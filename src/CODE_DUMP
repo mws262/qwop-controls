@@ -1,0 +1,218 @@
+//// Node redistribution /////
+
+//	public void redistributeNodePos(){
+//
+//
+//		// Count up which child branch has the most children. TODO may need to only count children to a certain depth.
+//		int [] branchSizes = new int[children.size()];
+//		float branchSum = 0;
+//		for (int i = 0; i < children.size(); i++){
+//			branchSizes[i] = children.get(i).countDescendants();
+//			branchSum += branchSizes[i];
+//		}
+//
+//		for (int i = 0; i < children.size(); i++){
+//			float spacing = 0;
+//			if (i > 0){
+//				spacing = sweepAngle*(i-1)*(branchSizes[i] + branchSizes[i - 1] )/ (2 * branchSum);
+//			}
+//
+//			children.get(i).sweepAngle = 2f*sweepAngle/(3f);
+//			children.get(i).nodeAngle = nodeAngle - 2f*sweepAngle/3.f + spacing;
+//
+//			children.get(i).nodeLocation[0] = (float) (nodeLocation[0] + edgeLength*Math.cos(children.get(i).nodeAngle));
+//			children.get(i).nodeLocation[1] = (float) (nodeLocation[1] + edgeLength*Math.sin(children.get(i).nodeAngle));
+//			children.get(i).nodeLocation[2] = 0f; // No out of plane stuff yet.
+//		}
+//
+//		for (TrialNodeMinimal child : children){
+//			child.redistributeNodePos();
+//		}
+//	}
+
+
+//	public void redistributeNodes_root(){
+//		if (treeDepth != 0) throw new RuntimeException("Only call node redistribution from a root node please.");
+//		ArrayList<TrialNodeMinimal> nodeList = new ArrayList<TrialNodeMinimal>();
+//		getNodes_below(nodeList);
+//		nodeList.remove(this);
+//
+//		int nodeListSize = nodeList.size();
+//
+//		// All accelerations x all constraint forces.
+//		FloatMatrix Amat = new FloatMatrix(nodeListSize * 4, nodeListSize * 4);
+//		FloatMatrix Bmat = new FloatMatrix(nodeListSize * 4, 1);
+//		System.out.println(nodeListSize);
+//		// INTEGRATION LOOP
+//		for (int k = 0; k < 1000; k++){
+//
+//			// Form A*x = B, where is ix [xdd1; ydd1; xdd2;... constraintForces];
+//			for (int i = 0; i < nodeListSize; i++){
+//
+//				// Mass and tension coupling terms.
+//				TrialNodeMinimal thisNode = nodeList.get(i);
+//				int xdd1Idx = 2*i;
+//				int ydd1Idx = 2*i + 1;
+//				Amat.put(xdd1Idx, xdd1Idx, thisNode.mass); // mass*ax
+//				Amat.put(ydd1Idx, ydd1Idx, thisNode.mass); // mass* ay
+//
+//				Amat.put(xdd1Idx, 2*nodeListSize + 2*i, 1f); // Tension x force on thisNode.
+//				Amat.put(ydd1Idx, 2*nodeListSize + 2*i + 1, 1f); // Tension y force on thisNode.
+//
+//				int xdd2Idx = 0;
+//				int ydd2Idx = 0;
+//
+//				if (thisNode.parent.treeDepth > 0){
+//					int parentIdx = nodeList.indexOf(thisNode.parent);
+//					xdd2Idx = 2*parentIdx;
+//					ydd2Idx = 2*parentIdx + 1;
+//					Amat.put(xdd2Idx, 2*nodeListSize + 2*i, -1f); // Reaction force on parent of thisNode.
+//					Amat.put(ydd2Idx, 2*nodeListSize + 2*i + 1, -1f); // Reaction force on parent of thisNode.
+//				}
+//
+//				// Constraint terms. From matlab.
+//				// Distance constraint.
+//				// Aterm = [ 2*x1 - 2*x2, 2*y1 - 2*y2, 2*x2 - 2*x1, 2*y2 - 2*y1]
+//				// bterm = xd2*(2*xd1 - 2*xd2) - xd1*(2*xd1 - 2*xd2) - yd1*(2*yd1 - 2*yd2) + yd2*(2*yd1 - 2*yd2)
+//				// xterm = [xdd1 ydd1 xdd2 ydd2];
+//				int constraintIdx_1 = i + 2*nodeListSize;
+//
+//				float x1 = thisNode.nodeLocation[0];
+//				float y1 = thisNode.nodeLocation[1];
+//				float xd1 = thisNode.velocity[0];
+//				float yd1 = thisNode.velocity[1];
+//
+//				float x2 = thisNode.parent.nodeLocation[0];
+//				float y2 = thisNode.parent.nodeLocation[1];
+//				float xd2 = thisNode.parent.velocity[0];
+//				float yd2 = thisNode.parent.velocity[1];
+//
+//				if (thisNode.parent.treeDepth > 0){
+//					Amat.put(constraintIdx_1, xdd2Idx, x2 - x1);
+//					Amat.put(constraintIdx_1, ydd2Idx, y2 - y1);
+//				}
+//				Amat.put(constraintIdx_1, xdd1Idx, x1 - x2);
+//				Amat.put(constraintIdx_1, ydd1Idx, y1 - y2);
+//
+//				// Tension direction constraint
+//				// Perpendicular direction to link dotted with tension force should be zero.
+//				// (y2 - y1)*Tx - (x2 - x1)*Ty = 0
+//				int constraintIdx_2 = i + 3*nodeListSize;
+//				int TxIdx = 2*nodeListSize + 2*i;
+//				int TyIdx = 2*nodeListSize + 2*i + 1;
+//
+//				Amat.put(constraintIdx_2, TxIdx, y2 - y1);
+//				Amat.put(constraintIdx_2, TyIdx, x1 - x2);
+//
+//				// Make B matrix
+//
+//				// Magnet forces
+//				Vec2 totalForce = new Vec2();
+//				Vec2 singleForce = new Vec2();
+//				for (TrialNodeMinimal otherNode : nodeList){
+//					if (!otherNode.equals(thisNode)){ // Don't have the node apply a force from itself.
+//
+//						singleForce.x = thisNode.nodeLocation[0] - otherNode.nodeLocation[0];
+//						singleForce.y = thisNode.nodeLocation[1] - otherNode.nodeLocation[1];
+//
+//						//System.out.println(thisNode.mass*otherNode.mass/singleForce.length());
+//						float forceMagnitude = Math.min(thisNode.mass*otherNode.mass/singleForce.length(),10000);
+//
+//						singleForce.normalize();
+//						singleForce.mulLocal(1f*forceMagnitude);
+//
+//						totalForce.addLocal(singleForce);
+//					}
+//				}
+//				//float velMagnitude = Math.sqrt(thisNode.velocity[0]*thisNode.velocity[0] + thisNode.velocity[1]*thisNode.velocity[1]);
+//				totalForce.addLocal(-damping*thisNode.velocity[0], -damping*thisNode.velocity[1]);
+//
+//				Bmat.put(2*i, 0, totalForce.x);
+//				Bmat.put(2*i + 1, 0, totalForce.y);
+//
+//				// Constraints
+//				Bmat.put(constraintIdx_1, 0,xd2*(xd1 - xd2) - xd1*(xd1 - xd2) - yd1*(yd1 - yd2) + yd2*(yd1 - yd2));
+//				// Damping
+//			}
+//			//			for (int i = 0; i < Amat.columns; i++){
+//			//				for (int j = 0; j < Amat.rows; j++){
+//			//					System.out.print(Amat.get(j,i) + ", ");
+//			//				}
+//			//				System.out.println();
+//			//			}
+//			//			System.out.println(Bmat.sum());
+//			//			for (int i = 0; i < Bmat.columns; i++){
+//			//				for (int j = 0; j < Bmat.rows; j++){
+//			//					System.out.print(Bmat.get(j,i) + ", ");
+//			//				}
+//			//				System.out.println();
+//			//			}
+//			//FloatMatrix xmat = Solve.solve(Amat, Bmat);
+//
+//			// Iterative solve.
+//			xmat = PGS.solve(Amat, Bmat, xmat, FloatMatrix.ones(Bmat.rows,1).mul(-1000),FloatMatrix.ones(Bmat.rows,1).mul(1000),10000, 1f);
+//
+//
+//			// Update all nodes. Euler.
+//			for (int i = 0; i < nodeListSize; i++){
+//				TrialNodeMinimal thisNode = nodeList.get(i);
+//				thisNode.nodeLocation[0] += thisNode.velocity[0]*dt;
+//				thisNode.nodeLocation[1] += thisNode.velocity[1]*dt;
+//
+//				thisNode.velocity[0] += xmat.get(2*i)*dt;
+//				thisNode.velocity[1] += xmat.get(2*i + 1)*dt;
+//			}
+//		}
+//	}
+
+//
+//	private void redistributeNodes_children(ArrayList<TrialNodeMinimal> nodeList){
+//
+//
+//		Vec2 er = new Vec2();
+//		er.x = nodeLocation[0] - parent.nodeLocation[0];
+//		er.y = nodeLocation[1] - parent.nodeLocation[1];
+//		er.normalize();
+//
+//		Vec2 eth = new Vec2();
+//		Vec2.crossToOut(er, -1f, eth);
+//
+//		Vec2 totalForce = new Vec2();
+//		Vec2 singleForce = new Vec2();
+//		for (TrialNodeMinimal otherNode : nodeList){
+//			if (!otherNode.equals(this)){ // Don't have the node apply a force from itself.
+//
+//				singleForce.x = nodeLocation[0] - otherNode.nodeLocation[0];
+//				singleForce.y = nodeLocation[1] - otherNode.nodeLocation[1];
+//
+//				float forceMagnitude = singleForce.length()/otherNode.treeDepth;
+//
+//				float cappedMinDist = Math.max(forceMagnitude, 0.05f);
+//
+//				singleForce.mulLocal(1.f/(forceMagnitude*cappedMinDist*cappedMinDist));
+//
+//				totalForce.addLocal(singleForce);
+//			}
+//		}
+//		float dirMagnitude = Vec2.dot(eth, totalForce);
+//
+//		float stretchMagnitude = Vec2.dot(er, totalForce);
+//		nodeAngle += 0.00000005f*dirMagnitude/edgeLength;
+//		edgeLength += 0.000005f*Math.abs(stretchMagnitude) - 0.1f*(edgeLength - edgeLength_init);
+//
+//		nodeLocation[0] = (float)Math.cos(nodeAngle) * edgeLength + parent.nodeLocation[0]; //eth.x*0.0001f;
+//		nodeLocation[1] = (float)Math.sin(nodeAngle) * edgeLength + parent.nodeLocation[1];//eth.y*0.0001f;
+//
+//		for (TrialNodeMinimal child : children){
+//			//			er.x = child.nodeLocation[0] - nodeLocation[0];
+//			//			er.y = child.nodeLocation[1] - nodeLocation[1];
+//			//			er.normalize();
+//			//			er.mulLocal(edgeLength);
+//			//			
+//			//			child.nodeLocation[0] = nodeLocation[0] + er.x;
+//			//			child.nodeLocation[1] = nodeLocation[1] + er.y;
+//
+//
+//			child.redistributeNodes_children(nodeList);
+//		}
+//	}
