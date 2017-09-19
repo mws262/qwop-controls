@@ -16,15 +16,17 @@ public class MAIN_test {
 		/* Load */
 		System.out.println("Reading saved games file."); tic();
 		QWOP_fileIO<CondensedRunInfo> io = new QWOP_fileIO<CondensedRunInfo>();
-		ArrayList<CondensedRunInfo> runs = io.loadObjects("test");
+		ArrayList<CondensedRunInfo> runs1 = io.loadObjects("test");
+	//	ArrayList<CondensedRunInfo> runs2 = io.loadObjects("test2");
 		toc();
 		
 		/* Convert from runs to tree with nodes */
 		System.out.println("Converting from games to a tree."); tic();
-		TrialNodeMinimal treeRoot = TrialNodeMinimal.makeNodesFromRunInfo(runs, useTreePhysics);
+		TrialNodeMinimal treeRoot = TrialNodeMinimal.makeNodesFromRunInfo(runs1, useTreePhysics);
+	//	TrialNodeMinimal.makeNodesFromRunInfo(runs2, treeRoot);
 
 		toc();
-		System.out.println("Done. Imported " + runs.size() + " runs. Starting graphics and tree builder.");
+		//System.out.println("Done. Imported " + runs1.size() + runs2.size() + " runs. Starting graphics and tree builder.");
 		
 		/* Add more choices for the tree to explore, and see if this changes anything. */
 		treeRoot.expandNodeChoices_allBelow(2);

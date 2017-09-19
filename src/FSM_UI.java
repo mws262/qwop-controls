@@ -77,6 +77,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	/** Pane for the snapshots of the runner. **/
 	SnapshotPane snapshotPane;
 
+	/** Selected node by user click/key **/
+	TrialNodeMinimal selectedNode;
+
 	/** List of panes which can be activated, deactivated. **/
 	private ArrayList<TabbedPaneActivator> allTabbedPanes= new ArrayList<TabbedPaneActivator>(); //List of all panes in the tabbed part
 
@@ -91,19 +94,40 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 	/** Usable milliseconds per frame **/
 	private long MSPF = (long)(1f/(float)FPS * 1000f);
-	
+
 	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
 	public int xOffsetPixels_init = 250;
 	public int xOffsetPixels = xOffsetPixels_init;
 	public int yOffsetPixels = 800;
-	
+
 	/** Runner coordinates to pixels. **/
 	public float runnerScaling = 10f;
-	
+
 	private Color defaultDrawColor = new Color(0f,0f,0f);
 	private Color historyDrawColor = new Color(0.6f,0.6f,0.6f);
 	final Font QWOPLittle = new Font("Ariel", Font.BOLD,21);
 	final Font QWOPBig = new Font("Ariel", Font.BOLD,28);
+
+	/** After how many loops do we update the tree physics? Negative means multiple times, positive means we only update every n loops **/
+	private int updatePhysFreq = 1;
+	/** Keeps track of how many display loops have occurred since the last tree physics update. **/
+	private int physDrawCounter = 0;
+	/** Continuously update the estimate of the display loop time in milliseconds. **/
+	private long avgLoopTime = MSPF;
+	/** Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers gives more weight to the old value. **/
+	private final float loopTimeFilter = 100f;
+	/** How fast does the loop time error accumulate before we change the physics update rate. **/
+	private final float ki_phys = 0.5f;
+	/** Keeps track of cummulative loop time error. **/
+	private float accumulator_phys = 0f;
+	/** Value at which the time error accumulator resets and changes the phys update frequency. **/
+	private final float accumulator_phys_MAX = 100f;
+	/** At what draw frequency do we scrap the physics. Bigger means we wait longer. **/
+	private final int physOffThreshold = 12;
+	/** Have we turned the physics off due to slowness? **/
+	private boolean physOn = true;
+	/** Keep track of whether we sent a pause tree command back to negotiator. **/
+	private boolean treePause = false;
 
 	/** State machine states for all UI **/
 	public enum Status{
@@ -187,9 +211,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				currentStatus = Status.DRAW_ALL;
 				break;
 			case DRAW_ALL:
-				Iterator<TrialNodeMinimal> iter = rootNodes.iterator();
-				while (iter.hasNext()){
-					iter.next().stepTreePhys(1);
+				if (physOn){
+					Iterator<TrialNodeMinimal> iter = rootNodes.iterator();
+					while (iter.hasNext()){
+						iter.next().stepTreePhys(1);
+					}
 				}
 				repaint();
 				break;
@@ -205,14 +231,29 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			previousStatus = currentStatus;
 
-			// Wait away any extra time after drawing to match target framerate.
-			long extraTime = MSPF - (System.currentTimeMillis() - currentTime);
-			if (extraTime > 0){
+			// Update frequency of physics updates to keep the framerate about constant.
+			avgLoopTime = (long)(((loopTimeFilter - 1f) * avgLoopTime + 1f * (System.currentTimeMillis() - currentTime)) / loopTimeFilter); // Filter the loop time
+
+			long extraTime = System.currentTimeMillis() - currentTime;
+			if (extraTime > 5){
 				try {
 					Thread.sleep(extraTime);
-				} catch (InterruptedException e) { e.printStackTrace(); }
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
+
 		}
+	}
+
+	/** Pick a node for the UI to highlight and potentially display. **/
+	public void selectNode(TrialNodeMinimal selected){
+		if (selectedNode != null) selectedNode.displayPoint = false;
+		selectedNode = selected;
+		selectedNode.displayPoint = true;
+		selectedNode.nodeColor = Color.RED;
+		if (negotiator != null) negotiator.uiNodeSelect(selectedNode);
 	}
 
 	@Override
@@ -233,9 +274,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		/** For rendering text overlays. Note that textrenderer is for overlays while GLUT is for labels in world space **/
 		TextRenderer textRenderBig;
 		TextRenderer textRenderSmall;
-
-		/** Selected node by user click/key **/
-		TrialNodeMinimal selectedNode;
 
 		/** Currently tracked mouse x location in screen coordinates of the panel **/
 		int mouseX;
@@ -272,23 +310,37 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			for (TrialNodeMinimal node : rootNodes){
 				gl.glColor3f(1f, 0.1f, 0.1f);
 				gl.glPointSize(3*ptSize);
-				if (selectedNode != null) selectedNode.drawPoint(gl);
+
+				gl.glBegin(GL2.GL_POINTS);
+				node.drawNodes_below(gl);
+				gl.glEnd();
 
 				gl.glColor3f(1f, 1f, 1f);
 				gl.glBegin(GL2.GL_LINES);
 				node.drawLines_below(gl);
 				gl.glEnd();
-				
-				gl.glBegin(GL2.GL_POINTS);
-				node.drawNodes_below(gl);
-				gl.glEnd();
 			}
 
-			//Draw games played and games/sec in upper left.
+			// Draw games played and games/sec in upper left.
 			textRenderBig.beginRendering(panelWidth, panelHeight);
 			textRenderBig.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			textRenderBig.draw(negotiator.gamesPlayed + " Games played", 20, panelHeight-50);
 			textRenderBig.endRendering();
+
+			// Draw the FPS of the tree drawer at the moment.
+			textRenderSmall.beginRendering(panelWidth, panelHeight);
+			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
+			int fps = (int)(10000./avgLoopTime);
+			textRenderSmall.draw( ( (Math.abs(fps) > 1000) ? "???" : fps/10f ) + " FPS", panelWidth - 75, panelHeight - 20);
+			if (physOn){
+				textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
+				textRenderSmall.draw("Tree physics on", panelWidth - 120, panelHeight - 35);
+			}else{
+				textRenderSmall.setColor(0.7f, 0.1f, 0.1f, 1.0f);
+				textRenderSmall.draw("Tree physics off", panelWidth - 120, panelHeight - 35);
+			}
+
+			textRenderSmall.endRendering();
 		}
 
 		/** Draw a text string using GLUT (for openGL rendering version of my stuff) **/
@@ -326,8 +378,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			if (e.isMetaDown()){
-				selectedNode = cam.nodeFromClick(e.getX(), e.getY(), rootNodes);
-				negotiator.uiNodeSelect(selectedNode);
+				selectNode(cam.nodeFromClick(e.getX(), e.getY(), rootNodes));
 			}
 		}
 
@@ -335,7 +386,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		public void mousePressed(MouseEvent e) {
 			mouseX = e.getX();
 			mouseY = e.getY();
-
 		}
 
 		@Override
@@ -377,22 +427,29 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				switch( keyCode ) { 
 				case KeyEvent.VK_UP: //Go out the branches of the tree
 					arrowSwitchNode(0,1);
-					negotiator.uiNodeSelect(selectedNode);
 					break;
 				case KeyEvent.VK_DOWN: //Go back towards root one level
 					arrowSwitchNode(0,-1); 
-					negotiator.uiNodeSelect(selectedNode);
 					break;
 				case KeyEvent.VK_LEFT: //Go left along an isobranch (like that word?)
 					arrowSwitchNode(1,0);
-					negotiator.uiNodeSelect(selectedNode);
 					break;
 				case KeyEvent.VK_RIGHT : //Go right along an isobranch
 					arrowSwitchNode(-1,0);
-					negotiator.uiNodeSelect(selectedNode);
 					break;
 				case KeyEvent.VK_P : //Pause everything except for graphics updates
-					negotiator.pauseSampling();
+					treePause = !treePause;
+					if (treePause){
+						negotiator.pauseTree();
+					}else{
+						negotiator.unpauseTree();
+					}
+					break;
+				case KeyEvent.VK_C:
+					negotiator.redistributeNodes();
+					break;
+				case KeyEvent.VK_V:
+					physOn = !physOn;
 					break;
 				case KeyEvent.VK_ESCAPE:
 					System.exit(0);
@@ -435,17 +492,16 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 						nextOver(selectedNode.parent,blacklist, 1,direction,selectedNode.parent.children.indexOf(selectedNode),0);
 
 					}else{ //Otherwise we can just switch nodes within the scope of this parent.
-						selectedNode = (selectedNode.parent.children.get(thisIndex+direction));
+						selectNode(selectedNode.parent.children.get(thisIndex+direction));
 					}
 				}
-				
+
 				//These logicals just take the proposed motion (or not) and ignore any edges.
 				if(depth == 1 && selectedNode.children.size()>0){ //Go further down the tree if this node has children
-					selectedNode = selectedNode.children.get(0);
+					selectNode(selectedNode.children.get(0));
 				}else if(depth == -1 && selectedNode.treeDepth>0){ //Go up the tree if this is not root.
-					selectedNode = selectedNode.parent;
+					selectNode(selectedNode.parent);
 				}
-				
 				repaint();
 			}
 		}
@@ -456,7 +512,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			boolean success = false;
 			//TERMINATING CONDITIONS-- fail quietly if we get back to root with nothing. Succeed if we get back to the same depth we started at.
 			if (deficitDepth == 0){ //We've successfully gotten back to the same level. Great.
-				selectedNode = current;
+				selectNode(current);
 				return true;
 			}else if(current.treeDepth == 0){
 				return true; // We made it back to the tree's root without any success. Just return.
@@ -497,88 +553,93 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 	}
-	
+
 	/** Pane for the animated runner. **/
 	public class RunnerPane extends JPanel implements TabbedPaneActivator {
 
 		public int headPos;
-		
+
 		boolean active = false;
-		
+
 		private World world;
 
 		public RunnerPane(){}
-		
+
 		public void paintComponent(Graphics g){
-			if (!active || world == null) return;
+			if (!active) return;
 			super.paintComponent(g);
 
-			Body newBody = world.getBodyList();
-			while (newBody != null){
+			if (world != null){
+				Body newBody = world.getBodyList();
+				while (newBody != null){
 
-				Shape newfixture = newBody.getShapeList();
+					Shape newfixture = newBody.getShapeList();
 
-				while(newfixture != null){
+					while(newfixture != null){
 
-					if(newfixture.getType() == ShapeType.POLYGON_SHAPE){
+						if(newfixture.getType() == ShapeType.POLYGON_SHAPE){
 
-						PolygonShape newShape = (PolygonShape)newfixture;
-						Vec2[] shapeVerts = newShape.m_vertices;
-						for (int k = 0; k<newShape.m_vertexCount; k++){
+							PolygonShape newShape = (PolygonShape)newfixture;
+							Vec2[] shapeVerts = newShape.m_vertices;
+							for (int k = 0; k<newShape.m_vertexCount; k++){
 
-							XForm xf = newBody.getXForm();
-							Vec2 ptA = XForm.mul(xf,shapeVerts[k]);
-							Vec2 ptB = XForm.mul(xf, shapeVerts[(k+1) % (newShape.m_vertexCount)]);
+								XForm xf = newBody.getXForm();
+								Vec2 ptA = XForm.mul(xf,shapeVerts[k]);
+								Vec2 ptB = XForm.mul(xf, shapeVerts[(k+1) % (newShape.m_vertexCount)]);
+								g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
+										(int)(runnerScaling * ptA.y) + yOffsetPixels,
+										(int)(runnerScaling * ptB.x) + xOffsetPixels,
+										(int)(runnerScaling * ptB.y) + yOffsetPixels);			    		
+							}
+						}else if (newfixture.getType() == ShapeType.CIRCLE_SHAPE){
+							CircleShape newShape = (CircleShape)newfixture;
+							float radius = newShape.m_radius;
+							headPos = (int)(runnerScaling * newBody.getPosition().x);
+							g.drawOval((int)(runnerScaling * (newBody.getPosition().x - radius) + xOffsetPixels),
+									(int)(runnerScaling * (newBody.getPosition().y - radius) + yOffsetPixels),
+									(int)(runnerScaling * radius * 2),
+									(int)(runnerScaling * radius * 2));		
+
+						}else if(newfixture.getType() == ShapeType.EDGE_SHAPE){
+
+							EdgeShape newShape = (EdgeShape)newfixture;
+							XForm trans = newBody.getXForm();
+
+							Vec2 ptA = XForm.mul(trans, newShape.getVertex1());
+							Vec2 ptB = XForm.mul(trans, newShape.getVertex2());
+							Vec2 ptC = XForm.mul(trans, newShape.getVertex2());
+
 							g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
 									(int)(runnerScaling * ptA.y) + yOffsetPixels,
 									(int)(runnerScaling * ptB.x) + xOffsetPixels,
 									(int)(runnerScaling * ptB.y) + yOffsetPixels);			    		
-						}
-					}else if (newfixture.getType() == ShapeType.CIRCLE_SHAPE){
-						CircleShape newShape = (CircleShape)newfixture;
-						float radius = newShape.m_radius;
-						headPos = (int)(runnerScaling * newBody.getPosition().x);
-						g.drawOval((int)(runnerScaling * (newBody.getPosition().x - newShape.m_radius) + xOffsetPixels),
-								(int)(runnerScaling * (newBody.getPosition().y - newShape.m_radius) + yOffsetPixels),
-								(int)(runnerScaling * newShape.m_radius * 2),
-								(int)(runnerScaling * newShape.m_radius * 2));		
-					
-					}else if(newfixture.getType() == ShapeType.EDGE_SHAPE){
-						
-		    			EdgeShape newShape = (EdgeShape)newfixture;
-			    		XForm trans = newBody.getXForm();
+							g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
+									(int)(runnerScaling * ptA.y) + yOffsetPixels,
+									(int)(runnerScaling * ptC.x) + xOffsetPixels,
+									(int)(runnerScaling * ptC.y) + yOffsetPixels);			    		
 
-			    		Vec2 ptA = XForm.mul(trans, newShape.getVertex1());
-			    		Vec2 ptB = XForm.mul(trans, newShape.getVertex2());
-			    		Vec2 ptC = XForm.mul(trans, newShape.getVertex2());
-			    		
-			    		g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-			    				(int)(runnerScaling * ptA.y) + yOffsetPixels,
-			    				(int)(runnerScaling * ptB.x) + xOffsetPixels,
-			    				(int)(runnerScaling * ptB.y) + yOffsetPixels);			    		
-			    		g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-			    				(int)(runnerScaling * ptA.y) + yOffsetPixels,
-			    				(int)(runnerScaling * ptC.x) + xOffsetPixels,
-			    				(int)(runnerScaling * ptC.y) + yOffsetPixels);			    		
-			
-					}else{
-						System.out.println("Not found: " + newfixture.m_type.name());
+						}else{
+							System.out.println("Not found: " + newfixture.m_type.name());
+						}
+						newfixture = newfixture.getNext();
 					}
-					newfixture = newfixture.getNext();
+					newBody = newBody.getNext();
 				}
-				newBody = newBody.getNext();
+				//This draws the "road" markings to show that the ground is moving relative to the dude.
+				for(int i = 0; i<this.getWidth()/69; i++){
+					g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 100);
+					keyDrawer(g, negotiator.Q,negotiator.W,negotiator.O,negotiator.P);
+				}
+			}else{
+				keyDrawer(g, false, false, false, false);
 			}
-			//This draws the "road" markings to show that the ground is moving relative to the dude.
-			for(int i = 0; i<this.getWidth()/69; i++){
-				g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 100);
-			}
-			
+
 			// Divider line.
 			g.setColor(historyDrawColor);
 			g.fill3DRect(0, yOffsetPixels - 230, getWidth(), 5, true);
 			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
 			xOffsetPixels = -headPos + xOffsetPixels_init;
-			keyDrawer(g, negotiator.Q,negotiator.W,negotiator.O,negotiator.P);
+
 		}
 
 		public void setWorldToView(World world){
@@ -604,7 +665,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			int startX = -45;
 			int startY = yOffsetPixels - 200;
 			int size = 40;
-			
+
 			Font activeFont;
 			FontMetrics fm;
 			Graphics2D g2 = (Graphics2D)g;
@@ -652,15 +713,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	/** Pane for the fixed view of the runner at each node. **/
 	public class SnapshotPane extends JPanel implements TabbedPaneActivator {
 
-		/** Node whose state will be displayed. **/
-		public TrialNodeMinimal selectedNode;
-		
 		/** Number of runner states in the past to display. **/
 		public int numHistoryStatesDisplay = 5;
 
 		/** Is this tab currently active? If not, don't run the draw loop. **/
 		public boolean active = false;
-		
+
 		public SnapshotPane(){}
 
 		public void paintComponent(Graphics g){
@@ -669,7 +727,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			Shape[] shapes;
 			XForm[] transforms;
-			
+
 			if (selectedNode != null && selectedNode.state != null){ // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
 				TrialNodeMinimal drawNode = selectedNode;
 				shapes = QWOPGame.shapeList;
@@ -677,7 +735,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 				xOffsetPixels = xOffsetPixels_init + (int)(-runnerScaling * transforms[1].position.x);
 				drawRunner(g, defaultDrawColor, shapes, transforms);
-				
+
 				for (int i = 0; i < numHistoryStatesDisplay; i++){
 					if (drawNode.treeDepth > 1){
 						drawNode = drawNode.parent;
@@ -687,14 +745,14 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 						break;
 					}
 				}
-				
-				
+
+
 			}
 		}
 
 		/** Draw the runner at a certain state. **/
 		private void drawRunner(Graphics g, Color drawColor, Shape[] shapes, XForm[] transforms){
-			
+
 			g.setColor(drawColor);
 			for (int i = 0; i < shapes.length; i++){
 				switch(shapes[i].getType()){

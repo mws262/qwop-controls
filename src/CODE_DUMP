@@ -216,3 +216,71 @@
 //			child.redistributeNodes_children(nodeList);
 //		}
 //	}
+
+// PHYS TIMING///////
+
+	// TODO this whole physics scheduling problem is a mess. Fix it later.
+				if (updatePhysFreq <= 0){ // We have extra time, so we can take >1 phys steps
+					timesToStep = -updatePhysFreq + 1;
+					physDrawCounter = 0;
+					
+				}else if (updatePhysFreq < 12){ // We don't have enough time for phys update every loop.
+					physDrawCounter++;
+					if (physDrawCounter == updatePhysFreq){
+						timesToStep = 1;
+					}
+				}else{ // Physics loops are so slow, we just pause instead.
+					timesToStep = 0;
+					physOn = false;
+					try {
+						Thread.sleep(20);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				if (timesToStep > 0){
+					Iterator<TrialNodeMinimal> iter = rootNodes.iterator();
+					while (iter.hasNext()){
+						physOn = true;
+						iter.next().stepTreePhys(timesToStep);
+					}
+					physDrawCounter = 0;
+				}else if (timesToStep < 0){
+					throw new RuntimeException("Trying to take negative physics steps in the tree graphics is bad.");
+				}else{
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				
+							// Update integration term
+			accumulator_phys += ki_phys* timeError;
+
+			if (accumulator_phys > accumulator_phys_MAX){ // Lots of extra time
+				if (updatePhysFreq > -5) updatePhysFreq--; // Multiple phys steps per loop.
+				accumulator_phys = 0;
+				//System.out.println(updatePhysFreq);
+			}else if (accumulator_phys < -accumulator_phys_MAX){ // We have a time deficit
+				if (updatePhysFreq < physOffThreshold) updatePhysFreq++; // Only take a step once in awhile.
+				accumulator_phys = 0;
+				//System.out.println(updatePhysFreq);
+			}
+			
+			
+				/** Apply a force synchronizing this node's location towards the target location. **/
+	private void applySyncForce(ArrayList<TrialNodeMinimal> nodeList){
+		if (arePhysicsInitialized){
+			for (TrialNodeMinimal thisNode : nodeList){
+				localForce.setZero();
+				localForce.x = thisNode.targetNodeLocation[0] - thisNode.nodeLocation[0];
+				localForce.y = thisNode.targetNodeLocation[1] - thisNode.nodeLocation[1];
+				localForce.mulLocal(1000f);
+				localForce.addLocal(thisNode.physBody.getLinearVelocity().mul(-100f));
+				thisNode.physBody.applyForce(localForce, thisNode.physBody.getWorldCenter());
+
+			}
+		}
+	}
+

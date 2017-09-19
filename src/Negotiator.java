@@ -22,13 +22,13 @@ public class Negotiator {
 	boolean P = false;
 
 	/** Box2D game interface reports all FSM changes. */
-	boolean verbose_game = true;
+	boolean verbose_game = false;
 
 	/** UI window reports all FSM changes. */
-	boolean verbose_UI = true;
+	boolean verbose_UI = false;
 
 	/** Tree builder reports all FSM changes. */
-	boolean verbose_tree = true;
+	boolean verbose_tree = false;
 
 	QWOP_fileIO<CondensedRunInfo> fileIO;
 
@@ -81,10 +81,26 @@ public class Negotiator {
 		saveToFile = true;
 	}
 	
-	/** Pause everything but the UI things. **/
-	public void pauseSampling(){
+	/** Pause everything but the game things. **/
+	public void pauseGame(){
 		activeRoots.get(0).calcNodePos_below();
 		game.getFSMStatusAndLock();
+	}
+	
+	public void pauseTree(){
+		tree.latchAtFSMStatus(FSM_Tree.Status.IDLE);
+	}
+	public void unpauseTree(){
+		tree.unlockFSM();
+	}
+	
+	public void redistributeNodes(){
+		TrialNodeMinimal.useTreePhysics = false;
+		while (TrialNodeMinimal.stepping);
+		System.out.println("Activate");
+		activeRoots.get(0).calcNodePos_below();
+		activeRoots.get(0).initTreePhys_below();
+		TrialNodeMinimal.useTreePhysics = true;
 	}
 
 	/***********************************/
@@ -101,14 +117,12 @@ public class Negotiator {
 		case DO_PREDETERMINED:
 			break;
 		case EVALUATE_GAME:
-
 			break;
 		case EXHAUSTED:
 			tree.kill();
 			break;
 		case WAITING_FOR_PREDETERMINED:
 			FSM_Game.Status gameStatusPredet = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
-			System.out.println("Did we get here?");
 			if (gameStatusPredet == FSM_Game.Status.IDLE){
 				game.addSequence_old(tree.targetNodeToTest.getSequence(),false);
 			}else{
@@ -119,7 +133,6 @@ public class Negotiator {
 			break;
 		case WAITING_FOR_SINGLE:
 			FSM_Game.Status gameStatusSingle = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
-			System.out.println("Did we get here?");
 			if (gameStatusSingle == FSM_Game.Status.WAITING){
 				game.addAction_old(tree.targetNodeToTest.controlAction);
 			}else{
@@ -147,7 +160,6 @@ public class Negotiator {
 	
 	/** Save the the run to file. Currently called by the Tree FSM when it is ready. **/
 	public void saveRunToFile(TrialNodeMinimal leafNode){
-		System.out.println("saved run.");
 		if (saveToFile)
 			fileIO.storeObjects(new CondensedRunInfo(leafNode),
 					saveFileName, append);
@@ -159,7 +171,6 @@ public class Negotiator {
 			System.out.println("UI FSM: " + status);
 		switch (status) {
 		case DRAW_ALL:
-			activeRoots.get(0).stepTreePhys(1);
 			break;
 		case IDLE_ALL:
 			break;
@@ -175,11 +186,21 @@ public class Negotiator {
 	/** Node selected by clicking the tree. **/
 	public void uiNodeSelect(TrialNodeMinimal node) {
 		if (ui.snapshotPane.active) {
-			ui.snapshotPane.selectedNode = node;
+
 		} else if (ui.runnerPane.active) {
-			System.out.println("Node selected to simulate.");
-			game.addSequence_old(node.getSequence(), true);
+			// Run a one-off, real-time game.
+			System.out.println(node.treeDepth);
+			tree.latchAtFSMStatus(FSM_Tree.Status.IDLE);
+			game.runSingleRealtime(node.getSequence());
+			//game.addSequence_old(node.getSequence(), true);
 		}
+	}
+	
+	/** Let the game report that it is no longer simulating in real time and the tree may resume. **/
+	public void reportEndOfRealTimeSim(){
+		System.out.println("JH");
+		tree.unlockFSM(); // Resume tree actions.
+		
 	}
 
 	/**** For the QWOP game. ****/
@@ -189,22 +210,26 @@ public class Negotiator {
 		switch (status) {
 		case IDLE:
 			break;
+		case LOCKED:
+			break;
 		case INITIALIZE:
 			break;
 		case RUNNING_SEQUENCE:
-			ui.runnerPane.setWorldToView(game.getWorld());
+			if (game.isRealtime()){
+				ui.runnerPane.setWorldToView(game.getWorld());
+			}
 			break;
 		case WAITING:
 			FSM_Tree.Status treeStatusWaiting = tree.getFSMStatus();
 			
 			if (treeStatusWaiting == FSM_Tree.Status.WAITING_FOR_PREDETERMINED
 			|| treeStatusWaiting == FSM_Tree.Status.WAITING_FOR_SINGLE){
-				System.out.println("gave game state to tree.");
 				tree.giveGameState(game.getGameState()); // Give the tree a game for it to 
+			}else if (game.isRealtime()){
+				ui.runnerPane.setWorldToView(null); // If it was a realtime game, turn of vis afterwards.
 			}else{
 				throw new RuntimeException("Game is waiting, but the tree isn't ready to do more stuff. Tree is in status: " + tree.currentStatus.toString());
 			}
-			
 			break;
 		case FAILED:
 			FSM_Tree.Status treeStatusFailed = tree.getFSMStatus();
@@ -213,7 +238,8 @@ public class Negotiator {
 			|| treeStatusFailed == FSM_Tree.Status.WAITING_FOR_SINGLE){
 				tree.giveGameState(game.getGameState()); // Give the tree a game for it to 
 			}else{
-				throw new RuntimeException("Game is failed, but the tree isn't ready to do more stuff. Tree is in status: " + tree.currentStatus.toString());
+				// Could also be ending a realtime run. Eliminated the exception for now.
+				//throw new RuntimeException("Game is failed, but the tree isn't ready to do more stuff. Tree is in status: " + tree.currentStatus.toString());
 			}
 			break;
 		default:

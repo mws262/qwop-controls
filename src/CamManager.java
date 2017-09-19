@@ -23,7 +23,7 @@ public class CamManager {
 	private Vector3f eyeToTarget = new Vector3f();
 
 	/** Position of the camera. */
-	private Vector3f eyePos = new Vector3f(8, 0, 50);
+	private Vector3f eyePos = new Vector3f(8, 0, 100);
 
 	/** Position of the camera's focus. */
 	private Vector3f targetPos = new Vector3f(8, 0, 0);

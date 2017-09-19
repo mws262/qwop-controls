@@ -17,12 +17,12 @@ public class FSM_Game implements Runnable{
 
 	/** Thread loop running? **/
 	public boolean running = true;
-	
+
 	/** Whether the FSM is locked for some other action to continue. **/
-	private boolean locked = false;
-	
+	private volatile boolean locked = false;
+
 	/** Confirms whether the FSM has finished its previous cycle and is effectively locked. **/
-	private boolean isLocked = false; 
+	private volatile boolean isLocked = false; 
 
 	/** Queued commands, IE QWOP key presses **/
 	private Queue<boolean[]> commandQueue = new LinkedList<boolean[]>();
@@ -54,12 +54,18 @@ public class FSM_Game implements Runnable{
 
 	private Negotiator negotiator;
 
+	/** Are we flagged to run a single, externally supplied sequence? **/
+	private boolean flagForSingle = false;
+
 	/** Do we add delays to make the simulation realtime? **/
-	public boolean runRealTime = false;
+	private boolean runRealTime = false;
+
+	/** Queued sequence to run. **/
+	private int[] queuedSequence;
 
 	/** State machine states for the QWOP game **/
 	public enum Status{
-		IDLE, WAITING, INITIALIZE, RUNNING_SEQUENCE, FAILED
+		IDLE, WAITING, INITIALIZE, RUNNING_SEQUENCE, LOCKED, FAILED
 	}
 
 	public FSM_Game() {
@@ -70,6 +76,7 @@ public class FSM_Game implements Runnable{
 	public void run() {	
 		while(running){
 			if (locked){
+				//System.out.println("set it!");
 				isLocked = true;
 				continue; // If we call one of the lock methods, the loop skips everything.
 			}else{
@@ -79,8 +86,19 @@ public class FSM_Game implements Runnable{
 			switch (currentStatus){
 			case IDLE:
 				// Initialize a new game if commands have been added to the queue.
-				if (!commandQueue.isEmpty()) currentStatus = Status.INITIALIZE;
+				if (!commandQueue.isEmpty()){
+					currentStatus = Status.INITIALIZE;
+				}else if (flagForSingle){ // User selected one to display.
+					if (queuedSequence == null) throw new RuntimeException("Game flagged for single run, but no queued sequence ready.");
+					addSequence_old(queuedSequence, true);
+					flagForSingle = false;
+					currentStatus = Status.LOCKED;
+				}
 				break;
+			case LOCKED:
+				// Namely if we want to trigger a one-off realtime run, this avoids going to IDLE where the tree might decide to run something instead.
+				if (commandQueue.isEmpty()) throw new RuntimeException("Game trying to display a user-selected run, but no sequence is added.");
+				currentStatus = Status.INITIALIZE;
 			case INITIALIZE:
 				newGame();
 				if (commandQueue.isEmpty()){
@@ -95,16 +113,16 @@ public class FSM_Game implements Runnable{
 				}else if (commandQueue.isEmpty()){
 					currentStatus = Status.WAITING; // Await any new commands if unfailed, but nothing to do right now.
 				}else{
-				
+
 					boolean[] nextCommand = commandQueue.poll(); // Get and remove the next keypresses
 					Q = nextCommand[0];
 					W = nextCommand[1]; 
 					O = nextCommand[2];
 					P = nextCommand[3];
-					
+
 					game.everyStep(Q,W,O,P);
 					getWorld().step(timestep, iterations);
-					
+
 					if (runRealTime){
 						negotiator.reportQWOPKeys(Q,W,O,P);
 						try {
@@ -117,6 +135,7 @@ public class FSM_Game implements Runnable{
 				break;
 			case WAITING:
 				if (failFlag || runRealTime){
+					System.out.println("What?");
 					currentStatus = Status.FAILED;
 				}else if(!commandQueue.isEmpty()){
 					currentStatus = Status.RUNNING_SEQUENCE;
@@ -124,8 +143,18 @@ public class FSM_Game implements Runnable{
 				break;
 			case FAILED:
 				commandQueue.clear(); // Clear remaining commands.
-				currentStatus = Status.IDLE;
-				runRealTime = false;
+
+				if (runRealTime) negotiator.reportEndOfRealTimeSim();
+				
+				if (flagForSingle){ // User selected one to display.
+					addSequence_old(queuedSequence, true);
+					flagForSingle = false;
+					currentStatus = Status.LOCKED;
+				}else{ // Normal operation
+					currentStatus = Status.IDLE;
+					runRealTime = false;
+				}
+
 				break;
 			default:
 				break;
@@ -176,22 +205,33 @@ public class FSM_Game implements Runnable{
 		commandQueue.clear();
 		sequenceIndex = 0;
 		for (int i = 0; i < seq.length; i++){
-			System.out.println(seq[i]);
+			//System.out.println(seq[i]);
 			addAction_old(seq[i]);
 		}	
 		this.runRealTime = realTime;
+	}
+
+	/** Queue up a single realtime game to play next time its available. **/
+	public void runSingleRealtime(int[] actionSequence){
+		queuedSequence = actionSequence;
+		flagForSingle = true;
 	}
 
 	/** World is the reference to internal Box2D stuff. **/
 	public World getWorld(){
 		return game.getWorld();
 	}
-	
+
 	/** Get the current game. **/
 	public QWOPGame getGame(){
 		return game;
 	}
 	
+	/** Check if we're trying to run a game in realtime. **/
+	public boolean isRealtime(){
+		return runRealTime;
+	}
+
 	/** Get the state of the runner. **/
 	public CondensedStateInfo getGameState(){
 		CondensedStateInfo currentState = new CondensedStateInfo(game);
@@ -208,21 +248,22 @@ public class FSM_Game implements Runnable{
 	public void reportFall(){
 		failFlag = true;
 	}
-	
+
 	/** Get the FSM status. **/
 	public Status getFSMStatus(){
 		return currentStatus;
 	}
-	
+
 	/** Stop the FSM after the current cycle, and return the status. Prevents changes from having odd effects in the middle of a cycle. **/
 	public Status getFSMStatusAndLock(){
 		if (isLocked) throw new RuntimeException("Someone tried to lock the game while it was already locked.");
 		locked = true;
-		while (!isLocked){
-		}
+		
+		while (!isLocked);
+		
 		return getFSMStatus();
 	}
-	
+
 	/** Stop the FSM after the current cycle, and return the status. Prevents changes from having odd effects in the middle of a cycle. **/
 	public void unlockFSM(){
 		if (!locked) throw new RuntimeException("Tried to unlock the game FSM but it wasn't previously locked. Not necessarily fatal, but indicates some bad logic.");

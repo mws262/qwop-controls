@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.media.opengl.GL2;
 
@@ -13,6 +14,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.World;
+import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
@@ -23,7 +25,6 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
  * 
  */
 public class TrialNodeMinimal {
-
 
 	/********* QWOP IN/OUT ************/
 	/** Actual numeric control action **/
@@ -41,7 +42,7 @@ public class TrialNodeMinimal {
 	public final TrialNodeMinimal parent; // Parentage may not be changed.
 
 	/** Child nodes. Not fixed size any more. **/
-	public ArrayList<TrialNodeMinimal> children = new ArrayList<TrialNodeMinimal>();
+	public CopyOnWriteArrayList<TrialNodeMinimal> children = new CopyOnWriteArrayList<TrialNodeMinimal>();
 
 	/** Untried child actions. **/
 	public ArrayList<Integer> uncheckedActions = new ArrayList<Integer>();
@@ -78,6 +79,9 @@ public class TrialNodeMinimal {
 
 	/** Are the physics things fully initialized for this node. Prevents null pointers. **/
 	private boolean arePhysicsInitialized = false;
+
+	/** Are we in the middle of a physics step? **/
+	public static volatile boolean stepping = false;
 
 	/** Node mass and inertia for tree physics. **/
 	float physMass = 5f;
@@ -173,16 +177,13 @@ public class TrialNodeMinimal {
 		nodeLocation[1] = 0f;
 		nodeLocation[2] = 0f;
 
+		nodeColor = Color.BLUE;
+		displayPoint = true;
+
 		// Initialize the tree physics world if this is enabled.
 		useTreePhysics = treePhysOn;
 
 		if (useTreePhysics){
-			treePhysWorld = new World(new AABB(new Vec2(-10, -10f), new Vec2(10f,10f)), new Vec2(0f, 0f), true);
-
-			treePhysWorld.setWarmStarting(true);
-			treePhysWorld.setPositionCorrection(true);
-			treePhysWorld.setContinuousPhysics(true);
-
 			initTreePhys_single();
 		}
 	}
@@ -203,7 +204,7 @@ public class TrialNodeMinimal {
 			if (!child.fullyExplored) unexploredChildren.add(child);
 		}
 
-		System.out.println("Unexplored: " + unexploredChildren.size() + ", Unchecked: " + uncheckedActions + ", Node depth: " + treeDepth + ", Total children: " + children.size());
+		// System.out.println("Unexplored: " + unexploredChildren.size() + ", Unchecked: " + uncheckedActions + ", Node depth: " + treeDepth + ", Total children: " + children.size());
 
 		if (fullyExplored) {
 			nodeColor = Color.RED;
@@ -222,7 +223,6 @@ public class TrialNodeMinimal {
 					+ treeDepth + ". Unexplored children: " + unexploredChildren + ", Unchecked potential actions: "
 					+ uncheckedActions + " , Descendant count: " + countDescendants(),e); 
 		}
-		System.out.println("Selection is: " + selection);
 
 		// Make a new node or pick a not fully explored child.
 		if (selection > unexploredChildren.size()){
@@ -356,7 +356,6 @@ public class TrialNodeMinimal {
 		return false;
 	}
 
-
 	/** Change whether this node or any above it have become fully explored. 
 	 * This is lite because it assumes all existing fullyExplored tags in its children are accurate. 
 	 * Call from a leaf node that we just assigned to be fully explored.
@@ -385,7 +384,6 @@ public class TrialNodeMinimal {
 	public void checkFullyExplored_complete(){
 		ArrayList<TrialNodeMinimal> leaves = new ArrayList<TrialNodeMinimal>();
 		getLeaves(leaves);
-		System.out.println("Number of leaves in this tree: " + leaves.size());
 
 		// Reset all existing exploration flags out there.
 		for (TrialNodeMinimal leaf : leaves){
@@ -441,6 +439,12 @@ public class TrialNodeMinimal {
 	/* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Returns the ROOT of a tree. */
 	public static TrialNodeMinimal makeNodesFromRunInfo(ArrayList<CondensedRunInfo> runs, boolean initializeTreePhysics){
 		TrialNodeMinimal rootNode = new TrialNodeMinimal(initializeTreePhysics);
+		return makeNodesFromRunInfo(runs, rootNode);
+	}
+
+	/* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Adds to an existing given root. **/
+	public static TrialNodeMinimal makeNodesFromRunInfo(ArrayList<CondensedRunInfo> runs, TrialNodeMinimal existingRootToAddTo){
+		TrialNodeMinimal rootNode = existingRootToAddTo;
 		currentlyAddingSavedNodes = true;
 		for (CondensedRunInfo run : runs){ // Go through all runs, placing them in the tree.
 			TrialNodeMinimal currentNode = rootNode;	
@@ -467,7 +471,7 @@ public class TrialNodeMinimal {
 		rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
 		currentlyAddingSavedNodes = false;
 		rootNode.calcNodePos_below();
-		if (initializeTreePhysics) rootNode.initTreePhys_below();
+		if (TrialNodeMinimal.useTreePhysics) rootNode.initTreePhys_below();
 		return rootNode;
 	}
 
@@ -486,7 +490,7 @@ public class TrialNodeMinimal {
 	 * Should still be used for initial conditions before letting
 	 * the physics kick in.
 	 **/
-	public void calcNodePos(){
+	public void calcNodePos(float[] nodeLocationsToAssign){
 		//Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will span the required sweep.
 		if(treeDepth == 0){ //If this is the root node, we shouldn't change stuff yet.
 			if (children.size() > 1 ){ //Catch the div by 0
@@ -504,9 +508,14 @@ public class TrialNodeMinimal {
 			}
 		}
 
-		nodeLocation[0] = (float) (parent.nodeLocation[0] + edgeLength*Math.cos(nodeAngle));
-		nodeLocation[1] = (float) (parent.nodeLocation[1] + edgeLength*Math.sin(nodeAngle));
-		nodeLocation[2] = 0f; // No out of plane stuff yet.
+		nodeLocationsToAssign[0] = (float) (parent.nodeLocation[0] + edgeLength*Math.cos(nodeAngle));
+		nodeLocationsToAssign[1] = (float) (parent.nodeLocation[1] + edgeLength*Math.sin(nodeAngle));
+		nodeLocationsToAssign[2] = 0f; // No out of plane stuff yet.
+	}
+
+	/** Same, but assumes that we're talking about this node's nodeLocation **/
+	public void calcNodePos(){
+		calcNodePos(nodeLocation);
 	}
 
 	/** Recalculate all node positions below this one (NOT including this one for the sake of root). **/
@@ -519,6 +528,13 @@ public class TrialNodeMinimal {
 
 	/** Initialize all the physics stuff for this node. **/
 	public void initTreePhys_single(){
+		if (treeDepth == 0){ // Root creates the WORLD.
+			treePhysWorld = new World(new AABB(new Vec2(-10, -10f), new Vec2(10f,10f)), new Vec2(0f, 0f), true);
+
+			treePhysWorld.setWarmStarting(true);
+			treePhysWorld.setPositionCorrection(true);
+			treePhysWorld.setContinuousPhysics(true);
+		}
 
 		physShape = new PolygonDef();
 		physShape.setAsBox(physSize, physSize); // Shape is just a small square centered at the node. No need to do rectangles.
@@ -569,19 +585,26 @@ public class TrialNodeMinimal {
 
 	/** Advance the tree physics, and update node positions. **/
 	public void stepTreePhys(int timesteps){
+		stepping = true;
 		if (treeDepth != 0) throw new RuntimeException("Tree physics updates are only supported from root for now.");
-
+		if (!useTreePhysics){
+			stepping = false;
+			return;
+		}
 		ArrayList<TrialNodeMinimal> nodeList = new ArrayList<TrialNodeMinimal>();
 		getNodes_below(nodeList);
 
 		for (int i = 0; i < timesteps; i++){
 			// Calculate added forces before stepping the world.
 			applyForce(nodeList);
+
 			treePhysWorld.step(physDt, physIterations);
 			updatePositionFromPhys();
 		}
+		stepping = false;
 	}
 
+	/** Apply all my made up forces to the nodes. **/
 	public void applyForce(ArrayList<TrialNodeMinimal> nodeList){
 		if (arePhysicsInitialized){
 			for (TrialNodeMinimal thisNode : nodeList){
@@ -619,6 +642,7 @@ public class TrialNodeMinimal {
 			}
 		}
 	}
+
 	/** Propagate all physics world info back to the node drawing info. **/
 	public void updatePositionFromPhys(){
 		if (arePhysicsInitialized){
@@ -648,7 +672,7 @@ public class TrialNodeMinimal {
 
 	/** Draw the node point if enabled **/
 	public void drawPoint(GL2 gl){
-		if(fullyExplored){//if (displayPoint){
+		if(fullyExplored || displayPoint){//if (displayPoint){
 			gl.glColor3fv(nodeColor.getColorComponents(null),0);
 			gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2]);
 		}

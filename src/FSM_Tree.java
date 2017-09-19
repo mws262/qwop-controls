@@ -23,6 +23,11 @@ public class FSM_Tree implements Runnable{
 	public TrialNodeMinimal currentNode;
 	/* Root of tree we care about. */
 	public TrialNodeMinimal currentRoot;
+
+	/** Whether the FSM is locked for some other action to continue. **/
+	private volatile boolean locked = false;
+	/** Confirms whether the FSM has finished its previous cycle and is effectively locked. **/
+	private volatile boolean isLocked = false;
 	
 	public enum Status{
 		IDLE, INITIALIZE_TREE, DO_PREDETERMINED, ADD_NODE, WAITING_FOR_PREDETERMINED, WAITING_FOR_SINGLE, EVALUATE_GAME, EXHAUSTED
@@ -37,6 +42,14 @@ public class FSM_Tree implements Runnable{
 		while (running){ // Call kill() to break
 			if (rootNodes.isEmpty()){
 				continue;
+			}
+			
+			if (locked){
+				//System.out.println("set it!");
+				isLocked = true;
+				continue; // If we call one of the lock methods, the loop skips everything.
+			}else{
+				isLocked = false;
 			}
 			
 			// Evaluate the state
@@ -135,6 +148,44 @@ public class FSM_Tree implements Runnable{
 		return currentStatus;
 	}
 
+	/** Stop the FSM after the current cycle, and return the status. Prevents changes from having odd effects in the middle of a cycle. **/
+	public Status getFSMStatusAndLock(){
+		if (isLocked) throw new RuntimeException("Someone tried to lock the game while it was already locked.");
+		locked = true;
+		
+		while (!isLocked);
+		
+		return getFSMStatus();
+	}
+	
+	/** Stop the FSM after the current cycle, and return the status. 
+	 * Prevents changes from having odd effects in the middle of a cycle.
+	 * Returns whether or not it did anything.
+	 **/
+	public boolean unlockFSM(){
+		if (!locked) return false;
+		if (!isLocked) throw new RuntimeException("Tried to unlock the game FSM, but it never got around to locked in the first place. This really shouldn't happen.");
+		locked = false;
+		while (isLocked);
+		return true;
+	}
+
+	/** Wait until a specific status is reached, and then pause there. Returns whether it succeeded or not. **/
+	public boolean latchAtFSMStatus(Status status){
+		if (isLocked) return false; //throw new RuntimeException("Someone tried to latch the game while it was already latched.");
+		
+		getFSMStatusAndLock();
+		while (currentStatus != status){
+			unlockFSM();
+			getFSMStatusAndLock();
+		}
+		
+		if (currentStatus != status){
+			throw new RuntimeException("Tried to lock at status: " + status.toString() + ". Actually got: " + currentStatus.toString());
+		}
+		return true;
+	}
+	
 
 	public void setNegotiator(Negotiator negotiator) {
 		this.negotiator = negotiator;
