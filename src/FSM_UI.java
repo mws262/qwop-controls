@@ -108,22 +108,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	final Font QWOPLittle = new Font("Ariel", Font.BOLD,21);
 	final Font QWOPBig = new Font("Ariel", Font.BOLD,28);
 
-	/** After how many loops do we update the tree physics? Negative means multiple times, positive means we only update every n loops **/
-	private int updatePhysFreq = 1;
-	/** Keeps track of how many display loops have occurred since the last tree physics update. **/
-	private int physDrawCounter = 0;
+
 	/** Continuously update the estimate of the display loop time in milliseconds. **/
 	private long avgLoopTime = MSPF;
 	/** Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers gives more weight to the old value. **/
 	private final float loopTimeFilter = 100f;
-	/** How fast does the loop time error accumulate before we change the physics update rate. **/
-	private final float ki_phys = 0.5f;
-	/** Keeps track of cummulative loop time error. **/
-	private float accumulator_phys = 0f;
-	/** Value at which the time error accumulator resets and changes the phys update frequency. **/
-	private final float accumulator_phys_MAX = 100f;
-	/** At what draw frequency do we scrap the physics. Bigger means we wait longer. **/
-	private final int physOffThreshold = 12;
+	private long lastIterTime = System.currentTimeMillis();
 	/** Have we turned the physics off due to slowness? **/
 	private boolean physOn = true;
 	/** Keep track of whether we sent a pause tree command back to negotiator. **/
@@ -231,9 +221,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			previousStatus = currentStatus;
 
-			// Update frequency of physics updates to keep the framerate about constant.
-			avgLoopTime = (long)(((loopTimeFilter - 1f) * avgLoopTime + 1f * (System.currentTimeMillis() - currentTime)) / loopTimeFilter); // Filter the loop time
-
 			long extraTime = System.currentTimeMillis() - currentTime;
 			if (extraTime > 5){
 				try {
@@ -244,6 +231,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				}
 			}
 
+			// Update frequency of physics updates to keep the framerate about constant.
+			avgLoopTime = (long)(((loopTimeFilter - 1f) * avgLoopTime + 1f * (System.currentTimeMillis() - lastIterTime)) / loopTimeFilter); // Filter the loop time
+			lastIterTime = System.currentTimeMillis();
 		}
 	}
 
@@ -304,8 +294,8 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			super.display(drawable);
 
-			float ptSize = 10f/cam.getZoomFactor(); //Let the points be smaller/bigger depending on zoom, but make sure to cap out the size!
-			ptSize = Math.min(ptSize, 8);
+			float ptSize = 5f/cam.getZoomFactor(); //Let the points be smaller/bigger depending on zoom, but make sure to cap out the size!
+			ptSize = Math.min(ptSize, 1f);
 
 			for (TrialNodeMinimal node : rootNodes){
 				gl.glColor3f(1f, 0.1f, 0.1f);
@@ -324,7 +314,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			// Draw games played and games/sec in upper left.
 			textRenderBig.beginRendering(panelWidth, panelHeight);
 			textRenderBig.setColor(0.7f, 0.7f, 0.7f, 1.0f);
-			textRenderBig.draw(negotiator.gamesPlayed + " Games played", 20, panelHeight-50);
+			textRenderBig.draw(negotiator.getGamesPlayed() + " Games played", 20, panelHeight - 50);
+
+			if (treePause){
+				textRenderBig.setColor(0.7f, 0.1f, 0.1f, 1.0f);	
+				textRenderBig.draw("PAUSED", panelWidth/2, panelHeight - 50);
+			}
 			textRenderBig.endRendering();
 
 			// Draw the FPS of the tree drawer at the moment.
@@ -332,6 +327,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			int fps = (int)(10000./avgLoopTime);
 			textRenderSmall.draw( ( (Math.abs(fps) > 1000) ? "???" : fps/10f ) + " FPS", panelWidth - 75, panelHeight - 20);
+			// Physics on/off alert
 			if (physOn){
 				textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
 				textRenderSmall.draw("Tree physics on", panelWidth - 120, panelHeight - 35);
@@ -339,7 +335,17 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				textRenderSmall.setColor(0.7f, 0.1f, 0.1f, 1.0f);
 				textRenderSmall.draw("Tree physics off", panelWidth - 120, panelHeight - 35);
 			}
+			// Number of imported games
+			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
+			textRenderSmall.draw(negotiator.getGamesImported() + " Games imported", 20, panelHeight - 70);
+			// Total games played
+			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
+			textRenderSmall.draw(negotiator.getGamesTotal() + " Total games", 20, panelHeight - 85);
 
+			textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
+			textRenderSmall.draw(Math.round(negotiator.getTimeSimulated()/360)/10f + " hours simulated!", 20, panelHeight - 100);
+
+			
 			textRenderSmall.endRendering();
 		}
 

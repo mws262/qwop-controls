@@ -88,6 +88,7 @@ public class FSM_Tree implements Runnable{
 				// TODO placeholder for now.
 				//currentNode = currentRoot;
 				negotiator.saveRunToFile(currentNode);
+				currentNode.markTerminal();
 				currentStatus = Status.IDLE;
 				break;
 			case EXHAUSTED: // Similar to idle, but we haven't decided whether to introduce more options or start over.

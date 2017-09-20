@@ -50,8 +50,6 @@ public class Negotiator {
 
 	ArrayList<TrialNodeMinimal> activeRoots = new ArrayList<TrialNodeMinimal>();
 
-	public int gamesPlayed = 0;
-
 	public Negotiator(FSM_Tree tree, FSM_UI ui, FSM_Game game,
 			QWOP_fileIO<CondensedRunInfo> fileIO, String saveFileName,
 			boolean appendToExistingFile) {
@@ -97,7 +95,6 @@ public class Negotiator {
 	public void redistributeNodes(){
 		TrialNodeMinimal.useTreePhysics = false;
 		while (TrialNodeMinimal.stepping);
-		System.out.println("Activate");
 		activeRoots.get(0).calcNodePos_below();
 		activeRoots.get(0).initTreePhys_below();
 		TrialNodeMinimal.useTreePhysics = true;
@@ -165,6 +162,11 @@ public class Negotiator {
 					saveFileName, append);
 	}
 
+	/** Only doing this to keep all information flowing through negotiator. **/
+	public int getGamesPlayed(){ return TrialNodeMinimal.getCreatedGameCount(); }
+	public int getGamesImported(){ return TrialNodeMinimal.getImportedGameCount(); }
+	public int getGamesTotal(){ return TrialNodeMinimal.getCreatedGameCount() + TrialNodeMinimal.getImportedGameCount(); }
+	public float getTimeSimulated() { return game.getTimeSimulated(); }
 	/**** For the visualization of the tree. ****/
 	public void statusChange_UI(FSM_UI.Status status) {
 		if (verbose_UI)
@@ -198,9 +200,7 @@ public class Negotiator {
 	
 	/** Let the game report that it is no longer simulating in real time and the tree may resume. **/
 	public void reportEndOfRealTimeSim(){
-		System.out.println("JH");
 		tree.unlockFSM(); // Resume tree actions.
-		
 	}
 
 	/**** For the QWOP game. ****/

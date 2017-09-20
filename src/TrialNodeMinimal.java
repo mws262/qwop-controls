@@ -25,6 +25,12 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
  * 
  */
 public class TrialNodeMinimal {
+	
+	/******** All node stats *********/
+	private static int nodesCreated = 0;
+	private static int nodesImported = 0;
+	private static int gamesImported = 0;
+	private static int gamesCreated = 0;
 
 	/********* QWOP IN/OUT ************/
 	/** Actual numeric control action **/
@@ -49,6 +55,9 @@ public class TrialNodeMinimal {
 
 	/** Are there any untried things below this node? **/
 	public boolean fullyExplored = false;
+	
+	/** Does this node represent a failed state? Stronger than fullyExplored. **/
+	public boolean isTerminal = false;
 
 	/** How deep is this node down the tree? 0 is root. **/
 	public final int treeDepth;
@@ -106,19 +115,18 @@ public class TrialNodeMinimal {
 	private final static int TREE_GROUP = -1; // No collisions between branches.
 
 	/** Motor at every joint tries to bring the branches together **/
-	static final float anglePGain = 0.05f;
-	static final float angleDGain = 0.1f;
-	static final float angleSpeedCap = 4f;
+	static final float anglePGain = 0.02f;
+	static final float angleDGain = 0.8f;
+	static final float angleSpeedCap = 1f;
 	static final float maxTorque = 1000f;
 
 	/** Damping general motion **/
-	static final float linearDamping = 20f;
-	static final float angularDamping = 20f;
+	static final float linearDamping = 10f;
+	static final float angularDamping = 10f;
 
 	/** Repulser force gains **/
-	static final float centralRepelGain = 500f;
-	static final float nodeRepelGain = 2f;
-	static final float ancestorMultiplier = 5f; // Ancestors of this node push harder
+	static final float centralRepelGain = 50f;
+	static final float nodeRepelGain = 10f;
 
 	static Vec2 repulserPoint = new Vec2(0f,0f); // Point everything is pushed from.
 
@@ -227,6 +235,7 @@ public class TrialNodeMinimal {
 		// Make a new node or pick a not fully explored child.
 		if (selection > unexploredChildren.size()){
 			sample = new TrialNodeMinimal(this,uncheckedActions.get(selection - unexploredChildren.size() - 1));
+			nodesCreated++;
 			uncheckedActions.remove(selection - unexploredChildren.size() - 1); // Don't allow this one to be picked again.
 		}else{
 			sample = unexploredChildren.get(selection - 1).sampleNode(); // Pick child and recurse this method.
@@ -400,6 +409,36 @@ public class TrialNodeMinimal {
 		}
 	}
 
+	/** Total number of nodes in this or any tree. **/
+	public static int getTotalNodeCount(){
+		return nodesImported + nodesCreated;
+	}
+	
+	/** Total number of nodes imported from save file. **/
+	public static int getImportedNodeCount(){
+		return nodesImported;
+	}
+	
+	/** Total number of nodes created this session. **/
+	public static int getCreatedNodeCount(){
+		return nodesCreated;
+	}
+	
+	/** Total number of nodes created this session. **/
+	public static int getImportedGameCount(){
+		return gamesImported;
+	}
+	/** Total number of nodes created this session. **/
+	public static int getCreatedGameCount(){
+		return gamesCreated;
+	}
+	
+	/** Mark this node as representing a terminal state. **/
+	public void markTerminal(){
+		isTerminal = true;
+		gamesCreated++;
+	}
+	
 	/***************************************************/
 	/******* STATE & SEQUENCE SETTING/GETTING **********/
 	/***************************************************/
@@ -465,8 +504,10 @@ public class TrialNodeMinimal {
 					newNode.setState(run.states[i]);
 					newNode.calcNodePos();
 					currentNode = newNode;
+					nodesImported++;
 				}
 			}
+			gamesImported++;
 		}
 		rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
 		currentlyAddingSavedNodes = false;
@@ -591,15 +632,27 @@ public class TrialNodeMinimal {
 			stepping = false;
 			return;
 		}
+		System.out.println("getting nodes");
+		MAIN_test.tic();
 		ArrayList<TrialNodeMinimal> nodeList = new ArrayList<TrialNodeMinimal>();
 		getNodes_below(nodeList);
+		MAIN_test.toc();
 
 		for (int i = 0; i < timesteps; i++){
 			// Calculate added forces before stepping the world.
+			System.out.println("Doing forces");
+			MAIN_test.tic();
 			applyForce(nodeList);
+			MAIN_test.toc();
 
+			System.out.println("STEP");
+			MAIN_test.tic();
 			treePhysWorld.step(physDt, physIterations);
+			MAIN_test.toc();
+			System.out.println("updating positions");
+			MAIN_test.tic();
 			updatePositionFromPhys();
+			MAIN_test.toc();
 		}
 		stepping = false;
 	}
@@ -618,22 +671,55 @@ public class TrialNodeMinimal {
 				Vec2 repulserForce = o_pt.mul(centralRepelGain * thisNode.physMass/(lengthSq)); // Only inverse distance law right now.
 				localForce.addLocal(repulserForce);
 
-				// Repulser from EVERYONE
-				for (TrialNodeMinimal otherNode : nodeList){
-					if (!otherNode.equals(thisNode) && otherNode.arePhysicsInitialized){
-						o_pt = thisNode.physBody.getPosition().sub(otherNode.physBody.getPosition()); // Repulser point to this node.
-						lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors
+				//				// Repulser from EVERYONE is way too slow. >1 second with big tree. We need AABB equivalent.
+				//				for (TrialNodeMinimal otherNode : nodeList){
+				//					if (!otherNode.equals(thisNode) && otherNode.arePhysicsInitialized){
+				//						o_pt = thisNode.physBody.getPosition().sub(otherNode.physBody.getPosition()); // Repulser point to this node.
+				//						lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors
+				//
+				//						// Ancestor nodes have a bigger repulsive effect than others.
+				//						if (thisNode.isOtherNodeAncestor(otherNode)){
+				//							repulserForce = o_pt.mul((ancestorMultiplier * nodeRepelGain * thisNode.physMass * otherNode.physMass)/(lengthSq*lengthSq)); // Only inverse distance law right now.
+				//						}else{
+				//							repulserForce = o_pt.mul((nodeRepelGain * thisNode.physMass * otherNode.physMass)/(lengthSq*lengthSq)); // Only inverse distance law right now.
+				//						}
+				//						localForce.addLocal(repulserForce);
+				//					}
+				//				}
 
-						// Ancestor nodes have a bigger repulsive effect than others.
-						if (thisNode.isOtherNodeAncestor(otherNode)){
-							repulserForce = o_pt.mul((ancestorMultiplier * nodeRepelGain * thisNode.physMass * otherNode.physMass)/(lengthSq*lengthSq)); // Only inverse distance law right now.
-						}else{
-							repulserForce = o_pt.mul((nodeRepelGain * thisNode.physMass * otherNode.physMass)/(lengthSq*lengthSq)); // Only inverse distance law right now.
+				// Repulser force from cousins (parent's sibling's children)
+				if (thisNode.treeDepth > 1){
+					TrialNodeMinimal grandparent = thisNode.parent.parent;
+					for (TrialNodeMinimal aunt : grandparent.children){ // Also happens to include parent
+						for (TrialNodeMinimal cousin : aunt.children){ // Also happens to include siblings
+							if (!cousin.equals(thisNode) && cousin.arePhysicsInitialized){
+								localForce.addLocal(repulserForce(thisNode, cousin));
+							}
 						}
-
-						localForce.addLocal(repulserForce);
+					}
+				}else if (thisNode.treeDepth == 1){ // Forces on nodes one layer in. It's important to balance the repulsive forces or things blow up.
+					for (TrialNodeMinimal sibling : thisNode.parent.children){
+						if (!sibling.equals(thisNode) && sibling.arePhysicsInitialized){
+							localForce.addLocal(repulserForce(thisNode,sibling));
+						}
 					}
 				}
+
+				// From grandchildren
+				for (TrialNodeMinimal child : children){
+					for (TrialNodeMinimal grandchild : child.children){
+						if (grandchild.arePhysicsInitialized){
+							localForce.addLocal(repulserForce(thisNode, grandchild));
+						}
+					}
+				}
+
+				// From grandparent
+				if (treeDepth > 1){
+					localForce.addLocal(repulserForce(thisNode, thisNode.parent.parent));
+				}
+
+
 				thisNode.physBody.applyForce(localForce, thisNode.physBody.getWorldCenter());
 
 				// Pseudo-spring in the joint
@@ -643,6 +729,18 @@ public class TrialNodeMinimal {
 		}
 	}
 
+	/** Node repulser force rule so I don't have to keep ctrl-c this crap **/
+	private Vec2 repulserForce(TrialNodeMinimal thisNode, TrialNodeMinimal otherNode){
+		if (!otherNode.equals(thisNode) && otherNode.arePhysicsInitialized){
+			Vec2 o_pt = thisNode.physBody.getPosition().sub(otherNode.physBody.getPosition()); // Repulser point to this node.
+			float lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors
+			Vec2 repulserForce = o_pt.mul(nodeRepelGain * thisNode.physMass/(lengthSq));//(float)Math.sqrt((double)lengthSq))); // Only inverse distance law right now.
+			return repulserForce;
+		}else{
+			return new Vec2(0,0);
+		}
+	}
+		
 	/** Propagate all physics world info back to the node drawing info. **/
 	public void updatePositionFromPhys(){
 		if (arePhysicsInitialized){

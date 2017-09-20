@@ -30,7 +30,8 @@ public class FSM_Game implements Runnable{
 	/** Physics engine stepping parameters. **/
 	public final float timestep = 0.04f;
 	private final int iterations = 5;
-
+	private float stepsSimulated = 0;
+	
 	/** Flags for each of the QWOP keys being down **/
 	public boolean Q = false;
 	public boolean W = false;
@@ -122,7 +123,7 @@ public class FSM_Game implements Runnable{
 
 					game.everyStep(Q,W,O,P);
 					getWorld().step(timestep, iterations);
-
+					stepsSimulated++;
 					if (runRealTime){
 						negotiator.reportQWOPKeys(Q,W,O,P);
 						try {
@@ -230,6 +231,11 @@ public class FSM_Game implements Runnable{
 	/** Check if we're trying to run a game in realtime. **/
 	public boolean isRealtime(){
 		return runRealTime;
+	}
+	
+	/** Total time simulated since this execution of the program. **/
+	public float getTimeSimulated(){
+		return stepsSimulated*timestep;
 	}
 
 	/** Get the state of the runner. **/
