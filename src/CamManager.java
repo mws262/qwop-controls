@@ -245,14 +245,14 @@ public class CamManager {
 		eyeToTarget.sub(targetPos,eyePos);
 		temp1 = new Vector3f();
 		temp1 = (Vector3f) upVec.clone();
-		temp1.scale((mouseYnew-mouseYold) * zoomFactor*0.046f); // Hand-tuned the multiplier.
+		temp1.scale((mouseYnew-mouseYold) * zoomFactor*0.1f); // Hand-tuned the multiplier.
 
 		temp2 = new Vector3f();
 
 		//Find y transformed
 		temp2.cross(upVec,eyeToTarget);
 		temp2.normalize();
-		temp2.scale((mouseXnew - mouseXold) * zoomFactor*0.046f);
+		temp2.scale((mouseXnew - mouseXold) * zoomFactor*0.1f);
 
 
 		temp1.add(temp2);
@@ -517,6 +517,40 @@ public class CamManager {
 		}
 		return chosenNode;
 	}
+	
+	/** Take a click vector, find the nearest node to this line. **/
+	public TrialNodeMinimal nodeFromRay_set(Vector3f clickVec, ArrayList<TrialNodeMinimal> nodeSet, float toleranceThresh){ //Alt flag says whether to use Node location 2 or 1.
+		// Determine which point is closest to the clicked ray.
+
+		double tanDist;
+		double normDistSq;
+
+
+		smallestDist = Double.MAX_VALUE;
+
+		for (TrialNodeMinimal node : nodeSet){
+			//Vector from eye to a vertex.
+			Vector3f nodePos = new Vector3f();
+
+			nodePos = new Vector3f(node.nodeLocation[0],node.nodeLocation[1],node.nodeLocation[2]);
+
+			EyeToPoint.sub(nodePos,eyePos);
+
+			tanDist = EyeToPoint.dot(clickVec);
+			normDistSq = EyeToPoint.lengthSquared() - tanDist*tanDist;
+
+			if (normDistSq < smallestDist){
+				smallestDist = normDistSq;
+				chosenNode = node;
+			}
+		}
+		
+		if (smallestDist < toleranceThresh){
+			return chosenNode;
+		}else{
+			return null;
+		}
+	}
 
 	/** Return the closest node to a click. **/
 	public TrialNodeMinimal nodeFromClick(int mouseX, int mouseY, TrialNodeMinimal root){
@@ -528,6 +562,12 @@ public class CamManager {
 	public TrialNodeMinimal nodeFromClick(int mouseX, int mouseY, ArrayList<TrialNodeMinimal> roots){
 		clickVec = clickVector(mouseX,mouseY);
 		return nodeFromRay(clickVec,roots);
+	}
+	
+	/** Given a set of nodes **/
+	public TrialNodeMinimal nodeFromClick_set(int mouseX, int mouseY, ArrayList<TrialNodeMinimal> nodeSet, float toleranceThresh){
+		clickVec = clickVector(mouseX, mouseY);
+		return nodeFromRay_set(clickVec, nodeSet, toleranceThresh/zoomFactor);
 	}
 
 	/** Take a click vector, find the coordinates of the projected point at a given level. **/ //Note: assumes trees always stay perpendicular to the z-axis.

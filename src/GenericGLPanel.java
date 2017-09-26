@@ -48,8 +48,8 @@ public class GenericGLPanel extends GLJPanel implements GLEventListener {
 	/** Camera manager for this scene **/
 	CamManager cam;
 	
-	int panelWidth = 1380; 
-	int panelHeight = 965;
+	int panelWidth = 1920; 
+	int panelHeight = 720;
 	
 	public GenericGLPanel() {
 		// Canvas setup and sizing -- GL stuff exists in a CANVAS that we put in a PANEL (not fully understood TBH)
@@ -57,8 +57,8 @@ public class GenericGLPanel extends GLJPanel implements GLEventListener {
 		GLCapabilities caps = new GLCapabilities(glp);
 		canvas = new GLCanvas(caps);
 		canvas.setSize(new Dimension(panelWidth,panelHeight));
-		canvas.setMaximumSize(new Dimension(panelWidth,panelHeight));
-		canvas.setMinimumSize(new Dimension(panelWidth,panelHeight));
+		//canvas.setMaximumSize(new Dimension(panelWidth,panelHeight));
+		//canvas.setMinimumSize(new Dimension(panelWidth,panelHeight));
 		
 		// Listeners for user interaction
 		canvas.addGLEventListener(this);

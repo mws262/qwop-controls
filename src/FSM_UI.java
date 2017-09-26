@@ -1,4 +1,4 @@
-import java.awt.BorderLayout;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Stroke;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -21,12 +22,7 @@ import java.util.Iterator;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLProfile;
-import javax.media.opengl.awt.GLCanvas;
-import javax.media.opengl.awt.GLJPanel;
-import javax.media.opengl.glu.GLU;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -90,21 +86,22 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	public static int windowHeight = 1000;
 
 	/** Attempted frame rate **/
-	private int FPS = 45;
+	private int FPS = 25;
 
 	/** Usable milliseconds per frame **/
 	private long MSPF = (long)(1f/(float)FPS * 1000f);
 
 	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
-	public int xOffsetPixels_init = 250;
+	public int xOffsetPixels_init = 960;
 	public int xOffsetPixels = xOffsetPixels_init;
-	public int yOffsetPixels = 800;
+	public int yOffsetPixels = 100;
 
 	/** Runner coordinates to pixels. **/
 	public float runnerScaling = 10f;
 
-	private Color defaultDrawColor = new Color(0f,0f,0f);
-	private Color historyDrawColor = new Color(0.6f,0.6f,0.6f);
+	private final Color defaultDrawColor = new Color(0.2f,0.2f,0.5f);
+	private final Color historyDrawColor = new Color(0.6f,0.6f,0.6f);
+
 	final Font QWOPLittle = new Font("Ariel", Font.BOLD,21);
 	final Font QWOPBig = new Font("Ariel", Font.BOLD,28);
 
@@ -115,9 +112,19 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	private final float loopTimeFilter = 100f;
 	private long lastIterTime = System.currentTimeMillis();
 	/** Have we turned the physics off due to slowness? **/
-	private boolean physOn = true;
+	private boolean physOn = false;
 	/** Keep track of whether we sent a pause tree command back to negotiator. **/
 	private boolean treePause = false;
+
+	/********** Writing actions on the left pane. **********/
+	/** Fonts used for drawing on the left side pane. **/
+	private final Font giantFont = new Font("Ariel",Font.BOLD,36);
+	private final Font bigFont = new Font("Ariel", Font.BOLD, 16);
+	private final Font littleFont = new Font("Ariel", Font.BOLD, 12);
+
+	/** Spacing for sequence number drawing on the left side panel. **/
+	private final int vertTextSpacing = 18;
+	private final int vertTextAnchor = 15;
 
 	/** State machine states for all UI **/
 	public enum Status{
@@ -135,9 +142,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		GridBagConstraints dataConstraints = new GridBagConstraints();
 		dataConstraints.fill = GridBagConstraints.HORIZONTAL;
 		dataConstraints.gridx = 0;
-		dataConstraints.gridy = 0;
+		dataConstraints.gridy = 1;
 		dataConstraints.weightx = 0.3;
-		dataConstraints.ipady = (int)(0.9*windowHeight);
+		dataConstraints.weighty = 0.1;
+		dataConstraints.ipady = (int)(0.3*windowHeight);
 		dataConstraints.ipadx = (int)(windowWidth*0.5);
 
 		/* Pane for all tabs */
@@ -167,17 +175,17 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		/**** TREE PANE ****/
 		GridBagConstraints treeConstraints = new GridBagConstraints();
 		treeConstraints.fill = GridBagConstraints.HORIZONTAL;
-		treeConstraints.gridx = 10;
+		treeConstraints.gridx = 0;
 		treeConstraints.gridy = 0;
 		treeConstraints.weightx = 0.8;
-		treeConstraints.ipady = (int)(windowHeight*0.95);
-		treeConstraints.ipadx = (int)(windowWidth*0.8);
+		treeConstraints.weighty = 0.6;
+		treeConstraints.ipady = (int)(windowHeight*0.8f);
+		treeConstraints.ipadx = (int)(windowWidth*0.8f);
 
 		treePane = new TreePane();
 
 		treePane.setBorder(BorderFactory.createRaisedBevelBorder());
 		pane.add(treePane,treeConstraints);
-
 		/*******************/
 
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -221,7 +229,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			previousStatus = currentStatus;
 
-			long extraTime = System.currentTimeMillis() - currentTime;
+			long extraTime = MSPF - (System.currentTimeMillis() - currentTime);
 			if (extraTime > 5){
 				try {
 					Thread.sleep(extraTime);
@@ -230,20 +238,29 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					e.printStackTrace();
 				}
 			}
-
-			// Update frequency of physics updates to keep the framerate about constant.
+			
+			// Tree frames per sec
 			avgLoopTime = (long)(((loopTimeFilter - 1f) * avgLoopTime + 1f * (System.currentTimeMillis() - lastIterTime)) / loopTimeFilter); // Filter the loop time
-			lastIterTime = System.currentTimeMillis();
+			lastIterTime = System.currentTimeMillis();		
 		}
 	}
 
 	/** Pick a node for the UI to highlight and potentially display. **/
 	public void selectNode(TrialNodeMinimal selected){
-		if (selectedNode != null) selectedNode.displayPoint = false;
-		selectedNode = selected;
-		selectedNode.displayPoint = true;
-		selectedNode.nodeColor = Color.RED;
-		if (negotiator != null) negotiator.uiNodeSelect(selectedNode);
+		boolean success = false; // We don't allow new node selection while a realtime game is being played. 
+		if (negotiator != null) success = negotiator.uiNodeSelect(selected);
+		if (success){
+			if (selectedNode != null){ // Clear things from the old selected node.
+				selectedNode.displayPoint = false;
+				selectedNode.clearBranchColor();
+				selectedNode.clearBranchZOffset();
+			}
+			selectedNode = selected;
+			selectedNode.displayPoint = true;
+			selectedNode.nodeColor = Color.RED;
+			selectedNode.setBranchZOffset(0.4f);
+			if (snapshotPane.active) snapshotPane.giveSelectedNode(selectedNode);
+		}
 	}
 
 	@Override
@@ -258,6 +275,54 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		this.negotiator = negotiator;
 	}
 
+	/** Draw the actions on the left side pane. **/
+	private void drawActionString(int[] sequence, Graphics g){
+		drawActionString(sequence, g, -1);
+	}
+
+	private void drawActionString(int[] sequence, Graphics g, int highlightIdx){
+		g.setFont(bigFont);
+		g.setColor(Color.BLACK);
+		g.drawString("Selected sequence: ", 10, vertTextAnchor);
+		g.setColor(Color.DARK_GRAY);
+
+		int currIdx = 0;
+		int lineNum = 1;
+		while (currIdx < sequence.length - 1){
+			String line = sequence[currIdx] + ",";
+
+			if (currIdx == highlightIdx){
+				g.setColor(Color.GREEN);
+			}else{
+				g.setColor(Color.DARK_GRAY);
+			}
+			g.drawString(line, 10 + (currIdx % 4)*50, vertTextAnchor + vertTextSpacing * (lineNum + 2));
+			currIdx++;
+			lineNum = currIdx/4 + 1;
+		}
+
+		// Draw the little keys above the column.
+		Graphics2D g2 = (Graphics2D)g;
+		g2.setColor(Color.DARK_GRAY);
+		g2.drawRoundRect(8, vertTextAnchor + 15, 30, 20, 5, 5);
+		g2.drawRoundRect(8 + 49, vertTextAnchor + 15, 30, 20, 5, 5);
+		g2.drawRoundRect(8 + 2*49, vertTextAnchor + 15, 30, 20, 5, 5);
+		g2.drawRoundRect(8 + 3*49, vertTextAnchor + 15, 30, 20, 5, 5);
+
+		g2.setColor(Color.LIGHT_GRAY);
+		g2.fillRoundRect(8, vertTextAnchor + 15, 30, 20, 6, 6);
+		g2.fillRoundRect(8 + 49, vertTextAnchor + 15, 30, 20, 6, 6);
+		g2.fillRoundRect(8 + 2*49, vertTextAnchor + 15, 30, 20, 6, 6);
+		g2.fillRoundRect(8 + 3*49, vertTextAnchor + 15, 30, 20, 6, 6);
+
+		g.setFont(littleFont);
+		g.setColor(Color.BLACK);
+		g.drawString("- -", 12, vertTextAnchor + 30);
+		g.drawString("W O", 12 + 49, vertTextAnchor + 30);
+		g.drawString("- -", 12 + 2*49, vertTextAnchor + 30);
+		g.drawString("Q P", 12 + 3*49, vertTextAnchor + 30);
+	}
+
 	/** Tree pane **/
 	public class TreePane extends GenericGLPanel implements TabbedPaneActivator, GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
 
@@ -270,6 +335,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		/** Currently tracked mouse x location in screen coordinates of the panel **/
 		int mouseY;
+
+		/** Is the mouse cursor inside the bounds of the tree panel? **/
+		boolean mouseInside = false;
 
 		public TreePane(){
 			super();
@@ -299,7 +367,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			for (TrialNodeMinimal node : rootNodes){
 				gl.glColor3f(1f, 0.1f, 0.1f);
-				gl.glPointSize(3*ptSize);
+				gl.glPointSize(5*ptSize);
 
 				gl.glBegin(GL2.GL_POINTS);
 				node.drawNodes_below(gl);
@@ -314,8 +382,8 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			// Draw games played and games/sec in upper left.
 			textRenderBig.beginRendering(panelWidth, panelHeight);
 			textRenderBig.setColor(0.7f, 0.7f, 0.7f, 1.0f);
-			textRenderBig.draw(negotiator.getGamesPlayed() + " Games played", 20, panelHeight - 50);
-
+			textRenderBig.draw(negotiator.getGamesPlayed() + " games", 20, panelHeight - 50);
+			
 			if (treePause){
 				textRenderBig.setColor(0.7f, 0.1f, 0.1f, 1.0f);	
 				textRenderBig.draw("PAUSED", panelWidth/2, panelHeight - 50);
@@ -326,7 +394,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			textRenderSmall.beginRendering(panelWidth, panelHeight);
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			int fps = (int)(10000./avgLoopTime);
-			textRenderSmall.draw( ( (Math.abs(fps) > 1000) ? "???" : fps/10f ) + " FPS", panelWidth - 75, panelHeight - 20);
+			textRenderSmall.draw( ( (Math.abs(fps) > 10000) ? "???" : fps/10f ) + " FPS", panelWidth - 75, panelHeight - 20);
 			// Physics on/off alert
 			if (physOn){
 				textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
@@ -341,12 +409,13 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			// Total games played
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			textRenderSmall.draw(negotiator.getGamesTotal() + " Total games", 20, panelHeight - 85);
-
+			
 			textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
 			textRenderSmall.draw(Math.round(negotiator.getTimeSimulated()/360)/10f + " hours simulated!", 20, panelHeight - 100);
+			textRenderSmall.draw((int)negotiator.getGamesPerSecond() + " games/s", 20, panelHeight - 115);
 
-			
 			textRenderSmall.endRendering();
+		
 		}
 
 		/** Draw a text string using GLUT (for openGL rendering version of my stuff) **/
@@ -465,17 +534,35 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 		@Override
 		public void keyReleased(KeyEvent e) {}
+
 		@Override
 		public void mouseMoved(MouseEvent e) {
 			mouseX = e.getX();
 			mouseY = e.getY();
+
+			// If the snapshot pane is displaying stuff, this lets us potentially select some of the future nodes displayed in the snapshot pane.
+			if (snapshotPane.active && mouseInside){
+				ArrayList<TrialNodeMinimal> snapshotLeaves = snapshotPane.getDisplayedLeaves();
+				if (snapshotLeaves.size() > 0){
+					TrialNodeMinimal nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves, 50);
+					if (nearest != null){
+						snapshotPane.giveSelectedFuture(nearest);
+					}else{
+						snapshotPane.giveSelectedFuture(null); // clear it out if the mouse is too far away from selectable nodes.
+					}
+				}
+			}
 		}
 		@Override
 		public void mouseReleased(MouseEvent e) {}
 		@Override
-		public void mouseEntered(MouseEvent e) {}
+		public void mouseEntered(MouseEvent e) {
+			mouseInside = true;
+		}
 		@Override
-		public void mouseExited(MouseEvent e) {}
+		public void mouseExited(MouseEvent e) {
+			mouseInside = false;
+		}
 
 		// The following 2 methods are probably too complicated. when you push the arrow at the edge of one branch, this tries to jump to the nearest next branch node at the same depth.
 		/** Called by key listener to change our focused node to the next adjacent one in the +1 or -1 direction **/
@@ -633,16 +720,16 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				}
 				//This draws the "road" markings to show that the ground is moving relative to the dude.
 				for(int i = 0; i<this.getWidth()/69; i++){
-					g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 100);
+					g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 92);
 					keyDrawer(g, negotiator.Q,negotiator.W,negotiator.O,negotiator.P);
 				}
+
+				drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
+
 			}else{
 				keyDrawer(g, false, false, false, false);
 			}
 
-			// Divider line.
-			g.setColor(historyDrawColor);
-			g.fill3DRect(0, yOffsetPixels - 230, getWidth(), 5, true);
 			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
 			xOffsetPixels = -headPos + xOffsetPixels_init;
 
@@ -650,6 +737,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		public void setWorldToView(World world){
 			this.world = world;
+		}
+
+		public void clearWorldToView(){
+			world = null;
 		}
 
 		@Override
@@ -717,50 +808,249 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	}
 
 	/** Pane for the fixed view of the runner at each node. **/
-	public class SnapshotPane extends JPanel implements TabbedPaneActivator {
+	public class SnapshotPane extends JPanel implements TabbedPaneActivator, MouseListener, MouseMotionListener, MouseWheelListener {
 
 		/** Number of runner states in the past to display. **/
-		public int numHistoryStatesDisplay = 5;
+		public int numHistoryStatesDisplay = 10;
 
 		/** Is this tab currently active? If not, don't run the draw loop. **/
 		public boolean active = false;
 
-		public SnapshotPane(){}
+		/** Highlight stroke for line drawing. **/
+		Stroke normalStroke = new BasicStroke(0.5f);
 
-		public void paintComponent(Graphics g){
-			if (!active) return;
-			super.paintComponent(g);
+		/** Highlight stroke for line drawing. **/
+		Stroke boldStroke = new BasicStroke(2);
 
-			Shape[] shapes;
-			XForm[] transforms;
+		/** Node we are focusing on displaying. **/
+		private TrialNodeMinimal snapshotNode;
 
-			if (selectedNode != null && selectedNode.state != null){ // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
-				TrialNodeMinimal drawNode = selectedNode;
-				shapes = QWOPGame.shapeList;
-				transforms = drawNode.state.getTransforms();
+		TrialNodeMinimal highlightedRunNode;
 
-				xOffsetPixels = xOffsetPixels_init + (int)(-runnerScaling * transforms[1].position.x);
-				drawRunner(g, defaultDrawColor, shapes, transforms);
+		TrialNodeMinimal queuedFutureLeaf;
 
-				for (int i = 0; i < numHistoryStatesDisplay; i++){
-					if (drawNode.treeDepth > 1){
-						drawNode = drawNode.parent;
-						transforms = drawNode.state.getTransforms();
-						drawRunner(g, historyDrawColor, shapes, transforms);	
-					}else{
-						break;
-					}
+		Font floatingActionText = new Font("Ariel", Font.BOLD, 18);
+		
+		private int mouseX = 0;
+		private int mouseY = 0;
+		private boolean mouseIsIn = false;
+
+		/** How close do we have to be (squared) from the chest of a single figure for it to be eligible for selection. **/
+		float figureSelectThreshSq = 150;
+
+		public SnapshotPane(){
+			addMouseListener(this);
+			addMouseMotionListener(this);
+		}
+
+		private ArrayList<TrialNodeMinimal> focusLeaves = new ArrayList<TrialNodeMinimal>();
+		private ArrayList<XForm[]> transforms = new ArrayList<XForm[]>();
+		private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
+		private ArrayList<Color> colors = new ArrayList<Color>();
+
+		Shape[] shapes;
+
+		/** Assign a selected node for the snapshot pane to display. **/
+		public void giveSelectedNode(TrialNodeMinimal node){
+			transforms.clear();
+			focusLeaves.clear();
+			strokes.clear();
+			colors.clear();
+
+			shapes = QWOPGame.shapeList;
+
+			/***** Focused node first *****/
+			snapshotNode = node;
+			XForm[] nodeTransform = snapshotNode.state.getTransforms();
+			// Make the sequence centered around the selected node state.
+			xOffsetPixels = xOffsetPixels_init + (int)(-runnerScaling * nodeTransform[1].position.x);
+			transforms.add(nodeTransform);
+			strokes.add(boldStroke);
+			colors.add(Color.BLACK);
+			focusLeaves.add(snapshotNode);
+
+			/***** History nodes *****/
+			TrialNodeMinimal historyNode = snapshotNode;
+			for (int i = 0; i < numHistoryStatesDisplay; i++){
+				if (historyNode.treeDepth > 1){
+					historyNode = historyNode.parent;
+					nodeTransform = historyNode.state.getTransforms();
+					transforms.add(nodeTransform);
+					strokes.add(normalStroke);
+					colors.add(historyDrawColor);
+					focusLeaves.add(historyNode);
 				}
+			}
 
+			/***** Future leaf nodes *****/
+			ArrayList<TrialNodeMinimal> descendants = new ArrayList<TrialNodeMinimal>();
+			for (int i = 0; i < selectedNode.children.size(); i++){
+				TrialNodeMinimal child = selectedNode.children.get(i);
+				child.getLeaves(descendants);
 
+				Color runnerColor = TrialNodeMinimal.getColorFromTreeDepth(i*10);
+				child.setBranchColor(runnerColor); // Change the color on the tree too.
+
+				for (TrialNodeMinimal descendant : descendants){
+					focusLeaves.add(descendant);
+					transforms.add(descendant.state.getTransforms());
+					strokes.add(normalStroke);
+					colors.add(runnerColor);
+				}
 			}
 		}
 
-		/** Draw the runner at a certain state. **/
-		private void drawRunner(Graphics g, Color drawColor, Shape[] shapes, XForm[] transforms){
+		private float getDistFromMouseSq(float x, float y){
+			float xdist = (mouseX - (runnerScaling * x + xOffsetPixels));
+			float ydist = (mouseY - (runnerScaling * y + yOffsetPixels));
+			return xdist*xdist + ydist*ydist;
+		}
+		
+		/** Draws the selected node state and potentially previous and future states. **/
+		public void paintComponent(Graphics g){
+			if (!active) return;
+			super.paintComponent(g);
+			Graphics2D g2 = (Graphics2D)g;
 
-			g.setColor(drawColor);
+			if (snapshotNode != null && snapshotNode.state != null){ // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
+
+				float bestSoFar = Float.MAX_VALUE;
+				int bestIdx = Integer.MIN_VALUE;
+
+				// Figure out if the mouse close enough to highlight one state.
+				if (mouseIsIn && mouseX > getWidth()/2){ // If we are mousing over this panel, see if we're hovering close enough over any particular dude state.
+					
+					// Check body first
+					for (int i = 0; i < focusLeaves.size(); i++){
+						float distSq = getDistFromMouseSq(focusLeaves.get(i).state.body.x,focusLeaves.get(i).state.body.y);
+						if (distSq < bestSoFar  && distSq < figureSelectThreshSq){
+							bestSoFar = distSq;
+							bestIdx = i;
+						}
+					}
+					// Then head
+					if (bestIdx < 0){
+						for (int i = 0; i < focusLeaves.size(); i++){
+							float distSq = getDistFromMouseSq(focusLeaves.get(i).state.head.x,focusLeaves.get(i).state.head.y);
+							if (distSq < bestSoFar  && distSq < figureSelectThreshSq){
+								bestSoFar = distSq;
+								bestIdx = i;
+							}
+						}
+					}
+					// Then both feet equally
+					if (bestIdx < 0){
+						for (int i = 0; i < focusLeaves.size(); i++){
+							float distSq = getDistFromMouseSq(focusLeaves.get(i).state.lfoot.x,focusLeaves.get(i).state.lfoot.y);
+							if (distSq < bestSoFar  && distSq < figureSelectThreshSq){
+								bestSoFar = distSq;
+								bestIdx = i;
+							}
+							distSq = getDistFromMouseSq(focusLeaves.get(i).state.rfoot.x,focusLeaves.get(i).state.rfoot.y);
+							if (distSq < bestSoFar  && distSq < figureSelectThreshSq){
+								bestSoFar = distSq;
+								bestIdx = i;
+							}
+							
+						}
+					}
+				}
+
+				// Draw all non-highlighted runners.
+				for (int i = transforms.size() - 1; i >= 0; i--){
+					if (!mouseIsIn || bestIdx != i){
+						if (highlightedRunNode != null && focusLeaves.get(i).treeDepth > selectedNode.treeDepth){ // Make the nodes after the selected one lighter if one is highlighted.
+							drawRunner(g2, colors.get(i).brighter(), strokes.get(i), shapes, transforms.get(i));
+						}else{
+							drawRunner(g2, colors.get(i), strokes.get(i), shapes, transforms.get(i));
+						}
+
+					}
+				}
+
+				// Change things if one runner is selected.
+				if (mouseIsIn && bestIdx >= 0){
+					TrialNodeMinimal newHighlightNode = focusLeaves.get(bestIdx);
+					changeFocusedFuture(g2, highlightedRunNode, newHighlightNode);
+					highlightedRunNode = newHighlightNode;
+
+					// Externally commanded pick, instead of mouse-picked.
+				}else if(queuedFutureLeaf != null){
+					changeFocusedFuture(g2, highlightedRunNode, queuedFutureLeaf);
+					highlightedRunNode = queuedFutureLeaf;
+
+				}else if (highlightedRunNode != null){ // When we stop mousing over, clear the brightness changes.
+					highlightedRunNode.displayPoint = false;
+					highlightedRunNode.nodeColor = Color.GREEN;
+					rootNodes.get(0).resetLineBrightness_below();
+					highlightedRunNode.clearBackwardsBranchZOffset();
+					highlightedRunNode = null;
+				}
+
+				// Draw the sequence too.
+				drawActionString(selectedNode.getSequence(), g);
+			}
+		}
+
+		/** Change highlighting on both the tree and the snapshot when selections change. **/
+		private void changeFocusedFuture(Graphics2D g2, TrialNodeMinimal oldFuture, TrialNodeMinimal newFuture){
+			// Clear out highlights from the old node.
+			if (oldFuture != null && !oldFuture.equals(newFuture)){
+				oldFuture.clearBackwardsBranchZOffset();
+				oldFuture.displayPoint = false;
+				oldFuture.nodeColor = Color.GREEN;
+			}
+
+			// Add highlights to the new node if it's different or previous is nonexistant
+			if (oldFuture == null || !oldFuture.equals(newFuture)){
+				newFuture.displayPoint = true;
+				newFuture.nodeColor = Color.ORANGE;
+				newFuture.setBackwardsBranchZOffset(0.8f);
+				newFuture.highlightSingleRunToThisNode(); // Tell the tree to highlight a section and darken others.
+			}
+			// Draw
+			int idx = focusLeaves.indexOf(newFuture);
+			if (idx > -1){ // Focus leaves no longer contains the no focus requested.
+				drawRunner(g2, colors.get(idx).darker(), boldStroke, shapes, transforms.get(idx));
+
+				TrialNodeMinimal currentNode = newFuture;
+
+				// Also draw parent nodes back the the selected one to view the run that leads to the highlighted failure.
+				int prevX = Integer.MAX_VALUE;
+				while (currentNode.treeDepth > selectedNode.treeDepth){
+					// Make color shades slightly alternate between subsequent move frames.
+					Color everyOtherEvenColor = colors.get(idx).darker();
+					if (currentNode.treeDepth % 2 == 0){
+						everyOtherEvenColor = everyOtherEvenColor.darker();
+					}
+					drawRunner(g2, everyOtherEvenColor, boldStroke, shapes, currentNode.state.getTransforms());
+					
+					// Draw actions above their heads.
+					g2.setFont(QWOPBig);
+					g2.setFont(floatingActionText);
+					g2.setColor(everyOtherEvenColor);
+					prevX = Math.min((int)(runnerScaling * currentNode.state.head.x) + xOffsetPixels - 3,prevX - 25);
+					
+					g2.drawString(String.valueOf(currentNode.controlAction), 
+							prevX, 
+							Math.min((int)(runnerScaling * currentNode.state.head.y) + yOffsetPixels - 25, 45));
+					
+					currentNode = currentNode.parent;
+				}
+			}
+		}
+
+		/** Focus a single future leaf **/
+		public void giveSelectedFuture(TrialNodeMinimal queuedFutureLeaf){
+			this.queuedFutureLeaf = queuedFutureLeaf;
+		}
+
+		/** Draw the runner at a certain state. **/
+		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms){
+
 			for (int i = 0; i < shapes.length; i++){
+				g.setColor(drawColor);
+				g.setStroke(stroke);
 				switch(shapes[i].getType()){
 				case CIRCLE_SHAPE:
 					CircleShape circleShape = (CircleShape)shapes[i];
@@ -776,13 +1066,18 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					PolygonShape polygonShape = (PolygonShape)shapes[i];
 					XForm transform = transforms[i];
 
+					// Ground is black regardless.
+					if (shapes[i].m_filter.groupIndex == 1){
+						g.setColor(Color.BLACK);
+						g.setStroke(normalStroke);
+					}
 					for (int j = 0; j < polygonShape.getVertexCount(); j++){ // Loop through polygon vertices and draw lines between them.
 						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
 						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
 						g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
 								(int)(runnerScaling * ptA.y) + yOffsetPixels,
 								(int)(runnerScaling * ptB.x) + xOffsetPixels,
-								(int)(runnerScaling * ptB.y) + yOffsetPixels);			    		
+								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
 					}
 					break;
 				default:
@@ -790,6 +1085,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				}
 			}
 		}
+
+		/** Get the list of leave nodes (failure states) that we're displaying in the snapshot pane. **/
+		public ArrayList<TrialNodeMinimal> getDisplayedLeaves(){
+			return focusLeaves;
+		}
+
 		@Override
 		public void activateTab() {
 			active = true;
@@ -798,11 +1099,45 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		public void deactivateTab() {
 			active = false;
 		}
+
+		@Override
+		public void mouseWheelMoved(MouseWheelEvent e) {}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {}
+
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			mouseX = e.getX();
+			mouseY = e.getY();
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {}
+
+		@Override
+		public void mousePressed(MouseEvent e) {}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			mouseIsIn = true;
+			queuedFutureLeaf = null; // No longer using what the tree says is focused when the mouse is in this pane.
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			mouseIsIn = false;
+		}
 	}
 
 	/** All panes should implement this so we can switch which is active at any given moment. **/
 	public interface TabbedPaneActivator {
 		public void activateTab();
 		public void deactivateTab();
-	}
+	}	
 }
+
+

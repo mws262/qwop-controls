@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.color.ColorSpace;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -14,7 +15,6 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.World;
-import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
@@ -66,9 +66,12 @@ public class TrialNodeMinimal {
 	public static int maxDepthYet = 1;
 
 	/********* TREE VISUALIZATION ************/
-	public Color lineColor = Color.BLUE; 
+	public Color overrideLineColor = null; // Only set when the color is overridden.
 	public Color nodeColor = Color.GREEN;
-
+	
+	private static final float lineBrightness_default = 0.85f;
+	private float lineBrightness = lineBrightness_default;
+	
 	public boolean displayPoint = false; // Round dot at this node. Is it on?
 	public boolean displayLine = true; // Line from this node to parent. Is it on?
 
@@ -77,9 +80,12 @@ public class TrialNodeMinimal {
 	/** Parameters for visualizing the tree **/
 	public float[] nodeLocation = new float[3]; // Location that this node appears on the tree visualization
 	public float nodeAngle = 0; // Keep track of the angle that the line previous node to this node makes.
-	public float sweepAngle = 2f*(float)Math.PI;
+	public float sweepAngle = 8f*(float)Math.PI;
 
 	public float edgeLength = 1.f;
+	
+	/** If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z offset. **/
+	private float zOffset = 0.f; 
 
 	/********* TREE PHYSICS ************/
 
@@ -163,9 +169,12 @@ public class TrialNodeMinimal {
 			maxDepthYet = treeDepth;
 		}
 
-		edgeLength = 4.00f * (float)Math.pow(0.6947, 0.1903 * treeDepth ) + 1.0f;
+		edgeLength = 5.00f * (float)Math.pow(0.6947, 0.1903 * treeDepth ) + 1.5f;
 		//(float)Math.pow(0.787, 0.495) + 1.0f; // Optimized exponential in Matlab 
 
+		lineBrightness = parent.lineBrightness;
+		zOffset = parent.zOffset;
+		
 		if (!currentlyAddingSavedNodes){
 			calcNodePos();
 			if (useTreePhysics){
@@ -211,8 +220,6 @@ public class TrialNodeMinimal {
 			TrialNodeMinimal child = iter.next();
 			if (!child.fullyExplored) unexploredChildren.add(child);
 		}
-
-		// System.out.println("Unexplored: " + unexploredChildren.size() + ", Unchecked: " + uncheckedActions + ", Node depth: " + treeDepth + ", Total children: " + children.size());
 
 		if (fullyExplored) {
 			nodeColor = Color.RED;
@@ -316,7 +323,7 @@ public class TrialNodeMinimal {
 		return children.get(randInt(0,children.size()-1));
 	}
 
-	/** Add all the nodes below this one to a list. **/
+	/** Add all the nodes below and including this one to a list. **/
 	public ArrayList<TrialNodeMinimal> getNodes_below(ArrayList<TrialNodeMinimal> nodeList){
 
 		nodeList.add(this);
@@ -335,6 +342,15 @@ public class TrialNodeMinimal {
 				child.getLeaves(leaves);
 			}
 		}	
+	}
+	
+	/** Returns the tree root no matter which node in the tree this is called from. **/
+	public TrialNodeMinimal getRoot(){
+		TrialNodeMinimal currentNode = this;
+		while (currentNode.treeDepth > 0){
+			currentNode = currentNode.parent;
+		}
+		return currentNode;
 	}
 
 	/** Recount how many descendants this node has. **/
@@ -541,7 +557,7 @@ public class TrialNodeMinimal {
 			}
 		}else{
 			if (parent.children.size() > 1){ //Catch the div by 0
-				sweepAngle = parent.sweepAngle/(2);
+				sweepAngle = parent.sweepAngle/(4);
 				nodeAngle = parent.nodeAngle - sweepAngle/2.f + (float)(parent.children.indexOf(this)) * sweepAngle/(float)(parent.children.size() - 1);
 			}else{
 				sweepAngle = parent.sweepAngle; //Only reduce the sweep angle if the parent one had more than one child.
@@ -632,27 +648,14 @@ public class TrialNodeMinimal {
 			stepping = false;
 			return;
 		}
-		System.out.println("getting nodes");
-		MAIN_test.tic();
 		ArrayList<TrialNodeMinimal> nodeList = new ArrayList<TrialNodeMinimal>();
 		getNodes_below(nodeList);
-		MAIN_test.toc();
 
 		for (int i = 0; i < timesteps; i++){
 			// Calculate added forces before stepping the world.
-			System.out.println("Doing forces");
-			MAIN_test.tic();
 			applyForce(nodeList);
-			MAIN_test.toc();
-
-			System.out.println("STEP");
-			MAIN_test.tic();
 			treePhysWorld.step(physDt, physIterations);
-			MAIN_test.toc();
-			System.out.println("updating positions");
-			MAIN_test.tic();
 			updatePositionFromPhys();
-			MAIN_test.toc();
 		}
 		stepping = false;
 	}
@@ -762,19 +765,26 @@ public class TrialNodeMinimal {
 	/** Draw the line connecting this node to its parent. **/
 	public void drawLine(GL2 gl){
 		if (treeDepth > 0 && displayLine){ // No lines for root.
-			gl.glColor3fv(getColorFromTreeDepth(treeDepth).getColorComponents(null),0);
-			gl.glVertex3d(parent.nodeLocation[0], parent.nodeLocation[1], parent.nodeLocation[2]);
-			gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2]);
+			if (overrideLineColor == null){
+				gl.glColor3fv(getColorFromTreeDepth(treeDepth,lineBrightness).getColorComponents(null),0);
+			}else{
+				// The most obtuse possible way to change just the brightness of the color. Rediculous, but I can't find anything else.
+				float[] color = Color.RGBtoHSB(overrideLineColor.getRed(),overrideLineColor.getGreen(),overrideLineColor.getBlue(),null);
+				gl.glColor3fv(Color.getHSBColor(color[0], color[1], lineBrightness).getColorComponents(null),0);
+			}
+			gl.glVertex3d(parent.nodeLocation[0], parent.nodeLocation[1], parent.nodeLocation[2] + zOffset);
+			gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + zOffset);
 		}
 	}
 
 	/** Draw the node point if enabled **/
 	public void drawPoint(GL2 gl){
-		if(fullyExplored || displayPoint){//if (displayPoint){
+		if(displayPoint){//if (displayPoint){
 			gl.glColor3fv(nodeColor.getColorComponents(null),0);
-			gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2]);
+			gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + zOffset);
 		}
 	}
+	
 
 	/** Draw all lines in the subtree below this node **/
 	public void drawLines_below(GL2 gl){	
@@ -798,15 +808,91 @@ public class TrialNodeMinimal {
 		}
 	}
 
-	/** Color the node scaled by depth in the tree. Totally for gradient pleasantness. **/
-	public static Color getColorFromTreeDepth(int depth)
-	{
+	/** Single out one run up to this node to highline the lines, while dimming the others. **/
+	public void highlightSingleRunToThisNode(){
+		TrialNodeMinimal rt = getRoot();
+		rt.setLineBrightness_below(0.4f); // Fade the entire tree, then go and highlight the run we care about.
+		
+		TrialNodeMinimal currentNode = this;
+		while (currentNode.treeDepth > 0){
+			currentNode.setLineBrightness(0.85f);
+			currentNode = currentNode.parent;
+		}
+	}
+	
+	/** Fade a single line going from this node to its parent. **/
+	public void setLineBrightness(float brightness){
+		lineBrightness = brightness;
+	}
+	
+	/** Fade a certain part of the tree. **/
+	public void setLineBrightness_below(float brightness){
+		setLineBrightness(brightness);
+		for (TrialNodeMinimal child : children){
+			child.setLineBrightness_below(brightness);
+		}
+	}
+	
+	/** Reset line brightnesses to default. **/
+	public void resetLineBrightness_below(){
+		setLineBrightness_below(lineBrightness_default);
+	}
+	
+	/** Color the node scaled by depth in the tree. Skip the brightness argument for default value. **/
+	public static Color getColorFromTreeDepth(int depth, float brightness){
 		float coloffset = 0.35f;
 		float scaledDepth = (float)depth/(float)maxDepthYet;
 		float H = scaledDepth* 0.38f+coloffset;
 		float S = 0.8f;
-		float B = 0.85f;
-
-		return Color.getHSBColor(H, S, B);
+		return Color.getHSBColor(H, S, brightness);
+	}
+	
+	/** Color the node scaled by depth in the tree. Totally for gradient pleasantness. **/
+	public static Color getColorFromTreeDepth(int depth){
+		return getColorFromTreeDepth(depth, lineBrightness_default);
+	}
+	
+	/** Set an override line color for this branch (all descendants). **/
+	public void setBranchColor(Color newColor){
+		overrideLineColor = newColor;
+		for (TrialNodeMinimal child : children){
+			child.setBranchColor(newColor);
+		}
+	}
+	
+	/** Clear an overriden line color on this branch. Call from root to get all line colors back to default. **/
+	public void clearBranchColor(){
+		overrideLineColor = null;
+		for (TrialNodeMinimal child : children){
+			child.clearBranchColor();
+		}
+	}
+	
+	/** Give this branch a zOffset to make it stand out. **/
+	public void setBranchZOffset(float zOffset){
+		this.zOffset = zOffset;
+		for (TrialNodeMinimal child : children){
+			child.setBranchZOffset(zOffset);
+		}
+	}
+	
+	/** Give this branch a zOffset to make it stand out. Goes backwards towards root. **/
+	public void setBackwardsBranchZOffset(float zOffset){
+		this.zOffset = zOffset;
+		TrialNodeMinimal currentNode = this;
+		while (currentNode.treeDepth > 0){
+			currentNode.zOffset = zOffset;
+			currentNode = currentNode.parent;
+		}
+	}
+	
+	/** Clear z offsets in this branch. Works backwards towards root. **/
+	public void clearBackwardsBranchZOffset(){
+		setBackwardsBranchZOffset(0f);
+	}
+	
+	/** Clear z offsets in this branch. Called from root, it resets all back to 0. **/
+	public void clearBranchZOffset(){
+		setBranchZOffset(0f);
 	}
 }

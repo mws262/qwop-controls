@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -25,8 +26,8 @@ public class FSM_Game implements Runnable{
 	private volatile boolean isLocked = false; 
 
 	/** Queued commands, IE QWOP key presses **/
-	private Queue<boolean[]> commandQueue = new LinkedList<boolean[]>();
-
+	QWOPQueue qwopQueue = new QWOPQueue();
+	
 	/** Physics engine stepping parameters. **/
 	public final float timestep = 0.04f;
 	private final int iterations = 5;
@@ -41,17 +42,6 @@ public class FSM_Game implements Runnable{
 	/** State machine state. **/
 	private Status currentStatus = Status.IDLE;
 	private Status previousStatus = Status.IDLE;
-
-	/** The fixed sequence of QWOP to be cycled through **/
-	public static final boolean[] nil_nil = {false, false, false, false}; // Nothing pressed.
-	public static final boolean[] W_O = {false,true,true,false};
-	public static final boolean[] Q_P = {true,false,false,true};
-
-	// Note: trying to get away from hardcoding sequences. Want to have keypresses also stored in the nodes soon.
-	public static final boolean[][] fixedSequence = {nil_nil,W_O,nil_nil,Q_P}; 
-	/** Current index in the fixed sequence. **/
-	int sequenceIndex = 0;
-	int sequenceLength = fixedSequence.length;
 
 	private Negotiator negotiator;
 
@@ -83,26 +73,26 @@ public class FSM_Game implements Runnable{
 			}else{
 				isLocked = false;
 			}
-			
 			switch (currentStatus){
 			case IDLE:
 				// Initialize a new game if commands have been added to the queue.
-				if (!commandQueue.isEmpty()){
+				if (!qwopQueue.isEmpty()){
 					currentStatus = Status.INITIALIZE;
 				}else if (flagForSingle){ // User selected one to display.
 					if (queuedSequence == null) throw new RuntimeException("Game flagged for single run, but no queued sequence ready.");
-					addSequence_old(queuedSequence, true);
+					qwopQueue.addSequence(queuedSequence);
+					runRealTime = true;
 					flagForSingle = false;
 					currentStatus = Status.LOCKED;
 				}
 				break;
 			case LOCKED:
 				// Namely if we want to trigger a one-off realtime run, this avoids going to IDLE where the tree might decide to run something instead.
-				if (commandQueue.isEmpty()) throw new RuntimeException("Game trying to display a user-selected run, but no sequence is added.");
+				if (qwopQueue.isEmpty()) throw new RuntimeException("Game trying to display a user-selected run, but no sequence is added.");
 				currentStatus = Status.INITIALIZE;
 			case INITIALIZE:
 				newGame();
-				if (commandQueue.isEmpty()){
+				if (qwopQueue.isEmpty()){
 					throw new RuntimeException("Transitions violated. Game was initialized without any queued actions.");
 				}else{
 					currentStatus = Status.RUNNING_SEQUENCE;
@@ -111,11 +101,10 @@ public class FSM_Game implements Runnable{
 			case RUNNING_SEQUENCE:
 				if (failFlag){ // Stop running if failure detected.
 					currentStatus = Status.FAILED;
-				}else if (commandQueue.isEmpty()){
+				}else if (qwopQueue.isEmpty()){
 					currentStatus = Status.WAITING; // Await any new commands if unfailed, but nothing to do right now.
 				}else{
-
-					boolean[] nextCommand = commandQueue.poll(); // Get and remove the next keypresses
+					boolean[] nextCommand = qwopQueue.pollCommand(); // Get and remove the next keypresses
 					Q = nextCommand[0];
 					W = nextCommand[1]; 
 					O = nextCommand[2];
@@ -136,26 +125,24 @@ public class FSM_Game implements Runnable{
 				break;
 			case WAITING:
 				if (failFlag || runRealTime){
-					System.out.println("What?");
 					currentStatus = Status.FAILED;
-				}else if(!commandQueue.isEmpty()){
+				}else if(!qwopQueue.isEmpty()){
 					currentStatus = Status.RUNNING_SEQUENCE;
 				}
 				break;
 			case FAILED:
-				commandQueue.clear(); // Clear remaining commands.
-
+				qwopQueue.clearAll(); // Clear remaining commands.
 				if (runRealTime) negotiator.reportEndOfRealTimeSim();
 				
 				if (flagForSingle){ // User selected one to display.
-					addSequence_old(queuedSequence, true);
+					qwopQueue.addSequence(queuedSequence);
+					runRealTime = true;
 					flagForSingle = false;
 					currentStatus = Status.LOCKED;
 				}else{ // Normal operation
 					currentStatus = Status.IDLE;
 					runRealTime = false;
 				}
-
 				break;
 			default:
 				break;
@@ -176,40 +163,17 @@ public class FSM_Game implements Runnable{
 		getWorld().setContactListener(new CollisionListener());
 	}
 
-	/** Queue one action (delay + keys down). **/
-	public void addAction(int delay, boolean[] keys){
-		if (keys.length != 4) throw new RuntimeException("Tried to add keypresses with only " + keys.length + " booleans to define them. Should be 4");
-		if (delay < 0) throw new RuntimeException("Cannot hold keys for negative time. Tried: " + delay);
-
-		for (int i = 0; i < delay; i++){
-			commandQueue.add(keys); // Each timestep, 1 is removed from the queue.
+	public void addSequence(int[] sequence){
+		qwopQueue.addSequence(sequence);
+	}
+	public void addAction(int action){
+		qwopQueue.addAction(action);
+	}
+	/** Callable to instantly stop real-time simulating a run. Usually when the UI tab is changed. **/
+	public void killRealtimeRun(){
+		if (runRealTime){
+			reportFall(); // TODO MATT WHEN YOU GET BACK DEBUG THIS!!!
 		}
-	}
-
-	/** Queue a sequence of actions. **/
-	public void addSequence(int[] delays, boolean[][] keys){
-		for (int i = 0; i < delays.length; i++){
-			addAction(delays[i], keys[i]);
-		}
-	}
-
-	/** Assumes a fixed sequence of keypresses. Adds whatever next keypress should come in that sequence and advances. **/
-	public void addAction_old(int action){
-		if (action < 0) throw new RuntimeException("Cannot hold keys for negative time. Tried: " + action);
-		addAction(action,fixedSequence[sequenceIndex]);
-		sequenceIndex = (sequenceIndex + 1) % sequenceLength;
-	}
-
-	/** Assumes a fixed sequence of keypresses. Adds whatever next keypress should come in that sequence. Always starts from first action, unlike the new version of this method. **/
-	public void addSequence_old(int[] seq, boolean realTime){
-		if (currentStatus != Status.IDLE) throw new RuntimeException("Cannot add a new sequence unless the game has returned to idle.");
-		commandQueue.clear();
-		sequenceIndex = 0;
-		for (int i = 0; i < seq.length; i++){
-			//System.out.println(seq[i]);
-			addAction_old(seq[i]);
-		}	
-		this.runRealTime = realTime;
 	}
 
 	/** Queue up a single realtime game to play next time its available. **/
@@ -277,6 +241,135 @@ public class FSM_Game implements Runnable{
 		locked = false;
 	}
 
+	/**
+	 * All things related to queueing actions should happen in here.
+	 * @author Matt
+	 *
+	 */
+	public class QWOPQueue{
+
+		/** Actions are the delays between keypresses. **/
+		private Queue<Integer> actionQueue = new LinkedList<Integer>();
+
+		/** Commands are the 4 booleans expressing whether any particular key is down. **/
+		private Queue<boolean[]> commandQueue = new LinkedList<boolean[]>();
+
+		/** All actions done or queued since the last reset. Unlike the queue, things aren't removed until reset. **/
+		private ArrayList<Integer> actionsInRunList = new ArrayList<Integer>();
+		
+		/** Integer action currently in progress. If the action is 20, this will be 20 even when 15 commands have been issued. **/
+		private int currentAction;
+
+		/** Is there anything at all queued up to execute? **/
+		private boolean isEmpty = true;
+
+		/** The fixed sequence of QWOP to be cycled through **/
+		public final boolean[] nil_nil = {false, false, false, false}; // Nothing pressed.
+		public final boolean[] W_O = {false,true,true,false};
+		public final boolean[] Q_P = {true,false,false,true};
+
+		// Note: trying to get away from hardcoding sequences. Want to have keypresses also stored in the nodes soon.
+		public final boolean[][] fixedSequence = {nil_nil,W_O,nil_nil,Q_P}; 
+
+		/** Current index in the fixed sequence. **/
+		int sequenceIndex = 0;
+		int sequenceLength = fixedSequence.length;
+
+		public QWOPQueue() {}
+
+		/** See the action we are currently executing. Does not change the queue. **/
+		public int peekThisAction(){
+			return currentAction;
+		}
+
+		/** See the next action we will execute. Does not change the queue. **/
+		public int peekNextAction(){
+			return actionQueue.peek();
+		}
+		
+		/** See the next keypresses. **/
+		public boolean[] peekCommand(){
+			return commandQueue.peek();
+		}
+		
+		/** Adds a new action to the end of the queue. **/
+		public void addAction(int action){
+			if (action < 0) throw new RuntimeException("Cannot hold keys for negative time. Tried: " + action);
+			actionQueue.add(action);
+			actionsInRunList.add(action);
+			isEmpty = false;
+		}
+		
+		/** Add a sequence of actions. NOTE: sequence is NOT reset unless clearAll is called. **/
+		public void addSequence(int[] actions){
+			for (int i = 0; i < actions.length; i++){
+				addAction(actions[i]);
+			}
+		}
+		
+		/** Request the next QWOP keypress commands from the added sequence. **/
+		public boolean[] pollCommand(){
+			//System.out.println("POLL");
+			if (commandQueue.isEmpty() && actionQueue.isEmpty()){
+				throw new RuntimeException("Tried to get a command off the queue when nothing is queued up.");
+			}
+
+			// If the current action has no more keypresses, load up the next one.
+			if (commandQueue.isEmpty()){
+				currentAction = actionQueue.poll();
+				actionToCommand(currentAction);
+			}
+			
+			boolean[] nextCommand = commandQueue.poll();
+			
+			if (commandQueue.isEmpty() && actionQueue.isEmpty()){
+				isEmpty = true;
+			}
+			return nextCommand;
+		}
+
+		/** Takes an integer action and adds all the boolean commands to the command queue.
+		 * Removes the action from the action queue and lists it as the current action.
+		 * @param action
+		 */
+		private void actionToCommand(int action){
+			actionToCommand(action,fixedSequence[sequenceIndex]);
+			sequenceIndex = (sequenceIndex + 1) % sequenceLength;
+		}
+		
+		private void actionToCommand(int delay, boolean[] keys){
+			if (keys.length != 4) throw new RuntimeException("Tried to add keypresses with only " + keys.length + " booleans to define them. Should be 4");
+			if (delay < 0) throw new RuntimeException("Cannot hold keys for negative time. Tried: " + delay);
+
+			for (int i = 0; i < delay; i++){
+				commandQueue.add(keys); // Each timestep, 1 is removed from the queue.
+			}
+		}
+
+		/** Remove everything from the queues and reset the sequence. **/
+		public void clearAll(){
+			commandQueue.clear();
+			actionQueue.clear();
+			actionsInRunList.clear();
+			isEmpty = true;
+			sequenceIndex = 0;
+		}
+		
+		/** Check if the queue has anything in it. **/
+		public boolean isEmpty(){ return isEmpty; }
+		
+		public int[] getActionsInCurrentRun(){
+			int[] actions = new int[actionsInRunList.size()];
+			for (int i = 0; i < actions.length; i++){
+				actions[i] = actionsInRunList.get(i);
+			}
+			return actions;
+		}
+		
+		public int getCurrentActionIdx(){
+			return actionsInRunList.size() - actionQueue.size() - 1;
+		}
+	}
 	/** Listens for collisions involving lower arms and head (implicitly with the ground) **/
 	private class CollisionListener implements ContactListener{
 

@@ -11,19 +11,19 @@ public class MAIN_test {
 	public MAIN_test() {}
 
 	public static void main(String[] args) {
-		//TrialNodeMinimal.useTreePhysics = false;
+		boolean useTreePhysics = false;
 		
 		/* Load */
 		System.out.println("Reading saved games file."); tic();
 		QWOP_fileIO<CondensedRunInfo> io = new QWOP_fileIO<CondensedRunInfo>();
 		ArrayList<CondensedRunInfo> runs1 = io.loadObjects("test");
-		ArrayList<CondensedRunInfo> runs2 = io.loadObjects("test2");
+		//ArrayList<CondensedRunInfo> runs2 = io.loadObjects("test2");
 		toc();
 		
 		/* Convert from runs to tree with nodes */
 		System.out.println("Converting from games to a tree."); tic();
 		TrialNodeMinimal treeRoot = TrialNodeMinimal.makeNodesFromRunInfo(runs1, useTreePhysics);
-		TrialNodeMinimal.makeNodesFromRunInfo(runs2, treeRoot);
+		//TrialNodeMinimal.makeNodesFromRunInfo(runs2, treeRoot);
 
 		toc();
 		//System.out.println("Done. Imported " + runs1.size() + runs2.size() + " runs. Starting graphics and tree builder.");
@@ -38,7 +38,7 @@ public class MAIN_test {
 		FSM_Game game = new FSM_Game();
 		
 		/* Manage the tree, UI, and game. Start some threads. */
-		Negotiator negotiator = new Negotiator(tree,ui,game,io,"test2",true);
+		Negotiator negotiator = new Negotiator(tree,ui,game,io,"test3",false);
 		
 		tree.setNegotiator(negotiator);
 		ui.setNegotiator(negotiator);

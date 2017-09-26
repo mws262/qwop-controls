@@ -29,6 +29,13 @@ public class FSM_Tree implements Runnable{
 	/** Confirms whether the FSM has finished its previous cycle and is effectively locked. **/
 	private volatile boolean isLocked = false;
 	
+	/** How often do we estimate games/s? **/
+	private int gpsFrequency = 25;
+	private int gpsCounter = 1; // Counts up to gpsFrequency at which point gps is calculated.
+	private long lastTime = System.currentTimeMillis();
+	public float currentGPS = 120;
+	private int gpsFilter = 5;
+	
 	public enum Status{
 		IDLE, INITIALIZE_TREE, DO_PREDETERMINED, ADD_NODE, WAITING_FOR_PREDETERMINED, WAITING_FOR_SINGLE, EVALUATE_GAME, EXHAUSTED
 	}
@@ -90,6 +97,16 @@ public class FSM_Tree implements Runnable{
 				negotiator.saveRunToFile(currentNode);
 				currentNode.markTerminal();
 				currentStatus = Status.IDLE;
+				
+				// Estimate games per second if the frequency met.
+				if (gpsCounter % gpsFrequency == 0){
+					currentGPS = (currentGPS * (gpsFilter - 1) + 1000f * gpsFrequency/(float)(System.currentTimeMillis() - lastTime))/gpsFilter;
+					gpsCounter = 1;
+					lastTime = System.currentTimeMillis();
+				}else{
+					gpsCounter++;
+				}
+				
 				break;
 			case EXHAUSTED: // Similar to idle, but we haven't decided whether to introduce more options or start over.
 				kill();
