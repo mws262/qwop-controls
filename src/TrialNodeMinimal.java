@@ -25,7 +25,7 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
  * 
  */
 public class TrialNodeMinimal {
-	
+
 	/******** All node stats *********/
 	private static int nodesCreated = 0;
 	private static int nodesImported = 0;
@@ -55,7 +55,7 @@ public class TrialNodeMinimal {
 
 	/** Are there any untried things below this node? **/
 	public boolean fullyExplored = false;
-	
+
 	/** Does this node represent a failed state? Stronger than fullyExplored. **/
 	public boolean isTerminal = false;
 
@@ -68,10 +68,10 @@ public class TrialNodeMinimal {
 	/********* TREE VISUALIZATION ************/
 	public Color overrideLineColor = null; // Only set when the color is overridden.
 	public Color nodeColor = Color.GREEN;
-	
+
 	private static final float lineBrightness_default = 0.85f;
 	private float lineBrightness = lineBrightness_default;
-	
+
 	public boolean displayPoint = false; // Round dot at this node. Is it on?
 	public boolean displayLine = true; // Line from this node to parent. Is it on?
 
@@ -83,7 +83,7 @@ public class TrialNodeMinimal {
 	public float sweepAngle = 8f*(float)Math.PI;
 
 	public float edgeLength = 1.f;
-	
+
 	/** If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z offset. **/
 	private float zOffset = 0.f; 
 
@@ -174,7 +174,7 @@ public class TrialNodeMinimal {
 
 		lineBrightness = parent.lineBrightness;
 		zOffset = parent.zOffset;
-		
+
 		if (!currentlyAddingSavedNodes){
 			calcNodePos();
 			if (useTreePhysics){
@@ -199,6 +199,9 @@ public class TrialNodeMinimal {
 
 		// Initialize the tree physics world if this is enabled.
 		useTreePhysics = treePhysOn;
+
+		// Root node gets the QWOP initial condition. Yay!
+		setState(FSM_Game.getInitialState());
 
 		if (useTreePhysics){
 			initTreePhys_single();
@@ -323,15 +326,17 @@ public class TrialNodeMinimal {
 		return children.get(randInt(0,children.size()-1));
 	}
 
-	/** Add all the nodes below and including this one to a list. **/
+	/** Add all the nodes below and including this one to a list. Does not include nodes whose state have not yet been assigned. **/
 	public ArrayList<TrialNodeMinimal> getNodes_below(ArrayList<TrialNodeMinimal> nodeList){
-
-		nodeList.add(this);
+		if (state != null){
+			nodeList.add(this);
+		}
 		for (TrialNodeMinimal child : children){
 			child.getNodes_below(nodeList);
 		}	
 		return nodeList;
 	}
+
 
 	/** Locate all the endpoints in the tree. Starts from the node it is called from. **/
 	public void getLeaves(ArrayList<TrialNodeMinimal> leaves){
@@ -343,7 +348,7 @@ public class TrialNodeMinimal {
 			}
 		}	
 	}
-	
+
 	/** Returns the tree root no matter which node in the tree this is called from. **/
 	public TrialNodeMinimal getRoot(){
 		TrialNodeMinimal currentNode = this;
@@ -429,17 +434,17 @@ public class TrialNodeMinimal {
 	public static int getTotalNodeCount(){
 		return nodesImported + nodesCreated;
 	}
-	
+
 	/** Total number of nodes imported from save file. **/
 	public static int getImportedNodeCount(){
 		return nodesImported;
 	}
-	
+
 	/** Total number of nodes created this session. **/
 	public static int getCreatedNodeCount(){
 		return nodesCreated;
 	}
-	
+
 	/** Total number of nodes created this session. **/
 	public static int getImportedGameCount(){
 		return gamesImported;
@@ -448,22 +453,22 @@ public class TrialNodeMinimal {
 	public static int getCreatedGameCount(){
 		return gamesCreated;
 	}
-	
+
 	/** Mark this node as representing a terminal state. **/
 	public void markTerminal(){
 		isTerminal = true;
 		gamesCreated++;
 	}
-	
+
 	/***************************************************/
 	/******* STATE & SEQUENCE SETTING/GETTING **********/
 	/***************************************************/
 
-	/** Capture the state from an active game **/
-	@Deprecated
-	public void captureState(QWOPInterface QWOPHandler){
-		state = new CondensedStateInfo(QWOPHandler.game); // MATT add 8/22/17
-	}
+	//	/** Capture the state from an active game **/
+	//	@Deprecated
+	//	public void captureState(QWOPInterface QWOPHandler){
+	//		state = new CondensedStateInfo(QWOPHandler.game); // MATT add 8/22/17
+	//	}
 
 	/** Capture the state from an active game **/
 	public void captureState(QWOPGame game){
@@ -478,6 +483,7 @@ public class TrialNodeMinimal {
 	/** Get the sequence of actions up to, and including this node **/
 	public int[] getSequence(){
 		int[] sequence = new int[treeDepth];
+		if (treeDepth == 0) return sequence; // Empty array for root node.
 		TrialNodeMinimal current = this;
 		sequence[treeDepth-1] = current.controlAction;
 		for (int i = treeDepth - 2; i >= 0; i--){
@@ -743,7 +749,7 @@ public class TrialNodeMinimal {
 			return new Vec2(0,0);
 		}
 	}
-		
+
 	/** Propagate all physics world info back to the node drawing info. **/
 	public void updatePositionFromPhys(){
 		if (arePhysicsInitialized){
@@ -784,7 +790,7 @@ public class TrialNodeMinimal {
 			gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + zOffset);
 		}
 	}
-	
+
 
 	/** Draw all lines in the subtree below this node **/
 	public void drawLines_below(GL2 gl){	
@@ -812,19 +818,19 @@ public class TrialNodeMinimal {
 	public void highlightSingleRunToThisNode(){
 		TrialNodeMinimal rt = getRoot();
 		rt.setLineBrightness_below(0.4f); // Fade the entire tree, then go and highlight the run we care about.
-		
+
 		TrialNodeMinimal currentNode = this;
 		while (currentNode.treeDepth > 0){
 			currentNode.setLineBrightness(0.85f);
 			currentNode = currentNode.parent;
 		}
 	}
-	
+
 	/** Fade a single line going from this node to its parent. **/
 	public void setLineBrightness(float brightness){
 		lineBrightness = brightness;
 	}
-	
+
 	/** Fade a certain part of the tree. **/
 	public void setLineBrightness_below(float brightness){
 		setLineBrightness(brightness);
@@ -832,12 +838,12 @@ public class TrialNodeMinimal {
 			child.setLineBrightness_below(brightness);
 		}
 	}
-	
+
 	/** Reset line brightnesses to default. **/
 	public void resetLineBrightness_below(){
 		setLineBrightness_below(lineBrightness_default);
 	}
-	
+
 	/** Color the node scaled by depth in the tree. Skip the brightness argument for default value. **/
 	public static Color getColorFromTreeDepth(int depth, float brightness){
 		float coloffset = 0.35f;
@@ -846,12 +852,12 @@ public class TrialNodeMinimal {
 		float S = 0.8f;
 		return Color.getHSBColor(H, S, brightness);
 	}
-	
+
 	/** Color the node scaled by depth in the tree. Totally for gradient pleasantness. **/
 	public static Color getColorFromTreeDepth(int depth){
 		return getColorFromTreeDepth(depth, lineBrightness_default);
 	}
-	
+
 	/** Set an override line color for this branch (all descendants). **/
 	public void setBranchColor(Color newColor){
 		overrideLineColor = newColor;
@@ -859,7 +865,7 @@ public class TrialNodeMinimal {
 			child.setBranchColor(newColor);
 		}
 	}
-	
+
 	/** Clear an overriden line color on this branch. Call from root to get all line colors back to default. **/
 	public void clearBranchColor(){
 		overrideLineColor = null;
@@ -867,7 +873,7 @@ public class TrialNodeMinimal {
 			child.clearBranchColor();
 		}
 	}
-	
+
 	/** Give this branch a zOffset to make it stand out. **/
 	public void setBranchZOffset(float zOffset){
 		this.zOffset = zOffset;
@@ -875,7 +881,7 @@ public class TrialNodeMinimal {
 			child.setBranchZOffset(zOffset);
 		}
 	}
-	
+
 	/** Give this branch a zOffset to make it stand out. Goes backwards towards root. **/
 	public void setBackwardsBranchZOffset(float zOffset){
 		this.zOffset = zOffset;
@@ -885,12 +891,12 @@ public class TrialNodeMinimal {
 			currentNode = currentNode.parent;
 		}
 	}
-	
+
 	/** Clear z offsets in this branch. Works backwards towards root. **/
 	public void clearBackwardsBranchZOffset(){
 		setBackwardsBranchZOffset(0f);
 	}
-	
+
 	/** Clear z offsets in this branch. Called from root, it resets all back to 0. **/
 	public void clearBranchZOffset(){
 		setBranchZOffset(0f);

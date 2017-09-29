@@ -26,6 +26,13 @@ public class CondensedStateInfo implements Serializable {
 	public StateVariable llarm;
 	public StateVariable head;
 	
+	public enum ObjectName{
+		BODY, HEAD, RTHIGH, LTHIGH, RCALF, LCALF, RFOOT, LFOOT, RUARM, LUARM, RLARM, LLARM
+	}
+	
+	public enum StateName{
+		X, Y, TH, DX, DY, DTH
+	}
 	
 	public CondensedStateInfo(QWOPGame world) {
 		Body nextBody = world.TorsoBody;
@@ -138,6 +145,76 @@ public class CondensedStateInfo implements Serializable {
 		
 		return transforms;
 	}
+	
+	/** Get the value of the state you want using their names. I'll bet hashmaps do this better. **/
+	public float getStateVarFromName(ObjectName obj, StateName state){
+		StateVariable st;
+		switch(obj){
+		case BODY:
+			st = body;
+			break;
+		case HEAD:
+			st = head;
+			break;
+		case LCALF:
+			st = lcalf;
+			break;
+		case LFOOT:
+			st = lfoot;
+			break;
+		case LLARM:
+			st = llarm;
+			break;
+		case LTHIGH:
+			st = lthigh;
+			break;
+		case LUARM:
+			st = luarm;
+			break;
+		case RCALF:
+			st = rcalf;
+			break;
+		case RFOOT:
+			st = rfoot;
+			break;
+		case RLARM:
+			st = rlarm;
+			break;
+		case RTHIGH:
+			st = rthigh;
+			break;
+		case RUARM:
+			st = ruarm;
+			break;
+		default:
+			throw new RuntimeException("Unknown object state queried.");
+		}
+		float stateValue;
+		switch(state){
+		case DTH:
+			stateValue = st.dth;
+			break;
+		case DX:
+			stateValue = st.dx;
+			break;
+		case DY:
+			stateValue = st.dy;
+			break;
+		case TH:
+			stateValue = st.th;
+			break;
+		case X:
+			stateValue = st.x;
+			break;
+		case Y:
+			stateValue = st.y;
+			break;
+		default:
+			throw new RuntimeException("Unknown object state queried.");
+		}
+		return stateValue;
+	}
+
 	
 	public class StateVariable implements Serializable{
 

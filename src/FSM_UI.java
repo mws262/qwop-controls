@@ -1,4 +1,5 @@
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -8,7 +9,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -16,14 +21,20 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -31,6 +42,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Vector3f;
 
+import org.jblas.FloatMatrix;
+import org.jblas.Singular;
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonShape;
@@ -40,6 +53,24 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.World;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.entity.ChartEntity;
+import org.jfree.chart.plot.DrawingSupplier;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.AbstractRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.DomainInfo;
+import org.jfree.data.Range;
+import org.jfree.data.RangeInfo;
+import org.jfree.data.xy.AbstractXYDataset;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.ui.RectangleInsets;
 
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
@@ -73,6 +104,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	/** Pane for the snapshots of the runner. **/
 	SnapshotPane snapshotPane;
 
+	/** Plots here. **/
+	DataPane dataPane;
+
 	/** Selected node by user click/key **/
 	TrialNodeMinimal selectedNode;
 
@@ -101,6 +135,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 	private final Color defaultDrawColor = new Color(0.2f,0.2f,0.5f);
 	private final Color historyDrawColor = new Color(0.6f,0.6f,0.6f);
+	private final Color appleGray = new Color(230,230,230);
 
 	final Font QWOPLittle = new Font("Ariel", Font.BOLD,21);
 	final Font QWOPBig = new Font("Ariel", Font.BOLD,28);
@@ -145,7 +180,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		dataConstraints.gridy = 1;
 		dataConstraints.weightx = 0.3;
 		dataConstraints.weighty = 0.1;
-		dataConstraints.ipady = (int)(0.3*windowHeight);
+		dataConstraints.ipady = (int)(0.28*windowHeight);
 		dataConstraints.ipadx = (int)(windowWidth*0.5);
 
 		/* Pane for all tabs */
@@ -160,6 +195,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		snapshotPane = new SnapshotPane();
 		tabPane.addTab("State Viewer", snapshotPane);
 
+		/* Data pane */
+		dataPane = new DataPane();
+		tabPane.addTab("Data Viewer", dataPane);
+
 		/* Tree pane */
 		treePane = new TreePane();
 
@@ -167,6 +206,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		allTabbedPanes.add(runnerPane);
 		allTabbedPanes.add(snapshotPane);
+		allTabbedPanes.add(dataPane);
 		tabPane.addChangeListener(this);
 
 		//Make sure the currently active tab is actually being updated.
@@ -238,7 +278,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					e.printStackTrace();
 				}
 			}
-			
+
 			// Tree frames per sec
 			avgLoopTime = (long)(((loopTimeFilter - 1f) * avgLoopTime + 1f * (System.currentTimeMillis() - lastIterTime)) / loopTimeFilter); // Filter the loop time
 			lastIterTime = System.currentTimeMillis();		
@@ -260,6 +300,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			selectedNode.nodeColor = Color.RED;
 			selectedNode.setBranchZOffset(0.4f);
 			if (snapshotPane.active) snapshotPane.giveSelectedNode(selectedNode);
+			if (dataPane.active) dataPane.update(); // Updates data being put on plots
 		}
 	}
 
@@ -383,7 +424,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			textRenderBig.beginRendering(panelWidth, panelHeight);
 			textRenderBig.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			textRenderBig.draw(negotiator.getGamesPlayed() + " games", 20, panelHeight - 50);
-			
+
 			if (treePause){
 				textRenderBig.setColor(0.7f, 0.1f, 0.1f, 1.0f);	
 				textRenderBig.draw("PAUSED", panelWidth/2, panelHeight - 50);
@@ -409,13 +450,13 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			// Total games played
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			textRenderSmall.draw(negotiator.getGamesTotal() + " Total games", 20, panelHeight - 85);
-			
+
 			textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
 			textRenderSmall.draw(Math.round(negotiator.getTimeSimulated()/360)/10f + " hours simulated!", 20, panelHeight - 100);
 			textRenderSmall.draw((int)negotiator.getGamesPerSecond() + " games/s", 20, panelHeight - 115);
 
 			textRenderSmall.endRendering();
-		
+
 		}
 
 		/** Draw a text string using GLUT (for openGL rendering version of my stuff) **/
@@ -750,6 +791,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		@Override
 		public void deactivateTab() {
 			active = false;
+			negotiator.killRealtimeRun();
 		}
 		public void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p){
 
@@ -830,7 +872,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		TrialNodeMinimal queuedFutureLeaf;
 
 		Font floatingActionText = new Font("Ariel", Font.BOLD, 18);
-		
+
 		private int mouseX = 0;
 		private int mouseY = 0;
 		private boolean mouseIsIn = false;
@@ -872,7 +914,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			/***** History nodes *****/
 			TrialNodeMinimal historyNode = snapshotNode;
 			for (int i = 0; i < numHistoryStatesDisplay; i++){
-				if (historyNode.treeDepth > 1){
+				if (historyNode.treeDepth > 0){
 					historyNode = historyNode.parent;
 					nodeTransform = historyNode.state.getTransforms();
 					transforms.add(nodeTransform);
@@ -892,10 +934,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				child.setBranchColor(runnerColor); // Change the color on the tree too.
 
 				for (TrialNodeMinimal descendant : descendants){
-					focusLeaves.add(descendant);
-					transforms.add(descendant.state.getTransforms());
-					strokes.add(normalStroke);
-					colors.add(runnerColor);
+					if (descendant.state != null){
+						focusLeaves.add(descendant);
+						transforms.add(descendant.state.getTransforms());
+						strokes.add(normalStroke);
+						colors.add(runnerColor);
+					}
 				}
 			}
 		}
@@ -905,7 +949,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			float ydist = (mouseY - (runnerScaling * y + yOffsetPixels));
 			return xdist*xdist + ydist*ydist;
 		}
-		
+
 		/** Draws the selected node state and potentially previous and future states. **/
 		public void paintComponent(Graphics g){
 			if (!active) return;
@@ -919,7 +963,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 				// Figure out if the mouse close enough to highlight one state.
 				if (mouseIsIn && mouseX > getWidth()/2){ // If we are mousing over this panel, see if we're hovering close enough over any particular dude state.
-					
+
 					// Check body first
 					for (int i = 0; i < focusLeaves.size(); i++){
 						float distSq = getDistFromMouseSq(focusLeaves.get(i).state.body.x,focusLeaves.get(i).state.body.y);
@@ -951,7 +995,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 								bestSoFar = distSq;
 								bestIdx = i;
 							}
-							
+
 						}
 					}
 				}
@@ -1011,31 +1055,35 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			// Draw
 			int idx = focusLeaves.indexOf(newFuture);
 			if (idx > -1){ // Focus leaves no longer contains the no focus requested.
-				drawRunner(g2, colors.get(idx).darker(), boldStroke, shapes, transforms.get(idx));
+				try{
+					drawRunner(g2, colors.get(idx).darker(), boldStroke, shapes, transforms.get(idx));
 
-				TrialNodeMinimal currentNode = newFuture;
+					TrialNodeMinimal currentNode = newFuture;
 
-				// Also draw parent nodes back the the selected one to view the run that leads to the highlighted failure.
-				int prevX = Integer.MAX_VALUE;
-				while (currentNode.treeDepth > selectedNode.treeDepth){
-					// Make color shades slightly alternate between subsequent move frames.
-					Color everyOtherEvenColor = colors.get(idx).darker();
-					if (currentNode.treeDepth % 2 == 0){
-						everyOtherEvenColor = everyOtherEvenColor.darker();
+					// Also draw parent nodes back the the selected one to view the run that leads to the highlighted failure.
+					int prevX = Integer.MAX_VALUE;
+					while (currentNode.treeDepth > selectedNode.treeDepth){
+						// Make color shades slightly alternate between subsequent move frames.
+						Color everyOtherEvenColor = colors.get(idx).darker();
+						if (currentNode.treeDepth % 2 == 0){
+							everyOtherEvenColor = everyOtherEvenColor.darker();
+						}
+						drawRunner(g2, everyOtherEvenColor, boldStroke, shapes, currentNode.state.getTransforms());
+
+						// Draw actions above their heads.
+						g2.setFont(QWOPBig);
+						g2.setFont(floatingActionText);
+						g2.setColor(everyOtherEvenColor);
+						prevX = Math.min((int)(runnerScaling * currentNode.state.head.x) + xOffsetPixels - 3,prevX - 25);
+
+						g2.drawString(String.valueOf(currentNode.controlAction), 
+								prevX, 
+								Math.min((int)(runnerScaling * currentNode.state.head.y) + yOffsetPixels - 25, 45));
+
+						currentNode = currentNode.parent;
 					}
-					drawRunner(g2, everyOtherEvenColor, boldStroke, shapes, currentNode.state.getTransforms());
-					
-					// Draw actions above their heads.
-					g2.setFont(QWOPBig);
-					g2.setFont(floatingActionText);
-					g2.setColor(everyOtherEvenColor);
-					prevX = Math.min((int)(runnerScaling * currentNode.state.head.x) + xOffsetPixels - 3,prevX - 25);
-					
-					g2.drawString(String.valueOf(currentNode.controlAction), 
-							prevX, 
-							Math.min((int)(runnerScaling * currentNode.state.head.y) + yOffsetPixels - 25, 45));
-					
-					currentNode = currentNode.parent;
+				}catch(IndexOutOfBoundsException e){
+					// I don't really care tbh. Just skip this one.
 				}
 			}
 		}
@@ -1133,11 +1181,364 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 	}
 
+	public class DataPane extends JPanel implements TabbedPaneActivator, ChartMouseListener{
+
+		/** How many plots do we want to squeeze in there horizontally? **/
+		private final int numberOfPlots = 6;
+
+		/** Array of the numberOfPlots number of plots we make. **/
+		public ChartPanel[] plotPanels = new ChartPanel[numberOfPlots];
+
+		/** Is this tab active? Do we bother to do updates in other words. **/
+		private boolean active = false;
+
+		/** Formatting stuff for the dot markers. **/
+		private MarkerFormat format = new MarkerFormat(false,true,this);
+
+		/** The variables and nodes associated with the plots. **/
+		private XYDataset[] plotData = new XYDataset[numberOfPlots];
+
+		public int selectedPoint = -1;
+
+		public DataPane(){
+			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+			for (int i = 0; i < numberOfPlots; i++){
+				JFreeChart chart = createChart(null,null); // Null means no title and no data yet too
+				ChartPanel chartPanel = new ChartPanel(chart);
+				chartPanel.addChartMouseListener(this);
+				chartPanel.setPopupMenu(null);
+				chartPanel.setDomainZoomable(false);
+				chartPanel.setRangeZoomable(false);
+				chartPanel.setVisible(true);
+				plotPanels[i] = chartPanel;
+				add(chartPanel);
+			}
+			pack();
+		}
+
+		/** Check if the bounds need expanding, tell JFreeChart to update, and set the bounds correctly **/
+		public void update(){
+
+			// Fetching new data.
+			ArrayList<TrialNodeMinimal> nodesBelow = new ArrayList<TrialNodeMinimal>();
+			if (selectedNode != null){
+				selectedNode.getNodes_below(nodesBelow);
+				
+				// A state pair being added to the first plot.
+				XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
+				LinkStateCombination statePlotDat1 = new LinkStateCombination(nodesBelow);
+				statePlotDat1.addSeries(0, CondensedStateInfo.ObjectName.BODY, CondensedStateInfo.StateName.TH, CondensedStateInfo.ObjectName.BODY, CondensedStateInfo.StateName.Y);
+				pl.setDataset(statePlotDat1);
+				
+				
+				// A PCA plot being added to the second plot.
+				pl = (XYPlot)plotPanels[1].getChart().getPlot();
+				PCATransformedData pcaPlotDat1 = new PCATransformedData(nodesBelow);
+				pcaPlotDat1.addSeries(0, 0, 1);
+				pl.setDataset(pcaPlotDat1);
+				
+				pl = (XYPlot)plotPanels[2].getChart().getPlot();
+				PCATransformedData pcaPlotDat2 = new PCATransformedData(nodesBelow);
+				pcaPlotDat2.addSeries(0, 0, 2);
+				pl.setDataset(pcaPlotDat2);
+				
+				pl = (XYPlot)plotPanels[3].getChart().getPlot();
+				PCATransformedData pcaPlotDat3 = new PCATransformedData(nodesBelow);
+				pcaPlotDat3.addSeries(0, 0, 3);
+				pl.setDataset(pcaPlotDat3);
+				
+				pl = (XYPlot)plotPanels[4].getChart().getPlot();
+				PCATransformedData pcaPlotDat4 = new PCATransformedData(nodesBelow);
+				pcaPlotDat4.addSeries(0, 0, 4);
+				pl.setDataset(pcaPlotDat4);
+				
+				
+				//pl.getRangeAxis().setLabel(obj2.toString() + " " + st2.toString());
+				//pl.getDomainAxis().setLabel(obj1.toString() + " " + st1.toString());
+			}
+
+			for (int i = 0; i < numberOfPlots; i++){
+				JFreeChart chart = plotPanels[i].getChart();
+				chart.fireChartChanged();
+				//XYPlot plot = (XYPlot)(plotPanels[i].getChart().getPlot());
+				//plot.getDomainAxis().setRange(range); TODO
+				//plot.getRangeAxis().setRange(range);
+			}
+		}
+		/** My default settings for each plot. **/
+		private JFreeChart createChart(XYDataset dataset,String name) {
+			JFreeChart chart = ChartFactory.createScatterPlot(name,
+					"X", "Y", dataset, PlotOrientation.VERTICAL, false, false, false);
+
+			chart.setBackgroundPaint(appleGray);
+			chart.setPadding(new RectangleInsets(-8,-12,-8,-5)); // Pack em in really tight.
+			chart.setBorderVisible(false);
+
+			XYPlot plot = (XYPlot) chart.getPlot();
+
+			plot.setNoDataMessage("NO DATA");
+			plot.setDomainZeroBaselineVisible(true);
+			plot.setRangeZeroBaselineVisible(true);
+			plot.setRenderer(format);
+			plot.setBackgroundPaint(Color.WHITE); // Background of actual plotting area, not the surrounding border area.
+
+			format.setSeriesShape( 0, new Rectangle2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
+			format.setUseOutlinePaint(false);
+
+			NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
+			domainAxis.setAutoRangeIncludesZero(false);
+			domainAxis.setTickMarkInsideLength(2.0f);
+			domainAxis.setTickMarkOutsideLength(0.0f);
+			domainAxis.setLabelFont(littleFont);
+			domainAxis.setRange(new Range(-10, 10));
+
+			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+			rangeAxis.setTickMarkInsideLength(2.0f);
+			rangeAxis.setTickMarkOutsideLength(0.0f);
+			rangeAxis.setLabelFont(littleFont);
+			rangeAxis.setRange(new Range(-10, 10));
+			return chart;
+		}
+
+		@Override
+		public void chartMouseClicked(ChartMouseEvent event) {
+			ChartEntity entity = event.getEntity();
+			if (entity == null)
+				return;
+		}
+
+		@Override
+		public void chartMouseMoved(ChartMouseEvent event) {}
+
+		@Override
+		public void activateTab() {
+			active = true;
+			update();
+
+		}
+		@Override
+		public void deactivateTab() {
+			active = false;
+		}
+
+		public class MarkerFormat extends XYLineAndShapeRenderer {
+			DataPane pane;
+			Rectangle2D BigMarker = new Rectangle2D.Double( -5.0, -5.0, 10.0, 10.0 );
+			Color SelectedColor = new Color(0.5f,1,0.5f);
+			Color UnSelectedColor = new Color(1f,0.25f,0.25f);
+
+			public MarkerFormat(boolean lines, boolean shapes, DataPane pane) {
+				super(lines, shapes);
+				this.pane = pane;
+			}
+
+			@Override
+			public Paint getItemPaint(int row, int col) {
+				if (col == pane.selectedPoint) {
+					return SelectedColor;
+				} else {
+					return UnSelectedColor;
+				}
+			}
+			@Override
+			public java.awt.Shape getItemShape(int row, int col){ // Dumb because box2d also has shape imported.
+				if (col == pane.selectedPoint) {
+					return (java.awt.Shape)BigMarker;
+				} else {
+					return (java.awt.Shape) super.getItemShape(row, col);
+				}
+
+			}
+		}
+
+		/** XYDataset gets data for ploting states vs other states here. **/
+		private class LinkStateCombination extends AbstractXYDataset{
+
+			/** Nodes to appear on the plot. **/
+			private final ArrayList<TrialNodeMinimal> nodeList;
+
+			private Map<Integer,Pair> dataSeries = new HashMap<Integer,Pair>();
+
+			public LinkStateCombination(ArrayList<TrialNodeMinimal> nodes){
+				nodeList = nodes;
+			}
+
+			public void addSeries(int plotIdx, CondensedStateInfo.ObjectName objectX, CondensedStateInfo.StateName stateX,
+					CondensedStateInfo.ObjectName objectY, CondensedStateInfo.StateName stateY){
+				dataSeries.put(plotIdx, new Pair(plotIdx, objectX, stateX,
+						objectY, stateY));
+			}
+
+			@Override
+			public Number getX(int series, int item) {
+				CondensedStateInfo state = nodeList.get(item).state; // Item is which node.
+				Pair dat = dataSeries.get(series);
+				return state.getStateVarFromName(dat.objectX, dat.stateX);
+			}
+			@Override
+			public Number getY(int series, int item) {
+				CondensedStateInfo state = nodeList.get(item).state; // Item is which node.
+				Pair dat = dataSeries.get(series);
+				return state.getStateVarFromName(dat.objectY, dat.stateY);
+			}
+
+			/** State + body part name pairs for looking up data. **/
+			private class Pair{
+				CondensedStateInfo.ObjectName objectX;
+				CondensedStateInfo.StateName stateX;
+				CondensedStateInfo.ObjectName objectY;
+				CondensedStateInfo.StateName stateY;
+
+				public Pair(int plotIdx, CondensedStateInfo.ObjectName objectX, CondensedStateInfo.StateName stateX,
+						CondensedStateInfo.ObjectName objectY, CondensedStateInfo.StateName stateY){
+					this.objectX = objectX;
+					this.objectY = objectY;
+					this.stateX = stateX;
+					this.stateY = stateY;
+				}
+			}
+
+			@Override
+			public int getItemCount(int series) {
+				return nodeList.size();
+			}
+
+			@Override
+			public int getSeriesCount() {
+				return dataSeries.size();
+			}
+
+			@Override
+			public Comparable getSeriesKey(int series) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		}
+
+		/** XYDataset gets data for plotting transformed data from PCA here. **/
+		private class PCATransformedData extends AbstractXYDataset{
+
+			/** Nodes to appear on the plot. **/
+			private final ArrayList<TrialNodeMinimal> nodeList;
+
+			/** Eigenvectors found during SVD of the conditioned states. They represent the principle directions that explain most of the state variance. **/
+			private FloatMatrix evecs;
+
+			/** During SVD we find the eigenvalues, the weights for what portion of variance is explained by the corresponding eigenvector. **/
+			private FloatMatrix evals;
+
+			/** The conditioned dataset. Mean of each state is subtracted and divided by its standard deviation to give a variance of 1. **/
+			private FloatMatrix dataSet;
+
+			/** Specific series of data to by plotted. Integer is the plotindex, the matrix is 2xn for x-y plot. **/
+			private Map<Integer,FloatMatrix> tformedData = new HashMap<Integer,FloatMatrix>();
+
+
+			public PCATransformedData(ArrayList<TrialNodeMinimal> nodes){
+				nodeList = nodes;
+				doPCA();
+			}
+
+			/** PCA is already done when the object is created with a list of nodes. This determines which data, transformed according to which
+			 * eigenvalue, is plotted on which plot index.
+			 * @param plotIdxNum
+			 * @param eigForXAxis
+			 * @param eigForYAxis
+			 */
+			public void addSeries(int plotIdx, int eigForXAxis, int eigForYAxis){
+				tformedData.put(plotIdx, dataSet.mmul(evecs.getColumns(new int[]{eigForXAxis,eigForYAxis})));	
+			}
+
+			@Override
+			public Number getX(int series, int item) {
+				return tformedData.get(series).get(item,0);
+			}
+
+			@Override
+			public Number getY(int series, int item) {
+				return tformedData.get(series).get(item,1);
+			}
+
+			/** Run PCA on all the states in the nodes stored here. **/
+			public void doPCA(){
+				int numStates = CondensedStateInfo.ObjectName.values().length * CondensedStateInfo.StateName.values().length;
+				dataSet = new FloatMatrix(nodeList.size(), numStates);
+
+				// Iterate through all nodes
+				for (int i = 0; i < nodeList.size(); i++){
+					int colCounter = 0;
+					// Through all body parts...
+					for (CondensedStateInfo.ObjectName obj : CondensedStateInfo.ObjectName.values()){
+						// For each state of each body part.
+						for (CondensedStateInfo.StateName st : CondensedStateInfo.StateName.values()){
+							dataSet.put(i, colCounter, nodeList.get(i).state.getStateVarFromName(obj, st));
+							colCounter++;
+						}
+					}
+				}
+				conditionData(dataSet);
+				FloatMatrix[] USV = Singular.fullSVD(dataSet);
+				evecs = USV[2]; // Eigenvectors
+				evals = USV[1].mul(USV[1]).div(dataSet.rows); // Eigenvalues
+				// Transforming with the first two eigenvectors
+				//tformedData = dataSet.mmul(evecs.getColumns(new int[]{pcaEigX,pcaEigY}));
+			}
+
+			/** Subtracts the mean for each variable, and converts to unit variance.
+			 *  Samples are rows, variables are columns. Alters matrix x.
+			 * @param x
+			 */
+			private void conditionData(FloatMatrix x){
+
+				for (int i = 0; i < x.columns; i++){
+					// Calculate the mean of a column.
+					float sum = 0;
+					for (int j = 0; j < x.rows; j++){
+						sum += x.get(j,i);
+					}
+					// Subtract the mean out.
+					float avg = sum/(float)x.rows;
+					for (int j = 0; j < x.rows; j++){
+						float centered = x.get(j,i) - avg;
+						x.put(j,i,centered);
+					}
+					// Find the standard deviation for each column.
+					sum = 0;
+					for (int j = 0; j < x.rows; j++){
+						sum += x.get(j,i) * x.get(j,i);
+					}
+					float std = (float)Math.sqrt(sum/(float)(x.rows - 1));
+
+					// Divide the standard deviation out.
+					for (int j = 0; j < x.rows; j++){
+						float unitVar = x.get(j,i)/std;
+						x.put(j,i,unitVar);
+					}	
+				}	
+			}
+
+			@Override
+			public int getItemCount(int series) {
+				return nodeList.size();
+			}
+
+			@Override
+			public int getSeriesCount() {
+				return tformedData.size();
+			}
+
+			@Override
+			public Comparable getSeriesKey(int series) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		}
+	}
+
 	/** All panes should implement this so we can switch which is active at any given moment. **/
-	public interface TabbedPaneActivator {
+	private interface TabbedPaneActivator {
 		public void activateTab();
 		public void deactivateTab();
 	}	
 }
-
 

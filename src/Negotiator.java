@@ -112,6 +112,7 @@ public class Negotiator {
 	public void statusChange_tree(FSM_Tree.Status status) {
 		if (verbose_tree)
 			System.out.println("Tree FSM: " + status);
+		if (status == null) throw new RuntimeException("Somehow statusChange_tree in negotiator received a null status change. This should never be possible but I think I've seen it.");
 		switch (status) {
 		case ADD_NODE:
 			break;
@@ -162,6 +163,11 @@ public class Negotiator {
 		if (saveToFile)
 			fileIO.storeObjects(new CondensedRunInfo(leafNode),
 					saveFileName, append);
+	}
+	
+	/** Stop an active realtime game (e.g. when a tab change occurs). **/
+	public void killRealtimeRun(){
+		game.killRealtimeRun();
 	}
 
 	/** Only doing this to keep all information flowing through negotiator. **/
