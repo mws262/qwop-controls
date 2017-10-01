@@ -106,7 +106,6 @@ public class FSM_Tree implements Runnable{
 				}else{
 					gpsCounter++;
 				}
-				
 				break;
 			case EXHAUSTED: // Similar to idle, but we haven't decided whether to introduce more options or start over.
 				kill();
