@@ -26,7 +26,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.Ellipse2D.Double;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -1198,7 +1200,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 	}
 
-
 	public class DataPane_State extends DataPane implements ItemListener{
 		
 		/** Which plot index has an active menu. **/
@@ -1286,15 +1287,16 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				
 				for (int i = 0; i < numberOfPlots; i++){
 					XYPlot pl = (XYPlot)plotPanels[i].getChart().getPlot();
-					LinkStateCombination statePlotDat1 = new LinkStateCombination(nodesBelow);
-					statePlotDat1.addSeries(0, plotObjectsX[i], plotStatesX[i], plotObjectsY[i], plotStatesY[i]);
-					pl.setDataset(statePlotDat1);
+					LinkStateCombination statePlotDat = new LinkStateCombination(nodesBelow);
+					pl.setRenderer(statePlotDat.getRenderer());
+					statePlotDat.addSeries(0, plotObjectsX[i], plotStatesX[i], plotObjectsY[i], plotStatesY[i]);
+					pl.setDataset(statePlotDat);
 					pl.getRangeAxis().setLabel(plotObjectsX[i].toString() + " " + plotStatesX[i].toString());
 					pl.getDomainAxis().setLabel(plotObjectsY[i].toString() + " " + plotStatesY[i].toString());
 					JFreeChart chart = plotPanels[i].getChart();
 					chart.fireChartChanged();
 					//XYPlot plot = (XYPlot)(plotPanels[i].getChart().getPlot());
-					pl.getDomainAxis().setRange(new Range(statePlotDat1.xLimLo,statePlotDat1.xLimHi));
+					//pl.getDomainAxis().setRange(new Range(statePlotDat1.xLimLo,statePlotDat1.xLimHi));
 					//plot.getRangeAxis().setRange(range);
 				}
 			}
@@ -1362,6 +1364,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		public void update(){
+			requestFocus();
 			setDatasets(dataSelect);
 			for (int i = 0; i < numberOfPlots; i++){
 				JFreeChart chart = plotPanels[i].getChart();
@@ -1391,18 +1394,20 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					lastSelectedNode = selectedNode;
 				}
 
+				pl.setRenderer(pcaPlotDat.getRenderer());
 				pcaPlotDat.addSeries(0, dataSelect[0][0], dataSelect[0][1]);
 				pl.setDataset(pcaPlotDat);
-				pl.getDomainAxis().setLabel("Eig " + dataSelect[0][0]);
-				pl.getRangeAxis().setLabel("Eig " + dataSelect[0][1]);
+				pl.getDomainAxis().setLabel("Eig " + dataSelect[0][0] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[0][0]))/10. + "%)");
+				pl.getRangeAxis().setLabel("Eig " + dataSelect[0][1] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[0][1]))/10. + "%)");
 
 				for (int i = 1; i < dataSelect.length; i++){
 					pl = (XYPlot)plotPanels[i].getChart().getPlot();
 					PCATransformedData pcaPlotDatNext = pcaPlotDat.duplicateWithoutRecalcPCA();
+					pl.setRenderer(pcaPlotDat.getRenderer());
 					pcaPlotDatNext.addSeries(0, dataSelect[i][0], dataSelect[i][1]);
 					pl.setDataset(pcaPlotDatNext);
-					pl.getDomainAxis().setLabel("Eig " + dataSelect[i][0]);
-					pl.getRangeAxis().setLabel("Eig " + dataSelect[i][1]);
+					pl.getDomainAxis().setLabel("Eig " + dataSelect[i][0] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[i][0]))/10. + "%)");
+					pl.getRangeAxis().setLabel("Eig " + dataSelect[i][1] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[i][1]))/10. + "%)");
 				}	
 			}
 		}
@@ -1476,9 +1481,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		/** Is this tab active? Do we bother to do updates in other words. **/
 		private boolean active = false;
 
-		/** Formatting stuff for the dot markers. **/
-		private MarkerFormat format = new MarkerFormat(false,true,this);
-
 		/** The variables and nodes associated with the plots. **/
 		private XYDataset[] plotData = new XYDataset[numberOfPlots];
 
@@ -1518,11 +1520,8 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			plot.setNoDataMessage("NO DATA");
 			plot.setDomainZeroBaselineVisible(true);
 			plot.setRangeZeroBaselineVisible(true);
-			plot.setRenderer(format);
 			plot.setBackgroundPaint(Color.WHITE); // Background of actual plotting area, not the surrounding border area.
 
-			format.setSeriesShape( 0, new Rectangle2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
-			format.setUseOutlinePaint(false);
 
 			NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
 			domainAxis.setAutoRangeIncludesZero(false);
@@ -1565,36 +1564,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			active = false;
 		}
 
-		public class MarkerFormat extends XYLineAndShapeRenderer {
-			DataPane pane;
-			Rectangle2D BigMarker = new Rectangle2D.Double( -5.0, -5.0, 10.0, 10.0 );
-			Color SelectedColor = new Color(0.5f,1,0.5f);
-			Color UnSelectedColor = new Color(1f,0.25f,0.25f);
-
-			public MarkerFormat(boolean lines, boolean shapes, DataPane pane) {
-				super(lines, shapes);
-				this.pane = pane;
-			}
-
-			@Override
-			public Paint getItemPaint(int row, int col) {
-				//				if (col == pane.selectedPoint) {
-				//					return SelectedColor;
-				//				} else {
-				return UnSelectedColor;
-				//				}
-			}
-			@Override
-			public java.awt.Shape getItemShape(int row, int col){ // Dumb because box2d also has shape imported.
-				//				if (col == pane.selectedPoint) {
-				//					return (java.awt.Shape)BigMarker;
-				//				} else {
-				return (java.awt.Shape) super.getItemShape(row, col);
-				//				}
-
-			}
-		}
-
 		/** XYDataset gets data for ploting states vs other states here. **/
 		protected class LinkStateCombination extends AbstractXYDataset{
 
@@ -1606,6 +1575,8 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			private Map<Integer,Pair> dataSeries = new HashMap<Integer,Pair>();
 
+			private StatePlotRenderer renderer = new StatePlotRenderer();
+			
 			public LinkStateCombination(ArrayList<TrialNodeMinimal> nodes){
 				nodeList = nodes;
 			}
@@ -1669,6 +1640,39 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				// TODO Auto-generated method stub
 				return null;
 			}
+			
+			public XYLineAndShapeRenderer getRenderer(){
+				return renderer;
+			}
+			
+			public class StatePlotRenderer extends XYLineAndShapeRenderer {
+				Rectangle2D BigMarker = new Rectangle2D.Double( -5.0, -5.0, 10.0, 10.0 );
+				Color SelectedColor = new Color(0.5f,1,0.5f);
+				Color UnSelectedColor = new Color(1f,0.25f,0.25f);
+
+				public StatePlotRenderer() {
+					super(false, true); //boolean lines, boolean shapes
+					setSeriesShape( 0, new Ellipse2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
+					setUseOutlinePaint(false);
+				}
+
+				@Override
+				public Paint getItemPaint(int series, int column) {
+					//				if (col == pane.selectedPoint) {
+					//					return SelectedColor;
+					//				} else {
+					return UnSelectedColor;
+					//				}
+				}
+				@Override
+				public java.awt.Shape getItemShape(int row, int col){ // Dumb because box2d also has shape imported.
+					//				if (col == pane.selectedPoint) {
+					//					return (java.awt.Shape)BigMarker;
+					//				} else {
+					return (java.awt.Shape) super.getItemShape(row, col);
+					//				}
+				}
+			}
 		}
 
 		/** XYDataset gets data for plotting transformed data from PCA here. **/
@@ -1682,9 +1686,14 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			/** During SVD we find the eigenvalues, the weights for what portion of variance is explained by the corresponding eigenvector. **/
 			private FloatMatrix evals;
+			
+			/** Normalized so the sum of the evals == 1 **/
+			private FloatMatrix evalsNormalized;
 
 			/** The conditioned dataset. Mean of each state is subtracted and divided by its standard deviation to give a variance of 1. **/
 			private FloatMatrix dataSet;
+			
+			private PCAPlotRenderer renderer = new PCAPlotRenderer();
 
 			/** Specific series of data to by plotted. Integer is the plotindex, the matrix is 2xn for x-y plot. **/
 			private Map<Integer,FloatMatrix> tformedData = new HashMap<Integer,FloatMatrix>();
@@ -1706,7 +1715,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				duplicate.nodeList = nodeList;
 				duplicate.evals = evals;
 				duplicate.evecs = evecs;
-
+				duplicate.evalsNormalized = evalsNormalized;
 				return duplicate;
 			}
 
@@ -1753,6 +1762,16 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				evals = USV[1].mul(USV[1]).div(dataSet.rows); // Eigenvalues
 				// Transforming with the first two eigenvectors
 				//tformedData = dataSet.mmul(evecs.getColumns(new int[]{pcaEigX,pcaEigY}));
+				
+				// Also make the vector of normalized eigenvalues.
+				float evalSum = 0;
+				for (int i = 0; i < evals.length; i++){
+					evalSum += evals.get(i);
+				}
+				evalsNormalized = new FloatMatrix(evals.length);
+				for (int i = 0; i < evals.length; i++){
+					evalsNormalized.put(i, evals.get(i)/evalSum);
+				}
 			}
 
 			/** Subtracts the mean for each variable, and converts to unit variance.
@@ -1802,6 +1821,36 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			public Comparable getSeriesKey(int series) {
 				// TODO Auto-generated method stub
 				return null;
+			}
+			
+			public XYLineAndShapeRenderer getRenderer(){
+				return renderer;
+			}
+			
+			public class PCAPlotRenderer extends XYLineAndShapeRenderer {
+				Rectangle2D BigMarker = new Rectangle2D.Double( -5.0, -5.0, 10.0, 10.0 );
+				Color SelectedColor = new Color(0.5f,1,0.5f);
+				Color UnSelectedColor = new Color(1f,0.25f,0.25f);
+
+				public PCAPlotRenderer() {
+					super(false, true); //boolean lines, boolean shapes
+					setSeriesShape( 0, new Rectangle2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
+					setUseOutlinePaint(false);
+				}
+
+				@Override
+				public Paint getItemPaint(int series, int item) {
+					
+					return TrialNodeMinimal.getColorFromTreeDepth(nodeList.get(item).treeDepth);
+				}
+				@Override
+				public java.awt.Shape getItemShape(int row, int col){ // Dumb because box2d also has shape imported.
+					//				if (col == pane.selectedPoint) {
+					//					return (java.awt.Shape)BigMarker;
+					//				} else {
+					return (java.awt.Shape) super.getItemShape(row, col);
+					//				}
+				}
 			}
 		}
 	}

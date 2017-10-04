@@ -88,6 +88,7 @@ public class Negotiator {
 	public void pauseTree(){
 		tree.latchAtFSMStatus(FSM_Tree.Status.IDLE);
 	}
+	
 	public void unpauseTree(){
 		tree.unlockFSM();
 	}
