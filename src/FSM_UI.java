@@ -1,8 +1,6 @@
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -11,12 +9,8 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.ItemSelectable;
 import java.awt.Paint;
-import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
@@ -28,10 +22,9 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.Ellipse2D.Double;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -45,7 +38,6 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
@@ -68,17 +60,12 @@ import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.AxisLabelLocation;
+import org.jfree.chart.annotations.XYTextAnnotation;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.entity.ChartEntity;
-import org.jfree.chart.plot.DrawingSupplier;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.DomainInfo;
 import org.jfree.data.Range;
-import org.jfree.data.RangeInfo;
 import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
@@ -172,6 +159,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	/** Spacing for sequence number drawing on the left side panel. **/
 	private final int vertTextSpacing = 18;
 	private final int vertTextAnchor = 15;
+	
+	/********** Plots **********/
+	public boolean plotColorsByDepth = true;
 
 	/** State machine states for all UI **/
 	public enum Status{
@@ -1201,37 +1191,37 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	}
 
 	public class DataPane_State extends DataPane implements ItemListener{
-		
+
 		/** Which plot index has an active menu. **/
 		int activePlotIdx = 0;
-		
+
 		/** Body parts associated with each plot and axis. **/
 		private CondensedStateInfo.ObjectName[] plotObjectsX = new CondensedStateInfo.ObjectName[numberOfPlots];
 		private CondensedStateInfo.ObjectName[] plotObjectsY = new CondensedStateInfo.ObjectName[numberOfPlots];
-		
+
 		/** State variables associated with each plot and axis. **/
 		private CondensedStateInfo.StateName[] plotStatesX = new CondensedStateInfo.StateName[numberOfPlots];
 		private CondensedStateInfo.StateName[] plotStatesY = new CondensedStateInfo.StateName[numberOfPlots];
-		
+
 		/** Drop down menus for the things to plot. **/
 		private JComboBox<String> objListX;
 		private JComboBox<String> stateListX;
 		private JComboBox<String> objListY;
 		private JComboBox<String> stateListY;
-		
+
 		/** String names of the body parts. **/
 		private final String[] objNames = new String[CondensedStateInfo.ObjectName.values().length];
-		
+
 		/** String names of the state variables. **/
 		private final String[] stateNames = new String[CondensedStateInfo.StateName.values().length];
-		
+
 		/** Menu for selecting which data is displayed. **/
 		private final JDialog menu;
-		
+
 		/** Offsets to put the data selection menu right above the correct panel. **/
 		private final int menuXOffset = 30;
 		private final int menuYOffset = -30;
-		
+
 		public DataPane_State(){
 			super();
 			// Make string arrays of the body part and state variable names.
@@ -1245,7 +1235,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				stateNames[count] = st.name();
 				count++;
 			}
-			
+
 			// Initial plots to display			
 			for (int i = 0; i < numberOfPlots; i++){
 				plotObjectsX[i] = CondensedStateInfo.ObjectName.values()[TrialNodeMinimal.randInt(0, numberOfPlots - 1)];
@@ -1253,18 +1243,18 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				plotObjectsY[i] = CondensedStateInfo.ObjectName.values()[TrialNodeMinimal.randInt(0, numberOfPlots - 1)];
 				plotStatesY[i] = CondensedStateInfo.StateName.values()[TrialNodeMinimal.randInt(0, numberOfPlots - 1)];	
 			}
-			
+
 			// Drop down menus
 			objListX = new JComboBox<>(objNames);
 			stateListX = new JComboBox<>(stateNames);
 			objListY = new JComboBox<>(objNames);
 			stateListY = new JComboBox<>(stateNames);
-			
+
 			objListX.addItemListener(this);
 			stateListX.addItemListener(this);
 			objListY.addItemListener(this);
 			stateListY.addItemListener(this);
-			
+
 			menu = new JDialog(); // Pop up box for the menus.
 			menu.setLayout(new GridLayout(2,4));
 			menu.add(new JLabel("X-axis", JLabel.CENTER));
@@ -1284,7 +1274,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			ArrayList<TrialNodeMinimal> nodesBelow = new ArrayList<TrialNodeMinimal>();
 			if (selectedNode != null){
 				selectedNode.getNodes_below(nodesBelow);
-				
+
 				for (int i = 0; i < numberOfPlots; i++){
 					XYPlot pl = (XYPlot)plotPanels[i].getChart().getPlot();
 					LinkStateCombination statePlotDat = new LinkStateCombination(nodesBelow);
@@ -1299,6 +1289,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					//pl.getDomainAxis().setRange(new Range(statePlotDat1.xLimLo,statePlotDat1.xLimHi));
 					//plot.getRangeAxis().setRange(range);
 				}
+
+				if (!plotColorsByDepth){
+					addCommandLegend((XYPlot)plotPanels[0].getChart().getPlot());
+				}
 			}
 
 		}
@@ -1308,7 +1302,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			super.deactivateTab();
 			menu.setVisible(false);	
 		}
-		
+
 		@Override
 		public void plotClicked(int plotIdx) {
 			activePlotIdx = plotIdx;
@@ -1318,27 +1312,27 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			objListY.setSelectedIndex(plotObjectsY[plotIdx].ordinal());
 			stateListX.setSelectedIndex(plotStatesX[plotIdx].ordinal());
 			stateListY.setSelectedIndex(plotStatesY[plotIdx].ordinal());
-			
+
 			menu.setVisible(true);
 		}
 
 		@Override
 		public void itemStateChanged(ItemEvent e) {
-	        int state = e.getStateChange();
-	        if (state == ItemEvent.SELECTED){
-	        	if (e.getSource() == objListX){
-	        		plotObjectsX[activePlotIdx] = CondensedStateInfo.ObjectName.valueOf((String)e.getItem());
-	        	}else if (e.getSource() == objListY){
-	        		plotObjectsY[activePlotIdx] = CondensedStateInfo.ObjectName.valueOf((String)e.getItem());
-	        	}else if (e.getSource() == stateListX){
-	        		plotStatesX[activePlotIdx] = CondensedStateInfo.StateName.valueOf((String)e.getItem());
-	        	}else if ((e.getSource() == stateListY)){
-	        		plotStatesY[activePlotIdx] = CondensedStateInfo.StateName.valueOf((String)e.getItem());
-	        	}else{
-	        		throw new RuntimeException("Unknown item status in plots from: " + e.getSource().toString());
-	        	}
-	        	update();
-	        }
+			int state = e.getStateChange();
+			if (state == ItemEvent.SELECTED){
+				if (e.getSource() == objListX){
+					plotObjectsX[activePlotIdx] = CondensedStateInfo.ObjectName.valueOf((String)e.getItem());
+				}else if (e.getSource() == objListY){
+					plotObjectsY[activePlotIdx] = CondensedStateInfo.ObjectName.valueOf((String)e.getItem());
+				}else if (e.getSource() == stateListX){
+					plotStatesX[activePlotIdx] = CondensedStateInfo.StateName.valueOf((String)e.getItem());
+				}else if ((e.getSource() == stateListY)){
+					plotStatesY[activePlotIdx] = CondensedStateInfo.StateName.valueOf((String)e.getItem());
+				}else{
+					throw new RuntimeException("Unknown item status in plots from: " + e.getSource().toString());
+				}
+				update();
+			}
 		}
 
 	}
@@ -1373,6 +1367,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				//plot.getDomainAxis().setRange(range);
 				//plot.getRangeAxis().setRange(range);
 			}
+			XYPlot firstPlot = (XYPlot)plotPanels[0].getChart().getPlot();
+			if (!plotColorsByDepth){
+				addCommandLegend(firstPlot);
+			}
 		}
 
 		private void setDatasets(int[][] dataSelect){			
@@ -1382,7 +1380,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 				// A state pair being added to the first plot.
 				XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
-
 				PCATransformedData pcaPlotDat;
 
 				// Only update the plots shown, don't redo PCA calcs.
@@ -1419,7 +1416,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
 				PCATransformedData dat = (PCATransformedData)pl.getDataset();
 				int totalEigs = dat.evals.length;
-				
+
 				if (dataSelect[0][0] + xShift < 0 || dataSelect[numberOfPlots - 1][0] + xShift > totalEigs - 1){
 					xShift = 0;
 				}
@@ -1465,7 +1462,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		@Override
 		public void plotClicked(int plotIdx) {
 			// TODO Auto-generated method stub
-			
+
 		}
 	}
 
@@ -1505,7 +1502,14 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		/** Tells what plot is clicked by the user. **/
 		public abstract void plotClicked(int plotIdx);
-		
+
+		/** Plotting colors for dots. **/
+		public final Color actionColor1 = TrialNodeMinimal.getColorFromTreeDepth(0);
+		public final Color actionColor2 = TrialNodeMinimal.getColorFromTreeDepth(10);
+		public final Color actionColor3 = TrialNodeMinimal.getColorFromTreeDepth(20);
+		public final Color actionColor4 = TrialNodeMinimal.getColorFromTreeDepth(30);
+
+
 		/** My default settings for each plot. **/
 		private JFreeChart createChart(XYDataset dataset,String name) {
 			JFreeChart chart = ChartFactory.createScatterPlot(name,
@@ -1538,6 +1542,37 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			return chart;
 		}
 
+		/** Add some labels for which action led to this state. Hackish. **/
+		public void addCommandLegend(XYPlot pl){
+			double axisDUB = pl.getDomainAxis().getUpperBound();
+			double axisDLB = pl.getDomainAxis().getLowerBound();
+			double axisDSpan = (axisDUB - axisDLB);
+			double axisRUB = pl.getRangeAxis().getUpperBound();
+			double axisRLB = pl.getRangeAxis().getLowerBound();
+			double axisRSpan = (axisRUB - axisRLB);
+
+			XYTextAnnotation a1 = new XYTextAnnotation("< -, - >", axisDLB + axisDSpan/8, axisRUB - axisRSpan/12);
+			a1.setPaint(actionColor1);
+			a1.setFont(new Font(Font.SANS_SERIF,Font.BOLD,16));
+
+			XYTextAnnotation a2 = new XYTextAnnotation("< W, O >", axisDLB + axisRSpan/8, axisRUB - 2*axisRSpan/12);
+			a2.setPaint(actionColor2);
+			a2.setFont(new Font(Font.SANS_SERIF,Font.BOLD,16));
+
+
+			XYTextAnnotation a3 = new XYTextAnnotation("< -, - >", axisDLB + axisRSpan/8, axisRUB - 3*axisRSpan/12);
+			a3.setPaint(actionColor3);
+			a3.setFont(new Font(Font.SANS_SERIF,Font.BOLD,16));
+
+			XYTextAnnotation a4 = new XYTextAnnotation("< Q, P >", axisDLB + axisRSpan/8, axisRUB - 4*axisRSpan/12);
+			a4.setPaint(actionColor4);
+			a4.setFont(new Font(Font.SANS_SERIF,Font.BOLD,16));
+			pl.addAnnotation(a1);
+			pl.addAnnotation(a2);
+			pl.addAnnotation(a3);
+			pl.addAnnotation(a4);
+		}
+
 		@Override
 		public void chartMouseClicked(ChartMouseEvent event) {
 			JFreeChart clickedChart = event.getChart();
@@ -1565,18 +1600,18 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** XYDataset gets data for ploting states vs other states here. **/
-		protected class LinkStateCombination extends AbstractXYDataset{
+		public class LinkStateCombination extends AbstractXYDataset{
 
 			public float xLimHi = Float.MIN_VALUE;
 			public float xLimLo = Float.MAX_VALUE;
-			
+
 			/** Nodes to appear on the plot. **/
 			private final ArrayList<TrialNodeMinimal> nodeList;
 
 			private Map<Integer,Pair> dataSeries = new HashMap<Integer,Pair>();
 
 			private StatePlotRenderer renderer = new StatePlotRenderer();
-			
+
 			public LinkStateCombination(ArrayList<TrialNodeMinimal> nodes){
 				nodeList = nodes;
 			}
@@ -1592,14 +1627,14 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				CondensedStateInfo state = nodeList.get(item).state; // Item is which node.
 				Pair dat = dataSeries.get(series);
 				float value = state.getStateVarFromName(dat.objectX, dat.stateX);
-				
+
 				if (value > xLimLo){
 					xLimLo = value;
 				}
 				if (value < xLimHi){
 					xLimLo = value;
 				}
-				
+
 				return value;
 			}
 			@Override
@@ -1640,15 +1675,14 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			public XYLineAndShapeRenderer getRenderer(){
 				return renderer;
 			}
-			
+
 			public class StatePlotRenderer extends XYLineAndShapeRenderer {
-				Rectangle2D BigMarker = new Rectangle2D.Double( -5.0, -5.0, 10.0, 10.0 );
-				Color SelectedColor = new Color(0.5f,1,0.5f);
-				Color UnSelectedColor = new Color(1f,0.25f,0.25f);
+				/** Color points by corresponding depth in the tree or by command leading to this point. **/
+				public boolean colorByDepth = plotColorsByDepth;
 
 				public StatePlotRenderer() {
 					super(false, true); //boolean lines, boolean shapes
@@ -1657,12 +1691,27 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				}
 
 				@Override
-				public Paint getItemPaint(int series, int column) {
-					//				if (col == pane.selectedPoint) {
-					//					return SelectedColor;
-					//				} else {
-					return UnSelectedColor;
-					//				}
+				public Paint getItemPaint(int series, int item) {
+					if (colorByDepth){
+						return TrialNodeMinimal.getColorFromTreeDepth(nodeList.get(item).treeDepth);
+					}else{
+						Color dotColor = Color.RED;
+						switch (nodeList.get(item).treeDepth % 4){
+						case 0:
+							dotColor = actionColor1;
+							break;
+						case 1:
+							dotColor = actionColor2;
+							break;
+						case 2:
+							dotColor = actionColor3;
+							break;
+						case 3:
+							dotColor = actionColor4;
+							break;
+						}
+						return dotColor;
+					}
 				}
 				@Override
 				public java.awt.Shape getItemShape(int row, int col){ // Dumb because box2d also has shape imported.
@@ -1676,7 +1725,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** XYDataset gets data for plotting transformed data from PCA here. **/
-		protected class PCATransformedData extends AbstractXYDataset{
+		public class PCATransformedData extends AbstractXYDataset{
 
 			/** Nodes to appear on the plot. **/
 			private ArrayList<TrialNodeMinimal> nodeList;
@@ -1686,13 +1735,13 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			/** During SVD we find the eigenvalues, the weights for what portion of variance is explained by the corresponding eigenvector. **/
 			private FloatMatrix evals;
-			
+
 			/** Normalized so the sum of the evals == 1 **/
 			private FloatMatrix evalsNormalized;
 
 			/** The conditioned dataset. Mean of each state is subtracted and divided by its standard deviation to give a variance of 1. **/
 			private FloatMatrix dataSet;
-			
+
 			private PCAPlotRenderer renderer = new PCAPlotRenderer();
 
 			/** Specific series of data to by plotted. Integer is the plotindex, the matrix is 2xn for x-y plot. **/
@@ -1741,16 +1790,22 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			/** Run PCA on all the states in the nodes stored here. **/
 			public void doPCA(){
-				int numStates = CondensedStateInfo.ObjectName.values().length * CondensedStateInfo.StateName.values().length;
+				ArrayList<CondensedStateInfo.ObjectName> objectsUsed = new ArrayList<CondensedStateInfo.ObjectName>(Arrays.asList(CondensedStateInfo.ObjectName.values()));
+				ArrayList<CondensedStateInfo.StateName> statesUsed = new ArrayList<CondensedStateInfo.StateName>(Arrays.asList(CondensedStateInfo.StateName.values()));
+				
+				// Can blacklist things NOT to be PCA'd
+				//statesUsed.remove(CondensedStateInfo.StateName.X);
+				
+				int numStates = objectsUsed.size() * statesUsed.size();
 				dataSet = new FloatMatrix(nodeList.size(), numStates);
 
 				// Iterate through all nodes
 				for (int i = 0; i < nodeList.size(); i++){
 					int colCounter = 0;
 					// Through all body parts...
-					for (CondensedStateInfo.ObjectName obj : CondensedStateInfo.ObjectName.values()){
+					for (CondensedStateInfo.ObjectName obj : objectsUsed){
 						// For each state of each body part.
-						for (CondensedStateInfo.StateName st : CondensedStateInfo.StateName.values()){
+						for (CondensedStateInfo.StateName st : statesUsed){
 							dataSet.put(i, colCounter, nodeList.get(i).state.getStateVarFromName(obj, st));
 							colCounter++;
 						}
@@ -1762,7 +1817,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				evals = USV[1].mul(USV[1]).div(dataSet.rows); // Eigenvalues
 				// Transforming with the first two eigenvectors
 				//tformedData = dataSet.mmul(evecs.getColumns(new int[]{pcaEigX,pcaEigY}));
-				
+
 				// Also make the vector of normalized eigenvalues.
 				float evalSum = 0;
 				for (int i = 0; i < evals.length; i++){
@@ -1822,16 +1877,15 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			public XYLineAndShapeRenderer getRenderer(){
 				return renderer;
 			}
-			
-			public class PCAPlotRenderer extends XYLineAndShapeRenderer {
-				Rectangle2D BigMarker = new Rectangle2D.Double( -5.0, -5.0, 10.0, 10.0 );
-				Color SelectedColor = new Color(0.5f,1,0.5f);
-				Color UnSelectedColor = new Color(1f,0.25f,0.25f);
 
+			public class PCAPlotRenderer extends XYLineAndShapeRenderer {
+				/** Color points by corresponding depth in the tree or by command leading to this point. **/
+				public boolean colorByDepth = plotColorsByDepth;
+			
 				public PCAPlotRenderer() {
 					super(false, true); //boolean lines, boolean shapes
 					setSeriesShape( 0, new Rectangle2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
@@ -1840,8 +1894,26 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 				@Override
 				public Paint getItemPaint(int series, int item) {
-					
-					return TrialNodeMinimal.getColorFromTreeDepth(nodeList.get(item).treeDepth);
+					if (colorByDepth){
+						return TrialNodeMinimal.getColorFromTreeDepth(nodeList.get(item).treeDepth);
+					}else{
+						Color dotColor = Color.RED;
+						switch (nodeList.get(item).treeDepth % 4){
+						case 0:
+							dotColor = actionColor1;
+							break;
+						case 1:
+							dotColor = actionColor2;
+							break;
+						case 2:
+							dotColor = actionColor3;
+							break;
+						case 3:
+							dotColor = actionColor4;
+							break;
+						}
+						return dotColor;
+					}
 				}
 				@Override
 				public java.awt.Shape getItemShape(int row, int col){ // Dumb because box2d also has shape imported.
