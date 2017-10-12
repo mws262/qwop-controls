@@ -67,6 +67,8 @@ public class TrialNodeMinimal {
 
 	/********* TREE VISUALIZATION ************/
 	public Color overrideLineColor = null; // Only set when the color is overridden.
+	public Color overrideNodeColor = null; // Only set when the color is overridden.
+	
 	public Color nodeColor = Color.GREEN;
 
 	private static final float lineBrightness_default = 0.85f;
@@ -317,6 +319,48 @@ public class TrialNodeMinimal {
 		//TODO
 	}
 
+	/** Expand to include certain values. **/
+	public void expandNodeChoices_fullCycle(int[] nil1, int[] W_O, int[] nil2, int[] Q_P){
+		int[] newChoices = {};
+		switch(treeDepth % 4){ // Figure out which action in the cycle this is.
+		case 0:
+			newChoices = nil1;
+			break;
+		case 1:
+			newChoices = W_O;
+			break;	
+		case 2:
+			newChoices = nil2;
+			break;
+		case 3:
+			newChoices = Q_P;
+			break;
+		}
+		// Check whether the actions are already tested in the children, or included in the uncheckedActions list. If not, add.
+		for (int i = 0; i < newChoices.length; i++){
+			boolean isDuplicate = false;
+			for (TrialNodeMinimal child : children){
+				if (child.controlAction == newChoices[i]){
+					isDuplicate = true;
+					break;
+				}
+			}
+			if (!isDuplicate && uncheckedActions.contains(newChoices[i])){
+				isDuplicate = true;
+			}
+			
+			if (!isDuplicate){
+				uncheckedActions.add(newChoices[i]);
+			}
+		}
+		
+		// Recurse.
+		for (TrialNodeMinimal child : children){
+			child.expandNodeChoices_fullCycle(nil1, W_O, nil2, Q_P);
+		}
+		
+	}
+	
 	/***********************************************/
 	/******* GETTING CERTAIN SETS OF NODES *********/
 	/***********************************************/
@@ -785,8 +829,12 @@ public class TrialNodeMinimal {
 
 	/** Draw the node point if enabled **/
 	public void drawPoint(GL2 gl){
-		if(displayPoint){//if (displayPoint){
-			gl.glColor3fv(nodeColor.getColorComponents(null),0);
+		if(displayPoint){
+			if (overrideNodeColor == null){
+				gl.glColor3fv(nodeColor.getColorComponents(null),0);
+			}else{
+				gl.glColor3fv(overrideNodeColor.getColorComponents(null),0);
+			}
 			gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + zOffset);
 		}
 	}
@@ -874,6 +922,28 @@ public class TrialNodeMinimal {
 		}
 	}
 
+	/** Clear node override colors from this node onward. Only clear the specified color. Call from root to clear all. **/
+	public void clearNodeOverrideColor(Color colorToClear){
+		if (overrideNodeColor == colorToClear){
+			overrideNodeColor = null;
+			displayPoint = false;
+		}
+		for (TrialNodeMinimal child : children){
+			child.clearNodeOverrideColor(colorToClear);
+		}
+	}
+	
+	/** Clear all node override colors from this node onward. Call from root to clear all. **/
+	public void clearNodeOverrideColor(){
+		if (overrideNodeColor != null){
+			overrideNodeColor = null;
+			displayPoint = false;
+		}
+		for (TrialNodeMinimal child : children){
+			child.clearNodeOverrideColor();
+		}
+	}
+	
 	/** Give this branch a zOffset to make it stand out. **/
 	public void setBranchZOffset(float zOffset){
 		this.zOffset = zOffset;

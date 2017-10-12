@@ -11,6 +11,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
@@ -28,12 +30,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -73,11 +79,11 @@ import org.jfree.ui.RectangleInsets;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-/*
- * 
- * 
- */
 
+/**
+ * All UI stuff happens here and most of the analysis that individual panes show happens here too.
+ * @author Matt
+ */
 @SuppressWarnings("serial")
 public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
@@ -101,6 +107,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 	/** Pane for the snapshots of the runner. **/
 	SnapshotPane snapshotPane;
+
+	/** Pane for comparing different states across the tree. **/
+	ComparisonPane comparisonPane;
 
 	/** Plots here. **/
 	DataPane dataPane_state;
@@ -159,7 +168,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	/** Spacing for sequence number drawing on the left side panel. **/
 	private final int vertTextSpacing = 18;
 	private final int vertTextAnchor = 15;
-	
+
 	/********** Plots **********/
 	public boolean plotColorsByDepth = true;
 
@@ -181,7 +190,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		dataConstraints.gridx = 0;
 		dataConstraints.gridy = 1;
 		dataConstraints.weightx = 0.3;
-		dataConstraints.weighty = 0.11;
+		dataConstraints.weighty = 0.125; // Turn this up if the tree stuff starts to cover the tabs
 		dataConstraints.ipady = (int)(0.28*windowHeight);
 		dataConstraints.ipadx = (int)(windowWidth*0.5);
 
@@ -203,6 +212,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		dataPane_pca = new DataPane_PCA();
 		tabPane.addTab("PCA Viewer", dataPane_pca);
 
+		/* State comparison pane */
+		comparisonPane = new ComparisonPane();
+		tabPane.addTab("State Compare", comparisonPane);
+
 		/* Tree pane */
 		treePane = new TreePane();
 
@@ -212,6 +225,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		allTabbedPanes.add(snapshotPane);
 		allTabbedPanes.add(dataPane_state);
 		allTabbedPanes.add(dataPane_pca);
+		allTabbedPanes.add(comparisonPane);
 		tabPane.addChangeListener(this);
 		//Make sure the currently active tab is actually being updated.
 		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
@@ -305,6 +319,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			selectedNode.setBranchZOffset(0.4f);
 
 			if (snapshotPane.active) snapshotPane.giveSelectedNode(selectedNode);
+			if (comparisonPane.active) comparisonPane.giveSelectedNode(selectedNode);
 			if (dataPane_state.active) dataPane_state.update(); // Updates data being put on plots
 			if (dataPane_pca.active) dataPane_pca.update(); // Updates data being put on plots
 		}
@@ -370,7 +385,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		g.drawString("Q P", 12 + 3*49, vertTextAnchor + 30);
 	}
 
-	/** Tree pane **/
+	/**
+	 * Pane for displaying the entire tree in OpenGL. Not part of the tabbed system.
+	 * @author Matt
+	 */
 	public class TreePane extends GenericGLPanel implements TabbedPaneActivator, GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
 
 		/** For rendering text overlays. Note that textrenderer is for overlays while GLUT is for labels in world space **/
@@ -409,12 +427,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			super.display(drawable);
 
-			float ptSize = 5f/cam.getZoomFactor(); //Let the points be smaller/bigger depending on zoom, but make sure to cap out the size!
-			ptSize = Math.min(ptSize, 1f);
+			float ptSize = 50f/cam.getZoomFactor(); //Let the points be smaller/bigger depending on zoom, but make sure to cap out the size!
+			ptSize = Math.min(ptSize, 10f);
 
 			for (TrialNodeMinimal node : rootNodes){
 				gl.glColor3f(1f, 0.1f, 0.1f);
-				gl.glPointSize(5*ptSize);
+				gl.glPointSize(ptSize);
 
 				gl.glBegin(GL2.GL_POINTS);
 				node.drawNodes_below(gl);
@@ -697,7 +715,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 	}
 
-	/** Pane for the animated runner. **/
+	/**
+	 * Pane for displaying the animated runner executing a sequence selected on the tree. A tab.
+	 * @author Matt
+	 */
 	public class RunnerPane extends JPanel implements TabbedPaneActivator {
 
 		public int headPos;
@@ -858,7 +879,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 	}
 
-	/** Pane for the fixed view of the runner at each node. **/
+	/**
+	 * Displays fixed shots of the runner at selected nodes. Can also preview the past and future from these nodes. A tab.
+	 * @author Matt
+	 */
 	public class SnapshotPane extends JPanel implements TabbedPaneActivator, MouseListener, MouseMotionListener, MouseWheelListener {
 
 		/** Number of runner states in the past to display. **/
@@ -1190,6 +1214,208 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 	}
 
+	/**
+	 * Pane for estimating and displaying similar states.
+	 * @author Matt
+	 */
+	public class ComparisonPane extends JPanel implements TabbedPaneActivator, ActionListener {
+
+		/** Highlight stroke for line drawing. **/
+		private final Stroke normalStroke = new BasicStroke(0.5f);
+
+		/** Highlight stroke for line drawing. **/
+		private final Stroke boldStroke = new BasicStroke(2);
+
+		/** Node that we compare all others to. **/
+		private TrialNodeMinimal primaryNode;
+		
+		/** How many of the eigenvectors do we use? Dimension reduction. **/
+		private int lastEigToDisp = 10; // Display eigenvalues 0-4
+		private int[] eigsToDisp;
+		
+		/** Drawn shapes **/
+		Shape[] shapes;
+		
+		private final JComboBox<Integer> eigSelector;
+
+		/** Is this tab currently on top? **/
+		private boolean active = false;
+
+		private ArrayList<XForm[]> transforms = new ArrayList<XForm[]>();
+		private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
+		private ArrayList<Color> colors = new ArrayList<Color>();
+
+		public ComparisonPane(){
+			eigSelector = new JComboBox<Integer>();
+			for (int i = 0; i < 10; i++){
+				eigSelector.addItem(i);
+			}
+			//add(eigSelector);
+			eigSelector.addActionListener(this);
+			pack();
+			//MATT CHECKBOX DOESN"T WORK YET, COME BACK HERE
+			eigsToDisp = new int[lastEigToDisp + 1];
+			
+			for (int i = 0; i < eigsToDisp.length; i++){
+				eigsToDisp[i] = i;
+			}
+		}
+		/** Assign a selected node for the snapshot pane to display. **/
+		public void giveSelectedNode(TrialNodeMinimal node){
+			rootNodes.get(0).clearNodeOverrideColor();
+			transforms.clear();
+			strokes.clear();
+			colors.clear();
+
+			shapes = QWOPGame.shapeList;
+
+			/***** Focused node first *****/
+			primaryNode = node;
+			primaryNode.overrideNodeColor = Color.RED; // Restore its red color
+			primaryNode.displayPoint = true;
+			XForm[] nodeTransform = primaryNode.state.getTransforms();
+			// Make the sequence centered around the selected node state.
+			xOffsetPixels = xOffsetPixels_init + (int)(-runnerScaling * nodeTransform[1].position.x);
+			transforms.add(nodeTransform);
+			strokes.add(boldStroke);
+			colors.add(Color.RED);
+
+
+			//////////// DO COMPARISON TO OTHER NODES //////////////
+			// This is a kind of hacky way of getting to the PCA stuff.
+			DataPane_PCA pcaPane = (DataPane_PCA)(dataPane_pca);
+			DataPane.PCATransformedData pcaData = pcaPane.getPCAData();
+			ArrayList<TrialNodeMinimal> allNodes = new ArrayList<TrialNodeMinimal>();
+			rootNodes.get(0).getNodes_below(allNodes);
+
+			FloatMatrix transDat = pcaData.transformDataset(allNodes,eigsToDisp);
+			FloatMatrix selectedRowDat = transDat.getRow(allNodes.indexOf(primaryNode));
+
+			// Error
+			transDat.subiRowVector(selectedRowDat);
+
+			// Error squared
+			transDat.muli(transDat);
+
+			// Sum.
+			FloatMatrix errSq = transDat.rowSums();
+
+
+			TreeMap<Float,TrialNodeMinimal> treeMap = new TreeMap<Float,TrialNodeMinimal> ();
+
+			for (int i = 0; i < allNodes.size(); i++){
+				treeMap.put(errSq.get(i), allNodes.get(i));
+			}
+
+			Iterator<TrialNodeMinimal> iter = treeMap.values().iterator();
+			iter.next(); // First one is a self-comparison.
+
+			int count = 0;
+			while (iter.hasNext() && count <= 5){
+				TrialNodeMinimal closeMatch = iter.next();
+
+				XForm[] nodeXForm = closeMatch.state.getTransforms();
+				// Make the sequence centered around the selected node state.
+				transforms.add(nodeXForm);
+				strokes.add(normalStroke);
+				Color matchColor = TrialNodeMinimal.getColorFromTreeDepth(count*5);
+				colors.add(matchColor);
+				closeMatch.overrideNodeColor = matchColor;
+				closeMatch.displayPoint = true;
+
+				count++;
+			}
+
+		}
+
+
+		/** Draws the selected node state and potentially previous and future states. **/
+		public void paintComponent(Graphics g){
+			if (!active) return;
+			super.paintComponent(g);
+			Graphics2D g2 = (Graphics2D)g;
+			DataPane_PCA pcaPane = (DataPane_PCA)(dataPane_pca);
+			if (pcaPane.getPCAData() == null){
+				g.setFont(bigFont);
+				g.drawString("Use the PCA tab to calculate PCA from a selected node.", windowWidth/3, 100);
+			}else if (primaryNode != null && primaryNode.state != null){ // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
+				// Draw all non-highlighted runners.
+				for (int i = transforms.size() - 1; i >= 0; i--){
+					drawRunner(g2, colors.get(i), strokes.get(i), shapes, transforms.get(i));
+				}
+			}
+		}
+		/** Draw the runner at a certain state. NOTE NOTE NOTE: This version subtracts out the X components of everything. **/
+		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms){
+
+			float thisBodyXOffset = transforms[0].position.x; // Offset in actual world coordinates so all the torsos line up.
+			
+			for (int i = 0; i < shapes.length; i++){
+				g.setColor(drawColor);
+				g.setStroke(stroke);
+				switch(shapes[i].getType()){
+				case CIRCLE_SHAPE:
+					CircleShape circleShape = (CircleShape)shapes[i];
+					float radius = circleShape.getRadius();
+					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
+					g.drawOval((int)(runnerScaling * (circleCenter.x - radius  - thisBodyXOffset) + windowWidth/2),
+							(int)(runnerScaling * (circleCenter.y - radius) + yOffsetPixels),
+							(int)(runnerScaling * radius * 2),
+							(int)(runnerScaling * radius * 2));
+					break;
+				case POLYGON_SHAPE:
+					//Get both the shape and its transform.
+					PolygonShape polygonShape = (PolygonShape)shapes[i];
+					XForm transform = transforms[i];
+
+					// Ground is black regardless.
+					if (shapes[i].m_filter.groupIndex == 1){
+						g.setColor(Color.BLACK);
+						g.setStroke(normalStroke);
+					}
+					for (int j = 0; j < polygonShape.getVertexCount(); j++){ // Loop through polygon vertices and draw lines between them.
+						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
+						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
+						g.drawLine((int)(runnerScaling * (ptA.x - thisBodyXOffset) + windowWidth/2),
+								(int)(runnerScaling * ptA.y) + yOffsetPixels,
+								(int)(runnerScaling * (ptB.x - thisBodyXOffset) + windowWidth/2),
+								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
+					}
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		@Override
+		public void activateTab() {
+			active = true;
+		}
+
+		@Override
+		public void deactivateTab() {
+			active = false;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+            JComboBox<Integer> eigSelect = (JComboBox)e.getSource();
+            lastEigToDisp = (Integer)eigSelect.getSelectedItem();
+            eigsToDisp = new int[lastEigToDisp + 1];
+            for (int i = 0; i < eigsToDisp.length; i++){
+            	eigsToDisp[i] = 1;
+            }
+            //giveSelectedNode(primaryNode); // Redo calculations.
+		}	
+
+	}
+
+	
+	/**
+	 * Pane for displaying plots of various state variables. Click each plot to pull up a menu for selecting data.
+	 * A tab.
+	 * @author Matt
+	 */
 	public class DataPane_State extends DataPane implements ItemListener{
 
 		/** Which plot index has an active menu. **/
@@ -1337,11 +1563,18 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 	}
 
+	/**
+	 * Pane for displaying plots of the states transformed using principle component analysis (PCA). A tab.
+	 * @author Matt
+	 */
 	public class DataPane_PCA extends DataPane implements KeyListener {
 		// Which pairs of eigenvalues we're plotting.
 		int[][] dataSelect;
 
 		private TrialNodeMinimal lastSelectedNode;
+
+		/** Data transformed by PCA **/
+		private PCATransformedData pcaPlotDat;
 
 		public boolean mouseIsIn = false;
 
@@ -1380,7 +1613,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 				// A state pair being added to the first plot.
 				XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
-				PCATransformedData pcaPlotDat;
 
 				// Only update the plots shown, don't redo PCA calcs.
 				if (lastSelectedNode != null && lastSelectedNode.equals(selectedNode)){
@@ -1434,6 +1666,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 		}
 
+		/** Get the last PCA data. **/
+		public PCATransformedData getPCAData(){
+			return pcaPlotDat;
+		}
+
 		@Override
 		public void keyTyped(KeyEvent e) {
 		}
@@ -1453,6 +1690,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			case KeyEvent.VK_RIGHT:
 				plotShift(1,0);
 				break;
+			case KeyEvent.VK_B:
+				plotColorsByDepth = !plotColorsByDepth;
+				break;
 			}	
 		}
 
@@ -1464,9 +1704,21 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			// TODO Auto-generated method stub
 
 		}
+	
+		@Override
+		public void activateTab() {
+			active = true;
+			// update(); // Don't update though. Make the user click a node before doing this.
+			requestFocus();
+		}
 	}
 
 	/** Plots are made here. **/
+	
+	/**
+	 * Plots extend this for basic features. Specific XYDataset objects are inside here. A tab.
+	 * @author Matt
+	 */
 	abstract public class DataPane extends JPanel implements TabbedPaneActivator, ChartMouseListener{
 
 		/** How many plots do we want to squeeze in there horizontally? **/
@@ -1476,7 +1728,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		public ChartPanel[] plotPanels = new ChartPanel[numberOfPlots];
 
 		/** Is this tab active? Do we bother to do updates in other words. **/
-		private boolean active = false;
+		public boolean active = false;
 
 		/** The variables and nodes associated with the plots. **/
 		private XYDataset[] plotData = new XYDataset[numberOfPlots];
@@ -1747,8 +1999,15 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			/** Specific series of data to by plotted. Integer is the plotindex, the matrix is 2xn for x-y plot. **/
 			private Map<Integer,FloatMatrix> tformedData = new HashMap<Integer,FloatMatrix>();
 
+			ArrayList<CondensedStateInfo.ObjectName> objectsUsed = new ArrayList<CondensedStateInfo.ObjectName>(Arrays.asList(CondensedStateInfo.ObjectName.values()));
+			ArrayList<CondensedStateInfo.StateName> statesUsed = new ArrayList<CondensedStateInfo.StateName>(Arrays.asList(CondensedStateInfo.StateName.values()));
+
+
 			public PCATransformedData(ArrayList<TrialNodeMinimal> nodes){
 				super();
+				// Can blacklist things NOT to be PCA'd
+				statesUsed.remove(CondensedStateInfo.StateName.X);
+
 				nodeList = nodes;
 				doPCA();
 			}
@@ -1778,6 +2037,13 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				tformedData.put(plotIdx, dataSet.mmul(evecs.getColumns(new int[]{eigForXAxis,eigForYAxis})));	
 			}
 
+			/** Mostly for external use. Transform any data by the chosen PCA components. Must have done the PCA already! **/
+			public FloatMatrix transformDataset(ArrayList<TrialNodeMinimal> nodesToTransform, int[] chosenPCAComponents){
+				FloatMatrix preppedDat = prepTrialNodeData(nodesToTransform, objectsUsed, statesUsed);
+				FloatMatrix lowDimData = preppedDat.mmul(evecs.getColumns(chosenPCAComponents));
+				return lowDimData;
+			}
+
 			@Override
 			public Number getX(int series, int item) {
 				return tformedData.get(series).get(item,0);
@@ -1790,28 +2056,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			/** Run PCA on all the states in the nodes stored here. **/
 			public void doPCA(){
-				ArrayList<CondensedStateInfo.ObjectName> objectsUsed = new ArrayList<CondensedStateInfo.ObjectName>(Arrays.asList(CondensedStateInfo.ObjectName.values()));
-				ArrayList<CondensedStateInfo.StateName> statesUsed = new ArrayList<CondensedStateInfo.StateName>(Arrays.asList(CondensedStateInfo.StateName.values()));
-				
-				// Can blacklist things NOT to be PCA'd
-				//statesUsed.remove(CondensedStateInfo.StateName.X);
-				
-				int numStates = objectsUsed.size() * statesUsed.size();
-				dataSet = new FloatMatrix(nodeList.size(), numStates);
 
-				// Iterate through all nodes
-				for (int i = 0; i < nodeList.size(); i++){
-					int colCounter = 0;
-					// Through all body parts...
-					for (CondensedStateInfo.ObjectName obj : objectsUsed){
-						// For each state of each body part.
-						for (CondensedStateInfo.StateName st : statesUsed){
-							dataSet.put(i, colCounter, nodeList.get(i).state.getStateVarFromName(obj, st));
-							colCounter++;
-						}
-					}
-				}
-				conditionData(dataSet);
+				dataSet = prepTrialNodeData(nodeList, objectsUsed, statesUsed);
+
 				FloatMatrix[] USV = Singular.fullSVD(dataSet);
 				evecs = USV[2]; // Eigenvectors
 				evals = USV[1].mul(USV[1]).div(dataSet.rows); // Eigenvalues
@@ -1827,6 +2074,31 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				for (int i = 0; i < evals.length; i++){
 					evalsNormalized.put(i, evals.get(i)/evalSum);
 				}
+			}
+
+			/** Unpack the state data from the nodes, pulling only the stuff we want. Condition data to variance 1, mean 0. **/
+			private FloatMatrix prepTrialNodeData(ArrayList<TrialNodeMinimal> nodes, 
+					ArrayList<CondensedStateInfo.ObjectName> includedObjects, 
+					ArrayList<CondensedStateInfo.StateName> includedStates){
+
+
+				int numStates = includedObjects.size() * includedStates.size();
+				FloatMatrix dat = new FloatMatrix(nodes.size(), numStates);
+
+				// Iterate through all nodes
+				for (int i = 0; i < nodes.size(); i++){
+					int colCounter = 0;
+					// Through all body parts...
+					for (CondensedStateInfo.ObjectName obj : includedObjects){
+						// For each state of each body part.
+						for (CondensedStateInfo.StateName st : includedStates){
+							dat.put(i, colCounter, nodes.get(i).state.getStateVarFromName(obj, st));
+							colCounter++;
+						}
+					}
+				}
+				conditionData(dat);
+				return dat;
 			}
 
 			/** Subtracts the mean for each variable, and converts to unit variance.
@@ -1885,7 +2157,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			public class PCAPlotRenderer extends XYLineAndShapeRenderer {
 				/** Color points by corresponding depth in the tree or by command leading to this point. **/
 				public boolean colorByDepth = plotColorsByDepth;
-			
+
 				public PCAPlotRenderer() {
 					super(false, true); //boolean lines, boolean shapes
 					setSeriesShape( 0, new Rectangle2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
