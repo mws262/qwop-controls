@@ -2,7 +2,6 @@ import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
 import org.jbox2d.collision.shapes.CircleDef;
 import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.EdgeChainDef;
 import org.jbox2d.collision.shapes.PolygonDef;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.collision.shapes.Shape;
@@ -851,104 +850,107 @@ public class QWOPGame{// extends JFrame{
 	public World getWorld() {
 		return m_world;
 	}
-
-	/* Sets all the state parameters but does not assign them. Could be useful to call before creating a game. */
-	public void setParametersToState(QWOP_stateHolder sh) {
-		// Feet
-		 RFootPos = sh.rfoot.getPvec();
-		 LFootPos = sh.lfoot.getPvec();
-		 RFootAng = (float)sh.rfoot.theta;
-		 LFootAng = (float)sh.lfoot.theta;
-		// Calves
-		 RCalfPos = sh.rcalf.getPvec();
-		 LCalfPos = sh.lcalf.getPvec();
-		 RCalfAng = (float)sh.rcalf.theta;
-		 LCalfAng = (float)sh.rcalf.theta;
-		// Thighs
-		 RThighPos = sh.rthigh.getPvec();
-		 LThighPos = sh.lthigh.getPvec();
-		 RThighAng = (float)sh.rthigh.theta;
-		 LThighAng = (float)sh.lthigh.theta;
-		// Torso
-		 TorsoPos = sh.body.getPvec();
-		 TorsoAng = (float)sh.body.theta;
-		// Head
-		 HeadPos = sh.head.getPvec();
-		 HeadAng = (float)sh.head.theta;
-		// Upper arms
-		 RUArmPos = sh.ruarm.getPvec();
-		 LUArmPos = sh.luarm.getPvec();
-		 RUArmAng = (float)sh.ruarm.theta;
-		 LUArmAng = (float)sh.luarm.theta;
-		// Lower Arms
-		 RLArmPos = sh.rlarm.getPvec();
-		 LLArmPos = sh.llarm.getPvec();
-		 RLArmAng = (float)sh.rlarm.theta;
-		 LLArmAng = (float)sh.llarm.theta;
-	}
-	public void setState(QWOP_stateHolder sh){
-
-		// Torso
-		TorsoBody.setXForm(sh.body.getPvec(), (float)sh.body.theta + 0*TorsoAngAdj);
-		TorsoBody.setLinearVelocity(sh.body.getVvec());
-		TorsoBody.setAngularVelocity((float)sh.body.dtheta);
-
-		// rthigh
-		RThighBody.setXForm(sh.rthigh.getPvec(), (float)sh.rthigh.theta + 0*RThighAngAdj);
-		RThighBody.setLinearVelocity(sh.rthigh.getVvec());
-		RThighBody.setAngularVelocity((float)sh.rthigh.dtheta);
-
-
-		// lthigh
-		LThighBody.setXForm(sh.lthigh.getPvec(), (float)sh.lthigh.theta + 0*LThighAngAdj);
-		LThighBody.setLinearVelocity(sh.lthigh.getVvec());
-		LThighBody.setAngularVelocity((float)sh.lthigh.dtheta);
-
-
-		// rcalf
-		RCalfBody.setXForm(sh.rcalf.getPvec(), (float)sh.rcalf.theta + 0*RCalfAngAdj);
-		RCalfBody.setLinearVelocity(sh.rcalf.getVvec());
-		RCalfBody.setAngularVelocity((float)sh.rcalf.dtheta);
-
-		// lcalf
-		LCalfBody.setXForm(sh.lcalf.getPvec(), (float)sh.lcalf.theta + 0*LCalfAngAdj);
-		LCalfBody.setLinearVelocity(sh.lcalf.getVvec());
-		LCalfBody.setAngularVelocity((float)sh.lcalf.dtheta);
-
-		// rfoot
-		RFootBody.setXForm(sh.rfoot.getPvec(), (float)sh.rfoot.theta);
-		RFootBody.setLinearVelocity(sh.rfoot.getVvec());
-		RFootBody.setAngularVelocity((float)sh.rfoot.dtheta);
-
-		// lfoot
-		LFootBody.setXForm(sh.lfoot.getPvec(), (float)sh.lfoot.theta);
-		LFootBody.setLinearVelocity(sh.lfoot.getVvec());
-		LFootBody.setAngularVelocity((float)sh.lfoot.dtheta);
-
-		// ruarm
-		RUArmBody.setXForm(sh.ruarm.getPvec(), (float)sh.ruarm.theta + 0*RUArmAngAdj);
-		RUArmBody.setLinearVelocity(sh.ruarm.getVvec());
-		RUArmBody.setAngularVelocity((float)sh.ruarm.dtheta);
-
-		// luarm
-		LUArmBody.setXForm(sh.luarm.getPvec(), (float)sh.luarm.theta + 0*LUArmAngAdj);
-		LUArmBody.setLinearVelocity(sh.luarm.getVvec());
-		LUArmBody.setAngularVelocity((float)sh.luarm.dtheta);
-
-		// rlarm
-		RLArmBody.setXForm(sh.rlarm.getPvec(), (float)sh.rlarm.theta + 0*RLArmAngAdj);
-		RLArmBody.setLinearVelocity(sh.rlarm.getVvec());
-		RLArmBody.setAngularVelocity((float)sh.rlarm.dtheta);
-
-		// llarm
-		LLArmBody.setXForm(sh.llarm.getPvec(), (float)sh.llarm.theta + 0*LLArmAngAdj);
-		LLArmBody.setLinearVelocity(sh.llarm.getVvec());
-		LLArmBody.setAngularVelocity((float)sh.llarm.dtheta);
-
-		// head
-		HeadBody.setXForm(sh.head.getPvec(), (float)sh.head.theta + 0*HeadAngAdj);
-		HeadBody.setLinearVelocity(sh.head.getVvec());
-		HeadBody.setAngularVelocity((float)sh.head.dtheta);
-	}
+	
+// I'm removing support for importing games from the old versions of the software.
+//
+//	/**
+//	/* Sets all the state parameters but does not assign them. Could be useful to call before creating a game. */
+//	public void setParametersToState(QWOP_stateHolder sh) {
+//		// Feet
+//		 RFootPos = sh.rfoot.getPvec();
+//		 LFootPos = sh.lfoot.getPvec();
+//		 RFootAng = (float)sh.rfoot.theta;
+//		 LFootAng = (float)sh.lfoot.theta;
+//		// Calves
+//		 RCalfPos = sh.rcalf.getPvec();
+//		 LCalfPos = sh.lcalf.getPvec();
+//		 RCalfAng = (float)sh.rcalf.theta;
+//		 LCalfAng = (float)sh.rcalf.theta;
+//		// Thighs
+//		 RThighPos = sh.rthigh.getPvec();
+//		 LThighPos = sh.lthigh.getPvec();
+//		 RThighAng = (float)sh.rthigh.theta;
+//		 LThighAng = (float)sh.lthigh.theta;
+//		// Torso
+//		 TorsoPos = sh.body.getPvec();
+//		 TorsoAng = (float)sh.body.theta;
+//		// Head
+//		 HeadPos = sh.head.getPvec();
+//		 HeadAng = (float)sh.head.theta;
+//		// Upper arms
+//		 RUArmPos = sh.ruarm.getPvec();
+//		 LUArmPos = sh.luarm.getPvec();
+//		 RUArmAng = (float)sh.ruarm.theta;
+//		 LUArmAng = (float)sh.luarm.theta;
+//		// Lower Arms
+//		 RLArmPos = sh.rlarm.getPvec();
+//		 LLArmPos = sh.llarm.getPvec();
+//		 RLArmAng = (float)sh.rlarm.theta;
+//		 LLArmAng = (float)sh.llarm.theta;
+//	}
+//	public void setState(QWOP_stateHolder sh){
+//
+//		// Torso
+//		TorsoBody.setXForm(sh.body.getPvec(), (float)sh.body.theta + 0*TorsoAngAdj);
+//		TorsoBody.setLinearVelocity(sh.body.getVvec());
+//		TorsoBody.setAngularVelocity((float)sh.body.dtheta);
+//
+//		// rthigh
+//		RThighBody.setXForm(sh.rthigh.getPvec(), (float)sh.rthigh.theta + 0*RThighAngAdj);
+//		RThighBody.setLinearVelocity(sh.rthigh.getVvec());
+//		RThighBody.setAngularVelocity((float)sh.rthigh.dtheta);
+//
+//
+//		// lthigh
+//		LThighBody.setXForm(sh.lthigh.getPvec(), (float)sh.lthigh.theta + 0*LThighAngAdj);
+//		LThighBody.setLinearVelocity(sh.lthigh.getVvec());
+//		LThighBody.setAngularVelocity((float)sh.lthigh.dtheta);
+//
+//
+//		// rcalf
+//		RCalfBody.setXForm(sh.rcalf.getPvec(), (float)sh.rcalf.theta + 0*RCalfAngAdj);
+//		RCalfBody.setLinearVelocity(sh.rcalf.getVvec());
+//		RCalfBody.setAngularVelocity((float)sh.rcalf.dtheta);
+//
+//		// lcalf
+//		LCalfBody.setXForm(sh.lcalf.getPvec(), (float)sh.lcalf.theta + 0*LCalfAngAdj);
+//		LCalfBody.setLinearVelocity(sh.lcalf.getVvec());
+//		LCalfBody.setAngularVelocity((float)sh.lcalf.dtheta);
+//
+//		// rfoot
+//		RFootBody.setXForm(sh.rfoot.getPvec(), (float)sh.rfoot.theta);
+//		RFootBody.setLinearVelocity(sh.rfoot.getVvec());
+//		RFootBody.setAngularVelocity((float)sh.rfoot.dtheta);
+//
+//		// lfoot
+//		LFootBody.setXForm(sh.lfoot.getPvec(), (float)sh.lfoot.theta);
+//		LFootBody.setLinearVelocity(sh.lfoot.getVvec());
+//		LFootBody.setAngularVelocity((float)sh.lfoot.dtheta);
+//
+//		// ruarm
+//		RUArmBody.setXForm(sh.ruarm.getPvec(), (float)sh.ruarm.theta + 0*RUArmAngAdj);
+//		RUArmBody.setLinearVelocity(sh.ruarm.getVvec());
+//		RUArmBody.setAngularVelocity((float)sh.ruarm.dtheta);
+//
+//		// luarm
+//		LUArmBody.setXForm(sh.luarm.getPvec(), (float)sh.luarm.theta + 0*LUArmAngAdj);
+//		LUArmBody.setLinearVelocity(sh.luarm.getVvec());
+//		LUArmBody.setAngularVelocity((float)sh.luarm.dtheta);
+//
+//		// rlarm
+//		RLArmBody.setXForm(sh.rlarm.getPvec(), (float)sh.rlarm.theta + 0*RLArmAngAdj);
+//		RLArmBody.setLinearVelocity(sh.rlarm.getVvec());
+//		RLArmBody.setAngularVelocity((float)sh.rlarm.dtheta);
+//
+//		// llarm
+//		LLArmBody.setXForm(sh.llarm.getPvec(), (float)sh.llarm.theta + 0*LLArmAngAdj);
+//		LLArmBody.setLinearVelocity(sh.llarm.getVvec());
+//		LLArmBody.setAngularVelocity((float)sh.llarm.dtheta);
+//
+//		// head
+//		HeadBody.setXForm(sh.head.getPvec(), (float)sh.head.theta + 0*HeadAngAdj);
+//		HeadBody.setLinearVelocity(sh.head.getVvec());
+//		HeadBody.setAngularVelocity((float)sh.head.dtheta);
+//	}
 }
 

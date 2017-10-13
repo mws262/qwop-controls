@@ -27,21 +27,21 @@ public class CondensedRunInfo implements Serializable {
 			currentNode = currentNode.parent;
 		}	
 	}
-	
-	@Deprecated
-	/** Old TrialNodes **/
-	public CondensedRunInfo(TrialNode terminalNode) {
-		states = new CondensedStateInfo[terminalNode.TreeDepth];
-		actions = new int[terminalNode.TreeDepth];
-		
-		TrialNode currentNode = terminalNode;
-		
-		while ( currentNode.TreeDepth > 0 ){
-			
-			actions[currentNode.TreeDepth - 1] = currentNode.ControlAction;
-			states[currentNode.TreeDepth - 1] = currentNode.csi;
-			
-			currentNode = currentNode.ParentNode;
-		}
-	}
+// I'm removing support for importing games from the old versions of the software.
+//	@Deprecated
+//	/** Old TrialNodes **/
+//	public CondensedRunInfo(TrialNode terminalNode) {
+//		states = new CondensedStateInfo[terminalNode.TreeDepth];
+//		actions = new int[terminalNode.TreeDepth];
+//		
+//		TrialNode currentNode = terminalNode;
+//		
+//		while ( currentNode.TreeDepth > 0 ){
+//			
+//			actions[currentNode.TreeDepth - 1] = currentNode.ControlAction;
+//			states[currentNode.TreeDepth - 1] = currentNode.csi;
+//			
+//			currentNode = currentNode.ParentNode;
+//		}
+//	}
 }

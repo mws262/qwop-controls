@@ -381,8 +381,10 @@ public class FSM_Game implements Runnable{
 	/** Listens for collisions involving lower arms and head (implicitly with the ground) **/
 	private class CollisionListener implements ContactListener{
 
-		boolean rFootDown = false;
-		boolean lFootDown = false;
+		/** Keep track of whether the right foot is on the ground. **/
+		private boolean rFootDown = false;
+		/** Keep track of whether the left foot is on the ground. **/
+		private boolean lFootDown = false;
 
 		public CollisionListener(){
 		}
@@ -424,5 +426,17 @@ public class FSM_Game implements Runnable{
 		}
 		@Override
 		public void result(ContactResult point) {}
+		
+		/** Check if the right foot is touching the ground. **/
+		@SuppressWarnings("unused")
+		public boolean isRightFootGrounded(){
+			return rFootDown;
+		}
+		
+		/** Check if the left foot is touching the ground. **/
+		@SuppressWarnings("unused")
+		public boolean isLeftFootGrounded(){
+			return lFootDown;
+		}
 	}
 }

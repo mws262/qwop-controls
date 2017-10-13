@@ -1,7 +1,5 @@
 
 import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLU;
 import javax.vecmath.AxisAngle4f;

@@ -1,5 +1,4 @@
 import java.awt.Color;
-import java.awt.color.ColorSpace;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -584,6 +583,7 @@ public class TrialNodeMinimal {
 
 	/** Generate a random integer between two values, inclusive. **/
 	public static int randInt(int min, int max) {
+		if (min > max) throw new IllegalArgumentException("Random int sampler should be given a minimum value which is less than or equal to the given max value.");
 		int randomNum = rand.nextInt((max - min) + 1) + min;
 		return randomNum;
 	}
@@ -783,7 +783,7 @@ public class TrialNodeMinimal {
 	}
 
 	/** Node repulser force rule so I don't have to keep ctrl-c this crap **/
-	private Vec2 repulserForce(TrialNodeMinimal thisNode, TrialNodeMinimal otherNode){
+	private static Vec2 repulserForce(TrialNodeMinimal thisNode, TrialNodeMinimal otherNode){
 		if (!otherNode.equals(thisNode) && otherNode.arePhysicsInitialized){
 			Vec2 o_pt = thisNode.physBody.getPosition().sub(otherNode.physBody.getPosition()); // Repulser point to this node.
 			float lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors

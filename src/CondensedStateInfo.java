@@ -1,8 +1,5 @@
-import java.awt.Graphics;
 import java.io.Serializable;
 
-import org.jbox2d.common.Mat22;
-import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
 

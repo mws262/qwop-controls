@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 
 public class QWOP_fileIO<T> {
@@ -63,7 +62,6 @@ public class QWOP_fileIO<T> {
 			boolean reading = true;
 			while (reading){
 				try{
-					@SuppressWarnings("unchecked")
 					T obj = (T) objIs.readObject();
 					dataList.add(obj);
 					counter++;

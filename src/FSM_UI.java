@@ -37,9 +37,6 @@ import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -141,7 +138,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	/** Runner coordinates to pixels. **/
 	public float runnerScaling = 10f;
 
-	private final Color defaultDrawColor = new Color(0.2f,0.2f,0.5f);
 	private final Color historyDrawColor = new Color(0.6f,0.6f,0.6f);
 	private final Color appleGray = new Color(230,230,230);
 
@@ -161,7 +157,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 	/********** Writing actions on the left pane. **********/
 	/** Fonts used for drawing on the left side pane. **/
-	private final Font giantFont = new Font("Ariel",Font.BOLD,36);
+	//private final Font giantFont = new Font("Ariel",Font.BOLD,36);
 	private final Font bigFont = new Font("Ariel", Font.BOLD, 16);
 	private final Font littleFont = new Font("Ariel", Font.BOLD, 12);
 
@@ -1399,7 +1395,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
-            JComboBox<Integer> eigSelect = (JComboBox)e.getSource();
+            JComboBox<Integer> eigSelect = (JComboBox<Integer>)e.getSource();
             lastEigToDisp = (Integer)eigSelect.getSelectedItem();
             eigsToDisp = new int[lastEigToDisp + 1];
             for (int i = 0; i < eigsToDisp.length; i++){
@@ -1407,7 +1403,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
             }
             //giveSelectedNode(primaryNode); // Redo calculations.
 		}	
-
 	}
 
 	
@@ -1596,7 +1591,8 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			for (int i = 0; i < numberOfPlots; i++){
 				JFreeChart chart = plotPanels[i].getChart();
 				chart.fireChartChanged();
-				XYPlot plot = (XYPlot)(plotPanels[i].getChart().getPlot());
+				// TODO: resizing plots axes
+				//XYPlot plot = (XYPlot)(plotPanels[i].getChart().getPlot());
 				//plot.getDomainAxis().setRange(range);
 				//plot.getRangeAxis().setRange(range);
 			}
@@ -1729,9 +1725,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		/** Is this tab active? Do we bother to do updates in other words. **/
 		public boolean active = false;
-
-		/** The variables and nodes associated with the plots. **/
-		private XYDataset[] plotData = new XYDataset[numberOfPlots];
 
 		public DataPane(){
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
