@@ -6,5 +6,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JFreeChart 1.0.19"/>
 	<classpathentry kind="lib" path="jfreechart-1.0.19/lib/jcommon-1.0.23.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jbox2d_mid_phys"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
