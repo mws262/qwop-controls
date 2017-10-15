@@ -1,4 +1,4 @@
-package main;
+//package main;
 import java.io.Serializable;
 
 /*
@@ -17,7 +17,6 @@ public class CondensedRunInfo implements Serializable {
 	public CondensedRunInfo(TrialNodeMinimal terminalNode){
 		states = new CondensedStateInfo[terminalNode.treeDepth];
 		actions = new int[terminalNode.treeDepth];
-		
 		TrialNodeMinimal currentNode = terminalNode;
 		
 		while ( currentNode.treeDepth > 0 ){

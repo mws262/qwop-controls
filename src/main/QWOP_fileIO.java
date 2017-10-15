@@ -58,12 +58,14 @@ public class QWOP_fileIO<T> {
 
 		ArrayList<T> dataList = new ArrayList<T>();
 		try {
+			final String dir = System.getProperty("user.dir");
+	        System.out.println("current directory: " + dir);
 			fileIs = new FileInputStream(filenameNoExtension + ".qwop");
 			objIs = new ObjectInputStream(fileIs);
 			boolean reading = true;
 			while (reading){
 				try{
-					T obj = (T) objIs.readObject();
+					T obj = (T) objIs.readObject().getClass();
 					dataList.add(obj);
 					counter++;
 				}catch(EOFException c){
