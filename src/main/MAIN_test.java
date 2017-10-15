@@ -14,26 +14,26 @@ public class MAIN_test {
 	public static void main(String[] args) {
 		
 		/* Load */
-//		System.out.println("Reading saved games file."); tic();
+		System.out.println("Reading saved games file."); tic();
 		QWOP_fileIO<CondensedRunInfo> io = new QWOP_fileIO<CondensedRunInfo>();
-//		ArrayList<CondensedRunInfo> runs1 = io.loadObjects("test");
-//		//ArrayList<CondensedRunInfo> runs2 = io.loadObjects("test2");
-//		toc();
-//		
-//		/* Convert from runs to tree with nodes */
-//		System.out.println("Converting from games to a tree."); tic();
-//		TrialNodeMinimal treeRoot = TrialNodeMinimal.makeNodesFromRunInfo(runs1, useTreePhysics);
-//		//TrialNodeMinimal.makeNodesFromRunInfo(runs2, treeRoot);
-//
-//		toc();
+		ArrayList<CondensedRunInfo> runs1 = io.loadObjects("test");
+		//ArrayList<CondensedRunInfo> runs2 = io.loadObjects("test2");
+		toc();
+		
+		/* Convert from runs to tree with nodes */
+		System.out.println("Converting from games to a tree."); tic();
+		TrialNodeMinimal treeRoot = TrialNodeMinimal.makeNodesFromRunInfo(runs1, useTreePhysics);
+		//TrialNodeMinimal.makeNodesFromRunInfo(runs2, treeRoot);
+
+		toc();
 		//System.out.println("Done. Imported " + runs1.size() + runs2.size() + " runs. Starting graphics and tree builder.");
 		
 		/* Add more choices for the tree to explore, and see if this changes anything. */
-//		treeRoot.expandNodeChoices_allBelow(2);
-//		treeRoot.checkFullyExplored_complete();
+		treeRoot.expandNodeChoices_allBelow(2);
+		treeRoot.checkFullyExplored_complete();
 		
 		
-		TrialNodeMinimal treeRoot = new TrialNodeMinimal(useTreePhysics);
+		//TrialNodeMinimal treeRoot = new TrialNodeMinimal(useTreePhysics);
 		/* Start tree processes */
 		FSM_UI ui = new FSM_UI();
 		FSM_Tree tree = new FSM_Tree();

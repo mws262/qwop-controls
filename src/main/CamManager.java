@@ -1,11 +1,13 @@
 package main;
 
 import java.util.ArrayList;
-import javax.media.opengl.GL2;
-import javax.media.opengl.glu.GLU;
+
 import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
+
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.glu.GLU;
 
 /** 
  * Handle all camera motion including smooth motions, click-to-coordinate mapping, etc.

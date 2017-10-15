@@ -6,8 +6,6 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.media.opengl.GL2;
-
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
 import org.jbox2d.collision.shapes.PolygonDef;
@@ -17,6 +15,8 @@ import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.World;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
+
+import com.jogamp.opengl.GL2;
 
 /*
  * This version will hopefully get rid of many legacy features.

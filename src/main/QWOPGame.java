@@ -14,6 +14,7 @@ import org.jbox2d.dynamics.World;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
+
 public class QWOPGame{// extends JFrame{
 
 	/* World object */
