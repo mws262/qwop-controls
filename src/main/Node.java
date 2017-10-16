@@ -1,7 +1,6 @@
 package main;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -33,14 +32,18 @@ public class Node {
 	private static int gamesCreated = 0;
 
 	/********* QWOP IN/OUT ************/
-	/** Actual numeric control action **/
-	public final Action action; //Actual delay used as control.
+	/** Keys and duration **/
+	private final Action action; //Actual delay used as control.
 
 	/** What is the state after taking this node's action? **/
 	public State state;
 
-	/** Keypress action. **/
-	//TODO
+	/** If assigned, this automatically adds potential actions to children when they are created. This makes the functionality a little
+	 * more like the old version which selected from a fixed pool of durations for each action in the sequence. This time, the action 
+	 * generator can use anything arbitrary to decide what the potential children are, and the potentialActionGenerator can be hot swapped
+	 * at any point.
+	 **/
+	public static IActionGenerator potentialActionGenerator;
 
 	/********* TREE CONNECTION INFO ************/
 
@@ -170,6 +173,9 @@ public class Node {
 		if (treeDepth > maxDepthYet){
 			maxDepthYet = treeDepth;
 		}
+		
+		// Add some child actions to try if an action generator is assigned.
+		autoAddUncheckedActions();
 
 		edgeLength = 5.00f * (float)Math.pow(0.6947, 0.1903 * treeDepth ) + 1.5f;
 		//(float)Math.pow(0.787, 0.495) + 1.0f; // Optimized exponential in Matlab 
@@ -205,6 +211,9 @@ public class Node {
 		// Root node gets the QWOP initial condition. Yay!
 		setState(FSM_Game.getInitialState());
 
+		// Add some child actions to try if an action generator is assigned.
+		autoAddUncheckedActions();
+		
 		if (useTreePhysics){
 			initTreePhys_single();
 		}
@@ -214,6 +223,21 @@ public class Node {
 	/******* ADDING TO THE TREE *********/
 	/************************************/
 
+	/** If we've assigned a potentialActionGenerator, this can auto-add potential child actions. Ignores duplicates. **/
+	private void autoAddUncheckedActions() {
+		// If we've set rules to auto-select potential children, do so.
+		if (potentialActionGenerator != null) {
+			Action[] potentialActions = potentialActionGenerator.getPotentialChildActionSet(this);
+			
+			for (Action potentialAction : potentialActions) {
+				if (!uncheckedActions.contains(potentialAction)) {
+					uncheckedActions.add(potentialAction);
+				}
+			}
+		}
+	}
+	
+	
 	/** Sample random node. Either create or return an existing not fully explored child. **/
 	public Node sampleNode(){
 
@@ -524,6 +548,12 @@ public class Node {
 		state = newState;
 	}
 
+	/** Get the action object (keypress + duration) that leads to this node from its parent. **/
+	public Action getAction(){
+		action.reset(); // Make sure internal counter for executing this action is reset.
+		return action;
+	}
+	
 	/** Get the sequence of actions up to, and including this node **/
 	public Action[] getSequence(){
 		Action[] sequence = new Action[treeDepth];

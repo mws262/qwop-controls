@@ -61,8 +61,17 @@ public class Action{
 	/** Get the total number of timesteps for this action. **/
 	public int getTimestepsTotal(){ return timestepsTotal; }
 	
-	/** Check if this action is equal to another in regards to keypresses and durations. **/
-	public boolean equals(Action otherAction){
+	/** Check if this action is equal to another in regards to keypresses and durations. 
+	 * Completely overrides default equals, so when doing ArrayList checks, this will
+	 * be the only way to judge.
+	 **/
+	@Override
+	public boolean equals(Object other){
+	    if(!(other instanceof Action)) {
+	        return false;
+	    }
+	    Action otherAction = (Action)other;
+	    
 		boolean equal = true;
 		
 		// Negate equality if any of the QWOP keys don't match.

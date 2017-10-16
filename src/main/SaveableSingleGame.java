@@ -21,7 +21,7 @@ public class SaveableSingleGame implements Serializable {
 		
 		while ( currentNode.treeDepth > 0 ){
 			
-			actions[currentNode.treeDepth - 1] = currentNode.action;
+			actions[currentNode.treeDepth - 1] = currentNode.getAction();
 			states[currentNode.treeDepth - 1] = currentNode.state;
 			
 			currentNode = currentNode.parent;

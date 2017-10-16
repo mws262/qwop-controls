@@ -138,7 +138,7 @@ public class Negotiator {
 		case WAITING_FOR_SINGLE:
 			FSM_Game.Status gameStatusSingle = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
 			if (gameStatusSingle == FSM_Game.Status.WAITING){
-				game.addAction(tree.targetNodeToTest.action);
+				game.addAction(tree.targetNodeToTest.getAction());
 			}else{
 				throw new RuntimeException("Tree tried to queue another single action while the game wasn't WAITING. Game was: " + game.getFSMStatus().toString());
 			}
@@ -177,8 +177,8 @@ public class Negotiator {
 	public int getGamesImported(){ return Node.getImportedGameCount(); }
 	public int getGamesTotal(){ return Node.getCreatedGameCount() + Node.getImportedGameCount(); }
 	public float getTimeSimulated() { return game.getTimeSimulated(); }
-	public int[] getCurrentSequence() { return game.qwopQueue.getActionsInCurrentRun(); }
-	public int getCurrentActionIdx() { return game.qwopQueue.getCurrentActionIdx(); }
+	public Action[] getCurrentSequence() { return game.actionQueue.getActionsInCurrentRun(); }
+	public int getCurrentActionIdx() { return game.actionQueue.getCurrentActionIdx(); }
 	public float getGamesPerSecond() { return tree.currentGPS; }
 	/**** For the visualization of the tree. ****/
 	public void statusChange_UI(FSM_UI.Status status) {

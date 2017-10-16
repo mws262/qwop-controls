@@ -1,6 +1,7 @@
 package main;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -15,7 +16,7 @@ public class FSM_Game implements Runnable{
 
 	private QWOPGame game;
 
-	/** Failure occurrance flag **/
+	/** Failure occurrence flag **/
 	private boolean failFlag = false;
 
 	/** Thread loop running? **/
@@ -28,7 +29,7 @@ public class FSM_Game implements Runnable{
 	private volatile boolean isLocked = false; 
 
 	/** Queued commands, IE QWOP key presses **/
-	QWOPQueue qwopQueue = new QWOPQueue();
+	ActionQueue actionQueue = new ActionQueue();
 	
 	/** Physics engine stepping parameters. **/
 	public final float timestep = 0.04f;
@@ -54,7 +55,7 @@ public class FSM_Game implements Runnable{
 	private boolean runRealTime = false;
 
 	/** Queued sequence to run. **/
-	private int[] queuedSequence;
+	private Action[] queuedSequence;
 
 	/** State machine states for the QWOP game **/
 	public enum Status{
@@ -78,11 +79,11 @@ public class FSM_Game implements Runnable{
 			switch (currentStatus){
 			case IDLE:
 				// Initialize a new game if commands have been added to the queue.
-				if (!qwopQueue.isEmpty()){
+				if (!actionQueue.isEmpty()){
 					currentStatus = Status.INITIALIZE;
 				}else if (flagForSingle){ // User selected one to display.
 					if (queuedSequence == null) throw new RuntimeException("Game flagged for single run, but no queued sequence ready.");
-					qwopQueue.addSequence(queuedSequence);
+					actionQueue.addSequence(queuedSequence);
 					runRealTime = true;
 					flagForSingle = false;
 					currentStatus = Status.LOCKED;
@@ -90,11 +91,11 @@ public class FSM_Game implements Runnable{
 				break;
 			case LOCKED:
 				// Namely if we want to trigger a one-off realtime run, this avoids going to IDLE where the tree might decide to run something instead.
-				if (qwopQueue.isEmpty()) throw new RuntimeException("Game trying to display a user-selected run, but no sequence is added.");
+				if (actionQueue.isEmpty()) throw new RuntimeException("Game trying to display a user-selected run, but no sequence is added.");
 				currentStatus = Status.INITIALIZE;
 			case INITIALIZE:
 				newGame();
-				if (qwopQueue.isEmpty()){
+				if (actionQueue.isEmpty()){
 					throw new RuntimeException("Transitions violated. Game was initialized without any queued actions.");
 				}else{
 					currentStatus = Status.RUNNING_SEQUENCE;
@@ -103,10 +104,10 @@ public class FSM_Game implements Runnable{
 			case RUNNING_SEQUENCE:
 				if (failFlag){ // Stop running if failure detected.
 					currentStatus = Status.FAILED;
-				}else if (qwopQueue.isEmpty()){
+				}else if (actionQueue.isEmpty()){
 					currentStatus = Status.WAITING; // Await any new commands if unfailed, but nothing to do right now.
 				}else{
-					boolean[] nextCommand = qwopQueue.pollCommand(); // Get and remove the next keypresses
+					boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
 					Q = nextCommand[0];
 					W = nextCommand[1]; 
 					O = nextCommand[2];
@@ -128,16 +129,16 @@ public class FSM_Game implements Runnable{
 			case WAITING:
 				if (failFlag || runRealTime){
 					currentStatus = Status.FAILED;
-				}else if(!qwopQueue.isEmpty()){
+				}else if(!actionQueue.isEmpty()){
 					currentStatus = Status.RUNNING_SEQUENCE;
 				}
 				break;
 			case FAILED:
-				qwopQueue.clearAll(); // Clear remaining commands.
+				actionQueue.clearAll(); // Clear remaining commands.
 				if (runRealTime) negotiator.reportEndOfRealTimeSim();
 				
 				if (flagForSingle){ // User selected one to display.
-					qwopQueue.addSequence(queuedSequence);
+					actionQueue.addSequence(queuedSequence);
 					runRealTime = true;
 					flagForSingle = false;
 					currentStatus = Status.LOCKED;
@@ -173,11 +174,11 @@ public class FSM_Game implements Runnable{
 		getWorld().setContactListener(new CollisionListener());
 	}
 
-	public void addSequence(int[] sequence){
-		qwopQueue.addSequence(sequence);
+	public void addSequence(Action[] sequence){
+		actionQueue.addSequence(sequence);
 	}
-	public void addAction(int action){
-		qwopQueue.addAction(action);
+	public void addAction(Action action){
+		actionQueue.addAction(action);
 	}
 	/** Callable to instantly stop real-time simulating a run. Usually when the UI tab is changed. **/
 	public void killRealtimeRun(){
@@ -187,7 +188,7 @@ public class FSM_Game implements Runnable{
 	}
 
 	/** Queue up a single realtime game to play next time its available. **/
-	public void runSingleRealtime(int[] actionSequence){
+	public void runSingleRealtime(Action[] actionSequence){
 		queuedSequence = actionSequence;
 		flagForSingle = true;
 	}
@@ -252,66 +253,51 @@ public class FSM_Game implements Runnable{
 	}
 
 	/**
-	 * All things related to queueing actions should happen in here.
+	 * All things related to queueing actions should happen in here. Actions themselves act like queues,
+	 * so this action queue decides when to switch actions when one is depleted.
 	 * @author Matt
 	 *
 	 */
-	public class QWOPQueue{
+	public class ActionQueue{
 
 		/** Actions are the delays between keypresses. **/
-		private Queue<Integer> actionQueue = new LinkedList<Integer>();
-
-		/** Commands are the 4 booleans expressing whether any particular key is down. **/
-		private Queue<boolean[]> commandQueue = new LinkedList<boolean[]>();
+		private Queue<Action> actionQueue = new LinkedList<Action>();
 
 		/** All actions done or queued since the last reset. Unlike the queue, things aren't removed until reset. **/
-		private ArrayList<Integer> actionsInRunList = new ArrayList<Integer>();
+		private ArrayList<Action> actionListFull = new ArrayList<Action>();
 		
 		/** Integer action currently in progress. If the action is 20, this will be 20 even when 15 commands have been issued. **/
-		private int currentAction;
+		private Action currentAction;
 
-		/** Is there anything at all queued up to execute? **/
+		/** Is there anything at all queued up to execute? Includes both the currentAction and the actionQueue **/
 		private boolean isEmpty = true;
 
-		/** The fixed sequence of QWOP to be cycled through **/
-		public final boolean[] nil_nil = {false, false, false, false}; // Nothing pressed.
-		public final boolean[] W_O = {false,true,true,false};
-		public final boolean[] Q_P = {true,false,false,true};
-
-		// Note: trying to get away from hardcoding sequences. Want to have keypresses also stored in the nodes soon.
-		public final boolean[][] fixedSequence = {nil_nil,W_O,nil_nil,Q_P}; 
-
-		/** Current index in the fixed sequence. **/
-		int sequenceIndex = 0;
-		int sequenceLength = fixedSequence.length;
-
-		public QWOPQueue() {}
+		public ActionQueue(){}
 
 		/** See the action we are currently executing. Does not change the queue. **/
-		public int peekThisAction(){
+		public Action peekThisAction(){
 			return currentAction;
 		}
 
 		/** See the next action we will execute. Does not change the queue. **/
-		public int peekNextAction(){
+		public Action peekNextAction(){
 			return actionQueue.peek();
 		}
 		
 		/** See the next keypresses. **/
 		public boolean[] peekCommand(){
-			return commandQueue.peek();
+			return currentAction.peek();
 		}
 		
 		/** Adds a new action to the end of the queue. **/
-		public void addAction(int action){
-			if (action < 0) throw new RuntimeException("Cannot hold keys for negative time. Tried: " + action);
+		public void addAction(Action action){
 			actionQueue.add(action);
-			actionsInRunList.add(action);
+			actionListFull.add(action);
 			isEmpty = false;
 		}
 		
 		/** Add a sequence of actions. NOTE: sequence is NOT reset unless clearAll is called. **/
-		public void addSequence(int[] actions){
+		public void addSequence(Action[] actions){
 			for (int i = 0; i < actions.length; i++){
 				addAction(actions[i]);
 			}
@@ -320,64 +306,42 @@ public class FSM_Game implements Runnable{
 		/** Request the next QWOP keypress commands from the added sequence. **/
 		public boolean[] pollCommand(){
 			//System.out.println("POLL");
-			if (commandQueue.isEmpty() && actionQueue.isEmpty()){
+			if (!currentAction.hasNext() && actionQueue.isEmpty()){
 				throw new RuntimeException("Tried to get a command off the queue when nothing is queued up.");
 			}
 
 			// If the current action has no more keypresses, load up the next one.
-			if (commandQueue.isEmpty()){
+			if (!currentAction.hasNext()){
 				currentAction = actionQueue.poll();
-				actionToCommand(currentAction);
 			}
 			
-			boolean[] nextCommand = commandQueue.poll();
+			boolean[] nextCommand = currentAction.poll();
 			
-			if (commandQueue.isEmpty() && actionQueue.isEmpty()){
+			if (!currentAction.hasNext() && actionQueue.isEmpty()){
 				isEmpty = true;
 			}
 			return nextCommand;
 		}
 
-		/** Takes an integer action and adds all the boolean commands to the command queue.
-		 * Removes the action from the action queue and lists it as the current action.
-		 * @param action
-		 */
-		private void actionToCommand(int action){
-			actionToCommand(action,fixedSequence[sequenceIndex]);
-			sequenceIndex = (sequenceIndex + 1) % sequenceLength;
-		}
-		
-		private void actionToCommand(int delay, boolean[] keys){
-			if (keys.length != 4) throw new RuntimeException("Tried to add keypresses with only " + keys.length + " booleans to define them. Should be 4");
-			if (delay < 0) throw new RuntimeException("Cannot hold keys for negative time. Tried: " + delay);
-
-			for (int i = 0; i < delay; i++){
-				commandQueue.add(keys); // Each timestep, 1 is removed from the queue.
-			}
-		}
-
 		/** Remove everything from the queues and reset the sequence. **/
 		public void clearAll(){
-			commandQueue.clear();
 			actionQueue.clear();
-			actionsInRunList.clear();
 			isEmpty = true;
-			sequenceIndex = 0;
 		}
 		
 		/** Check if the queue has anything in it. **/
 		public boolean isEmpty(){ return isEmpty; }
 		
-		public int[] getActionsInCurrentRun(){
-			int[] actions = new int[actionsInRunList.size()];
+		public Action[] getActionsInCurrentRun(){
+			Action[] actions = new Action[actionListFull.size()];
 			for (int i = 0; i < actions.length; i++){
-				actions[i] = actionsInRunList.get(i);
+				actions[i] = actionListFull.get(i);
 			}
 			return actions;
 		}
 		
 		public int getCurrentActionIdx(){
-			return actionsInRunList.size() - actionQueue.size() - 1;
+			return actionListFull.size() - actionQueue.size() - 1;
 		}
 	}
 	/** Listens for collisions involving lower arms and head (implicitly with the ground) **/

@@ -1106,7 +1106,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 						g2.setColor(everyOtherEvenColor);
 						prevX = Math.min((int)(runnerScaling * currentNode.state.head.x) + xOffsetPixels - 3,prevX - 25);
 
-						g2.drawString(String.valueOf(currentNode.action), 
+						g2.drawString(currentNode.getAction().toString(), 
 								prevX, 
 								Math.min((int)(runnerScaling * currentNode.state.head.y) + yOffsetPixels - 25, 45));
 
