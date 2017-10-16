@@ -31,8 +31,8 @@ public class ActionGenerator_FixedSequence_getPotentialChildActionSet {
 		ActionGenerator_FixedSequence generator = new ActionGenerator_FixedSequence(keySequence,actionRepeats,actionExceptions);
 		
 		Node fakeNodeRoot = new Node(false);
-		Node fakeNode1 = new Node(fakeNodeRoot,1);
-		Node fakeNode2 = new Node(fakeNode1,1);
+		Node fakeNode1 = new Node(fakeNodeRoot,new Action(1,false,false,false,false));
+		Node fakeNode2 = new Node(fakeNode1,new Action(1,false,false,false,false));
 		
 		Action[] rootActions = generator.getPotentialChildActionSet(fakeNodeRoot);
 		Action[] actions1 = generator.getPotentialChildActionSet(fakeNode1);

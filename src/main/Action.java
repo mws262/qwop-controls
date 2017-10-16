@@ -1,5 +1,7 @@
 package main;
 
+import java.io.Serializable;
+
 /**
  * Contains the keypresses and durations for a single action. Works like an uneditable queue.
  * Call poll() to get the keystrokes at each timestep execution. Call hasNext() to make sure 
@@ -9,7 +11,9 @@ package main;
  * @author Matt
  *
  */
-public class Action{
+public class Action implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 
 	/** Total number of box2d timesteps that this key combination should be held. **/
 	private final int timestepsTotal;
@@ -25,6 +29,7 @@ public class Action{
 		if (keysPressed.length != 4) throw new IllegalArgumentException("A QWOP action should have booleans for exactly 4 keys. Tried to create one with a boolean array of size: " + keysPressed.length);
 		this.timestepsTotal = totalTimestepsToHold;
 		this.keysPressed = keysPressed;
+		timestepsRemaining = timestepsTotal;
 	}
 	
 	/** Create an action containing the time to hold and the key combination. **/
@@ -34,7 +39,7 @@ public class Action{
 	
 	/** Return the keys for this action and deincrement the timestepsRemaining. **/
 	public boolean[] poll(){
-		if (timestepsRemaining <=0) throw new IndexOutOfBoundsException("Tried to poll a QWOPAction which was already completed. Call hasNext() to check before calling poll().");
+		if (timestepsRemaining <=0) throw new IndexOutOfBoundsException("Tried to poll an action which was already completed. Call hasNext() to check before calling poll().");
 		timestepsRemaining--;
 		
 		return keysPressed;
