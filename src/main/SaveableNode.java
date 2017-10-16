@@ -10,14 +10,14 @@ public class SaveableNode implements Serializable{
 
 	public ArrayList<SaveableNode> children = new ArrayList<SaveableNode>();
 
-	public int action;
+	public Action action;
 
 	public State state;
 
 	public static int nodeCounter = 0;
 
 	/* Note that parentNode relationships need to be defined after constructor. */
-	public SaveableNode(State state, int action, SaveableNode parent) {
+	public SaveableNode(State state, Action action, SaveableNode parent) {
 		this.state = state;
 		this.action = action;
 		this.parent = parent;

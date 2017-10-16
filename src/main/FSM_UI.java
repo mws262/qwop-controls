@@ -335,11 +335,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	}
 
 	/** Draw the actions on the left side pane. **/
-	private void drawActionString(int[] sequence, Graphics g){
+	private void drawActionString(Action[] sequence, Graphics g){
 		drawActionString(sequence, g, -1);
 	}
 
-	private void drawActionString(int[] sequence, Graphics g, int highlightIdx){
+	private void drawActionString(Action[] sequence, Graphics g, int highlightIdx){
 		g.setFont(bigFont);
 		g.setColor(Color.BLACK);
 		g.drawString("Selected sequence: ", 10, vertTextAnchor);
@@ -1106,7 +1106,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 						g2.setColor(everyOtherEvenColor);
 						prevX = Math.min((int)(runnerScaling * currentNode.state.head.x) + xOffsetPixels - 3,prevX - 25);
 
-						g2.drawString(String.valueOf(currentNode.controlAction), 
+						g2.drawString(String.valueOf(currentNode.action), 
 								prevX, 
 								Math.min((int)(runnerScaling * currentNode.state.head.y) + yOffsetPixels - 25, 45));
 

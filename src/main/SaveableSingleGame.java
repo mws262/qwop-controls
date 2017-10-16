@@ -10,18 +10,18 @@ public class SaveableSingleGame implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	public int[] actions;
+	public Action[] actions;
 	public State[] states;
 	
 	/** New TrialNodeMinimal **/
 	public SaveableSingleGame(Node terminalNode){
 		states = new State[terminalNode.treeDepth];
-		actions = new int[terminalNode.treeDepth];
+		actions = new Action[terminalNode.treeDepth];
 		Node currentNode = terminalNode;
 		
 		while ( currentNode.treeDepth > 0 ){
 			
-			actions[currentNode.treeDepth - 1] = currentNode.controlAction;
+			actions[currentNode.treeDepth - 1] = currentNode.action;
 			states[currentNode.treeDepth - 1] = currentNode.state;
 			
 			currentNode = currentNode.parent;

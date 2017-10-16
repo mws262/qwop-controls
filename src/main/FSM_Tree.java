@@ -143,7 +143,7 @@ public class FSM_Tree implements Runnable{
 					setStatus(Status.EVALUATE_GAME);					
 				}else{
 					//TODO Expand potential child nodes.
-					targetNodeToTest.expandNodeChoices(25, 2);
+					//targetNodeToTest.expandNodeChoices(25, 2);
 					setStatus(Status.ADD_NODE);
 				}
 			}catch (NullPointerException e){

@@ -182,7 +182,7 @@ public class FSM_Game implements Runnable{
 	/** Callable to instantly stop real-time simulating a run. Usually when the UI tab is changed. **/
 	public void killRealtimeRun(){
 		if (runRealTime){
-			reportFall(); // TODO MATT WHEN YOU GET BACK DEBUG THIS!!!
+			reportFall();
 		}
 	}
 

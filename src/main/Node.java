@@ -34,7 +34,7 @@ public class Node {
 
 	/********* QWOP IN/OUT ************/
 	/** Actual numeric control action **/
-	public final int controlAction; //Actual delay used as control.
+	public final Action action; //Actual delay used as control.
 
 	/** What is the state after taking this node's action? **/
 	public State state;
@@ -51,7 +51,7 @@ public class Node {
 	public CopyOnWriteArrayList<Node> children = new CopyOnWriteArrayList<Node>();
 
 	/** Untried child actions. **/
-	public ArrayList<Integer> uncheckedActions = new ArrayList<Integer>();
+	public ArrayList<Action> uncheckedActions = new ArrayList<Action>();
 
 	/** Are there any untried things below this node? **/
 	public boolean fullyExplored = false;
@@ -155,15 +155,15 @@ public class Node {
 	/** 
 	 * Make a new node which is NOT the root. 
 	 **/
-	public Node(Node parent, int controlAction) {
+	public Node(Node parent, Action action) {
 		this.parent = parent;
 		treeDepth = parent.treeDepth + 1;
-		this.controlAction = controlAction;
+		this.action = action;
 
 		// Error check for duplicate actions.
 		for (Node parentChildren : parent.children){
-			if (parentChildren.controlAction == controlAction){
-				throw new RuntimeException("Tried to add a duplicate action node at depth " + treeDepth + ". Action was: " + controlAction + ".");
+			if (parentChildren.action == action){
+				throw new RuntimeException("Tried to add a duplicate action node at depth " + treeDepth + ". Action was: " + action.toString() + ".");
 			}	
 		}
 		parent.children.add(this);
@@ -190,7 +190,7 @@ public class Node {
 	 **/
 	public Node(boolean treePhysOn) {
 		parent = null;
-		controlAction = Integer.MIN_VALUE;
+		action = null;
 		treeDepth = 0; 
 		nodeLocation[0] = 0f;
 		nodeLocation[1] = 0f;
@@ -263,103 +263,103 @@ public class Node {
 	 * Will bilaterally add the number of specified options to the existing, tried ones.
 	 * Will also fill any gaps, e.g. if we have nodes for 55,57,58, will make 56 a potential option.
 	 */
-	public void expandNodeChoices(int doubleSidedExpansionNumber){
-
-		if (children.isEmpty()){
-			this.fullyExplored = true;
-			return; // Not well defined if there are no children to begin with. TODO fix this.
-		}
-
-		// Get all existing child actions.
-		int[] existingActions = new int[children.size()];
-		for (int i = 0; i < children.size(); i++){
-			existingActions[i] = children.get(i).controlAction;
-		}
-		Arrays.sort(existingActions);
-
-		// Check for gaps and fill them in.
-		int count = 0;
-		for (int i = existingActions[0]; i <= existingActions[existingActions.length - 1]; i++){	
-			if (existingActions[count] == i){
-				count++;
-			}else{
-				uncheckedActions.add(i);
-			}
-		}
-
-		// Add new ones on either side of the existing set.
-		for (int i = 1; i <= doubleSidedExpansionNumber; i++){
-			uncheckedActions.add(existingActions[0] - i);
-			uncheckedActions.add(existingActions[existingActions.length - 1] + i);
-		}
-	}
-
-	/**
-	 * Add nodes around some center value.
-	 */
-	public void expandNodeChoices(int centerValue, int doubleSidedExpansionNumber){
-		for (int i = centerValue - doubleSidedExpansionNumber; i <= centerValue + doubleSidedExpansionNumber; i++){
-			if (!uncheckedActions.contains(i)){
-				uncheckedActions.add(i);
-			}
-		}
-	}
-
-	/** Expand all below this node. **/
-	public void expandNodeChoices_allBelow(int doubleSidedExpansionNumber){
-		expandNodeChoices(doubleSidedExpansionNumber);
-		fullyExplored = false;
-		for (Node child : children){
-			child.expandNodeChoices_allBelow(doubleSidedExpansionNumber);
-		}
-	}
-
-	/** Expand all below this node. **/
-	public void expandNodeChoices_range(int doubleSidedExpansionNumber, int firstLayer, int endLayer){
-		//TODO
-	}
-
-	/** Expand to include certain values. **/
-	public void expandNodeChoices_fullCycle(int[] nil1, int[] W_O, int[] nil2, int[] Q_P){
-		int[] newChoices = {};
-		switch(treeDepth % 4){ // Figure out which action in the cycle this is.
-		case 0:
-			newChoices = nil1;
-			break;
-		case 1:
-			newChoices = W_O;
-			break;	
-		case 2:
-			newChoices = nil2;
-			break;
-		case 3:
-			newChoices = Q_P;
-			break;
-		}
-		// Check whether the actions are already tested in the children, or included in the uncheckedActions list. If not, add.
-		for (int i = 0; i < newChoices.length; i++){
-			boolean isDuplicate = false;
-			for (Node child : children){
-				if (child.controlAction == newChoices[i]){
-					isDuplicate = true;
-					break;
-				}
-			}
-			if (!isDuplicate && uncheckedActions.contains(newChoices[i])){
-				isDuplicate = true;
-			}
-			
-			if (!isDuplicate){
-				uncheckedActions.add(newChoices[i]);
-			}
-		}
-		
-		// Recurse.
-		for (Node child : children){
-			child.expandNodeChoices_fullCycle(nil1, W_O, nil2, Q_P);
-		}
-		
-	}
+//	public void expandNodeChoices(int doubleSidedExpansionNumber){
+//
+//		if (children.isEmpty()){
+//			this.fullyExplored = true;
+//			return; // Not well defined if there are no children to begin with. TODO fix this.
+//		}
+//
+//		// Get all existing child actions.
+//		int[] existingActions = new int[children.size()];
+//		for (int i = 0; i < children.size(); i++){
+//			existingActions[i] = children.get(i).action;
+//		}
+//		Arrays.sort(existingActions);
+//
+//		// Check for gaps and fill them in.
+//		int count = 0;
+//		for (int i = existingActions[0]; i <= existingActions[existingActions.length - 1]; i++){	
+//			if (existingActions[count] == i){
+//				count++;
+//			}else{
+//				uncheckedActions.add(i);
+//			}
+//		}
+//
+//		// Add new ones on either side of the existing set.
+//		for (int i = 1; i <= doubleSidedExpansionNumber; i++){
+//			uncheckedActions.add(existingActions[0] - i);
+//			uncheckedActions.add(existingActions[existingActions.length - 1] + i);
+//		}
+//	}
+//
+//	/**
+//	 * Add nodes around some center value.
+//	 */
+//	public void expandNodeChoices(int centerValue, int doubleSidedExpansionNumber){
+//		for (int i = centerValue - doubleSidedExpansionNumber; i <= centerValue + doubleSidedExpansionNumber; i++){
+//			if (!uncheckedActions.contains(i)){
+//				uncheckedActions.add(i);
+//			}
+//		}
+//	}
+//
+//	/** Expand all below this node. **/
+//	public void expandNodeChoices_allBelow(int doubleSidedExpansionNumber){
+//		expandNodeChoices(doubleSidedExpansionNumber);
+//		fullyExplored = false;
+//		for (Node child : children){
+//			child.expandNodeChoices_allBelow(doubleSidedExpansionNumber);
+//		}
+//	}
+//
+//	/** Expand all below this node. **/
+//	public void expandNodeChoices_range(int doubleSidedExpansionNumber, int firstLayer, int endLayer){
+//		//TODO
+//	}
+//
+//	/** Expand to include certain values. **/
+//	public void expandNodeChoices_fullCycle(int[] nil1, int[] W_O, int[] nil2, int[] Q_P){
+//		int[] newChoices = {};
+//		switch(treeDepth % 4){ // Figure out which action in the cycle this is.
+//		case 0:
+//			newChoices = nil1;
+//			break;
+//		case 1:
+//			newChoices = W_O;
+//			break;	
+//		case 2:
+//			newChoices = nil2;
+//			break;
+//		case 3:
+//			newChoices = Q_P;
+//			break;
+//		}
+//		// Check whether the actions are already tested in the children, or included in the uncheckedActions list. If not, add.
+//		for (int i = 0; i < newChoices.length; i++){
+//			boolean isDuplicate = false;
+//			for (Node child : children){
+//				if (child.action == newChoices[i]){
+//					isDuplicate = true;
+//					break;
+//				}
+//			}
+//			if (!isDuplicate && uncheckedActions.contains(newChoices[i])){
+//				isDuplicate = true;
+//			}
+//			
+//			if (!isDuplicate){
+//				uncheckedActions.add(newChoices[i]);
+//			}
+//		}
+//		
+//		// Recurse.
+//		for (Node child : children){
+//			child.expandNodeChoices_fullCycle(nil1, W_O, nil2, Q_P);
+//		}
+//		
+//	}
 	
 	/***********************************************/
 	/******* GETTING CERTAIN SETS OF NODES *********/
@@ -525,14 +525,14 @@ public class Node {
 	}
 
 	/** Get the sequence of actions up to, and including this node **/
-	public int[] getSequence(){
-		int[] sequence = new int[treeDepth];
+	public Action[] getSequence(){
+		Action[] sequence = new Action[treeDepth];
 		if (treeDepth == 0) return sequence; // Empty array for root node.
 		Node current = this;
-		sequence[treeDepth-1] = current.controlAction;
+		sequence[treeDepth-1] = current.action;
 		for (int i = treeDepth - 2; i >= 0; i--){
 			current = current.parent;
-			sequence[i] = current.controlAction;
+			sequence[i] = current.action;
 		}
 		return sequence;
 	}
@@ -558,7 +558,7 @@ public class Node {
 
 				boolean foundExistingMatch = false;
 				for (Node child: currentNode.children){ // Look at each child of the currently investigated node.
-					if (child.controlAction == run.actions[i]){ // If there is already a node for the action we are trying to place, just use it.
+					if (child.action == run.actions[i]){ // If there is already a node for the action we are trying to place, just use it.
 						currentNode = child;
 						foundExistingMatch = true;
 						break; // We found a match, move on.

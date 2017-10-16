@@ -138,7 +138,7 @@ public class Negotiator {
 		case WAITING_FOR_SINGLE:
 			FSM_Game.Status gameStatusSingle = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
 			if (gameStatusSingle == FSM_Game.Status.WAITING){
-				game.addAction(tree.targetNodeToTest.controlAction);
+				game.addAction(tree.targetNodeToTest.action);
 			}else{
 				throw new RuntimeException("Tree tried to queue another single action while the game wasn't WAITING. Game was: " + game.getFSMStatus().toString());
 			}
