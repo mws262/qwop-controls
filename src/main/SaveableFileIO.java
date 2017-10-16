@@ -11,7 +11,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
-public class QWOP_fileIO<T> {
+public class SaveableFileIO<T> {
 
 	public void storeObjects(ArrayList<T> data, String filenameNoExtension, boolean append){
 
@@ -43,7 +43,6 @@ public class QWOP_fileIO<T> {
 		}
 	}
 
-
 	public void storeObjects(T data,String filenameNoExtension, boolean append){
 		ArrayList<T> dataList = new ArrayList<T>();
 		dataList.add(data);
@@ -65,6 +64,7 @@ public class QWOP_fileIO<T> {
 			boolean reading = true;
 			while (reading){
 				try{
+					@SuppressWarnings("unchecked")
 					T obj = (T) objIs.readObject().getClass();
 					dataList.add(obj);
 					counter++;
@@ -90,4 +90,23 @@ public class QWOP_fileIO<T> {
 		return dataList;
 	}
 
+	/**
+	 * Handle when we want to append to a save file rather than start anew.
+	 * @author matt
+	 *
+	 */
+	public class AppendingObjectOutputStream extends ObjectOutputStream {
+		  public AppendingObjectOutputStream(OutputStream out) throws IOException {
+		    super(out);
+		  }
+
+		  @Override
+		  protected void writeStreamHeader() throws IOException {
+		    // do not write a header, but reset:
+		    // this line added after another question
+		    // showed a problem with the original
+		    reset();
+		  }
+
+		}
 }

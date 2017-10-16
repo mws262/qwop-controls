@@ -15,14 +15,14 @@ public class MAIN_test {
 		
 		/* Load */
 		System.out.println("Reading saved games file."); tic();
-		QWOP_fileIO<CondensedRunInfo> io = new QWOP_fileIO<CondensedRunInfo>();
-		ArrayList<CondensedRunInfo> runs1 = io.loadObjects("test");
+		SaveableFileIO<SaveableSingleGame> io = new SaveableFileIO<SaveableSingleGame>();
+		ArrayList<SaveableSingleGame> runs1 = io.loadObjects("test");
 		//ArrayList<CondensedRunInfo> runs2 = io.loadObjects("test2");
 		toc();
 		
 		/* Convert from runs to tree with nodes */
 		System.out.println("Converting from games to a tree."); tic();
-		TrialNodeMinimal treeRoot = TrialNodeMinimal.makeNodesFromRunInfo(runs1, useTreePhysics);
+		Node treeRoot = Node.makeNodesFromRunInfo(runs1, useTreePhysics);
 		//TrialNodeMinimal.makeNodesFromRunInfo(runs2, treeRoot);
 
 		toc();

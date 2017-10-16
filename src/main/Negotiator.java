@@ -31,16 +31,16 @@ public class Negotiator {
 	/** Tree builder reports all FSM changes. */
 	boolean verbose_tree = false;
 
-	QWOP_fileIO<CondensedRunInfo> fileIO;
+	SaveableFileIO<SaveableSingleGame> saveableFileIO;
 
 	/* First new node, after a sequence of tested ones, that we want to sim to. */
-	TrialNodeMinimal requestedNodeToSimTo;
+	Node requestedNodeToSimTo;
 
 	/* Added node to sim. Continues an existing run. */
-	TrialNodeMinimal requestedContinuedNodeToSim;
+	Node requestedContinuedNodeToSim;
 
 	/* Node currently being simmed. */
-	TrialNodeMinimal nodeBeingSimmed;
+	Node nodeBeingSimmed;
 
 	/* Are we running games in realtime or fast? */
 	boolean runningGameRealtime = false;
@@ -49,15 +49,15 @@ public class Negotiator {
 	private boolean saveToFile = true;
 	private boolean append = true;
 
-	ArrayList<TrialNodeMinimal> activeRoots = new ArrayList<TrialNodeMinimal>();
+	ArrayList<Node> activeRoots = new ArrayList<Node>();
 
 	public Negotiator(FSM_Tree tree, FSM_UI ui, FSM_Game game,
-			QWOP_fileIO<CondensedRunInfo> fileIO, String saveFileName,
+			SaveableFileIO<SaveableSingleGame> fileIO, String saveFileName,
 			boolean appendToExistingFile) {
 		this.tree = tree;
 		this.ui = ui;
 		this.game = game;
-		this.fileIO = fileIO;
+		this.saveableFileIO = fileIO;
 		this.saveFileName = saveFileName;
 		append = appendToExistingFile;
 	}
@@ -95,12 +95,12 @@ public class Negotiator {
 	}
 
 	public void redistributeNodes(){
-		if (TrialNodeMinimal.useTreePhysics){
-			TrialNodeMinimal.useTreePhysics = false;
-			while (TrialNodeMinimal.stepping);
+		if (Node.useTreePhysics){
+			Node.useTreePhysics = false;
+			while (Node.stepping);
 			activeRoots.get(0).calcNodePos_below();
 			activeRoots.get(0).initTreePhys_below();
-			TrialNodeMinimal.useTreePhysics = true;	
+			Node.useTreePhysics = true;	
 		}else{
 			activeRoots.get(0).calcNodePos_below();
 		}
@@ -154,16 +154,16 @@ public class Negotiator {
 	}
 
 	/** Negotiator should keep track of added tree roots **/
-	public void addTreeRoot(TrialNodeMinimal node) {
+	public void addTreeRoot(Node node) {
 		activeRoots.add(node);
 		ui.rootNodes.add(node);
 		tree.rootNodes.add(node);
 	}
 
 	/** Save the the run to file. Currently called by the Tree FSM when it is ready. **/
-	public void saveRunToFile(TrialNodeMinimal leafNode){
+	public void saveRunToFile(Node leafNode){
 		if (saveToFile)
-			fileIO.storeObjects(new CondensedRunInfo(leafNode),
+			saveableFileIO.storeObjects(new SaveableSingleGame(leafNode),
 					saveFileName, append);
 	}
 	
@@ -173,9 +173,9 @@ public class Negotiator {
 	}
 
 	/** Only doing this to keep all information flowing through negotiator. **/
-	public int getGamesPlayed(){ return TrialNodeMinimal.getCreatedGameCount(); }
-	public int getGamesImported(){ return TrialNodeMinimal.getImportedGameCount(); }
-	public int getGamesTotal(){ return TrialNodeMinimal.getCreatedGameCount() + TrialNodeMinimal.getImportedGameCount(); }
+	public int getGamesPlayed(){ return Node.getCreatedGameCount(); }
+	public int getGamesImported(){ return Node.getImportedGameCount(); }
+	public int getGamesTotal(){ return Node.getCreatedGameCount() + Node.getImportedGameCount(); }
 	public float getTimeSimulated() { return game.getTimeSimulated(); }
 	public int[] getCurrentSequence() { return game.qwopQueue.getActionsInCurrentRun(); }
 	public int getCurrentActionIdx() { return game.qwopQueue.getCurrentActionIdx(); }
@@ -199,7 +199,7 @@ public class Negotiator {
 	}
 
 	/** Node selected by clicking the tree. **/
-	public boolean uiNodeSelect(TrialNodeMinimal node) {
+	public boolean uiNodeSelect(Node node) {
 		if (ui.snapshotPane.active) {
 
 		} else if (ui.runnerPane.active) {

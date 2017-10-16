@@ -16,14 +16,14 @@ public class FSM_Tree implements Runnable{
 	private Negotiator negotiator;
 
 	/* List of root nodes being tracked. TODO: currently only supports one. */
-	public ArrayList<TrialNodeMinimal> rootNodes = new ArrayList<TrialNodeMinimal>();
+	public ArrayList<Node> rootNodes = new ArrayList<Node>();
 
 	/* Targeted node to be tested. Negotiator looks at this. */
-	public TrialNodeMinimal targetNodeToTest;
+	public Node targetNodeToTest;
 	/* Node from where we are sampling now. */
-	public TrialNodeMinimal currentNode;
+	public Node currentNode;
 	/* Root of tree we care about. */
-	public TrialNodeMinimal currentRoot;
+	public Node currentRoot;
 
 	/** Whether the FSM is locked for some other action to continue. **/
 	private volatile boolean locked = false;
@@ -133,7 +133,7 @@ public class FSM_Tree implements Runnable{
 	}
 
 	/** Give the tree a state to assign to a node it's investigating. **/
-	public void giveGameState(CondensedStateInfo state){
+	public void giveGameState(State state){
 		
 		if (currentStatus == Status.WAITING_FOR_PREDETERMINED || currentStatus == Status.WAITING_FOR_SINGLE){
 			targetNodeToTest.setState(state);

@@ -24,7 +24,7 @@ import com.jogamp.opengl.GL2;
  * predetermined set.
  * 
  */
-public class TrialNodeMinimal {
+public class Node {
 
 	/******** All node stats *********/
 	private static int nodesCreated = 0;
@@ -37,7 +37,7 @@ public class TrialNodeMinimal {
 	public final int controlAction; //Actual delay used as control.
 
 	/** What is the state after taking this node's action? **/
-	public CondensedStateInfo state;
+	public State state;
 
 	/** Keypress action. **/
 	//TODO
@@ -45,10 +45,10 @@ public class TrialNodeMinimal {
 	/********* TREE CONNECTION INFO ************/
 
 	/** Node which leads up to this node. **/
-	public final TrialNodeMinimal parent; // Parentage may not be changed.
+	public final Node parent; // Parentage may not be changed.
 
 	/** Child nodes. Not fixed size any more. **/
-	public CopyOnWriteArrayList<TrialNodeMinimal> children = new CopyOnWriteArrayList<TrialNodeMinimal>();
+	public CopyOnWriteArrayList<Node> children = new CopyOnWriteArrayList<Node>();
 
 	/** Untried child actions. **/
 	public ArrayList<Integer> uncheckedActions = new ArrayList<Integer>();
@@ -155,13 +155,13 @@ public class TrialNodeMinimal {
 	/** 
 	 * Make a new node which is NOT the root. 
 	 **/
-	public TrialNodeMinimal(TrialNodeMinimal parent, int controlAction) {
+	public Node(Node parent, int controlAction) {
 		this.parent = parent;
 		treeDepth = parent.treeDepth + 1;
 		this.controlAction = controlAction;
 
 		// Error check for duplicate actions.
-		for (TrialNodeMinimal parentChildren : parent.children){
+		for (Node parentChildren : parent.children){
 			if (parentChildren.controlAction == controlAction){
 				throw new RuntimeException("Tried to add a duplicate action node at depth " + treeDepth + ". Action was: " + controlAction + ".");
 			}	
@@ -188,7 +188,7 @@ public class TrialNodeMinimal {
 	/**
 	 * Make the root of a new tree.
 	 **/
-	public TrialNodeMinimal(boolean treePhysOn) {
+	public Node(boolean treePhysOn) {
 		parent = null;
 		controlAction = Integer.MIN_VALUE;
 		treeDepth = 0; 
@@ -215,14 +215,14 @@ public class TrialNodeMinimal {
 	/************************************/
 
 	/** Sample random node. Either create or return an existing not fully explored child. **/
-	public TrialNodeMinimal sampleNode(){
+	public Node sampleNode(){
 
-		TrialNodeMinimal sample;
-		ArrayList<TrialNodeMinimal> unexploredChildren = new ArrayList<TrialNodeMinimal>();
+		Node sample;
+		ArrayList<Node> unexploredChildren = new ArrayList<Node>();
 
-		Iterator<TrialNodeMinimal> iter = children.iterator();
+		Iterator<Node> iter = children.iterator();
 		while(iter.hasNext()){ // Check how many children are still valid choices to expand.
-			TrialNodeMinimal child = iter.next();
+			Node child = iter.next();
 			if (!child.fullyExplored) unexploredChildren.add(child);
 		}
 
@@ -246,7 +246,7 @@ public class TrialNodeMinimal {
 
 		// Make a new node or pick a not fully explored child.
 		if (selection > unexploredChildren.size()){
-			sample = new TrialNodeMinimal(this,uncheckedActions.get(selection - unexploredChildren.size() - 1));
+			sample = new Node(this,uncheckedActions.get(selection - unexploredChildren.size() - 1));
 			nodesCreated++;
 			uncheckedActions.remove(selection - unexploredChildren.size() - 1); // Don't allow this one to be picked again.
 		}else{
@@ -309,7 +309,7 @@ public class TrialNodeMinimal {
 	public void expandNodeChoices_allBelow(int doubleSidedExpansionNumber){
 		expandNodeChoices(doubleSidedExpansionNumber);
 		fullyExplored = false;
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			child.expandNodeChoices_allBelow(doubleSidedExpansionNumber);
 		}
 	}
@@ -339,7 +339,7 @@ public class TrialNodeMinimal {
 		// Check whether the actions are already tested in the children, or included in the uncheckedActions list. If not, add.
 		for (int i = 0; i < newChoices.length; i++){
 			boolean isDuplicate = false;
-			for (TrialNodeMinimal child : children){
+			for (Node child : children){
 				if (child.controlAction == newChoices[i]){
 					isDuplicate = true;
 					break;
@@ -355,7 +355,7 @@ public class TrialNodeMinimal {
 		}
 		
 		// Recurse.
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			child.expandNodeChoices_fullCycle(nil1, W_O, nil2, Q_P);
 		}
 		
@@ -366,16 +366,16 @@ public class TrialNodeMinimal {
 	/***********************************************/
 
 	/** Get a random child **/
-	public TrialNodeMinimal getRandomChild(){
+	public Node getRandomChild(){
 		return children.get(randInt(0,children.size()-1));
 	}
 
 	/** Add all the nodes below and including this one to a list. Does not include nodes whose state have not yet been assigned. **/
-	public ArrayList<TrialNodeMinimal> getNodes_below(ArrayList<TrialNodeMinimal> nodeList){
+	public ArrayList<Node> getNodes_below(ArrayList<Node> nodeList){
 		if (state != null){
 			nodeList.add(this);
 		}
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			child.getNodes_below(nodeList);
 		}	
 		return nodeList;
@@ -383,8 +383,8 @@ public class TrialNodeMinimal {
 
 
 	/** Locate all the endpoints in the tree. Starts from the node it is called from. **/
-	public void getLeaves(ArrayList<TrialNodeMinimal> leaves){
-		for (TrialNodeMinimal child : children){
+	public void getLeaves(ArrayList<Node> leaves){
+		for (Node child : children){
 			if (child.children.isEmpty()){
 				leaves.add(child);
 			}else{
@@ -394,8 +394,8 @@ public class TrialNodeMinimal {
 	}
 
 	/** Returns the tree root no matter which node in the tree this is called from. **/
-	public TrialNodeMinimal getRoot(){
-		TrialNodeMinimal currentNode = this;
+	public Node getRoot(){
+		Node currentNode = this;
 		while (currentNode.treeDepth > 0){
 			currentNode = currentNode.parent;
 		}
@@ -405,7 +405,7 @@ public class TrialNodeMinimal {
 	/** Recount how many descendants this node has. **/
 	public int countDescendants(){
 		int count = 0;
-		for (TrialNodeMinimal current : children){
+		for (Node current : children){
 			count++;
 			count += current.countDescendants(); // Recurse down through the tree.
 		}
@@ -413,11 +413,11 @@ public class TrialNodeMinimal {
 	}
 
 	/** Check whether a node is an ancestor of this one. */
-	public boolean isOtherNodeAncestor(TrialNodeMinimal otherNode){
+	public boolean isOtherNodeAncestor(Node otherNode){
 		if (otherNode.treeDepth >= this.treeDepth){ // Don't need to check if this is as far down the tree.
 			return false;
 		}
-		TrialNodeMinimal currNode = parent;
+		Node currNode = parent;
 
 		while (currNode.treeDepth != otherNode.treeDepth){ // Find the node at the same depth as the one we're checking.
 			currNode = currNode.parent;
@@ -440,7 +440,7 @@ public class TrialNodeMinimal {
 		if (!uncheckedActions.isEmpty()){
 			flag = false;
 		}
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			if (!child.fullyExplored){ // If any child is not fully explored, then this node isn't too.
 				flag = false;
 			}
@@ -456,12 +456,12 @@ public class TrialNodeMinimal {
 	 * bunch of nodes have been loaded. 
 	 **/
 	public void checkFullyExplored_complete(){
-		ArrayList<TrialNodeMinimal> leaves = new ArrayList<TrialNodeMinimal>();
+		ArrayList<Node> leaves = new ArrayList<Node>();
 		getLeaves(leaves);
 
 		// Reset all existing exploration flags out there.
-		for (TrialNodeMinimal leaf : leaves){
-			TrialNodeMinimal currNode = leaf;
+		for (Node leaf : leaves){
+			Node currNode = leaf;
 			while (currNode.treeDepth > 0){
 				currNode.fullyExplored = false;
 				currNode = currNode.parent;
@@ -469,7 +469,7 @@ public class TrialNodeMinimal {
 			currNode.fullyExplored = false;
 		}
 
-		for (TrialNodeMinimal leaf : leaves){
+		for (Node leaf : leaves){
 			leaf.checkFullyExplored_lite();
 		}
 	}
@@ -516,11 +516,11 @@ public class TrialNodeMinimal {
 
 	/** Capture the state from an active game **/
 	public void captureState(QWOPGame game){
-		state = new CondensedStateInfo(game); // MATT add 8/22/17
+		state = new State(game); // MATT add 8/22/17
 	}
 
 	/** Assign the state directly. Usually when loading nodes. **/
-	public void setState(CondensedStateInfo newState){
+	public void setState(State newState){
 		state = newState;
 	}
 
@@ -528,7 +528,7 @@ public class TrialNodeMinimal {
 	public int[] getSequence(){
 		int[] sequence = new int[treeDepth];
 		if (treeDepth == 0) return sequence; // Empty array for root node.
-		TrialNodeMinimal current = this;
+		Node current = this;
 		sequence[treeDepth-1] = current.controlAction;
 		for (int i = treeDepth - 2; i >= 0; i--){
 			current = current.parent;
@@ -542,22 +542,22 @@ public class TrialNodeMinimal {
 	/****************************************/
 
 	/* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Returns the ROOT of a tree. */
-	public static TrialNodeMinimal makeNodesFromRunInfo(ArrayList<CondensedRunInfo> runs, boolean initializeTreePhysics){
-		TrialNodeMinimal rootNode = new TrialNodeMinimal(initializeTreePhysics);
+	public static Node makeNodesFromRunInfo(ArrayList<SaveableSingleGame> runs, boolean initializeTreePhysics){
+		Node rootNode = new Node(initializeTreePhysics);
 		return makeNodesFromRunInfo(runs, rootNode);
 	}
 
 	/* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Adds to an existing given root. **/
-	public static TrialNodeMinimal makeNodesFromRunInfo(ArrayList<CondensedRunInfo> runs, TrialNodeMinimal existingRootToAddTo){
-		TrialNodeMinimal rootNode = existingRootToAddTo;
+	public static Node makeNodesFromRunInfo(ArrayList<SaveableSingleGame> runs, Node existingRootToAddTo){
+		Node rootNode = existingRootToAddTo;
 		currentlyAddingSavedNodes = true;
-		for (CondensedRunInfo run : runs){ // Go through all runs, placing them in the tree.
-			TrialNodeMinimal currentNode = rootNode;	
+		for (SaveableSingleGame run : runs){ // Go through all runs, placing them in the tree.
+			Node currentNode = rootNode;	
 
 			for (int i = 0; i < run.actions.length; i++){ // Iterate through individual actions of this run, travelling down the tree in the process.
 
 				boolean foundExistingMatch = false;
-				for (TrialNodeMinimal child: currentNode.children){ // Look at each child of the currently investigated node.
+				for (Node child: currentNode.children){ // Look at each child of the currently investigated node.
 					if (child.controlAction == run.actions[i]){ // If there is already a node for the action we are trying to place, just use it.
 						currentNode = child;
 						foundExistingMatch = true;
@@ -566,7 +566,7 @@ public class TrialNodeMinimal {
 				}
 				// If this action is unique at this point in the tree, we need to add a new node there.
 				if (!foundExistingMatch){
-					TrialNodeMinimal newNode = new TrialNodeMinimal(currentNode, run.actions[i]);
+					Node newNode = new Node(currentNode, run.actions[i]);
 					newNode.setState(run.states[i]);
 					newNode.calcNodePos();
 					currentNode = newNode;
@@ -578,7 +578,7 @@ public class TrialNodeMinimal {
 		rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
 		currentlyAddingSavedNodes = false;
 		rootNode.calcNodePos_below();
-		if (TrialNodeMinimal.useTreePhysics) rootNode.initTreePhys_below();
+		if (Node.useTreePhysics) rootNode.initTreePhys_below();
 		return rootNode;
 	}
 
@@ -628,7 +628,7 @@ public class TrialNodeMinimal {
 
 	/** Recalculate all node positions below this one (NOT including this one for the sake of root). **/
 	public void calcNodePos_below(){		
-		for (TrialNodeMinimal current : children){
+		for (Node current : children){
 			current.calcNodePos();	
 			current.calcNodePos_below(); // Recurse down through the tree.
 		}
@@ -685,7 +685,7 @@ public class TrialNodeMinimal {
 
 	/** Initialize the tree physics below the called node. Useful when importing lots or doing in batches. **/
 	public void initTreePhys_below(){
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			child.initTreePhys_single();
 			child.initTreePhys_below();
 		}
@@ -699,7 +699,7 @@ public class TrialNodeMinimal {
 			stepping = false;
 			return;
 		}
-		ArrayList<TrialNodeMinimal> nodeList = new ArrayList<TrialNodeMinimal>();
+		ArrayList<Node> nodeList = new ArrayList<Node>();
 		getNodes_below(nodeList);
 
 		for (int i = 0; i < timesteps; i++){
@@ -712,9 +712,9 @@ public class TrialNodeMinimal {
 	}
 
 	/** Apply all my made up forces to the nodes. **/
-	public void applyForce(ArrayList<TrialNodeMinimal> nodeList){
+	public void applyForce(ArrayList<Node> nodeList){
 		if (arePhysicsInitialized){
-			for (TrialNodeMinimal thisNode : nodeList){
+			for (Node thisNode : nodeList){
 				if (thisNode.treeDepth == 0 || !thisNode.arePhysicsInitialized) continue; // Skip forces on root.
 				localForce.setZero();
 
@@ -743,16 +743,16 @@ public class TrialNodeMinimal {
 
 				// Repulser force from cousins (parent's sibling's children)
 				if (thisNode.treeDepth > 1){
-					TrialNodeMinimal grandparent = thisNode.parent.parent;
-					for (TrialNodeMinimal aunt : grandparent.children){ // Also happens to include parent
-						for (TrialNodeMinimal cousin : aunt.children){ // Also happens to include siblings
+					Node grandparent = thisNode.parent.parent;
+					for (Node aunt : grandparent.children){ // Also happens to include parent
+						for (Node cousin : aunt.children){ // Also happens to include siblings
 							if (!cousin.equals(thisNode) && cousin.arePhysicsInitialized){
 								localForce.addLocal(repulserForce(thisNode, cousin));
 							}
 						}
 					}
 				}else if (thisNode.treeDepth == 1){ // Forces on nodes one layer in. It's important to balance the repulsive forces or things blow up.
-					for (TrialNodeMinimal sibling : thisNode.parent.children){
+					for (Node sibling : thisNode.parent.children){
 						if (!sibling.equals(thisNode) && sibling.arePhysicsInitialized){
 							localForce.addLocal(repulserForce(thisNode,sibling));
 						}
@@ -760,8 +760,8 @@ public class TrialNodeMinimal {
 				}
 
 				// From grandchildren
-				for (TrialNodeMinimal child : children){
-					for (TrialNodeMinimal grandchild : child.children){
+				for (Node child : children){
+					for (Node grandchild : child.children){
 						if (grandchild.arePhysicsInitialized){
 							localForce.addLocal(repulserForce(thisNode, grandchild));
 						}
@@ -784,7 +784,7 @@ public class TrialNodeMinimal {
 	}
 
 	/** Node repulser force rule so I don't have to keep ctrl-c this crap **/
-	private static Vec2 repulserForce(TrialNodeMinimal thisNode, TrialNodeMinimal otherNode){
+	private static Vec2 repulserForce(Node thisNode, Node otherNode){
 		if (!otherNode.equals(thisNode) && otherNode.arePhysicsInitialized){
 			Vec2 o_pt = thisNode.physBody.getPosition().sub(otherNode.physBody.getPosition()); // Repulser point to this node.
 			float lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors
@@ -803,7 +803,7 @@ public class TrialNodeMinimal {
 			nodeLocation[1] = newPos.y;
 			nodeAngle = physBody.getAngle();
 			//nodeAngle = jointToParent.getJointAngle(); // Relative angle.
-			for (TrialNodeMinimal child : children){		
+			for (Node child : children){		
 				child.updatePositionFromPhys();
 			}
 		}
@@ -843,9 +843,9 @@ public class TrialNodeMinimal {
 
 	/** Draw all lines in the subtree below this node **/
 	public void drawLines_below(GL2 gl){	
-		Iterator<TrialNodeMinimal> iter = children.iterator();
+		Iterator<Node> iter = children.iterator();
 		while (iter.hasNext()){
-			TrialNodeMinimal current = iter.next();
+			Node current = iter.next();
 			current.drawLine(gl);
 			if (current.treeDepth <= this.treeDepth) throw new RuntimeException("Node hierarchy problem. Node with an equal or lesser depth is below another. At " + current.treeDepth + " and " + this.treeDepth + ".");
 			current.drawLines_below(gl); // Recurse down through the tree.
@@ -855,9 +855,9 @@ public class TrialNodeMinimal {
 	/** Draw all nodes in the subtree below this node. **/
 	public void drawNodes_below(GL2 gl){
 		drawPoint(gl);
-		Iterator<TrialNodeMinimal> iter = children.iterator();
+		Iterator<Node> iter = children.iterator();
 		while (iter.hasNext()){
-			TrialNodeMinimal child = iter.next();
+			Node child = iter.next();
 			child.drawPoint(gl);	
 			child.drawNodes_below(gl); // Recurse down through the tree.
 		}
@@ -865,10 +865,10 @@ public class TrialNodeMinimal {
 
 	/** Single out one run up to this node to highline the lines, while dimming the others. **/
 	public void highlightSingleRunToThisNode(){
-		TrialNodeMinimal rt = getRoot();
+		Node rt = getRoot();
 		rt.setLineBrightness_below(0.4f); // Fade the entire tree, then go and highlight the run we care about.
 
-		TrialNodeMinimal currentNode = this;
+		Node currentNode = this;
 		while (currentNode.treeDepth > 0){
 			currentNode.setLineBrightness(0.85f);
 			currentNode = currentNode.parent;
@@ -883,7 +883,7 @@ public class TrialNodeMinimal {
 	/** Fade a certain part of the tree. **/
 	public void setLineBrightness_below(float brightness){
 		setLineBrightness(brightness);
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			child.setLineBrightness_below(brightness);
 		}
 	}
@@ -910,7 +910,7 @@ public class TrialNodeMinimal {
 	/** Set an override line color for this branch (all descendants). **/
 	public void setBranchColor(Color newColor){
 		overrideLineColor = newColor;
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			child.setBranchColor(newColor);
 		}
 	}
@@ -918,7 +918,7 @@ public class TrialNodeMinimal {
 	/** Clear an overriden line color on this branch. Call from root to get all line colors back to default. **/
 	public void clearBranchColor(){
 		overrideLineColor = null;
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			child.clearBranchColor();
 		}
 	}
@@ -929,7 +929,7 @@ public class TrialNodeMinimal {
 			overrideNodeColor = null;
 			displayPoint = false;
 		}
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			child.clearNodeOverrideColor(colorToClear);
 		}
 	}
@@ -940,7 +940,7 @@ public class TrialNodeMinimal {
 			overrideNodeColor = null;
 			displayPoint = false;
 		}
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			child.clearNodeOverrideColor();
 		}
 	}
@@ -948,7 +948,7 @@ public class TrialNodeMinimal {
 	/** Give this branch a zOffset to make it stand out. **/
 	public void setBranchZOffset(float zOffset){
 		this.zOffset = zOffset;
-		for (TrialNodeMinimal child : children){
+		for (Node child : children){
 			child.setBranchZOffset(zOffset);
 		}
 	}
@@ -956,7 +956,7 @@ public class TrialNodeMinimal {
 	/** Give this branch a zOffset to make it stand out. Goes backwards towards root. **/
 	public void setBackwardsBranchZOffset(float zOffset){
 		this.zOffset = zOffset;
-		TrialNodeMinimal currentNode = this;
+		Node currentNode = this;
 		while (currentNode.treeDepth > 0){
 			currentNode.zOffset = zOffset;
 			currentNode = currentNode.parent;

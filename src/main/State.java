@@ -5,7 +5,7 @@ import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
 
 
-public class CondensedStateInfo implements Serializable {
+public class State implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -32,7 +32,7 @@ public class CondensedStateInfo implements Serializable {
 		X, Y, TH, DX, DY, DTH
 	}
 	
-	public CondensedStateInfo(QWOPGame world) {
+	public State(QWOPGame world) {
 		Body nextBody = world.TorsoBody;
 		body = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());

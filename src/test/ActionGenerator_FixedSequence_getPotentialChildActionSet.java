@@ -4,7 +4,7 @@
 package test;
 import main.Action;
 import main.ActionGenerator_FixedSequence;
-import main.TrialNodeMinimal;
+import main.Node;
 import static org.junit.Assert.*;
 
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import org.junit.Test;
 public class ActionGenerator_FixedSequence_getPotentialChildActionSet {
 	/**
 	 * Test method for {@link ActionGenerator_FixedSequence#ActionGenerator_FixedSequence(boolean[][], java.lang.Integer[][], java.util.Map)}.
-	 * and {@link ActionGenerator_FixedSequence#getPotentialChildActionSet(TrialNodeMinimal)}.
+	 * and {@link ActionGenerator_FixedSequence#getPotentialChildActionSet(Node)}.
 	 */
 	@Test
 	public final void testActionGenerator_FixedSequence() {
@@ -30,9 +30,9 @@ public class ActionGenerator_FixedSequence_getPotentialChildActionSet {
 		
 		ActionGenerator_FixedSequence generator = new ActionGenerator_FixedSequence(keySequence,actionRepeats,actionExceptions);
 		
-		TrialNodeMinimal fakeNodeRoot = new TrialNodeMinimal(false);
-		TrialNodeMinimal fakeNode1 = new TrialNodeMinimal(fakeNodeRoot,1);
-		TrialNodeMinimal fakeNode2 = new TrialNodeMinimal(fakeNode1,1);
+		Node fakeNodeRoot = new Node(false);
+		Node fakeNode1 = new Node(fakeNodeRoot,1);
+		Node fakeNode2 = new Node(fakeNode1,1);
 		
 		Action[] rootActions = generator.getPotentialChildActionSet(fakeNodeRoot);
 		Action[] actions1 = generator.getPotentialChildActionSet(fakeNode1);
@@ -43,8 +43,6 @@ public class ActionGenerator_FixedSequence_getPotentialChildActionSet {
 		assertEquals("Check actions from an exception node: ", 120, actions2[2].getTimestepsTotal());
 		assertFalse("Check that the keypresses line up for root: ",rootActions[0].peek()[1]);
 		assertTrue("Check that the keypresses line up for another node: ",actions1[0].peek()[1]);
-		
-		
-		
+
 	}
 }

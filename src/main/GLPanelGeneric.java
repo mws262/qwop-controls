@@ -21,7 +21,8 @@ import com.jogamp.opengl.util.gl2.GLUT;
  *
  */
 
-public class GenericGLPanel extends GLJPanel implements GLEventListener {
+@SuppressWarnings("serial")
+public class GLPanelGeneric extends GLJPanel implements GLEventListener {
 	
 	/***** GL objects *****/
 	/** If using openGL, we have to put a special GLCanvas inside the frame **/
@@ -42,12 +43,12 @@ public class GenericGLPanel extends GLJPanel implements GLEventListener {
 
 	/***** Camera management *****/
 	/** Camera manager for this scene **/
-	CamManager cam;
+	GLCamManager cam;
 	
 	int panelWidth = 1920; 
 	int panelHeight = 720;
 	
-	public GenericGLPanel() {
+	public GLPanelGeneric() {
 		// Canvas setup and sizing -- GL stuff exists in a CANVAS that we put in a PANEL (not fully understood TBH)
 		GLProfile glp = GLProfile.getDefault();
 		GLCapabilities caps = new GLCapabilities(glp);
@@ -62,7 +63,7 @@ public class GenericGLPanel extends GLJPanel implements GLEventListener {
 		this.add(canvas); // Add the canvas to the panel.
 		
 		// Default camera positioning.
-		cam = new CamManager(panelWidth,panelHeight);
+		cam = new GLCamManager(panelWidth,panelHeight);
 		
 	}
 	

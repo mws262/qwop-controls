@@ -15,7 +15,7 @@ import com.jogamp.opengl.glu.GLU;
  * @author Matt
  *
  */
-public class CamManager {
+public class GLCamManager {
 
 	/** Keep track of the current zoom factor. Absolute number is not significant. Relative to initial zoom. */
 	private float zoomFactor = 1f;
@@ -80,7 +80,7 @@ public class CamManager {
 	private float net = 0;
 
 	// For doing raycast point selection:
-	private TrialNodeMinimal chosenNode; // selected point
+	private Node chosenNode; // selected point
 	private double smallestDist = Double.MAX_VALUE;
 	private Vector3f clickVec = new Vector3f(0,0,0); // Vector ray of the mouse click.
 	private Vector3f EyeToPoint = new Vector3f(0,0,0); // vector from camera to a selected point.
@@ -90,7 +90,7 @@ public class CamManager {
 	private Vector3f temp2 = new Vector3f();
 
 	/** Provide camera's target, etc. **/
-	public CamManager(float width, float height, Vector3f eyePos, Vector3f targetPos) {
+	public GLCamManager(float width, float height, Vector3f eyePos, Vector3f targetPos) {
 		this.eyePos = eyePos;
 		this.targetPos = targetPos;
 		this.width = width;
@@ -98,7 +98,7 @@ public class CamManager {
 	}
 
 	/** Use default camera position, target, etc **/
-	public CamManager(float width, float height) {
+	public GLCamManager(float width, float height) {
 		this.width = width;
 		this.height = height;
 	}
@@ -472,12 +472,12 @@ public class CamManager {
 	}
 
 	/** Take a click vector, find the nearest node to this line. **/
-	public  TrialNodeMinimal nodeFromRay(Vector3f clickVec, ArrayList<TrialNodeMinimal> rootNodes){
+	public  Node nodeFromRay(Vector3f clickVec, ArrayList<Node> rootNodes){
 		// Determine which point is closest to the clicked ray.
 		double closestSoFar = Double.MAX_VALUE;
-		TrialNodeMinimal bestSoFar = null;
+		Node bestSoFar = null;
 		
-		for(TrialNodeMinimal root : rootNodes){ //Loop through all trees
+		for(Node root : rootNodes){ //Loop through all trees
 			chosenNode = nodeFromRay(clickVec, root);
 			
 			if (smallestDist < closestSoFar){
@@ -489,18 +489,18 @@ public class CamManager {
 	}
 
 	/** Take a click vector, find the nearest node to this line. **/
-	public TrialNodeMinimal nodeFromRay(Vector3f clickVec,TrialNodeMinimal root){ //Alt flag says whether to use Node location 2 or 1.
+	public Node nodeFromRay(Vector3f clickVec,Node root){ //Alt flag says whether to use Node location 2 or 1.
 		// Determine which point is closest to the clicked ray.
 
 		double tanDist;
 		double normDistSq;
-		ArrayList<TrialNodeMinimal> nodeList = new ArrayList<TrialNodeMinimal>();
+		ArrayList<Node> nodeList = new ArrayList<Node>();
 		
 		root.getNodes_below(nodeList);
 
 		smallestDist = Double.MAX_VALUE;
 
-		for (TrialNodeMinimal node : nodeList){
+		for (Node node : nodeList){
 			//Vector from eye to a vertex.
 			Vector3f nodePos = new Vector3f();
 
@@ -520,7 +520,7 @@ public class CamManager {
 	}
 	
 	/** Take a click vector, find the nearest node to this line. **/
-	public TrialNodeMinimal nodeFromRay_set(Vector3f clickVec, ArrayList<TrialNodeMinimal> nodeSet, float toleranceThresh){ //Alt flag says whether to use Node location 2 or 1.
+	public Node nodeFromRay_set(Vector3f clickVec, ArrayList<Node> nodeSet, float toleranceThresh){ //Alt flag says whether to use Node location 2 or 1.
 		// Determine which point is closest to the clicked ray.
 
 		double tanDist;
@@ -529,7 +529,7 @@ public class CamManager {
 
 		smallestDist = Double.MAX_VALUE;
 
-		for (TrialNodeMinimal node : nodeSet){
+		for (Node node : nodeSet){
 			//Vector from eye to a vertex.
 			Vector3f nodePos = new Vector3f();
 
@@ -554,19 +554,19 @@ public class CamManager {
 	}
 
 	/** Return the closest node to a click. **/
-	public TrialNodeMinimal nodeFromClick(int mouseX, int mouseY, TrialNodeMinimal root){
+	public Node nodeFromClick(int mouseX, int mouseY, Node root){
 		clickVec = clickVector(mouseX,mouseY);
 		return nodeFromRay(clickVec,root);
 	}
 	
 	/** Return the closest node to a click, given many trees. **/
-	public TrialNodeMinimal nodeFromClick(int mouseX, int mouseY, ArrayList<TrialNodeMinimal> roots){
+	public Node nodeFromClick(int mouseX, int mouseY, ArrayList<Node> roots){
 		clickVec = clickVector(mouseX,mouseY);
 		return nodeFromRay(clickVec,roots);
 	}
 	
 	/** Given a set of nodes **/
-	public TrialNodeMinimal nodeFromClick_set(int mouseX, int mouseY, ArrayList<TrialNodeMinimal> nodeSet, float toleranceThresh){
+	public Node nodeFromClick_set(int mouseX, int mouseY, ArrayList<Node> nodeSet, float toleranceThresh){
 		clickVec = clickVector(mouseX, mouseY);
 		return nodeFromRay_set(clickVec, nodeSet, toleranceThresh/zoomFactor);
 	}

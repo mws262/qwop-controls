@@ -92,7 +92,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	public boolean running = true;
 
 	/** Tree root nodes associated with this interface. **/
-	ArrayList<TrialNodeMinimal> rootNodes = new ArrayList<TrialNodeMinimal>();
+	ArrayList<Node> rootNodes = new ArrayList<Node>();
 
 	/** Individual pane for the tree. **/
 	TreePane treePane;
@@ -114,7 +114,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	DataPane dataPane_pca;
 
 	/** Selected node by user click/key **/
-	TrialNodeMinimal selectedNode;
+	Node selectedNode;
 
 	/** List of panes which can be activated, deactivated. **/
 	private ArrayList<TabbedPaneActivator> allTabbedPanes= new ArrayList<TabbedPaneActivator>(); //List of all panes in the tabbed part
@@ -265,7 +265,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				break;
 			case DRAW_ALL:
 				if (physOn){
-					Iterator<TrialNodeMinimal> iter = rootNodes.iterator();
+					Iterator<Node> iter = rootNodes.iterator();
 					while (iter.hasNext()){
 						iter.next().stepTreePhys(1);
 					}
@@ -301,7 +301,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	}
 
 	/** Pick a node for the UI to highlight and potentially display. **/
-	public void selectNode(TrialNodeMinimal selected){
+	public void selectNode(Node selected){
 		boolean success = false; // We don't allow new node selection while a realtime game is being played. 
 		if (negotiator != null) success = negotiator.uiNodeSelect(selected);
 		if (success){
@@ -386,7 +386,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	 * Pane for displaying the entire tree in OpenGL. Not part of the tabbed system.
 	 * @author Matt
 	 */
-	public class TreePane extends GenericGLPanel implements TabbedPaneActivator, GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
+	public class TreePane extends GLPanelGeneric implements TabbedPaneActivator, GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
 
 		/** For rendering text overlays. Note that textrenderer is for overlays while GLUT is for labels in world space **/
 		TextRenderer textRenderBig;
@@ -427,7 +427,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			float ptSize = 50f/cam.getZoomFactor(); //Let the points be smaller/bigger depending on zoom, but make sure to cap out the size!
 			ptSize = Math.min(ptSize, 10f);
 
-			for (TrialNodeMinimal node : rootNodes){
+			for (Node node : rootNodes){
 				gl.glColor3f(1f, 0.1f, 0.1f);
 				gl.glPointSize(ptSize);
 
@@ -607,9 +607,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			// If the snapshot pane is displaying stuff, this lets us potentially select some of the future nodes displayed in the snapshot pane.
 			if (snapshotPane.active && mouseInside){
-				ArrayList<TrialNodeMinimal> snapshotLeaves = snapshotPane.getDisplayedLeaves();
+				ArrayList<Node> snapshotLeaves = snapshotPane.getDisplayedLeaves();
 				if (snapshotLeaves.size() > 0){
-					TrialNodeMinimal nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves, 50);
+					Node nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves, 50);
 					if (nearest != null){
 						snapshotPane.giveSelectedFuture(nearest);
 					}else{
@@ -640,12 +640,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					int thisIndex = selectedNode.parent.children.indexOf(selectedNode);
 					//This set of logicals eliminates the edge cases, then takes the proposed action as default
 					if (thisIndex == 0 && direction == -1){ //We're at the lowest index of this node and must head to a new parent node.
-						ArrayList<TrialNodeMinimal> blacklist = new ArrayList<TrialNodeMinimal>(); //Keep a blacklist of nodes that already proved to be duds.
+						ArrayList<Node> blacklist = new ArrayList<Node>(); //Keep a blacklist of nodes that already proved to be duds.
 						blacklist.add(selectedNode);
 						nextOver(selectedNode.parent,blacklist,1,direction,selectedNode.parent.children.indexOf(selectedNode),0);
 
 					}else if (thisIndex == selectedNode.parent.children.size()-1 && direction == 1){ //We're at the highest index of this node and must head to a new parent node.
-						ArrayList<TrialNodeMinimal> blacklist = new ArrayList<TrialNodeMinimal>();
+						ArrayList<Node> blacklist = new ArrayList<Node>();
 						blacklist.add(selectedNode);
 						nextOver(selectedNode.parent,blacklist, 1,direction,selectedNode.parent.children.indexOf(selectedNode),0);
 
@@ -665,7 +665,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** Take a node back a layer. Don't return to node past. Try to go back out by the deficit depth amount in the +1 or -1 direction left/right **/
-		private boolean nextOver(TrialNodeMinimal current, ArrayList<TrialNodeMinimal> blacklist, int deficitDepth, int direction,int prevIndexAbove,int numTimesTried){ // numTimesTried added to prevent some really deep node for causing some really huge search through the whole tree. If we don't succeed in a handful of iterations, just fail quietly.
+		private boolean nextOver(Node current, ArrayList<Node> blacklist, int deficitDepth, int direction,int prevIndexAbove,int numTimesTried){ // numTimesTried added to prevent some really deep node for causing some really huge search through the whole tree. If we don't succeed in a handful of iterations, just fail quietly.
 			numTimesTried++;
 			boolean success = false;
 			//TERMINATING CONDITIONS-- fail quietly if we get back to root with nothing. Succeed if we get back to the same depth we started at.
@@ -895,11 +895,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		Stroke boldStroke = new BasicStroke(2);
 
 		/** Node we are focusing on displaying. **/
-		private TrialNodeMinimal snapshotNode;
+		private Node snapshotNode;
 
-		TrialNodeMinimal highlightedRunNode;
+		Node highlightedRunNode;
 
-		TrialNodeMinimal queuedFutureLeaf;
+		Node queuedFutureLeaf;
 
 		Font floatingActionText = new Font("Ariel", Font.BOLD, 18);
 
@@ -915,7 +915,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			addMouseMotionListener(this);
 		}
 
-		private ArrayList<TrialNodeMinimal> focusLeaves = new ArrayList<TrialNodeMinimal>();
+		private ArrayList<Node> focusLeaves = new ArrayList<Node>();
 		private ArrayList<XForm[]> transforms = new ArrayList<XForm[]>();
 		private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
 		private ArrayList<Color> colors = new ArrayList<Color>();
@@ -923,7 +923,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		Shape[] shapes;
 
 		/** Assign a selected node for the snapshot pane to display. **/
-		public void giveSelectedNode(TrialNodeMinimal node){
+		public void giveSelectedNode(Node node){
 			transforms.clear();
 			focusLeaves.clear();
 			strokes.clear();
@@ -942,7 +942,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			focusLeaves.add(snapshotNode);
 
 			/***** History nodes *****/
-			TrialNodeMinimal historyNode = snapshotNode;
+			Node historyNode = snapshotNode;
 			for (int i = 0; i < numHistoryStatesDisplay; i++){
 				if (historyNode.treeDepth > 0){
 					historyNode = historyNode.parent;
@@ -955,15 +955,15 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 
 			/***** Future leaf nodes *****/
-			ArrayList<TrialNodeMinimal> descendants = new ArrayList<TrialNodeMinimal>();
+			ArrayList<Node> descendants = new ArrayList<Node>();
 			for (int i = 0; i < selectedNode.children.size(); i++){
-				TrialNodeMinimal child = selectedNode.children.get(i);
+				Node child = selectedNode.children.get(i);
 				child.getLeaves(descendants);
 
-				Color runnerColor = TrialNodeMinimal.getColorFromTreeDepth(i*10);
+				Color runnerColor = Node.getColorFromTreeDepth(i*10);
 				child.setBranchColor(runnerColor); // Change the color on the tree too.
 
-				for (TrialNodeMinimal descendant : descendants){
+				for (Node descendant : descendants){
 					if (descendant.state != null){
 						focusLeaves.add(descendant);
 						transforms.add(descendant.state.getTransforms());
@@ -1044,7 +1044,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 				// Change things if one runner is selected.
 				if (mouseIsIn && bestIdx >= 0){
-					TrialNodeMinimal newHighlightNode = focusLeaves.get(bestIdx);
+					Node newHighlightNode = focusLeaves.get(bestIdx);
 					changeFocusedFuture(g2, highlightedRunNode, newHighlightNode);
 					highlightedRunNode = newHighlightNode;
 
@@ -1067,7 +1067,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** Change highlighting on both the tree and the snapshot when selections change. **/
-		private void changeFocusedFuture(Graphics2D g2, TrialNodeMinimal oldFuture, TrialNodeMinimal newFuture){
+		private void changeFocusedFuture(Graphics2D g2, Node oldFuture, Node newFuture){
 			// Clear out highlights from the old node.
 			if (oldFuture != null && !oldFuture.equals(newFuture)){
 				oldFuture.clearBackwardsBranchZOffset();
@@ -1088,7 +1088,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				try{
 					drawRunner(g2, colors.get(idx).darker(), boldStroke, shapes, transforms.get(idx));
 
-					TrialNodeMinimal currentNode = newFuture;
+					Node currentNode = newFuture;
 
 					// Also draw parent nodes back the the selected one to view the run that leads to the highlighted failure.
 					int prevX = Integer.MAX_VALUE;
@@ -1119,7 +1119,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** Focus a single future leaf **/
-		public void giveSelectedFuture(TrialNodeMinimal queuedFutureLeaf){
+		public void giveSelectedFuture(Node queuedFutureLeaf){
 			this.queuedFutureLeaf = queuedFutureLeaf;
 		}
 
@@ -1165,7 +1165,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** Get the list of leave nodes (failure states) that we're displaying in the snapshot pane. **/
-		public ArrayList<TrialNodeMinimal> getDisplayedLeaves(){
+		public ArrayList<Node> getDisplayedLeaves(){
 			return focusLeaves;
 		}
 
@@ -1224,7 +1224,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		private final Stroke boldStroke = new BasicStroke(2);
 
 		/** Node that we compare all others to. **/
-		private TrialNodeMinimal primaryNode;
+		private Node primaryNode;
 		
 		/** How many of the eigenvectors do we use? Dimension reduction. **/
 		private int lastEigToDisp = 10; // Display eigenvalues 0-4
@@ -1258,7 +1258,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 		}
 		/** Assign a selected node for the snapshot pane to display. **/
-		public void giveSelectedNode(TrialNodeMinimal node){
+		public void giveSelectedNode(Node node){
 			rootNodes.get(0).clearNodeOverrideColor();
 			transforms.clear();
 			strokes.clear();
@@ -1282,7 +1282,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			// This is a kind of hacky way of getting to the PCA stuff.
 			DataPane_PCA pcaPane = (DataPane_PCA)(dataPane_pca);
 			DataPane.PCATransformedData pcaData = pcaPane.getPCAData();
-			ArrayList<TrialNodeMinimal> allNodes = new ArrayList<TrialNodeMinimal>();
+			ArrayList<Node> allNodes = new ArrayList<Node>();
 			rootNodes.get(0).getNodes_below(allNodes);
 
 			FloatMatrix transDat = pcaData.transformDataset(allNodes,eigsToDisp);
@@ -1298,24 +1298,24 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			FloatMatrix errSq = transDat.rowSums();
 
 
-			TreeMap<Float,TrialNodeMinimal> treeMap = new TreeMap<Float,TrialNodeMinimal> ();
+			TreeMap<Float,Node> treeMap = new TreeMap<Float,Node> ();
 
 			for (int i = 0; i < allNodes.size(); i++){
 				treeMap.put(errSq.get(i), allNodes.get(i));
 			}
 
-			Iterator<TrialNodeMinimal> iter = treeMap.values().iterator();
+			Iterator<Node> iter = treeMap.values().iterator();
 			iter.next(); // First one is a self-comparison.
 
 			int count = 0;
 			while (iter.hasNext() && count <= 5){
-				TrialNodeMinimal closeMatch = iter.next();
+				Node closeMatch = iter.next();
 
 				XForm[] nodeXForm = closeMatch.state.getTransforms();
 				// Make the sequence centered around the selected node state.
 				transforms.add(nodeXForm);
 				strokes.add(normalStroke);
-				Color matchColor = TrialNodeMinimal.getColorFromTreeDepth(count*5);
+				Color matchColor = Node.getColorFromTreeDepth(count*5);
 				colors.add(matchColor);
 				closeMatch.overrideNodeColor = matchColor;
 				closeMatch.displayPoint = true;
@@ -1396,7 +1396,8 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
-            JComboBox<Integer> eigSelect = (JComboBox<Integer>)e.getSource();
+            @SuppressWarnings("unchecked")
+			JComboBox<Integer> eigSelect = (JComboBox<Integer>)e.getSource();
             lastEigToDisp = (Integer)eigSelect.getSelectedItem();
             eigsToDisp = new int[lastEigToDisp + 1];
             for (int i = 0; i < eigsToDisp.length; i++){
@@ -1418,12 +1419,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		int activePlotIdx = 0;
 
 		/** Body parts associated with each plot and axis. **/
-		private CondensedStateInfo.ObjectName[] plotObjectsX = new CondensedStateInfo.ObjectName[numberOfPlots];
-		private CondensedStateInfo.ObjectName[] plotObjectsY = new CondensedStateInfo.ObjectName[numberOfPlots];
+		private State.ObjectName[] plotObjectsX = new State.ObjectName[numberOfPlots];
+		private State.ObjectName[] plotObjectsY = new State.ObjectName[numberOfPlots];
 
 		/** State variables associated with each plot and axis. **/
-		private CondensedStateInfo.StateName[] plotStatesX = new CondensedStateInfo.StateName[numberOfPlots];
-		private CondensedStateInfo.StateName[] plotStatesY = new CondensedStateInfo.StateName[numberOfPlots];
+		private State.StateName[] plotStatesX = new State.StateName[numberOfPlots];
+		private State.StateName[] plotStatesY = new State.StateName[numberOfPlots];
 
 		/** Drop down menus for the things to plot. **/
 		private JComboBox<String> objListX;
@@ -1432,10 +1433,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		private JComboBox<String> stateListY;
 
 		/** String names of the body parts. **/
-		private final String[] objNames = new String[CondensedStateInfo.ObjectName.values().length];
+		private final String[] objNames = new String[State.ObjectName.values().length];
 
 		/** String names of the state variables. **/
-		private final String[] stateNames = new String[CondensedStateInfo.StateName.values().length];
+		private final String[] stateNames = new String[State.StateName.values().length];
 
 		/** Menu for selecting which data is displayed. **/
 		private final JDialog menu;
@@ -1448,22 +1449,22 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			super();
 			// Make string arrays of the body part and state variable names.
 			int count = 0;
-			for (CondensedStateInfo.ObjectName obj : CondensedStateInfo.ObjectName.values()) {
+			for (State.ObjectName obj : State.ObjectName.values()) {
 				objNames[count] = obj.name();
 				count++;
 			}
 			count = 0;
-			for (CondensedStateInfo.StateName st : CondensedStateInfo.StateName.values()) {
+			for (State.StateName st : State.StateName.values()) {
 				stateNames[count] = st.name();
 				count++;
 			}
 
 			// Initial plots to display			
 			for (int i = 0; i < numberOfPlots; i++){
-				plotObjectsX[i] = CondensedStateInfo.ObjectName.values()[TrialNodeMinimal.randInt(0, numberOfPlots - 1)];
-				plotStatesX[i] = CondensedStateInfo.StateName.values()[TrialNodeMinimal.randInt(0, numberOfPlots - 1)];
-				plotObjectsY[i] = CondensedStateInfo.ObjectName.values()[TrialNodeMinimal.randInt(0, numberOfPlots - 1)];
-				plotStatesY[i] = CondensedStateInfo.StateName.values()[TrialNodeMinimal.randInt(0, numberOfPlots - 1)];	
+				plotObjectsX[i] = State.ObjectName.values()[Node.randInt(0, numberOfPlots - 1)];
+				plotStatesX[i] = State.StateName.values()[Node.randInt(0, numberOfPlots - 1)];
+				plotObjectsY[i] = State.ObjectName.values()[Node.randInt(0, numberOfPlots - 1)];
+				plotStatesY[i] = State.StateName.values()[Node.randInt(0, numberOfPlots - 1)];	
 			}
 
 			// Drop down menus
@@ -1493,7 +1494,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		public void update(){
 			// Fetching new data.
-			ArrayList<TrialNodeMinimal> nodesBelow = new ArrayList<TrialNodeMinimal>();
+			ArrayList<Node> nodesBelow = new ArrayList<Node>();
 			if (selectedNode != null){
 				selectedNode.getNodes_below(nodesBelow);
 
@@ -1543,13 +1544,13 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			int state = e.getStateChange();
 			if (state == ItemEvent.SELECTED){
 				if (e.getSource() == objListX){
-					plotObjectsX[activePlotIdx] = CondensedStateInfo.ObjectName.valueOf((String)e.getItem());
+					plotObjectsX[activePlotIdx] = State.ObjectName.valueOf((String)e.getItem());
 				}else if (e.getSource() == objListY){
-					plotObjectsY[activePlotIdx] = CondensedStateInfo.ObjectName.valueOf((String)e.getItem());
+					plotObjectsY[activePlotIdx] = State.ObjectName.valueOf((String)e.getItem());
 				}else if (e.getSource() == stateListX){
-					plotStatesX[activePlotIdx] = CondensedStateInfo.StateName.valueOf((String)e.getItem());
+					plotStatesX[activePlotIdx] = State.StateName.valueOf((String)e.getItem());
 				}else if ((e.getSource() == stateListY)){
-					plotStatesY[activePlotIdx] = CondensedStateInfo.StateName.valueOf((String)e.getItem());
+					plotStatesY[activePlotIdx] = State.StateName.valueOf((String)e.getItem());
 				}else{
 					throw new RuntimeException("Unknown item status in plots from: " + e.getSource().toString());
 				}
@@ -1567,7 +1568,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		// Which pairs of eigenvalues we're plotting.
 		int[][] dataSelect;
 
-		private TrialNodeMinimal lastSelectedNode;
+		private Node lastSelectedNode;
 
 		/** Data transformed by PCA **/
 		private PCATransformedData pcaPlotDat;
@@ -1605,7 +1606,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		private void setDatasets(int[][] dataSelect){			
 			// Fetching new data.
-			ArrayList<TrialNodeMinimal> nodesBelow = new ArrayList<TrialNodeMinimal>();
+			ArrayList<Node> nodesBelow = new ArrayList<Node>();
 			if (selectedNode != null){
 
 				// A state pair being added to the first plot.
@@ -1750,10 +1751,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		public abstract void plotClicked(int plotIdx);
 
 		/** Plotting colors for dots. **/
-		public final Color actionColor1 = TrialNodeMinimal.getColorFromTreeDepth(0);
-		public final Color actionColor2 = TrialNodeMinimal.getColorFromTreeDepth(10);
-		public final Color actionColor3 = TrialNodeMinimal.getColorFromTreeDepth(20);
-		public final Color actionColor4 = TrialNodeMinimal.getColorFromTreeDepth(30);
+		public final Color actionColor1 = Node.getColorFromTreeDepth(0);
+		public final Color actionColor2 = Node.getColorFromTreeDepth(10);
+		public final Color actionColor3 = Node.getColorFromTreeDepth(20);
+		public final Color actionColor4 = Node.getColorFromTreeDepth(30);
 
 
 		/** My default settings for each plot. **/
@@ -1852,25 +1853,25 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			public float xLimLo = Float.MAX_VALUE;
 
 			/** Nodes to appear on the plot. **/
-			private final ArrayList<TrialNodeMinimal> nodeList;
+			private final ArrayList<Node> nodeList;
 
 			private Map<Integer,Pair> dataSeries = new HashMap<Integer,Pair>();
 
 			private StatePlotRenderer renderer = new StatePlotRenderer();
 
-			public LinkStateCombination(ArrayList<TrialNodeMinimal> nodes){
+			public LinkStateCombination(ArrayList<Node> nodes){
 				nodeList = nodes;
 			}
 
-			public void addSeries(int plotIdx, CondensedStateInfo.ObjectName objectX, CondensedStateInfo.StateName stateX,
-					CondensedStateInfo.ObjectName objectY, CondensedStateInfo.StateName stateY){
+			public void addSeries(int plotIdx, State.ObjectName objectX, State.StateName stateX,
+					State.ObjectName objectY, State.StateName stateY){
 				dataSeries.put(plotIdx, new Pair(plotIdx, objectX, stateX,
 						objectY, stateY));
 			}
 
 			@Override
 			public Number getX(int series, int item) {
-				CondensedStateInfo state = nodeList.get(item).state; // Item is which node.
+				State state = nodeList.get(item).state; // Item is which node.
 				Pair dat = dataSeries.get(series);
 				float value = state.getStateVarFromName(dat.objectX, dat.stateX);
 
@@ -1885,20 +1886,20 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 			@Override
 			public Number getY(int series, int item) {
-				CondensedStateInfo state = nodeList.get(item).state; // Item is which node.
+				State state = nodeList.get(item).state; // Item is which node.
 				Pair dat = dataSeries.get(series);
 				return state.getStateVarFromName(dat.objectY, dat.stateY);
 			}
 
 			/** State + body part name pairs for looking up data. **/
 			private class Pair{
-				CondensedStateInfo.ObjectName objectX;
-				CondensedStateInfo.StateName stateX;
-				CondensedStateInfo.ObjectName objectY;
-				CondensedStateInfo.StateName stateY;
+				State.ObjectName objectX;
+				State.StateName stateX;
+				State.ObjectName objectY;
+				State.StateName stateY;
 
-				public Pair(int plotIdx, CondensedStateInfo.ObjectName objectX, CondensedStateInfo.StateName stateX,
-						CondensedStateInfo.ObjectName objectY, CondensedStateInfo.StateName stateY){
+				public Pair(int plotIdx, State.ObjectName objectX, State.StateName stateX,
+						State.ObjectName objectY, State.StateName stateY){
 					this.objectX = objectX;
 					this.objectY = objectY;
 					this.stateX = stateX;
@@ -1939,7 +1940,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				@Override
 				public Paint getItemPaint(int series, int item) {
 					if (colorByDepth){
-						return TrialNodeMinimal.getColorFromTreeDepth(nodeList.get(item).treeDepth);
+						return Node.getColorFromTreeDepth(nodeList.get(item).treeDepth);
 					}else{
 						Color dotColor = Color.RED;
 						switch (nodeList.get(item).treeDepth % 4){
@@ -1974,7 +1975,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		public class PCATransformedData extends AbstractXYDataset{
 
 			/** Nodes to appear on the plot. **/
-			private ArrayList<TrialNodeMinimal> nodeList;
+			private ArrayList<Node> nodeList;
 
 			/** Eigenvectors found during SVD of the conditioned states. They represent the principle directions that explain most of the state variance. **/
 			private FloatMatrix evecs;
@@ -1993,14 +1994,14 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			/** Specific series of data to by plotted. Integer is the plotindex, the matrix is 2xn for x-y plot. **/
 			private Map<Integer,FloatMatrix> tformedData = new HashMap<Integer,FloatMatrix>();
 
-			ArrayList<CondensedStateInfo.ObjectName> objectsUsed = new ArrayList<CondensedStateInfo.ObjectName>(Arrays.asList(CondensedStateInfo.ObjectName.values()));
-			ArrayList<CondensedStateInfo.StateName> statesUsed = new ArrayList<CondensedStateInfo.StateName>(Arrays.asList(CondensedStateInfo.StateName.values()));
+			ArrayList<State.ObjectName> objectsUsed = new ArrayList<State.ObjectName>(Arrays.asList(State.ObjectName.values()));
+			ArrayList<State.StateName> statesUsed = new ArrayList<State.StateName>(Arrays.asList(State.StateName.values()));
 
 
-			public PCATransformedData(ArrayList<TrialNodeMinimal> nodes){
+			public PCATransformedData(ArrayList<Node> nodes){
 				super();
 				// Can blacklist things NOT to be PCA'd
-				statesUsed.remove(CondensedStateInfo.StateName.X);
+				statesUsed.remove(State.StateName.X);
 
 				nodeList = nodes;
 				doPCA();
@@ -2032,7 +2033,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 
 			/** Mostly for external use. Transform any data by the chosen PCA components. Must have done the PCA already! **/
-			public FloatMatrix transformDataset(ArrayList<TrialNodeMinimal> nodesToTransform, int[] chosenPCAComponents){
+			public FloatMatrix transformDataset(ArrayList<Node> nodesToTransform, int[] chosenPCAComponents){
 				FloatMatrix preppedDat = prepTrialNodeData(nodesToTransform, objectsUsed, statesUsed);
 				FloatMatrix lowDimData = preppedDat.mmul(evecs.getColumns(chosenPCAComponents));
 				return lowDimData;
@@ -2071,9 +2072,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 
 			/** Unpack the state data from the nodes, pulling only the stuff we want. Condition data to variance 1, mean 0. **/
-			private FloatMatrix prepTrialNodeData(ArrayList<TrialNodeMinimal> nodes, 
-					ArrayList<CondensedStateInfo.ObjectName> includedObjects, 
-					ArrayList<CondensedStateInfo.StateName> includedStates){
+			private FloatMatrix prepTrialNodeData(ArrayList<Node> nodes, 
+					ArrayList<State.ObjectName> includedObjects, 
+					ArrayList<State.StateName> includedStates){
 
 
 				int numStates = includedObjects.size() * includedStates.size();
@@ -2083,9 +2084,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				for (int i = 0; i < nodes.size(); i++){
 					int colCounter = 0;
 					// Through all body parts...
-					for (CondensedStateInfo.ObjectName obj : includedObjects){
+					for (State.ObjectName obj : includedObjects){
 						// For each state of each body part.
-						for (CondensedStateInfo.StateName st : includedStates){
+						for (State.StateName st : includedStates){
 							dat.put(i, colCounter, nodes.get(i).state.getStateVarFromName(obj, st));
 							colCounter++;
 						}
@@ -2161,7 +2162,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				@Override
 				public Paint getItemPaint(int series, int item) {
 					if (colorByDepth){
-						return TrialNodeMinimal.getColorFromTreeDepth(nodeList.get(item).treeDepth);
+						return Node.getColorFromTreeDepth(nodeList.get(item).treeDepth);
 					}else{
 						Color dotColor = Color.RED;
 						switch (nodeList.get(item).treeDepth % 4){

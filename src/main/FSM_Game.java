@@ -158,10 +158,10 @@ public class FSM_Game implements Runnable{
 	}
 
 	/** QWOP initial condition. Good way to give the root node a state. **/
-	public static CondensedStateInfo getInitialState(){
+	public static State getInitialState(){
 		QWOPGame g = new QWOPGame();
 		g.Setup();
-		CondensedStateInfo initState = new CondensedStateInfo(g);
+		State initState = new State(g);
 		initState.failedState = false;
 		return initState;
 	}
@@ -213,8 +213,8 @@ public class FSM_Game implements Runnable{
 	}
 
 	/** Get the state of the runner. **/
-	public CondensedStateInfo getGameState(){
-		CondensedStateInfo currentState = new CondensedStateInfo(game);
+	public State getGameState(){
+		State currentState = new State(game);
 		currentState.failedState = failFlag;
 		return currentState;
 	}

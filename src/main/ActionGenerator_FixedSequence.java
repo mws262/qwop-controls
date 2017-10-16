@@ -61,7 +61,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator{
 	}
 	
 	@Override
-	public Action[] getPotentialChildActionSet(TrialNodeMinimal parentNode) {
+	public Action[] getPotentialChildActionSet(Node parentNode) {
 		int actionDepth = parentNode.treeDepth;
 		
 		// Check if this is an exception case.
