@@ -105,4 +105,9 @@ public class Action implements Serializable{
 		
 		return reportString;
 	}
+	
+	/** Just returns the total delay time, assuming the user remebers the key sequence stuff. **/
+	public String toStringLite() {
+		return String.valueOf(timestepsTotal);
+	}
 }

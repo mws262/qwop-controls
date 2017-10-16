@@ -23,7 +23,7 @@ public class Negotiator {
 	boolean P = false;
 
 	/** Box2D game interface reports all FSM changes. */
-	boolean verbose_game = false;
+	boolean verbose_game = true;
 
 	/** UI window reports all FSM changes. */
 	boolean verbose_UI = false;
@@ -114,7 +114,17 @@ public class Negotiator {
 	public void statusChange_tree(FSM_Tree.Status status) {
 		if (verbose_tree)
 			System.out.println("Tree FSM: " + status);
-		if (status == null) throw new RuntimeException("Somehow statusChange_tree in negotiator received a null status change. This should never be possible but I think I've seen it.");
+		if (status == null) {
+			  System.out.println("Printing stack trace:");
+			  StackTraceElement[] elements = Thread.currentThread().getStackTrace();
+			  for (int i = 1; i < elements.length; i++) {
+			    StackTraceElement s = elements[i];
+			    System.out.println("\tat " + s.getClassName() + "." + s.getMethodName()
+			        + "(" + s.getFileName() + ":" + s.getLineNumber() + ")");
+			  }
+			
+			throw new RuntimeException("Somehow statusChange_tree in negotiator received a null status change. This should never be possible but I think I've seen it.");
+		}
 		switch (status) {
 		case ADD_NODE:
 			break;
@@ -203,7 +213,7 @@ public class Negotiator {
 		if (ui.snapshotPane.active) {
 
 		} else if (ui.runnerPane.active) {
-			if (!game.isRealtime()){
+			if (!game.isRealtime() && node.treeDepth > 0){ // Can't be a root node.
 				// Run a one-off, real-time game.
 				tree.latchAtFSMStatus(FSM_Tree.Status.IDLE);
 				game.runSingleRealtime(node.getSequence());

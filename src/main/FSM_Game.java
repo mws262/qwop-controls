@@ -83,6 +83,7 @@ public class FSM_Game implements Runnable{
 					currentStatus = Status.INITIALIZE;
 				}else if (flagForSingle){ // User selected one to display.
 					if (queuedSequence == null) throw new RuntimeException("Game flagged for single run, but no queued sequence ready.");
+					System.out.println(queuedSequence.length);
 					actionQueue.addSequence(queuedSequence);
 					runRealTime = true;
 					flagForSingle = false;
@@ -138,6 +139,7 @@ public class FSM_Game implements Runnable{
 				if (runRealTime) negotiator.reportEndOfRealTimeSim();
 				
 				if (flagForSingle){ // User selected one to display.
+					System.out.println(queuedSequence.length);
 					actionQueue.addSequence(queuedSequence);
 					runRealTime = true;
 					flagForSingle = false;
@@ -314,7 +316,7 @@ public class FSM_Game implements Runnable{
 			if (currentAction == null || !currentAction.hasNext()){
 				if (currentAction != null) currentAction.reset();
 				currentAction = actionQueue.poll();
-				System.out.println(currentAction.toString());
+				currentAction.reset();
 			}
 			
 			boolean[] nextCommand = currentAction.poll();
@@ -328,6 +330,7 @@ public class FSM_Game implements Runnable{
 		/** Remove everything from the queues and reset the sequence. **/
 		public void clearAll(){
 			actionQueue.clear();
+			currentAction = null;
 			isEmpty = true;
 		}
 		

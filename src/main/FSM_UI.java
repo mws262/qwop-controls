@@ -348,7 +348,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		int currIdx = 0;
 		int lineNum = 1;
 		while (currIdx < sequence.length - 1){
-			String line = sequence[currIdx] + ",";
+			String line = sequence[currIdx].toStringLite() + ",";
 
 			if (currIdx == highlightIdx){
 				g.setColor(Color.GREEN);
@@ -529,7 +529,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyPressed(KeyEvent e) {
-
 			if (mouseInside){
 				//Navigating the focused node tree
 				int keyCode = e.getKeyCode();
@@ -1106,7 +1105,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 						g2.setColor(everyOtherEvenColor);
 						prevX = Math.min((int)(runnerScaling * currentNode.state.head.x) + xOffsetPixels - 3,prevX - 25);
 
-						g2.drawString(currentNode.getAction().toString(), 
+						g2.drawString(currentNode.getAction().toStringLite(), 
 								prevX, 
 								Math.min((int)(runnerScaling * currentNode.state.head.y) + yOffsetPixels - 25, 45));
 

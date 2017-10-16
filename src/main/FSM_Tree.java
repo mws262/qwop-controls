@@ -7,8 +7,8 @@ public class FSM_Tree implements Runnable{
 	private boolean running = true;
 
 	/* State machine current and previous loop status. Only reports to negotiator when changes. */
-	public Status currentStatus = Status.IDLE;
-	public Status previousStatus = Status.IDLE;
+	public volatile Status currentStatus = Status.IDLE;
+	public volatile Status previousStatus = Status.IDLE;
 	private Status queuedStatusChange;
 	private boolean forcedStatusChange = false;
 	
@@ -119,6 +119,7 @@ public class FSM_Tree implements Runnable{
 			
 			// Handle external status changes in a way that lets them be reported properly. 
 			if (forcedStatusChange){
+//				System.out.println(queuedStatusChange.toString()); // TODO null is here too
 				currentStatus = queuedStatusChange;
 				queuedStatusChange = null;
 				forcedStatusChange = false;
@@ -156,6 +157,7 @@ public class FSM_Tree implements Runnable{
 	
 	/** Force a status change. DO NOT try to just change currentStatus. **/
 	private void setStatus(Status status){
+//		System.out.println(status.toString());
 		queuedStatusChange = status;
 		forcedStatusChange = true;
 	}
