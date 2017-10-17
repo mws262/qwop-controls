@@ -7,10 +7,10 @@ public class FSM_Tree implements Runnable{
 	private boolean running = true;
 
 	/* State machine current and previous loop status. Only reports to negotiator when changes. */
-	public volatile Status currentStatus = Status.IDLE;
-	public volatile Status previousStatus = Status.IDLE;
-	private Status queuedStatusChange;
-	private boolean forcedStatusChange = false;
+	public Status currentStatus = Status.IDLE;
+	public Status previousStatus = Status.IDLE;
+	private volatile Status queuedStatusChange;
+	private volatile boolean forcedStatusChange = false;
 	
 	/* Reports changes to negotiator and uses it to get reports from the game. */
 	private Negotiator negotiator;
@@ -53,7 +53,6 @@ public class FSM_Tree implements Runnable{
 			}
 			
 			if (locked){
-				//System.out.println("set it!");
 				isLocked = true;
 				continue; // If we call one of the lock methods, the loop skips everything.
 			}else{
@@ -119,7 +118,6 @@ public class FSM_Tree implements Runnable{
 			
 			// Handle external status changes in a way that lets them be reported properly. 
 			if (forcedStatusChange){
-				System.out.println(queuedStatusChange.toString()); // TODO null is here too
 				currentStatus = queuedStatusChange;
 				queuedStatusChange = null;
 				forcedStatusChange = false;
@@ -143,8 +141,6 @@ public class FSM_Tree implements Runnable{
 					targetNodeToTest.checkFullyExplored_lite();
 					setStatus(Status.EVALUATE_GAME);					
 				}else{
-					//TODO Expand potential child nodes.
-					//targetNodeToTest.expandNodeChoices(25, 2);
 					setStatus(Status.ADD_NODE);
 				}
 			}catch (NullPointerException e){
@@ -157,19 +153,6 @@ public class FSM_Tree implements Runnable{
 	
 	/** Force a status change. DO NOT try to just change currentStatus. **/
 	private void setStatus(Status status){
-		// Temp tracking
-		if (status == null) {
-			  System.out.println("Printing stack trace:");
-			  StackTraceElement[] elements = Thread.currentThread().getStackTrace();
-			  for (int i = 1; i < elements.length; i++) {
-			    StackTraceElement s = elements[i];
-			    System.out.println("\tat " + s.getClassName() + "." + s.getMethodName()
-			        + "(" + s.getFileName() + ":" + s.getLineNumber() + ")");
-			  }
-			
-			throw new RuntimeException("Somehow statusChange_tree in negotiator received a null status change. This should never be possible but I think I've seen it.");
-		}
-		//System.out.println(status.toString());
 		queuedStatusChange = status;
 		forcedStatusChange = true;
 	}

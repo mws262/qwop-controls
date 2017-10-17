@@ -26,13 +26,17 @@ public class MAIN_test {
 												  
 		// Selection of delays for each key press combo. 
 		Integer[][] actionRepeats = new Integer[][] {{3,4,5,6,7,8,9,10},
-													 {29,30,31,32,33,34,35,36,37,38,39,40,41,42},
+													 {32,33,34,35,36,37,38,39,40,41,42},
 												     {3,4,5,6,7,8,9,10},
-												     {29,30,31,32,33,34,35,36,37,38,39,40,41,42}};
+												     {32,33,34,35,36,37,38,39,40,41,42}};
+												     
 												     
 		// Exceptions to the actionRepeats above. Mainly for the first few actions.   
 		Map<Integer,Integer[]> actionExceptions = new HashMap<Integer,Integer[]>();
-		//actionExceptions.put(key, value)
+		actionExceptions.put(0, new Integer[] {4,5,6});
+		actionExceptions.put(1, new Integer[] {31,32,33,34,35,36});
+		actionExceptions.put(2, new Integer[] {21,22,23,24,25});
+		actionExceptions.put(3, new Integer[] {45,46,47,48,49,50});
 		
 		IActionGenerator actionGenerator = new ActionGenerator_FixedSequence(keySequence, actionRepeats, actionExceptions);
 		Node.potentialActionGenerator = actionGenerator;

@@ -70,7 +70,6 @@ public class FSM_Game implements Runnable{
 	public void run() {	
 		while(running){
 			if (locked){
-				//System.out.println("set it!");
 				isLocked = true;
 				continue; // If we call one of the lock methods, the loop skips everything.
 			}else{
@@ -83,7 +82,6 @@ public class FSM_Game implements Runnable{
 					currentStatus = Status.INITIALIZE;
 				}else if (flagForSingle){ // User selected one to display.
 					if (queuedSequence == null) throw new RuntimeException("Game flagged for single run, but no queued sequence ready.");
-					System.out.println(queuedSequence.length);
 					actionQueue.addSequence(queuedSequence);
 					runRealTime = true;
 					flagForSingle = false;

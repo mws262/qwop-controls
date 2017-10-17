@@ -23,7 +23,7 @@ public class Negotiator {
 	boolean P = false;
 
 	/** Box2D game interface reports all FSM changes. */
-	boolean verbose_game = true;
+	boolean verbose_game = false;
 
 	/** UI window reports all FSM changes. */
 	boolean verbose_UI = false;
@@ -114,6 +114,7 @@ public class Negotiator {
 	public void statusChange_tree(FSM_Tree.Status status) {
 		if (verbose_tree)
 			System.out.println("Tree FSM: " + status);
+		// Temporary tracking of that elusive bug which may or may not be fixed.
 		if (status == null) {
 			  System.out.println("Printing stack trace:");
 			  StackTraceElement[] elements = Thread.currentThread().getStackTrace();
