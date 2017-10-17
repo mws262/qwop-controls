@@ -330,6 +330,7 @@ public class FSM_Game implements Runnable{
 		/** Remove everything from the queues and reset the sequence. **/
 		public void clearAll(){
 			actionQueue.clear();
+			actionListFull.clear();
 			currentAction = null;
 			isEmpty = true;
 		}

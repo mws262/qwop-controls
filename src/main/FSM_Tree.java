@@ -119,7 +119,7 @@ public class FSM_Tree implements Runnable{
 			
 			// Handle external status changes in a way that lets them be reported properly. 
 			if (forcedStatusChange){
-//				System.out.println(queuedStatusChange.toString()); // TODO null is here too
+				System.out.println(queuedStatusChange.toString()); // TODO null is here too
 				currentStatus = queuedStatusChange;
 				queuedStatusChange = null;
 				forcedStatusChange = false;
@@ -157,7 +157,19 @@ public class FSM_Tree implements Runnable{
 	
 	/** Force a status change. DO NOT try to just change currentStatus. **/
 	private void setStatus(Status status){
-//		System.out.println(status.toString());
+		// Temp tracking
+		if (status == null) {
+			  System.out.println("Printing stack trace:");
+			  StackTraceElement[] elements = Thread.currentThread().getStackTrace();
+			  for (int i = 1; i < elements.length; i++) {
+			    StackTraceElement s = elements[i];
+			    System.out.println("\tat " + s.getClassName() + "." + s.getMethodName()
+			        + "(" + s.getFileName() + ":" + s.getLineNumber() + ")");
+			  }
+			
+			throw new RuntimeException("Somehow statusChange_tree in negotiator received a null status change. This should never be possible but I think I've seen it.");
+		}
+		//System.out.println(status.toString());
 		queuedStatusChange = status;
 		forcedStatusChange = true;
 	}
