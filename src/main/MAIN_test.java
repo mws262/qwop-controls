@@ -65,9 +65,11 @@ public class MAIN_test {
 		
 		
 		Node treeRoot = new Node(useTreePhysics);
+		ISampler randomSampler = new Sampler_Random();
+		
 		/* Start tree processes */
 		FSM_UI ui = new FSM_UI();
-		FSM_Tree tree = new FSM_Tree();
+		FSM_Tree tree = new FSM_Tree(randomSampler);
 		FSM_Game game = new FSM_Game();
 		
 		/* Manage the tree, UI, and game. Start some threads. */

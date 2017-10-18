@@ -223,6 +223,13 @@ public class Node {
 	/******* ADDING TO THE TREE *********/
 	/************************************/
 
+	/** Add a new child node from a given action. If the action is in uncheckedActions, remove it. **/
+	public Node addChild(Action childAction) {
+		uncheckedActions.remove(childAction);
+		nodesCreated++;
+		return new Node(this,childAction);
+	}
+	
 	/** If we've assigned a potentialActionGenerator, this can auto-add potential child actions. Ignores duplicates. **/
 	private void autoAddUncheckedActions() {
 		// If we've set rules to auto-select potential children, do so.
@@ -256,8 +263,6 @@ public class Node {
 					+ " children it thinks are not fully explored and " 
 					+ uncheckedActions.size() + " unchecked potential actions. Total children: " + children.size());
 		}
-
-
 
 		int selection = 0;
 		try{

@@ -89,7 +89,7 @@ public class Negotiator {
 	public void pauseTree(){
 		tree.latchAtFSMStatus(FSM_Tree.Status.IDLE);
 	}
-	
+
 	public void unpauseTree(){
 		tree.unlockFSM();
 	}
@@ -112,52 +112,53 @@ public class Negotiator {
 
 	/**** For the actual tree ****/
 	public void statusChange_tree(FSM_Tree.Status status) {
-		if (verbose_tree)
-			System.out.println("Tree FSM: " + status);
-		// Temporary tracking of that elusive bug which may or may not be fixed.
-		if (status == null) {
-			  System.out.println("Printing stack trace:");
-			  StackTraceElement[] elements = Thread.currentThread().getStackTrace();
-			  for (int i = 1; i < elements.length; i++) {
-			    StackTraceElement s = elements[i];
-			    System.out.println("\tat " + s.getClassName() + "." + s.getMethodName()
-			        + "(" + s.getFileName() + ":" + s.getLineNumber() + ")");
-			  }
-			
-			throw new RuntimeException("Somehow statusChange_tree in negotiator received a null status change. This should never be possible but I think I've seen it.");
-		}
+		if (verbose_tree) System.out.println("Tree FSM: " + status);
+
+		FSM_Game.Status gameStatus;
+
 		switch (status) {
-		case ADD_NODE:
+		case IDLE:
 			break;
-		case DO_PREDETERMINED:
+		case INITIALIZE:
 			break;
-		case EVALUATE_GAME:
+		case TREE_POLICY:
 			break;
-		case EXHAUSTED:
-			tree.kill();
-			break;
-		case WAITING_FOR_PREDETERMINED:
-			FSM_Game.Status gameStatusPredet = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
-			if (gameStatusPredet == FSM_Game.Status.IDLE){
+		case TREE_POLICY_WAITING:
+			gameStatus = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
+			if (gameStatus == FSM_Game.Status.IDLE){
 				game.addSequence(tree.targetNodeToTest.getSequence());
 			}else{
-				throw new RuntimeException("Tree tried to queue a predetermined sequence while the game wasn't idle.");
+				throw new RuntimeException("Tree tried to queue a sequence while the game wasn't idle.");
 			}
 			game.unlockFSM();
 
 			break;
-		case WAITING_FOR_SINGLE:
-			FSM_Game.Status gameStatusSingle = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
-			if (gameStatusSingle == FSM_Game.Status.WAITING){
+		case EXPANSION_POLICY:
+			break;
+		case EXPANSION_POLICY_WAITING:
+			gameStatus = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
+			if (gameStatus == FSM_Game.Status.WAITING){
 				game.addAction(tree.targetNodeToTest.getAction());
 			}else{
 				throw new RuntimeException("Tree tried to queue another single action while the game wasn't WAITING. Game was: " + game.getFSMStatus().toString());
 			}
 			game.unlockFSM();
 			break;
-		case IDLE:
+		case ROLLOUT_POLICY:
 			break;
-		case INITIALIZE_TREE:
+		case ROLLOUT_POLICY_WAITING:
+			gameStatus = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
+			if (gameStatus == FSM_Game.Status.WAITING){
+				game.addAction(tree.targetNodeToTest.getAction());
+			}else{
+				throw new RuntimeException("Tree tried to queue another single action while the game wasn't WAITING. Game was: " + game.getFSMStatus().toString());
+			}
+			game.unlockFSM();
+			break;
+		case EVALUATE_GAME:
+			break;
+		case EXHAUSTED:
+			tree.kill();
 			break;
 		default:
 			break;
@@ -177,7 +178,7 @@ public class Negotiator {
 			saveableFileIO.storeObjects(new SaveableSingleGame(leafNode),
 					saveFileName, append);
 	}
-	
+
 	/** Stop an active realtime game (e.g. when a tab change occurs). **/
 	public void killRealtimeRun(){
 		game.killRealtimeRun();
@@ -249,26 +250,36 @@ public class Negotiator {
 			}
 			break;
 		case WAITING:
-			FSM_Tree.Status treeStatusWaiting = tree.getFSMStatus();
+			// What is the tree doing?
+			switch(tree.getFSMStatus()) {
+			case TREE_POLICY_WAITING:
 
-			if (treeStatusWaiting == FSM_Tree.Status.WAITING_FOR_PREDETERMINED
-					|| treeStatusWaiting == FSM_Tree.Status.WAITING_FOR_SINGLE){
+				break;
+			case EXPANSION_POLICY_WAITING:
 				tree.giveGameState(game.getGameState()); // Give the tree a game for it to 
-			}else if (game.isRealtime()){
-				ui.runnerPane.setWorldToView(null); // If it was a realtime game, turn of vis afterwards.
-			}else{
-				throw new RuntimeException("Game is waiting, but the tree isn't ready to do more stuff. Tree is in status: " + tree.currentStatus.toString());
+				break;
+			case ROLLOUT_POLICY_WAITING:
+				break;
+			default:
+				if (game.isRealtime()){
+					ui.runnerPane.setWorldToView(null); // If it was a realtime game, turn off vis afterwards.
+				}else {
+					throw new RuntimeException("Game is waiting, but the tree isn't ready to do more stuff. Tree is in status: " + tree.currentStatus.toString());
+				}
 			}
 			break;
 		case FAILED:
-			FSM_Tree.Status treeStatusFailed = tree.getFSMStatus();
-
-			if (treeStatusFailed == FSM_Tree.Status.WAITING_FOR_PREDETERMINED
-					|| treeStatusFailed == FSM_Tree.Status.WAITING_FOR_SINGLE){
-				tree.giveGameState(game.getGameState()); // Give the tree a game for it to 
-			}else{
-				// Could also be ending a realtime run. Eliminated the exception for now.
-				//throw new RuntimeException("Game is failed, but the tree isn't ready to do more stuff. Tree is in status: " + tree.currentStatus.toString());
+			switch(tree.getFSMStatus()) {
+			case TREE_POLICY_WAITING:
+				throw new RuntimeException("Tree policy should never visit previously found failed states.");
+			case EXPANSION_POLICY_WAITING:
+				tree.giveGameState(game.getGameState()); // Assign the failed state to this node.
+				break;
+			case ROLLOUT_POLICY_WAITING:
+				tree.giveGameState(game.getGameState()); // Give rollout the state for evaluation.
+				break;
+			default:
+				break;
 			}
 			break;
 		default:
