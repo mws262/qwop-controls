@@ -24,4 +24,10 @@ public interface ISampler {
 	
 	/** Are we ready to switch from rollout policy to tree policy? **/
 	public boolean rolloutPolicyGuard(Node currentNode);
+
+	void rolloutPolicyActionDone(Node currentNode);
+
+	void expansionPolicyActionDone(Node currentNode);
+
+	void treePolicyActionDone(Node currentNode);
 }

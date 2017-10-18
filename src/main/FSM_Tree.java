@@ -76,9 +76,12 @@ public class FSM_Tree implements Runnable{
 
 				/******** Getting through the tree to the point we plan to add new nodes. *********/
 			case TREE_POLICY:
-				// Target an untried node.
-				targetNodeToTest = sampler.treePolicy(currentNode); // This gets us through the existing tree to a place that we plan to add a new node.
-				currentStatus = Status.TREE_POLICY_WAITING; // Need to wait for negotiator to get the game played.
+				if (!sampler.treePolicyGuard(currentNode)) {
+					targetNodeToTest = sampler.treePolicy(currentNode); // This gets us through the existing tree to a place that we plan to add a new node.
+					currentStatus = Status.TREE_POLICY_WAITING; // Need to wait for negotiator to get the game played.
+				}else {
+					currentStatus = Status.EXPANSION_POLICY;
+				}
 				break;
 			case TREE_POLICY_WAITING:
 				// Sit here until we receive a game state to add to our node.
@@ -87,8 +90,12 @@ public class FSM_Tree implements Runnable{
 
 				/******** Doing tree expansion. *********/
 			case EXPANSION_POLICY:
-				targetNodeToTest = sampler.expansionPolicy(currentNode);
-				currentStatus = Status.EXPANSION_POLICY_WAITING;
+				if (!sampler.expansionPolicyGuard(currentNode)) {
+					targetNodeToTest = sampler.expansionPolicy(currentNode);
+					currentStatus = Status.EXPANSION_POLICY_WAITING;			
+				}else {
+					currentStatus = Status.ROLLOUT_POLICY;
+				}
 				break;
 			case EXPANSION_POLICY_WAITING:
 				// Sit here until we receive a game state to add to our node.
@@ -97,15 +104,20 @@ public class FSM_Tree implements Runnable{
 
 				/******** Doing post-simulation for evaluation purposes. No tree expansion. *********/
 			case ROLLOUT_POLICY:
-				Node resultingNode = sampler.rolloutPolicy(currentNode);
+				if (!sampler.rolloutPolicyGuard(currentNode)) {
+					targetNodeToTest = sampler.rolloutPolicy(currentNode);
+					currentStatus = Status.ROLLOUT_POLICY_WAITING;
+				}else {
+					currentStatus = Status.EVALUATE_GAME;
+				}
 				break;
 			case ROLLOUT_POLICY_WAITING:
-				// TODO
+				currentNode = targetNodeToTest;
 				break;
 			case EVALUATE_GAME: // Triggered once tree is given a failed state.
 
 				negotiator.saveRunToFile(currentNode);
-				currentNode.markTerminal();
+				if (currentNode.state.failedState) currentNode.markTerminal();
 				currentStatus = Status.IDLE;
 
 				// Estimate games per second if the frequency met.
@@ -166,7 +178,7 @@ public class FSM_Tree implements Runnable{
 			break;
 		case ROLLOUT_POLICY_WAITING:
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.
-			setStatus(sampler.expansionPolicyGuard(currentNode) ? Status.EVALUATE_GAME : Status.ROLLOUT_POLICY);
+			setStatus(sampler.rolloutPolicyGuard(currentNode) ? Status.EVALUATE_GAME : Status.ROLLOUT_POLICY);
 			break;
 		default: // Should only be called when the tree is expecting to receive a game state. Otherwise, this:
 			throw new RuntimeException("Someone passed the tree a game state when the tree wasn't waiting for one.");

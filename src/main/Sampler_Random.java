@@ -100,4 +100,19 @@ public class Sampler_Random implements ISampler {
 		return true; // No rollout policy
 	}
 
+	@Override
+	public void treePolicyActionDone(Node currentNode) {
+
+	}
+
+	@Override
+	public void expansionPolicyActionDone(Node currentNode) {
+
+	}
+
+	@Override
+	public void rolloutPolicyActionDone(Node currentNode) {
+
+	}
+	
 }
