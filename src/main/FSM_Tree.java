@@ -163,11 +163,12 @@ public class FSM_Tree implements Runnable{
 
 	/** Give the tree a state to assign to a node it's investigating. **/
 	public void giveGameState(State state){
-
+System.out.println("Hi");
 		switch (currentStatus){
 		case TREE_POLICY_WAITING: // Should only ever be going through nodes which have a game state assigned.
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.
 			sampler.treePolicyActionDone(currentNode);
+			setStatus(Status.TREE_POLICY);
 			break;
 		case EXPANSION_POLICY_WAITING:
 			if(currentNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
@@ -183,10 +184,12 @@ public class FSM_Tree implements Runnable{
 
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.
 			sampler.expansionPolicyActionDone(currentNode);
+			setStatus(Status.EXPANSION_POLICY);
 			break;
 		case ROLLOUT_POLICY_WAITING:
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.
-			sampler.expansionPolicyActionDone(currentNode);
+			sampler.rolloutPolicyActionDone(currentNode);
+			setStatus(Status.ROLLOUT_POLICY);
 			break;
 		default: // Should only be called when the tree is expecting to receive a game state. Otherwise, this:
 			throw new RuntimeException("Someone passed the tree a game state when the tree wasn't waiting for one.");

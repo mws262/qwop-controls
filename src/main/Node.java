@@ -71,7 +71,7 @@ public class Node {
 	/********* TREE VISUALIZATION ************/
 	public Color overrideLineColor = null; // Only set when the color is overridden.
 	public Color overrideNodeColor = null; // Only set when the color is overridden.
-	
+
 	public Color nodeColor = Color.GREEN;
 
 	private static final float lineBrightness_default = 0.85f;
@@ -173,7 +173,7 @@ public class Node {
 		if (treeDepth > maxDepthYet){
 			maxDepthYet = treeDepth;
 		}
-		
+
 		// Add some child actions to try if an action generator is assigned.
 		autoAddUncheckedActions();
 
@@ -213,7 +213,7 @@ public class Node {
 
 		// Add some child actions to try if an action generator is assigned.
 		autoAddUncheckedActions();
-		
+
 		if (useTreePhysics){
 			initTreePhys_single();
 		}
@@ -229,13 +229,13 @@ public class Node {
 		nodesCreated++;
 		return new Node(this,childAction);
 	}
-	
+
 	/** If we've assigned a potentialActionGenerator, this can auto-add potential child actions. Ignores duplicates. **/
 	private void autoAddUncheckedActions() {
 		// If we've set rules to auto-select potential children, do so.
 		if (potentialActionGenerator != null) {
 			Action[] potentialActions = potentialActionGenerator.getPotentialChildActionSet(this);
-			
+
 			for (Action potentialAction : potentialActions) {
 				if (!uncheckedActions.contains(potentialAction)) {
 					uncheckedActions.add(potentialAction);
@@ -243,8 +243,8 @@ public class Node {
 			}
 		}
 	}
-	
-	
+
+
 	/** Sample random node. Either create or return an existing not fully explored child. **/
 	public Node sampleNode(){
 
@@ -292,104 +292,104 @@ public class Node {
 	 * Will bilaterally add the number of specified options to the existing, tried ones.
 	 * Will also fill any gaps, e.g. if we have nodes for 55,57,58, will make 56 a potential option.
 	 */
-//	public void expandNodeChoices(int doubleSidedExpansionNumber){
-//
-//		if (children.isEmpty()){
-//			this.fullyExplored = true;
-//			return; // Not well defined if there are no children to begin with. TODO fix this.
-//		}
-//
-//		// Get all existing child actions.
-//		int[] existingActions = new int[children.size()];
-//		for (int i = 0; i < children.size(); i++){
-//			existingActions[i] = children.get(i).action;
-//		}
-//		Arrays.sort(existingActions);
-//
-//		// Check for gaps and fill them in.
-//		int count = 0;
-//		for (int i = existingActions[0]; i <= existingActions[existingActions.length - 1]; i++){	
-//			if (existingActions[count] == i){
-//				count++;
-//			}else{
-//				uncheckedActions.add(i);
-//			}
-//		}
-//
-//		// Add new ones on either side of the existing set.
-//		for (int i = 1; i <= doubleSidedExpansionNumber; i++){
-//			uncheckedActions.add(existingActions[0] - i);
-//			uncheckedActions.add(existingActions[existingActions.length - 1] + i);
-//		}
-//	}
-//
-//	/**
-//	 * Add nodes around some center value.
-//	 */
-//	public void expandNodeChoices(int centerValue, int doubleSidedExpansionNumber){
-//		for (int i = centerValue - doubleSidedExpansionNumber; i <= centerValue + doubleSidedExpansionNumber; i++){
-//			if (!uncheckedActions.contains(i)){
-//				uncheckedActions.add(i);
-//			}
-//		}
-//	}
-//
-//	/** Expand all below this node. **/
-//	public void expandNodeChoices_allBelow(int doubleSidedExpansionNumber){
-//		expandNodeChoices(doubleSidedExpansionNumber);
-//		fullyExplored = false;
-//		for (Node child : children){
-//			child.expandNodeChoices_allBelow(doubleSidedExpansionNumber);
-//		}
-//	}
-//
-//	/** Expand all below this node. **/
-//	public void expandNodeChoices_range(int doubleSidedExpansionNumber, int firstLayer, int endLayer){
-//		//TODO
-//	}
-//
-//	/** Expand to include certain values. **/
-//	public void expandNodeChoices_fullCycle(int[] nil1, int[] W_O, int[] nil2, int[] Q_P){
-//		int[] newChoices = {};
-//		switch(treeDepth % 4){ // Figure out which action in the cycle this is.
-//		case 0:
-//			newChoices = nil1;
-//			break;
-//		case 1:
-//			newChoices = W_O;
-//			break;	
-//		case 2:
-//			newChoices = nil2;
-//			break;
-//		case 3:
-//			newChoices = Q_P;
-//			break;
-//		}
-//		// Check whether the actions are already tested in the children, or included in the uncheckedActions list. If not, add.
-//		for (int i = 0; i < newChoices.length; i++){
-//			boolean isDuplicate = false;
-//			for (Node child : children){
-//				if (child.action == newChoices[i]){
-//					isDuplicate = true;
-//					break;
-//				}
-//			}
-//			if (!isDuplicate && uncheckedActions.contains(newChoices[i])){
-//				isDuplicate = true;
-//			}
-//			
-//			if (!isDuplicate){
-//				uncheckedActions.add(newChoices[i]);
-//			}
-//		}
-//		
-//		// Recurse.
-//		for (Node child : children){
-//			child.expandNodeChoices_fullCycle(nil1, W_O, nil2, Q_P);
-//		}
-//		
-//	}
-	
+	//	public void expandNodeChoices(int doubleSidedExpansionNumber){
+	//
+	//		if (children.isEmpty()){
+	//			this.fullyExplored = true;
+	//			return; // Not well defined if there are no children to begin with. TODO fix this.
+	//		}
+	//
+	//		// Get all existing child actions.
+	//		int[] existingActions = new int[children.size()];
+	//		for (int i = 0; i < children.size(); i++){
+	//			existingActions[i] = children.get(i).action;
+	//		}
+	//		Arrays.sort(existingActions);
+	//
+	//		// Check for gaps and fill them in.
+	//		int count = 0;
+	//		for (int i = existingActions[0]; i <= existingActions[existingActions.length - 1]; i++){	
+	//			if (existingActions[count] == i){
+	//				count++;
+	//			}else{
+	//				uncheckedActions.add(i);
+	//			}
+	//		}
+	//
+	//		// Add new ones on either side of the existing set.
+	//		for (int i = 1; i <= doubleSidedExpansionNumber; i++){
+	//			uncheckedActions.add(existingActions[0] - i);
+	//			uncheckedActions.add(existingActions[existingActions.length - 1] + i);
+	//		}
+	//	}
+	//
+	//	/**
+	//	 * Add nodes around some center value.
+	//	 */
+	//	public void expandNodeChoices(int centerValue, int doubleSidedExpansionNumber){
+	//		for (int i = centerValue - doubleSidedExpansionNumber; i <= centerValue + doubleSidedExpansionNumber; i++){
+	//			if (!uncheckedActions.contains(i)){
+	//				uncheckedActions.add(i);
+	//			}
+	//		}
+	//	}
+	//
+	//	/** Expand all below this node. **/
+	//	public void expandNodeChoices_allBelow(int doubleSidedExpansionNumber){
+	//		expandNodeChoices(doubleSidedExpansionNumber);
+	//		fullyExplored = false;
+	//		for (Node child : children){
+	//			child.expandNodeChoices_allBelow(doubleSidedExpansionNumber);
+	//		}
+	//	}
+	//
+	//	/** Expand all below this node. **/
+	//	public void expandNodeChoices_range(int doubleSidedExpansionNumber, int firstLayer, int endLayer){
+	//		//TODO
+	//	}
+	//
+	//	/** Expand to include certain values. **/
+	//	public void expandNodeChoices_fullCycle(int[] nil1, int[] W_O, int[] nil2, int[] Q_P){
+	//		int[] newChoices = {};
+	//		switch(treeDepth % 4){ // Figure out which action in the cycle this is.
+	//		case 0:
+	//			newChoices = nil1;
+	//			break;
+	//		case 1:
+	//			newChoices = W_O;
+	//			break;	
+	//		case 2:
+	//			newChoices = nil2;
+	//			break;
+	//		case 3:
+	//			newChoices = Q_P;
+	//			break;
+	//		}
+	//		// Check whether the actions are already tested in the children, or included in the uncheckedActions list. If not, add.
+	//		for (int i = 0; i < newChoices.length; i++){
+	//			boolean isDuplicate = false;
+	//			for (Node child : children){
+	//				if (child.action == newChoices[i]){
+	//					isDuplicate = true;
+	//					break;
+	//				}
+	//			}
+	//			if (!isDuplicate && uncheckedActions.contains(newChoices[i])){
+	//				isDuplicate = true;
+	//			}
+	//			
+	//			if (!isDuplicate){
+	//				uncheckedActions.add(newChoices[i]);
+	//			}
+	//		}
+	//		
+	//		// Recurse.
+	//		for (Node child : children){
+	//			child.expandNodeChoices_fullCycle(nil1, W_O, nil2, Q_P);
+	//		}
+	//		
+	//	}
+
 	/***********************************************/
 	/******* GETTING CERTAIN SETS OF NODES *********/
 	/***********************************************/
@@ -466,15 +466,17 @@ public class Node {
 	public void checkFullyExplored_lite(){
 		boolean flag = true;
 
-		if (!uncheckedActions.isEmpty()){
-			flag = false;
-		}
-		for (Node child : children){
-			if (!child.fullyExplored){ // If any child is not fully explored, then this node isn't too.
+		if (!state.failedState) {
+			if (!uncheckedActions.isEmpty()){
 				flag = false;
 			}
+			for (Node child : children){
+				if (!child.fullyExplored){ // If any child is not fully explored, then this node isn't too.
+					flag = false;
+				}
+			}
+			fullyExplored = flag;
 		}
-		fullyExplored = flag;
 
 		if (treeDepth > 0){ // We already know this node is fully explored, check the parent.
 			parent.checkFullyExplored_lite();
@@ -558,7 +560,7 @@ public class Node {
 		action.reset(); // Make sure internal counter for executing this action is reset.
 		return action;
 	}
-	
+
 	/** Get the sequence of actions up to, and including this node **/
 	public Action[] getSequence(){
 		Action[] sequence = new Action[treeDepth];
@@ -968,7 +970,7 @@ public class Node {
 			child.clearNodeOverrideColor(colorToClear);
 		}
 	}
-	
+
 	/** Clear all node override colors from this node onward. Call from root to clear all. **/
 	public void clearNodeOverrideColor(){
 		if (overrideNodeColor != null){
@@ -979,7 +981,7 @@ public class Node {
 			child.clearNodeOverrideColor();
 		}
 	}
-	
+
 	/** Give this branch a zOffset to make it stand out. **/
 	public void setBranchZOffset(float zOffset){
 		this.zOffset = zOffset;

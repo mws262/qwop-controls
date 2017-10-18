@@ -14,9 +14,7 @@ public class Sampler_Random implements ISampler {
 	private boolean expansionPolicyDone = false;
 	private boolean rolloutPolicyDone = true; // Rollout policy not in use in the random sampler.
 	
-	private static enum Status{
-		WAITING_TREE_POLICY, WAITING_EXPANSION_POLICY, WAITING_ROLLOUT_POLICY
-	}
+
 	
 	@Override
 	public Node treePolicy(Node startNode) {
@@ -116,7 +114,11 @@ public class Sampler_Random implements ISampler {
 	@Override
 	public void expansionPolicyActionDone(Node currentNode) {
 		treePolicyDone = false;
-		expansionPolicyDone = true;
+		if (currentNode.state.failedState) {
+			expansionPolicyDone = true;
+		}else {
+			expansionPolicyDone = false;
+		}
 	}
 
 	@Override

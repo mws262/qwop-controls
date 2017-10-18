@@ -127,6 +127,10 @@ public class Negotiator {
 			gameStatus = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
 			if (gameStatus == FSM_Game.Status.IDLE){
 				game.addSequence(tree.targetNodeToTest.getSequence());
+				
+				for (Action act : tree.targetNodeToTest.getSequence()) {
+					System.out.println(act.toString());
+				}
 			}else{
 				throw new RuntimeException("Tree tried to queue a sequence while the game wasn't idle.");
 			}
@@ -137,9 +141,14 @@ public class Negotiator {
 			break;
 		case EXPANSION_POLICY_WAITING:
 			gameStatus = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
+			for (Action act : tree.targetNodeToTest.getSequence()) {
+				System.out.println(act.toString());
+			}
 			if (gameStatus == FSM_Game.Status.WAITING){
+				game.actionQueue.clearAll();
 				game.addAction(tree.targetNodeToTest.getAction());
 			}else if (tree.targetNodeToTest.treeDepth == 1 && gameStatus == FSM_Game.Status.IDLE){ // The case where the tree policy is skipped because we're starting at the root.
+				game.actionQueue.clearAll();
 				game.addAction(tree.targetNodeToTest.getAction());
 			}else {
 				throw new RuntimeException("Tree tried to queue another single action while the game wasn't WAITING. Game was: " + game.getFSMStatus().toString());
@@ -255,7 +264,7 @@ public class Negotiator {
 			// What is the tree doing?
 			switch(tree.getFSMStatus()) {
 			case TREE_POLICY_WAITING:
-
+				tree.giveGameState(null);
 				break;
 			case EXPANSION_POLICY_WAITING:
 				tree.giveGameState(game.getGameState()); // Give the tree a game for it to 

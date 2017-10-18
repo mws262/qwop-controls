@@ -137,7 +137,6 @@ public class FSM_Game implements Runnable{
 				if (runRealTime) negotiator.reportEndOfRealTimeSim();
 				
 				if (flagForSingle){ // User selected one to display.
-					System.out.println(queuedSequence.length);
 					actionQueue.addSequence(queuedSequence);
 					runRealTime = true;
 					flagForSingle = false;
@@ -320,6 +319,7 @@ public class FSM_Game implements Runnable{
 			boolean[] nextCommand = currentAction.poll();
 			
 			if (!currentAction.hasNext() && actionQueue.isEmpty()){
+				currentAction.reset();
 				isEmpty = true;
 			}
 			return nextCommand;
