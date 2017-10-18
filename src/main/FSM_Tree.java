@@ -78,7 +78,15 @@ public class FSM_Tree implements Runnable{
 			case TREE_POLICY:
 				if (!sampler.treePolicyGuard(currentNode)) {
 					targetNodeToTest = sampler.treePolicy(currentNode); // This gets us through the existing tree to a place that we plan to add a new node.
-					currentStatus = Status.TREE_POLICY_WAITING; // Need to wait for negotiator to get the game played.
+
+					if (targetNodeToTest.treeDepth > 0) {
+						currentStatus = Status.TREE_POLICY_WAITING; // Need to wait for negotiator to get the game played.
+					}else {
+						currentNode = targetNodeToTest;
+						sampler.treePolicyActionDone(currentNode);
+						currentStatus = Status.EXPANSION_POLICY;
+					}
+
 				}else {
 					currentStatus = Status.EXPANSION_POLICY;
 				}
@@ -159,12 +167,12 @@ public class FSM_Tree implements Runnable{
 		switch (currentStatus){
 		case TREE_POLICY_WAITING: // Should only ever be going through nodes which have a game state assigned.
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.
-			setStatus(sampler.treePolicyGuard(currentNode) ? Status.EXPANSION_POLICY : Status.TREE_POLICY);
+			sampler.treePolicyActionDone(currentNode);
 			break;
 		case EXPANSION_POLICY_WAITING:
 			if(currentNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
 			currentNode.setState(state);
-			
+
 			try {
 				if (state.failedState){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
 					targetNodeToTest.checkFullyExplored_lite();
@@ -172,13 +180,13 @@ public class FSM_Tree implements Runnable{
 			}catch (NullPointerException e){
 				throw new NullPointerException("Tree was given a game state that did not have a failure status assigned. " + e.getMessage());
 			}
-			
+
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.
-			setStatus(sampler.expansionPolicyGuard(currentNode) ? Status.ROLLOUT_POLICY : Status.EXPANSION_POLICY);
+			sampler.expansionPolicyActionDone(currentNode);
 			break;
 		case ROLLOUT_POLICY_WAITING:
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.
-			setStatus(sampler.rolloutPolicyGuard(currentNode) ? Status.EVALUATE_GAME : Status.ROLLOUT_POLICY);
+			sampler.expansionPolicyActionDone(currentNode);
 			break;
 		default: // Should only be called when the tree is expecting to receive a game state. Otherwise, this:
 			throw new RuntimeException("Someone passed the tree a game state when the tree wasn't waiting for one.");

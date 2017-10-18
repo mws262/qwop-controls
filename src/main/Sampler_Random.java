@@ -10,6 +10,14 @@ public class Sampler_Random implements ISampler {
 
 	public Sampler_Random() {}
 
+	private boolean treePolicyDone = false;
+	private boolean expansionPolicyDone = false;
+	private boolean rolloutPolicyDone = true; // Rollout policy not in use in the random sampler.
+	
+	private static enum Status{
+		WAITING_TREE_POLICY, WAITING_EXPANSION_POLICY, WAITING_ROLLOUT_POLICY
+	}
+	
 	@Override
 	public Node treePolicy(Node startNode) {
 		if (startNode.fullyExplored) throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. Whoever called this is at fault.");
@@ -86,13 +94,12 @@ public class Sampler_Random implements ISampler {
 
 	@Override
 	public boolean treePolicyGuard(Node currentNode) {
-		return true; // Never any case to return to tree policy for us.
+		return treePolicyDone; // True means ready to move on to the next.
 	}
 
 	@Override
 	public boolean expansionPolicyGuard(Node currentNode) {
-		// Keep going back to expansion policy until failure.
-		return false;
+		return expansionPolicyDone;
 	}
 
 	@Override
@@ -102,17 +109,17 @@ public class Sampler_Random implements ISampler {
 
 	@Override
 	public void treePolicyActionDone(Node currentNode) {
-
+		treePolicyDone = true; // Enable transition to next through the guard.
+		expansionPolicyDone = false; // Prevent transition before it's done via the guard.
 	}
 
 	@Override
 	public void expansionPolicyActionDone(Node currentNode) {
-
+		treePolicyDone = false;
+		expansionPolicyDone = true;
 	}
 
 	@Override
-	public void rolloutPolicyActionDone(Node currentNode) {
-
-	}
+	public void rolloutPolicyActionDone(Node currentNode) {} // No rollout in random sampler.
 	
 }

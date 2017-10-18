@@ -23,13 +23,13 @@ public class Negotiator {
 	boolean P = false;
 
 	/** Box2D game interface reports all FSM changes. */
-	boolean verbose_game = false;
+	boolean verbose_game = true;
 
 	/** UI window reports all FSM changes. */
 	boolean verbose_UI = false;
 
 	/** Tree builder reports all FSM changes. */
-	boolean verbose_tree = false;
+	boolean verbose_tree = true;
 
 	SaveableFileIO<SaveableSingleGame> saveableFileIO;
 
@@ -139,7 +139,9 @@ public class Negotiator {
 			gameStatus = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
 			if (gameStatus == FSM_Game.Status.WAITING){
 				game.addAction(tree.targetNodeToTest.getAction());
-			}else{
+			}else if (tree.targetNodeToTest.treeDepth == 1 && gameStatus == FSM_Game.Status.IDLE){ // The case where the tree policy is skipped because we're starting at the root.
+				game.addAction(tree.targetNodeToTest.getAction());
+			}else {
 				throw new RuntimeException("Tree tried to queue another single action while the game wasn't WAITING. Game was: " + game.getFSMStatus().toString());
 			}
 			game.unlockFSM();
