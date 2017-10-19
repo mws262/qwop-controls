@@ -102,7 +102,7 @@ public class Sampler_Random implements ISampler {
 
 	@Override
 	public boolean rolloutPolicyGuard(Node currentNode) {
-		return true; // No rollout policy
+		return rolloutPolicyDone; // No rollout policy
 	}
 
 	@Override

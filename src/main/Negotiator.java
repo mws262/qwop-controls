@@ -127,10 +127,6 @@ public class Negotiator {
 			gameStatus = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
 			if (gameStatus == FSM_Game.Status.IDLE){
 				game.addSequence(tree.targetNodeToTest.getSequence());
-				
-				for (Action act : tree.targetNodeToTest.getSequence()) {
-					System.out.println(act.toString());
-				}
 			}else{
 				throw new RuntimeException("Tree tried to queue a sequence while the game wasn't idle.");
 			}
@@ -141,9 +137,6 @@ public class Negotiator {
 			break;
 		case EXPANSION_POLICY_WAITING:
 			gameStatus = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
-			for (Action act : tree.targetNodeToTest.getSequence()) {
-				System.out.println(act.toString());
-			}
 			if (gameStatus == FSM_Game.Status.WAITING){
 				game.actionQueue.clearAll();
 				game.addAction(tree.targetNodeToTest.getAction());
