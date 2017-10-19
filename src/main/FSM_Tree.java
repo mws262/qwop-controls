@@ -163,7 +163,6 @@ public class FSM_Tree implements Runnable{
 
 	/** Give the tree a state to assign to a node it's investigating. **/
 	public void giveGameState(State state){
-System.out.println("Hi");
 		switch (currentStatus){
 		case TREE_POLICY_WAITING: // Should only ever be going through nodes which have a game state assigned.
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.

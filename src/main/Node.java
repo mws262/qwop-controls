@@ -475,9 +475,8 @@ public class Node {
 					flag = false;
 				}
 			}
-			fullyExplored = flag;
 		}
-
+		fullyExplored = flag;
 		if (treeDepth > 0){ // We already know this node is fully explored, check the parent.
 			parent.checkFullyExplored_lite();
 		}

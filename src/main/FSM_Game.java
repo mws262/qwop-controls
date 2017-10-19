@@ -304,7 +304,6 @@ public class FSM_Game implements Runnable{
 		
 		/** Request the next QWOP keypress commands from the added sequence. **/
 		public boolean[] pollCommand(){
-			//System.out.println("POLL");
 			if (actionQueue.isEmpty() && (currentAction == null || !currentAction.hasNext())){
 				throw new RuntimeException("Tried to get a command off the queue when nothing is queued up.");
 			}
