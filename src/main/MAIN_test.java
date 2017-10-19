@@ -1,5 +1,4 @@
 package main;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,7 +65,8 @@ public class MAIN_test {
 		
 		Node treeRoot = new Node(useTreePhysics);
 //		ISampler sampler = new Sampler_Random();
-		ISampler sampler = new Sampler_Greedy();
+//		ISampler sampler = new Sampler_Greedy();
+		ISampler sampler = new Sampler_UCB();
 		
 		/* Start tree processes */
 		FSM_UI ui = new FSM_UI();

@@ -186,6 +186,9 @@ public class FSM_Tree implements Runnable{
 			setStatus(Status.EXPANSION_POLICY);
 			break;
 		case ROLLOUT_POLICY_WAITING:
+			if(currentNode.state != null) throw new RuntimeException("The rollout policy should only encounter new nodes. None of them should have their state assigned before now.");
+			currentNode.setState(state);
+			
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.
 			sampler.rolloutPolicyActionDone(currentNode);
 			setStatus(Status.ROLLOUT_POLICY);

@@ -23,13 +23,13 @@ public class Negotiator {
 	boolean P = false;
 
 	/** Box2D game interface reports all FSM changes. */
-	boolean verbose_game = false;
+	boolean verbose_game = true;
 
 	/** UI window reports all FSM changes. */
 	boolean verbose_UI = false;
 
 	/** Tree builder reports all FSM changes. */
-	boolean verbose_tree = false;
+	boolean verbose_tree = true;
 
 	SaveableFileIO<SaveableSingleGame> saveableFileIO;
 
@@ -153,6 +153,7 @@ public class Negotiator {
 		case ROLLOUT_POLICY_WAITING:
 			gameStatus = game.getFSMStatusAndLock(); // Stop the FSM while we do this.
 			if (gameStatus == FSM_Game.Status.WAITING){
+				game.actionQueue.clearAll();
 				game.addAction(tree.targetNodeToTest.getAction());
 			}else{
 				throw new RuntimeException("Tree tried to queue another single action while the game wasn't WAITING. Game was: " + game.getFSMStatus().toString());
@@ -263,6 +264,7 @@ public class Negotiator {
 				tree.giveGameState(game.getGameState()); // Give the tree a game for it to 
 				break;
 			case ROLLOUT_POLICY_WAITING:
+				tree.giveGameState(game.getGameState()); // Give the tree a game for it to 
 				break;
 			default:
 				if (game.isRealtime()){

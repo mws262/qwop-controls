@@ -31,6 +31,10 @@ public class Node {
 	private static int gamesImported = 0;
 	private static int gamesCreated = 0;
 
+	/** Some sampling methods want to track how many times this node has been visited. **/
+	public int visitCount = 0;
+	public float ucbValue = 0;
+
 	/********* QWOP IN/OUT ************/
 	/** Keys and duration **/
 	private final Action action; //Actual delay used as control.
@@ -156,7 +160,7 @@ public class Node {
 	/**********************************/
 
 	/** 
-	 * Make a new node which is NOT the root. 
+	 * Make a new node which is NOT the root. Add this to the tree hierarchy.
 	 **/
 	public Node(Node parent, Action action) {
 		this.parent = parent;
@@ -184,6 +188,46 @@ public class Node {
 		zOffset = parent.zOffset;
 
 		if (!currentlyAddingSavedNodes){
+			calcNodePos();
+			if (useTreePhysics){
+				initTreePhys_single();
+			}
+		}
+	}
+
+
+	/** 
+	 * Make a new node which is NOT the root. connectNodeToTree is the default.
+	 **/
+	public Node(Node parent, Action action, boolean connectNodeToTree) {
+		this.parent = parent;
+		treeDepth = parent.treeDepth + 1;
+		this.action = action;
+
+		// Error check for duplicate actions.
+		for (Node parentChildren : parent.children){
+			if (parentChildren.action == action){
+				throw new RuntimeException("Tried to add a duplicate action node at depth " + treeDepth + ". Action was: " + action.toString() + ".");
+			}	
+		}
+
+		if (connectNodeToTree) {
+			parent.children.add(this);
+			if (treeDepth > maxDepthYet){
+				maxDepthYet = treeDepth;
+			}
+		}
+
+		// Add some child actions to try if an action generator is assigned.
+		autoAddUncheckedActions();
+
+		edgeLength = 5.00f * (float)Math.pow(0.6947, 0.1903 * treeDepth ) + 1.5f;
+		//(float)Math.pow(0.787, 0.495) + 1.0f; // Optimized exponential in Matlab 
+
+		lineBrightness = parent.lineBrightness;
+		zOffset = parent.zOffset;
+
+		if (connectNodeToTree && !currentlyAddingSavedNodes){
 			calcNodePos();
 			if (useTreePhysics){
 				initTreePhys_single();
@@ -637,7 +681,7 @@ public class Node {
 	public void calcNodePos(float[] nodeLocationsToAssign){
 		//Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will span the required sweep.
 		if(treeDepth == 0){ //If this is the root node, we shouldn't change stuff yet.
-			if (children.size() > 1 ){ //Catch the div by 0
+			if (children.size() > 1) { //Catch the div by 0
 				nodeAngle = -sweepAngle/2.f + (float)(parent.children.indexOf(this)) * sweepAngle/(float)(children.size() - 1);
 			}else{
 				nodeAngle = (float)Math.PI/2f;
