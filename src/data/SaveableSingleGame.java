@@ -12,7 +12,7 @@ import main.State;
  */
 public class SaveableSingleGame implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	public Action[] actions;
 	public State[] states;

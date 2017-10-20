@@ -1,6 +1,5 @@
 package main;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
@@ -51,7 +50,7 @@ public class Negotiator {
 	/********* File saving *********/
 	public boolean saveToFile = false; // Is saving even on? Performance improvement if off.
 	public int saveInterval = 100;
-	private HashSet<SaveableSingleGame> saveBuffer = new HashSet<SaveableSingleGame>();
+	private ArrayList<SaveableSingleGame> saveBuffer = new ArrayList<SaveableSingleGame>();
 	private int saveIdx = 0;
 	
 	SaveableFileIO<SaveableSingleGame> saveableFileIO;
@@ -190,7 +189,7 @@ public class Negotiator {
 		if (saveToFile) {
 			saveBuffer.add(new SaveableSingleGame(leafNode));
 			if (saveIdx == saveInterval - 1) {
-				saveableFileIO.storeObjectsUnordered(saveBuffer,
+				saveableFileIO.storeObjectsOrdered(saveBuffer,
 						saveFileName, append);
 				saveBuffer.clear();
 				saveIdx = 0;

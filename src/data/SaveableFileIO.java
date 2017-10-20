@@ -52,7 +52,7 @@ public class SaveableFileIO<T> {
 		storeObjectsOrdered(dataList,filenameNoExtension,append);
 	}
 
-	/** Store objects in unordered form. Better option. Will also not preserve duplicates. **/
+	/** Store objects in unordered form. Will also not preserve duplicates. **/
 	public void storeObjectsUnordered(HashSet<T> data, String filenameNoExtension, boolean append){
 
 		OutputStream ops = null;
@@ -83,14 +83,14 @@ public class SaveableFileIO<T> {
 		}
 	}
 	
-	/** Store objects in unordered form. Better option. Will also not preserve duplicates. **/
+	/** Store objects in unordered form. Will also not preserve duplicates. **/
 	public void storeObjectsUnordered(T data,String filenameNoExtension, boolean append){
 		HashSet<T> dataList = new HashSet<T>();
 		dataList.add(data);
 		storeObjectsUnordered(dataList,filenameNoExtension,append);
 	}
 	
-	/** Load objects in unordered form. Will also NOT contain duplicates. Better option. **/
+	/** Load objects in unordered form. Will also NOT contain duplicates. **/
 	public HashSet<T> loadObjectsUnordered(String filenameNoExtension){
 		InputStream fileIs = null;
 		ObjectInputStream objIs = null;
@@ -106,7 +106,7 @@ public class SaveableFileIO<T> {
 			while (reading){
 				try{
 					@SuppressWarnings("unchecked")
-					T obj = (T) objIs.readObject().getClass();
+					T obj = (T) objIs.readObject();
 					dataList.add(obj);
 					counter++;
 				}catch(EOFException c){
@@ -131,7 +131,7 @@ public class SaveableFileIO<T> {
 		return dataList;
 	}
 	
-	/** Load objects in ordered form. Worse option in general. Slower. Also may still contain duplicates. **/
+	/** Load objects in ordered form. Faster but could contain duplicates. **/
 	public ArrayList<T> loadObjectsOrdered(String filenameNoExtension){
 
 		InputStream fileIs = null;
@@ -148,7 +148,7 @@ public class SaveableFileIO<T> {
 			while (reading){
 				try{
 					@SuppressWarnings("unchecked")
-					T obj = (T) objIs.readObject().getClass();
+					T obj = (T) objIs.readObject();
 					dataList.add(obj);
 					counter++;
 				}catch(EOFException c){

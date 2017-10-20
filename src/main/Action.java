@@ -13,7 +13,7 @@ import java.io.Serializable;
  */
 public class Action implements Serializable{
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	/** Total number of box2d timesteps that this key combination should be held. **/
 	private final int timestepsTotal;

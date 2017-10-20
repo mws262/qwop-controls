@@ -7,7 +7,7 @@ import org.jbox2d.dynamics.Body;
 
 public class State implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	public boolean failedState;
 	
