@@ -3,7 +3,7 @@ package main;
 public class Sampler_UCB implements ISampler {
 
 
-	float c = 0.8f;
+	float c = 5f;
 
 
 	/** Are we done with the tree policy? **/
@@ -15,9 +15,23 @@ public class Sampler_UCB implements ISampler {
 	/** Are we done with the rollout policy? **/
 	private boolean rolloutPolicyDone = false;
 
+	/** Propagate the score and visit count back up the tree. **/
+	private void propagateScore(Node failureNode) {
+		float score = failureNode.state.body.x;
+		// Do evaluation and propagation of scores.
+		failureNode.visitCount++;
+		failureNode.ucbValue += score;
+		while (failureNode.treeDepth > 0){//TODO test 0
+			failureNode = failureNode.parent;
+			failureNode.visitCount++;
+			failureNode.ucbValue += score;
+		}	
+	}
+	
 	@Override
 	public Node treePolicy(Node startNode) {
 		if (!startNode.uncheckedActions.isEmpty()) { // We immediately expand if there's an untried action.
+			System.out.println("Found a node to expand");
 			return startNode;
 		}
 
@@ -37,8 +51,9 @@ public class Sampler_UCB implements ISampler {
 				}
 			}
 		}
-
-		return bestNodeSoFar;
+		System.out.println("deeper on tree policy: " + bestNodeSoFar.treeDepth);
+		
+		return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked action.;
 	}
 
 	@Override
@@ -56,14 +71,21 @@ public class Sampler_UCB implements ISampler {
 	public Node expansionPolicy(Node startNode) {
 		if (startNode.uncheckedActions.size() == 0) throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 		Action childAction = startNode.uncheckedActions.get(Node.randInt(0,startNode.uncheckedActions.size() - 1));
-		
+
 		return startNode.addChild(childAction);
 	}
 
 	@Override
 	public void expansionPolicyActionDone(Node currentNode) {
+		treePolicyDone = false;
 		expansionPolicyDone = true; // We move on after adding only one node.
-		rolloutPolicyDone = false;
+		if (currentNode.state.failedState) { // If expansion is to failed node, no need to do rollout.
+			rolloutPolicyDone = true;
+			System.out.println("this happened");
+			propagateScore(currentNode);
+		}else {
+			rolloutPolicyDone = false;
+		}
 	}
 
 	@Override
@@ -73,30 +95,22 @@ public class Sampler_UCB implements ISampler {
 
 	@Override
 	public Node rolloutPolicy(Node startNode) {
+		if (startNode.state.failedState) throw new RuntimeException("Rollout policy received a starting node which corresponds to an already failed state.");
 		// Do shit without adding nodes to the rest of the tree hierarchy.
 		Action childAction = startNode.uncheckedActions.get(Node.randInt(0,startNode.uncheckedActions.size() - 1));
-		
+
 		Node rolloutNode = new Node(startNode,childAction,false);
-		
+
 		return rolloutNode;
 	}
 
 	@Override
 	public void rolloutPolicyActionDone(Node currentNode) {
 		expansionPolicyDone = false;
-		
+
 		if (currentNode.state.failedState) {
 			rolloutPolicyDone = true;
-			
-			float score = currentNode.state.body.x;
-			// Do evaluation and propagation of scores.
-			currentNode.visitCount++;
-			currentNode.ucbValue += score;
-			while (currentNode.treeDepth > 0){//TODO test 0
-				currentNode = currentNode.parent;
-				currentNode.visitCount++;
-				currentNode.ucbValue += score;
-			}	
+			propagateScore(currentNode);
 		}else {
 			rolloutPolicyDone = false;
 		}
