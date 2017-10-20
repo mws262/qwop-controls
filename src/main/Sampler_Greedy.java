@@ -5,6 +5,11 @@ import java.util.ArrayList;
 
 public class Sampler_Greedy implements ISampler {
 	
+	/******* NODE EVALUATION *******/
+	
+	/** How are individual nodes scored? **/
+	private IEvaluationFunction evaluationFunction;
+	
 	/******* HOW MANY SAMPLES BETWEEN JUMPS ********/
 	/** Number of samples to take before moving on from tree depth 0. **/
 	public int samplesAt0 = 500;
@@ -29,12 +34,22 @@ public class Sampler_Greedy implements ISampler {
 	/** Are we done with the rollout policy? **/
 	private boolean rolloutPolicyDone = true; // Rollout policy not in use in the random sampler.
 	
+	/** Current node from which all sampling is done further down the tree among its descendents. **/
 	private Node currentRoot;
 	
+	/** Number of samples being taken from this node before going deeper into the tree. **/
 	private int totalSamplesToTakeAtThisNode;
+	
+	/** Number of samples done so far at this node and depth. **/
 	private int samplesSoFarAtThisNode;
 	
-	Sampler_Random randomSampler = new Sampler_Random();
+	/** Some random sampling features used. **/
+	private Sampler_Random randomSampler = new Sampler_Random();
+	
+	
+	public Sampler_Greedy(IEvaluationFunction evaluationFunction) {
+		this.evaluationFunction = evaluationFunction;
+	}
 	
 	/**
 	 * Top half of a hyperbola to decide how many samples to take from a root at depth treeDepth.
@@ -62,6 +77,11 @@ public class Sampler_Greedy implements ISampler {
 		
 		totalSamplesToTakeAtThisNode = numSamplesAtDepth(currentRoot.treeDepth);
 		samplesSoFarAtThisNode = 0;
+	}
+	
+	/** Set a new evaluation function for this sampler. Should be hot-swappable at any point. **/
+	public void setEvaluationFunction(IEvaluationFunction evaluationFunction) {
+		this.evaluationFunction = evaluationFunction;
 	}
 	
 	@Override

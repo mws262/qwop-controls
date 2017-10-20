@@ -23,13 +23,13 @@ public class Negotiator {
 	boolean P = false;
 
 	/** Box2D game interface reports all FSM changes. */
-	boolean verbose_game = true;
+	boolean verbose_game = false;
 
 	/** UI window reports all FSM changes. */
 	boolean verbose_UI = false;
 
 	/** Tree builder reports all FSM changes. */
-	boolean verbose_tree = true;
+	boolean verbose_tree = false;
 
 	SaveableFileIO<SaveableSingleGame> saveableFileIO;
 

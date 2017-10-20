@@ -14,9 +14,11 @@ public class MAIN_test {
 
 	public static void main(String[] args) {
 	
-		
+		/********************************************************************/		
 		/******* Decide the rules for picking child actions to test. ********/
+		/********************************************************************/
 		
+		/***** Space of allowed actions to sample ******/
 		// Repeated sequence of key presses.
 		boolean[][] keySequence = new boolean[][]{{false,false,false,false},
 												  {false,true,true,false},
@@ -37,10 +39,27 @@ public class MAIN_test {
 		actionExceptions.put(2, new Integer[] {21,22,23,24,25});
 		actionExceptions.put(3, new Integer[] {45,46,47,48,49,50});
 		
+		// Define the specific way that these allowed actions are assigned as potential options for nodes.
 		IActionGenerator actionGenerator = new ActionGenerator_FixedSequence(keySequence, actionRepeats, actionExceptions);
 		Node.potentialActionGenerator = actionGenerator;
 		
+		/******** Define how nodes are evaluated. *********/
+
+		IEvaluationFunction evaluateRandom = new Evaluator_Random(); // Assigns a purely random score for diagnostics.
+		IEvaluationFunction evaluateDistance = new Evaluator_Distance();
 		
+		IEvaluationFunction currentEvaluator = evaluateDistance;
+		
+		/******** Define how nodes are sampled from the above defined actions. *********/
+		ISampler samplerRandom = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
+		ISampler samplerGreedy = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+		ISampler samplerUCB = new Sampler_UCB(currentEvaluator); // Upper confidence bound for trees sampler. More principled way of assigning weight for exploration/exploitation.
+		
+		ISampler currentSampler = samplerGreedy;
+		
+		/************************************************************/		
+		/******* Decide how datasets are to be saved/loaded. ********/
+		/************************************************************/
 		
 		// TODO Temp removed the imported games.
 //		/* Load */
@@ -64,13 +83,11 @@ public class MAIN_test {
 		
 		
 		Node treeRoot = new Node(useTreePhysics);
-//		ISampler sampler = new Sampler_Random();
-//		ISampler sampler = new Sampler_Greedy();
-		ISampler sampler = new Sampler_UCB();
+
 		
 		/* Start tree processes */
 		FSM_UI ui = new FSM_UI();
-		FSM_Tree tree = new FSM_Tree(sampler);
+		FSM_Tree tree = new FSM_Tree(currentSampler);
 		FSM_Game game = new FSM_Game();
 		
 		/* Manage the tree, UI, and game. Start some threads. */
