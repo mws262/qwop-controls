@@ -6,7 +6,7 @@ import data.SaveableFileIO;
 import data.SaveableSingleGame;
 
 
-public class MAIN_test {
+public class MAIN_Run {
 
 	private static long ticTime;
 	private static long tocTime;
@@ -14,7 +14,7 @@ public class MAIN_test {
 	private static final boolean useTreePhysics = false;
 	private static final boolean saveGamesToFile = true;
 	
-	public MAIN_test() {}
+	public MAIN_Run() {}
 
 	public static void main(String[] args) {
 	
@@ -53,14 +53,14 @@ public class MAIN_test {
 		IEvaluationFunction evaluateDistance = new Evaluator_Distance();
 		IEvaluationFunction evaluateHandTuned = new Evaluator_HandTunedOnState();
 		
-		IEvaluationFunction currentEvaluator = evaluateHandTuned;
+		IEvaluationFunction currentEvaluator = evaluateDistance;
 		
 		/******** Define how nodes are sampled from the above defined actions. *********/
 		ISampler samplerRandom = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
 		ISampler samplerGreedy = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
 		ISampler samplerUCB = new Sampler_UCB(currentEvaluator); // Upper confidence bound for trees sampler. More principled way of assigning weight for exploration/exploitation.
 		
-		ISampler currentSampler = samplerGreedy;
+		ISampler currentSampler = samplerUCB;
 		
 		/************************************************************/		
 		/******* Decide how datasets are to be saved/loaded. ********/

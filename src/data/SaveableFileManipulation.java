@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
-public class MAIN_EliminateDuplicates {
+public class SaveableFileManipulation {
 
 	static String origin = "test3";
 	static String destination = "test3";
@@ -19,7 +19,7 @@ public class MAIN_EliminateDuplicates {
 		File folder = new File(".");
 		File[] listOfFiles = folder.listFiles();
 		ArrayList<File> qwopFiles = new ArrayList<File>();
-
+		System.out.println("Found the following QWOP files: ");
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].isFile()) {
 
@@ -40,7 +40,7 @@ public class MAIN_EliminateDuplicates {
 	}
 
 	/** Eliminate all duplicate runs in the given file and save to destination file. **/
-	public static void eliminateDuplicates(String origin, String destination) {
+	public static void eliminateDuplicateRuns(String origin, String destination) {
 		File file = new File(origin + ".qwop");
 
 		if(file.exists()){
@@ -63,4 +63,18 @@ public class MAIN_EliminateDuplicates {
 			System.out.println(Math.round(megabytes*100)/100. + " megabyte file output: " + destination);
 		}
 	}
+	
+	/** Combine multiple .qwop files into a single one containing the data of both with duplicates removed. **/
+	public static void combineFiles(String[] inputFiles, String destination) {
+		SaveableFileIO<SaveableSingleGame> io = new SaveableFileIO<SaveableSingleGame>();
+		HashSet<SaveableSingleGame> loaded = new HashSet<SaveableSingleGame>();
+		
+		// Load them all into the same hashset.
+		for (String file : inputFiles) {
+			 loaded.addAll(io.loadObjectsUnordered(file));
+		}
+		
+		io.storeObjectsUnordered(loaded, destination, false);
+	}
+	
 }
