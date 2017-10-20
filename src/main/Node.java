@@ -17,6 +17,8 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
 import com.jogamp.opengl.GL2;
 
+import data.SaveableSingleGame;
+
 /*
  * This version will hopefully get rid of many legacy features.
  * Also, this should handle adding actions which are not from a 

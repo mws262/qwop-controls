@@ -1,5 +1,9 @@
-package main;
+package data;
 import java.io.Serializable;
+
+import main.Action;
+import main.Node;
+import main.State;
 
 /*
  * Structure to hold actions and states in individual QWOP runs. 

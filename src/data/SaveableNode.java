@@ -1,6 +1,9 @@
-package main;
+package data;
 import java.io.Serializable;
 import java.util.ArrayList;
+
+import main.Action;
+import main.State;
 
 public class SaveableNode implements Serializable{
 

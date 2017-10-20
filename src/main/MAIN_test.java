@@ -2,6 +2,9 @@ package main;
 import java.util.HashMap;
 import java.util.Map;
 
+import data.SaveableFileIO;
+import data.SaveableSingleGame;
+
 
 public class MAIN_test {
 
@@ -9,6 +12,7 @@ public class MAIN_test {
 	private static long tocTime;
 	
 	private static final boolean useTreePhysics = false;
+	private static final boolean saveGamesToFile = true;
 	
 	public MAIN_test() {}
 
@@ -62,6 +66,7 @@ public class MAIN_test {
 		/******* Decide how datasets are to be saved/loaded. ********/
 		/************************************************************/
 		
+		
 		// TODO Temp removed the imported games.
 //		/* Load */
 //		System.out.println("Reading saved games file."); tic();
@@ -85,14 +90,13 @@ public class MAIN_test {
 		
 		Node treeRoot = new Node(useTreePhysics);
 
-		
-		/* Start tree processes */
 		FSM_UI ui = new FSM_UI();
 		FSM_Tree tree = new FSM_Tree(currentSampler);
 		FSM_Game game = new FSM_Game();
 		
 		/* Manage the tree, UI, and game. Start some threads. */
-		Negotiator negotiator = new Negotiator(tree,ui,game,io,"test3",false);
+		Negotiator negotiator = new Negotiator(tree,ui,game,io,"test3");
+		negotiator.saveToFile = saveGamesToFile;
 		
 		tree.setNegotiator(negotiator);
 		ui.setNegotiator(negotiator);
@@ -104,6 +108,7 @@ public class MAIN_test {
 		Thread gameThread = new Thread(game); 
 		//uiThread.setPriority(Thread.MAX_PRIORITY);
 		
+		/* Start processes */
 		gameThread.start();
 		uiThread.start();
 		treeThread.start();
@@ -113,15 +118,15 @@ public class MAIN_test {
 	
 	/** Matlab tic and toc functionality. **/
 	public static void tic(){
-		ticTime = System.currentTimeMillis();
+		ticTime = System.nanoTime();
 	}
 	public static long toc(){
-		tocTime = System.currentTimeMillis();
+		tocTime = System.nanoTime();
 		long difference = tocTime - ticTime;
-		if (difference < 1000){
-			System.out.println(difference + " ms elapsed.");
+		if (difference < 1000000000){
+			System.out.println(Math.floor(difference/10000)/100 + " ms elapsed.");
 		}else{
-			System.out.println(Math.floor(difference/10.)/100. + " s elapsed.");
+			System.out.println(Math.floor(difference/100000000.)/10. + " s elapsed.");
 		}
 		return difference;
 	}

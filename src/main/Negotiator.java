@@ -1,5 +1,9 @@
 package main;
 import java.util.ArrayList;
+import java.util.HashSet;
+
+import data.SaveableFileIO;
+import data.SaveableSingleGame;
 
 /*
  * Negotiates actions between real game and sim.
@@ -31,8 +35,6 @@ public class Negotiator {
 	/** Tree builder reports all FSM changes. */
 	boolean verbose_tree = false;
 
-	SaveableFileIO<SaveableSingleGame> saveableFileIO;
-
 	/* First new node, after a sequence of tested ones, that we want to sim to. */
 	Node requestedNodeToSimTo;
 
@@ -45,21 +47,26 @@ public class Negotiator {
 	/* Are we running games in realtime or fast? */
 	boolean runningGameRealtime = false;
 
+
+	/********* File saving *********/
+	public boolean saveToFile = false; // Is saving even on? Performance improvement if off.
+	public int saveInterval = 100;
+	private HashSet<SaveableSingleGame> saveBuffer = new HashSet<SaveableSingleGame>();
+	private int saveIdx = 0;
+	
+	SaveableFileIO<SaveableSingleGame> saveableFileIO;
 	private String saveFileName;
-	private boolean saveToFile = true;
 	private boolean append = true;
 
 	ArrayList<Node> activeRoots = new ArrayList<Node>();
 
 	public Negotiator(FSM_Tree tree, FSM_UI ui, FSM_Game game,
-			SaveableFileIO<SaveableSingleGame> fileIO, String saveFileName,
-			boolean appendToExistingFile) {
+			SaveableFileIO<SaveableSingleGame> fileIO, String saveFileName) {
 		this.tree = tree;
 		this.ui = ui;
 		this.game = game;
 		this.saveableFileIO = fileIO;
 		this.saveFileName = saveFileName;
-		append = appendToExistingFile;
 	}
 
 	public Negotiator(FSM_Tree tree, FSM_UI ui, FSM_Game game) {
@@ -179,9 +186,19 @@ public class Negotiator {
 
 	/** Save the the run to file. Currently called by the Tree FSM when it is ready. **/
 	public void saveRunToFile(Node leafNode){
-		if (saveToFile)
-			saveableFileIO.storeObjects(new SaveableSingleGame(leafNode),
-					saveFileName, append);
+		//MAIN_test.tic();
+		if (saveToFile) {
+			saveBuffer.add(new SaveableSingleGame(leafNode));
+			if (saveIdx == saveInterval - 1) {
+				saveableFileIO.storeObjectsUnordered(saveBuffer,
+						saveFileName, append);
+				saveBuffer.clear();
+				saveIdx = 0;
+			}else {
+				saveIdx++;
+			}
+		//	MAIN_test.toc();
+		}
 	}
 
 	/** Stop an active realtime game (e.g. when a tab change occurs). **/
