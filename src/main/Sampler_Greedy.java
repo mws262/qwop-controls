@@ -16,14 +16,15 @@ public class Sampler_Greedy implements ISampler {
 	/** Another depth specified. **/
 	public int depthN = 5;
 	/** Number of samples to take before moving on from tree depth N. **/
-	public int samplesAtN= 300;
+	public int samplesAtN= 100;
 	/** Number of samples to take before moving on from large depth. **/
-	public int samplesAtInf = 100;
+	public int samplesAtInf = 50;
 	
 	/****** JUMP SIZES ******/
 	public int forwardJump = 1;
 	public int backwardsJump = 5;
-	
+	public int backwardsJumpMin = 5;
+	public float backwardsJumpFailureMultiplier = 1.5f;
 	
 	/** Are we done with the tree policy? **/
 	private boolean treePolicyDone = false;
@@ -103,6 +104,7 @@ public class Sampler_Greedy implements ISampler {
 				movingNode = movingNode.parent;
 				count++;
 			}
+			backwardsJump *= backwardsJumpFailureMultiplier;
 			chooseNewRoot(movingNode);
 		}
 
@@ -145,11 +147,11 @@ public class Sampler_Greedy implements ISampler {
 				// Pick the best leaf
 				ArrayList<Node> leaves = new ArrayList<Node>();
 				currentRoot.getLeaves(leaves);
-				float rootX = currentRoot.state.body.x;
+				//float rootX = currentRoot.state.body.x;
 				Node bestNode = currentRoot;
 				float bestScore = -Float.MAX_VALUE;
 				for (Node leaf : leaves) {
-					float score = (leaf.state.body.x - rootX)/rootX;// + 5f*leaf.state.body.th;
+					float score = evaluationFunction.getValue(leaf);//(leaf.state.body.x - rootX)/rootX;// + 5f*leaf.state.body.th;
 					if (score > bestScore) {
 						bestScore = score;
 						bestNode = leaf;
@@ -159,6 +161,8 @@ public class Sampler_Greedy implements ISampler {
 				while (bestNode.treeDepth > currentRoot.treeDepth + forwardJump) {
 					bestNode = bestNode.parent;
 				}
+				backwardsJump -= 1;
+				backwardsJump = Math.max(backwardsJump, backwardsJumpMin);
 				chooseNewRoot(bestNode);
 			}
 		}else {

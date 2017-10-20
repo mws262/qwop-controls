@@ -355,9 +355,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}else{
 				g.setColor(Color.DARK_GRAY);
 			}
-			g.drawString(line, 10 + (currIdx % 4)*50, vertTextAnchor + vertTextSpacing * (lineNum + 2));
+			g.drawString(line, 10 + (currIdx % 4)*50 + lineNum/7*210, vertTextAnchor + vertTextSpacing * (lineNum % 7 + 2)); // Wrap horizontally after 7 lines
 			currIdx++;
 			lineNum = currIdx/4 + 1;
+			
 		}
 
 		// Draw the little keys above the column.
@@ -1406,7 +1407,6 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}	
 	}
 
-	
 	/**
 	 * Pane for displaying plots of various state variables. Click each plot to pull up a menu for selecting data.
 	 * A tab.

@@ -26,10 +26,10 @@ public class MAIN_test {
 												  {true,false,false,true}};
 												  
 		// Selection of delays for each key press combo. 
-		Integer[][] actionRepeats = new Integer[][] {{3,4,5,6,7,8,9,10},
-													 {32,33,34,35,36,37,38,39,40,41,42},
-												     {3,4,5,6,7,8,9,10},
-												     {32,33,34,35,36,37,38,39,40,41,42}};
+		Integer[][] actionRepeats = new Integer[][] {{5,6,7,8,9,10},
+													 {35,36,37,38,39,40},
+												     {5,6,7,8,9,10},
+												     {35,36,37,38,39,40}};
 												     
 												     
 		// Exceptions to the actionRepeats above. Mainly for the first few actions.   
@@ -47,8 +47,9 @@ public class MAIN_test {
 
 		IEvaluationFunction evaluateRandom = new Evaluator_Random(); // Assigns a purely random score for diagnostics.
 		IEvaluationFunction evaluateDistance = new Evaluator_Distance();
+		IEvaluationFunction evaluateHandTuned = new Evaluator_HandTunedOnState();
 		
-		IEvaluationFunction currentEvaluator = evaluateDistance;
+		IEvaluationFunction currentEvaluator = evaluateHandTuned;
 		
 		/******** Define how nodes are sampled from the above defined actions. *********/
 		ISampler samplerRandom = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
