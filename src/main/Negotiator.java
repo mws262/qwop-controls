@@ -8,7 +8,7 @@ import data.SaveableSingleGame;
  * Negotiates actions between real game and sim.
  * 
  */
-public class Negotiator {
+public class Negotiator implements INegotiateGame {
 
 	/** Handles building the tree and adding nodes. **/
 	FSM_Tree tree;
@@ -116,7 +116,6 @@ public class Negotiator {
 	/********** FSM Changes ************/
 	/***********************************/
 
-	/**** For the actual tree ****/
 	public void statusChange_tree(FSM_Tree.Status status) {
 		if (verbose_tree) System.out.println("Tree FSM: " + status);
 
@@ -213,7 +212,7 @@ public class Negotiator {
 	public Action[] getCurrentSequence() { return game.actionQueue.getActionsInCurrentRun(); }
 	public int getCurrentActionIdx() { return game.actionQueue.getCurrentActionIdx(); }
 	public float getGamesPerSecond() { return tree.currentGPS; }
-	/**** For the visualization of the tree. ****/
+
 	public void statusChange_UI(FSM_UI.Status status) {
 		if (verbose_UI)
 			System.out.println("UI FSM: " + status);
@@ -249,12 +248,16 @@ public class Negotiator {
 	}
 
 	/** Let the game report that it is no longer simulating in real time and the tree may resume. **/
+	@Override
 	public void reportEndOfRealTimeSim(){
 		tree.unlockFSM(); // Resume tree actions.
 		ui.runnerPane.clearWorldToView();
 	}
 
-	/**** For the QWOP game. ****/
+	/* (non-Javadoc)
+	 * @see main.INegotiator#statusChange_Game(main.FSM_Game.Status)
+	 */
+	@Override
 	public void statusChange_Game(FSM_Game.Status status) {
 		if (verbose_game)
 			System.out.println("Game FSM: " + status);
@@ -310,6 +313,7 @@ public class Negotiator {
 	}
 
 	/** Game tells negotiator which keys are down currently. **/
+	@Override
 	public void reportQWOPKeys(boolean Q, boolean W, boolean O, boolean P) {
 		this.Q = Q;
 		this.W = W;

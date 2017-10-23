@@ -45,7 +45,7 @@ public class FSM_Game implements Runnable{
 	private Status currentStatus = Status.IDLE;
 	private Status previousStatus = Status.IDLE;
 
-	private Negotiator negotiator;
+	private INegotiateGame negotiator;
 
 	/** Are we flagged to run a single, externally supplied sequence? **/
 	private boolean flagForSingle = false;
@@ -113,6 +113,7 @@ public class FSM_Game implements Runnable{
 
 					game.everyStep(Q,W,O,P);
 					getWorld().step(timestep, iterations);
+					negotiator.reportGameStep(actionQueue.peekThisAction());
 					stepsSimulated++;
 					if (runRealTime){
 						negotiator.reportQWOPKeys(Q,W,O,P);
@@ -219,7 +220,7 @@ public class FSM_Game implements Runnable{
 	}
 
 	/** Set the external communication channel **/
-	public void setNegotiator(Negotiator negotiator){
+	public void setNegotiator(INegotiateGame negotiator){
 		this.negotiator = negotiator;
 	}
 

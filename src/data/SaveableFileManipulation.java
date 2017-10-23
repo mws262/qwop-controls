@@ -10,8 +10,9 @@ public class SaveableFileManipulation {
 	static String destination = "test3";
 
 	public static void main(String[] args) {
-		ArrayList<File> qwopFiles = getQWOPFiles();
-
+		//ArrayList<File> qwopFiles = getQWOPFiles();
+		String[] filesToCombine = new String[] {"test1","test2"};
+		combineFiles(filesToCombine,"test_out");
 	}
 
 	/** Get all .qwop files in the working directory. **/
@@ -63,18 +64,21 @@ public class SaveableFileManipulation {
 			System.out.println(Math.round(megabytes*100)/100. + " megabyte file output: " + destination);
 		}
 	}
-	
+
 	/** Combine multiple .qwop files into a single one containing the data of both with duplicates removed. **/
 	public static void combineFiles(String[] inputFiles, String destination) {
 		SaveableFileIO<SaveableSingleGame> io = new SaveableFileIO<SaveableSingleGame>();
 		HashSet<SaveableSingleGame> loaded = new HashSet<SaveableSingleGame>();
-		
+		System.out.println("Combining .QWOP files: ");
 		// Load them all into the same hashset.
 		for (String file : inputFiles) {
-			 loaded.addAll(io.loadObjectsUnordered(file));
+			HashSet<SaveableSingleGame> loadedSet = io.loadObjectsUnordered(file);
+			loaded.addAll(loadedSet);
+			//System.out.println("File " + file + " has " + loadedSet.size() + " games in it.");
 		}
-		
+		System.out.println("Output file " + destination + " has " + loaded.size() + " games in it.");
+
 		io.storeObjectsUnordered(loaded, destination, false);
 	}
-	
+
 }
