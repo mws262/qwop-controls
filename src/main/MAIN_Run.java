@@ -95,7 +95,7 @@ public class MAIN_Run {
 		FSM_Game game = new FSM_Game();
 		
 		/* Manage the tree, UI, and game. Start some threads. */
-		Negotiator negotiator = new Negotiator(tree,ui,game,io,"test3");
+		Negotiator negotiator = new Negotiator(tree,ui,game,io,"test2");
 		negotiator.saveToFile = saveGamesToFile;
 		
 		tree.setNegotiator(negotiator);
