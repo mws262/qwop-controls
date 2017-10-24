@@ -1,7 +1,11 @@
 package main;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
+import data.SaveableDenseData;
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
 
@@ -68,25 +72,16 @@ public class MAIN_Run {
 		
 		
 		// TODO Temp removed the imported games.
-//		/* Load */
 //		System.out.println("Reading saved games file."); tic();
-		SaveableFileIO<SaveableSingleGame> io = new SaveableFileIO<SaveableSingleGame>();
-//		ArrayList<SaveableSingleGame> runs1 = io.loadObjects("test");
-//		//ArrayList<CondensedRunInfo> runs2 = io.loadObjects("test2");
-//		toc();
-//		
-//		/* Convert from runs to tree with nodes */
-//		System.out.println("Converting from games to a tree."); tic();
-//		Node treeRoot = Node.makeNodesFromRunInfo(runs1, useTreePhysics);
-//		//TrialNodeMinimal.makeNodesFromRunInfo(runs2, treeRoot);
-//
-//		toc();
-//		//System.out.println("Done. Imported " + runs1.size() + runs2.size() + " runs. Starting graphics and tree builder.");
-//		
-//		/* Add more choices for the tree to explore, and see if this changes anything. */
-//		treeRoot.expandNodeChoices_allBelow(2);
-//		treeRoot.checkFullyExplored_complete();
+		SaveableFileIO<SaveableSingleGame> io_sparse = new SaveableFileIO<SaveableSingleGame>();
+		SaveableFileIO<SaveableDenseData> io_dense = new SaveableFileIO<SaveableDenseData>();
 		
+		String sparseFileName = "test.SaveableSingleGame";
+		String denseFileName =  "test.SaveableDenseData";
+		
+		// If we don't want to append to an existing file, we should clear out anything existing with this name.
+		clearExistingFile(sparseFileName);
+		clearExistingFile(denseFileName);
 		
 		Node treeRoot = new Node(useTreePhysics);
 
@@ -95,8 +90,9 @@ public class MAIN_Run {
 		FSM_Game game = new FSM_Game();
 		
 		/* Manage the tree, UI, and game. Start some threads. */
-		Negotiator negotiator = new Negotiator(tree,ui,game,io,"test.SaveableSingleGame");
-		negotiator.saveToFile = saveGamesToFile;
+		Negotiator negotiator = new Negotiator(tree, ui, game, 
+												io_sparse, sparseFileName,
+												io_dense, denseFileName);
 		
 		tree.setNegotiator(negotiator);
 		ui.setNegotiator(negotiator);
@@ -129,5 +125,16 @@ public class MAIN_Run {
 			System.out.println(Math.floor(difference/100000000.)/10. + " s elapsed.");
 		}
 		return difference;
+	}
+	
+	/** Clear out an existing file. **/
+	public static void clearExistingFile(String fileName) {
+		File file = new File(fileName);
+		try {
+			boolean result = Files.deleteIfExists(file.toPath());
+			if (result) System.out.println("Cleared file: " + file.getName());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
