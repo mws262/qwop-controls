@@ -16,7 +16,7 @@ public class SaveableFileManipulation {
 	}
 
 	/** Get all .qwop files in the working directory. **/
-	public static ArrayList<File> getQWOPFiles(){
+	public static ArrayList<File> getQWOPFiles(String extension){
 		File folder = new File(".");
 		File[] listOfFiles = folder.listFiles();
 		ArrayList<File> qwopFiles = new ArrayList<File>();
@@ -29,7 +29,7 @@ public class SaveableFileManipulation {
 				int indexOfLastSeparator = f.getName().lastIndexOf(".");
 
 				// Only get the .qwop files
-				if (f.getName().substring(indexOfLastSeparator).equalsIgnoreCase(".qwop")) {
+				if (f.getName().substring(indexOfLastSeparator).equalsIgnoreCase(extension)) {
 					System.out.println("File " + f.getName());
 					qwopFiles.add(f);
 				}
@@ -42,7 +42,7 @@ public class SaveableFileManipulation {
 
 	/** Eliminate all duplicate runs in the given file and save to destination file. **/
 	public static void eliminateDuplicateRuns(String origin, String destination) {
-		File file = new File(origin + ".qwop");
+		File file = new File(origin);
 
 		if(file.exists()){
 			double bytes = file.length();
@@ -56,7 +56,7 @@ public class SaveableFileManipulation {
 		io.storeObjectsUnordered(loaded, destination, false);
 
 
-		file = new File(destination + ".qwop");
+		file = new File(destination);
 		if(file.exists()){
 			double bytes = file.length();
 			double kilobytes = (bytes / 1024);

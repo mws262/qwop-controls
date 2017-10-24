@@ -1,7 +1,6 @@
 package data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 
 import main.Action;
@@ -10,15 +9,28 @@ import main.FSM_Game.Status;
 import main.INegotiateGame;
 import main.State;
 
+/**
+ * Convert sparse run data, ie with only state and action at the transitions, to dense, with data
+ * at every timestep.
+ * 
+ * @author matt
+ *
+ */
 public class ProcessDenseData implements INegotiateGame{
 	
+	/** Interface to the QWOP game. **/
 	private FSM_Game gameFSM = new FSM_Game();
-	private Thread gameThread = new Thread(gameFSM); 
+	/** Separate thread for the game. **/
+	private Thread gameThread = new Thread(gameFSM);
+	
 	private ArrayList<Action> actionBuffer = new ArrayList<Action>();
 	private ArrayList<State> stateBuffer = new ArrayList<State>();
 	private ArrayList<SaveableDenseData> denseDataBuffer = new ArrayList<SaveableDenseData>();
-	private volatile boolean gameReady = true;
+	
+	/** Initial state that the runner starts at. First element of every data object. **/
 	private State initialState = FSM_Game.getInitialState();
+	/** Is the game ready to take a new sequence yet? **/
+	private volatile boolean gameReady = true;
 	
 	public ProcessDenseData() {
 		gameThread.start();
@@ -46,18 +58,13 @@ public class ProcessDenseData implements INegotiateGame{
 				System.out.println("Games run: " + counter);
 			}
 		}
+
+		while (!gameReady); // Wait for the game FSM to return to IDLE.	
 		
-		// Hack to prevent concurrent modification. TODO yeah....
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		/**** Write to file ****/
-		fileOut.storeObjectsOrdered(denseDataBuffer, "denseData", false);
+		fileOut.storeObjectsOrdered(denseDataBuffer, "denseData.SaveableDenseData", false);
 		
-		
+		System.exit(0);
 	}
 	
 	@Override
