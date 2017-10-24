@@ -15,17 +15,17 @@ import java.util.HashSet;
 public class SaveableFileIO<T> {
 
 	/** Store objects in ordered form. Only use if you require ordered. It's slower. Also preserves duplicates for better or worse. **/
-	public void storeObjectsOrdered(ArrayList<T> data, String filenameNoExtension, boolean append){
+	public void storeObjectsOrdered(ArrayList<T> data, String fullFileName, boolean append){
 
 		OutputStream ops = null;
 		ObjectOutputStream objOps = null;
 
 		try {
-			if (append && new File(filenameNoExtension + ".qwop").isFile()){
-				ops = new FileOutputStream(filenameNoExtension + ".qwop",true);
+			if (append && new File(fullFileName).isFile()){
+				ops = new FileOutputStream(fullFileName, true);
 				objOps = new AppendingObjectOutputStream(ops);
 			}else{
-				ops = new FileOutputStream(filenameNoExtension + ".qwop",false);
+				ops = new FileOutputStream(fullFileName, false);
 				objOps = new ObjectOutputStream(ops);	
 			}
 
@@ -46,24 +46,24 @@ public class SaveableFileIO<T> {
 	}
 
 	/** Store objects in ordered form. Only use if you require ordered. It's slower. Also preserves duplicates for better or worse. **/
-	public void storeObjectsOrdered(T data,String filenameNoExtension, boolean append){
+	public void storeObjectsOrdered(T data, String fullFileName, boolean append){
 		ArrayList<T> dataList = new ArrayList<T>();
 		dataList.add(data);
-		storeObjectsOrdered(dataList,filenameNoExtension,append);
+		storeObjectsOrdered(dataList, fullFileName, append);
 	}
 
 	/** Store objects in unordered form. Will also not preserve duplicates. **/
-	public void storeObjectsUnordered(HashSet<T> data, String filenameNoExtension, boolean append){
+	public void storeObjectsUnordered(HashSet<T> data, String fullFileName, boolean append){
 
 		OutputStream ops = null;
 		ObjectOutputStream objOps = null;
 
 		try {
-			if (append && new File(filenameNoExtension + ".qwop").isFile()){
-				ops = new FileOutputStream(filenameNoExtension + ".qwop",true);
+			if (append && new File(fullFileName).isFile()){
+				ops = new FileOutputStream(fullFileName, true);
 				objOps = new AppendingObjectOutputStream(ops);
 			}else{
-				ops = new FileOutputStream(filenameNoExtension + ".qwop",false);
+				ops = new FileOutputStream(fullFileName, false);
 				objOps = new ObjectOutputStream(ops);	
 			}
 
@@ -84,14 +84,14 @@ public class SaveableFileIO<T> {
 	}
 	
 	/** Store objects in unordered form. Will also not preserve duplicates. **/
-	public void storeObjectsUnordered(T data,String filenameNoExtension, boolean append){
+	public void storeObjectsUnordered(T data, String fullFileName, boolean append){
 		HashSet<T> dataList = new HashSet<T>();
 		dataList.add(data);
-		storeObjectsUnordered(dataList,filenameNoExtension,append);
+		storeObjectsUnordered(dataList, fullFileName, append);
 	}
 	
 	/** Load objects in unordered form. Will also NOT contain duplicates. **/
-	public HashSet<T> loadObjectsUnordered(String filenameNoExtension){
+	public HashSet<T> loadObjectsUnordered(String fullFileName){
 		InputStream fileIs = null;
 		ObjectInputStream objIs = null;
 		int counter = 0;
@@ -100,7 +100,7 @@ public class SaveableFileIO<T> {
 		try {
 			final String dir = System.getProperty("user.dir");
 	        System.out.println("current directory: " + dir);
-			fileIs = new FileInputStream(filenameNoExtension + ".qwop");
+			fileIs = new FileInputStream(fullFileName);
 			objIs = new ObjectInputStream(fileIs);
 			boolean reading = true;
 			while (reading){
@@ -127,12 +127,12 @@ public class SaveableFileIO<T> {
 
 			}
 		}
-		System.out.println("Loaded " + counter + " objects from file " + filenameNoExtension + ".");
+		System.out.println("Loaded " + counter + " objects from file " + fullFileName + ".");
 		return dataList;
 	}
 	
 	/** Load objects in ordered form. Faster but could contain duplicates. **/
-	public ArrayList<T> loadObjectsOrdered(String filenameNoExtension){
+	public ArrayList<T> loadObjectsOrdered(String fullFileName){
 
 		InputStream fileIs = null;
 		ObjectInputStream objIs = null;
@@ -142,7 +142,7 @@ public class SaveableFileIO<T> {
 		try {
 			final String dir = System.getProperty("user.dir");
 	        System.out.println("current directory: " + dir);
-			fileIs = new FileInputStream(filenameNoExtension + ".qwop");
+			fileIs = new FileInputStream(fullFileName);
 			objIs = new ObjectInputStream(fileIs);
 			boolean reading = true;
 			while (reading){
@@ -169,7 +169,7 @@ public class SaveableFileIO<T> {
 
 			}
 		}
-		System.out.println("Loaded " + counter + " objects from file " + filenameNoExtension + ".");
+		System.out.println("Loaded " + counter + " objects from file " + fullFileName + ".");
 		return dataList;
 	}
 
