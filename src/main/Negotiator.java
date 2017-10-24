@@ -320,4 +320,10 @@ public class Negotiator implements INegotiateGame {
 		this.O = O;
 		this.P = P;
 	}
+
+	@Override
+	public void reportGameStep(Action action) {
+		// TODO Auto-generated method stub
+		
+	}
 }
