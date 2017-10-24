@@ -151,9 +151,9 @@ public class FSM_Game implements Runnable{
 			}
 			// Report changes to negotiator.
 			if (currentStatus != previousStatus){
+				previousStatus = currentStatus;	
 				negotiator.statusChange_Game(currentStatus);
 			}
-			previousStatus = currentStatus;	
 		}
 	}
 
