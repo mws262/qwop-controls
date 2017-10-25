@@ -22,7 +22,7 @@ public class Sampler_Greedy implements ISampler {
 	
 	/****** JUMP SIZES ******/
 	public int forwardJump = 1;
-	public int backwardsJump = 5;
+	public int backwardsJump = 10;
 	public int backwardsJumpMin = 5;
 	public float backwardsJumpFailureMultiplier = 1.5f;
 	

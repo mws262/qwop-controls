@@ -883,7 +883,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	public class SnapshotPane extends JPanel implements TabbedPaneActivator, MouseListener, MouseMotionListener, MouseWheelListener {
 
 		/** Number of runner states in the past to display. **/
-		public int numHistoryStatesDisplay = 10;
+		public int numHistoryStatesDisplay = 25;
 
 		/** Is this tab currently active? If not, don't run the draw loop. **/
 		public boolean active = false;

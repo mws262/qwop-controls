@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,10 +37,10 @@ public class MAIN_Run {
 												  {true,false,false,true}};
 												  
 		// Selection of delays for each key press combo. 
-		Integer[][] actionRepeats = new Integer[][] {{5,6,7,8,9,10},
-													 {35,36,37,38,39,40},
-												     {5,6,7,8,9,10},
-												     {35,36,37,38,39,40}};
+		Integer[][] actionRepeats = new Integer[][] {{5,6,7,8,9,10,11,12,13,14,15},
+													 {30,31,32,33,34,35,36,37,38,39,40},
+												     {5,6,7,8,9,10,11,12,13,14,15},
+												     {30,31,32,33,34,35,36,37,38,39,40}};
 												     
 												     
 		// Exceptions to the actionRepeats above. Mainly for the first few actions.   
@@ -59,21 +60,19 @@ public class MAIN_Run {
 		IEvaluationFunction evaluateDistance = new Evaluator_Distance();
 		IEvaluationFunction evaluateHandTuned = new Evaluator_HandTunedOnState();
 		
-		IEvaluationFunction currentEvaluator = evaluateDistance;
+		IEvaluationFunction currentEvaluator = evaluateHandTuned;
 		
 		/******** Define how nodes are sampled from the above defined actions. *********/
 		ISampler samplerRandom = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
 		ISampler samplerGreedy = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
 		ISampler samplerUCB = new Sampler_UCB(currentEvaluator); // Upper confidence bound for trees sampler. More principled way of assigning weight for exploration/exploitation.
 		
-		ISampler currentSampler = samplerUCB;
+		ISampler currentSampler = samplerGreedy;
 		
 		/************************************************************/		
 		/******* Decide how datasets are to be saved/loaded. ********/
 		/************************************************************/
-		
-		
-		// TODO Temp removed the imported games.
+
 //		System.out.println("Reading saved games file."); tic();
 		SaveableFileIO<SaveableSingleGame> io_sparse = new SaveableFileIO<SaveableSingleGame>();
 		SaveableFileIO<SaveableDenseData> io_dense = new SaveableFileIO<SaveableDenseData>();
@@ -81,11 +80,16 @@ public class MAIN_Run {
 		String sparseFileName = generateFileName("test", "SaveableSingleGame");
 		String denseFileName =  generateFileName("test", "SaveableDenseData");
 
+		//ArrayList<SaveableSingleGame> loaded = io_sparse.loadObjectsOrdered("test_2017-10-25_16-25-38.SaveableSingleGame");
+		
+		//Node treeRoot = Node.makeNodesFromRunInfo(loaded, false);
 		// If we don't want to append to an existing file, we should clear out anything existing with this name.
-		clearExistingFile(sparseFileName);
-		clearExistingFile(denseFileName);
+//		clearExistingFile(sparseFileName);
+//		clearExistingFile(denseFileName);
 		
 		Node treeRoot = new Node(useTreePhysics);
+		
+		
 
 		FSM_UI ui = new FSM_UI();
 		FSM_Tree tree = new FSM_Tree(currentSampler);
@@ -93,8 +97,7 @@ public class MAIN_Run {
 		
 		/* Manage the tree, UI, and game. Start some threads. */
 		Negotiator negotiator = new Negotiator(tree, ui, game, 
-												io_sparse, sparseFileName,
-												io_dense, denseFileName);
+												io_sparse, sparseFileName);//, io_dense, denseFileName);
 		
 		tree.setNegotiator(negotiator);
 		ui.setNegotiator(negotiator);
