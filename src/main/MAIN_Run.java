@@ -2,6 +2,8 @@ package main;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,9 +78,9 @@ public class MAIN_Run {
 		SaveableFileIO<SaveableSingleGame> io_sparse = new SaveableFileIO<SaveableSingleGame>();
 		SaveableFileIO<SaveableDenseData> io_dense = new SaveableFileIO<SaveableDenseData>();
 		
-		String sparseFileName = "test.SaveableSingleGame";
-		String denseFileName =  "test.SaveableDenseData";
-		
+		String sparseFileName = generateFileName("test", "SaveableSingleGame");
+		String denseFileName =  generateFileName("test", "SaveableDenseData");
+
 		// If we don't want to append to an existing file, we should clear out anything existing with this name.
 		clearExistingFile(sparseFileName);
 		clearExistingFile(denseFileName);
@@ -136,5 +138,15 @@ public class MAIN_Run {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/** Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]**/
+	public static String generateFileName(String prefix, String className) {
+		Date date = new Date() ;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("'" + prefix + "_'" + "yyyy-MM-dd_HH-mm-ss" + "'." +  className + "'") ;
+		String name = dateFormat.format(date);
+		System.out.println("Generated file: " + name);
+		
+		return name;
 	}
 }
