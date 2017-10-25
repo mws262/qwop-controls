@@ -142,7 +142,8 @@ public class Negotiator implements INegotiateGame {
 			if (gameStatus == FSM_Game.Status.IDLE){
 				game.addSequence(tree.targetNodeToTest.getSequence());
 			}else{
-				throw new RuntimeException("Tree tried to queue a sequence while the game wasn't idle. Game was: " + gameStatus.toString());
+				System.out.println("Warning Tree tried to queue a sequence while the game wasn't idle");
+				//throw new RuntimeException("Tree tried to queue a sequence while the game wasn't idle. Game was: " + gameStatus.toString());
 			}
 			game.unlockFSM();
 			break;

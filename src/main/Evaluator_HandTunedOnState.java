@@ -5,7 +5,7 @@ public class Evaluator_HandTunedOnState implements IEvaluationFunction {
 	@Override
 	public float getValue(Node nodeToEvaluate) {
 		float value = 0.f;
-		//value += getAngleValue(nodeToEvaluate);
+		value += getAngleValue(nodeToEvaluate);
 		value += getDistanceValue(nodeToEvaluate);
 		
 		return value;
@@ -23,7 +23,7 @@ public class Evaluator_HandTunedOnState implements IEvaluationFunction {
 
 	
 	private float getAngleValue(Node nodeToEvaluate) {
-		return -100*nodeToEvaluate.state.body.th;
+		return 10*nodeToEvaluate.state.body.th;
 	}
 	
 	private float getDistanceValue(Node nodeToEvaluate) {
