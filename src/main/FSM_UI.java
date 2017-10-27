@@ -587,6 +587,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					case KeyEvent.VK_C:
 						negotiator.redistributeNodes();
 						break;
+					case KeyEvent.VK_B:
+						negotiator.toggleSampler();
+						break;
 					case KeyEvent.VK_V:
 						physOn = !physOn;
 						break;

@@ -12,7 +12,7 @@ public class Sampler_UCB implements ISampler {
 	private IEvaluationFunction evaluationFunction;
 	
 	/** Explore/exploit tradeoff parameter. Higher means more exploration. Lower means more exploitation. **/
-	float c = 1.f;
+	float c = 0.1f;
 
 	/** Are we done with the tree policy? **/
 	private boolean treePolicyDone = false;

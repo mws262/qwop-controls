@@ -27,6 +27,13 @@ public class ActionSet extends ArrayList<Action>{
 		return samplingDist.randOnDistribution(this);
 	}
 	
+	/** Duplicate this, including the elements. **/
+	public ActionSet clone() {
+		ActionSet duplicate = new ActionSet(samplingDist);
+		duplicate.addAll(this);
+		return duplicate;
+	}
+	
 	/** Get an ActionSet defined by as many durations as desired, 4 keys, and a sampling distribution. **/
 	public static ActionSet makeActionSet(Integer[] durations, boolean[][] keys, Distribution<Action> dist) {
 		ActionSet set = new ActionSet(dist);
@@ -36,11 +43,16 @@ public class ActionSet extends ArrayList<Action>{
 		return set;
 	}
 	
-	/** Duplicate this, including the elements. **/
-	public ActionSet clone() {
-		ActionSet duplicate = new ActionSet(samplingDist);
-		duplicate.addAll(this);
-		return duplicate;
+	/** Simply return many instances of the given keyString. Useful when making action sets sometimes. **/
+	public static boolean[][] replicateKeyString(boolean[] keyString, int times){
+		boolean[][] bigger = new boolean[times][];
+		
+		for (int i = 0; i < times; i++) {
+			bigger[i] = keyString;
+		}
+		
+		return bigger;
 	}
+	
 	
 }

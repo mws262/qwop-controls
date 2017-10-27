@@ -11,6 +11,9 @@ public class FSM_Tree implements Runnable{
 	public Status previousStatus = Status.IDLE;
 	private volatile Status queuedStatusChange;
 	private volatile boolean forcedStatusChange = false;
+	
+	/** Queued sampler ready to swap in when the FSM is ready for it. **/
+	private ISampler queuedSamplerChange = null;
 
 	/** Reports changes to negotiator and uses it to get reports from the game. **/
 	private Negotiator negotiator;
@@ -136,6 +139,12 @@ public class FSM_Tree implements Runnable{
 				}else{
 					gpsCounter++;
 				}
+				
+				// Sampler change safely if queued.
+				if (queuedSamplerChange != null) {
+					sampler = queuedSamplerChange;
+					queuedSamplerChange = null;
+				}
 				break;
 			case EXHAUSTED: // Similar to idle, but we haven't decided whether to introduce more options or start over.
 				kill();
@@ -232,6 +241,11 @@ public class FSM_Tree implements Runnable{
 		return true;
 	}
 
+	/** Change the sampler safely. **/
+	public void changeSampler(ISampler newSampler) {
+		queuedSamplerChange = newSampler;
+	}
+	
 	/** Wait until a specific status is reached, and then pause there. Returns whether it succeeded or not. **/
 	public boolean latchAtFSMStatus(Status status){
 		if (isLocked) return false; //throw new RuntimeException("Someone tried to latch the game while it was already latched.");
