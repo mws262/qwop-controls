@@ -60,7 +60,7 @@ public class Node {
 	public CopyOnWriteArrayList<Node> children = new CopyOnWriteArrayList<Node>();
 
 	/** Untried child actions. **/
-	public ArrayList<Action> uncheckedActions = new ArrayList<Action>();
+	public ActionSet uncheckedActions;
 
 	/** Are there any untried things below this node? **/
 	public boolean fullyExplored = false;
@@ -280,11 +280,17 @@ public class Node {
 	private void autoAddUncheckedActions() {
 		// If we've set rules to auto-select potential children, do so.
 		if (potentialActionGenerator != null) {
-			Action[] potentialActions = potentialActionGenerator.getPotentialChildActionSet(this);
+			ActionSet potentialActions = potentialActionGenerator.getPotentialChildActionSet(this);
 
-			for (Action potentialAction : potentialActions) {
-				if (!uncheckedActions.contains(potentialAction)) {
-					uncheckedActions.add(potentialAction);
+			// If no unchecked actions have been previously added (must have assigned a sampling distribution to do so),
+			// then just use the new one outright.
+			if (uncheckedActions == null) {
+				uncheckedActions = potentialActions;
+			}else { // Otherwise, just use the existing distribution, but add the new actions anyway.
+				for (Action potentialAction : potentialActions) {
+					if (!uncheckedActions.contains(potentialAction)) {
+						uncheckedActions.add(potentialAction);
+					}
 				}
 			}
 		}
@@ -683,21 +689,21 @@ public class Node {
 	public void calcNodePos(float[] nodeLocationsToAssign){
 		//Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will span the required sweep.
 		if(treeDepth == 0){ //If this is the root node, we shouldn't change stuff yet.
-//			if (children.size() > 1) { //Catch the div by 0
-//				
-//				int division = children.size() + uncheckedActions.size(); // Split into this many chunks.
-//				System.out.println("WHa");
-//				nodeAngle = -sweepAngle/2.f + (float)(parent.children.indexOf(this)) * sweepAngle/(float)(children.size() - 1 + uncheckedActions.size());
-//			}else{
-//				nodeAngle = (float)Math.PI/2f;
-//			}
+			//			if (children.size() > 1) { //Catch the div by 0
+			//				
+			//				int division = children.size() + uncheckedActions.size(); // Split into this many chunks.
+			//				System.out.println("WHa");
+			//				nodeAngle = -sweepAngle/2.f + (float)(parent.children.indexOf(this)) * sweepAngle/(float)(children.size() - 1 + uncheckedActions.size());
+			//			}else{
+			//				nodeAngle = (float)Math.PI/2f;
+			//			}
 		}else{
 			if (parent.children.size() + parent.uncheckedActions.size() > 1){ //Catch the div by 0
 				int division = parent.children.size() + parent.uncheckedActions.size(); // Split into this many chunks.
 				int childNo = parent.children.indexOf(this);
-				
+
 				sweepAngle = (parent.sweepAngle/division) * (1 + treeDepth * 0.05f);
-				
+
 				if (childNo == 0) {
 					nodeAngle = parent.nodeAngle;
 				}else if (childNo % 2 == 0) {

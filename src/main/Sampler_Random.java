@@ -79,7 +79,9 @@ public class Sampler_Random implements ISampler {
 	public Node expansionPolicy(Node startNode) {
 		if (startNode.uncheckedActions.size() == 0) throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 		
-		Action childAction = startNode.uncheckedActions.get(Node.randInt(0,startNode.uncheckedActions.size() - 1));
+		Action childAction = startNode.uncheckedActions.getRandom();
+				
+				//startNode.uncheckedActions.get(Node.randInt(0,startNode.uncheckedActions.size() - 1));
 		
 		return startNode.addChild(childAction);
 	}

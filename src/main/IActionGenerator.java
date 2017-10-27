@@ -1,6 +1,6 @@
 package main;
 
 public interface IActionGenerator {
-	public Action[] getPotentialChildActionSet(Node parentNode);
+	public ActionSet getPotentialChildActionSet(Node parentNode);
 	
 }
