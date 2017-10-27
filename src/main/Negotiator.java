@@ -391,4 +391,32 @@ public class Negotiator implements INegotiateGame {
 			stateBuffer_dense.add(game.getGameState());
 		}
 	}
+
+	private boolean toggler = true;
+	public void toggleSampler() {
+		IEvaluationFunction evaluateRandom = new Evaluator_Random(); // Assigns a purely random score for diagnostics.
+		IEvaluationFunction evaluateDistance = new Evaluator_Distance();
+		IEvaluationFunction evaluateHandTuned = new Evaluator_HandTunedOnState();
+		
+		IEvaluationFunction currentEvaluator = evaluateDistance;
+		
+		/***********************************************/		
+		/*********** Tree building strategy ************/
+		/***********************************************/
+		
+		/******** Define how nodes are sampled from the above defined actions. *********/
+		ISampler samplerRandom = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
+		ISampler samplerGreedy = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+		ISampler samplerUCB = new Sampler_UCB(currentEvaluator); // Upper confidence bound for trees sampler. More principled way of assigning weight for exploration/exploitation.
+		if (toggler) {
+			tree.changeSampler(samplerGreedy);
+			System.out.println("Greedy");
+			toggler = !toggler;
+		}else {
+			tree.changeSampler(samplerUCB);
+			System.out.println("UCB");
+			toggler = !toggler;
+		}
+		
+	}
 }
