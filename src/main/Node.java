@@ -91,7 +91,7 @@ public class Node {
 	/** Parameters for visualizing the tree **/
 	public float[] nodeLocation = new float[3]; // Location that this node appears on the tree visualization
 	public float nodeAngle = 0; // Keep track of the angle that the line previous node to this node makes.
-	public float sweepAngle = 8f*(float)Math.PI;
+	public float sweepAngle = 2f*(float)Math.PI;
 
 	public float edgeLength = 1.f;
 
@@ -683,15 +683,28 @@ public class Node {
 	public void calcNodePos(float[] nodeLocationsToAssign){
 		//Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will span the required sweep.
 		if(treeDepth == 0){ //If this is the root node, we shouldn't change stuff yet.
-			if (children.size() > 1) { //Catch the div by 0
-				nodeAngle = -sweepAngle/2.f + (float)(parent.children.indexOf(this)) * sweepAngle/(float)(children.size() - 1);
-			}else{
-				nodeAngle = (float)Math.PI/2f;
-			}
+//			if (children.size() > 1) { //Catch the div by 0
+//				
+//				int division = children.size() + uncheckedActions.size(); // Split into this many chunks.
+//				System.out.println("WHa");
+//				nodeAngle = -sweepAngle/2.f + (float)(parent.children.indexOf(this)) * sweepAngle/(float)(children.size() - 1 + uncheckedActions.size());
+//			}else{
+//				nodeAngle = (float)Math.PI/2f;
+//			}
 		}else{
-			if (parent.children.size() > 1){ //Catch the div by 0
-				sweepAngle = parent.sweepAngle/(4);
-				nodeAngle = parent.nodeAngle - sweepAngle/2.f + (float)(parent.children.indexOf(this)) * sweepAngle/(float)(parent.children.size() - 1);
+			if (parent.children.size() + parent.uncheckedActions.size() > 1){ //Catch the div by 0
+				int division = parent.children.size() + parent.uncheckedActions.size(); // Split into this many chunks.
+				int childNo = parent.children.indexOf(this);
+				
+				sweepAngle = (parent.sweepAngle/division) * (1 + treeDepth * 0.05f);
+				
+				if (childNo == 0) {
+					nodeAngle = parent.nodeAngle;
+				}else if (childNo % 2 == 0) {
+					nodeAngle = parent.nodeAngle + sweepAngle * childNo/2;
+				}else {
+					nodeAngle = parent.nodeAngle - sweepAngle * (childNo + 1)/2;
+				}
 			}else{
 				sweepAngle = parent.sweepAngle; //Only reduce the sweep angle if the parent one had more than one child.
 				nodeAngle = parent.nodeAngle;
