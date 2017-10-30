@@ -698,7 +698,7 @@ public class Node {
 			//				nodeAngle = (float)Math.PI/2f;
 			//			}
 		}else{
-			if (parent.children.size() + parent.uncheckedActions.size() > 1){ //Catch the div by 0
+			if (parent.children.size() + ((parent.uncheckedActions == null) ? 0 :parent.uncheckedActions.size()) > 1){ //Catch the div by 0
 				int division = parent.children.size() + parent.uncheckedActions.size(); // Split into this many chunks.
 				int childNo = parent.children.indexOf(this);
 
