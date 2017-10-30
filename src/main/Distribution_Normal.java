@@ -12,6 +12,7 @@ public class Distribution_Normal extends Distribution<Action> {
 		this.stdev = stdev;	
 	}
 	
+	/** Get an action based on duration sampled from a normal distribution with mean and stdev. **/
 	@Override
 	public Action randOnDistribution(ArrayList<Action> set) {
 		double r = rand.nextGaussian(); // Gets a new value on bell curve. 0 mean, 1 stddev.

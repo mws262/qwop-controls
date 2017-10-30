@@ -15,11 +15,15 @@ public class FSM_Game implements Runnable{
 
 	private QWOPGame game;
 
+	/** Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls. **/
+	public float torsoAngUpper = 1.2f;
+	public float torsoAngLower = -1.2f; // Negative is falling backwards. 0.4 is start angle.
+	
 	/** Failure occurrence flag **/
 	private boolean failFlag = false;
 
 	/** Thread loop running? **/
-	public boolean running = true;
+	private boolean running = true;
 
 	/** Whether the FSM is locked for some other action to continue. **/
 	private volatile boolean locked = false;
@@ -113,6 +117,13 @@ public class FSM_Game implements Runnable{
 
 					game.everyStep(Q,W,O,P);
 					getWorld().step(timestep, iterations);
+					
+					// Extra fail conditions besides contacts.
+					float angle = game.TorsoBody.getAngle();
+					if (angle > torsoAngUpper || angle < torsoAngLower) {
+						reportFall();
+					}
+					
 					negotiator.reportGameStep(actionQueue.peekThisAction());
 					stepsSimulated++;
 					if (runRealTime){
@@ -249,6 +260,11 @@ public class FSM_Game implements Runnable{
 		if (!locked) throw new RuntimeException("Tried to unlock the game FSM but it wasn't previously locked. Not necessarily fatal, but indicates some bad logic.");
 		if (!isLocked) throw new RuntimeException("Tried to unlock the game FSM, but it never got around to locked in the first place. This really shouldn't happen.");
 		locked = false;
+	}
+	
+	/** Stop the game FSM. **/
+	public void kill() {
+		running = false;
 	}
 
 	/**

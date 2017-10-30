@@ -23,6 +23,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
@@ -177,7 +178,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	private Status currentStatus = Status.IDLE_ALL;
 	private Status previousStatus = Status.IDLE_ALL;
 
-	public FSM_UI(){
+	public FSM_UI() {
 		Container pane = this.getContentPane();
 		pane.setLayout(new GridBagLayout());
 
@@ -253,10 +254,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	}
 
 	/** Main graphics loop. **/
-	public void run(){
-		while (running){
+	public void run() {
+		while (running) {
 			long currentTime = System.currentTimeMillis();
-			switch(currentStatus){
+			switch(currentStatus) {
 			case IDLE_ALL:
 				currentStatus = Status.INITIALIZE;
 				break;
@@ -264,9 +265,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				currentStatus = Status.DRAW_ALL;
 				break;
 			case DRAW_ALL:
-				if (physOn){
+				if (physOn) {
 					Iterator<Node> iter = rootNodes.iterator();
-					while (iter.hasNext()){
+					while (iter.hasNext()) {
 						iter.next().stepTreePhys(1);
 					}
 				}
@@ -278,14 +279,14 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				break;
 			}
 
-			if (currentStatus != previousStatus){
+			if (currentStatus != previousStatus) {
 				negotiator.statusChange_UI(currentStatus);
 			}
 
 			previousStatus = currentStatus;
 
 			long extraTime = MSPF - (System.currentTimeMillis() - currentTime);
-			if (extraTime > 5){
+			if (extraTime > 5) {
 				try {
 					Thread.sleep(extraTime);
 				} catch (InterruptedException e) {
@@ -300,12 +301,19 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 	}
 
+	/** Stop the FSM. **/
+	public void kill() {
+		running = false;
+		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));	
+	}
+	
 	/** Pick a node for the UI to highlight and potentially display. **/
-	public void selectNode(Node selected){
+	public void selectNode(Node selected) {
 		boolean success = false; // We don't allow new node selection while a realtime game is being played. 
 		if (negotiator != null) success = negotiator.uiNodeSelect(selected);
-		if (success){
-			if (selectedNode != null){ // Clear things from the old selected node.
+		if (success) {
+			if (selectedNode != null) { // Clear things from the old selected node.
 				selectedNode.displayPoint = false;
 				selectedNode.clearBranchColor();
 				selectedNode.clearBranchZOffset();
@@ -324,22 +332,22 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		for (TabbedPaneActivator p: allTabbedPanes){
+		for (TabbedPaneActivator p: allTabbedPanes) {
 			p.deactivateTab();
 		}
 		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
 	}
 
-	public void setNegotiator(Negotiator negotiator){
+	public void setNegotiator(Negotiator negotiator) {
 		this.negotiator = negotiator;
 	}
 
 	/** Draw the actions on the left side pane. **/
-	private void drawActionString(Action[] sequence, Graphics g){
+	private void drawActionString(Action[] sequence, Graphics g) {
 		drawActionString(sequence, g, -1);
 	}
 
-	private void drawActionString(Action[] sequence, Graphics g, int highlightIdx){
+	private void drawActionString(Action[] sequence, Graphics g, int highlightIdx) {
 		g.setFont(bigFont);
 		g.setColor(Color.BLACK);
 		g.drawString("Selected sequence: ", 10, vertTextAnchor);
@@ -347,10 +355,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		int currIdx = 0;
 		int lineNum = 1;
-		while (currIdx < sequence.length - 1){
+		while (currIdx < sequence.length - 1) {
 			String line = sequence[currIdx].toStringLite() + ",";
 
-			if (currIdx == highlightIdx){
+			if (currIdx == highlightIdx) {
 				g.setColor(Color.GREEN);
 			}else{
 				g.setColor(Color.DARK_GRAY);
@@ -402,7 +410,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		/** Is the mouse cursor inside the bounds of the tree panel? **/
 		boolean mouseInside = false;
 
-		public TreePane(){
+		public TreePane() {
 			super();
 			canvas.setFocusable(true);
 			canvas.addKeyListener(this);
@@ -428,7 +436,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			float ptSize = 50f/cam.getZoomFactor(); //Let the points be smaller/bigger depending on zoom, but make sure to cap out the size!
 			ptSize = Math.min(ptSize, 10f);
 
-			for (Node node : rootNodes){
+			for (Node node : rootNodes) {
 				gl.glColor3f(1f, 0.1f, 0.1f);
 				gl.glPointSize(ptSize);
 
@@ -447,7 +455,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			textRenderBig.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			textRenderBig.draw(negotiator.getGamesPlayed() + " games", 20, panelHeight - 50);
 
-			if (treePause){
+			if (treePause) {
 				textRenderBig.setColor(0.7f, 0.1f, 0.1f, 1.0f);	
 				textRenderBig.draw("PAUSED", panelWidth/2, panelHeight - 50);
 			}
@@ -459,7 +467,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			int fps = (int)(10000./avgLoopTime);
 			textRenderSmall.draw( ( (Math.abs(fps) > 10000) ? "???" : fps/10f ) + " FPS", panelWidth - 75, panelHeight - 20);
 			// Physics on/off alert
-			if (physOn){
+			if (physOn) {
 				textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
 				textRenderSmall.draw("Tree physics on", panelWidth - 120, panelHeight - 35);
 			}else{
@@ -497,7 +505,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			if (e.getWheelRotation() < 0){ //Negative mouse direction -> zoom in.
+			if (e.getWheelRotation() < 0) { //Negative mouse direction -> zoom in.
 				cam.smoothZoom(0.9f, 5);
 			}else{
 				cam.smoothZoom(1.1f, 5);
@@ -515,7 +523,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if (e.isMetaDown()){
+			if (e.isMetaDown()) {
 				selectNode(cam.nodeFromClick(e.getX(), e.getY(), rootNodes));
 			}
 		}
@@ -530,11 +538,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyPressed(KeyEvent e) {
-			if (mouseInside){
+			if (mouseInside) {
 				//Navigating the focused node tree
 				int keyCode = e.getKeyCode();
 
-				if(e.isMetaDown()){ //if we're using GL, then we'll move the camera with mac key + arrows
+				if(e.isMetaDown()) { //if we're using GL, then we'll move the camera with mac key + arrows
 					switch( keyCode ) { 
 					case KeyEvent.VK_UP: //Go out the branches of the tree
 
@@ -553,7 +561,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 						//TODO
 						break;
 					}
-				}else if(e.isShiftDown()){
+				}else if(e.isShiftDown()) {
 					switch( keyCode ) { 
 					case KeyEvent.VK_LEFT: //Go left along an isobranch (like that word?)
 						cam.smoothTwist(0.1f, 5);
@@ -578,7 +586,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 						break;
 					case KeyEvent.VK_P : //Pause everything except for graphics updates
 						treePause = !treePause;
-						if (treePause){
+						if (treePause) {
 							negotiator.pauseTree();
 						}else{
 							negotiator.unpauseTree();
@@ -609,11 +617,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			mouseY = e.getY();
 
 			// If the snapshot pane is displaying stuff, this lets us potentially select some of the future nodes displayed in the snapshot pane.
-			if (snapshotPane.active && mouseInside){
+			if (snapshotPane.active && mouseInside) {
 				ArrayList<Node> snapshotLeaves = snapshotPane.getDisplayedLeaves();
-				if (snapshotLeaves.size() > 0){
+				if (snapshotLeaves.size() > 0) {
 					Node nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves, 50);
-					if (nearest != null){
+					if (nearest != null) {
 						snapshotPane.giveSelectedFuture(nearest);
 					}else{
 						snapshotPane.giveSelectedFuture(null); // clear it out if the mouse is too far away from selectable nodes.
@@ -634,20 +642,20 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		// The following 2 methods are probably too complicated. when you push the arrow at the edge of one branch, this tries to jump to the nearest next branch node at the same depth.
 		/** Called by key listener to change our focused node to the next adjacent one in the +1 or -1 direction **/
-		private void arrowSwitchNode(int direction,int depth){
+		private void arrowSwitchNode(int direction,int depth) {
 			//Stupid way of getting this one's index according to its parent.
-			if(selectedNode != null){
-				if (selectedNode.treeDepth == 0){ // At root, don't try to look at parent.
+			if(selectedNode != null) {
+				if (selectedNode.treeDepth == 0) { // At root, don't try to look at parent.
 					// <nothing>
 				}else{
 					int thisIndex = selectedNode.parent.children.indexOf(selectedNode);
 					//This set of logicals eliminates the edge cases, then takes the proposed action as default
-					if (thisIndex == 0 && direction == -1){ //We're at the lowest index of this node and must head to a new parent node.
+					if (thisIndex == 0 && direction == -1) { //We're at the lowest index of this node and must head to a new parent node.
 						ArrayList<Node> blacklist = new ArrayList<Node>(); //Keep a blacklist of nodes that already proved to be duds.
 						blacklist.add(selectedNode);
 						nextOver(selectedNode.parent,blacklist,1,direction,selectedNode.parent.children.indexOf(selectedNode),0);
 
-					}else if (thisIndex == selectedNode.parent.children.size()-1 && direction == 1){ //We're at the highest index of this node and must head to a new parent node.
+					}else if (thisIndex == selectedNode.parent.children.size()-1 && direction == 1) { //We're at the highest index of this node and must head to a new parent node.
 						ArrayList<Node> blacklist = new ArrayList<Node>();
 						blacklist.add(selectedNode);
 						nextOver(selectedNode.parent,blacklist, 1,direction,selectedNode.parent.children.indexOf(selectedNode),0);
@@ -658,9 +666,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				}
 
 				//These logicals just take the proposed motion (or not) and ignore any edges.
-				if(depth == 1 && selectedNode.children.size()>0){ //Go further down the tree if this node has children
+				if(depth == 1 && selectedNode.children.size()>0) { //Go further down the tree if this node has children
 					selectNode(selectedNode.children.get(0));
-				}else if(depth == -1 && selectedNode.treeDepth>0){ //Go up the tree if this is not root.
+				}else if(depth == -1 && selectedNode.treeDepth>0) { //Go up the tree if this is not root.
 					selectNode(selectedNode.parent);
 				}
 				repaint();
@@ -668,41 +676,41 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** Take a node back a layer. Don't return to node past. Try to go back out by the deficit depth amount in the +1 or -1 direction left/right **/
-		private boolean nextOver(Node current, ArrayList<Node> blacklist, int deficitDepth, int direction,int prevIndexAbove,int numTimesTried){ // numTimesTried added to prevent some really deep node for causing some really huge search through the whole tree. If we don't succeed in a handful of iterations, just fail quietly.
+		private boolean nextOver(Node current, ArrayList<Node> blacklist, int deficitDepth, int direction,int prevIndexAbove,int numTimesTried) { // numTimesTried added to prevent some really deep node for causing some really huge search through the whole tree. If we don't succeed in a handful of iterations, just fail quietly.
 			numTimesTried++;
 			boolean success = false;
 			//TERMINATING CONDITIONS-- fail quietly if we get back to root with nothing. Succeed if we get back to the same depth we started at.
-			if (deficitDepth == 0){ //We've successfully gotten back to the same level. Great.
+			if (deficitDepth == 0) { //We've successfully gotten back to the same level. Great.
 				selectNode(current);
 				return true;
-			}else if(current.treeDepth == 0){
+			}else if(current.treeDepth == 0) {
 				return true; // We made it back to the tree's root without any success. Just return.
 
-			}else if(numTimesTried>100){// If it takes >100 movements between nodes, we'll just give up.
+			}else if(numTimesTried>100) {// If it takes >100 movements between nodes, we'll just give up.
 				return true;
 			}else{
 				//CCONDITIONS WE NEED TO STEP BACKWARDS TOWARDS ROOT.
 				//If this new node has no children OR it's 1 child is on the blacklist, move back up the tree.
-				if((prevIndexAbove+1 == current.children.size() && direction == 1) || (prevIndexAbove == 0 && direction == -1)){
+				if((prevIndexAbove+1 == current.children.size() && direction == 1) || (prevIndexAbove == 0 && direction == -1)) {
 					blacklist.add(current); 
 					success = nextOver(current.parent,blacklist,deficitDepth+1,direction,current.parent.children.indexOf(current),numTimesTried); //Recurse back another node.
-				}else if (!(current.children.size() >0) || (blacklist.contains(current.children.get(0)) && current.children.size() == 1)){ 
+				}else if (!(current.children.size() >0) || (blacklist.contains(current.children.get(0)) && current.children.size() == 1)) { 
 					blacklist.add(current); 
 					success = nextOver(current.parent,blacklist,deficitDepth+1,direction,current.parent.children.indexOf(current),numTimesTried); //Recurse back another node.
 				}else{
 
 					//CONDITIONS WE NEED TO GO DEEPER:
-					if(direction == 1){ //March right along this previous node.
-						for (int i = prevIndexAbove+1; i<current.children.size(); i++){
+					if(direction == 1) { //March right along this previous node.
+						for (int i = prevIndexAbove+1; i<current.children.size(); i++) {
 							success = nextOver(current.children.get(i),blacklist,deficitDepth-1,direction,-1,numTimesTried);
-							if(success){
+							if(success) {
 								return true;
 							}
 						}
-					}else if(direction == -1){ //March left along this previous node
-						for (int i = prevIndexAbove-1; i>=0; i--){
+					}else if(direction == -1) { //March left along this previous node
+						for (int i = prevIndexAbove-1; i>=0; i--) {
 							success = nextOver(current.children.get(i),blacklist,deficitDepth-1,direction,current.children.get(i).children.size(),numTimesTried);
-							if(success){
+							if(success) {
 								return true;
 							}
 						}
@@ -727,25 +735,25 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		private World world;
 
-		public RunnerPane(){}
+		public RunnerPane() {}
 
-		public void paintComponent(Graphics g){
+		public void paintComponent(Graphics g) {
 			if (!active) return;
 			super.paintComponent(g);
 
-			if (world != null){
+			if (world != null) {
 				Body newBody = world.getBodyList();
-				while (newBody != null){
+				while (newBody != null) {
 
 					Shape newfixture = newBody.getShapeList();
 
-					while(newfixture != null){
+					while(newfixture != null) {
 
-						if(newfixture.getType() == ShapeType.POLYGON_SHAPE){
+						if(newfixture.getType() == ShapeType.POLYGON_SHAPE) {
 
 							PolygonShape newShape = (PolygonShape)newfixture;
 							Vec2[] shapeVerts = newShape.m_vertices;
-							for (int k = 0; k<newShape.m_vertexCount; k++){
+							for (int k = 0; k<newShape.m_vertexCount; k++) {
 
 								XForm xf = newBody.getXForm();
 								Vec2 ptA = XForm.mul(xf,shapeVerts[k]);
@@ -755,7 +763,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 										(int)(runnerScaling * ptB.x) + xOffsetPixels,
 										(int)(runnerScaling * ptB.y) + yOffsetPixels);			    		
 							}
-						}else if (newfixture.getType() == ShapeType.CIRCLE_SHAPE){
+						}else if (newfixture.getType() == ShapeType.CIRCLE_SHAPE) {
 							CircleShape newShape = (CircleShape)newfixture;
 							float radius = newShape.m_radius;
 							headPos = (int)(runnerScaling * newBody.getPosition().x);
@@ -764,7 +772,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 									(int)(runnerScaling * radius * 2),
 									(int)(runnerScaling * radius * 2));		
 
-						}else if(newfixture.getType() == ShapeType.EDGE_SHAPE){
+						}else if(newfixture.getType() == ShapeType.EDGE_SHAPE) {
 
 							EdgeShape newShape = (EdgeShape)newfixture;
 							XForm trans = newBody.getXForm();
@@ -790,7 +798,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					newBody = newBody.getNext();
 				}
 				//This draws the "road" markings to show that the ground is moving relative to the dude.
-				for(int i = 0; i<this.getWidth()/69; i++){
+				for(int i = 0; i<this.getWidth()/69; i++) {
 					g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 92);
 					keyDrawer(g, negotiator.Q,negotiator.W,negotiator.O,negotiator.P);
 				}
@@ -806,11 +814,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		}
 
-		public void setWorldToView(World world){
+		public void setWorldToView(World world) {
 			this.world = world;
 		}
 
-		public void clearWorldToView(){
+		public void clearWorldToView() {
 			world = null;
 		}
 
@@ -823,7 +831,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			active = false;
 			negotiator.killRealtimeRun();
 		}
-		public void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p){
+		public void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
 
 			int qOffset = (q ? 10:0);
 			int wOffset = (w ? 10:0);
@@ -913,7 +921,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		/** How close do we have to be (squared) from the chest of a single figure for it to be eligible for selection. **/
 		float figureSelectThreshSq = 150;
 
-		public SnapshotPane(){
+		public SnapshotPane() {
 			addMouseListener(this);
 			addMouseMotionListener(this);
 		}
@@ -926,7 +934,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		Shape[] shapes;
 
 		/** Assign a selected node for the snapshot pane to display. **/
-		public void giveSelectedNode(Node node){
+		public void giveSelectedNode(Node node) {
 			transforms.clear();
 			focusLeaves.clear();
 			strokes.clear();
@@ -946,8 +954,8 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			/***** History nodes *****/
 			Node historyNode = snapshotNode;
-			for (int i = 0; i < numHistoryStatesDisplay; i++){
-				if (historyNode.treeDepth > 0){
+			for (int i = 0; i < numHistoryStatesDisplay; i++) {
+				if (historyNode.treeDepth > 0) {
 					historyNode = historyNode.parent;
 					nodeTransform = historyNode.state.getTransforms();
 					transforms.add(nodeTransform);
@@ -959,15 +967,15 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			/***** Future leaf nodes *****/
 			ArrayList<Node> descendants = new ArrayList<Node>();
-			for (int i = 0; i < selectedNode.children.size(); i++){
+			for (int i = 0; i < selectedNode.children.size(); i++) {
 				Node child = selectedNode.children.get(i);
 				child.getLeaves(descendants);
 
 				Color runnerColor = Node.getColorFromTreeDepth(i*10);
 				child.setBranchColor(runnerColor); // Change the color on the tree too.
 
-				for (Node descendant : descendants){
-					if (descendant.state != null){
+				for (Node descendant : descendants) {
+					if (descendant.state != null) {
 						focusLeaves.add(descendant);
 						transforms.add(descendant.state.getTransforms());
 						strokes.add(normalStroke);
@@ -977,54 +985,54 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 		}
 
-		private float getDistFromMouseSq(float x, float y){
+		private float getDistFromMouseSq(float x, float y) {
 			float xdist = (mouseX - (runnerScaling * x + xOffsetPixels));
 			float ydist = (mouseY - (runnerScaling * y + yOffsetPixels));
 			return xdist*xdist + ydist*ydist;
 		}
 
 		/** Draws the selected node state and potentially previous and future states. **/
-		public void paintComponent(Graphics g){
+		public void paintComponent(Graphics g) {
 			if (!active) return;
 			super.paintComponent(g);
 			Graphics2D g2 = (Graphics2D)g;
 
-			if (snapshotNode != null && snapshotNode.state != null){ // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
+			if (snapshotNode != null && snapshotNode.state != null) { // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
 
 				float bestSoFar = Float.MAX_VALUE;
 				int bestIdx = Integer.MIN_VALUE;
 
 				// Figure out if the mouse close enough to highlight one state.
-				if (mouseIsIn && mouseX > getWidth()/2){ // If we are mousing over this panel, see if we're hovering close enough over any particular dude state.
+				if (mouseIsIn && mouseX > getWidth()/2) { // If we are mousing over this panel, see if we're hovering close enough over any particular dude state.
 
 					// Check body first
-					for (int i = 0; i < focusLeaves.size(); i++){
+					for (int i = 0; i < focusLeaves.size(); i++) {
 						float distSq = getDistFromMouseSq(focusLeaves.get(i).state.body.x,focusLeaves.get(i).state.body.y);
-						if (distSq < bestSoFar  && distSq < figureSelectThreshSq){
+						if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
 							bestSoFar = distSq;
 							bestIdx = i;
 						}
 					}
 					// Then head
-					if (bestIdx < 0){
-						for (int i = 0; i < focusLeaves.size(); i++){
+					if (bestIdx < 0) {
+						for (int i = 0; i < focusLeaves.size(); i++) {
 							float distSq = getDistFromMouseSq(focusLeaves.get(i).state.head.x,focusLeaves.get(i).state.head.y);
-							if (distSq < bestSoFar  && distSq < figureSelectThreshSq){
+							if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
 								bestSoFar = distSq;
 								bestIdx = i;
 							}
 						}
 					}
 					// Then both feet equally
-					if (bestIdx < 0){
-						for (int i = 0; i < focusLeaves.size(); i++){
+					if (bestIdx < 0) {
+						for (int i = 0; i < focusLeaves.size(); i++) {
 							float distSq = getDistFromMouseSq(focusLeaves.get(i).state.lfoot.x,focusLeaves.get(i).state.lfoot.y);
-							if (distSq < bestSoFar  && distSq < figureSelectThreshSq){
+							if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
 								bestSoFar = distSq;
 								bestIdx = i;
 							}
 							distSq = getDistFromMouseSq(focusLeaves.get(i).state.rfoot.x,focusLeaves.get(i).state.rfoot.y);
-							if (distSq < bestSoFar  && distSq < figureSelectThreshSq){
+							if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
 								bestSoFar = distSq;
 								bestIdx = i;
 							}
@@ -1034,9 +1042,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				}
 
 				// Draw all non-highlighted runners.
-				for (int i = transforms.size() - 1; i >= 0; i--){
-					if (!mouseIsIn || bestIdx != i){
-						if (highlightedRunNode != null && focusLeaves.get(i).treeDepth > selectedNode.treeDepth){ // Make the nodes after the selected one lighter if one is highlighted.
+				for (int i = transforms.size() - 1; i >= 0; i--) {
+					if (!mouseIsIn || bestIdx != i) {
+						if (highlightedRunNode != null && focusLeaves.get(i).treeDepth > selectedNode.treeDepth) { // Make the nodes after the selected one lighter if one is highlighted.
 							drawRunner(g2, colors.get(i).brighter(), strokes.get(i), shapes, transforms.get(i));
 						}else{
 							drawRunner(g2, colors.get(i), strokes.get(i), shapes, transforms.get(i));
@@ -1046,17 +1054,17 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				}
 
 				// Change things if one runner is selected.
-				if (mouseIsIn && bestIdx >= 0){
+				if (mouseIsIn && bestIdx >= 0) {
 					Node newHighlightNode = focusLeaves.get(bestIdx);
 					changeFocusedFuture(g2, highlightedRunNode, newHighlightNode);
 					highlightedRunNode = newHighlightNode;
 
 					// Externally commanded pick, instead of mouse-picked.
-				}else if(queuedFutureLeaf != null){
+				}else if(queuedFutureLeaf != null) {
 					changeFocusedFuture(g2, highlightedRunNode, queuedFutureLeaf);
 					highlightedRunNode = queuedFutureLeaf;
 
-				}else if (highlightedRunNode != null){ // When we stop mousing over, clear the brightness changes.
+				}else if (highlightedRunNode != null) { // When we stop mousing over, clear the brightness changes.
 					highlightedRunNode.displayPoint = false;
 					highlightedRunNode.nodeColor = Color.GREEN;
 					rootNodes.get(0).resetLineBrightness_below();
@@ -1070,16 +1078,16 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** Change highlighting on both the tree and the snapshot when selections change. **/
-		private void changeFocusedFuture(Graphics2D g2, Node oldFuture, Node newFuture){
+		private void changeFocusedFuture(Graphics2D g2, Node oldFuture, Node newFuture) {
 			// Clear out highlights from the old node.
-			if (oldFuture != null && !oldFuture.equals(newFuture)){
+			if (oldFuture != null && !oldFuture.equals(newFuture)) {
 				oldFuture.clearBackwardsBranchZOffset();
 				oldFuture.displayPoint = false;
 				oldFuture.nodeColor = Color.GREEN;
 			}
 
 			// Add highlights to the new node if it's different or previous is nonexistant
-			if (oldFuture == null || !oldFuture.equals(newFuture)){
+			if (oldFuture == null || !oldFuture.equals(newFuture)) {
 				newFuture.displayPoint = true;
 				newFuture.nodeColor = Color.ORANGE;
 				newFuture.setBackwardsBranchZOffset(0.8f);
@@ -1087,7 +1095,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 			// Draw
 			int idx = focusLeaves.indexOf(newFuture);
-			if (idx > -1){ // Focus leaves no longer contains the no focus requested.
+			if (idx > -1) { // Focus leaves no longer contains the no focus requested.
 				try{
 					drawRunner(g2, colors.get(idx).darker(), boldStroke, shapes, transforms.get(idx));
 
@@ -1095,10 +1103,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 					// Also draw parent nodes back the the selected one to view the run that leads to the highlighted failure.
 					int prevX = Integer.MAX_VALUE;
-					while (currentNode.treeDepth > selectedNode.treeDepth){
+					while (currentNode.treeDepth > selectedNode.treeDepth) {
 						// Make color shades slightly alternate between subsequent move frames.
 						Color everyOtherEvenColor = colors.get(idx).darker();
-						if (currentNode.treeDepth % 2 == 0){
+						if (currentNode.treeDepth % 2 == 0) {
 							everyOtherEvenColor = everyOtherEvenColor.darker();
 						}
 						drawRunner(g2, everyOtherEvenColor, boldStroke, shapes, currentNode.state.getTransforms());
@@ -1115,24 +1123,24 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 						currentNode = currentNode.parent;
 					}
-				}catch(IndexOutOfBoundsException e){
+				}catch(IndexOutOfBoundsException e) {
 					// I don't really care tbh. Just skip this one.
 				}
 			}
 		}
 
 		/** Focus a single future leaf **/
-		public void giveSelectedFuture(Node queuedFutureLeaf){
+		public void giveSelectedFuture(Node queuedFutureLeaf) {
 			this.queuedFutureLeaf = queuedFutureLeaf;
 		}
 
 		/** Draw the runner at a certain state. **/
-		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms){
+		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms) {
 
-			for (int i = 0; i < shapes.length; i++){
+			for (int i = 0; i < shapes.length; i++) {
 				g.setColor(drawColor);
 				g.setStroke(stroke);
-				switch(shapes[i].getType()){
+				switch(shapes[i].getType()) {
 				case CIRCLE_SHAPE:
 					CircleShape circleShape = (CircleShape)shapes[i];
 					float radius = circleShape.getRadius();
@@ -1148,11 +1156,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					XForm transform = transforms[i];
 
 					// Ground is black regardless.
-					if (shapes[i].m_filter.groupIndex == 1){
+					if (shapes[i].m_filter.groupIndex == 1) {
 						g.setColor(Color.BLACK);
 						g.setStroke(normalStroke);
 					}
-					for (int j = 0; j < polygonShape.getVertexCount(); j++){ // Loop through polygon vertices and draw lines between them.
+					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
 						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
 						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
 						g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
@@ -1168,7 +1176,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** Get the list of leave nodes (failure states) that we're displaying in the snapshot pane. **/
-		public ArrayList<Node> getDisplayedLeaves(){
+		public ArrayList<Node> getDisplayedLeaves() {
 			return focusLeaves;
 		}
 
@@ -1245,9 +1253,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
 		private ArrayList<Color> colors = new ArrayList<Color>();
 
-		public ComparisonPane(){
+		public ComparisonPane() {
 			eigSelector = new JComboBox<Integer>();
-			for (int i = 0; i < 10; i++){
+			for (int i = 0; i < 10; i++) {
 				eigSelector.addItem(i);
 			}
 			//add(eigSelector);
@@ -1256,12 +1264,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			//MATT CHECKBOX DOESN"T WORK YET, COME BACK HERE
 			eigsToDisp = new int[lastEigToDisp + 1];
 			
-			for (int i = 0; i < eigsToDisp.length; i++){
+			for (int i = 0; i < eigsToDisp.length; i++) {
 				eigsToDisp[i] = i;
 			}
 		}
 		/** Assign a selected node for the snapshot pane to display. **/
-		public void giveSelectedNode(Node node){
+		public void giveSelectedNode(Node node) {
 			rootNodes.get(0).clearNodeOverrideColor();
 			transforms.clear();
 			strokes.clear();
@@ -1303,7 +1311,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			TreeMap<Float,Node> treeMap = new TreeMap<Float,Node> ();
 
-			for (int i = 0; i < allNodes.size(); i++){
+			for (int i = 0; i < allNodes.size(); i++) {
 				treeMap.put(errSq.get(i), allNodes.get(i));
 			}
 
@@ -1311,7 +1319,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			iter.next(); // First one is a self-comparison.
 
 			int count = 0;
-			while (iter.hasNext() && count <= 5){
+			while (iter.hasNext() && count <= 5) {
 				Node closeMatch = iter.next();
 
 				XForm[] nodeXForm = closeMatch.state.getTransforms();
@@ -1330,30 +1338,30 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 
 		/** Draws the selected node state and potentially previous and future states. **/
-		public void paintComponent(Graphics g){
+		public void paintComponent(Graphics g) {
 			if (!active) return;
 			super.paintComponent(g);
 			Graphics2D g2 = (Graphics2D)g;
 			DataPane_PCA pcaPane = (DataPane_PCA)(dataPane_pca);
-			if (pcaPane.getPCAData() == null){
+			if (pcaPane.getPCAData() == null) {
 				g.setFont(bigFont);
 				g.drawString("Use the PCA tab to calculate PCA from a selected node.", windowWidth/3, 100);
-			}else if (primaryNode != null && primaryNode.state != null){ // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
+			}else if (primaryNode != null && primaryNode.state != null) { // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
 				// Draw all non-highlighted runners.
-				for (int i = transforms.size() - 1; i >= 0; i--){
+				for (int i = transforms.size() - 1; i >= 0; i--) {
 					drawRunner(g2, colors.get(i), strokes.get(i), shapes, transforms.get(i));
 				}
 			}
 		}
 		/** Draw the runner at a certain state. NOTE NOTE NOTE: This version subtracts out the X components of everything. **/
-		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms){
+		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms) {
 
 			float thisBodyXOffset = transforms[0].position.x; // Offset in actual world coordinates so all the torsos line up.
 			
-			for (int i = 0; i < shapes.length; i++){
+			for (int i = 0; i < shapes.length; i++) {
 				g.setColor(drawColor);
 				g.setStroke(stroke);
-				switch(shapes[i].getType()){
+				switch(shapes[i].getType()) {
 				case CIRCLE_SHAPE:
 					CircleShape circleShape = (CircleShape)shapes[i];
 					float radius = circleShape.getRadius();
@@ -1369,11 +1377,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					XForm transform = transforms[i];
 
 					// Ground is black regardless.
-					if (shapes[i].m_filter.groupIndex == 1){
+					if (shapes[i].m_filter.groupIndex == 1) {
 						g.setColor(Color.BLACK);
 						g.setStroke(normalStroke);
 					}
-					for (int j = 0; j < polygonShape.getVertexCount(); j++){ // Loop through polygon vertices and draw lines between them.
+					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
 						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
 						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
 						g.drawLine((int)(runnerScaling * (ptA.x - thisBodyXOffset) + windowWidth/2),
@@ -1403,7 +1411,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			JComboBox<Integer> eigSelect = (JComboBox<Integer>)e.getSource();
             lastEigToDisp = (Integer)eigSelect.getSelectedItem();
             eigsToDisp = new int[lastEigToDisp + 1];
-            for (int i = 0; i < eigsToDisp.length; i++){
+            for (int i = 0; i < eigsToDisp.length; i++) {
             	eigsToDisp[i] = 1;
             }
             //giveSelectedNode(primaryNode); // Redo calculations.
@@ -1447,7 +1455,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		private final int menuXOffset = 30;
 		private final int menuYOffset = -30;
 
-		public DataPane_State(){
+		public DataPane_State() {
 			super();
 			// Make string arrays of the body part and state variable names.
 			int count = 0;
@@ -1462,7 +1470,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 
 			// Initial plots to display			
-			for (int i = 0; i < numberOfPlots; i++){
+			for (int i = 0; i < numberOfPlots; i++) {
 				plotObjectsX[i] = State.ObjectName.values()[Node.randInt(0, numberOfPlots - 1)];
 				plotStatesX[i] = State.StateName.values()[Node.randInt(0, numberOfPlots - 1)];
 				plotObjectsY[i] = State.ObjectName.values()[Node.randInt(0, numberOfPlots - 1)];
@@ -1494,13 +1502,13 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			menu.setVisible(false); // Start with this panel hidden.
 		}
 
-		public void update(){
+		public void update() {
 			// Fetching new data.
 			ArrayList<Node> nodesBelow = new ArrayList<Node>();
-			if (selectedNode != null){
+			if (selectedNode != null) {
 				selectedNode.getNodes_below(nodesBelow);
 
-				for (int i = 0; i < numberOfPlots; i++){
+				for (int i = 0; i < numberOfPlots; i++) {
 					XYPlot pl = (XYPlot)plotPanels[i].getChart().getPlot();
 					LinkStateCombination statePlotDat = new LinkStateCombination(nodesBelow);
 					pl.setRenderer(statePlotDat.getRenderer());
@@ -1515,7 +1523,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					//plot.getRangeAxis().setRange(range);
 				}
 
-				if (!plotColorsByDepth){
+				if (!plotColorsByDepth) {
 					addCommandLegend((XYPlot)plotPanels[0].getChart().getPlot());
 				}
 			}
@@ -1523,7 +1531,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		@Override
-		public void deactivateTab(){
+		public void deactivateTab() {
 			super.deactivateTab();
 			menu.setVisible(false);	
 		}
@@ -1544,14 +1552,14 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		@Override
 		public void itemStateChanged(ItemEvent e) {
 			int state = e.getStateChange();
-			if (state == ItemEvent.SELECTED){
-				if (e.getSource() == objListX){
+			if (state == ItemEvent.SELECTED) {
+				if (e.getSource() == objListX) {
 					plotObjectsX[activePlotIdx] = State.ObjectName.valueOf((String)e.getItem());
-				}else if (e.getSource() == objListY){
+				}else if (e.getSource() == objListY) {
 					plotObjectsY[activePlotIdx] = State.ObjectName.valueOf((String)e.getItem());
-				}else if (e.getSource() == stateListX){
+				}else if (e.getSource() == stateListX) {
 					plotStatesX[activePlotIdx] = State.StateName.valueOf((String)e.getItem());
-				}else if ((e.getSource() == stateListY)){
+				}else if ((e.getSource() == stateListY)) {
 					plotStatesY[activePlotIdx] = State.StateName.valueOf((String)e.getItem());
 				}else{
 					throw new RuntimeException("Unknown item status in plots from: " + e.getSource().toString());
@@ -1577,22 +1585,22 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		public boolean mouseIsIn = false;
 
-		public DataPane_PCA(){
+		public DataPane_PCA() {
 			super();
 			addKeyListener(this);
 			setFocusable(true);
 			dataSelect = new int[numberOfPlots][2];
 
 			// First set of plots are the 0 vs 1-6 eig
-			for (int i = 0; i < numberOfPlots; i++){
+			for (int i = 0; i < numberOfPlots; i++) {
 				dataSelect[i] = new int[]{0,i};
 			}
 		}
 
-		public void update(){
+		public void update() {
 			requestFocus();
 			setDatasets(dataSelect);
-			for (int i = 0; i < numberOfPlots; i++){
+			for (int i = 0; i < numberOfPlots; i++) {
 				JFreeChart chart = plotPanels[i].getChart();
 				chart.fireChartChanged();
 				// TODO: resizing plots axes
@@ -1601,21 +1609,21 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				//plot.getRangeAxis().setRange(range);
 			}
 			XYPlot firstPlot = (XYPlot)plotPanels[0].getChart().getPlot();
-			if (!plotColorsByDepth){
+			if (!plotColorsByDepth) {
 				addCommandLegend(firstPlot);
 			}
 		}
 
-		private void setDatasets(int[][] dataSelect){			
+		private void setDatasets(int[][] dataSelect) {			
 			// Fetching new data.
 			ArrayList<Node> nodesBelow = new ArrayList<Node>();
-			if (selectedNode != null){
+			if (selectedNode != null) {
 
 				// A state pair being added to the first plot.
 				XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
 
 				// Only update the plots shown, don't redo PCA calcs.
-				if (lastSelectedNode != null && lastSelectedNode.equals(selectedNode)){
+				if (lastSelectedNode != null && lastSelectedNode.equals(selectedNode)) {
 					pcaPlotDat = (PCATransformedData)pl.getDataset();
 				}else{
 					selectedNode.getNodes_below(nodesBelow);
@@ -1629,7 +1637,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				pl.getDomainAxis().setLabel("Eig " + dataSelect[0][0] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[0][0]))/10. + "%)");
 				pl.getRangeAxis().setLabel("Eig " + dataSelect[0][1] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[0][1]))/10. + "%)");
 
-				for (int i = 1; i < dataSelect.length; i++){
+				for (int i = 1; i < dataSelect.length; i++) {
 					pl = (XYPlot)plotPanels[i].getChart().getPlot();
 					PCATransformedData pcaPlotDatNext = pcaPlotDat.duplicateWithoutRecalcPCA();
 					pl.setRenderer(pcaPlotDat.getRenderer());
@@ -1641,23 +1649,23 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 		}
 
-		public void plotShift(int xShift, int yShift){
-			if (xShift != 0 || yShift != 0){
+		public void plotShift(int xShift, int yShift) {
+			if (xShift != 0 || yShift != 0) {
 				// First set of plots are the 0 vs 1-6 eig
 
 				XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
 				PCATransformedData dat = (PCATransformedData)pl.getDataset();
 				int totalEigs = dat.evals.length;
 
-				if (dataSelect[0][0] + xShift < 0 || dataSelect[numberOfPlots - 1][0] + xShift > totalEigs - 1){
+				if (dataSelect[0][0] + xShift < 0 || dataSelect[numberOfPlots - 1][0] + xShift > totalEigs - 1) {
 					xShift = 0;
 				}
 
-				if (dataSelect[0][1] + yShift < 0 || dataSelect[numberOfPlots - 1][1] + yShift > totalEigs - 1){
+				if (dataSelect[0][1] + yShift < 0 || dataSelect[numberOfPlots - 1][1] + yShift > totalEigs - 1) {
 					yShift = 0;
 				}
 
-				for (int i = 0; i < numberOfPlots; i++){
+				for (int i = 0; i < numberOfPlots; i++) {
 
 					dataSelect[i][0] = dataSelect[i][0] + xShift; // Clamp within the actual number of eigenvalues we have.
 					dataSelect[i][1] = dataSelect[i][1] + yShift;
@@ -1667,7 +1675,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** Get the last PCA data. **/
-		public PCATransformedData getPCAData(){
+		public PCATransformedData getPCAData() {
 			return pcaPlotDat;
 		}
 
@@ -1677,7 +1685,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		@Override
 		public void keyPressed(KeyEvent e) {
-			switch(e.getKeyCode()){
+			switch(e.getKeyCode()) {
 			case KeyEvent.VK_UP:
 				plotShift(0,-1);
 				break;
@@ -1730,9 +1738,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		/** Is this tab active? Do we bother to do updates in other words. **/
 		public boolean active = false;
 
-		public DataPane(){
+		public DataPane() {
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-			for (int i = 0; i < numberOfPlots; i++){
+			for (int i = 0; i < numberOfPlots; i++) {
 				JFreeChart chart = createChart(null,null); // Null means no title and no data yet too
 				ChartPanel chartPanel = new ChartPanel(chart);
 				chartPanel.addChartMouseListener(this);
@@ -1792,7 +1800,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 
 		/** Add some labels for which action led to this state. Hackish. **/
-		public void addCommandLegend(XYPlot pl){
+		public void addCommandLegend(XYPlot pl) {
 			double axisDUB = pl.getDomainAxis().getUpperBound();
 			double axisDLB = pl.getDomainAxis().getLowerBound();
 			double axisDSpan = (axisDUB - axisDLB);
@@ -1825,8 +1833,8 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		@Override
 		public void chartMouseClicked(ChartMouseEvent event) {
 			JFreeChart clickedChart = event.getChart();
-			for (int i = 0; i < numberOfPlots; i++){
-				if(plotPanels[i].getChart() == (clickedChart)){
+			for (int i = 0; i < numberOfPlots; i++) {
+				if(plotPanels[i].getChart() == (clickedChart)) {
 					plotClicked(i); // Alert implementation specific method.
 					break;
 				}
@@ -1861,12 +1869,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 			private StatePlotRenderer renderer = new StatePlotRenderer();
 
-			public LinkStateCombination(ArrayList<Node> nodes){
+			public LinkStateCombination(ArrayList<Node> nodes) {
 				nodeList = nodes;
 			}
 
 			public void addSeries(int plotIdx, State.ObjectName objectX, State.StateName stateX,
-					State.ObjectName objectY, State.StateName stateY){
+					State.ObjectName objectY, State.StateName stateY) {
 				dataSeries.put(plotIdx, new Pair(plotIdx, objectX, stateX,
 						objectY, stateY));
 			}
@@ -1877,10 +1885,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				Pair dat = dataSeries.get(series);
 				float value = state.getStateVarFromName(dat.objectX, dat.stateX);
 
-				if (value > xLimLo){
+				if (value > xLimLo) {
 					xLimLo = value;
 				}
-				if (value < xLimHi){
+				if (value < xLimHi) {
 					xLimLo = value;
 				}
 
@@ -1901,7 +1909,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				State.StateName stateY;
 
 				public Pair(int plotIdx, State.ObjectName objectX, State.StateName stateX,
-						State.ObjectName objectY, State.StateName stateY){
+						State.ObjectName objectY, State.StateName stateY) {
 					this.objectX = objectX;
 					this.objectY = objectY;
 					this.stateX = stateX;
@@ -1925,7 +1933,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				return null;
 			}
 
-			public XYLineAndShapeRenderer getRenderer(){
+			public XYLineAndShapeRenderer getRenderer() {
 				return renderer;
 			}
 
@@ -1941,11 +1949,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 				@Override
 				public Paint getItemPaint(int series, int item) {
-					if (colorByDepth){
+					if (colorByDepth) {
 						return Node.getColorFromTreeDepth(nodeList.get(item).treeDepth);
 					}else{
 						Color dotColor = Color.RED;
-						switch (nodeList.get(item).treeDepth % 4){
+						switch (nodeList.get(item).treeDepth % 4) {
 						case 0:
 							dotColor = actionColor1;
 							break;
@@ -1963,7 +1971,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					}
 				}
 				@Override
-				public java.awt.Shape getItemShape(int row, int col){ // Dumb because box2d also has shape imported.
+				public java.awt.Shape getItemShape(int row, int col) { // Dumb because box2d also has shape imported.
 					//				if (col == pane.selectedPoint) {
 					//					return (java.awt.Shape)BigMarker;
 					//				} else {
@@ -2000,7 +2008,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			ArrayList<State.StateName> statesUsed = new ArrayList<State.StateName>(Arrays.asList(State.StateName.values()));
 
 
-			public PCATransformedData(ArrayList<Node> nodes){
+			public PCATransformedData(ArrayList<Node> nodes) {
 				super();
 				// Can blacklist things NOT to be PCA'd
 				statesUsed.remove(State.StateName.X);
@@ -2009,12 +2017,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				doPCA();
 			}
 
-			private PCATransformedData(){
+			private PCATransformedData() {
 				super();
 			}
 
 			/** Make another one of these but using the same PCA calculation. No data series are specified. **/
-			public PCATransformedData duplicateWithoutRecalcPCA(){
+			public PCATransformedData duplicateWithoutRecalcPCA() {
 				PCATransformedData duplicate = new PCATransformedData();
 				duplicate.dataSet = dataSet;
 				duplicate.nodeList = nodeList;
@@ -2030,12 +2038,12 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			 * @param eigForXAxis
 			 * @param eigForYAxis
 			 */
-			public void addSeries(int plotIdx, int eigForXAxis, int eigForYAxis){
+			public void addSeries(int plotIdx, int eigForXAxis, int eigForYAxis) {
 				tformedData.put(plotIdx, dataSet.mmul(evecs.getColumns(new int[]{eigForXAxis,eigForYAxis})));	
 			}
 
 			/** Mostly for external use. Transform any data by the chosen PCA components. Must have done the PCA already! **/
-			public FloatMatrix transformDataset(ArrayList<Node> nodesToTransform, int[] chosenPCAComponents){
+			public FloatMatrix transformDataset(ArrayList<Node> nodesToTransform, int[] chosenPCAComponents) {
 				FloatMatrix preppedDat = prepTrialNodeData(nodesToTransform, objectsUsed, statesUsed);
 				FloatMatrix lowDimData = preppedDat.mmul(evecs.getColumns(chosenPCAComponents));
 				return lowDimData;
@@ -2052,7 +2060,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 
 			/** Run PCA on all the states in the nodes stored here. **/
-			public void doPCA(){
+			public void doPCA() {
 
 				dataSet = prepTrialNodeData(nodeList, objectsUsed, statesUsed);
 
@@ -2064,11 +2072,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 				// Also make the vector of normalized eigenvalues.
 				float evalSum = 0;
-				for (int i = 0; i < evals.length; i++){
+				for (int i = 0; i < evals.length; i++) {
 					evalSum += evals.get(i);
 				}
 				evalsNormalized = new FloatMatrix(evals.length);
-				for (int i = 0; i < evals.length; i++){
+				for (int i = 0; i < evals.length; i++) {
 					evalsNormalized.put(i, evals.get(i)/evalSum);
 				}
 			}
@@ -2076,19 +2084,19 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			/** Unpack the state data from the nodes, pulling only the stuff we want. Condition data to variance 1, mean 0. **/
 			private FloatMatrix prepTrialNodeData(ArrayList<Node> nodes, 
 					ArrayList<State.ObjectName> includedObjects, 
-					ArrayList<State.StateName> includedStates){
+					ArrayList<State.StateName> includedStates) {
 
 
 				int numStates = includedObjects.size() * includedStates.size();
 				FloatMatrix dat = new FloatMatrix(nodes.size(), numStates);
 
 				// Iterate through all nodes
-				for (int i = 0; i < nodes.size(); i++){
+				for (int i = 0; i < nodes.size(); i++) {
 					int colCounter = 0;
 					// Through all body parts...
-					for (State.ObjectName obj : includedObjects){
+					for (State.ObjectName obj : includedObjects) {
 						// For each state of each body part.
-						for (State.StateName st : includedStates){
+						for (State.StateName st : includedStates) {
 							dat.put(i, colCounter, nodes.get(i).state.getStateVarFromName(obj, st));
 							colCounter++;
 						}
@@ -2102,29 +2110,29 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			 *  Samples are rows, variables are columns. Alters matrix x.
 			 * @param x
 			 */
-			private void conditionData(FloatMatrix x){
+			private void conditionData(FloatMatrix x) {
 
-				for (int i = 0; i < x.columns; i++){
+				for (int i = 0; i < x.columns; i++) {
 					// Calculate the mean of a column.
 					float sum = 0;
-					for (int j = 0; j < x.rows; j++){
+					for (int j = 0; j < x.rows; j++) {
 						sum += x.get(j,i);
 					}
 					// Subtract the mean out.
 					float avg = sum/(float)x.rows;
-					for (int j = 0; j < x.rows; j++){
+					for (int j = 0; j < x.rows; j++) {
 						float centered = x.get(j,i) - avg;
 						x.put(j,i,centered);
 					}
 					// Find the standard deviation for each column.
 					sum = 0;
-					for (int j = 0; j < x.rows; j++){
+					for (int j = 0; j < x.rows; j++) {
 						sum += x.get(j,i) * x.get(j,i);
 					}
 					float std = (float)Math.sqrt(sum/(float)(x.rows - 1));
 
 					// Divide the standard deviation out.
-					for (int j = 0; j < x.rows; j++){
+					for (int j = 0; j < x.rows; j++) {
 						float unitVar = x.get(j,i)/std;
 						x.put(j,i,unitVar);
 					}	
@@ -2147,7 +2155,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				return null;
 			}
 
-			public XYLineAndShapeRenderer getRenderer(){
+			public XYLineAndShapeRenderer getRenderer() {
 				return renderer;
 			}
 
@@ -2163,11 +2171,11 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 				@Override
 				public Paint getItemPaint(int series, int item) {
-					if (colorByDepth){
+					if (colorByDepth) {
 						return Node.getColorFromTreeDepth(nodeList.get(item).treeDepth);
 					}else{
 						Color dotColor = Color.RED;
-						switch (nodeList.get(item).treeDepth % 4){
+						switch (nodeList.get(item).treeDepth % 4) {
 						case 0:
 							dotColor = actionColor1;
 							break;
@@ -2185,7 +2193,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 					}
 				}
 				@Override
-				public java.awt.Shape getItemShape(int row, int col){ // Dumb because box2d also has shape imported.
+				public java.awt.Shape getItemShape(int row, int col) { // Dumb because box2d also has shape imported.
 					//				if (col == pane.selectedPoint) {
 					//					return (java.awt.Shape)BigMarker;
 					//				} else {

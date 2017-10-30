@@ -26,7 +26,7 @@ public class Evaluator_Distance implements IEvaluationFunction {
 	/** X distance of body between a node and its parent. **/
 	private float subsequentNodeDistanceValue(Node nodeToEvaluate) {
 		if (nodeToEvaluate.treeDepth > 0) {
-			return nodeToEvaluate.state.body.x - nodeToEvaluate.parent.state.body.x; // Difference in x between subsequent nodes. 
+			return nodeToEvaluate.state.body.x;// - nodeToEvaluate.parent.state.body.x; // Difference in x between subsequent nodes. 
 		}else {
 			return 0.f; // Root gets score of 0.
 		}

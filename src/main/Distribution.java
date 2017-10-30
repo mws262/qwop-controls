@@ -15,6 +15,19 @@ public abstract class Distribution<T> {
 		return set.get(randInt(0,set.size() - 1));
 	}
 	
+	/** Use this distribution's rules to choose between two sets. 
+	 * Makes the distribution also work for the tree policy
+	 * Returns true for set 1, false for set 2. **/
+	public boolean chooseASet(ArrayList<T> set1, ArrayList<T> set2) {
+		ArrayList<T> totalSet = new ArrayList<T>();
+		totalSet.addAll(set1);
+		totalSet.addAll(set2);
+		
+		T sample = randOnDistribution(totalSet);
+		
+		return set1.contains(sample);
+	}
+	
 	/** Generate a random integer between two values, inclusive. **/
 	public static int randInt(int min, int max) {
 		if (min > max) throw new IllegalArgumentException("Random int sampler should be given a minimum value which is less than or equal to the given max value.");
