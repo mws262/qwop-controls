@@ -278,6 +278,13 @@ public class Negotiator implements INegotiateGame {
 
 	/****** Pausers/stoppers *******/
 	
+	/** Stop EVERYTHING. **/
+	public void globalDestruction() {
+		game.kill();
+		tree.kill();
+		ui.kill();
+	}
+	
 	/** Negotiator should keep track of added tree roots **/
 	public void addTreeRoot(Node node) {
 		activeRoots.add(node);

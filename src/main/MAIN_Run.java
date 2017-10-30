@@ -13,101 +13,142 @@ import data.SaveableFileIO;
 import data.SaveableSingleGame;
 
 
-public class MAIN_Run {
+public class MAIN_Run implements Runnable{
 
 	private static long ticTime;
 	private static long tocTime;
-	
+
 	private static final boolean useTreePhysics = false;
-	private static final boolean saveGamesToFile = true;
+
+	private static Negotiator negotiator;
+	
+	private int treesPlayed = 0;
+	private int treesToPlay = 10;
+	private long secondsPerTree = 120;
+
+	private long initTime;
+
+	private String filePrefix = "sample1";
 	
 	public MAIN_Run() {}
 
 	public static void main(String[] args) {
-	
+
+		MAIN_Run manager = new MAIN_Run();
+		Thread managerThread = new Thread(manager);
+		managerThread.start();
+	}
+
+	@Override
+	public void run() {
+		while(true) {
+
+			if (negotiator == null) {
+				initTime = System.currentTimeMillis();
+				doGames(filePrefix);
+			}
+			
+			if ((System.currentTimeMillis() - initTime)/1000 >= secondsPerTree) {
+				negotiator.globalDestruction();
+				Node.maxDepthYet = 0;
+				negotiator = null;
+				treesPlayed++;
+				if (treesPlayed >= treesToPlay) System.exit(0);
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void doGames(String filePrefix) {
+
 		/********************************************/		
 		/******* Space of allowable actions. ********/
 		/********************************************/
-		
+
 		/***** Space of allowed actions to sample ******/
 		Distribution<Action> uniform_dist = new Distribution_Uniform();
-		
+
 		/********** Repeated action 1 -- no keys pressed. ***********/
-		Integer[] durations1 = new Integer[]{5,6,7,8,9,10,11,12,13,14,15};
+		Integer[] durations1 = new Integer[]{5,6,7,8,9,10,11,12,13,14,15,16,17,18};
 		boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations1.length);
-		
+
 		//Distribution<Action> dist1 = new Distribution_Uniform();
-		Distribution<Action> dist1 = new Distribution_Normal(8f,1f);
+		Distribution<Action> dist1 = new Distribution_Normal(10f,2f);
 		ActionSet actionSet1 = ActionSet.makeActionSet(durations1, keySet1, dist1);
-		
+
 		/**********  Repeated action 2 -- W-O pressed ***********/
-		Integer[] durations2 = new Integer[]{30,31,32,33,34,35,36,37,38,39,40};
+		Integer[] durations2 = new Integer[]{30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45};
 		boolean[][] keySet2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durations2.length);
-		
-//		Distribution<Action> dist2 = new Distribution_Uniform();
-		Distribution<Action> dist2 = new Distribution_Normal(35f,1f);
+
+		//		Distribution<Action> dist2 = new Distribution_Uniform();
+		Distribution<Action> dist2 = new Distribution_Normal(39f,3f);
 		ActionSet actionSet2 = ActionSet.makeActionSet(durations2, keySet2, dist2);
-		
+
 		/**********  Repeated action 3 -- W-O pressed ***********/
-		Integer[] durations3 = new Integer[]{5,6,7,8,9,10,11,12,13,14,15};
+		Integer[] durations3 = new Integer[]{5,6,7,8,9,10,11,12,13,14,15,16,17,18};
 		boolean[][] keySet3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations3.length);
-		
-//		Distribution<Action> dist3 = new Distribution_Uniform();
-		Distribution<Action> dist3 = new Distribution_Normal(8f,1f);
+
+		//		Distribution<Action> dist3 = new Distribution_Uniform();
+		Distribution<Action> dist3 = new Distribution_Normal(10f,2f);
 		ActionSet actionSet3 = ActionSet.makeActionSet(durations3, keySet3, dist3);
-		
+
 		/**********  Repeated action 4 -- Q-P pressed ***********/
-		Integer[] durations4 = new Integer[]{30,31,32,33,34,35,36,37,38,39,40};
+		Integer[] durations4 = new Integer[]{30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45};
 		boolean[][] keySet4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durations4.length);
-		
-//		Distribution<Action> dist4 = new Distribution_Uniform();
-		Distribution<Action> dist4 = new Distribution_Normal(35f,1f);
+
+		//		Distribution<Action> dist4 = new Distribution_Uniform();
+		Distribution<Action> dist4 = new Distribution_Normal(39f,3f);
 		ActionSet actionSet4 = ActionSet.makeActionSet(durations4, keySet4, dist4);
-								
+
 		ActionSet[] repeatedActions = new ActionSet[] {actionSet1,actionSet2,actionSet3,actionSet4};
-		
-		
+
+
 		/////// Action Exceptions ////////
 		/********** Repeated action exceptions 1 -- no keys pressed. ***********/
-		Integer[] durationsE1 = new Integer[]{4,5,6};
+		Integer[] durationsE1 = new Integer[]{1,2,3,4,5,6,7,8,9,10};
 		boolean[][] keySetE1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE1.length);
-		
+
 		//Distribution<Action> distE1 = new Distribution_Uniform();
-		Distribution<Action> distE1 = new Distribution_Normal(5f,0.4f);
+		Distribution<Action> distE1 = new Distribution_Normal(5f,1f);
 		ActionSet actionSetE1 = ActionSet.makeActionSet(durationsE1, keySetE1, distE1);
-		
+
 		/**********  Repeated action exceptions 2 -- W-O pressed ***********/
-		Integer[] durationsE2 = new Integer[]{31,32,33,34,35,36};
+		Integer[] durationsE2 = new Integer[]{27,28,29,30,31,32,33,34,35,36,37,38,39};
 		boolean[][] keySetE2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durationsE2.length);
-		
-		Distribution<Action> distE2 = new Distribution_Uniform();
+
+		Distribution<Action> distE2 = new Distribution_Normal(34f,2f);
 		ActionSet actionSetE2 = ActionSet.makeActionSet(durationsE2, keySetE2, distE2);
-		
+
 		/**********  Repeated action exceptions 3 -- W-O pressed ***********/
-		Integer[] durationsE3 = new Integer[]{21,22,23,24,25};
+		Integer[] durationsE3 = new Integer[]{20,21,22,23,24,25,26,27,28,29,30,31,32};
 		boolean[][] keySetE3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE3.length);
-		
-		Distribution<Action> distE3 = new Distribution_Uniform();
+
+		Distribution<Action> distE3 = new Distribution_Normal(24f,2f);
 		ActionSet actionSetE3 = ActionSet.makeActionSet(durationsE3, keySetE3, distE3);
-		
+
 		/**********  Repeated action exceptions 4 -- Q-P pressed ***********/
-		Integer[] durationsE4 = new Integer[]{45,46,47,48,49,50};
+		Integer[] durationsE4 = new Integer[]{45,46,47,48,49,50,51,52,53,54,55};
 		boolean[][] keySetE4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durationsE4.length);
-		
-		Distribution<Action> distE4 = new Distribution_Uniform();
+
+		Distribution<Action> distE4 = new Distribution_Normal(49f,2f);
 		ActionSet actionSetE4 = ActionSet.makeActionSet(durationsE4, keySetE4, distE4);
-								
+
 		Map<Integer,ActionSet> actionExceptions = new HashMap<Integer,ActionSet>();
 		actionExceptions.put(0, actionSetE1);
 		actionExceptions.put(1, actionSetE2);
 		actionExceptions.put(2, actionSetE3);
 		actionExceptions.put(3, actionSetE4);
-		
+
 
 		// Define the specific way that these allowed actions are assigned as potential options for nodes.
 		IActionGenerator actionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
 		Node.potentialActionGenerator = actionGenerator;
-		
+
 		/****************************************/		
 		/*********** Node evaluation ************/
 		/****************************************/
@@ -115,66 +156,67 @@ public class MAIN_Run {
 		IEvaluationFunction evaluateRandom = new Evaluator_Random(); // Assigns a purely random score for diagnostics.
 		IEvaluationFunction evaluateDistance = new Evaluator_Distance();
 		IEvaluationFunction evaluateHandTuned = new Evaluator_HandTunedOnState();
-		
-		IEvaluationFunction currentEvaluator = evaluateDistance;
-		
+
+		IEvaluationFunction currentEvaluator = evaluateHandTuned;
+
 		/***********************************************/		
 		/*********** Tree building strategy ************/
 		/***********************************************/
-		
+
 		/******** Define how nodes are sampled from the above defined actions. *********/
 		ISampler samplerRandom = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
+		ISampler samplerDistribution = new Sampler_Distribution();
 		ISampler samplerGreedy = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
 		ISampler samplerUCB = new Sampler_UCB(currentEvaluator); // Upper confidence bound for trees sampler. More principled way of assigning weight for exploration/exploitation.
-		
-		ISampler currentSampler = samplerGreedy;
-		
+
+		ISampler currentSampler = samplerUCB;
+
 		/************************************************************/		
 		/******* Decide how datasets are to be saved/loaded. ********/
 		/************************************************************/
 
-//		System.out.println("Reading saved games file."); tic();
+		//		System.out.println("Reading saved games file."); tic();
 		SaveableFileIO<SaveableSingleGame> io_sparse = new SaveableFileIO<SaveableSingleGame>();
 		SaveableFileIO<SaveableDenseData> io_dense = new SaveableFileIO<SaveableDenseData>();
-		
-		String sparseFileName = generateFileName("test", "SaveableSingleGame");
-		String denseFileName =  generateFileName("test", "SaveableDenseData");
+
+		String sparseFileName = generateFileName(filePrefix, "SaveableSingleGame");
+		//String denseFileName =  generateFileName(filePrefix, "SaveableDenseData");
 
 		//ArrayList<SaveableSingleGame> loaded = io_sparse.loadObjectsOrdered("test_2017-10-25_16-25-38.SaveableSingleGame");
-		
+
 		//Node treeRoot = Node.makeNodesFromRunInfo(loaded, false);
 		// If we don't want to append to an existing file, we should clear out anything existing with this name.
-//		clearExistingFile(sparseFileName);
-//		clearExistingFile(denseFileName);
-		
+		//		clearExistingFile(sparseFileName);
+		//		clearExistingFile(denseFileName);
+
 		Node treeRoot = new Node(useTreePhysics);
 
 		FSM_UI ui = new FSM_UI();
 		FSM_Tree tree = new FSM_Tree(currentSampler);
 		FSM_Game game = new FSM_Game();
-		
+
 		/* Manage the tree, UI, and game. Start some threads. */
-		Negotiator negotiator = new Negotiator(tree, ui, game, 
-												io_sparse, sparseFileName);//, io_dense, denseFileName);
-		
+		negotiator = new Negotiator(tree, ui, game, 
+				io_sparse, sparseFileName);//, io_dense, denseFileName);
+
 		tree.setNegotiator(negotiator);
 		ui.setNegotiator(negotiator);
 		game.setNegotiator(negotiator);
 		negotiator.addTreeRoot(treeRoot);
-		
+
 		Thread treeThread = new Thread(tree);
 		Thread uiThread = new Thread(ui);
 		Thread gameThread = new Thread(game); 
 		//uiThread.setPriority(Thread.MAX_PRIORITY);
-		
+
 		/* Start processes */
 		gameThread.start();
 		uiThread.start();
 		treeThread.start();
-		
+
 		System.out.println("All initialized.");
 	}
-	
+
 	/** Matlab tic and toc functionality. **/
 	public static void tic(){
 		ticTime = System.nanoTime();
@@ -189,7 +231,7 @@ public class MAIN_Run {
 		}
 		return difference;
 	}
-	
+
 	/** Clear out an existing file. **/
 	public static void clearExistingFile(String fileName) {
 		File file = new File(fileName);
@@ -200,14 +242,14 @@ public class MAIN_Run {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/** Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]**/
 	public static String generateFileName(String prefix, String className) {
 		Date date = new Date() ;
 		SimpleDateFormat dateFormat = new SimpleDateFormat("'" + prefix + "_'" + "yyyy-MM-dd_HH-mm-ss" + "'." +  className + "'") ;
 		String name = dateFormat.format(date);
 		System.out.println("Generated file: " + name);
-		
+
 		return name;
 	}
 }
