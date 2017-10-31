@@ -3,7 +3,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,8 +22,8 @@ public class MAIN_Run implements Runnable{
 	private static Negotiator negotiator;
 	
 	private int treesPlayed = 0;
-	private int treesToPlay = 10;
-	private long secondsPerTree = 120;
+	private int treesToPlay = 1000;
+	private long secondsPerTree = 180;
 
 	private long initTime;
 
