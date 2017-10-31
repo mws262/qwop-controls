@@ -2,3 +2,5 @@
 /aziokbd/
 *.SaveableDenseData
 *.SaveableSingleGame
+data*
+
