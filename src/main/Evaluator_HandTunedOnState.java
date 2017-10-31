@@ -11,6 +11,15 @@ public class Evaluator_HandTunedOnState implements IEvaluationFunction {
 		
 		return value;
 	}
+	
+	public float getValue(State state) {
+		float value = 0.f;
+		value += state.body.th;
+		value += state.body.x;
+		value += state.body.dx;
+		
+		return value;
+	}
 
 	@Override
 	public String getValueString(Node nodeToEvaluate) {

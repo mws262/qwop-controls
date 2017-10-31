@@ -32,7 +32,7 @@ public class FSM_Game implements Runnable{
 	private volatile boolean isLocked = false; 
 
 	/** Queued commands, IE QWOP key presses **/
-	ActionQueue actionQueue = new ActionQueue();
+	public ActionQueue actionQueue = new ActionQueue();
 	
 	/** Physics engine stepping parameters. **/
 	public final float timestep = 0.04f;
@@ -328,7 +328,7 @@ public class FSM_Game implements Runnable{
 			if (currentAction == null || !currentAction.hasNext()){
 				if (currentAction != null) currentAction.reset();
 				currentAction = actionQueue.poll();
-				currentAction.reset();
+				//if (currentAction == null) System.out.println("WTF");
 			}
 			
 			boolean[] nextCommand = currentAction.poll();
@@ -344,7 +344,10 @@ public class FSM_Game implements Runnable{
 		public void clearAll(){
 			actionQueue.clear();
 			actionListFull.clear();
+			currentAction.reset();
 			currentAction = null;
+			
+			//while (actionQueue.size() > 0 || currentAction != null
 			isEmpty = true;
 		}
 		

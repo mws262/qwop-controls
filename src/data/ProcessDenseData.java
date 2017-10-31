@@ -2,6 +2,8 @@ package data;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 
 import main.Action;
 import main.FSM_Game;
@@ -17,32 +19,32 @@ import main.State;
  *
  */
 public class ProcessDenseData implements INegotiateGame{
-	
+
 	/** Interface to the QWOP game. **/
 	private FSM_Game gameFSM = new FSM_Game();
 	/** Separate thread for the game. **/
 	private Thread gameThread = new Thread(gameFSM);
-	
+
 	private ArrayList<Action> actionBuffer = new ArrayList<Action>();
 	private ArrayList<State> stateBuffer = new ArrayList<State>();
 	private ArrayList<SaveableDenseData> denseDataBuffer = new ArrayList<SaveableDenseData>();
-	
+
 	/** Initial state that the runner starts at. First element of every data object. **/
 	private State initialState = FSM_Game.getInitialState();
 	/** Is the game ready to take a new sequence yet? **/
 	private volatile boolean gameReady = true;
-	
+
 	public ProcessDenseData() {
 		gameThread.start();
 		gameFSM.setNegotiator(this);
 	}
-	
+
 	public void process(String[] filenames) {
-		
+
 		/**** Load the sparse runs we want to fill in. ****/
 		SaveableFileIO<SaveableSingleGame> fileIn = new SaveableFileIO<SaveableSingleGame>();
 		SaveableFileIO<SaveableDenseData> fileOut = new SaveableFileIO<SaveableDenseData>();
-		
+
 		/**** Loop through simulations ****/
 		int counter = 0;
 		for (int i = 0; i < filenames.length; i++) { // Loop through files.
@@ -54,19 +56,44 @@ public class ProcessDenseData implements INegotiateGame{
 				gameFSM.addSequence(singleGame.actions); // Queue up the next games.
 				stateBuffer.add(initialState);
 				gameReady = false; // Mark the game FSM busy until IDLE is reached again.
+				if (counter > 0) gameFSM.unlockFSM();
 				counter++;
 				System.out.println("Games run: " + counter);
 			}
 		}
 
 		while (!gameReady); // Wait for the game FSM to return to IDLE.	
-		
+
 		/**** Write to file ****/
 		fileOut.storeObjectsOrdered(denseDataBuffer, "denseData.SaveableDenseData", false);
-		
+
 		System.exit(0);
 	}
-	
+
+	public void process(Map<Float,SaveableSingleGame> sparseGames) {
+
+		SaveableFileIO<SaveableDenseData> fileOut = new SaveableFileIO<SaveableDenseData>();
+
+		/**** Loop through simulations ****/
+		int counter = 0;
+		for (SaveableSingleGame game : sparseGames.values()) {
+			//System.out.println(game.actions.length);
+			while (!gameReady);// && game.actionQueue.); // Wait for the game FSM to return to IDLE.	
+			gameReady = false; // Mark the game FSM busy until IDLE is reached again.
+			gameFSM.addSequence(game.actions); // Queue up the next games.
+			stateBuffer.add(initialState);
+			if (counter > 0) gameFSM.unlockFSM();
+			counter++;
+			System.out.println("Games run: " + counter);
+
+		}
+
+		while (!gameReady); // Wait for the game FSM to return to IDLE.	
+
+		/**** Write to file ****/
+		fileOut.storeObjectsOrdered(denseDataBuffer, "denseData.SaveableDenseData", false);
+	}
+
 	@Override
 	public void reportGameStep(Action action) {
 		actionBuffer.add(action); // Technically this is the action which GETS us to the current state, so we want it sort of grouped with the previous state since that is when it is applied.
@@ -83,7 +110,11 @@ public class ProcessDenseData implements INegotiateGame{
 			// Clear out for the next run to begin.
 			stateBuffer.clear();
 			actionBuffer.clear();
+
+			
+			gameFSM.getFSMStatusAndLock();
 			gameReady = true;
+			
 			break;
 		case IDLE:
 			break;
