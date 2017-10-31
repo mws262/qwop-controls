@@ -3,6 +3,9 @@ package main;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.dynamics.ContactListener;
@@ -18,7 +21,7 @@ public class FSM_Game implements Runnable{
 	/** Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls. **/
 	public float torsoAngUpper = 1.2f;
 	public float torsoAngLower = -1.2f; // Negative is falling backwards. 0.4 is start angle.
-	
+
 	/** Failure occurrence flag **/
 	private boolean failFlag = false;
 
@@ -33,12 +36,12 @@ public class FSM_Game implements Runnable{
 
 	/** Queued commands, IE QWOP key presses **/
 	public ActionQueue actionQueue = new ActionQueue();
-	
+
 	/** Physics engine stepping parameters. **/
 	public final float timestep = 0.04f;
 	private final int iterations = 5;
 	private float stepsSimulated = 0;
-	
+
 	/** Flags for each of the QWOP keys being down **/
 	public boolean Q = false;
 	public boolean W = false;
@@ -59,6 +62,9 @@ public class FSM_Game implements Runnable{
 
 	/** Queued sequence to run. **/
 	private Action[] queuedSequence;
+
+	public Lock FSMLock = new ReentrantLock();
+	public Condition doneWithCurrent = FSMLock.newCondition();
 
 	/** State machine states for the QWOP game **/
 	public enum Status{
@@ -82,6 +88,7 @@ public class FSM_Game implements Runnable{
 			case IDLE:
 				// Initialize a new game if commands have been added to the queue.
 				if (!actionQueue.isEmpty()){
+					FSMLock.lock();
 					currentStatus = Status.INITIALIZE;
 				}else if (flagForSingle){ // User selected one to display.
 					if (queuedSequence == null) throw new RuntimeException("Game flagged for single run, but no queued sequence ready.");
@@ -89,6 +96,13 @@ public class FSM_Game implements Runnable{
 					runRealTime = true;
 					flagForSingle = false;
 					currentStatus = Status.LOCKED;
+				}else {
+					FSMLock.lock();
+					try {
+						doneWithCurrent.signalAll();
+					}finally {
+						FSMLock.unlock();
+					}
 				}
 				break;
 			case LOCKED:
@@ -117,13 +131,13 @@ public class FSM_Game implements Runnable{
 
 					game.everyStep(Q,W,O,P);
 					getWorld().step(timestep, iterations);
-					
+
 					// Extra fail conditions besides contacts.
 					float angle = game.TorsoBody.getAngle();
 					if (angle > torsoAngUpper || angle < torsoAngLower) {
 						reportFall();
 					}
-					
+
 					negotiator.reportGameStep(actionQueue.peekThisAction());
 					stepsSimulated++;
 					if (runRealTime){
@@ -146,7 +160,7 @@ public class FSM_Game implements Runnable{
 			case FAILED:
 				actionQueue.clearAll(); // Clear remaining commands.
 				if (runRealTime) negotiator.reportEndOfRealTimeSim();
-				
+
 				if (flagForSingle){ // User selected one to display.
 					actionQueue.addSequence(queuedSequence);
 					runRealTime = true;
@@ -156,6 +170,7 @@ public class FSM_Game implements Runnable{
 					currentStatus = Status.IDLE;
 					runRealTime = false;
 				}
+
 				break;
 			default:
 				break;
@@ -184,10 +199,10 @@ public class FSM_Game implements Runnable{
 		getWorld().setContactListener(new CollisionListener());
 	}
 
-	public void addSequence(Action[] sequence){
+	public synchronized void addSequence(Action[] sequence){
 		actionQueue.addSequence(sequence);
 	}
-	public void addAction(Action action){
+	public synchronized void addAction(Action action){
 		actionQueue.addAction(action);
 	}
 	/** Callable to instantly stop real-time simulating a run. Usually when the UI tab is changed. **/
@@ -212,19 +227,19 @@ public class FSM_Game implements Runnable{
 	public QWOPGame getGame(){
 		return game;
 	}
-	
+
 	/** Check if we're trying to run a game in realtime. **/
 	public boolean isRealtime(){
 		return runRealTime;
 	}
-	
+
 	/** Total time simulated since this execution of the program. **/
 	public float getTimeSimulated(){
 		return stepsSimulated*timestep;
 	}
 
 	/** Get the state of the runner. **/
-	public State getGameState(){
+	public synchronized State getGameState(){
 		State currentState = new State(game);
 		currentState.failedState = failFlag;
 		return currentState;
@@ -241,7 +256,7 @@ public class FSM_Game implements Runnable{
 	}
 
 	/** Get the FSM status. **/
-	public Status getFSMStatus(){
+	public synchronized Status getFSMStatus(){
 		return currentStatus;
 	}
 
@@ -249,9 +264,9 @@ public class FSM_Game implements Runnable{
 	public Status getFSMStatusAndLock(){
 		if (isLocked) throw new RuntimeException("Someone tried to lock the game while it was already locked.");
 		locked = true;
-		
+
 		while (!isLocked);
-		
+
 		return getFSMStatus();
 	}
 
@@ -261,7 +276,7 @@ public class FSM_Game implements Runnable{
 		if (!isLocked) throw new RuntimeException("Tried to unlock the game FSM, but it never got around to locked in the first place. This really shouldn't happen.");
 		locked = false;
 	}
-	
+
 	/** Stop the game FSM. **/
 	public void kill() {
 		running = false;
@@ -280,7 +295,7 @@ public class FSM_Game implements Runnable{
 
 		/** All actions done or queued since the last reset. Unlike the queue, things aren't removed until reset. **/
 		private ArrayList<Action> actionListFull = new ArrayList<Action>();
-		
+
 		/** Integer action currently in progress. If the action is 20, this will be 20 even when 15 commands have been issued. **/
 		private Action currentAction;
 
@@ -298,28 +313,28 @@ public class FSM_Game implements Runnable{
 		public Action peekNextAction(){
 			return actionQueue.peek();
 		}
-		
+
 		/** See the next keypresses. **/
 		public boolean[] peekCommand(){
 			return currentAction.peek();
 		}
-		
+
 		/** Adds a new action to the end of the queue. **/
-		public void addAction(Action action){
+		public synchronized void addAction(Action action){
 			actionQueue.add(action);
 			actionListFull.add(action);
 			isEmpty = false;
 		}
-		
+
 		/** Add a sequence of actions. NOTE: sequence is NOT reset unless clearAll is called. **/
-		public void addSequence(Action[] actions){
+		public synchronized void addSequence(Action[] actions){
 			for (int i = 0; i < actions.length; i++){
 				addAction(actions[i]);
 			}
 		}
-		
+
 		/** Request the next QWOP keypress commands from the added sequence. **/
-		public boolean[] pollCommand(){
+		public synchronized boolean[] pollCommand(){
 			if (actionQueue.isEmpty() && (currentAction == null || !currentAction.hasNext())){
 				throw new RuntimeException("Tried to get a command off the queue when nothing is queued up.");
 			}
@@ -330,9 +345,9 @@ public class FSM_Game implements Runnable{
 				currentAction = actionQueue.poll();
 				//if (currentAction == null) System.out.println("WTF");
 			}
-			
+
 			boolean[] nextCommand = currentAction.poll();
-			
+
 			if (!currentAction.hasNext() && actionQueue.isEmpty()){
 				currentAction.reset();
 				isEmpty = true;
@@ -341,19 +356,19 @@ public class FSM_Game implements Runnable{
 		}
 
 		/** Remove everything from the queues and reset the sequence. **/
-		public void clearAll(){
+		public synchronized void clearAll(){
 			actionQueue.clear();
 			actionListFull.clear();
 			currentAction.reset();
 			currentAction = null;
-			
+
 			//while (actionQueue.size() > 0 || currentAction != null
 			isEmpty = true;
 		}
-		
+
 		/** Check if the queue has anything in it. **/
-		public boolean isEmpty(){ return isEmpty; }
-		
+		public synchronized boolean isEmpty(){ return isEmpty; }
+
 		public Action[] getActionsInCurrentRun(){
 			Action[] actions = new Action[actionListFull.size()];
 			for (int i = 0; i < actions.length; i++){
@@ -361,7 +376,7 @@ public class FSM_Game implements Runnable{
 			}
 			return actions;
 		}
-		
+
 		public int getCurrentActionIdx(){
 			return actionListFull.size() - actionQueue.size() - 1;
 		}
@@ -414,13 +429,13 @@ public class FSM_Game implements Runnable{
 		}
 		@Override
 		public void result(ContactResult point) {}
-		
+
 		/** Check if the right foot is touching the ground. **/
 		@SuppressWarnings("unused")
 		public boolean isRightFootGrounded(){
 			return rFootDown;
 		}
-		
+
 		/** Check if the left foot is touching the ground. **/
 		@SuppressWarnings("unused")
 		public boolean isLeftFootGrounded(){

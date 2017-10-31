@@ -78,13 +78,23 @@ public class ProcessDenseData implements INegotiateGame{
 		int counter = 0;
 		for (SaveableSingleGame game : sparseGames.values()) {
 			//System.out.println(game.actions.length);
-			while (!gameReady);// && game.actionQueue.); // Wait for the game FSM to return to IDLE.	
+			try {
+				gameFSM.doneWithCurrent.await();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}// && game.actionQueue.); // Wait for the game FSM to return to IDLE.	
+			
+			gameFSM.FSMLock.lock();
+			try {
 			gameReady = false; // Mark the game FSM busy until IDLE is reached again.
 			gameFSM.addSequence(game.actions); // Queue up the next games.
 			stateBuffer.add(initialState);
-			if (counter > 0) gameFSM.unlockFSM();
+			//if (counter > 0) gameFSM.unlockFSM();
 			counter++;
 			System.out.println("Games run: " + counter);
+			}finally {
+				gameFSM.FSMLock.unlock();
+			}
 
 		}
 
@@ -105,14 +115,13 @@ public class ProcessDenseData implements INegotiateGame{
 		System.out.println(status.toString());
 		switch(status) {
 		case FAILED:
-			// Collect all the states and actions into a data object.
+			// Collect all thForkJoinPoole states and actions into a data object.
 			denseDataBuffer.add(new SaveableDenseData(stateBuffer,actionBuffer));
 			// Clear out for the next run to begin.
 			stateBuffer.clear();
 			actionBuffer.clear();
 
-			
-			gameFSM.getFSMStatusAndLock();
+			//gameFSM.getFSMStatusAndLock();
 			gameReady = true;
 			
 			break;
