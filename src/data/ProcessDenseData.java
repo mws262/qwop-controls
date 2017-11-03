@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import main.Action;
 import main.FSM_Game;
@@ -34,6 +36,9 @@ public class ProcessDenseData implements INegotiateGame{
 	/** Is the game ready to take a new sequence yet? **/
 	private volatile boolean gameReady = true;
 
+	public ReentrantLock negotiatorLock = new ReentrantLock();
+	public Condition negotiatorFree = negotiatorLock.newCondition();
+	
 	public ProcessDenseData() {
 		gameThread.start();
 		gameFSM.setNegotiator(this);
@@ -77,24 +82,16 @@ public class ProcessDenseData implements INegotiateGame{
 		/**** Loop through simulations ****/
 		int counter = 0;
 		for (SaveableSingleGame game : sparseGames.values()) {
-			//System.out.println(game.actions.length);
-			try {
-				gameFSM.doneWithCurrent.await();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}// && game.actionQueue.); // Wait for the game FSM to return to IDLE.	
+
 			
-			gameFSM.FSMLock.lock();
-			try {
+			while (!gameReady);
+			
 			gameReady = false; // Mark the game FSM busy until IDLE is reached again.
 			gameFSM.addSequence(game.actions); // Queue up the next games.
 			stateBuffer.add(initialState);
 			//if (counter > 0) gameFSM.unlockFSM();
 			counter++;
-			System.out.println("Games run: " + counter);
-			}finally {
-				gameFSM.FSMLock.unlock();
-			}
+			//System.out.println("Games run: " + counter);
 
 		}
 
@@ -112,7 +109,7 @@ public class ProcessDenseData implements INegotiateGame{
 
 	@Override
 	public void statusChange_Game(Status status) {
-		System.out.println(status.toString());
+		//System.out.println(status.toString());
 		switch(status) {
 		case FAILED:
 			// Collect all thForkJoinPoole states and actions into a data object.
@@ -120,12 +117,9 @@ public class ProcessDenseData implements INegotiateGame{
 			// Clear out for the next run to begin.
 			stateBuffer.clear();
 			actionBuffer.clear();
-
-			//gameFSM.getFSMStatusAndLock();
-			gameReady = true;
-			
 			break;
 		case IDLE:
+			gameReady = true;
 			break;
 		case INITIALIZE:
 			break;

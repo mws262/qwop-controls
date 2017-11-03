@@ -63,9 +63,6 @@ public class FSM_Game implements Runnable{
 	/** Queued sequence to run. **/
 	private Action[] queuedSequence;
 
-	public Lock FSMLock = new ReentrantLock();
-	public Condition doneWithCurrent = FSMLock.newCondition();
-
 	/** State machine states for the QWOP game **/
 	public enum Status{
 		IDLE, WAITING, INITIALIZE, RUNNING_SEQUENCE, LOCKED, FAILED
@@ -88,7 +85,6 @@ public class FSM_Game implements Runnable{
 			case IDLE:
 				// Initialize a new game if commands have been added to the queue.
 				if (!actionQueue.isEmpty()){
-					FSMLock.lock();
 					currentStatus = Status.INITIALIZE;
 				}else if (flagForSingle){ // User selected one to display.
 					if (queuedSequence == null) throw new RuntimeException("Game flagged for single run, but no queued sequence ready.");
@@ -96,13 +92,6 @@ public class FSM_Game implements Runnable{
 					runRealTime = true;
 					flagForSingle = false;
 					currentStatus = Status.LOCKED;
-				}else {
-					FSMLock.lock();
-					try {
-						doneWithCurrent.signalAll();
-					}finally {
-						FSMLock.unlock();
-					}
 				}
 				break;
 			case LOCKED:
@@ -199,10 +188,10 @@ public class FSM_Game implements Runnable{
 		getWorld().setContactListener(new CollisionListener());
 	}
 
-	public synchronized void addSequence(Action[] sequence){
+	public void addSequence(Action[] sequence){
 		actionQueue.addSequence(sequence);
 	}
-	public synchronized void addAction(Action action){
+	public void addAction(Action action){
 		actionQueue.addAction(action);
 	}
 	/** Callable to instantly stop real-time simulating a run. Usually when the UI tab is changed. **/
