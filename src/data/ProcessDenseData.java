@@ -130,8 +130,11 @@ public class ProcessDenseData implements INegotiateGame{
 		//System.out.println(status.toString());
 		switch(status) {
 		case FAILED:
-			// Collect all thForkJoinPoole states and actions into a data object.
-			denseDataBuffer.add(new SaveableDenseData(stateBuffer,actionBuffer));
+			// Collect all the states and actions into a data object.
+			SaveableDenseData denseDat = new SaveableDenseData(stateBuffer,actionBuffer);
+			if (denseDat.getAction() != null && denseDat.getAction().length > 0) {
+				denseDataBuffer.add(denseDat);
+			}
 			// Clear out for the next run to begin.
 			stateBuffer.clear();
 			actionBuffer.clear();

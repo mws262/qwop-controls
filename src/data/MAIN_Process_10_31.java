@@ -128,13 +128,18 @@ public class MAIN_Process_10_31 {
 
 
 		// DO THE REST IN BATCHES.
-		for (int k = 0; k < inFiles.size(); k += fileBatchSize) {
+		// STOPPED JUST AS BATCH 34 was starting
+		for (int k = 10*fileBatchSize; k < inFiles.size(); k += fileBatchSize) {
 
 			SaveableFileIO<SaveableSingleGame> qwopIn = new SaveableFileIO<SaveableSingleGame>();
 			ArrayList<ArrayList<SaveableSingleGame>> allLoadedRuns = new ArrayList<ArrayList<SaveableSingleGame>>();
 
 			for (int j = k; j < Math.min(k + fileBatchSize, inFiles.size()); j++) {
-				allLoadedRuns.add(qwopIn.loadObjectsOrdered(inFiles.get(j).getAbsolutePath()));
+				ArrayList<SaveableSingleGame> game = qwopIn.loadObjectsOrdered(inFiles.get(j).getAbsolutePath());
+				if (game == null) {
+					System.out.println("Warning: loaded a null game");
+				}
+				allLoadedRuns.add(game);
 				System.out.println((int)((j+1.)/(float)inFiles.size() * 100) + "% total completion. " + (int)((j - k)/(float)fileBatchSize * 100) + "% of file batch imported.");
 			}
 			System.out.printf("Done\n");
@@ -161,9 +166,15 @@ public class MAIN_Process_10_31 {
 				int savedSoFar = 0;
 				float worstScore = Float.MAX_VALUE;
 				// Don't save too many or too few. Keep saving while score is good.
-				while (savedSoFar < minKeepNumberOfGames || (worstScore > scoreCutoff && savedSoFar < maxKeepNumberOfGames)) {
+				while (!sortedGamesThisFile.isEmpty() && savedSoFar < minKeepNumberOfGames || (worstScore > scoreCutoff && savedSoFar < maxKeepNumberOfGames)) {
 					Entry<Float, SaveableSingleGame> gameEntry = sortedGamesThisFile.pollLastEntry();
-					allSortedGames.put(gameEntry.getKey(),gameEntry.getValue());
+					//System.out.println(gameEntry.getValue().actions[0]);
+					try {
+						allSortedGames.put(gameEntry.getKey(),gameEntry.getValue());
+					}catch(NullPointerException e) {
+						System.out.println("Tried to put null entry into the sorted games list. Just skipped it instead");
+						break;
+					}
 					worstScore = gameEntry.getKey(); // We're going in descending order from the end of the map, so the next one will always be the worst we've seen so far.
 					savedSoFar++;
 				}
