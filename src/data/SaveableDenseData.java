@@ -24,13 +24,19 @@ public class SaveableDenseData implements Serializable{
 	private final Action[] action;
 	
 	public SaveableDenseData(State[] state, Action[] action) {
-		if (state.length != action.length && state.length - action.length != 1) throw new RuntimeException("State and action data must be of the same size, or state must have 1 more element than action. State size: " + state.length + ". Action size: " + action.length);
+		if (state.length != action.length && state.length - action.length != 1) {
+			//throw new RuntimeException("State and action data must be of the same size, or state must have 1 more element than action. State size: " + state.length + ". Action size: " + action.length);
+			System.out.println("State size: " + state.length + ". Action size: " + action.length + ". Ignoring for now.");
+		}
 		this.state = state;
 		this.action = action;
 	}
 	
 	public SaveableDenseData(ArrayList<State> state, ArrayList<Action> action) {
-		if (state.size() != action.size() && state.size() - action.size() != 1) throw new RuntimeException("State and action data must be of the same size, or state must have 1 more element than action. State size: " + state.size() + ". Action size: " + action.size());
+		if (state.size() != action.size() && state.size() - action.size() != 1) {
+			//throw new RuntimeException("State and action data must be of the same size, or state must have 1 more element than action. State size: " + state.size() + ". Action size: " + action.size());
+			System.out.println("State size: " + state.size() + ". Action size: " + action.size() + ". Ignoring for now.");
+		}
 		
 		this.state = new State[state.size()];
 		this.action = new Action[action.size()];
