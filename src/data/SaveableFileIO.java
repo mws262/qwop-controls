@@ -29,8 +29,11 @@ public class SaveableFileIO<T> {
 				objOps = new ObjectOutputStream(ops);	
 			}
 
+			int count = 0;
 			for (T d : data){
 				objOps.writeObject(d);
+				count++;
+				System.out.println("Writen games to file: " + count + "/" + data.size());
 			}
 			objOps.flush();
 		} catch (FileNotFoundException e) {
