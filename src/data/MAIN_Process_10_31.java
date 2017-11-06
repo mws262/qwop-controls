@@ -120,6 +120,8 @@ public class MAIN_Process_10_31 {
 		/** Import the sparse run data from input files. **/
 		System.out.println("Beginning to load sparse run data from input files...");
 		
+		
+		
 		SaveableFileIO<SaveableSingleGame> qwopIn = new SaveableFileIO<SaveableSingleGame>();
 		ArrayList<ArrayList<SaveableSingleGame>> allLoadedRuns = new ArrayList<ArrayList<SaveableSingleGame>>();
 		
@@ -137,7 +139,7 @@ public class MAIN_Process_10_31 {
 		TreeMap<Float,SaveableSingleGame> allSortedGames = new TreeMap<Float,SaveableSingleGame>();
 		
 		
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < allLoadedRuns.size(); i++) {
 			
 			ArrayList<SaveableSingleGame> currentSet = allLoadedRuns.get(i);
 			for (int j = 0; j < currentSet.size(); j++) {
@@ -169,7 +171,7 @@ public class MAIN_Process_10_31 {
 		System.out.println("Simulating the selected runs to get dense data and writing to file...");
 		
 		ProcessDenseData reSim = new ProcessDenseData();
-		reSim.process(allSortedGames);
+		reSim.process(allSortedGames,100);
 		System.out.println("Done.");
 
 	}

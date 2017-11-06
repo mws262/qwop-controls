@@ -1,6 +1,8 @@
 package data;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -44,6 +46,7 @@ public class ProcessDenseData implements INegotiateGame{
 		gameFSM.setNegotiator(this);
 	}
 
+	//TODO: add batch size.
 	public void process(String[] filenames) {
 
 		/**** Load the sparse runs we want to fill in. ****/
@@ -75,32 +78,47 @@ public class ProcessDenseData implements INegotiateGame{
 		System.exit(0);
 	}
 
-	public void process(Map<Float,SaveableSingleGame> sparseGames) {
+	public void process(Map<Float,SaveableSingleGame> sparseGames, int batchSize) {
 
 		SaveableFileIO<SaveableDenseData> fileOut = new SaveableFileIO<SaveableDenseData>();
 
 		/**** Loop through simulations ****/
 		int counter = 0;
-		for (SaveableSingleGame game : sparseGames.values()) {
+		
+		Iterator<Map.Entry<Float, SaveableSingleGame>> iter = sparseGames.entrySet().iterator();
+		
+		for (int i = 0; i < sparseGames.size(); i += batchSize) {
+			for (int j = i; j < Math.min(i + batchSize, sparseGames.size()); j++) {
+				
+				SaveableSingleGame game = iter.next().getValue();
+				
+				while (!gameReady);
+				
+				gameReady = false; // Mark the game FSM busy until IDLE is reached again.
+				gameFSM.addSequence(game.actions); // Queue up the next games.
+				stateBuffer.add(initialState);
+				counter++;
+				System.out.println("Games run: " + counter + "/" + sparseGames.size());				
+			} 
 
-			
-			while (!gameReady);
-			
-			gameReady = false; // Mark the game FSM busy until IDLE is reached again.
-			gameFSM.addSequence(game.actions); // Queue up the next games.
-			stateBuffer.add(initialState);
-			//if (counter > 0) gameFSM.unlockFSM();
-			counter++;
-			//System.out.println("Games run: " + counter);
-
+			while (!gameReady); // Wait for the game FSM to return to IDLE.	
+			/**** Write to file ****/
+			fileOut.storeObjectsOrdered(denseDataBuffer, generateFileName("denseData","SaveableDenseData"), false);
+			denseDataBuffer.clear();
+			System.out.println("Batch saved.");
 		}
-
-		while (!gameReady); // Wait for the game FSM to return to IDLE.	
-
-		/**** Write to file ****/
-		fileOut.storeObjectsOrdered(denseDataBuffer, "denseData.SaveableDenseData", false);
 	}
 
+	/** Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]**/
+	public static String generateFileName(String prefix, String className) {
+		Date date = new Date() ;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("'" + prefix + "_'" + "yyyy-MM-dd_HH-mm-ss" + "'." +  className + "'") ;
+		String name = dateFormat.format(date);
+		System.out.println("Generated file: " + name);
+
+		return name;
+	}
+	
 	@Override
 	public void reportGameStep(Action action) {
 		actionBuffer.add(action); // Technically this is the action which GETS us to the current state, so we want it sort of grouped with the previous state since that is when it is applied.
