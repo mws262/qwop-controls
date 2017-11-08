@@ -1,0 +1,168 @@
+package data;
+
+import data.DenseDataProtos.DenseData;
+import main.State;
+import main.Action;
+
+public class MAIN_Test_Protos {
+	
+	public void main(SaveableDenseData[] denseData) {
+		for (SaveableDenseData dat : denseData) {
+			DenseData.Builder data = DenseData.newBuilder();
+			
+			for (State st : dat.getState()) {
+				DenseData.State.Builder state = DenseData.State.newBuilder();
+				// Do for body:
+				DenseData.State.StateVariable.Builder stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.body.x);
+				stateVar.setY(st.body.y);
+				stateVar.setTh(st.body.th);
+				stateVar.setDx(st.body.dx);
+				stateVar.setDy(st.body.dy);
+				stateVar.setDth(st.body.dth);
+				stateVar.build();
+				state.setBody(stateVar);
+				
+				// For head:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.head.x);
+				stateVar.setY(st.head.y);
+				stateVar.setTh(st.head.th);
+				stateVar.setDx(st.head.dx);
+				stateVar.setDy(st.head.dy);
+				stateVar.setDth(st.head.dth);
+				stateVar.build();
+				state.setHead(stateVar);
+				
+				// For r thigh:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.rthigh.x);
+				stateVar.setY(st.rthigh.y);
+				stateVar.setTh(st.rthigh.th);
+				stateVar.setDx(st.rthigh.dx);
+				stateVar.setDy(st.rthigh.dy);
+				stateVar.setDth(st.rthigh.dth);
+				stateVar.build();
+				state.setRthigh(stateVar);
+				
+				// For l thigh:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.lthigh.x);
+				stateVar.setY(st.lthigh.y);
+				stateVar.setTh(st.lthigh.th);
+				stateVar.setDx(st.lthigh.dx);
+				stateVar.setDy(st.lthigh.dy);
+				stateVar.setDth(st.lthigh.dth);
+				stateVar.build();
+				state.setLthigh(stateVar);
+				
+				// For r calf:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.rcalf.x);
+				stateVar.setY(st.rcalf.y);
+				stateVar.setTh(st.rcalf.th);
+				stateVar.setDx(st.rcalf.dx);
+				stateVar.setDy(st.rcalf.dy);
+				stateVar.setDth(st.rcalf.dth);
+				stateVar.build();
+				state.setRcalf(stateVar);
+				
+				// For l calf:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.lcalf.x);
+				stateVar.setY(st.lcalf.y);
+				stateVar.setTh(st.lcalf.th);
+				stateVar.setDx(st.lcalf.dx);
+				stateVar.setDy(st.lcalf.dy);
+				stateVar.setDth(st.lcalf.dth);
+				stateVar.build();
+				state.setLcalf(stateVar);
+				
+				// For r foot:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.rfoot.x);
+				stateVar.setY(st.rfoot.y);
+				stateVar.setTh(st.rfoot.th);
+				stateVar.setDx(st.rfoot.dx);
+				stateVar.setDy(st.rfoot.dy);
+				stateVar.setDth(st.rfoot.dth);
+				stateVar.build();
+				state.setRfoot(stateVar);
+				
+				// For l foot:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.lfoot.x);
+				stateVar.setY(st.lfoot.y);
+				stateVar.setTh(st.lfoot.th);
+				stateVar.setDx(st.lfoot.dx);
+				stateVar.setDy(st.lfoot.dy);
+				stateVar.setDth(st.lfoot.dth);
+				stateVar.build();
+				state.setLfoot(stateVar);
+				
+				// For r upper arm:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.ruarm.x);
+				stateVar.setY(st.ruarm.y);
+				stateVar.setTh(st.ruarm.th);
+				stateVar.setDx(st.ruarm.dx);
+				stateVar.setDy(st.ruarm.dy);
+				stateVar.setDth(st.ruarm.dth);
+				stateVar.build();
+				state.setRuarm(stateVar);
+				
+				// For L upper arm:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.luarm.x);
+				stateVar.setY(st.luarm.y);
+				stateVar.setTh(st.luarm.th);
+				stateVar.setDx(st.luarm.dx);
+				stateVar.setDy(st.luarm.dy);
+				stateVar.setDth(st.luarm.dth);
+				stateVar.build();
+				state.setLuarm(stateVar);
+				
+				// For R lower arm:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.rlarm.x);
+				stateVar.setY(st.rlarm.y);
+				stateVar.setTh(st.rlarm.th);
+				stateVar.setDx(st.rlarm.dx);
+				stateVar.setDy(st.rlarm.dy);
+				stateVar.setDth(st.rlarm.dth);
+				stateVar.build();
+				state.setRlarm(stateVar);
+				
+				// For L lower arm:
+				stateVar = DenseData.State.StateVariable.newBuilder();
+				stateVar.setX(st.llarm.x);
+				stateVar.setY(st.llarm.y);
+				stateVar.setTh(st.llarm.th);
+				stateVar.setDx(st.llarm.dx);
+				stateVar.setDy(st.llarm.dy);
+				stateVar.setDth(st.llarm.dth);
+				stateVar.build();
+				state.setLlarm(stateVar);	
+				
+				// Finish this state:
+				state.build();
+				data.addState(state);
+			}
+			
+			// Add all the actions for the dense run.
+			for (Action act : dat.getAction()) {
+				DenseData.Action.Builder action = DenseData.Action.newBuilder();
+				action.setQ(act.peek()[0]);
+				action.setW(act.peek()[1]);
+				action.setO(act.peek()[2]);
+				action.setP(act.peek()[3]);
+				
+				action.setActionTimesteps(act.getTimestepsTotal());
+				action.build();
+				data.addAction(action);
+			}
+			
+			data.build();
+		}
+	}
+}
