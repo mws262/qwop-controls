@@ -1,0 +1,47 @@
+package data;
+
+option java_package = "data";
+option java_outer_classname = "DenseDataProtos";
+
+// Converting my serialized .SaveableDenseData
+message DenseData {
+
+  // Corresponds to State.java
+  message State {
+    required StateVariable body = 1;
+    required StateVariable rthigh = 2;
+    required StateVariable lthigh = 3;
+    required StateVariable rcalf = 4;
+    required StateVariable lcalf = 5;
+    required StateVariable rfoot = 6;
+    required StateVariable lfoot = 7;
+    required StateVariable ruarm = 8;
+    required StateVariable luarm = 9;
+    required StateVariable rlarm = 10;
+    required StateVariable llarm = 11;
+    required StateVariable head = 12;
+
+    // Subclass of State.java
+    message StateVariable {
+      required float x = 1;
+      required float y = 2;
+      required float th = 3;
+      required float dx = 4;
+      required float dy = 5;
+      required float dth = 6;
+    }
+  }
+
+  // Corresponds to Action.java
+  message Action {
+    required bool Q = 1;
+    required bool W = 2;
+    required bool O = 3;
+    required bool P = 4;
+    optional int32 actionTimesteps = 5;
+    optional int32 currentActionTimestep = 6;
+  }
+
+  repeated State state = 1;
+  repeated Action action = 2;
+}
