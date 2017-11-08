@@ -129,7 +129,7 @@ public class MAIN_Process_10_31 {
 
 		// DO THE REST IN BATCHES.
 		// STOPPED JUST AS BATCH 34 was starting
-		for (int k = 10*fileBatchSize; k < inFiles.size(); k += fileBatchSize) {
+		for (int k = 34*fileBatchSize; k < inFiles.size(); k += fileBatchSize) {
 
 			SaveableFileIO<SaveableSingleGame> qwopIn = new SaveableFileIO<SaveableSingleGame>();
 			ArrayList<ArrayList<SaveableSingleGame>> allLoadedRuns = new ArrayList<ArrayList<SaveableSingleGame>>();
