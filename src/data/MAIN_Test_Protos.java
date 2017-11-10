@@ -1,15 +1,78 @@
 package data;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import data.DenseDataProtos.DenseData;
+import data.DenseDataProtos.*;
 import main.State;
 import main.Action;
 
 public class MAIN_Test_Protos {
-	
-	public void main(SaveableDenseData[] denseData) {
+
+	static String sourceDir = ".";
+	static String inFileExt = "SaveableDenseData";
+
+	public static void main(String[] args) {
+
+		/** Grab input files. **/
+		System.out.println("Identifying input files...");
+		File inDir = new File(sourceDir);
+		if (!inDir.exists()) throw new RuntimeException("Input directory does not exist here: " + inDir.getName());
+
+		double megabyteCount = 0;
+		ArrayList<File> inFiles = new ArrayList<File>();
+		for(File file: inDir.listFiles()) {	
+			if (!file.isDirectory()) {
+				String extension = "";
+				// Get only files with the correct file extension.
+				int i = file.getName().lastIndexOf('.');
+				if (i > 0) {
+					extension = file.getName().substring(i+1);
+				}
+				if (extension.equals(inFileExt)) {
+					inFiles.add(file);	
+					megabyteCount += file.length()/1.0e6;
+				}else {
+					System.out.println("Ignoring file in input directory: " + file.getName());
+				}
+			}
+		}
+
+		System.out.println("Found " + inFiles.size() + " input files with the extension " + inFileExt + ".");
+		System.out.println("Total input size: " + Math.round(megabyteCount*10)/10. + " MB.");
+
+		System.out.println("done");
+
+
+		SaveableFileIO<SaveableDenseData> inFileLoader = new SaveableFileIO<SaveableDenseData>();
+
+		for (File file : inFiles) {
+			ArrayList<SaveableDenseData> denseDat = inFileLoader.loadObjectsOrdered(file.getAbsolutePath());
+			try {
+				convertToProtobuf(denseDat,"outBuf");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+
+
+	}
+
+
+	public static void convertToProtobuf(List<SaveableDenseData> denseData, String fileName) throws IOException {
+
+		FileOutputStream stream = new FileOutputStream(new File(fileName));
+
 		for (SaveableDenseData dat : denseData) {
 			DenseData.Builder data = DenseData.newBuilder();
-			
+
 			for (State st : dat.getState()) {
 				DenseData.State.Builder state = DenseData.State.newBuilder();
 				// Do for body:
@@ -22,7 +85,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.body.dth);
 				stateVar.build();
 				state.setBody(stateVar);
-				
+
 				// For head:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.head.x);
@@ -33,7 +96,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.head.dth);
 				stateVar.build();
 				state.setHead(stateVar);
-				
+
 				// For r thigh:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.rthigh.x);
@@ -44,7 +107,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.rthigh.dth);
 				stateVar.build();
 				state.setRthigh(stateVar);
-				
+
 				// For l thigh:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.lthigh.x);
@@ -55,7 +118,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.lthigh.dth);
 				stateVar.build();
 				state.setLthigh(stateVar);
-				
+
 				// For r calf:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.rcalf.x);
@@ -66,7 +129,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.rcalf.dth);
 				stateVar.build();
 				state.setRcalf(stateVar);
-				
+
 				// For l calf:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.lcalf.x);
@@ -77,7 +140,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.lcalf.dth);
 				stateVar.build();
 				state.setLcalf(stateVar);
-				
+
 				// For r foot:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.rfoot.x);
@@ -88,7 +151,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.rfoot.dth);
 				stateVar.build();
 				state.setRfoot(stateVar);
-				
+
 				// For l foot:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.lfoot.x);
@@ -99,7 +162,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.lfoot.dth);
 				stateVar.build();
 				state.setLfoot(stateVar);
-				
+
 				// For r upper arm:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.ruarm.x);
@@ -110,7 +173,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.ruarm.dth);
 				stateVar.build();
 				state.setRuarm(stateVar);
-				
+
 				// For L upper arm:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.luarm.x);
@@ -121,7 +184,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.luarm.dth);
 				stateVar.build();
 				state.setLuarm(stateVar);
-				
+
 				// For R lower arm:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.rlarm.x);
@@ -132,7 +195,7 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.rlarm.dth);
 				stateVar.build();
 				state.setRlarm(stateVar);
-				
+
 				// For L lower arm:
 				stateVar = DenseData.State.StateVariable.newBuilder();
 				stateVar.setX(st.llarm.x);
@@ -143,12 +206,12 @@ public class MAIN_Test_Protos {
 				stateVar.setDth(st.llarm.dth);
 				stateVar.build();
 				state.setLlarm(stateVar);	
-				
+
 				// Finish this state:
 				state.build();
 				data.addState(state);
 			}
-			
+
 			// Add all the actions for the dense run.
 			for (Action act : dat.getAction()) {
 				DenseData.Action.Builder action = DenseData.Action.newBuilder();
@@ -156,13 +219,14 @@ public class MAIN_Test_Protos {
 				action.setW(act.peek()[1]);
 				action.setO(act.peek()[2]);
 				action.setP(act.peek()[3]);
-				
+
 				action.setActionTimesteps(act.getTimestepsTotal());
 				action.build();
 				data.addAction(action);
 			}
-			
-			data.build();
+
+			data.build().writeTo(stream);
 		}
+		stream.close();
 	}
 }
