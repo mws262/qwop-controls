@@ -50,7 +50,7 @@ public class MAIN_Test_Protos {
 
 
 		SaveableFileIO<SaveableDenseData> inFileLoader = new SaveableFileIO<SaveableDenseData>();
-
+		int count = 0;
 		for (File file : inFiles) {
 			ArrayList<SaveableDenseData> denseDat = inFileLoader.loadObjectsOrdered(file.getAbsolutePath());
 			System.out.print("Beginning to package " + file.getName() + ". ");
@@ -61,7 +61,8 @@ public class MAIN_Test_Protos {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			System.out.println("Done.");
+			count++;
+			System.out.println("Done. " + count + "/" + inFiles.size());
 			
 //			// Validate -- not needed during batch run.
 //			DataSet dataValidate = null;
