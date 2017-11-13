@@ -4,6 +4,9 @@ option java_package = "data";
 option java_outer_classname = "DenseDataProtos";
 
 // Converting my serialized .SaveableDenseData
+message DataSet{
+
+
 message DenseData {
 
   // Corresponds to State.java
@@ -44,4 +47,7 @@ message DenseData {
 
   repeated State state = 1;
   repeated Action action = 2;
+}
+repeated DenseData denseData = 1;
+
 }
