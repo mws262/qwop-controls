@@ -1,13 +1,13 @@
 package data;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.DenseDataProtos.DenseData;
+import data.DenseDataProtos.DataSet.DenseData;
 import data.DenseDataProtos.*;
 import main.State;
 import main.Action;
@@ -53,23 +53,44 @@ public class MAIN_Test_Protos {
 
 		for (File file : inFiles) {
 			ArrayList<SaveableDenseData> denseDat = inFileLoader.loadObjectsOrdered(file.getAbsolutePath());
+			System.out.print("Beginning to package " + file.getName() + ". ");
+			String fileOutName = file.getName().substring(0, file.getName().lastIndexOf('.')) + ".proto";
 			try {
-				convertToProtobuf(denseDat,"outBuf");
+				convertToProtobuf(denseDat,fileOutName);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			System.out.println("Done.");
+			
+//			// Validate -- not needed during batch run.
+//			DataSet dataValidate = null;
+//			try {
+//				FileInputStream fIn = new FileInputStream(fileOutName);
+//				
+//				dataValidate = DataSet.parseFrom(new FileInputStream(fileOutName));
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			DenseData.State state1 = dataValidate.getDenseData(0).getState(10);
+//			float dx1 = state1.getBody().getDx();
+//			System.out.println("From new file: " + dx1 + ". From original data: " + denseDat.get(0).getState()[10].body.dx);
+//			
+//			
+//			DenseData.State state2 = dataValidate.getDenseData(10).getState(3);
+//			float th1 = state2.getHead().getTh();
+//			System.out.println("From new file: " + th1 + ". From original data: " + denseDat.get(10).getState()[3].head.th);
+//			break;
+//			
 		}
-
-
-
 	}
 
 
 	public static void convertToProtobuf(List<SaveableDenseData> denseData, String fileName) throws IOException {
 
-		FileOutputStream stream = new FileOutputStream(new File(fileName));
-
+		DataSet.Builder set = DataSet.newBuilder();
+		
 		for (SaveableDenseData dat : denseData) {
 			DenseData.Builder data = DenseData.newBuilder();
 
@@ -225,8 +246,11 @@ public class MAIN_Test_Protos {
 				data.addAction(action);
 			}
 
-			data.build().writeTo(stream);
+			set.addDenseData(data.build());
+			
 		}
+		FileOutputStream stream = new FileOutputStream(new File(fileName));
+		set.build().writeTo(stream);
 		stream.close();
 	}
 }
