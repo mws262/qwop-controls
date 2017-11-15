@@ -1,3 +1,4 @@
+syntax = "proto2";
 package data;
 
 option java_package = "data";
