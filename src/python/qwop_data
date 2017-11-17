@@ -1,7 +1,24 @@
-import numpy
+import numpy as np
+import densedata_pb2 as dataset
+
+# Define state order
+NUM_BODY_PARTS = 12;
+
+BODY = 0
+RTHIGH = 1
+RCALF = 2
+RFOOT = 3
+LTHIGH = 4
+LCALF = 5
+LFOOT = 6
+RUARM = 7
+RLARM = 8
+LUARM = 9
+LLARM = 10
+HEAD = 11
 
 def extract_states(f):
-  """Extract the images into a 4D uint8 numpy array [index, y, x, depth].
+  """Extract the images into a 3D numpy array [game, timestep, [x, y, th, dx, dy, dth]].
   Args:
     f: A file object that can be passed into a gzip reader.
   Returns:
@@ -9,6 +26,30 @@ def extract_states(f):
   Raises:
     ValueError: If the bytestream does not start with 2051.
   """
+    #f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
+
+  dat = dataset.DataSet()
+  try:
+      dataset.ParseFromString(f.read())
+      f.close
+  except IOError:
+      print "Import failed"
+
+
+    num_games = len(dat.denseData)
+
+
+  bodyX = np.empty(shape=(len(dat.denseData[0].state), 1), dtype=np.float32)
+
+
+  for idx, s in enumerate(dataset.denseData[0].state):
+
+      np.put(bodyX, ind=idx, v=s.body.x)
+      np.put(bodyY, ind=idx, v=s.body.y)
+      np.put(bodyTh, ind=idx, v=s.body.th)
+
+
+
 
     return states
 
@@ -32,8 +73,8 @@ class DataSet(object):
   def __init__(self, states, labels):
     """Construct a DataSet.
     """
-    assert states.shape[0] == labels.shape[0], ('images.shape: %s labels.shape: %s' % (images.shape, labels.shape))
-    self._num_examples = images.shape[0]
+    assert states.shape[0] == labels.shape[0], ('images.shape: %s labels.shape: %s' % (states.shape, labels.shape))
+    self._num_examples = states.shape[0]
 
     ## DO RESCALING
 
@@ -44,7 +85,7 @@ class DataSet(object):
 
   @property
   def images(self):
-    return self._images
+    return self._states
 
   @property
   def labels(self):

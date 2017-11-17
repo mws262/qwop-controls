@@ -1,6 +1,5 @@
 import densedata_pb2 as dataset
 import timeit
-import tensorflow as tf
 import numpy as np
 import matplotlib as mat
 import matplotlib.pyplot as plt
