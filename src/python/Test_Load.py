@@ -39,6 +39,11 @@ for idx, s in enumerate(dataset.denseData[0].state):
     np.put(bodyY, ind=idx, v=s.body.y)
     np.put(bodyTh, ind=idx, v=s.body.th)
 
+
+for idx, a in enumerate(dataset.denseData[0].action):
+    print a.actionTimesteps
+    print a.Q
+
 plt.plot(np.linspace(1,10,np.size(bodyY,0)),bodyX)
 plt.plot(np.linspace(1,10,np.size(bodyY,0)),bodyY)
 pylab.show()

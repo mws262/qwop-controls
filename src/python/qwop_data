@@ -2,7 +2,8 @@ import numpy as np
 import densedata_pb2 as dataset
 
 # Define state order
-NUM_BODY_PARTS = 12;
+NUM_BODY_PARTS = 12
+NUM_STATES_PER = 6
 
 BODY = 0
 RTHIGH = 1
@@ -17,12 +18,11 @@ LUARM = 9
 LLARM = 10
 HEAD = 11
 
-def extract_states(f):
-  """Extract the images into a 3D numpy array [game, timestep, [x, y, th, dx, dy, dth]].
+
+def extract_games(f):
+  """Extract the games into a list of 2D numpy arrays [timestep, [x, y, th, dx, dy, dth]].
   Args:
-    f: A file object that can be passed into a gzip reader.
-  Returns:
-    data: A 4D uint8 numpy array [index, y, x, depth].
+    f: A file object
   Raises:
     ValueError: If the bytestream does not start with 2051.
   """
@@ -35,37 +35,114 @@ def extract_states(f):
   except IOError:
       print "Import failed"
 
+## Outer for loop here
+  allStatesInFile = []
+  allActionssInFile = []
+  for gameIdx, game in enumerate(dataset.denseData):
+      num_timesteps = len(game.state)
+      singleGame = np.empty(shape=(num_timesteps, NUM_BODY_PARTS * NUM_STATES_PER), dtype=np.float32)
 
-    num_games = len(dat.denseData)
+      for tsIdx, s in enumerate(game.state):
+
+        # TODO stop hardcoding this stuff
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * BODY), v=s.body.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * BODY + 1), v=s.body.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * BODY + 2), v=s.body.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * BODY + 3), v=s.body.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * BODY + 4), v=s.body.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * BODY + 5), v=s.body.thd)
+
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RTHIGH), v=s.rthigh.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RTHIGH + 1), v=s.rthigh.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RTHIGH + 2), v=s.rthigh.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RTHIGH + 3), v=s.rthigh.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RTHIGH + 4), v=s.rthigh.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RTHIGH + 5), v=s.rthigh.thd)
+
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RCALF), v=s.rcalf.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RCALF + 1), v=s.rcalf.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RCALF + 2), v=s.rcalf.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RCALF + 3), v=s.rcalf.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RCALF + 4), v=s.rcalf.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RCALF + 5), v=s.rcalf.thd)
+
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RFOOT), v=s.rfoot.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RFOOT + 1), v=s.rfoot.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RFOOT + 2), v=s.rfoot.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RFOOT + 3), v=s.rfoot.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RFOOT + 4), v=s.rfoot.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RFOOT + 5), v=s.rfoot.thd)
 
 
-  bodyX = np.empty(shape=(len(dat.denseData[0].state), 1), dtype=np.float32)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LTHIGH), v=s.lthigh.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LTHIGH + 1), v=s.lthigh.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LTHIGH + 2), v=s.lthigh.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LTHIGH + 3), v=s.lthigh.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LTHIGH + 4), v=s.lthigh.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LTHIGH + 5), v=s.lthigh.thd)
+
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LCALF), v=s.lcalf.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LCALF + 1), v=s.lcalf.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LCALF + 2), v=s.lcalf.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LCALF + 3), v=s.lcalf.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LCALF + 4), v=s.lcalf.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LCALF + 5), v=s.lcalf.thd)
+
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LFOOT), v=s.lfoot.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LFOOT + 1), v=s.lfoot.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LFOOT + 2), v=s.lfoot.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LFOOT + 3), v=s.lfoot.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LFOOT + 4), v=s.lfoot.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LFOOT + 5), v=s.lfoot.thd)
 
 
-  for idx, s in enumerate(dataset.denseData[0].state):
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RUARM), v=s.ruarm.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RUARM + 1), v=s.ruarm.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RUARM + 2), v=s.ruarm.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RUARM + 3), v=s.ruarm.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RUARM + 4), v=s.ruarm.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RUARM + 5), v=s.ruarm.thd)
 
-      np.put(bodyX, ind=idx, v=s.body.x)
-      np.put(bodyY, ind=idx, v=s.body.y)
-      np.put(bodyTh, ind=idx, v=s.body.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RLARM), v=s.rlarm.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RLARM + 1), v=s.rlarm.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RLARM + 2), v=s.rlarm.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RLARM + 3), v=s.rlarm.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RLARM + 4), v=s.rlarm.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * RLARM + 5), v=s.rlarm.thd)
+
+
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LUARM), v=s.ruarm.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LUARM + 1), v=s.ruarm.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LUARM + 2), v=s.ruarm.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LUARM + 3), v=s.ruarm.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LUARM + 4), v=s.ruarm.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LUARM + 5), v=s.ruarm.thd)
+
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LLARM), v=s.llarm.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LLARM + 1), v=s.llarm.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LLARM + 2), v=s.llarm.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LLARM + 3), v=s.llarm.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LLARM + 4), v=s.llarm.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * LLARM + 5), v=s.llarm.thd)
+
+
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * HEAD), v=s.head.x)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * HEAD + 1), v=s.head.y)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * HEAD + 2), v=s.head.th)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * HEAD + 3), v=s.head.xd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * HEAD + 4), v=s.head.yd)
+        np.put(singleGame, ind=(tsIdx, NUM_STATES_PER * HEAD + 5), v=s.head.thd)
+
+        allStatesInFile.append(singleGame)
+
+
+      for tsIdx, a in enumerate(game.action):
 
 
 
 
-    return states
 
-
-def extract_labels(f):
-  """Extract the labels into a 1D uint8 numpy array [index].
-  Args:
-    f: A file object that can be passed into a gzip reader.
-    one_hot: Does one hot encoding for the result.
-    num_classes: Number of classes for the one hot encoding.
-  Returns:
-    labels: a 1D uint8 numpy array.
-  Raises:
-    ValueError: If the bystream doesn't start with 2049.
-  """
-    return labels
+  return allStatesInFile
 
 
 class DataSet(object):
