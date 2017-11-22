@@ -1,5 +1,7 @@
 import numpy as np
 import densedata_pb2 as dataset
+import tensorflow as tf
+import time
 
 # Define state order
 NUM_BODY_PARTS = 12
@@ -37,8 +39,35 @@ def extract_games(f):
   ## Outer for loop here
   allStatesInFile = []
   allActionssInFile = []
+  justTSToTransition = []
   for gameIdx, game in enumerate(dat.denseData):
       num_timesteps = len(game.state)
+
+      #### ACTIONS ####
+      singleGameActions = {'q' : list(), 'w' : list(), 'o' : list(), 'p' : list(), 'ts_hold' : list(), 'ts_to_transition' : list()}
+      for tsIdx, a in enumerate(game.action):
+          singleGameActions['q'].append(a.Q)
+          singleGameActions['w'].append(a.W)
+          singleGameActions['o'].append(a.O)
+          singleGameActions['p'].append(a.P)
+          singleGameActions['ts_hold'].append(a.actionTimesteps)
+
+
+          if tsIdx == 0: # For first index, we need to discover when the next transition is. Otherwise, we can just subtract one from the previously found one.
+              prevTrans = 0
+          else:
+              prevTrans = singleGameActions['ts_to_transition'][-1]
+
+          if prevTrans > 1:
+                singleGameActions['ts_to_transition'].append(prevTrans - 1)
+                justTSToTransition.append(prevTrans - 1)
+          else:
+              tsToTransition = singleGameActions['ts_hold'][-1]
+              singleGameActions['ts_to_transition'].append(tsToTransition)
+              justTSToTransition.append(prevTrans - 1)
+      allActionssInFile.append(singleGameActions)
+
+      #### STATES ####
       singleGame = np.zeros(shape=(num_timesteps, NUM_BODY_PARTS * NUM_STATES_PER), dtype=np.float32)
       for tsIdx, s in enumerate(game.state):
 
@@ -132,106 +161,81 @@ def extract_games(f):
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * HEAD + 4], v=s.head.dy)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * HEAD + 5], v=s.head.dth)
 
+          np.reshape(singleGame,newshape=[num_timesteps,NUM_STATES_PER * NUM_BODY_PARTS])
+
       allStatesInFile.append(singleGame)
 
 
-      singleGameActions = {'q' : list(), 'w' : list(), 'o' : list(), 'p' : list(), 'ts_hold' : list(), 'ts_to_transition' : list()}
-      for tsIdx, a in enumerate(game.action):
-          singleGameActions['q'].append(a.Q)
-          singleGameActions['w'].append(a.W)
-          singleGameActions['o'].append(a.O)
-          singleGameActions['p'].append(a.P)
-          singleGameActions['ts_hold'].append(a.actionTimesteps)
+  print len(allStatesInFile)
+  print len(allActionssInFile[5])
+  return {'states' : allStatesInFile, 'actions' : allActionssInFile, 'justTS' : justTSToTransition}
 
-
-          if tsIdx == 0: # For first index, we need to discover when the next transition is. Otherwise, we can just subtract one from the previously found one.
-              prevTrans = 0
-          else:
-              prevTrans = singleGameActions['ts_to_transition'][-1]
-
-          if prevTrans > 1:
-                singleGameActions['ts_to_transition'].append(prevTrans - 1)
-          else:
-              tsToTransition = singleGameActions['ts_hold'][-1]
-              singleGameActions['ts_to_transition'].append(tsToTransition)
-      allActionssInFile.append(singleGameActions)
-
-
-
-
-  return {'states' : allStatesInFile, 'actions' : allActionssInFile}
 
 f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
 data = extract_games(f)
+"""
+x_inputs_data = data['states'] #tf.random_normal([128, 1024], mean=0, stddev=1)
+# We will try to predict this law:
+# predict 1 if the sum of the elements is positive and 0 otherwise
+y_inputs_data = data['justTS']
 
-  # class DataSet(object):
-#
-#   def __init__(self, states, labels):
-#     """Construct a DataSet.
-#     """
-#     assert states.shape[0] == labels.shape[0], ('images.shape: %s labels.shape: %s' % (states.shape, labels.shape))
-#     self._num_examples = states.shape[0]
-#
-#     ## DO RESCALING
-#
-#     self._states = states
-#     self._labels = labels
-#     self._epochs_completed = 0
-#     self._index_in_epoch = 0
-#
-#   @property
-#   def images(self):
-#     return self._states
-#
-#   @property
-#   def labels(self):
-#     return self._labels
-#
-#   @property
-#   def num_examples(self):
-#     return self._num_examples
-#
-#   @property
-#   def epochs_completed(self):
-#     return self._epochs_completed
-#
-#   def next_batch(self, batch_size):
-#       start = self._index_in_epoch
-#
-#       if start + batch_size > self._num_examples:
-#           # Finished epoch
-#           self._epochs_completed += 1
-#           # Get the rest examples in this epoch
-#           rest_num_examples = self._num_examples - start
-#           states_rest_part = self._states[start:self._num_examples]
-#           labels_rest_part = self._labels[start:self._num_examples]
-#           # Start next epoch
-#           start = 0
-#           self._index_in_epoch = batch_size - rest_num_examples
-#           end = self._index_in_epoch
-#           states_new_part = self._states[start:end]
-#           labels_new_part = self._labels[start:end]
-#           return numpy.concatenate((states_rest_part, states_new_part), axis=0), numpy.concatenate(
-#               (labels_rest_part, labels_new_part), axis=0)
-#       else:
-#           self._index_in_epoch += batch_size
-#           end = self._index_in_epoch
-#           return self._states[start:end], self._labels[start:end]
-#
-#
-# def read_data_sets(train_dir, validation_size=5000):
-#
-#   validation_images = train_images[:validation_size]
-#   validation_labels = train_labels[:validation_size]
-#   train_images = train_images[validation_size:]
-#   train_labels = train_labels[validation_size:]
-#
-#   train = DataSet(train_images, train_labels, **options)
-#   validation = DataSet(validation_images, validation_labels, **options)
-#   test = DataSet(test_images, test_labels, **options)
-#
-#   return datasets(train=train, validation=validation, test=test)
-#
-#
-# def load_mnist(train_dir='MNIST-data'):
-#   return read_data_sets(train_dir)
+# We build our small model: a basic two layers neural net with ReLU
+with tf.variable_scope("placeholder"):
+    input = tf.placeholder(tf.float32, shape=[None, 72])
+    y_true = tf.placeholder(tf.int32, shape=[None, 1])
+with tf.variable_scope('FullyConnected'):
+    w = tf.get_variable('w', shape=[72, 72], initializer=tf.random_normal_initializer(stddev=1e-1))
+    b = tf.get_variable('b', shape=[72], initializer=tf.constant_initializer(0.1))
+    z = tf.matmul(input, w) + b
+    y = tf.nn.relu(z)
+
+    w2 = tf.get_variable('w2', shape=[72, 1], initializer=tf.random_normal_initializer(stddev=1e-1))
+    b2 = tf.get_variable('b2', shape=[1], initializer=tf.constant_initializer(0.1))
+    z = tf.matmul(y, w2) + b2
+with tf.variable_scope('Loss'):
+    losses = tf.nn.sigmoid_cross_entropy_with_logits(None, tf.cast(y_true, tf.float32), z)
+    loss_op = tf.reduce_mean(losses)
+with tf.variable_scope('Accuracy'):
+    y_pred = tf.cast(z > 0, tf.int32)
+    accuracy = tf.reduce_mean(tf.cast(tf.equal(y_pred, y_true), tf.float32))
+    accuracy = tf.Print(accuracy, data=[accuracy], message="accuracy:")
+
+# We add the training operation, ...
+adam = tf.train.AdamOptimizer(1e-2)
+train_op = adam.minimize(loss_op, name="train_op")
+
+startTime = time.time()
+with tf.Session() as sess:
+    # ... init our variables, ...
+    sess.run(tf.global_variables_initializer())
+
+    # ... check the accuracy before training, ...
+    x_input, y_input = sess.run([x_inputs_data, y_inputs_data])
+    sess.run(accuracy, feed_dict={
+        input: x_input,
+        y_true: y_input
+    })
+
+    # ... train ...
+    for i in range(5000):
+        #  ... by sampling some input data (fetching) ...
+        x_input, y_input = sess.run([x_inputs_data, y_inputs_data])
+        # ... and feeding it to our model
+        _, loss = sess.run([train_op, loss_op], feed_dict={
+            input: x_input,
+            y_true: y_input
+        })
+
+        # We regularly check the loss
+        if i % 500 == 0:
+            print('iter:%d - loss:%f' % (i, loss))
+
+    # Finally, we check our final accuracy
+    x_input, y_input = sess.run([x_inputs_data, y_inputs_data])
+    sess.run(accuracy, feed_dict={
+        input: x_input,
+        y_true: y_input
+    })
+
+print("Time taken: %f" % (time.time() - startTime))
+"""
