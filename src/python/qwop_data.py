@@ -2,6 +2,9 @@ import numpy as np
 import densedata_pb2 as dataset
 import tensorflow as tf
 import time
+import timeit
+
+DISCARD_END_TS_NUM = 100
 
 # Define state order
 NUM_BODY_PARTS = 12
@@ -31,7 +34,10 @@ def extract_games(f):
 
   dat = dataset.DataSet()
   try:
+      start = timeit.default_timer()
       dat.ParseFromString(f.read())
+      end = timeit.default_timer()
+      print("Time to parse binary: " + str(end - start) + " seconds")
       f.close
   except IOError:
       print "Import failed"
@@ -42,16 +48,11 @@ def extract_games(f):
   justTSToTransition = []
   for gameIdx, game in enumerate(dat.denseData):
       num_timesteps = len(game.state)
+      cutoffTS = num_timesteps - 1 # Normally cuts off at the last index
 
       #### ACTIONS ####
       singleGameActions = {'q' : list(), 'w' : list(), 'o' : list(), 'p' : list(), 'ts_hold' : list(), 'ts_to_transition' : list()}
       for tsIdx, a in enumerate(game.action):
-          singleGameActions['q'].append(a.Q)
-          singleGameActions['w'].append(a.W)
-          singleGameActions['o'].append(a.O)
-          singleGameActions['p'].append(a.P)
-          singleGameActions['ts_hold'].append(a.actionTimesteps)
-
 
           if tsIdx == 0: # For first index, we need to discover when the next transition is. Otherwise, we can just subtract one from the previously found one.
               prevTrans = 0
@@ -62,14 +63,31 @@ def extract_games(f):
                 singleGameActions['ts_to_transition'].append(prevTrans - 1)
                 justTSToTransition.append(prevTrans - 1)
           else:
-              tsToTransition = singleGameActions['ts_hold'][-1]
-              singleGameActions['ts_to_transition'].append(tsToTransition)
-              justTSToTransition.append(prevTrans - 1)
+              if num_timesteps - tsIdx - a.actionTimesteps > DISCARD_END_TS_NUM:  # If after this next action we'll be below the "ignore the end timesteps count," just stop.
+                  tsToTransition = a.actionTimesteps
+                  singleGameActions['ts_to_transition'].append(tsToTransition)
+                  justTSToTransition.append(prevTrans - 1)
+              else:
+                  cutoffTS = tsIdx - 1 # Otherwise cuts off at index before this one, and skips this one.
+                  break
+
+          singleGameActions['q'].append(a.Q)
+          singleGameActions['w'].append(a.W)
+          singleGameActions['o'].append(a.O)
+          singleGameActions['p'].append(a.P)
+          singleGameActions['ts_hold'].append(a.actionTimesteps)
+
+
       allActionssInFile.append(singleGameActions)
 
+      print cutoffTS
+
       #### STATES ####
-      singleGame = np.zeros(shape=(num_timesteps, NUM_BODY_PARTS * NUM_STATES_PER), dtype=np.float32)
+      singleGame = np.zeros(shape=(cutoffTS + 1, NUM_BODY_PARTS * NUM_STATES_PER), dtype=np.float32)
       for tsIdx, s in enumerate(game.state):
+          if tsIdx > cutoffTS:
+              print tsIdx
+              break
 
           singleIndex = tsIdx * NUM_STATES_PER * NUM_BODY_PARTS
           # TODO stop hardcoding this stuff
@@ -161,23 +179,26 @@ def extract_games(f):
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * HEAD + 4], v=s.head.dy)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * HEAD + 5], v=s.head.dth)
 
-          np.reshape(singleGame,newshape=[num_timesteps,NUM_STATES_PER * NUM_BODY_PARTS])
+          np.reshape(singleGame,newshape=[cutoffTS + 1, NUM_STATES_PER * NUM_BODY_PARTS])
 
       allStatesInFile.append(singleGame)
 
+  stateConcat = np.empty(shape=(0,NUM_STATES_PER * NUM_BODY_PARTS),dtype=np.float32)
+  for states in allStatesInFile:
+      stateConcat = np.concatenate((stateConcat, states), axis=0)
 
   print len(allStatesInFile)
   print len(allActionssInFile[5])
-  return {'states' : allStatesInFile, 'actions' : allActionssInFile, 'justTS' : justTSToTransition}
+  return {'states' : allStatesInFile, 'actions' : allActionssInFile, 'concatState' : stateConcat, 'concatTS' : justTSToTransition}
 
 
 f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
 data = extract_games(f)
-"""
-x_inputs_data = data['states'] #tf.random_normal([128, 1024], mean=0, stddev=1)
+
+x_inputs_data = tf.nn.l2_normalize(tf.convert_to_tensor(data['concatState'],dtype=tf.float32),0) #tf.random_normal([128, 1024], mean=0, stddev=1)
 # We will try to predict this law:
 # predict 1 if the sum of the elements is positive and 0 otherwise
-y_inputs_data = data['justTS']
+y_inputs_data = tf.nn.l2_normalize(tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32),0) #TODO ugly as all hell
 
 # We build our small model: a basic two layers neural net with ReLU
 with tf.variable_scope("placeholder"):
@@ -193,8 +214,9 @@ with tf.variable_scope('FullyConnected'):
     b2 = tf.get_variable('b2', shape=[1], initializer=tf.constant_initializer(0.1))
     z = tf.matmul(y, w2) + b2
 with tf.variable_scope('Loss'):
-    losses = tf.nn.sigmoid_cross_entropy_with_logits(None, tf.cast(y_true, tf.float32), z)
-    loss_op = tf.reduce_mean(losses)
+    #losses = tf.nn.sigmoid_cross_entropy_with_logits(None, tf.cast(y_true, tf.float32), z)
+    #loss_op = tf.reduce_mean(losses)
+    loss_op = tf.losses.mean_squared_error(y_true, z)
 with tf.variable_scope('Accuracy'):
     y_pred = tf.cast(z > 0, tf.int32)
     accuracy = tf.reduce_mean(tf.cast(tf.equal(y_pred, y_true), tf.float32))
@@ -238,4 +260,3 @@ with tf.Session() as sess:
     })
 
 print("Time taken: %f" % (time.time() - startTime))
-"""
