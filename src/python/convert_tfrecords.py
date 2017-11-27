@@ -5,10 +5,6 @@ import time
 import timeit
 import os.path
 
-## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
-## First: source ~/tensorflow/bin/activate
-
-export_dir = './models/'
 
 DISCARD_END_TS_NUM = 100
 
@@ -197,157 +193,27 @@ def extract_games(f):
   print len(allActionssInFile[5])
   return {'states' : allStatesInFile, 'actions' : allActionssInFile, 'concatState' : stateConcat, 'concatTS' : justTSToTransition}
 
-
-def weight_variable(shape):
-    """Create a weight variable with appropriate initialization."""
-    initial = tf.truncated_normal(shape, stddev=0.1)
-    return tf.Variable(initial)
-
-def bias_variable(shape):
-    """Create a bias variable with appropriate initialization."""
-    initial = tf.constant(0.1, shape=shape)
-    return tf.Variable(initial)
-
-def variable_summaries(var):
-  """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
-  with tf.name_scope('summaries'):
-    mean = tf.reduce_mean(var)
-    tf.summary.scalar('mean', mean)
-    with tf.name_scope('stddev'):
-      stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
-    tf.summary.scalar('stddev', stddev)
-    tf.summary.scalar('max', tf.reduce_max(var))
-    tf.summary.scalar('min', tf.reduce_min(var))
-    tf.summary.histogram('histogram', var)
-
-def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
-  """Reusable code for making a simple neural net layer.
-
-  It does a matrix multiply, bias add, and then uses relu to nonlinearize.
-  It also sets up name scoping so that the resultant graph is easy to read,
-  and adds a number of summary ops.
-  """
-  # Adding a name scope ensures logical grouping of the layers in the graph.
-  with tf.name_scope(layer_name):
-    # This Variable will hold the state of the weights for the layer
-    with tf.name_scope('weights'):
-      weights = weight_variable([input_dim, output_dim])
-      variable_summaries(weights)
-    with tf.name_scope('biases'):
-      biases = bias_variable([output_dim])
-      variable_summaries(biases)
-    with tf.name_scope('Wx_plus_b'):
-      preactivate = tf.matmul(input_tensor, weights) + biases
-      tf.summary.histogram('pre_activations', preactivate)
-    activations = act(preactivate, name='activation')
-    tf.summary.histogram('activations', activations)
-    return activations
-
-#builder = tf.saved_model.builder.SavedModelBuilder(export_dir)
-
 f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
 data = extract_games(f)
 
 x_inputs_data = tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
-x_shuffle = tf.random_shuffle(x_inputs_data, seed=8, name='shuffle_x')
-    # tf.nn.l2_normalize(
-    #     tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
-    #     ,0) #tf.random_normal([128, 1024], mean=0, stddev=1)
-
 y_inputs_data = tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
-y_shuffle = tf.random_shuffle(y_inputs_data, seed=8, name='shuffle_y')
-    # tf.nn.l2_normalize(
-    # tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
-    # ,0) #TODO ugly as all hell
-
-divides = tf.constant([40000,40000,32313])
-x_batch = tf.split(x_shuffle, num_or_size_splits=divides, name='split_x')
-y_batch = tf.split(y_shuffle, num_or_size_splits=divides, name='split_y')
-
-# We build our small model: a basic two layers neural net with ReLU
-with tf.name_scope('input'):
-    x = tf.placeholder(tf.float32, shape=[None, 72], name='x-input')
-    y_true = tf.placeholder(tf.int32, shape=[None, 1], name='y-input')
 
 
-layer1 = nn_layer(x, 72, 144, 'layer1')
+train_filename = 'denseData_2017-11-06_08-58-03.tfrecords'  # address to save the TFRecords file
+# open the TFRecords file
+writer = tf.python_io.TFRecordWriter(train_filename)
 
-with tf.name_scope('dropout'):
-    keep_prob = tf.placeholder(tf.float32)
-    tf.summary.scalar('dropout_keep_probability', keep_prob)
-    dropped = tf.nn.dropout(layer1, keep_prob)
+# Create a feature
+feature = {'train/label': x_inputs_data,
+           'train/image': y_inputs_data}
+# Create an example protocol buffer
+example = tf.train.Example(features=tf.train.Features(feature=feature))
 
-layer2 = nn_layer(dropped, 144, 72, 'layer2')
+# Serialize to string and write on the file
+writer.write(example.SerializeToString())
 
-y = nn_layer(layer2, 72, 1, 'layer3')
-
-
-with tf.name_scope('Loss'):
-    loss_op = tf.losses.mean_squared_error(y_true, y)
-with tf.name_scope('Accuracy'):
-    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(tf.round(y),tf.int32),tf.cast(y_true,tf.int32)),tf.float32))
-
+writer.close()
+sys.stdout.flush()
 
 
-np.set_printoptions(threshold=np.nan) # Makes printing not be truncated
-# We add the training operation, ...
-adam = tf.train.AdamOptimizer(1e-3)
-train_op = adam.minimize(loss_op, name="optimizer")
-
-# Add ops to save and restore all the variables -- checkpoint style
-saver = tf.train.Saver()
-
-# Create a summary to monitor cost tensor
-tf.summary.scalar("loss", loss_op)
-tf.summary.scalar("accuracy", accuracy)
-# Merge all summaries into a single op
-merged_summary_op = tf.summary.merge_all()
-
-
-startTime = time.time()
-with tf.Session() as sess:
-    # ... init our variables, ...
-    sess.run(tf.global_variables_initializer())
-
-    if os.path.isfile("./tmp/model.ckpt"):
-        saver.restore(sess, "./tmp/model.ckpt")
-        print('Loaded checkpoint file')
-    #builder.add_meta_graph_and_variables(sess)
-
-    summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
-
-    # ... train ...
-    for i in range(2000):
-
-        for xin,yin in zip(x_batch,y_batch):
-            x_input, y_input = sess.run([xin, yin])
-            # ... and feeding it to our model
-            _, loss, acc, summary = sess.run([train_op, loss_op, accuracy, merged_summary_op], feed_dict={x: x_input, y_true: y_input, keep_prob : 0.9})
-
-            # summary_writer.add_summary(summary, i)
-
-            # We regularly check the loss
-            #if i % 500 == 0:
-            print('iter:%d - loss:%f - accuracy:%f' % (i, loss, acc))
-
-        if i % 10 == 9:
-            save_path = saver.save(sess, "./tmp/model.ckpt")
-            # Finally, we check our final accuracy
-        #     x_input, y_input = sess.run([x_inputs_data, y_inputs_data])
-        #     print sess.run(y, feed_dict={
-        #     x: x_input,
-        #     y_true: y_input,
-        #     keep_prob: 1.0
-        # })
-
-
-    # Finally, we check our final accuracy
-    x_input, y_input = sess.run([x_inputs_data, y_inputs_data])
-    sess.run(accuracy, feed_dict={
-        x: x_input,
-        y_true: y_input,
-        keep_prob: 1
-    })
-   # builder.save()
-
-print("Time taken: %f" % (time.time() - startTime))
