@@ -4,6 +4,9 @@ import tensorflow as tf
 import time
 import timeit
 
+
+export_dir = './models/'
+
 DISCARD_END_TS_NUM = 100
 
 # Define state order
@@ -192,6 +195,9 @@ def extract_games(f):
   return {'states' : allStatesInFile, 'actions' : allActionssInFile, 'concatState' : stateConcat, 'concatTS' : justTSToTransition}
 
 
+
+#builder = tf.saved_model.builder.SavedModelBuilder(export_dir)
+
 f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
 data = extract_games(f)
 
@@ -201,10 +207,10 @@ x_inputs_data = tf.nn.l2_normalize(tf.convert_to_tensor(data['concatState'],dtyp
 y_inputs_data = tf.nn.l2_normalize(tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32),0) #TODO ugly as all hell
 
 # We build our small model: a basic two layers neural net with ReLU
-with tf.variable_scope("placeholder"):
+with tf.name_scope("placeholder"):
     input = tf.placeholder(tf.float32, shape=[None, 72])
     y_true = tf.placeholder(tf.int32, shape=[None, 1])
-with tf.variable_scope('FullyConnected'):
+with tf.name_scope('FullyConnected'):
     w = tf.get_variable('w', shape=[72, 72], initializer=tf.random_normal_initializer(stddev=1e-1))
     b = tf.get_variable('b', shape=[72], initializer=tf.constant_initializer(0.1))
     z = tf.matmul(input, w) + b
@@ -213,11 +219,11 @@ with tf.variable_scope('FullyConnected'):
     w2 = tf.get_variable('w2', shape=[72, 1], initializer=tf.random_normal_initializer(stddev=1e-1))
     b2 = tf.get_variable('b2', shape=[1], initializer=tf.constant_initializer(0.1))
     z = tf.matmul(y, w2) + b2
-with tf.variable_scope('Loss'):
+with tf.name_scope('Loss'):
     #losses = tf.nn.sigmoid_cross_entropy_with_logits(None, tf.cast(y_true, tf.float32), z)
     #loss_op = tf.reduce_mean(losses)
     loss_op = tf.losses.mean_squared_error(y_true, z)
-with tf.variable_scope('Accuracy'):
+with tf.name_scope('Accuracy'):
     y_pred = tf.cast(z > 0, tf.int32)
     accuracy = tf.reduce_mean(tf.cast(tf.equal(y_pred, y_true), tf.float32))
     accuracy = tf.Print(accuracy, data=[accuracy], message="accuracy:")
@@ -226,27 +232,39 @@ with tf.variable_scope('Accuracy'):
 adam = tf.train.AdamOptimizer(1e-2)
 train_op = adam.minimize(loss_op, name="train_op")
 
+# Create a summary to monitor cost tensor
+tf.summary.scalar("loss", loss_op)
+# Merge all summaries into a single op
+merged_summary_op = tf.summary.merge_all()
+
+
 startTime = time.time()
 with tf.Session() as sess:
     # ... init our variables, ...
     sess.run(tf.global_variables_initializer())
 
+    #builder.add_meta_graph_and_variables(sess)
+
+    summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
+
     # ... check the accuracy before training, ...
-    x_input, y_input = sess.run([x_inputs_data, y_inputs_data])
-    sess.run(accuracy, feed_dict={
-        input: x_input,
-        y_true: y_input
-    })
+    # x_input, y_input = sess.run([x_inputs_data, y_inputs_data])
+    # sess.run(accuracy, feed_dict={
+    #     input: x_input,
+    #     y_true: y_input
+    # })
 
     # ... train ...
-    for i in range(5000):
+    for i in range(2000):
         #  ... by sampling some input data (fetching) ...
         x_input, y_input = sess.run([x_inputs_data, y_inputs_data])
         # ... and feeding it to our model
-        _, loss = sess.run([train_op, loss_op], feed_dict={
+        _, loss, summary = sess.run([train_op, loss_op, merged_summary_op], feed_dict={
             input: x_input,
             y_true: y_input
         })
+
+        summary_writer.add_summary(summary, i)
 
         # We regularly check the loss
         if i % 500 == 0:
@@ -258,5 +276,6 @@ with tf.Session() as sess:
         input: x_input,
         y_true: y_input
     })
+   # builder.save()
 
 print("Time taken: %f" % (time.time() - startTime))
