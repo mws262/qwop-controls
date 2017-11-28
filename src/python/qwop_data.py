@@ -4,11 +4,15 @@ import tensorflow as tf
 import time
 import timeit
 import os.path
+import math
 
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 ## First: source ~/tensorflow/bin/activate
 
 export_dir = './models/'
+
+num_batches = 10
+learn_rate = 1e-3
 
 DISCARD_END_TS_NUM = 100
 
@@ -197,7 +201,6 @@ def extract_games(f):
   print len(allActionssInFile[5])
   return {'states' : allStatesInFile, 'actions' : allActionssInFile, 'concatState' : stateConcat, 'concatTS' : justTSToTransition}
 
-
 def weight_variable(shape):
     """Create a weight variable with appropriate initialization."""
     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -248,21 +251,36 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
 f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
 data = extract_games(f)
 
+fValidate = open("../../denseData_2017-11-07_10-31-05.proto", "rb")
+dataValidate = extract_games(fValidate)
+
+
+
+
+## Convert to tensors and shuffle
 x_inputs_data = tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
 x_shuffle = tf.random_shuffle(x_inputs_data, seed=8, name='shuffle_x')
-    # tf.nn.l2_normalize(
-    #     tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
-    #     ,0) #tf.random_normal([128, 1024], mean=0, stddev=1)
+#random_normal([128, 1024], mean=0, stddev=1)
 
 y_inputs_data = tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
 y_shuffle = tf.random_shuffle(y_inputs_data, seed=8, name='shuffle_y')
-    # tf.nn.l2_normalize(
-    # tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
-    # ,0) #TODO ugly as all hell
 
-divides = tf.constant([40000,40000,32313])
-x_batch = tf.split(x_shuffle, num_or_size_splits=divides, name='split_x')
-y_batch = tf.split(y_shuffle, num_or_size_splits=divides, name='split_y')
+# TODO subtract mean, div by stdev?
+# tf.nn.l2_normalize(
+#     tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
+#     ,0) #tf.
+# tf.nn.l2_normalize(
+# tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
+# ,0)
+
+## SPLIT DATA INTO BATCHES
+batch_size = math.floor(len(data['concatTS'])/num_batches)
+batches = np.ones(num_batches, dtype=np.int32) * batch_size
+batches = batches.tolist()
+batches[-1] = len(data['concatTS']) - (num_batches - 1) * batch_size # Last element takes whatever is left.
+batches = [int(i) for i in batches]
+x_batch = tf.split(x_shuffle, num_or_size_splits=batches, name='split_x')
+y_batch = tf.split(y_shuffle, num_or_size_splits=batches, name='split_y')
 
 # We build our small model: a basic two layers neural net with ReLU
 with tf.name_scope('input'):
@@ -291,7 +309,7 @@ with tf.name_scope('Accuracy'):
 
 np.set_printoptions(threshold=np.nan) # Makes printing not be truncated
 # We add the training operation, ...
-adam = tf.train.AdamOptimizer(1e-3)
+adam = tf.train.AdamOptimizer(learn_rate)
 train_op = adam.minimize(loss_op, name="optimizer")
 
 # Add ops to save and restore all the variables -- checkpoint style
@@ -309,9 +327,9 @@ with tf.Session() as sess:
     # ... init our variables, ...
     sess.run(tf.global_variables_initializer())
 
-    if os.path.isfile("./tmp/model.ckpt"):
-        saver.restore(sess, "./tmp/model.ckpt")
-        print('Loaded checkpoint file')
+    #if os.path.isfile("./tmp/model.ckpt"):
+    saver.restore(sess, "./tmp/model.ckpt")
+    print('Loaded checkpoint file')
     #builder.add_meta_graph_and_variables(sess)
 
     summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
