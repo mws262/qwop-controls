@@ -3,4 +3,4 @@
 *.SaveableDenseData
 *.SaveableSingleGame
 *.proto
-
+/src/python/logs/
