@@ -216,26 +216,29 @@ train_filename = 'denseData_2017-11-06_08-58-03.tfrecords'  # address to save th
 # open the TFRecords file
 writer = tf.python_io.TFRecordWriter(train_filename)
 
-#TODO LOOK HERE https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/core/example/feature.proto
-# Create a feature
-feature = {'train/label': x_shuffle,
-           'train/image': y_shuffle}
-# construct the Example proto boject
-example = tf.train.Example(
-    # Example contains a Features proto object
-    features=tf.train.Features(
-    # Features contains a map of string to Feature proto objects
-          feature={
-            # A Feature contains one of either a int64_list,
-            # float_list, or bytes_list
-            'label': tf.train.Feature(
-                float_list=tf.train.FloatList(value=[x_shuffle])),
-            'image': tf.train.Feature(
-                float_list=tf.train.FloatList(value=[y_shuffle])),
-    }))
+# LOOK HERE https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/core/example/feature.proto
 
-# use the proto object to serialize the example to a string
-serialized = example.SerializeToString()
-# write the serialized object to disk
-writer.write(serialized)
+
+for x_single, y_single in zip(x_shuffle, y_shuffle):
+    # print("xy: %s:%s" % (str(x_single), str(y_single)))
+    # construct the Example proto boject
+    example = tf.train.Example(
+        # Example contains a Features proto object
+        features=tf.train.Features(
+        # Features contains a map of string to Feature proto objects
+              feature={
+                # A Feature contains one of either a int64_list,
+                # float_list, or bytes_list
+                'x': tf.train.Feature(
+                    float_list=tf.train.FloatList(value=x_single.tolist())),
+                'y': tf.train.Feature(
+                    float_list=tf.train.FloatList(value=[y_single])),
+        }))
+
+    # use the proto object to serialize the example to a string
+    serialized = example.SerializeToString()
+    # write the serialized object to disk
+    writer.write(serialized)
+
+writer.close()
 
