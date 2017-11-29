@@ -193,27 +193,49 @@ def extract_games(f):
   print len(allActionssInFile[5])
   return {'states' : allStatesInFile, 'actions' : allActionssInFile, 'concatState' : stateConcat, 'concatTS' : justTSToTransition}
 
+def unison_shuffled_copies(a, b):
+    assert len(a) == len(b)
+    p = np.random.permutation(len(a))
+    return a[p], b[p]
+
 f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
 data = extract_games(f)
 
-x_inputs_data = tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
-y_inputs_data = tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
+## Convert to tensors and shuffle
+# x_inputs_data = tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
+# x_shuffle = tf.random_shuffle(x_inputs_data, seed=8, name='shuffle_x')
+# #random_normal([128, 1024], mean=0, stddev=1)
+#
+# y_inputs_data = tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
+# y_shuffle = tf.random_shuffle(y_inputs_data, seed=8, name='shuffle_y')
+
+x_shuffle, y_shuffle = unison_shuffled_copies(data['concatState'], np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)))
 
 
 train_filename = 'denseData_2017-11-06_08-58-03.tfrecords'  # address to save the TFRecords file
 # open the TFRecords file
 writer = tf.python_io.TFRecordWriter(train_filename)
 
+#TODO LOOK HERE https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/core/example/feature.proto
 # Create a feature
-feature = {'train/label': x_inputs_data,
-           'train/image': y_inputs_data}
-# Create an example protocol buffer
-example = tf.train.Example(features=tf.train.Features(feature=feature))
+feature = {'train/label': x_shuffle,
+           'train/image': y_shuffle}
+# construct the Example proto boject
+example = tf.train.Example(
+    # Example contains a Features proto object
+    features=tf.train.Features(
+    # Features contains a map of string to Feature proto objects
+          feature={
+            # A Feature contains one of either a int64_list,
+            # float_list, or bytes_list
+            'label': tf.train.Feature(
+                float_list=tf.train.FloatList(value=[x_shuffle])),
+            'image': tf.train.Feature(
+                float_list=tf.train.FloatList(value=[y_shuffle])),
+    }))
 
-# Serialize to string and write on the file
-writer.write(example.SerializeToString())
-
-writer.close()
-sys.stdout.flush()
-
+# use the proto object to serialize the example to a string
+serialized = example.SerializeToString()
+# write the serialized object to disk
+writer.write(serialized)
 

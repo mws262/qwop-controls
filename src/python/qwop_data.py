@@ -251,12 +251,6 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
 f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
 data = extract_games(f)
 
-fValidate = open("../../denseData_2017-11-07_10-31-05.proto", "rb")
-dataValidate = extract_games(fValidate)
-
-
-
-
 ## Convert to tensors and shuffle
 x_inputs_data = tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
 x_shuffle = tf.random_shuffle(x_inputs_data, seed=8, name='shuffle_x')
@@ -281,6 +275,24 @@ batches[-1] = len(data['concatTS']) - (num_batches - 1) * batch_size # Last elem
 batches = [int(i) for i in batches]
 x_batch = tf.split(x_shuffle, num_or_size_splits=batches, name='split_x')
 y_batch = tf.split(y_shuffle, num_or_size_splits=batches, name='split_y')
+
+
+
+# ## VALIDATION DATA
+# fValidate = open("../../denseData_2017-11-07_10-31-05.proto", "rb")
+# dataValidate = extract_games(fValidate)
+#
+# ## Convert to tensors and shuffle
+# x_valid_data = tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
+# #random_normal([128, 1024], mean=0, stddev=1)
+#
+# y_valid_data = tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
+
+
+
+
+
+
 
 # We build our small model: a basic two layers neural net with ReLU
 with tf.name_scope('input'):
