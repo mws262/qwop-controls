@@ -201,6 +201,32 @@ def extract_games(f):
   print len(allActionssInFile[5])
   return {'states' : allStatesInFile, 'actions' : allActionssInFile, 'concatState' : stateConcat, 'concatTS' : justTSToTransition}
 
+def read_and_decode_single_example(filename):
+    # first construct a queue containing a list of filenames.
+    # this lets a user split up there dataset in multiple files to keep
+    # size down
+    filename_queue = tf.train.string_input_producer([filename],
+                                                    num_epochs=None)
+    # Unlike the TFRecordWriter, the TFRecordReader is symbolic
+    reader = tf.TFRecordReader()
+    # One can read a single serialized example from a filename
+    # serialized_example is a Tensor of type string.
+    _, serialized_example = reader.read(filename_queue)
+    # The serialized example is converted back to actual values.
+    # One needs to describe the format of the objects to be returned
+    features = tf.parse_single_example(
+        serialized_example,
+        features={
+            # We know the length of both fields. If not the
+            # tf.VarLenFeature could be used
+            'x': tf.FixedLenFeature([72], tf.float32),
+            'y': tf.FixedLenFeature([1], tf.float32)
+        })
+    # now return the converted data
+    x = features['x']
+    y = features['y']
+    return x, y
+
 def weight_variable(shape):
     """Create a weight variable with appropriate initialization."""
     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -248,34 +274,35 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
 
 #builder = tf.saved_model.builder.SavedModelBuilder(export_dir)
 
-f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
-data = extract_games(f)
+x, y = read_and_decode_single_example("denseData_2017-11-06_08-58-03.tfrecords")
 
-## Convert to tensors and shuffle
-x_inputs_data = tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
-x_shuffle = tf.random_shuffle(x_inputs_data, seed=8, name='shuffle_x')
-#random_normal([128, 1024], mean=0, stddev=1)
-
-y_inputs_data = tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
-y_shuffle = tf.random_shuffle(y_inputs_data, seed=8, name='shuffle_y')
-
-# TODO subtract mean, div by stdev?
-# tf.nn.l2_normalize(
-#     tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
-#     ,0) #tf.
-# tf.nn.l2_normalize(
-# tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
-# ,0)
-
-## SPLIT DATA INTO BATCHES
-batch_size = math.floor(len(data['concatTS'])/num_batches)
-batches = np.ones(num_batches, dtype=np.int32) * batch_size
-batches = batches.tolist()
-batches[-1] = len(data['concatTS']) - (num_batches - 1) * batch_size # Last element takes whatever is left.
-batches = [int(i) for i in batches]
-x_batch = tf.split(x_shuffle, num_or_size_splits=batches, name='split_x')
-y_batch = tf.split(y_shuffle, num_or_size_splits=batches, name='split_y')
-
+# f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
+# data = extract_games(f)
+#
+# ## Convert to tensors and shuffle
+# x_inputs_data = tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
+# x_shuffle = tf.random_shuffle(x_inputs_data, seed=8, name='shuffle_x')
+# #random_normal([128, 1024], mean=0, stddev=1)
+#
+# y_inputs_data = tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
+# y_shuffle = tf.random_shuffle(y_inputs_data, seed=8, name='shuffle_y')
+#
+# # TODO subtract mean, div by stdev?
+# # tf.nn.l2_normalize(
+# #     tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
+# #     ,0) #tf.
+# # tf.nn.l2_normalize(
+# # tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
+# # ,0)
+#
+# ## SPLIT DATA INTO BATCHES
+# batch_size = math.floor(len(data['concatTS'])/num_batches)
+# batches = np.ones(num_batches, dtype=np.int32) * batch_size
+# batches = batches.tolist()
+# batches[-1] = len(data['concatTS']) - (num_batches - 1) * batch_size # Last element takes whatever is left.
+# batches = [int(i) for i in batches]
+# x_batch = tf.split(x_shuffle, num_or_size_splits=batches, name='split_x')
+# y_batch = tf.split(y_shuffle, num_or_size_splits=batches, name='split_y')
 
 
 # ## VALIDATION DATA
@@ -338,37 +365,42 @@ startTime = time.time()
 with tf.Session() as sess:
     # ... init our variables, ...
     sess.run(tf.global_variables_initializer())
+    tf.train.start_queue_runners(sess=sess)
 
-    #if os.path.isfile("./tmp/model.ckpt"):
-    saver.restore(sess, "./tmp/model.ckpt")
-    print('Loaded checkpoint file')
+    # #if os.path.isfile("./tmp/model.ckpt"):
+    # saver.restore(sess, "./tmp/model.ckpt")
+    # print('Loaded checkpoint file')
     #builder.add_meta_graph_and_variables(sess)
 
     summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
-
     # ... train ...
     for i in range(2000):
+        print x
+        x_input, y_input = sess.run([x, y])
 
-        for xin,yin in zip(x_batch,y_batch):
-            x_input, y_input = sess.run([xin, yin])
-            # ... and feeding it to our model
-            _, loss, acc, summary = sess.run([train_op, loss_op, accuracy, merged_summary_op], feed_dict={x: x_input, y_true: y_input, keep_prob : 0.9})
-
-            # summary_writer.add_summary(summary, i)
-
-            # We regularly check the loss
-            #if i % 500 == 0:
-            print('iter:%d - loss:%f - accuracy:%f' % (i, loss, acc))
-
-        if i % 10 == 9:
-            save_path = saver.save(sess, "./tmp/model.ckpt")
-            # Finally, we check our final accuracy
-        #     x_input, y_input = sess.run([x_inputs_data, y_inputs_data])
-        #     print sess.run(y, feed_dict={
-        #     x: x_input,
-        #     y_true: y_input,
-        #     keep_prob: 1.0
-        # })
+       # print x_input
+        _, loss, acc, summary = sess.run([train_op, loss_op, accuracy, merged_summary_op],feed_dict={x: x_input, y_true: y_input, keep_prob: 0.9})
+        print('iter:%d - loss:%f - accuracy:%f' % (i, loss, acc))
+        # for xin,yin in zip(x_batch,y_batch):
+        #     x_input, y_input = sess.run([xin, yin])
+        #     # ... and feeding it to our model
+        #     _, loss, acc, summary = sess.run([train_op, loss_op, accuracy, merged_summary_op], feed_dict={x: x_input, y_true: y_input, keep_prob : 0.9})
+        #
+        #     # summary_writer.add_summary(summary, i)
+        #
+        #     # We regularly check the loss
+        #     #if i % 500 == 0:
+        #     print('iter:%d - loss:%f - accuracy:%f' % (i, loss, acc))
+        #
+        # if i % 10 == 9:
+        #     save_path = saver.save(sess, "./tmp/model.ckpt")
+        #     # Finally, we check our final accuracy
+        # #     x_input, y_input = sess.run([x_inputs_data, y_inputs_data])
+        # #     print sess.run(y, feed_dict={
+        # #     x: x_input,
+        # #     y_true: y_input,
+        # #     keep_prob: 1.0
+        # # })
 
 
     # Finally, we check our final accuracy
