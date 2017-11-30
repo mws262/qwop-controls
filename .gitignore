@@ -3,4 +3,5 @@
 *.SaveableDenseData
 *.SaveableSingleGame
 *.proto
+*.tfrecords
 /src/python/logs/

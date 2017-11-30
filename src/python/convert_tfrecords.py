@@ -1,10 +1,9 @@
 import numpy as np
 import densedata_pb2 as dataset
 import tensorflow as tf
-from tqdm import tqdm
 import time
 import timeit
-import os.path
+import os
 
 
 DISCARD_END_TS_NUM = 100
@@ -191,40 +190,43 @@ def unison_shuffled_copies(a, b):
     p = np.random.permutation(len(a))
     return a[p], b[p]
 
-filename = 'denseData_2017-11-06_08-58-03'
-#filename = 'denseData_2017-11-07_10-31-05'
-#f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
+for file in os.listdir("../../"):
+    if file.endswith(".proto"):
+        print(os.path.join("/../../", file))
 
-f = open('../../' + filename + '.proto', "rb")
-data = extract_games(f)
+        f = open('../../' + file, "rb")
+        data = extract_games(f)
 
-x_shuffle, y_shuffle = unison_shuffled_copies(data['concatState'], np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)))
+        #x_shuffle, y_shuffle = unison_shuffled_copies(data['concatState'], np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)))
+        x_dat = data['concatState']
+        y_dat = np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1))
 
-train_filename = filename + '.tfrecords'  # address to save the TFRecords file
-# open the TFRecords file
-writer = tf.python_io.TFRecordWriter(train_filename)
+        train_filename = os.path.splitext(file)[0] + '.tfrecords'  # address to save the TFRecords file
+        print(train_filename)
 
-# LOOK HERE FOR FORMAT: https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/core/example/feature.proto
-for x_single, y_single in zip(x_shuffle, y_shuffle):
-    # print("xy: %s:%s" % (str(x_single), str(y_single)))
-    # construct the Example proto boject
-    example = tf.train.Example(
-        # Example contains a Features proto object
-        features=tf.train.Features(
-        # Features contains a map of string to Feature proto objects
-              feature={
-                # A Feature contains one of either a int64_list,
-                # float_list, or bytes_list
-                'x': tf.train.Feature(
-                    float_list=tf.train.FloatList(value=x_single.tolist())),
-                'y': tf.train.Feature(
-                    float_list=tf.train.FloatList(value=y_single.tolist())),
-        }))
+        # open the TFRecords file
+        writer = tf.python_io.TFRecordWriter(train_filename)
 
-    # use the proto object to serialize the example to a string
-    serialized = example.SerializeToString()
-    # write the serialized object to disk
-    writer.write(serialized)
+        # LOOK HERE FOR FORMAT: https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/core/example/feature.proto
+        for x_single, y_single in zip(x_dat, y_dat):
+            # print("xy: %s:%s" % (str(x_single), str(y_single)))
+            # construct the Example proto boject
+            example = tf.train.Example(
+                # Example contains a Features proto object
+                features=tf.train.Features(
+                # Features contains a map of string to Feature proto objects
+                      feature={
+                        # A Feature contains one of either a int64_list,
+                        # float_list, or bytes_list
+                        'x': tf.train.Feature(
+                            float_list=tf.train.FloatList(value=x_single.tolist())),
+                        'y': tf.train.Feature(
+                            float_list=tf.train.FloatList(value=y_single.tolist())),
+                }))
 
-writer.close()
+            # use the proto object to serialize the example to a string
+            serialized = example.SerializeToString()
+            # write the serialized object to disk
+            writer.write(serialized)
 
+        writer.close()
