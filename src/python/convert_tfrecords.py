@@ -1,6 +1,7 @@
 import numpy as np
 import densedata_pb2 as dataset
 import tensorflow as tf
+from tqdm import tqdm
 import time
 import timeit
 import os.path
@@ -29,10 +30,7 @@ def extract_games(f):
   """Extract the games into a list of 2D numpy arrays [timestep, [x, y, th, dx, dy, dth]].
   Args:
     f: A file object
-  Raises:
-    ValueError: If the bytestream does not start with 2051.
   """
-    #f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
 
   dat = dataset.DataSet()
   try:
@@ -82,39 +80,37 @@ def extract_games(f):
 
       allActionssInFile.append(singleGameActions)
 
-      print cutoffTS
 
       #### STATES ####
       singleGame = np.zeros(shape=(cutoffTS + 1, NUM_BODY_PARTS * NUM_STATES_PER), dtype=np.float32)
       for tsIdx, s in enumerate(game.state):
           if tsIdx > cutoffTS:
-              print tsIdx
               break
 
           singleIndex = tsIdx * NUM_STATES_PER * NUM_BODY_PARTS
           # TODO stop hardcoding this stuff
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * BODY], v=s.body.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * BODY], v=s.body.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * BODY + 1], v=s.body.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * BODY + 2], v=s.body.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * BODY + 3], v=s.body.dx)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * BODY + 4], v=s.body.dy)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * BODY + 5], v=s.body.dth)
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RTHIGH], v=s.rthigh.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RTHIGH], v=s.rthigh.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RTHIGH + 1], v=s.rthigh.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RTHIGH + 2], v=s.rthigh.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RTHIGH + 3], v=s.rthigh.dx)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RTHIGH + 4], v=s.rthigh.dy)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RTHIGH + 5], v=s.rthigh.dth)
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RCALF], v=s.rcalf.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RCALF], v=s.rcalf.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RCALF + 1], v=s.rcalf.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RCALF + 2], v=s.rcalf.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RCALF + 3], v=s.rcalf.dx)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RCALF + 4], v=s.rcalf.dy)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RCALF + 5], v=s.rcalf.dth)
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RFOOT], v=s.rfoot.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RFOOT], v=s.rfoot.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RFOOT + 1], v=s.rfoot.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RFOOT + 2], v=s.rfoot.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RFOOT + 3], v=s.rfoot.dx)
@@ -122,21 +118,21 @@ def extract_games(f):
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RFOOT + 5], v=s.rfoot.dth)
 
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LTHIGH], v=s.lthigh.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LTHIGH], v=s.lthigh.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LTHIGH + 1], v=s.lthigh.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LTHIGH + 2], v=s.lthigh.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LTHIGH + 3], v=s.lthigh.dx)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LTHIGH + 4], v=s.lthigh.dy)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LTHIGH + 5], v=s.lthigh.dth)
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LCALF], v=s.lcalf.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LCALF], v=s.lcalf.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LCALF + 1], v=s.lcalf.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LCALF + 2], v=s.lcalf.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LCALF + 3], v=s.lcalf.dx)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LCALF + 4], v=s.lcalf.dy)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LCALF + 5], v=s.lcalf.dth)
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LFOOT], v=s.lfoot.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LFOOT], v=s.lfoot.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LFOOT + 1], v=s.lfoot.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LFOOT + 2], v=s.lfoot.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LFOOT + 3], v=s.lfoot.dx)
@@ -144,14 +140,14 @@ def extract_games(f):
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LFOOT + 5], v=s.lfoot.dth)
 
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RUARM], v=s.ruarm.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RUARM], v=s.ruarm.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RUARM + 1], v=s.ruarm.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RUARM + 2], v=s.ruarm.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RUARM + 3], v=s.ruarm.dx)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RUARM + 4], v=s.ruarm.dy)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RUARM + 5], v=s.ruarm.dth)
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RLARM], v=s.rlarm.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RLARM], v=s.rlarm.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RLARM + 1], v=s.rlarm.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RLARM + 2], v=s.rlarm.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RLARM + 3], v=s.rlarm.dx)
@@ -159,14 +155,14 @@ def extract_games(f):
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RLARM + 5], v=s.rlarm.dth)
 
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM], v=s.ruarm.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM], v=s.ruarm.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 1], v=s.ruarm.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 2], v=s.ruarm.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 3], v=s.ruarm.dx)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 4], v=s.ruarm.dy)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 5], v=s.ruarm.dth)
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LLARM], v=s.llarm.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LLARM], v=s.llarm.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LLARM + 1], v=s.llarm.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LLARM + 2], v=s.llarm.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LLARM + 3], v=s.llarm.dx)
@@ -174,7 +170,7 @@ def extract_games(f):
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LLARM + 5], v=s.llarm.dth)
 
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * HEAD], v=s.head.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * HEAD], v=s.head.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * HEAD + 1], v=s.head.y)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * HEAD + 2], v=s.head.th)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * HEAD + 3], v=s.head.dx)
@@ -188,9 +184,6 @@ def extract_games(f):
   stateConcat = np.empty(shape=(0,NUM_STATES_PER * NUM_BODY_PARTS),dtype=np.float32)
   for states in allStatesInFile:
       stateConcat = np.concatenate((stateConcat, states), axis=0)
-
-  print len(allStatesInFile)
-  print len(allActionssInFile[5])
   return {'states' : allStatesInFile, 'actions' : allActionssInFile, 'concatState' : stateConcat, 'concatTS' : justTSToTransition}
 
 def unison_shuffled_copies(a, b):
@@ -198,27 +191,20 @@ def unison_shuffled_copies(a, b):
     p = np.random.permutation(len(a))
     return a[p], b[p]
 
-f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
-data = extract_games(f)
+filename = 'denseData_2017-11-06_08-58-03'
+#filename = 'denseData_2017-11-07_10-31-05'
+#f = open("../../denseData_2017-11-06_08-58-03.proto", "rb")
 
-## Convert to tensors and shuffle
-# x_inputs_data = tf.convert_to_tensor(data['concatState'],dtype=tf.float32)
-# x_shuffle = tf.random_shuffle(x_inputs_data, seed=8, name='shuffle_x')
-# #random_normal([128, 1024], mean=0, stddev=1)
-#
-# y_inputs_data = tf.convert_to_tensor(np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)),dtype=tf.float32)
-# y_shuffle = tf.random_shuffle(y_inputs_data, seed=8, name='shuffle_y')
+f = open('../../' + filename + '.proto', "rb")
+data = extract_games(f)
 
 x_shuffle, y_shuffle = unison_shuffled_copies(data['concatState'], np.reshape(np.asarray(data['concatTS']),(len(data['concatTS']),1)))
 
-
-train_filename = 'denseData_2017-11-06_08-58-03.tfrecords'  # address to save the TFRecords file
+train_filename = filename + '.tfrecords'  # address to save the TFRecords file
 # open the TFRecords file
 writer = tf.python_io.TFRecordWriter(train_filename)
 
-# LOOK HERE https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/core/example/feature.proto
-
-
+# LOOK HERE FOR FORMAT: https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/core/example/feature.proto
 for x_single, y_single in zip(x_shuffle, y_shuffle):
     # print("xy: %s:%s" % (str(x_single), str(y_single)))
     # construct the Example proto boject
@@ -232,7 +218,7 @@ for x_single, y_single in zip(x_shuffle, y_shuffle):
                 'x': tf.train.Feature(
                     float_list=tf.train.FloatList(value=x_single.tolist())),
                 'y': tf.train.Feature(
-                    float_list=tf.train.FloatList(value=[y_single])),
+                    float_list=tf.train.FloatList(value=y_single.tolist())),
         }))
 
     # use the proto object to serialize the example to a string
