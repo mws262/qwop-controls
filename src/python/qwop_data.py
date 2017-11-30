@@ -86,7 +86,13 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
 
 #x_loaded, y_loaded = read_and_decode_single_example("denseData_2017-11-07_10-31-05.tfrecords")#denseData_2017-11-06_08-58-03.tfrecords")
 
-filename_list = ["denseData_2017-11-07_10-31-05.tfrecords", "denseData_2017-11-06_08-58-03.tfrecords"]
+filename_list = []
+for file in os.listdir("."):
+    if file.endswith(".tfrecords"):
+        filename_list.append(file)
+
+print('%d files in queue.' % len(filename_list))
+#filename_list = ["denseData_2017-11-07_10-31-05.tfrecords", "denseData_2017-11-06_08-58-03.tfrecords"]
 x_loaded, y_loaded = read_and_decode_single_example(filename_list)
 
 # groups examples into batches randomly
@@ -104,16 +110,20 @@ with tf.name_scope('input'):
     y_true = tf.placeholder(tf.int32, shape=[None, 1], name='y-input')
 
 
-layer1 = nn_layer(x, 72, 144, 'layer1')
+layer1 = nn_layer(x, 72, 72, 'layer1')
 
 with tf.name_scope('dropout'):
     keep_prob = tf.placeholder(tf.float32)
     tf.summary.scalar('dropout_keep_probability', keep_prob)
     dropped = tf.nn.dropout(layer1, keep_prob)
 
-layer2 = nn_layer(dropped, 144, 72, 'layer2')
+layer2 = nn_layer(dropped, 72, 72, 'layer2')
 
-y = nn_layer(layer2, 72, 1, 'layer3')
+layer3 = nn_layer(layer2, 72, 46, 'layer3')
+
+layer4 = nn_layer(layer3, 46, 23, 'layer4')
+
+y = nn_layer(layer4, 23, 1, 'layer5')
 
 
 with tf.name_scope('Loss'):
@@ -135,7 +145,7 @@ tf.summary.scalar("accuracy", accuracy)
 # Merge all summaries into a single op
 merged_summary_op = tf.summary.merge_all()
 
-builder = tf.saved_model.builder.SavedModelBuilder(export_dir)
+#builder = tf.saved_model.builder.SavedModelBuilder(export_dir)
 
 startTime = time.time()
 with tf.Session() as sess:
@@ -144,7 +154,7 @@ with tf.Session() as sess:
     tf.train.start_queue_runners(sess=sess)
 
     # #if os.path.isfile("./tmp/model.ckpt"):
-    saver.restore(sess, "./tmp/model.ckpt")
+    #saver.restore(sess, "./tmp/model.ckpt")
     # print('Loaded checkpoint file')
     #builder.add_meta_graph_and_variables(sess)
 
