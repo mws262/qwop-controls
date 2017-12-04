@@ -154,13 +154,15 @@ with tf.Session() as sess:
     tf.train.start_queue_runners(sess=sess)
 
     # #if os.path.isfile("./tmp/model.ckpt"):
-    #saver.restore(sess, "./tmp/model.ckpt")
+    saver.restore(sess, "./tmp/model.ckpt")
     # print('Loaded checkpoint file')
     #builder.add_meta_graph_and_variables(sess)
+    # for n in tf.get_default_graph().as_graph_def().node:
+    #     print(n.name)
 
     summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
-    # ... train ...
-    for i in range(2000):
+    #... train ...
+    for i in range(100000):
         x_input, y_input = sess.run([x_batch, y_batch])
 
         _, loss, acc, summary = sess.run([train_op, loss_op, accuracy, merged_summary_op],feed_dict={x: x_input, y_true: y_input, keep_prob: 0.75})
