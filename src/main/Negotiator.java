@@ -391,11 +391,17 @@ public class Negotiator implements INegotiateGame {
 		this.P = P;
 	}
 
+	boolean usePredictor = true;
+	Tensorflow_Predictor pred = new Tensorflow_Predictor();
 	@Override
 	public void reportGameStep(Action action) {
+		if (usePredictor) {
+			System.out.println(Math.round(pred.getPrediction(game.getGameState())));
+		}
 		if (save_dense) {
 			actionBuffer_dense.add(action); // Technically this is the action which GETS us to the current state, so we want it sort of grouped with the previous state since that is when it is applied.
-			stateBuffer_dense.add(game.getGameState());
+			State thisState = game.getGameState();
+			stateBuffer_dense.add(thisState);
 		}
 	}
 

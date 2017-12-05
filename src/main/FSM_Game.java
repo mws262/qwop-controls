@@ -348,7 +348,7 @@ public class FSM_Game implements Runnable{
 		public synchronized void clearAll(){
 			actionQueue.clear();
 			actionListFull.clear();
-			currentAction.reset();
+			if (currentAction != null) currentAction.reset();
 			currentAction = null;
 
 			//while (actionQueue.size() > 0 || currentAction != null
