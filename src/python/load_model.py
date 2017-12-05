@@ -16,35 +16,23 @@ def load_graph(frozen_graph_filename):
         tf.import_graph_def(graph_def, name="")
     return graph
 
-if __name__ == '__main__':
-    # Let's allow the user to pass the filename as an argument
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--frozen_model_filename", default="./tmp/frozen_model.pb", type=str,
-                        help="Frozen model file to import")
-    args = parser.parse_args()
+# Let's allow the user to pass the filename as an argument
+frozen_model_filename = "./tmp/frozen_model.pb"
 
-    # We use our "load_graph" function
-    graph = load_graph(args.frozen_model_filename)
+# We use our "load_graph" function
+graph = load_graph(frozen_model_filename)
 
-    # We can verify that we can access the list of operations in the graph
-    for op in graph.get_operations():
-        print(op.name)
-        # prefix/Placeholder/inputs_placeholder
-        # ...
-        # prefix/Accuracy/predictions
+# We can verify that we can access the list of operations in the graph
+for op in graph.get_operations():
+    print(op.name)
 
-    # We access the input and output nodes
-    x = graph.get_tensor_by_name('input/x-input:0')
-    y = graph.get_tensor_by_name('layer5/activation:0')
-    drp = graph.get_tensor_by_name('dropout/Placeholder:0')
+# We access the input and output nodes
+x = graph.get_tensor_by_name('input/x-input:0')
+y = graph.get_tensor_by_name('layer5/activation:0')
+drp = graph.get_tensor_by_name('dropout/Placeholder:0')
 
-
-    # We launch a Session
-    with tf.Session(graph=graph) as sess:
-        # Note: we don't nee to initialize/restore anything
-        # There is no Variables in this graph, only hardcoded constants
-        y_out = sess.run(y, feed_dict={
-            x: [range(0,72)], drp: [1]})
-        # I taught a neural net to recognise when a sum of numbers is bigger than 45
-        # it should return False in this case
-        print(y_out)  # [[ False ]] Yay, it works!
+# We launch a Session
+with tf.Session(graph=graph) as sess:
+    y_out = sess.run(y, feed_dict={
+        x: [range(0,72)], drp: [1]})
+    print(y_out)

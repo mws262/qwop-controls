@@ -734,7 +734,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		boolean active = false;
 
 		private World world;
-
+		
 		public RunnerPane() {}
 
 		public void paintComponent(Graphics g) {

@@ -154,12 +154,12 @@ def extract_games(f):
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * RLARM + 5], v=s.rlarm.dth)
 
 
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM], v=s.ruarm.x - s.body.x)
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 1], v=s.ruarm.y)
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 2], v=s.ruarm.th)
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 3], v=s.ruarm.dx)
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 4], v=s.ruarm.dy)
-          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 5], v=s.ruarm.dth)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM], v=s.luarm.x - s.body.x)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 1], v=s.luarm.y)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 2], v=s.luarm.th)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 3], v=s.luarm.dx)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 4], v=s.luarm.dy)
+          np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LUARM + 5], v=s.luarm.dth)
 
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LLARM], v=s.llarm.x - s.body.x)
           np.put(singleGame, ind=[singleIndex + NUM_STATES_PER * LLARM + 1], v=s.llarm.y)
