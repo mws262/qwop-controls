@@ -13,7 +13,7 @@ def load_graph(frozen_graph_filename):
     with tf.Graph().as_default() as graph:
         # The name var will prefix every op/nodes in your graph
         # Since we load everything in a new graph, this is not needed
-        tf.import_graph_def(graph_def, name="prefix")
+        tf.import_graph_def(graph_def, name="")
     return graph
 
 if __name__ == '__main__':
@@ -34,9 +34,9 @@ if __name__ == '__main__':
         # prefix/Accuracy/predictions
 
     # We access the input and output nodes
-    x = graph.get_tensor_by_name('prefix/input/x-input:0')
-    y = graph.get_tensor_by_name('prefix/layer5/activation:0')
-    drp = graph.get_tensor_by_name('prefix/dropout/Placeholder:0')
+    x = graph.get_tensor_by_name('input/x-input:0')
+    y = graph.get_tensor_by_name('layer5/activation:0')
+    drp = graph.get_tensor_by_name('dropout/Placeholder:0')
 
 
     # We launch a Session
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         # Note: we don't nee to initialize/restore anything
         # There is no Variables in this graph, only hardcoded constants
         y_out = sess.run(y, feed_dict={
-            x: [range(0, 72)], drp: [1]})
+            x: [range(0,72)], drp: [1]})
         # I taught a neural net to recognise when a sum of numbers is bigger than 45
         # it should return False in this case
         print(y_out)  # [[ False ]] Yay, it works!
