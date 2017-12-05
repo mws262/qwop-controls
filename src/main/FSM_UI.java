@@ -800,9 +800,8 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				//This draws the "road" markings to show that the ground is moving relative to the dude.
 				for(int i = 0; i<this.getWidth()/69; i++) {
 					g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 92);
-					keyDrawer(g, negotiator.Q,negotiator.W,negotiator.O,negotiator.P);
 				}
-
+				keyDrawer(g, negotiator.Q,negotiator.W,negotiator.O,negotiator.P);
 				drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
 
 			}else{
