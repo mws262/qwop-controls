@@ -10,12 +10,20 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
+<<<<<<< HEAD
     <SUITE FILE_PATH="coverage/python$test_load_run.coverage" NAME="test_load_run Coverage Results" MODIFIED="1511990931588" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/python$load_model.coverage" NAME="load_model Coverage Results" MODIFIED="1512482470464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/python$qwop_data.coverage" NAME="qwop_data Coverage Results" MODIFIED="1511313832675" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/python$convert_tfrecords.coverage" NAME="convert_tfrecords Coverage Results" MODIFIED="1512536889899" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/python$qwop_data__1_.coverage" NAME="qwop_data (1) Coverage Results" MODIFIED="1512536924452" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+=======
+    <SUITE FILE_PATH="coverage/python$qwop_data__1_.coverage" NAME="qwop_data (1) Coverage Results" MODIFIED="1512426472579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/python$convert_tfrecords.coverage" NAME="convert_tfrecords Coverage Results" MODIFIED="1512488617171" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/python$load_model.coverage" NAME="load_model Coverage Results" MODIFIED="1512482470464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
     <SUITE FILE_PATH="coverage/python$Test_Load.coverage" NAME="Test_Load Coverage Results" MODIFIED="1511273233134" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/python$test_load_run.coverage" NAME="test_load_run Coverage Results" MODIFIED="1511990931588" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/python$qwop_data.coverage" NAME="qwop_data Coverage Results" MODIFIED="1511313832675" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <splitter split-orientation="horizontal" split-proportion="0.28817636">
@@ -24,7 +32,7 @@
           <file leaf-file-name="Test_Load.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/Test_Load.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="432">
+                <state relative-caret-position="495">
                   <caret line="33" column="0" lean-forward="false" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
                   <folding>
                     <element signature="e#0#31#0" expanded="true" />
@@ -36,8 +44,13 @@
           <file leaf-file-name="qwop_data.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/qwop_data.py">
               <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
                 <state relative-caret-position="738">
                   <caret line="156" column="4" lean-forward="false" selection-start-line="156" selection-start-column="4" selection-end-line="156" selection-end-column="4" />
+=======
+                <state relative-caret-position="1800">
+                  <caret line="160" column="23" lean-forward="false" selection-start-line="160" selection-start-column="23" selection-end-line="160" selection-end-column="23" />
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                     <element signature="e#328#1414#0" expanded="false" />
@@ -52,7 +65,11 @@
           <file leaf-file-name="load_model.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/load_model.py">
               <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
                 <state relative-caret-position="414">
+=======
+                <state relative-caret-position="345">
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
                   <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
                   <folding>
                     <element signature="e#0#15#0" expanded="true" />
@@ -64,8 +81,13 @@
           <file leaf-file-name="freeze_checkpoint.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/freeze_checkpoint.py">
               <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
                 <state relative-caret-position="751">
                   <caret line="61" column="86" lean-forward="true" selection-start-line="61" selection-start-column="2" selection-end-line="61" selection-end-column="90" />
+=======
+                <state relative-caret-position="75">
+                  <caret line="7" column="49" lean-forward="false" selection-start-line="7" selection-start-column="49" selection-end-line="7" selection-end-column="49" />
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
                   <folding>
                     <element signature="e#0#19#0" expanded="true" />
                   </folding>
@@ -80,7 +102,7 @@
           <file leaf-file-name="Test_Load.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/Test_Load.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="684">
+                <state relative-caret-position="570">
                   <caret line="38" column="38" lean-forward="false" selection-start-line="38" selection-start-column="38" selection-end-line="38" selection-end-column="38" />
                   <folding>
                     <element signature="e#0#31#0" expanded="true" />
@@ -92,8 +114,13 @@
           <file leaf-file-name="convert_tfrecords.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/convert_tfrecords.py">
               <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
                 <state relative-caret-position="427">
                   <caret line="168" column="72" lean-forward="false" selection-start-line="168" selection-start-column="72" selection-end-line="168" selection-end-column="72" />
+=======
+                <state relative-caret-position="490">
+                  <caret line="165" column="82" lean-forward="true" selection-start-line="165" selection-start-column="82" selection-end-line="165" selection-end-column="82" />
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                     <element signature="e#9928#10011#0" expanded="false" />
@@ -105,7 +132,7 @@
           <file leaf-file-name="test_load_run.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test_load_run.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="234">
+                <state relative-caret-position="210">
                   <caret line="14" column="45" lean-forward="false" selection-start-line="14" selection-start-column="45" selection-end-line="14" selection-end-column="45" />
                   <folding>
                     <element signature="e#0#23#0" expanded="true" />
@@ -168,10 +195,17 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
+<<<<<<< HEAD
     <option name="x" value="1345" />
     <option name="y" value="603" />
     <option name="width" value="2495" />
     <option name="height" value="1444" />
+=======
+    <option name="x" value="602" />
+    <option name="y" value="54" />
+    <option name="width" value="1280" />
+    <option name="height" value="900" />
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -327,20 +361,24 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1345" y="603" width="2495" height="1444" extended-state="6" />
+    <frame x="0" y="23" width="1440" height="831" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.13955224" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.085074626" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+<<<<<<< HEAD
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20223881" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+=======
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -822,7 +860,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test_load_run.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
+        <state relative-caret-position="210">
           <caret line="14" column="45" lean-forward="false" selection-start-line="14" selection-start-column="45" selection-end-line="14" selection-end-column="45" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
@@ -833,8 +871,13 @@
     <entry file="file://$PROJECT_DIR$/model_freeze.py" />
     <entry file="file://$PROJECT_DIR$/Test_Load.py">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
         <state relative-caret-position="432">
           <caret line="33" column="0" lean-forward="false" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+=======
+        <state relative-caret-position="570">
+          <caret line="38" column="38" lean-forward="false" selection-start-line="38" selection-start-column="38" selection-end-line="38" selection-end-column="38" />
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
@@ -843,8 +886,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/load_model.py">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
         <state relative-caret-position="414">
           <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+=======
+        <state relative-caret-position="1800">
+          <caret line="160" column="23" lean-forward="false" selection-start-line="160" selection-start-column="23" selection-end-line="160" selection-end-column="23" />
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
@@ -853,8 +901,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/convert_tfrecords.py">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
         <state relative-caret-position="427">
           <caret line="168" column="72" lean-forward="false" selection-start-line="168" selection-start-column="72" selection-end-line="168" selection-end-column="72" />
+=======
+        <state relative-caret-position="75">
+          <caret line="7" column="49" lean-forward="false" selection-start-line="7" selection-start-column="49" selection-end-line="7" selection-end-column="49" />
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
           <folding>
             <element signature="e#0#18#0" expanded="true" />
             <element signature="e#9928#10011#0" expanded="false" />
@@ -864,8 +917,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/qwop_data.py">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
         <state relative-caret-position="738">
           <caret line="156" column="4" lean-forward="false" selection-start-line="156" selection-start-column="4" selection-end-line="156" selection-end-column="4" />
+=======
+        <state relative-caret-position="345">
+          <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
           <folding>
             <element signature="e#0#18#0" expanded="true" />
             <element signature="e#328#1414#0" expanded="false" />
@@ -878,8 +936,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/freeze_checkpoint.py">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
         <state relative-caret-position="751">
           <caret line="61" column="86" lean-forward="true" selection-start-line="61" selection-start-column="2" selection-end-line="61" selection-end-column="90" />
+=======
+        <state relative-caret-position="490">
+          <caret line="165" column="82" lean-forward="true" selection-start-line="165" selection-start-column="82" selection-end-line="165" selection-end-column="82" />
+>>>>>>> 7d50179625535ae758f3dea4a50f1d8275285143
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>
