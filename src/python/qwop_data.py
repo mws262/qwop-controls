@@ -119,11 +119,11 @@ with tf.name_scope('dropout'):
 
 layer2 = nn_layer(dropped, 72, 72, 'layer2')
 
-layer3 = nn_layer(layer2, 72, 46, 'layer3')
+layer3 = nn_layer(layer2, 72, 72, 'layer3')
 
-layer4 = nn_layer(layer3, 46, 23, 'layer4')
+layer4 = nn_layer(layer3, 72, 46, 'layer4')
 
-y = nn_layer(layer4, 23, 1, 'layer5')
+y = nn_layer(layer4, 46, 1, 'layer5')
 
 
 with tf.name_scope('Loss'):
