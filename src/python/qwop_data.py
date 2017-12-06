@@ -110,24 +110,21 @@ with tf.name_scope('input'):
     y_true = tf.placeholder(tf.int32, shape=[None, 1], name='y-input')
 
 
-layer1 = nn_layer(x, 72, 72, 'layer1')
+layer1 = nn_layer(x, 72, 72*4, 'layer1')
 
 with tf.name_scope('dropout'):
     keep_prob = tf.placeholder(tf.float32)
     tf.summary.scalar('dropout_keep_probability', keep_prob)
     dropped = tf.nn.dropout(layer1, keep_prob)
 
-layer2 = nn_layer(dropped, 72, 72, 'layer2')
+layer2 = nn_layer(dropped, 72*4, 72, 'layer2')
 
-layer3 = nn_layer(layer2, 72, 72, 'layer3')
-
-layer4 = nn_layer(layer3, 72, 46, 'layer4')
-
-y = nn_layer(layer4, 46, 1, 'layer5')
+y = nn_layer(layer2, 72, 1, 'layer3')
 
 
 with tf.name_scope('Loss'):
-    loss_op = tf.losses.mean_squared_error(y_true, y)
+    #loss_op = tf.losses.mean_squared_error(y_true, y)
+    loss_op = tf.reduce_mean(tf.divide(tf.square(tf.subtract(tf.cast(y_true, tf.float32),y)),tf.add(tf.cast(y_true, tf.float32),2.0)))
 with tf.name_scope('Accuracy'):
     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(tf.round(y),tf.int32),tf.cast(y_true,tf.int32)),tf.float32))
 
@@ -154,7 +151,7 @@ with tf.Session() as sess:
     tf.train.start_queue_runners(sess=sess)
 
     # #if os.path.isfile("./tmp/model.ckpt"):
-    saver.restore(sess, "./tmp/model.ckpt")
+  #  saver.restore(sess, "./tmp/model.ckpt")
     # print('Loaded checkpoint file')
     #builder.add_meta_graph_and_variables(sess)
     # for n in tf.get_default_graph().as_graph_def().node:

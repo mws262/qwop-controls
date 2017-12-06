@@ -34,7 +34,7 @@ public class Tensorflow_Predictor {
 		Tensor<Float> result =
 				sess.runner().feed("input/x-input:0", inputTensor)
 				.feed("dropout/Placeholder:0", dropVal)
-				.fetch("layer5/activation:0")
+				.fetch("layer3/activation:0")
 				.run().get(0).expect(Float.class);
 		
 		float[] res = result.copyTo(new float[1][1])[0];

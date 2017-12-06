@@ -109,10 +109,10 @@ public class MAIN_Controlled extends JFrame{
 			float prediction = pred.getPrediction(st);
 			System.out.println(prediction);
 			
-			if (toSwitchCount > 10 && prediction < 3.5f) {
+			if (toSwitchCount > 10 && prediction <1.2f) {
 				
 				System.out.println("SWITCHING SOON");
-				toSwitchCount = (int) Math.ceil(prediction); 
+				toSwitchCount = (int) Math.round(prediction); 
 			}
 			
 			if (toSwitchCount == 0) {
