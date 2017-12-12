@@ -2,13 +2,9 @@ package data;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-
 import main.Evaluator_HandTunedOnState;
-import main.IEvaluationFunction;
 import main.State;
 
 /**
