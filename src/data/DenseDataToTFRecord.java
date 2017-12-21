@@ -89,131 +89,126 @@ public class DenseDataToTFRecord {
 
 	public static void convertToProtobuf(List<SaveableDenseData> denseData, String fileName) throws IOException {
 
-		//DataSet.Builder set = DataSet.newBuilder();
-		
 		for (SaveableDenseData dat : denseData) {
 			SequenceExample.Builder seqEx = SequenceExample.newBuilder();
 			
 			// Use timestamp as unique run identifier.
-			Int64List.Builder identifier = Int64List.newBuilder();
-			identifier.addValue(System.currentTimeMillis());
-			Feature.Builder identifierFeat = Feature.newBuilder(); // It gets its own feature.
-			identifierFeat.setInt64List(identifier.build());
+//			Int64List.Builder identifier = Int64List.newBuilder();
+//			identifier.addValue(System.currentTimeMillis());
+//			Feature.Builder identifierFeat = Feature.newBuilder(); // It gets its own feature.
+//			identifierFeat.setInt64List(identifier.build());
+//			seqEx.setContext(identifierFeat.build());
 			
-			seqEx.setContext(identifierFeat.build());
-			FeatureList.Builder feats = FeatureList.newBuilder();
+			
+			FeatureLists.Builder featLists = FeatureLists.newBuilder(); // Featlists is a single run
+			FeatureList.Builder featList = FeatureList.newBuilder(); //Single featlist is just states or just actions.
 		
 			for (State st : dat.getState()) {
 				Feature.Builder feat = Feature.newBuilder();
-				FloatList.Builder slist = FloatList.newBuilder();
-				
-				
-
-				//DenseData.State.Builder state = DenseData.State.newBuilder();
+				FloatList.Builder flist = FloatList.newBuilder();
 				
 				// Do for body:
-				slist.addValue(st.body.x);
-				slist.addValue(st.body.y);
-				slist.addValue(st.body.th);
-				slist.addValue(st.body.dx);
-				slist.addValue(st.body.dy);
-				slist.addValue(st.body.dth);
+				flist.addValue(st.body.x);
+				flist.addValue(st.body.y);
+				flist.addValue(st.body.th);
+				flist.addValue(st.body.dx);
+				flist.addValue(st.body.dy);
+				flist.addValue(st.body.dth);
 
 				// For head:
-				slist.addValue(st.head.x);
-				slist.addValue(st.head.y);
-				slist.addValue(st.head.th);
-				slist.addValue(st.head.dx);
-				slist.addValue(st.head.dy);
-				slist.addValue(st.head.dth);
+				flist.addValue(st.head.x);
+				flist.addValue(st.head.y);
+				flist.addValue(st.head.th);
+				flist.addValue(st.head.dx);
+				flist.addValue(st.head.dy);
+				flist.addValue(st.head.dth);
 
 				// For r thigh:
-				slist.addValue(st.rthigh.x);
-				slist.addValue(st.rthigh.y);
-				slist.addValue(st.rthigh.th);
-				slist.addValue(st.rthigh.dx);
-				slist.addValue(st.rthigh.dy);
-				slist.addValue(st.rthigh.dth);
+				flist.addValue(st.rthigh.x);
+				flist.addValue(st.rthigh.y);
+				flist.addValue(st.rthigh.th);
+				flist.addValue(st.rthigh.dx);
+				flist.addValue(st.rthigh.dy);
+				flist.addValue(st.rthigh.dth);
 
 				// For l thigh:
-				slist.addValue(st.lthigh.x);
-				slist.addValue(st.lthigh.y);
-				slist.addValue(st.lthigh.th);
-				slist.addValue(st.lthigh.dx);
-				slist.addValue(st.lthigh.dy);
-				slist.addValue(st.lthigh.dth);
+				flist.addValue(st.lthigh.x);
+				flist.addValue(st.lthigh.y);
+				flist.addValue(st.lthigh.th);
+				flist.addValue(st.lthigh.dx);
+				flist.addValue(st.lthigh.dy);
+				flist.addValue(st.lthigh.dth);
 
 				// For r calf:
-				slist.addValue(st.rcalf.x);
-				slist.addValue(st.rcalf.y);
-				slist.addValue(st.rcalf.th);
-				slist.addValue(st.rcalf.dx);
-				slist.addValue(st.rcalf.dy);
-				slist.addValue(st.rcalf.dth);
+				flist.addValue(st.rcalf.x);
+				flist.addValue(st.rcalf.y);
+				flist.addValue(st.rcalf.th);
+				flist.addValue(st.rcalf.dx);
+				flist.addValue(st.rcalf.dy);
+				flist.addValue(st.rcalf.dth);
 
 				// For l calf:
-				slist.addValue(st.lcalf.x);
-				slist.addValue(st.lcalf.y);
-				slist.addValue(st.lcalf.th);
-				slist.addValue(st.lcalf.dx);
-				slist.addValue(st.lcalf.dy);
-				slist.addValue(st.lcalf.dth);
+				flist.addValue(st.lcalf.x);
+				flist.addValue(st.lcalf.y);
+				flist.addValue(st.lcalf.th);
+				flist.addValue(st.lcalf.dx);
+				flist.addValue(st.lcalf.dy);
+				flist.addValue(st.lcalf.dth);
 
 				// For r foot:
-				slist.addValue(st.rfoot.x);
-				slist.addValue(st.rfoot.y);
-				slist.addValue(st.rfoot.th);
-				slist.addValue(st.rfoot.dx);
-				slist.addValue(st.rfoot.dy);
-				slist.addValue(st.rfoot.dth);
+				flist.addValue(st.rfoot.x);
+				flist.addValue(st.rfoot.y);
+				flist.addValue(st.rfoot.th);
+				flist.addValue(st.rfoot.dx);
+				flist.addValue(st.rfoot.dy);
+				flist.addValue(st.rfoot.dth);
 
 				// For l foot:
-				slist.addValue(st.lfoot.x);
-				slist.addValue(st.lfoot.y);
-				slist.addValue(st.lfoot.th);
-				slist.addValue(st.lfoot.dx);
-				slist.addValue(st.lfoot.dy);
-				slist.addValue(st.lfoot.dth);
+				flist.addValue(st.lfoot.x);
+				flist.addValue(st.lfoot.y);
+				flist.addValue(st.lfoot.th);
+				flist.addValue(st.lfoot.dx);
+				flist.addValue(st.lfoot.dy);
+				flist.addValue(st.lfoot.dth);
 
 				// For r upper arm:
-				slist.addValue(st.ruarm.x);
-				slist.addValue(st.ruarm.y);
-				slist.addValue(st.ruarm.th);
-				slist.addValue(st.ruarm.dx);
-				slist.addValue(st.ruarm.dy);
-				slist.addValue(st.ruarm.dth);
+				flist.addValue(st.ruarm.x);
+				flist.addValue(st.ruarm.y);
+				flist.addValue(st.ruarm.th);
+				flist.addValue(st.ruarm.dx);
+				flist.addValue(st.ruarm.dy);
+				flist.addValue(st.ruarm.dth);
 
 				// For L upper arm:
-				slist.addValue(st.luarm.x);
-				slist.addValue(st.luarm.y);
-				slist.addValue(st.luarm.th);
-				slist.addValue(st.luarm.dx);
-				slist.addValue(st.luarm.dy);
-				slist.addValue(st.luarm.dth);
+				flist.addValue(st.luarm.x);
+				flist.addValue(st.luarm.y);
+				flist.addValue(st.luarm.th);
+				flist.addValue(st.luarm.dx);
+				flist.addValue(st.luarm.dy);
+				flist.addValue(st.luarm.dth);
 				
 				// For R lower arm:
-				slist.addValue(st.rlarm.x);
-				slist.addValue(st.rlarm.y);
-				slist.addValue(st.rlarm.th);
-				slist.addValue(st.rlarm.dx);
-				slist.addValue(st.rlarm.dy);
-				slist.addValue(st.rlarm.dth);
+				flist.addValue(st.rlarm.x);
+				flist.addValue(st.rlarm.y);
+				flist.addValue(st.rlarm.th);
+				flist.addValue(st.rlarm.dx);
+				flist.addValue(st.rlarm.dy);
+				flist.addValue(st.rlarm.dth);
 
 				// For L lower arm:
-				slist.addValue(st.llarm.x);
-				slist.addValue(st.llarm.y);
-				slist.addValue(st.llarm.th);
-				slist.addValue(st.llarm.dx);
-				slist.addValue(st.llarm.dy);
-				slist.addValue(st.llarm.dth);
+				flist.addValue(st.llarm.x);
+				flist.addValue(st.llarm.y);
+				flist.addValue(st.llarm.th);
+				flist.addValue(st.llarm.dx);
+				flist.addValue(st.llarm.dy);
+				flist.addValue(st.llarm.dth);
 
-				slist.build();
-				Feature.Builder feat = Feature.newBuilder();
-				
-				slist.build();
-				feats.addFeature(slist);
+				feat.setFloatList(flist.build());
+				featList.addFeature(feat.build());
 			}
 
+			featLists.putFeatureList("states", featList.build());
+			
 			// Add all the actions for the dense run.
 			for (Action act : dat.getAction()) {
 				DenseData.Action.Builder action = DenseData.Action.newBuilder();
