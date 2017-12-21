@@ -7,7 +7,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.protobuf.ByteString;
+
 import main.State;
+import main.State.StateVariable;
 import main.Action;
 
 
@@ -53,7 +56,7 @@ public class DenseDataToTFRecord {
 		for (File file : inFiles) {
 			ArrayList<SaveableDenseData> denseDat = inFileLoader.loadObjectsOrdered(file.getAbsolutePath());
 			System.out.print("Beginning to package " + file.getName() + ". ");
-			String fileOutName = file.getName().substring(0, file.getName().lastIndexOf('.')) + ".proto";
+			String fileOutName = file.getName().substring(0, file.getName().lastIndexOf('.')) + ".NEWNEWNEW";
 			try {
 				convertToProtobuf(denseDat,fileOutName);
 			} catch (IOException e) {
@@ -62,171 +65,130 @@ public class DenseDataToTFRecord {
 			}
 			count++;
 			System.out.println("Done. " + count + "/" + inFiles.size());
-			
-//			// Validate -- not needed during batch run.
-//			DataSet dataValidate = null;
-//			try {
-//				FileInputStream fIn = new FileInputStream(fileOutName);
-//				
-//				dataValidate = DataSet.parseFrom(new FileInputStream(fileOutName));
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			DenseData.State state1 = dataValidate.getDenseData(0).getState(10);
-//			float dx1 = state1.getBody().getDx();
-//			System.out.println("From new file: " + dx1 + ". From original data: " + denseDat.get(0).getState()[10].body.dx);
-//			
-//			
-//			DenseData.State state2 = dataValidate.getDenseData(10).getState(3);
-//			float th1 = state2.getHead().getTh();
-//			System.out.println("From new file: " + th1 + ". From original data: " + denseDat.get(10).getState()[3].head.th);
-//			break;
-//			
+
+			//			// Validate -- not needed during batch run.
+			//			DataSet dataValidate = null;
+			//			try {
+			//				FileInputStream fIn = new FileInputStream(fileOutName);
+			//				
+			//				dataValidate = DataSet.parseFrom(new FileInputStream(fileOutName));
+			//			} catch (IOException e) {
+			//				// TODO Auto-generated catch block
+			//				e.printStackTrace();
+			//			}
+			//			DenseData.State state1 = dataValidate.getDenseData(0).getState(10);
+			//			float dx1 = state1.getBody().getDx();
+			//			System.out.println("From new file: " + dx1 + ". From original data: " + denseDat.get(0).getState()[10].body.dx);
+			//			
+			//			
+			//			DenseData.State state2 = dataValidate.getDenseData(10).getState(3);
+			//			float th1 = state2.getHead().getTh();
+			//			System.out.println("From new file: " + th1 + ". From original data: " + denseDat.get(10).getState()[3].head.th);
+			//			break;
+			//			
 		}
 	}
 
+	/** Make a single feature representing the 6 state variables for a single body part at a single timestep. Append to existing FeatureList for that body part. **/
+	private static void makeFeature(State.ObjectName bodyPart, State state, FeatureList.Builder listToAppendTo) {
+		Feature.Builder feat = Feature.newBuilder();
+		FloatList.Builder featVals = FloatList.newBuilder();
+		for (State.StateName stateName : State.StateName.values()) { // Iterate over all 6 state variables.
+			featVals.addValue(state.getStateVarFromName(bodyPart, stateName));
+		}
+		feat.setFloatList(featVals.build());
+		listToAppendTo.addFeature(feat);
+	}
+
+	/** Make a time series for a single run of a single state variable as a FeatureList. Add to the broader list of FeatureList for this run. **/
+	private static void makeStateFeatureList(SaveableDenseData data, State.ObjectName bodyPart, FeatureLists.Builder featLists) {
+		FeatureList.Builder featList = FeatureList.newBuilder();
+		for (State st : data.getState()) { // Iterate through the timesteps in a single run.
+			makeFeature(bodyPart, st, featList);
+		}
+		featLists.putFeatureList(bodyPart.toString(), featList.build()); // Add this feature to the broader list of features.
+	}
 
 	public static void convertToProtobuf(List<SaveableDenseData> denseData, String fileName) throws IOException {
-
+		FileOutputStream stream = new FileOutputStream(new File(fileName));
+		
+		// Iterate through all runs in a single file.
 		for (SaveableDenseData dat : denseData) {
 			SequenceExample.Builder seqEx = SequenceExample.newBuilder();
-			
-			// Use timestamp as unique run identifier.
-//			Int64List.Builder identifier = Int64List.newBuilder();
-//			identifier.addValue(System.currentTimeMillis());
-//			Feature.Builder identifierFeat = Feature.newBuilder(); // It gets its own feature.
-//			identifierFeat.setInt64List(identifier.build());
-//			seqEx.setContext(identifierFeat.build());
-			
-			
-			FeatureLists.Builder featLists = FeatureLists.newBuilder(); // Featlists is a single run
-			FeatureList.Builder featList = FeatureList.newBuilder(); //Single featlist is just states or just actions.
-		
-			for (State st : dat.getState()) {
-				Feature.Builder feat = Feature.newBuilder();
-				FloatList.Builder flist = FloatList.newBuilder();
-				
-				// Do for body:
-				flist.addValue(st.body.x);
-				flist.addValue(st.body.y);
-				flist.addValue(st.body.th);
-				flist.addValue(st.body.dx);
-				flist.addValue(st.body.dy);
-				flist.addValue(st.body.dth);
+			FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & actions) in a single run.
 
-				// For head:
-				flist.addValue(st.head.x);
-				flist.addValue(st.head.y);
-				flist.addValue(st.head.th);
-				flist.addValue(st.head.dx);
-				flist.addValue(st.head.dy);
-				flist.addValue(st.head.dth);
-
-				// For r thigh:
-				flist.addValue(st.rthigh.x);
-				flist.addValue(st.rthigh.y);
-				flist.addValue(st.rthigh.th);
-				flist.addValue(st.rthigh.dx);
-				flist.addValue(st.rthigh.dy);
-				flist.addValue(st.rthigh.dth);
-
-				// For l thigh:
-				flist.addValue(st.lthigh.x);
-				flist.addValue(st.lthigh.y);
-				flist.addValue(st.lthigh.th);
-				flist.addValue(st.lthigh.dx);
-				flist.addValue(st.lthigh.dy);
-				flist.addValue(st.lthigh.dth);
-
-				// For r calf:
-				flist.addValue(st.rcalf.x);
-				flist.addValue(st.rcalf.y);
-				flist.addValue(st.rcalf.th);
-				flist.addValue(st.rcalf.dx);
-				flist.addValue(st.rcalf.dy);
-				flist.addValue(st.rcalf.dth);
-
-				// For l calf:
-				flist.addValue(st.lcalf.x);
-				flist.addValue(st.lcalf.y);
-				flist.addValue(st.lcalf.th);
-				flist.addValue(st.lcalf.dx);
-				flist.addValue(st.lcalf.dy);
-				flist.addValue(st.lcalf.dth);
-
-				// For r foot:
-				flist.addValue(st.rfoot.x);
-				flist.addValue(st.rfoot.y);
-				flist.addValue(st.rfoot.th);
-				flist.addValue(st.rfoot.dx);
-				flist.addValue(st.rfoot.dy);
-				flist.addValue(st.rfoot.dth);
-
-				// For l foot:
-				flist.addValue(st.lfoot.x);
-				flist.addValue(st.lfoot.y);
-				flist.addValue(st.lfoot.th);
-				flist.addValue(st.lfoot.dx);
-				flist.addValue(st.lfoot.dy);
-				flist.addValue(st.lfoot.dth);
-
-				// For r upper arm:
-				flist.addValue(st.ruarm.x);
-				flist.addValue(st.ruarm.y);
-				flist.addValue(st.ruarm.th);
-				flist.addValue(st.ruarm.dx);
-				flist.addValue(st.ruarm.dy);
-				flist.addValue(st.ruarm.dth);
-
-				// For L upper arm:
-				flist.addValue(st.luarm.x);
-				flist.addValue(st.luarm.y);
-				flist.addValue(st.luarm.th);
-				flist.addValue(st.luarm.dx);
-				flist.addValue(st.luarm.dy);
-				flist.addValue(st.luarm.dth);
-				
-				// For R lower arm:
-				flist.addValue(st.rlarm.x);
-				flist.addValue(st.rlarm.y);
-				flist.addValue(st.rlarm.th);
-				flist.addValue(st.rlarm.dx);
-				flist.addValue(st.rlarm.dy);
-				flist.addValue(st.rlarm.dth);
-
-				// For L lower arm:
-				flist.addValue(st.llarm.x);
-				flist.addValue(st.llarm.y);
-				flist.addValue(st.llarm.th);
-				flist.addValue(st.llarm.dx);
-				flist.addValue(st.llarm.dy);
-				flist.addValue(st.llarm.dth);
-
-				feat.setFloatList(flist.build());
-				featList.addFeature(feat.build());
+			// Pack up states
+			for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body parts and add to the overall list of feature lists.
+				makeStateFeatureList(dat, bodyPart, featLists);
 			}
 
-			featLists.putFeatureList("states", featList.build());
-			
-			// Add all the actions for the dense run.
+			// Pack up actions -- 3 different ways:
+			// 1) Keys pressed at individual timestep.
+			// 2) Timesteps until transition for each timestep.
+			// 3) Just the action sequence (shorter than number of timesteps)
+
+			// 1) Keys pressed at individual timestep. 0 or 1 in bytes for each key
+			FeatureList.Builder keyFeatList = FeatureList.newBuilder();
 			for (Action act : dat.getAction()) {
-				DenseData.Action.Builder action = DenseData.Action.newBuilder();
-				action.setQ(act.peek()[0]);
-				action.setW(act.peek()[1]);
-				action.setO(act.peek()[2]);
-				action.setP(act.peek()[3]);
-
-				action.setActionTimesteps(act.getTimestepsTotal());
-				action.build();
-				data.addAction(action);
+				Feature.Builder keyFeat = Feature.newBuilder();
+				BytesList.Builder keyDat = BytesList.newBuilder();
+				byte[] keys = new byte[] {
+						act.peek()[0] ? (byte)(1) : (byte)(0),
+						act.peek()[1] ? (byte)(1) : (byte)(0),
+						act.peek()[2] ? (byte)(1) : (byte)(0),
+						act.peek()[3] ? (byte)(1) : (byte)(0)};
+				keyDat.addValue(ByteString.copyFrom(keys));
+				keyFeat.setBytesList(keyDat.build());
+				keyFeatList.addFeature(keyFeat.build());
 			}
+			featLists.putFeatureList("PRESSED_KEYS", keyFeatList.build());
 
-			set.addDenseData(data.build());
+			// 2) Timesteps until transition for each timestep.
+			FeatureList.Builder transitionTSList = FeatureList.newBuilder();
+			for (int i = 0; i < dat.getAction().length; i++) {
+				int action = dat.getAction()[i].getTimestepsTotal();
+
+				while (action > 0 && i < dat.getAction().length) {
+					Feature.Builder transitionTSFeat = Feature.newBuilder();
+					BytesList.Builder transitionTS = BytesList.newBuilder();
+					transitionTS.addValue(ByteString.copyFrom(new byte[] {(byte)action}));
+					transitionTSFeat.setBytesList(transitionTS.build());
+					transitionTSList.addFeature(transitionTSFeat.build());
+
+					action--;
+					i++;
+				}
+			}
+			featLists.putFeatureList("TIME_TO_TRANSITION", transitionTSList.build());
+
+			// 3) Just the action sequence (shorter than number of timesteps) -- bytestrings e.g. [15, 1, 0, 0, 1]
+			FeatureList.Builder actionList = FeatureList.newBuilder();
+			int prevAct = -1;
+			for (Action act : dat.getAction()) {
+				int action = act.getTimestepsTotal();
+				if (action == prevAct) {
+					continue;
+				}else {
+					prevAct = action;
+					Feature.Builder sequenceFeat = Feature.newBuilder();
+					BytesList.Builder seqList = BytesList.newBuilder();
+					
+					byte[] actionBytes = new byte[] {(byte)action,
+							act.peek()[0] ? (byte)(1) : (byte)(0),
+							act.peek()[1] ? (byte)(1) : (byte)(0),
+							act.peek()[2] ? (byte)(1) : (byte)(0),
+							act.peek()[3] ? (byte)(1) : (byte)(0)};
+							
+					seqList.addValue(ByteString.copyFrom(actionBytes));
+					sequenceFeat.setBytesList(seqList.build());
+					actionList.addFeature(sequenceFeat.build());
+				}
+			}
+			featLists.putFeatureList("ACTIONS", transitionTSList.build());
 			
+			seqEx.setFeatureLists(featLists.build());
+			seqEx.build().writeTo(stream);
 		}
-		FileOutputStream stream = new FileOutputStream(new File(fileName));
-		set.build().writeTo(stream);
 		stream.close();
 	}
 }
