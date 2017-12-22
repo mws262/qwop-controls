@@ -21,20 +21,31 @@ def read_and_decode_single_example(filename):
     _, serialized_example = reader.read(filename_queue)
     # The serialized example is converted back to actual values.
     # One needs to describe the format of the objects to be returned
-    features = tf.parse_single_example(
-        serialized_example,
-        feature_lists={
-            # We know the length of both fields. If not the
-            # tf.VarLenFeature could be used
-            'x': tf.FixedLenFeature([72], tf.float32),
-            'y': tf.FixedLenFeature([1], tf.float32)
-        })
 
+    sequence_features = {
+        'PRESSED_KEYS': tf.FixedLenSequenceFeature(shape=[], dtype=tf.string),
+        'TIME_TO_TRANSITION': tf.FixedLenSequenceFeature(shape=[], dtype=tf.string),
+        'ACTIONS': tf.FixedLenSequenceFeature(shape=[], dtype=tf.string)
+    }
+
+    features = tf.parse_single_sequence_example(serialized=serialized_example, sequence_features=sequence_features)
+
+    # features = tf.parse_example(
+    #     serialized_example,
+    #     features={
+    #         # We know the length of both fields. If not the
+    #         # tf.VarLenFeature could be used
+    #         'PRESSED_KEYS': tf.FixedLenSequenceFeature(tf.string),
+    #         'TIME_TO_TRANSITION': tf.VarLenFeature(tf.string),
+    #         #'ACTIONS': tf.FixedLenFeature([5], tf.string)
+    #     })
 
     # now return the converted data
-    x = features['x']
-    y = features['y']
-    return x, y
+    print features
+    #x = features[1]['PRESSED_KEYS'] # 1 means the sequence_features. 0 index would be context_features
+    y = features[1]['TIME_TO_TRANSITION']
+    print y
+    return y
 
 
 
@@ -51,11 +62,17 @@ def read_and_decode_single_example(filename):
 # print filename_list
 # print('%d files in queue.' % len(filename_list))
 
-x_loaded, y_loaded = read_and_decode_single_example(['../../denseData_2017-11-06_08-57-41.NEWNEWNEW', '../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])
-print x_loaded
+y_loaded = read_and_decode_single_example(['../../denseDataTest.NEWNEWNEW'])
+
+y_loaded = tf.reshape(y_loaded,[1,1])
+# groups examples into batches
+y_batch = tf.train.batch(
+    [y_loaded], batch_size=1)
+
 with tf.Session() as sess:
     # ... init our variables, ...
+   # print sess.run(x_loaded)
     sess.run(tf.global_variables_initializer())
     tf.train.start_queue_runners(sess=sess)
-    x_input, y_input = sess.run([x_loaded, y_loaded])
-    print(x_input)
+    y_input = sess.run(y_batch)
+    print(y_input)
