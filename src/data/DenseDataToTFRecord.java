@@ -6,8 +6,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import org.tensorflow.example.BytesList;
+import org.tensorflow.example.Feature;
+import org.tensorflow.example.FeatureList;
+import org.tensorflow.example.FeatureLists;
+import org.tensorflow.example.FloatList;
+import org.tensorflow.example.SequenceExample;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import main.State;
 import main.State.StateVariable;
@@ -66,26 +75,49 @@ public class DenseDataToTFRecord {
 			count++;
 			System.out.println("Done. " + count + "/" + inFiles.size());
 
-			//			// Validate -- not needed during batch run.
-			//			DataSet dataValidate = null;
-			//			try {
-			//				FileInputStream fIn = new FileInputStream(fileOutName);
-			//				
-			//				dataValidate = DataSet.parseFrom(new FileInputStream(fileOutName));
-			//			} catch (IOException e) {
-			//				// TODO Auto-generated catch block
-			//				e.printStackTrace();
-			//			}
-			//			DenseData.State state1 = dataValidate.getDenseData(0).getState(10);
-			//			float dx1 = state1.getBody().getDx();
-			//			System.out.println("From new file: " + dx1 + ". From original data: " + denseDat.get(0).getState()[10].body.dx);
-			//			
-			//			
-			//			DenseData.State state2 = dataValidate.getDenseData(10).getState(3);
-			//			float th1 = state2.getHead().getTh();
-			//			System.out.println("From new file: " + th1 + ". From original data: " + denseDat.get(10).getState()[3].head.th);
-			//			break;
-			//			
+						// Validate -- not needed during batch run.
+			System.out.println("Validation stuff");
+						SequenceExample dataValidate = null;
+						FileInputStream fIn = null;
+						int counter = 0;
+						try {
+							
+							fIn = new FileInputStream(fileOutName);
+							while(fIn.available() > 0) {
+								dataValidate = SequenceExample.parseDelimitedFrom(fIn);
+								FeatureLists featLists = dataValidate.getFeatureLists();
+								Map<String, FeatureList> featListMap = featLists.getFeatureList();
+								for (String s : featListMap.keySet()) {
+									System.out.println(s);
+									FeatureList fl = featListMap.get(s);
+									List<Feature> flist = fl.getFeatureList();
+									for (Feature f : flist) {
+										List<ByteString> bl = f.getBytesList().getValueList();
+										for (ByteString b : bl) {
+											for (int i = 0; i < b.size(); i++) {
+												System.out.print(b.byteAt(i));
+											}
+											System.out.println();
+										}
+									}
+								}
+								counter++;
+								System.out.println("Done: " + counter);
+							}
+
+						System.out.println("Validation done");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} finally {
+							try {
+								fIn.close();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						
 		}
 	}
 
@@ -97,7 +129,7 @@ public class DenseDataToTFRecord {
 			featVals.addValue(state.getStateVarFromName(bodyPart, stateName));
 		}
 		feat.setFloatList(featVals.build());
-		listToAppendTo.addFeature(feat);
+		listToAppendTo.addFeature(feat.build());
 	}
 
 	/** Make a time series for a single run of a single state variable as a FeatureList. Add to the broader list of FeatureList for this run. **/
@@ -118,9 +150,9 @@ public class DenseDataToTFRecord {
 			FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & actions) in a single run.
 
 			// Pack up states
-			for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body parts and add to the overall list of feature lists.
-				makeStateFeatureList(dat, bodyPart, featLists);
-			}
+//			for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body parts and add to the overall list of feature lists.
+//				makeStateFeatureList(dat, bodyPart, featLists);
+//			}
 
 			// Pack up actions -- 3 different ways:
 			// 1) Keys pressed at individual timestep.
@@ -184,10 +216,10 @@ public class DenseDataToTFRecord {
 					actionList.addFeature(sequenceFeat.build());
 				}
 			}
-			featLists.putFeatureList("ACTIONS", transitionTSList.build());
+			featLists.putFeatureList("ACTIONS", actionList.build());
 			
 			seqEx.setFeatureLists(featLists.build());
-			seqEx.build().writeTo(stream);
+			seqEx.build().writeDelimitedTo(stream);
 		}
 		stream.close();
 	}
