@@ -23,6 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   serialized_pb=_b('\n\rexample.proto\x12\ntensorflow\x1a\rfeature.proto\"1\n\x07\x45xample\x12&\n\x08\x66\x65\x61tures\x18\x01 \x01(\x0b\x32\x14.tensorflow.Features\"i\n\x0fSequenceExample\x12%\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x14.tensorflow.Features\x12/\n\rfeature_lists\x18\x02 \x01(\x0b\x32\x18.tensorflow.FeatureListsB\x1a\n\x04\x64\x61taB\rExampleProtosP\x01\xf8\x01\x01\x62\x06proto3')
   ,
   dependencies=[feature__pb2.DESCRIPTOR,])
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -40,7 +41,7 @@ _EXAMPLE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
@@ -71,14 +72,14 @@ _SEQUENCEEXAMPLE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='feature_lists', full_name='tensorflow.SequenceExample.feature_lists', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
@@ -100,7 +101,6 @@ _SEQUENCEEXAMPLE.fields_by_name['context'].message_type = feature__pb2._FEATURES
 _SEQUENCEEXAMPLE.fields_by_name['feature_lists'].message_type = feature__pb2._FEATURELISTS
 DESCRIPTOR.message_types_by_name['Example'] = _EXAMPLE
 DESCRIPTOR.message_types_by_name['SequenceExample'] = _SEQUENCEEXAMPLE
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Example = _reflection.GeneratedProtocolMessageType('Example', (_message.Message,), dict(
   DESCRIPTOR = _EXAMPLE,
