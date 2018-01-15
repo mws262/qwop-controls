@@ -36,7 +36,7 @@ def read_and_decode_single_example(filename):
 
    # example proto decode
 def _parse_function(example_proto):
-    keys_to_features = {'x':tf.FixedLenFeature((1), tf.float32)}
+    keys_to_features = {'x':tf.FixedLenFeature((6), tf.float32)}
     parsed_features = tf.parse_single_example(example_proto, keys_to_features)
     return parsed_features['x']
 

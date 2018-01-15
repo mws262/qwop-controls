@@ -16,10 +16,7 @@ import org.tensorflow.example.FloatList;
 import org.tensorflow.example.SequenceExample;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Descriptors.FieldDescriptor;
-
 import main.State;
-import main.State.StateVariable;
 import main.Action;
 
 
