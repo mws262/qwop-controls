@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.tensorflow.example.BytesList;
+import org.tensorflow.example.Example;
 import org.tensorflow.example.Feature;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.FeatureLists;
@@ -143,13 +144,14 @@ public class DenseDataToTFRecord {
 		
 		// Iterate through all runs in a single file.
 		for (SaveableDenseData dat : denseData) {
+			Example.Builder exB = Example.newBuilder();
 			SequenceExample.Builder seqEx = SequenceExample.newBuilder();
 			FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & actions) in a single run.
 
 			// Pack up states
-//			for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body parts and add to the overall list of feature lists.
-//				makeStateFeatureList(dat, bodyPart, featLists);
-//			}
+			for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body parts and add to the overall list of feature lists.
+				makeStateFeatureList(dat, bodyPart, featLists);
+			}
 
 			// Pack up actions -- 3 different ways:
 			// 1) Keys pressed at individual timestep.
@@ -217,7 +219,6 @@ public class DenseDataToTFRecord {
 			
 			seqEx.setFeatureLists(featLists.build());
 			TFRecordWriter.writeToStream(seqEx.build().toByteArray(), stream);
-			break;
 		}
 		stream.close();
 	}
