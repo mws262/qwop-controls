@@ -72,49 +72,49 @@ public class DenseDataToTFRecord {
 			count++;
 			System.out.println("Done. " + count + "/" + inFiles.size());
 
-						// Validate -- not needed during batch run.
-			System.out.println("Validation stuff");
-						SequenceExample dataValidate = null;
-						FileInputStream fIn = null;
-						int counter = 0;
-						try {
-							
-							fIn = new FileInputStream(fileOutName);
-							while(fIn.available() > 0) {
-								dataValidate = SequenceExample.parseDelimitedFrom(fIn);
-								FeatureLists featLists = dataValidate.getFeatureLists();
-								Map<String, FeatureList> featListMap = featLists.getFeatureList();
-								for (String s : featListMap.keySet()) {
-									System.out.println(s);
-									FeatureList fl = featListMap.get(s);
-									List<Feature> flist = fl.getFeatureList();
-									for (Feature f : flist) {
-										List<ByteString> bl = f.getBytesList().getValueList();
-										for (ByteString b : bl) {
-											for (int i = 0; i < b.size(); i++) {
-												System.out.print(b.byteAt(i));
-											}
-											System.out.println();
-										}
-									}
-								}
-								counter++;
-								System.out.println("Done: " + counter);
-							}
-
-						System.out.println("Validation done");
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} finally {
-							try {
-								fIn.close();
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						
+//						// Validate -- not needed during batch run.
+//			System.out.println("Validation stuff");
+//						SequenceExample dataValidate = null;
+//						FileInputStream fIn = null;
+//						int counter = 0;
+//						try {
+//							
+//							fIn = new FileInputStream(fileOutName);
+//							while(fIn.available() > 0) {
+//								dataValidate = SequenceExample.parseDelimitedFrom(fIn);
+//								FeatureLists featLists = dataValidate.getFeatureLists();
+//								Map<String, FeatureList> featListMap = featLists.getFeatureList();
+//								for (String s : featListMap.keySet()) {
+//									System.out.println(s);
+//									FeatureList fl = featListMap.get(s);
+//									List<Feature> flist = fl.getFeatureList();
+//									for (Feature f : flist) {
+//										List<ByteString> bl = f.getBytesList().getValueList();
+//										for (ByteString b : bl) {
+//											for (int i = 0; i < b.size(); i++) {
+//												System.out.print(b.byteAt(i));
+//											}
+//											System.out.println();
+//										}
+//									}
+//								}
+//								counter++;
+//								System.out.println("Done: " + counter);
+//							}
+//
+//						System.out.println("Validation done");
+//						} catch (IOException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						} finally {
+//							try {
+//								fIn.close();
+//							} catch (IOException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//						}
+//						
 		}
 	}
 
@@ -216,7 +216,8 @@ public class DenseDataToTFRecord {
 			featLists.putFeatureList("ACTIONS", actionList.build());
 			
 			seqEx.setFeatureLists(featLists.build());
-			seqEx.build().writeDelimitedTo(stream);
+			TFRecordWriter.writeToStream(seqEx.build().toByteArray(), stream);
+			break;
 		}
 		stream.close();
 	}

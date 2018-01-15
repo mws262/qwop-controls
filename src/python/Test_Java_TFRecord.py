@@ -8,6 +8,8 @@ import math
 
 # Test and debug tfrecord files written from my java end.
 
+feature = 'TIME_TO_TRANSITION'
+
 def read_and_decode_single_example(filename):
     # first construct a queue containing a list of filenames.
     # this lets a user split up there dataset in multiple files to keep
@@ -21,70 +23,44 @@ def read_and_decode_single_example(filename):
     _, serialized_example = reader.read(filename_queue)
     # The serialized example is converted back to actual values.
     # One needs to describe the format of the objects to be returned
-    features = tf.parse_single_example(
-        serialized_example,
-        features={
+    features = tf.parse_single_sequence_example(
+        serialized=serialized_example,
+        sequence_features={
             # We know the length of both fields. If not the
             # tf.VarLenFeature could be used
-            'x': tf.VarLenFeature(tf.float32)
+            'PRESSED_KEYS': tf.FixedLenSequenceFeature([],tf.string,True),
+            'TIME_TO_TRANSITION': tf.FixedLenSequenceFeature([],tf.string,True),
+            'ACTIONS': tf.FixedLenSequenceFeature([],tf.string,True)
         })
 
-
     # now return the converted data
-    x = features['x']
-    return x
+    pk = tf.decode_raw(features[1]['PRESSED_KEYS'],tf.uint8)
+    tt = tf.decode_raw(features[1]['TIME_TO_TRANSITION'],tf.uint8),
+    act = tf.decode_raw(features[1]['ACTIONS'],tf.uint8)
+    return pk,tt,act
 
-   # example proto decode
-def _parse_function(example_proto):
-    keys_to_features = {'x':tf.FixedLenFeature((6), tf.float32)}
-    parsed_features = tf.parse_single_example(example_proto, keys_to_features)
-    return parsed_features['x']
+filename_list = []
+print os.listdir('../../')
+for file in os.listdir('../../'):
+    if file.endswith('.NEWNEWNEW'):
+        filename_list.append(file)
 
-filenames = ['../../test.NEWNEWNEW']
-dataset = tf.contrib.data.TFRecordDataset(filenames)
+filename_list.append(filename_list)
 
-# Parse the record into tensors.
-dataset = dataset.map(_parse_function)
+print filename_list
+print('%d files in queue.' % len(filename_list))
 
-# Shuffle the dataset
-dataset = dataset.shuffle(buffer_size=100)
+options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.NONE)
 
-# Repeat the input indefinitly
-dataset = dataset.repeat()
 
-# Generate batches
-dataset = dataset.batch(1)
-
-# Create a one-shot iterator
-iterator = dataset.make_one_shot_iterator()
-
-# Get batch X and y
-x = iterator.get_next()
-print x
-
+pk,tt,act = read_and_decode_single_example(['../../denseDataTest.NEWNEWNEW']);#'../../denseData_2017-11-06_08-57-41.NEWNEWNEW', '../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])
 with tf.Session() as sess:
+    # ... init our variables, ...
     sess.run(tf.global_variables_initializer())
-    val = sess.run(x)
-    print val
-# filename_list = []
-# print os.listdir('../../')
-# for file in os.listdir('../../'):
-#     if file.endswith('.NEWNEWNEW'):
-#         filename_list.append(file)
-#
-# filename_list.append(filename_list)
-#
-# print filename_list
-# print('%d files in queue.' % len(filename_list))
-#
-# options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.NONE)
-#
-#
-# x_loaded = read_and_decode_single_example(['../../test.NEWNEWNEW']);#'../../denseData_2017-11-06_08-57-41.NEWNEWNEW', '../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])
-# print x_loaded
-# with tf.Session() as sess:
-#     # ... init our variables, ...
-#     sess.run(tf.global_variables_initializer())
-#     tf.train.start_queue_runners(sess=sess)
-#     x_input = sess.run([x_loaded])
-#     print(x_input)
+    tf.train.start_queue_runners(sess=sess)
+    pkIn = sess.run([pk])
+    ttIn = sess.run([tt])
+    actIn = sess.run([act])
+    print pkIn
+    print ttIn
+    print actIn

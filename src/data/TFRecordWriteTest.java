@@ -58,70 +58,16 @@ public class TFRecordWriteTest {
 		ex.setFeatures(feats.build());
 		System.out.println(ex.build().toString());
 
-		byte[] exSerialized = ex.build().toByteArray();
-		byte[] length = LittleEndianEncoding.encodeLong(exSerialized.length);
-		byte[] crcLength = LittleEndianEncoding.encodeInt(CRC32.mask(CRC32.hash(length)));
-		byte[] crcEx = LittleEndianEncoding.encodeInt(CRC32.mask(CRC32.hash(exSerialized)));
-
 		FileOutputStream stream = null;
 		try {
 			stream = new FileOutputStream(new File("test.NEWNEWNEW"));
-			stream.write(length);
-			stream.write(crcLength);
-			stream.write(exSerialized);
-			stream.write(crcEx);
-
+			TFRecordWriter.writeToStream(ex.build().toByteArray(), stream);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-	}
-
-
-	// Code shamelessly ripped and converted from scala from : https://stackoverflow.com/questions/34711264/pure-java-scala-code-for-writing-tensorflow-tfrecords-data-file
-	// Thank you kind stranger.
-	public static class CRC32 {
-		private static final int MASK_DELTA = 0xa282ead8;
-
-		public static int hash(byte[] input) {
-			HashFunction hf = Hashing.crc32c();
-			return hf.hashBytes(input).asInt();
-		}
-
-		public static int mask(int crc) {
-			// Rotate right by 15 bits and add a constant.
-			return ((crc >>> 15) | (crc << 17)) + MASK_DELTA;
-		}
-		public static int unmask(int maskedCrc) {
-			int rot = maskedCrc - MASK_DELTA;
-			return ((rot >>> 17) | (rot << 15));
-		}
-	}
-
-	public static class LittleEndianEncoding {
-		public static byte[] encodeLong(long input) {
-			ByteArrayOutputStream bStream = new ByteArrayOutputStream();
-			LittleEndianDataOutputStream leStream = new LittleEndianDataOutputStream(bStream);
-			try {
-				leStream.writeLong(input);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return bStream.toByteArray();
-		}
-
-		public static byte[] encodeInt(int input) {
-			ByteArrayOutputStream bStream = new ByteArrayOutputStream();
-			LittleEndianDataOutputStream leStream = new LittleEndianDataOutputStream(bStream);
-			try {
-				leStream.writeInt(input);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return bStream.toByteArray();
 		}
 	}
 }
