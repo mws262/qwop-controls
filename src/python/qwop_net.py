@@ -184,6 +184,16 @@ state_batch, action_batch = tf.train.shuffle_batch(
     allow_smaller_final_batch=False,
     name='rand_batch')
 
+batch = tf.batch_sequences_with_states(
+    input_key=key,
+    input_sequences=sequences,
+    input_context=context,
+    initial_states=initial_states,
+    num_unroll=num_unroll,
+    batch_size=batch_size,
+    num_threads=num_enqueue_threads,
+    capacity=batch_size * num_enqueue_threads * 2)
+
 # LAYERS
 
 # Input layer.

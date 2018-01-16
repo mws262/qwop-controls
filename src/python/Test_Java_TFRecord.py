@@ -25,6 +25,9 @@ def read_and_decode_single_example(filename):
     # One needs to describe the format of the objects to be returned
     features = tf.parse_single_sequence_example(
         serialized=serialized_example,
+        # context_features={
+        #     'TIMESTEPS': tf.VarLenFeature(tf.string)
+        # },
         sequence_features={
             # We know the length of both fields. If not the
             # tf.VarLenFeature could be used
@@ -35,11 +38,12 @@ def read_and_decode_single_example(filename):
         })
 
     # now return the converted data
+    ts = features[0]# tf.decode_raw(features[0]['TIMESTEPS'],tf.int64)
     body = features[1]['BODY']
     pk = tf.decode_raw(features[1]['PRESSED_KEYS'],tf.uint8)
     tt = tf.decode_raw(features[1]['TIME_TO_TRANSITION'],tf.uint8),
     act = tf.decode_raw(features[1]['ACTIONS'],tf.uint8)
-    return pk,tt,act,body
+    return pk,tt,act,body,ts
 
 filename_list = []
 print os.listdir('../../')
@@ -55,7 +59,7 @@ print('%d files in queue.' % len(filename_list))
 options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.NONE)
 
 
-pk,tt,act,body = read_and_decode_single_example(['../../denseDataTest.NEWNEWNEW'])#'../../denseData_2017-11-06_08-57-41.NEWNEWNEW', '../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])
+pk,tt,act,body,ts = read_and_decode_single_example(['../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])#'../../denseData_2017-11-06_08-57-41.NEWNEWNEW', '../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])
 with tf.Session() as sess:
     # ... init our variables, ...
     sess.run(tf.global_variables_initializer())
@@ -64,11 +68,13 @@ with tf.Session() as sess:
     ttIn = sess.run([tt])
     actIn = sess.run([act])
     bodyIn = sess.run([body])
+    tsIn = sess.run([ts])
     print pkIn
     print ttIn
     print actIn
     print bodyIn
-
-    for i in range(10):
-        ttIn = sess.run([tt])
-        print ttIn
+    print tsIn
+    #
+    # for i in range(10):
+    #     ttIn = sess.run([tt])
+    #     print ttIn
