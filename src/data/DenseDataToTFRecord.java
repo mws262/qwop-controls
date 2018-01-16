@@ -163,7 +163,7 @@ public class DenseDataToTFRecord {
 
 			// 1) Keys pressed at individual timestep. 0 or 1 in bytes for each key
 			FeatureList.Builder keyFeatList = FeatureList.newBuilder();
-			long timestep = 0;
+			//long timestep = 0;
 			for (Action act : dat.getAction()) {
 				Feature.Builder keyFeat = Feature.newBuilder();
 				BytesList.Builder keyDat = BytesList.newBuilder();
@@ -175,8 +175,8 @@ public class DenseDataToTFRecord {
 				keyDat.addValue(ByteString.copyFrom(keys));
 				keyFeat.setBytesList(keyDat.build());
 				keyFeatList.addFeature(keyFeat.build());
-				tsList.addValue(timestep);
-				timestep++;
+				//tsList.addValue(timestep);
+				//timestep++;
 			}
 			featLists.putFeatureList("PRESSED_KEYS", keyFeatList.build());
 
@@ -224,6 +224,7 @@ public class DenseDataToTFRecord {
 			featLists.putFeatureList("ACTIONS", actionList.build());
 			
 			// Adding the timesteps as the context for each sequence.
+			/*
 			Features.Builder contextFeats = Features.newBuilder();
 			Feature.Builder timestepContext = Feature.newBuilder();			
 			
@@ -231,6 +232,7 @@ public class DenseDataToTFRecord {
 			contextFeats.putFeature("TIMESTEPS", timestepContext.build());
 			
 			seqEx.setContext(contextFeats.build());
+			*/
 			seqEx.setFeatureLists(featLists.build());
 			TFRecordWriter.writeToStream(seqEx.build().toByteArray(), stream);
 			break;
