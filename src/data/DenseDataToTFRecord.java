@@ -13,7 +13,9 @@ import org.tensorflow.example.Example;
 import org.tensorflow.example.Feature;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.FeatureLists;
+import org.tensorflow.example.Features;
 import org.tensorflow.example.FloatList;
+import org.tensorflow.example.Int64List;
 import org.tensorflow.example.SequenceExample;
 
 import com.google.protobuf.ByteString;
@@ -147,6 +149,7 @@ public class DenseDataToTFRecord {
 			Example.Builder exB = Example.newBuilder();
 			SequenceExample.Builder seqEx = SequenceExample.newBuilder();
 			FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & actions) in a single run.
+			Int64List.Builder tsList = Int64List.newBuilder();
 
 			// Pack up states
 			for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body parts and add to the overall list of feature lists.
@@ -160,6 +163,7 @@ public class DenseDataToTFRecord {
 
 			// 1) Keys pressed at individual timestep. 0 or 1 in bytes for each key
 			FeatureList.Builder keyFeatList = FeatureList.newBuilder();
+			long timestep = 0;
 			for (Action act : dat.getAction()) {
 				Feature.Builder keyFeat = Feature.newBuilder();
 				BytesList.Builder keyDat = BytesList.newBuilder();
@@ -171,6 +175,8 @@ public class DenseDataToTFRecord {
 				keyDat.addValue(ByteString.copyFrom(keys));
 				keyFeat.setBytesList(keyDat.build());
 				keyFeatList.addFeature(keyFeat.build());
+				tsList.addValue(timestep);
+				timestep++;
 			}
 			featLists.putFeatureList("PRESSED_KEYS", keyFeatList.build());
 
@@ -217,8 +223,17 @@ public class DenseDataToTFRecord {
 			}
 			featLists.putFeatureList("ACTIONS", actionList.build());
 			
+			// Adding the timesteps as the context for each sequence.
+			Features.Builder contextFeats = Features.newBuilder();
+			Feature.Builder timestepContext = Feature.newBuilder();			
+			
+			timestepContext.setInt64List(tsList.build());
+			contextFeats.putFeature("TIMESTEPS", timestepContext.build());
+			
+			seqEx.setContext(contextFeats.build());
 			seqEx.setFeatureLists(featLists.build());
 			TFRecordWriter.writeToStream(seqEx.build().toByteArray(), stream);
+			break;
 		}
 		stream.close();
 	}
