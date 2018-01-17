@@ -22,9 +22,13 @@ stateKeys = ['BODY', 'HEAD', 'RTHIGH', 'LTHIGH', 'RCALF', 'LCALF',
 # Various action parameterizations put in the TFRECORD files
 actionKeys = ['PRESSED_KEYS', 'TIME_TO_TRANSITION', 'ACTIONS']
 
+# Various information pertaining to the ENTIRE run, but not recorded at every timestep
+contextKeys = ['TIMESTEPS']
+
 # Tensorflow placeholders for for sequence and action features as defined by the stateKeys and actionKeys above.
 sequence_features = {skey: tf.FixedLenSequenceFeature([6], tf.float32, True) for skey in stateKeys}
 sequence_features.update({akey: tf.FixedLenSequenceFeature([], tf.string, True) for akey in actionKeys})
+context_features = {ckey: tf.FixedLenFeature([],tf.int64,True) for ckey in contextKeys}
 
 
 '''
@@ -51,12 +55,13 @@ def read_and_decode_example(filename):
     # The serialized example is converted back to actual values.
     features = tf.parse_single_sequence_example(
         serialized=serialized_example,
+        context_features=context_features,
         sequence_features=sequence_features
     )
+    context = features[0] # Total number of timesteps in here with key 'TIMESTEPS'
     states_in = {key: features[1][key] for key in stateKeys}
     actions_in= {key: tf.decode_raw(features[1][key], tf.uint8) for key in actionKeys}
-
-    return states_in, actions_in
+    return context, states_in, actions_in
 
 
 def process_state(state_dict):
@@ -169,11 +174,11 @@ for file in os.listdir(tfrecordPath):
         print(nextFile)
 
 # OVERRIDE:
-filename_list = ['../../denseData_2017-11-06_08-57-41.NEWNEWNEW']
+filename_list = ['../../denseDataTest.NEWNEWNEW']  # denseData_2017-11-06_08-57-41.NEWNEWNEW']
 print('%d files in queue.' % len(filename_list))
 
 # Read in data and rearrange.
-states,actions = read_and_decode_example(filename_list)
+context,states,actions = read_and_decode_example(filename_list)
 states_processed = process_state(states)
 actions_processed = process_action(actions)
 
@@ -192,15 +197,22 @@ state_size = 6
 initial_state_values = tf.zeros((state_size,), dtype=tf.float32)
 initial_states = {'runner_state': initial_state_values}
 
+
+## MY UNDERSTANDING OF THIS QUEUEING:
+# sess.run(batch...) returns a new set of data at runtime.
+# It starts at the first run in the file and returns batch_size number of runs at a time. This loops back around after
+# all have been iterated through.
+# Each run returned will have num_unroll worth of timesteps in it. I believe that this wraps back again too.
 batch = tf.contrib.training.batch_sequences_with_states(
     input_key=tf.as_string(key.assign_add(1)),
     input_sequences=states,
-    input_context={'context': 0},
-    input_length=None,
+    input_context=context,
+    input_length=tf.cast(context['TIMESTEPS'],tf.int32),
     initial_states=initial_states,
-    num_unroll=1,
-    batch_size=1,
-    num_threads=1)
+    num_unroll=500, # How many timesteps from each sequence to pull each loop through the runs.
+    batch_size=2, # How many runs to pull in one call.
+    num_threads=4,
+    make_keys_unique=True)
 
 # key = tf.Variable(0)
 #
@@ -220,6 +232,8 @@ batch = tf.contrib.training.batch_sequences_with_states(
 # batch = stateful_reader.next_batch
 # print batch
 inputs = batch.sequences['RUARM']
+inputs_by_time = tf.split(inputs,500,1)
+context_label = batch.context['TIMESTEPS']
 print batch
 # # LAYERS
 #
@@ -263,6 +277,9 @@ print batch
 # # Merge all summaries into a single op
 # merged_summary_op = tf.summary.merge_all()
 
+
+coord = tf.train.Coordinator() # Can kill everything when code is done. Prevents the `Skipping cancelled enqueue attempt with queue not closed'
+
 '''
 EXECUTE NET
 '''
@@ -275,12 +292,17 @@ with tf.Session() as sess:
     # queue_runner = tf.train.QueueRunner(
     #     stateful_reader, [stateful_reader.prefetch_op] * num_threads)
     # tf.train.add_queue_runner(queue_runner)
-    tf.train.start_queue_runners(sess=sess)
+    threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    for i in range(10):
+    for i in range(100):
 
-        batchIn = sess.run([inputs])
-        print batchIn
+        batchIn = sess.run([inputs_by_time])
+        print sess.run([context_label])
+        print batchIn[-1][-1]
+
+    # Stop all the queue threads.
+    coord.request_stop()
+    coord.join(threads)
 
 
 
