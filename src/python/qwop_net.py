@@ -168,6 +168,8 @@ for file in os.listdir(tfrecordPath):
         filename_list.append(nextFile)
         print(nextFile)
 
+# OVERRIDE:
+filename_list = ['../../denseData_2017-11-06_08-57-41.NEWNEWNEW']
 print('%d files in queue.' % len(filename_list))
 
 # Read in data and rearrange.
@@ -175,66 +177,91 @@ states,actions = read_and_decode_example(filename_list)
 states_processed = process_state(states)
 actions_processed = process_action(actions)
 
-# Groups examples into batches randomly
-state_batch, action_batch = tf.train.shuffle_batch(
-    [states_processed, actions_processed], batch_size=1000,
-    capacity=20000,
-    min_after_dequeue=500,
-    enqueue_many=False, # I think this might be wrong.
-    allow_smaller_final_batch=False,
-    name='rand_batch')
+# # Groups examples into batches randomly
+# state_batch, action_batch = tf.train.shuffle_batch(
+#     [states_processed, actions_processed], batch_size=1000,
+#     capacity=20000,
+#     min_after_dequeue=500,
+#     enqueue_many=False, # I think this might be wrong.
+#     allow_smaller_final_batch=False,
+#     name='rand_batch')
+#
+#
+key = tf.Variable(0)
+state_size = 6
+initial_state_values = tf.zeros((state_size,), dtype=tf.float32)
+initial_states = {'runner_state': initial_state_values}
 
-batch = tf.batch_sequences_with_states(
-    input_key=key,
-    input_sequences=sequences,
-    input_context=context,
+batch = tf.contrib.training.batch_sequences_with_states(
+    input_key=tf.as_string(key.assign_add(1)),
+    input_sequences=states,
+    input_context={'context': 0},
+    input_length=None,
     initial_states=initial_states,
-    num_unroll=num_unroll,
-    batch_size=batch_size,
-    num_threads=num_enqueue_threads,
-    capacity=batch_size * num_enqueue_threads * 2)
+    num_unroll=1,
+    batch_size=1,
+    num_threads=1)
 
-# LAYERS
-
-# Input layer.
-with tf.name_scope('input'):
-    state = tf.placeholder(tf.float32, shape=[None, 72], name='state-input')
-    action_true = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
-
-# Layer 1: Fully-connected.
-layer1 = nn_layer(state, 72, 72*4, 'layer1')
-
-# Layer 2: Fully connected, with dropout. During training, some nodes are trimmed out to keep the net general.
-with tf.name_scope('dropout'):
-    keep_prob = tf.placeholder(tf.float32)
-    tf.summary.scalar('dropout_keep_probability', keep_prob)
-    dropped = tf.nn.dropout(layer1, keep_prob)
-    layer2 = nn_layer(dropped, 72*4, 72, 'layer2')
-
-action_pred = nn_layer(layer2, 72, 1, 'layer3')
-
-with tf.name_scope('Loss'):
-    loss_op = tf.losses.mean_squared_error(action_true, action_pred)
-    #loss_op = tf.reduce_mean(tf.divide(tf.square(tf.subtract(tf.cast(y_true, tf.float32),y)),tf.add(tf.cast(y_true, tf.float32),2.0)))
-with tf.name_scope('Accuracy'):
-    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(tf.round(action_pred),tf.int32),tf.cast(action_true,tf.int32)),tf.float32))
-
-# Training operation.
-adam = tf.train.AdamOptimizer(learn_rate)
-train_op = adam.minimize(loss_op, name="optimizer")
-
-
-# FINAL SETUP
-
-# Add ops to save and restore all the variables -- checkpoint style
-saver = tf.train.Saver()
-
-# Create a summary to monitor cost tensor
-tf.summary.scalar("loss", loss_op)
-tf.summary.scalar("accuracy", accuracy)
-
-# Merge all summaries into a single op
-merged_summary_op = tf.summary.merge_all()
+# key = tf.Variable(0)
+#
+# state_size = 6
+# initial_state_values = tf.zeros((state_size,), dtype=tf.float32)
+# initial_states = {'runner_state': initial_state_values}
+#
+# stateful_reader = tf.contrib.training.SequenceQueueingStateSaver(
+#     input_key=tf.as_string(key.assign_add(1)),
+#     input_sequences=states,
+#     input_context={'context': 0},
+#     input_length=10,
+#     initial_states=initial_states,
+#     num_unroll=1,
+#     batch_size=1)
+#
+# batch = stateful_reader.next_batch
+# print batch
+inputs = batch.sequences['RUARM']
+print batch
+# # LAYERS
+#
+# # Input layer.
+# with tf.name_scope('input'):
+#     state = tf.placeholder(tf.float32, shape=[None, 72], name='state-input')
+#     action_true = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
+#
+# # Layer 1: Fully-connected.
+# layer1 = nn_layer(state, 72, 72*4, 'layer1')
+#
+# # Layer 2: Fully connected, with dropout. During training, some nodes are trimmed out to keep the net general.
+# with tf.name_scope('dropout'):
+#     keep_prob = tf.placeholder(tf.float32)
+#     tf.summary.scalar('dropout_keep_probability', keep_prob)
+#     dropped = tf.nn.dropout(layer1, keep_prob)
+#     layer2 = nn_layer(dropped, 72*4, 72, 'layer2')
+#
+# action_pred = nn_layer(layer2, 72, 1, 'layer3')
+#
+# with tf.name_scope('Loss'):
+#     loss_op = tf.losses.mean_squared_error(action_true, action_pred)
+#     #loss_op = tf.reduce_mean(tf.divide(tf.square(tf.subtract(tf.cast(y_true, tf.float32),y)),tf.add(tf.cast(y_true, tf.float32),2.0)))
+# with tf.name_scope('Accuracy'):
+#     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(tf.round(action_pred),tf.int32),tf.cast(action_true,tf.int32)),tf.float32))
+#
+# # Training operation.
+# adam = tf.train.AdamOptimizer(learn_rate)
+# train_op = adam.minimize(loss_op, name="optimizer")
+#
+#
+# # FINAL SETUP
+#
+# # Add ops to save and restore all the variables -- checkpoint style
+# saver = tf.train.Saver()
+#
+# # Create a summary to monitor cost tensor
+# tf.summary.scalar("loss", loss_op)
+# tf.summary.scalar("accuracy", accuracy)
+#
+# # Merge all summaries into a single op
+# merged_summary_op = tf.summary.merge_all()
 
 '''
 EXECUTE NET
@@ -244,7 +271,18 @@ with tf.Session() as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
     # Ready data input queues.
+    # num_threads = 1
+    # queue_runner = tf.train.QueueRunner(
+    #     stateful_reader, [stateful_reader.prefetch_op] * num_threads)
+    # tf.train.add_queue_runner(queue_runner)
     tf.train.start_queue_runners(sess=sess)
+
+    for i in range(10):
+
+        batchIn = sess.run([inputs])
+        print batchIn
+
+
 
     # #if os.path.isfile("./tmp/model.ckpt"):
     #  saver.restore(sess, "./tmp/model.ckpt")
@@ -253,20 +291,20 @@ with tf.Session() as sess:
     # for n in tf.get_default_graph().as_graph_def().node:
     #     print(n.name)
 
-    # Summary written to be used by TensorBoard
-    summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
-
-    # TRAIN
-    for i in range(100):
-        state_input, action_input = sess.run([state_batch, action_batch])
-
-        _, loss, acc, summary = sess.run([train_op, loss_op, accuracy, merged_summary_op],feed_dict={state: state_input, action_true: action_input, keep_prob: 0.9})
-
-        summary_writer.add_summary(summary, i)
-
-        print('iter:%d - loss:%f - accuracy:%f' % (i, loss, acc))
-        # if i % 10 == 9:
-        #     save_path = saver.save(sess, "./tmp/model.ckpt")
+    # # Summary written to be used by TensorBoard
+    # summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
+    #
+    # # TRAIN
+    # for i in range(100):
+    #     state_input, action_input = sess.run([state_batch, action_batch])
+    #
+    #     _, loss, acc, summary = sess.run([train_op, loss_op, accuracy, merged_summary_op],feed_dict={state: state_input, action_true: action_input, keep_prob: 0.9})
+    #
+    #     summary_writer.add_summary(summary, i)
+    #
+    #     print('iter:%d - loss:%f - accuracy:%f' % (i, loss, acc))
+    #     # if i % 10 == 9:
+    #     #     save_path = saver.save(sess, "./tmp/model.ckpt")
 
 
 
