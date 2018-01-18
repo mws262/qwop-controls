@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import os.path
+from tensorflow.python.ops import rnn, rnn_cell
 
 '''
 PARAMETERS & SETTINGS
@@ -59,9 +60,10 @@ def read_and_decode_example(filename):
         sequence_features=sequence_features
     )
     context = features[0] # Total number of timesteps in here with key 'TIMESTEPS'
-    states_in = {key: features[1][key] for key in stateKeys}
-    actions_in= {key: tf.decode_raw(features[1][key], tf.uint8) for key in actionKeys}
-    return context, states_in, actions_in
+    feats = {key: features[1][key] for key in stateKeys}  # States
+    feats.update({key: tf.reshape(tf.decode_raw(features[1][key], tf.uint8),(1,)) for key in actionKeys})  # Attach actions too after decoding.
+
+    return context, feats
 
 
 def process_state(state_dict):
@@ -160,6 +162,23 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
 
         return activations
 
+def lstm_layer(input_tensor, input_dim, output_dim, layer_name):
+
+    # Adding a name scope ensures logical grouping of the layers in the graph.
+    with tf.name_scope(layer_name):
+        # This Variable will hold the state of the weights for the layer
+        with tf.name_scope('weights'):
+            weights = weight_variable([input_dim, output_dim])
+            variable_summaries(weights)
+        with tf.name_scope('biases'):
+            biases = bias_variable([output_dim])
+            variable_summaries(biases)
+        with tf.name_scope('LSTM'):
+            lstm_cell = rnn_cell.BasicLSTMCell(input_dim, state_is_tuple=True)
+            outputs, states = rnn.static_rnn(lstm_cell, input_tensor, dtype=tf.float32)
+        with tf.name_scope('Wx_plus_b'):
+            activations = tf.matmul(outputs[-1], weights) + biases
+        return activations
 
 '''
 DEFINE SPECIFIC DATAFLOW
@@ -178,34 +197,21 @@ filename_list = ['../../denseDataTest.NEWNEWNEW']  # denseData_2017-11-06_08-57-
 print('%d files in queue.' % len(filename_list))
 
 # Read in data and rearrange.
-context,states,actions = read_and_decode_example(filename_list)
-states_processed = process_state(states)
-actions_processed = process_action(actions)
-
-# # Groups examples into batches randomly
-# state_batch, action_batch = tf.train.shuffle_batch(
-#     [states_processed, actions_processed], batch_size=1000,
-#     capacity=20000,
-#     min_after_dequeue=500,
-#     enqueue_many=False, # I think this might be wrong.
-#     allow_smaller_final_batch=False,
-#     name='rand_batch')
-#
-#
-key = tf.Variable(0)
-state_size = 6
-initial_state_values = tf.zeros((state_size,), dtype=tf.float32)
-initial_states = {'runner_state': initial_state_values}
-
+context,features = read_and_decode_example(filename_list)
 
 ## MY UNDERSTANDING OF THIS QUEUEING:
 # sess.run(batch...) returns a new set of data at runtime.
 # It starts at the first run in the file and returns batch_size number of runs at a time. This loops back around after
 # all have been iterated through.
 # Each run returned will have num_unroll worth of timesteps in it. I believe that this wraps back again too.
+key = tf.Variable(0)
+state_size = 6
+initial_state_values = tf.zeros((state_size,), dtype=tf.float32)
+initial_states = {'runner_state': initial_state_values}
+
 batch = tf.contrib.training.batch_sequences_with_states(
     input_key=tf.as_string(key.assign_add(1)),
-    input_sequences=states,
+    input_sequences=features,
     input_context=context,
     input_length=tf.cast(context['TIMESTEPS'],tf.int32),
     initial_states=initial_states,
@@ -214,34 +220,22 @@ batch = tf.contrib.training.batch_sequences_with_states(
     num_threads=4,
     make_keys_unique=True)
 
-# key = tf.Variable(0)
-#
-# state_size = 6
-# initial_state_values = tf.zeros((state_size,), dtype=tf.float32)
-# initial_states = {'runner_state': initial_state_values}
-#
-# stateful_reader = tf.contrib.training.SequenceQueueingStateSaver(
-#     input_key=tf.as_string(key.assign_add(1)),
-#     input_sequences=states,
-#     input_context={'context': 0},
-#     input_length=10,
-#     initial_states=initial_states,
-#     num_unroll=1,
-#     batch_size=1)
-#
-# batch = stateful_reader.next_batch
-# print batch
-inputs = batch.sequences['RUARM']
+inputs = batch.sequences['BODY']
+#outputs = batch.sequences['TIME_TO_TRANSITION']
 inputs_by_time = tf.split(inputs,500,1)
 context_label = batch.context['TIMESTEPS']
 print batch
-# # LAYERS
-#
-# # Input layer.
-# with tf.name_scope('input'):
-#     state = tf.placeholder(tf.float32, shape=[None, 72], name='state-input')
-#     action_true = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
-#
+
+# LAYERS
+
+# Input layer.
+with tf.name_scope('input'):
+    state = tf.placeholder(tf.float32, shape=[None, 72], name='state-input')
+    action_true = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
+
+
+lstm1 = lstm_layer(inputs_by_time, state_size, 1, 'lstm1')
+
 # # Layer 1: Fully-connected.
 # layer1 = nn_layer(state, 72, 72*4, 'layer1')
 #
@@ -254,28 +248,28 @@ print batch
 #
 # action_pred = nn_layer(layer2, 72, 1, 'layer3')
 #
-# with tf.name_scope('Loss'):
-#     loss_op = tf.losses.mean_squared_error(action_true, action_pred)
-#     #loss_op = tf.reduce_mean(tf.divide(tf.square(tf.subtract(tf.cast(y_true, tf.float32),y)),tf.add(tf.cast(y_true, tf.float32),2.0)))
+with tf.name_scope('Loss'):
+    loss_op = tf.losses.mean_squared_error(outputs, lstm1)
+    #loss_op = tf.reduce_mean(tf.divide(tf.square(tf.subtract(tf.cast(y_true, tf.float32),y)),tf.add(tf.cast(y_true, tf.float32),2.0)))
 # with tf.name_scope('Accuracy'):
 #     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(tf.round(action_pred),tf.int32),tf.cast(action_true,tf.int32)),tf.float32))
-#
-# # Training operation.
-# adam = tf.train.AdamOptimizer(learn_rate)
-# train_op = adam.minimize(loss_op, name="optimizer")
-#
-#
-# # FINAL SETUP
-#
-# # Add ops to save and restore all the variables -- checkpoint style
-# saver = tf.train.Saver()
-#
-# # Create a summary to monitor cost tensor
+
+# Training operation.
+adam = tf.train.AdamOptimizer(learn_rate)
+train_op = adam.minimize(loss_op, name="optimizer")
+
+
+# FINAL SETUP
+
+# Add ops to save and restore all the variables -- checkpoint style
+saver = tf.train.Saver()
+
+# Create a summary to monitor cost tensor
 # tf.summary.scalar("loss", loss_op)
 # tf.summary.scalar("accuracy", accuracy)
-#
-# # Merge all summaries into a single op
-# merged_summary_op = tf.summary.merge_all()
+
+# Merge all summaries into a single op
+merged_summary_op = tf.summary.merge_all()
 
 
 coord = tf.train.Coordinator() # Can kill everything when code is done. Prevents the `Skipping cancelled enqueue attempt with queue not closed'
