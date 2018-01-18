@@ -11,7 +11,7 @@ tfrecordExtension = '.NEWNEWNEW'  # File extension for input datafiles. Datafile
 tfrecordPath = '../../'  # Location of datafiles on this machine.
 
 export_dir = './models/'
-learn_rate = 1e-4
+learn_rate = 1e-5
 
 initWeightsStdev = 0.1
 initBiasVal = 0.1
@@ -71,6 +71,25 @@ def read_and_decode_example(filename):
     return context, feats
 
 
+def _parse_function(example_proto):
+    # The serialized example is converted back to actual values.
+    features = tf.parse_single_sequence_example(
+        serialized=example_proto,
+        context_features=context_features,
+        sequence_features=sequence_features
+    )
+    context = features[0]  # Total number of timesteps in here with key 'TIMESTEPS'
+    feats = {key: features[1][key] for key in stateKeys}  # States
+    pk = {'PRESSED_KEYS': tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4])}
+    # ttt = {'TIME_TO_TRANSITION': tf.reshape(tf.decode_raw(features[1]['TIME_TO_TRANSITION'], tf.uint8),)}
+    # act = {'ACTIONS': tf.reshape(tf.decode_raw(features[1]['ACTIONS'], tf.uint8),(5,))}
+
+    # feats.update({key: tf.reshape(tf.decode_raw(features[1][key], tf.uint8),(1,)) for key in actionKeys})  # Attach actions too after decoding.
+    feats.update(pk)
+    print feats
+    return context, feats
+
+
 def process_state(state_dict):
     """
     Do any necessary post processing to the loaded states in order to make it feedable into the NN.
@@ -78,7 +97,9 @@ def process_state(state_dict):
     :param state_dict: The dictionary of state variables immediately decoded from TFRecord files.
     :return: All the state variables concatenated into a single row.
     """
-    return tf.reshape(tf.concat(values=state_dict.values(), axis=1),[-1,72])
+    # st = [state_dict[key] for key in stateKeys] # e.g. (1, 12, 2, 500, 6) 1 means nothing, 12 is number of body parts, 2 is number of runs, 500 is number of timesteps, 6 is num states/body part
+
+    return tf.concat(values=[state_dict[key] for key in stateKeys], axis=2, name='state-concat')  #, [-1,72])
 
 
 def process_action(action_dict):
@@ -90,6 +111,7 @@ def process_action(action_dict):
     """
     print tf.reshape(action_dict[actionKeys[1]],[-1,1])
     return tf.reshape(action_dict[actionKeys[1]],[-1,1])  # For now, just time to transition. Others thrown away.
+
 
 def weight_variable(shape):
     """
@@ -199,70 +221,65 @@ for file in os.listdir(tfrecordPath):
 
 # OVERRIDE:
 filename_list = ['../../denseData_2017-11-06_08-57-41.NEWNEWNEW']
+dataset = tf.data.TFRecordDataset(filename_list)
+dataset = dataset.map(_parse_function)
 print('%d files in queue.' % len(filename_list))
 
+batch = dataset.batch(1)
+
 # Read in data and rearrange.
-context,features = read_and_decode_example(filename_list)
+# context,features = read_and_decode_example(filename_list)
 
 ## MY UNDERSTANDING OF THIS QUEUEING:
 # sess.run(batch...) returns a new set of data at runtime.
 # It starts at the first run in the file and returns batch_size number of runs at a time. This loops back around after
 # all have been iterated through.
 # Each run returned will have num_unroll worth of timesteps in it. I believe that this wraps back again too.
-key = tf.Variable(0)
-state_size = 6
-initial_state_values = tf.zeros((state_size,), dtype=tf.float32)
-initial_states = {'runner_state': initial_state_values}
-
-batch = tf.contrib.training.batch_sequences_with_states(
-    input_key=tf.as_string(key.assign_add(1)),
-    input_sequences=features,
-    input_context=context,
-    input_length=tf.cast(context['TIMESTEPS'],tf.int32),
-    initial_states=initial_states,
-    num_unroll=500, # How many timesteps from each sequence to pull each loop through the runs.
-    batch_size=2, # How many runs to pull in one call.
-    num_threads=4,
-    make_keys_unique=True)
-
-inputs = batch.sequences['BODY']
-#outputs = batch.sequences['TIME_TO_TRANSITION']
-inputs_by_time = tf.split(inputs,500,1)
-context_label = batch.context['TIMESTEPS']
-print batch
-
-# LAYERS
-
-# Input layer.
-with tf.name_scope('input'):
-    state = tf.placeholder(tf.float32, shape=[None, 72], name='state-input')
-    action_true = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
-
-
-lstm1 = inputs_by_time#lstm_layer(inputs_by_time, state_size, 1, 'lstm1')
-
-# # Layer 1: Fully-connected.
-# layer1 = nn_layer(state, 72, 72*4, 'layer1')
+# key = tf.Variable(0)
+# state_size = 72
+# initial_state_values = tf.zeros((state_size,), dtype=tf.float32)
+# initial_states = {'runner_state': initial_state_values}
 #
-# # Layer 2: Fully connected, with dropout. During training, some nodes are trimmed out to keep the net general.
-# with tf.name_scope('dropout'):
-#     keep_prob = tf.placeholder(tf.float32)
-#     tf.summary.scalar('dropout_keep_probability', keep_prob)
-#     dropped = tf.nn.dropout(layer1, keep_prob)
-#     layer2 = nn_layer(dropped, 72*4, 72, 'layer2')
+# batch = tf.contrib.training.batch_sequences_with_states(
+#     input_key=tf.as_string(key.assign_add(1)),
+#     input_sequences=features,
+#     input_context=context,
+#     input_length=tf.cast(context['TIMESTEPS'],tf.int32),
+#     initial_states=initial_states,
+#     num_unroll=500, # How many timesteps from each sequence to pull each loop through the runs.
+#     batch_size=1, # How many runs to pull in one call.
+#     num_threads=4,
+#     make_keys_unique=True,
+#     allow_small_batch=True)
 #
-# action_pred = nn_layer(layer2, 72, 1, 'layer3')
+# state_in = process_state(batch.sequences) # Pull the states out of here and concatenate.
+# #outputs = batch.sequences['TIME_TO_TRANSITION']
+# # inputs_by_time = tf.split(inputs,500,1)
+# # context_label = batch.context['TIMESTEPS']
+# # print batch
+# #
+# # # LAYERS
+# #
+# # # Input layer.
+# with tf.name_scope('input'):
+#     state = tf.placeholder(tf.float32, shape=[None,72], name='state-input')
+#     #action_true = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
+# #
+# #
+# # lstm1 = inputs_by_time#lstm_layer(inputs_by_time, state_size, 1, 'lstm1')
+# #
+# # # Layer 1: Fully-connected.
+# layer1 = nn_layer(state, 72, 1, 'layer1')
+# layer2 = nn_layer(layer1, 1, 72, 'layer2')
+#
 #
 # with tf.name_scope('Loss'):
-#     loss_op = tf.losses.mean_squared_error(outputs, lstm1)
-    #loss_op = tf.reduce_mean(tf.divide(tf.square(tf.subtract(tf.cast(y_true, tf.float32),y)),tf.add(tf.cast(y_true, tf.float32),2.0)))
-# with tf.name_scope('Accuracy'):
-#     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(tf.round(action_pred),tf.int32),tf.cast(action_true,tf.int32)),tf.float32))
-
+#     loss_op = tf.losses.mean_squared_error(state, layer2)
+#
 # # Training operation.
 # adam = tf.train.AdamOptimizer(learn_rate)
 # train_op = adam.minimize(loss_op, name="optimizer")
-#
+
 #
 # # FINAL SETUP
 #
@@ -293,15 +310,17 @@ with tf.Session() as sess:
     # tf.train.add_queue_runner(queue_runner)
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    for i in range(100):
-
-        batchIn = sess.run([inputs_by_time])
-        print sess.run([context_label])
-        print batchIn[-1][-1]
+    print sess.run([batch])
+    # for i in range(100000):
+    #
+    #     state_input = sess.run([state_in])
+    #     layer1_out, loss_out, _ = sess.run([layer1,loss_op,train_op], feed_dict={state: np.squeeze(state_input)})
+    #
+    #     print('iter:%d - loss:%f' % (i, loss_out))
 
     # Stop all the queue threads.
-    coord.request_stop()
-    coord.join(threads)
+    # coord.request_stop()
+    # coord.join(threads)
 
 
 
