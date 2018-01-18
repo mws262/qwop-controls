@@ -146,6 +146,11 @@ public class DenseDataToTFRecord {
 		
 		// Iterate through all runs in a single file.
 		for (SaveableDenseData dat : denseData) {
+			int actionPad = dat.getState().length - dat.getAction().length; // Make the dimensions match for coding convenience.
+			if (actionPad != 1) {
+				System.out.println("Dimensions of state is not 1 more than dimension of action as expected. Ignoring this one.");
+				continue;
+			}
 			Example.Builder exB = Example.newBuilder();
 			SequenceExample.Builder seqEx = SequenceExample.newBuilder();
 			FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & actions) in a single run.
@@ -174,8 +179,17 @@ public class DenseDataToTFRecord {
 				keyFeat.setBytesList(keyDat.build());
 				keyFeatList.addFeature(keyFeat.build());
 			}
+			// Pad it by one.
+			Feature.Builder keyFeat = Feature.newBuilder();
+			BytesList.Builder keyDat = BytesList.newBuilder();
+			byte[] keys = new byte[] {(byte)0, (byte)0, (byte)0, (byte)0};
+			keyDat.addValue(ByteString.copyFrom(keys));
+			keyFeat.setBytesList(keyDat.build());
+			keyFeatList.addFeature(keyFeat.build());
+			
 			featLists.putFeatureList("PRESSED_KEYS", keyFeatList.build());
 
+			
 			// 2) Timesteps until transition for each timestep.
 			FeatureList.Builder transitionTSList = FeatureList.newBuilder();
 			for (int i = 0; i < dat.getAction().length; i++) {
@@ -192,6 +206,13 @@ public class DenseDataToTFRecord {
 					i++;
 				}
 			}
+			// Pad by one.
+			Feature.Builder transitionTSFeat = Feature.newBuilder();
+			BytesList.Builder transitionTS = BytesList.newBuilder();
+			transitionTS.addValue(ByteString.copyFrom(new byte[] {(byte)0}));
+			transitionTSFeat.setBytesList(transitionTS.build());
+			transitionTSList.addFeature(transitionTSFeat.build());
+			
 			featLists.putFeatureList("TIME_TO_TRANSITION", transitionTSList.build());
 
 			// 3) Just the action sequence (shorter than number of timesteps) -- bytestrings e.g. [15, 1, 0, 0, 1]
