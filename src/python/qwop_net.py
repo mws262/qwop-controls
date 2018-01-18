@@ -61,8 +61,13 @@ def read_and_decode_example(filename):
     )
     context = features[0] # Total number of timesteps in here with key 'TIMESTEPS'
     feats = {key: features[1][key] for key in stateKeys}  # States
-    feats.update({key: tf.reshape(tf.decode_raw(features[1][key], tf.uint8),(1,)) for key in actionKeys})  # Attach actions too after decoding.
+    pk = {'PRESSED_KEYS': tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1,4])}
+    #ttt = {'TIME_TO_TRANSITION': tf.reshape(tf.decode_raw(features[1]['TIME_TO_TRANSITION'], tf.uint8),)}
+    #act = {'ACTIONS': tf.reshape(tf.decode_raw(features[1]['ACTIONS'], tf.uint8),(5,))}
 
+    #feats.update({key: tf.reshape(tf.decode_raw(features[1][key], tf.uint8),(1,)) for key in actionKeys})  # Attach actions too after decoding.
+    feats.update(pk)
+    print feats
     return context, feats
 
 
@@ -193,7 +198,7 @@ for file in os.listdir(tfrecordPath):
         print(nextFile)
 
 # OVERRIDE:
-filename_list = ['../../denseDataTest.NEWNEWNEW']  # denseData_2017-11-06_08-57-41.NEWNEWNEW']
+filename_list = ['../../denseData_2017-11-06_08-57-41.NEWNEWNEW']
 print('%d files in queue.' % len(filename_list))
 
 # Read in data and rearrange.
@@ -234,7 +239,7 @@ with tf.name_scope('input'):
     action_true = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
 
 
-lstm1 = lstm_layer(inputs_by_time, state_size, 1, 'lstm1')
+lstm1 = inputs_by_time#lstm_layer(inputs_by_time, state_size, 1, 'lstm1')
 
 # # Layer 1: Fully-connected.
 # layer1 = nn_layer(state, 72, 72*4, 'layer1')
@@ -248,21 +253,21 @@ lstm1 = lstm_layer(inputs_by_time, state_size, 1, 'lstm1')
 #
 # action_pred = nn_layer(layer2, 72, 1, 'layer3')
 #
-with tf.name_scope('Loss'):
-    loss_op = tf.losses.mean_squared_error(outputs, lstm1)
+# with tf.name_scope('Loss'):
+#     loss_op = tf.losses.mean_squared_error(outputs, lstm1)
     #loss_op = tf.reduce_mean(tf.divide(tf.square(tf.subtract(tf.cast(y_true, tf.float32),y)),tf.add(tf.cast(y_true, tf.float32),2.0)))
 # with tf.name_scope('Accuracy'):
 #     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(tf.round(action_pred),tf.int32),tf.cast(action_true,tf.int32)),tf.float32))
 
-# Training operation.
-adam = tf.train.AdamOptimizer(learn_rate)
-train_op = adam.minimize(loss_op, name="optimizer")
-
-
-# FINAL SETUP
-
-# Add ops to save and restore all the variables -- checkpoint style
-saver = tf.train.Saver()
+# # Training operation.
+# adam = tf.train.AdamOptimizer(learn_rate)
+# train_op = adam.minimize(loss_op, name="optimizer")
+#
+#
+# # FINAL SETUP
+#
+# # Add ops to save and restore all the variables -- checkpoint style
+# saver = tf.train.Saver()
 
 # Create a summary to monitor cost tensor
 # tf.summary.scalar("loss", loss_op)
