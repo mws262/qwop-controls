@@ -2,6 +2,7 @@ package data;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,8 +26,10 @@ import main.Action;
 
 public class DenseDataToTFRecord {
 
-	static String sourceDir = ".";
+	static String sourceDir = "/media/matt/Storage/QWOP_SaveableDenseData/";
+	static String outDir = "/media/matt/Storage/QWOP_Tfrecord_1_20/";
 	static String inFileExt = "SaveableDenseData";
+	static String outFileExt = "tfrecord";
 
 	public static void main(String[] args) {
 
@@ -65,59 +68,15 @@ public class DenseDataToTFRecord {
 		for (File file : inFiles) {
 			ArrayList<SaveableDenseData> denseDat = inFileLoader.loadObjectsOrdered(file.getAbsolutePath());
 			System.out.print("Beginning to package " + file.getName() + ". ");
-			String fileOutName = file.getName().substring(0, file.getName().lastIndexOf('.')) + ".NEWNEWNEW";
+			String fileOutName = file.getName().substring(0, file.getName().lastIndexOf('.')) + "." + outFileExt;
 			try {
-				convertToProtobuf(denseDat,fileOutName);
+				convertToProtobuf(denseDat,fileOutName,outDir);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			count++;
 			System.out.println("Done. " + count + "/" + inFiles.size());
-
-//						// Validate -- not needed during batch run.
-//			System.out.println("Validation stuff");
-//						SequenceExample dataValidate = null;
-//						FileInputStream fIn = null;
-//						int counter = 0;
-//						try {
-//							
-//							fIn = new FileInputStream(fileOutName);
-//							while(fIn.available() > 0) {
-//								dataValidate = SequenceExample.parseDelimitedFrom(fIn);
-//								FeatureLists featLists = dataValidate.getFeatureLists();
-//								Map<String, FeatureList> featListMap = featLists.getFeatureList();
-//								for (String s : featListMap.keySet()) {
-//									System.out.println(s);
-//									FeatureList fl = featListMap.get(s);
-//									List<Feature> flist = fl.getFeatureList();
-//									for (Feature f : flist) {
-//										List<ByteString> bl = f.getBytesList().getValueList();
-//										for (ByteString b : bl) {
-//											for (int i = 0; i < b.size(); i++) {
-//												System.out.print(b.byteAt(i));
-//											}
-//											System.out.println();
-//										}
-//									}
-//								}
-//								counter++;
-//								System.out.println("Done: " + counter);
-//							}
-//
-//						System.out.println("Validation done");
-//						} catch (IOException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						} finally {
-//							try {
-//								fIn.close();
-//							} catch (IOException e) {
-//								// TODO Auto-generated catch block
-//								e.printStackTrace();
-//							}
-//						}
-//						
 		}
 	}
 
@@ -141,8 +100,11 @@ public class DenseDataToTFRecord {
 		featLists.putFeatureList(bodyPart.toString(), featList.build()); // Add this feature to the broader list of features.
 	}
 
-	public static void convertToProtobuf(List<SaveableDenseData> denseData, String fileName) throws IOException {
-		FileOutputStream stream = new FileOutputStream(new File(fileName));
+	public static void convertToProtobuf(List<SaveableDenseData> denseData, String fileName, String destinationPath) throws IOException {
+		File file = new File(destinationPath + fileName);
+		
+		file.getParentFile().mkdirs();
+		FileOutputStream stream = new FileOutputStream(file);
 		
 		// Iterate through all runs in a single file.
 		for (SaveableDenseData dat : denseData) {
