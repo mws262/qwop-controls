@@ -2,7 +2,6 @@ import tensorflow as tf
 import numpy as np
 import os.path
 from tensorflow.python.ops import rnn, rnn_cell
-import sys
 
 '''
 PARAMETERS & SETTINGS
@@ -15,6 +14,7 @@ export_dir = './models/'
 learn_rate = 1e-3
 
 initWeightsStdev = 0.1
+initBiasVal = 0.1
 
 # All states found in the TFRECORD files
 stateKeys = ['BODY', 'HEAD', 'RTHIGH', 'LTHIGH', 'RCALF', 'LCALF',
@@ -45,16 +45,10 @@ def _parse_function(example_proto):
     )
     context = features[0]  # Total number of timesteps in here with key 'TIMESTEPS'
     ts = context['TIMESTEPS']
-    xoffsets = features[1]['BODY'][:,0] # Get first column.
+    ts_padded = tf.fill([1,], ts, name='timesteps_padded')
+    feats = {key: features[1][key] for key in stateKeys}  # States
 
-    x_out_list = []
-    for key in stateKeys:
-        body_part = features[1][key]
-        x_out_list.append(tf.reshape(body_part[:,0] - xoffsets,[-1,1]))
-        x_out_list.append(body_part[:,1:])
-
-    #feats = {key: features[1][key] for key in stateKeys}  # States
-    statesConcat = tf.concat(x_out_list,1)
+    statesConcat = tf.concat(feats.values(),1)
 
     # pk = {'PRESSED_KEYS': tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4])}
     # ttt = {'TIME_TO_TRANSITION': tf.reshape(tf.decode_raw(features[1]['TIME_TO_TRANSITION'], tf.uint8),)}
@@ -85,7 +79,7 @@ def bias_variable(shape):
     :return: Bias tensor initialized to a constant value.
     """
 
-    initial = tf.truncated_normal(shape, stddev=initWeightsStdev)
+    initial = tf.constant(initBiasVal, shape=shape)
     return tf.Variable(initial)
 
 
@@ -108,7 +102,7 @@ def variable_summaries(var):
             tf.summary.histogram('histogram', var)
 
 
-def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.leaky_relu):
+def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
 
     """Reusable code for making a simple neural net layer.
 
@@ -141,6 +135,23 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.leaky_re
 
         return activations
 
+def lstm_layer(input_tensor, input_dim, output_dim, layer_name):
+
+    # Adding a name scope ensures logical grouping of the layers in the graph.
+    with tf.name_scope(layer_name):
+        # This Variable will hold the state of the weights for the layer
+        with tf.name_scope('weights'):
+            weights = weight_variable([input_dim, output_dim])
+            variable_summaries(weights)
+        with tf.name_scope('biases'):
+            biases = bias_variable([output_dim])
+            variable_summaries(biases)
+        with tf.name_scope('LSTM'):
+            lstm_cell = rnn_cell.BasicLSTMCell(input_dim, state_is_tuple=True)
+            outputs, states = rnn.static_rnn(lstm_cell, input_tensor, dtype=tf.float32)
+        with tf.name_scope('Wx_plus_b'):
+            activations = tf.matmul(outputs[-1], weights) + biases
+        return activations
 
 '''
 DEFINE SPECIFIC DATAFLOW
@@ -160,7 +171,7 @@ for file in os.listdir(tfrecordPath):
 filenames = tf.placeholder(tf.string, shape=[None])
 dataset = tf.data.TFRecordDataset(filenames)
 dataset = dataset.map(_parse_function)
-#dataset = dataset.shuffle(buffer_size=5000)
+dataset = dataset.shuffle(buffer_size=5000)
 dataset = dataset.repeat()  # Repeat the input indefinitely.
 dataset = dataset.batch(1)  # .padded_batch(4, padded_shapes=[None])
 iterator = dataset.make_initializable_iterator()
@@ -171,33 +182,70 @@ next_element = iterator.get_next()
 
 
 # LAYERS
+n_output = 72 # 72 state vector elements + 4 key presses.
+n_input = 76 # (I think) How many previous steps are fed into to get the prediction. This is the short-term memory part of LSTM.
+n_hidden = 144 # (I think) How many hidden state variables are passed from timestep to timestep.
 
 # Input layer.
 with tf.name_scope('input'):
-    state = tf.placeholder(tf.float32, shape=[None,72], name='state-input')
-    #action_true = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
+    qwop_state = tf.placeholder(tf.float32, shape=[None,72], name='qwop-state-input')
+    qwop_action = tf.placeholder(tf.float32, shape=[None,4], name='qwop-action-input')
+    init_net_state = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
 
- # lstm1 = inputs_by_time#lstm_layer(inputs_by_time, state_size, 1, 'lstm1')
 
-# Layer 1: Fully-connected.
-layer1 = nn_layer(state, 72, 36, 'layer1')
-layer2 = nn_layer(layer1, 36, 12, 'layer2')
-layer3 = nn_layer(layer2, 12, 36, 'layer3')
-decompressed = nn_layer(layer3, 36, 72, 'layer4')
+combined_qwop_state = tf.stack([qwop_state, qwop_action])
+
+rnn_cell = rnn.BasicLSTMCell(n_hidden)
+outputs, state = rnn.static_rnn(cell=rnn_cell,inputs=combined_qwop_state)
+
 
 # num_hidden = 24
 # data = tf.placeholder(tf.float32, [None, 20,1])
 # target = tf.placeholder(tf.float32, [None, 21])
 # cell = tf.nn.rnn_cell.LSTMCell(num_hidden,state_is_tuple=True)
 # val, state = tf.nn.dynamic_rnn(cell, data, dtype=tf.float32)
+#
+#
+# with tf.name_scope('Loss'):
+#     loss_op = tf.losses.mean_squared_error(state, layer4)
 
 
-with tf.name_scope('Loss'):
-    loss_op = tf.losses.absolute_difference(state, decompressed)
+    ################
+    #
+    # # tf Graph input
+    # X = tf.placeholder("float", [None, timesteps, 72])
+    #
+    # # Define weights
+    # weights = {
+    #     'out': tf.Variable(tf.random_normal([num_hidden, num_classes]))
+    # }
+    # biases = {
+    #     'out': tf.Variable(tf.random_normal([num_classes]))
+    # }
+    #
+    #
+    # def RNN(x, weights, biases):
+    #     # Prepare data shape to match `rnn` function requirements
+    #     # Current data input shape: (batch_size, timesteps, n_input)
+    #     # Required shape: 'timesteps' tensors list of shape (batch_size, n_input)
+    #
+    #     # Unstack to get a list of 'timesteps' tensors of shape (batch_size, n_input)
+    #     x = tf.unstack(x, timesteps, 1)
+    #
+    #     # Define a lstm cell with tensorflow
+    #     lstm_cell = rnn.BasicLSTMCell(num_hidden, forget_bias=1.0)
+    #
+    #     # Get lstm cell output
+    #     outputs, states = rnn.static_rnn(lstm_cell, x, dtype=tf.float32)
+    #
+    #     # Linear activation, using rnn inner loop last output
+    #     return tf.matmul(outputs[-1], weights['out']) + biases['out']
+    #
 
 # Training operation.
 adam = tf.train.AdamOptimizer(learn_rate)
 train_op = adam.minimize(loss_op, name="optimizer")
+
 
 # FINAL SETUP
 
@@ -222,32 +270,19 @@ with tf.Session() as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
 
-    if os.path.isfile("./tmp/model1.ckpt"):
-      saver.restore(sess, "./tmp/model1.ckpt")
+    if os.path.isfile("./tmp/model.ckpt"):
+      saver.restore(sess, "./tmp/model.ckpt")
 
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
     sess.run(iterator.initializer, feed_dict={filenames: filename_list})
 
     for i in range(10000000):
-        state_next = np.squeeze(sess.run([next_element]))
-        loss, _, reconstructed = sess.run([loss_op,train_op,decompressed], feed_dict={state: state_next})
+        state_next = sess.run([next_element])
+        loss, _ = sess.run([loss_op,train_op], feed_dict={state: np.squeeze(state_next)})
         if i%99 == 0:
-            print("Iter: %d, Loss %f" % (i,loss))
+            print("Iter: %d, Loss %f\n", [i,loss])
             save_path = saver.save(sess, "./tmp/model1.ckpt")
-            # for val in np.nditer(np.divide(reconstructed[-1,:] - state_next[-1,:],state_next[-1,:])):
-            #     sys.stdout.write('%.2f' % val)
-            #     sys.stdout.write(', ')
-            # sys.stdout.write('\n')
-            for val in np.nditer(reconstructed[-1,:]):
-                sys.stdout.write('%.2f' % val)
-                sys.stdout.write(', ')
-            sys.stdout.write('\n')
-            for val in np.nditer(state_next[-1,:]):
-                sys.stdout.write('%.2f' % val)
-                sys.stdout.write(', ')
-            sys.stdout.write('\n')
-
     # print np.shape(sess.run([next_element]))
 
 
