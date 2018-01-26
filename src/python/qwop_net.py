@@ -10,6 +10,7 @@ PARAMETERS & SETTINGS
 
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
+# On external drive ^. use sudo mount /dev/sdb1 /mnt
 
 export_dir = './models/'
 learn_rate = 1e-3
@@ -45,8 +46,9 @@ def _parse_function(example_proto):
     )
     context = features[0]  # Total number of timesteps in here with key 'TIMESTEPS'
     ts = context['TIMESTEPS']
-    xoffsets = features[1]['BODY'][:,0] # Get first column.
 
+    # Subtract out the x component of the body from all other x components.
+    xoffsets = features[1]['BODY'][:,0] # Get first column.
     x_out_list = []
     for key in stateKeys:
         body_part = features[1][key]
@@ -177,20 +179,12 @@ with tf.name_scope('input'):
     state = tf.placeholder(tf.float32, shape=[None,72], name='state-input')
     #action_true = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
 
- # lstm1 = inputs_by_time#lstm_layer(inputs_by_time, state_size, 1, 'lstm1')
 
 # Layer 1: Fully-connected.
 layer1 = nn_layer(state, 72, 36, 'layer1')
-layer2 = nn_layer(layer1, 36, 12, 'layer2')
-layer3 = nn_layer(layer2, 12, 36, 'layer3')
+layer2 = nn_layer(layer1, 36, 6, 'layer2')
+layer3 = nn_layer(layer2, 6, 36, 'layer3')
 decompressed = nn_layer(layer3, 36, 72, 'layer4')
-
-# num_hidden = 24
-# data = tf.placeholder(tf.float32, [None, 20,1])
-# target = tf.placeholder(tf.float32, [None, 21])
-# cell = tf.nn.rnn_cell.LSTMCell(num_hidden,state_is_tuple=True)
-# val, state = tf.nn.dynamic_rnn(cell, data, dtype=tf.float32)
-
 
 with tf.name_scope('Loss'):
     loss_op = tf.losses.absolute_difference(state, decompressed)
@@ -239,25 +233,15 @@ with tf.Session() as sess:
             #     sys.stdout.write('%.2f' % val)
             #     sys.stdout.write(', ')
             # sys.stdout.write('\n')
-            for val in np.nditer(reconstructed[-1,:]):
-                sys.stdout.write('%.2f' % val)
+            for val in np.nditer(reconstructed[200,:]):
+                sys.stdout.write('%2.2f' % val)
                 sys.stdout.write(', ')
             sys.stdout.write('\n')
-            for val in np.nditer(state_next[-1,:]):
-                sys.stdout.write('%.2f' % val)
+            for val in np.nditer(state_next[200,:]):
+                sys.stdout.write('%2.2f' % val)
                 sys.stdout.write(', ')
             sys.stdout.write('\n')
-
-    # print np.shape(sess.run([next_element]))
-
-
-    # for i in range(100000):
-    #
-    #     state_input = sess.run([state_in])
-    #     layer1_out, loss_out, _ = sess.run([layer1,loss_op,train_op], feed_dict={state: np.squeeze(state_input)})
-    #
-    #     print('iter:%d - loss:%f' % (i, loss_out))
 
     # Stop all the queue threads.
-    # coord.request_stop()
-    # coord.join(threads)
+    coord.request_stop()
+    coord.join(threads)
