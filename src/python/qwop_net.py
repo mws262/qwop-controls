@@ -181,13 +181,16 @@ with tf.name_scope('input'):
 
 
 # Layer 1: Fully-connected.
-layer1 = nn_layer(state, 72, 36, 'layer1')
-layer2 = nn_layer(layer1, 36, 6, 'layer2')
-layer3 = nn_layer(layer2, 6, 36, 'layer3')
-decompressed = nn_layer(layer3, 36, 72, 'layer4')
+layer1 = nn_layer(state, 72, 42, 'layer1')
+layer2 = nn_layer(layer1, 42, 25, 'layer2')
+layer3 = nn_layer(layer2, 25, 6, 'layer3')
+
+layer4 = nn_layer(layer3, 6, 25, 'layer4')
+layer5 = nn_layer(layer4, 25, 42, 'layer5')
+decompressed = nn_layer(layer5, 42, 72, 'layer6')
 
 with tf.name_scope('Loss'):
-    loss_op = tf.losses.absolute_difference(state, decompressed)
+    loss_op = tf.losses.mean_squared_error(state, decompressed)
 
 # Training operation.
 adam = tf.train.AdamOptimizer(learn_rate)
@@ -233,14 +236,14 @@ with tf.Session() as sess:
             #     sys.stdout.write('%.2f' % val)
             #     sys.stdout.write(', ')
             # sys.stdout.write('\n')
-            for val in np.nditer(reconstructed[200,:]):
-                sys.stdout.write('%2.2f' % val)
-                sys.stdout.write(', ')
-            sys.stdout.write('\n')
-            for val in np.nditer(state_next[200,:]):
-                sys.stdout.write('%2.2f' % val)
-                sys.stdout.write(', ')
-            sys.stdout.write('\n')
+            # for val in np.nditer(reconstructed[200,:]):
+            #     sys.stdout.write('%2.2f' % val)
+            #     sys.stdout.write(', ')
+            # sys.stdout.write('\n')
+            # for val in np.nditer(state_next[200,:]):
+            #     sys.stdout.write('%2.2f' % val)
+            #     sys.stdout.write(', ')
+            # sys.stdout.write('\n')
 
     # Stop all the queue threads.
     coord.request_stop()
