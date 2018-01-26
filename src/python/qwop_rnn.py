@@ -165,9 +165,6 @@ for file in os.listdir(tfrecordPath):
         filename_list.append(nextFile)
         print(nextFile)
 
-# OVERRIDE:
-# filename_list = ['../../denseData_2017-11-06_08-57-41.NEWNEWNEW']
-
 filenames = tf.placeholder(tf.string, shape=[None])
 dataset = tf.data.TFRecordDataset(filenames)
 dataset = dataset.map(_parse_function)
