@@ -280,6 +280,7 @@ with tf.Session() as sess:
         if i%99 == 0:
             print("Iter: %d, Loss %f\n", [i,loss])
             save_path = saver.save(sess, "./tmp/model1.ckpt")
+
     # print np.shape(sess.run([next_element]))
 
 
