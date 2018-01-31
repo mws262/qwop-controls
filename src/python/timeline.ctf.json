@@ -1,0 +1,3850 @@
+{
+    "traceEvents": [
+        {
+            "ph": "M",
+            "args": {
+                "name": "Allocators"
+            },
+            "pid": 0,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Compute"
+            },
+            "pid": 1,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:CPU:0 Tensors"
+            },
+            "pid": 2,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Compute"
+            },
+            "pid": 3,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/job:localhost/replica:0/task:0/device:GPU:0 Tensors"
+            },
+            "pid": 4,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/device:GPU:0/stream:all Compute"
+            },
+            "pid": 5,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/device:GPU:0/stream:all Tensors"
+            },
+            "pid": 6,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/device:GPU:0/stream:13 Compute"
+            },
+            "pid": 7,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/device:GPU:0/stream:13 Tensors"
+            },
+            "pid": 8,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/device:GPU:0/memcpy Compute"
+            },
+            "pid": 9,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/device:GPU:0/memcpy Tensors"
+            },
+            "pid": 10,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/device:GPU:0/stream:14 Compute"
+            },
+            "pid": 11,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/device:GPU:0/stream:14 Tensors"
+            },
+            "pid": 12,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/device:GPU:0/stream:15 Compute"
+            },
+            "pid": 13,
+            "name": "process_name"
+        },
+        {
+            "ph": "M",
+            "args": {
+                "name": "/device:GPU:0/stream:15 Tensors"
+            },
+            "pid": 14,
+            "name": "process_name"
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            },
+            "pid": 1,
+            "ts": 1517407893023820,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "_Arg",
+            "args": {
+                "name": "_arg_Placeholder_0_0",
+                "op": "_Arg"
+            },
+            "pid": 1,
+            "ts": 1517407893023855,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 20
+        },
+        {
+            "name": "_Arg",
+            "args": {
+                "name": "_arg_Placeholder_2_0_2",
+                "op": "_Arg"
+            },
+            "pid": 1,
+            "ts": 1517407893023869,
+            "cat": "Op",
+            "tid": 1,
+            "ph": "X",
+            "dur": 35
+        },
+        {
+            "name": "_Retval",
+            "args": {
+                "input0": "decompressor3/Identity/_41",
+                "name": "_retval_decompressor3/Identity_0_1",
+                "op": "_Retval"
+            },
+            "pid": 1,
+            "ts": 1517407893027592,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 4
+        },
+        {
+            "name": "decompressor3/Identity",
+            "pid": 3,
+            "ts": 1517407893026636,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 0
+        },
+        {
+            "name": "decompressor3/Identity",
+            "pid": 1,
+            "ts": 1517407893027592,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "t",
+            "id": 0
+        },
+        {
+            "name": "_Retval",
+            "args": {
+                "input0": "Loss/mean_squared_error/value/_39",
+                "name": "_retval_Loss/mean_squared_error/value_0_0",
+                "op": "_Retval"
+            },
+            "pid": 1,
+            "ts": 1517407893028630,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 8
+        },
+        {
+            "name": "Loss/mean_squared_error/value",
+            "pid": 3,
+            "ts": 1517407893028406,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 1
+        },
+        {
+            "name": "Loss/mean_squared_error/value",
+            "pid": 1,
+            "ts": 1517407893028630,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "t",
+            "id": 1
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "name": "_SOURCE",
+                "op": "NoOp"
+            },
+            "pid": 3,
+            "ts": 1517407893023829,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 63
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "ConstantFolding/gradients/Loss/mean_squared_error/div_grad/BroadcastGradientArgs-0",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893023911,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 15
+        },
+        {
+            "name": "VariableV2",
+            "args": {
+                "name": "decompressor3/W/Adam",
+                "op": "VariableV2"
+            },
+            "pid": 3,
+            "ts": 1517407893023932,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 42
+        },
+        {
+            "name": "VariableV2",
+            "args": {
+                "name": "decompressor3/W/Adam_1",
+                "op": "VariableV2"
+            },
+            "pid": 3,
+            "ts": 1517407893023978,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 13
+        },
+        {
+            "name": "VariableV2",
+            "args": {
+                "name": "decompressor3/b/Adam",
+                "op": "VariableV2"
+            },
+            "pid": 3,
+            "ts": 1517407893023994,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 11
+        },
+        {
+            "name": "VariableV2",
+            "args": {
+                "name": "decompressor3/b/Adam_1",
+                "op": "VariableV2"
+            },
+            "pid": 3,
+            "ts": 1517407893024007,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 9
+        },
+        {
+            "name": "VariableV2",
+            "args": {
+                "name": "beta1_power",
+                "op": "VariableV2"
+            },
+            "pid": 3,
+            "ts": 1517407893024019,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 10
+        },
+        {
+            "name": "VariableV2",
+            "args": {
+                "name": "beta2_power",
+                "op": "VariableV2"
+            },
+            "pid": 3,
+            "ts": 1517407893024032,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 8
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "optimizer/learning_rate",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024042,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 7
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "optimizer/beta1",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024052,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 6
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "optimizer/beta2",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024060,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "optimizer/epsilon",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024068,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 6
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/value_grad/zeros_like",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024076,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 6
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "gradients/Fill",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024085,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 6
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Sum_grad/Reshape/shape",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024093,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 8
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "gradients/decompressor3/add_grad/Shape_1",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024104,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 6
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "Loss/strided_slice_1/stack",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024112,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 6
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "Loss/strided_slice_1/stack_1",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024121,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 6
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "decompressor3/Reshape/shape",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024129,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "VariableV2",
+            "args": {
+                "name": "decompressor3/W",
+                "op": "VariableV2"
+            },
+            "pid": 3,
+            "ts": 1517407893024137,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 9
+        },
+        {
+            "name": "VariableV2",
+            "args": {
+                "name": "decompressor3/b",
+                "op": "VariableV2"
+            },
+            "pid": 3,
+            "ts": 1517407893024148,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 8
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "decompressor3/stack/0",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024158,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "decompressor3/stack/2",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024166,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 6
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "Loss/strided_slice/stack",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024174,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 7
+        },
+        {
+            "name": "Const",
+            "args": {
+                "name": "Loss/strided_slice/stack_1",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024183,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "name": "Loss/mean_squared_error/assert_broadcastable/static_scalar_check_success",
+                "op": "NoOp"
+            },
+            "pid": 3,
+            "ts": 1517407893024191,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 4
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "beta1_power",
+                "name": "beta1_power/read",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893024200,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 6
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "beta2_power",
+                "name": "beta2_power/read",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893024211,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "decompressor3/W",
+                "name": "decompressor3/W/read",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893024219,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "decompressor3/b",
+                "name": "decompressor3/b/read",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893024228,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 7
+        },
+        {
+            "name": "Const",
+            "args": {
+                "input0": "^Loss/mean_squared_error/assert_broadcastable/static_scalar_check_success",
+                "name": "Loss/mean_squared_error/ToFloat_3/x",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024237,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 7
+        },
+        {
+            "name": "Const",
+            "args": {
+                "input0": "^Loss/mean_squared_error/assert_broadcastable/static_scalar_check_success",
+                "name": "Loss/mean_squared_error/ones_like",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024247,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 7
+        },
+        {
+            "name": "Const",
+            "args": {
+                "input0": "^Loss/mean_squared_error/assert_broadcastable/static_scalar_check_success",
+                "name": "Loss/mean_squared_error/Const_1",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024259,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 4
+        },
+        {
+            "name": "Const",
+            "args": {
+                "input0": "^Loss/mean_squared_error/assert_broadcastable/static_scalar_check_success",
+                "name": "Loss/mean_squared_error/Greater/y",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024267,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "input0": "^Loss/mean_squared_error/assert_broadcastable/static_scalar_check_success",
+                "name": "Loss/mean_squared_error/num_present/broadcast_weights/assert_broadcastable/static_scalar_check_success",
+                "op": "NoOp"
+            },
+            "pid": 3,
+            "ts": 1517407893024275,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "Const",
+            "args": {
+                "input0": "^Loss/mean_squared_error/assert_broadcastable/static_scalar_check_success",
+                "name": "Loss/mean_squared_error/Const",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024283,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 6
+        },
+        {
+            "name": "Const",
+            "args": {
+                "input0": "^Loss/mean_squared_error/assert_broadcastable/static_scalar_check_success",
+                "input1": "^Loss/mean_squared_error/num_present/broadcast_weights/assert_broadcastable/static_scalar_check_success",
+                "name": "Loss/mean_squared_error/num_present/broadcast_weights/ones_like/Const",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893024292,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 9
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "_arg_Placeholder_0_0/_35",
+                "input1": "decompressor3/Reshape/shape",
+                "name": "decompressor3/Reshape",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893026106,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 17
+        },
+        {
+            "name": "_arg_Placeholder_0_0",
+            "pid": 1,
+            "ts": 1517407893023875,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 2
+        },
+        {
+            "name": "_arg_Placeholder_0_0",
+            "pid": 3,
+            "ts": 1517407893026106,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "t",
+            "id": 2
+        },
+        {
+            "name": "StridedSlice",
+            "args": {
+                "input2": "Loss/strided_slice_1/stack_1",
+                "input3": "gradients/Loss/mean_squared_error/Sum_grad/Reshape/shape",
+                "input0": "_arg_Placeholder_0_0/_35",
+                "input1": "Loss/strided_slice_1/stack",
+                "name": "Loss/strided_slice_1",
+                "op": "StridedSlice"
+            },
+            "pid": 3,
+            "ts": 1517407893026108,
+            "cat": "Op",
+            "tid": 1,
+            "ph": "X",
+            "dur": 82
+        },
+        {
+            "name": "_arg_Placeholder_0_0",
+            "pid": 1,
+            "ts": 1517407893023875,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 3
+        },
+        {
+            "name": "_arg_Placeholder_0_0",
+            "pid": 3,
+            "ts": 1517407893026108,
+            "cat": "DataFlow",
+            "tid": 1,
+            "ph": "t",
+            "id": 3
+        },
+        {
+            "name": "Loss/strided_slice_1/stack",
+            "pid": 3,
+            "ts": 1517407893024118,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 4
+        },
+        {
+            "name": "Loss/strided_slice_1/stack",
+            "pid": 3,
+            "ts": 1517407893026108,
+            "cat": "DataFlow",
+            "tid": 1,
+            "ph": "t",
+            "id": 4
+        },
+        {
+            "name": "Loss/strided_slice_1/stack_1",
+            "pid": 3,
+            "ts": 1517407893024127,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 5
+        },
+        {
+            "name": "Loss/strided_slice_1/stack_1",
+            "pid": 3,
+            "ts": 1517407893026108,
+            "cat": "DataFlow",
+            "tid": 1,
+            "ph": "t",
+            "id": 5
+        },
+        {
+            "name": "gradients/Loss/mean_squared_error/Sum_grad/Reshape/shape",
+            "pid": 3,
+            "ts": 1517407893024101,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 6
+        },
+        {
+            "name": "gradients/Loss/mean_squared_error/Sum_grad/Reshape/shape",
+            "pid": 3,
+            "ts": 1517407893026108,
+            "cat": "DataFlow",
+            "tid": 1,
+            "ph": "t",
+            "id": 6
+        },
+        {
+            "name": "Shape",
+            "args": {
+                "input0": "Loss/strided_slice_1",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Shape",
+                "op": "Shape"
+            },
+            "pid": 3,
+            "ts": 1517407893026208,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "Loss/strided_slice_1",
+            "pid": 3,
+            "ts": 1517407893026190,
+            "cat": "DataFlow",
+            "tid": 1,
+            "ph": "s",
+            "id": 7
+        },
+        {
+            "name": "Loss/strided_slice_1",
+            "pid": 3,
+            "ts": 1517407893026208,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "t",
+            "id": 7
+        },
+        {
+            "name": "MatMul",
+            "args": {
+                "input0": "decompressor3/Reshape",
+                "input1": "decompressor3/W/read",
+                "name": "decompressor3/MatMul",
+                "op": "MatMul"
+            },
+            "pid": 3,
+            "ts": 1517407893026128,
+            "cat": "Op",
+            "tid": 2,
+            "ph": "X",
+            "dur": 107
+        },
+        {
+            "name": "decompressor3/Reshape",
+            "pid": 3,
+            "ts": 1517407893026123,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 8
+        },
+        {
+            "name": "decompressor3/Reshape",
+            "pid": 3,
+            "ts": 1517407893026128,
+            "cat": "DataFlow",
+            "tid": 2,
+            "ph": "t",
+            "id": 8
+        },
+        {
+            "name": "decompressor3/W/read",
+            "pid": 3,
+            "ts": 1517407893024224,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 9
+        },
+        {
+            "name": "decompressor3/W/read",
+            "pid": 3,
+            "ts": 1517407893026128,
+            "cat": "DataFlow",
+            "tid": 2,
+            "ph": "t",
+            "id": 9
+        },
+        {
+            "name": "Shape",
+            "args": {
+                "input0": "decompressor3/MatMul",
+                "name": "gradients/decompressor3/add_grad/Shape",
+                "op": "Shape"
+            },
+            "pid": 3,
+            "ts": 1517407893026250,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "decompressor3/MatMul",
+            "pid": 3,
+            "ts": 1517407893026235,
+            "cat": "DataFlow",
+            "tid": 2,
+            "ph": "s",
+            "id": 10
+        },
+        {
+            "name": "decompressor3/MatMul",
+            "pid": 3,
+            "ts": 1517407893026250,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "t",
+            "id": 10
+        },
+        {
+            "name": "Add",
+            "args": {
+                "input0": "decompressor3/MatMul",
+                "input1": "decompressor3/b/read",
+                "name": "decompressor3/add",
+                "op": "Add"
+            },
+            "pid": 3,
+            "ts": 1517407893026265,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 63
+        },
+        {
+            "name": "decompressor3/MatMul",
+            "pid": 3,
+            "ts": 1517407893026235,
+            "cat": "DataFlow",
+            "tid": 2,
+            "ph": "s",
+            "id": 11
+        },
+        {
+            "name": "decompressor3/MatMul",
+            "pid": 3,
+            "ts": 1517407893026265,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "t",
+            "id": 11
+        },
+        {
+            "name": "BroadcastGradientArgs",
+            "args": {
+                "input0": "gradients/decompressor3/add_grad/Shape",
+                "input1": "gradients/decompressor3/add_grad/Shape_1",
+                "name": "gradients/decompressor3/add_grad/BroadcastGradientArgs",
+                "op": "BroadcastGradientArgs"
+            },
+            "pid": 3,
+            "ts": 1517407893026332,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "Shape",
+            "args": {
+                "input0": "decompressor3/add",
+                "name": "gradients/decompressor3/Reshape_1_grad/Shape",
+                "op": "Shape"
+            },
+            "pid": 3,
+            "ts": 1517407893026347,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 9
+        },
+        {
+            "name": "Pack",
+            "args": {
+                "input2": "decompressor3/stack/2",
+                "input0": "decompressor3/stack/0",
+                "input1": "_arg_Placeholder_2_0_2/_33",
+                "name": "decompressor3/stack",
+                "op": "Pack"
+            },
+            "pid": 3,
+            "ts": 1517407893026136,
+            "cat": "Op",
+            "tid": 3,
+            "ph": "X",
+            "dur": 271
+        },
+        {
+            "name": "decompressor3/stack/0",
+            "pid": 3,
+            "ts": 1517407893024163,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 12
+        },
+        {
+            "name": "decompressor3/stack/0",
+            "pid": 3,
+            "ts": 1517407893026136,
+            "cat": "DataFlow",
+            "tid": 3,
+            "ph": "t",
+            "id": 12
+        },
+        {
+            "name": "_arg_Placeholder_2_0_2",
+            "pid": 1,
+            "ts": 1517407893023904,
+            "cat": "DataFlow",
+            "tid": 1,
+            "ph": "s",
+            "id": 13
+        },
+        {
+            "name": "_arg_Placeholder_2_0_2",
+            "pid": 3,
+            "ts": 1517407893026136,
+            "cat": "DataFlow",
+            "tid": 3,
+            "ph": "t",
+            "id": 13
+        },
+        {
+            "name": "decompressor3/stack/2",
+            "pid": 3,
+            "ts": 1517407893024172,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "s",
+            "id": 14
+        },
+        {
+            "name": "decompressor3/stack/2",
+            "pid": 3,
+            "ts": 1517407893026136,
+            "cat": "DataFlow",
+            "tid": 3,
+            "ph": "t",
+            "id": 14
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "decompressor3/add",
+                "input1": "decompressor3/stack/_37",
+                "name": "decompressor3/Reshape_1",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893026592,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 24
+        },
+        {
+            "name": "decompressor3/stack",
+            "pid": 3,
+            "ts": 1517407893026407,
+            "cat": "DataFlow",
+            "tid": 3,
+            "ph": "s",
+            "id": 15
+        },
+        {
+            "name": "decompressor3/stack",
+            "pid": 3,
+            "ts": 1517407893026592,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "t",
+            "id": 15
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "decompressor3/Reshape_1",
+                "name": "decompressor3/Identity",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893026624,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "Shape",
+            "args": {
+                "input0": "decompressor3/Identity",
+                "name": "gradients/Loss/strided_slice_grad/Shape",
+                "op": "Shape"
+            },
+            "pid": 3,
+            "ts": 1517407893026738,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 28
+        },
+        {
+            "name": "StridedSlice",
+            "args": {
+                "input2": "Loss/strided_slice/stack_1",
+                "input3": "gradients/Loss/mean_squared_error/Sum_grad/Reshape/shape",
+                "input0": "decompressor3/Identity",
+                "input1": "Loss/strided_slice/stack",
+                "name": "Loss/strided_slice",
+                "op": "StridedSlice"
+            },
+            "pid": 3,
+            "ts": 1517407893026771,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 88
+        },
+        {
+            "name": "SquaredDifference",
+            "args": {
+                "input0": "Loss/strided_slice_1",
+                "input1": "Loss/strided_slice",
+                "name": "Loss/mean_squared_error/SquaredDifference",
+                "op": "SquaredDifference"
+            },
+            "pid": 3,
+            "ts": 1517407893026894,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 80
+        },
+        {
+            "name": "Loss/strided_slice_1",
+            "pid": 3,
+            "ts": 1517407893026190,
+            "cat": "DataFlow",
+            "tid": 1,
+            "ph": "s",
+            "id": 16
+        },
+        {
+            "name": "Loss/strided_slice_1",
+            "pid": 3,
+            "ts": 1517407893026894,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "t",
+            "id": 16
+        },
+        {
+            "name": "Shape",
+            "args": {
+                "input0": "Loss/strided_slice",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Shape_1",
+                "op": "Shape"
+            },
+            "pid": 3,
+            "ts": 1517407893026988,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 19
+        },
+        {
+            "name": "Shape",
+            "args": {
+                "input0": "Loss/mean_squared_error/SquaredDifference",
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/Shape",
+                "op": "Shape"
+            },
+            "pid": 3,
+            "ts": 1517407893027014,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 19
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "input0": "Loss/mean_squared_error/SquaredDifference",
+                "input1": "Loss/mean_squared_error/ToFloat_3/x",
+                "name": "Loss/mean_squared_error/Mul",
+                "op": "Mul"
+            },
+            "pid": 3,
+            "ts": 1517407893027039,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 151
+        },
+        {
+            "name": "Shape",
+            "args": {
+                "input2": "^Loss/mean_squared_error/num_present/broadcast_weights/assert_broadcastable/static_scalar_check_success",
+                "input0": "Loss/mean_squared_error/SquaredDifference",
+                "input1": "^Loss/mean_squared_error/assert_broadcastable/static_scalar_check_success",
+                "name": "Loss/mean_squared_error/num_present/broadcast_weights/ones_like/Shape",
+                "op": "Shape"
+            },
+            "pid": 3,
+            "ts": 1517407893027206,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 19
+        },
+        {
+            "name": "BroadcastGradientArgs",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Shape",
+                "input1": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Shape_1",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/BroadcastGradientArgs",
+                "op": "BroadcastGradientArgs"
+            },
+            "pid": 3,
+            "ts": 1517407893027236,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 24
+        },
+        {
+            "name": "BroadcastGradientArgs",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/Mul_grad/Shape",
+                "input1": "ConstantFolding/gradients/Loss/mean_squared_error/div_grad/BroadcastGradientArgs-0",
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/BroadcastGradientArgs",
+                "op": "BroadcastGradientArgs"
+            },
+            "pid": 3,
+            "ts": 1517407893027267,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 22
+        },
+        {
+            "name": "Shape",
+            "args": {
+                "input0": "Loss/mean_squared_error/Mul",
+                "name": "gradients/Loss/mean_squared_error/Sum_grad/Shape",
+                "op": "Shape"
+            },
+            "pid": 3,
+            "ts": 1517407893027297,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 18
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "Loss/mean_squared_error/Mul",
+                "input1": "Loss/mean_squared_error/Const",
+                "name": "Loss/mean_squared_error/Sum",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893027322,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 191
+        },
+        {
+            "name": "Fill",
+            "args": {
+                "input0": "Loss/mean_squared_error/num_present/broadcast_weights/ones_like/Shape",
+                "input1": "Loss/mean_squared_error/num_present/broadcast_weights/ones_like/Const",
+                "name": "Loss/mean_squared_error/num_present/broadcast_weights/ones_like",
+                "op": "Fill"
+            },
+            "pid": 3,
+            "ts": 1517407893027520,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 64
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "Loss/mean_squared_error/Sum",
+                "input1": "Loss/mean_squared_error/Const_1",
+                "name": "Loss/mean_squared_error/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893027597,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 13
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "input0": "Loss/mean_squared_error/ones_like",
+                "input1": "Loss/mean_squared_error/num_present/broadcast_weights/ones_like",
+                "name": "Loss/mean_squared_error/num_present/broadcast_weights",
+                "op": "Mul"
+            },
+            "pid": 3,
+            "ts": 1517407893027616,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 53
+        },
+        {
+            "name": "Neg",
+            "args": {
+                "input0": "Loss/mean_squared_error/Sum_1",
+                "name": "gradients/Loss/mean_squared_error/div_grad/Neg",
+                "op": "Neg"
+            },
+            "pid": 3,
+            "ts": 1517407893027676,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 52
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "Loss/mean_squared_error/num_present/broadcast_weights",
+                "input1": "Loss/mean_squared_error/Const",
+                "name": "Loss/mean_squared_error/num_present",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893027733,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 117
+        },
+        {
+            "name": "Equal",
+            "args": {
+                "input0": "Loss/mean_squared_error/num_present",
+                "input1": "Loss/mean_squared_error/Greater/y",
+                "name": "Loss/mean_squared_error/Equal",
+                "op": "Equal"
+            },
+            "pid": 3,
+            "ts": 1517407893027857,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 56
+        },
+        {
+            "name": "Greater",
+            "args": {
+                "input0": "Loss/mean_squared_error/num_present",
+                "input1": "Loss/mean_squared_error/Greater/y",
+                "name": "Loss/mean_squared_error/Greater",
+                "op": "Greater"
+            },
+            "pid": 3,
+            "ts": 1517407893027923,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 53
+        },
+        {
+            "name": "Select",
+            "args": {
+                "input2": "Loss/mean_squared_error/num_present",
+                "input0": "Loss/mean_squared_error/Equal",
+                "input1": "Loss/mean_squared_error/ones_like",
+                "name": "Loss/mean_squared_error/Select",
+                "op": "Select"
+            },
+            "pid": 3,
+            "ts": 1517407893027983,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 62
+        },
+        {
+            "name": "Select",
+            "args": {
+                "input2": "gradients/Fill",
+                "input0": "Loss/mean_squared_error/Greater",
+                "input1": "gradients/Loss/mean_squared_error/value_grad/zeros_like",
+                "name": "gradients/Loss/mean_squared_error/value_grad/Select_1",
+                "op": "Select"
+            },
+            "pid": 3,
+            "ts": 1517407893028052,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 58
+        },
+        {
+            "name": "Select",
+            "args": {
+                "input2": "gradients/Loss/mean_squared_error/value_grad/zeros_like",
+                "input0": "Loss/mean_squared_error/Greater",
+                "input1": "gradients/Fill",
+                "name": "gradients/Loss/mean_squared_error/value_grad/Select",
+                "op": "Select"
+            },
+            "pid": 3,
+            "ts": 1517407893028118,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 54
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/div_grad/Neg",
+                "input1": "Loss/mean_squared_error/Select",
+                "name": "gradients/Loss/mean_squared_error/div_grad/RealDiv_1",
+                "op": "RealDiv"
+            },
+            "pid": 3,
+            "ts": 1517407893028181,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 51
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "input0": "Loss/mean_squared_error/Sum_1",
+                "input1": "Loss/mean_squared_error/Select",
+                "name": "Loss/mean_squared_error/div",
+                "op": "RealDiv"
+            },
+            "pid": 3,
+            "ts": 1517407893028238,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 46
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "input0": "^gradients/Loss/mean_squared_error/value_grad/Select",
+                "input1": "^gradients/Loss/mean_squared_error/value_grad/Select_1",
+                "name": "gradients/Loss/mean_squared_error/value_grad/tuple/group_deps",
+                "op": "NoOp"
+            },
+            "pid": 3,
+            "ts": 1517407893028290,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 9
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/div_grad/RealDiv_1",
+                "input1": "Loss/mean_squared_error/Select",
+                "name": "gradients/Loss/mean_squared_error/div_grad/RealDiv_2",
+                "op": "RealDiv"
+            },
+            "pid": 3,
+            "ts": 1517407893028304,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 44
+        },
+        {
+            "name": "Select",
+            "args": {
+                "input2": "Loss/mean_squared_error/Greater/y",
+                "input0": "Loss/mean_squared_error/Greater",
+                "input1": "Loss/mean_squared_error/div",
+                "name": "Loss/mean_squared_error/value",
+                "op": "Select"
+            },
+            "pid": 3,
+            "ts": 1517407893028355,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 51
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/value_grad/Select",
+                "input1": "^gradients/Loss/mean_squared_error/value_grad/tuple/group_deps",
+                "name": "gradients/Loss/mean_squared_error/value_grad/tuple/control_dependency",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893028413,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/value_grad/tuple/control_dependency",
+                "input1": "gradients/Loss/mean_squared_error/div_grad/RealDiv_2",
+                "name": "gradients/Loss/mean_squared_error/div_grad/mul",
+                "op": "Mul"
+            },
+            "pid": 3,
+            "ts": 1517407893028555,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 54
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/value_grad/tuple/control_dependency",
+                "input1": "Loss/mean_squared_error/Select",
+                "name": "gradients/Loss/mean_squared_error/div_grad/RealDiv",
+                "op": "RealDiv"
+            },
+            "pid": 3,
+            "ts": 1517407893028617,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 51
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/div_grad/mul",
+                "input1": "ConstantFolding/gradients/Loss/mean_squared_error/div_grad/BroadcastGradientArgs-0",
+                "name": "gradients/Loss/mean_squared_error/div_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893028676,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 13
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/div_grad/RealDiv",
+                "input1": "ConstantFolding/gradients/Loss/mean_squared_error/div_grad/BroadcastGradientArgs-0",
+                "name": "gradients/Loss/mean_squared_error/div_grad/Sum",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893028698,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/div_grad/Sum_1",
+                "input1": "ConstantFolding/gradients/Loss/mean_squared_error/div_grad/BroadcastGradientArgs-0",
+                "name": "gradients/Loss/mean_squared_error/div_grad/Reshape_1",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893028716,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 15
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/div_grad/Sum",
+                "input1": "ConstantFolding/gradients/Loss/mean_squared_error/div_grad/BroadcastGradientArgs-0",
+                "name": "gradients/Loss/mean_squared_error/div_grad/Reshape",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893028738,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 11
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "input0": "^gradients/Loss/mean_squared_error/div_grad/Reshape",
+                "input1": "^gradients/Loss/mean_squared_error/div_grad/Reshape_1",
+                "name": "gradients/Loss/mean_squared_error/div_grad/tuple/group_deps",
+                "op": "NoOp"
+            },
+            "pid": 3,
+            "ts": 1517407893028756,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 7
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/div_grad/Reshape",
+                "input1": "^gradients/Loss/mean_squared_error/div_grad/tuple/group_deps",
+                "name": "gradients/Loss/mean_squared_error/div_grad/tuple/control_dependency",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893028769,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 10
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/div_grad/tuple/control_dependency",
+                "input1": "ConstantFolding/gradients/Loss/mean_squared_error/div_grad/BroadcastGradientArgs-0",
+                "name": "gradients/Loss/mean_squared_error/Sum_1_grad/Reshape",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893028785,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "Tile",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/Sum_1_grad/Reshape",
+                "input1": "ConstantFolding/gradients/Loss/mean_squared_error/div_grad/BroadcastGradientArgs-0",
+                "name": "gradients/Loss/mean_squared_error/Sum_1_grad/Tile",
+                "op": "Tile"
+            },
+            "pid": 3,
+            "ts": 1517407893028803,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 11
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/Sum_1_grad/Tile",
+                "input1": "gradients/Loss/mean_squared_error/Sum_grad/Reshape/shape",
+                "name": "gradients/Loss/mean_squared_error/Sum_grad/Reshape",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893028820,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "Tile",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/Sum_grad/Reshape",
+                "input1": "gradients/Loss/mean_squared_error/Sum_grad/Shape",
+                "name": "gradients/Loss/mean_squared_error/Sum_grad/Tile",
+                "op": "Tile"
+            },
+            "pid": 3,
+            "ts": 1517407893028839,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 60
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "input0": "Loss/mean_squared_error/SquaredDifference",
+                "input1": "gradients/Loss/mean_squared_error/Sum_grad/Tile",
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/mul_1",
+                "op": "Mul"
+            },
+            "pid": 3,
+            "ts": 1517407893028912,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 52
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/Sum_grad/Tile",
+                "input1": "Loss/mean_squared_error/ToFloat_3/x",
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/mul",
+                "op": "Mul"
+            },
+            "pid": 3,
+            "ts": 1517407893028971,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 50
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/Mul_grad/mul_1",
+                "input1": "gradients/Loss/mean_squared_error/Mul_grad/BroadcastGradientArgs:1",
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893029028,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 122
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/Mul_grad/mul",
+                "input1": "gradients/Loss/mean_squared_error/Mul_grad/BroadcastGradientArgs",
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/Sum",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893029157,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 14
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/Mul_grad/Sum_1",
+                "input1": "ConstantFolding/gradients/Loss/mean_squared_error/div_grad/BroadcastGradientArgs-0",
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/Reshape_1",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893029181,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 13
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/Mul_grad/Sum",
+                "input1": "gradients/Loss/mean_squared_error/Mul_grad/Shape",
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/Reshape",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893029200,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 15
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "input0": "^gradients/Loss/mean_squared_error/Mul_grad/Reshape",
+                "input1": "^gradients/Loss/mean_squared_error/Mul_grad/Reshape_1",
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/tuple/group_deps",
+                "op": "NoOp"
+            },
+            "pid": 3,
+            "ts": 1517407893029220,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 7
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/Mul_grad/Reshape",
+                "input1": "^gradients/Loss/mean_squared_error/Mul_grad/tuple/group_deps",
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/tuple/control_dependency",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893029233,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 11
+        },
+        {
+            "name": "Sub",
+            "args": {
+                "input2": "^gradients/Loss/mean_squared_error/Mul_grad/tuple/control_dependency",
+                "input0": "Loss/strided_slice_1",
+                "input1": "Loss/strided_slice",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/sub",
+                "op": "Sub"
+            },
+            "pid": 3,
+            "ts": 1517407893029249,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 55
+        },
+        {
+            "name": "Loss/strided_slice_1",
+            "pid": 3,
+            "ts": 1517407893026190,
+            "cat": "DataFlow",
+            "tid": 1,
+            "ph": "s",
+            "id": 17
+        },
+        {
+            "name": "Loss/strided_slice_1",
+            "pid": 3,
+            "ts": 1517407893029249,
+            "cat": "DataFlow",
+            "tid": 0,
+            "ph": "t",
+            "id": 17
+        },
+        {
+            "name": "Const",
+            "args": {
+                "input0": "^gradients/Loss/mean_squared_error/Mul_grad/tuple/control_dependency",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/scalar",
+                "op": "Const"
+            },
+            "pid": 3,
+            "ts": 1517407893029311,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 11
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/SquaredDifference_grad/scalar",
+                "input1": "gradients/Loss/mean_squared_error/Mul_grad/tuple/control_dependency",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/mul",
+                "op": "Mul"
+            },
+            "pid": 3,
+            "ts": 1517407893029328,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 48
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/SquaredDifference_grad/mul",
+                "input1": "gradients/Loss/mean_squared_error/SquaredDifference_grad/sub",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/mul_1",
+                "op": "Mul"
+            },
+            "pid": 3,
+            "ts": 1517407893029383,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 50
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/SquaredDifference_grad/mul_1",
+                "input1": "gradients/Loss/mean_squared_error/SquaredDifference_grad/BroadcastGradientArgs:1",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893029440,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 14
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/SquaredDifference_grad/mul_1",
+                "input1": "gradients/Loss/mean_squared_error/SquaredDifference_grad/BroadcastGradientArgs",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Sum",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893029460,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Sum_1",
+                "input1": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Shape_1",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Reshape_1",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893029478,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 15
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Sum",
+                "input1": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Shape",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Reshape",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893029498,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 15
+        },
+        {
+            "name": "Neg",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Reshape_1",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Neg",
+                "op": "Neg"
+            },
+            "pid": 3,
+            "ts": 1517407893029519,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 43
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "input0": "^gradients/Loss/mean_squared_error/SquaredDifference_grad/Reshape",
+                "input1": "^gradients/Loss/mean_squared_error/SquaredDifference_grad/Neg",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/tuple/group_deps",
+                "op": "NoOp"
+            },
+            "pid": 3,
+            "ts": 1517407893029568,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 8
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Neg",
+                "input1": "^gradients/Loss/mean_squared_error/SquaredDifference_grad/tuple/group_deps",
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/tuple/control_dependency_1",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893029582,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 11
+        },
+        {
+            "name": "StridedSliceGrad",
+            "args": {
+                "input2": "Loss/strided_slice/stack_1",
+                "input3": "gradients/Loss/mean_squared_error/Sum_grad/Reshape/shape",
+                "input0": "gradients/Loss/strided_slice_grad/Shape",
+                "input1": "Loss/strided_slice/stack",
+                "name": "gradients/Loss/strided_slice_grad/StridedSliceGrad",
+                "input4": "gradients/Loss/mean_squared_error/SquaredDifference_grad/tuple/control_dependency_1",
+                "op": "StridedSliceGrad"
+            },
+            "pid": 3,
+            "ts": 1517407893029602,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 98
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/Loss/strided_slice_grad/StridedSliceGrad",
+                "input1": "gradients/decompressor3/Reshape_1_grad/Shape",
+                "name": "gradients/decompressor3/Reshape_1_grad/Reshape",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893029714,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 16
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "gradients/decompressor3/Reshape_1_grad/Reshape",
+                "input1": "gradients/decompressor3/add_grad/BroadcastGradientArgs:1",
+                "name": "gradients/decompressor3/add_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893029737,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 102
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "input0": "gradients/decompressor3/Reshape_1_grad/Reshape",
+                "input1": "gradients/decompressor3/add_grad/BroadcastGradientArgs",
+                "name": "gradients/decompressor3/add_grad/Sum",
+                "op": "Sum"
+            },
+            "pid": 3,
+            "ts": 1517407893029847,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 13
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/decompressor3/add_grad/Sum_1",
+                "input1": "gradients/decompressor3/add_grad/Shape_1",
+                "name": "gradients/decompressor3/add_grad/Reshape_1",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893029866,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 13
+        },
+        {
+            "name": "Reshape",
+            "args": {
+                "input0": "gradients/decompressor3/add_grad/Sum",
+                "input1": "gradients/decompressor3/add_grad/Shape",
+                "name": "gradients/decompressor3/add_grad/Reshape",
+                "op": "Reshape"
+            },
+            "pid": 3,
+            "ts": 1517407893029884,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 13
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "input0": "^gradients/decompressor3/add_grad/Reshape",
+                "input1": "^gradients/decompressor3/add_grad/Reshape_1",
+                "name": "gradients/decompressor3/add_grad/tuple/group_deps",
+                "op": "NoOp"
+            },
+            "pid": 3,
+            "ts": 1517407893029903,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 8
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "gradients/decompressor3/add_grad/Reshape_1",
+                "input1": "^gradients/decompressor3/add_grad/tuple/group_deps",
+                "name": "gradients/decompressor3/add_grad/tuple/control_dependency_1",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893029916,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 11
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "gradients/decompressor3/add_grad/Reshape",
+                "input1": "^gradients/decompressor3/add_grad/tuple/group_deps",
+                "name": "gradients/decompressor3/add_grad/tuple/control_dependency",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893029932,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 11
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "input2": "decompressor3/b/Adam_1",
+                "input3": "beta1_power/read",
+                "input0": "decompressor3/b",
+                "input1": "decompressor3/b/Adam",
+                "input6": "optimizer/beta1",
+                "name": "optimizer/update_decompressor3/b/ApplyAdam",
+                "input4": "beta2_power/read",
+                "input5": "optimizer/learning_rate",
+                "input7": "optimizer/beta2",
+                "input8": "optimizer/epsilon",
+                "input9": "gradients/decompressor3/add_grad/tuple/control_dependency_1",
+                "op": "ApplyAdam"
+            },
+            "pid": 3,
+            "ts": 1517407893029949,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 127
+        },
+        {
+            "name": "MatMul",
+            "args": {
+                "input0": "decompressor3/Reshape",
+                "input1": "gradients/decompressor3/add_grad/tuple/control_dependency",
+                "name": "gradients/decompressor3/MatMul_grad/MatMul_1",
+                "op": "MatMul"
+            },
+            "pid": 3,
+            "ts": 1517407893030086,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 120
+        },
+        {
+            "name": "MatMul",
+            "args": {
+                "input0": "gradients/decompressor3/add_grad/tuple/control_dependency",
+                "input1": "decompressor3/W/read",
+                "name": "gradients/decompressor3/MatMul_grad/MatMul",
+                "op": "MatMul"
+            },
+            "pid": 3,
+            "ts": 1517407893030214,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 74
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "input0": "^gradients/decompressor3/MatMul_grad/MatMul",
+                "input1": "^gradients/decompressor3/MatMul_grad/MatMul_1",
+                "name": "gradients/decompressor3/MatMul_grad/tuple/group_deps",
+                "op": "NoOp"
+            },
+            "pid": 3,
+            "ts": 1517407893030301,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 8
+        },
+        {
+            "name": "Identity",
+            "args": {
+                "input0": "gradients/decompressor3/MatMul_grad/MatMul_1",
+                "input1": "^gradients/decompressor3/MatMul_grad/tuple/group_deps",
+                "name": "gradients/decompressor3/MatMul_grad/tuple/control_dependency_1",
+                "op": "Identity"
+            },
+            "pid": 3,
+            "ts": 1517407893030315,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 11
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "input2": "decompressor3/W/Adam_1",
+                "input3": "beta1_power/read",
+                "input0": "decompressor3/W",
+                "input1": "decompressor3/W/Adam",
+                "input6": "optimizer/beta1",
+                "name": "optimizer/update_decompressor3/W/ApplyAdam",
+                "input4": "beta2_power/read",
+                "input5": "optimizer/learning_rate",
+                "input7": "optimizer/beta2",
+                "input8": "optimizer/epsilon",
+                "input9": "gradients/decompressor3/MatMul_grad/tuple/control_dependency_1",
+                "op": "ApplyAdam"
+            },
+            "pid": 3,
+            "ts": 1517407893030332,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 115
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "input2": "^optimizer/update_decompressor3/W/ApplyAdam",
+                "input3": "^optimizer/update_decompressor3/b/ApplyAdam",
+                "input0": "beta2_power/read",
+                "input1": "optimizer/beta2",
+                "name": "optimizer/mul_1",
+                "op": "Mul"
+            },
+            "pid": 3,
+            "ts": 1517407893030457,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 51
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "input2": "^optimizer/update_decompressor3/W/ApplyAdam",
+                "input3": "^optimizer/update_decompressor3/b/ApplyAdam",
+                "input0": "beta1_power/read",
+                "input1": "optimizer/beta1",
+                "name": "optimizer/mul",
+                "op": "Mul"
+            },
+            "pid": 3,
+            "ts": 1517407893030516,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 48
+        },
+        {
+            "name": "Assign",
+            "args": {
+                "input0": "beta2_power",
+                "input1": "optimizer/mul_1",
+                "name": "optimizer/Assign_1",
+                "op": "Assign"
+            },
+            "pid": 3,
+            "ts": 1517407893030572,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 64
+        },
+        {
+            "name": "Assign",
+            "args": {
+                "input0": "beta1_power",
+                "input1": "optimizer/mul",
+                "name": "optimizer/Assign",
+                "op": "Assign"
+            },
+            "pid": 3,
+            "ts": 1517407893030642,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 54
+        },
+        {
+            "name": "NoOp",
+            "args": {
+                "input2": "^optimizer/Assign",
+                "input3": "^optimizer/Assign_1",
+                "input0": "^optimizer/update_decompressor3/W/ApplyAdam",
+                "input1": "^optimizer/update_decompressor3/b/ApplyAdam",
+                "name": "optimizer",
+                "op": "NoOp"
+            },
+            "pid": 3,
+            "ts": 1517407893030703,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 12
+        },
+        {
+            "name": "StridedSlice",
+            "args": {
+                "name": "Loss/strided_slice_1",
+                "op": "StridedSlice"
+            },
+            "pid": 5,
+            "ts": 1517407893026182,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 36
+        },
+        {
+            "name": "MatMul",
+            "args": {
+                "name": "decompressor3/MatMul",
+                "op": "MatMul"
+            },
+            "pid": 5,
+            "ts": 1517407893026224,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 76
+        },
+        {
+            "name": "Pack",
+            "args": {
+                "name": "decompressor3/stack",
+                "op": "Pack"
+            },
+            "pid": 5,
+            "ts": 1517407893026303,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "Add",
+            "args": {
+                "name": "decompressor3/add",
+                "op": "Add"
+            },
+            "pid": 5,
+            "ts": 1517407893026321,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 36
+        },
+        {
+            "name": "Pack",
+            "args": {
+                "name": "decompressor3/stack",
+                "op": "Pack"
+            },
+            "pid": 5,
+            "ts": 1517407893026360,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Pack",
+            "args": {
+                "name": "decompressor3/stack",
+                "op": "Pack"
+            },
+            "pid": 5,
+            "ts": 1517407893026385,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "StridedSlice",
+            "args": {
+                "name": "Loss/strided_slice",
+                "op": "StridedSlice"
+            },
+            "pid": 5,
+            "ts": 1517407893026846,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 38
+        },
+        {
+            "name": "SquaredDifference",
+            "args": {
+                "name": "Loss/mean_squared_error/SquaredDifference",
+                "op": "SquaredDifference"
+            },
+            "pid": 5,
+            "ts": 1517407893026962,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 54
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "Loss/mean_squared_error/Mul",
+                "op": "Mul"
+            },
+            "pid": 5,
+            "ts": 1517407893027179,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 36
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "Loss/mean_squared_error/Sum",
+                "op": "Sum"
+            },
+            "pid": 5,
+            "ts": 1517407893027447,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 22
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "Loss/mean_squared_error/Sum",
+                "op": "Sum"
+            },
+            "pid": 5,
+            "ts": 1517407893027481,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 4
+        },
+        {
+            "name": "Fill",
+            "args": {
+                "name": "Loss/mean_squared_error/num_present/broadcast_weights/ones_like",
+                "op": "Fill"
+            },
+            "pid": 5,
+            "ts": 1517407893027569,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 17
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "Loss/mean_squared_error/num_present/broadcast_weights",
+                "op": "Mul"
+            },
+            "pid": 5,
+            "ts": 1517407893027660,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 35
+        },
+        {
+            "name": "Neg",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/div_grad/Neg",
+                "op": "Neg"
+            },
+            "pid": 5,
+            "ts": 1517407893027719,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "Loss/mean_squared_error/num_present",
+                "op": "Sum"
+            },
+            "pid": 5,
+            "ts": 1517407893027802,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 22
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "Loss/mean_squared_error/num_present",
+                "op": "Sum"
+            },
+            "pid": 5,
+            "ts": 1517407893027834,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "Equal",
+            "args": {
+                "name": "Loss/mean_squared_error/Equal",
+                "op": "Equal"
+            },
+            "pid": 5,
+            "ts": 1517407893027903,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Greater",
+            "args": {
+                "name": "Loss/mean_squared_error/Greater",
+                "op": "Greater"
+            },
+            "pid": 5,
+            "ts": 1517407893027967,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Select",
+            "args": {
+                "name": "Loss/mean_squared_error/Select",
+                "op": "Select"
+            },
+            "pid": 5,
+            "ts": 1517407893028033,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Select",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/value_grad/Select_1",
+                "op": "Select"
+            },
+            "pid": 5,
+            "ts": 1517407893028099,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Select",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/value_grad/Select",
+                "op": "Select"
+            },
+            "pid": 5,
+            "ts": 1517407893028164,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/div_grad/RealDiv_1",
+                "op": "RealDiv"
+            },
+            "pid": 5,
+            "ts": 1517407893028223,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "name": "Loss/mean_squared_error/div",
+                "op": "RealDiv"
+            },
+            "pid": 5,
+            "ts": 1517407893028275,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/div_grad/RealDiv_2",
+                "op": "RealDiv"
+            },
+            "pid": 5,
+            "ts": 1517407893028341,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Select",
+            "args": {
+                "name": "Loss/mean_squared_error/value",
+                "op": "Select"
+            },
+            "pid": 5,
+            "ts": 1517407893028395,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/div_grad/mul",
+                "op": "Mul"
+            },
+            "pid": 5,
+            "ts": 1517407893028599,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/div_grad/RealDiv",
+                "op": "RealDiv"
+            },
+            "pid": 5,
+            "ts": 1517407893028657,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Tile",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Sum_grad/Tile",
+                "op": "Tile"
+            },
+            "pid": 5,
+            "ts": 1517407893028885,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 49
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/mul_1",
+                "op": "Mul"
+            },
+            "pid": 5,
+            "ts": 1517407893028954,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 54
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/mul",
+                "op": "Mul"
+            },
+            "pid": 5,
+            "ts": 1517407893029013,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 34
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 5,
+            "ts": 1517407893029099,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 23
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 5,
+            "ts": 1517407893029132,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "Sub",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/sub",
+                "op": "Sub"
+            },
+            "pid": 5,
+            "ts": 1517407893029292,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 50
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/mul",
+                "op": "Mul"
+            },
+            "pid": 5,
+            "ts": 1517407893029368,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 35
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/mul_1",
+                "op": "Mul"
+            },
+            "pid": 5,
+            "ts": 1517407893029421,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 53
+        },
+        {
+            "name": "Neg",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Neg",
+                "op": "Neg"
+            },
+            "pid": 5,
+            "ts": 1517407893029554,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 35
+        },
+        {
+            "name": "StridedSliceGrad",
+            "args": {
+                "name": "gradients/Loss/strided_slice_grad/StridedSliceGrad",
+                "op": "StridedSliceGrad"
+            },
+            "pid": 5,
+            "ts": 1517407893029654,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 17
+        },
+        {
+            "name": "StridedSliceGrad",
+            "args": {
+                "name": "gradients/Loss/strided_slice_grad/StridedSliceGrad",
+                "op": "StridedSliceGrad"
+            },
+            "pid": 5,
+            "ts": 1517407893029685,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 39
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "gradients/decompressor3/add_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 5,
+            "ts": 1517407893029790,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 29
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "gradients/decompressor3/add_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 5,
+            "ts": 1517407893029823,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/b/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 5,
+            "ts": 1517407893029995,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/b/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 5,
+            "ts": 1517407893030027,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/b/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 5,
+            "ts": 1517407893030061,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 4
+        },
+        {
+            "name": "MatMul",
+            "args": {
+                "name": "gradients/decompressor3/MatMul_grad/MatMul_1",
+                "op": "MatMul"
+            },
+            "pid": 5,
+            "ts": 1517407893030188,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 210
+        },
+        {
+            "name": "MatMul",
+            "args": {
+                "name": "gradients/decompressor3/MatMul_grad/MatMul",
+                "op": "MatMul"
+            },
+            "pid": 5,
+            "ts": 1517407893030401,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 68
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/W/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 5,
+            "ts": 1517407893030472,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/W/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 5,
+            "ts": 1517407893030477,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/W/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 5,
+            "ts": 1517407893030481,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "optimizer/mul_1",
+                "op": "Mul"
+            },
+            "pid": 5,
+            "ts": 1517407893030500,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "optimizer/mul",
+                "op": "Mul"
+            },
+            "pid": 5,
+            "ts": 1517407893030557,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "StridedSlice",
+            "args": {
+                "name": "Loss/strided_slice_1",
+                "op": "StridedSlice"
+            },
+            "pid": 7,
+            "ts": 1517407893026182,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 36
+        },
+        {
+            "name": "MatMul",
+            "args": {
+                "name": "decompressor3/MatMul",
+                "op": "MatMul"
+            },
+            "pid": 7,
+            "ts": 1517407893026224,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 76
+        },
+        {
+            "name": "Pack",
+            "args": {
+                "name": "decompressor3/stack",
+                "op": "Pack"
+            },
+            "pid": 7,
+            "ts": 1517407893026303,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "Add",
+            "args": {
+                "name": "decompressor3/add",
+                "op": "Add"
+            },
+            "pid": 7,
+            "ts": 1517407893026321,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 36
+        },
+        {
+            "name": "Pack",
+            "args": {
+                "name": "decompressor3/stack",
+                "op": "Pack"
+            },
+            "pid": 7,
+            "ts": 1517407893026360,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Pack",
+            "args": {
+                "name": "decompressor3/stack",
+                "op": "Pack"
+            },
+            "pid": 7,
+            "ts": 1517407893026385,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "StridedSlice",
+            "args": {
+                "name": "Loss/strided_slice",
+                "op": "StridedSlice"
+            },
+            "pid": 7,
+            "ts": 1517407893026846,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 38
+        },
+        {
+            "name": "SquaredDifference",
+            "args": {
+                "name": "Loss/mean_squared_error/SquaredDifference",
+                "op": "SquaredDifference"
+            },
+            "pid": 7,
+            "ts": 1517407893026962,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 54
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "Loss/mean_squared_error/Mul",
+                "op": "Mul"
+            },
+            "pid": 7,
+            "ts": 1517407893027179,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 36
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "Loss/mean_squared_error/Sum",
+                "op": "Sum"
+            },
+            "pid": 7,
+            "ts": 1517407893027447,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 22
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "Loss/mean_squared_error/Sum",
+                "op": "Sum"
+            },
+            "pid": 7,
+            "ts": 1517407893027481,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 4
+        },
+        {
+            "name": "Fill",
+            "args": {
+                "name": "Loss/mean_squared_error/num_present/broadcast_weights/ones_like",
+                "op": "Fill"
+            },
+            "pid": 7,
+            "ts": 1517407893027569,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 17
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "Loss/mean_squared_error/num_present/broadcast_weights",
+                "op": "Mul"
+            },
+            "pid": 7,
+            "ts": 1517407893027660,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 35
+        },
+        {
+            "name": "Neg",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/div_grad/Neg",
+                "op": "Neg"
+            },
+            "pid": 7,
+            "ts": 1517407893027719,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "Loss/mean_squared_error/num_present",
+                "op": "Sum"
+            },
+            "pid": 7,
+            "ts": 1517407893027802,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 22
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "Loss/mean_squared_error/num_present",
+                "op": "Sum"
+            },
+            "pid": 7,
+            "ts": 1517407893027834,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "Equal",
+            "args": {
+                "name": "Loss/mean_squared_error/Equal",
+                "op": "Equal"
+            },
+            "pid": 7,
+            "ts": 1517407893027903,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Greater",
+            "args": {
+                "name": "Loss/mean_squared_error/Greater",
+                "op": "Greater"
+            },
+            "pid": 7,
+            "ts": 1517407893027967,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Select",
+            "args": {
+                "name": "Loss/mean_squared_error/Select",
+                "op": "Select"
+            },
+            "pid": 7,
+            "ts": 1517407893028033,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Select",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/value_grad/Select_1",
+                "op": "Select"
+            },
+            "pid": 7,
+            "ts": 1517407893028099,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Select",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/value_grad/Select",
+                "op": "Select"
+            },
+            "pid": 7,
+            "ts": 1517407893028164,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/div_grad/RealDiv_1",
+                "op": "RealDiv"
+            },
+            "pid": 7,
+            "ts": 1517407893028223,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "name": "Loss/mean_squared_error/div",
+                "op": "RealDiv"
+            },
+            "pid": 7,
+            "ts": 1517407893028275,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/div_grad/RealDiv_2",
+                "op": "RealDiv"
+            },
+            "pid": 7,
+            "ts": 1517407893028341,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Select",
+            "args": {
+                "name": "Loss/mean_squared_error/value",
+                "op": "Select"
+            },
+            "pid": 7,
+            "ts": 1517407893028395,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/div_grad/mul",
+                "op": "Mul"
+            },
+            "pid": 7,
+            "ts": 1517407893028599,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "RealDiv",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/div_grad/RealDiv",
+                "op": "RealDiv"
+            },
+            "pid": 7,
+            "ts": 1517407893028657,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Tile",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Sum_grad/Tile",
+                "op": "Tile"
+            },
+            "pid": 7,
+            "ts": 1517407893028885,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 49
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/mul_1",
+                "op": "Mul"
+            },
+            "pid": 7,
+            "ts": 1517407893028954,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 54
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/mul",
+                "op": "Mul"
+            },
+            "pid": 7,
+            "ts": 1517407893029013,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 34
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 7,
+            "ts": 1517407893029099,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 23
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/Mul_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 7,
+            "ts": 1517407893029132,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "Sub",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/sub",
+                "op": "Sub"
+            },
+            "pid": 7,
+            "ts": 1517407893029292,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 50
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/mul",
+                "op": "Mul"
+            },
+            "pid": 7,
+            "ts": 1517407893029368,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 35
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/mul_1",
+                "op": "Mul"
+            },
+            "pid": 7,
+            "ts": 1517407893029421,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 53
+        },
+        {
+            "name": "Neg",
+            "args": {
+                "name": "gradients/Loss/mean_squared_error/SquaredDifference_grad/Neg",
+                "op": "Neg"
+            },
+            "pid": 7,
+            "ts": 1517407893029554,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 35
+        },
+        {
+            "name": "StridedSliceGrad",
+            "args": {
+                "name": "gradients/Loss/strided_slice_grad/StridedSliceGrad",
+                "op": "StridedSliceGrad"
+            },
+            "pid": 7,
+            "ts": 1517407893029654,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 17
+        },
+        {
+            "name": "StridedSliceGrad",
+            "args": {
+                "name": "gradients/Loss/strided_slice_grad/StridedSliceGrad",
+                "op": "StridedSliceGrad"
+            },
+            "pid": 7,
+            "ts": 1517407893029685,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 39
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "gradients/decompressor3/add_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 7,
+            "ts": 1517407893029790,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 29
+        },
+        {
+            "name": "Sum",
+            "args": {
+                "name": "gradients/decompressor3/add_grad/Sum_1",
+                "op": "Sum"
+            },
+            "pid": 7,
+            "ts": 1517407893029823,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/b/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 7,
+            "ts": 1517407893029995,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/b/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 7,
+            "ts": 1517407893030027,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/b/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 7,
+            "ts": 1517407893030061,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 4
+        },
+        {
+            "name": "MatMul",
+            "args": {
+                "name": "gradients/decompressor3/MatMul_grad/MatMul_1",
+                "op": "MatMul"
+            },
+            "pid": 7,
+            "ts": 1517407893030188,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 210
+        },
+        {
+            "name": "MatMul",
+            "args": {
+                "name": "gradients/decompressor3/MatMul_grad/MatMul",
+                "op": "MatMul"
+            },
+            "pid": 7,
+            "ts": 1517407893030401,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 68
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/W/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 7,
+            "ts": 1517407893030472,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/W/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 7,
+            "ts": 1517407893030477,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 3
+        },
+        {
+            "name": "ApplyAdam",
+            "args": {
+                "name": "optimizer/update_decompressor3/W/ApplyAdam",
+                "op": "ApplyAdam"
+            },
+            "pid": 7,
+            "ts": 1517407893030481,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 5
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "optimizer/mul_1",
+                "op": "Mul"
+            },
+            "pid": 7,
+            "ts": 1517407893030500,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Mul",
+            "args": {
+                "name": "optimizer/mul",
+                "op": "Mul"
+            },
+            "pid": 7,
+            "ts": 1517407893030557,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 2
+        },
+        {
+            "name": "Assign",
+            "args": {
+                "name": "optimizer/Assign_1",
+                "op": "Assign"
+            },
+            "pid": 7,
+            "ts": 1517407893030622,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1
+        },
+        {
+            "name": "Assign",
+            "args": {
+                "name": "optimizer/Assign",
+                "op": "Assign"
+            },
+            "pid": 7,
+            "ts": 1517407893030683,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1
+        },
+        {
+            "name": "MEMCPYHtoD",
+            "args": {
+                "name": "edge_242__arg_Placeholder_0_0",
+                "op": "MEMCPYHtoD"
+            },
+            "pid": 9,
+            "ts": 1517407893024332,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1663
+        },
+        {
+            "name": "MEMCPYHtoD",
+            "args": {
+                "name": "edge_245__arg_Placeholder_2_0_2",
+                "op": "MEMCPYHtoD"
+            },
+            "pid": 9,
+            "ts": 1517407893026005,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1
+        },
+        {
+            "name": "MEMCPYDtoH",
+            "args": {
+                "name": "edge_22_decompressor3/stack",
+                "op": "MEMCPYDtoH"
+            },
+            "pid": 9,
+            "ts": 1517407893026530,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1
+        },
+        {
+            "name": "MEMCPYDtoH",
+            "args": {
+                "name": "edge_248_decompressor3/Identity",
+                "op": "MEMCPYDtoH"
+            },
+            "pid": 9,
+            "ts": 1517407893026698,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 742
+        },
+        {
+            "name": "MEMCPYDtoH",
+            "args": {
+                "name": "edge_246_Loss/mean_squared_error/value",
+                "op": "MEMCPYDtoH"
+            },
+            "pid": 9,
+            "ts": 1517407893028490,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1
+        },
+        {
+            "name": "Assign",
+            "args": {
+                "name": "optimizer/Assign_1",
+                "op": "Assign"
+            },
+            "pid": 9,
+            "ts": 1517407893030622,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1
+        },
+        {
+            "name": "Assign",
+            "args": {
+                "name": "optimizer/Assign",
+                "op": "Assign"
+            },
+            "pid": 9,
+            "ts": 1517407893030683,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1
+        },
+        {
+            "name": "MEMCPYHtoD",
+            "args": {
+                "name": "edge_242__arg_Placeholder_0_0",
+                "op": "MEMCPYHtoD"
+            },
+            "pid": 11,
+            "ts": 1517407893024332,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1663
+        },
+        {
+            "name": "MEMCPYHtoD",
+            "args": {
+                "name": "edge_245__arg_Placeholder_2_0_2",
+                "op": "MEMCPYHtoD"
+            },
+            "pid": 11,
+            "ts": 1517407893026005,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1
+        },
+        {
+            "name": "MEMCPYDtoH",
+            "args": {
+                "name": "edge_22_decompressor3/stack",
+                "op": "MEMCPYDtoH"
+            },
+            "pid": 13,
+            "ts": 1517407893026530,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1
+        },
+        {
+            "name": "MEMCPYDtoH",
+            "args": {
+                "name": "edge_248_decompressor3/Identity",
+                "op": "MEMCPYDtoH"
+            },
+            "pid": 13,
+            "ts": 1517407893026698,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 742
+        },
+        {
+            "name": "MEMCPYDtoH",
+            "args": {
+                "name": "edge_246_Loss/mean_squared_error/value",
+                "op": "MEMCPYDtoH"
+            },
+            "pid": 13,
+            "ts": 1517407893028490,
+            "cat": "Op",
+            "tid": 0,
+            "ph": "X",
+            "dur": 1
+        }
+    ]
+}
