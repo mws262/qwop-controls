@@ -13,7 +13,7 @@ tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machi
 # On external drive ^. use sudo mount /dev/sdb1 /mnt
 
 export_dir = './models/'
-learn_rate = 1e-3
+learn_rate = 1e-6
 
 initWeightsStdev = 0.1
 
@@ -181,13 +181,15 @@ with tf.name_scope('input'):
 
 
 # Layer 1: Fully-connected.
-layer1 = nn_layer(state, 72, 42, 'layer1')
-layer2 = nn_layer(layer1, 42, 25, 'layer2')
-layer3 = nn_layer(layer2, 25, 6, 'layer3')
+out = nn_layer(state, 72, 64, 'layer1')
+out = nn_layer(out, 64, 42, 'layer2')
+out = nn_layer(out, 42, 25, 'layer2')
+out = nn_layer(out, 25, 12, 'layer3')
 
-layer4 = nn_layer(layer3, 6, 25, 'layer4')
-layer5 = nn_layer(layer4, 25, 42, 'layer5')
-decompressed = nn_layer(layer5, 42, 72, 'layer6')
+out = nn_layer(out, 12, 25, 'layer4')
+out = nn_layer(out, 25, 42, 'layer5')
+out = nn_layer(out, 42, 64, 'layer2')
+decompressed = nn_layer(out, 64, 72, 'layer6')
 
 with tf.name_scope('Loss'):
     loss_op = tf.losses.mean_squared_error(state, decompressed)
@@ -219,8 +221,9 @@ with tf.Session() as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
 
-    if os.path.isfile("./tmp/model1.ckpt"):
+    if os.path.isfile("./tmp/model1.ckpt.meta"):
       saver.restore(sess, "./tmp/model1.ckpt")
+      print('restored')
 
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
