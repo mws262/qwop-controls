@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os.path
 from tensorflow.python.ops import rnn, rnn_cell
+import time
 
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
@@ -10,7 +11,7 @@ tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machi
 stateKeys = ['BODY', 'HEAD', 'RTHIGH', 'LTHIGH', 'RCALF', 'LCALF',
              'RFOOT', 'LFOOT', 'RUARM', 'LUARM', 'RLARM', 'LLARM']
 
-batch_size = 10
+batch_size = 1
 
 
 sequence_features = {skey: tf.FixedLenSequenceFeature([6], tf.float32, True) for skey in stateKeys}
@@ -45,7 +46,7 @@ statesConcat = tf.concat(sequence_read.values(), 1)
 
 # Creating a new queue
 padding_q = tf.PaddingFIFOQueue(
-    capacity=1000,
+    capacity=100,
     dtypes=[tf.int64, tf.float32],
     shapes=[[],[None,76]])
 
@@ -53,7 +54,7 @@ padding_q = tf.PaddingFIFOQueue(
 enqueue_op = padding_q.enqueue([timesteps, statesConcat])
 
 # Add the queue runner to the graph
-qr = tf.train.QueueRunner(padding_q, [enqueue_op])
+qr = tf.train.QueueRunner(padding_q, [enqueue_op]*16)
 tf.train.add_queue_runner(qr)
 
 # Dequeue padded data
@@ -103,7 +104,7 @@ predictions = activated
 #     W = tf.get_variable('W', initializer=tf.truncated_normal([size_in, size_out], stddev=1))
 #     b = tf.get_variable('b', [size_out], initializer=tf.constant_initializer(0.1))
 #     predictions = tf.reshape(
-#             tf.matmul(tf.reshape(activated, [-1, size_in]), W) + b,
+#          hdparm -t   tf.matmul(tf.reshape(activated, [-1, size_in]), W) + b,
 #             tf.stack([batch_size, max_ts, size_out], axis=0))
 
 learning_rate = 1e-2
@@ -125,17 +126,18 @@ with tf.Session() as sess:
     # lengths_batch, state_batch = sess.run(batched_data)
     # state_batch = state_batch[:,:100,:]
     # lengths_batch[0] = 100
-    for i in range(1000):
-        lengths_batch, state_batch = sess.run(batched_data)
+    before = time.time()
+    for i in range(10000):
+        lengths_batch, state_batch = sess.run(batched_data)#, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
         _, loss, pred =  sess.run([train_op, loss_op, predictions],
-                                          feed_dict={timesteps_in: lengths_batch, states_in: state_batch, max_ts: np.amax(lengths_batch)}, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE),
-            run_metadata=run_metadata)
-        if i%99 == 0:
-            print loss
+                                          feed_dict={timesteps_in: lengths_batch, states_in: state_batch, max_ts: np.amax(lengths_batch)}) #, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE),run_metadata=run_metadata)
+        # if i%99 == 0:
+        #     print loss
         #print pred[0, 1:11, 0:6] - state_batch[0, 0:10, 0:6]
         #print np.shape(lstates)
 
-from tensorflow.python.client import timeline
-trace = timeline.Timeline(step_stats=run_metadata.step_stats)
-trace_file = open('timeline.ctf.json', 'w')
-trace_file.write(trace.generate_chrome_trace_format())
+# print time.time() - before
+# from tensorflow.python.client import timeline
+# trace = timeline.Timeline(step_stats=run_metadata.step_stats)
+# trace_file = open('timeline.ctf.json', 'w') # View in chrome://tracing
+# trace_file.write(trace.generate_chrome_trace_format())
