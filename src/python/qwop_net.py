@@ -5,11 +5,13 @@ from tensorflow.python.client import timeline
 from tensorflow.python.ops import rnn, rnn_cell
 import sys
 import numpy as np
+import time
+from tabulate import tabulate
 
 '''
 PARAMETERS & SETTINGS
 '''
-
+## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 # On external drive ^. use sudo mount /dev/sdb1 /mnt
@@ -17,7 +19,7 @@ tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machi
 export_dir = './models/'
 learn_rate = 1e-3
 
-initWeightsStdev = 0.1
+initWeightsStdev = .1
 
 # All states found in the TFRECORD files
 stateKeys = ['BODY', 'HEAD', 'RTHIGH', 'LTHIGH', 'RCALF', 'LCALF',
@@ -36,7 +38,8 @@ context_features = {ckey: tf.FixedLenFeature([],tf.int64,True) for ckey in conte
 
 
 '''
-FUNCTIONS IN THE NN PIPELINE
+FUNCTIONS IN THE NN PIPELINED
+
 '''
 
 def _parse_function(example_proto):
@@ -113,7 +116,7 @@ def variable_summaries(var):
             tf.summary.histogram('histogram', var)
 
 
-def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.leaky_relu):
+def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.tanh):
 
     """Reusable code for making a simple neural net layer.
 
@@ -146,10 +149,23 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.leaky_re
 
         return activations
 
+def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.leaky_relu):
+    current_tensor = input
+    for idx in range(len(layer_sizes) - 1):
+        if idx == range(len(layer_sizes) - 1):
+            current_tensor = nn_layer(current_tensor, layer_sizes[idx], layer_sizes[idx + 1], name_prefix + str(idx), act=last_activation)
+        else:
+            current_tensor = nn_layer(current_tensor, layer_sizes[idx], layer_sizes[idx + 1], name_prefix + str(idx))
+
+    return current_tensor
+
+
 
 '''
 DEFINE SPECIFIC DATAFLOW
 '''
+batch_size = 64
+print_freq = 9
 
 # Make a list of TFRecord files.
 filename_list = []
@@ -164,49 +180,44 @@ filenames = tf.placeholder(tf.string, shape=[None])
 dataset = tf.data.TFRecordDataset(filenames)
 dataset = dataset.map(_parse_function, num_parallel_calls=16)
 #dataset = dataset.shuffle(buffer_size=5000)
-dataset = dataset.repeat()  # Repeat the input indefinitely.
-#dataset = dataset.batch(10)
-dataset = dataset.padded_batch(200, padded_shapes=([2000,72]))
-dataset = dataset.apply(tf.contrib.data.unbatch())
+dataset = dataset.repeat()
+dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
+#dataset = dataset.apply(tf.contrib.data.unbatch())
 iterator = dataset.make_initializable_iterator()
-next_element = iterator.get_next()
-dataset = dataset.prefetch(1000)
+next = iterator.get_next()
+next_element = tf.reshape(next, [-1,72])
 state_batch = tf.squeeze(next_element)
+dataset = dataset.prefetch(256)
 
 # LAYERS
 
 # Input layer.
 with tf.name_scope('encoder'):
     full_state = tf.placeholder_with_default(state_batch, shape=[None,72], name='encoder_input')
-
-    # Layer 1: Fully-connected.
-    out = nn_layer(full_state, 72, 72, 'encode1')
-    out = nn_layer(out, 72, 64, 'encode2')
-    out = nn_layer(out, 64, 56, 'encode3')
-    out = nn_layer(out, 56, 48, 'encode4')
-    out = nn_layer(out, 48, 36, 'encode5')
-    out = nn_layer(out, 36, 24, 'encode6')
-    out = nn_layer(out, 24, 20, 'encode7')
-    out = nn_layer(out, 20, 16, 'encode8')
-    out = nn_layer(out, 16, 14, 'encode9')
-    out = nn_layer(out, 14, 12, 'encode_out')
+    batch_normalized = tf.contrib.layers.batch_norm(full_state, center=True, scale=True, is_training=True)
+    layers = [72,64,56,52,48,36,32,28]
+    out = sequential_layers(batch_normalized,layers, 'encode')
 
 with tf.name_scope('decoder'):
-    compressed_state = tf.placeholder_with_default(out, shape=[None,12], name='decoder_input')
-
-    out = nn_layer(compressed_state, 12, 14, 'decode1')
-    out = nn_layer(out, 14, 16, 'decode2')
-    out = nn_layer(out, 16, 20, 'decode3')
-    out = nn_layer(out, 20, 24, 'decode4')
-    out = nn_layer(out, 24, 36, 'decode5')
-    out = nn_layer(out, 36, 48, 'decode6')
-    out = nn_layer(out, 48, 56, 'decode7')
-    out = nn_layer(out, 56, 64, 'decode8')
-    out = nn_layer(out, 64, 72, 'decode9')
-    decompressed_state = nn_layer(out, 72, 72, 'decode_out')
+    compressed_state = tf.placeholder_with_default(out, shape=[None,layers[-1]], name='decoder_input')
+    out = sequential_layers(compressed_state, list(reversed(layers)), 'decode')
+    decompressed_state = out # nn_layer(out, 72, 72, 'decode_out')
 
 with tf.name_scope('loss'):
-    loss_op = tf.losses.mean_squared_error(full_state, decompressed_state)
+
+    # # Cost function weights -- make velocities less important
+    # weights_np = np.zeros([1,72])
+    # weights_np[0,::6] = 2 # X pos
+    # weights_np[0, 1::6] = 2 # Y pos
+    # weights_np[0, 2::6] = 2 # Angle
+    # weights_np[0, 3::6] = 1  # x vel
+    # weights_np[0, 4::6] = 1  # y vel
+    # weights_np[0, 5::6] = 1  # ang rate
+    #
+    # cost_weights = tf.constant(weights_np)
+
+    loss_op = tf.losses.absolute_difference(batch_normalized, decompressed_state)
+
 
 with tf.name_scope('training'):
     # Training operation.
@@ -219,64 +230,83 @@ with tf.name_scope('training'):
 saver = tf.train.Saver()
 
 # Create a summary to monitor cost tensor
-#tf.summary.scalar("loss", loss_op)
+tf.summary.scalar("loss", loss_op)
 
 # Merge all summaries into a single op
-#merged_summary_op = tf.summary.merge_all()
+merged_summary_op = tf.summary.merge_all()
 
 coord = tf.train.Coordinator() # Can kill everything when code is done. Prevents the `Skipping cancelled enqueue attempt with queue not closed'
 np.set_printoptions(threshold=np.nan)
-# run_metadata = tf.RunMetadata()
+
+run_metadata = tf.RunMetadata()
+run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+
+# Config to turn on JIT compilation
+config = tf.ConfigProto()
+config.gpu_options.force_gpu_compatible = True
+
+# config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
 
 '''
 EXECUTE NET
 '''
 
 
-with tf.Session() as sess:
+with tf.Session(config=config) as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
 
-    if os.path.isfile("./tmp/model2.ckpt.meta"):
-      saver.restore(sess, "./tmp/model2.ckpt")
+    if os.path.isfile("./logs/model2.ckpt.meta"):
+      saver.restore(sess, "./logs/model2.ckpt")
       print('restored')
 
-    graph = tf.get_default_graph()
-    for i in tf.get_default_graph().get_operations():
-        print i.name
 
-    print sess.run([compressed_state], feed_dict={full_state: np.resize(np.arange(72),[1,72])})
+    # Clear old log files.
+    dir_name = "./logs"
+    test = os.listdir(dir_name)
+    for item in test:
+        if item.endswith(".matt-desktop"):
+            os.remove(os.path.join(dir_name, item))
 
-    threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+    summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
+
+    # graph = tf.get_default_graph()
+    # for i in tf.get_default_graph().get_operations():
+    #     print i.name
+
     sess.run(iterator.initializer, feed_dict={filenames: filename_list})
+    old_time = time.time()
 
     for i in range(100000000):
+        if i%print_freq == 0:
 
-        if i%499 == 0:
-            loss, _, est_state, true_state = sess.run([loss_op, train_op, decompressed_state, full_state])
-            print("Iter: %d, Loss %f" % (i,loss)) # options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
-            save_path = saver.save(sess, "./tmp/model2.ckpt")
+            loss, _, summary, est_state, true_state, normed = sess.run([loss_op, train_op, merged_summary_op, decompressed_state, full_state, batch_normalized], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
+            # loss, _, est_state, true_state = sess.run([loss_op, train_op, decompressed_state, full_state])
+            #print np.shape(true_state)
+
+            summary_writer.add_summary(summary, i)
+            summary_writer.add_run_metadata(run_metadata, str(i))
+            new_time = time.time()
+            ips = batch_size*print_freq/(new_time - old_time)# options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
+
+            print '\n' + '\033[1m'
+            print("Iter: %d, Loss %f, runs/s %0.1f" % (i, loss, ips))
+            print '\033[0m'
+            save_path = saver.save(sess, "./logs/model2.ckpt")
+            old_time = time.time() # Don't count the saving in our time estimate
 
             st_diff = est_state - true_state
-            error_percents = np.abs(np.divide(st_diff, true_state, out=np.zeros_like(st_diff), where=true_state != 0))
-            avg_single_error = np.mean(error_percents[:,::6], axis=1)
-            print(avg_single_error[::50])
-            print('Total average error:')
-            print(np.mean(avg_single_error))
+
+            print tabulate([['All x', np.mean(np.abs(st_diff[:,::6])), np.max(normed[:,::6]), np.max(est_state[:,::6]), np.min(normed[:,::6]), np.min(est_state[:,::6])],
+                            ['All y', np.mean(np.abs(st_diff[:, 1::6])), np.max(normed[:, 1::6]), np.max(est_state[:, 1::6]), np.min(normed[:, 1::6]), np.min(est_state[:, 1::6])],
+                            ['All th', np.mean(np.abs(st_diff[:, 2::6])), np.max(normed[:, 2::6]), np.max(est_state[:, 2::6]), np.min(normed[:, 2::6]), np.min(est_state[:, 2::6])],
+                            ['All xd', np.mean(np.abs(st_diff[:, 3::6])), np.max(normed[:, 3::6]), np.max(est_state[:, 3::6]), np.min(normed[:, 3::6]), np.min(est_state[:, 3::6])],
+                            ['All yd', np.mean(np.abs(st_diff[:, 4::6])), np.max(normed[:, 4::6]), np.max(est_state[:, 4::6]), np.min(normed[:, 4::6]), np.min(est_state[:, 4::6])],
+                            ['All thd', np.mean(np.abs(st_diff[:, 5::6])), np.max(normed[:, 5::6]), np.max(est_state[:, 5::6]), np.min(normed[:, 5::6]), np.min(est_state[:, 5::6])]],
+                           headers=['Variable', 'MeanAbsErr', 'Max actual', 'max pred', 'Min actual', 'min pred'])
         else:
-            loss, _ = sess.run([loss_op, train_op])
-            # for val in np.nditer(np.divide(reconstructed[-1,:] - state_next[-1,:],state_next[-1,:])):
-            #     sys.stdout.write('%.2f' % val)
-            #     sys.stdout.write(', ')
-            # sys.stdout.write('\n')
-            # for val in np.nditer(reconstructed[200,:]):
-            #     sys.stdout.write('%2.2f' % val)
-            #     sys.stdout.write(', ')
-            # sys.stdout.write('\n')
-            # for val in np.nditer(state_next[200,:]):
-            #     sys.stdout.write('%2.2f' % val)
-            #     sys.stdout.write(', ')
-            # sys.stdout.write('\n')
+
+            sess.run([train_op])
 
 
     # trace = timeline.Timeline(step_stats=run_metadata.step_stats)
