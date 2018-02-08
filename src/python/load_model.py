@@ -17,7 +17,7 @@ def load_graph(frozen_graph_filename):
     return graph
 
 # Let's allow the user to pass the filename as an argument
-frozen_model_filename = "./tmp/frozen_model.pb"
+frozen_model_filename = "./logs/frozen_model.pb"
 
 # We use our "load_graph" function
 graph = load_graph(frozen_model_filename)
@@ -27,8 +27,8 @@ for op in graph.get_operations():
     print(op.name)
 
 # We access the input and output nodes
-x = graph.get_tensor_by_name('input/state-input:0')
-y = graph.get_tensor_by_name('layer4/activation:0')
+x = graph.get_tensor_by_name('Squeeze:0')
+y = graph.get_tensor_by_name('transform_out/Add_1:0')
 
 state_next = np.array([ 2.02438141e+02, -7.76173949e-01, -8.75894010e-01,
          -6.09454393e-01,  5.14787865e+00, -3.25002372e-01,

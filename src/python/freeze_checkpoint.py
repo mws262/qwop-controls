@@ -8,7 +8,7 @@ import tensorflow as tf
 dir = os.path.dirname(os.path.realpath(__file__))
 
 
-def freeze_graph(model_dir, output_node_names):
+def freeze_graph(model_dir, output_node_names, blacklist_node_names):
     """Extract the sub graph defined by the output nodes and convert
     all its variables into constant
     Args:
@@ -44,11 +44,14 @@ def freeze_graph(model_dir, output_node_names):
         # We restore the weights
         saver.restore(sess, input_checkpoint)
 
+        print output_node_names.split(",")
+        print blacklist_node_names.split(",")
         # We use a built-in TF helper to export variables to constants
         output_graph_def = tf.graph_util.convert_variables_to_constants(
             sess,  # The session is used to retrieve the weights
             tf.get_default_graph().as_graph_def(),  # The graph_def is used to retrieve the nodes
-            output_node_names.split(",")  # The output node names are used to select the usefull nodes
+            output_node_names.split(","),  # The output node names are used to select the usefull nodes
+            variable_names_blacklist=blacklist_node_names.split(",")
         )
 
         # Finally we serialize and dump the output graph to the filesystem
@@ -65,6 +68,8 @@ if __name__ == '__main__':
     parser.add_argument("--model_dir", type=str, default="", help="Model folder to export")
     parser.add_argument("--output_node_names", type=str, default="",
                         help="The name of the output nodes, comma separated.")
+    parser.add_argument("--blacklist_nodes", type=str, default="",
+                        help="The name of the nodes NOT to convert to constants, comma separated.")
     args = parser.parse_args()
-
-    freeze_graph(args.model_dir, args.output_node_names)
+    print args.output_node_names
+    freeze_graph(args.model_dir, args.output_node_names, args.blacklist_nodes)

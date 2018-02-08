@@ -12,13 +12,14 @@ import matplotlib.pyplot as plt
 '''
 PARAMETERS & SETTINGS
 '''
+#freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/Add_1" --blacklist_nodes "transform_in/transform_input"
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 # On external drive ^. use sudo mount /dev/sdb1 /mnt
 
 export_dir = './models/'
-learn_rate = 1e-4
+learn_rate = 1e-3
 
 initWeightsStdev = .1
 
@@ -182,7 +183,7 @@ dataset = tf.data.TFRecordDataset(filenames)
 dataset = dataset.map(_parse_function, num_parallel_calls=16)
 #dataset = dataset.shuffle(buffer_size=5000)
 dataset = dataset.repeat()
-dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
+#dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
 #dataset = dataset.apply(tf.contrib.data.unbatch())
 iterator = dataset.make_initializable_iterator()
 next = iterator.get_next()
@@ -194,7 +195,7 @@ dataset = dataset.prefetch(256)
 # LAYERS
 
 eps = 0.001
-is_training = True
+is_training = False
 global_step = tf.Variable(0)
 mean_update_rate = tf.train.exponential_decay(0.2, global_step, 500, 0.7)
 
@@ -203,12 +204,12 @@ mean_update_rate = tf.train.exponential_decay(0.2, global_step, 500, 0.7)
 with tf.name_scope('transform_in'):
     state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input')
     # with tf.device('/gpu:0'):
-    mins_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32))
-    maxes_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32))
-    scaler_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32))
+    mins_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False)
+    maxes_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False)
+    scaler_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False)
 
     #total_ele_so_far = tf.Variable(initial_value=tf.zeros([], tf.int64))
-    mean_so_far = tf.Variable(initial_value=tf.zeros([1,72], tf.float32))
+    mean_so_far = tf.Variable(initial_value=tf.zeros([1,72], tf.float32),trainable=False)
 
     if is_training:
         mins_so_far = tf.assign(mins_so_far,tf.minimum(mins_so_far, tf.reduce_min(state_in, axis=0)))
@@ -229,7 +230,7 @@ with tf.name_scope('transform_in'):
 # Encode the transformed input.
 with tf.name_scope('encoder'):
     scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
-    layers = [72,64,56,52,48,36,32,28]
+    layers = [72,58,48,32,28,18,12]
     out = sequential_layers(state_batch,layers, 'encode')
 
 with tf.name_scope('decoder'):
@@ -241,9 +242,8 @@ with tf.name_scope('transform_out'):
      state_out = tf.add(tf.multiply(state_to_unscale,tf.add(scaler_so_far, eps)), mean_so_far)
 
 with tf.name_scope('loss'):
-    loss_op = tf.losses.mean_squared_error(scaled_state_in, decompressed_state)
-
-adam = tf.train.AdagradOptimizer(learn_rate)
+    loss_op = tf.losses.absolute_difference(scaled_state_in, decompressed_state)
+adam = tf.train.AdamOptimizer(learn_rate)
 with tf.name_scope('training'):
     train_op = adam.minimize(loss_op, global_step=global_step, name="optimizer")
 
@@ -285,11 +285,11 @@ with tf.Session(config=config) as sess:
 
 
     # Clear old log files.
-    dir_name = "./logs"
-    test = os.listdir(dir_name)
-    for item in test:
-        if item.endswith(".matt-desktop"):
-            os.remove(os.path.join(dir_name, item))
+    # dir_name = "./logs"
+    # test = os.listdir(dir_name)
+    # for item in test:
+    #     if item.endswith(".matt-desktop"):
+    #         os.remove(os.path.join(dir_name, item))
 
     summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
 
@@ -303,7 +303,7 @@ with tf.Session(config=config) as sess:
     for i in range(100000000):
         if i%print_freq == 0:
 
-            loss, _, summary, true_state, est_state, sca, me,decomp, ss = sess.run([loss_op, train_op, merged_summary_op, state_in, state_out, scaler_so_far, mean_so_far, decompressed_state, scaled_state], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
+            loss, _, summary, true_state, est_state, sca, me, decomp, ss = sess.run([loss_op, train_op, merged_summary_op, state_in, state_out, scaler_so_far, mean_so_far, decompressed_state, scaled_state], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
             # loss, _, est_state, true_state = sess.run([loss_op, train_op, decompressed_state, full_state])
             #print np.shape(true_state)
 
@@ -327,14 +327,20 @@ with tf.Session(config=config) as sess:
                             ['All yd', np.mean(np.abs(st_diff[:, 4::6])), np.max(true_state[:, 4::6]), np.max(est_state[:, 4::6]), np.min(true_state[:, 4::6]), np.min(est_state[:, 4::6])],
                             ['All thd', np.mean(np.abs(st_diff[:, 5::6])), np.max(true_state[:, 5::6]), np.max(est_state[:, 5::6]), np.min(true_state[:, 5::6]), np.min(est_state[:, 5::6])]],
                            headers=['Variable', 'MeanAbsErr', 'Max actual', 'max pred', 'Min actual', 'min pred'])
-            print str(sca) + "," + str(me)
-            fig1 = plt.figure()
-            ax1 = fig1.add_subplot(111)
-            ax1.plot(range(len(decomp[0:1000,0])),decomp[0:1000,12], '.b')
-            fig2 = plt.figure()
-            ax2 = fig2.add_subplot(111)
-            ax2.plot(range(len(ss[0:1000,0])),ss[0:1000,12], '.b')
-            plt.show()
+
+            np.save('est_st.npy', est_state)
+            np.save('tr_st.npy', true_state)
+            np.save('est_st_unsc.npy', decomp)
+            np.save('tr_st_unsc.npy', ss)
+
+            # print str(sca) + "," + str(me)
+            # fig1 = plt.figure()
+            # ax1 = fig1.add_subplot(111)
+            # ax1.plot(range(len(decomp[0:1000,0])),decomp[0:1000,12], '.b')
+            # fig2 = plt.figure()
+            # ax2 = fig2.add_subplot(111)
+            # ax2.plot(range(len(ss[0:1000,0])),ss[0:1000,12], '.b')
+            # plt.show()
         else:
 
             sess.run([train_op])
