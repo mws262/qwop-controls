@@ -71,6 +71,23 @@ public class State implements Serializable {
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
 	}
 	
+	/** ADDED 2/8/17 -- this may mess with the serializability of the class. **/
+	public State(float[] stateVars) { // Order matches order in TensorflosAutoencoder.java
+		body = new StateVariable(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
+		head = new StateVariable(stateVars[6], stateVars[7], stateVars[8], stateVars[9], stateVars[10], stateVars[11]);
+		rthigh = new StateVariable(stateVars[12], stateVars[13], stateVars[14], stateVars[15], stateVars[16], stateVars[17]);
+		lthigh = new StateVariable(stateVars[18], stateVars[19], stateVars[20], stateVars[21], stateVars[22], stateVars[23]);
+		rcalf = new StateVariable(stateVars[24], stateVars[25], stateVars[26], stateVars[27], stateVars[28], stateVars[29]);
+		lcalf = new StateVariable(stateVars[30], stateVars[31], stateVars[32], stateVars[33], stateVars[34], stateVars[35]);
+		rfoot = new StateVariable(stateVars[36], stateVars[37], stateVars[38], stateVars[39], stateVars[40], stateVars[41]);
+		lfoot = new StateVariable(stateVars[42], stateVars[43], stateVars[44], stateVars[45], stateVars[46], stateVars[47]);
+		ruarm = new StateVariable(stateVars[48], stateVars[49], stateVars[50], stateVars[51], stateVars[52], stateVars[53]);
+		luarm = new StateVariable(stateVars[54], stateVars[55], stateVars[56], stateVars[57], stateVars[58], stateVars[59]);
+		rlarm = new StateVariable(stateVars[60], stateVars[61], stateVars[62], stateVars[63], stateVars[64], stateVars[65]);
+		llarm = new StateVariable(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70], stateVars[71]);
+
+	}
+	
 	public XForm[] getTransforms(){
 		XForm[] transforms = new XForm[13];
 

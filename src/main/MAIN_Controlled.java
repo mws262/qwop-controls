@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -9,6 +10,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Stroke;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -28,7 +30,7 @@ import org.jbox2d.dynamics.World;
 @SuppressWarnings("serial")
 public class MAIN_Controlled extends JFrame{
 
-	private QWOPGame game;
+	public QWOPGame game;
 	private Tensorflow_Predictor pred = new Tensorflow_Predictor();
 	private RunnerPane runnerPane;
 	
@@ -138,9 +140,19 @@ public class MAIN_Controlled extends JFrame{
 
 		public int headPos;
 
+		/** Highlight stroke for line drawing. **/
+		private final Stroke normalStroke = new BasicStroke(0.5f);
+
+		/** Highlight stroke for line drawing. **/
+		private final Stroke boldStroke = new BasicStroke(2);
+		
 		boolean active = true;
 
 		private World world;
+		
+		Shape[] shapes = QWOPGame.shapeList;
+		
+		TensorflowAutoencoder enc = new TensorflowAutoencoder();
 		
 		public RunnerPane() {}
 
@@ -212,6 +224,13 @@ public class MAIN_Controlled extends JFrame{
 
 				//drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
 
+				
+				State predState = new State(enc.getPrediction(new State(game)));
+				XForm[] predXForms = predState.getTransforms();
+				drawRunner((Graphics2D)g, Color.RED, normalStroke, shapes, predXForms);
+				
+				
+				
 			}else{
 				//keyDrawer(g, false, false, false, false);
 			}
@@ -219,6 +238,47 @@ public class MAIN_Controlled extends JFrame{
 			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
 			xOffsetPixels = -headPos + xOffsetPixels_init;
 
+		}
+		
+		/** Draw the runner at a certain state. **/
+		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms) {
+
+			for (int i = 0; i < shapes.length; i++) {
+				g.setColor(drawColor);
+				g.setStroke(stroke);
+				switch(shapes[i].getType()) {
+				case CIRCLE_SHAPE:
+					CircleShape circleShape = (CircleShape)shapes[i];
+					float radius = circleShape.getRadius();
+					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
+					g.drawOval((int)(runnerScaling * (circleCenter.x - radius) + xOffsetPixels),
+							(int)(runnerScaling * (circleCenter.y - radius) + yOffsetPixels),
+							(int)(runnerScaling * radius * 2),
+							(int)(runnerScaling * radius * 2));
+					break;
+				case POLYGON_SHAPE:
+					//Get both the shape and its transform.
+					PolygonShape polygonShape = (PolygonShape)shapes[i];
+					XForm transform = transforms[i];
+
+					// Ground is black regardless.
+					if (shapes[i].m_filter.groupIndex == 1) {
+						g.setColor(Color.BLACK);
+						g.setStroke(normalStroke);
+					}
+					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
+						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
+						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
+						g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
+								(int)(runnerScaling * ptA.y) + yOffsetPixels,
+								(int)(runnerScaling * ptB.x) + xOffsetPixels,
+								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
+					}
+					break;
+				default:
+					break;
+				}
+			}
 		}
 
 		public void setWorldToView(World world) {
