@@ -7,6 +7,7 @@ import sys
 import numpy as np
 import time
 from tabulate import tabulate
+import matplotlib.pyplot as plt
 
 '''
 PARAMETERS & SETTINGS
@@ -17,7 +18,7 @@ tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machi
 # On external drive ^. use sudo mount /dev/sdb1 /mnt
 
 export_dir = './models/'
-learn_rate = 1e-3
+learn_rate = 1e-4
 
 initWeightsStdev = .1
 
@@ -116,7 +117,7 @@ def variable_summaries(var):
             tf.summary.histogram('histogram', var)
 
 
-def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.tanh):
+def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.leaky_relu):
 
     """Reusable code for making a simple neural net layer.
 
@@ -185,44 +186,66 @@ dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to m
 #dataset = dataset.apply(tf.contrib.data.unbatch())
 iterator = dataset.make_initializable_iterator()
 next = iterator.get_next()
+# next = tf.layers.batch_normalization(next, axis=1,center=True, scale=True, training=True)
 next_element = tf.reshape(next, [-1,72])
 state_batch = tf.squeeze(next_element)
 dataset = dataset.prefetch(256)
 
 # LAYERS
 
-# Input layer.
+eps = 0.001
+is_training = True
+global_step = tf.Variable(0)
+mean_update_rate = tf.train.exponential_decay(0.2, global_step, 500, 0.7)
+
+
+# Input layer -- scale and recenter data.
+with tf.name_scope('transform_in'):
+    state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input')
+    # with tf.device('/gpu:0'):
+    mins_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32))
+    maxes_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32))
+    scaler_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32))
+
+    #total_ele_so_far = tf.Variable(initial_value=tf.zeros([], tf.int64))
+    mean_so_far = tf.Variable(initial_value=tf.zeros([1,72], tf.float32))
+
+    if is_training:
+        mins_so_far = tf.assign(mins_so_far,tf.minimum(mins_so_far, tf.reduce_min(state_in, axis=0)))
+        maxes_so_far = tf.assign(maxes_so_far,tf.maximum(mins_so_far, tf.reduce_max(state_in, axis=0)))
+        scaler_so_far = tf.assign(scaler_so_far, tf.subtract(maxes_so_far, mins_so_far))
+        this_mean = tf.reduce_mean(state_in, axis=0)
+
+        mean_so_far = tf.assign(mean_so_far,
+                                tf.add(tf.scalar_mul(mean_update_rate, this_mean),
+                                       tf.scalar_mul(tf.subtract(tf.constant(1, dtype=tf.float32), mean_update_rate), mean_so_far)))
+
+        # weighted_sum =
+        # total_ele_so_far = tf.assign_add(total_ele_so_far,this_num_ele)
+
+
+    scaled_state = tf.div(tf.subtract(state_in, mean_so_far), tf.add(scaler_so_far, eps))
+
+# Encode the transformed input.
 with tf.name_scope('encoder'):
-    full_state = tf.placeholder_with_default(state_batch, shape=[None,72], name='encoder_input')
-    batch_normalized = tf.contrib.layers.batch_norm(full_state, center=True, scale=True, is_training=True)
+    scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
     layers = [72,64,56,52,48,36,32,28]
-    out = sequential_layers(batch_normalized,layers, 'encode')
+    out = sequential_layers(state_batch,layers, 'encode')
 
 with tf.name_scope('decoder'):
     compressed_state = tf.placeholder_with_default(out, shape=[None,layers[-1]], name='decoder_input')
-    out = sequential_layers(compressed_state, list(reversed(layers)), 'decode')
-    decompressed_state = out # nn_layer(out, 72, 72, 'decode_out')
+    decompressed_state = sequential_layers(compressed_state, list(reversed(layers)), 'decode')
+
+with tf.name_scope('transform_out'):
+     state_to_unscale= tf.placeholder_with_default(decompressed_state, shape=[None,72], name='transform_output')
+     state_out = tf.add(tf.multiply(state_to_unscale,tf.add(scaler_so_far, eps)), mean_so_far)
 
 with tf.name_scope('loss'):
+    loss_op = tf.losses.mean_squared_error(scaled_state_in, decompressed_state)
 
-    # # Cost function weights -- make velocities less important
-    # weights_np = np.zeros([1,72])
-    # weights_np[0,::6] = 2 # X pos
-    # weights_np[0, 1::6] = 2 # Y pos
-    # weights_np[0, 2::6] = 2 # Angle
-    # weights_np[0, 3::6] = 1  # x vel
-    # weights_np[0, 4::6] = 1  # y vel
-    # weights_np[0, 5::6] = 1  # ang rate
-    #
-    # cost_weights = tf.constant(weights_np)
-
-    loss_op = tf.losses.absolute_difference(batch_normalized, decompressed_state)
-
-
+adam = tf.train.AdagradOptimizer(learn_rate)
 with tf.name_scope('training'):
-    # Training operation.
-    adam = tf.train.AdamOptimizer(learn_rate)
-    train_op = adam.minimize(loss_op, name="optimizer")
+    train_op = adam.minimize(loss_op, global_step=global_step, name="optimizer")
 
 # FINAL SETUP
 
@@ -280,7 +303,7 @@ with tf.Session(config=config) as sess:
     for i in range(100000000):
         if i%print_freq == 0:
 
-            loss, _, summary, est_state, true_state, normed = sess.run([loss_op, train_op, merged_summary_op, decompressed_state, full_state, batch_normalized], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
+            loss, _, summary, true_state, est_state, sca, me,decomp, ss = sess.run([loss_op, train_op, merged_summary_op, state_in, state_out, scaler_so_far, mean_so_far, decompressed_state, scaled_state], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
             # loss, _, est_state, true_state = sess.run([loss_op, train_op, decompressed_state, full_state])
             #print np.shape(true_state)
 
@@ -297,13 +320,21 @@ with tf.Session(config=config) as sess:
 
             st_diff = est_state - true_state
 
-            print tabulate([['All x', np.mean(np.abs(st_diff[:,::6])), np.max(normed[:,::6]), np.max(est_state[:,::6]), np.min(normed[:,::6]), np.min(est_state[:,::6])],
-                            ['All y', np.mean(np.abs(st_diff[:, 1::6])), np.max(normed[:, 1::6]), np.max(est_state[:, 1::6]), np.min(normed[:, 1::6]), np.min(est_state[:, 1::6])],
-                            ['All th', np.mean(np.abs(st_diff[:, 2::6])), np.max(normed[:, 2::6]), np.max(est_state[:, 2::6]), np.min(normed[:, 2::6]), np.min(est_state[:, 2::6])],
-                            ['All xd', np.mean(np.abs(st_diff[:, 3::6])), np.max(normed[:, 3::6]), np.max(est_state[:, 3::6]), np.min(normed[:, 3::6]), np.min(est_state[:, 3::6])],
-                            ['All yd', np.mean(np.abs(st_diff[:, 4::6])), np.max(normed[:, 4::6]), np.max(est_state[:, 4::6]), np.min(normed[:, 4::6]), np.min(est_state[:, 4::6])],
-                            ['All thd', np.mean(np.abs(st_diff[:, 5::6])), np.max(normed[:, 5::6]), np.max(est_state[:, 5::6]), np.min(normed[:, 5::6]), np.min(est_state[:, 5::6])]],
+            print tabulate([['All x', np.mean(np.abs(st_diff[:,::6])), np.max(true_state[:,::6]), np.max(est_state[:,::6]), np.min(true_state[:,::6]), np.min(est_state[:,::6])],
+                            ['All y', np.mean(np.abs(st_diff[:, 1::6])), np.max(true_state[:, 1::6]), np.max(est_state[:, 1::6]), np.min(true_state[:, 1::6]), np.min(est_state[:, 1::6])],
+                            ['All th', np.mean(np.abs(st_diff[:, 2::6])), np.max(true_state[:, 2::6]), np.max(est_state[:, 2::6]), np.min(true_state[:, 2::6]), np.min(est_state[:, 2::6])],
+                            ['All xd', np.mean(np.abs(st_diff[:, 3::6])), np.max(true_state[:, 3::6]), np.max(est_state[:, 3::6]), np.min(true_state[:, 3::6]), np.min(est_state[:, 3::6])],
+                            ['All yd', np.mean(np.abs(st_diff[:, 4::6])), np.max(true_state[:, 4::6]), np.max(est_state[:, 4::6]), np.min(true_state[:, 4::6]), np.min(est_state[:, 4::6])],
+                            ['All thd', np.mean(np.abs(st_diff[:, 5::6])), np.max(true_state[:, 5::6]), np.max(est_state[:, 5::6]), np.min(true_state[:, 5::6]), np.min(est_state[:, 5::6])]],
                            headers=['Variable', 'MeanAbsErr', 'Max actual', 'max pred', 'Min actual', 'min pred'])
+            print str(sca) + "," + str(me)
+            fig1 = plt.figure()
+            ax1 = fig1.add_subplot(111)
+            ax1.plot(range(len(decomp[0:1000,0])),decomp[0:1000,12], '.b')
+            fig2 = plt.figure()
+            ax2 = fig2.add_subplot(111)
+            ax2.plot(range(len(ss[0:1000,0])),ss[0:1000,12], '.b')
+            plt.show()
         else:
 
             sess.run([train_op])
