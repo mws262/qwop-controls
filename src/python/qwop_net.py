@@ -195,7 +195,7 @@ dataset = dataset.prefetch(256)
 # LAYERS
 
 eps = 0.001
-is_training = True
+is_training = False
 global_step = tf.Variable(0)
 mean_update_rate = tf.train.exponential_decay(0.2, global_step, 500, 0.7)
 
