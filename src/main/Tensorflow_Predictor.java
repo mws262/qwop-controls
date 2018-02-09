@@ -14,11 +14,11 @@ public class Tensorflow_Predictor {
 	private Session sess;
 	
 	public Tensorflow_Predictor() {
-		String modelDir = "./src/python/tmp";
+		String modelDir = "./src/python/models";
 
 		byte[] graphDef = null;
 		try {
-			graphDef = Files.readAllBytes(Paths.get(modelDir, "frozen_model.pb"));
+			graphDef = Files.readAllBytes(Paths.get(modelDir, "shitty_controller.pb"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
