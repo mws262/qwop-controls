@@ -13,11 +13,11 @@ public class TensorflowAutoencoder {
 	public Session sess;
 	
 	public TensorflowAutoencoder() {
-		String modelDir = "./src/python/logs";
+		String modelDir = "./src/python/models";
 
 		byte[] graphDef = null;
 		try {
-			graphDef = Files.readAllBytes(Paths.get(modelDir, "frozen_model.pb"));
+			graphDef = Files.readAllBytes(Paths.get(modelDir, "AutoEnc_72to12_6layer.pb"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
