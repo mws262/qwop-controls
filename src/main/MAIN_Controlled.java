@@ -113,7 +113,7 @@ public class MAIN_Controlled extends JFrame{
 			
 			if (toSwitchCount > 10 && prediction <1.8f) {
 				
-				System.out.println("SWITCHING SOON");
+				//System.out.println("SWITCHING SOON");
 				toSwitchCount = (int) Math.round(prediction); 
 			}
 			
@@ -224,12 +224,18 @@ public class MAIN_Controlled extends JFrame{
 
 				//drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
 
-				
-				State predState = new State(enc.getPrediction(new State(game)));
+				State currState = new State(game);
+				System.out.println(currState.body.th);
+				State predState = new State(enc.getPrediction(currState));
 				XForm[] predXForms = predState.getTransforms();
 				drawRunner((Graphics2D)g, Color.RED, normalStroke, shapes, predXForms);
 				
+//				float[] encoding = enc.getEncoding(currState);
 				
+//				for (float val : encoding) {
+//					System.out.printf("%.2f, ", val);
+//				}
+//				System.out.println("");
 				
 			}else{
 				//keyDrawer(g, false, false, false, false);

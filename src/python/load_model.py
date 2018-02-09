@@ -17,8 +17,7 @@ def load_graph(frozen_graph_filename):
     return graph
 
 # Let's allow the user to pass the filename as an argument
-frozen_model_filename = "./logs/frozen_model.pb"
-
+frozen_model_filename = "./models/AutoEnc_72to12_6layer.pb"
 # We use our "load_graph" function
 graph = load_graph(frozen_model_filename)
 

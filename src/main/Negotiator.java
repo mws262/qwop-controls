@@ -203,7 +203,7 @@ public class Negotiator implements INegotiateGame {
 			break;
 		case RUNNING_SEQUENCE:
 			if (game.isRealtime()){
-				ui.runnerPane.setWorldToView(game.getWorld());
+				ui.runnerPane.setGameToView(game.getGame());
 			}
 			break;
 		case WAITING:
@@ -220,7 +220,7 @@ public class Negotiator implements INegotiateGame {
 				break;
 			default:
 				if (game.isRealtime()){
-					ui.runnerPane.setWorldToView(null); // If it was a realtime game, turn off vis afterwards.
+					ui.runnerPane.clearGameToView(); // If it was a realtime game, turn off vis afterwards.
 				}else {
 					throw new RuntimeException("Game is waiting, but the tree isn't ready to do more stuff. Tree is in status: " + tree.currentStatus.toString());
 				}
@@ -379,7 +379,7 @@ public class Negotiator implements INegotiateGame {
 	@Override
 	public void reportEndOfRealTimeSim(){
 		tree.unlockFSM(); // Resume tree actions.
-		ui.runnerPane.clearWorldToView();
+		ui.runnerPane.clearGameToView();
 	}
 
 	/** Game tells negotiator which keys are down currently. **/
@@ -392,12 +392,12 @@ public class Negotiator implements INegotiateGame {
 	}
 
 	boolean usePredictor = true;
-	Tensorflow_Predictor pred = new Tensorflow_Predictor();
+//	Tensorflow_Predictor pred = new Tensorflow_Predictor();
 	@Override
 	public void reportGameStep(Action action) {
-		if (usePredictor) {
-			System.out.println(Math.round(pred.getPrediction(game.getGameState())));
-		}
+//		if (usePredictor) {
+//			System.out.println(Math.round(pred.getPrediction(game.getGameState())));
+//		}
 		if (save_dense) {
 			actionBuffer_dense.add(action); // Technically this is the action which GETS us to the current state, so we want it sort of grouped with the previous state since that is when it is applied.
 			State thisState = game.getGameState();
