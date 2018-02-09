@@ -132,7 +132,7 @@ public class FSM_Game implements Runnable{
 					if (runRealTime){
 						negotiator.reportQWOPKeys(Q,W,O,P);
 						try {
-							Thread.sleep(30);
+							Thread.sleep(90);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
