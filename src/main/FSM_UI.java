@@ -750,6 +750,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			if (tensorflowAutoencoderDisplay) {
 				encoders = new ArrayList<TensorflowAutoencoder>();
 				encoders.add(new TensorflowAutoencoder("AutoEnc_72to1_6layer.pb", "1 output"));
+				encoders.add(new TensorflowAutoencoder("AutoEnc_72to2_6layer.pb", "2 output"));
 				encoders.add(new TensorflowAutoencoder("AutoEnc_72to6_6layer.pb", "6 output"));
 				encoders.add(new TensorflowAutoencoder("AutoEnc_72to8_6layer.pb", "8 output"));
 				encoders.add(new TensorflowAutoencoder("AutoEnc_72to12_6layer.pb", "12 output"));
@@ -764,7 +765,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			if (world != null) {
 				Body newBody = world.getBodyList();
 				while (newBody != null) {
-
+					xOffsetPixels = -(int)(runnerScaling*game.TorsoBody.getPosition().x) + xOffsetPixels_init;
 					Shape newfixture = newBody.getShapeList();
 
 					while(newfixture != null) {
@@ -837,7 +838,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			}
 
 			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
-			xOffsetPixels = -headPos + xOffsetPixels_init;
+			//xOffsetPixels = -(int)game.TorsoBody.getPosition().x + xOffsetPixels_init;
 		}
 
 		/** Draw the runner at a certain state -- for the autoencoder testing. **/
