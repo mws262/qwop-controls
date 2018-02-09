@@ -12,12 +12,14 @@ public class TensorflowAutoencoder {
 
 	public Session sess;
 	
-	public TensorflowAutoencoder() {
+	public String encoderName;
+	
+	public TensorflowAutoencoder(String filename, String encoderName) {
 		String modelDir = "./src/python/models";
-
+		this.encoderName = encoderName;
 		byte[] graphDef = null;
 		try {
-			graphDef = Files.readAllBytes(Paths.get(modelDir, "AutoEnc_72to12_6layer.pb"));
+			graphDef = Files.readAllBytes(Paths.get(modelDir, filename));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -38,6 +40,18 @@ public class TensorflowAutoencoder {
 		
 		float[][] res = result.copyTo(new float[1][72]);
 		return res[0];
+	}
+	
+	public float[] getEncoding(State state) {
+		Tensor<Float> inputTensor = Tensor.create(flattenState(state), Float.class);
+		Tensor<Float> result =
+				sess.runner().feed("Squeeze:0", inputTensor)
+				.fetch("decoder/decoder_input:0")
+				.run().get(0).expect(Float.class);
+		
+		float[][] res = result.copyTo(new float[1][1]);
+		return res[0];
+		
 	}
 	
 	

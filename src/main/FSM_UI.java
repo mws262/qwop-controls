@@ -307,7 +307,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));	
 	}
-	
+
 	/** Pick a node for the UI to highlight and potentially display. **/
 	public void selectNode(Node selected) {
 		boolean success = false; // We don't allow new node selection while a realtime game is being played. 
@@ -366,7 +366,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			g.drawString(line, 10 + (currIdx % 4)*50 + lineNum/7*210, vertTextAnchor + vertTextSpacing * (lineNum % 7 + 2)); // Wrap horizontally after 7 lines
 			currIdx++;
 			lineNum = currIdx/4 + 1;
-			
+
 		}
 
 		// Draw the little keys above the column.
@@ -732,10 +732,29 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		public int headPos;
 
 		boolean active = false;
+		
+		boolean tensorflowAutoencoderDisplay = true;
 
 		private World world;
-		
-		public RunnerPane() {}
+
+		private QWOPGame game;
+
+		private ArrayList<TensorflowAutoencoder> encoders;
+
+		private Shape[] shapes = QWOPGame.shapeList;
+
+		/** Normal stroke for line drawing. **/
+		Stroke normalStroke = new BasicStroke(0.5f);
+
+		public RunnerPane() {
+			if (tensorflowAutoencoderDisplay) {
+				encoders = new ArrayList<TensorflowAutoencoder>();
+				encoders.add(new TensorflowAutoencoder("AutoEnc_72to1_6layer.pb", "1 output"));
+				encoders.add(new TensorflowAutoencoder("AutoEnc_72to6_6layer.pb", "6 output"));
+				encoders.add(new TensorflowAutoencoder("AutoEnc_72to8_6layer.pb", "8 output"));
+				encoders.add(new TensorflowAutoencoder("AutoEnc_72to12_6layer.pb", "12 output"));
+			}
+		}
 
 		public void paintComponent(Graphics g) {
 			if (!active) return;
@@ -804,21 +823,71 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				keyDrawer(g, negotiator.Q,negotiator.W,negotiator.O,negotiator.P);
 				drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
 
+				if (tensorflowAutoencoderDisplay) {
+					for (int i = 0; i < encoders.size(); i++) {
+						State currState = new State(game);
+						State predState = new State(encoders.get(i).getPrediction(currState));
+						XForm[] predXForms = predState.getTransforms();
+						drawExtraRunner((Graphics2D)g, Node.getColorFromTreeDepth(i*10), normalStroke, shapes, predXForms, 400 + i*100, encoders.get(i).encoderName);
+					}
+				}
 			}else{
 				keyDrawer(g, false, false, false, false);
 			}
 
 			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
 			xOffsetPixels = -headPos + xOffsetPixels_init;
-
 		}
 
-		public void setWorldToView(World world) {
-			this.world = world;
+		/** Draw the runner at a certain state -- for the autoencoder testing. **/
+		private void drawExtraRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms, int addedXOffset, String name) {
+			g.setColor(drawColor);
+			g.drawString(name, addedXOffset - 20, vertTextAnchor + 20);
+			for (int i = 0; i < shapes.length; i++) {
+				g.setColor(drawColor);
+				g.setStroke(stroke);
+				switch(shapes[i].getType()) {
+				case CIRCLE_SHAPE:
+					CircleShape circleShape = (CircleShape)shapes[i];
+					float radius = circleShape.getRadius();
+					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
+					g.drawOval((int)(runnerScaling * (circleCenter.x - radius) + addedXOffset),
+							(int)(runnerScaling * (circleCenter.y - radius) + yOffsetPixels),
+							(int)(runnerScaling * radius * 2),
+							(int)(runnerScaling * radius * 2));
+					break;
+				case POLYGON_SHAPE:
+					//Get both the shape and its transform.
+					PolygonShape polygonShape = (PolygonShape)shapes[i];
+					XForm transform = transforms[i];
+
+					// Ground is black regardless.
+					if (shapes[i].m_filter.groupIndex == 1) {
+						g.setColor(Color.BLACK);
+						g.setStroke(normalStroke);
+					}
+					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
+						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
+						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
+						g.drawLine((int)(runnerScaling * ptA.x) + addedXOffset,
+								(int)(runnerScaling * ptA.y) + yOffsetPixels,
+								(int)(runnerScaling * ptB.x) + addedXOffset,
+								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
+					}
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		public void setGameToView(QWOPGame game) {
+			world = game.getWorld();
+			this.game = game;
 		}
 
-		public void clearWorldToView() {
+		public void clearGameToView() {
 			world = null;
+			game = null;
 		}
 
 		@Override
@@ -898,7 +967,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		/** Is this tab currently active? If not, don't run the draw loop. **/
 		public boolean active = false;
 
-		/** Highlight stroke for line drawing. **/
+		/** Normal stroke for line drawing. **/
 		Stroke normalStroke = new BasicStroke(0.5f);
 
 		/** Highlight stroke for line drawing. **/
@@ -930,7 +999,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
 		private ArrayList<Color> colors = new ArrayList<Color>();
 
-		Shape[] shapes;
+		public Shape[] shapes;
 
 		/** Assign a selected node for the snapshot pane to display. **/
 		public void giveSelectedNode(Node node) {
@@ -1235,14 +1304,14 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 
 		/** Node that we compare all others to. **/
 		private Node primaryNode;
-		
+
 		/** How many of the eigenvectors do we use? Dimension reduction. **/
 		private int lastEigToDisp = 10; // Display eigenvalues 0-4
 		private int[] eigsToDisp;
-		
+
 		/** Drawn shapes **/
 		Shape[] shapes;
-		
+
 		private final JComboBox<Integer> eigSelector;
 
 		/** Is this tab currently on top? **/
@@ -1262,7 +1331,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			pack();
 			//MATT CHECKBOX DOESN"T WORK YET, COME BACK HERE
 			eigsToDisp = new int[lastEigToDisp + 1];
-			
+
 			for (int i = 0; i < eigsToDisp.length; i++) {
 				eigsToDisp[i] = i;
 			}
@@ -1356,7 +1425,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms) {
 
 			float thisBodyXOffset = transforms[0].position.x; // Offset in actual world coordinates so all the torsos line up.
-			
+
 			for (int i = 0; i < shapes.length; i++) {
 				g.setColor(drawColor);
 				g.setStroke(stroke);
@@ -1406,14 +1475,14 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
-            @SuppressWarnings("unchecked")
+			@SuppressWarnings("unchecked")
 			JComboBox<Integer> eigSelect = (JComboBox<Integer>)e.getSource();
-            lastEigToDisp = (Integer)eigSelect.getSelectedItem();
-            eigsToDisp = new int[lastEigToDisp + 1];
-            for (int i = 0; i < eigsToDisp.length; i++) {
-            	eigsToDisp[i] = 1;
-            }
-            //giveSelectedNode(primaryNode); // Redo calculations.
+			lastEigToDisp = (Integer)eigSelect.getSelectedItem();
+			eigsToDisp = new int[lastEigToDisp + 1];
+			for (int i = 0; i < eigsToDisp.length; i++) {
+				eigsToDisp[i] = 1;
+			}
+			//giveSelectedNode(primaryNode); // Redo calculations.
 		}	
 	}
 
@@ -1711,7 +1780,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 			// TODO Auto-generated method stub
 
 		}
-	
+
 		@Override
 		public void activateTab() {
 			active = true;
@@ -1721,7 +1790,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	}
 
 	/** Plots are made here. **/
-	
+
 	/**
 	 * Plots extend this for basic features. Specific XYDataset objects are inside here. A tab.
 	 * @author Matt
