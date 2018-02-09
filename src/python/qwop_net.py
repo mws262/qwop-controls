@@ -19,7 +19,7 @@ tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machi
 # On external drive ^. use sudo mount /dev/sdb1 /mnt
 
 export_dir = './models/'
-learn_rate = 1e-3
+learn_rate = 1e-4
 
 initWeightsStdev = .1
 
@@ -195,10 +195,14 @@ dataset = dataset.prefetch(256)
 # LAYERS
 
 eps = 0.001
-is_training = False
+is_training = True
 global_step = tf.Variable(0)
 mean_update_rate = tf.train.exponential_decay(0.2, global_step, 500, 0.7)
 
+if is_training:
+    print "TRAINING MODE ON"
+else:
+    print "TRAINING MODE OFF"
 
 # Input layer -- scale and recenter data.
 with tf.name_scope('transform_in'):
@@ -230,7 +234,7 @@ with tf.name_scope('transform_in'):
 # Encode the transformed input.
 with tf.name_scope('encoder'):
     scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
-    layers = [72,58,48,32,28,18,12]
+    layers = [72,58,48,32,28,18,10]
     out = sequential_layers(state_batch,layers, 'encode')
 
 with tf.name_scope('decoder'):
@@ -285,11 +289,11 @@ with tf.Session(config=config) as sess:
 
 
     # Clear old log files.
-    # dir_name = "./logs"
-    # test = os.listdir(dir_name)
-    # for item in test:
-    #     if item.endswith(".matt-desktop"):
-    #         os.remove(os.path.join(dir_name, item))
+    dir_name = "./logs"
+    test = os.listdir(dir_name)
+    for item in test:
+        if item.endswith(".matt-desktop"):
+            os.remove(os.path.join(dir_name, item))
 
     summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
 
@@ -318,20 +322,20 @@ with tf.Session(config=config) as sess:
             save_path = saver.save(sess, "./logs/model2.ckpt")
             old_time = time.time() # Don't count the saving in our time estimate
 
-            st_diff = est_state - true_state
-
-            print tabulate([['All x', np.mean(np.abs(st_diff[:,::6])), np.max(true_state[:,::6]), np.max(est_state[:,::6]), np.min(true_state[:,::6]), np.min(est_state[:,::6])],
-                            ['All y', np.mean(np.abs(st_diff[:, 1::6])), np.max(true_state[:, 1::6]), np.max(est_state[:, 1::6]), np.min(true_state[:, 1::6]), np.min(est_state[:, 1::6])],
-                            ['All th', np.mean(np.abs(st_diff[:, 2::6])), np.max(true_state[:, 2::6]), np.max(est_state[:, 2::6]), np.min(true_state[:, 2::6]), np.min(est_state[:, 2::6])],
-                            ['All xd', np.mean(np.abs(st_diff[:, 3::6])), np.max(true_state[:, 3::6]), np.max(est_state[:, 3::6]), np.min(true_state[:, 3::6]), np.min(est_state[:, 3::6])],
-                            ['All yd', np.mean(np.abs(st_diff[:, 4::6])), np.max(true_state[:, 4::6]), np.max(est_state[:, 4::6]), np.min(true_state[:, 4::6]), np.min(est_state[:, 4::6])],
-                            ['All thd', np.mean(np.abs(st_diff[:, 5::6])), np.max(true_state[:, 5::6]), np.max(est_state[:, 5::6]), np.min(true_state[:, 5::6]), np.min(est_state[:, 5::6])]],
-                           headers=['Variable', 'MeanAbsErr', 'Max actual', 'max pred', 'Min actual', 'min pred'])
-
-            np.save('est_st.npy', est_state)
-            np.save('tr_st.npy', true_state)
-            np.save('est_st_unsc.npy', decomp)
-            np.save('tr_st_unsc.npy', ss)
+            # st_diff = est_state - true_state
+            #
+            # print tabulate([['All x', np.mean(np.abs(st_diff[:,::6])), np.max(true_state[:,::6]), np.max(est_state[:,::6]), np.min(true_state[:,::6]), np.min(est_state[:,::6])],
+            #                 ['All y', np.mean(np.abs(st_diff[:, 1::6])), np.max(true_state[:, 1::6]), np.max(est_state[:, 1::6]), np.min(true_state[:, 1::6]), np.min(est_state[:, 1::6])],
+            #                 ['All th', np.mean(np.abs(st_diff[:, 2::6])), np.max(true_state[:, 2::6]), np.max(est_state[:, 2::6]), np.min(true_state[:, 2::6]), np.min(est_state[:, 2::6])],
+            #                 ['All xd', np.mean(np.abs(st_diff[:, 3::6])), np.max(true_state[:, 3::6]), np.max(est_state[:, 3::6]), np.min(true_state[:, 3::6]), np.min(est_state[:, 3::6])],
+            #                 ['All yd', np.mean(np.abs(st_diff[:, 4::6])), np.max(true_state[:, 4::6]), np.max(est_state[:, 4::6]), np.min(true_state[:, 4::6]), np.min(est_state[:, 4::6])],
+            #                 ['All thd', np.mean(np.abs(st_diff[:, 5::6])), np.max(true_state[:, 5::6]), np.max(est_state[:, 5::6]), np.min(true_state[:, 5::6]), np.min(est_state[:, 5::6])]],
+            #                headers=['Variable', 'MeanAbsErr', 'Max actual', 'max pred', 'Min actual', 'min pred'])
+            #
+            # np.save('est_st.npy', est_state)
+            # np.save('tr_st.npy', true_state)
+            # np.save('est_st_unsc.npy', decomp)
+            # np.save('tr_st_unsc.npy', ss)
 
             # print str(sca) + "," + str(me)
             # fig1 = plt.figure()

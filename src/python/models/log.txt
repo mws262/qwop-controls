@@ -1,0 +1,5 @@
+AutoEnc_72to12_6layer.pb
+layers = [72,58,48,32,28,18,12] and back out
+
+shitty_controller.pb
+Bad controller for testing in java.
