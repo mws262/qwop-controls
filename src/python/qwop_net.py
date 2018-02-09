@@ -234,7 +234,7 @@ with tf.name_scope('transform_in'):
 # Encode the transformed input.
 with tf.name_scope('encoder'):
     scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
-    layers = [72,58,48,32,28,18,10]
+    layers = [72,58,48,32,28,18,8]
     out = sequential_layers(state_batch,layers, 'encode')
 
 with tf.name_scope('decoder'):
