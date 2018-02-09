@@ -23,7 +23,7 @@ public class MAIN_Run implements Runnable{
 	
 	private int treesPlayed = 0;
 	private int treesToPlay = 1000;
-	private long secondsPerTree = 180;
+	private long secondsPerTree = 1000000;
 
 	private long initTime;
 
@@ -195,8 +195,8 @@ public class MAIN_Run implements Runnable{
 		FSM_Game game = new FSM_Game();
 
 		/* Manage the tree, UI, and game. Start some threads. */
-		negotiator = new Negotiator(tree, ui, game, 
-				io_sparse, sparseFileName);//, io_dense, denseFileName);
+		negotiator = new Negotiator(tree, ui, game);
+				//io_sparse, sparseFileName);//, io_dense, denseFileName);
 
 		tree.setNegotiator(negotiator);
 		ui.setNegotiator(negotiator);

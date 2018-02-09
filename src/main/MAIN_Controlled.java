@@ -152,7 +152,7 @@ public class MAIN_Controlled extends JFrame{
 		
 		Shape[] shapes = QWOPGame.shapeList;
 		
-		TensorflowAutoencoder enc = new TensorflowAutoencoder();
+		TensorflowAutoencoder enc = new TensorflowAutoencoder("AutoEnc_72to6_6layer.pb", "6 output");
 		
 		public RunnerPane() {}
 

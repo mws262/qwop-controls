@@ -753,6 +753,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 				encoders.add(new TensorflowAutoencoder("AutoEnc_72to6_6layer.pb", "6 output"));
 				encoders.add(new TensorflowAutoencoder("AutoEnc_72to8_6layer.pb", "8 output"));
 				encoders.add(new TensorflowAutoencoder("AutoEnc_72to12_6layer.pb", "12 output"));
+				encoders.add(new TensorflowAutoencoder("AutoEnc_72to16_6layer.pb", "16 output"));
 			}
 		}
 
@@ -828,7 +829,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 						State currState = new State(game);
 						State predState = new State(encoders.get(i).getPrediction(currState));
 						XForm[] predXForms = predState.getTransforms();
-						drawExtraRunner((Graphics2D)g, Node.getColorFromTreeDepth(i*10), normalStroke, shapes, predXForms, 400 + i*100, encoders.get(i).encoderName);
+						drawExtraRunner((Graphics2D)g, Node.getColorFromTreeDepth(i*10), normalStroke, shapes, predXForms, 1100 + i*100, encoders.get(i).encoderName);
 					}
 				}
 			}else{
