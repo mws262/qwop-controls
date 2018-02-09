@@ -109,9 +109,9 @@ public class MAIN_Controlled extends JFrame{
 			
 			State st = new State(game);
 			float prediction = pred.getPrediction(st);
-			System.out.println(prediction);
+			// System.out.println(prediction);
 			
-			if (toSwitchCount > 10 && prediction <1.2f) {
+			if (toSwitchCount > 10 && prediction <1.8f) {
 				
 				System.out.println("SWITCHING SOON");
 				toSwitchCount = (int) Math.round(prediction); 
@@ -243,6 +243,7 @@ public class MAIN_Controlled extends JFrame{
 		/** Draw the runner at a certain state. **/
 		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms) {
 
+			int specificXOffset = 580;
 			for (int i = 0; i < shapes.length; i++) {
 				g.setColor(drawColor);
 				g.setStroke(stroke);
@@ -251,7 +252,7 @@ public class MAIN_Controlled extends JFrame{
 					CircleShape circleShape = (CircleShape)shapes[i];
 					float radius = circleShape.getRadius();
 					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
-					g.drawOval((int)(runnerScaling * (circleCenter.x - radius) + xOffsetPixels),
+					g.drawOval((int)(runnerScaling * (circleCenter.x - radius) + specificXOffset),
 							(int)(runnerScaling * (circleCenter.y - radius) + yOffsetPixels),
 							(int)(runnerScaling * radius * 2),
 							(int)(runnerScaling * radius * 2));
@@ -269,9 +270,9 @@ public class MAIN_Controlled extends JFrame{
 					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
 						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
 						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
-						g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
+						g.drawLine((int)(runnerScaling * ptA.x) + specificXOffset,
 								(int)(runnerScaling * ptA.y) + yOffsetPixels,
-								(int)(runnerScaling * ptB.x) + xOffsetPixels,
+								(int)(runnerScaling * ptB.x) + specificXOffset,
 								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
 					}
 					break;
