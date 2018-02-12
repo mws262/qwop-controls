@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 '''
 PARAMETERS & SETTINGS
 '''
-# python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output"
+# Note: if freeze_checkpoint.py won't give the nodes I need, add them to the outputs. DO NOT PUT A SPACE AROUND THE COMMAS IN THE NODE LIST.
+## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output,transform_in/transform_input"
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
@@ -228,13 +229,13 @@ with tf.name_scope('encoder'):
     scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
     layers = [72,58,48,32,28,18,4]
     out = sequential_layers(state_batch,layers, 'encode')
-
-    # mean_encodings = tf.reduce_mean(out, axis=0)
-    # for i in range(layers[-1]):
-    #     tf.summary.scalar('encoding' + str(i), mean_encodings[i], family='encodings')
+    enc_out = tf.identity(out, name='encoder_output') # Solely to make a convenient output to reference in the saved graph.
+    mean_encodings = tf.reduce_mean(out, axis=0)
+    for i in range(layers[-1]):
+        tf.summary.scalar('encoding' + str(i), mean_encodings[i], family='encodings')
 
 with tf.name_scope('decoder'):
-    compressed_state = tf.placeholder_with_default(out, shape=[None,layers[-1]], name='decoder_input')
+    compressed_state = tf.placeholder_with_default(enc_out, shape=[None,layers[-1]], name='decoder_input')
     decompressed_state = sequential_layers(compressed_state, list(reversed(layers)), 'decode')
 
 with tf.name_scope('transform_out'):
