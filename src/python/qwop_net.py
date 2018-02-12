@@ -229,9 +229,9 @@ with tf.name_scope('encoder'):
     layers = [72,58,48,32,28,18,4]
     out = sequential_layers(state_batch,layers, 'encode')
 
-    mean_encodings = tf.reduce_mean(out, axis=0)
-    for i in range(layers[-1]):
-        tf.summary.scalar('encoding' + str(i), mean_encodings[i], family='encodings')
+    # mean_encodings = tf.reduce_mean(out, axis=0)
+    # for i in range(layers[-1]):
+    #     tf.summary.scalar('encoding' + str(i), mean_encodings[i], family='encodings')
 
 with tf.name_scope('decoder'):
     compressed_state = tf.placeholder_with_default(out, shape=[None,layers[-1]], name='decoder_input')
@@ -304,20 +304,19 @@ with tf.Session(config=config) as sess:
 
     for i in range(100000000):
         if i%print_freq == 0:
-
-            loss, _, summary, true_state, est_state, sca, me, decomp, ss = sess.run([loss_op, train_op, merged_summary_op, state_in, state_out, scaler_so_far, mean_so_far, decompressed_state, scaled_state], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
-            # loss, _, est_state, true_state = sess.run([loss_op, train_op, decompressed_state, full_state])
+            #loss, _, summary, true_state, est_state, sca, me, decomp, ss = sess.run([loss_op, train_op, merged_summary_op, state_in, state_out, scaler_so_far, mean_so_far, decompressed_state, scaled_state], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
+            loss, _, summary = sess.run([loss_op, train_op, merged_summary_op], options=run_options,run_metadata = run_metadata)
             #print np.shape(true_state)
 
             summary_writer.add_summary(summary, i)
             summary_writer.add_run_metadata(run_metadata, str(i))
             new_time = time.time()
-            ips = batch_size*print_freq/(new_time - old_time)# options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
+            ips = batch_size*print_freq/(new_time - old_time)
 
             print '\n' + '\033[1m'
             print("Iter: %d, Loss %f, runs/s %0.1f" % (i, loss, ips))
             print '\033[0m'
-            save_path = saver.save(sess, "./logs/model2.ckpt")
+            save_path = saver.save(sess, "./logs/model2.ckpt", global_step=i)
             old_time = time.time() # Don't count the saving in our time estimate
 
             # st_diff = est_state - true_state
