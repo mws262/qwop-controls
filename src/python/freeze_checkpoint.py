@@ -8,7 +8,7 @@ import tensorflow as tf
 dir = os.path.dirname(os.path.realpath(__file__))
 
 
-def freeze_graph(model_dir, output_node_names, blacklist_node_names):
+def freeze_graph(model_dir, output_node_names, blacklist_node_names, whitelist_node_names):
     """Extract the sub graph defined by the output nodes and convert
     all its variables into constant
     Args:
@@ -43,7 +43,8 @@ def freeze_graph(model_dir, output_node_names, blacklist_node_names):
 
         # We restore the weights
         saver.restore(sess, input_checkpoint)
-
+        for op in tf.get_default_graph().get_operations():
+            print(op.name)
         print output_node_names.split(",")
         print blacklist_node_names.split(",")
         # We use a built-in TF helper to export variables to constants
@@ -51,7 +52,8 @@ def freeze_graph(model_dir, output_node_names, blacklist_node_names):
             sess,  # The session is used to retrieve the weights
             tf.get_default_graph().as_graph_def(),  # The graph_def is used to retrieve the nodes
             output_node_names.split(","),  # The output node names are used to select the usefull nodes
-            variable_names_blacklist=blacklist_node_names.split(",")
+            variable_names_blacklist=blacklist_node_names.split(","),
+            # variable_names_whitelist=whitelist_node_names.split(",")
         )
 
         # Finally we serialize and dump the output graph to the filesystem
@@ -70,6 +72,7 @@ if __name__ == '__main__':
                         help="The name of the output nodes, comma separated.")
     parser.add_argument("--blacklist_nodes", type=str, default="",
                         help="The name of the nodes NOT to convert to constants, comma separated.")
+    parser.add_argument("--whitelist_nodes", type=str, default="",
+                        help="The name of the nodes to definitely convert to constants, comma separated.")
     args = parser.parse_args()
-    print args.output_node_names
-    freeze_graph(args.model_dir, args.output_node_names, args.blacklist_nodes)
+    freeze_graph(args.model_dir, args.output_node_names, args.blacklist_nodes, args.whitelist_nodes)

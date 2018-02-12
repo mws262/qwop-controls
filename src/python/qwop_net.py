@@ -12,11 +12,11 @@ import matplotlib.pyplot as plt
 '''
 PARAMETERS & SETTINGS
 '''
-#freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/Add_1" --blacklist_nodes "transform_in/transform_input"
+# python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output"
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
-# On external drive ^. use sudo mount /dev/sdb1 /mnt
+# On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
 learn_rate = 1e-4
@@ -167,7 +167,7 @@ def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.lea
 DEFINE SPECIFIC DATAFLOW
 '''
 batch_size = 64
-print_freq = 9
+print_freq = 49
 
 # Make a list of TFRecord files.
 filename_list = []
@@ -178,19 +178,18 @@ for file in os.listdir(tfrecordPath):
         print(nextFile)
 random.shuffle(filename_list) # Shuffle so each time we restart, we get different order.
 
-filenames = tf.placeholder(tf.string, shape=[None])
-dataset = tf.data.TFRecordDataset(filenames)
-dataset = dataset.map(_parse_function, num_parallel_calls=16)
-#dataset = dataset.shuffle(buffer_size=5000)
-dataset = dataset.repeat()
-#dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
-#dataset = dataset.apply(tf.contrib.data.unbatch())
-iterator = dataset.make_initializable_iterator()
-next = iterator.get_next()
-# next = tf.layers.batch_normalization(next, axis=1,center=True, scale=True, training=True)
-next_element = tf.reshape(next, [-1,72])
-state_batch = tf.squeeze(next_element)
-dataset = dataset.prefetch(256)
+with tf.name_scope("tfrecord_input"):
+    filenames = tf.placeholder(tf.string, shape=[None])
+    dataset = tf.data.TFRecordDataset(filenames)
+    dataset = dataset.map(_parse_function, num_parallel_calls=16)
+    #dataset = dataset.shuffle(buffer_size=5000)
+    dataset = dataset.repeat()
+    #dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
+    iterator = dataset.make_initializable_iterator()
+    next = iterator.get_next()
+    next_element = tf.reshape(next, [-1,72])
+    state_batch = tf.squeeze(next_element)
+    dataset = dataset.prefetch(256)
 
 # LAYERS
 
@@ -208,34 +207,31 @@ else:
 with tf.name_scope('transform_in'):
     state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input')
     # with tf.device('/gpu:0'):
-    mins_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False)
-    maxes_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False)
-    scaler_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False)
-
-    #total_ele_so_far = tf.Variable(initial_value=tf.zeros([], tf.int64))
+    mins_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False, name='running_input_min')
+    maxes_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False, name='running_input_max')
+    scaler_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False, name='running_input_scaler')
     mean_so_far = tf.Variable(initial_value=tf.zeros([1,72], tf.float32),trainable=False)
 
     if is_training:
-        mins_so_far = tf.assign(mins_so_far,tf.minimum(mins_so_far, tf.reduce_min(state_in, axis=0)))
-        maxes_so_far = tf.assign(maxes_so_far,tf.maximum(mins_so_far, tf.reduce_max(state_in, axis=0)))
-        scaler_so_far = tf.assign(scaler_so_far, tf.subtract(maxes_so_far, mins_so_far))
+        mins_so_far = tf.assign(mins_so_far,tf.minimum(mins_so_far, tf.reduce_min(state_in, axis=0)), name='update_running_min')
+        maxes_so_far = tf.assign(maxes_so_far,tf.maximum(mins_so_far, tf.reduce_max(state_in, axis=0)), name='update_running_max')
+        scaler_so_far = tf.assign(scaler_so_far, tf.subtract(maxes_so_far, mins_so_far), name='update_running_scaler')
         this_mean = tf.reduce_mean(state_in, axis=0)
-
         mean_so_far = tf.assign(mean_so_far,
                                 tf.add(tf.scalar_mul(mean_update_rate, this_mean),
-                                       tf.scalar_mul(tf.subtract(tf.constant(1, dtype=tf.float32), mean_update_rate), mean_so_far)))
+                                       tf.scalar_mul(tf.subtract(tf.constant(1, dtype=tf.float32), mean_update_rate), mean_so_far)), name='update_mean')
 
-        # weighted_sum =
-        # total_ele_so_far = tf.assign_add(total_ele_so_far,this_num_ele)
-
-
-    scaled_state = tf.div(tf.subtract(state_in, mean_so_far), tf.add(scaler_so_far, eps))
+    scaled_state = tf.div(tf.subtract(state_in, mean_so_far, 'subtract_mean'), tf.add(scaler_so_far, eps), 'divide_scale')
 
 # Encode the transformed input.
 with tf.name_scope('encoder'):
     scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
-    layers = [72,58,48,32,28,18,2]
+    layers = [72,58,48,32,28,18,4]
     out = sequential_layers(state_batch,layers, 'encode')
+
+    mean_encodings = tf.reduce_mean(out, axis=0)
+    for i in range(layers[-1]):
+        tf.summary.scalar('encoding' + str(i), mean_encodings[i], family='encodings')
 
 with tf.name_scope('decoder'):
     compressed_state = tf.placeholder_with_default(out, shape=[None,layers[-1]], name='decoder_input')
@@ -243,13 +239,15 @@ with tf.name_scope('decoder'):
 
 with tf.name_scope('transform_out'):
      state_to_unscale= tf.placeholder_with_default(decompressed_state, shape=[None,72], name='transform_output')
-     state_out = tf.add(tf.multiply(state_to_unscale,tf.add(scaler_so_far, eps)), mean_so_far)
+     state_out = tf.add(tf.multiply(state_to_unscale,tf.add(scaler_so_far, eps)), mean_so_far, name='unscaled_output')
 
 with tf.name_scope('loss'):
     loss_op = tf.losses.absolute_difference(scaled_state_in, decompressed_state)
-adam = tf.train.AdamOptimizer(learn_rate)
+
 with tf.name_scope('training'):
-    train_op = adam.minimize(loss_op, global_step=global_step, name="optimizer")
+    adam = tf.train.AdamOptimizer(learn_rate)
+    train_op = adam.minimize(loss_op, global_step=global_step, name='optimizer')
+
 
 # FINAL SETUP
 
@@ -257,7 +255,7 @@ with tf.name_scope('training'):
 saver = tf.train.Saver()
 
 # Create a summary to monitor cost tensor
-tf.summary.scalar("loss", loss_op)
+tf.summary.scalar('loss', loss_op)
 
 # Merge all summaries into a single op
 merged_summary_op = tf.summary.merge_all()
@@ -336,15 +334,6 @@ with tf.Session(config=config) as sess:
             # np.save('tr_st.npy', true_state)
             # np.save('est_st_unsc.npy', decomp)
             # np.save('tr_st_unsc.npy', ss)
-
-            # print str(sca) + "," + str(me)
-            # fig1 = plt.figure()
-            # ax1 = fig1.add_subplot(111)
-            # ax1.plot(range(len(decomp[0:1000,0])),decomp[0:1000,12], '.b')
-            # fig2 = plt.figure()
-            # ax2 = fig2.add_subplot(111)
-            # ax2.plot(range(len(ss[0:1000,0])),ss[0:1000,12], '.b')
-            # plt.show()
         else:
 
             sess.run([train_op])
@@ -354,6 +343,3 @@ with tf.Session(config=config) as sess:
     # trace_file = open('timeline.ctf.json', 'w') # View in chrome://tracing
     # trace_file.write(trace.generate_chrome_trace_format())
 
-    # Stop all the queue threads.
-    coord.request_stop()
-    coord.join(threads)
