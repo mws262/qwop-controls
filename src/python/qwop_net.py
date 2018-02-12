@@ -13,7 +13,9 @@ import matplotlib.pyplot as plt
 PARAMETERS & SETTINGS
 '''
 # Note: if freeze_checkpoint.py won't give the nodes I need, add them to the outputs. DO NOT PUT A SPACE AROUND THE COMMAS IN THE NODE LIST.
-## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output,transform_in/transform_input"
+# Additional troubles with trying to include input layer correct names -- somehow depends on iterator, which can't be loaded and initialized for some reason.
+# Use tfrecord_input/Squeeze as input.
+## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output,encoder/encoder_output"
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
@@ -206,7 +208,8 @@ else:
 
 # Input layer -- scale and recenter data.
 with tf.name_scope('transform_in'):
-    state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input')
+    state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input_placeholder')
+    state_portal = tf.identity(state_in, name="transform_input")
     # with tf.device('/gpu:0'):
     mins_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False, name='running_input_min')
     maxes_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False, name='running_input_max')
@@ -214,15 +217,15 @@ with tf.name_scope('transform_in'):
     mean_so_far = tf.Variable(initial_value=tf.zeros([1,72], tf.float32),trainable=False)
 
     if is_training:
-        mins_so_far = tf.assign(mins_so_far,tf.minimum(mins_so_far, tf.reduce_min(state_in, axis=0)), name='update_running_min')
-        maxes_so_far = tf.assign(maxes_so_far,tf.maximum(mins_so_far, tf.reduce_max(state_in, axis=0)), name='update_running_max')
+        mins_so_far = tf.assign(mins_so_far,tf.minimum(mins_so_far, tf.reduce_min(state_portal, axis=0)), name='update_running_min')
+        maxes_so_far = tf.assign(maxes_so_far,tf.maximum(mins_so_far, tf.reduce_max(state_portal, axis=0)), name='update_running_max')
         scaler_so_far = tf.assign(scaler_so_far, tf.subtract(maxes_so_far, mins_so_far), name='update_running_scaler')
-        this_mean = tf.reduce_mean(state_in, axis=0)
+        this_mean = tf.reduce_mean(state_portal, axis=0)
         mean_so_far = tf.assign(mean_so_far,
                                 tf.add(tf.scalar_mul(mean_update_rate, this_mean),
                                        tf.scalar_mul(tf.subtract(tf.constant(1, dtype=tf.float32), mean_update_rate), mean_so_far)), name='update_mean')
 
-    scaled_state = tf.div(tf.subtract(state_in, mean_so_far, 'subtract_mean'), tf.add(scaler_so_far, eps), 'divide_scale')
+    scaled_state = tf.div(tf.subtract(state_portal, mean_so_far, 'subtract_mean'), tf.add(scaler_so_far, eps), 'divide_scale')
 
 # Encode the transformed input.
 with tf.name_scope('encoder'):
