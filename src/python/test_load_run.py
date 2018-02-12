@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-export_dir = './models/'
+export_dir = './logs'
 # loading
 with tf.Session(graph=tf.Graph()) as sess:
     tf.saved_model.loader.load(sess, ["tag"], export_dir)
