@@ -56,6 +56,7 @@ def freeze_graph(model_dir, output_node_names, blacklist_node_names, whitelist_n
             # variable_names_whitelist=whitelist_node_names.split(",")
         )
 
+        #print output_graph_def.SerializeToString()
         # Finally we serialize and dump the output graph to the filesystem
         with tf.gfile.GFile(output_graph, "wb") as f:
             f.write(output_graph_def.SerializeToString())
