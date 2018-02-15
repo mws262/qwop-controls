@@ -14,9 +14,13 @@ PARAMETERS & SETTINGS
 '''
 # Note: if freeze_checkpoint.py won't give the nodes I need, add them to the outputs. DO NOT PUT A SPACE AROUND THE COMMAS IN THE NODE LIST.
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Additional troubles with trying to include input layer correct names -- somehow depends on iterator, which can't be loaded and initialized for some reason.
 # Use tfrecord_input/Squeeze as input.
 ## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "untransform/untransform_output""
+=======
+## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output,transform_in/transform_input"
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
 =======
 ## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output,transform_in/transform_input"
 >>>>>>> 2794723861571e4f486359db1b1398829d617b2a
@@ -266,6 +270,9 @@ with tf.name_scope('encoder'):
     scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
     layers = [72,58,48,32,28,18,4]
     out = sequential_layers(state_batch,layers, 'encode')
+<<<<<<< HEAD
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
+=======
 >>>>>>> 2794723861571e4f486359db1b1398829d617b2a
     enc_out = tf.identity(out, name='encoder_output') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)
