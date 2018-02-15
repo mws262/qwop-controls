@@ -13,16 +13,24 @@ import matplotlib.pyplot as plt
 PARAMETERS & SETTINGS
 '''
 # Note: if freeze_checkpoint.py won't give the nodes I need, add them to the outputs. DO NOT PUT A SPACE AROUND THE COMMAS IN THE NODE LIST.
+<<<<<<< HEAD
 # Additional troubles with trying to include input layer correct names -- somehow depends on iterator, which can't be loaded and initialized for some reason.
 # Use tfrecord_input/Squeeze as input.
 ## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "untransform/untransform_output""
+=======
+## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output,transform_in/transform_input"
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
+<<<<<<< HEAD
 learn_rate = 1e-6
+=======
+learn_rate = 1e-4
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
 
 initWeightsStdev = .1
 
@@ -169,7 +177,11 @@ def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.lea
 '''
 DEFINE SPECIFIC DATAFLOW
 '''
+<<<<<<< HEAD
 batch_size = 1
+=======
+batch_size = 64
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
 print_freq = 49
 
 # Make a list of TFRecord files.
@@ -207,9 +219,14 @@ else:
     print "TRAINING MODE OFF"
 
 # Input layer -- scale and recenter data.
+<<<<<<< HEAD
 with tf.name_scope('transform'):
     state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input_placeholder')
     state_portal = tf.identity(state_in, name="transform_input")
+=======
+with tf.name_scope('transform_in'):
+    state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input')
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
     # with tf.device('/gpu:0'):
     mins_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False, name='running_input_min')
     maxes_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False, name='running_input_max')
@@ -217,14 +234,22 @@ with tf.name_scope('transform'):
     mean_so_far = tf.Variable(initial_value=tf.zeros([1,72], tf.float32),trainable=False)
 
     if is_training:
+<<<<<<< HEAD
         mins_so_far = tf.assign(mins_so_far,tf.minimum(mins_so_far, tf.reduce_min(state_portal, axis=0)), name='update_running_min')
         maxes_so_far = tf.assign(maxes_so_far,tf.maximum(mins_so_far, tf.reduce_max(state_portal, axis=0)), name='update_running_max')
         scaler_so_far = tf.assign(scaler_so_far, tf.subtract(maxes_so_far, mins_so_far), name='update_running_scaler')
         this_mean = tf.reduce_mean(state_portal, axis=0)
+=======
+        mins_so_far = tf.assign(mins_so_far,tf.minimum(mins_so_far, tf.reduce_min(state_in, axis=0)), name='update_running_min')
+        maxes_so_far = tf.assign(maxes_so_far,tf.maximum(mins_so_far, tf.reduce_max(state_in, axis=0)), name='update_running_max')
+        scaler_so_far = tf.assign(scaler_so_far, tf.subtract(maxes_so_far, mins_so_far), name='update_running_scaler')
+        this_mean = tf.reduce_mean(state_in, axis=0)
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
         mean_so_far = tf.assign(mean_so_far,
                                 tf.add(tf.scalar_mul(mean_update_rate, this_mean),
                                        tf.scalar_mul(tf.subtract(tf.constant(1, dtype=tf.float32), mean_update_rate), mean_so_far)), name='update_mean')
 
+<<<<<<< HEAD
     scaled_state = tf.div(tf.subtract(state_portal, mean_so_far, 'subtract_mean'), tf.add(scaler_so_far, eps), 'divide_scale')
     trans_out = tf.identity(scaled_state, name='transform_output') # Solely to make a convenient output to reference in the saved graph.
 
@@ -233,6 +258,15 @@ with tf.name_scope('encoder'):
     scaled_state_in = tf.placeholder_with_default(trans_out, shape=[None, 72], name='encoder_input')
     layers = [72,58,48,32,28,18,12]
     out = sequential_layers(scaled_state_in,layers, 'encode')
+=======
+    scaled_state = tf.div(tf.subtract(state_in, mean_so_far, 'subtract_mean'), tf.add(scaler_so_far, eps), 'divide_scale')
+
+# Encode the transformed input.
+with tf.name_scope('encoder'):
+    scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
+    layers = [72,58,48,32,28,18,4]
+    out = sequential_layers(state_batch,layers, 'encode')
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
     enc_out = tf.identity(out, name='encoder_output') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)
     for i in range(layers[-1]):
@@ -241,11 +275,18 @@ with tf.name_scope('encoder'):
 with tf.name_scope('decoder'):
     compressed_state = tf.placeholder_with_default(enc_out, shape=[None,layers[-1]], name='decoder_input')
     decompressed_state = sequential_layers(compressed_state, list(reversed(layers)), 'decode')
+<<<<<<< HEAD
     dec_out = tf.identity(decompressed_state, name='decoder_output') # Solely to make a convenient output to reference in the saved graph.
 
 with tf.name_scope('untransform'):
      state_to_unscale= tf.placeholder_with_default(dec_out, shape=[None,72], name='untransform_input')
      state_out = tf.add(tf.multiply(state_to_unscale,tf.add(scaler_so_far, eps)), mean_so_far, name='untransform_output')
+=======
+
+with tf.name_scope('transform_out'):
+     state_to_unscale= tf.placeholder_with_default(decompressed_state, shape=[None,72], name='transform_output')
+     state_out = tf.add(tf.multiply(state_to_unscale,tf.add(scaler_so_far, eps)), mean_so_far, name='unscaled_output')
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
 
 with tf.name_scope('loss'):
     loss_op = tf.losses.absolute_difference(scaled_state_in, decompressed_state)
@@ -287,9 +328,14 @@ with tf.Session(config=config) as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
 
+<<<<<<< HEAD
     if os.path.isfile("./logs/checkpoint"):
       ckpt = tf.train.get_checkpoint_state("./logs")
       saver.restore(sess, ckpt.model_checkpoint_path)
+=======
+    if os.path.isfile("./logs/model2.ckpt.meta"):
+      saver.restore(sess, "./logs/model2.ckpt")
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
       print('restored')
 
 

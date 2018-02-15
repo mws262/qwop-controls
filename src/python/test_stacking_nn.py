@@ -26,6 +26,7 @@ for op in graph.get_operations():
     print(op.name)
 
 x = graph.get_tensor_by_name('tfrecord_input/Squeeze:0')
+<<<<<<< HEAD
 y = graph.get_tensor_by_name('encoder/encoder_output:0')
 
 
@@ -36,6 +37,11 @@ with graph.as_default():
 
     b = tf.add(y,a)
 
+=======
+y = graph.get_tensor_by_name('decoder/decoder_input:0')
+
+tmp1 = tf.multiply(y, 2)
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
 
 state_next = np.array([ 2.02438141e+02, -7.76173949e-01, -8.75894010e-01,
          -6.09454393e-01,  5.14787865e+00, -3.25002372e-01,
@@ -63,6 +69,7 @@ state_next = np.array([ 2.02438141e+02, -7.76173949e-01, -8.75894010e-01,
           2.83644170e-01,  3.42957735e+00, -2.32843828e+00])
 
 with tf.Session(graph=graph) as sess:
+<<<<<<< HEAD
     sess.run(tf.global_variables_initializer())
 
     y_out, tmp1_out, b_out = sess.run([y, tmp1, b], feed_dict={
@@ -70,6 +77,12 @@ with tf.Session(graph=graph) as sess:
     print(y_out)
     print(tmp1_out)
     print(b_out)
+=======
+    y_out, tmp1_out = sess.run([y, tmp1], feed_dict={
+        x:state_next})
+    print(y_out)
+    print(tmp1_out)
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
 
 
 

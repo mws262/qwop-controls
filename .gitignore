@@ -5,6 +5,9 @@
 *.proto
 *.tfrecords
 /src/python/logs/
+<<<<<<< HEAD
 *.matt-desktop
 *.local
 *.NEWNEWNEW
+=======
+>>>>>>> 2794723861571e4f486359db1b1398829d617b2a
