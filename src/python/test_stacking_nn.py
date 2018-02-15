@@ -30,6 +30,12 @@ y = graph.get_tensor_by_name('encoder/encoder_output:0')
 
 
 tmp1 = tf.multiply(y, 2)
+with graph.as_default():
+    a = tf.get_variable('a', shape=[1, 4], initializer=tf.random_normal_initializer(stddev=1e-1))
+
+
+    b = tf.add(y,a)
+
 
 state_next = np.array([ 2.02438141e+02, -7.76173949e-01, -8.75894010e-01,
          -6.09454393e-01,  5.14787865e+00, -3.25002372e-01,
@@ -59,10 +65,11 @@ state_next = np.array([ 2.02438141e+02, -7.76173949e-01, -8.75894010e-01,
 with tf.Session(graph=graph) as sess:
     sess.run(tf.global_variables_initializer())
 
-    y_out, tmp1_out = sess.run([y, tmp1], feed_dict={
+    y_out, tmp1_out, b_out = sess.run([y, tmp1, b], feed_dict={
         x:[state_next]})
     print(y_out)
     print(tmp1_out)
+    print(b_out)
 
 
 

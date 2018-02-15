@@ -34,7 +34,7 @@ def freeze_graph(model_dir, output_node_names, blacklist_node_names, whitelist_n
     output_graph = absolute_model_dir + "/frozen_model.pb"
 
     # We clear devices to allow TensorFlow to control on which device it will load operations
-    clear_devices = False
+    clear_devices = True
 
     # We start a session using a temporary fresh Graph
     with tf.Session(graph=tf.Graph()) as sess:

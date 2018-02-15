@@ -15,14 +15,14 @@ PARAMETERS & SETTINGS
 # Note: if freeze_checkpoint.py won't give the nodes I need, add them to the outputs. DO NOT PUT A SPACE AROUND THE COMMAS IN THE NODE LIST.
 # Additional troubles with trying to include input layer correct names -- somehow depends on iterator, which can't be loaded and initialized for some reason.
 # Use tfrecord_input/Squeeze as input.
-## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output,encoder/encoder_output"
+## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "untransform/untransform_output""
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
-learn_rate = 1e-4
+learn_rate = 1e-6
 
 initWeightsStdev = .1
 
@@ -169,7 +169,7 @@ def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.lea
 '''
 DEFINE SPECIFIC DATAFLOW
 '''
-batch_size = 64
+batch_size = 1
 print_freq = 49
 
 # Make a list of TFRecord files.
@@ -207,7 +207,7 @@ else:
     print "TRAINING MODE OFF"
 
 # Input layer -- scale and recenter data.
-with tf.name_scope('transform_in'):
+with tf.name_scope('transform'):
     state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input_placeholder')
     state_portal = tf.identity(state_in, name="transform_input")
     # with tf.device('/gpu:0'):
@@ -226,12 +226,13 @@ with tf.name_scope('transform_in'):
                                        tf.scalar_mul(tf.subtract(tf.constant(1, dtype=tf.float32), mean_update_rate), mean_so_far)), name='update_mean')
 
     scaled_state = tf.div(tf.subtract(state_portal, mean_so_far, 'subtract_mean'), tf.add(scaler_so_far, eps), 'divide_scale')
+    trans_out = tf.identity(scaled_state, name='transform_output') # Solely to make a convenient output to reference in the saved graph.
 
 # Encode the transformed input.
 with tf.name_scope('encoder'):
-    scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
-    layers = [72,58,48,32,28,18,4]
-    out = sequential_layers(state_batch,layers, 'encode')
+    scaled_state_in = tf.placeholder_with_default(trans_out, shape=[None, 72], name='encoder_input')
+    layers = [72,58,48,32,28,18,12]
+    out = sequential_layers(scaled_state_in,layers, 'encode')
     enc_out = tf.identity(out, name='encoder_output') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)
     for i in range(layers[-1]):
@@ -240,10 +241,11 @@ with tf.name_scope('encoder'):
 with tf.name_scope('decoder'):
     compressed_state = tf.placeholder_with_default(enc_out, shape=[None,layers[-1]], name='decoder_input')
     decompressed_state = sequential_layers(compressed_state, list(reversed(layers)), 'decode')
+    dec_out = tf.identity(decompressed_state, name='decoder_output') # Solely to make a convenient output to reference in the saved graph.
 
-with tf.name_scope('transform_out'):
-     state_to_unscale= tf.placeholder_with_default(decompressed_state, shape=[None,72], name='transform_output')
-     state_out = tf.add(tf.multiply(state_to_unscale,tf.add(scaler_so_far, eps)), mean_so_far, name='unscaled_output')
+with tf.name_scope('untransform'):
+     state_to_unscale= tf.placeholder_with_default(dec_out, shape=[None,72], name='untransform_input')
+     state_out = tf.add(tf.multiply(state_to_unscale,tf.add(scaler_so_far, eps)), mean_so_far, name='untransform_output')
 
 with tf.name_scope('loss'):
     loss_op = tf.losses.absolute_difference(scaled_state_in, decompressed_state)
@@ -285,8 +287,9 @@ with tf.Session(config=config) as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
 
-    if os.path.isfile("./logs/model2.ckpt.meta"):
-      saver.restore(sess, "./logs/model2.ckpt")
+    if os.path.isfile("./logs/checkpoint"):
+      ckpt = tf.train.get_checkpoint_state("./logs")
+      saver.restore(sess, ckpt.model_checkpoint_path)
       print('restored')
 
 
