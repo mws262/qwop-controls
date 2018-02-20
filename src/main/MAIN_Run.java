@@ -173,14 +173,12 @@ public class MAIN_Run implements Runnable{
 		/************************************************************/		
 		/******* Decide how datasets are to be saved/loaded. ********/
 		/************************************************************/
-
-		//		System.out.println("Reading saved games file."); tic();
-		SaveableFileIO<SaveableSingleGame> io_sparse = new SaveableFileIO<SaveableSingleGame>();
-		SaveableFileIO<SaveableDenseData> io_dense = new SaveableFileIO<SaveableDenseData>();
-
-		String sparseFileName = generateFileName(filePrefix, "SaveableSingleGame");
-		//String denseFileName =  generateFileName(filePrefix, "SaveableDenseData");
-
+		
+//		IDataSaver sparseSaver = new DataSaver_Sparse(); // Saves just actions needed to recreate runs.
+//		IDataSaver denseSaver = new DataSaver_DenseJava(); // Saves full state/action info, but in serialized java classes.
+		IDataSaver TFRecordSaver = new DataSaver_DenseTFRecord(); // Saves full state/action info, in Tensorflow-compatible TFRecord format.
+		TFRecordSaver.setSaveInterval(500);
+		
 		//ArrayList<SaveableSingleGame> loaded = io_sparse.loadObjectsOrdered("test_2017-10-25_16-25-38.SaveableSingleGame");
 
 		//Node treeRoot = Node.makeNodesFromRunInfo(loaded, false);
@@ -196,8 +194,12 @@ public class MAIN_Run implements Runnable{
 
 		/* Manage the tree, UI, and game. Start some threads. */
 		negotiator = new Negotiator(tree, ui, game);
-				//io_sparse, sparseFileName);//, io_dense, denseFileName);
-
+		
+//		negotiator.addDataSaver(sparseSaver);
+//		negotiator.addDataSaver(denseSaver);
+		negotiator.addDataSaver(TFRecordSaver);
+		
+		
 		tree.setNegotiator(negotiator);
 		ui.setNegotiator(negotiator);
 		game.setNegotiator(negotiator);

@@ -1,10 +1,6 @@
 package main;
 import java.util.ArrayList;
 
-import data.SaveableDenseData;
-import data.SaveableFileIO;
-import data.SaveableSingleGame;
-
 /*
  * Negotiates actions between real game and sim.
  * 
@@ -50,29 +46,9 @@ public class Negotiator implements INegotiateGame {
 	/** Right now, only a single node is used, but in the future, we may have multiple active roots. **/
 	ArrayList<Node> activeRoots = new ArrayList<Node>();
 
-	/********* File saving -- sparse *********/
-	private boolean save_sparse = false; // Is saving even on? Performance improvement if off.
-	private int saveInterval_sparse = 100;
-	private int saveCounter_sparse = 0;
-	private ArrayList<SaveableSingleGame> saveBuffer_sparse = new ArrayList<SaveableSingleGame>();
+	/********* File saving ***********/
+	private ArrayList<IDataSaver> dataSavers = new ArrayList<IDataSaver>();
 
-	private SaveableFileIO<SaveableSingleGame> fileIOSparse;
-	private String saveFileName_sparse;
-	private boolean append_sparse = true;
-
-	/********* File saving -- dense **********/
-	private boolean save_dense = false; // Warning: produces large large files.
-	private int saveInterval_dense = 100;
-	private int saveCounter_dense = 0;
-	
-	private ArrayList<Action> actionBuffer_dense = new ArrayList<Action>();
-	private ArrayList<State> stateBuffer_dense = new ArrayList<State>();
-	private ArrayList<SaveableDenseData> saveBuffer_dense = new ArrayList<SaveableDenseData>();
-
-	private SaveableFileIO<SaveableDenseData> fileIODense;
-	private String saveFileName_dense;
-	private boolean append_dense = true;
-	
 	/** Initial state that the runner starts at. First element of every data object. **/
 	private State initialState = FSM_Game.getInitialState();
 
@@ -81,55 +57,25 @@ public class Negotiator implements INegotiateGame {
 		this.tree = tree;
 		this.ui = ui;
 		this.game = game;
-
-		save_sparse = false;
-		save_dense = false;
 	}
-
-	/** Make a negotiator which also saves results to file. Saves the states and actions at transitions, which
-	 * can be used to reconstruct a tree.
+	
+	/** Add another saver which will write info to file at a specified interval.
+	 *  Which data is written depends on the implementation.
+	 * @param dataSaver
 	 */
-	public Negotiator(FSM_Tree tree, FSM_UI ui, FSM_Game game,
-			SaveableFileIO<SaveableSingleGame> fileIOSparse, String saveFileName_sparse) {
-		this.tree = tree;
-		this.ui = ui;
-		this.game = game;
-		this.fileIOSparse = fileIOSparse;
-		this.saveFileName_sparse = saveFileName_sparse;
-
-		save_sparse = true;
-		save_dense = false;
-	}
-
-	/** Make a negotiator which also saves results to file. 1) Saves the states and actions at transitions, which
-	 * can be used to reconstruct a tree. 2) Saves dense results, action and state at every timestep, future used
-	 * for learning.
-	 */
-	public Negotiator(FSM_Tree tree, FSM_UI ui, FSM_Game game,
-			SaveableFileIO<SaveableSingleGame> fileIOSparse, String saveFileName_sparse,
-			SaveableFileIO<SaveableDenseData> fileIODense, String saveFileName_dense) {
-		this.tree = tree;
-		this.ui = ui;
-		this.game = game;
-		this.fileIOSparse = fileIOSparse;
-		this.saveFileName_sparse = saveFileName_sparse;
-
-		this.fileIODense = fileIODense;
-		this.saveFileName_dense = saveFileName_dense;
-
-		save_sparse = true;
-		save_dense = true;
+	public void addDataSaver(IDataSaver dataSaver) {
+		dataSavers.add(dataSaver);
 	}
 
 	/***********************************/
 	/********** FSM Changes ************/
 	/***********************************/
-	
+
 	public void statusChange_tree(FSM_Tree.Status status) {
 		if (verbose_tree) System.out.println("Tree FSM: " + status);
-	
+
 		FSM_Game.Status gameStatus;
-	
+
 		switch (status) {
 		case IDLE:
 			break;
@@ -175,6 +121,10 @@ public class Negotiator implements INegotiateGame {
 			game.unlockFSM();
 			break;
 		case EVALUATE_GAME:
+			// Report to file writer. For most, this initiates an actual file write if the interval is met.
+			for (IDataSaver ds : dataSavers) {
+				ds.reportGameEnding(tree.currentNode);
+			}
 			break;
 		case EXHAUSTED:
 			tree.kill();
@@ -197,8 +147,9 @@ public class Negotiator implements INegotiateGame {
 		case LOCKED:
 			break;
 		case INITIALIZE:
-			if (save_dense) {
-				stateBuffer_dense.add(initialState);
+			// Report to file writer. Usually only used by IDataSavers which record at every timestep.
+			for (IDataSaver ds : dataSavers) {
+				ds.reportGameInitialization(initialState);
 			}
 			break;
 		case RUNNING_SEQUENCE:
@@ -227,20 +178,6 @@ public class Negotiator implements INegotiateGame {
 			}
 			break;
 		case FAILED:	
-			if (save_dense) {
-				// Collect all the states and actions into a data object.
-				saveBuffer_dense.add(new SaveableDenseData(stateBuffer_dense,actionBuffer_dense));
-				saveCounter_dense++;
-				
-				if (saveInterval_dense == saveCounter_dense) {
-					fileIODense.storeObjectsOrdered(saveBuffer_dense, saveFileName_dense, append_dense);
-					saveCounter_dense = 0;
-				}
-				// Clear out for the next run to begin.
-				stateBuffer_dense.clear();
-				actionBuffer_dense.clear();
-			}
-			
 			switch(tree.getFSMStatus()) {
 			case TREE_POLICY_WAITING:
 				throw new RuntimeException("Tree policy should never visit previously found failed states.");
@@ -277,38 +214,19 @@ public class Negotiator implements INegotiateGame {
 	}
 
 	/****** Pausers/stoppers *******/
-	
+
 	/** Stop EVERYTHING. **/
 	public void globalDestruction() {
 		game.kill();
 		tree.kill();
 		ui.kill();
 	}
-	
+
 	/** Negotiator should keep track of added tree roots **/
 	public void addTreeRoot(Node node) {
 		activeRoots.add(node);
 		ui.rootNodes.add(node);
 		tree.rootNodes.add(node);
-	}
-
-	/** Save the the run to file. Currently called by the Tree FSM when it is ready. 
-	 *  Dense saver piggybacks this to save when triggered also. 
-	 */
-	public void saveRunToFile(Node leafNode){
-		//MAIN_test.tic();
-		if (save_sparse) {
-			saveBuffer_sparse.add(new SaveableSingleGame(leafNode));
-			if (saveCounter_sparse == saveInterval_sparse - 1) {
-				fileIOSparse.storeObjectsOrdered(saveBuffer_sparse,
-						saveFileName_sparse, append_sparse);
-				saveBuffer_sparse.clear();
-				saveCounter_sparse = 0;
-			}else {
-				saveCounter_sparse++;
-			}
-			//	MAIN_test.toc();
-		}
 	}
 
 	/** Pause everything but the game things. **/
@@ -331,7 +249,7 @@ public class Negotiator implements INegotiateGame {
 	}
 
 	/******* UI Commands ********/
-	
+
 	public void redistributeNodes(){
 		if (Node.useTreePhysics){
 			Node.useTreePhysics = false;
@@ -347,7 +265,7 @@ public class Negotiator implements INegotiateGame {
 	/** Node selected by clicking the tree. **/
 	public boolean uiNodeSelect(Node node) {
 		if (ui.snapshotPane.active) {
-	
+
 		} else if (ui.runnerPane.active) {
 			if (!game.isRealtime() && node.treeDepth > 0){ // Can't be a root node.
 				// Run a one-off, real-time game.
@@ -362,7 +280,7 @@ public class Negotiator implements INegotiateGame {
 	}
 
 	/****** Run stats ******/
-	
+
 	/** Only doing this to keep all information flowing through negotiator. **/
 	public int getGamesPlayed(){ return Node.getCreatedGameCount(); }
 	public int getGamesImported(){ return Node.getImportedGameCount(); }
@@ -374,7 +292,7 @@ public class Negotiator implements INegotiateGame {
 
 
 	/******* Reporting finished stuff *******/
-	
+
 	/** Let the game report that it is no longer simulating in real time and the tree may resume. **/
 	@Override
 	public void reportEndOfRealTimeSim(){
@@ -391,32 +309,25 @@ public class Negotiator implements INegotiateGame {
 		this.P = P;
 	}
 
-	boolean usePredictor = true;
-//	Tensorflow_Predictor pred = new Tensorflow_Predictor();
 	@Override
 	public void reportGameStep(Action action) {
-//		if (usePredictor) {
-//			System.out.println(Math.round(pred.getPrediction(game.getGameState())));
-//		}
-		if (save_dense) {
-			actionBuffer_dense.add(action); // Technically this is the action which GETS us to the current state, so we want it sort of grouped with the previous state since that is when it is applied.
-			State thisState = game.getGameState();
-			stateBuffer_dense.add(thisState);
+		for (IDataSaver ds : dataSavers) {
+			ds.reportTimestep(action, game.getGameState()); //TODO make getGameState not do so much shit when it doesn't have to.
 		}
 	}
 
-	private boolean toggler = true;
+	private boolean toggler = false;
 	public void toggleSampler() {
 		IEvaluationFunction evaluateRandom = new Evaluator_Random(); // Assigns a purely random score for diagnostics.
 		IEvaluationFunction evaluateDistance = new Evaluator_Distance();
 		IEvaluationFunction evaluateHandTuned = new Evaluator_HandTunedOnState();
-		
+
 		IEvaluationFunction currentEvaluator = evaluateDistance;
-		
+
 		/***********************************************/		
 		/*********** Tree building strategy ************/
 		/***********************************************/
-		
+
 		/******** Define how nodes are sampled from the above defined actions. *********/
 		ISampler samplerRandom = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
 		ISampler samplerGreedy = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
@@ -430,6 +341,6 @@ public class Negotiator implements INegotiateGame {
 			System.out.println("UCB");
 			toggler = !toggler;
 		}
-		
+
 	}
 }

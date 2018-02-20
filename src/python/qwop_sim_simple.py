@@ -15,14 +15,14 @@ PARAMETERS & SETTINGS
 # Note: if freeze_checkpoint.py won't give the nodes I need, add them to the outputs. DO NOT PUT A SPACE AROUND THE COMMAS IN THE NODE LIST.
 # Additional troubles with trying to include input layer correct names -- somehow depends on iterator, which can't be loaded and initialized for some reason.
 # Use tfrecord_input/Squeeze as input.
-## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "untransform/untransform_output"
+## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output,encoder/encoder_output"
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
-learn_rate = 1e-4
+learn_rate = 1e-5
 
 initWeightsStdev = .1
 
@@ -67,16 +67,33 @@ def _parse_function(example_proto):
         x_out_list.append(body_part[:,1:])
 
     #feats = {key: features[1][key] for key in stateKeys}  # States
-    statesConcat = tf.concat(x_out_list, 1, name='concat_states')
+    states_concat = tf.concat(x_out_list, 1, name='concat_states')
 
-    # pk = {'PRESSED_KEYS': tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4])}
+    pressed_keys = tf.reshape(tf.cast(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), dtype=tf.float32), [-1, 4])
+    extended_states = (states_concat, pressed_keys, ts)
+
+    #tf.concat([states_concat, pressed_keys], 1, name='concat_actions')
+
     # ttt = {'TIME_TO_TRANSITION': tf.reshape(tf.decode_raw(features[1]['TIME_TO_TRANSITION'], tf.uint8),)}
     # act = {'ACTIONS': tf.reshape(tf.decode_raw(features[1]['ACTIONS'], tf.uint8),(5,))}
 
     # feats.update({key: tf.reshape(tf.decode_raw(features[1][key], tf.uint8),(1,)) for key in actionKeys})  # Attach actions too after decoding.
     #feats.update(pk)
-    return statesConcat
+    return extended_states
 
+def load_graph(frozen_graph_filename):
+    # We load the protobuf file from the disk and parse it to retrieve the
+    # unserialized graph_def
+    with tf.gfile.GFile(frozen_graph_filename, "rb") as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+
+    # Then, we import the graph_def into a new Graph and returns it
+    with tf.Graph().as_default() as graph:
+        # The name var will prefix every op/nodes in your graph
+        # Since we load everything in a new graph, this is not needed
+        tf.import_graph_def(graph_def)
+    return graph
 
 def weight_variable(shape):
     """
@@ -165,11 +182,10 @@ def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.lea
     return current_tensor
 
 
-
 '''
 DEFINE SPECIFIC DATAFLOW
 '''
-batch_size = 1
+# batch_size = 1
 print_freq = 49
 
 # Make a list of TFRecord files.
@@ -181,23 +197,9 @@ for file in os.listdir(tfrecordPath):
         print(nextFile)
 random.shuffle(filename_list) # Shuffle so each time we restart, we get different order.
 
-with tf.name_scope("tfrecord_input"):
-    filenames = tf.placeholder(tf.string, shape=[None])
-    dataset = tf.data.TFRecordDataset(filenames)
-    dataset = dataset.map(_parse_function, num_parallel_calls=16)
-    #dataset = dataset.shuffle(buffer_size=5000)
-    dataset = dataset.repeat()
-    #dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
-    iterator = dataset.make_initializable_iterator()
-    next = iterator.get_next()
-    next_element = tf.reshape(next, [-1,72])
-    state_batch = tf.squeeze(next_element)
-    dataset = dataset.prefetch(256)
-
 # LAYERS
-
 eps = 0.001
-is_training = False
+is_training = True
 global_step = tf.Variable(0)
 mean_update_rate = tf.train.exponential_decay(0.2, global_step, 500, 0.7)
 
@@ -205,6 +207,22 @@ if is_training:
     print "TRAINING MODE ON"
 else:
     print "TRAINING MODE OFF"
+
+
+with tf.name_scope("dataset_input"):
+    filenames = tf.placeholder(tf.string, shape=[None])
+    dataset = tf.data.TFRecordDataset(filenames)
+    dataset = dataset.map(_parse_function, num_parallel_calls=16)
+    # dataset = dataset.shuffle(buffer_size=5000)
+    dataset = dataset.repeat()
+    # dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
+    iterator = dataset.make_initializable_iterator()
+    next = iterator.get_next()
+    state_batch = next[0]
+    keys_batch = next[1]
+    timesteps_batch = next[2]
+    dataset = dataset.prefetch(256)
+
 
 # Input layer -- scale and recenter data.
 with tf.name_scope('transform'):
@@ -231,7 +249,7 @@ with tf.name_scope('transform'):
 # Encode the transformed input.
 with tf.name_scope('encoder'):
     scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
-    layers = [72,58,48,32,28,18,4]
+    layers = [72,58,48,32,28]
     out = sequential_layers(state_batch,layers, 'encode')
     enc_out = tf.identity(out, name='encoder_output') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)
@@ -239,8 +257,13 @@ with tf.name_scope('encoder'):
         tf.summary.scalar('encoding' + str(i), mean_encodings[i], family='encodings')
 
 with tf.name_scope('decoder'):
-    compressed_state = tf.placeholder_with_default(enc_out, shape=[None,layers[-1]], name='decoder_input')
-    decompressed_state = sequential_layers(compressed_state, list(reversed(layers)), 'decode')
+    compressed_state = tf.placeholder_with_default(enc_out, shape=[None,layers[-1]], name='decoder_input_st')
+    keys_in = tf.placeholder_with_default(keys_batch, shape=[None,4], name='decoder_input_key')
+    ext_state = tf.concat([compressed_state, keys_in], axis=1)
+
+    dec_layer_sizes = [x+4 for x in list(reversed(layers))]
+    mostly_decoded = sequential_layers(ext_state, dec_layer_sizes, 'decode')
+    decompressed_state = nn_layer(mostly_decoded, 76, 72, 'decode_resize')
     dec_out = tf.identity(decompressed_state, name='decoder_output') # Solely to make a convenient output to reference in the saved graph.
 
 with tf.name_scope('untransform'):
@@ -248,12 +271,11 @@ with tf.name_scope('untransform'):
      state_out = tf.add(tf.multiply(state_to_unscale,tf.add(scaler_so_far, eps)), mean_so_far, name='untransform_output')
 
 with tf.name_scope('loss'):
-    loss_op = tf.losses.absolute_difference(scaled_state_in, decompressed_state)
+    loss_op = tf.losses.absolute_difference(scaled_state_in[1:,:], decompressed_state[:-1,:])
 
 with tf.name_scope('training'):
     adam = tf.train.AdamOptimizer(learn_rate)
     train_op = adam.minimize(loss_op, global_step=global_step, name='optimizer')
-
 
 # FINAL SETUP
 
@@ -287,10 +309,10 @@ with tf.Session(config=config) as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
 
-    if os.path.isfile("./logs/checkpoint"):
-      ckpt = tf.train.get_checkpoint_state("./logs")
-      saver.restore(sess, ckpt.model_checkpoint_path)
-      print('restored')
+    # if os.path.isfile("./logs/checkpoint"):
+    #   ckpt = tf.train.get_checkpoint_state("./logs")
+    #   saver.restore(sess, ckpt.model_checkpoint_path)
+    #   print('restored')
 
 
     # Clear old log files.
@@ -318,7 +340,7 @@ with tf.Session(config=config) as sess:
             summary_writer.add_summary(summary, i)
             summary_writer.add_run_metadata(run_metadata, str(i))
             new_time = time.time()
-            ips = batch_size*print_freq/(new_time - old_time)
+            ips = 1*print_freq/(new_time - old_time)
 
             print '\n' + '\033[1m'
             print("Iter: %d, Loss %f, runs/s %0.1f" % (i, loss, ips))
@@ -348,4 +370,3 @@ with tf.Session(config=config) as sess:
     # trace = timeline.Timeline(step_stats=run_metadata.step_stats)
     # trace_file = open('timeline.ctf.json', 'w') # View in chrome://tracing
     # trace_file.write(trace.generate_chrome_trace_format())
-

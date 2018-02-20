@@ -11,7 +11,7 @@ public class FSM_Tree implements Runnable{
 	public Status previousStatus = Status.IDLE;
 	private volatile Status queuedStatusChange;
 	private volatile boolean forcedStatusChange = false;
-	
+
 	/** Queued sampler ready to swap in when the FSM is ready for it. **/
 	private ISampler queuedSamplerChange = null;
 
@@ -127,8 +127,12 @@ public class FSM_Tree implements Runnable{
 				break;
 			case EVALUATE_GAME: // Triggered once tree is given a failed state.
 
-				negotiator.saveRunToFile(currentNode);
-				if (currentNode.state.failedState) currentNode.markTerminal();
+				if (currentNode.state.failedState) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
+					currentNode.markTerminal();
+				}else {
+					throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
+				}
+				
 				currentStatus = Status.IDLE;
 
 				// Estimate games per second if the frequency met.
@@ -139,7 +143,7 @@ public class FSM_Tree implements Runnable{
 				}else{
 					gpsCounter++;
 				}
-				
+
 				// Sampler change safely if queued.
 				if (queuedSamplerChange != null) {
 					sampler = queuedSamplerChange;
@@ -197,7 +201,7 @@ public class FSM_Tree implements Runnable{
 		case ROLLOUT_POLICY_WAITING:
 			if(currentNode.state != null) throw new RuntimeException("The rollout policy should only encounter new nodes. None of them should have their state assigned before now.");
 			currentNode.setState(state);
-			
+
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.
 			sampler.rolloutPolicyActionDone(currentNode);
 			setStatus(Status.ROLLOUT_POLICY);
@@ -245,7 +249,7 @@ public class FSM_Tree implements Runnable{
 	public void changeSampler(ISampler newSampler) {
 		queuedSamplerChange = newSampler;
 	}
-	
+
 	/** Wait until a specific status is reached, and then pause there. Returns whether it succeeded or not. **/
 	public boolean latchAtFSMStatus(Status status){
 		if (isLocked) return false; //throw new RuntimeException("Someone tried to latch the game while it was already latched.");

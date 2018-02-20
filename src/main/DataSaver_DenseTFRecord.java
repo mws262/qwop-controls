@@ -1,12 +1,10 @@
-package data;
+package main;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import org.tensorflow.example.BytesList;
-import org.tensorflow.example.Example;
 import org.tensorflow.example.Feature;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.FeatureLists;
@@ -16,67 +14,51 @@ import org.tensorflow.example.Int64List;
 import org.tensorflow.example.SequenceExample;
 
 import com.google.protobuf.ByteString;
-import main.State;
-import main.Action;
 
+import data.TFRecordWriter;
 
-public class DenseDataToTFRecord {
-
-	static String sourceDir = "/media/matt/Storage/QWOP_SaveableDenseData/";
-	static String outDir = "/media/matt/Storage/QWOP_Tfrecord_1_20/";
-	static String inFileExt = "SaveableDenseData";
-	static String outFileExt = "tfrecord";
-
-	public static void main(String[] args) {
-
-		/** Grab input files. **/
-		System.out.println("Identifying input files...");
-		File inDir = new File(sourceDir);
-		if (!inDir.exists()) throw new RuntimeException("Input directory does not exist here: " + inDir.getName());
-
-		double megabyteCount = 0;
-		ArrayList<File> inFiles = new ArrayList<File>();
-		for(File file: inDir.listFiles()) {	
-			if (!file.isDirectory()) {
-				String extension = "";
-				// Get only files with the correct file extension.
-				int i = file.getName().lastIndexOf('.');
-				if (i > 0) {
-					extension = file.getName().substring(i+1);
-				}
-				if (extension.equals(inFileExt)) {
-					inFiles.add(file);	
-					megabyteCount += file.length()/1.0e6;
-				}else {
-					System.out.println("Ignoring file in input directory: " + file.getName());
-				}
-			}
-		}
-
-		System.out.println("Found " + inFiles.size() + " input files with the extension " + inFileExt + ".");
-		System.out.println("Total input size: " + Math.round(megabyteCount*10)/10. + " MB.");
-
-		System.out.println("done");
-
-
-		SaveableFileIO<SaveableDenseData> inFileLoader = new SaveableFileIO<SaveableDenseData>();
-		int count = 0;
-		for (File file : inFiles) {
-			ArrayList<SaveableDenseData> denseDat = inFileLoader.loadObjectsOrdered(file.getAbsolutePath());
-			System.out.print("Beginning to package " + file.getName() + ". ");
-			String fileOutName = file.getName().substring(0, file.getName().lastIndexOf('.')) + "." + outFileExt;
+public class DataSaver_DenseTFRecord extends DataSaver_Dense{
+	
+	/** File prefix. Goes in front of date. **/
+	public String filePrefix = "denseTF";
+	
+	/** Do not include dot before. **/
+	public String fileExtension = "TFRecord";
+	
+	/** Games since last save. **/
+	private int saveCounter = 0;
+	
+	/** List of sets of states and actions for individual games awaiting file write. **/
+	ArrayList<GameContainer> gameData = new ArrayList<GameContainer>();
+	
+	@Override
+	public void reportGameEnding(Node endNode) {
+		saveCounter++;
+		gameData.add(new GameContainer(actionBuffer, stateBuffer));
+		
+		if (saveInterval == saveCounter) {
 			try {
-				convertToProtobuf(denseDat,fileOutName,outDir);
+				convertToProtobuf();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			count++;
-			System.out.println("Done. " + count + "/" + inFiles.size());
+			
+			// Reset until next file write interval is up.
+			gameData.clear();
+			saveCounter = 0;
 		}
+		
+		// Clear out for the next run to begin.
+		stateBuffer.clear();
+		actionBuffer.clear();
+		
 	}
 
-	/** Make a single feature representing the 6 state variables for a single body part at a single timestep. Append to existing FeatureList for that body part. **/
+	// NOTE: The following methods were borrowed and altered from my DenseDataToTFRecord class.
+	
+	/** Make a single feature representing the 6 state variables for a single 
+	 * body part at a single timestep. Append to existing FeatureList for that body part. 
+	 **/
 	private static void makeFeature(State.ObjectName bodyPart, State state, FeatureList.Builder listToAppendTo) {
 		Feature.Builder feat = Feature.newBuilder();
 		FloatList.Builder featVals = FloatList.newBuilder();
@@ -87,35 +69,36 @@ public class DenseDataToTFRecord {
 		listToAppendTo.addFeature(feat.build());
 	}
 
-	/** Make a time series for a single run of a single state variable as a FeatureList. Add to the broader list of FeatureList for this run. **/
-	private static void makeStateFeatureList(SaveableDenseData data, State.ObjectName bodyPart, FeatureLists.Builder featLists) {
+	/** Make a time series for a single run of a single state variable as a 
+	 * FeatureList. Add to the broader list of FeatureList for this run. 
+	 * **/
+	private static void makeStateFeatureList(ArrayList<State> states, State.ObjectName bodyPart, FeatureLists.Builder featLists) {
 		FeatureList.Builder featList = FeatureList.newBuilder();
-		for (State st : data.getState()) { // Iterate through the timesteps in a single run.
+		for (State st : states) { // Iterate through the timesteps in a single run.
 			makeFeature(bodyPart, st, featList);
 		}
 		featLists.putFeatureList(bodyPart.toString(), featList.build()); // Add this feature to the broader list of features.
 	}
 
-	public static void convertToProtobuf(List<SaveableDenseData> denseData, String fileName, String destinationPath) throws IOException {
-		File file = new File(destinationPath + fileName);
+	private void convertToProtobuf() throws IOException {
+		File file = new File("./" + IDataSaver.generateFileName(filePrefix, fileExtension));
 		
-		file.getParentFile().mkdirs();
+		//file.getParentFile().mkdirs();
 		FileOutputStream stream = new FileOutputStream(file);
 		
 		// Iterate through all runs in a single file.
-		for (SaveableDenseData dat : denseData) {
-			int actionPad = dat.getState().length - dat.getAction().length; // Make the dimensions match for coding convenience.
+		for (GameContainer dat : gameData) {
+			int actionPad = dat.states.size() - dat.actions.size(); // Make the dimensions match for coding convenience.
 			if (actionPad != 1) {
 				System.out.println("Dimensions of state is not 1 more than dimension of action as expected. Ignoring this one.");
 				continue;
 			}
-			Example.Builder exB = Example.newBuilder();
 			SequenceExample.Builder seqEx = SequenceExample.newBuilder();
 			FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & actions) in a single run.
 
 			// Pack up states
 			for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body parts and add to the overall list of feature lists.
-				makeStateFeatureList(dat, bodyPart, featLists);
+				makeStateFeatureList(dat.states, bodyPart, featLists);
 			}
 
 			// Pack up actions -- 3 different ways:
@@ -125,7 +108,7 @@ public class DenseDataToTFRecord {
 
 			// 1) Keys pressed at individual timestep. 0 or 1 in bytes for each key
 			FeatureList.Builder keyFeatList = FeatureList.newBuilder();
-			for (Action act : dat.getAction()) {
+			for (Action act : actionBuffer) {
 				Feature.Builder keyFeat = Feature.newBuilder();
 				BytesList.Builder keyDat = BytesList.newBuilder();
 				byte[] keys = new byte[] {
@@ -150,10 +133,10 @@ public class DenseDataToTFRecord {
 			
 			// 2) Timesteps until transition for each timestep.
 			FeatureList.Builder transitionTSList = FeatureList.newBuilder();
-			for (int i = 0; i < dat.getAction().length; i++) {
-				int action = dat.getAction()[i].getTimestepsTotal();
+			for (int i = 0; i < dat.actions.size(); i++) {
+				int action = dat.actions.get(i).getTimestepsTotal();
 
-				while (action > 0 && i < dat.getAction().length) {
+				while (action > 0 && i < dat.actions.size()) {
 					Feature.Builder transitionTSFeat = Feature.newBuilder();
 					BytesList.Builder transitionTS = BytesList.newBuilder();
 					transitionTS.addValue(ByteString.copyFrom(new byte[] {(byte)action}));
@@ -176,7 +159,7 @@ public class DenseDataToTFRecord {
 			// 3) Just the action sequence (shorter than number of timesteps) -- bytestrings e.g. [15, 1, 0, 0, 1]
 			FeatureList.Builder actionList = FeatureList.newBuilder();
 			int prevAct = -1;
-			for (Action act : dat.getAction()) {
+			for (Action act : dat.actions) {
 				int action = act.getTimestepsTotal();
 				if (action == prevAct) {
 					continue;
@@ -202,7 +185,7 @@ public class DenseDataToTFRecord {
 			Features.Builder contextFeats = Features.newBuilder();
 			Feature.Builder timestepContext = Feature.newBuilder();			
 			Int64List.Builder tsList = Int64List.newBuilder();
-			tsList.addValue(dat.getState().length); // TOTAL number of timesteps in this run.
+			tsList.addValue(dat.states.size()); // TOTAL number of timesteps in this run.
 			timestepContext.setInt64List(tsList.build());
 			contextFeats.putFeature("TIMESTEPS", timestepContext.build());
 			
@@ -212,5 +195,22 @@ public class DenseDataToTFRecord {
 			TFRecordWriter.writeToStream(seqEx.build().toByteArray(), stream);
 		}
 		stream.close();
+	}
+	
+	/**
+	 * Just a holder for the states and actions of individual games.
+	 * Just so we can add these combinations to another list.
+	 * @author matt
+	 *
+	 */
+	private class GameContainer{
+		
+		ArrayList<Action> actions = new ArrayList<Action>();
+		ArrayList<State> states = new ArrayList<State>();
+		
+		private GameContainer(ArrayList<Action> actions, ArrayList<State> states) {
+			this.actions.addAll(actions);
+			this.states.addAll(states);
+		}	
 	}
 }

@@ -22,7 +22,7 @@ tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machi
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
-learn_rate = 1e-3
+learn_rate = 1e-5
 
 initWeightsStdev = .1
 
@@ -220,9 +220,6 @@ with tf.name_scope("dataset_input"):
         timesteps_batch = next[2]
         dataset = dataset.prefetch(256)
 
-#     # LAYERS
-#     #transform_in = graph.get_tensor_by_name('Squeeze:0')
-#
 
 transform_in = graph.get_tensor_by_name('import/transform/transform_input:0')
 tramsform_out = graph.get_tensor_by_name('import/transform/transform_output:0')
@@ -240,29 +237,32 @@ untransform_out = graph.get_tensor_by_name('import/untransform/untransform_outpu
 
 with graph.as_default():
     with tf.name_scope('LSTM'):
-        key_commands = tf.placeholder_with_default(keys_batch, shape=[None, 4], name='key_command_input')
-        num_timesteps = tf.placeholder_with_default(timesteps_batch, shape=[], name='sequence_timesteps')
-        combined = tf.concat([encoder_out, tf.cast(key_commands, dtype=tf.float32)], axis=1) # Insert the keystroke data here.
+        key_commands = tf.placeholder(tf.float32, shape=[None, 4], name='key_command_input')
+        num_timesteps = tf.placeholder(tf.float32, shape=[], name='sequence_timesteps')
+        encoded_state = tf.placeholder(tf.float32, shape=[None, 12], name='encoded_state')
+
+        combined = tf.concat([encoded_state, key_commands], axis=1) # Insert the keystroke data here.
         rnn_outputs, _ = lstm(tf.expand_dims(combined, 0), [num_timesteps], 16, 'lstm1')
         rnn_outputs, _ = lstm(rnn_outputs, [num_timesteps], 16, 'lstm2')
         rnn_outputs = tf.squeeze(rnn_outputs)
         rnn_to_compressed = nn_layer(rnn_outputs, 16, 12, "fully_connected_rnn_reshaper")
+        rnn_out = tf.identity(rnn_to_compressed, name="rnn_output")
 
     with tf.name_scope('loss'):
-        loss_op = tf.losses.absolute_difference(encoder_out[:, 1:], rnn_to_compressed[:, :-1])
+        loss_op = tf.losses.absolute_difference(encoded_state[:, 1:], rnn_out[:, :-1])
 
     with tf.name_scope('training'):
         adam = tf.train.AdamOptimizer(learn_rate)
         train_op = adam.minimize(loss_op, name='optimizer')
 
-# with tf.name_scope('loss'):
-#     pred = tf.placeholder_with_default(untransform_out, shape=[None, 72], name='predicted_for_loss')
-#     true = tf.placeholder_with_default(state_batch, shape=[None, 72], name='true_for_loss')
-#     loss_op = tf.losses.absolute_difference(true[:,1:], pred[:,:-1])
-#
-# with tf.name_scope('training'):
-#     adam = tf.train.AdamOptimizer(learn_rate)
-#     train_op = adam.minimize(loss_op, name='optimizer')
+    saver = tf.train.Saver()
+
+    # Create a summary to monitor cost tensor
+    tf.summary.scalar('loss', loss_op)
+
+    # Merge all summaries into a single op
+    merged_summary_op = tf.summary.merge_all()
+
 
 
 filename_list = []
@@ -275,16 +275,28 @@ random.shuffle(filename_list) # Shuffle so each time we restart, we get differen
 
 coord = tf.train.Coordinator()
 with tf.Session(graph=graph) as sess:
+
     sess.run(tf.global_variables_initializer())
+
+    if os.path.isfile("./logs/checkpoint"):
+      ckpt = tf.train.get_checkpoint_state("./logs")
+      print ckpt
+      saver.restore(sess, ckpt.model_checkpoint_path)
+      print('restored')
+
     sess.run(iterator.initializer, feed_dict={filenames: filename_list})
     # s,k,t = sess.run([state_batch,keys_batch,timesteps_batch])
+    summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
 
     for i in range(1000000):
-        st, k, ts = sess.run([state_batch, keys_batch, timesteps_batch])
-        rnn_comp, loss, _ = sess.run([rnn_to_compressed, loss_op, train_op], feed_dict={transform_in: st, key_commands: k, num_timesteps: ts})
-        # recomposed = sess.run([untransform_out], feed_dict={decoder_in: np.squeeze(rnn_comp)})
+        st, k, ts = sess.run([state_batch, keys_batch, timesteps_batch]) # Get a batch from tfrecords
+        encoded = sess.run([encoder_out], feed_dict={transform_in: st}) # Transform and encode state
+        rnn_comp, loss, _, summary = sess.run([rnn_to_compressed, loss_op, train_op, merged_summary_op], feed_dict={key_commands: k, num_timesteps: ts, encoded_state: np.squeeze(encoded)}) # Run through rnn
+        recomposed = sess.run([untransform_out], feed_dict={decoder_in: np.squeeze(rnn_comp)})
         # loss, _ = sess.run([loss_op, train_op], feed_dict={pred: recomposed, true: st})
-
+        if i%4 == 1:
+            save_path = saver.save(sess, "./logs/rnn.ckpt", global_step=i)
+            print("saved")
 
         print str(i) + "," + str(loss)
     # for i in range(100000000):
