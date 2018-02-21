@@ -25,7 +25,9 @@ public class SaveableFileIO<T> {
 				ops = new FileOutputStream(fullFileName, true);
 				objOps = new AppendingObjectOutputStream(ops);
 			}else{
-				ops = new FileOutputStream(fullFileName, false);
+				File file = new File(fullFileName);
+				file.getParentFile().mkdirs();
+				ops = new FileOutputStream(file, false);
 				objOps = new ObjectOutputStream(ops);	
 			}
 
@@ -66,8 +68,9 @@ public class SaveableFileIO<T> {
 				ops = new FileOutputStream(fullFileName, true);
 				objOps = new AppendingObjectOutputStream(ops);
 			}else{
-				ops = new FileOutputStream(fullFileName, false);
-				objOps = new ObjectOutputStream(ops);	
+				File file = new File(fullFileName);
+				file.getParentFile().mkdirs();
+				ops = new FileOutputStream(file, false);
 			}
 
 			for (T d : data){

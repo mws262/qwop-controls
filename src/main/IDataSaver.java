@@ -25,6 +25,9 @@ public interface IDataSaver {
 	/** Set the number of games to collect in between saves. **/
 	public void setSaveInterval(int numGames);
 	
+	/** Set where the files are saved. Defaults to working directory otherwise. **/
+	public void setSavePath(String fileLoc);
+	
 	/** Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]**/
 	static String generateFileName(String prefix, String className) {
 		Date date = new Date() ;

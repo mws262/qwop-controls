@@ -81,9 +81,9 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 	}
 
 	private void convertToProtobuf() throws IOException {
-		File file = new File("./" + IDataSaver.generateFileName(filePrefix, fileExtension));
+		File file = new File(fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension));
 		
-		//file.getParentFile().mkdirs();
+		file.getParentFile().mkdirs();
 		FileOutputStream stream = new FileOutputStream(file);
 		
 		// Iterate through all runs in a single file.

@@ -21,6 +21,9 @@ public class DataSaver_Sparse implements IDataSaver {
 	/** Do not include dot before. **/
 	public String fileExtension = "SaveableSingleGame";
 	
+	/** File save location. **/
+	private String fileLocation = "./";
+	
 	/** How many games in between saves. **/
 	private int saveInterval = 100;
 	
@@ -45,7 +48,7 @@ public class DataSaver_Sparse implements IDataSaver {
 		gamesSinceFile++;
 		
 		if (saveInterval == gamesSinceFile) {	
-			fileIO.storeObjectsOrdered(saveBuffer, IDataSaver.generateFileName(filePrefix, fileExtension), false);
+			fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
 			saveBuffer.clear();
 			gamesSinceFile = 0;
 		}
@@ -56,4 +59,8 @@ public class DataSaver_Sparse implements IDataSaver {
 		saveInterval = numGames;
 	}
 
+	@Override
+	public void setSavePath(String fileLoc) {
+		this.fileLocation = fileLoc;
+	}
 }

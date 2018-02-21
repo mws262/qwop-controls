@@ -39,7 +39,7 @@ public class DataSaver_DenseJava extends DataSaver_Dense{
 		saveCounter++;
 
 		if (saveInterval == saveCounter) {
-			fileIO.storeObjectsOrdered(saveBuffer, IDataSaver.generateFileName(filePrefix, fileExtension), false);
+			fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
 			saveCounter = 0;
 		}
 		// Clear out for the next run to begin.

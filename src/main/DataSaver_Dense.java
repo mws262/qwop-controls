@@ -22,6 +22,9 @@ public abstract class DataSaver_Dense implements IDataSaver {
 	/** Number of games in between saves to file. **/
 	protected int saveInterval = 100;
 	
+	/** File save location. **/
+	protected String fileLocation = "./";
+	
 	public DataSaver_Dense() {
 		actionBuffer.ensureCapacity(1800);
 		stateBuffer.ensureCapacity(1800);
@@ -45,6 +48,11 @@ public abstract class DataSaver_Dense implements IDataSaver {
 	@Override
 	public void setSaveInterval(int numGames) {
 		saveInterval = numGames;
+	}
+	
+	@Override
+	public void setSavePath(String fileLoc) {
+		this.fileLocation = fileLoc;
 	}
 
 }
