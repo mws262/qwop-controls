@@ -68,5 +68,12 @@
   <artifactId>tensorflow</artifactId>
   <version>1.4.0</version>
 </dependency>
+<dependency>
+    <groupId>jbox2d</groupId>
+    <artifactId>org.jbox2d</artifactId>
+    <version>1.0</version>
+    <scope>system</scope>
+    <systemPath>${project.basedir}/jbox2d.jar</systemPath>
+</dependency>
   </dependencies>
 </project>
