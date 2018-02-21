@@ -10,3 +10,4 @@ src/python/logs/
 *.NEWNEWNEW
 src/python/tmp/
 .DS_Store
+*.TFRecord
