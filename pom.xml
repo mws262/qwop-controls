@@ -1,112 +1,125 @@
-<!-- DO THIS TO RUN STUFF COMMAND LINE: -->
-<!-- mvn clean -->
-<!-- mvn install -->
-<!-- mvn exec:java -e -Dexec.mainClass="main.MAIN_Run" -->
+<!-- 
+To run files from the command line:
+		mvn clean
+		mvn install
+		mvn exec:java -e -Dexec.mainClass="main.MAIN_Run"
+To update the classpath settings for Eclipse:
+		mvn eclipse:clean
+		mvn eclipse:eclipse
+	-->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>QWOP_SaveLoad</groupId>
-  <artifactId>QWOP_SaveLoad</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-  <build>
-    <sourceDirectory>src</sourceDirectory>
-    <resources>
-      <resource>
-        <directory>src</directory>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </resource>
-    </resources>	  
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.7.0</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.2</version>
-        </plugin>
-      <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-install-plugin</artifactId>
-      <version>2.5.2</version>
-      <executions>
-          <execution>
-              <id>install-external</id>
-              <phase>clean</phase>
-              <configuration>
-                  <file>${project.basedir}/jbox2d.jar</file>
-                  <repositoryLayout>default</repositoryLayout>
-                  <groupId>org.jbox2d</groupId>
-                  <artifactId>jbox2d</artifactId>
-                  <version>0.0.1</version>
-                  <packaging>jar</packaging>
-                  <generatePom>true</generatePom>
-              </configuration>
-              <goals>
-                  <goal>install-file</goal>
-              </goals>
-          </execution>
-      </executions>
-  </plugin>
-    </plugins>
-  </build>
-  <dependencies>
-  <dependency>
-  	<groupId>org.jblas</groupId>
-  	<artifactId>jblas</artifactId>
-  	<version>1.2.4</version>
-  </dependency>
-  <dependency>
-    <groupId>org.jfree</groupId>
-    <artifactId>jfreechart</artifactId>
-    <version>1.0.19</version>
-  </dependency>
-      <dependency>
-      <groupId>org.jogamp.gluegen</groupId>
-      <artifactId>gluegen-rt-main</artifactId>
-      <version>2.3.2</version>
-    </dependency>
-  <dependency>
-  	<groupId>org.jogamp.jogl</groupId>
-  	<artifactId>jogl-all-main</artifactId>
-  	<version>2.3.2</version>
-  </dependency>
-  <dependency>
-    <groupId>javax.vecmath</groupId>
-    <artifactId>vecmath</artifactId>
-    <version>1.5.2</version>
-  </dependency>
-<!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
-<dependency>
-    <groupId>com.google.protobuf</groupId>
-    <artifactId>protobuf-java</artifactId>
-    <version>3.1.0</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
-<dependency>
-    <groupId>com.google.guava</groupId>
-    <artifactId>guava</artifactId>
-    <version>23.0</version>
-</dependency>
-<dependency>
-  <groupId>org.tensorflow</groupId>
-  <artifactId>tensorflow</artifactId>
-  <version>1.4.0</version>
-</dependency>
-<dependency>
-    <groupId>org.jbox2d</groupId>
-    <artifactId>jbox2d</artifactId>
-    <version>0.0.1</version>
-</dependency>
-  </dependencies>
-</project>
+	<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		<modelVersion>4.0.0</modelVersion>
+		<groupId>QWOP_SaveLoad</groupId>
+		<artifactId>QWOP_SaveLoad</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+
+		<properties>
+			<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		</properties>
+		
+		<build>
+			<!-- Define main location of source code. -->
+			<sourceDirectory>src</sourceDirectory>
+			<resources>
+				<resource>
+					<directory>src</directory>
+					<excludes>
+						<exclude>**/*.java</exclude>
+					</excludes>
+				</resource>
+			</resources>
+
+			<plugins>
+				<!-- Lets maven compile the source code. -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.7.0</version>
+					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
+					</configuration>
+				</plugin>
+
+
+
+				<!-- Defines how/what to run when executing code. -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>1.2</version>
+				</plugin>
+
+			</plugins>
+		</build>
+
+
+		<!-- Code dependencies automagically imported from various repositories. -->
+		<dependencies>
+
+			<!-- Linear algebra -->
+			<dependency>
+				<groupId>org.jblas</groupId>
+				<artifactId>jblas</artifactId>
+				<version>1.2.4</version>
+			</dependency>
+
+			<!-- Plotting -->
+			<dependency>
+				<groupId>org.jfree</groupId>
+				<artifactId>jfreechart</artifactId>
+				<version>1.0.19</version>
+			</dependency>
+
+			<!-- Lets java call C libraries, mostly (only?) for OpenGL -->
+			<dependency>
+				<groupId>org.jogamp.gluegen</groupId>
+				<artifactId>gluegen-rt-main</artifactId>
+				<version>2.3.2</version>
+			</dependency>
+
+			<!-- OpenGL 3D graphics rendering. Note that this is a very old version because I'm too lazy to learn the whole shader pipeline. -->
+			<dependency>
+				<groupId>org.jogamp.jogl</groupId>
+				<artifactId>jogl-all-main</artifactId>
+				<version>2.3.2</version>
+			</dependency>
+
+			<!-- Convenient library for dealing with vectors. TODO: replace this with just jblas? -->
+			<dependency>
+				<groupId>javax.vecmath</groupId>
+				<artifactId>vecmath</artifactId>
+				<version>1.5.2</version>
+			</dependency>
+
+			<!-- Create data binary files which can be read by different programming languages. -->
+			<dependency>
+				<groupId>com.google.protobuf</groupId>
+				<artifactId>protobuf-java</artifactId>
+				<version>3.1.0</version>
+			</dependency>
+
+			<!-- Lots of various utility functions. -->
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>23.0</version>
+			</dependency>
+
+			<!-- Running neural network models. -->
+			<dependency>
+				<groupId>org.tensorflow</groupId>
+				<artifactId>tensorflow</artifactId>
+				<version>1.4.0</version>
+			</dependency>
+
+			<!-- 2D physics engine; old version similar to that in QWOP. Hosted locally. -->
+			<dependency>
+				<groupId>org.jbox2d</groupId>
+				<artifactId>jbox2d</artifactId>
+				<version>0.0.1</version>
+			</dependency>
+
+		</dependencies>
+	</project>
