@@ -188,7 +188,7 @@ public class MAIN_Run implements Runnable{
 
 		Node treeRoot = new Node(useTreePhysics);
 
-		FSM_UI ui = new FSM_UI();
+		IUserInterface ui = new FSM_UI();
 		FSM_Tree tree = new FSM_Tree(currentSampler);
 		FSM_Game game = new FSM_Game();
 

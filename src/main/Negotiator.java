@@ -11,7 +11,7 @@ public class Negotiator implements INegotiateGame {
 	FSM_Tree tree;
 
 	/** All visuals and external interaction. **/
-	FSM_UI ui;
+	IUserInterface ui;
 
 	/** Communication with the physics engine and entering commands. **/
 	FSM_Game game;
@@ -53,7 +53,7 @@ public class Negotiator implements INegotiateGame {
 	private State initialState = FSM_Game.getInitialState();
 
 	/** Basic negotiator which communicates between the tree, ui, and game FSMs. No file saving. **/
-	public Negotiator(FSM_Tree tree, FSM_UI ui, FSM_Game game) {
+	public Negotiator(FSM_Tree tree, IUserInterface ui, FSM_Game game) {
 		this.tree = tree;
 		this.ui = ui;
 		this.game = game;
@@ -154,7 +154,7 @@ public class Negotiator implements INegotiateGame {
 			break;
 		case RUNNING_SEQUENCE:
 			if (game.isRealtime()){
-				ui.runnerPane.setGameToView(game.getGame());
+				ui.setLiveGameToView(game.getGame());
 			}
 			break;
 		case WAITING:
@@ -171,7 +171,7 @@ public class Negotiator implements INegotiateGame {
 				break;
 			default:
 				if (game.isRealtime()){
-					ui.runnerPane.clearGameToView(); // If it was a realtime game, turn off vis afterwards.
+					ui.clearLiveGameToView(); // If it was a realtime game, turn off vis afterwards.
 				}else {
 					throw new RuntimeException("Game is waiting, but the tree isn't ready to do more stuff. Tree is in status: " + tree.currentStatus.toString());
 				}
@@ -225,7 +225,7 @@ public class Negotiator implements INegotiateGame {
 	/** Negotiator should keep track of added tree roots **/
 	public void addTreeRoot(Node node) {
 		activeRoots.add(node);
-		ui.rootNodes.add(node);
+		ui.addRootNode(node);
 		tree.rootNodes.add(node);
 	}
 
@@ -264,9 +264,9 @@ public class Negotiator implements INegotiateGame {
 
 	/** Node selected by clicking the tree. **/
 	public boolean uiNodeSelect(Node node) {
-		if (ui.snapshotPane.active) {
+		if (ui.isSnapshotPaneActive()) {
 
-		} else if (ui.runnerPane.active) {
+		} else if (ui.isRunnerPaneActive()) {
 			if (!game.isRealtime() && node.treeDepth > 0){ // Can't be a root node.
 				// Run a one-off, real-time game.
 				tree.latchAtFSMStatus(FSM_Tree.Status.IDLE);
@@ -297,7 +297,7 @@ public class Negotiator implements INegotiateGame {
 	@Override
 	public void reportEndOfRealTimeSim(){
 		tree.unlockFSM(); // Resume tree actions.
-		ui.runnerPane.clearGameToView();
+		ui.clearLiveGameToView();
 	}
 
 	/** Game tells negotiator which keys are down currently. **/

@@ -84,7 +84,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
  * @author Matt
  */
 @SuppressWarnings("serial")
-public class FSM_UI extends JFrame implements ChangeListener, Runnable{
+public class FSM_UI extends JFrame implements ChangeListener, Runnable, IUserInterface{
 
 	/** Negotiator acts like a listener. **/
 	Negotiator negotiator;
@@ -253,7 +253,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		repaint();
 	}
 
-	/** Main graphics loop. **/
+	/* (non-Javadoc)
+	 * @see main.IUserInterface#run()
+	 */
+	@Override
 	public void run() {
 		while (running) {
 			long currentTime = System.currentTimeMillis();
@@ -301,14 +304,20 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 	}
 
-	/** Stop the FSM. **/
+	/* (non-Javadoc)
+	 * @see main.IUserInterface#kill()
+	 */
+	@Override
 	public void kill() {
 		running = false;
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));	
 	}
 
-	/** Pick a node for the UI to highlight and potentially display. **/
+	/* (non-Javadoc)
+	 * @see main.IUserInterface#selectNode(main.Node)
+	 */
+	@Override
 	public void selectNode(Node selected) {
 		boolean success = false; // We don't allow new node selection while a realtime game is being played. 
 		if (negotiator != null) success = negotiator.uiNodeSelect(selected);
@@ -330,6 +339,9 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see main.IUserInterface#stateChanged(javax.swing.event.ChangeEvent)
+	 */
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		for (TabbedPaneActivator p: allTabbedPanes) {
@@ -338,6 +350,10 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
 	}
 
+	/* (non-Javadoc)
+	 * @see main.IUserInterface#setNegotiator(main.Negotiator)
+	 */
+	@Override
 	public void setNegotiator(Negotiator negotiator) {
 		this.negotiator = negotiator;
 	}
@@ -2278,6 +2294,31 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable{
 	private interface TabbedPaneActivator {
 		public void activateTab();
 		public void deactivateTab();
+	}
+
+	@Override
+	public void setLiveGameToView(QWOPGame game) {
+		runnerPane.setGameToView(game);
+	}
+
+	@Override
+	public void clearLiveGameToView() {
+		runnerPane.clearGameToView();		
+	}
+
+	@Override
+	public void addRootNode(Node node) {
+		rootNodes.add(node);
+	}
+
+	@Override
+	public boolean isSnapshotPaneActive() {
+		return snapshotPane.active;
+	}
+
+	@Override
+	public boolean isRunnerPaneActive() {
+		return runnerPane.active;
 	}	
 }
 
