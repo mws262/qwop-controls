@@ -3,14 +3,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import data.SaveableDenseData;
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
-
+import com.beust.jcommander.*;
 
 public class MAIN_Run implements Runnable{
 
@@ -18,9 +20,8 @@ public class MAIN_Run implements Runnable{
 	private static long tocTime;
 
 	private static final boolean useTreePhysics = false;
-
 	private static Negotiator negotiator;
-	
+
 	private int treesPlayed = 0;
 	private int treesToPlay = 1000;
 	private long secondsPerTree = 1000000;
@@ -28,12 +29,26 @@ public class MAIN_Run implements Runnable{
 	private long initTime;
 
 	private String filePrefix = "sample1";
+
+	/***** Command line arguments to parse. *****/
+	@Parameter
+	private List<String> parameters = new ArrayList<>();
+
+	@Parameter(names={"--headless", "-hl"})
+	private boolean headless = false;
+	
 	
 	public MAIN_Run() {}
 
 	public static void main(String[] args) {
 
 		MAIN_Run manager = new MAIN_Run();
+
+		JCommander.newBuilder()
+		.addObject(manager)
+		.build()
+		.parse(args);
+
 		Thread managerThread = new Thread(manager);
 		managerThread.start();
 	}
@@ -46,7 +61,7 @@ public class MAIN_Run implements Runnable{
 				initTime = System.currentTimeMillis();
 				doGames(filePrefix);
 			}
-			
+
 			if ((System.currentTimeMillis() - initTime)/1000 >= secondsPerTree) {
 				negotiator.globalDestruction();
 				Node.maxDepthYet = 0;
@@ -63,7 +78,7 @@ public class MAIN_Run implements Runnable{
 		}
 	}
 
-	public static void doGames(String filePrefix) {
+	public void doGames(String filePrefix) {
 
 		/********************************************/		
 		/******* Space of allowable actions. ********/
@@ -173,12 +188,12 @@ public class MAIN_Run implements Runnable{
 		/************************************************************/		
 		/******* Decide how datasets are to be saved/loaded. ********/
 		/************************************************************/
-		
-//		IDataSaver sparseSaver = new DataSaver_Sparse(); // Saves just actions needed to recreate runs.
-//		IDataSaver denseSaver = new DataSaver_DenseJava(); // Saves full state/action info, but in serialized java classes.
+
+		//		IDataSaver sparseSaver = new DataSaver_Sparse(); // Saves just actions needed to recreate runs.
+		//		IDataSaver denseSaver = new DataSaver_DenseJava(); // Saves full state/action info, but in serialized java classes.
 		IDataSaver TFRecordSaver = new DataSaver_DenseTFRecord(); // Saves full state/action info, in Tensorflow-compatible TFRecord format.
 		TFRecordSaver.setSaveInterval(500);
-		
+
 		//ArrayList<SaveableSingleGame> loaded = io_sparse.loadObjectsOrdered("test_2017-10-25_16-25-38.SaveableSingleGame");
 
 		//Node treeRoot = Node.makeNodesFromRunInfo(loaded, false);
@@ -188,18 +203,24 @@ public class MAIN_Run implements Runnable{
 
 		Node treeRoot = new Node(useTreePhysics);
 
-		IUserInterface ui = new FSM_UI();
+		IUserInterface ui;
+		if (headless) {
+			ui = new UI_Headless();
+		}else {
+			ui = new UI_Full();
+		}
+
 		FSM_Tree tree = new FSM_Tree(currentSampler);
 		FSM_Game game = new FSM_Game();
 
 		/* Manage the tree, UI, and game. Start some threads. */
 		negotiator = new Negotiator(tree, ui, game);
-		
-//		negotiator.addDataSaver(sparseSaver);
-//		negotiator.addDataSaver(denseSaver);
+
+		//		negotiator.addDataSaver(sparseSaver);
+		//		negotiator.addDataSaver(denseSaver);
 		negotiator.addDataSaver(TFRecordSaver);
-		
-		
+
+
 		tree.setNegotiator(negotiator);
 		ui.setNegotiator(negotiator);
 		game.setNegotiator(negotiator);

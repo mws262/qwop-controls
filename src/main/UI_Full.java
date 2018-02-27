@@ -84,7 +84,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
  * @author Matt
  */
 @SuppressWarnings("serial")
-public class FSM_UI extends JFrame implements ChangeListener, Runnable, IUserInterface{
+public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserInterface{
 
 	/** Negotiator acts like a listener. **/
 	Negotiator negotiator;
@@ -178,7 +178,7 @@ public class FSM_UI extends JFrame implements ChangeListener, Runnable, IUserInt
 	private Status currentStatus = Status.IDLE_ALL;
 	private Status previousStatus = Status.IDLE_ALL;
 
-	public FSM_UI() {
+	public UI_Full() {
 		Container pane = this.getContentPane();
 		pane.setLayout(new GridBagLayout());
 

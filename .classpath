@@ -2,13 +2,37 @@
 <classpath>
   <classpathentry kind="src" path="src"/>
   <classpathentry kind="output" path="target/classes"/>
-  <classpathentry kind="var" path="M2_REPO/javax/vecmath/vecmath/1.5.2/vecmath-1.5.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/javax/vecmath/vecmath/1.5.2/vecmath-1.5.2.jar" sourcepath="M2_REPO/javax/vecmath/vecmath/1.5.2/vecmath-1.5.2-sources.jar">
+    <attributes>
+      <attribute value="jar:file:/Users/Matt/.m2/repository/javax/vecmath/vecmath/1.5.2/vecmath-1.5.2-javadoc.jar!/" name="javadoc_location"/>
+    </attributes>
+  </classpathentry>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-  <classpathentry kind="var" path="M2_REPO/org/jblas/jblas/1.2.4/jblas-1.2.4.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/jfree/jfreechart/1.0.19/jfreechart-1.0.19.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/jfree/jcommon/1.0.23/jcommon-1.0.23.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/jogamp/gluegen/gluegen-rt-main/2.3.2/gluegen-rt-main-2.3.2.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jblas/jblas/1.2.4/jblas-1.2.4.jar" sourcepath="M2_REPO/org/jblas/jblas/1.2.4/jblas-1.2.4-sources.jar">
+    <attributes>
+      <attribute value="jar:file:/Users/Matt/.m2/repository/org/jblas/jblas/1.2.4/jblas-1.2.4-javadoc.jar!/" name="javadoc_location"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="var" path="M2_REPO/org/jfree/jfreechart/1.0.19/jfreechart-1.0.19.jar" sourcepath="M2_REPO/org/jfree/jfreechart/1.0.19/jfreechart-1.0.19-sources.jar">
+    <attributes>
+      <attribute value="jar:file:/Users/Matt/.m2/repository/org/jfree/jfreechart/1.0.19/jfreechart-1.0.19-javadoc.jar!/" name="javadoc_location"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="var" path="M2_REPO/org/jfree/jcommon/1.0.23/jcommon-1.0.23.jar" sourcepath="M2_REPO/org/jfree/jcommon/1.0.23/jcommon-1.0.23-sources.jar">
+    <attributes>
+      <attribute value="jar:file:/Users/Matt/.m2/repository/org/jfree/jcommon/1.0.23/jcommon-1.0.23-javadoc.jar!/" name="javadoc_location"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="var" path="M2_REPO/org/jogamp/gluegen/gluegen-rt-main/2.3.2/gluegen-rt-main-2.3.2.jar" sourcepath="M2_REPO/org/jogamp/gluegen/gluegen-rt-main/2.3.2/gluegen-rt-main-2.3.2-sources.jar">
+    <attributes>
+      <attribute value="jar:file:/Users/Matt/.m2/repository/org/jogamp/gluegen/gluegen-rt-main/2.3.2/gluegen-rt-main-2.3.2-javadoc.jar!/" name="javadoc_location"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="var" path="M2_REPO/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2.jar" sourcepath="M2_REPO/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-sources.jar">
+    <attributes>
+      <attribute value="jar:file:/Users/Matt/.m2/repository/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-javadoc.jar!/" name="javadoc_location"/>
+    </attributes>
+  </classpathentry>
   <classpathentry kind="var" path="M2_REPO/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-android-aarch64.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-android-armv6.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-linux-amd64.jar"/>
@@ -20,8 +44,16 @@
   <classpathentry kind="var" path="M2_REPO/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-solaris-i586.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-windows-amd64.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-windows-i586.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/jogamp/jogl/jogl-all-main/2.3.2/jogl-all-main-2.3.2.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jogamp/jogl/jogl-all-main/2.3.2/jogl-all-main-2.3.2.jar" sourcepath="M2_REPO/org/jogamp/jogl/jogl-all-main/2.3.2/jogl-all-main-2.3.2-sources.jar">
+    <attributes>
+      <attribute value="jar:file:/Users/Matt/.m2/repository/org/jogamp/jogl/jogl-all-main/2.3.2/jogl-all-main-2.3.2-javadoc.jar!/" name="javadoc_location"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="var" path="M2_REPO/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2.jar" sourcepath="M2_REPO/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-sources.jar">
+    <attributes>
+      <attribute value="jar:file:/Users/Matt/.m2/repository/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-javadoc.jar!/" name="javadoc_location"/>
+    </attributes>
+  </classpathentry>
   <classpathentry kind="var" path="M2_REPO/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-android-aarch64.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-android-armv6.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-linux-amd64.jar"/>
@@ -43,4 +75,5 @@
   <classpathentry kind="var" path="M2_REPO/org/tensorflow/libtensorflow/1.4.0/libtensorflow-1.4.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/tensorflow/libtensorflow_jni/1.4.0/libtensorflow_jni-1.4.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jbox2d/jbox2d/0.0.1/jbox2d-0.0.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/beust/jcommander/1.72/jcommander-1.72.jar"/>
 </classpath>

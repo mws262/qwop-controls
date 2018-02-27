@@ -3,6 +3,8 @@ To run files from the command line:
 		mvn clean
 		mvn install
 		mvn exec:java -e -Dexec.mainClass="main.MAIN_Run"
+		with command-line arguments:
+		mvn exec:java -e -Dexec.mainClass="main.MAIN_Run" -Dexec.args=""
 To update the classpath settings for Eclipse:
 		mvn eclipse:clean
 		mvn eclipse:eclipse
@@ -142,6 +144,13 @@ To update the classpath settings for Eclipse:
 				<groupId>org.jbox2d</groupId>
 				<artifactId>jbox2d</artifactId>
 				<version>0.0.1</version>
+			</dependency>
+
+			<!-- Parsing command line arguments -->
+			<dependency>
+    				<groupId>com.beust</groupId>
+    				<artifactId>jcommander</artifactId>
+    				<version>1.72</version>
 			</dependency>
 
 		</dependencies>

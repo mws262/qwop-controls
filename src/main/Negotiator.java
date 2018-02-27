@@ -196,7 +196,7 @@ public class Negotiator implements INegotiateGame {
 		}
 	}
 
-	public void statusChange_UI(FSM_UI.Status status) {
+	public void statusChange_UI(UI_Full.Status status) {
 		if (verbose_UI)
 			System.out.println("UI FSM: " + status);
 		switch (status) {
