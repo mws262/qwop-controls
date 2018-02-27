@@ -34,10 +34,16 @@ public class MAIN_Run implements Runnable{
 	@Parameter
 	private List<String> parameters = new ArrayList<>();
 
-	@Parameter(names={"--headless", "-hl"})
+	@Parameter(names={"--headless", "-hl"},  description = "Run without graphical interface.")
 	private boolean headless = false;
+
+	@Parameter(names={"--sampler", "-sm"},  description = "Pick how new nodes are selected [random, distribution, greedy, UCB].")
+	private String sampler = "";
 	
-	
+	@Parameter(names={"--saver", "-sv"},  description = "Pick how data is saved [tfrecord, java_dense, java_sparse, none].")
+	private String saver = "";
+
+
 	public MAIN_Run() {}
 
 	public static void main(String[] args) {
@@ -178,21 +184,49 @@ public class MAIN_Run implements Runnable{
 		/***********************************************/
 
 		/******** Define how nodes are sampled from the above defined actions. *********/
-		ISampler samplerRandom = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
-		ISampler samplerDistribution = new Sampler_Distribution();
-		ISampler samplerGreedy = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
-		ISampler samplerUCB = new Sampler_UCB(currentEvaluator); // Upper confidence bound for trees sampler. More principled way of assigning weight for exploration/exploitation.
-
-		ISampler currentSampler = samplerUCB;
+		// Can be picked with command line argument --sampler or -sm
+		ISampler currentSampler;
+		switch (sampler.toLowerCase()) {
+		case "random":
+			currentSampler = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
+			break;
+		case "distribution":
+			currentSampler = new Sampler_Distribution();
+			break;
+		case "greedy":
+			currentSampler = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+			break;
+		case "ucb":
+			currentSampler = new Sampler_UCB(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+			break;
+		default:
+			currentSampler = new Sampler_UCB(currentEvaluator);
+		}
 
 		/************************************************************/		
 		/******* Decide how datasets are to be saved/loaded. ********/
 		/************************************************************/
 
-		//		IDataSaver sparseSaver = new DataSaver_Sparse(); // Saves just actions needed to recreate runs.
-		//		IDataSaver denseSaver = new DataSaver_DenseJava(); // Saves full state/action info, but in serialized java classes.
-		IDataSaver TFRecordSaver = new DataSaver_DenseTFRecord(); // Saves full state/action info, in Tensorflow-compatible TFRecord format.
-		TFRecordSaver.setSaveInterval(500);
+		// Can be picked with command line argument --sampler or -sm
+		IDataSaver dataSaver;
+		switch (saver.toLowerCase()) {
+		case "tfrecord":
+			dataSaver = new DataSaver_DenseTFRecord(); // Saves full state/action info, in Tensorflow-compatible TFRecord format.
+			break;
+		case "java_sparse":
+			dataSaver = new DataSaver_Sparse(); // Saves just actions needed to recreate runs.
+			break;
+		case "java_dense":
+			dataSaver = new DataSaver_DenseJava(); // Saves full state/action info, but in serialized java classes. // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+			break;
+		case "none":
+			dataSaver = new DataSaver_null(); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+			break;
+		default:
+			dataSaver = new DataSaver_null();
+		}
+
+		dataSaver.setSaveInterval(500);
 
 		//ArrayList<SaveableSingleGame> loaded = io_sparse.loadObjectsOrdered("test_2017-10-25_16-25-38.SaveableSingleGame");
 
@@ -218,7 +252,7 @@ public class MAIN_Run implements Runnable{
 
 		//		negotiator.addDataSaver(sparseSaver);
 		//		negotiator.addDataSaver(denseSaver);
-		negotiator.addDataSaver(TFRecordSaver);
+		negotiator.addDataSaver(dataSaver);
 
 
 		tree.setNegotiator(negotiator);
