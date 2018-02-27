@@ -18,7 +18,7 @@ PARAMETERS & SETTINGS
 ## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "untransform/untransform_output"
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
-tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
+tfrecordPath = '/media/matt/Raid1_pair/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
@@ -184,7 +184,7 @@ random.shuffle(filename_list) # Shuffle so each time we restart, we get differen
 with tf.name_scope("tfrecord_input"):
     filenames = tf.placeholder(tf.string, shape=[None])
     dataset = tf.data.TFRecordDataset(filenames)
-    dataset = dataset.map(_parse_function, num_parallel_calls=16)
+    dataset = dataset.map(_parse_function, num_parallel_calls=40)
     #dataset = dataset.shuffle(buffer_size=5000)
     dataset = dataset.repeat()
     #dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
@@ -197,7 +197,7 @@ with tf.name_scope("tfrecord_input"):
 # LAYERS
 
 eps = 0.001
-is_training = False
+is_training = True
 global_step = tf.Variable(0)
 mean_update_rate = tf.train.exponential_decay(0.2, global_step, 500, 0.7)
 
@@ -231,7 +231,7 @@ with tf.name_scope('transform'):
 # Encode the transformed input.
 with tf.name_scope('encoder'):
     scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='encoder_input')
-    layers = [72,58,48,32,28,18,4]
+    layers = [72,58,48,32,28,18]
     out = sequential_layers(state_batch,layers, 'encode')
     enc_out = tf.identity(out, name='encoder_output') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)

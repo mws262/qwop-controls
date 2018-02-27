@@ -42,7 +42,30 @@ To update the classpath settings for Eclipse:
 					</configuration>
 				</plugin>
 
-
+				<!-- Needed to import the local .jar file for box2d -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>2.5.2</version>
+					<executions>
+						<execution>
+							<id>install-external</id>
+							<phase>clean</phase>
+							<configuration>
+								<file>${project.basedir}/jbox2d.jar</file>
+								<repositoryLayout>default</repositoryLayout>
+								<groupId>org.jbox2d</groupId>
+								<artifactId>jbox2d</artifactId>
+								<version>0.0.1</version>
+								<packaging>jar</packaging>
+								<generatePom>true</generatePom>
+							</configuration>
+							<goals>
+								<goal>install-file</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 
 				<!-- Defines how/what to run when executing code. -->
 				<plugin>
