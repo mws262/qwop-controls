@@ -20,7 +20,7 @@ public abstract class DataSaver_Dense implements IDataSaver {
 	protected ArrayList<State> stateBuffer = new ArrayList<State>();
 
 	/** Number of games in between saves to file. **/
-	protected int saveInterval = 100;
+	protected int saveInterval;
 	
 	/** File save location. **/
 	protected String fileLocation = "./";

@@ -211,6 +211,6 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 		private GameContainer(ArrayList<Action> actions, ArrayList<State> states) {
 			this.actions.addAll(actions);
 			this.states.addAll(states);
-		}	
+		}
 	}
 }

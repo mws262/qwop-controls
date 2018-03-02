@@ -4,15 +4,27 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import data.SaveableDenseData;
-import data.SaveableFileIO;
-import data.SaveableSingleGame;
 import com.beust.jcommander.*;
+
+class Settings {
+	@Parameter
+	List<String> parameters = new ArrayList<>();
+
+	@Parameter(names={"--headless", "-hl"},  description = "Run without graphical interface.")
+	boolean headless = false;
+
+	@Parameter(names={"--sampler", "-sm"},  description = "Pick how new nodes are selected [random, distribution, greedy, UCB].")
+	String sampler = "";
+
+	@Parameter(names={"--saver", "-sv"}, variableArity = true, description = "Pick how data is saved [tfrecord, java_dense, java_sparse, none].")
+	List<String> saver = Arrays.asList("none", "200");
+}
 
 public class MAIN_Run implements Runnable{
 
@@ -28,30 +40,19 @@ public class MAIN_Run implements Runnable{
 
 	private long initTime;
 
-	private String filePrefix = "sample1";
-
-	/***** Command line arguments to parse. *****/
-	@Parameter
-	private List<String> parameters = new ArrayList<>();
-
-	@Parameter(names={"--headless", "-hl"},  description = "Run without graphical interface.")
-	private boolean headless = false;
-
-	@Parameter(names={"--sampler", "-sm"},  description = "Pick how new nodes are selected [random, distribution, greedy, UCB].")
-	private String sampler = "";
-	
-	@Parameter(names={"--saver", "-sv"},  description = "Pick how data is saved [tfrecord, java_dense, java_sparse, none].")
-	private String saver = "";
+	private Settings settings;
 
 
-	public MAIN_Run() {}
+	public MAIN_Run(Settings settings) {
+		this.settings = settings;
+	}
 
 	public static void main(String[] args) {
 
-		MAIN_Run manager = new MAIN_Run();
-
+		Settings settings = new Settings();
+		MAIN_Run manager = new MAIN_Run(settings);
 		JCommander.newBuilder()
-		.addObject(manager)
+		.addObject(settings)
 		.build()
 		.parse(args);
 
@@ -65,7 +66,7 @@ public class MAIN_Run implements Runnable{
 
 			if (negotiator == null) {
 				initTime = System.currentTimeMillis();
-				doGames(filePrefix);
+				doGames();
 			}
 
 			if ((System.currentTimeMillis() - initTime)/1000 >= secondsPerTree) {
@@ -84,7 +85,7 @@ public class MAIN_Run implements Runnable{
 		}
 	}
 
-	public void doGames(String filePrefix) {
+	public void doGames() {
 
 		/********************************************/		
 		/******* Space of allowable actions. ********/
@@ -186,21 +187,26 @@ public class MAIN_Run implements Runnable{
 		/******** Define how nodes are sampled from the above defined actions. *********/
 		// Can be picked with command line argument --sampler or -sm
 		ISampler currentSampler;
-		switch (sampler.toLowerCase()) {
+		switch (settings.sampler.toLowerCase()) {
 		case "random":
 			currentSampler = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
+			System.out.println("SAMPLER: Using random node sampler.");
 			break;
 		case "distribution":
 			currentSampler = new Sampler_Distribution();
+			System.out.println("SAMPLER: Using distribution node sampler.");
 			break;
 		case "greedy":
 			currentSampler = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+			System.out.println("SAMPLER: Using greedy node sampler.");
 			break;
 		case "ucb":
 			currentSampler = new Sampler_UCB(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+			System.out.println("SAMPLER: Using UCB node sampler.");
 			break;
 		default:
 			currentSampler = new Sampler_UCB(currentEvaluator);
+			System.out.println("SAMPLER: Unrecognized argument. Defaulting to UCB.");
 		}
 
 		/************************************************************/		
@@ -209,24 +215,30 @@ public class MAIN_Run implements Runnable{
 
 		// Can be picked with command line argument --sampler or -sm
 		IDataSaver dataSaver;
-		switch (saver.toLowerCase()) {
+		switch (settings.saver.get(0).toLowerCase()) { // Defaults to "" if no saver settings were passed.
 		case "tfrecord":
 			dataSaver = new DataSaver_DenseTFRecord(); // Saves full state/action info, in Tensorflow-compatible TFRecord format.
+			System.out.println("SAVER: Using TFRecord data saver, densely storing state data. Frequency: " + settings.saver.get(1) + " games/save.");
 			break;
 		case "java_sparse":
 			dataSaver = new DataSaver_Sparse(); // Saves just actions needed to recreate runs.
+			System.out.println("SAVER: Using serialized Java class data saver, sparsely storing state data. Frequency: " + settings.saver.get(1) + " games/save.");
 			break;
 		case "java_dense":
 			dataSaver = new DataSaver_DenseJava(); // Saves full state/action info, but in serialized java classes. // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+			System.out.println("SAVER: Using serialized Java class data saver, densely storing state data. Frequency: " + settings.saver.get(1) + " games/save.");
 			break;
 		case "none":
 			dataSaver = new DataSaver_null(); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+			System.out.println("SAVER: Not saving data to file. Frequency: " + settings.saver.get(1) + " games/save.");
 			break;
 		default:
+			System.out.println("SAVER: Unrecognized argument. Defaulting to no saving. Frequency: " + settings.saver.get(1) + " games/save.");
 			dataSaver = new DataSaver_null();
+		
 		}
 
-		dataSaver.setSaveInterval(500);
+		dataSaver.setSaveInterval(Integer.parseInt(settings.saver.get(1))); // set save frequency from parsed args if that argument has been input.
 
 		//ArrayList<SaveableSingleGame> loaded = io_sparse.loadObjectsOrdered("test_2017-10-25_16-25-38.SaveableSingleGame");
 
@@ -238,10 +250,12 @@ public class MAIN_Run implements Runnable{
 		Node treeRoot = new Node(useTreePhysics);
 
 		IUserInterface ui;
-		if (headless) {
+		if (settings.headless) {
 			ui = new UI_Headless();
+			System.out.println("GUI: Running in headless mode.");
 		}else {
 			ui = new UI_Full();
+			System.out.println("GUI: Running in full graphics mode.");
 		}
 
 		FSM_Tree tree = new FSM_Tree(currentSampler);
