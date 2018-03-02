@@ -14,8 +14,6 @@ public class Sampler_Random implements ISampler {
 	private boolean expansionPolicyDone = false;
 	private boolean rolloutPolicyDone = true; // Rollout policy not in use in the random sampler.
 	
-
-	
 	@Override
 	public Node treePolicy(Node startNode) {
 		if (startNode.fullyExplored) throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. Whoever called this is at fault.");
