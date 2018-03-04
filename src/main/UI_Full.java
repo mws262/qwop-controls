@@ -87,7 +87,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserInterface{
 
 	/** Negotiator acts like a listener. **/
-	Negotiator negotiator;
+	INegotiateGame negotiator;
 
 	/** Thread loop running? **/
 	public boolean running = true;
@@ -283,7 +283,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			}
 
 			if (currentStatus != previousStatus) {
-				negotiator.statusChange_UI(currentStatus);
+				//tmp remove negotiator.statusChange_UI(currentStatus);
 			}
 
 			previousStatus = currentStatus;
@@ -320,7 +320,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	@Override
 	public void selectNode(Node selected) {
 		boolean success = false; // We don't allow new node selection while a realtime game is being played. 
-		if (negotiator != null) success = negotiator.uiNodeSelect(selected);
+		if (negotiator != null) //tmp remove success = negotiator.uiNodeSelect(selected);
 		if (success) {
 			if (selectedNode != null) { // Clear things from the old selected node.
 				selectedNode.displayPoint = false;
@@ -354,7 +354,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	 * @see main.IUserInterface#setNegotiator(main.Negotiator)
 	 */
 	@Override
-	public void setNegotiator(Negotiator negotiator) {
+	public void setNegotiator(INegotiateGame negotiator) {
 		this.negotiator = negotiator;
 	}
 
@@ -469,7 +469,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			// Draw games played and games/sec in upper left.
 			textRenderBig.beginRendering(panelWidth, panelHeight);
 			textRenderBig.setColor(0.7f, 0.7f, 0.7f, 1.0f);
-			textRenderBig.draw(negotiator.getGamesPlayed() + " games", 20, panelHeight - 50);
+			//tmp remove textRenderBig.draw(negotiator.getGamesPlayed() + " games", 20, panelHeight - 50);
 
 			if (treePause) {
 				textRenderBig.setColor(0.7f, 0.1f, 0.1f, 1.0f);	
@@ -492,14 +492,14 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			}
 			// Number of imported games
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
-			textRenderSmall.draw(negotiator.getGamesImported() + " Games imported", 20, panelHeight - 70);
+			//tmp remove textRenderSmall.draw(negotiator.getGamesImported() + " Games imported", 20, panelHeight - 70);
 			// Total games played
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
-			textRenderSmall.draw(negotiator.getGamesTotal() + " Total games", 20, panelHeight - 85);
+			//tmp remove textRenderSmall.draw(negotiator.getGamesTotal() + " Total games", 20, panelHeight - 85);
 
 			textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
-			textRenderSmall.draw(Math.round(negotiator.getTimeSimulated()/360)/10f + " hours simulated!", 20, panelHeight - 100);
-			textRenderSmall.draw((int)negotiator.getGamesPerSecond() + " games/s", 20, panelHeight - 115);
+			//tmp remove textRenderSmall.draw(Math.round(negotiator.getTimeSimulated()/360)/10f + " hours simulated!", 20, panelHeight - 100);
+			//tmp remove textRenderSmall.draw((int)negotiator.getGamesPerSecond() + " games/s", 20, panelHeight - 115);
 
 			textRenderSmall.endRendering();
 
@@ -603,16 +603,16 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 					case KeyEvent.VK_P : //Pause everything except for graphics updates
 						treePause = !treePause;
 						if (treePause) {
-							negotiator.pauseTree();
+							//tmp remove 	negotiator.pauseTree();
 						}else{
-							negotiator.unpauseTree();
+							//tmp remove negotiator.unpauseTree();
 						}
 						break;
 					case KeyEvent.VK_C:
-						negotiator.redistributeNodes();
+						//tmp remove negotiator.redistributeNodes();
 						break;
 					case KeyEvent.VK_B:
-						negotiator.toggleSampler();
+						//tmp remove negotiator.toggleSampler();
 						break;
 					case KeyEvent.VK_V:
 						physOn = !physOn;
@@ -838,8 +838,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 				for(int i = 0; i<this.getWidth()/69; i++) {
 					g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 92);
 				}
-				keyDrawer(g, negotiator.Q,negotiator.W,negotiator.O,negotiator.P);
-				drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
+				//tmp remove keyDrawer(g, negotiator.Q, negotiator.W, negotiator.O, negotiator.P);
+				//tmp remove drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
 
 				if (tensorflowAutoencoderDisplay) {
 					for (int i = 0; i < encoders.size(); i++) {
@@ -915,7 +915,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		@Override
 		public void deactivateTab() {
 			active = false;
-			negotiator.killRealtimeRun();
+			//tmp remove negotiator.killRealtimeRun();
 		}
 		public void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
 

@@ -30,11 +30,11 @@ public class Sampler_Random implements ISampler {
 
 			if (notFullyExploredChildren == 0 && currentNode.uncheckedActions.size() == 0) throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully explored before.");
 
-			
-			if (notFullyExploredChildren == 0) {
-				// We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
-				return currentNode;
-			}
+			// 3/3/18 Removed because I'm confused. But will it still work?
+//			if (notFullyExploredChildren == 0) {
+//				// We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
+//				return currentNode;
+//			}
 			
 			if (currentNode.uncheckedActions.size() == 0) { // No unchecked actions means that we pick a random not-fully-explored child.
 				// Pick random not fully explored child. Keep going.
@@ -55,6 +55,7 @@ public class Sampler_Random implements ISampler {
 				int selection = Node.randInt(1, notFullyExploredChildren + currentNode.uncheckedActions.size());
 				// Make a new node or pick a not fully explored child.
 				if (selection > notFullyExploredChildren){
+					if (currentNode.state.failedState) throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
 					return currentNode;
 				}else{
 					int count = 1;

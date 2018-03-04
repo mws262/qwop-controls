@@ -22,62 +22,72 @@ import main.FSM_Game.Status;
  *
  */
 
-public class FSM_Tree_Updated implements Runnable {
+public class TreeWorker implements Runnable {
 
 	public enum Status{
 		IDLE, INITIALIZE, TREE_POLICY_CHOOSING, TREE_POLICY_EXECUTING, EXPANSION_POLICY_CHOOSING, EXPANSION_POLICY_EXECUTING, ROLLOUT_POLICY_CHOOSING,  ROLLOUT_POLICY_EXECUTING, EVALUATE_GAME, EXHAUSTED
 	}
 	
+	/** Is this worker running the FSM repeatedly? **/
+	private boolean workerRunning = true;
+	
+	/** Sets the FSM to stop running the next time it is idle. **/
+	private boolean flagForTermination = false;
+	
+	/** Print debugging info? **/
+	public boolean verbose = false;
+
 	/** The current game instance that this FSM is using. This will frequently change since a new one is created for each run. **/
 	private QWOPGame game;
-	
+
 	/** Collision listener to determine when the game has failed. **/
 	private CollisionListener colListen = new CollisionListener();
-	
-	
+
+
 	/** Strategy for sampling new nodes. **/
 	private ISampler sampler;
 
 	/** Root of tree that this FSM is operating on. **/
 	private Node rootNode;
-	
+
 	/** Node that the game is currently operating at. **/
 	private Node currentGameNode;
-	
+
 	/** Node the game is attempting to run to. **/
 	private Node targetNodeToTest;
-	
+
 	/** Queued commands, IE QWOP key presses **/
 	public ActionQueue actionQueue = new ActionQueue();
-	
+
 	/** Initial runner state. **/
 	private State initState;
-	
+
 	/** Is the game in a currently failed state? **/
 	private boolean failFlag = false;
-	
+
 	/** Current status of this FSM **/
 	private Status currentStatus = Status.IDLE;
-	
+
 	/** Flags for each of the QWOP keys being down **/
 	public boolean Q = false;
 	public boolean W = false;
 	public boolean O = false;
 	public boolean P = false;
-	
+
 	/** Physics engine stepping parameters. **/
 	public final float timestep = 0.04f;
 	private final int iterations = 5;
 	private float stepsSimulated = 0;
-	
+
 	/** Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls. **/
 	public float torsoAngUpper = 1.2f;
 	public float torsoAngLower = -1.2f; // Negative is falling backwards. 0.4 is start angle.
-	
-	
-	public FSM_Tree_Updated(ISampler sampler) {
+
+
+	public TreeWorker(Node rootNode, ISampler sampler) {
 		this.sampler = sampler;
-		
+		this.rootNode = rootNode;
+
 		// Find initial runner state for later use.
 		QWOPGame g = new QWOPGame();
 		g.Setup();
@@ -85,160 +95,169 @@ public class FSM_Tree_Updated implements Runnable {
 		initState.failedState = false;
 	}
 
-
-
-
-
 	/* Finite state machine loop. Runnable. */
 	public void run() {
-		switch(currentStatus) {
-		case IDLE:
-			break;
-		case INITIALIZE:
-			actionQueue.clearAll();
-			newGame(); // Create a new game world.
-			changeStatus(Status.TREE_POLICY_CHOOSING);
-			
-			break;		
-		case TREE_POLICY_CHOOSING: // Picks a target leaf node within the tree to get to.
-			if (isGameFailed()) throw new RuntimeException("Tree policy operates only within an existing tree. We should not find failures in here.");
-			
-			if (sampler.treePolicyGuard(currentGameNode)) { // Sampler tells us when we're done with the tree policy.
-				changeStatus(Status.EXPANSION_POLICY_CHOOSING);
-				sampler.treePolicyActionDone(currentGameNode);
-			}else {
-				targetNodeToTest = sampler.treePolicy(currentGameNode); // This gets us through the existing tree to a place that we plan to add a new node.
-				
-				// Check special cases.
-				if (targetNodeToTest == currentGameNode) { // We must be at the fringe of the tree and we should switch to expansion policy.
-					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
-					sampler.treePolicyActionDone(currentGameNode);
-					
-				}else if (targetNodeToTest.treeDepth <= currentGameNode.treeDepth) {
-					throw new RuntimeException("Picked a node in the tree policy that is further up the tree towards the root than the current node.");
-				}else if (!targetNodeToTest.isOtherNodeAncestor(currentGameNode)) {
-					throw new RuntimeException("Target node in the tree policy should be a descendant of the current node.");
+		while(workerRunning) {
+			switch(currentStatus) {
+			case IDLE:
+				if (flagForTermination) {
+					workerRunning = false;
 				}else {
-					// Otherwise, this is a valid target point. We should add its actions and then execute.
-					actionQueue.addSequence(targetNodeToTest.getSequence());
-					changeStatus(Status.TREE_POLICY_EXECUTING);
+					changeStatus(Status.INITIALIZE);
 				}
-			}
-			
-			break;
-		case TREE_POLICY_EXECUTING:
+				
+				break;
+			case INITIALIZE:
+				actionQueue.clearAll();
+				newGame(); // Create a new game world.
+				currentGameNode = rootNode;
+				changeStatus(Status.TREE_POLICY_CHOOSING);
 
-			executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
-			if (isGameFailed()) throw new RuntimeException("Game encountered a failure while executing the tree policy. The tree policy should be safe, since it's ground that's been covered before.");
-			
-			// When all actions in queue are done, figure out what to do next.
-			if (actionQueue.isEmpty) {
-				currentGameNode = targetNodeToTest;
-				if (currentGameNode.uncheckedActions.size() == 0) { // This case should only happen if another worker just happens to beat it here.
-					System.out.println("Wow! Another worker must have finished this node off before this worker got here. We're going to keep running tree policy down the tree. If there aren't other workers, you should be worried.");
-					changeStatus(Status.TREE_POLICY_CHOOSING);
-				}else {
-					sampler.treePolicyActionDone(currentGameNode);
+				break;		
+			case TREE_POLICY_CHOOSING: // Picks a target leaf node within the tree to get to.
+				if (isGameFailed()) throw new RuntimeException("Tree policy operates only within an existing tree. We should not find failures in here.");
+
+				if (sampler.treePolicyGuard(currentGameNode)) { // Sampler tells us when we're done with the tree policy.
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
-				}
-			}
-			
-			break;
-		case EXPANSION_POLICY_CHOOSING:
-			if (isGameFailed()) throw new RuntimeException("Should not be returning to expansion policy choosing status if the game has failed.");
-			
-			if (sampler.expansionPolicyGuard(currentGameNode)) { // Some samplers keep adding nodes until failure, others add a fewer number and move to rollout before failure.	
-				changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
-				sampler.expansionPolicyActionDone(currentGameNode);
-			}else {
-				targetNodeToTest = sampler.expansionPolicy(currentGameNode);
-				if (currentGameNode.treeDepth + 1 != targetNodeToTest.treeDepth) {
-					throw new RuntimeException("Expansion policy tried to sample a node more than 1 depth below it in the tree. This is bad since tree policy should be used"
-							+ "to traverse the existing tree and expansion policy should only be used for adding new nodes and extending the tree.");
-				}
-				
-				actionQueue.addAction(targetNodeToTest.getAction());
-				changeStatus(Status.EXPANSION_POLICY_EXECUTING);
-			}
-			
-			break;
-		case EXPANSION_POLICY_EXECUTING:
-			 
-			executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
-			
-			// When done, record state and go back to choosing. If failed, the sampler guards will tell us.
-			if (actionQueue.isEmpty || failFlag) {
-				// TODO possibly update the action to what was actually possible until the runner fell. Subtract out the extra timesteps that weren't possible due to failure.
-				currentGameNode = targetNodeToTest;
-				if(currentGameNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
-				currentGameNode.setState(getGameState());
-				sampler.expansionPolicyActionDone(currentGameNode);
-				changeStatus(Status.EXPANSION_POLICY_CHOOSING);
-				
-				try {
-					if (currentGameNode.state.failedState && failFlag){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
-						targetNodeToTest.checkFullyExplored_lite();
+				}else {
+					targetNodeToTest = sampler.treePolicy(currentGameNode); // This gets us through the existing tree to a place that we plan to add a new node.
+
+					// Check special cases.
+					if (targetNodeToTest.treeDepth == 0) { //targetNodeToTest == currentGameNode) { // We must be at the fringe of the tree and we should switch to expansion policy.
+						currentGameNode = targetNodeToTest;
+						changeStatus(Status.EXPANSION_POLICY_CHOOSING);
+						sampler.treePolicyActionDone(currentGameNode);
+
+					}else if (targetNodeToTest.treeDepth <= currentGameNode.treeDepth) {
+						throw new RuntimeException("Picked a node in the tree policy that is further up the tree towards the root than the current node.");
+					}else if (!targetNodeToTest.isOtherNodeAncestor(currentGameNode)) {
+						throw new RuntimeException("Target node in the tree policy should be a descendant of the current node.");
+					}else {
+						// Otherwise, this is a valid target point. We should add its actions and then execute.
+						actionQueue.addSequence(targetNodeToTest.getSequence());
+						changeStatus(Status.TREE_POLICY_EXECUTING);
 					}
-				}catch (NullPointerException e){
-					throw new NullPointerException("Tree was given a game state that did not have a failure status assigned. " + e.getMessage());
 				}
+
+				break;
+			case TREE_POLICY_EXECUTING:
+
+				executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
+				//if (isGameFailed()) throw new RuntimeException("Game encountered a failure while executing the tree policy. The tree policy should be safe, since it's ground that's been covered before.");
+
+				// When all actions in queue are done, figure out what to do next.
+				if (actionQueue.isEmpty) {
+					currentGameNode = targetNodeToTest;
+					if (currentGameNode.uncheckedActions.size() == 0) { // This case should only happen if another worker just happens to beat it here.
+						System.out.println("Wow! Another worker must have finished this node off before this worker got here. We're going to keep running tree policy down the tree. If there aren't other workers, you should be worried.");
+						changeStatus(Status.TREE_POLICY_CHOOSING);
+					}else {
+						sampler.treePolicyActionDone(currentGameNode);
+						changeStatus(Status.EXPANSION_POLICY_CHOOSING);
+					}
+				}
+
+				break;
+			case EXPANSION_POLICY_CHOOSING:
+				if (sampler.expansionPolicyGuard(currentGameNode)) { // Some samplers keep adding nodes until failure, others add a fewer number and move to rollout before failure.	
+					changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
+					sampler.expansionPolicyActionDone(currentGameNode);
+				}else {
+					targetNodeToTest = sampler.expansionPolicy(currentGameNode);
+					if (currentGameNode.treeDepth + 1 != targetNodeToTest.treeDepth) {
+						throw new RuntimeException("Expansion policy tried to sample a node more than 1 depth below it in the tree. This is bad since tree policy should be used"
+								+ "to traverse the existing tree and expansion policy should only be used for adding new nodes and extending the tree.");
+					}
+
+					actionQueue.addAction(targetNodeToTest.getAction());
+					changeStatus(Status.EXPANSION_POLICY_EXECUTING);
+				}
+
+				break;
+			case EXPANSION_POLICY_EXECUTING:
+
+				executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
+
+				// When done, record state and go back to choosing. If failed, the sampler guards will tell us.
+				if (actionQueue.isEmpty || failFlag) {
+					// TODO possibly update the action to what was actually possible until the runner fell. Subtract out the extra timesteps that weren't possible due to failure.
+					currentGameNode = targetNodeToTest;
+					if(currentGameNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
+					currentGameNode.setState(getGameState());
+					sampler.expansionPolicyActionDone(currentGameNode);
+					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
+
+					try {
+						if (currentGameNode.state.failedState && failFlag){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
+							targetNodeToTest.checkFullyExplored_lite();
+						}
+					}catch (NullPointerException e){
+						throw new NullPointerException("Tree was given a game state that did not have a failure status assigned. " + e.getMessage());
+					}
+				}	
+
+				break;		
+			case ROLLOUT_POLICY_CHOOSING:
+				if (sampler.rolloutPolicyGuard(currentGameNode)) {
+					changeStatus(Status.EVALUATE_GAME);
+				}else {
+					targetNodeToTest = sampler.rolloutPolicy(currentGameNode);
+					changeStatus(Status.ROLLOUT_POLICY_EXECUTING);
+				}
+
+				break;
+			case ROLLOUT_POLICY_EXECUTING:
+				executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
+
+				// When done, record state and go back to choosing. If failed, the sampler guards will tell us.
+				if (actionQueue.isEmpty || failFlag) {
+					// TODO possibly update the action to what was actually possible until the runner fell. Subtract out the extra timesteps that weren't possible due to failure.
+					currentGameNode = targetNodeToTest;
+					if(currentGameNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
+					currentGameNode.setState(getGameState());
+					sampler.rolloutPolicyActionDone(currentGameNode);
+					changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
+				}
+
+				break;		
+			case EVALUATE_GAME:
+
+				if (currentGameNode.state.failedState) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
+					currentGameNode.markTerminal();
+				}else {
+					throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
+				}
+				if (rootNode.fullyExplored) {
+					changeStatus(Status.EXHAUSTED);
+				}else {
+					changeStatus(Status.IDLE);
+				}
+
+				break;
+			case EXHAUSTED:
+				System.out.println("Tree is fully explored.");
+				break;		
+			default:
+				break;
 			}
-			
-			
-			
-			break;		
-		case ROLLOUT_POLICY_CHOOSING:
-			if (sampler.rolloutPolicyGuard(currentGameNode)) {
-				changeStatus(Status.EVALUATE_GAME);
-			}else {
-				targetNodeToTest = sampler.rolloutPolicy(currentGameNode);
-				changeStatus(Status.ROLLOUT_POLICY_EXECUTING);
-			}
-			
-			break;
-		case ROLLOUT_POLICY_EXECUTING:
-			 
-			executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
-			
-			// When done, record state and go back to choosing. If failed, the sampler guards will tell us.
-			if (actionQueue.isEmpty || failFlag) {
-				// TODO possibly update the action to what was actually possible until the runner fell. Subtract out the extra timesteps that weren't possible due to failure.
-				currentGameNode = targetNodeToTest;
-				if(currentGameNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
-				currentGameNode.setState(getGameState());
-				sampler.rolloutPolicyActionDone(currentGameNode);
-				changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
-			}
-			
-			break;		
-		case EVALUATE_GAME:
-			
-			if (currentGameNode.state.failedState) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
-				currentGameNode.markTerminal();
-			}else {
-				throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
-			}
-			if (rootNode.fullyExplored) {
-				changeStatus(Status.EXHAUSTED);
-			}else {
-				changeStatus(Status.IDLE);
-			}
-			break;
-		case EXHAUSTED:
-			System.out.println("Tree is fully explored.");
-			break;		
-		default:
-			break;
+//			try {
+//				Thread.sleep(10);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 	}
-	
+
+	/** Do not directly change the game status. Use this. **/
 	private void changeStatus(Status newStatus) {
+		//if (verbose && newStatus != Status.ROLLOUT_POLICY_CHOOSING && newStatus != Status.ROLLOUT_POLICY_EXECUTING) {
+			System.out.println(currentStatus + " --->  " + newStatus);
+		//}
 		currentStatus = newStatus;
 	}
-	
-	
-	
-	
+
+
 	/** Begin a new game. **/
 	private void newGame(){
 		failFlag = false; // Unflag failure.
@@ -247,42 +266,47 @@ public class FSM_Tree_Updated implements Runnable {
 		colListen.resetContacts();
 		game.getWorld().setContactListener(colListen);
 	}
+
 	
 	public void addAction(Action action){
 		actionQueue.addAction(action);
 	}
-	
+
+	/** Pop the next action off the queue and execute one timestep. **/
 	private void executeNextOnQueue() {
 		boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
 		Q = nextCommand[0];
 		W = nextCommand[1]; 
 		O = nextCommand[2];
 		P = nextCommand[3];
-
 		game.everyStep(Q,W,O,P);
 		game.getWorld().step(timestep, iterations);
 		stepsSimulated++;
-		
+
 		// Extra fail conditions besides contacts.
 		float angle = game.TorsoBody.getAngle();
 		if (angle > torsoAngUpper || angle < torsoAngLower) {
+			System.out.println("Angle fail");
 			failGame();
 		}
 	}
-	
+
+	/** Report game failure. Only internally used. **/
 	private void failGame() {
+		System.out.println("Fall reported.");
 		failFlag = true;
 	}
-	
+
+	/** Has the game gotten into a failed state (Either too much torso lean or body parts hitting the ground). **/
 	public boolean isGameFailed() {
 		return failFlag;
 	}
-	
+
 	/** QWOP initial condition. Good way to give the root node a state. **/
 	public  State getInitialState(){
 		return initState;
 	}
-	
+
 	/** Get the state of the runner. **/
 	public State getGameState(){
 		State currentState = new State(game);
@@ -290,6 +314,11 @@ public class FSM_Tree_Updated implements Runnable {
 		return currentState;
 	}
 	
+	/** Terminate this worker after it's done with it's current task. **/
+	public void terminateWorker() {
+		flagForTermination = true;
+	}
+
 	/**
 	 * All things related to queueing actions should happen in here. Actions themselves act like queues,
 	 * so this action queue decides when to switch actions when one is depleted.
@@ -388,24 +417,32 @@ public class FSM_Tree_Updated implements Runnable {
 		public int getCurrentActionIdx(){
 			return actionListFull.size() - actionQueue.size() - 1;
 		}
-	}
-	
-	
+	}	
+
 	/** Listens for collisions involving lower arms and head (implicitly with the ground) **/
 	private class CollisionListener implements ContactListener{
 
 		/** Keep track of whether the right foot is on the ground. **/
 		private boolean rFootDown = false;
-		
+
 		/** Keep track of whether the left foot is on the ground. **/
 		private boolean lFootDown = false;
 
 		public CollisionListener(){}
-		
+
 		@Override
 		public void add(ContactPoint point) {
 			Shape fixtureA = point.shape1;
 			Shape fixtureB = point.shape2;
+			
+//			if (fixtureB.m_body.equals(game.LFootBody) || fixtureA.m_body.equals(game.LFootBody)) {
+//				System.out.println("oh left foot");
+//			}
+//			
+//			if (fixtureB.m_body.equals(game.RFootBody) || fixtureA.m_body.equals(game.RFootBody)) {
+//				System.out.println("oh right foot");
+//			}
+			
 			//Failure when head, arms, or thighs hit the ground.
 			if(fixtureA.m_body.equals(game.HeadBody) ||
 					fixtureB.m_body.equals(game.HeadBody) ||
@@ -413,11 +450,13 @@ public class FSM_Tree_Updated implements Runnable {
 					fixtureB.m_body.equals(game.LLArmBody) ||
 					fixtureA.m_body.equals(game.RLArmBody) ||
 					fixtureB.m_body.equals(game.RLArmBody)) {
+				System.out.println("body fail");
 				failGame();
 			}else if(fixtureA.m_body.equals(game.LThighBody)||
 					fixtureB.m_body.equals(game.LThighBody)||
 					fixtureA.m_body.equals(game.RThighBody)||
 					fixtureB.m_body.equals(game.RThighBody)){
+				System.out.println("body fail");
 				failGame();
 			}else if(fixtureA.m_body.equals(game.RFootBody) || fixtureB.m_body.equals(game.RFootBody)){//Track when each foot hits the ground.
 				rFootDown = true;		
@@ -452,14 +491,14 @@ public class FSM_Tree_Updated implements Runnable {
 		public boolean isLeftFootGrounded(){
 			return lFootDown;
 		}
-		
+
 		/** Reset existing contacts so this collision listener can be reused in new games. **/
 		public void resetContacts() {
 			rFootDown = false;
 			lFootDown = false;
 		}
 	}
-	
+
 }
 
 

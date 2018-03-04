@@ -32,7 +32,7 @@ public class MAIN_Run implements Runnable{
 	private static long tocTime;
 
 	private static final boolean useTreePhysics = false;
-	private static Negotiator negotiator;
+	private static INegotiateGame negotiator;
 
 	private int treesPlayed = 0;
 	private int treesToPlay = 1000;
@@ -70,7 +70,7 @@ public class MAIN_Run implements Runnable{
 			}
 
 			if ((System.currentTimeMillis() - initTime)/1000 >= secondsPerTree) {
-				negotiator.globalDestruction();
+				//negotiator.globalDestruction();
 				Node.maxDepthYet = 0;
 				negotiator = null;
 				treesPlayed++;
@@ -205,7 +205,7 @@ public class MAIN_Run implements Runnable{
 			System.out.println("SAMPLER: Using UCB node sampler.");
 			break;
 		default:
-			currentSampler = new Sampler_UCB(currentEvaluator);
+			currentSampler = new Sampler_Random();
 			System.out.println("SAMPLER: Unrecognized argument. Defaulting to UCB.");
 		}
 
@@ -258,29 +258,28 @@ public class MAIN_Run implements Runnable{
 			System.out.println("GUI: Running in full graphics mode.");
 		}
 
-		FSM_Tree tree = new FSM_Tree(currentSampler);
-		FSM_Game game = new FSM_Game();
-
+		TreeWorker tree = new TreeWorker(treeRoot, currentSampler);
+		tree.verbose = true;
+		List<TreeWorker> workerList = new ArrayList<TreeWorker>();
+		workerList.add(tree);
 		/* Manage the tree, UI, and game. Start some threads. */
-		negotiator = new Negotiator(tree, ui, game);
-
-		//		negotiator.addDataSaver(sparseSaver);
-		//		negotiator.addDataSaver(denseSaver);
-		negotiator.addDataSaver(dataSaver);
+		negotiator = new Negotiator_Updated(workerList, ui);
+		//negotiator.addDataSaver(dataSaver);
 
 
-		tree.setNegotiator(negotiator);
+		//tree.setNegotiator(negotiator);
 		ui.setNegotiator(negotiator);
-		game.setNegotiator(negotiator);
-		negotiator.addTreeRoot(treeRoot);
+		ui.addRootNode(treeRoot);
+		//game.setNegotiator(negotiator);
+		//negotiator.addTreeRoot(treeRoot);
 
 		Thread treeThread = new Thread(tree);
 		Thread uiThread = new Thread(ui);
-		Thread gameThread = new Thread(game); 
+		//Thread gameThread = new Thread(game); 
 		//uiThread.setPriority(Thread.MAX_PRIORITY);
 
 		/* Start processes */
-		gameThread.start();
+		//gameThread.start();
 		uiThread.start();
 		treeThread.start();
 

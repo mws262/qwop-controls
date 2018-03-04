@@ -15,7 +15,7 @@ public interface IUserInterface extends Runnable{
 
 	void stateChanged(ChangeEvent e);
 
-	void setNegotiator(Negotiator negotiator);
+	void setNegotiator(INegotiateGame negotiator);
 	
 	void setLiveGameToView(QWOPGame game);
 	
