@@ -205,7 +205,7 @@ public class MAIN_Run implements Runnable{
 			System.out.println("SAMPLER: Using UCB node sampler.");
 			break;
 		default:
-			currentSampler = new Sampler_UCB(currentEvaluator);
+			currentSampler = new Sampler_Random();
 			System.out.println("SAMPLER: Unrecognized argument. Defaulting to UCB.");
 		}
 

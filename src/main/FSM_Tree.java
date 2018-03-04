@@ -179,6 +179,7 @@ public class FSM_Tree implements Runnable{
 		switch (currentStatus){
 		case TREE_POLICY_WAITING: // Should only ever be going through nodes which have a game state assigned.
 			// Either go forward to the rollout policy or backwards to expansion depending on whether the guard says ready.
+			if (state != null && state.failedState) throw new RuntimeException("Shouldn't be encountering failed states while executing tree policy.");
 			sampler.treePolicyActionDone(currentNode);
 			setStatus(Status.TREE_POLICY);
 			break;
