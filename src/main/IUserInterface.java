@@ -26,5 +26,9 @@ public interface IUserInterface extends Runnable{
 	boolean isSnapshotPaneActive();
 	
 	boolean isRunnerPaneActive();
-
+	
+	public interface TabbedPaneActivator {
+		public void activateTab();
+		public void deactivateTab();
+	}
 }

@@ -182,7 +182,7 @@ public class Node {
 		displayPoint = true;
 
 		// Root node gets the QWOP initial condition.
-		setState(FSM_Game.getInitialState());
+		setState(QWOPGame.getInitialState());
 
 		// Add some child actions to try if an action generator is assigned.
 		autoAddUncheckedActions();
@@ -390,7 +390,7 @@ public class Node {
 	}
 
 	/** Get the sequence of actions up to, and including this node **/
-	public Action[] getSequence(){
+	public synchronized Action[] getSequence(){
 		Action[] sequence = new Action[treeDepth];
 		if (treeDepth == 0) return sequence; // Empty array for root node.
 		Node current = this;

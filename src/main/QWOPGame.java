@@ -1,13 +1,18 @@
 package main;
 
+import java.awt.Graphics;
+
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
 import org.jbox2d.collision.shapes.CircleDef;
 import org.jbox2d.collision.shapes.CircleShape;
+import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonDef;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.collision.shapes.Shape;
+import org.jbox2d.collision.shapes.ShapeType;
 import org.jbox2d.common.Vec2;
+import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.ContactListener;
@@ -19,25 +24,25 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
 
 public class QWOPGame{
-	
+
 	/** Keep track of sim stats since beginning of execution. **/
 	private static long timestepsSimulated = 0;
-	
+
 	/** Physics engine stepping parameters. **/
 	public static final float timestep = 0.04f;
 	private final int iterations = 5;
-	
+
 	/** Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls. **/
 	public static float torsoAngUpper = 1.2f;
 	public static float torsoAngLower = -1.2f; // Negative is falling backwards. 0.4 is start angle.
 
-	
+
 	/** Box2D world to be populated for QWOP. **/
 	public World m_world;
-	
+
 	/** Has this game reached failure conditions? **/
 	private boolean isFailed = false;
-	
+
 	/** Should enclose the entire area we want collision checked. **/
 	private static final AABB worldAABB = new AABB(new Vec2(-100, -30f), new Vec2(5000f,80f));
 
@@ -87,7 +92,7 @@ public class QWOPGame{
 
 	/** Gravity vector. Positive since -y is up. **/
 	private static final Vec2 gravity = new Vec2(0, 10f);
-	
+
 	// Track
 	private static final float trackPosY = 8.90813f;
 	private static final float trackFric = 1f;
@@ -224,8 +229,8 @@ public class QWOPGame{
 	private static final float lLArmFric = 0.2f;
 	private static final float rLArmDensity = 1f;
 	private static final float lLArmDensity = 1f;
-	
-	
+
+
 	// Ankle speeds setpoints:
 	private static final float rAnkleSpeed1 = 2f;
 	private static final float rAnkleSpeed2 = -2f;
@@ -258,7 +263,7 @@ public class QWOPGame{
 	private static final float pRHipLimHi = 1.2f;
 	private static final float pLHipLimLo = -1.5f;
 	private static final float pLHipLimHi = 0.5f;
-	
+
 	//Springs:
 	private static final float neckStiff = 15f;
 	private static final float neckDamp = 5f;
@@ -266,7 +271,7 @@ public class QWOPGame{
 	private static final float lElbowStiff = 1f;
 	private static final float rElbowDamp = 0f;
 	private static final float lElbowDamp = 0f;
-	
+
 	/* Joints Positions*/
 
 	private static final Vec2 rAnklePos = new Vec2(-0.96750f,7.77200f);
@@ -288,10 +293,10 @@ public class QWOPGame{
 
 	/** List of shapes for use by graphics stuff. Making it static -- IE, assuming that in multiple games, the runner doesn't change shape. **/
 	public static Shape[] shapeList = new Shape[13];
-	
+
 	private static final BodyDef trackDef = new BodyDef();
 	private static final PolygonDef trackShape = new PolygonDef();
-	
+
 	private static final BodyDef rFootDef = new BodyDef();
 	private static final BodyDef lFootDef = new BodyDef();
 	private static final PolygonDef rFootShape = new PolygonDef();
@@ -305,39 +310,42 @@ public class QWOPGame{
 	private static final PolygonDef lCalfShape = new PolygonDef();
 	private static final MassData rCalfMassData = new MassData();
 	private static final MassData lCalfMassData = new MassData();
-	
+
 	private static final PolygonDef rThighShape = new PolygonDef();
 	private static final PolygonDef lThighShape = new PolygonDef();
 	private static final BodyDef rThighDef = new BodyDef();
 	private static final BodyDef lThighDef = new BodyDef();
 	private static final MassData rThighMassData = new MassData();
 	private static final MassData lThighMassData = new MassData();
-	
+
 	private static final PolygonDef torsoShape = new PolygonDef();
 	private static final BodyDef torsoDef = new BodyDef();
 	private static final MassData torsoMassData = new MassData();
-	
+
 	private static final CircleDef headShape = new CircleDef();
 	private static final BodyDef headDef = new BodyDef();
 	private static final MassData headMassData = new MassData();
-	
+
 	private static final PolygonDef rUArmShape = new PolygonDef();
 	private static final PolygonDef lUArmShape = new PolygonDef();
 	private static final BodyDef rUArmDef = new BodyDef();
 	private static final BodyDef lUArmDef = new BodyDef();
 	private static final MassData rUArmMassData = new MassData();
 	private static final MassData lUArmMassData = new MassData();
-	
+
 	private static final PolygonDef rLArmShape = new PolygonDef();
 	private static final PolygonDef lLArmShape = new PolygonDef();
 	private static final BodyDef rLArmDef = new BodyDef();
 	private static final BodyDef lLArmDef = new BodyDef();
 	private static final MassData rLArmMassData = new MassData();
 	private static final MassData lLArmMassData = new MassData();
-	
+
 	private static boolean hasOneTimeInitializationHappened = false;
-	
-	
+
+
+	/** Initial runner state. **/
+	private static final State initState = new QWOPGame().getCurrentGameState(); // Make sure this stays below all the other static assignments to avoid null pointers.
+
 	public QWOPGame(){
 		if (!hasOneTimeInitializationHappened) {
 			oneTimeSetup();
@@ -352,14 +360,14 @@ public class QWOPGame{
 		/* 
 		 * Make the bodies and collision shapes
 		 */
-		
+
 		/* TRACK */
 		trackDef.position = new Vec2(-30,trackPosY + 20);
 		trackShape.setAsBox(1000, 20);
 		trackShape.restitution = trackRest;
 		trackShape.friction = trackFric;
 		trackShape.filter.groupIndex = 1;
-		
+
 		/* FEET */
 		//Create the fixture shapes, IE collision shapes.
 		rFootShape.setAsBox(rFootL/2f, rFootH/2f);
@@ -376,14 +384,14 @@ public class QWOPGame{
 		rFootDef.angle = rFootAng;
 		lFootDef.position.set(lFootPos);
 		lFootDef.angle = lFootAng;	
-		
+
 		rFootMassData.mass = rFootMass;
 		rFootMassData.I = rFootInertia;
 		rFootDef.massData = rFootMassData;
 		lFootMassData.mass = lFootMass;
 		lFootMassData.I = lFootInertia;
 		lFootDef.massData = lFootMassData;
-		
+
 		/* CALVES */
 		rCalfShape.setAsBox(rCalfW/2f, rCalfL/2f);
 		lCalfShape.setAsBox(lCalfW/2f, lCalfL/2f);
@@ -399,14 +407,14 @@ public class QWOPGame{
 		rCalfDef.angle = rCalfAng + rCalfAngAdj;
 		lCalfDef.position = (lCalfPos);
 		lCalfDef.angle = lCalfAng + lCalfAngAdj;
-		
+
 		rCalfMassData.I = rCalfInertia;
 		rCalfMassData.mass = rCalfMass;
 		lCalfMassData.I = lCalfInertia;
 		lCalfMassData.mass = lCalfMass;
 		rCalfDef.massData = rCalfMassData;
 		lCalfDef.massData = lCalfMassData;
-		
+
 		/* THIGHS */
 		rThighShape.setAsBox(rThighW/2f, rThighL/2f);
 		lThighShape.setAsBox(lThighW/2f, lThighL/2f);
@@ -417,7 +425,7 @@ public class QWOPGame{
 		lThighShape.density = lThighDensity;
 		rThighShape.filter.groupIndex = BODY_GROUP;
 		lThighShape.filter.groupIndex = BODY_GROUP;
-		
+
 		rThighDef.position.set(rThighPos);
 		lThighDef.position.set(lThighPos);
 		rThighDef.angle = rThighAng + rThighAngAdj;
@@ -429,34 +437,34 @@ public class QWOPGame{
 		lThighMassData.mass = lThighMass;
 		rThighDef.massData = rThighMassData;
 		lThighDef.massData = lThighMassData;
-		
+
 		/* TORSO */
 		torsoShape.setAsBox(torsoW/2f, torsoL/2f);
 		torsoShape.friction = torsoFric;
 		torsoShape.density = torsoDensity;
 		torsoShape.filter.groupIndex = BODY_GROUP;
-		
+
 		torsoDef.position.set(torsoPos);
 		torsoDef.angle = torsoAng + torsoAngAdj;
-		
+
 		torsoMassData.I = torsoInertia;
 		torsoMassData.mass = torsoMass;
 		torsoDef.massData = torsoMassData;
-		
+
 		/* HEAD */      
 		headShape.radius = (headR);
 		headShape.friction = headFric;
 		headShape.density = headDensity;
 		headShape.restitution = 0f;
 		headShape.filter.groupIndex = BODY_GROUP;
-		
+
 		headDef.position.set(headPos);
 		headDef.angle = headAng + headAngAdj;
 
 		headMassData.I = headInertia;
 		headMassData.mass = headMass;
 		headDef.massData = headMassData;
-		
+
 		/* UPPER ARMS */	
 		rUArmShape.setAsBox(rUArmW/2f,rUArmL/2f);
 		lUArmShape.setAsBox(lUArmW/2f,lUArmL/2f);
@@ -478,7 +486,7 @@ public class QWOPGame{
 		lUArmMassData.mass = lUArmMass;
 		rUArmDef.massData = rUArmMassData;
 		lUArmDef.massData = lUArmMassData;
-		
+
 		/* LOWER ARMS */  
 		rLArmShape.setAsBox(rLArmW/2f, rLArmL/2f);
 		lLArmShape.setAsBox(lLArmW/2f, lLArmL/2f);
@@ -501,11 +509,11 @@ public class QWOPGame{
 		rLArmDef.massData = rLArmMassData;
 		lLArmDef.massData = lLArmMassData;
 	}
-	
+
 	private void setup() {
-		
+
 		isFailed = false;
-		
+
 		/* World Settings */
 		m_world = new World(worldAABB, gravity, true);
 		m_world.setWarmStarting(true);
@@ -718,7 +726,7 @@ public class QWOPGame{
 			shapeList[12] = (PolygonShape)trackBody.getShapeList();
 		}
 	} 
-	
+
 	/** Step the game forward 1 timestep with the specified keys pressed. **/
 	public void stepGame(boolean q, boolean w, boolean o, boolean p){
 		/* Involuntary Couplings (no QWOP presses) */
@@ -834,42 +842,109 @@ public class QWOPGame{
 			rKneeJ.m_motorSpeed = (0f);
 			lKneeJ.m_motorSpeed = (0f);  
 		}
-		
-		
+
+
 		getWorld().step(timestep, iterations);
-		
+
 
 		// Extra fail conditions besides contacts. 
 		float angle = torsoBody.getAngle();
 		if (angle > torsoAngUpper || angle < torsoAngLower) { // Fail if torso angles get too far out of whack.
 			isFailed = true;
 		}
-		
+
 		timestepsSimulated++;
 	}
-	
+
 	/** Get the actual Box2D world. **/
 	public World getWorld() {
 		return m_world;
 	}
-	
+
+	/** QWOP initial condition. Good way to give the root node a state. **/
+	public static State getInitialState(){
+		return initState;
+	}
+
 	/** Get the runner's current state. **/
 	public State getCurrentGameState() {
 		return new State(this);
 	}
-	
+
 	/** Is this state in failure? **/
 	public boolean getFailureStatus() {
 		return isFailed;
 	}
-	
-	
-	
+
 	/** Get the number of timesteps simulated since the beginning of execution. **/
 	public long getTimestepsSimulated() {
 		return timestepsSimulated;
 	}
-	
+
+	/** Draw this game's runner. Must provide scaling from game units to pixels, as well as pixel offsets in x and y. **/
+	public void draw(Graphics g, float scaling, int xOffset, int yOffset) {
+		Body newBody = getWorld().getBodyList();
+		while (newBody != null) {
+			int xOffsetPixels = -(int)(scaling*torsoBody.getPosition().x) + xOffset; // Basic offset, plus centering x on torso.
+			Shape newfixture = newBody.getShapeList();
+
+			while(newfixture != null) {
+
+				// Most links are polygon shapes
+				if(newfixture.getType() == ShapeType.POLYGON_SHAPE) {
+
+					PolygonShape newShape = (PolygonShape)newfixture;
+					Vec2[] shapeVerts = newShape.m_vertices;
+					for (int k = 0; k<newShape.m_vertexCount; k++) {
+
+						XForm xf = newBody.getXForm();
+						Vec2 ptA = XForm.mul(xf,shapeVerts[k]);
+						Vec2 ptB = XForm.mul(xf, shapeVerts[(k+1) % (newShape.m_vertexCount)]);
+						g.drawLine((int)(scaling * ptA.x) + xOffsetPixels,
+								(int)(scaling * ptA.y) + yOffset,
+								(int)(scaling * ptB.x) + xOffsetPixels,
+								(int)(scaling * ptB.y) + yOffset);			    		
+					}
+				}else if (newfixture.getType() == ShapeType.CIRCLE_SHAPE) { // Basically just head
+					CircleShape newShape = (CircleShape)newfixture;
+					float radius = newShape.m_radius;
+					g.drawOval((int)(scaling * (newBody.getPosition().x - radius) + xOffsetPixels),
+							(int)(scaling * (newBody.getPosition().y - radius) + yOffset),
+							(int)(scaling * radius * 2),
+							(int)(scaling * radius * 2));		
+
+				}else if(newfixture.getType() == ShapeType.EDGE_SHAPE) { // The track.
+
+					EdgeShape newShape = (EdgeShape)newfixture;
+					XForm trans = newBody.getXForm();
+
+					Vec2 ptA = XForm.mul(trans, newShape.getVertex1());
+					Vec2 ptB = XForm.mul(trans, newShape.getVertex2());
+					Vec2 ptC = XForm.mul(trans, newShape.getVertex2());
+
+					g.drawLine((int)(scaling * ptA.x) + xOffsetPixels,
+							(int)(scaling * ptA.y) + yOffset,
+							(int)(scaling * ptB.x) + xOffsetPixels,
+							(int)(scaling * ptB.y) + yOffset);			    		
+					g.drawLine((int)(scaling * ptA.x) + xOffsetPixels,
+							(int)(scaling * ptA.y) + yOffset,
+							(int)(scaling * ptC.x) + xOffsetPixels,
+							(int)(scaling * ptC.y) + yOffset);			    		
+
+				}else{
+					System.out.println("Not found: " + newfixture.m_type.name());
+				}
+				newfixture = newfixture.getNext();
+			}
+			newBody = newBody.getNext();
+		}
+		//			//This draws the "road" markings to show that the ground is moving relative to the dude.
+		//			for(int i = 0; i<this.getWidth()/69; i++) {
+		//				g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 92);
+		//			}
+	}
+
+
 	/** Listens for collisions involving lower arms and head (implicitly with the ground) **/
 	private class CollisionListener implements ContactListener{
 

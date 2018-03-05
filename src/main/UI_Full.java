@@ -103,7 +103,9 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	/** Pane for the runner. **/
 	RunnerPane runnerPane;
-
+	Panel_Runner runnerPanel = new Panel_Runner();
+	
+	
 	/** Pane for the snapshots of the runner. **/
 	SnapshotPane snapshotPane;
 
@@ -198,7 +200,9 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 		/* Runner pane */   
 		runnerPane = new RunnerPane();
-		tabPane.addTab("Run Animation", runnerPane);
+		Thread runnerPanelThread = new Thread(runnerPanel);
+		runnerPanelThread.start();
+		tabPane.addTab("Run Animation", runnerPanel);
 
 		/* Snapshot pane */
 		snapshotPane = new SnapshotPane();
@@ -315,7 +319,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	public void selectNode(Node selected) {
 		boolean success = false; // We don't allow new node selection while a realtime game is being played. 
 		if (negotiator != null) //tmp remove success = negotiator.uiNodeSelect(selected);
-		if (success) {
+		//if (success) {
 			if (selectedNode != null) { // Clear things from the old selected node.
 				selectedNode.displayPoint = false;
 				selectedNode.clearBranchColor();
@@ -325,12 +329,13 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			selectedNode.displayPoint = true;
 			selectedNode.nodeColor = Color.RED;
 			selectedNode.setBranchZOffset(0.4f);
+			if (runnerPanel.isActive()) runnerPanel.simRunToNode(selectedNode);
 
 			if (snapshotPane.active) snapshotPane.giveSelectedNode(selectedNode);
 			if (comparisonPane.active) comparisonPane.giveSelectedNode(selectedNode);
 			if (dataPane_state.active) dataPane_state.update(); // Updates data being put on plots
 			if (dataPane_pca.active) dataPane_pca.update(); // Updates data being put on plots
-		}
+		//}
 	}
 
 	/* (non-Javadoc)
@@ -533,7 +538,9 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
+
 			if (e.isMetaDown()) {
+				System.out.println("Here we be");
 				selectNode(cam.nodeFromClick(e.getX(), e.getY(), rootNodes));
 			}
 		}
@@ -2282,12 +2289,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 				}
 			}
 		}
-	}
-
-	/** All panes should implement this so we can switch which is active at any given moment. **/
-	private interface TabbedPaneActivator {
-		public void activateTab();
-		public void deactivateTab();
 	}
 
 	@Override
