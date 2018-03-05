@@ -2,21 +2,15 @@ package main;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Stroke;
 
-import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonShape;
@@ -33,10 +27,6 @@ public class MAIN_Controlled extends JFrame{
 	public QWOPGame game;
 	private Tensorflow_Predictor pred = new Tensorflow_Predictor();
 	private RunnerPane runnerPane;
-	
-	/** Physics engine stepping parameters. **/
-	public final float timestep = 0.04f;
-	private final int iterations = 5;
 	
 	/** Window width **/
 	public static int windowWidth = 1920;
@@ -81,34 +71,28 @@ public class MAIN_Controlled extends JFrame{
 	int toSwitchCount = Integer.MAX_VALUE;
 	public void run() {
 		game = new QWOPGame();
-		
-		game.Setup();
-		runnerPane.setWorldToView(game.getWorld());
-		
+
+		runnerPane.setWorldToView(game.getWorld());		
 		
 		while (true) {
 			
 			switch(phase) {
 			case 0:
-				game.everyStep(false,false,false,false);
+				game.stepGame(false,false,false,false);
 				break;
 			case 1:
-				game.everyStep(false,true,true,false);
+				game.stepGame(false,true,true,false);
 				break;
 			case 2:
-				game.everyStep(false,false,false,false);
+				game.stepGame(false,false,false,false);
 				break;
 			case 3:
-				game.everyStep(true,false,false,true);
+				game.stepGame(true,false,false,true);
 				break;
 			default: 
 				throw new RuntimeException("Sequence phase is busted: " + phase);
 			}
-			
-			game.getWorld().step(timestep, iterations);
-			
-			State st = new State(game);
-			float prediction = pred.getPrediction(st);
+			float prediction = pred.getPrediction(game.getCurrentGameState());
 			// System.out.println(prediction);
 			
 			if (toSwitchCount > 10 && prediction <1.8f) {
@@ -142,9 +126,6 @@ public class MAIN_Controlled extends JFrame{
 
 		/** Highlight stroke for line drawing. **/
 		private final Stroke normalStroke = new BasicStroke(0.5f);
-
-		/** Highlight stroke for line drawing. **/
-		private final Stroke boldStroke = new BasicStroke(2);
 		
 		boolean active = true;
 

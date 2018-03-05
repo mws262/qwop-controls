@@ -19,9 +19,6 @@ public class UI_Headless implements IUserInterface {
 	public void stateChanged(ChangeEvent e) {}
 
 	@Override
-	public void setNegotiator(Negotiator negotiator) {}
-
-	@Override
 	public void setLiveGameToView(QWOPGame game) {}
 
 	@Override
@@ -39,5 +36,8 @@ public class UI_Headless implements IUserInterface {
 	public boolean isRunnerPaneActive() {
 		return false;
 	}
+
+	@Override
+	public void setNegotiator(INegotiateGame negotiator) {}
 
 }

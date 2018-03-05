@@ -43,9 +43,6 @@ public class Sampler_Greedy implements ISampler {
 
 	/** Number of samples done so far at this node and depth. **/
 	private int samplesSoFarAtThisNode;
-
-	/** Some random sampling features used. **/
-	private Sampler_Random randomSampler = new Sampler_Random();
 	
 	/** Some random sampling features used. **/
 	private Sampler_Distribution distributionSampler = new Sampler_Distribution();
@@ -130,7 +127,7 @@ public class Sampler_Greedy implements ISampler {
 	public Node expansionPolicy(Node startNode) {
 		if (startNode.uncheckedActions.size() == 0) throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
-		Action childAction = startNode.uncheckedActions.get(Node.randInt(0,startNode.uncheckedActions.size() - 1));
+		Action childAction = startNode.uncheckedActions.get(Utility.randInt(0,startNode.uncheckedActions.size() - 1));
 
 		return startNode.addChild(childAction);
 	}

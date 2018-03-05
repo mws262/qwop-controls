@@ -1,11 +1,6 @@
 package main;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +23,6 @@ class Settings {
 
 public class MAIN_Run implements Runnable{
 
-	private static long ticTime;
-	private static long tocTime;
-
-	private static final boolean useTreePhysics = false;
 	private static INegotiateGame negotiator;
 
 	private int treesPlayed = 0;
@@ -242,12 +233,7 @@ public class MAIN_Run implements Runnable{
 
 		//ArrayList<SaveableSingleGame> loaded = io_sparse.loadObjectsOrdered("test_2017-10-25_16-25-38.SaveableSingleGame");
 
-		//Node treeRoot = Node.makeNodesFromRunInfo(loaded, false);
-		// If we don't want to append to an existing file, we should clear out anything existing with this name.
-		//		clearExistingFile(sparseFileName);
-		//		clearExistingFile(denseFileName);
-
-		Node treeRoot = new Node(useTreePhysics);
+		Node treeRoot = new Node();
 
 		IUserInterface ui;
 		if (settings.headless) {
@@ -258,10 +244,11 @@ public class MAIN_Run implements Runnable{
 			System.out.println("GUI: Running in full graphics mode.");
 		}
 
-		TreeWorker tree = new TreeWorker(treeRoot, currentSampler);
-		tree.verbose = true;
+		TreeWorker worker1 = new TreeWorker(treeRoot, currentSampler);
+		
+		worker1.verbose = true;
 		List<TreeWorker> workerList = new ArrayList<TreeWorker>();
-		workerList.add(tree);
+		workerList.add(worker1);
 		/* Manage the tree, UI, and game. Start some threads. */
 		negotiator = new Negotiator_Updated(workerList, ui);
 		//negotiator.addDataSaver(dataSaver);
@@ -273,52 +260,23 @@ public class MAIN_Run implements Runnable{
 		//game.setNegotiator(negotiator);
 		//negotiator.addTreeRoot(treeRoot);
 
-		Thread treeThread = new Thread(tree);
+		
+		List<Thread> workerThreads = new ArrayList<Thread>();
+		for (TreeWorker w : workerList) {
+			workerThreads.add(new Thread(w));	
+		}
+		
 		Thread uiThread = new Thread(ui);
 		//Thread gameThread = new Thread(game); 
 		//uiThread.setPriority(Thread.MAX_PRIORITY);
 
 		/* Start processes */
-		//gameThread.start();
 		uiThread.start();
-		treeThread.start();
+		for (Thread wthread : workerThreads) {
+			wthread.start();
+		}
+
 
 		System.out.println("All initialized.");
-	}
-
-	/** Matlab tic and toc functionality. **/
-	public static void tic(){
-		ticTime = System.nanoTime();
-	}
-	public static long toc(){
-		tocTime = System.nanoTime();
-		long difference = tocTime - ticTime;
-		if (difference < 1000000000){
-			System.out.println(Math.floor(difference/10000)/100 + " ms elapsed.");
-		}else{
-			System.out.println(Math.floor(difference/100000000.)/10. + " s elapsed.");
-		}
-		return difference;
-	}
-
-	/** Clear out an existing file. **/
-	public static void clearExistingFile(String fileName) {
-		File file = new File(fileName);
-		try {
-			boolean result = Files.deleteIfExists(file.toPath());
-			if (result) System.out.println("Cleared file: " + file.getName());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/** Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]**/
-	public static String generateFileName(String prefix, String className) {
-		Date date = new Date() ;
-		SimpleDateFormat dateFormat = new SimpleDateFormat("'" + prefix + "_'" + "yyyy-MM-dd_HH-mm-ss" + "'." +  className + "'") ;
-		String name = dateFormat.format(date);
-		System.out.println("Generated file: " + name);
-
-		return name;
 	}
 }

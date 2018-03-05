@@ -2,18 +2,7 @@ package main;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.jbox2d.collision.AABB;
-import org.jbox2d.collision.MassData;
-import org.jbox2d.collision.shapes.PolygonDef;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.World;
-import org.jbox2d.dynamics.joints.RevoluteJoint;
-import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
 import com.jogamp.opengl.GL2;
 
@@ -98,64 +87,11 @@ public class Node {
 	/** If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z offset. **/
 	private float zOffset = 0.f; 
 
-	/********* TREE PHYSICS ************/
-
-	/** Are the Box2D physics FOR THE TREE branches enabled? **/
-	public static boolean useTreePhysics;
-
-	/** Are the physics things fully initialized for this node. Prevents null pointers. **/
-	private boolean arePhysicsInitialized = false;
-
-	/** Are we in the middle of a physics step? **/
-	public static volatile boolean stepping = false;
-
-	/** Node mass and inertia for tree physics. **/
-	float physMass = 5f;
-	static final float physInertia = 1f;
-
-	/** Tree physics timestep. **/
-	static float physDt = 0.04f;
-	static final int physIterations = 15;
-
-	/** Physics world for the TREE not for the runner. **/
-	static World treePhysWorld;
-
-	/** Shape and body definition for the tree node physics. **/
-	public PolygonDef physShape;
-	public Body physBody;
-
-	/** Each node is jointed to its parent. **/
-	public RevoluteJoint jointToParent;
-
-	/** Length and width of the node boxes in the physics (half-extent). **/
-	static final float physSize = 0.1f/2f;
-	private final static int TREE_GROUP = -1; // No collisions between branches.
-
-	/** Motor at every joint tries to bring the branches together **/
-	static final float anglePGain = 0.02f;
-	static final float angleDGain = 0.8f;
-	static final float angleSpeedCap = 1f;
-	static final float maxTorque = 1000f;
-
-	/** Damping general motion **/
-	static final float linearDamping = 10f;
-	static final float angularDamping = 10f;
-
-	/** Repulser force gains **/
-	static final float centralRepelGain = 50f;
-	static final float nodeRepelGain = 10f;
-
-	static Vec2 repulserPoint = new Vec2(0f,0f); // Point everything is pushed from.
-
-	Vec2 localForce = new Vec2(0f,0f); // Latest force applied to this node.
 
 	/*********** UTILITY **************/
 
 	/** Are we bulk adding saved nodes? If so, some construction things are deferred. **/
 	private static boolean currentlyAddingSavedNodes = false;
-
-	/** Random number generator for new node selection **/
-	private final static Random rand = new Random();
 
 	/**********************************/
 	/********** CONSTRUCTORS **********/
@@ -191,9 +127,6 @@ public class Node {
 
 		if (!currentlyAddingSavedNodes){
 			calcNodePos();
-			if (useTreePhysics){
-				initTreePhys_single();
-			}
 		}
 	}
 
@@ -231,16 +164,13 @@ public class Node {
 
 		if (connectNodeToTree && !currentlyAddingSavedNodes){
 			calcNodePos();
-			if (useTreePhysics){
-				initTreePhys_single();
-			}
 		}
 	}
 
 	/**
 	 * Make the root of a new tree.
 	 **/
-	public Node(boolean treePhysOn) {
+	public Node() {
 		parent = null;
 		action = null;
 		treeDepth = 0; 
@@ -251,18 +181,11 @@ public class Node {
 		nodeColor = Color.BLUE;
 		displayPoint = true;
 
-		// Initialize the tree physics world if this is enabled.
-		useTreePhysics = treePhysOn;
-
-		// Root node gets the QWOP initial condition. Yay!
+		// Root node gets the QWOP initial condition.
 		setState(FSM_Game.getInitialState());
 
 		// Add some child actions to try if an action generator is assigned.
 		autoAddUncheckedActions();
-
-		if (useTreePhysics){
-			initTreePhys_single();
-		}
 	}
 
 	/************************************/
@@ -296,56 +219,13 @@ public class Node {
 		}
 	}
 
-
-	/** Sample random node. Either create or return an existing not fully explored child. **/
-	public Node sampleNode(){
-
-		Node sample;
-		ArrayList<Node> unexploredChildren = new ArrayList<Node>();
-
-		Iterator<Node> iter = children.iterator();
-		while(iter.hasNext()){ // Check how many children are still valid choices to expand.
-			Node child = iter.next();
-			if (!child.fullyExplored) unexploredChildren.add(child);
-		}
-
-		if (fullyExplored) {
-			nodeColor = Color.RED;
-			throw new RuntimeException("Tried to sample from a node which thinks it's fully explored at depth " + treeDepth + ". It has " + unexploredChildren 
-					+ " children it thinks are not fully explored and " 
-					+ uncheckedActions.size() + " unchecked potential actions. Total children: " + children.size());
-		}
-
-		int selection = 0;
-		try{
-			selection = randInt(1,unexploredChildren.size() + uncheckedActions.size());
-		}catch(IllegalArgumentException e){
-			throw new RuntimeException("Invalid range when using RNG to sample a new node from this one at depth "
-					+ treeDepth + ". Unexplored children: " + unexploredChildren + ", Unchecked potential actions: "
-					+ uncheckedActions + " , Descendant count: " + countDescendants(),e); 
-		}
-
-		// Make a new node or pick a not fully explored child.
-		if (selection > unexploredChildren.size()){
-			sample = new Node(this,uncheckedActions.get(selection - unexploredChildren.size() - 1));
-			nodesCreated++;
-			uncheckedActions.remove(selection - unexploredChildren.size() - 1); // Don't allow this one to be picked again.
-		}else{
-			sample = unexploredChildren.get(selection - 1).sampleNode(); // Pick child and recurse this method.
-		}
-
-		//sample.fullyExplored = true;
-		//sample.checkFullyExplored_lite();
-		return sample;
-	}
-
 	/***********************************************/
 	/******* GETTING CERTAIN SETS OF NODES *********/
 	/***********************************************/
 
 	/** Get a random child **/
 	public Node getRandomChild(){
-		return children.get(randInt(0,children.size()-1));
+		return children.get(Utility.randInt(0,children.size()-1));
 	}
 
 	/** Add all the nodes below and including this one to a list. Does not include nodes whose state have not yet been assigned. **/
@@ -528,7 +408,7 @@ public class Node {
 
 	/* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Returns the ROOT of a tree. */
 	public static Node makeNodesFromRunInfo(ArrayList<SaveableSingleGame> runs, boolean initializeTreePhysics){
-		Node rootNode = new Node(initializeTreePhysics);
+		Node rootNode = new Node();
 		return makeNodesFromRunInfo(runs, rootNode);
 	}
 
@@ -563,19 +443,11 @@ public class Node {
 		rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
 		currentlyAddingSavedNodes = false;
 		rootNode.calcNodePos_below();
-		if (Node.useTreePhysics) rootNode.initTreePhys_below();
 		return rootNode;
 	}
 
-	/** Generate a random integer between two values, inclusive. **/
-	public static int randInt(int min, int max) {
-		if (min > max) throw new IllegalArgumentException("Random int sampler should be given a minimum value which is less than or equal to the given max value.");
-		int randomNum = rand.nextInt((max - min) + 1) + min;
-		return randomNum;
-	}
-
 	/************************************************/
-	/******* NODE POSITIONING INCL PHYSICS **********/
+	/*******         NODE POSITIONING      **********/
 	/************************************************/
 
 	/** Vanilla node positioning from all previous versions.
@@ -585,16 +457,7 @@ public class Node {
 	 **/
 	public void calcNodePos(float[] nodeLocationsToAssign){
 		//Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will span the required sweep.
-		if(treeDepth == 0){ //If this is the root node, we shouldn't change stuff yet.
-			//			if (children.size() > 1) { //Catch the div by 0
-			//				
-			//				int division = children.size() + uncheckedActions.size(); // Split into this many chunks.
-			//				System.out.println("WHa");
-			//				nodeAngle = -sweepAngle/2.f + (float)(parent.children.indexOf(this)) * sweepAngle/(float)(children.size() - 1 + uncheckedActions.size());
-			//			}else{
-			//				nodeAngle = (float)Math.PI/2f;
-			//			}
-		}else{
+		if(treeDepth >= 0){
 			if (parent.children.size() + ((parent.uncheckedActions == null) ? 0 :parent.uncheckedActions.size()) > 1){ //Catch the div by 0
 				int division = parent.children.size() + parent.uncheckedActions.size(); // Split into this many chunks.
 				int childNo = parent.children.indexOf(this);
@@ -629,181 +492,6 @@ public class Node {
 		for (Node current : children){
 			current.calcNodePos();	
 			current.calcNodePos_below(); // Recurse down through the tree.
-		}
-	}
-
-	/** Initialize all the physics stuff for this node. **/
-	public void initTreePhys_single(){
-		if (treeDepth == 0){ // Root creates the WORLD.
-			treePhysWorld = new World(new AABB(new Vec2(-10, -10f), new Vec2(10f,10f)), new Vec2(0f, 0f), true);
-
-			treePhysWorld.setWarmStarting(true);
-			treePhysWorld.setPositionCorrection(true);
-			treePhysWorld.setContinuousPhysics(true);
-		}
-
-		physShape = new PolygonDef();
-		physShape.setAsBox(physSize, physSize); // Shape is just a small square centered at the node. No need to do rectangles.
-		physShape.filter.groupIndex = TREE_GROUP; // Filter out all collisions.
-		BodyDef physBodyDef = new BodyDef();
-
-		// Add at existing node positions. 
-		physBodyDef.position = new Vec2(nodeLocation[0],nodeLocation[1]);
-		physBodyDef.angle = nodeAngle;
-
-		if (treeDepth > 0){ // Setting the mass/inertia of root to zero makes it fixed.
-			MassData physMassData = new MassData();
-			physMassData.mass = physMass;
-			physMassData.I = physInertia;
-			physBodyDef.massData = physMassData;
-		}
-		physBody = null;
-		while (physBody == null){ // World locks while stepping. "m_lock" isn't visible outside the package, so this is the hack.
-			physBody = treePhysWorld.createBody(physBodyDef);
-		}
-		physBody.setLinearDamping(linearDamping);
-		physBody.setAngularDamping(angularDamping);
-		physBody.createShape(physShape);
-
-		if (treeDepth > 0){
-			RevoluteJointDef physJDef = new RevoluteJointDef(); 
-			physJDef.initialize(physBody,parent.physBody, new Vec2(parent.nodeLocation[0],parent.nodeLocation[1])); //Body1, body2, anchor in world coords
-			physJDef.enableLimit = false;
-			physJDef.upperAngle = 0.5f;
-			physJDef.lowerAngle = -0.5f;
-			physJDef.collideConnected = false;
-			physJDef.enableMotor = true;
-			physJDef.maxMotorTorque = maxTorque;
-			physJDef.motorSpeed = 0;
-
-			jointToParent = (RevoluteJoint)treePhysWorld.createJoint(physJDef);
-		}
-		arePhysicsInitialized = true;
-	}
-
-	/** Initialize the tree physics below the called node. Useful when importing lots or doing in batches. **/
-	public void initTreePhys_below(){
-		for (Node child : children){
-			child.initTreePhys_single();
-			child.initTreePhys_below();
-		}
-	}
-
-	/** Advance the tree physics, and update node positions. **/
-	public void stepTreePhys(int timesteps){
-		stepping = true;
-		if (treeDepth != 0) throw new RuntimeException("Tree physics updates are only supported from root for now.");
-		if (!useTreePhysics){
-			stepping = false;
-			return;
-		}
-		ArrayList<Node> nodeList = new ArrayList<Node>();
-		getNodes_below(nodeList);
-
-		for (int i = 0; i < timesteps; i++){
-			// Calculate added forces before stepping the world.
-			applyForce(nodeList);
-			treePhysWorld.step(physDt, physIterations);
-			updatePositionFromPhys();
-		}
-		stepping = false;
-	}
-
-	/** Apply all my made up forces to the nodes. **/
-	public void applyForce(ArrayList<Node> nodeList){
-		if (arePhysicsInitialized){
-			for (Node thisNode : nodeList){
-				if (thisNode.treeDepth == 0 || !thisNode.arePhysicsInitialized) continue; // Skip forces on root.
-				localForce.setZero();
-
-				// Repulser from the specified origin.
-				Vec2 o_pt = thisNode.physBody.getPosition().sub(repulserPoint); // Repulser point to this node.
-				//System.out.println(thisNode.physBody.getPosition().x + "," + thisNode.physBody.getPosition().y);
-				float lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors
-				Vec2 repulserForce = o_pt.mul(centralRepelGain * thisNode.physMass/(lengthSq)); // Only inverse distance law right now.
-				localForce.addLocal(repulserForce);
-
-				//				// Repulser from EVERYONE is way too slow. >1 second with big tree. We need AABB equivalent.
-				//				for (TrialNodeMinimal otherNode : nodeList){
-				//					if (!otherNode.equals(thisNode) && otherNode.arePhysicsInitialized){
-				//						o_pt = thisNode.physBody.getPosition().sub(otherNode.physBody.getPosition()); // Repulser point to this node.
-				//						lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors
-				//
-				//						// Ancestor nodes have a bigger repulsive effect than others.
-				//						if (thisNode.isOtherNodeAncestor(otherNode)){
-				//							repulserForce = o_pt.mul((ancestorMultiplier * nodeRepelGain * thisNode.physMass * otherNode.physMass)/(lengthSq*lengthSq)); // Only inverse distance law right now.
-				//						}else{
-				//							repulserForce = o_pt.mul((nodeRepelGain * thisNode.physMass * otherNode.physMass)/(lengthSq*lengthSq)); // Only inverse distance law right now.
-				//						}
-				//						localForce.addLocal(repulserForce);
-				//					}
-				//				}
-
-				// Repulser force from cousins (parent's sibling's children)
-				if (thisNode.treeDepth > 1){
-					Node grandparent = thisNode.parent.parent;
-					for (Node aunt : grandparent.children){ // Also happens to include parent
-						for (Node cousin : aunt.children){ // Also happens to include siblings
-							if (!cousin.equals(thisNode) && cousin.arePhysicsInitialized){
-								localForce.addLocal(repulserForce(thisNode, cousin));
-							}
-						}
-					}
-				}else if (thisNode.treeDepth == 1){ // Forces on nodes one layer in. It's important to balance the repulsive forces or things blow up.
-					for (Node sibling : thisNode.parent.children){
-						if (!sibling.equals(thisNode) && sibling.arePhysicsInitialized){
-							localForce.addLocal(repulserForce(thisNode,sibling));
-						}
-					}
-				}
-
-				// From grandchildren
-				for (Node child : children){
-					for (Node grandchild : child.children){
-						if (grandchild.arePhysicsInitialized){
-							localForce.addLocal(repulserForce(thisNode, grandchild));
-						}
-					}
-				}
-
-				// From grandparent
-				if (treeDepth > 1){
-					localForce.addLocal(repulserForce(thisNode, thisNode.parent.parent));
-				}
-
-
-				thisNode.physBody.applyForce(localForce, thisNode.physBody.getWorldCenter());
-
-				// Pseudo-spring in the joint
-				float motorSpeed = Math.min((float)thisNode.countDescendants() * anglePGain, angleSpeedCap) * (-thisNode.parent.physBody.getAngle() + thisNode.physBody.getAngle() - angleDGain * thisNode.jointToParent.getJointSpeed());
-				thisNode.jointToParent.setMotorSpeed(motorSpeed);
-			}
-		}
-	}
-
-	/** Node repulser force rule so I don't have to keep ctrl-c this crap **/
-	private static Vec2 repulserForce(Node thisNode, Node otherNode){
-		if (!otherNode.equals(thisNode) && otherNode.arePhysicsInitialized){
-			Vec2 o_pt = thisNode.physBody.getPosition().sub(otherNode.physBody.getPosition()); // Repulser point to this node.
-			float lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors
-			Vec2 repulserForce = o_pt.mul(nodeRepelGain * thisNode.physMass/(lengthSq));//(float)Math.sqrt((double)lengthSq))); // Only inverse distance law right now.
-			return repulserForce;
-		}else{
-			return new Vec2(0,0);
-		}
-	}
-
-	/** Propagate all physics world info back to the node drawing info. **/
-	public void updatePositionFromPhys(){
-		if (arePhysicsInitialized){
-			Vec2 newPos = physBody.getPosition();
-			nodeLocation[0] = newPos.x;
-			nodeLocation[1] = newPos.y;
-			nodeAngle = physBody.getAngle();
-			//nodeAngle = jointToParent.getJointAngle(); // Relative angle.
-			for (Node child : children){		
-				child.updatePositionFromPhys();
-			}
 		}
 	}
 

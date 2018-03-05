@@ -58,7 +58,7 @@ public class Negotiator implements INegotiateGame {
 		this.ui = ui;
 		this.game = game;
 	}
-	
+
 	/** Add another saver which will write info to file at a specified interval.
 	 *  Which data is written depends on the implementation.
 	 * @param dataSaver
@@ -251,15 +251,7 @@ public class Negotiator implements INegotiateGame {
 	/******* UI Commands ********/
 
 	public void redistributeNodes(){
-		if (Node.useTreePhysics){
-			Node.useTreePhysics = false;
-			while (Node.stepping);
-			activeRoots.get(0).calcNodePos_below();
-			activeRoots.get(0).initTreePhys_below();
-			Node.useTreePhysics = true;	
-		}else{
-			activeRoots.get(0).calcNodePos_below();
-		}
+		activeRoots.get(0).calcNodePos_below();
 	}
 
 	/** Node selected by clicking the tree. **/
@@ -280,11 +272,6 @@ public class Negotiator implements INegotiateGame {
 	}
 
 	/****** Run stats ******/
-
-	/** Only doing this to keep all information flowing through negotiator. **/
-	public int getGamesPlayed(){ return Node.getCreatedGameCount(); }
-	public int getGamesImported(){ return Node.getImportedGameCount(); }
-	public int getGamesTotal(){ return Node.getCreatedGameCount() + Node.getImportedGameCount(); }
 	public float getTimeSimulated() { return game.getTimeSimulated(); }
 	public Action[] getCurrentSequence() { return game.actionQueue.getActionsInCurrentRun(); }
 	public int getCurrentActionIdx() { return game.actionQueue.getCurrentActionIdx(); }

@@ -122,7 +122,7 @@ public class FSM_Game implements Runnable{
 					getWorld().step(timestep, iterations);
 
 					// Extra fail conditions besides contacts.
-					float angle = game.TorsoBody.getAngle();
+					float angle = game.torsoBody.getAngle();
 					if (angle > torsoAngUpper || angle < torsoAngLower) {
 						reportFall();
 					}
@@ -175,7 +175,7 @@ public class FSM_Game implements Runnable{
 	/** QWOP initial condition. Good way to give the root node a state. **/
 	public static State getInitialState(){
 		QWOPGame g = new QWOPGame();
-		g.Setup();
+		g.setup();
 		State initState = new State(g);
 		initState.failedState = false;
 		return initState;
@@ -184,7 +184,7 @@ public class FSM_Game implements Runnable{
 	private void newGame(){
 		failFlag = false; // Unflag failure.
 		game = new QWOPGame();
-		game.Setup();
+		game.setup();
 		getWorld().setContactListener(new CollisionListener());
 	}
 
@@ -385,21 +385,21 @@ public class FSM_Game implements Runnable{
 			Shape fixtureA = point.shape1;
 			Shape fixtureB = point.shape2;
 			//Failure when head, arms, or thighs hit the ground.
-			if(fixtureA.m_body.equals(game.HeadBody) ||
-					fixtureB.m_body.equals(game.HeadBody) ||
-					fixtureA.m_body.equals(game.LLArmBody) ||
-					fixtureB.m_body.equals(game.LLArmBody) ||
-					fixtureA.m_body.equals(game.RLArmBody) ||
-					fixtureB.m_body.equals(game.RLArmBody)) {
+			if(fixtureA.m_body.equals(game.headBody) ||
+					fixtureB.m_body.equals(game.headBody) ||
+					fixtureA.m_body.equals(game.lLArmBody) ||
+					fixtureB.m_body.equals(game.lLArmBody) ||
+					fixtureA.m_body.equals(game.rLArmBody) ||
+					fixtureB.m_body.equals(game.rLArmBody)) {
 				reportFall();
-			}else if(fixtureA.m_body.equals(game.LThighBody)||
-					fixtureB.m_body.equals(game.LThighBody)||
-					fixtureA.m_body.equals(game.RThighBody)||
-					fixtureB.m_body.equals(game.RThighBody)){
+			}else if(fixtureA.m_body.equals(game.lThighBody)||
+					fixtureB.m_body.equals(game.lThighBody)||
+					fixtureA.m_body.equals(game.rThighBody)||
+					fixtureB.m_body.equals(game.rThighBody)){
 				reportFall();
-			}else if(fixtureA.m_body.equals(game.RFootBody) || fixtureB.m_body.equals(game.RFootBody)){//Track when each foot hits the ground.
+			}else if(fixtureA.m_body.equals(game.rFootBody) || fixtureB.m_body.equals(game.rFootBody)){//Track when each foot hits the ground.
 				rFootDown = true;		
-			}else if(fixtureA.m_body.equals(game.LFootBody) || fixtureB.m_body.equals(game.LFootBody)){
+			}else if(fixtureA.m_body.equals(game.lFootBody) || fixtureB.m_body.equals(game.lFootBody)){
 				lFootDown = true;
 			}	
 		}
@@ -410,9 +410,9 @@ public class FSM_Game implements Runnable{
 			//Track when each foot leaves the ground.
 			Shape fixtureA = point.shape1;
 			Shape fixtureB = point.shape2;
-			if(fixtureA.m_body.equals(game.RFootBody) || fixtureB.m_body.equals(game.RFootBody)){
+			if(fixtureA.m_body.equals(game.rFootBody) || fixtureB.m_body.equals(game.rFootBody)){
 				rFootDown = false;
-			}else if(fixtureA.m_body.equals(game.LFootBody) || fixtureB.m_body.equals(game.LFootBody)){
+			}else if(fixtureA.m_body.equals(game.lFootBody) || fixtureB.m_body.equals(game.lFootBody)){
 				lFootDown = false;
 			}	
 		}

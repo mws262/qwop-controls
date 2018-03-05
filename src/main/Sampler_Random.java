@@ -38,7 +38,7 @@ public class Sampler_Random implements ISampler {
 			
 			if (currentNode.uncheckedActions.size() == 0) { // No unchecked actions means that we pick a random not-fully-explored child.
 				// Pick random not fully explored child. Keep going.
-				int selection = Node.randInt(0, notFullyExploredChildren - 1);
+				int selection = Utility.randInt(0, notFullyExploredChildren - 1);
 				int count = 0;
 				for (Node child : currentNode.children) {
 					if (!child.fullyExplored) {
@@ -52,7 +52,7 @@ public class Sampler_Random implements ISampler {
 				}
 			}else {
 				// Probability decides.
-				int selection = Node.randInt(1, notFullyExploredChildren + currentNode.uncheckedActions.size());
+				int selection = Utility.randInt(1, notFullyExploredChildren + currentNode.uncheckedActions.size());
 				// Make a new node or pick a not fully explored child.
 				if (selection > notFullyExploredChildren){
 					if (currentNode.state.failedState) throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");

@@ -268,12 +268,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 				currentStatus = Status.DRAW_ALL;
 				break;
 			case DRAW_ALL:
-				if (physOn) {
-					Iterator<Node> iter = rootNodes.iterator();
-					while (iter.hasNext()) {
-						iter.next().stepTreePhys(1);
-					}
-				}
 				repaint();
 				break;
 			case VIEW_RUN:
@@ -781,7 +775,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			if (world != null) {
 				Body newBody = world.getBodyList();
 				while (newBody != null) {
-					xOffsetPixels = -(int)(runnerScaling*game.TorsoBody.getPosition().x) + xOffsetPixels_init;
+					xOffsetPixels = -(int)(runnerScaling*game.torsoBody.getPosition().x) + xOffsetPixels_init;
 					Shape newfixture = newBody.getShapeList();
 
 					while(newfixture != null) {
@@ -1557,10 +1551,10 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 			// Initial plots to display			
 			for (int i = 0; i < numberOfPlots; i++) {
-				plotObjectsX[i] = State.ObjectName.values()[Node.randInt(0, numberOfPlots - 1)];
-				plotStatesX[i] = State.StateName.values()[Node.randInt(0, numberOfPlots - 1)];
-				plotObjectsY[i] = State.ObjectName.values()[Node.randInt(0, numberOfPlots - 1)];
-				plotStatesY[i] = State.StateName.values()[Node.randInt(0, numberOfPlots - 1)];	
+				plotObjectsX[i] = State.ObjectName.values()[Utility.randInt(0, numberOfPlots - 1)];
+				plotStatesX[i] = State.StateName.values()[Utility.randInt(0, numberOfPlots - 1)];
+				plotObjectsY[i] = State.ObjectName.values()[Utility.randInt(0, numberOfPlots - 1)];
+				plotStatesY[i] = State.StateName.values()[Utility.randInt(0, numberOfPlots - 1)];	
 			}
 
 			// Drop down menus

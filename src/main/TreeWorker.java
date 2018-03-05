@@ -4,14 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.jbox2d.collision.shapes.Shape;
-import org.jbox2d.dynamics.ContactListener;
-import org.jbox2d.dynamics.contacts.ContactPoint;
-import org.jbox2d.dynamics.contacts.ContactResult;
-
-import main.FSM_Game.ActionQueue;
-import main.FSM_Game.Status;
-
 /**
  * Addresses limitations of the old concurrent state machine approach.
  * Instead, both tree FSM and game FSM are combined but may both 
@@ -40,10 +32,6 @@ public class TreeWorker implements Runnable {
 	/** The current game instance that this FSM is using. This will frequently change since a new one is created for each run. **/
 	private QWOPGame game;
 
-	/** Collision listener to determine when the game has failed. **/
-	private CollisionListener colListen = new CollisionListener();
-
-
 	/** Strategy for sampling new nodes. **/
 	private ISampler sampler;
 
@@ -62,9 +50,6 @@ public class TreeWorker implements Runnable {
 	/** Initial runner state. **/
 	private State initState;
 
-	/** Is the game in a currently failed state? **/
-	private boolean failFlag = false;
-
 	/** Current status of this FSM **/
 	private Status currentStatus = Status.IDLE;
 
@@ -74,15 +59,7 @@ public class TreeWorker implements Runnable {
 	public boolean O = false;
 	public boolean P = false;
 
-	/** Physics engine stepping parameters. **/
-	public final float timestep = 0.04f;
-	private final int iterations = 5;
-	private float stepsSimulated = 0;
-
-	/** Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls. **/
-	public float torsoAngUpper = 1.2f;
-	public float torsoAngLower = -1.2f; // Negative is falling backwards. 0.4 is start angle.
-
+	private long workerStepsSimulated = 0;
 
 	public TreeWorker(Node rootNode, ISampler sampler) {
 		this.sampler = sampler;
@@ -90,8 +67,7 @@ public class TreeWorker implements Runnable {
 
 		// Find initial runner state for later use.
 		QWOPGame g = new QWOPGame();
-		g.Setup();
-		initState = new State(g);
+		initState = g.getCurrentGameState();
 		initState.failedState = false;
 	}
 
@@ -179,7 +155,7 @@ public class TreeWorker implements Runnable {
 				executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
 
 				// When done, record state and go back to choosing. If failed, the sampler guards will tell us.
-				if (actionQueue.isEmpty || failFlag) {
+				if (actionQueue.isEmpty || game.getFailureStatus()) {
 					// TODO possibly update the action to what was actually possible until the runner fell. Subtract out the extra timesteps that weren't possible due to failure.
 					currentGameNode = targetNodeToTest;
 					if(currentGameNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
@@ -188,7 +164,7 @@ public class TreeWorker implements Runnable {
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 
 					try {
-						if (currentGameNode.state.failedState && failFlag){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
+						if (currentGameNode.state.failedState && game.getFailureStatus()){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
 							targetNodeToTest.checkFullyExplored_lite();
 						}
 					}catch (NullPointerException e){
@@ -210,7 +186,7 @@ public class TreeWorker implements Runnable {
 				executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
 
 				// When done, record state and go back to choosing. If failed, the sampler guards will tell us.
-				if (actionQueue.isEmpty || failFlag) {
+				if (actionQueue.isEmpty || game.getFailureStatus()) {
 					// TODO possibly update the action to what was actually possible until the runner fell. Subtract out the extra timesteps that weren't possible due to failure.
 					currentGameNode = targetNodeToTest;
 					if(currentGameNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
@@ -260,11 +236,7 @@ public class TreeWorker implements Runnable {
 
 	/** Begin a new game. **/
 	private void newGame(){
-		failFlag = false; // Unflag failure.
 		game = new QWOPGame();
-		game.Setup();
-		colListen.resetContacts();
-		game.getWorld().setContactListener(colListen);
 	}
 
 	
@@ -279,27 +251,13 @@ public class TreeWorker implements Runnable {
 		W = nextCommand[1]; 
 		O = nextCommand[2];
 		P = nextCommand[3];
-		game.everyStep(Q,W,O,P);
-		game.getWorld().step(timestep, iterations);
-		stepsSimulated++;
-
-		// Extra fail conditions besides contacts.
-		float angle = game.TorsoBody.getAngle();
-		if (angle > torsoAngUpper || angle < torsoAngLower) {
-			System.out.println("Angle fail");
-			failGame();
-		}
-	}
-
-	/** Report game failure. Only internally used. **/
-	private void failGame() {
-		System.out.println("Fall reported.");
-		failFlag = true;
+		game.stepGame(Q,W,O,P);
+		workerStepsSimulated++;
 	}
 
 	/** Has the game gotten into a failed state (Either too much torso lean or body parts hitting the ground). **/
 	public boolean isGameFailed() {
-		return failFlag;
+		return game.getFailureStatus();
 	}
 
 	/** QWOP initial condition. Good way to give the root node a state. **/
@@ -309,11 +267,13 @@ public class TreeWorker implements Runnable {
 
 	/** Get the state of the runner. **/
 	public State getGameState(){
-		State currentState = new State(game);
-		currentState.failedState = failFlag;
-		return currentState;
+		return game.getCurrentGameState();
 	}
 	
+	/** How many physics timesteps has this particular worker simulated? **/
+	public long getWorkerStepsSimulated() {
+		return workerStepsSimulated;
+	}
 	/** Terminate this worker after it's done with it's current task. **/
 	public void terminateWorker() {
 		flagForTermination = true;
@@ -418,87 +378,6 @@ public class TreeWorker implements Runnable {
 			return actionListFull.size() - actionQueue.size() - 1;
 		}
 	}	
-
-	/** Listens for collisions involving lower arms and head (implicitly with the ground) **/
-	private class CollisionListener implements ContactListener{
-
-		/** Keep track of whether the right foot is on the ground. **/
-		private boolean rFootDown = false;
-
-		/** Keep track of whether the left foot is on the ground. **/
-		private boolean lFootDown = false;
-
-		public CollisionListener(){}
-
-		@Override
-		public void add(ContactPoint point) {
-			Shape fixtureA = point.shape1;
-			Shape fixtureB = point.shape2;
-			
-//			if (fixtureB.m_body.equals(game.LFootBody) || fixtureA.m_body.equals(game.LFootBody)) {
-//				System.out.println("oh left foot");
-//			}
-//			
-//			if (fixtureB.m_body.equals(game.RFootBody) || fixtureA.m_body.equals(game.RFootBody)) {
-//				System.out.println("oh right foot");
-//			}
-			
-			//Failure when head, arms, or thighs hit the ground.
-			if(fixtureA.m_body.equals(game.HeadBody) ||
-					fixtureB.m_body.equals(game.HeadBody) ||
-					fixtureA.m_body.equals(game.LLArmBody) ||
-					fixtureB.m_body.equals(game.LLArmBody) ||
-					fixtureA.m_body.equals(game.RLArmBody) ||
-					fixtureB.m_body.equals(game.RLArmBody)) {
-				System.out.println("body fail");
-				failGame();
-			}else if(fixtureA.m_body.equals(game.LThighBody)||
-					fixtureB.m_body.equals(game.LThighBody)||
-					fixtureA.m_body.equals(game.RThighBody)||
-					fixtureB.m_body.equals(game.RThighBody)){
-				System.out.println("body fail");
-				failGame();
-			}else if(fixtureA.m_body.equals(game.RFootBody) || fixtureB.m_body.equals(game.RFootBody)){//Track when each foot hits the ground.
-				rFootDown = true;		
-			}else if(fixtureA.m_body.equals(game.LFootBody) || fixtureB.m_body.equals(game.LFootBody)){
-				lFootDown = true;
-			}	
-		}
-		@Override
-		public void persist(ContactPoint point){}
-		@Override
-		public void remove(ContactPoint point) {
-			//Track when each foot leaves the ground.
-			Shape fixtureA = point.shape1;
-			Shape fixtureB = point.shape2;
-			if(fixtureA.m_body.equals(game.RFootBody) || fixtureB.m_body.equals(game.RFootBody)){
-				rFootDown = false;
-			}else if(fixtureA.m_body.equals(game.LFootBody) || fixtureB.m_body.equals(game.LFootBody)){
-				lFootDown = false;
-			}	
-		}
-		@Override
-		public void result(ContactResult point) {}
-
-		/** Check if the right foot is touching the ground. **/
-		@SuppressWarnings("unused")
-		public boolean isRightFootGrounded(){
-			return rFootDown;
-		}
-
-		/** Check if the left foot is touching the ground. **/
-		@SuppressWarnings("unused")
-		public boolean isLeftFootGrounded(){
-			return lFootDown;
-		}
-
-		/** Reset existing contacts so this collision listener can be reused in new games. **/
-		public void resetContacts() {
-			rFootDown = false;
-			lFootDown = false;
-		}
-	}
-
 }
 
 

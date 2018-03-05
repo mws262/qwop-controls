@@ -2,7 +2,6 @@ package main;
 
 import java.util.ArrayList;
 
-import data.SaveableDenseData;
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
 

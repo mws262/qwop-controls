@@ -84,7 +84,7 @@ public class Sampler_UCB implements ISampler {
 	@Override
 	public Node expansionPolicy(Node startNode) {
 		if (startNode.uncheckedActions.size() == 0) throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
-		Action childAction = startNode.uncheckedActions.get(Node.randInt(0,startNode.uncheckedActions.size() - 1));
+		Action childAction = startNode.uncheckedActions.get(Utility.randInt(0,startNode.uncheckedActions.size() - 1));
 		return startNode.addChild(childAction);
 	}
 
@@ -109,7 +109,7 @@ public class Sampler_UCB implements ISampler {
 	public Node rolloutPolicy(Node startNode) {
 		if (startNode.state.failedState) throw new RuntimeException("Rollout policy received a starting node which corresponds to an already failed state.");
 		// Do shit without adding nodes to the rest of the tree hierarchy.
-		Action childAction = startNode.uncheckedActions.get(Node.randInt(0,startNode.uncheckedActions.size() - 1));
+		Action childAction = startNode.uncheckedActions.get(Utility.randInt(0,startNode.uncheckedActions.size() - 1));
 
 		Node rolloutNode = new Node(startNode,childAction,false);
 

@@ -33,40 +33,41 @@ public class State implements Serializable {
 	}
 	
 	public State(QWOPGame world) {
-		Body nextBody = world.TorsoBody;
+		failedState = world.getFailureStatus();
+		Body nextBody = world.torsoBody;
 		body = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.RThighBody;
+		nextBody = world.rThighBody;
 		rthigh = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.LThighBody;
+		nextBody = world.lThighBody;
 		lthigh = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.RCalfBody;
+		nextBody = world.rCalfBody;
 		rcalf = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.LCalfBody;
+		nextBody = world.lCalfBody;
 		lcalf = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.RFootBody;
+		nextBody = world.rFootBody;
 		rfoot = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.LFootBody;
+		nextBody = world.lFootBody;
 		lfoot = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.RUArmBody;
+		nextBody = world.rUArmBody;
 		ruarm = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.LUArmBody;
+		nextBody = world.lUArmBody;
 		luarm = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.RLArmBody;
+		nextBody = world.rLArmBody;
 		rlarm = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.LLArmBody;
+		nextBody = world.lLArmBody;
 		llarm = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.HeadBody;
+		nextBody = world.headBody;
 		head = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
 				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
 	}
