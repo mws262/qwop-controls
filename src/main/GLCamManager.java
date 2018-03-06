@@ -1,6 +1,7 @@
 package main;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix3f;
@@ -520,7 +521,7 @@ public class GLCamManager {
 	}
 	
 	/** Take a click vector, find the nearest node to this line. **/
-	public Node nodeFromRay_set(Vector3f clickVec, ArrayList<Node> nodeSet, float toleranceThresh){ //Alt flag says whether to use Node location 2 or 1.
+	public Node nodeFromRay_set(Vector3f clickVec, List<Node> snapshotLeaves, float toleranceThresh){ //Alt flag says whether to use Node location 2 or 1.
 		// Determine which point is closest to the clicked ray.
 
 		double tanDist;
@@ -529,7 +530,7 @@ public class GLCamManager {
 
 		smallestDist = Double.MAX_VALUE;
 
-		for (Node node : nodeSet){
+		for (Node node : snapshotLeaves){
 			//Vector from eye to a vertex.
 			Vector3f nodePos = new Vector3f();
 
@@ -566,9 +567,9 @@ public class GLCamManager {
 	}
 	
 	/** Given a set of nodes **/
-	public Node nodeFromClick_set(int mouseX, int mouseY, ArrayList<Node> nodeSet, float toleranceThresh){
+	public Node nodeFromClick_set(int mouseX, int mouseY, List<Node> snapshotLeaves, float toleranceThresh){
 		clickVec = clickVector(mouseX, mouseY);
-		return nodeFromRay_set(clickVec, nodeSet, toleranceThresh/zoomFactor);
+		return nodeFromRay_set(clickVec, snapshotLeaves, toleranceThresh/zoomFactor);
 	}
 
 	/** Take a click vector, find the coordinates of the projected point at a given level. **/ //Note: assumes trees always stay perpendicular to the z-axis.

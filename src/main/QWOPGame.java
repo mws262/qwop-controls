@@ -958,7 +958,7 @@ public class QWOPGame{
 	/** Draw the runner at a specified set of transforms.. **/
 	public static void drawExtraRunner(Graphics2D g, XForm[] transforms, String label, float scaling, int xOffset, int yOffset, Color drawColor, Stroke stroke) {
 		g.setColor(drawColor);
-		g.drawString(label, xOffset - 20, xOffset - 100);
+		g.drawString(label, xOffset + (int)(transforms[1].position.x * scaling) - 20, yOffset - 75);
 		for (int i = 0; i < shapeList.length; i++) {
 			g.setColor(drawColor);
 			g.setStroke(stroke);

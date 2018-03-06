@@ -8,9 +8,12 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 
 	/** Is this panel still listening and ready to draw? Only false if thread is being killed. **/
 	private boolean running = true;
+	
+	/** Is the current simulation paused? **/
+	private boolean pauseFlag = false;
 
 	/** This panel's copy of the game it uses to run games for visualization. **/
-	private QWOPGame game;
+	protected QWOPGame game;
 
 	/** Stores the qwop actions we're going to execute. **/
 	private ActionQueue actionQueue = new ActionQueue();
@@ -60,7 +63,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 	@Override
 	public void run() {
 		while (running) {
-			if (active) {
+			if (active && !pauseFlag) {
 				if (game != null) {
 					executeNextOnQueue();
 				}
@@ -71,5 +74,10 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	/** Play/pause the current visualized simulation. Flag is reset by calling again or by selecting a new node to visualize. **/
+	public void pauseToggle() {
+		pauseFlag = !pauseFlag;
 	}
 }

@@ -2,6 +2,7 @@ package main;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.jogamp.opengl.GL2;
@@ -241,12 +242,12 @@ public class Node {
 
 
 	/** Locate all the endpoints in the tree. Starts from the node it is called from. **/
-	public void getLeaves(ArrayList<Node> leaves){
+	public void getLeaves(List<Node> descendants){
 		for (Node child : children){
 			if (child.children.isEmpty()){
-				leaves.add(child);
+				descendants.add(child);
 			}else{
-				child.getLeaves(leaves);
+				child.getLeaves(descendants);
 			}
 		}	
 	}

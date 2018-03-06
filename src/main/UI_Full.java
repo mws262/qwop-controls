@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -102,11 +103,11 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	JTabbedPane tabPane;
 
 	/** Pane for the runner. **/
-	PanelRunner_Animated runnerPanel = new PanelRunner_Animated();
+	PanelRunner_Animated runnerPanel = new PanelRunner_AnimatedAutoencoder();
 	
 	
 	/** Pane for the snapshots of the runner. **/
-	SnapshotPane snapshotPane;
+	PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot();
 
 	/** Pane for comparing different states across the tree. **/
 	ComparisonPane comparisonPane;
@@ -119,7 +120,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	Node selectedNode;
 
 	/** List of panes which can be activated, deactivated. **/
-	private ArrayList<TabbedPaneActivator> allTabbedPanes= new ArrayList<TabbedPaneActivator>(); //List of all panes in the tabbed part
+	private ArrayList<TabbedPaneActivator> allTabbedPanes = new ArrayList<TabbedPaneActivator>(); //List of all panes in the tabbed part
 
 	/** Window width **/
 	public static int windowWidth = 1920;
@@ -199,7 +200,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		tabPane.addTab("Run Animation", runnerPanel);
 
 		/* Snapshot pane */
-		snapshotPane = new SnapshotPane();
 		tabPane.addTab("State Viewer", snapshotPane);
 
 		/* Data pane */
@@ -567,6 +567,12 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 					case KeyEvent.VK_ESCAPE:
 						System.exit(0);
 						break;
+						
+					case KeyEvent.VK_SPACE:
+						if (runnerPanel.isActive()) {
+							runnerPanel.pauseToggle();
+						}
+						break;
 					}
 				}
 			}
@@ -581,7 +587,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 			// If the snapshot pane is displaying stuff, this lets us potentially select some of the future nodes displayed in the snapshot pane.
 			if (snapshotPane.active && mouseInside) {
-				ArrayList<Node> snapshotLeaves = snapshotPane.getDisplayedLeaves();
+				List<Node> snapshotLeaves = snapshotPane.getDisplayedLeaves();
 				if (snapshotLeaves.size() > 0) {
 					Node nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves, 50);
 					if (nearest != null) {
@@ -684,381 +690,342 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			return success;
 		}
 
-	}
-
-	/**
-	 * Pane for displaying the animated runner executing a sequence selected on the tree. A tab.
-	 * @author Matt
-	 */
-	public class RunnerPane extends JPanel implements TabbedPaneActivator {
-
-		private ArrayList<TensorflowAutoencoder> encoders;
-
-
-		public RunnerPane() {
-			if (tensorflowAutoencoderDisplay) {
-				encoders = new ArrayList<TensorflowAutoencoder>();
-				encoders.add(new TensorflowAutoencoder("AutoEnc_72to1_6layer.pb", "1 output"));
-				encoders.add(new TensorflowAutoencoder("AutoEnc_72to2_6layer.pb", "2 output"));
-				encoders.add(new TensorflowAutoencoder("AutoEnc_72to6_6layer.pb", "6 output"));
-				encoders.add(new TensorflowAutoencoder("AutoEnc_72to8_6layer.pb", "8 output"));
-				encoders.add(new TensorflowAutoencoder("AutoEnc_72to12_6layer.pb", "12 output"));
-				encoders.add(new TensorflowAutoencoder("AutoEnc_72to16_6layer.pb", "16 output"));
-			}
-		}
-
-		public void paintComponent(Graphics g) {
-
-				//tmp remove drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
-
-				if (tensorflowAutoencoderDisplay) {
-					for (int i = 0; i < encoders.size(); i++) {
-						State currState = new State(game);
-						State predState = new State(encoders.get(i).getPrediction(currState));
-						XForm[] predXForms = predState.getTransforms();
-						drawExtraRunner((Graphics2D)g, Node.getColorFromTreeDepth(i*10), normalStroke, shapes, predXForms, 1100 + i*100, encoders.get(i).encoderName);
-					}
-				}
-				
-
+		@Override
+		public boolean isActive() {
+			// TODO Auto-generated method stub
+			return false;
 		}
 
 	}
 
-	/**
-	 * Displays fixed shots of the runner at selected nodes. Can also preview the past and future from these nodes. A tab.
-	 * @author Matt
-	 */
-	public class SnapshotPane extends JPanel implements TabbedPaneActivator, MouseListener, MouseMotionListener, MouseWheelListener {
-
-		/** Number of runner states in the past to display. **/
-		public int numHistoryStatesDisplay = 25;
-
-		/** Is this tab currently active? If not, don't run the draw loop. **/
-		public boolean active = false;
-
-		/** Normal stroke for line drawing. **/
-		Stroke normalStroke = new BasicStroke(0.5f);
-
-		/** Highlight stroke for line drawing. **/
-		Stroke boldStroke = new BasicStroke(2);
-
-		/** Node we are focusing on displaying. **/
-		private Node snapshotNode;
-
-		Node highlightedRunNode;
-
-		Node queuedFutureLeaf;
-
-		Font floatingActionText = new Font("Ariel", Font.BOLD, 18);
-
-		private int mouseX = 0;
-		private int mouseY = 0;
-		private boolean mouseIsIn = false;
-
-		/** How close do we have to be (squared) from the chest of a single figure for it to be eligible for selection. **/
-		float figureSelectThreshSq = 150;
-
-		public SnapshotPane() {
-			addMouseListener(this);
-			addMouseMotionListener(this);
-		}
-
-		private ArrayList<Node> focusLeaves = new ArrayList<Node>();
-		private ArrayList<XForm[]> transforms = new ArrayList<XForm[]>();
-		private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
-		private ArrayList<Color> colors = new ArrayList<Color>();
-
-		public Shape[] shapes;
-
-		/** Assign a selected node for the snapshot pane to display. **/
-		public void giveSelectedNode(Node node) {
-			transforms.clear();
-			focusLeaves.clear();
-			strokes.clear();
-			colors.clear();
-
-			shapes = QWOPGame.shapeList;
-
-			/***** Focused node first *****/
-			snapshotNode = node;
-			XForm[] nodeTransform = snapshotNode.state.getTransforms();
-			// Make the sequence centered around the selected node state.
-			xOffsetPixels = xOffsetPixels_init + (int)(-runnerScaling * nodeTransform[1].position.x);
-			transforms.add(nodeTransform);
-			strokes.add(boldStroke);
-			colors.add(Color.BLACK);
-			focusLeaves.add(snapshotNode);
-
-			/***** History nodes *****/
-			Node historyNode = snapshotNode;
-			for (int i = 0; i < numHistoryStatesDisplay; i++) {
-				if (historyNode.treeDepth > 0) {
-					historyNode = historyNode.parent;
-					nodeTransform = historyNode.state.getTransforms();
-					transforms.add(nodeTransform);
-					strokes.add(normalStroke);
-					colors.add(historyDrawColor);
-					focusLeaves.add(historyNode);
-				}
-			}
-
-			/***** Future leaf nodes *****/
-			ArrayList<Node> descendants = new ArrayList<Node>();
-			for (int i = 0; i < selectedNode.children.size(); i++) {
-				Node child = selectedNode.children.get(i);
-				child.getLeaves(descendants);
-
-				Color runnerColor = Node.getColorFromTreeDepth(i*10);
-				child.setBranchColor(runnerColor); // Change the color on the tree too.
-
-				for (Node descendant : descendants) {
-					if (descendant.state != null) {
-						focusLeaves.add(descendant);
-						transforms.add(descendant.state.getTransforms());
-						strokes.add(normalStroke);
-						colors.add(runnerColor);
-					}
-				}
-			}
-		}
-
-		private float getDistFromMouseSq(float x, float y) {
-			float xdist = (mouseX - (runnerScaling * x + xOffsetPixels));
-			float ydist = (mouseY - (runnerScaling * y + yOffsetPixels));
-			return xdist*xdist + ydist*ydist;
-		}
-
-		/** Draws the selected node state and potentially previous and future states. **/
-		public void paintComponent(Graphics g) {
-			if (!active) return;
-			super.paintComponent(g);
-			Graphics2D g2 = (Graphics2D)g;
-
-			if (snapshotNode != null && snapshotNode.state != null) { // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
-
-				float bestSoFar = Float.MAX_VALUE;
-				int bestIdx = Integer.MIN_VALUE;
-
-				// Figure out if the mouse close enough to highlight one state.
-				if (mouseIsIn && mouseX > getWidth()/2) { // If we are mousing over this panel, see if we're hovering close enough over any particular dude state.
-
-					// Check body first
-					for (int i = 0; i < focusLeaves.size(); i++) {
-						float distSq = getDistFromMouseSq(focusLeaves.get(i).state.body.x,focusLeaves.get(i).state.body.y);
-						if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
-							bestSoFar = distSq;
-							bestIdx = i;
-						}
-					}
-					// Then head
-					if (bestIdx < 0) {
-						for (int i = 0; i < focusLeaves.size(); i++) {
-							float distSq = getDistFromMouseSq(focusLeaves.get(i).state.head.x,focusLeaves.get(i).state.head.y);
-							if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
-								bestSoFar = distSq;
-								bestIdx = i;
-							}
-						}
-					}
-					// Then both feet equally
-					if (bestIdx < 0) {
-						for (int i = 0; i < focusLeaves.size(); i++) {
-							float distSq = getDistFromMouseSq(focusLeaves.get(i).state.lfoot.x,focusLeaves.get(i).state.lfoot.y);
-							if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
-								bestSoFar = distSq;
-								bestIdx = i;
-							}
-							distSq = getDistFromMouseSq(focusLeaves.get(i).state.rfoot.x,focusLeaves.get(i).state.rfoot.y);
-							if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
-								bestSoFar = distSq;
-								bestIdx = i;
-							}
-
-						}
-					}
-				}
-
-				// Draw all non-highlighted runners.
-				for (int i = transforms.size() - 1; i >= 0; i--) {
-					if (!mouseIsIn || bestIdx != i) {
-						if (highlightedRunNode != null && focusLeaves.get(i).treeDepth > selectedNode.treeDepth) { // Make the nodes after the selected one lighter if one is highlighted.
-							drawRunner(g2, colors.get(i).brighter(), strokes.get(i), shapes, transforms.get(i));
-						}else{
-							drawRunner(g2, colors.get(i), strokes.get(i), shapes, transforms.get(i));
-						}
-
-					}
-				}
-
-				// Change things if one runner is selected.
-				if (mouseIsIn && bestIdx >= 0) {
-					Node newHighlightNode = focusLeaves.get(bestIdx);
-					changeFocusedFuture(g2, highlightedRunNode, newHighlightNode);
-					highlightedRunNode = newHighlightNode;
-
-					// Externally commanded pick, instead of mouse-picked.
-				}else if(queuedFutureLeaf != null) {
-					changeFocusedFuture(g2, highlightedRunNode, queuedFutureLeaf);
-					highlightedRunNode = queuedFutureLeaf;
-
-				}else if (highlightedRunNode != null) { // When we stop mousing over, clear the brightness changes.
-					highlightedRunNode.displayPoint = false;
-					highlightedRunNode.nodeColor = Color.GREEN;
-					rootNodes.get(0).resetLineBrightness_below();
-					highlightedRunNode.clearBackwardsBranchZOffset();
-					highlightedRunNode = null;
-				}
-
-				// Draw the sequence too.
-				drawActionString(selectedNode.getSequence(), g);
-			}
-		}
-
-		/** Change highlighting on both the tree and the snapshot when selections change. **/
-		private void changeFocusedFuture(Graphics2D g2, Node oldFuture, Node newFuture) {
-			// Clear out highlights from the old node.
-			if (oldFuture != null && !oldFuture.equals(newFuture)) {
-				oldFuture.clearBackwardsBranchZOffset();
-				oldFuture.displayPoint = false;
-				oldFuture.nodeColor = Color.GREEN;
-			}
-
-			// Add highlights to the new node if it's different or previous is nonexistant
-			if (oldFuture == null || !oldFuture.equals(newFuture)) {
-				newFuture.displayPoint = true;
-				newFuture.nodeColor = Color.ORANGE;
-				newFuture.setBackwardsBranchZOffset(0.8f);
-				newFuture.highlightSingleRunToThisNode(); // Tell the tree to highlight a section and darken others.
-			}
-			// Draw
-			int idx = focusLeaves.indexOf(newFuture);
-			if (idx > -1) { // Focus leaves no longer contains the no focus requested.
-				try{
-					drawRunner(g2, colors.get(idx).darker(), boldStroke, shapes, transforms.get(idx));
-
-					Node currentNode = newFuture;
-
-					// Also draw parent nodes back the the selected one to view the run that leads to the highlighted failure.
-					int prevX = Integer.MAX_VALUE;
-					while (currentNode.treeDepth > selectedNode.treeDepth) {
-						// Make color shades slightly alternate between subsequent move frames.
-						Color everyOtherEvenColor = colors.get(idx).darker();
-						if (currentNode.treeDepth % 2 == 0) {
-							everyOtherEvenColor = everyOtherEvenColor.darker();
-						}
-						drawRunner(g2, everyOtherEvenColor, boldStroke, shapes, currentNode.state.getTransforms());
-
-						// Draw actions above their heads.
-						g2.setFont(QWOPBig);
-						g2.setFont(floatingActionText);
-						g2.setColor(everyOtherEvenColor);
-						prevX = Math.min((int)(runnerScaling * currentNode.state.head.x) + xOffsetPixels - 3,prevX - 25);
-
-						g2.drawString(currentNode.getAction().toStringLite(), 
-								prevX, 
-								Math.min((int)(runnerScaling * currentNode.state.head.y) + yOffsetPixels - 25, 45));
-
-						currentNode = currentNode.parent;
-					}
-				}catch(IndexOutOfBoundsException e) {
-					// I don't really care tbh. Just skip this one.
-				}
-			}
-		}
-
-		/** Focus a single future leaf **/
-		public void giveSelectedFuture(Node queuedFutureLeaf) {
-			this.queuedFutureLeaf = queuedFutureLeaf;
-		}
-
-		/** Draw the runner at a certain state. **/
-		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms) {
-
-			for (int i = 0; i < shapes.length; i++) {
-				g.setColor(drawColor);
-				g.setStroke(stroke);
-				switch(shapes[i].getType()) {
-				case CIRCLE_SHAPE:
-					CircleShape circleShape = (CircleShape)shapes[i];
-					float radius = circleShape.getRadius();
-					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
-					g.drawOval((int)(runnerScaling * (circleCenter.x - radius) + xOffsetPixels),
-							(int)(runnerScaling * (circleCenter.y - radius) + yOffsetPixels),
-							(int)(runnerScaling * radius * 2),
-							(int)(runnerScaling * radius * 2));
-					break;
-				case POLYGON_SHAPE:
-					//Get both the shape and its transform.
-					PolygonShape polygonShape = (PolygonShape)shapes[i];
-					XForm transform = transforms[i];
-
-					// Ground is black regardless.
-					if (shapes[i].m_filter.groupIndex == 1) {
-						g.setColor(Color.BLACK);
-						g.setStroke(normalStroke);
-					}
-					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
-						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
-						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
-						g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-								(int)(runnerScaling * ptA.y) + yOffsetPixels,
-								(int)(runnerScaling * ptB.x) + xOffsetPixels,
-								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
-					}
-					break;
-				default:
-					break;
-				}
-			}
-		}
-
-		/** Get the list of leave nodes (failure states) that we're displaying in the snapshot pane. **/
-		public ArrayList<Node> getDisplayedLeaves() {
-			return focusLeaves;
-		}
-
-		@Override
-		public void activateTab() {
-			active = true;
-		}
-		@Override
-		public void deactivateTab() {
-			active = false;
-		}
-
-		@Override
-		public void mouseWheelMoved(MouseWheelEvent e) {}
-
-		@Override
-		public void mouseDragged(MouseEvent e) {}
-
-		@Override
-		public void mouseMoved(MouseEvent e) {
-			mouseX = e.getX();
-			mouseY = e.getY();
-		}
-
-		@Override
-		public void mouseClicked(MouseEvent e) {}
-
-		@Override
-		public void mousePressed(MouseEvent e) {}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			mouseIsIn = true;
-			queuedFutureLeaf = null; // No longer using what the tree says is focused when the mouse is in this pane.
-		}
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			mouseIsIn = false;
-		}
-	}
+//	/**
+//	 * Displays fixed shots of the runner at selected nodes. Can also preview the past and future from these nodes. A tab.
+//	 * @author Matt
+//	 */
+//	public class SnapshotPane extends JPanel implements TabbedPaneActivator, MouseListener, MouseMotionListener, MouseWheelListener {
+//
+//		/** Number of runner states in the past to display. **/
+//		public int numHistoryStatesDisplay = 25;
+//
+//		/** Is this tab currently active? If not, don't run the draw loop. **/
+//		public boolean active = false;
+//
+//		/** Node we are focusing on displaying. **/
+//		private Node snapshotNode;
+//
+//		Node highlightedRunNode;
+//
+//		Node queuedFutureLeaf;
+//
+//		Font floatingActionText = new Font("Ariel", Font.BOLD, 18);
+//
+//		private int mouseX = 0;
+//		private int mouseY = 0;
+//		private boolean mouseIsIn = false;
+//
+//		/** How close do we have to be (squared) from the chest of a single figure for it to be eligible for selection. **/
+//		float figureSelectThreshSq = 150;
+//
+//		public SnapshotPane() {
+//			addMouseListener(this);
+//			addMouseMotionListener(this);
+//		}
+//
+//		private ArrayList<Node> focusLeaves = new ArrayList<Node>();
+//		private ArrayList<XForm[]> transforms = new ArrayList<XForm[]>();
+//		private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
+//		private ArrayList<Color> colors = new ArrayList<Color>();
+//
+//		public Shape[] shapes;
+//
+//		/** Assign a selected node for the snapshot pane to display. **/
+//		public void giveSelectedNode(Node node) {
+//			transforms.clear();
+//			focusLeaves.clear();
+//			strokes.clear();
+//			colors.clear();
+//
+//			shapes = QWOPGame.shapeList;
+//
+//			/***** Focused node first *****/
+//			snapshotNode = node;
+//			XForm[] nodeTransform = snapshotNode.state.getTransforms();
+//			// Make the sequence centered around the selected node state.
+//			xOffsetPixels = xOffsetPixels_init + (int)(-runnerScaling * nodeTransform[1].position.x);
+//			transforms.add(nodeTransform);
+//			strokes.add(boldStroke);
+//			colors.add(Color.BLACK);
+//			focusLeaves.add(snapshotNode);
+//
+//			/***** History nodes *****/
+//			Node historyNode = snapshotNode;
+//			for (int i = 0; i < numHistoryStatesDisplay; i++) {
+//				if (historyNode.treeDepth > 0) {
+//					historyNode = historyNode.parent;
+//					nodeTransform = historyNode.state.getTransforms();
+//					transforms.add(nodeTransform);
+//					strokes.add(normalStroke);
+//					colors.add(historyDrawColor);
+//					focusLeaves.add(historyNode);
+//				}
+//			}
+//
+//			/***** Future leaf nodes *****/
+//			ArrayList<Node> descendants = new ArrayList<Node>();
+//			for (int i = 0; i < selectedNode.children.size(); i++) {
+//				Node child = selectedNode.children.get(i);
+//				child.getLeaves(descendants);
+//
+//				Color runnerColor = Node.getColorFromTreeDepth(i*10);
+//				child.setBranchColor(runnerColor); // Change the color on the tree too.
+//
+//				for (Node descendant : descendants) {
+//					if (descendant.state != null) {
+//						focusLeaves.add(descendant);
+//						transforms.add(descendant.state.getTransforms());
+//						strokes.add(normalStroke);
+//						colors.add(runnerColor);
+//					}
+//				}
+//			}
+//		}
+//
+//		private float getDistFromMouseSq(float x, float y) {
+//			float xdist = (mouseX - (runnerScaling * x + xOffsetPixels));
+//			float ydist = (mouseY - (runnerScaling * y + yOffsetPixels));
+//			return xdist*xdist + ydist*ydist;
+//		}
+//
+//		/** Draws the selected node state and potentially previous and future states. **/
+//		public void paintComponent(Graphics g) {
+//			if (!active) return;
+//			super.paintComponent(g);
+//			Graphics2D g2 = (Graphics2D)g;
+//
+//			if (snapshotNode != null && snapshotNode.state != null) { // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
+//
+//				float bestSoFar = Float.MAX_VALUE;
+//				int bestIdx = Integer.MIN_VALUE;
+//
+//				// Figure out if the mouse close enough to highlight one state.
+//				if (mouseIsIn && mouseX > getWidth()/2) { // If we are mousing over this panel, see if we're hovering close enough over any particular dude state.
+//
+//					// Check body first
+//					for (int i = 0; i < focusLeaves.size(); i++) {
+//						float distSq = getDistFromMouseSq(focusLeaves.get(i).state.body.x,focusLeaves.get(i).state.body.y);
+//						if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
+//							bestSoFar = distSq;
+//							bestIdx = i;
+//						}
+//					}
+//					// Then head
+//					if (bestIdx < 0) {
+//						for (int i = 0; i < focusLeaves.size(); i++) {
+//							float distSq = getDistFromMouseSq(focusLeaves.get(i).state.head.x,focusLeaves.get(i).state.head.y);
+//							if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
+//								bestSoFar = distSq;
+//								bestIdx = i;
+//							}
+//						}
+//					}
+//					// Then both feet equally
+//					if (bestIdx < 0) {
+//						for (int i = 0; i < focusLeaves.size(); i++) {
+//							float distSq = getDistFromMouseSq(focusLeaves.get(i).state.lfoot.x,focusLeaves.get(i).state.lfoot.y);
+//							if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
+//								bestSoFar = distSq;
+//								bestIdx = i;
+//							}
+//							distSq = getDistFromMouseSq(focusLeaves.get(i).state.rfoot.x,focusLeaves.get(i).state.rfoot.y);
+//							if (distSq < bestSoFar  && distSq < figureSelectThreshSq) {
+//								bestSoFar = distSq;
+//								bestIdx = i;
+//							}
+//
+//						}
+//					}
+//				}
+//
+//				// Draw all non-highlighted runners.
+//				for (int i = transforms.size() - 1; i >= 0; i--) {
+//					if (!mouseIsIn || bestIdx != i) {
+//						if (highlightedRunNode != null && focusLeaves.get(i).treeDepth > selectedNode.treeDepth) { // Make the nodes after the selected one lighter if one is highlighted.
+//							drawRunner(g2, colors.get(i).brighter(), strokes.get(i), shapes, transforms.get(i));
+//						}else{
+//							drawRunner(g2, colors.get(i), strokes.get(i), shapes, transforms.get(i));
+//						}
+//
+//					}
+//				}
+//
+//				// Change things if one runner is selected.
+//				if (mouseIsIn && bestIdx >= 0) {
+//					Node newHighlightNode = focusLeaves.get(bestIdx);
+//					changeFocusedFuture(g2, highlightedRunNode, newHighlightNode);
+//					highlightedRunNode = newHighlightNode;
+//
+//					// Externally commanded pick, instead of mouse-picked.
+//				}else if(queuedFutureLeaf != null) {
+//					changeFocusedFuture(g2, highlightedRunNode, queuedFutureLeaf);
+//					highlightedRunNode = queuedFutureLeaf;
+//
+//				}else if (highlightedRunNode != null) { // When we stop mousing over, clear the brightness changes.
+//					highlightedRunNode.displayPoint = false;
+//					highlightedRunNode.nodeColor = Color.GREEN;
+//					rootNodes.get(0).resetLineBrightness_below();
+//					highlightedRunNode.clearBackwardsBranchZOffset();
+//					highlightedRunNode = null;
+//				}
+//
+//				// Draw the sequence too.
+//				drawActionString(selectedNode.getSequence(), g);
+//			}
+//		}
+//
+//		/** Change highlighting on both the tree and the snapshot when selections change. **/
+//		private void changeFocusedFuture(Graphics2D g2, Node oldFuture, Node newFuture) {
+//			// Clear out highlights from the old node.
+//			if (oldFuture != null && !oldFuture.equals(newFuture)) {
+//				oldFuture.clearBackwardsBranchZOffset();
+//				oldFuture.displayPoint = false;
+//				oldFuture.nodeColor = Color.GREEN;
+//			}
+//
+//			// Add highlights to the new node if it's different or previous is nonexistant
+//			if (oldFuture == null || !oldFuture.equals(newFuture)) {
+//				newFuture.displayPoint = true;
+//				newFuture.nodeColor = Color.ORANGE;
+//				newFuture.setBackwardsBranchZOffset(0.8f);
+//				newFuture.highlightSingleRunToThisNode(); // Tell the tree to highlight a section and darken others.
+//			}
+//			// Draw
+//			int idx = focusLeaves.indexOf(newFuture);
+//			if (idx > -1) { // Focus leaves no longer contains the no focus requested.
+//				try{
+//					drawRunner(g2, colors.get(idx).darker(), boldStroke, shapes, transforms.get(idx));
+//
+//					Node currentNode = newFuture;
+//
+//					// Also draw parent nodes back the the selected one to view the run that leads to the highlighted failure.
+//					int prevX = Integer.MAX_VALUE;
+//					while (currentNode.treeDepth > selectedNode.treeDepth) {
+//						// Make color shades slightly alternate between subsequent move frames.
+//						Color everyOtherEvenColor = colors.get(idx).darker();
+//						if (currentNode.treeDepth % 2 == 0) {
+//							everyOtherEvenColor = everyOtherEvenColor.darker();
+//						}
+//						drawRunner(g2, everyOtherEvenColor, boldStroke, shapes, currentNode.state.getTransforms());
+//
+//						// Draw actions above their heads.
+//						g2.setFont(QWOPBig);
+//						g2.setFont(floatingActionText);
+//						g2.setColor(everyOtherEvenColor);
+//						prevX = Math.min((int)(runnerScaling * currentNode.state.head.x) + xOffsetPixels - 3,prevX - 25);
+//
+//						g2.drawString(currentNode.getAction().toStringLite(), 
+//								prevX, 
+//								Math.min((int)(runnerScaling * currentNode.state.head.y) + yOffsetPixels - 25, 45));
+//
+//						currentNode = currentNode.parent;
+//					}
+//				}catch(IndexOutOfBoundsException e) {
+//					// I don't really care tbh. Just skip this one.
+//				}
+//			}
+//		}
+//
+//		/** Focus a single future leaf **/
+//		public void giveSelectedFuture(Node queuedFutureLeaf) {
+//			this.queuedFutureLeaf = queuedFutureLeaf;
+//		}
+//
+//		/** Draw the runner at a certain state. **/
+//		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms) {
+//
+//			for (int i = 0; i < shapes.length; i++) {
+//				g.setColor(drawColor);
+//				g.setStroke(stroke);
+//				switch(shapes[i].getType()) {
+//				case CIRCLE_SHAPE:
+//					CircleShape circleShape = (CircleShape)shapes[i];
+//					float radius = circleShape.getRadius();
+//					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
+//					g.drawOval((int)(runnerScaling * (circleCenter.x - radius) + xOffsetPixels),
+//							(int)(runnerScaling * (circleCenter.y - radius) + yOffsetPixels),
+//							(int)(runnerScaling * radius * 2),
+//							(int)(runnerScaling * radius * 2));
+//					break;
+//				case POLYGON_SHAPE:
+//					//Get both the shape and its transform.
+//					PolygonShape polygonShape = (PolygonShape)shapes[i];
+//					XForm transform = transforms[i];
+//
+//					// Ground is black regardless.
+//					if (shapes[i].m_filter.groupIndex == 1) {
+//						g.setColor(Color.BLACK);
+//						g.setStroke(normalStroke);
+//					}
+//					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
+//						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
+//						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
+//						g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
+//								(int)(runnerScaling * ptA.y) + yOffsetPixels,
+//								(int)(runnerScaling * ptB.x) + xOffsetPixels,
+//								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
+//					}
+//					break;
+//				default:
+//					break;
+//				}
+//			}
+//		}
+//
+//		/** Get the list of leave nodes (failure states) that we're displaying in the snapshot pane. **/
+//		public ArrayList<Node> getDisplayedLeaves() {
+//			return focusLeaves;
+//		}
+//
+//		@Override
+//		public void activateTab() {
+//			active = true;
+//		}
+//		@Override
+//		public void deactivateTab() {
+//			active = false;
+//		}
+//
+//		@Override
+//		public void mouseWheelMoved(MouseWheelEvent e) {}
+//
+//		@Override
+//		public void mouseDragged(MouseEvent e) {}
+//
+//		@Override
+//		public void mouseMoved(MouseEvent e) {
+//			mouseX = e.getX();
+//			mouseY = e.getY();
+//		}
+//
+//		@Override
+//		public void mouseClicked(MouseEvent e) {}
+//
+//		@Override
+//		public void mousePressed(MouseEvent e) {}
+//
+//		@Override
+//		public void mouseReleased(MouseEvent e) {}
+//
+//		@Override
+//		public void mouseEntered(MouseEvent e) {
+//			mouseIsIn = true;
+//			queuedFutureLeaf = null; // No longer using what the tree says is focused when the mouse is in this pane.
+//		}
+//
+//		@Override
+//		public void mouseExited(MouseEvent e) {
+//			mouseIsIn = false;
+//		}
+//	}
 
 	/**
 	 * Pane for estimating and displaying similar states.
@@ -1253,6 +1220,11 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 				eigsToDisp[i] = 1;
 			}
 			//giveSelectedNode(primaryNode); // Redo calculations.
+		}
+		@Override
+		public boolean isActive() {
+			// TODO Auto-generated method stub
+			return false;
 		}	
 	}
 
@@ -1406,6 +1378,12 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			}
 		}
 
+		@Override
+		public boolean isActive() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
 	}
 
 	/**
@@ -1556,6 +1534,12 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			active = true;
 			// update(); // Don't update though. Make the user click a node before doing this.
 			requestFocus();
+		}
+
+		@Override
+		public boolean isActive() {
+			// TODO Auto-generated method stub
+			return false;
 		}
 	}
 
@@ -2042,15 +2026,15 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		}
 	}
 
-	@Override
-	public void setLiveGameToView(QWOPGame game) {
-		runnerPane.setGameToView(game);
-	}
+//	@Override
+//	public void setLiveGameToView(QWOPGame game) {
+//		runnerPane.setGameToView(game);
+//	}
 
-	@Override
-	public void clearLiveGameToView() {
-		runnerPane.clearGameToView();		
-	}
+//	@Override
+//	public void clearLiveGameToView() {
+//		runnerPane.clearGameToView();		
+//	}
 
 	@Override
 	public void addRootNode(Node node) {
@@ -2063,8 +2047,22 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	}
 
 	@Override
+	public void setLiveGameToView(QWOPGame game) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void clearLiveGameToView() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
 	public boolean isRunnerPaneActive() {
-		return runnerPane.active;
-	}	
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
 

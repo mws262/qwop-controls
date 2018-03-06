@@ -1,10 +1,12 @@
 package main;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 
 import javax.swing.JPanel;
 import main.IUserInterface.TabbedPaneActivator;
@@ -24,9 +26,18 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 	protected boolean active = false;
 	
 	/** Fonts for drawing the keyboard keys when pressed/not pressed. **/
-	private final static Font smallFont = new Font("Ariel", Font.BOLD,12);
-	private final static Font medFont = new Font("Ariel", Font.BOLD,21);
-	private final static Font bigFont = new Font("Ariel", Font.BOLD,28);
+	protected final static Font smallFont = new Font("Ariel", Font.BOLD,12);
+	protected final static Font medFont = new Font("Ariel", Font.BOLD,21);
+	protected final static Font bigFont = new Font("Ariel", Font.BOLD,28);
+	
+	/** Normal stroke for line drawing. **/
+	protected final static Stroke normalStroke = new BasicStroke(0.5f);
+	
+	/** Highlight stroke for line drawing. **/
+	protected final static Stroke boldStroke = new BasicStroke(2);
+	
+	/** Faded out gray for drawing past states and such. **/
+	protected final static Color ghostGray = new Color(0.6f,0.6f,0.6f);
 	
 	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
 	public int xOffsetPixels = 960;
