@@ -102,8 +102,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	JTabbedPane tabPane;
 
 	/** Pane for the runner. **/
-	RunnerPane runnerPane;
-	Panel_Runner runnerPanel = new Panel_Runner();
+	PanelRunner_Animated runnerPanel = new PanelRunner_Animated();
 	
 	
 	/** Pane for the snapshots of the runner. **/
@@ -165,10 +164,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	private final Font bigFont = new Font("Ariel", Font.BOLD, 16);
 	private final Font littleFont = new Font("Ariel", Font.BOLD, 12);
 
-	/** Spacing for sequence number drawing on the left side panel. **/
-	private final int vertTextSpacing = 18;
-	private final int vertTextAnchor = 15;
-
 	/********** Plots **********/
 	public boolean plotColorsByDepth = true;
 
@@ -199,7 +194,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		tabPane.setBorder(BorderFactory.createRaisedBevelBorder());
 
 		/* Runner pane */   
-		runnerPane = new RunnerPane();
 		Thread runnerPanelThread = new Thread(runnerPanel);
 		runnerPanelThread.start();
 		tabPane.addTab("Run Animation", runnerPanel);
@@ -223,7 +217,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 		pane.add(tabPane, dataConstraints);
 
-		allTabbedPanes.add(runnerPane);
+		allTabbedPanes.add(runnerPanel);
+		
 		allTabbedPanes.add(snapshotPane);
 		allTabbedPanes.add(dataPane_state);
 		allTabbedPanes.add(dataPane_pca);
@@ -357,54 +352,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		this.negotiator = negotiator;
 	}
 
-	/** Draw the actions on the left side pane. **/
-	private void drawActionString(Action[] sequence, Graphics g) {
-		drawActionString(sequence, g, -1);
-	}
-
-	private void drawActionString(Action[] sequence, Graphics g, int highlightIdx) {
-		g.setFont(bigFont);
-		g.setColor(Color.BLACK);
-		g.drawString("Selected sequence: ", 10, vertTextAnchor);
-		g.setColor(Color.DARK_GRAY);
-
-		int currIdx = 0;
-		int lineNum = 1;
-		while (currIdx < sequence.length - 1) {
-			String line = sequence[currIdx].toStringLite() + ",";
-
-			if (currIdx == highlightIdx) {
-				g.setColor(Color.GREEN);
-			}else{
-				g.setColor(Color.DARK_GRAY);
-			}
-			g.drawString(line, 10 + (currIdx % 4)*50 + lineNum/7*210, vertTextAnchor + vertTextSpacing * (lineNum % 7 + 2)); // Wrap horizontally after 7 lines
-			currIdx++;
-			lineNum = currIdx/4 + 1;
-
-		}
-
-		// Draw the little keys above the column.
-		Graphics2D g2 = (Graphics2D)g;
-		g2.setColor(Color.DARK_GRAY);
-		g2.drawRoundRect(8, vertTextAnchor + 15, 30, 20, 5, 5);
-		g2.drawRoundRect(8 + 49, vertTextAnchor + 15, 30, 20, 5, 5);
-		g2.drawRoundRect(8 + 2*49, vertTextAnchor + 15, 30, 20, 5, 5);
-		g2.drawRoundRect(8 + 3*49, vertTextAnchor + 15, 30, 20, 5, 5);
-
-		g2.setColor(Color.LIGHT_GRAY);
-		g2.fillRoundRect(8, vertTextAnchor + 15, 30, 20, 6, 6);
-		g2.fillRoundRect(8 + 49, vertTextAnchor + 15, 30, 20, 6, 6);
-		g2.fillRoundRect(8 + 2*49, vertTextAnchor + 15, 30, 20, 6, 6);
-		g2.fillRoundRect(8 + 3*49, vertTextAnchor + 15, 30, 20, 6, 6);
-
-		g.setFont(littleFont);
-		g.setColor(Color.BLACK);
-		g.drawString("- -", 12, vertTextAnchor + 30);
-		g.drawString("W O", 12 + 49, vertTextAnchor + 30);
-		g.drawString("- -", 12 + 2*49, vertTextAnchor + 30);
-		g.drawString("Q P", 12 + 3*49, vertTextAnchor + 30);
-	}
+	
 
 	/**
 	 * Pane for displaying the entire tree in OpenGL. Not part of the tabbed system.
@@ -744,22 +692,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	 */
 	public class RunnerPane extends JPanel implements TabbedPaneActivator {
 
-		public int headPos;
-
-		boolean active = false;
-		
-		boolean tensorflowAutoencoderDisplay = true;
-
-		private World world;
-
-		private QWOPGame game;
-
 		private ArrayList<TensorflowAutoencoder> encoders;
 
-		private Shape[] shapes = QWOPGame.shapeList;
-
-		/** Normal stroke for line drawing. **/
-		Stroke normalStroke = new BasicStroke(0.5f);
 
 		public RunnerPane() {
 			if (tensorflowAutoencoderDisplay) {
@@ -774,70 +708,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		}
 
 		public void paintComponent(Graphics g) {
-			if (!active) return;
-			super.paintComponent(g);
 
-			if (world != null) {
-				Body newBody = world.getBodyList();
-				while (newBody != null) {
-					xOffsetPixels = -(int)(runnerScaling*game.torsoBody.getPosition().x) + xOffsetPixels_init;
-					Shape newfixture = newBody.getShapeList();
-
-					while(newfixture != null) {
-
-						if(newfixture.getType() == ShapeType.POLYGON_SHAPE) {
-
-							PolygonShape newShape = (PolygonShape)newfixture;
-							Vec2[] shapeVerts = newShape.m_vertices;
-							for (int k = 0; k<newShape.m_vertexCount; k++) {
-
-								XForm xf = newBody.getXForm();
-								Vec2 ptA = XForm.mul(xf,shapeVerts[k]);
-								Vec2 ptB = XForm.mul(xf, shapeVerts[(k+1) % (newShape.m_vertexCount)]);
-								g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-										(int)(runnerScaling * ptA.y) + yOffsetPixels,
-										(int)(runnerScaling * ptB.x) + xOffsetPixels,
-										(int)(runnerScaling * ptB.y) + yOffsetPixels);			    		
-							}
-						}else if (newfixture.getType() == ShapeType.CIRCLE_SHAPE) {
-							CircleShape newShape = (CircleShape)newfixture;
-							float radius = newShape.m_radius;
-							headPos = (int)(runnerScaling * newBody.getPosition().x);
-							g.drawOval((int)(runnerScaling * (newBody.getPosition().x - radius) + xOffsetPixels),
-									(int)(runnerScaling * (newBody.getPosition().y - radius) + yOffsetPixels),
-									(int)(runnerScaling * radius * 2),
-									(int)(runnerScaling * radius * 2));		
-
-						}else if(newfixture.getType() == ShapeType.EDGE_SHAPE) {
-
-							EdgeShape newShape = (EdgeShape)newfixture;
-							XForm trans = newBody.getXForm();
-
-							Vec2 ptA = XForm.mul(trans, newShape.getVertex1());
-							Vec2 ptB = XForm.mul(trans, newShape.getVertex2());
-							Vec2 ptC = XForm.mul(trans, newShape.getVertex2());
-
-							g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-									(int)(runnerScaling * ptA.y) + yOffsetPixels,
-									(int)(runnerScaling * ptB.x) + xOffsetPixels,
-									(int)(runnerScaling * ptB.y) + yOffsetPixels);			    		
-							g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-									(int)(runnerScaling * ptA.y) + yOffsetPixels,
-									(int)(runnerScaling * ptC.x) + xOffsetPixels,
-									(int)(runnerScaling * ptC.y) + yOffsetPixels);			    		
-
-						}else{
-							System.out.println("Not found: " + newfixture.m_type.name());
-						}
-						newfixture = newfixture.getNext();
-					}
-					newBody = newBody.getNext();
-				}
-				//This draws the "road" markings to show that the ground is moving relative to the dude.
-				for(int i = 0; i<this.getWidth()/69; i++) {
-					g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 92);
-				}
-				//tmp remove keyDrawer(g, negotiator.Q, negotiator.W, negotiator.O, negotiator.P);
 				//tmp remove drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
 
 				if (tensorflowAutoencoderDisplay) {
@@ -848,128 +719,10 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 						drawExtraRunner((Graphics2D)g, Node.getColorFromTreeDepth(i*10), normalStroke, shapes, predXForms, 1100 + i*100, encoders.get(i).encoderName);
 					}
 				}
-			}else{
-				keyDrawer(g, false, false, false, false);
-			}
-
-			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
-			//xOffsetPixels = -(int)game.TorsoBody.getPosition().x + xOffsetPixels_init;
-		}
-
-		/** Draw the runner at a certain state -- for the autoencoder testing. **/
-		private void drawExtraRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms, int addedXOffset, String name) {
-			g.setColor(drawColor);
-			g.drawString(name, addedXOffset - 20, vertTextAnchor + 20);
-			for (int i = 0; i < shapes.length; i++) {
-				g.setColor(drawColor);
-				g.setStroke(stroke);
-				switch(shapes[i].getType()) {
-				case CIRCLE_SHAPE:
-					CircleShape circleShape = (CircleShape)shapes[i];
-					float radius = circleShape.getRadius();
-					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
-					g.drawOval((int)(runnerScaling * (circleCenter.x - radius) + addedXOffset),
-							(int)(runnerScaling * (circleCenter.y - radius) + yOffsetPixels),
-							(int)(runnerScaling * radius * 2),
-							(int)(runnerScaling * radius * 2));
-					break;
-				case POLYGON_SHAPE:
-					//Get both the shape and its transform.
-					PolygonShape polygonShape = (PolygonShape)shapes[i];
-					XForm transform = transforms[i];
-
-					// Ground is black regardless.
-					if (shapes[i].m_filter.groupIndex == 1) {
-						g.setColor(Color.BLACK);
-						g.setStroke(normalStroke);
-					}
-					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
-						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
-						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
-						g.drawLine((int)(runnerScaling * ptA.x) + addedXOffset,
-								(int)(runnerScaling * ptA.y) + yOffsetPixels,
-								(int)(runnerScaling * ptB.x) + addedXOffset,
-								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
-					}
-					break;
-				default:
-					break;
-				}
-			}
-		}
-		public void setGameToView(QWOPGame game) {
-			world = game.getWorld();
-			this.game = game;
-		}
-
-		public void clearGameToView() {
-			world = null;
-			game = null;
-		}
-
-		@Override
-		public void activateTab() {
-			active = true;
-		}
-		@Override
-		public void deactivateTab() {
-			active = false;
-			//tmp remove negotiator.killRealtimeRun();
-		}
-		public void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
-
-			int qOffset = (q ? 10:0);
-			int wOffset = (w ? 10:0);
-			int oOffset = (o ? 10:0);
-			int pOffset = (p ? 10:0);
-
-			int offsetBetweenPairs = getWidth()/4;
-			int startX = -45;
-			int startY = yOffsetPixels - 200;
-			int size = 40;
-
-			Font activeFont;
-			FontMetrics fm;
-			Graphics2D g2 = (Graphics2D)g;
-
-			g2.setColor(Color.DARK_GRAY);
-			g2.drawRoundRect(startX + 80 - qOffset/2, startY - qOffset/2, size + qOffset, size + qOffset, (size + qOffset)/10, (size + qOffset)/10);
-			g2.drawRoundRect(startX + 160 - wOffset/2, startY - wOffset/2, size + wOffset, size + wOffset, (size + wOffset)/10, (size + wOffset)/10);
-			g2.drawRoundRect(startX + 240 - oOffset/2 + offsetBetweenPairs, startY - oOffset/2, size + oOffset, size + oOffset, (size + oOffset)/10, (size + oOffset)/10);
-			g2.drawRoundRect(startX + 320 - pOffset/2 + offsetBetweenPairs, startY - pOffset/2, size + pOffset, size + pOffset, (size + pOffset)/10, (size + pOffset)/10);
-
-			g2.setColor(Color.LIGHT_GRAY);
-			g2.fillRoundRect(startX + 80 - qOffset/2, startY - qOffset/2, size + qOffset, size + qOffset, (size + qOffset)/10, (size + qOffset)/10);
-			g2.fillRoundRect(startX + 160 - wOffset/2, startY - wOffset/2, size + wOffset, size + wOffset, (size + wOffset)/10, (size + wOffset)/10);
-			g2.fillRoundRect(startX + 240 - oOffset/2 + offsetBetweenPairs, startY - oOffset/2, size + oOffset, size + oOffset, (size + oOffset)/10, (size + oOffset)/10);
-			g2.fillRoundRect(startX + 320 - pOffset/2 + offsetBetweenPairs, startY - pOffset/2, size + pOffset, size + pOffset, (size + pOffset)/10, (size + pOffset)/10);
-
-			g2.setColor(Color.BLACK);
-
-			//Used for making sure text stays centered.
-
-			activeFont = q ? QWOPBig:QWOPLittle;
-			g2.setFont(activeFont);
-			fm = g2.getFontMetrics();
-			g2.drawString("Q", startX + 80 + size/2-fm.stringWidth("Q")/2, startY + size/2+fm.getHeight()/3);
-
-
-			activeFont = w ? QWOPBig:QWOPLittle;
-			g2.setFont(activeFont);
-			fm = g2.getFontMetrics();
-			g2.drawString("W", startX + 160 + size/2-fm.stringWidth("W")/2, startY + size/2+fm.getHeight()/3);
-
-			activeFont = o ? QWOPBig:QWOPLittle;
-			g2.setFont(activeFont);
-			fm = g2.getFontMetrics();
-			g2.drawString("O", startX + 240 + size/2-fm.stringWidth("O")/2 + offsetBetweenPairs, startY + size/2+fm.getHeight()/3);
-
-			activeFont = p ? QWOPBig:QWOPLittle;
-			g2.setFont(activeFont);
-			fm = g2.getFontMetrics();
-			g2.drawString("P", startX + 320 + size/2-fm.stringWidth("P")/2 + offsetBetweenPairs, startY + size/2+fm.getHeight()/3);
+				
 
 		}
+
 	}
 
 	/**

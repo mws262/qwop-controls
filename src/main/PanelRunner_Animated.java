@@ -1,16 +1,13 @@
 package main;
 
 import java.awt.Graphics;
-import javax.swing.JPanel;
-import main.IUserInterface.TabbedPaneActivator;
 
-public class Panel_Runner extends JPanel implements Runnable, TabbedPaneActivator{
+public class PanelRunner_Animated extends PanelRunner implements Runnable{
+
+	private static final long serialVersionUID = 1L;
 
 	/** Is this panel still listening and ready to draw? Only false if thread is being killed. **/
 	private boolean running = true;
-
-	/** Should this panel be drawing or is it hidden. **/
-	private boolean active = true;
 
 	/** This panel's copy of the game it uses to run games for visualization. **/
 	private QWOPGame game;
@@ -21,22 +18,13 @@ public class Panel_Runner extends JPanel implements Runnable, TabbedPaneActivato
 	/** How long the panel pauses between drawing in millis. Assuming that simulation basically takes no time. **/
 	private long displayPause = 35;
 
-	/** Runner coordinates to pixels. **/
-	public float runnerScaling = 10f;
-
-	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
-	public int xOffsetPixels = 960;
-	public int yOffsetPixels = 100;
-
-
 	/** Current status of each keypress. **/
 	private boolean Q = false;
 	private boolean W = false;
 	private boolean O = false;
 	private boolean P = false;
 
-	public Panel_Runner() {}
-
+	public PanelRunner_Animated() {}
 
 	/** Give this panel a node to simulate and draw to. If a new node is supplied while another
 	 * is active, then terminate the previous and start the new one.**/
@@ -58,11 +46,14 @@ public class Panel_Runner extends JPanel implements Runnable, TabbedPaneActivato
 		}
 	}
 
+	/** Gets autocalled by the main graphics manager. **/
 	public void paintComponent(Graphics g) {
 		if (!active) return;
 		super.paintComponent(g);
 		if (game != null) {
 			game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
+			keyDrawer(g, Q, W, O, P);
+			drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
 		}
 	}
 
@@ -70,34 +61,15 @@ public class Panel_Runner extends JPanel implements Runnable, TabbedPaneActivato
 	public void run() {
 		while (running) {
 			if (active) {
-				//System.out.print("HI");
 				if (game != null) {
-					//System.out.println("HI");
 					executeNextOnQueue();
 				}
-
-				try {
-					Thread.sleep(displayPause);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+			}
+			try {
+				Thread.sleep(displayPause);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
-	}
-
-	@Override
-	public void activateTab() {
-		active = true;
-	}
-
-	@Override
-	public void deactivateTab() {
-		active = false;
-
-	}
-	
-	@Override
-	public boolean isActive() {
-		return active;
 	}
 }
