@@ -1,18 +1,7 @@
 package main;
 
 import java.awt.Graphics;
-
 import javax.swing.JPanel;
-
-import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.EdgeShape;
-import org.jbox2d.collision.shapes.PolygonShape;
-import org.jbox2d.collision.shapes.Shape;
-import org.jbox2d.collision.shapes.ShapeType;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.common.XForm;
-import org.jbox2d.dynamics.Body;
-
 import main.IUserInterface.TabbedPaneActivator;
 
 public class Panel_Runner extends JPanel implements Runnable, TabbedPaneActivator{
@@ -28,9 +17,6 @@ public class Panel_Runner extends JPanel implements Runnable, TabbedPaneActivato
 
 	/** Stores the qwop actions we're going to execute. **/
 	private ActionQueue actionQueue = new ActionQueue();
-
-	/** Runner body part shapes. **/
-	private Shape[] shapes = QWOPGame.shapeList;
 
 	/** How long the panel pauses between drawing in millis. Assuming that simulation basically takes no time. **/
 	private long displayPause = 35;
@@ -49,9 +35,7 @@ public class Panel_Runner extends JPanel implements Runnable, TabbedPaneActivato
 	private boolean O = false;
 	private boolean P = false;
 
-	public Panel_Runner() {
-
-	}
+	public Panel_Runner() {}
 
 
 	/** Give this panel a node to simulate and draw to. If a new node is supplied while another
@@ -111,7 +95,8 @@ public class Panel_Runner extends JPanel implements Runnable, TabbedPaneActivato
 		active = false;
 
 	}
-
+	
+	@Override
 	public boolean isActive() {
 		return active;
 	}

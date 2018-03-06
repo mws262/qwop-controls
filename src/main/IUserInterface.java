@@ -30,5 +30,6 @@ public interface IUserInterface extends Runnable{
 	public interface TabbedPaneActivator {
 		public void activateTab();
 		public void deactivateTab();
+		public boolean isActive();
 	}
 }

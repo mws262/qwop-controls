@@ -538,9 +538,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
-
 			if (e.isMetaDown()) {
-				System.out.println("Here we be");
 				selectNode(cam.nodeFromClick(e.getX(), e.getY(), rootNodes));
 			}
 		}

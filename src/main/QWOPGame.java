@@ -881,8 +881,13 @@ public class QWOPGame{
 		return timestepsSimulated;
 	}
 
+	
+	/** How far out to mark road dashes. **/
+	private final int markingWidth = 2000;
+	
 	/** Draw this game's runner. Must provide scaling from game units to pixels, as well as pixel offsets in x and y. **/
 	public void draw(Graphics g, float scaling, int xOffset, int yOffset) {
+		
 		Body newBody = getWorld().getBodyList();
 		while (newBody != null) {
 			int xOffsetPixels = -(int)(scaling*torsoBody.getPosition().x) + xOffset; // Basic offset, plus centering x on torso.
@@ -938,10 +943,11 @@ public class QWOPGame{
 			}
 			newBody = newBody.getNext();
 		}
-		//			//This draws the "road" markings to show that the ground is moving relative to the dude.
-		//			for(int i = 0; i<this.getWidth()/69; i++) {
-		//				g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 92);
-		//			}
+
+		//This draws the "road" markings to show that the ground is moving relative to the dude.
+		for (int i = 0; i < markingWidth/69; i++) {
+			g.drawString("_", ((-(int)(scaling * torsoBody.getPosition().x) - i * 70) % markingWidth) + markingWidth, yOffset + 92);
+		}
 	}
 
 
