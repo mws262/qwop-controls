@@ -1,4 +1,4 @@
-package main;
+package ui;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Container;
@@ -78,6 +78,16 @@ import org.jfree.ui.RectangleInsets;
 
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
+
+import main.INegotiateGame;
+import main.IUserInterface;
+import main.Node;
+import main.QWOPGame;
+import main.State;
+import main.Utility;
+import main.IUserInterface.TabbedPaneActivator;
+import main.State.ObjectName;
+import main.State.StateName;
 
 
 /**
@@ -326,7 +336,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			selectedNode.setBranchZOffset(0.4f);
 			if (runnerPanel.isActive()) runnerPanel.simRunToNode(selectedNode);
 
-			if (snapshotPane.active) snapshotPane.giveSelectedNode(selectedNode);
+			if (snapshotPane.isActive()) snapshotPane.giveSelectedNode(selectedNode);
 			if (comparisonPane.active) comparisonPane.giveSelectedNode(selectedNode);
 			if (dataPane_state.active) dataPane_state.update(); // Updates data being put on plots
 			if (dataPane_pca.active) dataPane_pca.update(); // Updates data being put on plots
@@ -586,7 +596,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			mouseY = e.getY();
 
 			// If the snapshot pane is displaying stuff, this lets us potentially select some of the future nodes displayed in the snapshot pane.
-			if (snapshotPane.active && mouseInside) {
+			if (snapshotPane.isActive() && mouseInside) {
 				List<Node> snapshotLeaves = snapshotPane.getDisplayedLeaves();
 				if (snapshotLeaves.size() > 0) {
 					Node nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves, 50);
@@ -2043,7 +2053,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	@Override
 	public boolean isSnapshotPaneActive() {
-		return snapshotPane.active;
+		return snapshotPane.isActive();
 	}
 
 	@Override

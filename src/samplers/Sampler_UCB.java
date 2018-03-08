@@ -1,4 +1,10 @@
-package main;
+package samplers;
+
+import main.Action;
+import main.IEvaluationFunction;
+import main.ISampler;
+import main.Node;
+import main.Utility;
 
 /**
  * Implements upper confidence bound for trees (UCBT, UCT, UCB, depending on who you ask).

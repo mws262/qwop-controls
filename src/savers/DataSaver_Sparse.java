@@ -1,9 +1,13 @@
-package main;
+package savers;
 
 import java.util.ArrayList;
 
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
+import main.Action;
+import main.IDataSaver;
+import main.Node;
+import main.State;
 
 /**
  * Saver for sparse game information. Basically this includes actions

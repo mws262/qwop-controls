@@ -1,6 +1,11 @@
-package main;
+package ui;
 
 import java.awt.Graphics;
+
+import main.ActionQueue;
+import main.Node;
+import main.PanelRunner;
+import main.QWOPGame;
 
 public class PanelRunner_Animated extends PanelRunner implements Runnable{
 

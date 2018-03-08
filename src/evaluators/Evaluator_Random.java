@@ -1,6 +1,9 @@
-package main;
+package evaluators;
 
 import java.util.Random;
+
+import main.IEvaluationFunction;
+import main.Node;
 
 /** This evaluation function returns a random value regardless of the given node.
  * This is rarely a good idea, but is ok for testing stuff.

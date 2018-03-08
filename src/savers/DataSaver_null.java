@@ -1,4 +1,10 @@
-package main;
+package savers;
+
+import main.Action;
+import main.IDataSaver;
+import main.Node;
+import main.State;
+
 /**
  * Data saver placeholder for when we don't wish to actually save anything.
  *

@@ -1,4 +1,4 @@
-package main;
+package savers;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,6 +16,10 @@ import org.tensorflow.example.SequenceExample;
 import com.google.protobuf.ByteString;
 
 import data.TFRecordWriter;
+import main.Action;
+import main.IDataSaver;
+import main.Node;
+import main.State;
 
 public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 	

@@ -1,4 +1,4 @@
-package main;
+package ui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,8 @@ import javax.vecmath.Vector3f;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.glu.GLU;
+
+import main.Node;
 
 /** 
  * Handle all camera motion including smooth motions, click-to-coordinate mapping, etc.

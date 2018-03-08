@@ -7,6 +7,22 @@ import java.util.Map;
 
 import com.beust.jcommander.*;
 
+import distributions.Distribution_Normal;
+import distributions.Distribution_Uniform;
+import evaluators.Evaluator_Distance;
+import evaluators.Evaluator_HandTunedOnState;
+import evaluators.Evaluator_Random;
+import samplers.Sampler_Distribution;
+import samplers.Sampler_Greedy;
+import samplers.Sampler_Random;
+import samplers.Sampler_UCB;
+import savers.DataSaver_DenseJava;
+import savers.DataSaver_DenseTFRecord;
+import savers.DataSaver_Sparse;
+import savers.DataSaver_null;
+import ui.UI_Full;
+import ui.UI_Headless;
+
 class Settings {
 	@Parameter
 	List<String> parameters = new ArrayList<>();

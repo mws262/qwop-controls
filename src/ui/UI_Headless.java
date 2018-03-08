@@ -1,6 +1,11 @@
-package main;
+package ui;
 
 import javax.swing.event.ChangeEvent;
+
+import main.INegotiateGame;
+import main.IUserInterface;
+import main.Node;
+import main.QWOPGame;
 
 public class UI_Headless implements IUserInterface {
 

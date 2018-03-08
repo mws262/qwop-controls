@@ -3,8 +3,11 @@ package data;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Map.Entry;
+
+import evaluators.Evaluator_HandTunedOnState;
+
 import java.util.TreeMap;
-import main.Evaluator_HandTunedOnState;
+
 import main.State;
 
 /**

@@ -1,4 +1,4 @@
-package main;
+package ui;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -6,6 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jbox2d.common.XForm;
+
+import main.Node;
+import main.QWOPGame;
+import main.State;
+import main.TensorflowAutoencoder;
 
 public class PanelRunner_AnimatedAutoencoder extends PanelRunner_Animated{
 

@@ -1,12 +1,14 @@
 /**
  * 
  */
-package main;
+package savers;
 
 import java.util.ArrayList;
 
 import data.SaveableDenseData;
 import data.SaveableFileIO;
+import main.IDataSaver;
+import main.Node;
 
 /**
  * Saves data at every timestep. Old saver which serializes java classes.

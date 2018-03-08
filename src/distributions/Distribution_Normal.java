@@ -1,6 +1,9 @@
-package main;
+package distributions;
 
 import java.util.ArrayList;
+
+import main.Action;
+import main.Distribution;
 
 public class Distribution_Normal extends Distribution<Action> {
 

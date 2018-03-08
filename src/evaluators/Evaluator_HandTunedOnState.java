@@ -1,4 +1,8 @@
-package main;
+package evaluators;
+
+import main.IEvaluationFunction;
+import main.Node;
+import main.State;
 
 public class Evaluator_HandTunedOnState implements IEvaluationFunction {
 

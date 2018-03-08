@@ -1,4 +1,9 @@
-package main;
+package samplers;
+
+import main.Action;
+import main.ISampler;
+import main.Node;
+import main.Utility;
 
 /**
  * Dumb sampler, either for filling a space or testing purposes.

@@ -1,6 +1,10 @@
-package main;
+package savers;
 
 import java.util.ArrayList;
+
+import main.Action;
+import main.IDataSaver;
+import main.State;
 
 /**
  * Saving to file with full state and action data at every timestep.

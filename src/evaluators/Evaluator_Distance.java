@@ -1,4 +1,7 @@
-package main;
+package evaluators;
+
+import main.IEvaluationFunction;
+import main.Node;
 
 /**
  * Evaluation of a node based on X progress along the track.

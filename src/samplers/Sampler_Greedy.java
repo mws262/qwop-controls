@@ -1,7 +1,13 @@
-package main;
+package samplers;
 
 import java.awt.Color;
 import java.util.ArrayList;
+
+import main.Action;
+import main.IEvaluationFunction;
+import main.ISampler;
+import main.Node;
+import main.Utility;
 
 public class Sampler_Greedy implements ISampler {
 

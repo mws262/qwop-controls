@@ -1,6 +1,10 @@
-package main;
+package samplers;
 
 import java.util.ArrayList;
+
+import main.Action;
+import main.ISampler;
+import main.Node;
 
 /**
  * Purely sample according to the assigned distributions, no other heuristics.

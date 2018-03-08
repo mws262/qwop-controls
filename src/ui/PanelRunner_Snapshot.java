@@ -1,4 +1,4 @@
-package main;
+package ui;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jbox2d.common.XForm;
+
+import main.Node;
+import main.PanelRunner;
+import main.QWOPGame;
 
 /**
 * Displays fixed shots of the runner at selected nodes. Can also preview the past and future from these nodes. A tab.

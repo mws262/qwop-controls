@@ -11,3 +11,4 @@ src/python/tmp/
 .DS_Store
 *.TFRecord
 src/python/venv/
+*.log
