@@ -261,6 +261,7 @@ public class MAIN_Run implements Runnable{
 		}
 
 		TreeWorker worker1 = new TreeWorker(treeRoot, currentSampler);
+		((UI_Full)ui).addDebuggingTab(worker1); // temp -- do something more permanent.
 		
 		worker1.verbose = false;
 		List<TreeWorker> workerList = new ArrayList<TreeWorker>();

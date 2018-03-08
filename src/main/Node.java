@@ -131,7 +131,6 @@ public class Node {
 		}
 	}
 
-
 	/** 
 	 * Make a new node which is NOT the root. connectNodeToTree is the default.
 	 **/

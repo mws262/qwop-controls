@@ -43,15 +43,16 @@ public class ActionQueue{
 
 	/** Adds a new action to the end of the queue. **/
 	public synchronized void addAction(Action action){
-		actionQueue.add(action);
-		actionListFull.add(action);
+		Action localCopy = action.getCopy();
+		actionQueue.add(localCopy);
+		actionListFull.add(localCopy);
 		isEmpty = false;
 	}
 
 	/** Add a sequence of actions. NOTE: sequence is NOT reset unless clearAll is called. **/
 	public synchronized void addSequence(Action[] actions){
 		for (int i = 0; i < actions.length; i++){
-			addAction(actions[i]);
+			addAction(actions[i].getCopy());
 		}
 	}
 

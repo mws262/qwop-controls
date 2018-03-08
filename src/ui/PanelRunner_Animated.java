@@ -2,6 +2,7 @@ package ui;
 
 import java.awt.Graphics;
 
+import main.Action;
 import main.ActionQueue;
 import main.Node;
 import main.PanelRunner;
@@ -39,7 +40,12 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 	public void simRunToNode(Node node) {
 		actionQueue.clearAll();
 		game = new QWOPGame();
-		actionQueue.addSequence(node.getSequence());
+		Action[] actionSequence = node.getSequence();
+		actionQueue.addSequence(actionSequence);
+		for (Action a : actionSequence) {
+			System.out.println(a);
+		}
+		
 	}
 
 	/** Pop the next action off the queue and execute one timestep. **/

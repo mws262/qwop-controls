@@ -82,6 +82,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import main.INegotiateGame;
 import main.IUserInterface;
 import main.Node;
+import main.PanelRunner;
 import main.QWOPGame;
 import main.State;
 import main.Utility;
@@ -260,6 +261,11 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		this.setVisible(true); 
 		//treePane.requestFocus();
 		repaint();
+	}
+	
+	public void addDebuggingTab(PanelRunner debugPanel) {
+		tabPane.addTab("Debugging", debugPanel);
+		allTabbedPanes.add(debugPanel);
 	}
 
 	/* (non-Javadoc)

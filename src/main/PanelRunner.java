@@ -54,7 +54,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 	
 	/** Spacing for sequence number drawing on the left side panel. **/
 	private final int vertTextSpacing = 18;
-	private final int vertTextAnchor = 15;
+	private final int vertTextAnchor = 60;
 	
 	
 	/** Draw the pressed keys in the panel during running. **/
@@ -113,14 +113,15 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 	}
 
 	protected void drawActionString(Graphics g, Action[] sequence, int highlightIdx) {
+
 		g.setFont(smallFont);
-		g.setColor(Color.BLACK);
+		// g.setColor(Color.BLACK);
 		// g.drawString("Selected sequence: ", 10, vertTextAnchor);
 		g.setColor(Color.DARK_GRAY);
 
 		int currIdx = 0;
 		int lineNum = 1;
-		while (currIdx < sequence.length - 1) {
+		do {
 			String line = sequence[currIdx].toStringLite() + ",";
 
 			if (currIdx == highlightIdx) {
@@ -129,10 +130,11 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 				g.setColor(Color.DARK_GRAY);
 			}
 			g.drawString(line, 10 + (currIdx % 4)*50 + lineNum/7*210, vertTextAnchor + vertTextSpacing * (lineNum % 7 + 2)); // Wrap horizontally after 7 lines
+		
 			currIdx++;
 			lineNum = currIdx/4 + 1;
-
-		}
+			
+		} while (currIdx < sequence.length);
 
 		// Draw the little keys above the column.
 		Graphics2D g2 = (Graphics2D)g;

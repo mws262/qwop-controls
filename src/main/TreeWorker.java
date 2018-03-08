@@ -1,5 +1,8 @@
 package main;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -14,18 +17,20 @@ import java.util.Queue;
  *
  */
 
-public class TreeWorker implements Runnable {
+public class TreeWorker extends PanelRunner implements Runnable {
+
+	private static final long serialVersionUID = 1L;
 
 	public enum Status{
 		IDLE, INITIALIZE, TREE_POLICY_CHOOSING, TREE_POLICY_EXECUTING, EXPANSION_POLICY_CHOOSING, EXPANSION_POLICY_EXECUTING, ROLLOUT_POLICY_CHOOSING,  ROLLOUT_POLICY_EXECUTING, EVALUATE_GAME, EXHAUSTED
 	}
-	
+
 	/** Is this worker running the FSM repeatedly? **/
 	private boolean workerRunning = true;
-	
+
 	/** Sets the FSM to stop running the next time it is idle. **/
 	private boolean flagForTermination = false;
-	
+
 	/** Print debugging info? **/
 	public boolean verbose = false;
 
@@ -65,6 +70,7 @@ public class TreeWorker implements Runnable {
 		initState.failedState = false;
 	}
 
+	int tmpcount = 0;
 	/* Finite state machine loop. Runnable. */
 	public void run() {
 		while(workerRunning) {
@@ -75,7 +81,7 @@ public class TreeWorker implements Runnable {
 				}else {
 					changeStatus(Status.INITIALIZE);
 				}
-				
+
 				break;
 			case INITIALIZE:
 				actionQueue.clearAll();
@@ -104,6 +110,7 @@ public class TreeWorker implements Runnable {
 						throw new RuntimeException("Target node in the tree policy should be a descendant of the current node.");
 					}else {
 						// Otherwise, this is a valid target point. We should add its actions and then execute.
+						actionQueue.clearAll();
 						actionQueue.addSequence(targetNodeToTest.getSequence());
 						changeStatus(Status.TREE_POLICY_EXECUTING);
 					}
@@ -138,7 +145,7 @@ public class TreeWorker implements Runnable {
 						throw new RuntimeException("Expansion policy tried to sample a node more than 1 depth below it in the tree. This is bad since tree policy should be used"
 								+ "to traverse the existing tree and expansion policy should only be used for adding new nodes and extending the tree.");
 					}
-
+					actionQueue.clearAll();
 					actionQueue.addAction(targetNodeToTest.getAction());
 					changeStatus(Status.EXPANSION_POLICY_EXECUTING);
 				}
@@ -172,6 +179,8 @@ public class TreeWorker implements Runnable {
 					changeStatus(Status.EVALUATE_GAME);
 				}else {
 					targetNodeToTest = sampler.rolloutPolicy(currentGameNode);
+					actionQueue.clearAll();
+					actionQueue.addAction(targetNodeToTest.getAction());
 					changeStatus(Status.ROLLOUT_POLICY_EXECUTING);
 				}
 
@@ -202,7 +211,11 @@ public class TreeWorker implements Runnable {
 				}else {
 					changeStatus(Status.IDLE);
 				}
-
+				tmpcount++;
+				
+				if (tmpcount > 500){
+					workerRunning = false;
+				}
 				break;
 			case EXHAUSTED:
 				System.out.println("Tree is fully explored.");
@@ -210,12 +223,6 @@ public class TreeWorker implements Runnable {
 			default:
 				break;
 			}
-//			try {
-//				Thread.sleep(10);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
 		}
 	}
 
@@ -233,7 +240,7 @@ public class TreeWorker implements Runnable {
 		game = new QWOPGame();
 	}
 
-	
+
 	public void addAction(Action action){
 		actionQueue.addAction(action);
 	}
@@ -263,7 +270,7 @@ public class TreeWorker implements Runnable {
 	public State getGameState(){
 		return game.getCurrentGameState();
 	}
-	
+
 	/** How many physics timesteps has this particular worker simulated? **/
 	public long getWorkerStepsSimulated() {
 		return workerStepsSimulated;
@@ -271,6 +278,16 @@ public class TreeWorker implements Runnable {
 	/** Terminate this worker after it's done with it's current task. **/
 	public void terminateWorker() {
 		flagForTermination = true;
+	}
+
+	/** Debug drawer. If you just want to display a run, use one of the other PanelRunner implementations. **/
+	public void paintComponent(Graphics g) {
+		if (!active || game == null) return;
+		super.paintComponent(g);
+		Graphics2D g2 = (Graphics2D)g;
+
+		// Draw all non-highlighted runners.
+		QWOPGame.drawExtraRunner(g2, game.getCurrentGameState().getTransforms(), "", runnerScaling, xOffsetPixels, yOffsetPixels, Color.BLACK, normalStroke);
 	}
 }
 
