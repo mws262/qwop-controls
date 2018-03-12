@@ -70,7 +70,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 		initState.failedState = false;
 	}
 
-	int tmpcount = 0;
+	int tmpc = 0;
 	/* Finite state machine loop. Runnable. */
 	public void run() {
 		while(workerRunning) {
@@ -211,11 +211,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				}else {
 					changeStatus(Status.IDLE);
 				}
-				tmpcount++;
 				
-				if (tmpcount > 500){
-					workerRunning = false;
-				}
+				tmpc++;
+				if (tmpc > 1200) workerRunning = false;
 				break;
 			case EXHAUSTED:
 				System.out.println("Tree is fully explored.");

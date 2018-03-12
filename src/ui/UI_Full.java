@@ -566,7 +566,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 					case KeyEvent.VK_P : //Pause everything except for graphics updates
 						treePause = !treePause;
 						if (treePause) {
-							//tmp remove 	negotiator.pauseTree();
+							rootNodes.get(0).calcNodePos_below();
 						}else{
 							//tmp remove negotiator.unpauseTree();
 						}

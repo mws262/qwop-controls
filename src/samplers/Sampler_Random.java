@@ -13,11 +13,11 @@ import main.Utility;
  */
 public class Sampler_Random implements ISampler {
 
-	public Sampler_Random() {}
-
 	private boolean treePolicyDone = false;
 	private boolean expansionPolicyDone = false;
 	private boolean rolloutPolicyDone = true; // Rollout policy not in use in the random sampler.
+	
+	public Sampler_Random() {}
 	
 	@Override
 	public Node treePolicy(Node startNode) {
@@ -84,8 +84,6 @@ public class Sampler_Random implements ISampler {
 		if (startNode.uncheckedActions.size() == 0) throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 		
 		Action childAction = startNode.uncheckedActions.getRandom();
-				
-				//startNode.uncheckedActions.get(Node.randInt(0,startNode.uncheckedActions.size() - 1));
 		
 		return startNode.addChild(childAction);
 	}
