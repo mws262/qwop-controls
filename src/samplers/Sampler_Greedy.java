@@ -67,7 +67,7 @@ public class Sampler_Greedy implements ISampler {
 	 */
 	public int numSamplesAtDepth(int treeDepth) {
 
-		float a = (float)(depthN*depthN)*(samplesAtN - samplesAtInf)/(float)(samplesAt0 - samplesAtN);
+		float a = (float)(depthN*depthN)*(samplesAtN - samplesAtInf)/(samplesAt0 - samplesAtN);
 		float samples = a*(samplesAt0 - samplesAtInf)/(((float)treeDepth*treeDepth) + a) + samplesAtInf;	
 		return Math.round(samples);
 	}

@@ -97,6 +97,7 @@ public class Action implements Serializable{
 	}
 	
 	/** Return a string with the current action keys, total time to hold, and time remaining. **/
+	@Override
 	public String toString(){
 		String reportString = " Keys pressed: ";
 		reportString += keysPressed[0] ? "Q" : "";

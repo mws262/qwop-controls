@@ -53,6 +53,7 @@ public class FSM_Tree implements Runnable{
 	}
 
 	/* Finite state machine loop. Runnable. */
+	@Override
 	public void run() {
 		while (running){ // Call kill() to break
 			if (rootNodes.isEmpty()){
@@ -137,7 +138,7 @@ public class FSM_Tree implements Runnable{
 
 				// Estimate games per second if the frequency met.
 				if (gpsCounter % gpsFrequency == 0){
-					currentGPS = (currentGPS * (gpsFilter - 1) + 1000f * gpsFrequency/(float)(System.currentTimeMillis() - lastTime))/gpsFilter;
+					currentGPS = (currentGPS * (gpsFilter - 1) + 1000f * gpsFrequency/(System.currentTimeMillis() - lastTime))/gpsFilter;
 					gpsCounter = 1;
 					lastTime = System.currentTimeMillis();
 				}else{

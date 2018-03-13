@@ -28,6 +28,7 @@ public class ActionSet extends ArrayList<Action>{
 	}
 	
 	/** Duplicate this, including the elements. **/
+	@Override
 	public ActionSet clone() {
 		ActionSet duplicate = new ActionSet(samplingDist);
 		duplicate.addAll(this);

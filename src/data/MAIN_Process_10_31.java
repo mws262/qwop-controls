@@ -139,7 +139,7 @@ public class MAIN_Process_10_31 {
 					System.out.println("Warning: loaded a null game");
 				}
 				allLoadedRuns.add(game);
-				System.out.println((int)((j+1.)/(float)inFiles.size() * 100) + "% total completion. " + (int)((j - k)/(float)fileBatchSize * 100) + "% of file batch imported.");
+				System.out.println((int)((j+1.)/inFiles.size() * 100) + "% total completion. " + (int)((j - k)/(float)fileBatchSize * 100) + "% of file batch imported.");
 			}
 			System.out.printf("Done\n");
 
@@ -190,7 +190,7 @@ public class MAIN_Process_10_31 {
 
 			ProcessDenseData reSim = new ProcessDenseData();
 			reSim.process(allSortedGames, gameBatchSize);
-			System.out.println("Completed file batch " + (int)(k/fileBatchSize + 1) + "/" + (int)Math.ceil(inFiles.size()/(double)fileBatchSize));
+			System.out.println("Completed file batch " + (k/fileBatchSize + 1) + "/" + (int)Math.ceil(inFiles.size()/(double)fileBatchSize));
 
 		}
 	}

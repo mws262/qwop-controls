@@ -39,7 +39,7 @@ public class MAIN_TestTFlow {
 		float[][] input = new float[1][72];
 		
 		for (int i = 0; i < input[0].length; i++) {
-			input[0][i] = (float)i;
+			input[0][i] = i;
 		}
 		Tensor<Float> inputTensor = Tensor.create(input, Float.class);
 		

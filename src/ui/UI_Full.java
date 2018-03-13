@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -43,23 +42,19 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Vector3f;
 
 import org.jblas.*;
 import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.collision.shapes.Shape;
-import org.jbox2d.collision.shapes.ShapeType;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.World;
-
 import com.jogamp.opengl.*;
-import com.jogamp.opengl.GLEventListener;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -86,9 +81,6 @@ import main.PanelRunner;
 import main.QWOPGame;
 import main.State;
 import main.Utility;
-import main.IUserInterface.TabbedPaneActivator;
-import main.State.ObjectName;
-import main.State.StateName;
 
 
 /**
@@ -143,7 +135,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	private int FPS = 25;
 
 	/** Usable milliseconds per frame **/
-	private long MSPF = (long)(1f/(float)FPS * 1000f);
+	private long MSPF = (long)(1f/FPS * 1000f);
 
 	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
 	public int xOffsetPixels_init = 960;
@@ -319,7 +311,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	@Override
 	public void kill() {
 		running = false;
-		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));	
 	}
 
@@ -419,12 +411,12 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 				gl.glColor3f(1f, 0.1f, 0.1f);
 				gl.glPointSize(ptSize);
 
-				gl.glBegin(GL2.GL_POINTS);
+				gl.glBegin(GL.GL_POINTS);
 				node.drawNodes_below(gl);
 				gl.glEnd();
 
 				gl.glColor3f(1f, 1f, 1f);
-				gl.glBegin(GL2.GL_LINES);
+				gl.glBegin(GL.GL_LINES);
 				node.drawLines_below(gl);
 				gl.glEnd();
 			}
@@ -1159,6 +1151,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 
 		/** Draws the selected node state and potentially previous and future states. **/
+		@Override
 		public void paintComponent(Graphics g) {
 			if (!active) return;
 			super.paintComponent(g);
@@ -1316,10 +1309,10 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 			menu = new JDialog(); // Pop up box for the menus.
 			menu.setLayout(new GridLayout(2,4));
-			menu.add(new JLabel("X-axis", JLabel.CENTER));
+			menu.add(new JLabel("X-axis", SwingConstants.CENTER));
 			menu.getContentPane().add(objListX);
 			menu.getContentPane().add(stateListX);
-			menu.add(new JLabel("Y-axis", JLabel.CENTER));
+			menu.add(new JLabel("Y-axis", SwingConstants.CENTER));
 			menu.getContentPane().add(objListY);
 			menu.getContentPane().add(stateListY);
 
@@ -1328,6 +1321,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			menu.setVisible(false); // Start with this panel hidden.
 		}
 
+		@Override
 		public void update() {
 			// Fetching new data.
 			ArrayList<Node> nodesBelow = new ArrayList<Node>();
@@ -1429,6 +1423,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			}
 		}
 
+		@Override
 		public void update() {
 			requestFocus();
 			setDatasets(dataSelect);
@@ -1813,7 +1808,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 					//				if (col == pane.selectedPoint) {
 					//					return (java.awt.Shape)BigMarker;
 					//				} else {
-					return (java.awt.Shape) super.getItemShape(row, col);
+					return super.getItemShape(row, col);
 					//				}
 				}
 			}
@@ -1957,7 +1952,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 						sum += x.get(j,i);
 					}
 					// Subtract the mean out.
-					float avg = sum/(float)x.rows;
+					float avg = sum/x.rows;
 					for (int j = 0; j < x.rows; j++) {
 						float centered = x.get(j,i) - avg;
 						x.put(j,i,centered);
@@ -1967,7 +1962,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 					for (int j = 0; j < x.rows; j++) {
 						sum += x.get(j,i) * x.get(j,i);
 					}
-					float std = (float)Math.sqrt(sum/(float)(x.rows - 1));
+					float std = (float)Math.sqrt(sum/(x.rows - 1));
 
 					// Divide the standard deviation out.
 					for (int j = 0; j < x.rows; j++) {
@@ -2035,7 +2030,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 					//				if (col == pane.selectedPoint) {
 					//					return (java.awt.Shape)BigMarker;
 					//				} else {
-					return (java.awt.Shape) super.getItemShape(row, col);
+					return super.getItemShape(row, col);
 					//				}
 				}
 			}

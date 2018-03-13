@@ -3,9 +3,6 @@ package main;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * Addresses limitations of the old concurrent state machine approach.
@@ -72,6 +69,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	int tmpc = 0;
 	/* Finite state machine loop. Runnable. */
+	@Override
 	public void run() {
 		while(workerRunning) {
 			switch(currentStatus) {
@@ -279,6 +277,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	}
 
 	/** Debug drawer. If you just want to display a run, use one of the other PanelRunner implementations. **/
+	@Override
 	public void paintComponent(Graphics g) {
 		if (!active || game == null) return;
 		super.paintComponent(g);

@@ -98,7 +98,7 @@ public class MAIN_Controlled extends JFrame{
 			if (toSwitchCount > 10 && prediction <1.8f) {
 				
 				//System.out.println("SWITCHING SOON");
-				toSwitchCount = (int) Math.round(prediction); 
+				toSwitchCount = Math.round(prediction); 
 			}
 			
 			if (toSwitchCount == 0) {
@@ -137,6 +137,7 @@ public class MAIN_Controlled extends JFrame{
 		
 		public RunnerPane() {}
 
+		@Override
 		public void paintComponent(Graphics g) {
 			if (!active) return;
 			super.paintComponent(g);

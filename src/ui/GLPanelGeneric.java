@@ -2,13 +2,17 @@ package ui;
 import java.awt.Dimension;
 import java.awt.Graphics;
 
+import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL2ES1;
+import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.awt.GLJPanel;
+import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
 
@@ -68,6 +72,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener {
 	}
 	
 	/** Paint for this JPanel pretty much just asks the sub-canvas to paint. Somewhat a relic of the old graphics **/
+	@Override
 	public void paintComponent(Graphics g){
 		if(canvas != null){   
 			canvas.display();
@@ -75,6 +80,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener {
 	}
 	
 	/** Set the size of this window **/
+	@Override
 	public void setSize(int width, int height){
 		panelWidth  = width;
 		panelHeight = height;	
@@ -89,7 +95,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener {
 		gl = drawable.getGL().getGL2();
 		if (glu == null) glu = GLU.createGLU();
 		
-		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
+		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		
 		/* Run any camera updates. Note the camera updates are smoothed, 
 		 * so calling this EVERY time is important even if we haven't commanded
@@ -106,22 +112,22 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener {
 		gl = drawable.getGL().getGL2();
 
 		gl.setSwapInterval(1);
-		gl.glEnable(GL2.GL_DEPTH_TEST);
+		gl.glEnable(GL.GL_DEPTH_TEST);
 		gl.glLineWidth(2);
 
-		gl.glEnable(GL2.GL_NORMALIZE);
+		gl.glEnable(GLLightingFunc.GL_NORMALIZE);
 
 		cam.initLighting(gl);
 
 		//Line smoothing -- get rid of the pixelated look.
-		gl.glEnable( GL2.GL_LINE_SMOOTH );
-		gl.glEnable( GL2.GL_POLYGON_SMOOTH );
-		gl.glHint( GL2.GL_LINE_SMOOTH_HINT, GL2.GL_NICEST );
-		gl.glHint( GL2.GL_POLYGON_SMOOTH_HINT, GL2.GL_NICEST );
-		gl.glEnable(GL2.GL_BLEND);
-		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+		gl.glEnable( GL.GL_LINE_SMOOTH );
+		gl.glEnable( GL2GL3.GL_POLYGON_SMOOTH );
+		gl.glHint( GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST );
+		gl.glHint( GL2GL3.GL_POLYGON_SMOOTH_HINT, GL.GL_NICEST );
+		gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 
-		gl.glEnable( GL2.GL_POINT_SMOOTH );
+		gl.glEnable( GL2ES1.GL_POINT_SMOOTH );
 
 		// Background color -- this is the dark one.
 		gl.glClearColor(darkBackground[0],darkBackground[1],darkBackground[2],darkBackground[3]);

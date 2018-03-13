@@ -5,6 +5,7 @@ import javax.swing.event.ChangeEvent;
 public interface IUserInterface extends Runnable{
 
 	/** Main graphics loop. **/
+	@Override
 	void run();
 
 	/** Stop the FSM. **/

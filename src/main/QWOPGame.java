@@ -5,6 +5,15 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
@@ -351,6 +360,79 @@ public class QWOPGame{
 	/** Initial runner state. **/
 	private static final State initState = new QWOPGame().getCurrentGameState(); // Make sure this stays below all the other static assignments to avoid null pointers.
 
+	
+	
+    static class GameLoader extends ClassLoader {
+
+        @Override
+        public Class<?> loadClass(String name) throws ClassNotFoundException {
+            if (!name.contains("org.jbox2d")) {//org.jbox2d.dynamics.World
+                return super.loadClass(name);
+            }
+            try {
+                JarFile jarFile = new JarFile(new File("jbox2d.jar"));
+                InputStream input = null;
+                final Enumeration<JarEntry> entries = jarFile.entries();
+                while (entries.hasMoreElements()) {
+                    final JarEntry entry = entries.nextElement();
+                    if (entry.getName().contains(".")) {
+                        System.out.println("File : " + entry.getName());
+                        JarEntry fileEntry = jarFile.getJarEntry(entry.getName());
+                        input = jarFile.getInputStream(fileEntry);
+                        if (entry.getName().equals(name.replaceAll(Pattern.quote("."), "/") + ".class")) break;
+                    System.out.println(name.replaceAll(Pattern.quote("."), "/") + ".class");
+                    }
+                }
+                byte[] a = new byte[50000];
+                int len  = input.read(a);
+                input.close();
+                System.out.println(len);
+                return defineClass(name, a, 0, len);
+            } catch (IOException e) {
+                throw new ClassNotFoundException();
+            }
+        }
+    }
+    
+    
+    public static void main(String[] args) {
+        try {
+			Class<?> g = new GameLoader().loadClass("org.jbox2d.dynamics.World");
+			Constructor<?> cons = g.getConstructor(AABB.class, Vec2.class, boolean.class);
+			Object w1 = cons.newInstance(worldAABB, gravity, true);
+			
+//			BodyDef trackBody = m_world.createBody(trackDef);
+//			trackBody.createShape(trackShape);
+			Object trackBody = w1.getClass().getMethod("creatBody").invoke(null, trackDef);
+
+			
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+//        public static class ByteClassLoader extends URLClassLoader {
+//            private final Map<String, byte[]> extraClassDefs;
+//
+//            public ByteClassLoader(URL[] urls, ClassLoader parent, Map<String, byte[]> extraClassDefs) {
+//              super(urls, parent);
+//              this.extraClassDefs = new HashMap<String, byte[]>(extraClassDefs);
+//            }
+//
+//            @Override
+//            protected Class<?> findClass(final String name) throws ClassNotFoundException {
+//              byte[] classBytes = this.extraClassDefs.remove(name);
+//              if (classBytes != null) {
+//                return defineClass(name, classBytes, 0, classBytes.length); 
+//              }
+//              return super.findClass(name);
+//            }
+//
+//          }
+    	
+    	
+    }
+	
 	public QWOPGame(){
 		if (!hasOneTimeInitializationHappened) {
 			oneTimeSetup();
@@ -716,19 +798,19 @@ public class QWOPGame{
 
 		//My current understanding is that the shapes never change. Only the transforms. Hence, this is now static and we only capture the states once.
 		if(shapeList[0] == null){
-			shapeList[0] = (PolygonShape)torsoBody.getShapeList();
-			shapeList[1] = (CircleShape)headBody.getShapeList();
-			shapeList[2] = (PolygonShape)rFootBody.getShapeList();
-			shapeList[3] = (PolygonShape)lFootBody.getShapeList();
-			shapeList[4] = (PolygonShape)rCalfBody.getShapeList();
-			shapeList[5] = (PolygonShape)lCalfBody.getShapeList();
-			shapeList[6] = (PolygonShape)rThighBody.getShapeList();
-			shapeList[7] = (PolygonShape)lThighBody.getShapeList();
-			shapeList[8] = (PolygonShape)rUArmBody.getShapeList();
-			shapeList[9] = (PolygonShape)lUArmBody.getShapeList();
-			shapeList[10] = (PolygonShape)rLArmBody.getShapeList();
-			shapeList[11] = (PolygonShape)lLArmBody.getShapeList();
-			shapeList[12] = (PolygonShape)trackBody.getShapeList();
+			shapeList[0] = torsoBody.getShapeList();
+			shapeList[1] = headBody.getShapeList();
+			shapeList[2] = rFootBody.getShapeList();
+			shapeList[3] = lFootBody.getShapeList();
+			shapeList[4] = rCalfBody.getShapeList();
+			shapeList[5] = lCalfBody.getShapeList();
+			shapeList[6] = rThighBody.getShapeList();
+			shapeList[7] = lThighBody.getShapeList();
+			shapeList[8] = rUArmBody.getShapeList();
+			shapeList[9] = lUArmBody.getShapeList();
+			shapeList[10] = rLArmBody.getShapeList();
+			shapeList[11] = lLArmBody.getShapeList();
+			shapeList[12] = trackBody.getShapeList();
 		}
 	} 
 

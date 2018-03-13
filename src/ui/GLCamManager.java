@@ -8,6 +8,8 @@ import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.fixedfunc.GLLightingFunc;
+import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 
 import main.Node;
@@ -109,13 +111,13 @@ public class GLCamManager {
 	/** Setup Lighting **/
 	public void initLighting(GL2 gl){
 		// SETUP LIGHTING
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
+		gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
 		gl.glLoadIdentity();
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightPos, 0);
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, lightAmbient, 0);
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, lightDiffuse, 0);
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, lightSpecular, 0);
-		gl.glEnable(GL2.GL_LIGHT0);
+		gl.glLightfv(GLLightingFunc.GL_LIGHT0, GLLightingFunc.GL_POSITION, lightPos, 0);
+		gl.glLightfv(GLLightingFunc.GL_LIGHT0, GLLightingFunc.GL_AMBIENT, lightAmbient, 0);
+		gl.glLightfv(GLLightingFunc.GL_LIGHT0, GLLightingFunc.GL_DIFFUSE, lightDiffuse, 0);
+		gl.glLightfv(GLLightingFunc.GL_LIGHT0, GLLightingFunc.GL_SPECULAR, lightSpecular, 0);
+		gl.glEnable(GLLightingFunc.GL_LIGHT0);
 	}
 
 	/** Update all camera views and bookkeeping info. Any queued camera movements will be incremented. **/
@@ -226,10 +228,10 @@ public class GLCamManager {
 		//Actually change the camera settings now.
 		//Camera perspective.
 		gl.glLoadIdentity();
-		glu.gluPerspective(viewAng, (float)width/height, nearPlane, farPlane);
+		glu.gluPerspective(viewAng, width/height, nearPlane, farPlane);
 		glu.gluLookAt(eyePos.x, eyePos.y, eyePos.z, targetPos.x, targetPos.y, targetPos.z, upVec.x, upVec.y, upVec.z);
 		gl.glPopMatrix();
-		gl.glGetFloatv(GL2.GL_MODELVIEW, modelViewMat,0);
+		gl.glGetFloatv(GLMatrixFunc.GL_MODELVIEW, modelViewMat,0);
 	}
 
 	/** Change window dims **/

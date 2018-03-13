@@ -61,6 +61,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 	}
 
 	/** Gets autocalled by the main graphics manager. **/
+	@Override
 	public void paintComponent(Graphics g) {
 		if (!active) return;
 		super.paintComponent(g);

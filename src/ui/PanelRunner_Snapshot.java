@@ -109,6 +109,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
 
 	/** Draws the selected node state and potentially previous and future states. **/
+	@Override
 	public void paintComponent(Graphics g) {
 		if (!active) return;
 		super.paintComponent(g);

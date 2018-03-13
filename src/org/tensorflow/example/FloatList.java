@@ -83,7 +83,8 @@ public  final class FloatList extends
     return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_FloatList_descriptor;
   }
 
-  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+  @Override
+protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_FloatList_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -95,26 +96,30 @@ public  final class FloatList extends
   /**
    * <code>repeated float value = 1 [packed = true];</code>
    */
-  public java.util.List<java.lang.Float>
+  @Override
+public java.util.List<java.lang.Float>
       getValueList() {
     return value_;
   }
   /**
    * <code>repeated float value = 1 [packed = true];</code>
    */
-  public int getValueCount() {
+  @Override
+public int getValueCount() {
     return value_.size();
   }
   /**
    * <code>repeated float value = 1 [packed = true];</code>
    */
-  public float getValue(int index) {
+  @Override
+public float getValue(int index) {
     return value_.get(index);
   }
   private int valueMemoizedSerializedSize = -1;
 
   private byte memoizedIsInitialized = -1;
-  public final boolean isInitialized() {
+  @Override
+public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
     if (isInitialized == 0) return false;
@@ -123,7 +128,8 @@ public  final class FloatList extends
     return true;
   }
 
-  public void writeTo(com.google.protobuf.CodedOutputStream output)
+  @Override
+public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
     getSerializedSize();
     if (getValueList().size() > 0) {
@@ -135,7 +141,8 @@ public  final class FloatList extends
     }
   }
 
-  public int getSerializedSize() {
+  @Override
+public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
 
@@ -247,14 +254,16 @@ public  final class FloatList extends
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public Builder newBuilderForType() { return newBuilder(); }
+  @Override
+public Builder newBuilderForType() { return newBuilder(); }
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
   public static Builder newBuilder(org.tensorflow.example.FloatList prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
-  public Builder toBuilder() {
+  @Override
+public Builder toBuilder() {
     return this == DEFAULT_INSTANCE
         ? new Builder() : new Builder().mergeFrom(this);
   }
@@ -277,7 +286,8 @@ public  final class FloatList extends
       return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_FloatList_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+	protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_FloatList_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -299,23 +309,27 @@ public  final class FloatList extends
               .alwaysUseFieldBuilders) {
       }
     }
-    public Builder clear() {
+    @Override
+	public Builder clear() {
       super.clear();
       value_ = java.util.Collections.emptyList();
       bitField0_ = (bitField0_ & ~0x00000001);
       return this;
     }
 
-    public com.google.protobuf.Descriptors.Descriptor
+    @Override
+	public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
       return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_FloatList_descriptor;
     }
 
-    public org.tensorflow.example.FloatList getDefaultInstanceForType() {
+    @Override
+	public org.tensorflow.example.FloatList getDefaultInstanceForType() {
       return org.tensorflow.example.FloatList.getDefaultInstance();
     }
 
-    public org.tensorflow.example.FloatList build() {
+    @Override
+	public org.tensorflow.example.FloatList build() {
       org.tensorflow.example.FloatList result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
@@ -323,7 +337,8 @@ public  final class FloatList extends
       return result;
     }
 
-    public org.tensorflow.example.FloatList buildPartial() {
+    @Override
+	public org.tensorflow.example.FloatList buildPartial() {
       org.tensorflow.example.FloatList result = new org.tensorflow.example.FloatList(this);
       int from_bitField0_ = bitField0_;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -335,33 +350,40 @@ public  final class FloatList extends
       return result;
     }
 
-    public Builder clone() {
-      return (Builder) super.clone();
+    @Override
+	public Builder clone() {
+      return super.clone();
     }
-    public Builder setField(
+    @Override
+	public Builder setField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         Object value) {
-      return (Builder) super.setField(field, value);
+      return super.setField(field, value);
     }
-    public Builder clearField(
+    @Override
+	public Builder clearField(
         com.google.protobuf.Descriptors.FieldDescriptor field) {
-      return (Builder) super.clearField(field);
+      return super.clearField(field);
     }
-    public Builder clearOneof(
+    @Override
+	public Builder clearOneof(
         com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-      return (Builder) super.clearOneof(oneof);
+      return super.clearOneof(oneof);
     }
-    public Builder setRepeatedField(
+    @Override
+	public Builder setRepeatedField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         int index, Object value) {
-      return (Builder) super.setRepeatedField(field, index, value);
+      return super.setRepeatedField(field, index, value);
     }
-    public Builder addRepeatedField(
+    @Override
+	public Builder addRepeatedField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         Object value) {
-      return (Builder) super.addRepeatedField(field, value);
+      return super.addRepeatedField(field, value);
     }
-    public Builder mergeFrom(com.google.protobuf.Message other) {
+    @Override
+	public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof org.tensorflow.example.FloatList) {
         return mergeFrom((org.tensorflow.example.FloatList)other);
       } else {
@@ -386,11 +408,13 @@ public  final class FloatList extends
       return this;
     }
 
-    public final boolean isInitialized() {
+    @Override
+	public final boolean isInitialized() {
       return true;
     }
 
-    public Builder mergeFrom(
+    @Override
+	public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -419,20 +443,23 @@ public  final class FloatList extends
     /**
      * <code>repeated float value = 1 [packed = true];</code>
      */
-    public java.util.List<java.lang.Float>
+    @Override
+	public java.util.List<java.lang.Float>
         getValueList() {
       return java.util.Collections.unmodifiableList(value_);
     }
     /**
      * <code>repeated float value = 1 [packed = true];</code>
      */
-    public int getValueCount() {
+    @Override
+	public int getValueCount() {
       return value_.size();
     }
     /**
      * <code>repeated float value = 1 [packed = true];</code>
      */
-    public float getValue(int index) {
+    @Override
+	public float getValue(int index) {
       return value_.get(index);
     }
     /**
@@ -474,12 +501,14 @@ public  final class FloatList extends
       onChanged();
       return this;
     }
-    public final Builder setUnknownFields(
+    @Override
+	public final Builder setUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return this;
     }
 
-    public final Builder mergeUnknownFields(
+    @Override
+	public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return this;
     }
@@ -500,7 +529,8 @@ public  final class FloatList extends
 
   private static final com.google.protobuf.Parser<FloatList>
       PARSER = new com.google.protobuf.AbstractParser<FloatList>() {
-    public FloatList parsePartialFrom(
+    @Override
+	public FloatList parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -517,7 +547,8 @@ public  final class FloatList extends
     return PARSER;
   }
 
-  public org.tensorflow.example.FloatList getDefaultInstanceForType() {
+  @Override
+public org.tensorflow.example.FloatList getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 
