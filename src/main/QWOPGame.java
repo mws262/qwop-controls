@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +52,7 @@ public class QWOPGame{
 
 	/** Normal stroke for line drawing. **/
 	private static final Stroke normalStroke = new BasicStroke(0.5f);
-	
+
 	/** Box2D world to be populated for QWOP. **/
 	public World m_world;
 
@@ -61,47 +62,7 @@ public class QWOPGame{
 	/** Should enclose the entire area we want collision checked. **/
 	private static final AABB worldAABB = new AABB(new Vec2(-100, -30f), new Vec2(5000f,80f));
 
-	/* Individual body objects */
-	public Body rFootBody;
-	public Body lFootBody;
-	public Body rCalfBody;
-	public Body lCalfBody;
-	public Body rThighBody;
-	public Body lThighBody;
-	public Body torsoBody;
-	public Body rUArmBody;
-	public Body lUArmBody;
-	public Body rLArmBody;
-	public Body lLArmBody;
-	public Body headBody;
-	public Body trackBody;
-
-	/* Joint Definitions */
-	public RevoluteJointDef rHipJDef;
-	public RevoluteJointDef lHipJDef;
-	public RevoluteJointDef rKneeJDef;
-	public RevoluteJointDef lKneeJDef;
-	public RevoluteJointDef rAnkleJDef;
-	public RevoluteJointDef lAnkleJDef;
-	public RevoluteJointDef rShoulderJDef;
-	public RevoluteJointDef lShoulderJDef;
-	public RevoluteJointDef rElbowJDef;
-	public RevoluteJointDef lElbowJDef;
-	public RevoluteJointDef neckJDef;
-
-	/* Joint objects */
-	public RevoluteJoint rHipJ;
-	public RevoluteJoint lHipJ;
-	public RevoluteJoint rKneeJ;
-	public RevoluteJoint lKneeJ;
-	public RevoluteJoint rAnkleJ;
-	public RevoluteJoint lAnkleJ;
-	public RevoluteJoint rShoulderJ;
-	public RevoluteJoint lShoulderJ;
-	public RevoluteJoint rElbowJ;
-	public RevoluteJoint lElbowJ;
-	public RevoluteJoint neckJ;
-
+	
 	/** Filters collisions. Prevents body parts from hitting other body parts. **/
 	private final int BODY_GROUP = -1;
 
@@ -116,20 +77,8 @@ public class QWOPGame{
 	// Feet
 	private static final Vec2 rFootPos = new Vec2(-0.96750f,7.77200f);
 	private static final Vec2 lFootPos = new Vec2(3.763f,8.101f);
-	private static final float rFootAng = 0.7498f;
-	private static final float lFootAng = 0.1429f;
-	private static final float rFootMass = 11.630f;
-	private static final float lFootMass = 10.895f;
-	private static final float rFootInertia = 9.017f;
-	private static final float lFootInertia = 8.242f;
-	private static final float rFootL = 2.68750f;
-	private static final float lFootL = 2.695f;
-	private static final float rFootH = 1.44249f;
-	private static final float lFootH = 1.34750f;
-	private static final float rFootFric = 1.5f;
-	private static final float lFootFric = 1.5f;
-	private static final float rFootDensity = 3f;
-	private static final float lFootDensity = 3f;
+	private static final float rFootAng = 0.7498f, rFootMass = 11.630f, rFootInertia = 9.017f, rFootL = 2.68750f, rFootH = 1.44249f, rFootFric = 1.5f, rFootDensity = 3f;
+	private static final float lFootAng = 0.1429f, lFootMass = 10.895f, lFootInertia = 8.242f, lFootL = 2.695f, lFootH = 1.34750f, lFootFric = 1.5f, lFootDensity = 3f;
 
 	// Calves
 	private static final Vec2 rCalfPos = new Vec2(0.0850f,5.381f);
@@ -289,22 +238,22 @@ public class QWOPGame{
 
 	/* Joints Positions*/
 
-	private static final Vec2 rAnklePos = new Vec2(-0.96750f,7.77200f);
-	private static final Vec2 lAnklePos = new Vec2(3.763f,8.101f);
+	private static final float rAnklePosX = -0.96750f; private static final float rAnklePosY = 7.77200f;
+	private static final float lAnklePosX = 3.763f; private static final float lAnklePosY = 8.101f;
 
-	private static final Vec2 rKneePos = new Vec2(1.58f,4.11375f);
-	private static final Vec2 lKneePos = new Vec2(3.26250f,3.51625f);
+	private static final float rKneePosX = 1.58f; private static final float rKneePosY = 4.11375f;
+	private static final float lKneePosX = 3.26250f; private static final float lKneePosY = 3.51625f;
 
-	private static final Vec2 rHipPos = new Vec2(1.260f,-0.06750f);
-	private static final Vec2 lHipPos = new Vec2(2.01625f,0.18125f);
+	private static final float rHipPosX = 1.260f; private static final float rHipPosY = -0.06750f;
+	private static final float lHipPosX = 2.01625f; private static final float lHipPosY = 0.18125f;
 
-	private static final Vec2 rShoulderPos = new Vec2(2.24375f,-4.14250f);
-	private static final Vec2 lShoulderPos = new Vec2(3.63875f,-3.58875f);
+	private static final float rShoulderPosX = 2.24375f; private static final float rShoulderPosY = -4.14250f;
+	private static final float lShoulderPosX = 3.63875f; private static final float lShoulderPosY = -3.58875f;
 
-	private static final Vec2 rElbowPos = new Vec2(-0.06f,-2.985f);
-	private static final Vec2 lElbowPos = new Vec2(5.65125f,-1.8125f);
+	private static final float rElbowPosX = -0.06f; private static final float rElbowPosY = -2.985f;
+	private static final float lElbowPosX = 5.65125f; private static final float lElbowPosY = -1.8125f;
 
-	private static final Vec2 neckPos = new Vec2(3.60400f,-4.581f);
+	private static final float neckPosX = 3.60400f; private static final float neckPosY = -4.581f;
 
 	/** List of shapes for use by graphics stuff. Making it static -- IE, assuming that in multiple games, the runner doesn't change shape. **/
 	public static Shape[] shapeList = new Shape[13];
@@ -355,357 +304,434 @@ public class QWOPGame{
 	private static final MassData rLArmMassData = new MassData();
 	private static final MassData lLArmMassData = new MassData();
 
-	private static boolean hasOneTimeInitializationHappened = false;
-
 	/** Initial runner state. **/
 	private static final State initState = new QWOPGame().getCurrentGameState(); // Make sure this stays below all the other static assignments to avoid null pointers.
 
-	
-	
-    static class GameLoader extends ClassLoader {
 
-        @Override
-        public Class<?> loadClass(String name) throws ClassNotFoundException {
-            if (!name.contains("org.jbox2d")) {//org.jbox2d.dynamics.World
-                return super.loadClass(name);
-            }
-            try {
-                JarFile jarFile = new JarFile(new File("jbox2d.jar"));
-                InputStream input = null;
-                final Enumeration<JarEntry> entries = jarFile.entries();
-                while (entries.hasMoreElements()) {
-                    final JarEntry entry = entries.nextElement();
-                    if (entry.getName().contains(".")) {
-                        System.out.println("File : " + entry.getName());
-                        JarEntry fileEntry = jarFile.getJarEntry(entry.getName());
-                        input = jarFile.getInputStream(fileEntry);
-                        if (entry.getName().equals(name.replaceAll(Pattern.quote("."), "/") + ".class")) break;
-                    System.out.println(name.replaceAll(Pattern.quote("."), "/") + ".class");
-                    }
-                }
-                byte[] a = new byte[50000];
-                int len  = input.read(a);
-                input.close();
-                System.out.println(len);
-                return defineClass(name, a, 0, len);
-            } catch (IOException e) {
-                throw new ClassNotFoundException();
-            }
-        }
-    }
-    
-    
-    public static void main(String[] args) {
-        try {
-			Class<?> g = new GameLoader().loadClass("org.jbox2d.dynamics.World");
-			Constructor<?> cons = g.getConstructor(AABB.class, Vec2.class, boolean.class);
-			Object w1 = cons.newInstance(worldAABB, gravity, true);
-			
-//			BodyDef trackBody = m_world.createBody(trackDef);
-//			trackBody.createShape(trackShape);
-			Object trackBody = w1.getClass().getMethod("creatBody").invoke(null, trackDef);
 
+
+
+	/**
+	 * This loads all the Box2D classes needed on a unique ClassLoader. This means that World.class from one instance
+	 * of this loader is different from the World.class of another loader. This means that they will have their
+	 * own static variables and should not interfere with each other.
+	 * @author matt
+	 *
+	 */
+	public class GameLoader extends ClassLoader {
+		
+		private Class<?> _World, _MassData, _BodyDef, _Vec2, _PolygonDef, _CircleDef, _AABB, _RevoluteJointDef, _Body, _RevoluteJoint;
+		
+		// Body/shape definitions:
+		private Object trackDef, rFootDef, lFootDef, rCalfDef, lCalfDef, rThighDef, lThighDef, torsoDef, headDef, rUArmDef, lUArmDef, rLArmDef, lLArmDef;
+		private Object trackShape, rFootShape, lFootShape, rCalfShape, lCalfShape, rThighShape, lThighShape, torsoShape, headShape, rUArmShape, lUArmShape, rLArmShape, lLArmShape;
+
+		// Actual bodies:
+		private Object trackBody, rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, headBody, rUArmBody, lUArmBody, rLArmBody, lLArmBody;
+		
+		// Joint definitions
+		public Object rHipJDef, lHipJDef, rKneeJDef, lKneeJDef, rAnkleJDef, lAnkleJDef, rShoulderJDef, lShoulderJDef, rElbowJDef, lElbowJDef, neckJDef;
+
+		// Joint objects
+		public Object rHipJ, lHipJ, rKneeJ, lKneeJ, rAnkleJ, lAnkleJ, rShoulderJ, lShoulderJ, rElbowJ, lElbowJ, neckJ;
+	
+		
+		public GameLoader() {
+			loadClasses(); // Load all the necessary classes on a new class loader (this).
 			
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			try {
+				oneTimeSetup(); // Create all the shape and body definitions that never need changing.
+			} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException
+					| IllegalArgumentException | InvocationTargetException | NoSuchFieldException e) {
+				e.printStackTrace();
+			}
 		}
-    	
-//        public static class ByteClassLoader extends URLClassLoader {
-//            private final Map<String, byte[]> extraClassDefs;
-//
-//            public ByteClassLoader(URL[] urls, ClassLoader parent, Map<String, byte[]> extraClassDefs) {
-//              super(urls, parent);
-//              this.extraClassDefs = new HashMap<String, byte[]>(extraClassDefs);
-//            }
-//
-//            @Override
-//            protected Class<?> findClass(final String name) throws ClassNotFoundException {
-//              byte[] classBytes = this.extraClassDefs.remove(name);
-//              if (classBytes != null) {
-//                return defineClass(name, classBytes, 0, classBytes.length); 
-//              }
-//              return super.findClass(name);
-//            }
-//
-//          }
-    	
-    	
-    }
+		
+		@Override
+		public Class<?> findClass(String name) {
+			byte[] bt = loadClassData(name);
+			return defineClass(name, bt, 0, bt.length);
+		}
+		
+		/** Loads individual classes.**/
+		private byte[] loadClassData(String className) {
+			//read class
+			InputStream is = getClass().getClassLoader().getResourceAsStream(className.replace(".", "/")+".class");
+			ByteArrayOutputStream byteSt = new ByteArrayOutputStream();
+			//write into byte
+			int len = 0;
+			try {
+				while((len=is.read())!=-1){
+					byteSt.write(len);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			//convert into byte array
+			return byteSt.toByteArray();
+		}
+		
+		/** Loads all the classes we need. **/
+		private void loadClasses() {
+			
+			try {
+				_Vec2 = findClass("org.jbox2d.common.Vec2");
+				_AABB = findClass("org.jbox2d.collision.AABB");
+				_World = findClass("org.jbox2d.dynamics.World");
+				
+				Class<?> world1 = findClass("org.jbox2d.dynamics.World$1");
+				Class<?> cm = findClass("org.jbox2d.dynamics.ContactManager");
+				Class<?> bp = findClass("org.jbox2d.collision.BroadPhase");
+				Class<?> pm = findClass("org.jbox2d.collision.PairManager");
+				Class<?> p = findClass("org.jbox2d.collision.Proxy");			
+				
+				_Body = findClass("org.jbox2d.dynamics.Body");
+				Class<?> xf = findClass("org.jbox2d.common.XForm");
+				_BodyDef = findClass("org.jbox2d.dynamics.BodyDef");
+				_MassData = findClass("org.jbox2d.collision.MassData");
+				_PolygonDef = findClass("org.jbox2d.collision.shapes.PolygonDef");
+				_CircleDef = findClass("org.jbox2d.collision.shapes.CircleDef");
+				Class<?> sw = findClass("org.jbox2d.common.Sweep");
+				Class<?> m22 = findClass("org.jbox2d.common.Mat22");
+				
+				_RevoluteJointDef = findClass("org.jbox2d.joint.RevoluteJointDef");
+				_RevoluteJoint = findClass("org.jbox2d.joint.RevoluteJoint");
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}	
+		}
+		
+		/** Convenience method to avoid dealing with reflection in the code constantly. 
+		 * @throws InstantiationException 
+		 * @throws SecurityException 
+		 * @throws NoSuchFieldException 
+		 * @throws IllegalAccessException 
+		 * @throws IllegalArgumentException 
+		 * @throws InvocationTargetException 
+		 * @throws NoSuchMethodException **/
+		private Object makeBodyDef(float positionX, float positionY, float angle, float mass, float inertia) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+
+			Object bodyDef = _BodyDef.newInstance();
+			Object massData = makeMassData(mass, inertia);
+			Object position = makeVec2(positionX, positionY);
+			
+			bodyDef.getClass().getField("massData").set(null, massData);
+			bodyDef.getClass().getField("position").set(null, position);
+			bodyDef.getClass().getField("angle").setFloat(null, angle);
+			
+			return bodyDef;
+		}
+		
+		/** Make a joint definition. 
+		 * @throws IllegalAccessException 
+		 * @throws InstantiationException 
+		 * @throws InvocationTargetException 
+		 * @throws IllegalArgumentException 
+		 * @throws SecurityException 
+		 * @throws NoSuchMethodException 
+		 * @throws NoSuchFieldException **/
+		private Object makeJointDef(Object body1, Object body2, float jointPosX, float jointPosY, float lowerAngle, 
+				float upperAngle, float maxTorque, float motorSpeed, boolean enableLimit, boolean enableMotor, boolean collideConnected) throws InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+			
+			Object jDef = _RevoluteJointDef.newInstance();
+			Object posVec = makeVec2(jointPosX, jointPosY);
+			
+			jDef.getClass().getMethod("initialize", _Body, _Body, _Vec2);
+			jDef.getClass().getField("lowerAngle").setFloat(null, lowerAngle);
+			jDef.getClass().getField("upperAngle").setFloat(null, upperAngle);
+			jDef.getClass().getField("maxMotorTorque").setFloat(null, maxTorque);
+			jDef.getClass().getField("motorSpeed").setFloat(null, motorSpeed);
+			
+			jDef.getClass().getField("motorSpeed").setBoolean(null, enableLimit);
+			jDef.getClass().getField("motorSpeed").setBoolean(null, enableMotor);
+			jDef.getClass().getField("motorSpeed").setBoolean(null, collideConnected);
+			
+			return jDef;
+		}
+		
+		/** Convenience method to avoid dealing with reflection in the code constantly. 
+		 * @throws IllegalAccessException 
+		 * @throws InstantiationException 
+		 * @throws SecurityException 
+		 * @throws NoSuchMethodException 
+		 * @throws InvocationTargetException 
+		 * @throws IllegalArgumentException 
+		 * @throws NoSuchFieldException **/
+		private Object makeBoxShapeDef(float boxX, float boxY, float restitution, float friction, float density, int groupIdx) throws InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+			Object boxShapeDef = _PolygonDef.newInstance();
+			
+			boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(null, boxX, boxY);
+			boxShapeDef.getClass().getField("friction").setFloat(null, friction);
+			boxShapeDef.getClass().getField("density").setFloat(null, density);
+			boxShapeDef.getClass().getField("restitution").setFloat(null, restitution);
+			boxShapeDef.getClass().getField("groupIndex").setInt(null, groupIdx);
+			
+			return boxShapeDef;
+		}
+		
+		/** Convenience method to avoid dealing with reflection in the code constantly. 
+		 * @throws IllegalAccessException 
+		 * @throws InstantiationException 
+		 * @throws SecurityException 
+		 * @throws NoSuchMethodException 
+		 * @throws InvocationTargetException 
+		 * @throws IllegalArgumentException 
+		 * @throws NoSuchFieldException **/
+		private Object makeBoxShapeDef(float boxX, float boxY, float friction, float density, int groupIdx) throws InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+			Object boxShapeDef = _PolygonDef.newInstance();
+			
+			boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(null, boxX, boxY);
+			boxShapeDef.getClass().getField("friction").setFloat(null, friction);
+			boxShapeDef.getClass().getField("density").setFloat(null, density);
+			boxShapeDef.getClass().getField("groupIndex").setInt(null, groupIdx);
+			
+			return boxShapeDef;
+		}
+		
+		/** Convenience method to avoid dealing with reflection in the code constantly. 
+		 * @throws IllegalAccessException 
+		 * @throws InstantiationException 
+		 * @throws SecurityException 
+		 * @throws NoSuchMethodException 
+		 * @throws InvocationTargetException 
+		 * @throws IllegalArgumentException 
+		 * @throws NoSuchFieldException **/
+		private Object makeCircleShapeDef(float radius, float restitution, float friction, float density, int groupIdx) throws InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+			Object circleShapeDef = _CircleDef.newInstance();
+			
+			circleShapeDef.getClass().getField("radius").setFloat(null, radius);
+			circleShapeDef.getClass().getField("friction").setFloat(null, friction);
+			circleShapeDef.getClass().getField("density").setFloat(null, density);
+			circleShapeDef.getClass().getField("restitution").setFloat(null, restitution);
+			circleShapeDef.getClass().getField("groupIndex").setInt(null, groupIdx);
+			
+			return circleShapeDef;
+		}
+		
+		/** Convenience method to avoid dealing with reflection in the code constantly. 
+		 * @throws IllegalAccessException 
+		 * @throws InstantiationException 
+		 * @throws SecurityException 
+		 * @throws NoSuchMethodException 
+		 * @throws InvocationTargetException 
+		 * @throws IllegalArgumentException 
+		 * @throws NoSuchFieldException **/
+		private Object makeCircleShapeDef(float radius, float friction, float density, int groupIdx) throws InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+			Object circleShapeDef = _CircleDef.newInstance();
+			
+			circleShapeDef.getClass().getField("radius").setFloat(null, radius);
+			circleShapeDef.getClass().getField("friction").setFloat(null, friction);
+			circleShapeDef.getClass().getField("density").setFloat(null, density);
+			circleShapeDef.getClass().getField("groupIndex").setInt(null, groupIdx);
+			
+			return circleShapeDef;
+		}
+		
+		
+		/** Convenience method to avoid dealing with reflection in the code constantly. 
+		 * @throws SecurityException 
+		 * @throws NoSuchFieldException 
+		 * @throws IllegalAccessException 
+		 * @throws IllegalArgumentException 
+		 * @throws InstantiationException **/
+		private Object makeMassData(float mass, float inertia) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, InstantiationException {
+			Object md = _MassData.newInstance();
+			md.getClass().getField("mass").setFloat(null, mass);
+			md.getClass().getField("I").setFloat(null, inertia);
+			
+			return md;
+		}
+		
+		
+		/** Convenience method to avoid dealing with reflection in the code constantly. 
+		 * @throws SecurityException 
+		 * @throws NoSuchFieldException 
+		 * @throws IllegalAccessException 
+		 * @throws IllegalArgumentException 
+		 * @throws InstantiationException **/
+		private Object makeVec2(float x, float y) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+			Constructor<?> cons = _Vec2.getConstructor(float.class, float.class);
+			Object vec = cons.newInstance(x, y);
+			
+			return vec;
+		}
+		
+		
+		/******* SET UP THINGS *********/
+		
+		/** Call once to initialize a lot of shape definitions which only need to be created once. 
+		 * @throws NoSuchFieldException 
+		 * @throws InvocationTargetException 
+		 * @throws IllegalArgumentException 
+		 * @throws SecurityException 
+		 * @throws NoSuchMethodException 
+		 * @throws IllegalAccessException 
+		 * @throws InstantiationException **/
+		private void oneTimeSetup() throws InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+			/* 
+			 * Make the bodies and collision shapes
+			 */
+
+			/* TRACK */
+			trackDef = makeBodyDef(-30, trackPosY + 20, 0, 0, 0);
+			trackShape = makeBoxShapeDef(1000f, 20f, trackRest, trackFric, 0, 1);
+			
+			/* FEET */
+			//Create the fixture shapes, IE collision shapes
+			rFootDef = makeBodyDef(rFootPos.x, rFootPos.y, rFootAng, rFootMass, rFootInertia);
+			rFootShape = makeBoxShapeDef(rFootL/2f, rFootH/2f, rFootFric, rFootDensity, BODY_GROUP);
+			lFootDef = makeBodyDef(lFootPos.x, lFootPos.y, lFootAng, lFootMass, lFootInertia);
+			lFootShape = makeBoxShapeDef(lFootL/2f, lFootH/2f, lFootFric, lFootDensity, BODY_GROUP);
+
+			/* CALVES */
+			rCalfDef = makeBodyDef(rCalfPos.x, rCalfPos.y, rCalfAng + rCalfAngAdj, rCalfMass, rCalfInertia);
+			rCalfShape = makeBoxShapeDef(rCalfW/2f, rCalfL/2f, rCalfFric, rCalfDensity, BODY_GROUP);
+			lCalfDef = makeBodyDef(lCalfPos.x, lCalfPos.y, lCalfAng + lCalfAngAdj, lCalfMass, lCalfInertia);
+			lCalfShape = makeBoxShapeDef(lCalfW/2f, lCalfL/2f, lCalfFric, lCalfDensity, BODY_GROUP);
+
+			/* THIGHS */
+			rThighDef = makeBodyDef(rThighPos.x, rThighPos.y, rThighAng + rThighAngAdj, rThighMass, rThighInertia);
+			rThighShape = makeBoxShapeDef(rThighW/2f, rThighL/2f, rThighFric, rThighDensity, BODY_GROUP);
+			lThighDef = makeBodyDef(lThighPos.x, lThighPos.y, lThighAng + lThighAngAdj, lThighMass, lThighInertia);
+			lThighShape = makeBoxShapeDef(lThighW/2f, lThighL/2f, lThighFric, lThighDensity, BODY_GROUP);
+			
+
+			/* TORSO */
+			torsoDef = makeBodyDef(torsoPos.x, torsoPos.y, torsoAng + torsoAngAdj, torsoMass, torsoInertia);
+			torsoShape = makeBoxShapeDef(torsoW/2f, torsoL/2f, torsoFric, torsoDensity, BODY_GROUP);
+
+
+			/* HEAD */    
+			headDef = makeBodyDef(headPos.x, headPos.y, headAng + headAngAdj, headMass, headInertia);
+			headShape = makeCircleShapeDef(headR, headFric, headDensity, BODY_GROUP);
+
+
+			/* UPPER ARMS */
+			rUArmDef = makeBodyDef(rUArmPos.x, rUArmPos.y, rUArmAng + rUArmAngAdj, rUArmMass, rUArmInertia);
+			rUArmShape = makeBoxShapeDef(rUArmW/2f, rUArmL/2f, rUArmFric, rUArmDensity, BODY_GROUP);
+			lUArmDef = makeBodyDef(lUArmPos.x, lUArmPos.y, lUArmAng + lUArmAngAdj, lUArmMass, lUArmInertia);
+			lUArmShape = makeBoxShapeDef(lUArmW/2f, lUArmL/2f, lUArmFric, lUArmDensity, BODY_GROUP);
+
+
+			/* LOWER ARMS */  
+			rLArmDef = makeBodyDef(rLArmPos.x, rLArmPos.y, rLArmAng + rLArmAngAdj, rLArmMass, rLArmInertia);
+			rLArmShape = makeBoxShapeDef(rLArmW/2f, rLArmL/2f, rLArmFric, rLArmDensity, BODY_GROUP);
+			lLArmDef = makeBodyDef(lLArmPos.x, lLArmPos.y, lLArmAng + lLArmAngAdj, lLArmMass, lLArmInertia);
+			lLArmShape = makeBoxShapeDef(lLArmW/2f, lLArmL/2f, lLArmFric, lLArmDensity, BODY_GROUP);
+		}
+		
+		/** Make (or remake) the world with all the body parts at their initial locations. 
+		 * @throws SecurityException 
+		 * @throws NoSuchMethodException 
+		 * @throws InvocationTargetException 
+		 * @throws IllegalArgumentException 
+		 * @throws IllegalAccessException 
+		 * @throws InstantiationException 
+		 * @throws NoSuchFieldException **/
+		private void makeNewWorld() throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+			
+			/******* WORLD ********/
+			// Make the world object:
+			Constructor<?> aabbCons = _AABB.getConstructor(_Vec2, _Vec2);
+			Object vecAABBLower = makeVec2(-100f,-30f);
+			Object vecAABBUpper = makeVec2(5000f,80f);
+			Object aabbWorld = aabbCons.newInstance(vecAABBLower, vecAABBUpper);
+
+			Object vecGrav = makeVec2(0f,10f);
+
+			Constructor<?> worldCons = _World.getConstructor(_AABB, _Vec2, boolean.class);
+			
+			Object world = worldCons.newInstance(aabbWorld, vecGrav, true);
+			
+			// World settings:
+			world.getClass().getMethod("setWarmStarting", boolean.class).invoke(null, true);
+			world.getClass().getMethod("setPositionCorrection", boolean.class).invoke(null, true);
+			world.getClass().getMethod("setContinuousPhysics", boolean.class).invoke(null, true);
+			
+			
+			/******* BODIES ********/
+			// Add bodies:
+			trackBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, trackDef);
+			trackBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, trackShape);
+			
+			rFootBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, rFootDef);
+			rFootBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, rFootShape);
+			lFootBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, lFootDef);
+			lFootBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, lFootShape);
+			
+			rCalfBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, rCalfDef);
+			rCalfBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, rCalfShape);
+			lCalfBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, lCalfDef);
+			lCalfBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, lCalfShape);
+			
+			rThighBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, rThighDef);
+			rThighBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, rThighShape);
+			lThighBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, lThighDef);
+			lThighBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, lThighShape);
+			
+			rUArmBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, rUArmDef);
+			rUArmBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, rUArmShape);
+			lUArmBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, lUArmDef);
+			lUArmBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, lUArmShape);
+			
+			rLArmBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, rLArmDef);
+			rLArmBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, rLArmShape);
+			lLArmBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, lLArmDef);
+			lLArmBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, lLArmShape);
+			
+			torsoBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, torsoDef);
+			torsoBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, torsoShape);
+			
+			headBody = world.getClass().getMethod("createBody", _BodyDef).invoke(null, headDef);
+			headBody.getClass().getMethod("createShape", _PolygonDef).invoke(null, headShape);
+			
+			
+			/******* JOINTS ********/
+//			makeJointDef(Object body1, Object body2, float jointPosX, float jointPosY, float lowerAngle, 
+//					float upperAngle, float maxTorque, float motorSpeed, boolean enableLimit, boolean enableMotor, boolean collideConnected)
+				
+			
+			Object rAnkleJDef = makeJointDef(rFootBody, rCalfBody, rAnklePosX, rAnklePosY, -0.5f, 0.5f, 2000f, 0f, true, false, false);
+			rAnkleJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, rAnkleJDef).getClass().asSubclass(_RevoluteJoint);
+
+			Object lAnkleJDef = makeJointDef(lFootBody, lCalfBody, lAnklePosX, lAnklePosY, -0.5f, 0.5f, 2000f, 0f, true, false, false);
+			lAnkleJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, lAnkleJDef).getClass().asSubclass(_RevoluteJoint);
+			
+			Object rKneeJDef = makeJointDef(rCalfBody, rThighBody, rKneePosX, rKneePosY, -1.3f, 0.3f, 3000f, 0f, true, true, false);
+			rKneeJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, rKneeJDef).getClass().asSubclass(_RevoluteJoint);
+			
+			Object lKneeJDef = makeJointDef(lCalfBody, lThighBody, lKneePosX, lKneePosY, -1.6f, 0.0f, 3000f, 0f, true, true, false);
+			lKneeJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, lKneeJDef).getClass().asSubclass(_RevoluteJoint);
+
+		}
+	}
 	
+
+
+	public static void main(String[] args) {
+
+		Object obj1 = loadClasses();
+		Object obj2 = loadClasses();
+		System.out.println(obj1);
+		System.out.println(obj2.getClass());
+		System.out.println(obj1.getClass() == obj2.getClass());
+
+
+
+	}
+
 	public QWOPGame(){
-		if (!hasOneTimeInitializationHappened) {
-			oneTimeSetup();
-			hasOneTimeInitializationHappened = true;
-		}
 		setup();
 		getWorld().setContactListener(new CollisionListener());
 	}
 
-	/** Call once to initialize a lot of shape definitions which only need to be created once. **/
-	private void oneTimeSetup() {
-		/* 
-		 * Make the bodies and collision shapes
-		 */
 
-		/* TRACK */
-		trackDef.position = new Vec2(-30,trackPosY + 20);
-		trackShape.setAsBox(1000, 20);
-		trackShape.restitution = trackRest;
-		trackShape.friction = trackFric;
-		trackShape.filter.groupIndex = 1;
-
-		/* FEET */
-		//Create the fixture shapes, IE collision shapes.
-		rFootShape.setAsBox(rFootL/2f, rFootH/2f);
-		lFootShape.setAsBox(lFootL/2f, lFootH/2f);
-
-		rFootShape.friction = (rFootFric);
-		lFootShape.friction = (lFootFric);
-		rFootShape.density = rFootDensity;
-		lFootShape.density = lFootDensity;
-		rFootShape.filter.groupIndex = BODY_GROUP;
-		lFootShape.filter.groupIndex = BODY_GROUP;
-
-		rFootDef.position = rFootPos;
-		rFootDef.angle = rFootAng;
-		lFootDef.position.set(lFootPos);
-		lFootDef.angle = lFootAng;	
-
-		rFootMassData.mass = rFootMass;
-		rFootMassData.I = rFootInertia;
-		rFootDef.massData = rFootMassData;
-		lFootMassData.mass = lFootMass;
-		lFootMassData.I = lFootInertia;
-		lFootDef.massData = lFootMassData;
-
-		/* CALVES */
-		rCalfShape.setAsBox(rCalfW/2f, rCalfL/2f);
-		lCalfShape.setAsBox(lCalfW/2f, lCalfL/2f);
-
-		rCalfShape.friction = rCalfFric;
-		lCalfShape.friction = lCalfFric;
-		rCalfShape.density = rCalfDensity;
-		lCalfShape.density = lCalfDensity;
-		rCalfShape.filter.groupIndex = BODY_GROUP;
-		lCalfShape.filter.groupIndex = BODY_GROUP;
-
-		rCalfDef.position = (rCalfPos);
-		rCalfDef.angle = rCalfAng + rCalfAngAdj;
-		lCalfDef.position = (lCalfPos);
-		lCalfDef.angle = lCalfAng + lCalfAngAdj;
-
-		rCalfMassData.I = rCalfInertia;
-		rCalfMassData.mass = rCalfMass;
-		lCalfMassData.I = lCalfInertia;
-		lCalfMassData.mass = lCalfMass;
-		rCalfDef.massData = rCalfMassData;
-		lCalfDef.massData = lCalfMassData;
-
-		/* THIGHS */
-		rThighShape.setAsBox(rThighW/2f, rThighL/2f);
-		lThighShape.setAsBox(lThighW/2f, lThighL/2f);
-
-		rThighShape.friction = rThighFric;
-		lThighShape.friction = lThighFric;
-		rThighShape.density = rThighDensity;
-		lThighShape.density = lThighDensity;
-		rThighShape.filter.groupIndex = BODY_GROUP;
-		lThighShape.filter.groupIndex = BODY_GROUP;
-
-		rThighDef.position.set(rThighPos);
-		lThighDef.position.set(lThighPos);
-		rThighDef.angle = rThighAng + rThighAngAdj;
-		lThighDef.angle = lThighAng + lThighAngAdj;
-
-		rThighMassData.I = rThighInertia;
-		rThighMassData.mass = rThighMass;
-		lThighMassData.I = lThighInertia;
-		lThighMassData.mass = lThighMass;
-		rThighDef.massData = rThighMassData;
-		lThighDef.massData = lThighMassData;
-
-		/* TORSO */
-		torsoShape.setAsBox(torsoW/2f, torsoL/2f);
-		torsoShape.friction = torsoFric;
-		torsoShape.density = torsoDensity;
-		torsoShape.filter.groupIndex = BODY_GROUP;
-
-		torsoDef.position.set(torsoPos);
-		torsoDef.angle = torsoAng + torsoAngAdj;
-
-		torsoMassData.I = torsoInertia;
-		torsoMassData.mass = torsoMass;
-		torsoDef.massData = torsoMassData;
-
-		/* HEAD */      
-		headShape.radius = (headR);
-		headShape.friction = headFric;
-		headShape.density = headDensity;
-		headShape.restitution = 0f;
-		headShape.filter.groupIndex = BODY_GROUP;
-
-		headDef.position.set(headPos);
-		headDef.angle = headAng + headAngAdj;
-
-		headMassData.I = headInertia;
-		headMassData.mass = headMass;
-		headDef.massData = headMassData;
-
-		/* UPPER ARMS */	
-		rUArmShape.setAsBox(rUArmW/2f,rUArmL/2f);
-		lUArmShape.setAsBox(lUArmW/2f,lUArmL/2f);
-		rUArmShape.friction = rUArmFric;
-		lUArmShape.friction = lUArmFric;
-		rUArmShape.density = rUArmDensity;
-		lUArmShape.density = lUArmDensity;
-		rUArmShape.filter.groupIndex = BODY_GROUP;
-		lUArmShape.filter.groupIndex = BODY_GROUP;
-
-		rUArmDef.position.set(rUArmPos);
-		lUArmDef.position.set(lUArmPos);
-		rUArmDef.angle = rUArmAng + rUArmAngAdj;
-		lUArmDef.angle = lUArmAng + lUArmAngAdj; 
-
-		rUArmMassData.I = rUArmInertia;
-		rUArmMassData.mass = rUArmMass;
-		lUArmMassData.I = lUArmInertia;
-		lUArmMassData.mass = lUArmMass;
-		rUArmDef.massData = rUArmMassData;
-		lUArmDef.massData = lUArmMassData;
-
-		/* LOWER ARMS */  
-		rLArmShape.setAsBox(rLArmW/2f, rLArmL/2f);
-		lLArmShape.setAsBox(lLArmW/2f, lLArmL/2f);
-		rLArmShape.friction = rLArmFric;
-		lLArmShape.friction = lLArmFric;
-		rLArmShape.density = rLArmDensity;
-		lLArmShape.density = lLArmDensity;
-		rLArmShape.filter.groupIndex = BODY_GROUP;
-		lLArmShape.filter.groupIndex = BODY_GROUP;
-
-		rLArmDef.position.set(rLArmPos);
-		lLArmDef.position.set(lLArmPos);
-		rLArmDef.angle = rLArmAng + rLArmAngAdj;
-		lLArmDef.angle = lLArmAng + lLArmAngAdj;
-
-		rLArmMassData.I = rLArmInertia;
-		rLArmMassData.mass = rLArmMass;
-		lLArmMassData.I = lLArmInertia;
-		lLArmMassData.mass = lLArmMass;
-		rLArmDef.massData = rLArmMassData;
-		lLArmDef.massData = lLArmMassData;
-	}
 
 	private void setup() {
 
 		isFailed = false;
 
-		/* World Settings */
-		m_world = new World(worldAABB, gravity, true);
-		m_world.setWarmStarting(true);
-		m_world.setPositionCorrection(true);
-		m_world.setContinuousPhysics(true);
-
-		/* TRACK */		
-		trackBody = m_world.createBody(trackDef);
-		trackBody.createShape(trackShape);
-
-		/* CALVES */
-		rFootBody = getWorld().createBody(rFootDef);
-		lFootBody = getWorld().createBody(lFootDef);
-		rFootBody.createShape(rFootShape);
-		lFootBody.createShape(lFootShape);
-
-		/* CALVES */  
-		rCalfBody = getWorld().createBody(rCalfDef);
-		lCalfBody = getWorld().createBody(lCalfDef);
-		rCalfBody.createShape(rCalfShape);
-		lCalfBody.createShape(lCalfShape);
-
-		/* THIGHS */
-		rThighBody = getWorld().createBody(rThighDef);
-		lThighBody = getWorld().createBody(lThighDef);
-		rThighBody.createShape(rThighShape);
-		lThighBody.createShape(lThighShape);
-
-		/* TORSO */
-		torsoBody = getWorld().createBody(torsoDef);
-		torsoBody.createShape(torsoShape);
-
-		/* HEAD */
-		headBody = getWorld().createBody(headDef);
-		headBody.createShape(headShape);
-
-		/* UPPER ARMS */		
-		rUArmBody = getWorld().createBody(rUArmDef);
-		lUArmBody = getWorld().createBody(lUArmDef);
-		rUArmBody.createShape(rUArmShape);
-		lUArmBody.createShape(lUArmShape);    
-
-		/* LOWER ARMS */  
-		rLArmBody = getWorld().createBody(rLArmDef);
-		lLArmBody = getWorld().createBody(lLArmDef);
-		rLArmBody.createShape(rLArmShape);
-		lLArmBody.createShape(lLArmShape);
-
-		/*
-		 *  Joints
-		 */
-		//Right Ankle:
-
-		rAnkleJDef = new RevoluteJointDef(); 
-		rAnkleJDef.initialize(rFootBody,rCalfBody, rAnklePos); //Body1, body2, anchor in world coords
-		rAnkleJDef.enableLimit = true;
-		rAnkleJDef.upperAngle = 0.5f;
-		rAnkleJDef.lowerAngle = -0.5f;
-		rAnkleJDef.enableMotor = false;
-		rAnkleJDef.maxMotorTorque = 2000f;
-		rAnkleJDef.motorSpeed = 0f; // Speed1,2: -2,2
-		rAnkleJDef.collideConnected = false;
-
-		rAnkleJ = (RevoluteJoint)getWorld().createJoint(rAnkleJDef);
-
-		//Left Ankle:
-		lAnkleJDef = new RevoluteJointDef();
-		lAnkleJDef.initialize(lFootBody,lCalfBody, lAnklePos);
-		lAnkleJDef.enableLimit = true;
-		lAnkleJDef.upperAngle = 0.5f;
-		lAnkleJDef.lowerAngle = -0.5f;
-		lAnkleJDef.enableMotor = false;
-		lAnkleJDef.maxMotorTorque = 2000;
-		lAnkleJDef.motorSpeed = 0f;// Speed1,2: 2,-2
-		lAnkleJDef.collideConnected = false;
-
-		lAnkleJ = (RevoluteJoint)getWorld().createJoint(lAnkleJDef);
-
-		/* Knee joints */
-
-		//Right Knee:
-		rKneeJDef = new RevoluteJointDef();
-		rKneeJDef.initialize(rCalfBody,rThighBody, rKneePos);
-		rKneeJDef.enableLimit = true;
-		rKneeJDef.upperAngle = 0.3f;
-		rKneeJDef.lowerAngle = -1.3f;
-		rKneeJDef.enableMotor = true;//?
-		rKneeJDef.maxMotorTorque = 3000;
-		rKneeJDef.motorSpeed = 0f; //Speeds 1,2: -2.5,2.5
-		rKneeJDef.collideConnected = false;
-
-		rKneeJ = (RevoluteJoint)getWorld().createJoint(rKneeJDef);
-
-		//Left Knee:
-		lKneeJDef = new RevoluteJointDef();
-		lKneeJDef.initialize(lCalfBody,lThighBody, lKneePos);
-		lKneeJDef.enableLimit = true;
-		lKneeJDef.upperAngle = 0f;
-		lKneeJDef.lowerAngle = -1.6f;
-		lKneeJDef.enableMotor = true;
-		lKneeJDef.maxMotorTorque = 3000;
-		lKneeJDef.motorSpeed = 0f;// Speed1,2: -2.5,2.5
-		lKneeJDef.collideConnected = false;
-
-		lKneeJ = (RevoluteJoint)getWorld().createJoint(lKneeJDef);
 
 		/* Hip Joints */
 
@@ -968,13 +994,13 @@ public class QWOPGame{
 		return timestepsSimulated;
 	}
 
-	
+
 	/** How far out to mark road dashes. **/
 	private final int markingWidth = 2000;
-	
+
 	/** Draw this game's runner. Must provide scaling from game units to pixels, as well as pixel offsets in x and y. **/
 	public void draw(Graphics g, float scaling, int xOffset, int yOffset) {
-		
+
 		Body newBody = getWorld().getBodyList();
 		while (newBody != null) {
 			int xOffsetPixels = -(int)(scaling*torsoBody.getPosition().x) + xOffset; // Basic offset, plus centering x on torso.
