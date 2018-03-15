@@ -59,15 +59,9 @@ public class QWOPGame{
 	/** Has this game reached failure conditions? **/
 	private boolean isFailed = false;
 
-	/** Should enclose the entire area we want collision checked. **/
-	private static final AABB worldAABB = new AABB(new Vec2(-100, -30f), new Vec2(5000f,80f));
-
 	
 	/** Filters collisions. Prevents body parts from hitting other body parts. **/
 	private final int BODY_GROUP = -1;
-
-	/** Gravity vector. Positive since -y is up. **/
-	private static final Vec2 gravity = new Vec2(0, 10f);
 
 	// Track
 	private static final float trackPosY = 8.90813f;
@@ -185,124 +179,34 @@ public class QWOPGame{
 	private static final float lLArmInertia = 4.301f;
 
 	// For collision shapes
-	private static final float rLArmL = 3.56f;
-	private static final float lLArmL = 2.54f;
-	private static final float rLArmW = 0.15f;
-	private static final float lLArmW = 0.12f;
-	private static final float rLArmFric = 0.2f;
-	private static final float lLArmFric = 0.2f;
-	private static final float rLArmDensity = 1f;
-	private static final float lLArmDensity = 1f;
+	private static final float rLArmL = 3.56f, lLArmL = 2.54f, rLArmW = 0.15f, lLArmW = 0.12f,
+			rLArmFric = 0.2f, lLArmFric = 0.2f, rLArmDensity = 1f, lLArmDensity = 1f;
 
 
 	// Ankle speeds setpoints:
-	private static final float rAnkleSpeed1 = 2f;
-	private static final float rAnkleSpeed2 = -2f;
-	private static final float lAnkleSpeed1 = -2f;
-	private static final float lAnkleSpeed2 = 2f;
-
-	private static final float rKneeSpeed1 = -2.5f;
-	private static final float rKneeSpeed2 = 2.5f;
-	private static final float lKneeSpeed1 = 2.5f;
-	private static final  float lKneeSpeed2 = -2.5f;
-
-	private static final float rHipSpeed1 = -2.5f;
-	private static final float rHipSpeed2 = 2.5f;
-	private static final float lHipSpeed1 = 2.5f;
-	private static final float lHipSpeed2 = -2.5f;
-
-	private static final float rShoulderSpeed1 = 2f;
-	private static final float rShoulderSpeed2 = -2f;
-	private static final float lShoulderSpeed1 = -2f;
-	private static final float lShoulderSpeed2 = 2f;
+	private static final float 	rAnkleSpeed1 = 2f, 		rAnkleSpeed2 = -2f, 		lAnkleSpeed1 = -2f, 		lAnkleSpeed2 = 2f,
+								rKneeSpeed1 = -2.5f, 	rKneeSpeed2 = 2.5f, 		lKneeSpeed1 = 2.5f, 		lKneeSpeed2 = -2.5f,
+								rHipSpeed1 = -2.5f, 		rHipSpeed2 = 2.5f, 		lHipSpeed1 = 2.5f, 		lHipSpeed2 = -2.5f,
+								rShoulderSpeed1 = 2f, 	rShoulderSpeed2 = -2f, 	lShoulderSpeed1 = -2f, 	lShoulderSpeed2 = 2f;
 
 	//O Hip limits (changed to this when o is pressed):
-	private static final float oRHipLimLo = -1.3f;
-	private static final float oRHipLimHi = 0.7f;
-	private static final float oLHipLimLo = -1f;
-	private static final float oLHipLimHi = 1f;
-
+	private static final float oRHipLimLo = -1.3f, oRHipLimHi = 0.7f, oLHipLimLo = -1f, oLHipLimHi = 1f;
 	//P Hip limits:
-	private static final float pRHipLimLo = -0.8f;
-	private static final float pRHipLimHi = 1.2f;
-	private static final float pLHipLimLo = -1.5f;
-	private static final float pLHipLimHi = 0.5f;
+	private static final float pRHipLimLo = -0.8f, pRHipLimHi = 1.2f, pLHipLimLo = -1.5f, pLHipLimHi = 0.5f;
 
-	//Springs:
-	private static final float neckStiff = 15f;
-	private static final float neckDamp = 5f;
-	private static final float rElbowStiff = 1f;
-	private static final float lElbowStiff = 1f;
-	private static final float rElbowDamp = 0f;
-	private static final float lElbowDamp = 0f;
+	//Springs and things:
+	private static final float neckStiff = 15f, neckDamp = 5f, rElbowStiff = 1f, lElbowStiff = 1f, rElbowDamp = 0f, lElbowDamp = 0f;
 
 	/* Joints Positions*/
-
-	private static final float rAnklePosX = -0.96750f; private static final float rAnklePosY = 7.77200f;
-	private static final float lAnklePosX = 3.763f; private static final float lAnklePosY = 8.101f;
-
-	private static final float rKneePosX = 1.58f; private static final float rKneePosY = 4.11375f;
-	private static final float lKneePosX = 3.26250f; private static final float lKneePosY = 3.51625f;
-
-	private static final float rHipPosX = 1.260f; private static final float rHipPosY = -0.06750f;
-	private static final float lHipPosX = 2.01625f; private static final float lHipPosY = 0.18125f;
-
-	private static final float rShoulderPosX = 2.24375f; private static final float rShoulderPosY = -4.14250f;
-	private static final float lShoulderPosX = 3.63875f; private static final float lShoulderPosY = -3.58875f;
-
-	private static final float rElbowPosX = -0.06f; private static final float rElbowPosY = -2.985f;
-	private static final float lElbowPosX = 5.65125f; private static final float lElbowPosY = -1.8125f;
-
-	private static final float neckPosX = 3.60400f; private static final float neckPosY = -4.581f;
+	private static final float rAnklePosX = -0.96750f, 	rAnklePosY = 7.77200f, 		lAnklePosX = 3.763f, 		lAnklePosY = 8.101f, 
+							  rKneePosX = 1.58f, 		rKneePosY = 4.11375f, 		lKneePosX = 3.26250f, 		lKneePosY = 3.51625f,
+							  rHipPosX = 1.260f, 		rHipPosY = -0.06750f, 		lHipPosX = 2.01625f, 		lHipPosY = 0.18125f,
+							  rShoulderPosX = 2.24375f, 	rShoulderPosY = -4.14250f,	lShoulderPosX = 3.63875f, 	lShoulderPosY = -3.58875f,
+							  rElbowPosX = -0.06f,		rElbowPosY = -2.985f,		lElbowPosX = 5.65125f, 		lElbowPosY = -1.8125f,
+							  neckPosX = 3.60400f, 		neckPosY = -4.581f;
 
 	/** List of shapes for use by graphics stuff. Making it static -- IE, assuming that in multiple games, the runner doesn't change shape. **/
 	public static Shape[] shapeList = new Shape[13];
-
-	private static final BodyDef trackDef = new BodyDef();
-	private static final PolygonDef trackShape = new PolygonDef();
-
-	private static final BodyDef rFootDef = new BodyDef();
-	private static final BodyDef lFootDef = new BodyDef();
-	private static final PolygonDef rFootShape = new PolygonDef();
-	private static final PolygonDef lFootShape = new PolygonDef();
-	private static final MassData rFootMassData = new MassData();
-	private static final MassData lFootMassData = new MassData();
-
-	private static final BodyDef rCalfDef = new BodyDef();
-	private static final BodyDef lCalfDef = new BodyDef();
-	private static final PolygonDef rCalfShape = new PolygonDef();
-	private static final PolygonDef lCalfShape = new PolygonDef();
-	private static final MassData rCalfMassData = new MassData();
-	private static final MassData lCalfMassData = new MassData();
-
-	private static final PolygonDef rThighShape = new PolygonDef();
-	private static final PolygonDef lThighShape = new PolygonDef();
-	private static final BodyDef rThighDef = new BodyDef();
-	private static final BodyDef lThighDef = new BodyDef();
-	private static final MassData rThighMassData = new MassData();
-	private static final MassData lThighMassData = new MassData();
-
-	private static final PolygonDef torsoShape = new PolygonDef();
-	private static final BodyDef torsoDef = new BodyDef();
-	private static final MassData torsoMassData = new MassData();
-
-	private static final CircleDef headShape = new CircleDef();
-	private static final BodyDef headDef = new BodyDef();
-	private static final MassData headMassData = new MassData();
-
-	private static final PolygonDef rUArmShape = new PolygonDef();
-	private static final PolygonDef lUArmShape = new PolygonDef();
-	private static final BodyDef rUArmDef = new BodyDef();
-	private static final BodyDef lUArmDef = new BodyDef();
-	private static final MassData rUArmMassData = new MassData();
-	private static final MassData lUArmMassData = new MassData();
-
-	private static final PolygonDef rLArmShape = new PolygonDef();
-	private static final PolygonDef lLArmShape = new PolygonDef();
-	private static final BodyDef rLArmDef = new BodyDef();
-	private static final BodyDef lLArmDef = new BodyDef();
-	private static final MassData rLArmMassData = new MassData();
-	private static final MassData lLArmMassData = new MassData();
 
 	/** Initial runner state. **/
 	private static final State initState = new QWOPGame().getCurrentGameState(); // Make sure this stays below all the other static assignments to avoid null pointers.
@@ -694,15 +598,32 @@ public class QWOPGame{
 			
 			Object rAnkleJDef = makeJointDef(rFootBody, rCalfBody, rAnklePosX, rAnklePosY, -0.5f, 0.5f, 2000f, 0f, true, false, false);
 			rAnkleJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, rAnkleJDef).getClass().asSubclass(_RevoluteJoint);
-
 			Object lAnkleJDef = makeJointDef(lFootBody, lCalfBody, lAnklePosX, lAnklePosY, -0.5f, 0.5f, 2000f, 0f, true, false, false);
 			lAnkleJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, lAnkleJDef).getClass().asSubclass(_RevoluteJoint);
 			
 			Object rKneeJDef = makeJointDef(rCalfBody, rThighBody, rKneePosX, rKneePosY, -1.3f, 0.3f, 3000f, 0f, true, true, false);
 			rKneeJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, rKneeJDef).getClass().asSubclass(_RevoluteJoint);
-			
 			Object lKneeJDef = makeJointDef(lCalfBody, lThighBody, lKneePosX, lKneePosY, -1.6f, 0.0f, 3000f, 0f, true, true, false);
 			lKneeJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, lKneeJDef).getClass().asSubclass(_RevoluteJoint);
+			
+			Object rHipJDef = makeJointDef(lCalfBody, lThighBody, rHipPosX, rHipPosY, -1.3f, 0.7f, 6000f, 0f, true, true, false);
+			rHipJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, rHipJDef).getClass().asSubclass(_RevoluteJoint);
+			Object lHipJDef = makeJointDef(lCalfBody, lThighBody, lHipPosX, lHipPosY, -1.5f, 0.5f, 6000f, 0f, true, true, false);
+			lHipJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, lHipJDef).getClass().asSubclass(_RevoluteJoint);
+
+			Object neckJDef = makeJointDef(lCalfBody, lThighBody, neckPosX, neckPosY, -0.5f, 0.0f, 1000f, 0f, true, true, false);
+			neckJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, neckJDef).getClass().asSubclass(_RevoluteJoint);
+
+
+			Object rShoulderJDef = makeJointDef(lCalfBody, lThighBody, rShoulderPosX, rShoulderPosY, -0.5f, 1.5f, 1000f, 0f, true, true, false);
+			rShoulderJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, rShoulderJDef).getClass().asSubclass(_RevoluteJoint);
+			Object lShoulderJDef = makeJointDef(lCalfBody, lThighBody, lShoulderPosX, lShoulderPosY, -2f, 0.0f, 1000f, 0f, true, true, false);
+			lShoulderJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, lShoulderJDef).getClass().asSubclass(_RevoluteJoint);
+
+			Object rElbowJDef = makeJointDef(lCalfBody, lThighBody, rElbowPosX, rElbowPosY, -0.1f, 0.5f, 0f, 10f, true, true, false);
+			rElbowJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, rElbowJDef).getClass().asSubclass(_RevoluteJoint);
+			Object lElbowJDef = makeJointDef(lCalfBody, lThighBody, lElbowPosX, lElbowPosY, -0.1f, 0.5f, 0f, 10f, true, true, false);
+			lElbowJ = world.getClass().getMethod("createJoint", _RevoluteJointDef).invoke(null, lElbowJDef).getClass().asSubclass(_RevoluteJoint);
 
 		}
 	}
@@ -735,92 +656,9 @@ public class QWOPGame{
 
 		/* Hip Joints */
 
-		//Right Hip:
-		rHipJDef = new RevoluteJointDef();
-		rHipJDef.initialize(rThighBody,torsoBody, rHipPos);
-		rHipJDef.enableLimit = true;
-		rHipJDef.upperAngle = 0.7f;
-		rHipJDef.lowerAngle = -1.3f;
-		rHipJDef.enableMotor = true;
-		rHipJDef.motorSpeed = 0f;
-		rHipJDef.maxMotorTorque = 6000f;
-		rHipJDef.collideConnected = false;
-
-		rHipJ = (RevoluteJoint)getWorld().createJoint(rHipJDef);
-
-		//Left Hip:
-		lHipJDef = new RevoluteJointDef();
-		lHipJDef.initialize(lThighBody,torsoBody, lHipPos);
-		lHipJDef.enableLimit = true;
-		lHipJDef.upperAngle = 0.5f;
-		lHipJDef.lowerAngle = -1.5f;
-		lHipJDef.enableMotor = true;
-		lHipJDef.motorSpeed = 0f;
-		lHipJDef.maxMotorTorque = 6000f;
-		lHipJDef.collideConnected = false;
-		lHipJ = (RevoluteJoint)getWorld().createJoint(lHipJDef);
 
 
-		//Neck Joint
-		neckJDef = new RevoluteJointDef();
-		neckJDef.initialize(headBody,torsoBody, neckPos);
-		neckJDef.enableLimit = true;
-		neckJDef.upperAngle = 0f;
-		neckJDef.lowerAngle = -0.5f;
-		neckJDef.enableMotor = true;
-		neckJDef.maxMotorTorque = 0f;
-		neckJDef.motorSpeed = 1000f; //Arbitrarily large to allow for torque control.  
-		neckJDef.collideConnected = false;
-		neckJ = (RevoluteJoint)getWorld().createJoint(neckJDef);
 
-		/* Arm Joints */
-		//Right shoulder
-		rShoulderJDef = new RevoluteJointDef();
-		rShoulderJDef.initialize(rUArmBody,torsoBody, rShoulderPos);
-		rShoulderJDef.enableLimit = true;
-		rShoulderJDef.upperAngle = 1.5f;
-		rShoulderJDef.lowerAngle = -0.5f;
-		rShoulderJDef.enableMotor = true;
-		rShoulderJDef.maxMotorTorque = 1000f;
-		rShoulderJDef.motorSpeed = 0f; // Speed 1,2: 2,-2
-		rShoulderJDef.collideConnected = false;
-		rShoulderJ = (RevoluteJoint)getWorld().createJoint(rShoulderJDef);
-
-		//Left shoulder
-		lShoulderJDef = new RevoluteJointDef();
-		lShoulderJDef.initialize(lUArmBody,torsoBody, lShoulderPos);
-		lShoulderJDef.enableLimit = true;
-		lShoulderJDef.upperAngle = 0f;
-		lShoulderJDef.lowerAngle = -2f;
-		lShoulderJDef.enableMotor = true;
-		lShoulderJDef.maxMotorTorque = 1000f;
-		lShoulderJDef.motorSpeed = 0f; // Speed 1,2: -2,2
-		lShoulderJDef.collideConnected = false;
-		lShoulderJ = (RevoluteJoint)getWorld().createJoint(lShoulderJDef);
-
-		//Right elbow
-		rElbowJDef = new RevoluteJointDef();
-		rElbowJDef.initialize(rLArmBody,rUArmBody, rElbowPos);
-		rElbowJDef.enableLimit = true;
-		rElbowJDef.upperAngle = 0.5f;
-		rElbowJDef.lowerAngle = -0.1f;
-		rElbowJDef.enableMotor = true;
-		rElbowJDef.maxMotorTorque = 0f;
-		rElbowJDef.motorSpeed = 10f; //TODO: investigate further 
-		rElbowJDef.collideConnected = false;
-		rElbowJ = (RevoluteJoint)getWorld().createJoint(rElbowJDef);
-
-		//Left elbow
-		lElbowJDef = new RevoluteJointDef();
-		lElbowJDef.initialize(lLArmBody,lUArmBody, lElbowPos);
-		lElbowJDef.enableLimit = true;
-		lElbowJDef.upperAngle = 0.5f;
-		lElbowJDef.lowerAngle = -0.1f;
-		lElbowJDef.enableMotor = true;
-		lElbowJDef.maxMotorTorque = 0f;
-		lElbowJDef.motorSpeed = 10f; //TODO: investigate further  
-		lElbowJDef.collideConnected = false;
-		lElbowJ = (RevoluteJoint)getWorld().createJoint(lElbowJDef);
 
 		//My current understanding is that the shapes never change. Only the transforms. Hence, this is now static and we only capture the states once.
 		if(shapeList[0] == null){
