@@ -67,24 +67,24 @@ public class QWOPGame{
 
 	// Feet
 	private static final float 	rFootPosX = -0.96750f, 	rFootPosY = 7.77200f,
-								lFootPosX = 3.763f, 		lFootPosY = 8.101f;
+								lFootPosX = 3.763f, 	lFootPosY = 8.101f;
 	
 	private static final float 	rFootAng = 0.7498f, 	rFootMass = 11.630f, 	rFootInertia = 9.017f, 	rFootL = 2.68750f, 	rFootH = 1.44249f, 	rFootFric = 1.5f, 	rFootDensity = 3f,
 								lFootAng = 0.1429f, 	lFootMass = 10.895f, 	lFootInertia = 8.242f, 	lFootL = 2.695f, 	lFootH = 1.34750f, 	lFootFric = 1.5f, 	lFootDensity = 3f;
 	// Calves
 	private static final float 	rCalfPosX = 0.0850f, 	rCalfPosY = 5.381f,
-								lCalfPosX = 2.986f, 		lCalfPosY = 5.523f;
+								lCalfPosX = 2.986f, 	lCalfPosY = 5.523f;
 	
 	private static final float 	rCalfAng = -0.821f, 	lCalfAng = -1.582f, 	rCalfAngAdj = 1.606188724f, 	lCalfAngAdj = 1.607108307f,
 								rCalfMass = 7.407f, 	lCalfMass = 7.464f, 	rCalfInertia = 16.644f, 		lCalfInertia = 16.893f;
 
 	//Length and width for the calves are just for collisions with the ground, so not very important.
-	private static final float 	rCalfL = 4.21f, 		lCalfL = 4.43f, 		rCalfW = 0.4f, 		lCalfW = 0.4f,
+	private static final float 	rCalfL = 4.21f, 	lCalfL = 4.43f, 	rCalfW = 0.4f, 		lCalfW = 0.4f,
 								rCalfFric = 0.2f, 	lCalfFric = 0.2f, 	rCalfDensity = 1f, 	lCalfDensity = 1f;
 
 	// Thighs
-	private static final float 	rThighPosX = 1.659f, 	rThighPosY = 1.999f, 	lThighPosX = 2.52f, 				lThighPosY = 1.615f,
-								rThighAng = 1.468f, 		lThighAng = -1.977f, 	rThighAngAdj = -1.544382589f, 	lThighAngAdj = 1.619256373f,
+	private static final float 	rThighPosX = 1.659f, 	rThighPosY = 1.999f, 	lThighPosX = 2.52f, 			lThighPosY = 1.615f,
+								rThighAng = 1.468f, 	lThighAng = -1.977f, 	rThighAngAdj = -1.544382589f, 	lThighAngAdj = 1.619256373f,
 								rThighMass = 10.54f, 	lThighMass = 10.037f, 	rThighInertia = 28.067f, 		lThighInertia = 24.546f;
 
 	//Length and width for the calves are just for collisions with the ground, so not very important.
@@ -92,8 +92,8 @@ public class QWOPGame{
 								rThighFric = 0.2f, 	lThighFric = 0.2f, 	rThighDensity = 1f, 	lThighDensity = 1f;
 
 	// Torso
-	private static final float 	torsoPosX = 2.525f, 		torsoPosY = -1.926f, 
-								torsoAng = -1.251f, 		torsoAngAdj = 1.651902129f, 
+	private static final float 	torsoPosX = 2.525f, 	torsoPosY = -1.926f, 
+								torsoAng = -1.251f, 	torsoAngAdj = 1.651902129f, 
 								torsoMass = 18.668f, 	torsoInertia = 79.376f;
 
 	//Length and width for the calves are just for collisions with the ground, so not very important.
@@ -110,15 +110,15 @@ public class QWOPGame{
 	// Upper arms
 	private static final float 	rUArmPosX = 1.165f, 	rUArmPosY = -3.616f, 	lUArmPosX = 4.475f, 			lUArmPosY = -2.911f,
 								rUArmAng = -0.466f, 	lUArmAng = 0.843f, 		rUArmAngAdj = 1.571196588f, 	lUArmAngAdj = -1.690706418f,
-								rUArmMass = 5.837f,	lUArmMass = 4.6065f, 	rUArmInertia = 8.479f, 		lUArmInertia = 5.85f;
+								rUArmMass = 5.837f,		lUArmMass = 4.6065f, 	rUArmInertia = 8.479f, 			lUArmInertia = 5.85f;
 
 	//for collision shapes
-	private static final float 	rUArmL = 2.58f, 		lUArmL = 2.68f, 		rUArmW = 0.2f, 		lUArmW = 0.15f, 
+	private static final float 	rUArmL = 2.58f, 	lUArmL = 2.68f, 	rUArmW = 0.2f, 		lUArmW = 0.15f, 
 								rUArmFric = 0.2f, 	lUArmFric = 0.2f, 	rUArmDensity = 1f, 	lUArmDensity = 1f;
 
 	// Lower Arms
 	private static final float 	rLArmPosX = 0.3662f, 	rLArmPosY = -1.248f, 	lLArmPosX = 5.899f, 			lLArmPosY = -3.06f,
-								rLArmAng = -1.762f, 		lLArmAng = -1.251f, 		rLArmAngAdj = 1.521319096f, 	lLArmAngAdj = 1.447045854f,
+								rLArmAng = -1.762f, 	lLArmAng = -1.251f, 	rLArmAngAdj = 1.521319096f, 	lLArmAngAdj = 1.447045854f,
 								rLArmMass = 5.99f, 		lLArmMass = 3.8445f, 	rLArmInertia = 10.768f, 		lLArmInertia = 4.301f;
 
 	// For collision shapes
@@ -127,9 +127,9 @@ public class QWOPGame{
 
 
 	// Ankle speeds setpoints:
-	private static final float 	rAnkleSpeed1 = 2f, 		rAnkleSpeed2 = -2f, 		lAnkleSpeed1 = -2f, 		lAnkleSpeed2 = 2f,
-								rKneeSpeed1 = -2.5f, 	rKneeSpeed2 = 2.5f, 		lKneeSpeed1 = 2.5f, 		lKneeSpeed2 = -2.5f,
-								rHipSpeed1 = -2.5f, 		rHipSpeed2 = 2.5f, 		lHipSpeed1 = 2.5f, 		lHipSpeed2 = -2.5f,
+	private static final float 	rAnkleSpeed1 = 2f, 		rAnkleSpeed2 = -2f, 	lAnkleSpeed1 = -2f, 	lAnkleSpeed2 = 2f,
+								rKneeSpeed1 = -2.5f, 	rKneeSpeed2 = 2.5f, 	lKneeSpeed1 = 2.5f, 	lKneeSpeed2 = -2.5f,
+								rHipSpeed1 = -2.5f, 	rHipSpeed2 = 2.5f, 		lHipSpeed1 = 2.5f, 		lHipSpeed2 = -2.5f,
 								rShoulderSpeed1 = 2f, 	rShoulderSpeed2 = -2f, 	lShoulderSpeed1 = -2f, 	lShoulderSpeed2 = 2f;
 
 	// Hip limits
@@ -146,7 +146,7 @@ public class QWOPGame{
 	private static final float rAnklePosX = -0.96750f, 	rAnklePosY = 7.77200f, 		lAnklePosX = 3.763f, 		lAnklePosY = 8.101f, 
 							  rKneePosX = 1.58f, 		rKneePosY = 4.11375f, 		lKneePosX = 3.26250f, 		lKneePosY = 3.51625f,
 							  rHipPosX = 1.260f, 		rHipPosY = -0.06750f, 		lHipPosX = 2.01625f, 		lHipPosY = 0.18125f,
-							  rShoulderPosX = 2.24375f, 	rShoulderPosY = -4.14250f,	lShoulderPosX = 3.63875f, 	lShoulderPosY = -3.58875f,
+							  rShoulderPosX = 2.24375f, rShoulderPosY = -4.14250f,	lShoulderPosX = 3.63875f, 	lShoulderPosY = -3.58875f,
 							  rElbowPosX = -0.06f,		rElbowPosY = -2.985f,		lElbowPosX = 5.65125f, 		lElbowPosY = -1.8125f,
 							  neckPosX = 3.60400f, 		neckPosY = -4.581f;
 
@@ -169,7 +169,8 @@ public class QWOPGame{
 	 */
 	public class GameLoader extends ClassLoader {
 		
-		private Class<?> _World, _MassData, _BodyDef, _Vec2, _PolygonDef, _CircleDef, _AABB, _RevoluteJointDef, _Body, _RevoluteJoint;
+		private Class<?> _World, _MassData, _BodyDef, _Vec2, _PolygonDef, _CircleDef, _AABB, _RevoluteJointDef,
+		_Body, _RevoluteJoint, _ContactPoint, _ContactListener, _ShapeType, _PolygonShape, _CircleShape, _EdgeShape, _XForm;
 		
 		// World definition:
 		private Object world;
@@ -233,16 +234,22 @@ public class QWOPGame{
 				
 				Class<?> world1 = findClass("org.jbox2d.dynamics.World$1");
 				Class<?> cm = findClass("org.jbox2d.dynamics.ContactManager");
+				_ContactPoint = findClass("org.jbox2.dynamics.contacts.ContactPoint");
+				_ContactListener = findClass("org.jbox2d.dynamics.ContactListener");
+				_ShapeType = findClass("org.jbox2d.collision.shapes.ShapeType");
 				Class<?> bp = findClass("org.jbox2d.collision.BroadPhase");
 				Class<?> pm = findClass("org.jbox2d.collision.PairManager");
 				Class<?> p = findClass("org.jbox2d.collision.Proxy");			
 				
 				_Body = findClass("org.jbox2d.dynamics.Body");
-				Class<?> xf = findClass("org.jbox2d.common.XForm");
+				_XForm = findClass("org.jbox2d.common.XForm");
 				_BodyDef = findClass("org.jbox2d.dynamics.BodyDef");
 				_MassData = findClass("org.jbox2d.collision.MassData");
 				_PolygonDef = findClass("org.jbox2d.collision.shapes.PolygonDef");
 				_CircleDef = findClass("org.jbox2d.collision.shapes.CircleDef");
+				_PolygonShape = findClass("org.jbox2d.collision.shapes.PolygonShape");
+				_CircleShape = findClass("org.jbox2d.collision.shapes.CircleShape");
+				_EdgeShape = findClass("org.jbox2d.collision.shapes.EdgeShape");
 				Class<?> sw = findClass("org.jbox2d.common.Sweep");
 				Class<?> m22 = findClass("org.jbox2d.common.Mat22");
 				
@@ -740,6 +747,197 @@ public class QWOPGame{
 				isFailed = true;
 			}
 			timestepsSimulated++;
+		}
+		
+		
+		/** Draw this game's runner. Must provide scaling from game units to pixels, as well as pixel offsets in x and y. 
+		 * @throws SecurityException 
+		 * @throws NoSuchMethodException 
+		 * @throws InvocationTargetException 
+		 * @throws IllegalArgumentException 
+		 * @throws IllegalAccessException 
+		 * @throws NoSuchFieldException **/
+		public void draw(Graphics g, float scaling, int xOffset, int yOffset) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, NoSuchFieldException {
+
+			Object newBody = world.getClass().getMethod("getBodyList").invoke(null);
+			
+			while (newBody != null) {
+				float torsoPosX = torsoBody.getClass().getMethod("getPosition").invoke(null).getClass().getField("x").getFloat(null);
+				int xOffsetPixels = -(int)(scaling * torsoPosX) + xOffset; // Basic offset, plus centering x on torso.
+
+				Object newFixture = newBody.getClass().getMethod("getShapeList");
+				
+				while(newFixture != null) {
+
+					// Most links are polygon shapes
+					Object fixtureType = newFixture.getClass().getMethod("getType");
+					if(fixtureType == _ShapeType.getClass().getField("POLYGON_SHAPE").get(null)) {
+						Object newShape = newFixture.getClass().cast(_PolygonShape); // PolygonShape
+						Object[] shapeVerts = (Object[]) newShape.getClass().getField("m_vertices").get(null); // Vec2[]
+						
+						for (int k = 0; k < newShape.getClass().getField("m_vertexCount").getInt(null); k++) {
+							Object xf = newBody.getClass().getMethod("getXForm").invoke(null); // XForm
+							
+							Object ptA = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, xf, shapeVerts[k]); // Vec2
+							Object ptB = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, xf, shapeVerts[(k + 1) % newShape.getClass().getField("m_vertexCount").getInt(null)]); // Vec2
+							g.drawLine((int)(scaling * ptA.getClass().getField("x").getInt(null)) + xOffsetPixels,
+									(int)(scaling * ptA.getClass().getField("y").getInt(null)) + yOffset,
+									(int)(scaling * ptB.getClass().getField("x").getInt(null)) + xOffsetPixels,
+									(int)(scaling * ptB.getClass().getField("y").getInt(null)) + yOffset);			    		
+						}
+					}else if (fixtureType == _ShapeType.getClass().getField("CIRCLE_SHAPE").get(null)) { // Basically just head
+						Object newShape = newFixture.getClass().cast(_CircleShape); // CircleShape
+						float radius = newShape.getClass().getField("m_radius").getFloat(null);
+						Object pos = newBody.getClass().getMethod("getPosition").invoke(null);
+						
+						g.drawOval((int)(scaling * (pos.getClass().getField("x").getFloat(null) - radius) + xOffsetPixels),
+								(int)(scaling * (pos.getClass().getField("y").getFloat(null) - radius) + yOffset),
+								(int)(scaling * radius * 2),
+								(int)(scaling * radius * 2));		
+
+					}else if(fixtureType == _ShapeType.getClass().getField("EDGE_SHAPE").get(null)) { // The track.
+
+						Object newShape = newFixture.getClass().cast(_EdgeShape); // EdgeShape
+						Object trans = newBody.getClass().getMethod("getXForm").invoke(null); // XForm
+
+						Object vert1 = newShape.getClass().getMethod("getVertex1").invoke(null); // Vec2
+						Object vert2 = newShape.getClass().getMethod("getVertex2").invoke(null);
+						Object vert3 = newShape.getClass().getMethod("getVertex3").invoke(null);
+						
+						
+						Object ptA = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vert1); // Vec2 
+						Object ptB = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vert2);
+						Object ptC = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vert3);
+
+						g.drawLine((int)(scaling * ptA.getClass().getField("x").getInt(null)) + xOffsetPixels,
+								(int)(scaling * ptA.getClass().getField("y").getInt(null)) + yOffset,
+								(int)(scaling * ptB.getClass().getField("x").getInt(null)) + xOffsetPixels,
+								(int)(scaling * ptB.getClass().getField("y").getInt(null)) + yOffset);			    		
+						g.drawLine((int)(scaling * ptA.getClass().getField("x").getInt(null)) + xOffsetPixels,
+								(int)(scaling * ptA.getClass().getField("y").getInt(null)) + yOffset,
+								(int)(scaling * ptC.getClass().getField("x").getInt(null)) + xOffsetPixels,
+								(int)(scaling * ptC.getClass().getField("y").getInt(null)) + yOffset);			    		
+
+					}else{
+						System.out.println("Shape type unknown.");
+					}
+					newFixture = newFixture.getClass().getMethod("getNext").invoke(null);
+				}
+				newBody = newBody.getClass().getMethod("getNext").invoke(null);
+			}
+
+			//This draws the "road" markings to show that the ground is moving relative to the dude.
+			for (int i = 0; i < markingWidth/69; i++) {
+				g.drawString("_", ((-(int)(scaling * torsoPosX) - i * 70) % markingWidth) + markingWidth, yOffset + 92);
+			}
+		}
+
+		/** Draw the runner at a specified set of transforms.. **/
+		public static void drawExtraRunner(Graphics2D g, XForm[] transforms, String label, float scaling, int xOffset, int yOffset, Color drawColor, Stroke stroke) {
+			g.setColor(drawColor);
+			g.drawString(label, xOffset + (int)(transforms[1].position.x * scaling) - 20, yOffset - 75);
+			for (int i = 0; i < shapeList.length; i++) {
+				g.setColor(drawColor);
+				g.setStroke(stroke);
+				switch(shapeList[i].getType()) {
+				case CIRCLE_SHAPE:
+					CircleShape circleShape = (CircleShape)shapeList[i];
+					float radius = circleShape.getRadius();
+					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
+					g.drawOval((int)(scaling * (circleCenter.x - radius) + xOffset),
+							(int)(scaling * (circleCenter.y - radius) + yOffset),
+							(int)(scaling * radius * 2),
+							(int)(scaling * radius * 2));
+					break;
+				case POLYGON_SHAPE:
+					//Get both the shape and its transform.
+					PolygonShape polygonShape = (PolygonShape)shapeList[i];
+					XForm transform = transforms[i];
+
+					// Ground is black regardless.
+					if (shapeList[i].m_filter.groupIndex == 1) {
+						g.setColor(Color.BLACK);
+						g.setStroke(normalStroke);
+					}
+					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
+						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
+						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
+						g.drawLine((int)(scaling * ptA.x) + xOffset,
+								(int)(scaling * ptA.y) + yOffset,
+								(int)(scaling * ptB.x) + xOffset,
+								(int)(scaling * ptB.y) + yOffset);		
+					}
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		
+		/** Listens for collisions involving lower arms and head (implicitly with the ground) **/
+		private class CollisionListener implements ContactListener{
+
+			/** Keep track of whether the right foot is on the ground. **/
+			private boolean rFootDown = false;
+
+			/** Keep track of whether the left foot is on the ground. **/
+			private boolean lFootDown = false;
+
+			public CollisionListener(){}
+
+			@Override
+			public void add(ContactPoint point) {
+				Shape fixtureA = point.shape1;
+				Shape fixtureB = point.shape2;
+
+				//Failure when head, arms, or thighs hit the ground.
+				if(fixtureA.m_body.equals(headBody) ||
+						fixtureB.m_body.equals(headBody) ||
+						fixtureA.m_body.equals(lLArmBody) ||
+						fixtureB.m_body.equals(lLArmBody) ||
+						fixtureA.m_body.equals(rLArmBody) ||
+						fixtureB.m_body.equals(rLArmBody)) {
+					isFailed = true;
+				}else if(fixtureA.m_body.equals(lThighBody)||
+						fixtureB.m_body.equals(lThighBody)||
+						fixtureA.m_body.equals(rThighBody)||
+						fixtureB.m_body.equals(rThighBody)){
+
+					isFailed = true;
+				}else if(fixtureA.m_body.equals(rFootBody) || fixtureB.m_body.equals(rFootBody)){//Track when each foot hits the ground.
+					rFootDown = true;		
+				}else if(fixtureA.m_body.equals(lFootBody) || fixtureB.m_body.equals(lFootBody)){
+					lFootDown = true;
+				}	
+			}
+			@Override
+			public void persist(ContactPoint point){}
+			@Override
+			public void remove(ContactPoint point) {
+				//Track when each foot leaves the ground.
+				Shape fixtureA = point.shape1;
+				Shape fixtureB = point.shape2;
+				if(fixtureA.m_body.equals(rFootBody) || fixtureB.m_body.equals(rFootBody)){
+					rFootDown = false;
+				}else if(fixtureA.m_body.equals(lFootBody) || fixtureB.m_body.equals(lFootBody)){
+					lFootDown = false;
+				}	
+			}
+			@Override
+			public void result(ContactResult point) {}
+
+			/** Check if the right foot is touching the ground. **/
+			@SuppressWarnings("unused")
+			public boolean isRightFootGrounded(){
+				return rFootDown;
+			}
+
+			/** Check if the left foot is touching the ground. **/
+			@SuppressWarnings("unused")
+			public boolean isLeftFootGrounded(){
+				return lFootDown;
+			}
 		}
 	}
 	
