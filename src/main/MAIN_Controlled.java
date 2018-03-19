@@ -8,6 +8,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -21,10 +22,12 @@ import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.World;
 
+import game.GameLoader;
+
 @SuppressWarnings("serial")
 public class MAIN_Controlled extends JFrame{
 
-	public QWOPGame game;
+	public GameLoader game;
 	private Tensorflow_Predictor pred = new Tensorflow_Predictor();
 	private RunnerPane runnerPane;
 	
@@ -70,17 +73,16 @@ public class MAIN_Controlled extends JFrame{
 	
 	int toSwitchCount = Integer.MAX_VALUE;
 	public void run() {
-		game = new QWOPGame();
-
-		runnerPane.setWorldToView(game.getWorld());		
+		game = new GameLoader();
 		
 		while (true) {
 			
+			try {
 			switch(phase) {
-			case 0:
+			case 1:
 				game.stepGame(false,false,false,false);
 				break;
-			case 1:
+			case 0:
 				game.stepGame(false,true,true,false);
 				break;
 			case 2:
@@ -92,23 +94,26 @@ public class MAIN_Controlled extends JFrame{
 			default: 
 				throw new RuntimeException("Sequence phase is busted: " + phase);
 			}
-			float prediction = pred.getPrediction(game.getCurrentGameState());
-			// System.out.println(prediction);
-			
-			if (toSwitchCount > 10 && prediction <1.8f) {
-				
-				//System.out.println("SWITCHING SOON");
-				toSwitchCount = Math.round(prediction); 
+			}catch(Exception e) {
+				e.printStackTrace();
 			}
-			
-			if (toSwitchCount == 0) {
-				phase = (phase + 1) % 4;
-				toSwitchCount = Integer.MAX_VALUE;
-			}
-			toSwitchCount--;
+//			float prediction = pred.getPrediction(game.getCurrentGameState());
+//			// System.out.println(prediction);
+//			
+//			if (toSwitchCount > 10 && prediction <1.8f) {
+//				
+//				//System.out.println("SWITCHING SOON");
+//				toSwitchCount = Math.round(prediction); 
+//			}
+//			
+//			if (toSwitchCount == 0) {
+//				phase = (phase + 1) % 4;
+//				toSwitchCount = Integer.MAX_VALUE;
+//			}
+//			toSwitchCount--;
 			repaint();
 			try {
-				Thread.sleep(40);
+				Thread.sleep(20);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -131,143 +136,33 @@ public class MAIN_Controlled extends JFrame{
 
 		private World world;
 		
-		Shape[] shapes = QWOPGame.shapeList;
-		
 		TensorflowAutoencoder enc = new TensorflowAutoencoder("AutoEnc_72to6_6layer.pb", "6 output");
 		
 		public RunnerPane() {}
 
 		@Override
 		public void paintComponent(Graphics g) {
-			if (!active) return;
+			if (!active || game == null) return;
 			super.paintComponent(g);
 
-			if (world != null) {
-				Body newBody = world.getBodyList();
-				while (newBody != null) {
-
-					Shape newfixture = newBody.getShapeList();
-
-					while(newfixture != null) {
-
-						if(newfixture.getType() == ShapeType.POLYGON_SHAPE) {
-
-							PolygonShape newShape = (PolygonShape)newfixture;
-							Vec2[] shapeVerts = newShape.m_vertices;
-							for (int k = 0; k<newShape.m_vertexCount; k++) {
-
-								XForm xf = newBody.getXForm();
-								Vec2 ptA = XForm.mul(xf,shapeVerts[k]);
-								Vec2 ptB = XForm.mul(xf, shapeVerts[(k+1) % (newShape.m_vertexCount)]);
-								g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-										(int)(runnerScaling * ptA.y) + yOffsetPixels,
-										(int)(runnerScaling * ptB.x) + xOffsetPixels,
-										(int)(runnerScaling * ptB.y) + yOffsetPixels);		
-							}
-						}else if (newfixture.getType() == ShapeType.CIRCLE_SHAPE) {
-							CircleShape newShape = (CircleShape)newfixture;
-							float radius = newShape.m_radius;
-							headPos = (int)(runnerScaling * newBody.getPosition().x);
-							g.drawOval((int)(runnerScaling * (newBody.getPosition().x - radius) + xOffsetPixels),
-									(int)(runnerScaling * (newBody.getPosition().y - radius) + yOffsetPixels),
-									(int)(runnerScaling * radius * 2),
-									(int)(runnerScaling * radius * 2));		
-
-						}else if(newfixture.getType() == ShapeType.EDGE_SHAPE) {
-
-							EdgeShape newShape = (EdgeShape)newfixture;
-							XForm trans = newBody.getXForm();
-
-							Vec2 ptA = XForm.mul(trans, newShape.getVertex1());
-							Vec2 ptB = XForm.mul(trans, newShape.getVertex2());
-							Vec2 ptC = XForm.mul(trans, newShape.getVertex2());
-
-							g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-									(int)(runnerScaling * ptA.y) + yOffsetPixels,
-									(int)(runnerScaling * ptB.x) + xOffsetPixels,
-									(int)(runnerScaling * ptB.y) + yOffsetPixels);			    		
-							g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-									(int)(runnerScaling * ptA.y) + yOffsetPixels,
-									(int)(runnerScaling * ptC.x) + xOffsetPixels,
-									(int)(runnerScaling * ptC.y) + yOffsetPixels);			    		
-
-						}else{
-							System.out.println("Not found: " + newfixture.m_type.name());
-						}
-						newfixture = newfixture.getNext();
-					}
-					newBody = newBody.getNext();
-				}
-				//This draws the "road" markings to show that the ground is moving relative to the dude.
-				for(int i = 0; i<this.getWidth()/69; i++) {
-					g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 92);
-					//keyDrawer(g, negotiator.Q,negotiator.W,negotiator.O,negotiator.P);
-				}
-
-				//drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
-
-				State currState = new State(game);
-				System.out.println(currState.body.th);
-				State predState = new State(enc.getPrediction(currState));
-				XForm[] predXForms = predState.getTransforms();
-				drawRunner((Graphics2D)g, Color.RED, normalStroke, shapes, predXForms);
-				
-//				float[] encoding = enc.getEncoding(currState);
-				
-//				for (float val : encoding) {
-//					System.out.printf("%.2f, ", val);
-//				}
-//				System.out.println("");
-				
-			}else{
-				//keyDrawer(g, false, false, false, false);
+			try {
+				game.draw(g, 10f, 960, 500);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+					| NoSuchMethodException | SecurityException | NoSuchFieldException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+
+//				State currState = new State(game);
+//				System.out.println(currState.body.th);
+//				State predState = new State(enc.getPrediction(currState));
+//				XForm[] predXForms = predState.getTransforms();
+//				drawRunner((Graphics2D)g, Color.RED, normalStroke, shapes, predXForms);
+
 
 			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
 			xOffsetPixels = -headPos + xOffsetPixels_init;
 
-		}
-		
-		/** Draw the runner at a certain state. **/
-		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms) {
-
-			int specificXOffset = 580;
-			for (int i = 0; i < shapes.length; i++) {
-				g.setColor(drawColor);
-				g.setStroke(stroke);
-				switch(shapes[i].getType()) {
-				case CIRCLE_SHAPE:
-					CircleShape circleShape = (CircleShape)shapes[i];
-					float radius = circleShape.getRadius();
-					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
-					g.drawOval((int)(runnerScaling * (circleCenter.x - radius) + specificXOffset),
-							(int)(runnerScaling * (circleCenter.y - radius) + yOffsetPixels),
-							(int)(runnerScaling * radius * 2),
-							(int)(runnerScaling * radius * 2));
-					break;
-				case POLYGON_SHAPE:
-					//Get both the shape and its transform.
-					PolygonShape polygonShape = (PolygonShape)shapes[i];
-					XForm transform = transforms[i];
-
-					// Ground is black regardless.
-					if (shapes[i].m_filter.groupIndex == 1) {
-						g.setColor(Color.BLACK);
-						g.setStroke(normalStroke);
-					}
-					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
-						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
-						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
-						g.drawLine((int)(runnerScaling * ptA.x) + specificXOffset,
-								(int)(runnerScaling * ptA.y) + yOffsetPixels,
-								(int)(runnerScaling * ptB.x) + specificXOffset,
-								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
-					}
-					break;
-				default:
-					break;
-				}
-			}
 		}
 
 		public void setWorldToView(World world) {

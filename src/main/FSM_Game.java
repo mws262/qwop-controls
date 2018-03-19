@@ -7,12 +7,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.jbox2d.collision.shapes.Shape;
-import org.jbox2d.dynamics.ContactListener;
-import org.jbox2d.dynamics.World;
-import org.jbox2d.dynamics.contacts.ContactPoint;
-import org.jbox2d.dynamics.contacts.ContactResult;
-
 
 public class FSM_Game implements Runnable{
 
@@ -368,67 +362,6 @@ public class FSM_Game implements Runnable{
 
 		public int getCurrentActionIdx(){
 			return actionListFull.size() - actionQueue.size() - 1;
-		}
-	}
-	/** Listens for collisions involving lower arms and head (implicitly with the ground) **/
-	private class CollisionListener implements ContactListener{
-
-		/** Keep track of whether the right foot is on the ground. **/
-		private boolean rFootDown = false;
-		/** Keep track of whether the left foot is on the ground. **/
-		private boolean lFootDown = false;
-
-		public CollisionListener(){
-		}
-		@Override
-		public void add(ContactPoint point) {
-			Shape fixtureA = point.shape1;
-			Shape fixtureB = point.shape2;
-			//Failure when head, arms, or thighs hit the ground.
-			if(fixtureA.m_body.equals(game.headBody) ||
-					fixtureB.m_body.equals(game.headBody) ||
-					fixtureA.m_body.equals(game.lLArmBody) ||
-					fixtureB.m_body.equals(game.lLArmBody) ||
-					fixtureA.m_body.equals(game.rLArmBody) ||
-					fixtureB.m_body.equals(game.rLArmBody)) {
-				reportFall();
-			}else if(fixtureA.m_body.equals(game.lThighBody)||
-					fixtureB.m_body.equals(game.lThighBody)||
-					fixtureA.m_body.equals(game.rThighBody)||
-					fixtureB.m_body.equals(game.rThighBody)){
-				reportFall();
-			}else if(fixtureA.m_body.equals(game.rFootBody) || fixtureB.m_body.equals(game.rFootBody)){//Track when each foot hits the ground.
-				rFootDown = true;		
-			}else if(fixtureA.m_body.equals(game.lFootBody) || fixtureB.m_body.equals(game.lFootBody)){
-				lFootDown = true;
-			}	
-		}
-		@Override
-		public void persist(ContactPoint point){}
-		@Override
-		public void remove(ContactPoint point) {
-			//Track when each foot leaves the ground.
-			Shape fixtureA = point.shape1;
-			Shape fixtureB = point.shape2;
-			if(fixtureA.m_body.equals(game.rFootBody) || fixtureB.m_body.equals(game.rFootBody)){
-				rFootDown = false;
-			}else if(fixtureA.m_body.equals(game.lFootBody) || fixtureB.m_body.equals(game.lFootBody)){
-				lFootDown = false;
-			}	
-		}
-		@Override
-		public void result(ContactResult point) {}
-
-		/** Check if the right foot is touching the ground. **/
-		@SuppressWarnings("unused")
-		public boolean isRightFootGrounded(){
-			return rFootDown;
-		}
-
-		/** Check if the left foot is touching the ground. **/
-		@SuppressWarnings("unused")
-		public boolean isLeftFootGrounded(){
-			return lFootDown;
 		}
 	}
 }
