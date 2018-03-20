@@ -12,9 +12,9 @@ import java.util.List;
 
 import org.jbox2d.common.XForm;
 
+import game.GameLoader;
 import main.Node;
 import main.PanelRunner;
-import main.QWOPGame;
 
 /**
 * Displays fixed shots of the runner at selected nodes. Can also preview the past and future from these nodes. A tab.
@@ -51,6 +51,8 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 	/** Mouse currently over this panel? **/
 	private boolean mouseIsIn = false;
 
+	private final GameLoader game = new GameLoader();
+	
 	public PanelRunner_Snapshot() {
 		super();
 		addMouseListener(this);
@@ -161,7 +163,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 			for (int i = transforms.size() - 1; i >= 0; i--) {
 				if (!mouseIsIn || bestIdx != i) {
 					Color nextRunnerColor = (highlightedFutureMousedOver != null && focusLeaves.get(i).treeDepth > snapshotNode.treeDepth) ? colors.get(i).brighter() : colors.get(i); // Make the nodes after the selected one lighter if one is highlighted.
-					QWOPGame.drawExtraRunner(g2, transforms.get(i), "", runnerScaling, xOffsetPixels, yOffsetPixels, nextRunnerColor, strokes.get(i));
+					game.drawExtraRunner(g2, transforms.get(i), "", runnerScaling, xOffsetPixels, yOffsetPixels, nextRunnerColor, strokes.get(i));
 				}
 			}
 
@@ -209,7 +211,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 		int idx = focusLeaves.indexOf(newFuture);
 		if (idx > -1) { // Focus leaves no longer contains the no focus requested.
 			try{
-				QWOPGame.drawExtraRunner(g2, transforms.get(idx), "", runnerScaling, xOffsetPixels, yOffsetPixels, colors.get(idx).darker(), boldStroke);
+				game.drawExtraRunner(g2, transforms.get(idx), "", runnerScaling, xOffsetPixels, yOffsetPixels, colors.get(idx).darker(), boldStroke);
 
 				Node currentNode = newFuture;
 
@@ -221,7 +223,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 					if (currentNode.treeDepth % 2 == 0) {
 						everyOtherEvenColor = everyOtherEvenColor.darker();
 					}
-					QWOPGame.drawExtraRunner(g2, currentNode.state.getTransforms(), currentNode.getAction().toStringLite(), runnerScaling, xOffsetPixels, yOffsetPixels, everyOtherEvenColor, boldStroke);
+					game.drawExtraRunner(g2, currentNode.state.getTransforms(), currentNode.getAction().toStringLite(), runnerScaling, xOffsetPixels, yOffsetPixels, everyOtherEvenColor, boldStroke);
 
 					//					// Draw actions above their heads.
 					//					g2.setFont(medFont);

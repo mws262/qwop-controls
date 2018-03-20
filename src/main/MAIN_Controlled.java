@@ -79,10 +79,10 @@ public class MAIN_Controlled extends JFrame{
 			
 			try {
 			switch(phase) {
-			case 1:
+			case 0:
 				game.stepGame(false,false,false,false);
 				break;
-			case 0:
+			case 1:
 				game.stepGame(false,true,true,false);
 				break;
 			case 2:
@@ -97,20 +97,20 @@ public class MAIN_Controlled extends JFrame{
 			}catch(Exception e) {
 				e.printStackTrace();
 			}
-//			float prediction = pred.getPrediction(game.getCurrentGameState());
-//			// System.out.println(prediction);
-//			
-//			if (toSwitchCount > 10 && prediction <1.8f) {
-//				
-//				//System.out.println("SWITCHING SOON");
-//				toSwitchCount = Math.round(prediction); 
-//			}
-//			
-//			if (toSwitchCount == 0) {
-//				phase = (phase + 1) % 4;
-//				toSwitchCount = Integer.MAX_VALUE;
-//			}
-//			toSwitchCount--;
+			float prediction = pred.getPrediction(game.getCurrentState());
+			// System.out.println(prediction);
+			
+			if (toSwitchCount > 10 && prediction <1.8f) {
+				
+				//System.out.println("SWITCHING SOON");
+				toSwitchCount = Math.round(prediction); 
+			}
+			
+			if (toSwitchCount == 0) {
+				phase = (phase + 1) % 4;
+				toSwitchCount = Integer.MAX_VALUE;
+			}
+			toSwitchCount--;
 			repaint();
 			try {
 				Thread.sleep(20);
@@ -134,7 +134,7 @@ public class MAIN_Controlled extends JFrame{
 		
 		boolean active = true;
 
-		private World world;
+		//private GameLoader game;
 		
 		TensorflowAutoencoder enc = new TensorflowAutoencoder("AutoEnc_72to6_6layer.pb", "6 output");
 		
@@ -147,31 +147,21 @@ public class MAIN_Controlled extends JFrame{
 
 			try {
 				game.draw(g, 10f, 960, 500);
+				State currState = game.getCurrentState();
+				State predState = new State(enc.getPrediction(currState));
+				game.drawExtraRunner((Graphics2D)g, game.getXForms(predState), "Encoded->Decoded", 10f, 960, 500, Color.RED, normalStroke);
+				
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
 					| NoSuchMethodException | SecurityException | NoSuchFieldException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-//				State currState = new State(game);
-//				System.out.println(currState.body.th);
-//				State predState = new State(enc.getPrediction(currState));
-//				XForm[] predXForms = predState.getTransforms();
-//				drawRunner((Graphics2D)g, Color.RED, normalStroke, shapes, predXForms);
-
-
 			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
 			xOffsetPixels = -headPos + xOffsetPixels_init;
 
 		}
 
-		public void setWorldToView(World world) {
-			this.world = world;
-		}
-
-		public void clearWorldToView() {
-			world = null;
-		}
 
 		public void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
 

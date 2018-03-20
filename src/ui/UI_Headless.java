@@ -2,10 +2,10 @@ package ui;
 
 import javax.swing.event.ChangeEvent;
 
+import game.GameLoader;
 import main.INegotiateGame;
 import main.IUserInterface;
 import main.Node;
-import main.QWOPGame;
 
 public class UI_Headless implements IUserInterface {
 
@@ -24,7 +24,7 @@ public class UI_Headless implements IUserInterface {
 	public void stateChanged(ChangeEvent e) {}
 
 	@Override
-	public void setLiveGameToView(QWOPGame game) {}
+	public void setLiveGameToView(GameLoader game) {}
 
 	@Override
 	public void clearLiveGameToView() {}

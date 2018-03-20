@@ -2,6 +2,8 @@ package main;
 
 import javax.swing.event.ChangeEvent;
 
+import game.GameLoader;
+
 public interface IUserInterface extends Runnable{
 
 	/** Main graphics loop. **/
@@ -18,7 +20,7 @@ public interface IUserInterface extends Runnable{
 
 	void setNegotiator(INegotiateGame negotiator);
 	
-	void setLiveGameToView(QWOPGame game);
+	void setLiveGameToView(GameLoader game);
 	
 	void clearLiveGameToView();
 	

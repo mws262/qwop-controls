@@ -8,6 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import com.jogamp.opengl.GL2;
 
 import data.SaveableSingleGame;
+import game.GameLoader;
 
 /*
  * This version will hopefully get rid of many legacy features.
@@ -182,7 +183,7 @@ public class Node {
 		displayPoint = true;
 
 		// Root node gets the QWOP initial condition.
-		setState(QWOPGame.getInitialState());
+		setState(GameLoader.getInitialState());
 
 		// Add some child actions to try if an action generator is assigned.
 		autoAddUncheckedActions();
@@ -367,16 +368,10 @@ public class Node {
 	/******* STATE & SEQUENCE SETTING/GETTING **********/
 	/***************************************************/
 
-	//	/** Capture the state from an active game **/
-	//	@Deprecated
-	//	public void captureState(QWOPInterface QWOPHandler){
-	//		state = new CondensedStateInfo(QWOPHandler.game); // MATT add 8/22/17
-	//	}
-
-	/** Capture the state from an active game **/
-	public void captureState(QWOPGame game){
-		state = new State(game); // MATT add 8/22/17
-	}
+//	/** Capture the state from an active game **/
+//	public void captureState(QWOPGame game){
+//		state = new State(game); // MATT add 8/22/17
+//	}
 
 	/** Assign the state directly. Usually when loading nodes. **/
 	public void setState(State newState){

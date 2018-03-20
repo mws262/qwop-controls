@@ -9,7 +9,7 @@ public class State implements Serializable {
 
 	private static final long serialVersionUID = 2L;
 	
-	public boolean failedState;
+	public boolean failedState = false;
 	
 	public StateVariable body;
 	public StateVariable rthigh;
@@ -31,48 +31,9 @@ public class State implements Serializable {
 	public enum StateName{
 		X, Y, TH, DX, DY, DTH
 	}
+
 	
-	public State(QWOPGame world) {
-		failedState = world.getFailureStatus();
-		Body nextBody = world.torsoBody;
-		body = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.rThighBody;
-		rthigh = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.lThighBody;
-		lthigh = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.rCalfBody;
-		rcalf = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.lCalfBody;
-		lcalf = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.rFootBody;
-		rfoot = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.lFootBody;
-		lfoot = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.rUArmBody;
-		ruarm = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.lUArmBody;
-		luarm = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.rLArmBody;
-		rlarm = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.lLArmBody;
-		llarm = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-		nextBody = world.headBody;
-		head = new StateVariable(nextBody.getPosition().x,nextBody.getPosition().y,nextBody.getAngle(),
-				nextBody.getLinearVelocity().x,nextBody.getLinearVelocity().y,nextBody.getAngularVelocity());
-	}
-	
-	/** ADDED 2/8/17 -- this may mess with the serializability of the class. **/
+	/** Make new state from list of ordered numbers. Most useful for interacting with neural network stuff. Number order is essential. **/
 	public State(float[] stateVars) { // Order matches order in TensorflosAutoencoder.java
 		body = new StateVariable(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
 		head = new StateVariable(stateVars[6], stateVars[7], stateVars[8], stateVars[9], stateVars[10], stateVars[11]);
@@ -86,7 +47,39 @@ public class State implements Serializable {
 		luarm = new StateVariable(stateVars[54], stateVars[55], stateVars[56], stateVars[57], stateVars[58], stateVars[59]);
 		rlarm = new StateVariable(stateVars[60], stateVars[61], stateVars[62], stateVars[63], stateVars[64], stateVars[65]);
 		llarm = new StateVariable(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70], stateVars[71]);
-
+	}
+	
+	/** Make new state from a list of StateVariables. This is now the default way that the GameLoader does it. To make a new State from an existing game,
+	 * the best bet is to call myGameLoader.getCurrentState().
+	 * 
+	 * @param bodyS
+	 * @param headS
+	 * @param rthighS
+	 * @param lthighS
+	 * @param rcalfS
+	 * @param lcalfS
+	 * @param rfootS
+	 * @param lfootS
+	 * @param ruarmS
+	 * @param luarmS
+	 * @param rlarmS
+	 * @param llarmS
+	 */
+	public State(StateVariable bodyS, StateVariable headS, StateVariable rthighS, StateVariable lthighS, StateVariable rcalfS, StateVariable lcalfS,
+			StateVariable rfootS, StateVariable lfootS, StateVariable ruarmS, StateVariable luarmS, StateVariable rlarmS, StateVariable llarmS, boolean isFailed) { // Order matches order in TensorflosAutoencoder.java
+		body = bodyS;
+		head = headS;
+		rthigh = rthighS;
+		lthigh = lthighS;
+		rcalf = rcalfS;
+		lcalf = lcalfS;
+		rfoot = rfootS;
+		lfoot = lfootS;
+		ruarm = ruarmS;
+		luarm = luarmS;
+		rlarm = rlarmS;
+		llarm = llarmS;
+		failedState = isFailed;
 	}
 	
 	public XForm[] getTransforms(){
@@ -229,28 +222,6 @@ public class State implements Serializable {
 			throw new RuntimeException("Unknown object state queried.");
 		}
 		return stateValue;
-	}
-
-	
-	public class StateVariable implements Serializable{
-
-		private static final long serialVersionUID = 1L;
-		
-		public float x;
-		public float y;
-		public float th;
-		public float dx;
-		public float dy;
-		public float dth;
-		
-		private StateVariable(float x, float y, float th, float dx, float dy, float dth){
-			this.x = x;
-			this.y = y;
-			this.th = th;
-			this.dx = dx;
-			this.dy = dy;
-			this.dth = dth;
-		}	
 	}
 }
 

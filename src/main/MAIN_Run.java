@@ -12,6 +12,7 @@ import distributions.Distribution_Uniform;
 import evaluators.Evaluator_Distance;
 import evaluators.Evaluator_HandTunedOnState;
 import evaluators.Evaluator_Random;
+import samplers.Sampler_Deterministic;
 import samplers.Sampler_Distribution;
 import samplers.Sampler_Greedy;
 import samplers.Sampler_Random;
@@ -306,5 +307,6 @@ public class MAIN_Run implements Runnable{
 
 
 		System.out.println("All initialized.");
+		
 	}
 }

@@ -2,11 +2,11 @@ package ui;
 
 import java.awt.Graphics;
 
+import game.GameLoader;
 import main.Action;
 import main.ActionQueue;
 import main.Node;
 import main.PanelRunner;
-import main.QWOPGame;
 
 public class PanelRunner_Animated extends PanelRunner implements Runnable{
 
@@ -19,7 +19,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 	private boolean pauseFlag = false;
 
 	/** This panel's copy of the game it uses to run games for visualization. **/
-	protected QWOPGame game;
+	protected GameLoader game;
 
 	/** Stores the qwop actions we're going to execute. **/
 	private ActionQueue actionQueue = new ActionQueue();
@@ -39,7 +39,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 	 * is active, then terminate the previous and start the new one.**/
 	public void simRunToNode(Node node) {
 		actionQueue.clearAll();
-		game = new QWOPGame();
+		game = new GameLoader();
 		Action[] actionSequence = node.getSequence();
 		actionQueue.addSequence(actionSequence);
 		for (Action a : actionSequence) {

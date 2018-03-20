@@ -3,6 +3,7 @@ package main;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import game.GameLoader;
 
 /**
  * Addresses limitations of the old concurrent state machine approach.
@@ -32,7 +33,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	public boolean verbose = false;
 
 	/** The current game instance that this FSM is using. This will frequently change since a new one is created for each run. **/
-	private QWOPGame game;
+	private final GameLoader game = new GameLoader();
 
 	/** Strategy for sampling new nodes. **/
 	private ISampler sampler;
@@ -50,7 +51,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	public ActionQueue actionQueue = new ActionQueue();
 
 	/** Initial runner state. **/
-	private State initState;
+	private State initState = GameLoader.getInitialState();
 
 	/** Current status of this FSM **/
 	private Status currentStatus = Status.IDLE;
@@ -60,11 +61,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	public TreeWorker(Node rootNode, ISampler sampler) {
 		this.sampler = sampler;
 		this.rootNode = rootNode;
-
-		// Find initial runner state for later use.
-		QWOPGame g = new QWOPGame();
-		initState = g.getCurrentGameState();
-		initState.failedState = false;
 	}
 
 	int tmpc = 0;
@@ -79,7 +75,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				}else {
 					changeStatus(Status.INITIALIZE);
 				}
-
 				break;
 			case INITIALIZE:
 				actionQueue.clearAll();
@@ -233,7 +228,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	/** Begin a new game. **/
 	private void newGame(){
-		game = new QWOPGame();
+		game.makeNewWorld();
 	}
 
 
@@ -264,7 +259,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	/** Get the state of the runner. **/
 	public State getGameState(){
-		return game.getCurrentGameState();
+		return game.getCurrentState();
 	}
 
 	/** How many physics timesteps has this particular worker simulated? **/
@@ -284,7 +279,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 		Graphics2D g2 = (Graphics2D)g;
 
 		// Draw all non-highlighted runners.
-		QWOPGame.drawExtraRunner(g2, game.getCurrentGameState().getTransforms(), "", runnerScaling, xOffsetPixels, yOffsetPixels, Color.BLACK, normalStroke);
+		game.draw(g2, runnerScaling, xOffsetPixels, yOffsetPixels);
 	}
 }
 
