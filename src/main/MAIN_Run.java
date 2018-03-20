@@ -273,11 +273,13 @@ public class MAIN_Run implements Runnable{
 		}
 
 		TreeWorker worker1 = new TreeWorker(treeRoot, currentSampler);
+		TreeWorker worker2 = new TreeWorker(treeRoot, currentSampler);
 		((UI_Full)ui).addDebuggingTab(worker1); // temp -- do something more permanent.
 		
 		worker1.verbose = false;
 		List<TreeWorker> workerList = new ArrayList<TreeWorker>();
 		workerList.add(worker1);
+		workerList.add(worker2);
 		/* Manage the tree, UI, and game. Start some threads. */
 		negotiator = new Negotiator_Updated(workerList, ui);
 		//negotiator.addDataSaver(dataSaver);
@@ -305,7 +307,7 @@ public class MAIN_Run implements Runnable{
 			wthread.start();
 		}
 
-
+		
 		System.out.println("All initialized.");
 		
 	}

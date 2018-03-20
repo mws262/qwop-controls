@@ -34,7 +34,7 @@ public class GameLoader extends ClassLoader {
 	private static long timestepsSimulated = 0;
 
 	/** Initial runner state. **/
-	//private static final State initState = new GameLoader().getCurrentState(); // Make sure this stays below all the other static assignments to avoid null pointers.
+	private static final State initState = new GameLoader().getCurrentState(); // Make sure this stays below all the other static assignments to avoid null pointers.
 
 	/** Physics engine stepping parameters. **/
 	public static final float timestep = 0.04f;
@@ -52,7 +52,7 @@ public class GameLoader extends ClassLoader {
 	/** Filters collisions. Prevents body parts from hitting other body parts. **/
 	private final int BODY_GROUP = -1;
 
-	/** List of shapes for use by graphics stuff. Making it static -- IE, assuming that in multiple games, the runner doesn't change shape. **/
+	/** List of shapes for use by graphics stuff. **/
 	private List<Object> shapeList;
 
 	// Track
@@ -214,6 +214,7 @@ public class GameLoader extends ClassLoader {
 
 			_ShapeType = findClass("org.jbox2d.collision.shapes.ShapeType");
 			findClass("org.jbox2d.dynamics.contacts.Contact");
+			findClass("org.jbox2d.dynamics.contacts.ContactCreateFcn");			
 			_ShapeDef = findClass("org.jbox2d.collision.shapes.ShapeDef");
 			_AABB = findClass("org.jbox2d.collision.AABB");
 			_World = findClass("org.jbox2d.dynamics.World");
@@ -240,14 +241,17 @@ public class GameLoader extends ClassLoader {
 			findClass("org.jbox2d.dynamics.contacts.ContactConstraintPoint");
 			findClass("org.jbox2d.dynamics.contacts.ContactConstraint");
 			findClass("org.jbox2d.dynamics.contacts.ContactResult");
+			findClass("org.jbox2d.dynamics.contacts.ContactRegister");
 
 			findClass("org.jbox2d.collision.BroadPhase");
+			findClass("org.jbox2d.collision.ContactID");
+			findClass("org.jbox2d.collision.ContactID$Features");
 			findClass("org.jbox2d.collision.PairManager");
 			findClass("org.jbox2d.collision.BufferedPair");
 			findClass("org.jbox2d.collision.Proxy");
 			findClass("org.jbox2d.collision.ManifoldPoint");		
 			findClass("org.jbox2d.collision.Manifold");
-			findClass("org.jbox2d.collision.ContactID");
+			findClass("org.jbox2d.collision.SupportsGenericDistance");
 			findClass("org.jbox2d.collision.OBB");
 			findClass("org.jbox2d.collision.TOI");
 			findClass("org.jbox2d.collision.Point");
