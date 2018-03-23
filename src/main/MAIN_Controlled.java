@@ -30,33 +30,33 @@ public class MAIN_Controlled extends JFrame{
 	public GameLoader game;
 	private Tensorflow_Predictor pred = new Tensorflow_Predictor();
 	private RunnerPane runnerPane;
-	
+
 	/** Window width **/
 	public static int windowWidth = 1920;
 
 	/** Window height **/
 	public static int windowHeight = 1000;
-	
+
 	final Font QWOPLittle = new Font("Ariel", Font.BOLD,21);
 	final Font QWOPBig = new Font("Ariel", Font.BOLD,28);
-	
+
 	/** Runner coordinates to pixels. **/
 	public float runnerScaling = 10f;
-	
+
 	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
 	public int xOffsetPixels_init = 700;
 	public int xOffsetPixels = xOffsetPixels_init;
 	public int yOffsetPixels = 600;
-	
+
 	private int phase = 0;
-	
+
 	public static void main(String[] args) {
-		
+
 		MAIN_Controlled mc = new MAIN_Controlled();
 		mc.setup();
 		mc.run();
 	}
-	
+
 	public void setup() {
 		/* Runner pane */   
 		runnerPane = new RunnerPane();
@@ -70,42 +70,42 @@ public class MAIN_Controlled extends JFrame{
 		this.setVisible(true); 
 		repaint();
 	}
-	
+
 	int toSwitchCount = Integer.MAX_VALUE;
 	public void run() {
 		game = new GameLoader();
-		
+
 		while (true) {
-			
+
 			try {
-			switch(phase) {
-			case 0:
-				game.stepGame(false,false,false,false);
-				break;
-			case 1:
-				game.stepGame(false,true,true,false);
-				break;
-			case 2:
-				game.stepGame(false,false,false,false);
-				break;
-			case 3:
-				game.stepGame(true,false,false,true);
-				break;
-			default: 
-				throw new RuntimeException("Sequence phase is busted: " + phase);
-			}
+				switch(phase) {
+				case 0:
+					game.stepGame(false,false,false,false);
+					break;
+				case 1:
+					game.stepGame(false,true,true,false);
+					break;
+				case 2:
+					game.stepGame(false,false,false,false);
+					break;
+				case 3:
+					game.stepGame(true,false,false,true);
+					break;
+				default: 
+					throw new RuntimeException("Sequence phase is busted: " + phase);
+				}
 			}catch(Exception e) {
 				e.printStackTrace();
 			}
 			float prediction = pred.getPrediction(game.getCurrentState());
 			// System.out.println(prediction);
-			
+
 			if (toSwitchCount > 10 && prediction <1.8f) {
-				
+
 				//System.out.println("SWITCHING SOON");
 				toSwitchCount = Math.round(prediction); 
 			}
-			
+
 			if (toSwitchCount == 0) {
 				phase = (phase + 1) % 4;
 				toSwitchCount = Integer.MAX_VALUE;
@@ -120,7 +120,7 @@ public class MAIN_Controlled extends JFrame{
 			}
 		}
 	}
-	
+
 	/**
 	 * Pane for displaying the animated runner executing a sequence selected on the tree. A tab.
 	 * @author Matt
@@ -131,13 +131,13 @@ public class MAIN_Controlled extends JFrame{
 
 		/** Highlight stroke for line drawing. **/
 		private final Stroke normalStroke = new BasicStroke(0.5f);
-		
+
 		boolean active = true;
 
 		//private GameLoader game;
-		
+
 		TensorflowAutoencoder enc = new TensorflowAutoencoder("AutoEnc_72to6_6layer.pb", "6 output");
-		
+
 		public RunnerPane() {}
 
 		@Override
@@ -145,21 +145,13 @@ public class MAIN_Controlled extends JFrame{
 			if (!active || game == null) return;
 			super.paintComponent(g);
 
-			try {
-				game.draw(g, 10f, 960, 500);
-				State currState = game.getCurrentState();
-				State predState = new State(enc.getPrediction(currState));
-				game.drawExtraRunner((Graphics2D)g, game.getXForms(predState), "Encoded->Decoded", 10f, 960, 500, Color.RED, normalStroke);
-				
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-					| NoSuchMethodException | SecurityException | NoSuchFieldException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			game.draw(g, 10f, 960, 500);
+			State currState = game.getCurrentState();
+			State predState = new State(enc.getPrediction(currState));
+			game.drawExtraRunner((Graphics2D)g, game.getXForms(predState), "Encoded->Decoded", 10f, 960, 500, Color.RED, normalStroke);
 
 			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
 			xOffsetPixels = -headPos + xOffsetPixels_init;
-
 		}
 
 

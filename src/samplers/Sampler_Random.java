@@ -30,7 +30,7 @@ public class Sampler_Random implements ISampler {
 			// Count the number of available children to go to next.
 			int notFullyExploredChildren = 0;
 			for (Node child : currentNode.children) {
-				if (!child.fullyExplored) notFullyExploredChildren++;
+				if (!child.fullyExplored && !child.getLockStatus()) notFullyExploredChildren++;
 			}
 
 			if (notFullyExploredChildren == 0 && currentNode.uncheckedActions.size() == 0) throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully explored before.");
@@ -46,7 +46,7 @@ public class Sampler_Random implements ISampler {
 				int selection = Utility.randInt(0, notFullyExploredChildren - 1);
 				int count = 0;
 				for (Node child : currentNode.children) {
-					if (!child.fullyExplored) {
+					if (!child.fullyExplored && !child.getLockStatus()) {
 						if (count == selection) {
 							currentNode = child;
 							break;
@@ -65,7 +65,7 @@ public class Sampler_Random implements ISampler {
 				}else{
 					int count = 1;
 					for (Node child : currentNode.children) {
-						if (!child.fullyExplored) {
+						if (!child.fullyExplored && !child.getLockStatus()) {
 							if (count == selection) {
 								currentNode = child;
 								break;
@@ -127,5 +127,10 @@ public class Sampler_Random implements ISampler {
 
 	@Override
 	public void rolloutPolicyActionDone(Node currentNode) {} // No rollout in random sampler.
+	
+	@Override
+	public Sampler_Random clone() {
+		return new Sampler_Random();
+	}
 	
 }

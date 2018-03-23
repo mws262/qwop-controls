@@ -272,14 +272,16 @@ public class MAIN_Run implements Runnable{
 			System.out.println("GUI: Running in full graphics mode.");
 		}
 
-		TreeWorker worker1 = new TreeWorker(treeRoot, currentSampler);
-		TreeWorker worker2 = new TreeWorker(treeRoot, currentSampler);
+		TreeWorker worker0 = new TreeWorker(treeRoot, currentSampler);
+		TreeWorker worker1 = new TreeWorker(treeRoot, currentSampler.clone());
+		worker0.verbose = true;
+		worker1.verbose = true;
 		((UI_Full)ui).addDebuggingTab(worker1); // temp -- do something more permanent.
 		
 		worker1.verbose = false;
 		List<TreeWorker> workerList = new ArrayList<TreeWorker>();
+		workerList.add(worker0);
 		workerList.add(worker1);
-		workerList.add(worker2);
 		/* Manage the tree, UI, and game. Start some threads. */
 		negotiator = new Negotiator_Updated(workerList, ui);
 		//negotiator.addDataSaver(dataSaver);

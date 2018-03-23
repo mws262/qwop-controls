@@ -46,6 +46,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	/** Node the game is attempting to run to. **/
 	private Node targetNodeToTest;
+	
+	/** Node the game is initially expanding from. **/
+	private Node expansionNode;
 
 	/** Queued commands, IE QWOP key presses **/
 	public ActionQueue actionQueue = new ActionQueue();
@@ -57,13 +60,18 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	private Status currentStatus = Status.IDLE;
 
 	private long workerStepsSimulated = 0;
+	private long workerGamesPlayed = 0;
+	
+	private final int workerID;
+	private static int workerCount = 0;
 
 	public TreeWorker(Node rootNode, ISampler sampler) {
 		this.sampler = sampler;
 		this.rootNode = rootNode;
+		workerID = workerCount;
+		workerCount++;
 	}
 
-	int tmpc = 0;
 	/* Finite state machine loop. Runnable. */
 	@Override
 	public void run() {
@@ -89,8 +97,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				if (sampler.treePolicyGuard(currentGameNode)) { // Sampler tells us when we're done with the tree policy.
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 				}else {
-					targetNodeToTest = sampler.treePolicy(currentGameNode); // This gets us through the existing tree to a place that we plan to add a new node.
-
+					expansionNode = sampler.treePolicy(currentGameNode); // This gets us through the existing tree to a place that we plan to add a new node.
+					targetNodeToTest = expansionNode;
+					System.out.println("Worker " + workerID + " tree policy picked node at depth " + expansionNode.treeDepth);
 					// Check special cases.
 					if (targetNodeToTest.treeDepth == 0) { //targetNodeToTest == currentGameNode) { // We must be at the fringe of the tree and we should switch to expansion policy.
 						currentGameNode = targetNodeToTest;
@@ -196,17 +205,22 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 				if (currentGameNode.state.failedState) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
 					currentGameNode.markTerminal();
+					Action[] a = currentGameNode.getSequence();
+					for (Action act : a) {
+						System.out.print( act.toString() + ", ");
+					}
+					System.out.println();
 				}else {
 					throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
 				}
+				workerGamesPlayed++;
+				expansionNode.releaseExpansionRights();
+				
 				if (rootNode.fullyExplored) {
 					changeStatus(Status.EXHAUSTED);
 				}else {
 					changeStatus(Status.IDLE);
 				}
-				
-				tmpc++;
-				if (tmpc > 1200) workerRunning = false;
 				break;
 			case EXHAUSTED:
 				System.out.println("Tree is fully explored.");
@@ -220,7 +234,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	/** Do not directly change the game status. Use this. **/
 	private void changeStatus(Status newStatus) {
 		if (verbose) {
-			System.out.println(currentStatus + " --->  " + newStatus);
+			System.out.println("Worker " + workerID + ": " + currentStatus + " --->  " + newStatus + "     game: " + workerGamesPlayed);
 		}
 		currentStatus = newStatus;
 	}

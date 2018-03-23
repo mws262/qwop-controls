@@ -59,6 +59,9 @@ public class Node {
 	/** Does this node represent a failed state? Stronger than fullyExplored. **/
 	public boolean isTerminal = false;
 
+	/** If one TreeWorker is expanding from this leaf node (if it is one), then no other worker should try to simultaneously expand from here too. **/
+	private volatile boolean locked = false;
+
 	/** How deep is this node down the tree? 0 is root. **/
 	public final int treeDepth;
 
@@ -113,7 +116,7 @@ public class Node {
 				throw new RuntimeException("Tried to add a duplicate action node at depth " + treeDepth + ". Action was: " + action.toString() + ".");
 			}	
 		}
-		parent.children.add(this);
+
 		if (treeDepth > maxDepthYet){
 			maxDepthYet = treeDepth;
 		}
@@ -127,8 +130,10 @@ public class Node {
 		lineBrightness = parent.lineBrightness;
 		zOffset = parent.zOffset;
 
+		parent.children.add(this);
+		
 		if (!currentlyAddingSavedNodes){
-			calcNodePos();
+			calcNodePos(); // Must be called after this node has been added to its parent's list!
 		}
 	}
 
@@ -147,13 +152,6 @@ public class Node {
 			}	
 		}
 
-		if (connectNodeToTree) {
-			parent.children.add(this);
-			if (treeDepth > maxDepthYet){
-				maxDepthYet = treeDepth;
-			}
-		}
-
 		// Add some child actions to try if an action generator is assigned.
 		autoAddUncheckedActions();
 
@@ -163,8 +161,16 @@ public class Node {
 		lineBrightness = parent.lineBrightness;
 		zOffset = parent.zOffset;
 
+		// Should only add to parent's list after everything else has been done to prevent half-initialized nodes from being used by other workers.
+		if (connectNodeToTree) {
+			parent.children.add(this);
+			if (treeDepth > maxDepthYet){
+				maxDepthYet = treeDepth;
+			}
+		}
+		
 		if (connectNodeToTree && !currentlyAddingSavedNodes){
-			calcNodePos();
+			calcNodePos(); // Must be called after this node has been added to its parent's list!
 		}
 	}
 
@@ -201,7 +207,7 @@ public class Node {
 	}
 
 	/** If we've assigned a potentialActionGenerator, this can auto-add potential child actions. Ignores duplicates. **/
-	private void autoAddUncheckedActions() {
+	private synchronized void autoAddUncheckedActions() {
 		// If we've set rules to auto-select potential children, do so.
 		if (potentialActionGenerator != null) {
 			ActionSet potentialActions = potentialActionGenerator.getPotentialChildActionSet(this);
@@ -218,6 +224,63 @@ public class Node {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Cases:
+	 * 	1. Select node to expand. It has only 1 untried option. We lock the node, and expand.
+	 * 	2. Select node to expand. It has multiple options. We still lock the node for now. This could be changed.
+	 * 	3. Select node to expand. It is now locked according to 1 and 2. This node's parent only has fully explored children and locked children. For all
+	 * 		practical purposes, this node is also out of play. Lock it too and recurse up the tree until we reach a node with at least one unlocked and not
+	 * 		fully explored child.
+	 * 		When unlocking, we should propagate fully-explored statuses back up the tree first, and then remove locks as far up the tree as possible.
+	 * 
+	 * 
+	 * 
+	 */
+	private synchronized void propagateLock() {
+		for (Node child : children) {
+			if (!child.isTerminal && !child.getLockStatus()) { // Neither terminal node, nor locked.
+				return; // In this case, we don't need to continue locking things further up the tree.
+			}
+		}
+		reserveExpansionRights();		
+	}
+
+	/** Set a flag to indicate that the invoking TreeWorker has temporary exclusive rights to expand from this node. **/
+	public synchronized boolean reserveExpansionRights() {
+		if (locked) {
+			return false;
+		}else {
+			if (uncheckedActions.isEmpty()) return false;//throw new RuntimeException("A worker tried to reserve a node to expand, but found that there were no untried actions to check here.");
+			locked = true;
+			displayPoint = true;
+			System.out.println("Lock set at node depth: " + treeDepth);
+			if (treeDepth > 0) parent.propagateLock();
+			return true;
+		}
+	}
+	
+	private synchronized void propagateUnlock() {
+		for (Node child : children) {
+			if (!child.isTerminal && !child.getLockStatus()) {  // Neither terminal node, nor locked -> does not need to stay locked.
+				releaseExpansionRights();
+				return;
+			}
+		}
+	}
+
+	/** Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node. **/
+	public synchronized void releaseExpansionRights() {
+		locked = false;
+		displayPoint = false;
+		System.out.println("Unlock at node depth: " + treeDepth);
+		if (treeDepth > 0) parent.propagateUnlock();
+	}
+	
+	/** Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node. **/
+	public synchronized boolean getLockStatus() {
+		return locked;
 	}
 
 	/***********************************************/
@@ -368,10 +431,10 @@ public class Node {
 	/******* STATE & SEQUENCE SETTING/GETTING **********/
 	/***************************************************/
 
-//	/** Capture the state from an active game **/
-//	public void captureState(QWOPGame game){
-//		state = new State(game); // MATT add 8/22/17
-//	}
+	//	/** Capture the state from an active game **/
+	//	public void captureState(QWOPGame game){
+	//		state = new State(game); // MATT add 8/22/17
+	//	}
 
 	/** Assign the state directly. Usually when loading nodes. **/
 	public void setState(State newState){
