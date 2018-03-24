@@ -255,13 +255,15 @@ public class Node {
 			if (uncheckedActions.isEmpty()) return false;//throw new RuntimeException("A worker tried to reserve a node to expand, but found that there were no untried actions to check here.");
 			locked = true;
 			displayPoint = true;
-			System.out.println("Lock set at node depth: " + treeDepth);
+			overrideNodeColor = Color.RED;
+			//System.out.println("Lock set at node depth: " + treeDepth);
 			if (treeDepth > 0) parent.propagateLock();
 			return true;
 		}
 	}
 	
 	private synchronized void propagateUnlock() {
+		if (!getLockStatus()) return; 
 		for (Node child : children) {
 			if (!child.isTerminal && !child.getLockStatus()) {  // Neither terminal node, nor locked -> does not need to stay locked.
 				releaseExpansionRights();
@@ -274,7 +276,8 @@ public class Node {
 	public synchronized void releaseExpansionRights() {
 		locked = false;
 		displayPoint = false;
-		System.out.println("Unlock at node depth: " + treeDepth);
+		overrideNodeColor = null;
+		//System.out.println("Unlock at node depth: " + treeDepth);
 		if (treeDepth > 0) parent.propagateUnlock();
 	}
 	
@@ -659,11 +662,26 @@ public class Node {
 		}
 	}
 
+	/** Set an override line color for this path (all ancestors). **/
+	public void setBackwardsBranchColor(Color newColor){
+		overrideLineColor = newColor;
+		if (treeDepth > 0) {
+			parent.setBackwardsBranchColor(newColor);
+		}
+	}
 	/** Clear an overriden line color on this branch. Call from root to get all line colors back to default. **/
 	public void clearBranchColor(){
 		overrideLineColor = null;
 		for (Node child : children){
 			child.clearBranchColor();
+		}
+	}
+	
+	/** Clear an overriden line color on this branch. Goes back towards root. **/
+	public void clearBackwardsBranchColor(){
+		overrideLineColor = null;
+		if (treeDepth > 0) {
+			parent.clearBackwardsBranchColor();
 		}
 	}
 
@@ -677,6 +695,17 @@ public class Node {
 			child.clearNodeOverrideColor(colorToClear);
 		}
 	}
+	
+	/** Clear node override colors from this node backwards. Only clear the specified color. Goes towards root. **/
+	public void clearBackwardsNodeOverrideColor(Color colorToClear){
+		if (overrideNodeColor == colorToClear){
+			overrideNodeColor = null;
+			displayPoint = false;
+		}
+		if (treeDepth > 0) {
+			parent.clearBackwardsNodeOverrideColor(colorToClear);
+		}
+	}
 
 	/** Clear all node override colors from this node onward. Call from root to clear all. **/
 	public void clearNodeOverrideColor(){
@@ -688,7 +717,18 @@ public class Node {
 			child.clearNodeOverrideColor();
 		}
 	}
-
+	
+	/** Clear all node override colors from this node onward. Call from root to clear all. **/
+	public void clearBackwardsNodeOverrideColor(){
+		if (overrideNodeColor != null){
+			overrideNodeColor = null;
+			displayPoint = false;
+		}
+		if (treeDepth > 0) {
+			parent.clearBackwardsNodeOverrideColor();
+		}
+	}
+	
 	/** Give this branch a zOffset to make it stand out. **/
 	public void setBranchZOffset(float zOffset){
 		this.zOffset = zOffset;

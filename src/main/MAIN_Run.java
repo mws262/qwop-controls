@@ -221,10 +221,10 @@ public class MAIN_Run implements Runnable{
 			System.out.println("SAMPLER: Using UCB node sampler.");
 			break;
 		case "deterministic":
-			currentSampler = new Sampler_Deterministic();
+			currentSampler = new Sampler_Random();
 			System.out.println("SAMPLER: Using deterministic DFS sampler.");
 		default:
-			currentSampler = new Sampler_Deterministic();
+			currentSampler = new Sampler_Random();
 			System.out.println("SAMPLER: Unrecognized argument. Defaulting to UCB.");
 		}
 
@@ -271,17 +271,15 @@ public class MAIN_Run implements Runnable{
 			ui = new UI_Full();
 			System.out.println("GUI: Running in full graphics mode.");
 		}
-
-		TreeWorker worker0 = new TreeWorker(treeRoot, currentSampler);
-		TreeWorker worker1 = new TreeWorker(treeRoot, currentSampler.clone());
-		worker0.verbose = true;
-		worker1.verbose = true;
-		((UI_Full)ui).addDebuggingTab(worker1); // temp -- do something more permanent.
 		
-		worker1.verbose = false;
+		
+		int numWorkers = 20;
 		List<TreeWorker> workerList = new ArrayList<TreeWorker>();
-		workerList.add(worker0);
-		workerList.add(worker1);
+		for (int i = 0; i < numWorkers; i++) {
+			TreeWorker w = new TreeWorker(treeRoot, currentSampler.clone());
+			workerList.add(w);
+		}
+
 		/* Manage the tree, UI, and game. Start some threads. */
 		negotiator = new Negotiator_Updated(workerList, ui);
 		//negotiator.addDataSaver(dataSaver);
@@ -296,7 +294,9 @@ public class MAIN_Run implements Runnable{
 		
 		List<Thread> workerThreads = new ArrayList<Thread>();
 		for (TreeWorker w : workerList) {
-			workerThreads.add(new Thread(w));	
+			Thread wThread = new Thread(w);
+			wThread.setName(w.workerName);
+			workerThreads.add(wThread);	
 		}
 		
 		Thread uiThread = new Thread(ui);

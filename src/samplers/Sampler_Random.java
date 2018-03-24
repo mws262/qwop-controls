@@ -1,5 +1,7 @@
 package samplers;
 
+import java.awt.Color;
+
 import main.Action;
 import main.ISampler;
 import main.Node;
@@ -33,7 +35,14 @@ public class Sampler_Random implements ISampler {
 				if (!child.fullyExplored && !child.getLockStatus()) notFullyExploredChildren++;
 			}
 
-			if (notFullyExploredChildren == 0 && currentNode.uncheckedActions.size() == 0) throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully explored before.");
+			if (notFullyExploredChildren == 0 && currentNode.uncheckedActions.size() == 0) {
+				currentNode = startNode;
+				continue; // TODO: investigate this error further.
+//				currentNode.nodeColor = Color.PINK;
+//				System.out.println(currentNode.getLockStatus());
+//				currentNode.displayPoint = true;
+//				throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully explored before.");
+			}
 
 			// 3/3/18 Removed because I'm confused. But will it still work?
 //			if (notFullyExploredChildren == 0) {
@@ -59,8 +68,8 @@ public class Sampler_Random implements ISampler {
 				// Probability decides.
 				int selection = Utility.randInt(1, notFullyExploredChildren + currentNode.uncheckedActions.size());
 				// Make a new node or pick a not fully explored child.
-				if (selection > notFullyExploredChildren){
-					if (currentNode.state.failedState) throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
+				if (selection > notFullyExploredChildren && currentNode.reserveExpansionRights()){
+					if (currentNode.state != null && currentNode.state.failedState) throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
 					return currentNode;
 				}else{
 					int count = 1;

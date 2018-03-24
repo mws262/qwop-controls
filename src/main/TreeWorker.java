@@ -49,6 +49,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	
 	/** Node the game is initially expanding from. **/
 	private Node expansionNode;
+	private Node lastNodeAdded;
 
 	/** Queued commands, IE QWOP key presses **/
 	public ActionQueue actionQueue = new ActionQueue();
@@ -61,7 +62,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	private long workerStepsSimulated = 0;
 	private long workerGamesPlayed = 0;
+	private static long totalGamesPlayed = 0;
 	
+	public String workerName = "";
 	private final int workerID;
 	private static int workerCount = 0;
 
@@ -69,6 +72,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 		this.sampler = sampler;
 		this.rootNode = rootNode;
 		workerID = workerCount;
+		workerName = "worker" + workerID;
 		workerCount++;
 	}
 
@@ -98,8 +102,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 				}else {
 					expansionNode = sampler.treePolicy(currentGameNode); // This gets us through the existing tree to a place that we plan to add a new node.
+					expansionNode.setBackwardsBranchColor(getColorFromWorkerID(workerID));
+					expansionNode.setBackwardsBranchZOffset(0.1f);
 					targetNodeToTest = expansionNode;
-					System.out.println("Worker " + workerID + " tree policy picked node at depth " + expansionNode.treeDepth);
+					//System.out.println(workerName + " tree policy picked node at depth " + expansionNode.treeDepth);
 					// Check special cases.
 					if (targetNodeToTest.treeDepth == 0) { //targetNodeToTest == currentGameNode) { // We must be at the fringe of the tree and we should switch to expansion policy.
 						currentGameNode = targetNodeToTest;
@@ -140,6 +146,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 			case EXPANSION_POLICY_CHOOSING:
 				if (sampler.expansionPolicyGuard(currentGameNode)) { // Some samplers keep adding nodes until failure, others add a fewer number and move to rollout before failure.	
 					changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
+					if (lastNodeAdded != null) lastNodeAdded.clearNodeOverrideColor();
+					lastNodeAdded = currentGameNode;
+					lastNodeAdded.setBranchColor(getColorFromWorkerID(workerID));
 					sampler.expansionPolicyActionDone(currentGameNode);
 				}else {
 					targetNodeToTest = sampler.expansionPolicy(currentGameNode);
@@ -205,16 +214,28 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 				if (currentGameNode.state.failedState) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
 					currentGameNode.markTerminal();
-					Action[] a = currentGameNode.getSequence();
-					for (Action act : a) {
-						System.out.print( act.toString() + ", ");
-					}
-					System.out.println();
+//					Action[] a = currentGameNode.getSequence();
+//					for (Action act : a) {
+//						System.out.print( act.toString() + ", ");
+//					}
+//					System.out.println();
 				}else {
 					throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
 				}
 				workerGamesPlayed++;
+				long totGames = incrementTotalGameCount();
+				if (totGames % 1000 == 0) {
+					System.out.println(totGames);
+				}
+//				try {
+//					Thread.sleep(500);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
 				expansionNode.releaseExpansionRights();
+				expansionNode.clearBackwardsBranchColor();
+				expansionNode.clearBackwardsBranchZOffset();
 				
 				if (rootNode.fullyExplored) {
 					changeStatus(Status.EXHAUSTED);
@@ -283,6 +304,22 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	/** Terminate this worker after it's done with it's current task. **/
 	public void terminateWorker() {
 		flagForTermination = true;
+	}
+	
+	/** Increase the the count of total games in a hopefully thread-safe way. **/
+	private synchronized static long incrementTotalGameCount() {
+		totalGamesPlayed++;
+		return totalGamesPlayed;
+	}
+	
+	/** Color the node scaled by depth in the tree. Skip the brightness argument for default value. **/
+	public static Color getColorFromWorkerID(int ID){
+		float brightness = 0.85f;
+		float coloffset = 0f;
+		float scaledDepth = (float)ID/4f;;
+		float H = scaledDepth* 0.38f+coloffset;
+		float S = 0.8f;
+		return Color.getHSBColor(H, S, brightness);
 	}
 
 	/** Debug drawer. If you just want to display a run, use one of the other PanelRunner implementations. **/
