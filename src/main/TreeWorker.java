@@ -180,7 +180,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
 							targetNodeToTest.checkFullyExplored_lite();
 						}
 					}catch (NullPointerException e){
-						throw new NullPointerException("Tree was given a game state that did not have a failure status assigned. " + e.getMessage());
+						e.printStackTrace();
+						throw new NullPointerException("Tree was given a game state that did not have a failure status assigned.");
 					}
 				}	
 
@@ -309,6 +310,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	/** Increase the the count of total games in a hopefully thread-safe way. **/
 	private synchronized static long incrementTotalGameCount() {
 		totalGamesPlayed++;
+		return totalGamesPlayed;
+	}
+	
+	/** Get the number of games played by all workers, total. **/
+	public static long getTotalGamesPlayed() {
 		return totalGamesPlayed;
 	}
 	

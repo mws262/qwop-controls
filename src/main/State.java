@@ -1,10 +1,6 @@
 package main;
 import java.io.Serializable;
 
-import org.jbox2d.common.XForm;
-import org.jbox2d.dynamics.Body;
-
-
 public class State implements Serializable {
 
 	private static final long serialVersionUID = 2L;
@@ -32,7 +28,6 @@ public class State implements Serializable {
 		X, Y, TH, DX, DY, DTH
 	}
 
-	
 	/** Make new state from list of ordered numbers. Most useful for interacting with neural network stuff. Number order is essential. **/
 	public State(float[] stateVars) { // Order matches order in TensorflosAutoencoder.java
 		body = new StateVariable(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
@@ -80,79 +75,6 @@ public class State implements Serializable {
 		rlarm = rlarmS;
 		llarm = llarmS;
 		failedState = isFailed;
-	}
-	
-	public XForm[] getTransforms(){
-		XForm[] transforms = new XForm[13];
-
-		//TODO check offsets and if not used, condense this code.
-		// Body
-		transforms[0] = new XForm();
-		transforms[0].position.x = body.x;
-		transforms[0].position.y = body.y;
-		transforms[0].R.set(body.th);
-		
-		transforms[1] = new XForm();
-		transforms[1].position.x = head.x;
-		transforms[1].position.y = head.y;
-		transforms[1].R.set(head.th);
-		
-		transforms[2] = new XForm();
-		transforms[2].position.x = rfoot.x;
-		transforms[2].position.y = rfoot.y;
-		transforms[2].R.set(rfoot.th);
-		
-		transforms[3] = new XForm();
-		transforms[3].position.x = lfoot.x;
-		transforms[3].position.y = lfoot.y;
-		transforms[3].R.set(lfoot.th);
-		
-		transforms[4] = new XForm();
-		transforms[4].position.x = rcalf.x;
-		transforms[4].position.y = rcalf.y;
-		transforms[4].R.set(rcalf.th);
-		
-		transforms[5] = new XForm();
-		transforms[5].position.x = lcalf.x;
-		transforms[5].position.y = lcalf.y;
-		transforms[5].R.set(lcalf.th);
-		
-		transforms[6] = new XForm();
-		transforms[6].position.x = rthigh.x;
-		transforms[6].position.y = rthigh.y;
-		transforms[6].R.set(rthigh.th);
-		
-		transforms[7] = new XForm();
-		transforms[7].position.x = lthigh.x;
-		transforms[7].position.y = lthigh.y;
-		transforms[7].R.set(lthigh.th);
-		
-		transforms[8] = new XForm();
-		transforms[8].position.x = ruarm.x;
-		transforms[8].position.y = ruarm.y;
-		transforms[8].R.set(ruarm.th);
-		
-		transforms[9] = new XForm();
-		transforms[9].position.x = luarm.x;
-		transforms[9].position.y = luarm.y;
-		transforms[9].R.set(luarm.th);
-		
-		transforms[10] = new XForm();
-		transforms[10].position.x = rlarm.x;
-		transforms[10].position.y = rlarm.y;
-		transforms[10].R.set(rlarm.th);
-		
-		transforms[11] = new XForm();
-		transforms[11].position.x = llarm.x;
-		transforms[11].position.y = llarm.y;
-		transforms[11].R.set(llarm.th);
-		
-		transforms[12] = new XForm(); // Cheating on the track for the time being.
-		transforms[12].position.x = 0;
-		transforms[12].position.y = 28.90813f;
-		transforms[12].R.set(0);
-		
-		return transforms;
 	}
 	
 	/** Get the value of the state you want using their names. I'll bet hashmaps do this better. **/

@@ -10,8 +10,6 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jbox2d.common.XForm;
-
 import game.GameLoader;
 import main.Node;
 import main.PanelRunner;
@@ -34,7 +32,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 	private Node highlightedFutureExternal;
 
 	private List<Node> focusLeaves = new ArrayList<Node>();
-	private List<XForm[]> transforms = new ArrayList<XForm[]>();
+	private List<Object[]> transforms = new ArrayList<Object[]>();
 	private List<Stroke> strokes = new ArrayList<Stroke>();
 	private List<Color> colors = new ArrayList<Color>();
 
@@ -68,7 +66,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
 		/***** Focused node first *****/
 		snapshotNode = node;
-		XForm[] nodeTransform = snapshotNode.state.getTransforms();
+		Object[] nodeTransform = game.getXForms(snapshotNode.state);
 		// Make the sequence centered around the selected node state.
 		//xOffsetNet = xOffsetPixels + (int)(-runnerScaling * nodeTransform[1].position.x);
 		transforms.add(nodeTransform);
@@ -81,7 +79,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 		for (int i = 0; i < numHistoryStatesDisplay; i++) {
 			if (historyNode.treeDepth > 0) {
 				historyNode = historyNode.parent;
-				nodeTransform = historyNode.state.getTransforms();
+				nodeTransform = game.getXForms(historyNode.state);
 				transforms.add(nodeTransform);
 				strokes.add(normalStroke);
 				colors.add(ghostGray);
@@ -101,7 +99,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 			for (Node descendant : descendants) {
 				if (descendant.state != null) {
 					focusLeaves.add(descendant);
-					transforms.add(descendant.state.getTransforms());
+					transforms.add(game.getXForms(descendant.state));
 					strokes.add(normalStroke);
 					colors.add(runnerColor);
 				}
@@ -223,7 +221,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 					if (currentNode.treeDepth % 2 == 0) {
 						everyOtherEvenColor = everyOtherEvenColor.darker();
 					}
-					game.drawExtraRunner(g2, currentNode.state.getTransforms(), currentNode.getAction().toStringLite(), runnerScaling, xOffsetPixels, yOffsetPixels, everyOtherEvenColor, boldStroke);
+					game.drawExtraRunner(g2, game.getXForms(currentNode.state), currentNode.getAction().toStringLite(), runnerScaling, xOffsetPixels, yOffsetPixels, everyOtherEvenColor, boldStroke);
 
 					//					// Draw actions above their heads.
 					//					g2.setFont(medFont);

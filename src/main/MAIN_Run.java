@@ -306,6 +306,11 @@ public class MAIN_Run implements Runnable{
 		/* Start processes */
 		uiThread.start();
 		for (Thread wthread : workerThreads) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			wthread.start();
 		}
 

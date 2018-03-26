@@ -25,7 +25,8 @@ import main.StateVariable;
 /**
  * This loads all the Box2D classes needed on a unique ClassLoader. This means that World.class from one instance
  * of this loader is different from the World.class of another loader. This means that they will have their
- * own static variables and should not interfere with each other.
+ * own static variables and should not interfere with each other. This solves the problem of having multithreaded
+ * simulations that we don't want to interact with each other.
  * @author matt
  *
  */
@@ -909,6 +910,7 @@ public class GameLoader extends ClassLoader {
 		return new StateVariable(x, y, th, dx, dy, dth);
 	}
 
+	/** Get the transform associated with this State. Note that these transforms can ONLY be used with this instance of GameLoader. **/
 	public Object[] getXForms(State st) {
 		Object[] transforms = new Object[13];
 		try {
@@ -1029,6 +1031,11 @@ public class GameLoader extends ClassLoader {
 		}
 	}
 
+	/** Draw the runner at a specified set of transforms.. **/
+	public void drawExtraRunner(Graphics2D g, State st, String label, float scaling, int xOffset, int yOffset, Color drawColor, Stroke stroke) {
+		drawExtraRunner(g, getXForms(st), label, scaling, xOffset, yOffset, drawColor, stroke);
+	}
+	
 	/** Draw the runner at a specified set of transforms.. **/
 	public void drawExtraRunner(Graphics2D g, Object[] transforms, String label, float scaling, int xOffset, int yOffset, Color drawColor, Stroke stroke) {			
 		try {
