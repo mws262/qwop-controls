@@ -31,7 +31,7 @@ import main.StateVariable;
  *
  */
 public class GameLoader extends ClassLoader {
-	/** Keep track of sim stats since beginning of execution. **/
+	/** Number of timesteps in this game. **/
 	private static long timestepsSimulated = 0;
 
 	/** Initial runner state. **/
@@ -592,6 +592,7 @@ public class GameLoader extends ClassLoader {
 	public void makeNewWorld() {
 		try {
 			isFailed = false;
+			timestepsSimulated = 0;
 
 			/******* WORLD ********/
 			// Make the world object:

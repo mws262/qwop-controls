@@ -60,8 +60,16 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	/** Current status of this FSM **/
 	private Status currentStatus = Status.IDLE;
 
+	/** Number of physics timesteps simulated by this TreeWorker. **/
 	private long workerStepsSimulated = 0;
+	
+	/** Number of games simulated by this TreeWorker. **/
 	private long workerGamesPlayed = 0;
+	
+	/** Total timesteps simulated by all TreeWorkers. **/
+	private static long totalStepsSimulated = 0;
+	
+	/** Total games played by all TreeWorkers. **/
 	private static long totalGamesPlayed = 0;
 	
 	public String workerName = "";
@@ -212,28 +220,19 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 				break;		
 			case EVALUATE_GAME:
-
 				if (currentGameNode.state.failedState) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
 					currentGameNode.markTerminal();
-//					Action[] a = currentGameNode.getSequence();
-//					for (Action act : a) {
-//						System.out.print( act.toString() + ", ");
-//					}
-//					System.out.println();
 				}else {
 					throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
 				}
+				
+				addToTotalTimesteps(game.getTimestepsSimulated());
 				workerGamesPlayed++;
 				long totGames = incrementTotalGameCount();
 				if (totGames % 1000 == 0) {
 					System.out.println(totGames);
 				}
-//				try {
-//					Thread.sleep(500);
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
+
 				expansionNode.releaseExpansionRights();
 				expansionNode.clearBackwardsBranchColor();
 				expansionNode.clearBackwardsBranchZOffset();
@@ -313,9 +312,20 @@ public class TreeWorker extends PanelRunner implements Runnable {
 		return totalGamesPlayed;
 	}
 	
+	/** Increase the number of timesteps simulated in a hopefully thread-safe way. **/
+	private synchronized static long addToTotalTimesteps(long timesteps) {
+		totalStepsSimulated += timesteps;
+		return totalStepsSimulated;
+	}
+	
 	/** Get the number of games played by all workers, total. **/
 	public static long getTotalGamesPlayed() {
 		return totalGamesPlayed;
+	}
+	
+	/** Get the number of games played by all workers, total. **/
+	public static long getTotalTimestepsSimulated() {
+		return totalStepsSimulated;
 	}
 	
 	/** Color the node scaled by depth in the tree. Skip the brightness argument for default value. **/

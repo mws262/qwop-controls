@@ -1,18 +1,12 @@
 package ui;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Paint;
-import java.awt.Stroke;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
@@ -29,11 +23,8 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
@@ -49,11 +40,6 @@ import javax.swing.event.ChangeListener;
 import javax.vecmath.Vector3f;
 
 import org.jblas.*;
-import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.PolygonShape;
-import org.jbox2d.collision.shapes.Shape;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.common.XForm;
 import com.jogamp.opengl.*;
 
 import org.jfree.chart.ChartFactory;
@@ -75,7 +61,6 @@ import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 import game.GameLoader;
-import main.INegotiateGame;
 import main.IUserInterface;
 import main.Node;
 import main.PanelRunner;
@@ -91,11 +76,11 @@ import main.Utility;
 @SuppressWarnings("serial")
 public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserInterface{
 
-	/** Negotiator acts like a listener. **/
-	INegotiateGame negotiator;
-
 	/** Thread loop running? **/
 	public boolean running = true;
+	
+	/** Verbose printing? **/
+	public boolean verbose = false;
 
 	/** Tree root nodes associated with this interface. **/
 	ArrayList<Node> rootNodes = new ArrayList<Node>();
@@ -114,7 +99,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot();
 
 	/** Pane for comparing different states across the tree. **/
-	ComparisonPane comparisonPane;
+	PanelRunner_Comparison comparisonPane;
 
 	/** Plots here. **/
 	DataPane dataPane_state;
@@ -163,7 +148,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	private long lastIterTime = System.currentTimeMillis();
 	private long currentGamesPlayed = 0;
 	private long lastGamesPlayed = 0;
-	/** Keep track of whether we sent a pause tree command back to negotiator. **/
+	/** Keep track of whether we sent a pause request to the tree. **/
 	private boolean treePause = false;
 
 	/********** Writing actions on the left pane. **********/
@@ -216,7 +201,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		tabPane.addTab("PCA Viewer", dataPane_pca);
 
 		/* State comparison pane */
-		comparisonPane = new ComparisonPane();
+		comparisonPane = new PanelRunner_Comparison();
 		tabPane.addTab("State Compare", comparisonPane);
 
 		/* Tree pane */
@@ -287,8 +272,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 				break;
 			}
 
-			if (currentStatus != previousStatus) {
-				//tmp remove negotiator.statusChange_UI(currentStatus);
+			if (verbose && currentStatus != previousStatus) {
+				System.out.println(previousStatus + " -> " + currentStatus );
 			}
 
 			previousStatus = currentStatus;
@@ -321,7 +306,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	@Override
 	public void selectNode(Node selected) {
 		boolean success = false; // We don't allow new node selection while a realtime game is being played. 
-		if (negotiator != null) //tmp remove success = negotiator.uiNodeSelect(selected);
 		//if (success) {
 			if (selectedNode != null) { // Clear things from the old selected node.
 				selectedNode.displayPoint = false;
@@ -335,15 +319,12 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			if (runnerPanel.isActive()) runnerPanel.simRunToNode(selectedNode);
 
 			if (snapshotPane.isActive()) snapshotPane.giveSelectedNode(selectedNode);
-			if (comparisonPane.active) comparisonPane.giveSelectedNode(selectedNode);
+			if (comparisonPane.isActive()) comparisonPane.giveSelectedNode(selectedNode);
 			if (dataPane_state.active) dataPane_state.update(); // Updates data being put on plots
 			if (dataPane_pca.active) dataPane_pca.update(); // Updates data being put on plots
 		//}
 	}
 
-	/* (non-Javadoc)
-	 * @see main.IUserInterface#stateChanged(javax.swing.event.ChangeEvent)
-	 */
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		for (TabbedPaneActivator p: allTabbedPanes) {
@@ -351,16 +332,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		}
 		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
 	}
-
-	/* (non-Javadoc)
-	 * @see main.IUserInterface#setNegotiator(main.Negotiator)
-	 */
-	@Override
-	public void setNegotiator(INegotiateGame negotiator) {
-		this.negotiator = negotiator;
-	}
-
-	
 
 	/**
 	 * Pane for displaying the entire tree in OpenGL. Not part of the tabbed system.
@@ -397,11 +368,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		public void activateTab() {}
 		@Override
 		public void deactivateTab() {}
-
 		@Override
 		public void display(GLAutoDrawable drawable) {		
-			if (negotiator == null) return;
-
 			super.display(drawable);
 
 			float ptSize = 50f/cam.getZoomFactor(); //Let the points be smaller/bigger depending on zoom, but make sure to cap out the size!
@@ -449,17 +417,18 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			// Total games played
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			currentGamesPlayed = TreeWorker.getTotalGamesPlayed();
-			textRenderSmall.draw(currentGamesPlayed + " total games", 20, panelHeight - 85);
-			
-			
-
+			textRenderSmall.draw(currentGamesPlayed + " total games", 20, panelHeight - 85);	
 			
 			textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
-			//tmp remove textRenderSmall.draw(Math.round(negotiator.getTimeSimulated()/360)/10f + " hours simulated!", 20, panelHeight - 100);
+			textRenderSmall.draw(Math.round(TreeWorker.getTotalTimestepsSimulated()/360)/10f + " hours simulated!", 20, panelHeight - 100);
 			
+			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			gps = (int)((gps*(loopTimeFilter - 1f) + 1000f*(currentGamesPlayed - lastGamesPlayed) / (System.currentTimeMillis() - lastIterTime))/loopTimeFilter);
 			textRenderSmall.draw(gps + " games/s", 20, panelHeight - 115);
 
+			
+			textRenderSmall.draw(Runtime.getRuntime().totalMemory()/1000000 + "MB used", 20, panelHeight - 145);
+			textRenderSmall.draw(Runtime.getRuntime().maxMemory()/1000000 + "MB max", 20, panelHeight - 160);
 			textRenderSmall.endRendering();
 			lastGamesPlayed = currentGamesPlayed;
 			lastIterTime = System.currentTimeMillis();		
@@ -707,208 +676,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			return false;
 		}
 
-	}
-
-	/**
-	 * Pane for estimating and displaying similar states.
-	 * @author Matt
-	 */
-	public class ComparisonPane extends JPanel implements TabbedPaneActivator, ActionListener {
-
-		/** Highlight stroke for line drawing. **/
-		private final Stroke normalStroke = new BasicStroke(0.5f);
-
-		/** Highlight stroke for line drawing. **/
-		private final Stroke boldStroke = new BasicStroke(2);
-
-		/** Node that we compare all others to. **/
-		private Node primaryNode;
-
-		/** How many of the eigenvectors do we use? Dimension reduction. **/
-		private int lastEigToDisp = 10; // Display eigenvalues 0-4
-		private int[] eigsToDisp;
-
-		/** Drawn shapes **/
-		Shape[] shapes;
-
-		private final JComboBox<Integer> eigSelector;
-
-		/** Is this tab currently on top? **/
-		private boolean active = false;
-
-		private ArrayList<XForm[]> transforms = new ArrayList<XForm[]>();
-		private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
-		private ArrayList<Color> colors = new ArrayList<Color>();
-
-		public ComparisonPane() {
-			eigSelector = new JComboBox<Integer>();
-			for (int i = 0; i < 10; i++) {
-				eigSelector.addItem(i);
-			}
-			//add(eigSelector);
-			eigSelector.addActionListener(this);
-			pack();
-			//MATT CHECKBOX DOESN"T WORK YET, COME BACK HERE
-			eigsToDisp = new int[lastEigToDisp + 1];
-
-			for (int i = 0; i < eigsToDisp.length; i++) {
-				eigsToDisp[i] = i;
-			}
-		}
-		/** Assign a selected node for the snapshot pane to display. **/
-		public void giveSelectedNode(Node node) {
-			rootNodes.get(0).clearNodeOverrideColor();
-			transforms.clear();
-			strokes.clear();
-			colors.clear();
-
-			//shapes = QWOPGame.shapeList;
-
-			/***** Focused node first *****/
-			primaryNode = node;
-			primaryNode.overrideNodeColor = Color.RED; // Restore its red color
-			primaryNode.displayPoint = true;
-			XForm[] nodeTransform = primaryNode.state.getTransforms();
-			// Make the sequence centered around the selected node state.
-			xOffsetPixels = xOffsetPixels_init + (int)(-runnerScaling * nodeTransform[1].position.x);
-			transforms.add(nodeTransform);
-			strokes.add(boldStroke);
-			colors.add(Color.RED);
-
-
-			//////////// DO COMPARISON TO OTHER NODES //////////////
-			// This is a kind of hacky way of getting to the PCA stuff.
-			DataPane_PCA pcaPane = (DataPane_PCA)(dataPane_pca);
-			DataPane.PCATransformedData pcaData = pcaPane.getPCAData();
-			ArrayList<Node> allNodes = new ArrayList<Node>();
-			rootNodes.get(0).getNodes_below(allNodes);
-
-			FloatMatrix transDat = pcaData.transformDataset(allNodes,eigsToDisp);
-			FloatMatrix selectedRowDat = transDat.getRow(allNodes.indexOf(primaryNode));
-
-			// Error
-			transDat.subiRowVector(selectedRowDat);
-
-			// Error squared
-			transDat.muli(transDat);
-
-			// Sum.
-			FloatMatrix errSq = transDat.rowSums();
-
-
-			TreeMap<Float,Node> treeMap = new TreeMap<Float,Node> ();
-
-			for (int i = 0; i < allNodes.size(); i++) {
-				treeMap.put(errSq.get(i), allNodes.get(i));
-			}
-
-			Iterator<Node> iter = treeMap.values().iterator();
-			iter.next(); // First one is a self-comparison.
-
-			int count = 0;
-			while (iter.hasNext() && count <= 5) {
-				Node closeMatch = iter.next();
-
-				XForm[] nodeXForm = closeMatch.state.getTransforms();
-				// Make the sequence centered around the selected node state.
-				transforms.add(nodeXForm);
-				strokes.add(normalStroke);
-				Color matchColor = Node.getColorFromTreeDepth(count*5);
-				colors.add(matchColor);
-				closeMatch.overrideNodeColor = matchColor;
-				closeMatch.displayPoint = true;
-
-				count++;
-			}
-
-		}
-
-
-		/** Draws the selected node state and potentially previous and future states. **/
-		@Override
-		public void paintComponent(Graphics g) {
-			if (!active) return;
-			super.paintComponent(g);
-			Graphics2D g2 = (Graphics2D)g;
-			DataPane_PCA pcaPane = (DataPane_PCA)(dataPane_pca);
-			if (pcaPane.getPCAData() == null) {
-				g.setFont(bigFont);
-				g.drawString("Use the PCA tab to calculate PCA from a selected node.", windowWidth/3, 100);
-			}else if (primaryNode != null && primaryNode.state != null) { // TODO this keeps the root node from throwing errors because I didn't assign it a state. We really should do that.
-				// Draw all non-highlighted runners.
-				for (int i = transforms.size() - 1; i >= 0; i--) {
-					drawRunner(g2, colors.get(i), strokes.get(i), shapes, transforms.get(i));
-				}
-			}
-		}
-		/** Draw the runner at a certain state. NOTE NOTE NOTE: This version subtracts out the X components of everything. **/
-		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms) {
-
-			float thisBodyXOffset = transforms[0].position.x; // Offset in actual world coordinates so all the torsos line up.
-
-			for (int i = 0; i < shapes.length; i++) {
-				g.setColor(drawColor);
-				g.setStroke(stroke);
-				switch(shapes[i].getType()) {
-				case CIRCLE_SHAPE:
-					CircleShape circleShape = (CircleShape)shapes[i];
-					float radius = circleShape.getRadius();
-					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
-					g.drawOval((int)(runnerScaling * (circleCenter.x - radius  - thisBodyXOffset) + windowWidth/2),
-							(int)(runnerScaling * (circleCenter.y - radius) + yOffsetPixels),
-							(int)(runnerScaling * radius * 2),
-							(int)(runnerScaling * radius * 2));
-					break;
-				case POLYGON_SHAPE:
-					//Get both the shape and its transform.
-					PolygonShape polygonShape = (PolygonShape)shapes[i];
-					XForm transform = transforms[i];
-
-					// Ground is black regardless.
-					if (shapes[i].m_filter.groupIndex == 1) {
-						g.setColor(Color.BLACK);
-						g.setStroke(normalStroke);
-					}
-					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
-						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
-						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
-						g.drawLine((int)(runnerScaling * (ptA.x - thisBodyXOffset) + windowWidth/2),
-								(int)(runnerScaling * ptA.y) + yOffsetPixels,
-								(int)(runnerScaling * (ptB.x - thisBodyXOffset) + windowWidth/2),
-								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
-					}
-					break;
-				default:
-					break;
-				}
-			}
-		}
-
-		@Override
-		public void activateTab() {
-			active = true;
-		}
-
-		@Override
-		public void deactivateTab() {
-			active = false;
-		}
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			@SuppressWarnings("unchecked")
-			JComboBox<Integer> eigSelect = (JComboBox<Integer>)e.getSource();
-			lastEigToDisp = (Integer)eigSelect.getSelectedItem();
-			eigsToDisp = new int[lastEigToDisp + 1];
-			for (int i = 0; i < eigsToDisp.length; i++) {
-				eigsToDisp[i] = 1;
-			}
-			//giveSelectedNode(primaryNode); // Redo calculations.
-		}
-		@Override
-		public boolean isActive() {
-			// TODO Auto-generated method stub
-			return false;
-		}	
 	}
 
 	/**
@@ -1223,8 +990,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 		@Override
 		public boolean isActive() {
-			// TODO Auto-generated method stub
-			return false;
+			return active;
 		}
 	}
 
@@ -1711,43 +1477,10 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		}
 	}
 
-//	@Override
-//	public void setLiveGameToView(QWOPGame game) {
-//		runnerPane.setGameToView(game);
-//	}
-
-//	@Override
-//	public void clearLiveGameToView() {
-//		runnerPane.clearGameToView();		
-//	}
 
 	@Override
 	public void addRootNode(Node node) {
 		rootNodes.add(node);
 	}
-
-	@Override
-	public boolean isSnapshotPaneActive() {
-		return snapshotPane.isActive();
-	}
-
-	@Override
-	public void setLiveGameToView(GameLoader game) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void clearLiveGameToView() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean isRunnerPaneActive() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 }
 

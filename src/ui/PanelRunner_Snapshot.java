@@ -222,16 +222,6 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 						everyOtherEvenColor = everyOtherEvenColor.darker();
 					}
 					game.drawExtraRunner(g2, game.getXForms(currentNode.state), currentNode.getAction().toStringLite(), runnerScaling, xOffsetPixels, yOffsetPixels, everyOtherEvenColor, boldStroke);
-
-					//					// Draw actions above their heads.
-					//					g2.setFont(medFont);
-					//					g2.setColor(everyOtherEvenColor);
-					//					prevX = Math.min((int)(runnerScaling * currentNode.state.head.x) + xOffsetPixels - 3,prevX - 25);
-					//
-					//					g2.drawString(currentNode.getAction().toStringLite(), 
-					//							prevX, 
-					//							Math.min((int)(runnerScaling * currentNode.state.head.y) + yOffsetPixels - 25, 45));
-
 					currentNode = currentNode.parent;
 				}
 			}catch(IndexOutOfBoundsException e) {
@@ -285,7 +275,4 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 	public void mouseExited(MouseEvent e) {
 		mouseIsIn = false;
 	}
-
-
-
 }

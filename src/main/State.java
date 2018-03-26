@@ -1,5 +1,8 @@
 package main;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class State implements Serializable {
 
@@ -20,6 +23,7 @@ public class State implements Serializable {
 	public StateVariable llarm;
 	public StateVariable head;
 	
+	private List<StateVariable> stateVariableList;
 	public enum ObjectName{
 		BODY, HEAD, RTHIGH, LTHIGH, RCALF, LCALF, RFOOT, LFOOT, RUARM, LUARM, RLARM, LLARM
 	}
@@ -42,6 +46,10 @@ public class State implements Serializable {
 		luarm = new StateVariable(stateVars[54], stateVars[55], stateVars[56], stateVars[57], stateVars[58], stateVars[59]);
 		rlarm = new StateVariable(stateVars[60], stateVars[61], stateVars[62], stateVars[63], stateVars[64], stateVars[65]);
 		llarm = new StateVariable(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70], stateVars[71]);
+	
+		 stateVariableList = Arrays.asList(body, rthigh, lthigh, rcalf, lcalf, 
+					rfoot, lfoot, ruarm, luarm, rlarm, llarm, head);
+
 	}
 	
 	/** Make new state from a list of StateVariables. This is now the default way that the GameLoader does it. To make a new State from an existing game,
@@ -75,6 +83,14 @@ public class State implements Serializable {
 		rlarm = rlarmS;
 		llarm = llarmS;
 		failedState = isFailed;
+		
+		 stateVariableList = Arrays.asList(body, rthigh, lthigh, rcalf, lcalf, 
+					rfoot, lfoot, ruarm, luarm, rlarm, llarm, head);
+	}
+	
+	/** Get the whole list of state variables. **/
+	public List<StateVariable> getStateList(){
+		return stateVariableList;
 	}
 	
 	/** Get the value of the state you want using their names. I'll bet hashmaps do this better. **/

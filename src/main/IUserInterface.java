@@ -16,19 +16,7 @@ public interface IUserInterface extends Runnable{
 	/** Pick a node for the UI to highlight and potentially display. **/
 	void selectNode(Node selected);
 
-	void stateChanged(ChangeEvent e);
-
-	void setNegotiator(INegotiateGame negotiator);
-	
-	void setLiveGameToView(GameLoader game);
-	
-	void clearLiveGameToView();
-	
 	void addRootNode(Node node);
-	
-	boolean isSnapshotPaneActive();
-	
-	boolean isRunnerPaneActive();
 	
 	public interface TabbedPaneActivator {
 		public void activateTab();
