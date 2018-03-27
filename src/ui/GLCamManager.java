@@ -501,7 +501,7 @@ public class GLCamManager {
 		double normDistSq;
 		ArrayList<Node> nodeList = new ArrayList<Node>();
 		
-		root.getNodes_below(nodeList);
+		root.getNodesBelow(nodeList);
 
 		smallestDist = Double.MAX_VALUE;
 

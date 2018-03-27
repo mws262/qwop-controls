@@ -1,9 +1,5 @@
 package main;
 
-import javax.swing.event.ChangeEvent;
-
-import game.GameLoader;
-
 public interface IUserInterface extends Runnable{
 
 	/** Main graphics loop. **/

@@ -296,12 +296,12 @@ public class Node {
 	}
 
 	/** Add all the nodes below and including this one to a list. Does not include nodes whose state have not yet been assigned. **/
-	public ArrayList<Node> getNodes_below(ArrayList<Node> nodeList){
+	public List<Node> getNodesBelow(List<Node> nodeList){
 		if (state != null){
 			nodeList.add(this);
 		}
 		for (Node child : children){
-			child.getNodes_below(nodeList);
+			child.getNodesBelow(nodeList);
 		}	
 		return nodeList;
 	}

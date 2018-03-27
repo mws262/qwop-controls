@@ -63,6 +63,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import game.GameLoader;
 import main.IUserInterface;
 import main.Node;
+import main.PanelPlot;
 import main.PanelRunner;
 import main.State;
 import main.TreeWorker;
@@ -102,8 +103,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	PanelRunner_Comparison comparisonPane;
 
 	/** Plots here. **/
-	DataPane dataPane_state;
-	DataPane dataPane_pca;
+	PanelPlot statePlotPane;
+	//DataPane dataPane_pca;
 
 	/** Selected node by user click/key **/
 	Node selectedNode;
@@ -195,10 +196,10 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		tabPane.addTab("State Viewer", snapshotPane);
 
 		/* Data pane */
-		dataPane_state = new DataPane_State();
-		tabPane.addTab("State Data Viewer", dataPane_state);
-		dataPane_pca = new DataPane_PCA();
-		tabPane.addTab("PCA Viewer", dataPane_pca);
+		statePlotPane = new PanelPlot_States(6);
+		tabPane.addTab("State Data Viewer", statePlotPane);
+		//dataPane_pca = new DataPane_PCA();
+		//tabPane.addTab("PCA Viewer", dataPane_pca);
 
 		/* State comparison pane */
 		comparisonPane = new PanelRunner_Comparison();
@@ -210,10 +211,9 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		pane.add(tabPane, dataConstraints);
 
 		allTabbedPanes.add(runnerPanel);
-		
 		allTabbedPanes.add(snapshotPane);
-		allTabbedPanes.add(dataPane_state);
-		allTabbedPanes.add(dataPane_pca);
+		allTabbedPanes.add(statePlotPane);
+		//allTabbedPanes.add(dataPane_pca);
 		allTabbedPanes.add(comparisonPane);
 		tabPane.addChangeListener(this);
 		//Make sure the currently active tab is actually being updated.
@@ -320,8 +320,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 			if (snapshotPane.isActive()) snapshotPane.giveSelectedNode(selectedNode);
 			if (comparisonPane.isActive()) comparisonPane.giveSelectedNode(selectedNode);
-			if (dataPane_state.active) dataPane_state.update(); // Updates data being put on plots
-			if (dataPane_pca.active) dataPane_pca.update(); // Updates data being put on plots
+			if (statePlotPane.isActive()) statePlotPane.update(selectedNode); // Updates data being put on plots
+			//if (dataPane_pca.active) dataPane_pca.update(); // Updates data being put on plots
 		//}
 	}
 
@@ -677,805 +677,386 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		}
 
 	}
-
-	/**
-	 * Pane for displaying plots of various state variables. Click each plot to pull up a menu for selecting data.
-	 * A tab.
-	 * @author Matt
-	 */
-	public class DataPane_State extends DataPane implements ItemListener{
-
-		/** Which plot index has an active menu. **/
-		int activePlotIdx = 0;
-
-		/** Body parts associated with each plot and axis. **/
-		private State.ObjectName[] plotObjectsX = new State.ObjectName[numberOfPlots];
-		private State.ObjectName[] plotObjectsY = new State.ObjectName[numberOfPlots];
-
-		/** State variables associated with each plot and axis. **/
-		private State.StateName[] plotStatesX = new State.StateName[numberOfPlots];
-		private State.StateName[] plotStatesY = new State.StateName[numberOfPlots];
-
-		/** Drop down menus for the things to plot. **/
-		private JComboBox<String> objListX;
-		private JComboBox<String> stateListX;
-		private JComboBox<String> objListY;
-		private JComboBox<String> stateListY;
-
-		/** String names of the body parts. **/
-		private final String[] objNames = new String[State.ObjectName.values().length];
-
-		/** String names of the state variables. **/
-		private final String[] stateNames = new String[State.StateName.values().length];
-
-		/** Menu for selecting which data is displayed. **/
-		private final JDialog menu;
-
-		/** Offsets to put the data selection menu right above the correct panel. **/
-		private final int menuXOffset = 30;
-		private final int menuYOffset = -30;
-
-		public DataPane_State() {
-			super();
-			// Make string arrays of the body part and state variable names.
-			int count = 0;
-			for (State.ObjectName obj : State.ObjectName.values()) {
-				objNames[count] = obj.name();
-				count++;
-			}
-			count = 0;
-			for (State.StateName st : State.StateName.values()) {
-				stateNames[count] = st.name();
-				count++;
-			}
-
-			// Initial plots to display			
-			for (int i = 0; i < numberOfPlots; i++) {
-				plotObjectsX[i] = State.ObjectName.values()[Utility.randInt(0, numberOfPlots - 1)];
-				plotStatesX[i] = State.StateName.values()[Utility.randInt(0, numberOfPlots - 1)];
-				plotObjectsY[i] = State.ObjectName.values()[Utility.randInt(0, numberOfPlots - 1)];
-				plotStatesY[i] = State.StateName.values()[Utility.randInt(0, numberOfPlots - 1)];	
-			}
-
-			// Drop down menus
-			objListX = new JComboBox<>(objNames);
-			stateListX = new JComboBox<>(stateNames);
-			objListY = new JComboBox<>(objNames);
-			stateListY = new JComboBox<>(stateNames);
-
-			objListX.addItemListener(this);
-			stateListX.addItemListener(this);
-			objListY.addItemListener(this);
-			stateListY.addItemListener(this);
-
-			menu = new JDialog(); // Pop up box for the menus.
-			menu.setLayout(new GridLayout(2,4));
-			menu.add(new JLabel("X-axis", SwingConstants.CENTER));
-			menu.getContentPane().add(objListX);
-			menu.getContentPane().add(stateListX);
-			menu.add(new JLabel("Y-axis", SwingConstants.CENTER));
-			menu.getContentPane().add(objListY);
-			menu.getContentPane().add(stateListY);
-
-			menu.setAlwaysOnTop(true);
-			menu.pack();
-			menu.setVisible(false); // Start with this panel hidden.
-		}
-
-		@Override
-		public void update() {
-			// Fetching new data.
-			ArrayList<Node> nodesBelow = new ArrayList<Node>();
-			if (selectedNode != null) {
-				selectedNode.getNodes_below(nodesBelow);
-
-				for (int i = 0; i < numberOfPlots; i++) {
-					XYPlot pl = (XYPlot)plotPanels[i].getChart().getPlot();
-					LinkStateCombination statePlotDat = new LinkStateCombination(nodesBelow);
-					pl.setRenderer(statePlotDat.getRenderer());
-					statePlotDat.addSeries(0, plotObjectsX[i], plotStatesX[i], plotObjectsY[i], plotStatesY[i]);
-					pl.setDataset(statePlotDat);
-					pl.getRangeAxis().setLabel(plotObjectsX[i].toString() + " " + plotStatesX[i].toString());
-					pl.getDomainAxis().setLabel(plotObjectsY[i].toString() + " " + plotStatesY[i].toString());
-					JFreeChart chart = plotPanels[i].getChart();
-					chart.fireChartChanged();
-					//XYPlot plot = (XYPlot)(plotPanels[i].getChart().getPlot());
-					//pl.getDomainAxis().setRange(new Range(statePlotDat1.xLimLo,statePlotDat1.xLimHi));
-					//plot.getRangeAxis().setRange(range);
-				}
-
-				if (!plotColorsByDepth) {
-					addCommandLegend((XYPlot)plotPanels[0].getChart().getPlot());
-				}
-			}
-
-		}
-
-		@Override
-		public void deactivateTab() {
-			super.deactivateTab();
-			menu.setVisible(false);	
-		}
-
-		@Override
-		public void plotClicked(int plotIdx) {
-			activePlotIdx = plotIdx;
-			menu.setTitle("Select plot " + (plotIdx + 1) + " data.");
-			menu.setLocation(plotPanels[plotIdx].getX() + menuXOffset, tabPane.getY() + menuYOffset);
-			objListX.setSelectedIndex(plotObjectsX[plotIdx].ordinal()); // Make the drop down menus match the current plots.
-			objListY.setSelectedIndex(plotObjectsY[plotIdx].ordinal());
-			stateListX.setSelectedIndex(plotStatesX[plotIdx].ordinal());
-			stateListY.setSelectedIndex(plotStatesY[plotIdx].ordinal());
-
-			menu.setVisible(true);
-		}
-
-		@Override
-		public void itemStateChanged(ItemEvent e) {
-			int state = e.getStateChange();
-			if (state == ItemEvent.SELECTED) {
-				if (e.getSource() == objListX) {
-					plotObjectsX[activePlotIdx] = State.ObjectName.valueOf((String)e.getItem());
-				}else if (e.getSource() == objListY) {
-					plotObjectsY[activePlotIdx] = State.ObjectName.valueOf((String)e.getItem());
-				}else if (e.getSource() == stateListX) {
-					plotStatesX[activePlotIdx] = State.StateName.valueOf((String)e.getItem());
-				}else if ((e.getSource() == stateListY)) {
-					plotStatesY[activePlotIdx] = State.StateName.valueOf((String)e.getItem());
-				}else{
-					throw new RuntimeException("Unknown item status in plots from: " + e.getSource().toString());
-				}
-				update();
-			}
-		}
-
-		@Override
-		public boolean isActive() {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-	}
-
-	/**
-	 * Pane for displaying plots of the states transformed using principle component analysis (PCA). A tab.
-	 * @author Matt
-	 */
-	public class DataPane_PCA extends DataPane implements KeyListener {
-		// Which pairs of eigenvalues we're plotting.
-		int[][] dataSelect;
-
-		private Node lastSelectedNode;
-
-		/** Data transformed by PCA **/
-		private PCATransformedData pcaPlotDat;
-
-		public boolean mouseIsIn = false;
-
-		public DataPane_PCA() {
-			super();
-			addKeyListener(this);
-			setFocusable(true);
-			dataSelect = new int[numberOfPlots][2];
-
-			// First set of plots are the 0 vs 1-6 eig
-			for (int i = 0; i < numberOfPlots; i++) {
-				dataSelect[i] = new int[]{0,i};
-			}
-		}
-
-		@Override
-		public void update() {
-			requestFocus();
-			setDatasets(dataSelect);
-			for (int i = 0; i < numberOfPlots; i++) {
-				JFreeChart chart = plotPanels[i].getChart();
-				chart.fireChartChanged();
-				// TODO: resizing plots axes
-				//XYPlot plot = (XYPlot)(plotPanels[i].getChart().getPlot());
-				//plot.getDomainAxis().setRange(range);
-				//plot.getRangeAxis().setRange(range);
-			}
-			XYPlot firstPlot = (XYPlot)plotPanels[0].getChart().getPlot();
-			if (!plotColorsByDepth) {
-				addCommandLegend(firstPlot);
-			}
-		}
-
-		private void setDatasets(int[][] dataSelect) {			
-			// Fetching new data.
-			ArrayList<Node> nodesBelow = new ArrayList<Node>();
-			if (selectedNode != null) {
-
-				// A state pair being added to the first plot.
-				XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
-
-				// Only update the plots shown, don't redo PCA calcs.
-				if (lastSelectedNode != null && lastSelectedNode.equals(selectedNode)) {
-					pcaPlotDat = (PCATransformedData)pl.getDataset();
-				}else{
-					selectedNode.getNodes_below(nodesBelow);
-					pcaPlotDat = new PCATransformedData(nodesBelow);
-					lastSelectedNode = selectedNode;
-				}
-
-				pl.setRenderer(pcaPlotDat.getRenderer());
-				pcaPlotDat.addSeries(0, dataSelect[0][0], dataSelect[0][1]);
-				pl.setDataset(pcaPlotDat);
-				pl.getDomainAxis().setLabel("Eig " + dataSelect[0][0] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[0][0]))/10. + "%)");
-				pl.getRangeAxis().setLabel("Eig " + dataSelect[0][1] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[0][1]))/10. + "%)");
-
-				for (int i = 1; i < dataSelect.length; i++) {
-					pl = (XYPlot)plotPanels[i].getChart().getPlot();
-					PCATransformedData pcaPlotDatNext = pcaPlotDat.duplicateWithoutRecalcPCA();
-					pl.setRenderer(pcaPlotDat.getRenderer());
-					pcaPlotDatNext.addSeries(0, dataSelect[i][0], dataSelect[i][1]);
-					pl.setDataset(pcaPlotDatNext);
-					pl.getDomainAxis().setLabel("Eig " + dataSelect[i][0] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[i][0]))/10. + "%)");
-					pl.getRangeAxis().setLabel("Eig " + dataSelect[i][1] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[i][1]))/10. + "%)");
-				}	
-			}
-		}
-
-		public void plotShift(int xShift, int yShift) {
-			if (xShift != 0 || yShift != 0) {
-				// First set of plots are the 0 vs 1-6 eig
-
-				XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
-				PCATransformedData dat = (PCATransformedData)pl.getDataset();
-				int totalEigs = dat.evals.length;
-
-				if (dataSelect[0][0] + xShift < 0 || dataSelect[numberOfPlots - 1][0] + xShift > totalEigs - 1) {
-					xShift = 0;
-				}
-
-				if (dataSelect[0][1] + yShift < 0 || dataSelect[numberOfPlots - 1][1] + yShift > totalEigs - 1) {
-					yShift = 0;
-				}
-
-				for (int i = 0; i < numberOfPlots; i++) {
-
-					dataSelect[i][0] = dataSelect[i][0] + xShift; // Clamp within the actual number of eigenvalues we have.
-					dataSelect[i][1] = dataSelect[i][1] + yShift;
-				}
-				update();
-			}
-		}
-
-		/** Get the last PCA data. **/
-		public PCATransformedData getPCAData() {
-			return pcaPlotDat;
-		}
-
-		@Override
-		public void keyTyped(KeyEvent e) {
-		}
-
-		@Override
-		public void keyPressed(KeyEvent e) {
-			switch(e.getKeyCode()) {
-			case KeyEvent.VK_UP:
-				plotShift(0,-1);
-				break;
-			case KeyEvent.VK_DOWN:
-				plotShift(0,1);
-				break;
-			case KeyEvent.VK_LEFT:
-				plotShift(-1,0);
-				break;
-			case KeyEvent.VK_RIGHT:
-				plotShift(1,0);
-				break;
-			case KeyEvent.VK_B:
-				plotColorsByDepth = !plotColorsByDepth;
-				break;
-			}	
-		}
-
-		@Override
-		public void keyReleased(KeyEvent e) {}
-
-		@Override
-		public void plotClicked(int plotIdx) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void activateTab() {
-			active = true;
-			// update(); // Don't update though. Make the user click a node before doing this.
-			requestFocus();
-		}
-
-		@Override
-		public boolean isActive() {
-			return active;
-		}
-	}
-
-	/** Plots are made here. **/
-
-	/**
-	 * Plots extend this for basic features. Specific XYDataset objects are inside here. A tab.
-	 * @author Matt
-	 */
-	abstract public class DataPane extends JPanel implements TabbedPaneActivator, ChartMouseListener{
-
-		/** How many plots do we want to squeeze in there horizontally? **/
-		protected final int numberOfPlots = 6;
-
-		/** Array of the numberOfPlots number of plots we make. **/
-		public ChartPanel[] plotPanels = new ChartPanel[numberOfPlots];
-
-		/** Is this tab active? Do we bother to do updates in other words. **/
-		public boolean active = false;
-
-		public DataPane() {
-			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-			for (int i = 0; i < numberOfPlots; i++) {
-				JFreeChart chart = createChart(null,null); // Null means no title and no data yet too
-				ChartPanel chartPanel = new ChartPanel(chart);
-				chartPanel.addChartMouseListener(this);
-				chartPanel.setPopupMenu(null);
-				chartPanel.setDomainZoomable(false);
-				chartPanel.setRangeZoomable(false);
-				chartPanel.setVisible(true);
-				plotPanels[i] = chartPanel;
-				add(chartPanel);
-			}
-			pack();
-		}
-
-		/** Check if the bounds need expanding, tell JFreeChart to update, and set the bounds correctly **/
-		public abstract void update();
-
-		/** Tells what plot is clicked by the user. **/
-		public abstract void plotClicked(int plotIdx);
-
-		/** Plotting colors for dots. **/
-		public final Color actionColor1 = Node.getColorFromTreeDepth(0);
-		public final Color actionColor2 = Node.getColorFromTreeDepth(10);
-		public final Color actionColor3 = Node.getColorFromTreeDepth(20);
-		public final Color actionColor4 = Node.getColorFromTreeDepth(30);
-
-
-		/** My default settings for each plot. **/
-		private JFreeChart createChart(XYDataset dataset,String name) {
-			JFreeChart chart = ChartFactory.createScatterPlot(name,
-					"X", "Y", dataset, PlotOrientation.VERTICAL, false, false, false);
-
-			chart.setBackgroundPaint(appleGray);
-			chart.setPadding(new RectangleInsets(-8,-12,-8,-5)); // Pack em in really tight.
-			chart.setBorderVisible(false);
-
-			XYPlot plot = (XYPlot) chart.getPlot();
-
-			plot.setNoDataMessage("NO DATA");
-			plot.setDomainZeroBaselineVisible(true);
-			plot.setRangeZeroBaselineVisible(true);
-			plot.setBackgroundPaint(Color.WHITE); // Background of actual plotting area, not the surrounding border area.
-
-
-			NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-			domainAxis.setAutoRangeIncludesZero(false);
-			domainAxis.setTickMarkInsideLength(2.0f);
-			domainAxis.setTickMarkOutsideLength(0.0f);
-			domainAxis.setLabelFont(littleFont);
-			domainAxis.setRange(new Range(-10, 10));
-
-			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-			rangeAxis.setTickMarkInsideLength(2.0f);
-			rangeAxis.setTickMarkOutsideLength(0.0f);
-			rangeAxis.setLabelFont(littleFont);
-			rangeAxis.setRange(new Range(-10, 10));
-			return chart;
-		}
-
-		/** Add some labels for which action led to this state. Hackish. **/
-		public void addCommandLegend(XYPlot pl) {
-			double axisDUB = pl.getDomainAxis().getUpperBound();
-			double axisDLB = pl.getDomainAxis().getLowerBound();
-			double axisDSpan = (axisDUB - axisDLB);
-			double axisRUB = pl.getRangeAxis().getUpperBound();
-			double axisRLB = pl.getRangeAxis().getLowerBound();
-			double axisRSpan = (axisRUB - axisRLB);
-
-			XYTextAnnotation a1 = new XYTextAnnotation("< -, - >", axisDLB + axisDSpan/8, axisRUB - axisRSpan/12);
-			a1.setPaint(actionColor1);
-			a1.setFont(new Font(Font.SANS_SERIF,Font.BOLD,16));
-
-			XYTextAnnotation a2 = new XYTextAnnotation("< W, O >", axisDLB + axisRSpan/8, axisRUB - 2*axisRSpan/12);
-			a2.setPaint(actionColor2);
-			a2.setFont(new Font(Font.SANS_SERIF,Font.BOLD,16));
-
-
-			XYTextAnnotation a3 = new XYTextAnnotation("< -, - >", axisDLB + axisRSpan/8, axisRUB - 3*axisRSpan/12);
-			a3.setPaint(actionColor3);
-			a3.setFont(new Font(Font.SANS_SERIF,Font.BOLD,16));
-
-			XYTextAnnotation a4 = new XYTextAnnotation("< Q, P >", axisDLB + axisRSpan/8, axisRUB - 4*axisRSpan/12);
-			a4.setPaint(actionColor4);
-			a4.setFont(new Font(Font.SANS_SERIF,Font.BOLD,16));
-			pl.addAnnotation(a1);
-			pl.addAnnotation(a2);
-			pl.addAnnotation(a3);
-			pl.addAnnotation(a4);
-		}
-
-		@Override
-		public void chartMouseClicked(ChartMouseEvent event) {
-			JFreeChart clickedChart = event.getChart();
-			for (int i = 0; i < numberOfPlots; i++) {
-				if(plotPanels[i].getChart() == (clickedChart)) {
-					plotClicked(i); // Alert implementation specific method.
-					break;
-				}
-			}
-		}
-
-		@Override
-		public void chartMouseMoved(ChartMouseEvent event) {}
-
-		@Override
-		public void activateTab() {
-			active = true;
-			update();
-			requestFocus();
-
-		}
-		@Override
-		public void deactivateTab() {
-			active = false;
-		}
-
-		/** XYDataset gets data for ploting states vs other states here. **/
-		public class LinkStateCombination extends AbstractXYDataset{
-
-			public float xLimHi = Float.MIN_VALUE;
-			public float xLimLo = Float.MAX_VALUE;
-
-			/** Nodes to appear on the plot. **/
-			private final ArrayList<Node> nodeList;
-
-			private Map<Integer,Pair> dataSeries = new HashMap<Integer,Pair>();
-
-			private StatePlotRenderer renderer = new StatePlotRenderer();
-
-			public LinkStateCombination(ArrayList<Node> nodes) {
-				nodeList = nodes;
-			}
-
-			public void addSeries(int plotIdx, State.ObjectName objectX, State.StateName stateX,
-					State.ObjectName objectY, State.StateName stateY) {
-				dataSeries.put(plotIdx, new Pair(plotIdx, objectX, stateX,
-						objectY, stateY));
-			}
-
-			@Override
-			public Number getX(int series, int item) {
-				State state = nodeList.get(item).state; // Item is which node.
-				Pair dat = dataSeries.get(series);
-				float value = state.getStateVarFromName(dat.objectX, dat.stateX);
-
-				if (value > xLimLo) {
-					xLimLo = value;
-				}
-				if (value < xLimHi) {
-					xLimLo = value;
-				}
-
-				return value;
-			}
-			@Override
-			public Number getY(int series, int item) {
-				State state = nodeList.get(item).state; // Item is which node.
-				Pair dat = dataSeries.get(series);
-				return state.getStateVarFromName(dat.objectY, dat.stateY);
-			}
-
-			/** State + body part name pairs for looking up data. **/
-			private class Pair{
-				State.ObjectName objectX;
-				State.StateName stateX;
-				State.ObjectName objectY;
-				State.StateName stateY;
-
-				public Pair(int plotIdx, State.ObjectName objectX, State.StateName stateX,
-						State.ObjectName objectY, State.StateName stateY) {
-					this.objectX = objectX;
-					this.objectY = objectY;
-					this.stateX = stateX;
-					this.stateY = stateY;
-				}
-			}
-
-			@Override
-			public int getItemCount(int series) {
-				return nodeList.size();
-			}
-
-			@Override
-			public int getSeriesCount() {
-				return dataSeries.size();
-			}
-
-			@Override
-			public Comparable getSeriesKey(int series) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			public XYLineAndShapeRenderer getRenderer() {
-				return renderer;
-			}
-
-			public class StatePlotRenderer extends XYLineAndShapeRenderer {
-				/** Color points by corresponding depth in the tree or by command leading to this point. **/
-				public boolean colorByDepth = plotColorsByDepth;
-
-				public StatePlotRenderer() {
-					super(false, true); //boolean lines, boolean shapes
-					setSeriesShape( 0, new Ellipse2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
-					setUseOutlinePaint(false);
-				}
-
-				@Override
-				public Paint getItemPaint(int series, int item) {
-					if (colorByDepth) {
-						return Node.getColorFromTreeDepth(nodeList.get(item).treeDepth);
-					}else{
-						Color dotColor = Color.RED;
-						switch (nodeList.get(item).treeDepth % 4) {
-						case 0:
-							dotColor = actionColor1;
-							break;
-						case 1:
-							dotColor = actionColor2;
-							break;
-						case 2:
-							dotColor = actionColor3;
-							break;
-						case 3:
-							dotColor = actionColor4;
-							break;
-						}
-						return dotColor;
-					}
-				}
-				@Override
-				public java.awt.Shape getItemShape(int row, int col) { // Dumb because box2d also has shape imported.
-					//				if (col == pane.selectedPoint) {
-					//					return (java.awt.Shape)BigMarker;
-					//				} else {
-					return super.getItemShape(row, col);
-					//				}
-				}
-			}
-		}
-
-		/** XYDataset gets data for plotting transformed data from PCA here. **/
-		public class PCATransformedData extends AbstractXYDataset{
-
-			/** Nodes to appear on the plot. **/
-			private ArrayList<Node> nodeList;
-
-			/** Eigenvectors found during SVD of the conditioned states. They represent the principle directions that explain most of the state variance. **/
-			private FloatMatrix evecs;
-
-			/** During SVD we find the eigenvalues, the weights for what portion of variance is explained by the corresponding eigenvector. **/
-			private FloatMatrix evals;
-
-			/** Normalized so the sum of the evals == 1 **/
-			private FloatMatrix evalsNormalized;
-
-			/** The conditioned dataset. Mean of each state is subtracted and divided by its standard deviation to give a variance of 1. **/
-			private FloatMatrix dataSet;
-
-			private PCAPlotRenderer renderer = new PCAPlotRenderer();
-
-			/** Specific series of data to by plotted. Integer is the plotindex, the matrix is 2xn for x-y plot. **/
-			private Map<Integer,FloatMatrix> tformedData = new HashMap<Integer,FloatMatrix>();
-
-			ArrayList<State.ObjectName> objectsUsed = new ArrayList<State.ObjectName>(Arrays.asList(State.ObjectName.values()));
-			ArrayList<State.StateName> statesUsed = new ArrayList<State.StateName>(Arrays.asList(State.StateName.values()));
-
-
-			public PCATransformedData(ArrayList<Node> nodes) {
-				super();
-				// Can blacklist things NOT to be PCA'd
-				statesUsed.remove(State.StateName.X);
-
-				nodeList = nodes;
-				doPCA();
-			}
-
-			private PCATransformedData() {
-				super();
-			}
-
-			/** Make another one of these but using the same PCA calculation. No data series are specified. **/
-			public PCATransformedData duplicateWithoutRecalcPCA() {
-				PCATransformedData duplicate = new PCATransformedData();
-				duplicate.dataSet = dataSet;
-				duplicate.nodeList = nodeList;
-				duplicate.evals = evals;
-				duplicate.evecs = evecs;
-				duplicate.evalsNormalized = evalsNormalized;
-				return duplicate;
-			}
-
-			/** PCA is already done when the object is created with a list of nodes. This determines which data, transformed according to which
-			 * eigenvalue, is plotted on which plot index.
-			 * @param plotIdxNum
-			 * @param eigForXAxis
-			 * @param eigForYAxis
-			 */
-			public void addSeries(int plotIdx, int eigForXAxis, int eigForYAxis) {
-				tformedData.put(plotIdx, dataSet.mmul(evecs.getColumns(new int[]{eigForXAxis,eigForYAxis})));	
-			}
-
-			/** Mostly for external use. Transform any data by the chosen PCA components. Must have done the PCA already! **/
-			public FloatMatrix transformDataset(ArrayList<Node> nodesToTransform, int[] chosenPCAComponents) {
-				FloatMatrix preppedDat = prepTrialNodeData(nodesToTransform, objectsUsed, statesUsed);
-				FloatMatrix lowDimData = preppedDat.mmul(evecs.getColumns(chosenPCAComponents));
-				return lowDimData;
-			}
-
-			@Override
-			public Number getX(int series, int item) {
-				return tformedData.get(series).get(item,0);
-			}
-
-			@Override
-			public Number getY(int series, int item) {
-				return tformedData.get(series).get(item,1);
-			}
-
-			/** Run PCA on all the states in the nodes stored here. **/
-			public void doPCA() {
-
-				dataSet = prepTrialNodeData(nodeList, objectsUsed, statesUsed);
-
-				FloatMatrix[] USV = Singular.fullSVD(dataSet);
-				evecs = USV[2]; // Eigenvectors
-				evals = USV[1].mul(USV[1]).div(dataSet.rows); // Eigenvalues
-				// Transforming with the first two eigenvectors
-				//tformedData = dataSet.mmul(evecs.getColumns(new int[]{pcaEigX,pcaEigY}));
-
-				// Also make the vector of normalized eigenvalues.
-				float evalSum = 0;
-				for (int i = 0; i < evals.length; i++) {
-					evalSum += evals.get(i);
-				}
-				evalsNormalized = new FloatMatrix(evals.length);
-				for (int i = 0; i < evals.length; i++) {
-					evalsNormalized.put(i, evals.get(i)/evalSum);
-				}
-			}
-
-			/** Unpack the state data from the nodes, pulling only the stuff we want. Condition data to variance 1, mean 0. **/
-			private FloatMatrix prepTrialNodeData(ArrayList<Node> nodes, 
-					ArrayList<State.ObjectName> includedObjects, 
-					ArrayList<State.StateName> includedStates) {
-
-
-				int numStates = includedObjects.size() * includedStates.size();
-				FloatMatrix dat = new FloatMatrix(nodes.size(), numStates);
-
-				// Iterate through all nodes
-				for (int i = 0; i < nodes.size(); i++) {
-					int colCounter = 0;
-					// Through all body parts...
-					for (State.ObjectName obj : includedObjects) {
-						// For each state of each body part.
-						for (State.StateName st : includedStates) {
-							dat.put(i, colCounter, nodes.get(i).state.getStateVarFromName(obj, st));
-							colCounter++;
-						}
-					}
-				}
-				conditionData(dat);
-				return dat;
-			}
-
-			/** Subtracts the mean for each variable, and converts to unit variance.
-			 *  Samples are rows, variables are columns. Alters matrix x.
-			 * @param x
-			 */
-			private void conditionData(FloatMatrix x) {
-
-				for (int i = 0; i < x.columns; i++) {
-					// Calculate the mean of a column.
-					float sum = 0;
-					for (int j = 0; j < x.rows; j++) {
-						sum += x.get(j,i);
-					}
-					// Subtract the mean out.
-					float avg = sum/x.rows;
-					for (int j = 0; j < x.rows; j++) {
-						float centered = x.get(j,i) - avg;
-						x.put(j,i,centered);
-					}
-					// Find the standard deviation for each column.
-					sum = 0;
-					for (int j = 0; j < x.rows; j++) {
-						sum += x.get(j,i) * x.get(j,i);
-					}
-					float std = (float)Math.sqrt(sum/(x.rows - 1));
-
-					// Divide the standard deviation out.
-					for (int j = 0; j < x.rows; j++) {
-						float unitVar = x.get(j,i)/std;
-						x.put(j,i,unitVar);
-					}	
-				}	
-			}
-
-			@Override
-			public int getItemCount(int series) {
-				return nodeList.size();
-			}
-
-			@Override
-			public int getSeriesCount() {
-				return tformedData.size();
-			}
-
-			@Override
-			public Comparable getSeriesKey(int series) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			public XYLineAndShapeRenderer getRenderer() {
-				return renderer;
-			}
-
-			public class PCAPlotRenderer extends XYLineAndShapeRenderer {
-				/** Color points by corresponding depth in the tree or by command leading to this point. **/
-				public boolean colorByDepth = plotColorsByDepth;
-
-				public PCAPlotRenderer() {
-					super(false, true); //boolean lines, boolean shapes
-					setSeriesShape( 0, new Rectangle2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
-					setUseOutlinePaint(false);
-				}
-
-				@Override
-				public Paint getItemPaint(int series, int item) {
-					if (colorByDepth) {
-						return Node.getColorFromTreeDepth(nodeList.get(item).treeDepth);
-					}else{
-						Color dotColor = Color.RED;
-						switch (nodeList.get(item).treeDepth % 4) {
-						case 0:
-							dotColor = actionColor1;
-							break;
-						case 1:
-							dotColor = actionColor2;
-							break;
-						case 2:
-							dotColor = actionColor3;
-							break;
-						case 3:
-							dotColor = actionColor4;
-							break;
-						}
-						return dotColor;
-					}
-				}
-				@Override
-				public java.awt.Shape getItemShape(int row, int col) { // Dumb because box2d also has shape imported.
-					//				if (col == pane.selectedPoint) {
-					//					return (java.awt.Shape)BigMarker;
-					//				} else {
-					return super.getItemShape(row, col);
-					//				}
-				}
-			}
-		}
-	}
+//	/**
+//	 * Pane for displaying plots of the states transformed using principle component analysis (PCA). A tab.
+//	 * @author Matt
+//	 */
+//	public class DataPane_PCA extends DataPane implements KeyListener {
+//		// Which pairs of eigenvalues we're plotting.
+//		int[][] dataSelect;
+//
+//		private Node lastSelectedNode;
+//
+//		/** Data transformed by PCA **/
+//		private PCATransformedData pcaPlotDat;
+//
+//		public boolean mouseIsIn = false;
+//
+//		public DataPane_PCA() {
+//			super();
+//			addKeyListener(this);
+//			setFocusable(true);
+//			dataSelect = new int[numberOfPlots][2];
+//
+//			// First set of plots are the 0 vs 1-6 eig
+//			for (int i = 0; i < numberOfPlots; i++) {
+//				dataSelect[i] = new int[]{0,i};
+//			}
+//		}
+//
+//		@Override
+//		public void update() {
+//			requestFocus();
+//			setDatasets(dataSelect);
+//			for (int i = 0; i < numberOfPlots; i++) {
+//				JFreeChart chart = plotPanels[i].getChart();
+//				chart.fireChartChanged();
+//				// TODO: resizing plots axes
+//				//XYPlot plot = (XYPlot)(plotPanels[i].getChart().getPlot());
+//				//plot.getDomainAxis().setRange(range);
+//				//plot.getRangeAxis().setRange(range);
+//			}
+//			XYPlot firstPlot = (XYPlot)plotPanels[0].getChart().getPlot();
+//			if (!plotColorsByDepth) {
+//				addCommandLegend(firstPlot);
+//			}
+//		}
+//
+//		private void setDatasets(int[][] dataSelect) {			
+//			// Fetching new data.
+//			ArrayList<Node> nodesBelow = new ArrayList<Node>();
+//			if (selectedNode != null) {
+//
+//				// A state pair being added to the first plot.
+//				XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
+//
+//				// Only update the plots shown, don't redo PCA calcs.
+//				if (lastSelectedNode != null && lastSelectedNode.equals(selectedNode)) {
+//					pcaPlotDat = (PCATransformedData)pl.getDataset();
+//				}else{
+//					selectedNode.getNodes_below(nodesBelow);
+//					pcaPlotDat = new PCATransformedData(nodesBelow);
+//					lastSelectedNode = selectedNode;
+//				}
+//
+//				pl.setRenderer(pcaPlotDat.getRenderer());
+//				pcaPlotDat.addSeries(0, dataSelect[0][0], dataSelect[0][1]);
+//				pl.setDataset(pcaPlotDat);
+//				pl.getDomainAxis().setLabel("Eig " + dataSelect[0][0] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[0][0]))/10. + "%)");
+//				pl.getRangeAxis().setLabel("Eig " + dataSelect[0][1] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[0][1]))/10. + "%)");
+//
+//				for (int i = 1; i < dataSelect.length; i++) {
+//					pl = (XYPlot)plotPanels[i].getChart().getPlot();
+//					PCATransformedData pcaPlotDatNext = pcaPlotDat.duplicateWithoutRecalcPCA();
+//					pl.setRenderer(pcaPlotDat.getRenderer());
+//					pcaPlotDatNext.addSeries(0, dataSelect[i][0], dataSelect[i][1]);
+//					pl.setDataset(pcaPlotDatNext);
+//					pl.getDomainAxis().setLabel("Eig " + dataSelect[i][0] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[i][0]))/10. + "%)");
+//					pl.getRangeAxis().setLabel("Eig " + dataSelect[i][1] + " (" + Math.round(1000.*pcaPlotDat.evalsNormalized.get(dataSelect[i][1]))/10. + "%)");
+//				}	
+//			}
+//		}
+//
+//		public void plotShift(int xShift, int yShift) {
+//			if (xShift != 0 || yShift != 0) {
+//				// First set of plots are the 0 vs 1-6 eig
+//
+//				XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
+//				PCATransformedData dat = (PCATransformedData)pl.getDataset();
+//				int totalEigs = dat.evals.length;
+//
+//				if (dataSelect[0][0] + xShift < 0 || dataSelect[numberOfPlots - 1][0] + xShift > totalEigs - 1) {
+//					xShift = 0;
+//				}
+//
+//				if (dataSelect[0][1] + yShift < 0 || dataSelect[numberOfPlots - 1][1] + yShift > totalEigs - 1) {
+//					yShift = 0;
+//				}
+//
+//				for (int i = 0; i < numberOfPlots; i++) {
+//
+//					dataSelect[i][0] = dataSelect[i][0] + xShift; // Clamp within the actual number of eigenvalues we have.
+//					dataSelect[i][1] = dataSelect[i][1] + yShift;
+//				}
+//				update();
+//			}
+//		}
+//
+//		/** Get the last PCA data. **/
+//		public PCATransformedData getPCAData() {
+//			return pcaPlotDat;
+//		}
+//
+//		@Override
+//		public void keyTyped(KeyEvent e) {
+//		}
+//
+//		@Override
+//		public void keyPressed(KeyEvent e) {
+//			switch(e.getKeyCode()) {
+//			case KeyEvent.VK_UP:
+//				plotShift(0,-1);
+//				break;
+//			case KeyEvent.VK_DOWN:
+//				plotShift(0,1);
+//				break;
+//			case KeyEvent.VK_LEFT:
+//				plotShift(-1,0);
+//				break;
+//			case KeyEvent.VK_RIGHT:
+//				plotShift(1,0);
+//				break;
+//			case KeyEvent.VK_B:
+//				plotColorsByDepth = !plotColorsByDepth;
+//				break;
+//			}	
+//		}
+//
+//		@Override
+//		public void keyReleased(KeyEvent e) {}
+//
+//		@Override
+//		public void plotClicked(int plotIdx) {
+//			// TODO Auto-generated method stub
+//
+//		}
+//
+//		@Override
+//		public void activateTab() {
+//			active = true;
+//			// update(); // Don't update though. Make the user click a node before doing this.
+//			requestFocus();
+//		}
+//
+//		@Override
+//		public boolean isActive() {
+//			return active;
+//		}
+//	}
+
+//
+//		/** XYDataset gets data for plotting transformed data from PCA here. **/
+//		public class PCATransformedData extends AbstractXYDataset{
+//
+//			/** Nodes to appear on the plot. **/
+//			private ArrayList<Node> nodeList;
+//
+//			/** Eigenvectors found during SVD of the conditioned states. They represent the principle directions that explain most of the state variance. **/
+//			private FloatMatrix evecs;
+//
+//			/** During SVD we find the eigenvalues, the weights for what portion of variance is explained by the corresponding eigenvector. **/
+//			private FloatMatrix evals;
+//
+//			/** Normalized so the sum of the evals == 1 **/
+//			private FloatMatrix evalsNormalized;
+//
+//			/** The conditioned dataset. Mean of each state is subtracted and divided by its standard deviation to give a variance of 1. **/
+//			private FloatMatrix dataSet;
+//
+//			private PCAPlotRenderer renderer = new PCAPlotRenderer();
+//
+//			/** Specific series of data to by plotted. Integer is the plotindex, the matrix is 2xn for x-y plot. **/
+//			private Map<Integer,FloatMatrix> tformedData = new HashMap<Integer,FloatMatrix>();
+//
+//			ArrayList<State.ObjectName> objectsUsed = new ArrayList<State.ObjectName>(Arrays.asList(State.ObjectName.values()));
+//			ArrayList<State.StateName> statesUsed = new ArrayList<State.StateName>(Arrays.asList(State.StateName.values()));
+//
+//
+//			public PCATransformedData(ArrayList<Node> nodes) {
+//				super();
+//				// Can blacklist things NOT to be PCA'd
+//				statesUsed.remove(State.StateName.X);
+//
+//				nodeList = nodes;
+//				doPCA();
+//			}
+//
+//			private PCATransformedData() {
+//				super();
+//			}
+//
+//			/** Make another one of these but using the same PCA calculation. No data series are specified. **/
+//			public PCATransformedData duplicateWithoutRecalcPCA() {
+//				PCATransformedData duplicate = new PCATransformedData();
+//				duplicate.dataSet = dataSet;
+//				duplicate.nodeList = nodeList;
+//				duplicate.evals = evals;
+//				duplicate.evecs = evecs;
+//				duplicate.evalsNormalized = evalsNormalized;
+//				return duplicate;
+//			}
+//
+//			/** PCA is already done when the object is created with a list of nodes. This determines which data, transformed according to which
+//			 * eigenvalue, is plotted on which plot index.
+//			 * @param plotIdxNum
+//			 * @param eigForXAxis
+//			 * @param eigForYAxis
+//			 */
+//			public void addSeries(int plotIdx, int eigForXAxis, int eigForYAxis) {
+//				tformedData.put(plotIdx, dataSet.mmul(evecs.getColumns(new int[]{eigForXAxis,eigForYAxis})));	
+//			}
+//
+//			/** Mostly for external use. Transform any data by the chosen PCA components. Must have done the PCA already! **/
+//			public FloatMatrix transformDataset(ArrayList<Node> nodesToTransform, int[] chosenPCAComponents) {
+//				FloatMatrix preppedDat = prepTrialNodeData(nodesToTransform, objectsUsed, statesUsed);
+//				FloatMatrix lowDimData = preppedDat.mmul(evecs.getColumns(chosenPCAComponents));
+//				return lowDimData;
+//			}
+//
+//			@Override
+//			public Number getX(int series, int item) {
+//				return tformedData.get(series).get(item,0);
+//			}
+//
+//			@Override
+//			public Number getY(int series, int item) {
+//				return tformedData.get(series).get(item,1);
+//			}
+//
+//			/** Run PCA on all the states in the nodes stored here. **/
+//			public void doPCA() {
+//
+//				dataSet = prepTrialNodeData(nodeList, objectsUsed, statesUsed);
+//
+//				FloatMatrix[] USV = Singular.fullSVD(dataSet);
+//				evecs = USV[2]; // Eigenvectors
+//				evals = USV[1].mul(USV[1]).div(dataSet.rows); // Eigenvalues
+//				// Transforming with the first two eigenvectors
+//				//tformedData = dataSet.mmul(evecs.getColumns(new int[]{pcaEigX,pcaEigY}));
+//
+//				// Also make the vector of normalized eigenvalues.
+//				float evalSum = 0;
+//				for (int i = 0; i < evals.length; i++) {
+//					evalSum += evals.get(i);
+//				}
+//				evalsNormalized = new FloatMatrix(evals.length);
+//				for (int i = 0; i < evals.length; i++) {
+//					evalsNormalized.put(i, evals.get(i)/evalSum);
+//				}
+//			}
+//
+//			/** Unpack the state data from the nodes, pulling only the stuff we want. Condition data to variance 1, mean 0. **/
+//			private FloatMatrix prepTrialNodeData(ArrayList<Node> nodes, 
+//					ArrayList<State.ObjectName> includedObjects, 
+//					ArrayList<State.StateName> includedStates) {
+//
+//
+//				int numStates = includedObjects.size() * includedStates.size();
+//				FloatMatrix dat = new FloatMatrix(nodes.size(), numStates);
+//
+//				// Iterate through all nodes
+//				for (int i = 0; i < nodes.size(); i++) {
+//					int colCounter = 0;
+//					// Through all body parts...
+//					for (State.ObjectName obj : includedObjects) {
+//						// For each state of each body part.
+//						for (State.StateName st : includedStates) {
+//							dat.put(i, colCounter, nodes.get(i).state.getStateVarFromName(obj, st));
+//							colCounter++;
+//						}
+//					}
+//				}
+//				conditionData(dat);
+//				return dat;
+//			}
+//
+//			/** Subtracts the mean for each variable, and converts to unit variance.
+//			 *  Samples are rows, variables are columns. Alters matrix x.
+//			 * @param x
+//			 */
+//			private void conditionData(FloatMatrix x) {
+//
+//				for (int i = 0; i < x.columns; i++) {
+//					// Calculate the mean of a column.
+//					float sum = 0;
+//					for (int j = 0; j < x.rows; j++) {
+//						sum += x.get(j,i);
+//					}
+//					// Subtract the mean out.
+//					float avg = sum/x.rows;
+//					for (int j = 0; j < x.rows; j++) {
+//						float centered = x.get(j,i) - avg;
+//						x.put(j,i,centered);
+//					}
+//					// Find the standard deviation for each column.
+//					sum = 0;
+//					for (int j = 0; j < x.rows; j++) {
+//						sum += x.get(j,i) * x.get(j,i);
+//					}
+//					float std = (float)Math.sqrt(sum/(x.rows - 1));
+//
+//					// Divide the standard deviation out.
+//					for (int j = 0; j < x.rows; j++) {
+//						float unitVar = x.get(j,i)/std;
+//						x.put(j,i,unitVar);
+//					}	
+//				}	
+//			}
+//
+//			@Override
+//			public int getItemCount(int series) {
+//				return nodeList.size();
+//			}
+//
+//			@Override
+//			public int getSeriesCount() {
+//				return tformedData.size();
+//			}
+//
+//			@Override
+//			public Comparable getSeriesKey(int series) {
+//				// TODO Auto-generated method stub
+//				return null;
+//			}
+//
+//			public XYLineAndShapeRenderer getRenderer() {
+//				return renderer;
+//			}
+//
+//			public class PCAPlotRenderer extends XYLineAndShapeRenderer {
+//				/** Color points by corresponding depth in the tree or by command leading to this point. **/
+//				public boolean colorByDepth = plotColorsByDepth;
+//
+//				public PCAPlotRenderer() {
+//					super(false, true); //boolean lines, boolean shapes
+//					setSeriesShape( 0, new Rectangle2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
+//					setUseOutlinePaint(false);
+//				}
+//
+//				@Override
+//				public Paint getItemPaint(int series, int item) {
+//					if (colorByDepth) {
+//						return Node.getColorFromTreeDepth(nodeList.get(item).treeDepth);
+//					}else{
+//						Color dotColor = Color.RED;
+//						switch (nodeList.get(item).treeDepth % 4) {
+//						case 0:
+//							dotColor = actionColor1;
+//							break;
+//						case 1:
+//							dotColor = actionColor2;
+//							break;
+//						case 2:
+//							dotColor = actionColor3;
+//							break;
+//						case 3:
+//							dotColor = actionColor4;
+//							break;
+//						}
+//						return dotColor;
+//					}
+//				}
+//				@Override
+//				public java.awt.Shape getItemShape(int row, int col) { // Dumb because box2d also has shape imported.
+//					//				if (col == pane.selectedPoint) {
+//					//					return (java.awt.Shape)BigMarker;
+//					//				} else {
+//					return super.getItemShape(row, col);
+//					//				}
+//				}
+//			}
+//		}
+//	}
 
 
 	@Override
