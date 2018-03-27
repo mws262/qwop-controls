@@ -40,8 +40,6 @@ class Settings {
 
 public class MAIN_Run implements Runnable{
 
-	private static INegotiateGame negotiator;
-
 	private int treesPlayed = 0;
 	private int treesToPlay = 1000;
 	private long secondsPerTree = 1000000;

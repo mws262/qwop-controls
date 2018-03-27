@@ -32,6 +32,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	/** Print debugging info? **/
 	public boolean verbose = false;
 
+	/** Print debugging info? **/
+	public boolean debugDraw = false;
+
 	/** The current game instance that this FSM is using. This will frequently change since a new one is created for each run. **/
 	private final GameLoader game = new GameLoader();
 
@@ -46,7 +49,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	/** Node the game is attempting to run to. **/
 	private Node targetNodeToTest;
-	
+
 	/** Node the game is initially expanding from. **/
 	private Node expansionNode;
 	private Node lastNodeAdded;
@@ -62,16 +65,16 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	/** Number of physics timesteps simulated by this TreeWorker. **/
 	private long workerStepsSimulated = 0;
-	
+
 	/** Number of games simulated by this TreeWorker. **/
 	private long workerGamesPlayed = 0;
-	
+
 	/** Total timesteps simulated by all TreeWorkers. **/
 	private static long totalStepsSimulated = 0;
-	
+
 	/** Total games played by all TreeWorkers. **/
 	private static long totalGamesPlayed = 0;
-	
+
 	public String workerName = "";
 	private final int workerID;
 	private static int workerCount = 0;
@@ -110,8 +113,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 				}else {
 					expansionNode = sampler.treePolicy(currentGameNode); // This gets us through the existing tree to a place that we plan to add a new node.
-					expansionNode.setBackwardsBranchColor(getColorFromWorkerID(workerID));
-					expansionNode.setBackwardsBranchZOffset(0.1f);
+					if (debugDraw) {
+						expansionNode.setBackwardsBranchColor(getColorFromWorkerID(workerID));
+						expansionNode.setBackwardsBranchZOffset(0.1f);
+					}
 					targetNodeToTest = expansionNode;
 					//System.out.println(workerName + " tree policy picked node at depth " + expansionNode.treeDepth);
 					// Check special cases.
@@ -154,9 +159,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 			case EXPANSION_POLICY_CHOOSING:
 				if (sampler.expansionPolicyGuard(currentGameNode)) { // Some samplers keep adding nodes until failure, others add a fewer number and move to rollout before failure.	
 					changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
-					if (lastNodeAdded != null) lastNodeAdded.clearNodeOverrideColor();
+					if (debugDraw && lastNodeAdded != null) lastNodeAdded.clearNodeOverrideColor();
 					lastNodeAdded = currentGameNode;
-					lastNodeAdded.setBranchColor(getColorFromWorkerID(workerID));
+					if (debugDraw) lastNodeAdded.setBranchColor(getColorFromWorkerID(workerID));
 					sampler.expansionPolicyActionDone(currentGameNode);
 				}else {
 					targetNodeToTest = sampler.expansionPolicy(currentGameNode);
@@ -225,7 +230,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				}else {
 					throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
 				}
-				
+
 				addToTotalTimesteps(game.getTimestepsSimulated());
 				workerGamesPlayed++;
 				long totGames = incrementTotalGameCount();
@@ -234,9 +239,12 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				}
 
 				expansionNode.releaseExpansionRights();
-				expansionNode.clearBackwardsBranchColor();
-				expansionNode.clearBackwardsBranchZOffset();
 				
+				if (debugDraw) {
+					expansionNode.clearBackwardsBranchColor();
+					expansionNode.clearBackwardsBranchZOffset();
+				}
+
 				if (rootNode.fullyExplored) {
 					changeStatus(Status.EXHAUSTED);
 				}else {
@@ -305,29 +313,29 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	public void terminateWorker() {
 		flagForTermination = true;
 	}
-	
+
 	/** Increase the the count of total games in a hopefully thread-safe way. **/
 	private synchronized static long incrementTotalGameCount() {
 		totalGamesPlayed++;
 		return totalGamesPlayed;
 	}
-	
+
 	/** Increase the number of timesteps simulated in a hopefully thread-safe way. **/
 	private synchronized static long addToTotalTimesteps(long timesteps) {
 		totalStepsSimulated += timesteps;
 		return totalStepsSimulated;
 	}
-	
+
 	/** Get the number of games played by all workers, total. **/
 	public static long getTotalGamesPlayed() {
 		return totalGamesPlayed;
 	}
-	
+
 	/** Get the number of games played by all workers, total. **/
 	public static long getTotalTimestepsSimulated() {
 		return totalStepsSimulated;
 	}
-	
+
 	/** Color the node scaled by depth in the tree. Skip the brightness argument for default value. **/
 	public static Color getColorFromWorkerID(int ID){
 		float brightness = 0.85f;

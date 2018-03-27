@@ -80,6 +80,8 @@ public class Node {
 	public boolean displayPoint = false; // Round dot at this node. Is it on?
 	public boolean displayLine = true; // Line from this node to parent. Is it on?
 
+	public static boolean debugDrawNodeLocking = false; // Draw which nodes are locked by command from the TreeWorkers.
+
 	/********* NODE PLACEMENT ************/
 
 	/** Parameters for visualizing the tree **/
@@ -94,7 +96,6 @@ public class Node {
 
 
 	/*********** UTILITY **************/
-
 	/** Are we bulk adding saved nodes? If so, some construction things are deferred. **/
 	private static boolean currentlyAddingSavedNodes = false;
 
@@ -131,7 +132,7 @@ public class Node {
 		zOffset = parent.zOffset;
 
 		parent.children.add(this);
-		
+
 		if (!currentlyAddingSavedNodes){
 			calcNodePos(); // Must be called after this node has been added to its parent's list!
 		}
@@ -168,7 +169,7 @@ public class Node {
 				maxDepthYet = treeDepth;
 			}
 		}
-		
+
 		if (connectNodeToTree && !currentlyAddingSavedNodes){
 			calcNodePos(); // Must be called after this node has been added to its parent's list!
 		}
@@ -234,9 +235,6 @@ public class Node {
 	 * 		practical purposes, this node is also out of play. Lock it too and recurse up the tree until we reach a node with at least one unlocked and not
 	 * 		fully explored child.
 	 * 		When unlocking, we should propagate fully-explored statuses back up the tree first, and then remove locks as far up the tree as possible.
-	 * 
-	 * 
-	 * 
 	 */
 	private synchronized void propagateLock() {
 		for (Node child : children) {
@@ -254,14 +252,15 @@ public class Node {
 		}else {
 			if (uncheckedActions.isEmpty()) return false;//throw new RuntimeException("A worker tried to reserve a node to expand, but found that there were no untried actions to check here.");
 			locked = true;
-			displayPoint = true;
-			overrideNodeColor = Color.RED;
-			//System.out.println("Lock set at node depth: " + treeDepth);
+			if (debugDrawNodeLocking) {
+				displayPoint = true;
+				overrideNodeColor = Color.RED;
+			}
 			if (treeDepth > 0) parent.propagateLock();
 			return true;
 		}
 	}
-	
+
 	private synchronized void propagateUnlock() {
 		if (!getLockStatus()) return; 
 		for (Node child : children) {
@@ -275,12 +274,13 @@ public class Node {
 	/** Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node. **/
 	public synchronized void releaseExpansionRights() {
 		locked = false;
-		displayPoint = false;
-		overrideNodeColor = null;
-		//System.out.println("Unlock at node depth: " + treeDepth);
+		if (debugDrawNodeLocking) {
+			displayPoint = false;
+			overrideNodeColor = null;
+		}
 		if (treeDepth > 0) parent.propagateUnlock();
 	}
-	
+
 	/** Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node. **/
 	public synchronized boolean getLockStatus() {
 		return locked;
@@ -440,7 +440,7 @@ public class Node {
 	//	}
 
 	/** Assign the state directly. Usually when loading nodes. **/
-	public void setState(State newState){
+	public synchronized void setState(State newState){
 		state = newState;
 	}
 
@@ -676,7 +676,7 @@ public class Node {
 			child.clearBranchColor();
 		}
 	}
-	
+
 	/** Clear an overriden line color on this branch. Goes back towards root. **/
 	public void clearBackwardsBranchColor(){
 		overrideLineColor = null;
@@ -695,7 +695,7 @@ public class Node {
 			child.clearNodeOverrideColor(colorToClear);
 		}
 	}
-	
+
 	/** Clear node override colors from this node backwards. Only clear the specified color. Goes towards root. **/
 	public void clearBackwardsNodeOverrideColor(Color colorToClear){
 		if (overrideNodeColor == colorToClear){
@@ -717,7 +717,7 @@ public class Node {
 			child.clearNodeOverrideColor();
 		}
 	}
-	
+
 	/** Clear all node override colors from this node onward. Call from root to clear all. **/
 	public void clearBackwardsNodeOverrideColor(){
 		if (overrideNodeColor != null){
@@ -728,7 +728,7 @@ public class Node {
 			parent.clearBackwardsNodeOverrideColor();
 		}
 	}
-	
+
 	/** Give this branch a zOffset to make it stand out. **/
 	public void setBranchZOffset(float zOffset){
 		this.zOffset = zOffset;
