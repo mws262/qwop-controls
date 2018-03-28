@@ -6,8 +6,10 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.jblas.FloatMatrix;
@@ -20,11 +22,17 @@ import main.ITransform;
 import main.Node;
 import main.PanelPlot;
 import main.State;
-import ui.PanelPlot_States.LinkStateCombination;
+import main.Utility;
 
 public class PanelPlot_Transformed extends PanelPlot {
 	
 	private static final long serialVersionUID = 1L;
+	
+	/** Maximum allowed datapoints. Will downsample if above. Prevents extreme lag. **/
+	public int maxPlotPoints = 2000;
+	
+	/** Maximum number of points used to update the transform. **/
+	public int maxTransformUpdatePoints = 2000;
 	
 	/** Node from which states are referenced. **/
 	private Node selectedNode;
@@ -52,62 +60,83 @@ public class PanelPlot_Transformed extends PanelPlot {
 	@Override
 	public void update(Node plotNode) {
 		
-		// Do transform update if necessary: TODO decide conditions
+		// Do transform update if necessary: TODO decide conditions and limitations.
 		List<Node> nodesBelow = new ArrayList<Node>();
-		plotNode.getNodesBelow(nodesBelow);
+		plotNode.getRoot().getNodesBelow(nodesBelow);
+		downsampleNodeList(nodesBelow, maxTransformUpdatePoints);
 		List<State> statesBelow = nodesBelow.stream().map(n -> n.state).collect(Collectors.toList()); // Convert from node list to state list.
-		transformer.updateTransform(statesBelow);
-		
-		// Do transformation on nodes below selected TODO: make distinction between above
+		transformer.updateTransform(statesBelow); // Update transform with all states.
+		// Pick which to actually plot.
+		nodesBelow.clear();
+		plotNode.getNodesBelow(nodesBelow);
+		downsampleNodeList(nodesBelow, maxPlotPoints); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.
+		statesBelow = nodesBelow.stream().map(n -> n.state).collect(Collectors.toList()); // Convert from node list to state list.
 		List<float[]> transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
-		
 		requestFocus();
-		for (int i = 0; i < numberOfPlots; i++) {
-			XYPlot pl = (XYPlot)plotPanels[i].getChart().getPlot();
-			TransformedData plotDat = new TransformedData();
-			pl.setRenderer(plotDat.getRenderer());
-			plotDat.addSeries(0, null,null); //TODO
-			pl.setDataset(plotDat);
-			pl.getRangeAxis().setLabel("placeholder" + " " + "placeholder"); //TODO
-			pl.getDomainAxis().setLabel("placeholder" + " " + "placeholder"); //TODO
+		
+		Iterator<Entry<XYPlot, PlotDataset>> it = plotsAndData.entrySet().iterator();	
+		int count = 0;
+		while (it.hasNext()) {
+			Entry<XYPlot, PlotDataset> plotAndData = it.next();
+			XYPlot pl = plotAndData.getKey();
+			PlotDataset dat = plotAndData.getValue();
+
+			// Pick x and y from the transformed stuff:
+			int datIdx = currentView * plotsPerView + count;
+//			float[] xData = new float[transformedStates.size()];
+//			float[] yData = new float[transformedStates.size()];
+//			
+//			for (int i = 0; i < transformedStates.size(); i++) {
+//				xData[i] = transformedStates.get(i)[currentView];
+//				yData[i] = transformedStates.get(i)[datIdx];
+//			}
 			
-			JFreeChart chart = plotPanels[i].getChart();
-			chart.fireChartChanged();
 			
+			Float[] xData = transformedStates.stream().map(ts -> ts[datIdx]).toArray(Float[] :: new);
+			Float[] yData = transformedStates.stream().map(ts -> ts[currentView]).toArray(Float[] :: new);
+			Color[] cData = nodesBelow.stream().map(n -> Node.getColorFromTreeDepth(n.treeDepth)).toArray(Color[] :: new);
+			
+			pl.getRangeAxis().setLabel("Component" + " " + currentView);
+			pl.getDomainAxis().setLabel("Component" + " " + datIdx);
+			
+			dat.addSeries(0, xData, yData, cData);
+			count++;
+		}
+		//addCommandLegend(firstPlot);
+		applyUpdates();
+		
+
+
+
 			// TODO: resizing plots axes
 			//XYPlot plot = (XYPlot)(plotPanels[i].getChart().getPlot());
 			//plot.getDomainAxis().setRange(range);
 			//plot.getRangeAxis().setRange(range);
-		}
-		XYPlot firstPlot = (XYPlot)plotPanels[0].getChart().getPlot();
-		if (!plotColorsByDepth) {
-			addCommandLegend(firstPlot);
-		}
 	}
 
 	public void plotShift(int xShift, int yShift) {
-		if (xShift != 0 || yShift != 0) {
-			// First set of plots are the 0 vs 1-6 eig
-
-			XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
-			PCATransformedData dat = (PCATransformedData)pl.getDataset();
-			int totalEigs = dat.evals.length;
-
-			if (dataSelect[0][0] + xShift < 0 || dataSelect[numberOfPlots - 1][0] + xShift > totalEigs - 1) {
-				xShift = 0;
-			}
-
-			if (dataSelect[0][1] + yShift < 0 || dataSelect[numberOfPlots - 1][1] + yShift > totalEigs - 1) {
-				yShift = 0;
-			}
-
-			for (int i = 0; i < numberOfPlots; i++) {
-
-				dataSelect[i][0] = dataSelect[i][0] + xShift; // Clamp within the actual number of eigenvalues we have.
-				dataSelect[i][1] = dataSelect[i][1] + yShift;
-			}
-			update();
-		}
+//		if (xShift != 0 || yShift != 0) {
+//			// First set of plots are the 0 vs 1-6 eig
+//
+//			XYPlot pl = (XYPlot)plotPanels[0].getChart().getPlot();
+//			PCATransformedData dat = (PCATransformedData)pl.getDataset();
+//			int totalEigs = dat.evals.length;
+//
+//			if (dataSelect[0][0] + xShift < 0 || dataSelect[numberOfPlots - 1][0] + xShift > totalEigs - 1) {
+//				xShift = 0;
+//			}
+//
+//			if (dataSelect[0][1] + yShift < 0 || dataSelect[numberOfPlots - 1][1] + yShift > totalEigs - 1) {
+//				yShift = 0;
+//			}
+//
+//			for (int i = 0; i < numberOfPlots; i++) {
+//
+//				dataSelect[i][0] = dataSelect[i][0] + xShift; // Clamp within the actual number of eigenvalues we have.
+//				dataSelect[i][1] = dataSelect[i][1] + yShift;
+//			}
+//			update();
+//		}
 	}
 
 	@Override
@@ -116,95 +145,5 @@ public class PanelPlot_Transformed extends PanelPlot {
 		
 	}
 	
-	/** XYDataset gets data for plotting transformed data from PCA here. **/
-	public class TransformedData extends AbstractXYDataset{
-
-		private TFormPlotRenderer renderer = new TFormPlotRenderer();
-
-		/** Specific series of data to by plotted. Integer is the plotindex,  **/
-		private Map<Integer, float[]> xData = new HashMap<Integer, float[]>();
-		private Map<Integer, float[]> yData = new HashMap<Integer, float[]>();
-
-		public TransformedData() {
-			super();
-		}
-
-		/** Add another data series at the specified plot index. **/
-		public void addSeries(int plotIdx, float[] xData, float[] yData) {
-			this.xData.put(plotIdx, xData);	
-			this.yData.put(plotIdx, yData);	
-		}
-
-		@Override
-		public Number getX(int series, int item) {
-			return xData.get(series)[item];
-		}
-
-		@Override
-		public Number getY(int series, int item) {
-			return yData.get(series)[item];
-		}
-
-		@Override
-		public int getItemCount(int series) {
-			return xData.get(series).length;
-		}
-
-		@Override
-		public int getSeriesCount() {
-			return xData.size();
-		}
-
-		@Override
-		public Comparable getSeriesKey(int series) {
-			return null;
-		}
-
-		public XYLineAndShapeRenderer getRenderer() {
-			return renderer;
-		}
-
-		public class TFormPlotRenderer extends XYLineAndShapeRenderer {
-			private static final long serialVersionUID = 1L;
-			
-			/** Color points by corresponding depth in the tree or by command leading to this point. **/
-			public boolean colorByDepth = plotColorsByDepth;
-
-			public TFormPlotRenderer() {
-				super(false, true); //boolean lines, boolean shapes
-				setSeriesShape( 0, new Rectangle2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
-				setUseOutlinePaint(false);
-			}
-
-			@Override
-			public Paint getItemPaint(int series, int item) {
-				if (colorByDepth) {
-					return Node.getColorFromTreeDepth(nodeList.get(item).treeDepth);
-				}else{
-					Color dotColor = Color.RED;
-					switch (nodeList.get(item).treeDepth % 4) {
-					case 0:
-						dotColor = actionColor1;
-						break;
-					case 1:
-						dotColor = actionColor2;
-						break;
-					case 2:
-						dotColor = actionColor3;
-						break;
-					case 3:
-						dotColor = actionColor4;
-						break;
-					}
-					return dotColor;
-				}
-			}
-			@Override
-			public Shape getItemShape(int row, int col) { 
-				return super.getItemShape(row, col);
-			}
-		}
-	}
-}
 
 }

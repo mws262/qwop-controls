@@ -1,7 +1,5 @@
 package samplers;
 
-import java.awt.Color;
-
 import main.Action;
 import main.ISampler;
 import main.Node;
@@ -27,7 +25,8 @@ public class Sampler_Random implements ISampler {
 		Node currentNode = startNode;
 
 		while (true) {
-			if (currentNode.fullyExplored) throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its fault.");
+			if (currentNode.fullyExplored) currentNode = startNode; // Just start over for now. I don't think it's a big enough problem to stress over.
+			//throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its fault.");
 
 			// Count the number of available children to go to next.
 			int notFullyExploredChildren = 0;

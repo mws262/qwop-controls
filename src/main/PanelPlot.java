@@ -3,9 +3,12 @@ package main;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
-import java.awt.geom.Ellipse2D;
-import java.util.ArrayList;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
@@ -34,33 +37,38 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 
 	/** Should this panel be drawing or is it hidden. **/
 	protected boolean active = false;
-	
+
 	/** How many plots do we want to squeeze in there horizontally? **/
 	protected final int numberOfPlots;
-	
+
 	/** Array of the numberOfPlots number of plots we make. **/
-	public ChartPanel[] plotPanels;
-	
+	protected ChartPanel[] plotPanels;
+
+	/****/
+	protected Map<XYPlot, PlotDataset> plotsAndData = new LinkedHashMap<XYPlot, PlotDataset>(); // Retains order of insertion.
+
 	/** Background color for the plots. **/
 	protected Color plotBackgroundColor = new Color(230, 230, 230);
-	
-	/** How plot dot colors are chosen. **/
-	public boolean plotColorsByDepth = true;
-	
+
 	/** Plotting colors for dots. **/
 	public final Color actionColor1 = Node.getColorFromTreeDepth(0);
 	public final Color actionColor2 = Node.getColorFromTreeDepth(10);
 	public final Color actionColor3 = Node.getColorFromTreeDepth(20);
 	public final Color actionColor4 = Node.getColorFromTreeDepth(30);
-	
+
 	public PanelPlot(int numberOfPlots) {
 		this.numberOfPlots = numberOfPlots;
 		plotPanels = new ChartPanel[numberOfPlots];
-		
+
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		for (int i = 0; i < numberOfPlots; i++) {
-			JFreeChart chart = createChart(null,null); // Null means no title and no data yet too
+			PlotDataset plData = new PlotDataset();
+			JFreeChart chart = createChart(plData, null); // Null means no title yet
+			XYPlot pl = chart.getXYPlot();
+			plotsAndData.put(chart.getXYPlot(), plData);
+			pl.setRenderer(plData.getRenderer());
+
 			ChartPanel chartPanel = new ChartPanel(chart);
 			chartPanel.addChartMouseListener(this);
 			chartPanel.setPopupMenu(null);
@@ -70,18 +78,22 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 			plotPanels[i] = chartPanel;
 			add(chartPanel);
 		}
-		//pack();
 	}
-	
+
+	/** Command all plots to apply updates. **/
+	public void applyUpdates() {
+		Arrays.stream(plotPanels).forEach(panel -> panel.getChart().fireChartChanged());
+	}
+
 	/** Check if the bounds need expanding, tell JFreeChart to update, and set the bounds correctly **/
 	public abstract void update(Node plotNode);
 
 	/** Tells what plot is clicked by the user. **/
 	public abstract void plotClicked(int plotIdx);
-	
+
 	/** Axis label font. **/
 	private final Font axisFont = new Font("Ariel", Font.BOLD, 12);
-	
+
 	/** My default settings for each plot. **/
 	private JFreeChart createChart(XYDataset dataset,String name) {
 		JFreeChart chart = ChartFactory.createScatterPlot(name,
@@ -113,7 +125,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 		rangeAxis.setRange(new Range(-10, 10));
 		return chart;
 	}
-	
+
 	/** Add some labels for which action led to this state. Hackish. **/
 	public void addCommandLegend(XYPlot pl) {
 		double axisDUB = pl.getDomainAxis().getUpperBound();
@@ -144,7 +156,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 		pl.addAnnotation(a3);
 		pl.addAnnotation(a4);
 	}
-	
+
 	@Override
 	public void chartMouseClicked(ChartMouseEvent event) {
 		JFreeChart clickedChart = event.getChart();
@@ -163,5 +175,147 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 	public void deactivateTab() { active = false; }
 	@Override
 	public boolean isActive() { return active; }
+
+	/** Get an evenly spaced list of nodes from one which is too big. If the list size isn't above maxSize,
+	 *  then nothing happens. Note: this downsampling is IN PLACE, meaning that the original list is changed.
+	 **/
+	public static List<Node> downsampleNodeList(List<Node> nodes, int maxSize) {
+		int numNodes = nodes.size();
+		if (numNodes > maxSize) {
+			float ratio = numNodes/(float)maxSize;
+			for (int i = 0; i < maxSize; i++) {
+				nodes.set(i, nodes.get((int)(ratio * i))); // Reassign the ith element with the spaced out one later in the arraylist.	
+			}
+
+			for (int i = numNodes; i > maxSize; i--) {
+				nodes.remove(i - 1);
+			}
+		}
+		return nodes;
+	}
 	
+	/** XYDataset gets data for plotting transformed data from PCA here. **/
+	public class PlotDataset extends AbstractXYDataset{
+
+		private static final long serialVersionUID = 1L;
+
+		private PlotRenderer renderer = new PlotRenderer();
+
+		/** Specific series of data to by plotted. Integer is the plotindex,  **/
+		private Map<Integer, DataSeries> series = new HashMap<Integer, DataSeries>();
+
+		public PlotDataset() {
+			super();
+		}
+
+		/** Add another data series at the specified plot index. **/
+		public void addSeries(int plotIdx, float[] xData, float[] yData, Color[] cData) {
+			DataSeries newDat = new DataSeries_float(xData, yData, cData);
+			series.put(plotIdx, newDat);
+		}
+
+		/** Add another data series at the specified plot index. **/
+		public void addSeries(int plotIdx, Float[] xData, Float[] yData, Color[] cData) {
+			DataSeries newDat = new DataSeries_Float(xData, yData, cData);
+			series.put(plotIdx, newDat);
+		}
+
+		@Override
+		public Number getX(int seriesIdx, int dataIdx) {
+			return series.get(seriesIdx).getX(dataIdx);
+		}
+
+		@Override
+		public Number getY(int seriesIdx, int dataIdx) {
+			return series.get(seriesIdx).getY(dataIdx);
+		}
+
+		@Override
+		public int getItemCount(int seriesIdx) {
+			if (series.get(seriesIdx) == null) return 0;
+			return series.get(seriesIdx).size();
+		}
+
+		@Override
+		public int getSeriesCount() {
+			return series.size();
+		}
+
+		@Override
+		public Comparable getSeriesKey(int series) {
+			return null;
+		}
+
+		public XYLineAndShapeRenderer getRenderer() {
+			return renderer;
+		}
+
+		private class DataSeries_float implements DataSeries{
+			float[] xData, yData;
+			Color[] cData;
+			private DataSeries_float(float[] xData, float[] yData, Color[] cData) {
+				this.xData = xData;
+				this.yData = yData;
+				this.cData = cData;
+			}
+			@Override
+			public float getX(int idx) { return xData[idx]; }
+			@Override
+			public float getY(int idx) { return yData[idx]; }
+			@Override
+			public Color getColor(int idx) { return cData[idx]; }
+			@Override
+			public int size() {
+				if (xData == null) return 0;
+				return xData.length; 
+			}
+		}
+
+		private class DataSeries_Float implements DataSeries{ // It's surprisingly hard to convert between primitive arrays and object arrays in a non-verbose way. Hence this.
+			Float[] xData, yData;
+			Color[] cData;
+			private DataSeries_Float(Float[] xData, Float[] yData, Color[] cData) {
+				this.xData = xData;
+				this.yData = yData;
+				this.cData = cData;
+			}
+			@Override
+			public float getX(int idx) { return xData[idx]; }
+			@Override
+			public float getY(int idx) { return yData[idx]; }
+			@Override
+			public Color getColor(int idx) { return cData[idx]; }
+			@Override
+			public int size() {
+				if (xData == null) return 0;
+				return xData.length; 
+			}
+		}
+
+		public class PlotRenderer extends XYLineAndShapeRenderer {
+			private static final long serialVersionUID = 1L;
+
+			public PlotRenderer() {
+				super(false, true); //boolean lines, boolean shapes
+				setSeriesShape( 0, new Rectangle2D.Double( -1.0, -1.0, 1.0, 1.0 ) );
+				setUseOutlinePaint(false);
+			}
+
+			@Override
+			public Paint getItemPaint(int seriesIdx, int dataIdx) {
+				return series.get(seriesIdx).getColor(dataIdx);
+			}
+			@Override
+			public Shape getItemShape(int row, int col) { 
+				return super.getItemShape(row, col);
+			}
+		}
+	}
+
+	private interface DataSeries{
+		public float getX(int idx);
+		public float getY(int idx);
+		public Color getColor(int idx);
+		public int size();
+	}
 }

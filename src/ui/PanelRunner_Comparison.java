@@ -66,7 +66,6 @@ public class PanelRunner_Comparison extends PanelRunner{
 		List<Node> allNodes = node.getRoot().getNodesBelow(new ArrayList<Node>());
 
 		for (Node n : allNodes) {
-			System.out.println(evFun.getValue(n));
 			evaluatedNodeList.put(evFun.getValue(n), n);
 		}
 

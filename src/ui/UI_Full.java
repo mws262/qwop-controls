@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
@@ -66,6 +68,7 @@ import main.Node;
 import main.PanelPlot;
 import main.PanelRunner;
 import main.State;
+import main.Transform_PCA;
 import main.TreeWorker;
 import main.Utility;
 
@@ -104,6 +107,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	/** Plots here. **/
 	PanelPlot statePlotPane;
+	
+	PanelPlot pcaPlotPane;
 	//DataPane dataPane_pca;
 
 	/** Selected node by user click/key **/
@@ -198,8 +203,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		/* Data pane */
 		statePlotPane = new PanelPlot_States(6);
 		tabPane.addTab("State Data Viewer", statePlotPane);
-		//dataPane_pca = new DataPane_PCA();
-		//tabPane.addTab("PCA Viewer", dataPane_pca);
+		pcaPlotPane = new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()));
+		tabPane.addTab("PCA Viewer", pcaPlotPane);
 
 		/* State comparison pane */
 		comparisonPane = new PanelRunner_Comparison();
@@ -213,7 +218,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		allTabbedPanes.add(runnerPanel);
 		allTabbedPanes.add(snapshotPane);
 		allTabbedPanes.add(statePlotPane);
-		//allTabbedPanes.add(dataPane_pca);
+		allTabbedPanes.add(pcaPlotPane);
 		allTabbedPanes.add(comparisonPane);
 		tabPane.addChangeListener(this);
 		//Make sure the currently active tab is actually being updated.
@@ -305,8 +310,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	 */
 	@Override
 	public void selectNode(Node selected) {
-		boolean success = false; // We don't allow new node selection while a realtime game is being played. 
-		//if (success) {
 			if (selectedNode != null) { // Clear things from the old selected node.
 				selectedNode.displayPoint = false;
 				selectedNode.clearBranchColor();
@@ -321,8 +324,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			if (snapshotPane.isActive()) snapshotPane.giveSelectedNode(selectedNode);
 			if (comparisonPane.isActive()) comparisonPane.giveSelectedNode(selectedNode);
 			if (statePlotPane.isActive()) statePlotPane.update(selectedNode); // Updates data being put on plots
-			//if (dataPane_pca.active) dataPane_pca.update(); // Updates data being put on plots
-		//}
+			if (pcaPlotPane.isActive()) pcaPlotPane.update(selectedNode); // Updates data being put on plots
 	}
 
 	@Override

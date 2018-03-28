@@ -2,24 +2,18 @@ package ui;
 
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.Paint;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
-import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.AbstractXYDataset;
-
 import main.Node;
 import main.PanelPlot;
 import main.State;
@@ -34,6 +28,9 @@ public class PanelPlot_States extends PanelPlot implements ItemListener{
 
 	private static final long serialVersionUID = 1L;
 
+	/** Maximum allowed datapoints. Will downsample if above. Prevents extreme lag. **/
+	public int maxPlotPoints = 2000;
+	
 	/** Node from which states are referenced. **/
 	private Node selectedNode;
 	
@@ -66,6 +63,8 @@ public class PanelPlot_States extends PanelPlot implements ItemListener{
 	/** Offsets to put the data selection menu right above the correct panel. **/
 	private final int menuXOffset = 30;
 	private final int menuYOffset = -30;
+	
+	private int countDataCollect = 0;
 
 	public PanelPlot_States(int numPlots) {
 		super(numPlots);
@@ -118,28 +117,32 @@ public class PanelPlot_States extends PanelPlot implements ItemListener{
 	public void update(Node selectedNode) {
 		this.selectedNode = selectedNode;
 		// Fetching new data.
-		ArrayList<Node> nodesBelow = new ArrayList<Node>();
+		List<Node> nodesBelow = new ArrayList<Node>();
 		if (selectedNode != null) {
 			selectedNode.getNodesBelow(nodesBelow);
-
-			for (int i = 0; i < numberOfPlots; i++) {
-				XYPlot pl = (XYPlot)plotPanels[i].getChart().getPlot();
-				LinkStateCombination statePlotDat = new LinkStateCombination(nodesBelow);
-				pl.setRenderer(statePlotDat.getRenderer());
-				statePlotDat.addSeries(0, plotObjectsX[i], plotStatesX[i], plotObjectsY[i], plotStatesY[i]);
-				pl.setDataset(statePlotDat);
-				pl.getRangeAxis().setLabel(plotObjectsX[i].toString() + " " + plotStatesX[i].toString());
-				pl.getDomainAxis().setLabel(plotObjectsY[i].toString() + " " + plotStatesY[i].toString());
-				JFreeChart chart = plotPanels[i].getChart();
-				chart.fireChartChanged();
-				//XYPlot plot = (XYPlot)(plotPanels[i].getChart().getPlot());
-				//pl.getDomainAxis().setRange(new Range(statePlotDat1.xLimLo,statePlotDat1.xLimHi));
-				//plot.getRangeAxis().setRange(range);
+			
+			// Reduce the list size to something which renders quickly.
+			downsampleNodeList(nodesBelow, maxPlotPoints);
+		
+			Iterator<Entry<XYPlot, PlotDataset>> it = plotsAndData.entrySet().iterator();
+			requestFocus();
+			countDataCollect = 0;
+			while (it.hasNext()) {
+				Entry<XYPlot, PlotDataset> plotAndData = it.next();
+				XYPlot pl = plotAndData.getKey();
+				PlotDataset dat = plotAndData.getValue();
+				
+				Float[] xData = nodesBelow.stream().map(n -> n.state.getStateVarFromName(plotObjectsX[countDataCollect], plotStatesX[countDataCollect])).toArray(Float[] :: new); // Crazy new Java 8!
+				Float[] yData = nodesBelow.stream().map(n -> n.state.getStateVarFromName(plotObjectsY[countDataCollect], plotStatesY[countDataCollect])).toArray(Float[] :: new);
+				Color[] cData = nodesBelow.stream().map(n -> Node.getColorFromTreeDepth(n.treeDepth)).toArray(Color[] :: new);
+				
+				dat.addSeries(0, xData, yData, cData);
+				pl.getRangeAxis().setLabel(plotObjectsX[countDataCollect].toString() + " " + plotStatesX[countDataCollect].toString());
+				pl.getDomainAxis().setLabel(plotObjectsY[countDataCollect].toString() + " " + plotStatesY[countDataCollect].toString());
+				countDataCollect++;
 			}
-
-			if (!plotColorsByDepth) {
-				addCommandLegend((XYPlot)plotPanels[0].getChart().getPlot());
-			}
+			//addCommandLegend(firstPlot);
+			applyUpdates();
 		}
 	}
 
@@ -177,126 +180,6 @@ public class PanelPlot_States extends PanelPlot implements ItemListener{
 				throw new RuntimeException("Unknown item status in plots from: " + e.getSource().toString());
 			}
 			update(selectedNode);
-		}
-	}
-	
-	/** XYDataset gets data for ploting states vs other states here. **/
-	public class LinkStateCombination extends AbstractXYDataset{
-
-		private static final long serialVersionUID = 1L;
-		
-		public float xLimHi = Float.MIN_VALUE;
-		public float xLimLo = Float.MAX_VALUE;
-
-		/** Nodes to appear on the plot. **/
-		private final ArrayList<Node> nodeList;
-
-		private Map<Integer,Pair> dataSeries = new HashMap<Integer,Pair>();
-
-		private StatePlotRenderer renderer = new StatePlotRenderer();
-
-		public LinkStateCombination(ArrayList<Node> nodes) {
-			nodeList = nodes;
-		}
-
-		public void addSeries(int plotIdx, State.ObjectName objectX, State.StateName stateX,
-				State.ObjectName objectY, State.StateName stateY) {
-			dataSeries.put(plotIdx, new Pair(plotIdx, objectX, stateX,
-					objectY, stateY));
-		}
-
-		@Override
-		public Number getX(int series, int item) {
-			State state = nodeList.get(item).state; // Item is which node.
-			Pair dat = dataSeries.get(series);
-			float value = state.getStateVarFromName(dat.objectX, dat.stateX);
-
-			if (value > xLimLo) {
-				xLimLo = value;
-			}
-			if (value < xLimHi) {
-				xLimLo = value;
-			}
-
-			return value;
-		}
-		@Override
-		public Number getY(int series, int item) {
-			State state = nodeList.get(item).state; // Item is which node.
-			Pair dat = dataSeries.get(series);
-			return state.getStateVarFromName(dat.objectY, dat.stateY);
-		}
-
-		/** State + body part name pairs for looking up data. **/
-		private class Pair{
-			State.ObjectName objectX;
-			State.StateName stateX;
-			State.ObjectName objectY;
-			State.StateName stateY;
-
-			public Pair(int plotIdx, State.ObjectName objectX, State.StateName stateX,
-					State.ObjectName objectY, State.StateName stateY) {
-				this.objectX = objectX;
-				this.objectY = objectY;
-				this.stateX = stateX;
-				this.stateY = stateY;
-			}
-		}
-
-		@Override
-		public int getItemCount(int series) {
-			return nodeList.size();
-		}
-
-		@Override
-		public int getSeriesCount() {
-			return dataSeries.size();
-		}
-
-		@Override
-		public Comparable getSeriesKey(int series) { return null; }
-
-		public XYLineAndShapeRenderer getRenderer() { return renderer; }
-
-		public class StatePlotRenderer extends XYLineAndShapeRenderer {
-			private static final long serialVersionUID = 1L;
-			
-			/** Color points by corresponding depth in the tree or by command leading to this point. **/
-			public boolean colorByDepth = plotColorsByDepth;
-
-			public StatePlotRenderer() {
-				super(false, true); //boolean lines, boolean shapes
-				setSeriesShape( 0, new Ellipse2D.Double( -2.0, -2.0, 2.0, 2.0 ) );
-				setUseOutlinePaint(false);
-			}
-
-			@Override
-			public Paint getItemPaint(int series, int item) {
-				if (colorByDepth) {
-					return Node.getColorFromTreeDepth(nodeList.get(item).treeDepth);
-				}else{
-					Color dotColor = Color.RED;
-					switch (nodeList.get(item).treeDepth % 4) {
-					case 0:
-						dotColor = actionColor1;
-						break;
-					case 1:
-						dotColor = actionColor2;
-						break;
-					case 2:
-						dotColor = actionColor3;
-						break;
-					case 3:
-						dotColor = actionColor4;
-						break;
-					}
-					return dotColor;
-				}
-			}
-			@Override
-			public java.awt.Shape getItemShape(int row, int col) {
-				return super.getItemShape(row, col);
-			}
 		}
 	}	
 }

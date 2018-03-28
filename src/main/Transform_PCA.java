@@ -42,7 +42,6 @@ public class Transform_PCA implements ITransform {
 	public void updateTransform(List<State> nodesToUpdateFrom) {
 		// Do PCA!
 		FloatMatrix dataSet = conditionData(unpackData(nodesToUpdateFrom));
-
 		FloatMatrix[] USV = Singular.fullSVD(dataSet);
 		evecs = USV[2]; // Eigenvectors
 		evals = USV[1].mul(USV[1]).div(dataSet.rows); // Eigenvalues
@@ -117,7 +116,7 @@ public class Transform_PCA implements ITransform {
 			}
 			// Subtract the mean out.
 			float avg = sum/dat.rows;
-			stateAvgs.put(1, i, avg); // Hold on to the averages for later transformations after the main calculation is done.
+			stateAvgs.put(0, i, avg); // Hold on to the averages for later transformations after the main calculation is done.
 			for (int j = 0; j < dat.rows; j++) {
 				float centered = dat.get(j,i) - avg;
 				dat.put(j,i,centered);
@@ -128,7 +127,7 @@ public class Transform_PCA implements ITransform {
 				sum += dat.get(j,i) * dat.get(j,i);
 			}
 			float std = (float)Math.sqrt(sum/(dat.rows - 1));
-			stateSTDs.put(1, i, std); // Keep the STD of each state variable for later transformations.
+			stateSTDs.put(0, i, std); // Keep the STD of each state variable for later transformations.
 			// Divide the standard deviation out.
 			for (int j = 0; j < dat.rows; j++) {
 				float unitVar = dat.get(j,i)/std;

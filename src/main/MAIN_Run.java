@@ -265,8 +265,8 @@ public class MAIN_Run implements Runnable{
 		
 		// Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the Box2D libraries.
 		int cores = Runtime.getRuntime().availableProcessors();
-		System.out.println("Detected " + cores + " physical cores. Making " + (cores-2) + " workers.");
-		int numWorkers = cores - 2; // Basing of number of cores including hyperthreading. May want to optimize this a tad.
+		System.out.println("Detected " + cores + " physical cores. Making " + (int)(0.75f*cores) + " workers.");
+		int numWorkers = (int)(0.75f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
 		List<TreeWorker> workerList = new ArrayList<TreeWorker>();
 		for (int i = 0; i < numWorkers; i++) {
 			TreeWorker w = new TreeWorker(treeRoot, currentSampler.clone());
