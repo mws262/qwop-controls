@@ -136,7 +136,7 @@ public class MAIN_Controlled extends JFrame{
 
 		//private GameLoader game;
 
-		TensorflowAutoencoder enc = new TensorflowAutoencoder("AutoEnc_72to6_6layer.pb", "6 output");
+		Transform_Autoencoder enc = new Transform_Autoencoder("AutoEnc_72to6_6layer.pb", "6 output");
 
 		public RunnerPane() {}
 

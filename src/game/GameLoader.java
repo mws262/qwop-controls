@@ -1036,7 +1036,7 @@ public class GameLoader extends ClassLoader {
 	public void drawExtraRunner(Graphics2D g, State st, String label, float scaling, int xOffset, int yOffset, Color drawColor, Stroke stroke) {
 		drawExtraRunner(g, getXForms(st), label, scaling, xOffset, yOffset, drawColor, stroke);
 	}
-	
+
 	/** Draw the runner at a specified set of transforms.. **/
 	public void drawExtraRunner(Graphics2D g, Object[] transforms, String label, float scaling, int xOffset, int yOffset, Color drawColor, Stroke stroke) {			
 		try {

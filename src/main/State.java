@@ -33,7 +33,7 @@ public class State implements Serializable {
 	}
 
 	/** Make new state from list of ordered numbers. Most useful for interacting with neural network stuff. Number order is essential. **/
-	public State(float[] stateVars) { // Order matches order in TensorflosAutoencoder.java
+	public State(float[] stateVars) { // Order matches order in TensorflowAutoencoder.java
 		body = new StateVariable(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
 		head = new StateVariable(stateVars[6], stateVars[7], stateVars[8], stateVars[9], stateVars[10], stateVars[11]);
 		rthigh = new StateVariable(stateVars[12], stateVars[13], stateVars[14], stateVars[15], stateVars[16], stateVars[17]);
