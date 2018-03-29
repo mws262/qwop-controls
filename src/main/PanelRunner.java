@@ -114,6 +114,8 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 
 	protected void drawActionString(Graphics g, Action[] sequence, int highlightIdx) {
 
+		if (sequence.length == 0) return; // Happens when clicking root node.
+		
 		g.setFont(smallFont);
 		// g.setColor(Color.BLACK);
 		// g.drawString("Selected sequence: ", 10, vertTextAnchor);

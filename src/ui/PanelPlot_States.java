@@ -5,6 +5,7 @@ import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -29,7 +30,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener{
 	private static final long serialVersionUID = 1L;
 
 	/** Maximum allowed datapoints. Will downsample if above. Prevents extreme lag. **/
-	public int maxPlotPoints = 2000;
+	public int maxPlotPoints = 5000;
 	
 	/** Node from which states are referenced. **/
 	private Node selectedNode;
@@ -135,6 +136,15 @@ public class PanelPlot_States extends PanelPlot implements ItemListener{
 				Float[] xData = nodesBelow.stream().map(n -> n.state.getStateVarFromName(plotObjectsX[countDataCollect], plotStatesX[countDataCollect])).toArray(Float[] :: new); // Crazy new Java 8!
 				Float[] yData = nodesBelow.stream().map(n -> n.state.getStateVarFromName(plotObjectsY[countDataCollect], plotStatesY[countDataCollect])).toArray(Float[] :: new);
 				Color[] cData = nodesBelow.stream().map(n -> Node.getColorFromTreeDepth(n.treeDepth)).toArray(Color[] :: new);
+				
+				float xLow = Arrays.stream(xData).min(Float :: compare).get();
+				float xHi = Arrays.stream(xData).max(Float :: compare).get();
+				
+				float yLow = Arrays.stream(yData).min(Float :: compare).get();
+				float yHi = Arrays.stream(yData).max(Float :: compare).get();
+				
+				pl.getDomainAxis().setRange(xLow - 0.05, xHi + 0.05); // Range gets whiney if you select one node and try to set the range upper and lower to the same thing.
+				pl.getRangeAxis().setRange(yLow - 0.05, yHi + 0.05);
 				
 				dat.addSeries(0, xData, yData, cData);
 				pl.getRangeAxis().setLabel(plotObjectsX[countDataCollect].toString() + " " + plotStatesX[countDataCollect].toString());

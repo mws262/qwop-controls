@@ -100,7 +100,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 				"X", "Y", dataset, PlotOrientation.VERTICAL, false, false, false);
 
 		chart.setBackgroundPaint(plotBackgroundColor);
-		chart.setPadding(new RectangleInsets(-8,-12,-8,-5)); // Pack em in really tight.
+		chart.setPadding(new RectangleInsets(-0,-12,-8,-5)); // Pack em in really tight.
 		chart.setBorderVisible(false);
 
 		XYPlot plot = (XYPlot) chart.getPlot();

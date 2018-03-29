@@ -1,7 +1,5 @@
 package ui;
 
-import javax.swing.event.ChangeEvent;
-
 import main.IUserInterface;
 import main.Node;
 
