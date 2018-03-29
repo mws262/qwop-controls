@@ -1,6 +1,5 @@
-package main;
+package game;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -160,6 +159,109 @@ public class State implements Serializable {
 			throw new RuntimeException("Unknown object state queried.");
 		}
 		return stateValue;
+	}
+	
+	/** Turn the state into an array of floats with body x subtracted from all x coordinates. **/
+	public float[] flattenState() {
+		float[] flatState = new float[72];
+		float bodyX = body.x;
+
+		// Body
+		flatState[0] = 0;
+		flatState[1] = body.y;
+		flatState[2] = body.th;
+		flatState[3] = body.dx;
+		flatState[4] = body.dy;
+		flatState[5] = body.dth;
+
+		// head
+		flatState[6] = head.x - bodyX;
+		flatState[7] = head.y;
+		flatState[8] = head.th;
+		flatState[9] = head.dx;
+		flatState[10] = head.dy;
+		flatState[11] = head.dth;	
+
+		// rthigh
+		flatState[12] = rthigh.x - bodyX;
+		flatState[13] = rthigh.y;
+		flatState[14] = rthigh.th;
+		flatState[15] = rthigh.dx;
+		flatState[16] = rthigh.dy;
+		flatState[17] = rthigh.dth;
+
+		// lthigh
+		flatState[18] = lthigh.x - bodyX;
+		flatState[19] = lthigh.y;
+		flatState[20] = lthigh.th;
+		flatState[21] = lthigh.dx;
+		flatState[22] = lthigh.dy;
+		flatState[23] = lthigh.dth;
+
+		// rcalf
+		flatState[24] = rcalf.x - bodyX;
+		flatState[25] = rcalf.y;
+		flatState[26] = rcalf.th;
+		flatState[27] = rcalf.dx;
+		flatState[28] = rcalf.dy;
+		flatState[29] = rcalf.dth;
+
+		// lcalf
+		flatState[30] = lcalf.x - bodyX;
+		flatState[31] = lcalf.y;
+		flatState[32] = lcalf.th;
+		flatState[33] = lcalf.dx;
+		flatState[34] = lcalf.dy;
+		flatState[35] = lcalf.dth;	
+
+		// rfoot
+		flatState[36] = rfoot.x - bodyX;
+		flatState[37] = rfoot.y;
+		flatState[38] = rfoot.th;
+		flatState[39] = rfoot.dx;
+		flatState[40] = rfoot.dy;
+		flatState[41] = rfoot.dth;
+
+		// lfoot
+		flatState[42] = lfoot.x - bodyX;
+		flatState[43] = lfoot.y;
+		flatState[44] = lfoot.th;
+		flatState[45] = lfoot.dx;
+		flatState[46] = lfoot.dy;
+		flatState[47] = lfoot.dth;	
+
+		// ruarm
+		flatState[48] = ruarm.x - bodyX;
+		flatState[49] = ruarm.y;
+		flatState[50] = ruarm.th;
+		flatState[51] = ruarm.dx;
+		flatState[52] = ruarm.dy;
+		flatState[53] = ruarm.dth;
+
+		// luarm
+		flatState[54] = luarm.x - bodyX;
+		flatState[55] = luarm.y;
+		flatState[56] = luarm.th;
+		flatState[57] = luarm.dx;
+		flatState[58] = luarm.dy;
+		flatState[59] = luarm.dth;
+		// rlarm
+		flatState[60] = rlarm.x - bodyX;
+		flatState[61] = rlarm.y;
+		flatState[62] = rlarm.th;
+		flatState[63] = rlarm.dx;
+		flatState[64] = rlarm.dy;
+		flatState[65] = rlarm.dth;	
+
+		// llarm
+		flatState[66] = llarm.x - bodyX;
+		flatState[67] = llarm.y;
+		flatState[68] = llarm.th;
+		flatState[69] = llarm.dx;
+		flatState[70] = llarm.dy;
+		flatState[71] = llarm.dth;	
+
+		return flatState;
 	}
 }
 

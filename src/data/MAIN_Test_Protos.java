@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import data.DenseDataProtos.DataSet.DenseData;
+import game.State;
 import data.DenseDataProtos.*;
-import main.State;
 import main.Action;
 
 public class MAIN_Test_Protos {

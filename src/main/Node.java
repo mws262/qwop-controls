@@ -1,8 +1,6 @@
 package main;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -13,6 +11,7 @@ import com.jogamp.opengl.GL2;
 
 import data.SaveableSingleGame;
 import game.GameLoader;
+import game.State;
 
 /*
  * This version will hopefully get rid of many legacy features.
@@ -87,8 +86,8 @@ public class Node {
 
 	// Limiting number of display nodes.
 	public boolean limitDrawing = true;
-	private static Set<float[]> pointsToDraw = ConcurrentHashMap.newKeySet();
-	public float drawFilterDistance = 0.05f * 0.05f; // Actually distance squared to avoid sqrt
+	private static Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
+	public float drawFilterDistance = 0.1f; // Actually distance squared to avoid sqrt
 	private boolean notDrawnForSpeed = false;
 	
 	// Disable node position calculations (for when running headless)
@@ -557,17 +556,16 @@ public class Node {
 		if (limitDrawing) {
 			float xDiff;
 			float yDiff;
-			for (float[] n : pointsToDraw) {
-				xDiff = n[0] - nodeLocationsToAssign[0];
-				yDiff = n[1] - nodeLocationsToAssign[1];
-				if (xDiff*xDiff + yDiff*yDiff < drawFilterDistance) {
+			for (Node n : pointsToDraw) {
+				xDiff = n.nodeLocation[0] - nodeLocationsToAssign[0];
+				yDiff = n.nodeLocation[1] - nodeLocationsToAssign[1];
+				if ((xDiff*xDiff + yDiff*yDiff) < drawFilterDistance) {
 					notDrawnForSpeed = true;
 					return; // To close. Turn it off and get out.
 				}
 			}
 			notDrawnForSpeed = false;
-			pointsToDraw.add(Arrays.copyOfRange(nodeLocationsToAssign, 0, 2));
-			
+			pointsToDraw.add(this);
 		}
 	}
 
@@ -621,7 +619,7 @@ public class Node {
 		Iterator<Node> iter = children.iterator();
 		while (iter.hasNext()){
 			Node current = iter.next();
-			if (!notDrawnForSpeed) current.drawLine(gl);
+			if (!current.notDrawnForSpeed) current.drawLine(gl);
 			if (current.treeDepth <= this.treeDepth) throw new RuntimeException("Node hierarchy problem. Node with an equal or lesser depth is below another. At " + current.treeDepth + " and " + this.treeDepth + ".");
 			current.drawLines_below(gl); // Recurse down through the tree.
 		}
@@ -629,11 +627,11 @@ public class Node {
 
 	/** Draw all nodes in the subtree below this node. **/
 	public void drawNodes_below(GL2 gl){
-		drawPoint(gl);
+		if (!notDrawnForSpeed) drawPoint(gl);
 		Iterator<Node> iter = children.iterator();
 		while (iter.hasNext()){
 			Node child = iter.next();
-			if (!notDrawnForSpeed) child.drawPoint(gl);	
+			child.drawPoint(gl);	
 			child.drawNodes_below(gl); // Recurse down through the tree.
 		}
 	}

@@ -2,9 +2,9 @@ package savers;
 
 import java.util.ArrayList;
 
+import game.State;
 import main.Action;
 import main.IDataSaver;
-import main.State;
 
 /**
  * Saving to file with full state and action data at every timestep.

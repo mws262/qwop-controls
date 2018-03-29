@@ -65,14 +65,14 @@ import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 import game.GameLoader;
+import game.State;
 import main.IUserInterface;
 import main.Node;
 import main.PanelPlot;
 import main.PanelRunner;
-import main.State;
-import main.Transform_PCA;
 import main.TreeWorker;
 import main.Utility;
+import transformations.Transform_PCA;
 
 
 /**
@@ -156,7 +156,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		Container pane = this.getContentPane();
 		/**** Tabbed panes ****/
 		/* Make each UI component */
-		runnerPanel = new PanelRunner_AnimatedAutoencoder();
+		runnerPanel = new PanelRunner_AnimatedTransformed();
 		snapshotPane = new PanelRunner_Snapshot();
 		comparisonPane = new PanelRunner_Comparison();
 		statePlotPane = new PanelPlot_States(6); // 6 plots per view at the bottom.

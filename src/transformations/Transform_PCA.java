@@ -1,10 +1,13 @@
-package main;
+package transformations;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.jblas.FloatMatrix;
 import org.jblas.Singular;
+
+import game.State;
+import main.ITransform;
 
 public class Transform_PCA implements ITransform {
 
@@ -60,10 +63,11 @@ public class Transform_PCA implements ITransform {
 
 	@Override
 	public List<float[]> transform(List<State> originalStates) {
-		FloatMatrix preppedDat = conditionData(unpackData(originalStates));
+		FloatMatrix preppedDat = unpackData(originalStates);
+		preppedDat.subi(stateAvgs);
+		preppedDat.divi(stateSTDs);
 		FloatMatrix lowDimData = preppedDat.mmul(evecs.getColumns(transformPCAComponents));
 		List<FloatMatrix> splitLowDimData = lowDimData.rowsAsList(); // Each data point is a list entry in a FloatMatrix
-
 		// Lambda mapping the list FloatMatrix's to float[]'s
 		return splitLowDimData.stream().map(floatmat -> floatmat.data).collect(Collectors.toList());
 	}
@@ -88,11 +92,11 @@ public class Transform_PCA implements ITransform {
 		return splitRowRestoredDimData.stream().map(floatmat -> new State(floatmat.data)).collect(Collectors.toList());
 	}
 
-
 	@Override
 	public List<State> compressAndDecompress(List<State> originalStates) {	
 		return untransform(transform(originalStates));
 	}
+	
 	/** Unpack the state data from the nodes, pulling only the stuff we want.
 	 * Subtract mean, make unit variance.
 	 **/
@@ -104,10 +108,15 @@ public class Transform_PCA implements ITransform {
 		for (int i = 0; i < states.size(); i++) {
 			int colCounter = 0;
 			// Through all body parts...
+			float bodyX = states.get(i).getStateVarFromName(State.ObjectName.BODY, State.StateName.X);
 			for (State.ObjectName obj : State.ObjectName.values()) {
 				// For each state of each body part.
 				for (State.StateName st : State.StateName.values()) {
-					dat.put(i, colCounter, states.get(i).getStateVarFromName(obj, st));
+					if (State.StateName.X == st) {
+						dat.put(i, colCounter, states.get(i).getStateVarFromName(obj, st) - bodyX);
+					}else {
+						dat.put(i, colCounter, states.get(i).getStateVarFromName(obj, st));	
+					}
 					colCounter++;
 				}
 			}
@@ -138,6 +147,8 @@ public class Transform_PCA implements ITransform {
 				sum += dat.get(j,i) * dat.get(j,i);
 			}
 			float std = (float)Math.sqrt(sum/(dat.rows - 1));
+			std = (std == 0) ? Float.MIN_NORMAL : std;
+			
 			stateSTDs.put(0, i, std); // Keep the STD of each state variable for later transformations.
 			// Divide the standard deviation out.
 			for (int j = 0; j < dat.rows; j++) {
@@ -151,5 +162,10 @@ public class Transform_PCA implements ITransform {
 	@Override
 	public int getOutputStateSize() {
 		return transformPCAComponents.length;
+	}
+	
+	@Override
+	public String getName() {
+		return "PCA " + getOutputStateSize();
 	}
 }

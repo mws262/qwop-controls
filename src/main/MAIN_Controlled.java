@@ -9,6 +9,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -23,6 +25,8 @@ import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.World;
 
 import game.GameLoader;
+import game.State;
+import transformations.Transform_Autoencoder;
 
 @SuppressWarnings("serial")
 public class MAIN_Controlled extends JFrame{
@@ -51,7 +55,6 @@ public class MAIN_Controlled extends JFrame{
 	private int phase = 0;
 
 	public static void main(String[] args) {
-
 		MAIN_Controlled mc = new MAIN_Controlled();
 		mc.setup();
 		mc.run();
@@ -115,7 +118,6 @@ public class MAIN_Controlled extends JFrame{
 			try {
 				Thread.sleep(20);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -133,10 +135,10 @@ public class MAIN_Controlled extends JFrame{
 		private final Stroke normalStroke = new BasicStroke(0.5f);
 
 		boolean active = true;
+		
+		private List<State> st = new ArrayList<State>();
 
-		//private GameLoader game;
-
-		Transform_Autoencoder enc = new Transform_Autoencoder("AutoEnc_72to6_6layer.pb", "6 output");
+		Transform_Autoencoder enc = new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12);
 
 		public RunnerPane() {}
 
@@ -147,8 +149,10 @@ public class MAIN_Controlled extends JFrame{
 
 			game.draw(g, 10f, 960, 500);
 			State currState = game.getCurrentState();
-			State predState = new State(enc.getPrediction(currState));
-			game.drawExtraRunner((Graphics2D)g, game.getXForms(predState), "Encoded->Decoded", 10f, 960, 500, Color.RED, normalStroke);
+			st.add(currState);
+			List<State> predState = enc.compressAndDecompress(st);
+			st.clear();
+			game.drawExtraRunner((Graphics2D)g, game.getXForms(predState.get(0)), "Encoded->Decoded", 10f, 960, 500, Color.RED, normalStroke);
 
 			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
 			xOffsetPixels = -headPos + xOffsetPixels_init;

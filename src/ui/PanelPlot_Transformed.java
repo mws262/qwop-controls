@@ -11,10 +11,11 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.jfree.chart.plot.XYPlot;
+
+import game.State;
 import main.ITransform;
 import main.Node;
 import main.PanelPlot;
-import main.State;
 
 public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 

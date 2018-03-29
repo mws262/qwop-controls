@@ -3,6 +3,8 @@ package main;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import game.State;
+
 public interface IDataSaver {
 	
 	/** Report initial state. **/

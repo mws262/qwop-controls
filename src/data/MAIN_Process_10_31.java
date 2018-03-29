@@ -5,10 +5,9 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 
 import evaluators.Evaluator_HandTunedOnState;
+import game.State;
 
 import java.util.TreeMap;
-
-import main.State;
 
 /**
  * Processes the data from 10/31/17

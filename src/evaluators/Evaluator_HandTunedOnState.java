@@ -1,8 +1,8 @@
 package evaluators;
 
+import game.State;
 import main.IEvaluationFunction;
 import main.Node;
-import main.State;
 
 public class Evaluator_HandTunedOnState implements IEvaluationFunction {
 

@@ -2,6 +2,8 @@ package main;
 
 import java.util.List;
 
+import game.State;
+
 public interface ITransform {
 	
 	/** Update any necessary transform calculations. Not really used by all types of transforms. **/
@@ -18,4 +20,7 @@ public interface ITransform {
 	
 	/** Find out how much the state is reduced. How many numbers will be left after transformation? **/
 	public int getOutputStateSize();
+	
+	/** Get the name of this transform. **/
+	public String getName();
 }

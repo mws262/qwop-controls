@@ -2,9 +2,9 @@ package evaluators;
 
 import java.util.List;
 
+import game.StateVariable;
 import main.IEvaluationFunction;
 import main.Node;
-import main.StateVariable;
 
 public class Evaluator_SqDistFromOther implements IEvaluationFunction {
 	

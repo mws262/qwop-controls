@@ -15,9 +15,10 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 import org.jfree.chart.plot.XYPlot;
+
+import game.State;
 import main.Node;
 import main.PanelPlot;
-import main.State;
 import main.Utility;
 
 /**

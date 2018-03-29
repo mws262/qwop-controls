@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import game.GameLoader;
+import game.State;
 
 /**
  * Addresses limitations of the old concurrent state machine approach.

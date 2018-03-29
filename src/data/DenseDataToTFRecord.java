@@ -16,7 +16,8 @@ import org.tensorflow.example.Int64List;
 import org.tensorflow.example.SequenceExample;
 
 import com.google.protobuf.ByteString;
-import main.State;
+
+import game.State;
 import main.Action;
 
 

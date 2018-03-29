@@ -2,8 +2,8 @@ package data;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import game.State;
 import main.Action;
-import main.State;
 
 public class SaveableNode implements Serializable{
 
