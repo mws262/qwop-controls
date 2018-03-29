@@ -1,6 +1,8 @@
 package ui;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
@@ -26,7 +28,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
  */
 
 @SuppressWarnings("serial")
-public class GLPanelGeneric extends GLJPanel implements GLEventListener {
+public class GLPanelGeneric extends GLJPanel implements GLEventListener, ComponentListener {
 	
 	/***** GL objects *****/
 	/** If using openGL, we have to put a special GLCanvas inside the frame **/
@@ -63,7 +65,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener {
 		
 		// Listeners for user interaction
 		canvas.addGLEventListener(this);
-		
+		addComponentListener(this);
 		this.add(canvas); // Add the canvas to the panel.
 		
 		// Default camera positioning.
@@ -86,8 +88,8 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener {
 		panelHeight = height;	
 		
 		canvas.setSize(new Dimension(panelWidth,panelHeight));
-		canvas.setMaximumSize(new Dimension(panelWidth,panelHeight));
-		canvas.setMinimumSize(new Dimension(panelWidth,panelHeight));
+		//canvas.setMaximumSize(new Dimension(panelWidth,panelHeight));
+		canvas.setMinimumSize(new Dimension(100,100));
 	}
 	
 	@Override
@@ -133,11 +135,27 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener {
 		gl.glClearColor(darkBackground[0],darkBackground[1],darkBackground[2],darkBackground[3]);
 	}
 	
+	/** This reshape only relates to the canvas. It won't get correct width and height values. Tends to just return the current values. **/
 	@Override
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-		panelWidth  = width;
-		panelHeight = height;	
 		GL2 gl = drawable.getGL().getGL2();
-		cam.setDims(gl, width, height);
+		cam.setDims(gl, panelWidth, panelHeight);
 	}
+
+	/** This applies to the whole panel. This one should handle resizing the canvas appropriately. **/
+	@Override
+	public void componentResized(ComponentEvent e) {
+		panelHeight = e.getComponent().getHeight();
+		panelWidth = e.getComponent().getWidth();
+		setSize(panelWidth, panelHeight);	
+	}
+
+	@Override
+	public void componentMoved(ComponentEvent e) {}
+
+	@Override
+	public void componentShown(ComponentEvent e) {}
+
+	@Override
+	public void componentHidden(ComponentEvent e) {}
 }

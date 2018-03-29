@@ -1,4 +1,5 @@
 package ui;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -34,6 +35,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
@@ -136,7 +138,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	/** Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers gives more weight to the old value. **/
 	private final float loopTimeFilter = 20f;
 	private long lastIterTime = System.currentTimeMillis();
-	private long currentGamesPlayed = 0;
+	private long totalGamesPlayed = 0;
 	private long lastGamesPlayed = 0;
 	
 	/** Keep track of whether we sent a pause request to the tree. **/
@@ -152,18 +154,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	public UI_Full() {
 		Container pane = this.getContentPane();
-		pane.setLayout(new GridBagLayout());
-
 		/**** Tabbed panes ****/
-		GridBagConstraints dataConstraints = new GridBagConstraints();
-		dataConstraints.fill = GridBagConstraints.HORIZONTAL;
-		dataConstraints.gridx = 0;
-		dataConstraints.gridy = 1;
-		dataConstraints.weightx = 0.3;
-		dataConstraints.weighty = 0.08; // Turn this up if the tree stuff starts to cover the tabs
-		dataConstraints.ipady = (int)(0.28*windowHeight);
-		dataConstraints.ipadx = (int)(windowWidth*0.5);
-
 		/* Make each UI component */
 		runnerPanel = new PanelRunner_AnimatedAutoencoder();
 		snapshotPane = new PanelRunner_Snapshot();
@@ -183,7 +174,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		tabPane.addTab("State Plots", statePlotPane);
 		tabPane.addTab("PCA Plots", pcaPlotPane);
 
-		pane.add(tabPane, dataConstraints);
+		tabPane.setPreferredSize(new Dimension(1080,250));
+		tabPane.setMinimumSize(new Dimension(100,1));
 		allTabbedPanes.add(runnerPanel);
 		allTabbedPanes.add(snapshotPane);
 		allTabbedPanes.add(comparisonPane);
@@ -195,19 +187,13 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
 
 		/**** TREE PANE ****/
-		GridBagConstraints treeConstraints = new GridBagConstraints();
-		treeConstraints.fill = GridBagConstraints.HORIZONTAL;
-		treeConstraints.gridx = 0;
-		treeConstraints.gridy = 0;
-		treeConstraints.weightx = 0.8;
-		treeConstraints.weighty = 0.6;
-		treeConstraints.ipady = (int)(windowHeight*0.8f);
-		treeConstraints.ipadx = (int)(windowWidth*0.8f);
-
 		treePane = new TreePane();
-
 		treePane.setBorder(BorderFactory.createRaisedBevelBorder());
-		pane.add(treePane,treeConstraints);
+		
+		// This makes it have that dragable border between the tab and the tree sections.
+		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, treePane, tabPane);
+		splitPane.setResizeWeight(0.7);
+		pane.add(splitPane);
 		
 		/*******************/
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -376,21 +362,26 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			
 			// Total games played
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
-			currentGamesPlayed = TreeWorker.getTotalGamesPlayed();
-			textRenderSmall.draw(currentGamesPlayed + " total games", 20, panelHeight - 85);	
+			long totalTimestepsSimulated = TreeWorker.getTotalTimestepsSimulated();
+			totalGamesPlayed = TreeWorker.getTotalGamesPlayed();
+			textRenderSmall.draw(totalGamesPlayed + " total games", 20, panelHeight - 85);	
+			
+
+			textRenderSmall.draw(Math.round(totalTimestepsSimulated/360)/10f + " hours simulated!", 20, panelHeight - 100);
 			
 			textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
-			textRenderSmall.draw(Math.round(TreeWorker.getTotalTimestepsSimulated()/360)/10f + " hours simulated!", 20, panelHeight - 100);
+			textRenderSmall.draw(Math.round(totalTimestepsSimulated/(double)totalGamesPlayed * 0.4)/10f + "s Avg. game length", 20, panelHeight - 115);
+			
 			
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
-			gps = (int)((gps*(loopTimeFilter - 1f) + 1000f*(currentGamesPlayed - lastGamesPlayed) / (System.currentTimeMillis() - lastIterTime))/loopTimeFilter);
-			textRenderSmall.draw(gps + " games/s", 20, panelHeight - 115);
+			gps = (int)((gps*(loopTimeFilter - 1f) + 1000f*(totalGamesPlayed - lastGamesPlayed) / (System.currentTimeMillis() - lastIterTime))/loopTimeFilter);
+			textRenderSmall.draw(gps + " games/s", 20, panelHeight - 130);
 
-			
+			textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
 			textRenderSmall.draw(Runtime.getRuntime().totalMemory()/1000000 + "MB used", 20, panelHeight - 145);
 			textRenderSmall.draw(Runtime.getRuntime().maxMemory()/1000000 + "MB max", 20, panelHeight - 160);
 			textRenderSmall.endRendering();
-			lastGamesPlayed = currentGamesPlayed;
+			lastGamesPlayed = totalGamesPlayed;
 			lastIterTime = System.currentTimeMillis();		
 
 		}

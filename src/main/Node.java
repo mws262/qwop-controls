@@ -1,8 +1,12 @@
 package main;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.jogamp.opengl.GL2;
@@ -79,8 +83,16 @@ public class Node {
 
 	public boolean displayPoint = false; // Round dot at this node. Is it on?
 	public boolean displayLine = true; // Line from this node to parent. Is it on?
-
 	public static boolean debugDrawNodeLocking = false; // Draw which nodes are locked by command from the TreeWorkers.
+
+	// Limiting number of display nodes.
+	public boolean limitDrawing = true;
+	private static Set<float[]> pointsToDraw = ConcurrentHashMap.newKeySet();
+	public float drawFilterDistance = 0.05f * 0.05f; // Actually distance squared to avoid sqrt
+	private boolean notDrawnForSpeed = false;
+	
+	// Disable node position calculations (for when running headless)
+	public static boolean calculateNodeVisPositions = true;
 
 	/********* NODE PLACEMENT ************/
 
@@ -92,8 +104,7 @@ public class Node {
 	public float edgeLength = 1.f;
 
 	/** If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z offset. **/
-	private float zOffset = 0.f; 
-
+	private float zOffset = 0.f;
 
 	/*********** UTILITY **************/
 	/** Are we bulk adding saved nodes? If so, some construction things are deferred. **/
@@ -133,7 +144,7 @@ public class Node {
 
 		parent.children.add(this);
 
-		if (!currentlyAddingSavedNodes){
+		if (!currentlyAddingSavedNodes && calculateNodeVisPositions){
 			calcNodePos(); // Must be called after this node has been added to its parent's list!
 		}
 	}
@@ -170,7 +181,7 @@ public class Node {
 			}
 		}
 
-		if (connectNodeToTree && !currentlyAddingSavedNodes){
+		if (connectNodeToTree && !currentlyAddingSavedNodes && calculateNodeVisPositions){
 			calcNodePos(); // Must be called after this node has been added to its parent's list!
 		}
 	}
@@ -541,6 +552,23 @@ public class Node {
 		nodeLocationsToAssign[0] = (float) (parent.nodeLocation[0] + edgeLength*Math.cos(nodeAngle));
 		nodeLocationsToAssign[1] = (float) (parent.nodeLocation[1] + edgeLength*Math.sin(nodeAngle));
 		nodeLocationsToAssign[2] = 0f; // No out of plane stuff yet.
+		
+		// Since drawing speed is a UI bottleneck, we may want to filter out some of the points that are REALLY close.
+		if (limitDrawing) {
+			float xDiff;
+			float yDiff;
+			for (float[] n : pointsToDraw) {
+				xDiff = n[0] - nodeLocationsToAssign[0];
+				yDiff = n[1] - nodeLocationsToAssign[1];
+				if (xDiff*xDiff + yDiff*yDiff < drawFilterDistance) {
+					notDrawnForSpeed = true;
+					return; // To close. Turn it off and get out.
+				}
+			}
+			notDrawnForSpeed = false;
+			pointsToDraw.add(Arrays.copyOfRange(nodeLocationsToAssign, 0, 2));
+			
+		}
 	}
 
 	/** Same, but assumes that we're talking about this node's nodeLocation **/
@@ -593,7 +621,7 @@ public class Node {
 		Iterator<Node> iter = children.iterator();
 		while (iter.hasNext()){
 			Node current = iter.next();
-			current.drawLine(gl);
+			if (!notDrawnForSpeed) current.drawLine(gl);
 			if (current.treeDepth <= this.treeDepth) throw new RuntimeException("Node hierarchy problem. Node with an equal or lesser depth is below another. At " + current.treeDepth + " and " + this.treeDepth + ".");
 			current.drawLines_below(gl); // Recurse down through the tree.
 		}
@@ -605,7 +633,7 @@ public class Node {
 		Iterator<Node> iter = children.iterator();
 		while (iter.hasNext()){
 			Node child = iter.next();
-			child.drawPoint(gl);	
+			if (!notDrawnForSpeed) child.drawPoint(gl);	
 			child.drawNodes_below(gl); // Recurse down through the tree.
 		}
 	}
