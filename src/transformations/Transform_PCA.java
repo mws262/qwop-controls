@@ -64,8 +64,8 @@ public class Transform_PCA implements ITransform {
 	@Override
 	public List<float[]> transform(List<State> originalStates) {
 		FloatMatrix preppedDat = unpackData(originalStates);
-		preppedDat.subi(stateAvgs);
-		preppedDat.divi(stateSTDs);
+		preppedDat.subiRowVector(stateAvgs);
+		preppedDat.diviRowVector(stateSTDs);
 		FloatMatrix lowDimData = preppedDat.mmul(evecs.getColumns(transformPCAComponents));
 		List<FloatMatrix> splitLowDimData = lowDimData.rowsAsList(); // Each data point is a list entry in a FloatMatrix
 		// Lambda mapping the list FloatMatrix's to float[]'s

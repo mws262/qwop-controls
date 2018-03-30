@@ -72,6 +72,7 @@ import main.PanelPlot;
 import main.PanelRunner;
 import main.TreeWorker;
 import main.Utility;
+import transformations.Transform_Autoencoder;
 import transformations.Transform_PCA;
 
 
@@ -111,6 +112,9 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	/** Plots of PCA transformed data **/
 	PanelPlot pcaPlotPane;
+	
+	/** Plots of autoencoder transformed data **/
+	PanelPlot autoencPlotPane;
 
 	/** Selected node by user click/key **/
 	Node selectedNode;
@@ -161,6 +165,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		comparisonPane = new PanelRunner_Comparison();
 		statePlotPane = new PanelPlot_States(6); // 6 plots per view at the bottom.
 		pcaPlotPane = new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
+		autoencPlotPane = new PanelPlot_Transformed(new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12), 6);
 
 		Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameLoader should have their own threads.
 		runnerPanelThread.start();
@@ -173,6 +178,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		tabPane.addTab("State Compare", comparisonPane);
 		tabPane.addTab("State Plots", statePlotPane);
 		tabPane.addTab("PCA Plots", pcaPlotPane);
+		tabPane.add("Autoenc Plots", autoencPlotPane);
 
 		tabPane.setPreferredSize(new Dimension(1080,250));
 		tabPane.setMinimumSize(new Dimension(100,1));
@@ -181,6 +187,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		allTabbedPanes.add(comparisonPane);
 		allTabbedPanes.add(statePlotPane);
 		allTabbedPanes.add(pcaPlotPane);
+		allTabbedPanes.add(autoencPlotPane);
 
 		tabPane.addChangeListener(this);
 		//Make sure the currently active tab is actually being updated.
@@ -270,6 +277,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			if (comparisonPane.isActive()) comparisonPane.giveSelectedNode(selectedNode);
 			if (statePlotPane.isActive()) statePlotPane.update(selectedNode); // Updates data being put on plots
 			if (pcaPlotPane.isActive()) pcaPlotPane.update(selectedNode); // Updates data being put on plots
+			if (autoencPlotPane.isActive()) autoencPlotPane.update(selectedNode); // Updates data being put on plots
 	}
 
 	@Override

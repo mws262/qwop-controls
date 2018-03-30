@@ -51,7 +51,7 @@ public class Transform_Autoencoder implements ITransform{
 					.fetch("decoder/decoder_input:0")
 					.run().get(0).expect(Float.class);
 
-			float[][] res = result.copyTo(new float[1][1]);
+			float[][] res = result.copyTo(new float[1][outputDim]);
 			transformedStates.add(res[0]);
 		}
 		return transformedStates;
