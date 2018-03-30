@@ -239,17 +239,18 @@ public class MAIN_Run implements Runnable{
 			System.out.println("SAVER: Not saving data to file. Frequency: " + settings.saver.get(1) + " games/save.");
 			break;
 		default:
-			System.out.println("SAVER: Unrecognized argument. Defaulting to no saving. Frequency: " + settings.saver.get(1) + " games/save.");
+			System.out.println("SAVER: Unrecognized argument. Defaulting to no saving.");
 			dataSaver = new DataSaver_null();
 		
 		}
 
 		dataSaver.setSaveInterval(Integer.parseInt(settings.saver.get(1))); // set save frequency from parsed args if that argument has been input.
-
 		//ArrayList<SaveableSingleGame> loaded = io_sparse.loadObjectsOrdered("test_2017-10-25_16-25-38.SaveableSingleGame");
 
+		/************************************************************/		
+		/**************** Pick user interface. **********************/
+		/************************************************************/
 		Node treeRoot = new Node();
-
 		IUserInterface ui;
 		if (settings.headless) {
 			ui = new UI_Headless();
@@ -261,6 +262,10 @@ public class MAIN_Run implements Runnable{
 		
 		// Root to visualize from.
 		ui.addRootNode(treeRoot);
+		
+		/************************************************************/		
+		/**************** Assign workers/threads ********************/
+		/************************************************************/
 		
 		// Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the Box2D libraries.
 		int cores = Runtime.getRuntime().availableProcessors();

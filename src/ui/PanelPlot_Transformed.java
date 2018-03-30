@@ -57,7 +57,6 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
 	@Override
 	public synchronized void update(Node plotNode) {
-
 		// Do transform update if necessary:
 		nodesToTransform.clear();
 		plotNode.getRoot().getNodesBelow(nodesToTransform);
