@@ -92,4 +92,10 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 	public void pauseToggle() {
 		pauseFlag = !pauseFlag;
 	}
+
+	@Override
+	public void deactivateTab() {
+		actionQueue.clearAll();
+		active = false;
+	}
 }

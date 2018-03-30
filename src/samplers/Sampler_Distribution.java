@@ -27,7 +27,8 @@ public class Sampler_Distribution implements ISampler{
 
 		while (true) {
 			if (currentNode.fullyExplored) throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its fault.");
-
+			if (currentNode.getLockStatus()) currentNode = currentNode.getRoot();
+			
 			// Count the number of available children to go to next.
 			ArrayList<Node> notFullyExploredChildren = new ArrayList<Node>();
 			ArrayList<Action> notFullyExploredActions = new ArrayList<Action>();
@@ -42,7 +43,7 @@ public class Sampler_Distribution implements ISampler{
 			if (notFullyExploredChildren.isEmpty() && currentNode.uncheckedActions.isEmpty()) throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully explored before.");
 
 			// Only new things to try.
-			if (notFullyExploredChildren.isEmpty()) {
+			if (notFullyExploredChildren.isEmpty() && currentNode.reserveExpansionRights()) {
 				// We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
 				return currentNode;
 			}
@@ -61,7 +62,7 @@ public class Sampler_Distribution implements ISampler{
 
 			// Both old and new things to try.
 			boolean doNew = currentNode.uncheckedActions.samplingDist.chooseASet(currentNode.uncheckedActions, notFullyExploredActions);
-			if (doNew) { // Turn it over to the expansion policy.
+			if (doNew && currentNode.reserveExpansionRights()) { // Turn it over to the expansion policy.
 				return currentNode;
 			}else {
 				Action chosen = currentNode.uncheckedActions.samplingDist.randOnDistribution(notFullyExploredActions);
@@ -126,4 +127,9 @@ public class Sampler_Distribution implements ISampler{
 
 	@Override
 	public void rolloutPolicyActionDone(Node currentNode) {} // No rollout in random sampler.
+	
+	@Override
+	public Sampler_Distribution clone() {
+		return new Sampler_Distribution();
+	}
 }

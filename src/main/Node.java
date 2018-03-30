@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
 import com.jogamp.opengl.GL2;
 
@@ -22,14 +25,14 @@ import game.State;
 public class Node {
 
 	/******** All node stats *********/
-	private static int nodesCreated = 0;
-	private static int nodesImported = 0;
-	private static int gamesImported = 0;
-	private static int gamesCreated = 0;
+	private static LongAdder nodesCreated = new LongAdder();
+	private static LongAdder nodesImported = new LongAdder();
+	private static LongAdder gamesImported = new LongAdder();
+	private static LongAdder gamesCreated = new LongAdder();
 
 	/** Some sampling methods want to track how many times this node has been visited. **/
-	public int visitCount = 0;
-	public float ucbValue = 0;
+	public AtomicLong visitCount = new AtomicLong();
+	private float value = 0;
 
 	/********* QWOP IN/OUT ************/
 	/** Keys and duration **/
@@ -63,7 +66,7 @@ public class Node {
 	public boolean isTerminal = false;
 
 	/** If one TreeWorker is expanding from this leaf node (if it is one), then no other worker should try to simultaneously expand from here too. **/
-	private volatile boolean locked = false;
+	private AtomicBoolean locked = new AtomicBoolean(false);
 
 	/** How deep is this node down the tree? 0 is root. **/
 	public final int treeDepth;
@@ -213,7 +216,7 @@ public class Node {
 	/** Add a new child node from a given action. If the action is in uncheckedActions, remove it. **/
 	public Node addChild(Action childAction) {
 		uncheckedActions.remove(childAction);
-		nodesCreated++;
+		nodesCreated.increment();
 		return new Node(this,childAction);
 	}
 
@@ -257,11 +260,11 @@ public class Node {
 
 	/** Set a flag to indicate that the invoking TreeWorker has temporary exclusive rights to expand from this node. **/
 	public synchronized boolean reserveExpansionRights() {
-		if (locked) {
+		if (locked.get()) {
 			return false;
 		}else {
 			if (uncheckedActions.isEmpty()) return false;//throw new RuntimeException("A worker tried to reserve a node to expand, but found that there were no untried actions to check here.");
-			locked = true;
+			locked.set(true);
 			if (debugDrawNodeLocking) {
 				displayPoint = true;
 				overrideNodeColor = Color.RED;
@@ -283,7 +286,7 @@ public class Node {
 
 	/** Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node. **/
 	public synchronized void releaseExpansionRights() {
-		locked = false;
+		locked.set(false);
 		if (debugDrawNodeLocking) {
 			displayPoint = false;
 			overrideNodeColor = null;
@@ -293,7 +296,22 @@ public class Node {
 
 	/** Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node. **/
 	public synchronized boolean getLockStatus() {
-		return locked;
+		return locked.get();
+	}
+	
+	/** Get the node's value in a thread-safe way. **/
+	public synchronized float getValue() {
+		return value;
+	}
+	
+	/** Set the node's value in a thread-safe way. **/
+	public synchronized void setValue(float val) {
+		value = val;
+	}
+	
+	/** Add to the node's value in a thread-safe way. **/
+	public synchronized void addToValue(float val) {
+		value += val;
 	}
 
 	/***********************************************/
@@ -411,33 +429,33 @@ public class Node {
 	}
 
 	/** Total number of nodes in this or any tree. **/
-	public static int getTotalNodeCount(){
-		return nodesImported + nodesCreated;
+	public static long getTotalNodeCount(){
+		return nodesImported.longValue() + nodesCreated.longValue();
 	}
 
 	/** Total number of nodes imported from save file. **/
-	public static int getImportedNodeCount(){
-		return nodesImported;
+	public static long getImportedNodeCount(){
+		return nodesImported.longValue();
 	}
 
 	/** Total number of nodes created this session. **/
-	public static int getCreatedNodeCount(){
-		return nodesCreated;
+	public static long getCreatedNodeCount(){
+		return nodesCreated.longValue();
 	}
 
 	/** Total number of nodes created this session. **/
-	public static int getImportedGameCount(){
-		return gamesImported;
+	public static long getImportedGameCount(){
+		return gamesImported.longValue();
 	}
 	/** Total number of nodes created this session. **/
-	public static int getCreatedGameCount(){
-		return gamesCreated;
+	public static long getCreatedGameCount(){
+		return gamesCreated.longValue();
 	}
 
 	/** Mark this node as representing a terminal state. **/
 	public void markTerminal(){
 		isTerminal = true;
-		gamesCreated++;
+		gamesCreated.increment();
 	}
 
 	/***************************************************/
@@ -506,10 +524,10 @@ public class Node {
 					newNode.setState(run.states[i]);
 					newNode.calcNodePos();
 					currentNode = newNode;
-					nodesImported++;
+					nodesImported.increment();
 				}
 			}
-			gamesImported++;
+			gamesImported.increment();
 		}
 		rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
 		currentlyAddingSavedNodes = false;

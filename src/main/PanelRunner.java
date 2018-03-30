@@ -166,10 +166,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 	}
 
 	@Override
-	public void deactivateTab() {
-		active = false;
-
-	}
+	public abstract void deactivateTab();
 	
 	@Override
 	public boolean isActive() {

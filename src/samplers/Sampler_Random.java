@@ -21,7 +21,9 @@ public class Sampler_Random implements ISampler {
 	
 	@Override
 	public Node treePolicy(Node startNode) {
-		if (startNode.fullyExplored) throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. Whoever called this is at fault.");
+		if (startNode.fullyExplored) {
+			throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. Whoever called this is at fault.");
+		}
 		Node currentNode = startNode;
 
 		while (true) {
@@ -34,7 +36,7 @@ public class Sampler_Random implements ISampler {
 				if (!child.fullyExplored && !child.getLockStatus()) notFullyExploredChildren++;
 			}
 
-			if (notFullyExploredChildren == 0 && currentNode.uncheckedActions.size() == 0) {
+			if (notFullyExploredChildren == 0 && currentNode.uncheckedActions.isEmpty()) {
 				currentNode = startNode;
 				continue; // TODO: investigate this error further.
 //				currentNode.nodeColor = Color.PINK;
@@ -43,11 +45,10 @@ public class Sampler_Random implements ISampler {
 //				throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully explored before.");
 			}
 
-			// 3/3/18 Removed because I'm confused. But will it still work?
-//			if (notFullyExploredChildren == 0) {
-//				// We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
-//				return currentNode;
-//			}
+			if (notFullyExploredChildren == 0 && currentNode.reserveExpansionRights()) {
+				// We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
+				return currentNode;
+			}
 			
 			if (currentNode.uncheckedActions.size() == 0) { // No unchecked actions means that we pick a random not-fully-explored child.
 				// Pick random not fully explored child. Keep going.

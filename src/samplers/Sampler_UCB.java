@@ -37,12 +37,12 @@ public class Sampler_UCB implements ISampler {
 		float score = evaluationFunction.getValue(failureNode);
 
 		// Do evaluation and propagation of scores.
-		failureNode.visitCount++;
-		failureNode.ucbValue += score;
+		failureNode.visitCount.incrementAndGet();
+		failureNode.addToValue(score);
 		while (failureNode.treeDepth > 0){//TODO test 0
 			failureNode = failureNode.parent;
-			failureNode.visitCount++;
-			failureNode.ucbValue += score;
+			failureNode.visitCount.incrementAndGet();
+			failureNode.addToValue(score);
 		}	
 	}
 	
@@ -53,7 +53,7 @@ public class Sampler_UCB implements ISampler {
 	
 	@Override
 	public Node treePolicy(Node startNode) {
-		if (!startNode.uncheckedActions.isEmpty()) { // We immediately expand if there's an untried action.
+		if (!startNode.uncheckedActions.isEmpty() && startNode.reserveExpansionRights()) { // We immediately expand if there's an untried action.
 			return startNode;
 		}
 
@@ -64,15 +64,21 @@ public class Sampler_UCB implements ISampler {
 		Node parent = startNode;
 		for (Node child: parent.children){
 
-			if (!child.fullyExplored){
-				float val = child.ucbValue/child.visitCount + c*(float)Math.sqrt(2.*Math.log(parent.visitCount)/child.visitCount);
+			if (!child.fullyExplored && child.reserveExpansionRights()){
+				float val = (float)(child.getValue()/child.visitCount.doubleValue() + c*(float)Math.sqrt(2.*Math.log(parent.visitCount.doubleValue())/child.visitCount.doubleValue()));
 				if (val > bestScoreSoFar){
+					if (bestNodeSoFar != null) bestNodeSoFar.releaseExpansionRights();
 					bestNodeSoFar = child;
 					bestScoreSoFar = val;
+				}else {
+					child.releaseExpansionRights();
 				}
 			}
 		}
-		
+		if (bestNodeSoFar == null) {
+			Thread.sleep(10);
+			bestNodeSoFar = treePolicy(startNode); // lol... recursion for stupid purposes.
+		} 
 		return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked action.;
 	}
 
@@ -137,5 +143,10 @@ public class Sampler_UCB implements ISampler {
 	@Override
 	public boolean rolloutPolicyGuard(Node currentNode) {
 		return rolloutPolicyDone;
+	}
+	
+	@Override
+	public Sampler_UCB clone() {
+		return new Sampler_UCB(evaluationFunction);
 	}
 }

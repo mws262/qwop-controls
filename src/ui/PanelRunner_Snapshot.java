@@ -275,4 +275,13 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 	public void mouseExited(MouseEvent e) {
 		mouseIsIn = false;
 	}
+
+	@Override
+	public void deactivateTab() {
+		transforms.clear();
+		focusLeaves.clear();
+		strokes.clear();
+		colors.clear();
+		active = false;	
+	}
 }

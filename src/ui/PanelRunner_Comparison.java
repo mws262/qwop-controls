@@ -97,4 +97,15 @@ public class PanelRunner_Comparison extends PanelRunner{
 			}
 		}
 	}
+	@Override
+	public void deactivateTab() {
+		if (selectedNode != null) {
+			selectedNode.getRoot().clearNodeOverrideColor();
+		}
+		active = false;
+		transforms.clear();
+		focusNodes.clear();
+		strokes.clear();
+		colors.clear();
+	}
 }

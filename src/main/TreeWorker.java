@@ -3,6 +3,8 @@ package main;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.concurrent.atomic.LongAdder;
+
 import game.GameLoader;
 import game.State;
 
@@ -63,18 +65,19 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	/** Current status of this FSM **/
 	private Status currentStatus = Status.IDLE;
+	private Status prevStatus = Status.IDLE;
 
 	/** Number of physics timesteps simulated by this TreeWorker. **/
 	private long workerStepsSimulated = 0;
 
 	/** Number of games simulated by this TreeWorker. **/
-	private long workerGamesPlayed = 0;
+	private static LongAdder workerGamesPlayed = new LongAdder();
 
 	/** Total timesteps simulated by all TreeWorkers. **/
-	private static long totalStepsSimulated = 0;
+	private static LongAdder totalStepsSimulated = new LongAdder();
 
 	/** Total games played by all TreeWorkers. **/
-	private static long totalGamesPlayed = 0;
+	private static LongAdder totalGamesPlayed = new LongAdder();
 
 	public String workerName = "";
 	private final int workerID;
@@ -148,7 +151,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				if (actionQueue.isEmpty()) {
 					currentGameNode = targetNodeToTest;
 					if (currentGameNode.uncheckedActions.size() == 0) { // This case should only happen if another worker just happens to beat it here.
-						System.out.println("Wow! Another worker must have finished this node off before this worker got here. We're going to keep running tree policy down the tree. If there aren't other workers, you should be worried.");
+						//System.out.println("Wow! Another worker must have finished this node off before this worker got here. We're going to keep running tree policy down the tree. If there aren't other workers, you should be worried.");
+						currentGameNode = rootNode;
 						changeStatus(Status.TREE_POLICY_CHOOSING);
 					}else {
 						sampler.treePolicyActionDone(currentGameNode);
@@ -233,7 +237,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				}
 
 				addToTotalTimesteps(game.getTimestepsSimulated());
-				workerGamesPlayed++;
+				workerGamesPlayed.increment();
 				long totGames = incrementTotalGameCount();
 				if (totGames % 1000 == 0) {
 					System.out.println(totGames);
@@ -266,6 +270,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 		if (verbose) {
 			System.out.println("Worker " + workerID + ": " + currentStatus + " --->  " + newStatus + "     game: " + workerGamesPlayed);
 		}
+		prevStatus = currentStatus;
 		currentStatus = newStatus;
 	}
 
@@ -316,25 +321,25 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	}
 
 	/** Increase the the count of total games in a hopefully thread-safe way. **/
-	private synchronized static long incrementTotalGameCount() {
-		totalGamesPlayed++;
-		return totalGamesPlayed;
+	private static long incrementTotalGameCount() {
+		totalGamesPlayed.increment();
+		return totalGamesPlayed.longValue();
 	}
 
 	/** Increase the number of timesteps simulated in a hopefully thread-safe way. **/
-	private synchronized static long addToTotalTimesteps(long timesteps) {
-		totalStepsSimulated += timesteps;
-		return totalStepsSimulated;
+	private static long addToTotalTimesteps(long timesteps) {
+		totalStepsSimulated.add(timesteps);
+		return totalStepsSimulated.longValue();
 	}
 
 	/** Get the number of games played by all workers, total. **/
 	public static long getTotalGamesPlayed() {
-		return totalGamesPlayed;
+		return totalGamesPlayed.longValue();
 	}
 
 	/** Get the number of games played by all workers, total. **/
 	public static long getTotalTimestepsSimulated() {
-		return totalStepsSimulated;
+		return totalStepsSimulated.longValue();
 	}
 
 	/** Color the node scaled by depth in the tree. Skip the brightness argument for default value. **/
@@ -357,6 +362,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 		// Draw all non-highlighted runners.
 		game.draw(g2, runnerScaling, xOffsetPixels, yOffsetPixels);
 	}
+
+	@Override
+	public void deactivateTab() { active = false; } // Not really applicable.
 }
 
 

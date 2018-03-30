@@ -57,4 +57,9 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated{
 			inStates.clear();
 		}
 	}
+	@Override
+	public void deactivateTab() {
+		super.deactivateTab();
+		
+	}
 }
