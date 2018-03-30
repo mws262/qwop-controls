@@ -34,7 +34,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 	private final int numPlots;
 
 	/** How many plots to squeeze in one displayed row. **/
-	private int plotsPerView = 6;
+	private int plotsPerView;
 	
 	/** Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation. **/
 	List<Node> nodesToTransform = new ArrayList<Node>();
@@ -124,7 +124,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 		
 		switch(e.getKeyCode()) {
 		case KeyEvent.VK_RIGHT:
-			if (firstPlotCol >= transformer.getOutputStateSize() - 1) return;
+			if (firstPlotCol >= transformer.getOutputStateSize() - plotsPerView) return;
 			firstPlotCol++;
 			break;
 		case KeyEvent.VK_LEFT:
@@ -136,7 +136,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 			firstPlotRow--;
 			break;
 		case KeyEvent.VK_DOWN:
-			if (firstPlotRow >= transformer.getOutputStateSize() - 1) return;
+			if (firstPlotRow >= transformer.getOutputStateSize() - plotsPerView) return;
 			firstPlotRow++;
 			break;
 		}

@@ -208,7 +208,7 @@ public class MAIN_Run implements Runnable{
 			System.out.println("SAMPLER: Using UCB node sampler.");
 			break;
 		case "deterministic":
-			currentSampler = new Sampler_Random();
+			currentSampler = new Sampler_Deterministic();
 			System.out.println("SAMPLER: Using deterministic DFS sampler.");
 		default:
 			currentSampler = new Sampler_Random();

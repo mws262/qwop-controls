@@ -210,13 +210,13 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 
 		/** Add another data series at the specified plot index. **/
 		public void addSeries(int plotIdx, float[] xData, float[] yData, Color[] cData) {
-			DataSeries newDat = new DataSeries_float(xData, yData, cData);
+			DataSeries newDat = new DataSeries_FloatPrimitive(xData, yData, cData);
 			series.put(plotIdx, newDat);
 		}
 
 		/** Add another data series at the specified plot index. **/
 		public void addSeries(int plotIdx, Float[] xData, Float[] yData, Color[] cData) {
-			DataSeries newDat = new DataSeries_Float(xData, yData, cData);
+			DataSeries newDat = new DataSeries_FloatObj(xData, yData, cData);
 			series.put(plotIdx, newDat);
 		}
 
@@ -250,10 +250,10 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 			return renderer;
 		}
 
-		private class DataSeries_float implements DataSeries{
+		private class DataSeries_FloatPrimitive implements DataSeries{
 			float[] xData, yData;
 			Color[] cData;
-			private DataSeries_float(float[] xData, float[] yData, Color[] cData) {
+			private DataSeries_FloatPrimitive(float[] xData, float[] yData, Color[] cData) {
 				this.xData = xData;
 				this.yData = yData;
 				this.cData = cData;
@@ -271,10 +271,10 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 			}
 		}
 
-		private class DataSeries_Float implements DataSeries{ // It's surprisingly hard to convert between primitive arrays and object arrays in a non-verbose way. Hence this.
+		private class DataSeries_FloatObj implements DataSeries{ // It's surprisingly hard to convert between primitive arrays and object arrays in a non-verbose way. Hence this.
 			Float[] xData, yData;
 			Color[] cData;
-			private DataSeries_Float(Float[] xData, Float[] yData, Color[] cData) {
+			private DataSeries_FloatObj(Float[] xData, Float[] yData, Color[] cData) {
 				this.xData = xData;
 				this.yData = yData;
 				this.cData = cData;
