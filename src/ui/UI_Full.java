@@ -443,9 +443,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyPressed(KeyEvent e) {
-			System.out.println("HI:");
 			if (mouseInside) {
-				System.out.println("IN");
 				//Navigating the focused node tree
 				int keyCode = e.getKeyCode();
 

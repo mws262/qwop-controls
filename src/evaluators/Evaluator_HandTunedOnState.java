@@ -1,5 +1,7 @@
 package evaluators;
 
+import org.jblas.util.Random;
+
 import game.State;
 import main.IEvaluationFunction;
 import main.Node;
@@ -8,10 +10,12 @@ public class Evaluator_HandTunedOnState implements IEvaluationFunction {
 
 	@Override
 	public float getValue(Node nodeToEvaluate) {
+		if (nodeToEvaluate.state == null) return 0f;
 		float value = 0.f;
 		value += getAngleValue(nodeToEvaluate);
 		value += getDistanceValue(nodeToEvaluate);
 		value += getVelocityValue(nodeToEvaluate);
+		value += Random.nextFloat(); // Trying to add a little noise for fun.
 		
 		return value;
 	}
@@ -46,5 +50,10 @@ public class Evaluator_HandTunedOnState implements IEvaluationFunction {
 	
 	private float getVelocityValue(Node nodeToEvaluate) {
 		return nodeToEvaluate.state.body.dx;
+	}
+	
+	@Override
+	public Evaluator_HandTunedOnState clone() {
+		return new Evaluator_HandTunedOnState();
 	}
 }

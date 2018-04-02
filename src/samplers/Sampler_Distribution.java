@@ -39,13 +39,19 @@ public class Sampler_Distribution implements ISampler{
 				}
 			}
 
-			// Nothing possible
-			if (notFullyExploredChildren.isEmpty() && currentNode.uncheckedActions.isEmpty()) throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully explored before.");
 
-			// Only new things to try.
-			if (notFullyExploredChildren.isEmpty() && currentNode.reserveExpansionRights()) {
-				// We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
-				return currentNode;
+			if (notFullyExploredChildren.isEmpty()) {
+				// Nothing possible
+				if (currentNode.uncheckedActions.isEmpty()) throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully explored before.");
+
+				// Only new things to try.
+				if (currentNode.reserveExpansionRights()) {
+					// We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
+					return currentNode;
+				}else { // Multithread got us in a funny place.
+					currentNode = startNode;
+					continue;
+				}
 			}
 
 			// Only old things to select between.

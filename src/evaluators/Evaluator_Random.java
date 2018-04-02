@@ -22,5 +22,10 @@ public class Evaluator_Random implements IEvaluationFunction {
 	public String getValueString(Node nodeToEvaluate) {
 		return String.valueOf(rand.nextFloat());
 	}
+	
+	@Override
+	public Evaluator_Random clone() {
+		return new Evaluator_Random();
+	}
 
 }

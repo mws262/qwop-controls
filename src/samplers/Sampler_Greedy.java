@@ -193,5 +193,10 @@ public class Sampler_Greedy implements ISampler {
 	public boolean rolloutPolicyGuard(Node currentNode) {
 		return rolloutPolicyDone; // No rollout policy
 	}
+	
+	@Override
+	public Sampler_Greedy clone() {
+		return new Sampler_Greedy(evaluationFunction.clone()); // No rollout policy
+	}
 
 }

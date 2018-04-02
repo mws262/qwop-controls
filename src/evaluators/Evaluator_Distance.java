@@ -35,4 +35,8 @@ public class Evaluator_Distance implements IEvaluationFunction {
 		}
 	}
 
+	@Override
+	public Evaluator_Distance clone() {
+		return new Evaluator_Distance();
+	}
 }

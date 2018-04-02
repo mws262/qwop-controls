@@ -68,10 +68,10 @@ public class MAIN_Run implements Runnable{
 
 	@Override
 	public void run() {
-		
+
 		initTime = System.currentTimeMillis();
 		doGames();
-		
+
 		while(true) {
 			// Do managey things here.
 			try {
@@ -92,7 +92,7 @@ public class MAIN_Run implements Runnable{
 		Distribution<Action> uniform_dist = new Distribution_Uniform();
 
 		/********** Repeated action 1 -- no keys pressed. ***********/
-//		Integer[] durations1 = new Integer[]{11,12,13,14};
+		//		Integer[] durations1 = new Integer[]{11,12,13,14};
 		Integer[] durations1 = new Integer[]{5,6,7,8,9,10,11,12,13,14,15,16,17,18};
 		boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations1.length);
 
@@ -101,7 +101,7 @@ public class MAIN_Run implements Runnable{
 		ActionSet actionSet1 = ActionSet.makeActionSet(durations1, keySet1, dist1);
 
 		/**********  Repeated action 2 -- W-O pressed ***********/
-//		Integer[] durations2 = new Integer[]{36,37,38,39,40,41};
+		//		Integer[] durations2 = new Integer[]{36,37,38,39,40,41};
 		Integer[] durations2 = new Integer[]{30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45};
 		boolean[][] keySet2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durations2.length);
 
@@ -110,7 +110,7 @@ public class MAIN_Run implements Runnable{
 		ActionSet actionSet2 = ActionSet.makeActionSet(durations2, keySet2, dist2);
 
 		/**********  Repeated action 3 -- W-O pressed ***********/
-//		Integer[] durations3 = new Integer[]{5,6,7,8,9,10,11};
+		//		Integer[] durations3 = new Integer[]{5,6,7,8,9,10,11};
 		Integer[] durations3 = new Integer[]{5,6,7,8,9,10,11,12,13,14,15,16,17,18};
 		boolean[][] keySet3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations3.length);
 
@@ -119,7 +119,7 @@ public class MAIN_Run implements Runnable{
 		ActionSet actionSet3 = ActionSet.makeActionSet(durations3, keySet3, dist3);
 
 		/**********  Repeated action 4 -- Q-P pressed ***********/
-//		Integer[] durations4 = new Integer[]{35,36,37,38,39,40};
+		//		Integer[] durations4 = new Integer[]{35,36,37,38,39,40};
 		Integer[] durations4 = new Integer[]{30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45};
 		boolean[][] keySet4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durations4.length);
 
@@ -130,7 +130,7 @@ public class MAIN_Run implements Runnable{
 
 		/////// Action Exceptions ////////
 		/********** Repeated action exceptions 1 -- no keys pressed. ***********/
-//		Integer[] durationsE1 = new Integer[]{1,2,3,4,5,6};
+		//		Integer[] durationsE1 = new Integer[]{1,2,3,4,5,6};
 		Integer[] durationsE1 = new Integer[]{1,2,3,4,5,6,7,8,9,10};
 		boolean[][] keySetE1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE1.length);
 
@@ -139,7 +139,7 @@ public class MAIN_Run implements Runnable{
 		ActionSet actionSetE1 = ActionSet.makeActionSet(durationsE1, keySetE1, distE1);
 
 		/**********  Repeated action exceptions 2 -- W-O pressed ***********/
-//		Integer[] durationsE2 = new Integer[]{30,31,32,33,34,35};
+		//		Integer[] durationsE2 = new Integer[]{30,31,32,33,34,35};
 		Integer[] durationsE2 = new Integer[]{27,28,29,30,31,32,33,34,35,36,37,38,39};
 		boolean[][] keySetE2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durationsE2.length);
 
@@ -147,7 +147,7 @@ public class MAIN_Run implements Runnable{
 		ActionSet actionSetE2 = ActionSet.makeActionSet(durationsE2, keySetE2, distE2);
 
 		/**********  Repeated action exceptions 3 -- W-O pressed ***********/
-//		Integer[] durationsE3 = new Integer[]{24,25,26,27,28};
+		//		Integer[] durationsE3 = new Integer[]{24,25,26,27,28};
 		Integer[] durationsE3 = new Integer[]{20,21,22,23,24,25,26,27,28,29,30,31,32};
 		boolean[][] keySetE3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE3.length);
 
@@ -155,7 +155,7 @@ public class MAIN_Run implements Runnable{
 		ActionSet actionSetE3 = ActionSet.makeActionSet(durationsE3, keySetE3, distE3);
 
 		/**********  Repeated action exceptions 4 -- Q-P pressed ***********/
-//		Integer[] durationsE4 = new Integer[]{46,47,48,49,50,51};
+		//		Integer[] durationsE4 = new Integer[]{46,47,48,49,50,51};
 		Integer[] durationsE4 = new Integer[]{45,46,47,48,49,50,51,52,53,54,55};
 		boolean[][] keySetE4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durationsE4.length);
 
@@ -241,7 +241,7 @@ public class MAIN_Run implements Runnable{
 		default:
 			System.out.println("SAVER: Unrecognized argument. Defaulting to no saving.");
 			dataSaver = new DataSaver_null();
-		
+
 		}
 
 		dataSaver.setSaveInterval(Integer.parseInt(settings.saver.get(1))); // set save frequency from parsed args if that argument has been input.
@@ -259,21 +259,27 @@ public class MAIN_Run implements Runnable{
 			ui = new UI_Full();
 			System.out.println("GUI: Running in full graphics mode.");
 		}
-		
+
 		// Root to visualize from.
 		ui.addRootNode(treeRoot);
-		
+
 		/************************************************************/		
 		/**************** Assign workers/threads ********************/
 		/************************************************************/
-		
+
 		// Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the Box2D libraries.
 		int cores = Runtime.getRuntime().availableProcessors();
 		int numWorkers = (int)(0.75f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
 		System.out.println("Detected " + cores + " physical cores. Making " + numWorkers + " workers.");
 		List<TreeWorker> workerList = new ArrayList<TreeWorker>();
 		for (int i = 0; i < numWorkers; i++) {
-			TreeWorker w = new TreeWorker(treeRoot, currentSampler.clone());
+			TreeWorker w;
+			//			if (i%2 == 0) {
+			w = new TreeWorker(treeRoot, currentSampler.clone());
+			//			}else {
+			//				w = new TreeWorker(treeRoot, new Sampler_Random());
+			//			}
+
 			workerList.add(w);
 		}
 
@@ -283,7 +289,7 @@ public class MAIN_Run implements Runnable{
 			wThread.setName(w.workerName);
 			workerThreads.add(wThread);	
 		}
-		
+
 		Thread uiThread = new Thread(ui);
 		//Thread gameThread = new Thread(game); 
 		//uiThread.setPriority(Thread.MAX_PRIORITY);
@@ -299,8 +305,8 @@ public class MAIN_Run implements Runnable{
 			wthread.start();
 		}
 
-		
+
 		System.out.println("All initialized.");
-		
+
 	}
 }

@@ -84,7 +84,6 @@ public class Sampler_UCB implements ISampler {
 		}
 		if (bestNodeSoFar == null) { // This worker can't get a lock on any of the children it wants. Starting back at startNode.
 			try {
-				System.out.println(deadlockDelayCurrent);
 				Thread.sleep(deadlockDelayCurrent);
 				deadlockDelayCurrent = deadlockDelayCurrent * 2 + 1;
 			} catch (InterruptedException e) {
@@ -163,6 +162,6 @@ public class Sampler_UCB implements ISampler {
 	
 	@Override
 	public Sampler_UCB clone() {
-		return new Sampler_UCB(evaluationFunction);
+		return new Sampler_UCB(evaluationFunction.clone());
 	}
 }

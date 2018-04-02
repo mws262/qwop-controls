@@ -60,5 +60,10 @@ public class Evaluator_SqDistFromOther implements IEvaluationFunction {
 		}	
 		return value;
 	}
+	
+	@Override
+	public Evaluator_SqDistFromOther clone() {
+		return new Evaluator_SqDistFromOther(nodeToCompareAllOthersTo);
+	}
 
 }
