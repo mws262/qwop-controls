@@ -181,7 +181,7 @@ public class MAIN_Run implements Runnable{
 		IEvaluationFunction evaluateDistance = new Evaluator_Distance();
 		IEvaluationFunction evaluateHandTuned = new Evaluator_HandTunedOnState();
 
-		IEvaluationFunction currentEvaluator = evaluateHandTuned;
+		IEvaluationFunction currentEvaluator = evaluateDistance;
 
 		/***********************************************/		
 		/*********** Tree building strategy ************/
@@ -211,7 +211,7 @@ public class MAIN_Run implements Runnable{
 			currentSampler = new Sampler_Deterministic();
 			System.out.println("SAMPLER: Using deterministic DFS sampler.");
 		default:
-			currentSampler = new Sampler_Random();
+			currentSampler = new Sampler_UCB(currentEvaluator);
 			System.out.println("SAMPLER: Unrecognized argument. Defaulting to UCB.");
 		}
 

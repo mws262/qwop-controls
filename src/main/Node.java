@@ -169,7 +169,7 @@ public class Node {
 		// Add some child actions to try if an action generator is assigned.
 		autoAddUncheckedActions();
 
-		edgeLength = 5.00f * (float)Math.pow(0.6947, 0.1903 * treeDepth ) + 1.5f;
+		edgeLength = 5.00f;// * (float)Math.pow(0.6947, 0.1903 * treeDepth ) + 1.5f;
 		//(float)Math.pow(0.787, 0.495) + 1.0f; // Optimized exponential in Matlab 
 
 		lineBrightness = parent.lineBrightness;
@@ -551,14 +551,24 @@ public class Node {
 				int division = parent.children.size() + parent.uncheckedActions.size(); // Split into this many chunks.
 				int childNo = parent.children.indexOf(this);
 
-				sweepAngle = (parent.sweepAngle/division) * (1 + treeDepth * 0.05f);
+				sweepAngle = (float) Math.max((parent.sweepAngle/division) * (1 + treeDepth * 0.05f), 0.1);
 
+				// This is to straighten out branches that are curving off to one side due to asymmetric expansion. Acts like a controller to bring the angle
+				// towards the angle of the first node in this branch after root.
+				float angleAdj = 0;
+				Node ancestor = this;
+				while (ancestor.treeDepth > 1) {
+					ancestor = ancestor.parent;
+				}
+				angleAdj = -0.2f*(parent.nodeAngle - ancestor.nodeAngle);
+				
+				
 				if (childNo == 0) {
-					nodeAngle = parent.nodeAngle;
+					nodeAngle = parent.nodeAngle + angleAdj;
 				}else if (childNo % 2 == 0) {
-					nodeAngle = parent.nodeAngle + sweepAngle * childNo/2;
+					nodeAngle = parent.nodeAngle + sweepAngle * childNo/2 + angleAdj;
 				}else {
-					nodeAngle = parent.nodeAngle - sweepAngle * (childNo + 1)/2;
+					nodeAngle = parent.nodeAngle - sweepAngle * (childNo + 1)/2 + angleAdj;
 				}
 			}else{
 				sweepAngle = parent.sweepAngle; //Only reduce the sweep angle if the parent one had more than one child.
