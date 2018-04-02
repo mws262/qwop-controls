@@ -127,7 +127,6 @@ public class PanelPlot_States extends PanelPlot implements ItemListener{
 			downsampleNodeList(nodesBelow, maxPlotPoints);
 		
 			Iterator<Entry<XYPlot, PlotDataset>> it = plotsAndData.entrySet().iterator();
-			requestFocus();
 			countDataCollect = 0;
 			while (it.hasNext()) {
 				Entry<XYPlot, PlotDataset> plotAndData = it.next();

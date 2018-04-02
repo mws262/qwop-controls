@@ -375,7 +375,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			textRenderSmall.draw(totalGamesPlayed + " total games", 20, panelHeight - 85);	
 			
 
-			textRenderSmall.draw(Math.round(totalTimestepsSimulated/360)/10f + " hours simulated!", 20, panelHeight - 100);
+			textRenderSmall.draw(Math.round(totalTimestepsSimulated/9000f)/10f + " hours simulated!", 20, panelHeight - 100);
 			
 			textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
 			textRenderSmall.draw(Math.round(totalTimestepsSimulated/(double)totalGamesPlayed * 0.4)/10f + "s Avg. game length", 20, panelHeight - 115);
@@ -443,7 +443,9 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyPressed(KeyEvent e) {
+			System.out.println("HI:");
 			if (mouseInside) {
+				System.out.println("IN");
 				//Navigating the focused node tree
 				int keyCode = e.getKeyCode();
 

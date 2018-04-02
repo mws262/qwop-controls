@@ -85,7 +85,7 @@ public class Node {
 
 	public boolean displayPoint = false; // Round dot at this node. Is it on?
 	public boolean displayLine = true; // Line from this node to parent. Is it on?
-	public static boolean debugDrawNodeLocking = false; // Draw which nodes are locked by command from the TreeWorkers.
+	public static boolean debugDrawNodeLocking = true; // Draw which nodes are locked by command from the TreeWorkers.
 
 	// Limiting number of display nodes.
 	public boolean limitDrawing = true;

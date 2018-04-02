@@ -36,7 +36,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	public boolean verbose = false;
 
 	/** Print debugging info? **/
-	public boolean debugDraw = false;
+	public boolean debugDraw = true;
 
 	/** The current game instance that this FSM is using. This will frequently change since a new one is created for each run. **/
 	private final GameLoader game = new GameLoader();

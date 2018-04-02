@@ -15,6 +15,11 @@ import transformations.Transform_PCA;
 public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated{
 
 	private static final long serialVersionUID = 1L;
+	
+	/** Maximum number of nodes used for updating transforms. These will try to be
+	 * evenly spaced around the tree. Keeps speed up especially for PCA.
+	 */
+	public int maxNodesToUpdateTransforms = 2000;
 
 	private List<ITransform> encoders;
 	private List<State> inStates = new ArrayList<State>();
@@ -36,6 +41,8 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated{
 	public void simRunToNode(Node node) {
 		List<Node> nlist = new ArrayList<Node>();
 		node.getRoot().getNodesBelow(nlist);
+		
+		downsampleNodeList(nlist, maxNodesToUpdateTransforms);
 		List<State> slist = nlist.stream().map(n -> n.state).collect(Collectors.toList());
 		
 		for (ITransform trans : encoders) {
@@ -61,5 +68,23 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated{
 	public void deactivateTab() {
 		super.deactivateTab();
 		
+	}
+	
+	/** Get an evenly spaced list of nodes from one which is too big. If the list size isn't above maxSize,
+	 *  then nothing happens. Note: this downsampling is IN PLACE, meaning that the original list is changed.
+	 **/
+	public static List<Node> downsampleNodeList(List<Node> nodes, int maxSize) {
+		int numNodes = nodes.size();
+		if (numNodes > maxSize) {
+			float ratio = numNodes/(float)maxSize;
+			for (int i = 0; i < maxSize; i++) {
+				nodes.set(i, nodes.get((int)(ratio * i))); // Reassign the ith element with the spaced out one later in the arraylist.	
+			}
+
+			for (int i = numNodes; i > maxSize; i--) {
+				nodes.remove(i - 1);
+			}
+		}
+		return nodes;
 	}
 }

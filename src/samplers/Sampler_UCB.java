@@ -1,5 +1,7 @@
 package samplers;
 
+import org.jblas.util.Random;
+
 import main.Action;
 import main.IEvaluationFunction;
 import main.ISampler;
@@ -27,9 +29,15 @@ public class Sampler_UCB implements ISampler {
 	/** Are we done with the rollout policy? **/
 	private boolean rolloutPolicyDone = false;
 
+	/** Individual workers can deadlock rarely. This causes overflow errors when the tree policy is recursively called.
+	 * Solution here is to wait a short period of time, doubling it until the worker is successful again. This happens
+	 * maybe 1 in 5k games or so near the beginning only, so it's not worth finding something more elegant. **/
+	private long deadlockDelayCurrent = 0;
+	
 	/** Must provide an evaluationFunction to get a numeric score for nodes after a rollout. **/
 	public Sampler_UCB(IEvaluationFunction evaluationFunction) {
 		this.evaluationFunction = evaluationFunction;
+		c = 10*Random.nextFloat()*c + 0.1f;
 	}
 	
 	/** Propagate the score and visit count back up the tree. **/
@@ -64,10 +72,9 @@ public class Sampler_UCB implements ISampler {
 		Node parent = startNode;
 		for (Node child: parent.children){
 
-			if (!child.fullyExplored && child.reserveExpansionRights()){
+			if (!child.fullyExplored && !child.getLockStatus()) {// && child.reserveExpansionRights()){
 				float val = (float)(child.getValue()/child.visitCount.doubleValue() + c*(float)Math.sqrt(2.*Math.log(parent.visitCount.doubleValue())/child.visitCount.doubleValue()));
 				if (val > bestScoreSoFar){
-					if (bestNodeSoFar != null) bestNodeSoFar.releaseExpansionRights();
 					bestNodeSoFar = child;
 					bestScoreSoFar = val;
 				}else {
@@ -75,10 +82,19 @@ public class Sampler_UCB implements ISampler {
 				}
 			}
 		}
-		if (bestNodeSoFar == null) {
-			Thread.sleep(10);
-			bestNodeSoFar = treePolicy(startNode); // lol... recursion for stupid purposes.
-		} 
+		if (bestNodeSoFar == null) { // This worker can't get a lock on any of the children it wants. Starting back at startNode.
+			try {
+				System.out.println(deadlockDelayCurrent);
+				Thread.sleep(deadlockDelayCurrent);
+				deadlockDelayCurrent = deadlockDelayCurrent * 2 + 1;
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			bestNodeSoFar = startNode;
+		}else {
+			deadlockDelayCurrent = 0; // Reset delay if we're successful again.
+		}
+		
 		return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked action.;
 	}
 
