@@ -2,21 +2,18 @@ package main;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Stroke;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonShape;
@@ -27,43 +24,42 @@ import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.World;
 
+import game.GameLoader;
+import game.State;
+import transformations.Transform_Autoencoder;
+
 @SuppressWarnings("serial")
 public class MAIN_Controlled extends JFrame{
 
-	public QWOPGame game;
+	public GameLoader game;
 	private Tensorflow_Predictor pred = new Tensorflow_Predictor();
 	private RunnerPane runnerPane;
-	
-	/** Physics engine stepping parameters. **/
-	public final float timestep = 0.04f;
-	private final int iterations = 5;
-	
+
 	/** Window width **/
 	public static int windowWidth = 1920;
 
 	/** Window height **/
 	public static int windowHeight = 1000;
-	
+
 	final Font QWOPLittle = new Font("Ariel", Font.BOLD,21);
 	final Font QWOPBig = new Font("Ariel", Font.BOLD,28);
-	
+
 	/** Runner coordinates to pixels. **/
 	public float runnerScaling = 10f;
-	
+
 	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
 	public int xOffsetPixels_init = 700;
 	public int xOffsetPixels = xOffsetPixels_init;
 	public int yOffsetPixels = 600;
-	
+
 	private int phase = 0;
-	
+
 	public static void main(String[] args) {
-		
 		MAIN_Controlled mc = new MAIN_Controlled();
 		mc.setup();
 		mc.run();
 	}
-	
+
 	public void setup() {
 		/* Runner pane */   
 		runnerPane = new RunnerPane();
@@ -77,46 +73,42 @@ public class MAIN_Controlled extends JFrame{
 		this.setVisible(true); 
 		repaint();
 	}
-	
+
 	int toSwitchCount = Integer.MAX_VALUE;
 	public void run() {
-		game = new QWOPGame();
-		
-		game.Setup();
-		runnerPane.setWorldToView(game.getWorld());
-		
-		
+		game = new GameLoader();
+
 		while (true) {
-			
-			switch(phase) {
-			case 0:
-				game.everyStep(false,false,false,false);
-				break;
-			case 1:
-				game.everyStep(false,true,true,false);
-				break;
-			case 2:
-				game.everyStep(false,false,false,false);
-				break;
-			case 3:
-				game.everyStep(true,false,false,true);
-				break;
-			default: 
-				throw new RuntimeException("Sequence phase is busted: " + phase);
+
+			try {
+				switch(phase) {
+				case 0:
+					game.stepGame(false,false,false,false);
+					break;
+				case 1:
+					game.stepGame(false,true,true,false);
+					break;
+				case 2:
+					game.stepGame(false,false,false,false);
+					break;
+				case 3:
+					game.stepGame(true,false,false,true);
+					break;
+				default: 
+					throw new RuntimeException("Sequence phase is busted: " + phase);
+				}
+			}catch(Exception e) {
+				e.printStackTrace();
 			}
-			
-			game.getWorld().step(timestep, iterations);
-			
-			State st = new State(game);
-			float prediction = pred.getPrediction(st);
+			float prediction = pred.getPrediction(game.getCurrentState());
 			// System.out.println(prediction);
-			
+
 			if (toSwitchCount > 10 && prediction <1.8f) {
-				
+
 				//System.out.println("SWITCHING SOON");
-				toSwitchCount = (int) Math.round(prediction); 
+				toSwitchCount = Math.round(prediction); 
 			}
-			
+
 			if (toSwitchCount == 0) {
 				phase = (phase + 1) % 4;
 				toSwitchCount = Integer.MAX_VALUE;
@@ -124,14 +116,13 @@ public class MAIN_Controlled extends JFrame{
 			toSwitchCount--;
 			repaint();
 			try {
-				Thread.sleep(40);
+				Thread.sleep(20);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
-	
+
 	/**
 	 * Pane for displaying the animated runner executing a sequence selected on the tree. A tab.
 	 * @author Matt
@@ -143,158 +134,30 @@ public class MAIN_Controlled extends JFrame{
 		/** Highlight stroke for line drawing. **/
 		private final Stroke normalStroke = new BasicStroke(0.5f);
 
-		/** Highlight stroke for line drawing. **/
-		private final Stroke boldStroke = new BasicStroke(2);
-		
 		boolean active = true;
+		
+		private List<State> st = new ArrayList<State>();
 
-		private World world;
-		
-		Shape[] shapes = QWOPGame.shapeList;
-		
-		TensorflowAutoencoder enc = new TensorflowAutoencoder("AutoEnc_72to6_6layer.pb", "6 output");
-		
+		Transform_Autoencoder enc = new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12);
+
 		public RunnerPane() {}
 
+		@Override
 		public void paintComponent(Graphics g) {
-			if (!active) return;
+			if (!active || game == null) return;
 			super.paintComponent(g);
 
-			if (world != null) {
-				Body newBody = world.getBodyList();
-				while (newBody != null) {
-
-					Shape newfixture = newBody.getShapeList();
-
-					while(newfixture != null) {
-
-						if(newfixture.getType() == ShapeType.POLYGON_SHAPE) {
-
-							PolygonShape newShape = (PolygonShape)newfixture;
-							Vec2[] shapeVerts = newShape.m_vertices;
-							for (int k = 0; k<newShape.m_vertexCount; k++) {
-
-								XForm xf = newBody.getXForm();
-								Vec2 ptA = XForm.mul(xf,shapeVerts[k]);
-								Vec2 ptB = XForm.mul(xf, shapeVerts[(k+1) % (newShape.m_vertexCount)]);
-								g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-										(int)(runnerScaling * ptA.y) + yOffsetPixels,
-										(int)(runnerScaling * ptB.x) + xOffsetPixels,
-										(int)(runnerScaling * ptB.y) + yOffsetPixels);		
-							}
-						}else if (newfixture.getType() == ShapeType.CIRCLE_SHAPE) {
-							CircleShape newShape = (CircleShape)newfixture;
-							float radius = newShape.m_radius;
-							headPos = (int)(runnerScaling * newBody.getPosition().x);
-							g.drawOval((int)(runnerScaling * (newBody.getPosition().x - radius) + xOffsetPixels),
-									(int)(runnerScaling * (newBody.getPosition().y - radius) + yOffsetPixels),
-									(int)(runnerScaling * radius * 2),
-									(int)(runnerScaling * radius * 2));		
-
-						}else if(newfixture.getType() == ShapeType.EDGE_SHAPE) {
-
-							EdgeShape newShape = (EdgeShape)newfixture;
-							XForm trans = newBody.getXForm();
-
-							Vec2 ptA = XForm.mul(trans, newShape.getVertex1());
-							Vec2 ptB = XForm.mul(trans, newShape.getVertex2());
-							Vec2 ptC = XForm.mul(trans, newShape.getVertex2());
-
-							g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-									(int)(runnerScaling * ptA.y) + yOffsetPixels,
-									(int)(runnerScaling * ptB.x) + xOffsetPixels,
-									(int)(runnerScaling * ptB.y) + yOffsetPixels);			    		
-							g.drawLine((int)(runnerScaling * ptA.x) + xOffsetPixels,
-									(int)(runnerScaling * ptA.y) + yOffsetPixels,
-									(int)(runnerScaling * ptC.x) + xOffsetPixels,
-									(int)(runnerScaling * ptC.y) + yOffsetPixels);			    		
-
-						}else{
-							System.out.println("Not found: " + newfixture.m_type.name());
-						}
-						newfixture = newfixture.getNext();
-					}
-					newBody = newBody.getNext();
-				}
-				//This draws the "road" markings to show that the ground is moving relative to the dude.
-				for(int i = 0; i<this.getWidth()/69; i++) {
-					g.drawString("_", ((xOffsetPixels - xOffsetPixels_init-i * 70) % getWidth()) + getWidth(), yOffsetPixels + 92);
-					//keyDrawer(g, negotiator.Q,negotiator.W,negotiator.O,negotiator.P);
-				}
-
-				//drawActionString(negotiator.getCurrentSequence(), g, negotiator.getCurrentActionIdx());
-
-				State currState = new State(game);
-				System.out.println(currState.body.th);
-				State predState = new State(enc.getPrediction(currState));
-				XForm[] predXForms = predState.getTransforms();
-				drawRunner((Graphics2D)g, Color.RED, normalStroke, shapes, predXForms);
-				
-//				float[] encoding = enc.getEncoding(currState);
-				
-//				for (float val : encoding) {
-//					System.out.printf("%.2f, ", val);
-//				}
-//				System.out.println("");
-				
-			}else{
-				//keyDrawer(g, false, false, false, false);
-			}
+			game.draw(g, 10f, 960, 500);
+			State currState = game.getCurrentState();
+			st.add(currState);
+			List<State> predState = enc.compressAndDecompress(st);
+			st.clear();
+			game.drawExtraRunner((Graphics2D)g, game.getXForms(predState.get(0)), "Encoded->Decoded", 10f, 960, 500, Color.RED, normalStroke);
 
 			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
 			xOffsetPixels = -headPos + xOffsetPixels_init;
-
-		}
-		
-		/** Draw the runner at a certain state. **/
-		private void drawRunner(Graphics2D g, Color drawColor, Stroke stroke, Shape[] shapes, XForm[] transforms) {
-
-			int specificXOffset = 580;
-			for (int i = 0; i < shapes.length; i++) {
-				g.setColor(drawColor);
-				g.setStroke(stroke);
-				switch(shapes[i].getType()) {
-				case CIRCLE_SHAPE:
-					CircleShape circleShape = (CircleShape)shapes[i];
-					float radius = circleShape.getRadius();
-					Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
-					g.drawOval((int)(runnerScaling * (circleCenter.x - radius) + specificXOffset),
-							(int)(runnerScaling * (circleCenter.y - radius) + yOffsetPixels),
-							(int)(runnerScaling * radius * 2),
-							(int)(runnerScaling * radius * 2));
-					break;
-				case POLYGON_SHAPE:
-					//Get both the shape and its transform.
-					PolygonShape polygonShape = (PolygonShape)shapes[i];
-					XForm transform = transforms[i];
-
-					// Ground is black regardless.
-					if (shapes[i].m_filter.groupIndex == 1) {
-						g.setColor(Color.BLACK);
-						g.setStroke(normalStroke);
-					}
-					for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
-						Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
-						Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
-						g.drawLine((int)(runnerScaling * ptA.x) + specificXOffset,
-								(int)(runnerScaling * ptA.y) + yOffsetPixels,
-								(int)(runnerScaling * ptB.x) + specificXOffset,
-								(int)(runnerScaling * ptB.y) + yOffsetPixels);		
-					}
-					break;
-				default:
-					break;
-				}
-			}
 		}
 
-		public void setWorldToView(World world) {
-			this.world = world;
-		}
-
-		public void clearWorldToView() {
-			world = null;
-		}
 
 		public void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
 

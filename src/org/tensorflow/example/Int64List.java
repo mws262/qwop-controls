@@ -83,7 +83,8 @@ public  final class Int64List extends
     return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_Int64List_descriptor;
   }
 
-  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+  @Override
+protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_Int64List_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -95,26 +96,30 @@ public  final class Int64List extends
   /**
    * <code>repeated int64 value = 1 [packed = true];</code>
    */
-  public java.util.List<java.lang.Long>
+  @Override
+public java.util.List<java.lang.Long>
       getValueList() {
     return value_;
   }
   /**
    * <code>repeated int64 value = 1 [packed = true];</code>
    */
-  public int getValueCount() {
+  @Override
+public int getValueCount() {
     return value_.size();
   }
   /**
    * <code>repeated int64 value = 1 [packed = true];</code>
    */
-  public long getValue(int index) {
+  @Override
+public long getValue(int index) {
     return value_.get(index);
   }
   private int valueMemoizedSerializedSize = -1;
 
   private byte memoizedIsInitialized = -1;
-  public final boolean isInitialized() {
+  @Override
+public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
     if (isInitialized == 0) return false;
@@ -123,7 +128,8 @@ public  final class Int64List extends
     return true;
   }
 
-  public void writeTo(com.google.protobuf.CodedOutputStream output)
+  @Override
+public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
     getSerializedSize();
     if (getValueList().size() > 0) {
@@ -135,7 +141,8 @@ public  final class Int64List extends
     }
   }
 
-  public int getSerializedSize() {
+  @Override
+public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
 
@@ -250,14 +257,16 @@ public  final class Int64List extends
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public Builder newBuilderForType() { return newBuilder(); }
+  @Override
+public Builder newBuilderForType() { return newBuilder(); }
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
   public static Builder newBuilder(org.tensorflow.example.Int64List prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
-  public Builder toBuilder() {
+  @Override
+public Builder toBuilder() {
     return this == DEFAULT_INSTANCE
         ? new Builder() : new Builder().mergeFrom(this);
   }
@@ -280,7 +289,8 @@ public  final class Int64List extends
       return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_Int64List_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+	protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_Int64List_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -302,23 +312,27 @@ public  final class Int64List extends
               .alwaysUseFieldBuilders) {
       }
     }
-    public Builder clear() {
+    @Override
+	public Builder clear() {
       super.clear();
       value_ = java.util.Collections.emptyList();
       bitField0_ = (bitField0_ & ~0x00000001);
       return this;
     }
 
-    public com.google.protobuf.Descriptors.Descriptor
+    @Override
+	public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
       return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_Int64List_descriptor;
     }
 
-    public org.tensorflow.example.Int64List getDefaultInstanceForType() {
+    @Override
+	public org.tensorflow.example.Int64List getDefaultInstanceForType() {
       return org.tensorflow.example.Int64List.getDefaultInstance();
     }
 
-    public org.tensorflow.example.Int64List build() {
+    @Override
+	public org.tensorflow.example.Int64List build() {
       org.tensorflow.example.Int64List result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
@@ -326,7 +340,8 @@ public  final class Int64List extends
       return result;
     }
 
-    public org.tensorflow.example.Int64List buildPartial() {
+    @Override
+	public org.tensorflow.example.Int64List buildPartial() {
       org.tensorflow.example.Int64List result = new org.tensorflow.example.Int64List(this);
       int from_bitField0_ = bitField0_;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -338,33 +353,40 @@ public  final class Int64List extends
       return result;
     }
 
-    public Builder clone() {
-      return (Builder) super.clone();
+    @Override
+	public Builder clone() {
+      return super.clone();
     }
-    public Builder setField(
+    @Override
+	public Builder setField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         Object value) {
-      return (Builder) super.setField(field, value);
+      return super.setField(field, value);
     }
-    public Builder clearField(
+    @Override
+	public Builder clearField(
         com.google.protobuf.Descriptors.FieldDescriptor field) {
-      return (Builder) super.clearField(field);
+      return super.clearField(field);
     }
-    public Builder clearOneof(
+    @Override
+	public Builder clearOneof(
         com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-      return (Builder) super.clearOneof(oneof);
+      return super.clearOneof(oneof);
     }
-    public Builder setRepeatedField(
+    @Override
+	public Builder setRepeatedField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         int index, Object value) {
-      return (Builder) super.setRepeatedField(field, index, value);
+      return super.setRepeatedField(field, index, value);
     }
-    public Builder addRepeatedField(
+    @Override
+	public Builder addRepeatedField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         Object value) {
-      return (Builder) super.addRepeatedField(field, value);
+      return super.addRepeatedField(field, value);
     }
-    public Builder mergeFrom(com.google.protobuf.Message other) {
+    @Override
+	public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof org.tensorflow.example.Int64List) {
         return mergeFrom((org.tensorflow.example.Int64List)other);
       } else {
@@ -389,11 +411,13 @@ public  final class Int64List extends
       return this;
     }
 
-    public final boolean isInitialized() {
+    @Override
+	public final boolean isInitialized() {
       return true;
     }
 
-    public Builder mergeFrom(
+    @Override
+	public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -422,20 +446,23 @@ public  final class Int64List extends
     /**
      * <code>repeated int64 value = 1 [packed = true];</code>
      */
-    public java.util.List<java.lang.Long>
+    @Override
+	public java.util.List<java.lang.Long>
         getValueList() {
       return java.util.Collections.unmodifiableList(value_);
     }
     /**
      * <code>repeated int64 value = 1 [packed = true];</code>
      */
-    public int getValueCount() {
+    @Override
+	public int getValueCount() {
       return value_.size();
     }
     /**
      * <code>repeated int64 value = 1 [packed = true];</code>
      */
-    public long getValue(int index) {
+    @Override
+	public long getValue(int index) {
       return value_.get(index);
     }
     /**
@@ -477,12 +504,14 @@ public  final class Int64List extends
       onChanged();
       return this;
     }
-    public final Builder setUnknownFields(
+    @Override
+	public final Builder setUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return this;
     }
 
-    public final Builder mergeUnknownFields(
+    @Override
+	public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return this;
     }
@@ -503,7 +532,8 @@ public  final class Int64List extends
 
   private static final com.google.protobuf.Parser<Int64List>
       PARSER = new com.google.protobuf.AbstractParser<Int64List>() {
-    public Int64List parsePartialFrom(
+    @Override
+	public Int64List parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -520,7 +550,8 @@ public  final class Int64List extends
     return PARSER;
   }
 
-  public org.tensorflow.example.Int64List getDefaultInstanceForType() {
+  @Override
+public org.tensorflow.example.Int64List getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

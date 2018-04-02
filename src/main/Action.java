@@ -24,6 +24,8 @@ public class Action implements Serializable{
 	/** Which of the QWOP keys are pressed? **/
 	private final boolean[] keysPressed;
 	
+	private boolean isExecutableCopy = false;
+	
 	/** Create an action containing the time to hold and the key combination. **/
 	public Action(int totalTimestepsToHold, boolean[] keysPressed){
 		if (keysPressed.length != 4) throw new IllegalArgumentException("A QWOP action should have booleans for exactly 4 keys. Tried to create one with a boolean array of size: " + keysPressed.length);
@@ -39,6 +41,7 @@ public class Action implements Serializable{
 	
 	/** Return the keys for this action and deincrement the timestepsRemaining. **/
 	public boolean[] poll(){
+		if (!isExecutableCopy) throw new RuntimeException("Trying to execute the base version of the Action. Due to multi-threading, this REALLY screws with the counters in the action. Call getCopy for the version you should use.");
 		if (timestepsRemaining <=0) throw new IndexOutOfBoundsException("Tried to poll an action which was already completed. Call hasNext() to check before calling poll().");
 		timestepsRemaining--;
 		
@@ -94,6 +97,7 @@ public class Action implements Serializable{
 	}
 	
 	/** Return a string with the current action keys, total time to hold, and time remaining. **/
+	@Override
 	public String toString(){
 		String reportString = " Keys pressed: ";
 		reportString += keysPressed[0] ? "Q" : "";
@@ -106,9 +110,15 @@ public class Action implements Serializable{
 		return reportString;
 	}
 	
-	/** Just returns the total delay time, assuming the user remebers the key sequence stuff. **/
+	/** Just returns the total delay time, assuming the user remembers the key sequence stuff. **/
 	public String toStringLite() {
 		return String.valueOf(timestepsTotal);
 	}
 	
+	/** Get a copy of this action. This avoid multi-threading issues. **/
+	public synchronized Action getCopy() {
+		Action copiedAction = new Action(timestepsTotal, keysPressed);
+		copiedAction.isExecutableCopy = true;
+		return copiedAction;
+	}
 }

@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import game.State;
 import main.Action;
 import main.FSM_Game;
 import main.FSM_Game.Status;
 import main.INegotiateGame;
-import main.State;
 
 /**
  * Convert sparse run data, ie with only state and action at the transitions, to dense, with data

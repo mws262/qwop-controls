@@ -2,22 +2,19 @@ package main;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Random;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.jbox2d.collision.AABB;
-import org.jbox2d.collision.MassData;
-import org.jbox2d.collision.shapes.PolygonDef;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.World;
-import org.jbox2d.dynamics.joints.RevoluteJoint;
-import org.jbox2d.dynamics.joints.RevoluteJointDef;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
 import com.jogamp.opengl.GL2;
 
 import data.SaveableSingleGame;
+import game.GameLoader;
+import game.State;
 
 /*
  * This version will hopefully get rid of many legacy features.
@@ -28,14 +25,14 @@ import data.SaveableSingleGame;
 public class Node {
 
 	/******** All node stats *********/
-	private static int nodesCreated = 0;
-	private static int nodesImported = 0;
-	private static int gamesImported = 0;
-	private static int gamesCreated = 0;
+	private static LongAdder nodesCreated = new LongAdder();
+	private static LongAdder nodesImported = new LongAdder();
+	private static LongAdder gamesImported = new LongAdder();
+	private static LongAdder gamesCreated = new LongAdder();
 
 	/** Some sampling methods want to track how many times this node has been visited. **/
-	public int visitCount = 0;
-	public float ucbValue = 0;
+	public AtomicLong visitCount = new AtomicLong();
+	private float value = 0;
 
 	/********* QWOP IN/OUT ************/
 	/** Keys and duration **/
@@ -68,6 +65,9 @@ public class Node {
 	/** Does this node represent a failed state? Stronger than fullyExplored. **/
 	public boolean isTerminal = false;
 
+	/** If one TreeWorker is expanding from this leaf node (if it is one), then no other worker should try to simultaneously expand from here too. **/
+	private AtomicBoolean locked = new AtomicBoolean(false);
+
 	/** How deep is this node down the tree? 0 is root. **/
 	public final int treeDepth;
 
@@ -85,6 +85,16 @@ public class Node {
 
 	public boolean displayPoint = false; // Round dot at this node. Is it on?
 	public boolean displayLine = true; // Line from this node to parent. Is it on?
+	public static boolean debugDrawNodeLocking = true; // Draw which nodes are locked by command from the TreeWorkers.
+
+	// Limiting number of display nodes.
+	public boolean limitDrawing = true;
+	private static Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
+	public float drawFilterDistance = 0.1f; // Actually distance squared to avoid sqrt
+	private boolean notDrawnForSpeed = false;
+	
+	// Disable node position calculations (for when running headless)
+	public static boolean calculateNodeVisPositions = true;
 
 	/********* NODE PLACEMENT ************/
 
@@ -96,66 +106,11 @@ public class Node {
 	public float edgeLength = 1.f;
 
 	/** If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z offset. **/
-	private float zOffset = 0.f; 
-
-	/********* TREE PHYSICS ************/
-
-	/** Are the Box2D physics FOR THE TREE branches enabled? **/
-	public static boolean useTreePhysics;
-
-	/** Are the physics things fully initialized for this node. Prevents null pointers. **/
-	private boolean arePhysicsInitialized = false;
-
-	/** Are we in the middle of a physics step? **/
-	public static volatile boolean stepping = false;
-
-	/** Node mass and inertia for tree physics. **/
-	float physMass = 5f;
-	static final float physInertia = 1f;
-
-	/** Tree physics timestep. **/
-	static float physDt = 0.04f;
-	static final int physIterations = 15;
-
-	/** Physics world for the TREE not for the runner. **/
-	static World treePhysWorld;
-
-	/** Shape and body definition for the tree node physics. **/
-	public PolygonDef physShape;
-	public Body physBody;
-
-	/** Each node is jointed to its parent. **/
-	public RevoluteJoint jointToParent;
-
-	/** Length and width of the node boxes in the physics (half-extent). **/
-	static final float physSize = 0.1f/2f;
-	private final static int TREE_GROUP = -1; // No collisions between branches.
-
-	/** Motor at every joint tries to bring the branches together **/
-	static final float anglePGain = 0.02f;
-	static final float angleDGain = 0.8f;
-	static final float angleSpeedCap = 1f;
-	static final float maxTorque = 1000f;
-
-	/** Damping general motion **/
-	static final float linearDamping = 10f;
-	static final float angularDamping = 10f;
-
-	/** Repulser force gains **/
-	static final float centralRepelGain = 50f;
-	static final float nodeRepelGain = 10f;
-
-	static Vec2 repulserPoint = new Vec2(0f,0f); // Point everything is pushed from.
-
-	Vec2 localForce = new Vec2(0f,0f); // Latest force applied to this node.
+	private float zOffset = 0.f;
 
 	/*********** UTILITY **************/
-
 	/** Are we bulk adding saved nodes? If so, some construction things are deferred. **/
 	private static boolean currentlyAddingSavedNodes = false;
-
-	/** Random number generator for new node selection **/
-	private final static Random rand = new Random();
 
 	/**********************************/
 	/********** CONSTRUCTORS **********/
@@ -175,7 +130,7 @@ public class Node {
 				throw new RuntimeException("Tried to add a duplicate action node at depth " + treeDepth + ". Action was: " + action.toString() + ".");
 			}	
 		}
-		parent.children.add(this);
+
 		if (treeDepth > maxDepthYet){
 			maxDepthYet = treeDepth;
 		}
@@ -189,14 +144,12 @@ public class Node {
 		lineBrightness = parent.lineBrightness;
 		zOffset = parent.zOffset;
 
-		if (!currentlyAddingSavedNodes){
-			calcNodePos();
-			if (useTreePhysics){
-				initTreePhys_single();
-			}
+		parent.children.add(this);
+
+		if (!currentlyAddingSavedNodes && calculateNodeVisPositions){
+			calcNodePos(); // Must be called after this node has been added to its parent's list!
 		}
 	}
-
 
 	/** 
 	 * Make a new node which is NOT the root. connectNodeToTree is the default.
@@ -213,13 +166,6 @@ public class Node {
 			}	
 		}
 
-		if (connectNodeToTree) {
-			parent.children.add(this);
-			if (treeDepth > maxDepthYet){
-				maxDepthYet = treeDepth;
-			}
-		}
-
 		// Add some child actions to try if an action generator is assigned.
 		autoAddUncheckedActions();
 
@@ -229,18 +175,23 @@ public class Node {
 		lineBrightness = parent.lineBrightness;
 		zOffset = parent.zOffset;
 
-		if (connectNodeToTree && !currentlyAddingSavedNodes){
-			calcNodePos();
-			if (useTreePhysics){
-				initTreePhys_single();
+		// Should only add to parent's list after everything else has been done to prevent half-initialized nodes from being used by other workers.
+		if (connectNodeToTree) {
+			parent.children.add(this);
+			if (treeDepth > maxDepthYet){
+				maxDepthYet = treeDepth;
 			}
+		}
+
+		if (connectNodeToTree && !currentlyAddingSavedNodes && calculateNodeVisPositions){
+			calcNodePos(); // Must be called after this node has been added to its parent's list!
 		}
 	}
 
 	/**
 	 * Make the root of a new tree.
 	 **/
-	public Node(boolean treePhysOn) {
+	public Node() {
 		parent = null;
 		action = null;
 		treeDepth = 0; 
@@ -251,18 +202,11 @@ public class Node {
 		nodeColor = Color.BLUE;
 		displayPoint = true;
 
-		// Initialize the tree physics world if this is enabled.
-		useTreePhysics = treePhysOn;
-
-		// Root node gets the QWOP initial condition. Yay!
-		setState(FSM_Game.getInitialState());
+		// Root node gets the QWOP initial condition.
+		setState(GameLoader.getInitialState());
 
 		// Add some child actions to try if an action generator is assigned.
 		autoAddUncheckedActions();
-
-		if (useTreePhysics){
-			initTreePhys_single();
-		}
 	}
 
 	/************************************/
@@ -272,12 +216,12 @@ public class Node {
 	/** Add a new child node from a given action. If the action is in uncheckedActions, remove it. **/
 	public Node addChild(Action childAction) {
 		uncheckedActions.remove(childAction);
-		nodesCreated++;
+		nodesCreated.increment();
 		return new Node(this,childAction);
 	}
 
 	/** If we've assigned a potentialActionGenerator, this can auto-add potential child actions. Ignores duplicates. **/
-	private void autoAddUncheckedActions() {
+	private synchronized void autoAddUncheckedActions() {
 		// If we've set rules to auto-select potential children, do so.
 		if (potentialActionGenerator != null) {
 			ActionSet potentialActions = potentialActionGenerator.getPotentialChildActionSet(this);
@@ -296,151 +240,79 @@ public class Node {
 		}
 	}
 
-
-	/** Sample random node. Either create or return an existing not fully explored child. **/
-	public Node sampleNode(){
-
-		Node sample;
-		ArrayList<Node> unexploredChildren = new ArrayList<Node>();
-
-		Iterator<Node> iter = children.iterator();
-		while(iter.hasNext()){ // Check how many children are still valid choices to expand.
-			Node child = iter.next();
-			if (!child.fullyExplored) unexploredChildren.add(child);
+	/**
+	 * Cases:
+	 * 	1. Select node to expand. It has only 1 untried option. We lock the node, and expand.
+	 * 	2. Select node to expand. It has multiple options. We still lock the node for now. This could be changed.
+	 * 	3. Select node to expand. It is now locked according to 1 and 2. This node's parent only has fully explored children and locked children. For all
+	 * 		practical purposes, this node is also out of play. Lock it too and recurse up the tree until we reach a node with at least one unlocked and not
+	 * 		fully explored child.
+	 * 		When unlocking, we should propagate fully-explored statuses back up the tree first, and then remove locks as far up the tree as possible.
+	 */
+	private synchronized void propagateLock() {
+		for (Node child : children) {
+			if (!child.isTerminal && !child.getLockStatus()) { // Neither terminal node, nor locked.
+				return; // In this case, we don't need to continue locking things further up the tree.
+			}
 		}
-
-		if (fullyExplored) {
-			nodeColor = Color.RED;
-			throw new RuntimeException("Tried to sample from a node which thinks it's fully explored at depth " + treeDepth + ". It has " + unexploredChildren 
-					+ " children it thinks are not fully explored and " 
-					+ uncheckedActions.size() + " unchecked potential actions. Total children: " + children.size());
-		}
-
-		int selection = 0;
-		try{
-			selection = randInt(1,unexploredChildren.size() + uncheckedActions.size());
-		}catch(IllegalArgumentException e){
-			throw new RuntimeException("Invalid range when using RNG to sample a new node from this one at depth "
-					+ treeDepth + ". Unexplored children: " + unexploredChildren + ", Unchecked potential actions: "
-					+ uncheckedActions + " , Descendant count: " + countDescendants(),e); 
-		}
-
-		// Make a new node or pick a not fully explored child.
-		if (selection > unexploredChildren.size()){
-			sample = new Node(this,uncheckedActions.get(selection - unexploredChildren.size() - 1));
-			nodesCreated++;
-			uncheckedActions.remove(selection - unexploredChildren.size() - 1); // Don't allow this one to be picked again.
-		}else{
-			sample = unexploredChildren.get(selection - 1).sampleNode(); // Pick child and recurse this method.
-		}
-
-		//sample.fullyExplored = true;
-		//sample.checkFullyExplored_lite();
-		return sample;
+		reserveExpansionRights();		
 	}
 
-	/**
-	 * Expand the sets of potential children to check.
-	 * Will bilaterally add the number of specified options to the existing, tried ones.
-	 * Will also fill any gaps, e.g. if we have nodes for 55,57,58, will make 56 a potential option.
-	 */
-	//	public void expandNodeChoices(int doubleSidedExpansionNumber){
-	//
-	//		if (children.isEmpty()){
-	//			this.fullyExplored = true;
-	//			return; // Not well defined if there are no children to begin with. TODO fix this.
-	//		}
-	//
-	//		// Get all existing child actions.
-	//		int[] existingActions = new int[children.size()];
-	//		for (int i = 0; i < children.size(); i++){
-	//			existingActions[i] = children.get(i).action;
-	//		}
-	//		Arrays.sort(existingActions);
-	//
-	//		// Check for gaps and fill them in.
-	//		int count = 0;
-	//		for (int i = existingActions[0]; i <= existingActions[existingActions.length - 1]; i++){	
-	//			if (existingActions[count] == i){
-	//				count++;
-	//			}else{
-	//				uncheckedActions.add(i);
-	//			}
-	//		}
-	//
-	//		// Add new ones on either side of the existing set.
-	//		for (int i = 1; i <= doubleSidedExpansionNumber; i++){
-	//			uncheckedActions.add(existingActions[0] - i);
-	//			uncheckedActions.add(existingActions[existingActions.length - 1] + i);
-	//		}
-	//	}
-	//
-	//	/**
-	//	 * Add nodes around some center value.
-	//	 */
-	//	public void expandNodeChoices(int centerValue, int doubleSidedExpansionNumber){
-	//		for (int i = centerValue - doubleSidedExpansionNumber; i <= centerValue + doubleSidedExpansionNumber; i++){
-	//			if (!uncheckedActions.contains(i)){
-	//				uncheckedActions.add(i);
-	//			}
-	//		}
-	//	}
-	//
-	//	/** Expand all below this node. **/
-	//	public void expandNodeChoices_allBelow(int doubleSidedExpansionNumber){
-	//		expandNodeChoices(doubleSidedExpansionNumber);
-	//		fullyExplored = false;
-	//		for (Node child : children){
-	//			child.expandNodeChoices_allBelow(doubleSidedExpansionNumber);
-	//		}
-	//	}
-	//
-	//	/** Expand all below this node. **/
-	//	public void expandNodeChoices_range(int doubleSidedExpansionNumber, int firstLayer, int endLayer){
-	//		//TODO
-	//	}
-	//
-	//	/** Expand to include certain values. **/
-	//	public void expandNodeChoices_fullCycle(int[] nil1, int[] W_O, int[] nil2, int[] Q_P){
-	//		int[] newChoices = {};
-	//		switch(treeDepth % 4){ // Figure out which action in the cycle this is.
-	//		case 0:
-	//			newChoices = nil1;
-	//			break;
-	//		case 1:
-	//			newChoices = W_O;
-	//			break;	
-	//		case 2:
-	//			newChoices = nil2;
-	//			break;
-	//		case 3:
-	//			newChoices = Q_P;
-	//			break;
-	//		}
-	//		// Check whether the actions are already tested in the children, or included in the uncheckedActions list. If not, add.
-	//		for (int i = 0; i < newChoices.length; i++){
-	//			boolean isDuplicate = false;
-	//			for (Node child : children){
-	//				if (child.action == newChoices[i]){
-	//					isDuplicate = true;
-	//					break;
-	//				}
-	//			}
-	//			if (!isDuplicate && uncheckedActions.contains(newChoices[i])){
-	//				isDuplicate = true;
-	//			}
-	//			
-	//			if (!isDuplicate){
-	//				uncheckedActions.add(newChoices[i]);
-	//			}
-	//		}
-	//		
-	//		// Recurse.
-	//		for (Node child : children){
-	//			child.expandNodeChoices_fullCycle(nil1, W_O, nil2, Q_P);
-	//		}
-	//		
-	//	}
+	/** Set a flag to indicate that the invoking TreeWorker has temporary exclusive rights to expand from this node. **/
+	public synchronized boolean reserveExpansionRights() {
+		if (locked.get()) {
+			return false;
+		}else {
+			if (uncheckedActions.isEmpty()) return false;//throw new RuntimeException("A worker tried to reserve a node to expand, but found that there were no untried actions to check here.");
+			locked.set(true);
+			if (debugDrawNodeLocking) {
+				displayPoint = true;
+				overrideNodeColor = Color.RED;
+			}
+			if (treeDepth > 0) parent.propagateLock();
+			return true;
+		}
+	}
+
+	private synchronized void propagateUnlock() {
+		if (!getLockStatus()) return; 
+		for (Node child : children) {
+			if (!child.isTerminal && !child.getLockStatus()) {  // Neither terminal node, nor locked -> does not need to stay locked.
+				releaseExpansionRights();
+				return;
+			}
+		}
+	}
+
+	/** Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node. **/
+	public synchronized void releaseExpansionRights() {
+		locked.set(false);
+		if (debugDrawNodeLocking) {
+			displayPoint = false;
+			overrideNodeColor = null;
+		}
+		if (treeDepth > 0) parent.propagateUnlock();
+	}
+
+	/** Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node. **/
+	public synchronized boolean getLockStatus() {
+		return locked.get();
+	}
+	
+	/** Get the node's value in a thread-safe way. **/
+	public synchronized float getValue() {
+		return value;
+	}
+	
+	/** Set the node's value in a thread-safe way. **/
+	public synchronized void setValue(float val) {
+		value = val;
+	}
+	
+	/** Add to the node's value in a thread-safe way. **/
+	public synchronized void addToValue(float val) {
+		value += val;
+	}
 
 	/***********************************************/
 	/******* GETTING CERTAIN SETS OF NODES *********/
@@ -448,28 +320,28 @@ public class Node {
 
 	/** Get a random child **/
 	public Node getRandomChild(){
-		return children.get(randInt(0,children.size()-1));
+		return children.get(Utility.randInt(0,children.size()-1));
 	}
 
 	/** Add all the nodes below and including this one to a list. Does not include nodes whose state have not yet been assigned. **/
-	public ArrayList<Node> getNodes_below(ArrayList<Node> nodeList){
+	public List<Node> getNodesBelow(List<Node> nodeList){
 		if (state != null){
 			nodeList.add(this);
 		}
 		for (Node child : children){
-			child.getNodes_below(nodeList);
+			child.getNodesBelow(nodeList);
 		}	
 		return nodeList;
 	}
 
 
 	/** Locate all the endpoints in the tree. Starts from the node it is called from. **/
-	public void getLeaves(ArrayList<Node> leaves){
+	public void getLeaves(List<Node> descendants){
 		for (Node child : children){
 			if (child.children.isEmpty()){
-				leaves.add(child);
+				descendants.add(child);
 			}else{
-				child.getLeaves(leaves);
+				child.getLeaves(descendants);
 			}
 		}	
 	}
@@ -557,33 +429,33 @@ public class Node {
 	}
 
 	/** Total number of nodes in this or any tree. **/
-	public static int getTotalNodeCount(){
-		return nodesImported + nodesCreated;
+	public static long getTotalNodeCount(){
+		return nodesImported.longValue() + nodesCreated.longValue();
 	}
 
 	/** Total number of nodes imported from save file. **/
-	public static int getImportedNodeCount(){
-		return nodesImported;
+	public static long getImportedNodeCount(){
+		return nodesImported.longValue();
 	}
 
 	/** Total number of nodes created this session. **/
-	public static int getCreatedNodeCount(){
-		return nodesCreated;
+	public static long getCreatedNodeCount(){
+		return nodesCreated.longValue();
 	}
 
 	/** Total number of nodes created this session. **/
-	public static int getImportedGameCount(){
-		return gamesImported;
+	public static long getImportedGameCount(){
+		return gamesImported.longValue();
 	}
 	/** Total number of nodes created this session. **/
-	public static int getCreatedGameCount(){
-		return gamesCreated;
+	public static long getCreatedGameCount(){
+		return gamesCreated.longValue();
 	}
 
 	/** Mark this node as representing a terminal state. **/
 	public void markTerminal(){
 		isTerminal = true;
-		gamesCreated++;
+		gamesCreated.increment();
 	}
 
 	/***************************************************/
@@ -591,18 +463,12 @@ public class Node {
 	/***************************************************/
 
 	//	/** Capture the state from an active game **/
-	//	@Deprecated
-	//	public void captureState(QWOPInterface QWOPHandler){
-	//		state = new CondensedStateInfo(QWOPHandler.game); // MATT add 8/22/17
+	//	public void captureState(QWOPGame game){
+	//		state = new State(game); // MATT add 8/22/17
 	//	}
 
-	/** Capture the state from an active game **/
-	public void captureState(QWOPGame game){
-		state = new State(game); // MATT add 8/22/17
-	}
-
 	/** Assign the state directly. Usually when loading nodes. **/
-	public void setState(State newState){
+	public synchronized void setState(State newState){
 		state = newState;
 	}
 
@@ -613,7 +479,7 @@ public class Node {
 	}
 
 	/** Get the sequence of actions up to, and including this node **/
-	public Action[] getSequence(){
+	public synchronized Action[] getSequence(){
 		Action[] sequence = new Action[treeDepth];
 		if (treeDepth == 0) return sequence; // Empty array for root node.
 		Node current = this;
@@ -631,7 +497,7 @@ public class Node {
 
 	/* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Returns the ROOT of a tree. */
 	public static Node makeNodesFromRunInfo(ArrayList<SaveableSingleGame> runs, boolean initializeTreePhysics){
-		Node rootNode = new Node(initializeTreePhysics);
+		Node rootNode = new Node();
 		return makeNodesFromRunInfo(runs, rootNode);
 	}
 
@@ -658,27 +524,19 @@ public class Node {
 					newNode.setState(run.states[i]);
 					newNode.calcNodePos();
 					currentNode = newNode;
-					nodesImported++;
+					nodesImported.increment();
 				}
 			}
-			gamesImported++;
+			gamesImported.increment();
 		}
 		rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
 		currentlyAddingSavedNodes = false;
 		rootNode.calcNodePos_below();
-		if (Node.useTreePhysics) rootNode.initTreePhys_below();
 		return rootNode;
 	}
 
-	/** Generate a random integer between two values, inclusive. **/
-	public static int randInt(int min, int max) {
-		if (min > max) throw new IllegalArgumentException("Random int sampler should be given a minimum value which is less than or equal to the given max value.");
-		int randomNum = rand.nextInt((max - min) + 1) + min;
-		return randomNum;
-	}
-
 	/************************************************/
-	/******* NODE POSITIONING INCL PHYSICS **********/
+	/*******         NODE POSITIONING      **********/
 	/************************************************/
 
 	/** Vanilla node positioning from all previous versions.
@@ -688,16 +546,7 @@ public class Node {
 	 **/
 	public void calcNodePos(float[] nodeLocationsToAssign){
 		//Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will span the required sweep.
-		if(treeDepth == 0){ //If this is the root node, we shouldn't change stuff yet.
-			//			if (children.size() > 1) { //Catch the div by 0
-			//				
-			//				int division = children.size() + uncheckedActions.size(); // Split into this many chunks.
-			//				System.out.println("WHa");
-			//				nodeAngle = -sweepAngle/2.f + (float)(parent.children.indexOf(this)) * sweepAngle/(float)(children.size() - 1 + uncheckedActions.size());
-			//			}else{
-			//				nodeAngle = (float)Math.PI/2f;
-			//			}
-		}else{
+		if(treeDepth >= 0){
 			if (parent.children.size() + ((parent.uncheckedActions == null) ? 0 :parent.uncheckedActions.size()) > 1){ //Catch the div by 0
 				int division = parent.children.size() + parent.uncheckedActions.size(); // Split into this many chunks.
 				int childNo = parent.children.indexOf(this);
@@ -720,6 +569,22 @@ public class Node {
 		nodeLocationsToAssign[0] = (float) (parent.nodeLocation[0] + edgeLength*Math.cos(nodeAngle));
 		nodeLocationsToAssign[1] = (float) (parent.nodeLocation[1] + edgeLength*Math.sin(nodeAngle));
 		nodeLocationsToAssign[2] = 0f; // No out of plane stuff yet.
+		
+		// Since drawing speed is a UI bottleneck, we may want to filter out some of the points that are REALLY close.
+		if (limitDrawing) {
+			float xDiff;
+			float yDiff;
+			for (Node n : pointsToDraw) {
+				xDiff = n.nodeLocation[0] - nodeLocationsToAssign[0];
+				yDiff = n.nodeLocation[1] - nodeLocationsToAssign[1];
+				if ((xDiff*xDiff + yDiff*yDiff) < drawFilterDistance) {
+					notDrawnForSpeed = true;
+					return; // To close. Turn it off and get out.
+				}
+			}
+			notDrawnForSpeed = false;
+			pointsToDraw.add(this);
+		}
 	}
 
 	/** Same, but assumes that we're talking about this node's nodeLocation **/
@@ -732,181 +597,6 @@ public class Node {
 		for (Node current : children){
 			current.calcNodePos();	
 			current.calcNodePos_below(); // Recurse down through the tree.
-		}
-	}
-
-	/** Initialize all the physics stuff for this node. **/
-	public void initTreePhys_single(){
-		if (treeDepth == 0){ // Root creates the WORLD.
-			treePhysWorld = new World(new AABB(new Vec2(-10, -10f), new Vec2(10f,10f)), new Vec2(0f, 0f), true);
-
-			treePhysWorld.setWarmStarting(true);
-			treePhysWorld.setPositionCorrection(true);
-			treePhysWorld.setContinuousPhysics(true);
-		}
-
-		physShape = new PolygonDef();
-		physShape.setAsBox(physSize, physSize); // Shape is just a small square centered at the node. No need to do rectangles.
-		physShape.filter.groupIndex = TREE_GROUP; // Filter out all collisions.
-		BodyDef physBodyDef = new BodyDef();
-
-		// Add at existing node positions. 
-		physBodyDef.position = new Vec2(nodeLocation[0],nodeLocation[1]);
-		physBodyDef.angle = nodeAngle;
-
-		if (treeDepth > 0){ // Setting the mass/inertia of root to zero makes it fixed.
-			MassData physMassData = new MassData();
-			physMassData.mass = physMass;
-			physMassData.I = physInertia;
-			physBodyDef.massData = physMassData;
-		}
-		physBody = null;
-		while (physBody == null){ // World locks while stepping. "m_lock" isn't visible outside the package, so this is the hack.
-			physBody = treePhysWorld.createBody(physBodyDef);
-		}
-		physBody.setLinearDamping(linearDamping);
-		physBody.setAngularDamping(angularDamping);
-		physBody.createShape(physShape);
-
-		if (treeDepth > 0){
-			RevoluteJointDef physJDef = new RevoluteJointDef(); 
-			physJDef.initialize(physBody,parent.physBody, new Vec2(parent.nodeLocation[0],parent.nodeLocation[1])); //Body1, body2, anchor in world coords
-			physJDef.enableLimit = false;
-			physJDef.upperAngle = 0.5f;
-			physJDef.lowerAngle = -0.5f;
-			physJDef.collideConnected = false;
-			physJDef.enableMotor = true;
-			physJDef.maxMotorTorque = maxTorque;
-			physJDef.motorSpeed = 0;
-
-			jointToParent = (RevoluteJoint)treePhysWorld.createJoint(physJDef);
-		}
-		arePhysicsInitialized = true;
-	}
-
-	/** Initialize the tree physics below the called node. Useful when importing lots or doing in batches. **/
-	public void initTreePhys_below(){
-		for (Node child : children){
-			child.initTreePhys_single();
-			child.initTreePhys_below();
-		}
-	}
-
-	/** Advance the tree physics, and update node positions. **/
-	public void stepTreePhys(int timesteps){
-		stepping = true;
-		if (treeDepth != 0) throw new RuntimeException("Tree physics updates are only supported from root for now.");
-		if (!useTreePhysics){
-			stepping = false;
-			return;
-		}
-		ArrayList<Node> nodeList = new ArrayList<Node>();
-		getNodes_below(nodeList);
-
-		for (int i = 0; i < timesteps; i++){
-			// Calculate added forces before stepping the world.
-			applyForce(nodeList);
-			treePhysWorld.step(physDt, physIterations);
-			updatePositionFromPhys();
-		}
-		stepping = false;
-	}
-
-	/** Apply all my made up forces to the nodes. **/
-	public void applyForce(ArrayList<Node> nodeList){
-		if (arePhysicsInitialized){
-			for (Node thisNode : nodeList){
-				if (thisNode.treeDepth == 0 || !thisNode.arePhysicsInitialized) continue; // Skip forces on root.
-				localForce.setZero();
-
-				// Repulser from the specified origin.
-				Vec2 o_pt = thisNode.physBody.getPosition().sub(repulserPoint); // Repulser point to this node.
-				//System.out.println(thisNode.physBody.getPosition().x + "," + thisNode.physBody.getPosition().y);
-				float lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors
-				Vec2 repulserForce = o_pt.mul(centralRepelGain * thisNode.physMass/(lengthSq)); // Only inverse distance law right now.
-				localForce.addLocal(repulserForce);
-
-				//				// Repulser from EVERYONE is way too slow. >1 second with big tree. We need AABB equivalent.
-				//				for (TrialNodeMinimal otherNode : nodeList){
-				//					if (!otherNode.equals(thisNode) && otherNode.arePhysicsInitialized){
-				//						o_pt = thisNode.physBody.getPosition().sub(otherNode.physBody.getPosition()); // Repulser point to this node.
-				//						lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors
-				//
-				//						// Ancestor nodes have a bigger repulsive effect than others.
-				//						if (thisNode.isOtherNodeAncestor(otherNode)){
-				//							repulserForce = o_pt.mul((ancestorMultiplier * nodeRepelGain * thisNode.physMass * otherNode.physMass)/(lengthSq*lengthSq)); // Only inverse distance law right now.
-				//						}else{
-				//							repulserForce = o_pt.mul((nodeRepelGain * thisNode.physMass * otherNode.physMass)/(lengthSq*lengthSq)); // Only inverse distance law right now.
-				//						}
-				//						localForce.addLocal(repulserForce);
-				//					}
-				//				}
-
-				// Repulser force from cousins (parent's sibling's children)
-				if (thisNode.treeDepth > 1){
-					Node grandparent = thisNode.parent.parent;
-					for (Node aunt : grandparent.children){ // Also happens to include parent
-						for (Node cousin : aunt.children){ // Also happens to include siblings
-							if (!cousin.equals(thisNode) && cousin.arePhysicsInitialized){
-								localForce.addLocal(repulserForce(thisNode, cousin));
-							}
-						}
-					}
-				}else if (thisNode.treeDepth == 1){ // Forces on nodes one layer in. It's important to balance the repulsive forces or things blow up.
-					for (Node sibling : thisNode.parent.children){
-						if (!sibling.equals(thisNode) && sibling.arePhysicsInitialized){
-							localForce.addLocal(repulserForce(thisNode,sibling));
-						}
-					}
-				}
-
-				// From grandchildren
-				for (Node child : children){
-					for (Node grandchild : child.children){
-						if (grandchild.arePhysicsInitialized){
-							localForce.addLocal(repulserForce(thisNode, grandchild));
-						}
-					}
-				}
-
-				// From grandparent
-				if (treeDepth > 1){
-					localForce.addLocal(repulserForce(thisNode, thisNode.parent.parent));
-				}
-
-
-				thisNode.physBody.applyForce(localForce, thisNode.physBody.getWorldCenter());
-
-				// Pseudo-spring in the joint
-				float motorSpeed = Math.min((float)thisNode.countDescendants() * anglePGain, angleSpeedCap) * (-thisNode.parent.physBody.getAngle() + thisNode.physBody.getAngle() - angleDGain * thisNode.jointToParent.getJointSpeed());
-				thisNode.jointToParent.setMotorSpeed(motorSpeed);
-			}
-		}
-	}
-
-	/** Node repulser force rule so I don't have to keep ctrl-c this crap **/
-	private static Vec2 repulserForce(Node thisNode, Node otherNode){
-		if (!otherNode.equals(thisNode) && otherNode.arePhysicsInitialized){
-			Vec2 o_pt = thisNode.physBody.getPosition().sub(otherNode.physBody.getPosition()); // Repulser point to this node.
-			float lengthSq = Math.max(o_pt.lengthSquared(), 0.1f); // Set minimum distance to prevent div0 errors
-			Vec2 repulserForce = o_pt.mul(nodeRepelGain * thisNode.physMass/(lengthSq));//(float)Math.sqrt((double)lengthSq))); // Only inverse distance law right now.
-			return repulserForce;
-		}else{
-			return new Vec2(0,0);
-		}
-	}
-
-	/** Propagate all physics world info back to the node drawing info. **/
-	public void updatePositionFromPhys(){
-		if (arePhysicsInitialized){
-			Vec2 newPos = physBody.getPosition();
-			nodeLocation[0] = newPos.x;
-			nodeLocation[1] = newPos.y;
-			nodeAngle = physBody.getAngle();
-			//nodeAngle = jointToParent.getJointAngle(); // Relative angle.
-			for (Node child : children){		
-				child.updatePositionFromPhys();
-			}
 		}
 	}
 
@@ -947,7 +637,7 @@ public class Node {
 		Iterator<Node> iter = children.iterator();
 		while (iter.hasNext()){
 			Node current = iter.next();
-			current.drawLine(gl);
+			if (!current.notDrawnForSpeed) current.drawLine(gl);
 			if (current.treeDepth <= this.treeDepth) throw new RuntimeException("Node hierarchy problem. Node with an equal or lesser depth is below another. At " + current.treeDepth + " and " + this.treeDepth + ".");
 			current.drawLines_below(gl); // Recurse down through the tree.
 		}
@@ -955,7 +645,7 @@ public class Node {
 
 	/** Draw all nodes in the subtree below this node. **/
 	public void drawNodes_below(GL2 gl){
-		drawPoint(gl);
+		if (!notDrawnForSpeed) drawPoint(gl);
 		Iterator<Node> iter = children.iterator();
 		while (iter.hasNext()){
 			Node child = iter.next();
@@ -1016,11 +706,26 @@ public class Node {
 		}
 	}
 
+	/** Set an override line color for this path (all ancestors). **/
+	public void setBackwardsBranchColor(Color newColor){
+		overrideLineColor = newColor;
+		if (treeDepth > 0) {
+			parent.setBackwardsBranchColor(newColor);
+		}
+	}
 	/** Clear an overriden line color on this branch. Call from root to get all line colors back to default. **/
 	public void clearBranchColor(){
 		overrideLineColor = null;
 		for (Node child : children){
 			child.clearBranchColor();
+		}
+	}
+
+	/** Clear an overriden line color on this branch. Goes back towards root. **/
+	public void clearBackwardsBranchColor(){
+		overrideLineColor = null;
+		if (treeDepth > 0) {
+			parent.clearBackwardsBranchColor();
 		}
 	}
 
@@ -1035,6 +740,17 @@ public class Node {
 		}
 	}
 
+	/** Clear node override colors from this node backwards. Only clear the specified color. Goes towards root. **/
+	public void clearBackwardsNodeOverrideColor(Color colorToClear){
+		if (overrideNodeColor == colorToClear){
+			overrideNodeColor = null;
+			displayPoint = false;
+		}
+		if (treeDepth > 0) {
+			parent.clearBackwardsNodeOverrideColor(colorToClear);
+		}
+	}
+
 	/** Clear all node override colors from this node onward. Call from root to clear all. **/
 	public void clearNodeOverrideColor(){
 		if (overrideNodeColor != null){
@@ -1043,6 +759,17 @@ public class Node {
 		}
 		for (Node child : children){
 			child.clearNodeOverrideColor();
+		}
+	}
+
+	/** Clear all node override colors from this node onward. Call from root to clear all. **/
+	public void clearBackwardsNodeOverrideColor(){
+		if (overrideNodeColor != null){
+			overrideNodeColor = null;
+			displayPoint = false;
+		}
+		if (treeDepth > 0) {
+			parent.clearBackwardsNodeOverrideColor();
 		}
 	}
 

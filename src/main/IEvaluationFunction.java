@@ -13,4 +13,7 @@ public interface IEvaluationFunction {
 	/** Get a formatted string of the evaluation of a note. Typically this will divide the value up into whatever components go into it. **/
 	public String getValueString(Node nodeToEvaluate);
 	
+	/** Get a copy of this. **/
+	public IEvaluationFunction clone();
+	
 }

@@ -139,12 +139,12 @@ To update the classpath settings for Eclipse:
 				<version>1.4.0</version>
 			</dependency>
 
-			<!-- 2D physics engine; old version similar to that in QWOP. Hosted locally. -->
-			<dependency>
+			<!--			<dependency>
 				<groupId>org.jbox2d</groupId>
 				<artifactId>jbox2d</artifactId>
 				<version>0.0.1</version>
-			</dependency>
+			</dependency> 2D physics engine; old version similar to that in QWOP. Hosted locally. -->
+
 
 			<!-- Parsing command line arguments -->
 			<dependency>

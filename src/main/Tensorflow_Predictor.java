@@ -8,6 +8,8 @@ import org.tensorflow.Graph;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 
+import game.State;
+
 public class Tensorflow_Predictor {
 
 	private Tensor<Float> dropVal = Tensor.create(new float[] {1.f}, Float.class);

@@ -1,10 +1,9 @@
 package main;
 
-import javax.swing.event.ChangeEvent;
-
 public interface IUserInterface extends Runnable{
 
 	/** Main graphics loop. **/
+	@Override
 	void run();
 
 	/** Stop the FSM. **/
@@ -13,18 +12,11 @@ public interface IUserInterface extends Runnable{
 	/** Pick a node for the UI to highlight and potentially display. **/
 	void selectNode(Node selected);
 
-	void stateChanged(ChangeEvent e);
-
-	void setNegotiator(Negotiator negotiator);
-	
-	void setLiveGameToView(QWOPGame game);
-	
-	void clearLiveGameToView();
-	
 	void addRootNode(Node node);
 	
-	boolean isSnapshotPaneActive();
-	
-	boolean isRunnerPaneActive();
-
+	public interface TabbedPaneActivator {
+		public void activateTab();
+		public void deactivateTab();
+		public boolean isActive();
+	}
 }

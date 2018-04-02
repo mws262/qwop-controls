@@ -33,4 +33,7 @@ public interface ISampler {
 	
 	/** Are we ready to switch from rollout policy to tree policy? **/
 	public boolean rolloutPolicyGuard(Node currentNode);
+	
+	/** Copy this sampler and its settings. Each worker needs an individual copy. **/
+	public ISampler clone();
 }

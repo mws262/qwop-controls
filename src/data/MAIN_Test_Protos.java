@@ -1,15 +1,14 @@
 package data;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import data.DenseDataProtos.DataSet.DenseData;
+import game.State;
 import data.DenseDataProtos.*;
-import main.State;
 import main.Action;
 
 public class MAIN_Test_Protos {

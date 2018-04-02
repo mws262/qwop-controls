@@ -71,7 +71,8 @@ public  final class Example extends
     return org.tensorflow.example.ExampleProtos.internal_static_tensorflow_Example_descriptor;
   }
 
-  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+  @Override
+protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return org.tensorflow.example.ExampleProtos.internal_static_tensorflow_Example_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -83,24 +84,28 @@ public  final class Example extends
   /**
    * <code>optional .tensorflow.Features features = 1;</code>
    */
-  public boolean hasFeatures() {
+  @Override
+public boolean hasFeatures() {
     return features_ != null;
   }
   /**
    * <code>optional .tensorflow.Features features = 1;</code>
    */
-  public org.tensorflow.example.Features getFeatures() {
+  @Override
+public org.tensorflow.example.Features getFeatures() {
     return features_ == null ? org.tensorflow.example.Features.getDefaultInstance() : features_;
   }
   /**
    * <code>optional .tensorflow.Features features = 1;</code>
    */
-  public org.tensorflow.example.FeaturesOrBuilder getFeaturesOrBuilder() {
+  @Override
+public org.tensorflow.example.FeaturesOrBuilder getFeaturesOrBuilder() {
     return getFeatures();
   }
 
   private byte memoizedIsInitialized = -1;
-  public final boolean isInitialized() {
+  @Override
+public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
     if (isInitialized == 0) return false;
@@ -109,14 +114,16 @@ public  final class Example extends
     return true;
   }
 
-  public void writeTo(com.google.protobuf.CodedOutputStream output)
+  @Override
+public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
     if (features_ != null) {
       output.writeMessage(1, getFeatures());
     }
   }
 
-  public int getSerializedSize() {
+  @Override
+public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
 
@@ -224,14 +231,16 @@ public  final class Example extends
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public Builder newBuilderForType() { return newBuilder(); }
+  @Override
+public Builder newBuilderForType() { return newBuilder(); }
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
   public static Builder newBuilder(org.tensorflow.example.Example prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
-  public Builder toBuilder() {
+  @Override
+public Builder toBuilder() {
     return this == DEFAULT_INSTANCE
         ? new Builder() : new Builder().mergeFrom(this);
   }
@@ -254,7 +263,8 @@ public  final class Example extends
       return org.tensorflow.example.ExampleProtos.internal_static_tensorflow_Example_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+	protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.tensorflow.example.ExampleProtos.internal_static_tensorflow_Example_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -276,7 +286,8 @@ public  final class Example extends
               .alwaysUseFieldBuilders) {
       }
     }
-    public Builder clear() {
+    @Override
+	public Builder clear() {
       super.clear();
       if (featuresBuilder_ == null) {
         features_ = null;
@@ -287,16 +298,19 @@ public  final class Example extends
       return this;
     }
 
-    public com.google.protobuf.Descriptors.Descriptor
+    @Override
+	public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
       return org.tensorflow.example.ExampleProtos.internal_static_tensorflow_Example_descriptor;
     }
 
-    public org.tensorflow.example.Example getDefaultInstanceForType() {
+    @Override
+	public org.tensorflow.example.Example getDefaultInstanceForType() {
       return org.tensorflow.example.Example.getDefaultInstance();
     }
 
-    public org.tensorflow.example.Example build() {
+    @Override
+	public org.tensorflow.example.Example build() {
       org.tensorflow.example.Example result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
@@ -304,7 +318,8 @@ public  final class Example extends
       return result;
     }
 
-    public org.tensorflow.example.Example buildPartial() {
+    @Override
+	public org.tensorflow.example.Example buildPartial() {
       org.tensorflow.example.Example result = new org.tensorflow.example.Example(this);
       if (featuresBuilder_ == null) {
         result.features_ = features_;
@@ -315,33 +330,40 @@ public  final class Example extends
       return result;
     }
 
-    public Builder clone() {
-      return (Builder) super.clone();
+    @Override
+	public Builder clone() {
+      return super.clone();
     }
-    public Builder setField(
+    @Override
+	public Builder setField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         Object value) {
-      return (Builder) super.setField(field, value);
+      return super.setField(field, value);
     }
-    public Builder clearField(
+    @Override
+	public Builder clearField(
         com.google.protobuf.Descriptors.FieldDescriptor field) {
-      return (Builder) super.clearField(field);
+      return super.clearField(field);
     }
-    public Builder clearOneof(
+    @Override
+	public Builder clearOneof(
         com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-      return (Builder) super.clearOneof(oneof);
+      return super.clearOneof(oneof);
     }
-    public Builder setRepeatedField(
+    @Override
+	public Builder setRepeatedField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         int index, Object value) {
-      return (Builder) super.setRepeatedField(field, index, value);
+      return super.setRepeatedField(field, index, value);
     }
-    public Builder addRepeatedField(
+    @Override
+	public Builder addRepeatedField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         Object value) {
-      return (Builder) super.addRepeatedField(field, value);
+      return super.addRepeatedField(field, value);
     }
-    public Builder mergeFrom(com.google.protobuf.Message other) {
+    @Override
+	public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof org.tensorflow.example.Example) {
         return mergeFrom((org.tensorflow.example.Example)other);
       } else {
@@ -359,11 +381,13 @@ public  final class Example extends
       return this;
     }
 
-    public final boolean isInitialized() {
+    @Override
+	public final boolean isInitialized() {
       return true;
     }
 
-    public Builder mergeFrom(
+    @Override
+	public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -387,13 +411,15 @@ public  final class Example extends
     /**
      * <code>optional .tensorflow.Features features = 1;</code>
      */
-    public boolean hasFeatures() {
+    @Override
+	public boolean hasFeatures() {
       return featuresBuilder_ != null || features_ != null;
     }
     /**
      * <code>optional .tensorflow.Features features = 1;</code>
      */
-    public org.tensorflow.example.Features getFeatures() {
+    @Override
+	public org.tensorflow.example.Features getFeatures() {
       if (featuresBuilder_ == null) {
         return features_ == null ? org.tensorflow.example.Features.getDefaultInstance() : features_;
       } else {
@@ -473,7 +499,8 @@ public  final class Example extends
     /**
      * <code>optional .tensorflow.Features features = 1;</code>
      */
-    public org.tensorflow.example.FeaturesOrBuilder getFeaturesOrBuilder() {
+    @Override
+	public org.tensorflow.example.FeaturesOrBuilder getFeaturesOrBuilder() {
       if (featuresBuilder_ != null) {
         return featuresBuilder_.getMessageOrBuilder();
       } else {
@@ -497,12 +524,14 @@ public  final class Example extends
       }
       return featuresBuilder_;
     }
-    public final Builder setUnknownFields(
+    @Override
+	public final Builder setUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return this;
     }
 
-    public final Builder mergeUnknownFields(
+    @Override
+	public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return this;
     }
@@ -523,7 +552,8 @@ public  final class Example extends
 
   private static final com.google.protobuf.Parser<Example>
       PARSER = new com.google.protobuf.AbstractParser<Example>() {
-    public Example parsePartialFrom(
+    @Override
+	public Example parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -540,7 +570,8 @@ public  final class Example extends
     return PARSER;
   }
 
-  public org.tensorflow.example.Example getDefaultInstanceForType() {
+  @Override
+public org.tensorflow.example.Example getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

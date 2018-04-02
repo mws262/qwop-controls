@@ -3,7 +3,7 @@ package data;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import main.State;
+import game.State;
 import main.Action;
 /**
  * Holds all the states and actions on a TIMESTEP level for an entire game.

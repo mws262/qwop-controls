@@ -71,7 +71,8 @@ public  final class Features extends
     return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_Features_descriptor;
   }
 
-  @SuppressWarnings({"rawtypes"})
+  @Override
+@SuppressWarnings({"rawtypes"})
   protected com.google.protobuf.MapField internalGetMapField(
       int number) {
     switch (number) {
@@ -82,7 +83,8 @@ public  final class Features extends
             "Invalid map field number: " + number);
     }
   }
-  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+  @Override
+protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_Features_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -112,7 +114,8 @@ public  final class Features extends
     return feature_;
   }
 
-  public int getFeatureCount() {
+  @Override
+public int getFeatureCount() {
     return internalGetFeature().getMap().size();
   }
   /**
@@ -123,7 +126,8 @@ public  final class Features extends
    * <code>map&lt;string, .tensorflow.Feature&gt; feature = 1;</code>
    */
 
-  public boolean containsFeature(
+  @Override
+public boolean containsFeature(
       java.lang.String key) {
     if (key == null) { throw new java.lang.NullPointerException(); }
     return internalGetFeature().getMap().containsKey(key);
@@ -131,7 +135,8 @@ public  final class Features extends
   /**
    * Use {@link #getFeatureMap()} instead.
    */
-  @java.lang.Deprecated
+  @Override
+@java.lang.Deprecated
   public java.util.Map<java.lang.String, org.tensorflow.example.Feature> getFeature() {
     return getFeatureMap();
   }
@@ -143,7 +148,8 @@ public  final class Features extends
    * <code>map&lt;string, .tensorflow.Feature&gt; feature = 1;</code>
    */
 
-  public java.util.Map<java.lang.String, org.tensorflow.example.Feature> getFeatureMap() {
+  @Override
+public java.util.Map<java.lang.String, org.tensorflow.example.Feature> getFeatureMap() {
     return internalGetFeature().getMap();
   }
   /**
@@ -154,7 +160,8 @@ public  final class Features extends
    * <code>map&lt;string, .tensorflow.Feature&gt; feature = 1;</code>
    */
 
-  public org.tensorflow.example.Feature getFeatureOrDefault(
+  @Override
+public org.tensorflow.example.Feature getFeatureOrDefault(
       java.lang.String key,
       org.tensorflow.example.Feature defaultValue) {
     if (key == null) { throw new java.lang.NullPointerException(); }
@@ -170,7 +177,8 @@ public  final class Features extends
    * <code>map&lt;string, .tensorflow.Feature&gt; feature = 1;</code>
    */
 
-  public org.tensorflow.example.Feature getFeatureOrThrow(
+  @Override
+public org.tensorflow.example.Feature getFeatureOrThrow(
       java.lang.String key) {
     if (key == null) { throw new java.lang.NullPointerException(); }
     java.util.Map<java.lang.String, org.tensorflow.example.Feature> map =
@@ -182,7 +190,8 @@ public  final class Features extends
   }
 
   private byte memoizedIsInitialized = -1;
-  public final boolean isInitialized() {
+  @Override
+public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
     if (isInitialized == 0) return false;
@@ -191,7 +200,8 @@ public  final class Features extends
     return true;
   }
 
-  public void writeTo(com.google.protobuf.CodedOutputStream output)
+  @Override
+public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
     com.google.protobuf.GeneratedMessageV3
       .serializeStringMapTo(
@@ -201,7 +211,8 @@ public  final class Features extends
         1);
   }
 
-  public int getSerializedSize() {
+  @Override
+public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
 
@@ -312,14 +323,16 @@ public  final class Features extends
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public Builder newBuilderForType() { return newBuilder(); }
+  @Override
+public Builder newBuilderForType() { return newBuilder(); }
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
   public static Builder newBuilder(org.tensorflow.example.Features prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
-  public Builder toBuilder() {
+  @Override
+public Builder toBuilder() {
     return this == DEFAULT_INSTANCE
         ? new Builder() : new Builder().mergeFrom(this);
   }
@@ -342,7 +355,8 @@ public  final class Features extends
       return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_Features_descriptor;
     }
 
-    @SuppressWarnings({"rawtypes"})
+    @Override
+	@SuppressWarnings({"rawtypes"})
     protected com.google.protobuf.MapField internalGetMapField(
         int number) {
       switch (number) {
@@ -353,7 +367,8 @@ public  final class Features extends
               "Invalid map field number: " + number);
       }
     }
-    @SuppressWarnings({"rawtypes"})
+    @Override
+	@SuppressWarnings({"rawtypes"})
     protected com.google.protobuf.MapField internalGetMutableMapField(
         int number) {
       switch (number) {
@@ -364,7 +379,8 @@ public  final class Features extends
               "Invalid map field number: " + number);
       }
     }
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+	protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_Features_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -386,22 +402,26 @@ public  final class Features extends
               .alwaysUseFieldBuilders) {
       }
     }
-    public Builder clear() {
+    @Override
+	public Builder clear() {
       super.clear();
       internalGetMutableFeature().clear();
       return this;
     }
 
-    public com.google.protobuf.Descriptors.Descriptor
+    @Override
+	public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
       return org.tensorflow.example.FeatureProtos.internal_static_tensorflow_Features_descriptor;
     }
 
-    public org.tensorflow.example.Features getDefaultInstanceForType() {
+    @Override
+	public org.tensorflow.example.Features getDefaultInstanceForType() {
       return org.tensorflow.example.Features.getDefaultInstance();
     }
 
-    public org.tensorflow.example.Features build() {
+    @Override
+	public org.tensorflow.example.Features build() {
       org.tensorflow.example.Features result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
@@ -409,7 +429,8 @@ public  final class Features extends
       return result;
     }
 
-    public org.tensorflow.example.Features buildPartial() {
+    @Override
+	public org.tensorflow.example.Features buildPartial() {
       org.tensorflow.example.Features result = new org.tensorflow.example.Features(this);
       int from_bitField0_ = bitField0_;
       result.feature_ = internalGetFeature();
@@ -418,33 +439,40 @@ public  final class Features extends
       return result;
     }
 
-    public Builder clone() {
-      return (Builder) super.clone();
+    @Override
+	public Builder clone() {
+      return super.clone();
     }
-    public Builder setField(
+    @Override
+	public Builder setField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         Object value) {
-      return (Builder) super.setField(field, value);
+      return super.setField(field, value);
     }
-    public Builder clearField(
+    @Override
+	public Builder clearField(
         com.google.protobuf.Descriptors.FieldDescriptor field) {
-      return (Builder) super.clearField(field);
+      return super.clearField(field);
     }
-    public Builder clearOneof(
+    @Override
+	public Builder clearOneof(
         com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-      return (Builder) super.clearOneof(oneof);
+      return super.clearOneof(oneof);
     }
-    public Builder setRepeatedField(
+    @Override
+	public Builder setRepeatedField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         int index, Object value) {
-      return (Builder) super.setRepeatedField(field, index, value);
+      return super.setRepeatedField(field, index, value);
     }
-    public Builder addRepeatedField(
+    @Override
+	public Builder addRepeatedField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
         Object value) {
-      return (Builder) super.addRepeatedField(field, value);
+      return super.addRepeatedField(field, value);
     }
-    public Builder mergeFrom(com.google.protobuf.Message other) {
+    @Override
+	public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof org.tensorflow.example.Features) {
         return mergeFrom((org.tensorflow.example.Features)other);
       } else {
@@ -461,11 +489,13 @@ public  final class Features extends
       return this;
     }
 
-    public final boolean isInitialized() {
+    @Override
+	public final boolean isInitialized() {
       return true;
     }
 
-    public Builder mergeFrom(
+    @Override
+	public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -507,7 +537,8 @@ public  final class Features extends
       return feature_;
     }
 
-    public int getFeatureCount() {
+    @Override
+	public int getFeatureCount() {
       return internalGetFeature().getMap().size();
     }
     /**
@@ -518,7 +549,8 @@ public  final class Features extends
      * <code>map&lt;string, .tensorflow.Feature&gt; feature = 1;</code>
      */
 
-    public boolean containsFeature(
+    @Override
+	public boolean containsFeature(
         java.lang.String key) {
       if (key == null) { throw new java.lang.NullPointerException(); }
       return internalGetFeature().getMap().containsKey(key);
@@ -526,7 +558,8 @@ public  final class Features extends
     /**
      * Use {@link #getFeatureMap()} instead.
      */
-    @java.lang.Deprecated
+    @Override
+	@java.lang.Deprecated
     public java.util.Map<java.lang.String, org.tensorflow.example.Feature> getFeature() {
       return getFeatureMap();
     }
@@ -538,7 +571,8 @@ public  final class Features extends
      * <code>map&lt;string, .tensorflow.Feature&gt; feature = 1;</code>
      */
 
-    public java.util.Map<java.lang.String, org.tensorflow.example.Feature> getFeatureMap() {
+    @Override
+	public java.util.Map<java.lang.String, org.tensorflow.example.Feature> getFeatureMap() {
       return internalGetFeature().getMap();
     }
     /**
@@ -549,7 +583,8 @@ public  final class Features extends
      * <code>map&lt;string, .tensorflow.Feature&gt; feature = 1;</code>
      */
 
-    public org.tensorflow.example.Feature getFeatureOrDefault(
+    @Override
+	public org.tensorflow.example.Feature getFeatureOrDefault(
         java.lang.String key,
         org.tensorflow.example.Feature defaultValue) {
       if (key == null) { throw new java.lang.NullPointerException(); }
@@ -565,7 +600,8 @@ public  final class Features extends
      * <code>map&lt;string, .tensorflow.Feature&gt; feature = 1;</code>
      */
 
-    public org.tensorflow.example.Feature getFeatureOrThrow(
+    @Override
+	public org.tensorflow.example.Feature getFeatureOrThrow(
         java.lang.String key) {
       if (key == null) { throw new java.lang.NullPointerException(); }
       java.util.Map<java.lang.String, org.tensorflow.example.Feature> map =
@@ -630,12 +666,14 @@ public  final class Features extends
       getMutableFeature().putAll(values);
       return this;
     }
-    public final Builder setUnknownFields(
+    @Override
+	public final Builder setUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return this;
     }
 
-    public final Builder mergeUnknownFields(
+    @Override
+	public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return this;
     }
@@ -656,7 +694,8 @@ public  final class Features extends
 
   private static final com.google.protobuf.Parser<Features>
       PARSER = new com.google.protobuf.AbstractParser<Features>() {
-    public Features parsePartialFrom(
+    @Override
+	public Features parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -673,7 +712,8 @@ public  final class Features extends
     return PARSER;
   }
 
-  public org.tensorflow.example.Features getDefaultInstanceForType() {
+  @Override
+public org.tensorflow.example.Features getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 
