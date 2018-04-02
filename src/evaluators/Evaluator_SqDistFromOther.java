@@ -25,7 +25,7 @@ public class Evaluator_SqDistFromOther implements IEvaluationFunction {
 		float sqError = 0;
 
 		for (int i = 0; i < baseStateVarList.size(); i++) {
-			float diff = baseStateVarList.get(i).x - otherStateVarList.get(i).x;
+			float diff = (baseStateVarList.get(i).x - baseStateVarList.get(0).x) - (otherStateVarList.get(i).x - otherStateVarList.get(0).x); // Subtract out the absolute x of body.
 			sqError += diff*diff;	
 			diff = baseStateVarList.get(i).y - otherStateVarList.get(i).y;
 			sqError += diff*diff;
@@ -45,7 +45,7 @@ public class Evaluator_SqDistFromOther implements IEvaluationFunction {
 		List<StateVariable> otherStateVarList = nodeToEvaluate.state.getStateList();
 		String value = "";
 		for (int i = 0; i < baseStateVarList.size(); i++) {
-			float diff = baseStateVarList.get(i).x - otherStateVarList.get(i).x;
+			float diff = (baseStateVarList.get(i).x - baseStateVarList.get(0).x) - (otherStateVarList.get(i).x - otherStateVarList.get(0).x);
 			value += "x: " + diff*diff + ", ";	
 			diff = baseStateVarList.get(i).y - otherStateVarList.get(i).y;
 			value += "y: " + diff*diff + ", ";

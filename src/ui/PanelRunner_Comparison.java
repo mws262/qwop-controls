@@ -20,7 +20,7 @@ public class PanelRunner_Comparison extends PanelRunner{
 	private static final long serialVersionUID = 1L;
 
 	/** Maximum number of similar node states to display. **/
-	public int maxNumStatesToShow = 5;
+	public int maxNumStatesToShow = 50;
 
 	/** Its unique copy of the game. Only used for plotting, but important to keep separate. **/
 	private final GameLoader game = new GameLoader();

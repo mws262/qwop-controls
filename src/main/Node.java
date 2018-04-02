@@ -85,7 +85,7 @@ public class Node {
 
 	public boolean displayPoint = false; // Round dot at this node. Is it on?
 	public boolean displayLine = true; // Line from this node to parent. Is it on?
-	public static boolean debugDrawNodeLocking = true; // Draw which nodes are locked by command from the TreeWorkers.
+	public static boolean debugDrawNodeLocking = false; // Draw which nodes are locked by command from the TreeWorkers.
 
 	// Limiting number of display nodes.
 	public boolean limitDrawing = true;
@@ -619,6 +619,7 @@ public class Node {
 		if (treeDepth > 0 && displayLine){ // No lines for root.
 			if (overrideLineColor == null){
 				gl.glColor3fv(getColorFromTreeDepth(treeDepth,lineBrightness).getColorComponents(null),0);
+				//getColorFromScaledValue(value/visitCount.floatValue()/(float)treeDepth, 20, lineBrightness).getColorComponents(null),0);
 			}else{
 				// The most obtuse possible way to change just the brightness of the color. Rediculous, but I can't find anything else.
 				float[] color = Color.RGBtoHSB(overrideLineColor.getRed(),overrideLineColor.getGreen(),overrideLineColor.getBlue(),null);
@@ -706,6 +707,14 @@ public class Node {
 	/** Color the node scaled by depth in the tree. Totally for gradient pleasantness. **/
 	public static Color getColorFromTreeDepth(int depth){
 		return getColorFromTreeDepth(depth, lineBrightness_default);
+	}
+	
+	public static Color getColorFromScaledValue(float val, float max, float brightness){
+		float coloffset = 0.35f;
+		float scaledDepth = val/max;
+		float H = scaledDepth* 0.38f+coloffset;
+		float S = 0.8f;
+		return Color.getHSBColor(H, S, brightness);
 	}
 
 	/** Set an override line color for this branch (all descendants). **/
