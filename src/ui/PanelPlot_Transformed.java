@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.jfree.chart.plot.XYPlot;
 
 import game.State;
+import main.INodeFilter;
 import main.ITransform;
 import main.Node;
 import main.PanelPlot;
@@ -30,12 +31,15 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 	/** Transformer to use to transform normal states into reduced coordinates. **/
 	private final ITransform transformer;
 
+	/** Filters to be applied to the node list. **/
+	List<INodeFilter> nodeFilters = new ArrayList<INodeFilter>();
+
 	/** Total number of plots -- not necessarily all displayed at once. **/
 	private final int numPlots;
 
 	/** How many plots to squeeze in one displayed row. **/
 	private int plotsPerView;
-	
+
 	/** Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation. **/
 	List<Node> nodesToTransform = new ArrayList<Node>();
 	List<float[]> transformedStates;
@@ -47,7 +51,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 	public PanelPlot_Transformed(ITransform transformer, int plotsPerView) {
 		super(plotsPerView);
 		this.plotsPerView = plotsPerView;
-		
+
 		this.transformer = transformer;
 		numPlots = transformer.getOutputStateSize() * transformer.getOutputStateSize(); // Every output vs. every other output.
 
@@ -67,13 +71,19 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 		// Pick which to actually plot.
 		nodesToTransform.clear();
 		plotNode.getNodesBelow(nodesToTransform);
+
+		// Apply any added filters (may be none).
+		for (INodeFilter filter : nodeFilters) {
+			filter.filter(nodesToTransform);
+		}
 		downsampleNodeList(nodesToTransform, maxPlotPoints); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.
+
 		statesBelow = nodesToTransform.stream().map(n -> n.state).collect(Collectors.toList()); // Convert from node list to state list.
 		transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
-		
+
 		changePlots();
 	}
-	
+
 	public void changePlots() {
 		requestFocus();
 
@@ -94,21 +104,26 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
 			dat.addSeries(0, xData, yData, cData);
 
-			float xLow = Arrays.stream(xData).min(Float :: compare).get();
-			float xHi = Arrays.stream(xData).max(Float :: compare).get();
-			
-			float yLow = Arrays.stream(yData).min(Float :: compare).get();
-			float yHi = Arrays.stream(yData).max(Float :: compare).get();
-			
-			pl.getDomainAxis().setRange(xLow - 0.05, xHi + 0.05); // Range gets whiney if you select one node and try to set the range upper and lower to the same thing.
-			pl.getRangeAxis().setRange(yLow - 0.05, yHi + 0.05);
-			
+			if (xData.length > 0) {
+				float xLow = Arrays.stream(xData).min(Float :: compare).get();
+				float xHi = Arrays.stream(xData).max(Float :: compare).get();
+
+				float yLow = Arrays.stream(yData).min(Float :: compare).get();
+				float yHi = Arrays.stream(yData).max(Float :: compare).get();
+
+				pl.getDomainAxis().setRange(xLow - 0.05, xHi + 0.05); // Range gets whiney if you select one node and try to set the range upper and lower to the same thing.
+				pl.getRangeAxis().setRange(yLow - 0.05, yHi + 0.05);
+			}
 			count++;
 		}
 		//addCommandLegend(firstPlot);
 		applyUpdates();
 	}
 
+	/** Add a filter to be applied to the list of nodes to be plotted. **/
+	public void addFilter(INodeFilter filter) {
+		nodeFilters.add(filter);
+	}
 
 	@Override
 	public void plotClicked(int plotIdx) {}
@@ -118,9 +133,9 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		
+
 		if (transformedStates.isEmpty()) return;
-		
+
 		switch(e.getKeyCode()) {
 		case KeyEvent.VK_RIGHT:
 			if (firstPlotCol >= transformer.getOutputStateSize() - plotsPerView) return;

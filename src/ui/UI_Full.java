@@ -64,6 +64,7 @@ import org.jfree.ui.RectangleInsets;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
 
+import filters.NodeFilter_GoodDescendants;
 import game.GameLoader;
 import game.State;
 import main.IUserInterface;
@@ -108,13 +109,13 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	PanelRunner_Comparison comparisonPane;
 
 	/** State variable plots. **/
-	PanelPlot statePlotPane;
+	PanelPlot_States statePlotPane;
 
 	/** Plots of PCA transformed data **/
-	PanelPlot pcaPlotPane;
+	PanelPlot_Transformed pcaPlotPane;
 	
 	/** Plots of autoencoder transformed data **/
-	PanelPlot autoencPlotPane;
+	PanelPlot_Transformed autoencPlotPane;
 
 	/** Selected node by user click/key **/
 	Node selectedNode;
@@ -166,6 +167,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		statePlotPane = new PanelPlot_States(6); // 6 plots per view at the bottom.
 		pcaPlotPane = new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
 		autoencPlotPane = new PanelPlot_Transformed(new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12), 6);
+		autoencPlotPane.addFilter(new NodeFilter_GoodDescendants(2));
+		
 
 		Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameLoader should have their own threads.
 		runnerPanelThread.start();
