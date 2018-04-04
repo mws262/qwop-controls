@@ -16,6 +16,7 @@ import javax.swing.SwingConstants;
 
 import org.jfree.chart.plot.XYPlot;
 
+import filters.NodeFilter_Downsample;
 import game.State;
 import main.Node;
 import main.PanelPlot;
@@ -31,7 +32,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener{
 	private static final long serialVersionUID = 1L;
 
 	/** Maximum allowed datapoints. Will downsample if above. Prevents extreme lag. **/
-	public int maxPlotPoints = 5000;
+	private NodeFilter_Downsample plotDownsampler = new NodeFilter_Downsample(5000);
 	
 	/** Node from which states are referenced. **/
 	private Node selectedNode;
@@ -124,7 +125,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener{
 			selectedNode.getNodesBelow(nodesBelow);
 			
 			// Reduce the list size to something which renders quickly.
-			downsampleNodeList(nodesBelow, maxPlotPoints);
+			plotDownsampler.filter(nodesBelow);
 		
 			Iterator<Entry<XYPlot, PlotDataset>> it = plotsAndData.entrySet().iterator();
 			countDataCollect = 0;

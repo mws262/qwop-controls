@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.beust.jcommander.*;
 
@@ -93,7 +95,8 @@ public class MAIN_Run implements Runnable{
 
 		/********** Repeated action 1 -- no keys pressed. ***********/
 		//		Integer[] durations1 = new Integer[]{11,12,13,14};
-		Integer[] durations1 = new Integer[]{5,6,7,8,9,10,11,12,13,14,15,16,17,18};
+		
+		Integer[] durations1 = IntStream.range(1, 20).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations1.length);
 
 		//Distribution<Action> dist1 = new Distribution_Uniform();
@@ -102,7 +105,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action 2 -- W-O pressed ***********/
 		//		Integer[] durations2 = new Integer[]{36,37,38,39,40,41};
-		Integer[] durations2 = new Integer[]{30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45};
+		Integer[] durations2 = IntStream.range(30, 60).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durations2.length);
 
 		//		Distribution<Action> dist2 = new Distribution_Uniform();
@@ -111,7 +114,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action 3 -- W-O pressed ***********/
 		//		Integer[] durations3 = new Integer[]{5,6,7,8,9,10,11};
-		Integer[] durations3 = new Integer[]{5,6,7,8,9,10,11,12,13,14,15,16,17,18};
+		Integer[] durations3 = IntStream.range(1, 20).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations3.length);
 
 		//		Distribution<Action> dist3 = new Distribution_Uniform();
@@ -120,7 +123,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action 4 -- Q-P pressed ***********/
 		//		Integer[] durations4 = new Integer[]{35,36,37,38,39,40};
-		Integer[] durations4 = new Integer[]{30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45};
+		Integer[] durations4 = IntStream.range(30, 60).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durations4.length);
 
 		//		Distribution<Action> dist4 = new Distribution_Uniform();
@@ -131,7 +134,7 @@ public class MAIN_Run implements Runnable{
 		/////// Action Exceptions ////////
 		/********** Repeated action exceptions 1 -- no keys pressed. ***********/
 		//		Integer[] durationsE1 = new Integer[]{1,2,3,4,5,6};
-		Integer[] durationsE1 = new Integer[]{1,2,3,4,5,6,7,8,9,10};
+		Integer[] durationsE1 = IntStream.range(1, 25).boxed().toArray(Integer[] :: new);
 		boolean[][] keySetE1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE1.length);
 
 		//Distribution<Action> distE1 = new Distribution_Uniform();
@@ -140,7 +143,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action exceptions 2 -- W-O pressed ***********/
 		//		Integer[] durationsE2 = new Integer[]{30,31,32,33,34,35};
-		Integer[] durationsE2 = new Integer[]{27,28,29,30,31,32,33,34,35,36,37,38,39};
+		Integer[] durationsE2 = IntStream.range(20, 50).boxed().toArray(Integer[] :: new);
 		boolean[][] keySetE2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durationsE2.length);
 
 		Distribution<Action> distE2 = new Distribution_Normal(34f,2f);
@@ -148,7 +151,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action exceptions 3 -- W-O pressed ***********/
 		//		Integer[] durationsE3 = new Integer[]{24,25,26,27,28};
-		Integer[] durationsE3 = new Integer[]{20,21,22,23,24,25,26,27,28,29,30,31,32};
+		Integer[] durationsE3 = IntStream.range(10, 45).boxed().toArray(Integer[] :: new);
 		boolean[][] keySetE3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE3.length);
 
 		Distribution<Action> distE3 = new Distribution_Normal(24f,2f);
@@ -156,7 +159,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action exceptions 4 -- Q-P pressed ***********/
 		//		Integer[] durationsE4 = new Integer[]{46,47,48,49,50,51};
-		Integer[] durationsE4 = new Integer[]{45,46,47,48,49,50,51,52,53,54,55};
+		Integer[] durationsE4 = IntStream.range(25, 65).boxed().toArray(Integer[] :: new);
 		boolean[][] keySetE4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durationsE4.length);
 
 		Distribution<Action> distE4 = new Distribution_Normal(49f,2f);

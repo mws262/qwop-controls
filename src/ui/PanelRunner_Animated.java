@@ -33,13 +33,15 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 	private boolean O = false;
 	private boolean P = false;
 
-	public PanelRunner_Animated() {}
+	public PanelRunner_Animated() {
+		game = new GameLoader();
+	}
 
 	/** Give this panel a node to simulate and draw to. If a new node is supplied while another
 	 * is active, then terminate the previous and start the new one.**/
 	public void simRunToNode(Node node) {
 		actionQueue.clearAll();
-		game = new GameLoader();
+		game.makeNewWorld();
 		Action[] actionSequence = node.getSequence();
 		actionQueue.addSequence(actionSequence);
 		for (Action a : actionSequence) {
@@ -63,7 +65,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 	/** Gets autocalled by the main graphics manager. **/
 	@Override
 	public void paintComponent(Graphics g) {
-		if (!active) return;
+		if (!active && game.initialized) return;
 		super.paintComponent(g);
 		if (game != null) {
 			game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);

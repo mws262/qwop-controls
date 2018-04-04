@@ -110,7 +110,13 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	/** State variable plots. **/
 	PanelPlot_States statePlotPane;
+	
+	/** Control actions vs states **/
+	PanelPlot_Controls controlsPlotPane;
 
+	/** Control actions and states on a single run. **/
+	PanelPlot_SingleRun singleRunPlotPane;
+	
 	/** Plots of PCA transformed data **/
 	PanelPlot_Transformed pcaPlotPane;
 	
@@ -165,9 +171,12 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		snapshotPane = new PanelRunner_Snapshot();
 		comparisonPane = new PanelRunner_Comparison();
 		statePlotPane = new PanelPlot_States(6); // 6 plots per view at the bottom.
+		
 		pcaPlotPane = new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
+		controlsPlotPane = new PanelPlot_Controls(6); // 6 plots per view at the bottom.
 		autoencPlotPane = new PanelPlot_Transformed(new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12), 6);
-		autoencPlotPane.addFilter(new NodeFilter_GoodDescendants(2));
+		autoencPlotPane.addFilter(new NodeFilter_GoodDescendants(1));
+		singleRunPlotPane = new PanelPlot_SingleRun(6);
 		
 
 		Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameLoader should have their own threads.
@@ -180,8 +189,10 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		tabPane.addTab("State Viewer", snapshotPane);
 		tabPane.addTab("State Compare", comparisonPane);
 		tabPane.addTab("State Plots", statePlotPane);
+		tabPane.addTab("Controls Plots", controlsPlotPane);
+		tabPane.addTab("Single Run Plots", singleRunPlotPane);
 		tabPane.addTab("PCA Plots", pcaPlotPane);
-		tabPane.add("Autoenc Plots", autoencPlotPane);
+		tabPane.addTab("Autoenc Plots", autoencPlotPane);
 
 		tabPane.setPreferredSize(new Dimension(1080,250));
 		tabPane.setMinimumSize(new Dimension(100,1));
@@ -189,6 +200,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		allTabbedPanes.add(snapshotPane);
 		allTabbedPanes.add(comparisonPane);
 		allTabbedPanes.add(statePlotPane);
+		allTabbedPanes.add(controlsPlotPane);
+		allTabbedPanes.add(singleRunPlotPane);
 		allTabbedPanes.add(pcaPlotPane);
 		allTabbedPanes.add(autoencPlotPane);
 
@@ -279,6 +292,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			if (snapshotPane.isActive()) snapshotPane.giveSelectedNode(selectedNode);
 			if (comparisonPane.isActive()) comparisonPane.giveSelectedNode(selectedNode);
 			if (statePlotPane.isActive()) statePlotPane.update(selectedNode); // Updates data being put on plots
+			if (controlsPlotPane.isActive()) controlsPlotPane.update(selectedNode); // Updates data being put on plots
+			if (singleRunPlotPane.isActive()) singleRunPlotPane.update(selectedNode);
 			if (pcaPlotPane.isActive()) pcaPlotPane.update(selectedNode); // Updates data being put on plots
 			if (autoencPlotPane.isActive()) autoencPlotPane.update(selectedNode); // Updates data being put on plots
 	}

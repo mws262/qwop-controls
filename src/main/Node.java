@@ -36,7 +36,7 @@ public class Node {
 
 	/********* QWOP IN/OUT ************/
 	/** Keys and duration **/
-	private final Action action; //Actual delay used as control.
+	public final Action action; //Actual delay used as control.
 
 	/** What is the state after taking this node's action? **/
 	public State state;
@@ -477,6 +477,11 @@ public class Node {
 		action.reset(); // Make sure internal counter for executing this action is reset.
 		return action;
 	}
+	
+	/** Get the action object (keypress + duration) that leads to this node from its parent. **/
+	public int getActionTimesteps(){
+		return action.getTimestepsTotal();
+	}
 
 	/** Get the sequence of actions up to, and including this node **/
 	public synchronized Action[] getSequence(){
@@ -551,7 +556,7 @@ public class Node {
 				int division = parent.children.size() + parent.uncheckedActions.size(); // Split into this many chunks.
 				int childNo = parent.children.indexOf(this);
 
-				sweepAngle = (float) Math.max((parent.sweepAngle/division) * (1 + treeDepth * 0.05f), 0.1);
+				sweepAngle = (float) Math.max((parent.sweepAngle/division) * (1 + treeDepth * 0.05f), 0.02);
 
 				// This is to straighten out branches that are curving off to one side due to asymmetric expansion. Acts like a controller to bring the angle
 				// towards the angle of the first node in this branch after root.

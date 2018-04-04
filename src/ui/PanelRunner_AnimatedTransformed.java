@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import filters.NodeFilter_Downsample;
 import game.State;
 import main.ITransform;
 import main.Node;
@@ -16,10 +17,12 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated{
 
 	private static final long serialVersionUID = 1L;
 	
+	private boolean transformsInitialized = false;
+	
 	/** Maximum number of nodes used for updating transforms. These will try to be
 	 * evenly spaced around the tree. Keeps speed up especially for PCA.
 	 */
-	public int maxNodesToUpdateTransforms = 2000;
+	private NodeFilter_Downsample transformDownsampler = new NodeFilter_Downsample(2000);
 
 	private List<ITransform> encoders;
 	private List<State> inStates = new ArrayList<State>();
@@ -42,20 +45,22 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated{
 		List<Node> nlist = new ArrayList<Node>();
 		node.getRoot().getNodesBelow(nlist);
 		
-		downsampleNodeList(nlist, maxNodesToUpdateTransforms);
+		transformDownsampler.filter(nlist);
 		List<State> slist = nlist.stream().map(n -> n.state).collect(Collectors.toList());
 		
 		for (ITransform trans : encoders) {
 			trans.updateTransform(slist);
 		}
+		transformsInitialized = true;
 		super.simRunToNode(node);
 	}
 
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		if (super.isActive() && game != null) {
-			inStates.add(game.getCurrentState());
+		if (super.isActive() && game.initialized && transformsInitialized) {
+			State currState = game.getCurrentState();
+			if (currState != null) inStates.add(currState);
 			for (int i = 0; i < encoders.size(); i++) {
 				List<State> predStateList = encoders.get(i).compressAndDecompress(inStates);
 				State predState = predStateList.get(0);
@@ -68,23 +73,5 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated{
 	public void deactivateTab() {
 		super.deactivateTab();
 		
-	}
-	
-	/** Get an evenly spaced list of nodes from one which is too big. If the list size isn't above maxSize,
-	 *  then nothing happens. Note: this downsampling is IN PLACE, meaning that the original list is changed.
-	 **/
-	public static List<Node> downsampleNodeList(List<Node> nodes, int maxSize) {
-		int numNodes = nodes.size();
-		if (numNodes > maxSize) {
-			float ratio = numNodes/(float)maxSize;
-			for (int i = 0; i < maxSize; i++) {
-				nodes.set(i, nodes.get((int)(ratio * i))); // Reassign the ith element with the spaced out one later in the arraylist.	
-			}
-
-			for (int i = numNodes; i > maxSize; i--) {
-				nodes.remove(i - 1);
-			}
-		}
-		return nodes;
 	}
 }

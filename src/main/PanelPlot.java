@@ -175,24 +175,6 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 	public void deactivateTab() { active = false; }
 	@Override
 	public boolean isActive() { return active; }
-
-	/** Get an evenly spaced list of nodes from one which is too big. If the list size isn't above maxSize,
-	 *  then nothing happens. Note: this downsampling is IN PLACE, meaning that the original list is changed.
-	 **/
-	public static List<Node> downsampleNodeList(List<Node> nodes, int maxSize) {
-		int numNodes = nodes.size();
-		if (numNodes > maxSize) {
-			float ratio = numNodes/(float)maxSize;
-			for (int i = 0; i < maxSize; i++) {
-				nodes.set(i, nodes.get((int)(ratio * i))); // Reassign the ith element with the spaced out one later in the arraylist.	
-			}
-
-			for (int i = numNodes; i > maxSize; i--) {
-				nodes.remove(i - 1);
-			}
-		}
-		return nodes;
-	}
 	
 	/** XYDataset gets data for plotting transformed data from PCA here. **/
 	public class PlotDataset extends AbstractXYDataset{
@@ -254,6 +236,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 			float[] xData, yData;
 			Color[] cData;
 			private DataSeries_FloatPrimitive(float[] xData, float[] yData, Color[] cData) {
+				if (xData.length != yData.length || xData.length != cData.length) throw new RuntimeException("Tried to add a data series with an unequal number of x's y's or colors.");
 				this.xData = xData;
 				this.yData = yData;
 				this.cData = cData;
@@ -275,6 +258,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 			Float[] xData, yData;
 			Color[] cData;
 			private DataSeries_FloatObj(Float[] xData, Float[] yData, Color[] cData) {
+				if (xData.length != yData.length || xData.length != cData.length) throw new RuntimeException("Tried to add a data series with an unequal number of x's y's or colors.");
 				this.xData = xData;
 				this.yData = yData;
 				this.cData = cData;

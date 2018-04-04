@@ -30,6 +30,9 @@ import java.util.List;
 public class GameLoader extends ClassLoader {
 	/** Number of timesteps in this game. **/
 	private static long timestepsSimulated = 0;
+	
+	/** Has a game world been created yet? **/
+	public boolean initialized = false;
 
 	/** Initial runner state. **/
 	private static final State initState = new GameLoader().getCurrentState(); // Make sure this stays below all the other static assignments to avoid null pointers.
@@ -697,6 +700,7 @@ public class GameLoader extends ClassLoader {
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
+		initialized = true;
 	}
 
 	/** Convenience method to avoid the verbose reflection stuff every time. 
