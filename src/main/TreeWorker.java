@@ -3,7 +3,9 @@ package main;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.List;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
 
 import game.GameLoader;
 import game.State;
@@ -71,7 +73,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	private long workerStepsSimulated = 0;
 
 	/** Number of games simulated by this TreeWorker. **/
-	private static LongAdder workerGamesPlayed = new LongAdder();
+	private LongAdder workerGamesPlayed = new LongAdder();
 
 	/** Total timesteps simulated by all TreeWorkers. **/
 	private static LongAdder totalStepsSimulated = new LongAdder();
@@ -106,7 +108,18 @@ public class TreeWorker extends PanelRunner implements Runnable {
 			case INITIALIZE:
 				actionQueue.clearAll();
 				newGame(); // Create a new game world.
+
+				if (workerGamesPlayed.intValue() % 1000000 == 0 && workerGamesPlayed.intValue() > 0) {
+					List<Node> notFullyExploredChildren = rootNode.children.stream().filter(c -> !c.fullyExplored).collect(Collectors.toList());
+					if (!notFullyExploredChildren.isEmpty()) {
+						rootNode = notFullyExploredChildren.get(Utility.randInt(0, notFullyExploredChildren.size() - 1));
+						rootNode.overrideNodeColor = Color.RED;
+					}
+				}
 				currentGameNode = rootNode;
+
+
+
 				changeStatus(Status.TREE_POLICY_CHOOSING);
 
 				break;		
@@ -124,7 +137,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					targetNodeToTest = expansionNode;
 					//System.out.println(workerName + " tree policy picked node at depth " + expansionNode.treeDepth);
 					// Check special cases.
-					if (targetNodeToTest.treeDepth == 0) { //targetNodeToTest == currentGameNode) { // We must be at the fringe of the tree and we should switch to expansion policy.
+					if (targetNodeToTest.treeDepth == rootNode.treeDepth) { //targetNodeToTest == currentGameNode) { // We must be at the fringe of the tree and we should switch to expansion policy.
 						currentGameNode = targetNodeToTest;
 						changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 						sampler.treePolicyActionDone(currentGameNode);
@@ -244,7 +257,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				}
 
 				expansionNode.releaseExpansionRights();
-				
+
 				if (debugDraw) {
 					expansionNode.clearBackwardsBranchColor();
 					expansionNode.clearBackwardsBranchZOffset();
@@ -258,6 +271,14 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				break;
 			case EXHAUSTED:
 				System.out.println("Tree is fully explored.");
+				if (rootNode.treeDepth > 0) {
+					rootNode = rootNode.getRoot();
+					if (rootNode.fullyExplored) {
+						workerRunning = false;
+					}else {
+						changeStatus(Status.IDLE);
+					}
+				}
 				break;		
 			default:
 				break;

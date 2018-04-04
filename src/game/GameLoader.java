@@ -764,7 +764,7 @@ public class GameLoader extends ClassLoader {
 			float lElbowTorque = -lElbowStiff*lElbowAngle + 0*lElbowDamp*lElbowAngularRate;
 
 			//For now, using motors with high speed settings and torque limits to simulate springs. I don't know a better way for now.
-
+			
 			setMotorSpeed(neckJ, 1000*Math.signum(neckTorque));
 			setMotorSpeed(rElbowJ, 1000*Math.signum(rElbowTorque));
 			setMotorSpeed(lElbowJ, 1000*Math.signum(lElbowTorque));

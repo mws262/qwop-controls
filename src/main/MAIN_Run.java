@@ -9,6 +9,7 @@ import java.util.stream.IntStream;
 
 import com.beust.jcommander.*;
 
+import TreeStages.TreeStage_SearchForever;
 import distributions.Distribution_Normal;
 import distributions.Distribution_Uniform;
 import evaluators.Evaluator_Distance;
@@ -274,40 +275,14 @@ public class MAIN_Run implements Runnable{
 		int cores = Runtime.getRuntime().availableProcessors();
 		int numWorkers = (int)(0.75f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
 		System.out.println("Detected " + cores + " physical cores. Making " + numWorkers + " workers.");
-		List<TreeWorker> workerList = new ArrayList<TreeWorker>();
-		for (int i = 0; i < numWorkers; i++) {
-			TreeWorker w;
-			//			if (i%2 == 0) {
-			w = new TreeWorker(treeRoot, currentSampler.clone());
-			//			}else {
-			//				w = new TreeWorker(treeRoot, new Sampler_Random());
-			//			}
-
-			workerList.add(w);
-		}
-
-		List<Thread> workerThreads = new ArrayList<Thread>();
-		for (TreeWorker w : workerList) {
-			Thread wThread = new Thread(w);
-			wThread.setName(w.workerName);
-			workerThreads.add(wThread);	
-		}
 
 		Thread uiThread = new Thread(ui);
-		//Thread gameThread = new Thread(game); 
-		//uiThread.setPriority(Thread.MAX_PRIORITY);
-
-		/* Start processes */
 		uiThread.start();
-		for (Thread wthread : workerThreads) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			wthread.start();
-		}
-
+		
+		// Searches are divided into stages now, allowing for multiple objectives and searches in a single run.
+		// Here is the searchForever -- the equivalent to the previous code.
+		TreeStage searchForever = new TreeStage_SearchForever(currentSampler.clone());
+		searchForever.initialize(treeRoot, numWorkers);
 
 		System.out.println("All initialized.");
 
