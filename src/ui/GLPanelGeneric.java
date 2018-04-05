@@ -52,7 +52,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
 	GLCamManager cam;
 	
 	int panelWidth = 1920; 
-	int panelHeight = 720;
+	int panelHeight = 700;
 	
 	public GLPanelGeneric() {
 		// Canvas setup and sizing -- GL stuff exists in a CANVAS that we put in a PANEL (not fully understood TBH)

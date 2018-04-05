@@ -94,6 +94,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
 	@Override
 	public void update(Node plotNode) { // Note that this is different from the other PlotPanes. It plots UP TO this node rather than below this node.
+		if (plotNode.treeDepth == 0) return; // Nothing to see from root.
 		selectedNode = plotNode;
 		simRunToNode(plotNode);
 		transformedStates = transformer.transform(stateList); // Dimensionally reduced states

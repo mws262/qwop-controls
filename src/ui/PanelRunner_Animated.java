@@ -1,5 +1,6 @@
 package ui;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
 
 import game.GameLoader;
@@ -35,6 +36,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 
 	public PanelRunner_Animated() {
 		game = new GameLoader();
+		//this.setMinimumSize(new Dimension(100,100));
 	}
 
 	/** Give this panel a node to simulate and draw to. If a new node is supplied while another

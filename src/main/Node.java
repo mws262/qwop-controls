@@ -214,7 +214,7 @@ public class Node {
 	/************************************/
 
 	/** Add a new child node from a given action. If the action is in uncheckedActions, remove it. **/
-	public Node addChild(Action childAction) {
+	public synchronized Node addChild(Action childAction) {
 		uncheckedActions.remove(childAction);
 		nodesCreated.increment();
 		return new Node(this,childAction);
@@ -295,7 +295,7 @@ public class Node {
 	}
 
 	/** Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node. **/
-	public synchronized boolean getLockStatus() {
+	public boolean getLockStatus() {
 		return locked.get();
 	}
 	

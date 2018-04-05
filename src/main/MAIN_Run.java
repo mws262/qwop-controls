@@ -9,6 +9,7 @@ import java.util.stream.IntStream;
 
 import com.beust.jcommander.*;
 
+import TreeStages.TreeStage_FixedGames;
 import TreeStages.TreeStage_SearchForever;
 import distributions.Distribution_Normal;
 import distributions.Distribution_Uniform;
@@ -273,18 +274,25 @@ public class MAIN_Run implements Runnable{
 
 		// Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the Box2D libraries.
 		int cores = Runtime.getRuntime().availableProcessors();
-		int numWorkers = (int)(0.75f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
+		int numWorkers = (int)(0.65f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
 		System.out.println("Detected " + cores + " physical cores. Making " + numWorkers + " workers.");
 
 		Thread uiThread = new Thread(ui);
 		uiThread.start();
+		System.out.println("All initialized.");
+		
+		
 		
 		// Searches are divided into stages now, allowing for multiple objectives and searches in a single run.
 		// Here is the searchForever -- the equivalent to the previous code.
-		TreeStage searchForever = new TreeStage_SearchForever(currentSampler.clone());
+		TreeStage searchFixed = new TreeStage_FixedGames(currentSampler.clone(),1000l);
+		TreeStage searchForever = new TreeStage_SearchForever(new Sampler_Random());
+		System.out.println("Starting stage 1.");
+		searchFixed.initialize(treeRoot, numWorkers);
+		System.out.println("Starting stage 2.");
 		searchForever.initialize(treeRoot, numWorkers);
 
-		System.out.println("All initialized.");
+
 
 	}
 }

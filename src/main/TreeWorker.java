@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	private boolean workerRunning = true;
 
 	/** Sets the FSM to stop running the next time it is idle. **/
-	private boolean flagForTermination = false;
+	private AtomicBoolean flagForTermination = new AtomicBoolean(false);
 
 	/** Print debugging info? **/
 	public boolean verbose = false;
@@ -99,8 +100,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
 		while(workerRunning) {
 			switch(currentStatus) {
 			case IDLE:
-				if (flagForTermination) {
+
+				if (flagForTermination.get()) {
 					workerRunning = false;
+					break;
 				}else {
 					changeStatus(Status.INITIALIZE);
 				}
@@ -338,7 +341,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	}
 	/** Terminate this worker after it's done with it's current task. **/
 	public void terminateWorker() {
-		flagForTermination = true;
+		flagForTermination.set(true);
 	}
 
 	/** Increase the the count of total games in a hopefully thread-safe way. **/
