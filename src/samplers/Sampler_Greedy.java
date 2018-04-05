@@ -103,10 +103,10 @@ public class Sampler_Greedy implements ISampler {
 		}
 
 		// Current node fully exhausted, we need to back the root up.
-		if (currentRoot.fullyExplored) {
+		if (currentRoot.fullyExplored.get()) {
 			int count = 0;
 			Node movingNode = currentRoot;
-			while (movingNode.treeDepth > 0 && (movingNode.fullyExplored || count < backwardsJump)) {
+			while (movingNode.treeDepth > 0 && (movingNode.fullyExplored.get() || count < backwardsJump)) {
 				movingNode = movingNode.parent;
 				count++;
 			}

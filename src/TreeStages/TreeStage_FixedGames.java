@@ -42,6 +42,7 @@ public class TreeStage_FixedGames extends TreeStage {
 
 	@Override
 	public boolean checkTerminationConditions() {
+		if (getRootNode().fullyExplored.get()) return true;
 		return (TreeWorker.getTotalGamesPlayed() - initialGamesPlayed + numWorkers) >= numGamesToPlay; // Won't always manage to stop exactly at the right number, but close enough.
 	}
 

@@ -60,7 +60,7 @@ public class Node {
 	public ActionSet uncheckedActions;
 
 	/** Are there any untried things below this node? **/
-	public boolean fullyExplored = false;
+	public AtomicBoolean fullyExplored = new AtomicBoolean(false);
 
 	/** Does this node represent a failed state? Stronger than fullyExplored. **/
 	public boolean isTerminal = false;
@@ -395,12 +395,12 @@ public class Node {
 				flag = false;
 			}
 			for (Node child : children){
-				if (!child.fullyExplored){ // If any child is not fully explored, then this node isn't too.
+				if (!child.fullyExplored.get()){ // If any child is not fully explored, then this node isn't too.
 					flag = false;
 				}
 			}
 		}
-		fullyExplored = flag;
+		fullyExplored.set(flag);
 		if (treeDepth > 0){ // We already know this node is fully explored, check the parent.
 			parent.checkFullyExplored_lite();
 		}
@@ -417,10 +417,10 @@ public class Node {
 		for (Node leaf : leaves){
 			Node currNode = leaf;
 			while (currNode.treeDepth > 0){
-				currNode.fullyExplored = false;
+				currNode.fullyExplored.set(false);
 				currNode = currNode.parent;
 			}
-			currNode.fullyExplored = false;
+			currNode.fullyExplored.set(false);
 		}
 
 		for (Node leaf : leaves){

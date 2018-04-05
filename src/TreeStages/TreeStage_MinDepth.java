@@ -20,7 +20,11 @@ public class TreeStage_MinDepth extends TreeStage {
 
 	private List<Node> leafList = new LinkedList<Node>();
 	
+	/** Minimum relative depth (relative to given root) that we want to achieve. **/
 	private int minDepth;
+	
+	/** Minimum ABSOLUTE depth (relative to absolute root) that we want to achieve. **/
+	private int minEffectiveDepth;
 	
 	public TreeStage_MinDepth(ISampler sampler, int minDepth) {
 		this.sampler = sampler;
@@ -28,15 +32,21 @@ public class TreeStage_MinDepth extends TreeStage {
 	}
 	
 	@Override
+	public void initialize(Node treeRoot, int numWorkers) {
+		minEffectiveDepth = minDepth + treeRoot.treeDepth;
+		super.initialize(treeRoot, numWorkers);
+	}
+	
+	@Override
 	public List<Node> getResults() {
 		List<Node> resultList = new ArrayList<Node>();
 		
 		for (Node n : leafList) {
-			if (n.treeDepth == minDepth) {
+			if (n.treeDepth == minEffectiveDepth) {
 				resultList.add(n);
-			}else if (n.treeDepth > minDepth) {
+			}else if (n.treeDepth > minEffectiveDepth) {
 				Node atDepth = n;
-				while (atDepth.treeDepth > minDepth) {
+				while (atDepth.treeDepth > minEffectiveDepth) {
 					atDepth = atDepth.parent;
 				}
 				resultList.add(n);
@@ -48,15 +58,33 @@ public class TreeStage_MinDepth extends TreeStage {
 	@Override
 	public boolean checkTerminationConditions() {
 		Node rootNode = getRootNode();
+		if (rootNode.fullyExplored.get()) return true;
 		leafList.clear();
 		rootNode.getLeaves(leafList);
+
+		// If no leaves, then we haven't gotten far enough for sure.
+		if (leafList.isEmpty()) return false;
 		
 		for (Node n : leafList) {
-			if (n.treeDepth < minDepth) {
+			// We find a leaf which is not deep enough AND not terminal
+			if (n.treeDepth < minEffectiveDepth && !n.isTerminal) {
 				return false;
+			} else {
+				Node currNode = n;
+				// Get back from the leaf to the horizon we wish to achieve.
+				while (currNode.treeDepth > minEffectiveDepth) {
+					currNode = currNode.parent;
+				}
+				
+				// Make sure everything under that horizon has been tried.
+				while (currNode.treeDepth > rootNode.treeDepth) {
+					currNode = currNode.parent;
+					if (currNode.uncheckedActions.size() > 0) {
+						return false;
+					}
+				}	
 			}
 		}
 		return true;
 	}
-
 }

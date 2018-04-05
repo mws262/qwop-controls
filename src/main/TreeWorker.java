@@ -112,13 +112,13 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				actionQueue.clearAll();
 				newGame(); // Create a new game world.
 
-				if (workerGamesPlayed.intValue() % 1000000 == 0 && workerGamesPlayed.intValue() > 0) {
-					List<Node> notFullyExploredChildren = rootNode.children.stream().filter(c -> !c.fullyExplored).collect(Collectors.toList());
-					if (!notFullyExploredChildren.isEmpty()) {
-						rootNode = notFullyExploredChildren.get(Utility.randInt(0, notFullyExploredChildren.size() - 1));
-						rootNode.overrideNodeColor = Color.RED;
-					}
-				}
+//				if (workerGamesPlayed.intValue() % 1000000 == 0 && workerGamesPlayed.intValue() > 0) {
+//					List<Node> notFullyExploredChildren = rootNode.children.stream().filter(c -> !c.fullyExplored).collect(Collectors.toList());
+//					if (!notFullyExploredChildren.isEmpty()) {
+//						rootNode = notFullyExploredChildren.get(Utility.randInt(0, notFullyExploredChildren.size() - 1));
+//						rootNode.overrideNodeColor = Color.RED;
+//					}
+//				}
 				currentGameNode = rootNode;
 
 
@@ -266,7 +266,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					expansionNode.clearBackwardsBranchZOffset();
 				}
 
-				if (rootNode.fullyExplored) {
+				if (rootNode.fullyExplored.get()) {
 					changeStatus(Status.EXHAUSTED);
 				}else {
 					changeStatus(Status.IDLE);
@@ -274,14 +274,16 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				break;
 			case EXHAUSTED:
 				System.out.println("Tree is fully explored.");
-				if (rootNode.treeDepth > 0) {
-					rootNode = rootNode.getRoot();
-					if (rootNode.fullyExplored) {
-						workerRunning = false;
-					}else {
-						changeStatus(Status.IDLE);
-					}
-				}
+				terminateWorker();
+				changeStatus(Status.IDLE);
+//				if (rootNode.treeDepth > 0) {
+//					rootNode = rootNode.getRoot();
+//					if (rootNode.fullyExplored) {
+//						workerRunning = false;
+//					}else {
+//						changeStatus(Status.IDLE);
+//					}
+//				}
 				break;		
 			default:
 				break;

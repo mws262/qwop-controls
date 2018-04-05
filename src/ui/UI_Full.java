@@ -215,7 +215,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		
 		// This makes it have that dragable border between the tab and the tree sections.
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, treePane, tabPane);
-		//splitPane.setResizeWeight(0.0001);
+		splitPane.setResizeWeight(0.7);
 		pane.add(splitPane);
 		
 		/*******************/

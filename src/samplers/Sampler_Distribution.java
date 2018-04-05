@@ -22,18 +22,18 @@ public class Sampler_Distribution implements ISampler{
 	@Override
 	public Node treePolicy(Node startNode) {
 		/******** Normal random sampling now, but using distribution to decide when to switch to expand policy. **********/
-		if (startNode.fullyExplored) throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. Whoever called this is at fault.");
+		if (startNode.fullyExplored.get()) throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. Whoever called this is at fault.");
 		Node currentNode = startNode;
 
 		while (true) {
-			if (currentNode.fullyExplored) throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its fault.");
+			if (currentNode.fullyExplored.get()) throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its fault.");
 			if (currentNode.getLockStatus()) currentNode = currentNode.getRoot();
 			
 			// Count the number of available children to go to next.
 			ArrayList<Node> notFullyExploredChildren = new ArrayList<Node>();
 			ArrayList<Action> notFullyExploredActions = new ArrayList<Action>();
 			for (Node child : currentNode.children) {
-				if (!child.fullyExplored) {
+				if (!child.fullyExplored.get()) {
 					notFullyExploredChildren.add(child);
 					notFullyExploredActions.add(child.getAction());
 				}

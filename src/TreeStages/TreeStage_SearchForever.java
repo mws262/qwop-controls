@@ -22,7 +22,7 @@ public class TreeStage_SearchForever extends TreeStage {
 
 	@Override
 	public boolean checkTerminationConditions() {
-		return getRootNode().fullyExplored; // Only termination condition is a completely explored tree. Unlikely when the selection pool is good.
+		return getRootNode().fullyExplored.get(); // Only termination condition is a completely explored tree. Unlikely when the selection pool is good.
 	}
 
 }

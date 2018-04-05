@@ -32,6 +32,9 @@ public abstract class TreeStage implements Runnable{
 	/** Is the managing thread of this stage running? **/
 	private volatile boolean running = false;
 
+	/** Does this stage block the mai thread until done? **/
+	public boolean blocking = true;
+
 	private final Object lock = new Object();
 
 	public void initialize(Node treeRoot, int numWorkers) {
@@ -59,13 +62,15 @@ public abstract class TreeStage implements Runnable{
 			t.start();
 		}
 
-		// This blocks the main thread until this stage is done.
-		synchronized(lock){
-			while (running) {
-				try {
-					lock.wait();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+		if (blocking) {
+			// This blocks the main thread until this stage is done.
+			synchronized(lock){
+				while (running) {
+					try {
+						lock.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -100,7 +105,7 @@ public abstract class TreeStage implements Runnable{
 	/** Terminate this stage, destroying the workers and their threads in the process. **/
 	public void terminate() {
 		running = false;
-		
+
 		// Stop threads and get rid of them.
 		Iterator<TreeWorker> iter = workers.iterator();
 		while (iter.hasNext()) {

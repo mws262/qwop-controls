@@ -22,12 +22,12 @@ public class Sampler_Deterministic implements ISampler {
 
 	@Override
 	public Node treePolicy(Node startNode) {
-		if (startNode.fullyExplored) throw new RuntimeException("Trying to do tree policy on a given node at depth " + startNode.treeDepth + " which is already fully-explored. Whoever called this is at fault.");
+		if (startNode.fullyExplored.get()) throw new RuntimeException("Trying to do tree policy on a given node at depth " + startNode.treeDepth + " which is already fully-explored. Whoever called this is at fault.");
 		Node currentNode = startNode;
 
 		while (true) {
 			// TEMPORARY DELAY
-			if (currentNode.fullyExplored || currentNode.isTerminal) throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its fault.");
+			if (currentNode.fullyExplored.get() || currentNode.isTerminal) throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its fault.");
 			if (currentNode.getLockStatus()) {
 				currentNode = startNode;
 				if (currentNode.treeDepth > startNode.treeDepth) {
@@ -44,7 +44,7 @@ public class Sampler_Deterministic implements ISampler {
 			for (Node child : currentNode.children) {
 				if (!child.uncheckedActions.isEmpty() && child.reserveExpansionRights()) {
 					return child;
-				}else if (!child.fullyExplored) {
+				}else if (!child.fullyExplored.get()) {
 					currentNode = child;
 					foundViableChild = true;
 					break;

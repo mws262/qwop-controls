@@ -21,19 +21,19 @@ public class Sampler_Random implements ISampler {
 	
 	@Override
 	public Node treePolicy(Node startNode) {
-		if (startNode.fullyExplored) {
+		if (startNode.fullyExplored.get()) {
 			throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. Whoever called this is at fault.");
 		}
 		Node currentNode = startNode;
 
 		while (true) {
-			if (currentNode.fullyExplored) currentNode = startNode; // Just start over for now. I don't think it's a big enough problem to stress over.
+			if (currentNode.fullyExplored.get()) currentNode = startNode; // Just start over for now. I don't think it's a big enough problem to stress over.
 			//throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its fault.");
 
 			// Count the number of available children to go to next.
 			int notFullyExploredChildren = 0;
 			for (Node child : currentNode.children) {
-				if (!child.fullyExplored && !child.getLockStatus()) notFullyExploredChildren++;
+				if (!child.fullyExplored.get() && !child.getLockStatus()) notFullyExploredChildren++;
 			}
 
 			if (notFullyExploredChildren == 0 && currentNode.uncheckedActions.isEmpty()) {
@@ -55,7 +55,7 @@ public class Sampler_Random implements ISampler {
 				int selection = Utility.randInt(0, notFullyExploredChildren - 1);
 				int count = 0;
 				for (Node child : currentNode.children) {
-					if (!child.fullyExplored && !child.getLockStatus()) {
+					if (!child.fullyExplored.get() && !child.getLockStatus()) {
 						if (count == selection) {
 							currentNode = child;
 							break;
@@ -74,7 +74,7 @@ public class Sampler_Random implements ISampler {
 				}else{
 					int count = 1;
 					for (Node child : currentNode.children) {
-						if (!child.fullyExplored && !child.getLockStatus()) {
+						if (!child.fullyExplored.get() && !child.getLockStatus()) {
 							if (count == selection) {
 								currentNode = child;
 								break;

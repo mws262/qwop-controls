@@ -72,7 +72,7 @@ public class Sampler_UCB implements ISampler {
 		Node parent = startNode;
 		for (Node child: parent.children){
 
-			if (!child.fullyExplored && !child.getLockStatus()) {// && child.reserveExpansionRights()){
+			if (!child.fullyExplored.get() && !child.getLockStatus()) {// && child.reserveExpansionRights()){
 				float val = (float)(child.getValue()/child.visitCount.doubleValue() + c*(float)Math.sqrt(2.*Math.log(parent.visitCount.doubleValue())/child.visitCount.doubleValue()));
 				if (val > bestScoreSoFar){
 					bestNodeSoFar = child;

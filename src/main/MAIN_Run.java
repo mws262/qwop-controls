@@ -1,4 +1,5 @@
 package main;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,6 +11,8 @@ import java.util.stream.IntStream;
 import com.beust.jcommander.*;
 
 import TreeStages.TreeStage_FixedGames;
+import TreeStages.TreeStage_MaxDepth;
+import TreeStages.TreeStage_MinDepth;
 import TreeStages.TreeStage_SearchForever;
 import distributions.Distribution_Normal;
 import distributions.Distribution_Uniform;
@@ -285,12 +288,39 @@ public class MAIN_Run implements Runnable{
 		
 		// Searches are divided into stages now, allowing for multiple objectives and searches in a single run.
 		// Here is the searchForever -- the equivalent to the previous code.
-		TreeStage searchFixed = new TreeStage_FixedGames(currentSampler.clone(),1000l);
-		TreeStage searchForever = new TreeStage_SearchForever(new Sampler_Random());
+		//TreeStage searchFixed = new TreeStage_FixedGames(currentSampler.clone(),1000l);
+//		TreeStage searchForever = new TreeStage_SearchForever(new Sampler_Random());
+		
 		System.out.println("Starting stage 1.");
-		searchFixed.initialize(treeRoot, numWorkers);
+		TreeStage searchMax = new TreeStage_MaxDepth(currentSampler.clone(), 6); // Depth to get to sorta steady state.
+		searchMax.initialize(treeRoot, numWorkers);
+		List<Node> deepNode = searchMax.getResults(); // Should only return the one node way out there.
+		System.out.println("Stage 1 done.");
+		
 		System.out.println("Starting stage 2.");
-		searchForever.initialize(treeRoot, numWorkers);
+		TreeStage searchMin = new TreeStage_MinDepth(currentSampler.clone(), 2); // Two actions to get weird.
+		deepNode.get(0).sweepAngle = (float)(Math.PI*1.);
+		searchMin.initialize(deepNode.get(0), numWorkers); // Start from where the last stage stopped deep in the tree.
+		List<Node> crazyNodes = searchMin.getResults(); // Should only return the one node way out there.
+		System.out.println("Stage 2 done.");
+		
+		System.out.println("Starting stage 3. " + crazyNodes.size() + " nodes to expand.");
+		int count = 0;
+		for (Node n : crazyNodes) {
+			System.out.println("Beginning node " + ++count + ".");
+			n.overrideNodeColor = Color.RED;
+			n.displayPoint = true;
+			TreeStage searchRecovery = new TreeStage_MaxDepth(currentSampler.clone(), 4); // Two actions to get weird.
+			
+			if (count < crazyNodes.size()) searchRecovery.blocking = false;
+			searchRecovery.initialize(n, 1); // Start from where the last stage stopped deep in the tree.
+		}
+
+//		
+//		System.out.println("Starting stage 2.");
+//		searchFixed.initialize(treeRoot, numWorkers);
+//		System.out.println("Starting stage 3.");
+//		searchForever.initialize(treeRoot, numWorkers);
 
 
 

@@ -17,7 +17,11 @@ import main.TreeStage;
 public class TreeStage_MaxDepth extends TreeStage {
 	private List<Node> leafList = new LinkedList<Node>();
 	
+	/** Max relative depth (i.e. specified relative to the given root node). **/
 	private int maxDepth;
+	
+	/** Max effective depth (i.e. absolute depth relative to the entire tree root). **/
+	private int maxEffectiveDepth;
 	
 	public TreeStage_MaxDepth(ISampler sampler, int maxDepth) {
 		this.sampler = sampler;
@@ -25,16 +29,22 @@ public class TreeStage_MaxDepth extends TreeStage {
 	}
 	
 	@Override
+	public void initialize(Node treeRoot, int numWorkers) {
+		maxEffectiveDepth = maxDepth + treeRoot.treeDepth;
+		super.initialize(treeRoot, numWorkers);
+	}
+	
+	@Override
 	public List<Node> getResults() {
 		List<Node> resultList = new ArrayList<Node>();
 		
 		for (Node n : leafList) {
-			if (n.treeDepth == maxDepth) {
+			if (n.treeDepth == maxEffectiveDepth) {
 				resultList.add(n);
 				return resultList;
-			}else if (n.treeDepth > maxDepth) {
+			}else if (n.treeDepth > maxEffectiveDepth) {
 				Node atDepth = n;
-				while (atDepth.treeDepth > maxDepth) {
+				while (atDepth.treeDepth > maxEffectiveDepth) {
 					atDepth = atDepth.parent;
 				}
 				resultList.add(n);
@@ -47,11 +57,12 @@ public class TreeStage_MaxDepth extends TreeStage {
 	@Override
 	public boolean checkTerminationConditions() {
 		Node rootNode = getRootNode();
+		if (rootNode.fullyExplored.get()) return true;
 		leafList.clear();
 		rootNode.getLeaves(leafList);
 		
 		for (Node n : leafList) {
-			if (n.treeDepth >= maxDepth) {
+			if (n.treeDepth >= maxEffectiveDepth) {
 				return true;
 			}
 		}
