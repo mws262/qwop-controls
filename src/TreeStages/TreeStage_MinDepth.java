@@ -49,7 +49,7 @@ public class TreeStage_MinDepth extends TreeStage {
 				while (atDepth.treeDepth > minEffectiveDepth) {
 					atDepth = atDepth.parent;
 				}
-				resultList.add(n);
+				resultList.add(atDepth);
 			}
 		}
 		return resultList;

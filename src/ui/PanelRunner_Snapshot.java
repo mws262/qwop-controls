@@ -10,7 +10,9 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import filters.NodeFilter_Downsample;
 import game.GameLoader;
+import main.INodeFilter;
 import main.Node;
 import main.PanelRunner;
 
@@ -24,6 +26,9 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
 	/** The node that is the current focus of this panel. **/
 	private Node snapshotNode;
+	
+	/** Filter to keep from drawing too many and killing the graphics speed. **/
+	private INodeFilter filter = new NodeFilter_Downsample(10);
 
 	/** Potentially, a future node selected by hovering over its runner to display a specific sequence of actions in all the displayed futures. **/
 	private Node highlightedFutureMousedOver;
@@ -46,6 +51,9 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 	private int mouseX = 0;
 	private int mouseY = 0;
 
+	/** X offset in frame pixel coordinates determined by the focused body's x coordinate. **/
+	private int specificXOffset = 0;
+	
 	/** Mouse currently over this panel? **/
 	private boolean mouseIsIn = false;
 
@@ -67,6 +75,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 		/***** Focused node first *****/
 		snapshotNode = node;
 		Object[] nodeTransform = game.getXForms(snapshotNode.state);
+		specificXOffset = (int)(runnerScaling * snapshotNode.state.body.x);
 		// Make the sequence centered around the selected node state.
 		//xOffsetNet = xOffsetPixels + (int)(-runnerScaling * nodeTransform[1].position.x);
 		transforms.add(nodeTransform);
@@ -92,7 +101,8 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 		for (int i = 0; i < snapshotNode.children.size(); i++) {
 			Node child = snapshotNode.children.get(i);
 			child.getLeaves(descendants);
-
+			filter.filter(descendants);
+			
 			Color runnerColor = Node.getColorFromTreeDepth(i*10);
 			child.setBranchColor(runnerColor); // Change the color on the tree too.
 
@@ -161,7 +171,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 			for (int i = transforms.size() - 1; i >= 0; i--) {
 				if (!mouseIsIn || bestIdx != i) {
 					Color nextRunnerColor = (highlightedFutureMousedOver != null && focusLeaves.get(i).treeDepth > snapshotNode.treeDepth) ? colors.get(i).brighter() : colors.get(i); // Make the nodes after the selected one lighter if one is highlighted.
-					game.drawExtraRunner(g2, transforms.get(i), "", runnerScaling, xOffsetPixels, yOffsetPixels, nextRunnerColor, strokes.get(i));
+					game.drawExtraRunner(g2, transforms.get(i), "", runnerScaling, xOffsetPixels - specificXOffset, yOffsetPixels, nextRunnerColor, strokes.get(i));
 				}
 			}
 
@@ -209,7 +219,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 		int idx = focusLeaves.indexOf(newFuture);
 		if (idx > -1) { // Focus leaves no longer contains the no focus requested.
 			try{
-				game.drawExtraRunner(g2, transforms.get(idx), "", runnerScaling, xOffsetPixels, yOffsetPixels, colors.get(idx).darker(), boldStroke);
+				game.drawExtraRunner(g2, transforms.get(idx), "", runnerScaling, xOffsetPixels - specificXOffset, yOffsetPixels, colors.get(idx).darker(), boldStroke);
 
 				Node currentNode = newFuture;
 
@@ -221,7 +231,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 					if (currentNode.treeDepth % 2 == 0) {
 						everyOtherEvenColor = everyOtherEvenColor.darker();
 					}
-					game.drawExtraRunner(g2, game.getXForms(currentNode.state), currentNode.getAction().toStringLite(), runnerScaling, xOffsetPixels, yOffsetPixels, everyOtherEvenColor, boldStroke);
+					game.drawExtraRunner(g2, game.getXForms(currentNode.state), currentNode.getAction().toStringLite(), runnerScaling, xOffsetPixels - specificXOffset, yOffsetPixels, everyOtherEvenColor, boldStroke);
 					currentNode = currentNode.parent;
 				}
 			}catch(IndexOutOfBoundsException e) {
@@ -232,8 +242,8 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
 	/** Distance of given coordinates from mouse location, squared. **/
 	private float getDistFromMouseSq(float x, float y) {
-		float xdist = (mouseX - (runnerScaling * x + xOffsetPixels));
-		float ydist = (mouseY - (runnerScaling * y + yOffsetPixels));
+		float xdist = (mouseX - (runnerScaling * x + xOffsetPixels - specificXOffset));
+		float ydist = (mouseY - (runnerScaling * y + yOffsetPixels - specificXOffset));
 		return xdist*xdist + ydist*ydist;
 	}
 

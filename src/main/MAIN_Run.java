@@ -285,6 +285,8 @@ public class MAIN_Run implements Runnable{
 		System.out.println("All initialized.");
 		
 		
+		// MATT
+		// MAKE A RANDOM SAMPLER WHICH ONLY GOES TO A FIXED DEPTH
 		
 		// Searches are divided into stages now, allowing for multiple objectives and searches in a single run.
 		// Here is the searchForever -- the equivalent to the previous code.
@@ -292,15 +294,17 @@ public class MAIN_Run implements Runnable{
 //		TreeStage searchForever = new TreeStage_SearchForever(new Sampler_Random());
 		
 		System.out.println("Starting stage 1.");
-		TreeStage searchMax = new TreeStage_MaxDepth(currentSampler.clone(), 6); // Depth to get to sorta steady state.
+		TreeStage searchMax = new TreeStage_MaxDepth(currentSampler.clone(), 14); // Depth to get to sorta steady state.
 		searchMax.initialize(treeRoot, numWorkers);
 		List<Node> deepNode = searchMax.getResults(); // Should only return the one node way out there.
+		Node expNode = deepNode.get(0).parent.parent; // Node at depth 12
 		System.out.println("Stage 1 done.");
 		
 		System.out.println("Starting stage 2.");
-		TreeStage searchMin = new TreeStage_MinDepth(currentSampler.clone(), 2); // Two actions to get weird.
-		deepNode.get(0).sweepAngle = (float)(Math.PI*1.);
-		searchMin.initialize(deepNode.get(0), numWorkers); // Start from where the last stage stopped deep in the tree.
+		TreeStage searchMin = new TreeStage_MinDepth(new Sampler_Random(), 2); // Two actions to get weird.
+		expNode.sweepAngle = (float)(Math.PI*1.);
+		expNode.calcNodePos_below();
+		searchMin.initialize(expNode, numWorkers); // Start from where the last stage stopped deep in the tree.
 		List<Node> crazyNodes = searchMin.getResults(); // Should only return the one node way out there.
 		System.out.println("Stage 2 done.");
 		
@@ -310,10 +314,10 @@ public class MAIN_Run implements Runnable{
 			System.out.println("Beginning node " + ++count + ".");
 			n.overrideNodeColor = Color.RED;
 			n.displayPoint = true;
-			TreeStage searchRecovery = new TreeStage_MaxDepth(currentSampler.clone(), 4); // Two actions to get weird.
+			TreeStage searchRecovery = new TreeStage_MaxDepth(currentSampler.clone(), 4);
 			
-			if (count < crazyNodes.size()) searchRecovery.blocking = false;
-			searchRecovery.initialize(n, 1); // Start from where the last stage stopped deep in the tree.
+			//if (count < crazyNodes.size()) searchRecovery.blocking = false;
+			searchRecovery.initialize(n, 4); // Start from where the last stage stopped deep in the tree.
 		}
 
 //		
