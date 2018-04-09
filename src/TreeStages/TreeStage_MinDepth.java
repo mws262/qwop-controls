@@ -48,6 +48,7 @@ public class TreeStage_MinDepth extends TreeStage {
 		List<Node> resultList = new ArrayList<Node>();
 		
 		for (Node n : leafList) {
+			if (n.state == null) continue;
 			if (n.treeDepth == minEffectiveDepth) {
 				resultList.add(n);
 			}else if (n.treeDepth > minEffectiveDepth) {

@@ -500,14 +500,10 @@ public class Node {
 	/******* SAVE/LOAD AND UTILITY **********/
 	/****************************************/
 
-	/* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Returns the ROOT of a tree. */
-	public static Node makeNodesFromRunInfo(ArrayList<SaveableSingleGame> runs, boolean initializeTreePhysics){
-		Node rootNode = new Node();
-		return makeNodesFromRunInfo(runs, rootNode);
-	}
-
-	/* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Adds to an existing given root. **/
-	public static Node makeNodesFromRunInfo(ArrayList<SaveableSingleGame> runs, Node existingRootToAddTo){
+	/* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Adds to an existing given root.
+	 * If trimActionAddingToDepth is >= than 0, then actions will be stripped from the imported nodes up to, and including the depth specified.
+	 * Set to -1 or something if you don't want this.**/
+	public static synchronized Node makeNodesFromRunInfo(List<SaveableSingleGame> runs, Node existingRootToAddTo, int trimActionAddingToDepth){
 		Node rootNode = existingRootToAddTo;
 		currentlyAddingSavedNodes = true;
 		for (SaveableSingleGame run : runs){ // Go through all runs, placing them in the tree.
@@ -526,6 +522,7 @@ public class Node {
 				// If this action is unique at this point in the tree, we need to add a new node there.
 				if (!foundExistingMatch){
 					Node newNode = new Node(currentNode, run.actions[i]);
+					newNode.limitDrawing = false;
 					newNode.setState(run.states[i]);
 					newNode.calcNodePos();
 					currentNode = newNode;
@@ -535,9 +532,19 @@ public class Node {
 			gamesImported.increment();
 		}
 		rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
+		if (trimActionAddingToDepth >= 0) stripUncheckedActionsExceptOnLeaves(rootNode, trimActionAddingToDepth);
 		currentlyAddingSavedNodes = false;
 		rootNode.calcNodePosBelow();
 		return rootNode;
+	}
+	
+	/** Helper for node adding from file. Clears unchecked actions from non-leaf nodes. 
+	 * Only does it for things below minDepth. Forces new building to happen only at the boundaries of this. **/
+	private static void stripUncheckedActionsExceptOnLeaves(Node node, int minDepth) {
+		if (!node.children.isEmpty() && node.treeDepth <= minDepth) node.uncheckedActions.clear();
+		for (Node child : node.children) {
+			stripUncheckedActionsExceptOnLeaves(child, minDepth);
+		}
 	}
 
 	/************************************************/
@@ -670,6 +677,18 @@ public class Node {
 		}
 	}
 
+	/** Turn off all display for this node onward. **/
+	public void turnOffBranchDisplay() {
+		displayLine = false;
+		displayPoint = false;
+		notDrawnForSpeed = false;
+		pointsToDraw.remove(this);
+		
+		for (Node child : children) {
+			child.turnOffBranchDisplay();
+		}	
+	}
+	
 	/** Single out one run up to this node to highline the lines, while dimming the others. **/
 	public void highlightSingleRunToThisNode(){
 		Node rt = getRoot();

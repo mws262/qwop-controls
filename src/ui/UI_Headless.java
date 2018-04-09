@@ -19,4 +19,7 @@ public class UI_Headless implements IUserInterface {
 	@Override
 	public void addRootNode(Node node) {}
 
+	@Override
+	public void clearRootNodes() {}
+
 }

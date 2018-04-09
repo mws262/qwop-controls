@@ -26,6 +26,9 @@ public class DataSaver_StageSelected implements IDataSaver{
 	/** Do not include dot before. **/
 	public String fileExtension = "SaveableSingleGame";
 	
+	/** If this string is not empty, use this as the filename instead. **/
+	public String overrideFilename = "";
+	
 	/** Handles class serialization and writing to file. **/
 	private SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
 	
@@ -49,10 +52,14 @@ public class DataSaver_StageSelected implements IDataSaver{
 		for (Node tar : targetNodes) {
 			saveBuffer.add(new SaveableSingleGame(tar));
 		}
-		fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
+		if (overrideFilename.isEmpty()) {
+			fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
+		}else {
+			fileIO.storeObjectsOrdered(saveBuffer, fileLocation + overrideFilename + "." + fileExtension, false);
+
+		}
 		saveBuffer.clear();
 		System.out.println("Saved " + targetNodes.size() + " runs sparsely to file at the end of the stage.");
-	
 	}
 
 	@Override

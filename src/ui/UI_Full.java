@@ -658,5 +658,10 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	public void addRootNode(Node node) {
 		rootNodes.add(node);
 	}
+	
+	@Override
+	public void clearRootNodes() {
+		rootNodes.clear();
+	}
 }
 

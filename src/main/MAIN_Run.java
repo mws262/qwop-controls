@@ -1,5 +1,6 @@
 package main;
 import java.awt.Color;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,6 +12,9 @@ import com.beust.jcommander.*;
 
 import TreeStages.TreeStage_MaxDepth;
 import TreeStages.TreeStage_MinDepth;
+import TreeStages.TreeStage_SearchForever;
+import data.SaveableFileIO;
+import data.SaveableSingleGame;
 import distributions.Distribution_Normal;
 import distributions.Distribution_Uniform;
 import evaluators.Evaluator_Distance;
@@ -99,7 +103,7 @@ public class MAIN_Run implements Runnable{
 
 		/********** Repeated action 1 -- no keys pressed. ***********/
 		//		Integer[] durations1 = new Integer[]{11,12,13,14};
-		
+
 		Integer[] durations1 = IntStream.range(1, 20).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations1.length);
 
@@ -259,6 +263,7 @@ public class MAIN_Run implements Runnable{
 		/************************************************************/
 		Node treeRoot = new Node();
 		IUserInterface ui;
+		settings.headless = true;
 		if (settings.headless) {
 			ui = new UI_Headless();
 			System.out.println("GUI: Running in headless mode.");
@@ -283,55 +288,122 @@ public class MAIN_Run implements Runnable{
 		uiThread.start();
 		System.out.println("All initialized.");
 
-		
-		// Searches are divided into stages now, allowing for multiple objectives and searches in a single run.
-		// Here is the searchForever -- the equivalent to the previous code.
-		//TreeStage searchFixed = new TreeStage_FixedGames(currentSampler.clone(),1000l);
-//		TreeStage searchForever = new TreeStage_SearchForever(new Sampler_Random());
-		
-		System.out.println("Starting stage 1.");
-		TreeStage searchMax = new TreeStage_MaxDepth(14, currentSampler.clone(), new DataSaver_StageSelected()); // Depth to get to sorta steady state.
-		searchMax.initialize(treeRoot, numWorkers);
-		List<Node> deepNode = searchMax.getResults(); // Should only return the one node way out there.
-		Node expNode = deepNode.get(0).parent.parent; // Node at depth 12
-		System.out.println("Stage 1 done.");
-		
-		System.out.println("Starting stage 2.");
-		int screwUpDepth = 2;
-		TreeStage searchMin = new TreeStage_MinDepth(screwUpDepth, new Sampler_FixedDepth(screwUpDepth), dataSaver.clone()); // Two actions to get weird.
-		expNode.edgeLength = 12;
-		expNode.calcNodePos();
-		expNode.sweepAngle = (float)(Math.PI);
-		expNode.calcNodePosBelow();
-		
-		searchMin.initialize(expNode, numWorkers/2); // Start from where the last stage stopped deep in the tree.
-		List<Node> crazyNodes = searchMin.getResults(); // Should only return the one node way out there.
-		System.out.println("Stage 2 done.");
-		
-		System.out.println("Starting stage 3. " + crazyNodes.size() + " nodes to expand.");
-		int count = 0;
-		for (Node n : crazyNodes) {
-			n.edgeLength = 15;
-			n.calcNodePos();
-			n.notDrawnForSpeed = false;
-			System.out.println("Beginning node " + ++count + ".");
-			n.overrideNodeColor = Color.RED;
-			n.displayPoint = true;
-			TreeStage searchRecovery = new TreeStage_MaxDepth(8, currentSampler.clone(), dataSaver.clone());
-			if (count % 5 == 0) {
-				searchRecovery.blocking = true;
-			}else {
-				searchRecovery.blocking = false;
-			}
-			//if (count < crazyNodes.size()) searchRecovery.blocking = false;
-			searchRecovery.initialize(n, 12); // Start from where the last stage stopped deep in the tree.
+
+		// Make a new folder for this trial.
+		File saveLoc = new File("./4_9_18");
+		if (!saveLoc.exists()) {
+			boolean success = saveLoc.mkdir();
+			if (!success) throw new RuntimeException("Could not make save directory.");
 		}
 
-//		
-//		System.out.println("Starting stage 2.");
-//		searchFixed.initialize(treeRoot, numWorkers);
-//		System.out.println("Starting stage 3.");
-//		searchForever.initialize(treeRoot, numWorkers);
+
+		boolean doStage1 = false;
+		boolean doStage2 = false;
+		boolean doStage3 = true;
+
+		// This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
+		if (doStage1) {
+			System.out.println("Starting stage 1.");
+			// Saver setup.
+			DataSaver_StageSelected saver = new DataSaver_StageSelected();
+			saver.overrideFilename = "steadyRunPrefix";
+			saver.setSavePath(saveLoc.getPath() + "/");
+
+			TreeStage searchMax = new TreeStage_MaxDepth(14, currentSampler.clone(), saver); // Depth to get to sorta steady state.
+			searchMax.initialize(treeRoot, numWorkers);
+			System.out.println("Stage 1 done.");
+		}
+
+		// This stage generates deviations from nominal. Load nominal gait. Do not allow expansion near the root. Expand to a fixed, small depth.
+		if (doStage2) {
+			System.out.println("Starting stage 2.");
+
+			// Saver setup.
+			DataSaver_StageSelected saver = new DataSaver_StageSelected();
+			saver.overrideFilename = "deviations";
+			saver.setSavePath(saveLoc.getPath() + "/");	
+
+			Node rootNode = new Node();
+			ui.clearRootNodes();
+			ui.addRootNode(rootNode);
+
+			TreeStage searchMin = new TreeStage_MinDepth(2, new Sampler_FixedDepth(2), saver); // Two actions to get weird.
+			SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
+			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/steadyRunPrefix.SaveableSingleGame"), rootNode, 11);
+			Node currNode = rootNode;
+			while (currNode.treeDepth < 12) {
+				currNode = currNode.children.get(0);
+			}
+			searchMin.initialize(currNode, 8);
+			System.out.println("Stage 2 done.");
+		}
+
+
+		if (doStage3) {
+			System.out.println("Starting stage 3.");
+
+			// Saver setup.
+			Node rootNode = new Node();
+			ui.clearRootNodes();
+			ui.addRootNode(rootNode);
+
+			SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
+			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/deviations.SaveableSingleGame"), rootNode, 11);
+			List<Node> leafList = new ArrayList<Node>();
+			rootNode.getLeaves(leafList);
+
+			int count = 0;
+			for (Node leaf : leafList) {
+				DataSaver_StageSelected saver = new DataSaver_StageSelected();
+				saver.overrideFilename = "recoveries" + count;
+				saver.setSavePath(saveLoc.getPath() + "/");
+
+				TreeStage searchMax = new TreeStage_MaxDepth(8, currentSampler.clone(), saver); // Depth to get to sorta steady state.
+				System.out.print("Started " + count + "...");
+				searchMax.initialize(leaf, 20);
+				// Turn off drawing for this one.
+				leaf.turnOffBranchDisplay();
+				leaf.parent.children.remove(leaf);
+				System.out.println(" finished.");
+				count++;
+			}
+
+			System.out.println("Stage 3 done.");
+		}
+
+		//		
+		//		System.out.println("Starting stage 2.");
+		//		int screwUpDepth = 2;
+		//		TreeStage searchMin = new TreeStage_MinDepth(screwUpDepth, new Sampler_FixedDepth(screwUpDepth), dataSaver.clone()); // Two actions to get weird.
+		//		expNode.edgeLength = 12;
+		//		expNode.calcNodePos();
+		//		expNode.sweepAngle = (float)(Math.PI);
+		//		expNode.calcNodePosBelow();
+		//		
+		//		searchMin.initialize(expNode, numWorkers/2); // Start from where the last stage stopped deep in the tree.
+		//		List<Node> crazyNodes = searchMin.getResults(); // Should only return the one node way out there.
+		//		System.out.println("Stage 2 done.");
+		//		
+		//		System.out.println("Starting stage 3. " + crazyNodes.size() + " nodes to expand.");
+		//		int count = 0;
+		//		for (Node n : crazyNodes) {
+		//			n.edgeLength = 15;
+		//			n.calcNodePos();
+		//			n.notDrawnForSpeed = false;
+		//			System.out.println("Beginning node " + ++count + ".");
+		//			n.overrideNodeColor = Color.RED;
+		//			n.displayPoint = true;
+		//			TreeStage searchRecovery = new TreeStage_MaxDepth(8, currentSampler.clone(), dataSaver.clone());
+		//			if (count % 5 == 0) {
+		//				searchRecovery.blocking = true;
+		//			}else {
+		//				searchRecovery.blocking = false;
+		//			}
+		//			//if (count < crazyNodes.size()) searchRecovery.blocking = false;
+		//			searchRecovery.initialize(n, 12); // Start from where the last stage stopped deep in the tree.
+		//		}
+
+
 
 
 

@@ -14,6 +14,8 @@ public interface IUserInterface extends Runnable{
 
 	void addRootNode(Node node);
 	
+	void clearRootNodes();
+	
 	public interface TabbedPaneActivator {
 		public void activateTab();
 		public void deactivateTab();

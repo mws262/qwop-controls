@@ -11,11 +11,12 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 public class SaveableFileIO<T> {
 
 	/** Store objects in ordered form. Only use if you require ordered. It's slower. Also preserves duplicates for better or worse. **/
-	public void storeObjectsOrdered(ArrayList<T> data, String fullFileName, boolean append){
+	public void storeObjectsOrdered(List<T> data, String fullFileName, boolean append){
 
 		OutputStream ops = null;
 		ObjectOutputStream objOps = null;
@@ -52,7 +53,7 @@ public class SaveableFileIO<T> {
 
 	/** Store objects in ordered form. Only use if you require ordered. It's slower. Also preserves duplicates for better or worse. **/
 	public void storeObjectsOrdered(T data, String fullFileName, boolean append){
-		ArrayList<T> dataList = new ArrayList<T>();
+		List<T> dataList = new ArrayList<T>();
 		dataList.add(data);
 		storeObjectsOrdered(dataList, fullFileName, append);
 	}
@@ -138,13 +139,13 @@ public class SaveableFileIO<T> {
 	}
 	
 	/** Load objects in ordered form. Faster but could contain duplicates. **/
-	public ArrayList<T> loadObjectsOrdered(String fullFileName){
+	public List<T> loadObjectsOrdered(String fullFileName){
 
 		InputStream fileIs = null;
 		ObjectInputStream objIs = null;
 		int counter = 0;
 
-		ArrayList<T> dataList = new ArrayList<T>();
+		List<T> dataList = new ArrayList<T>();
 		try {
 			final String dir = System.getProperty("user.dir");
 	        System.out.println("current directory: " + dir);

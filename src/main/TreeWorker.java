@@ -253,9 +253,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				addToTotalTimesteps(game.getTimestepsSimulated());
 				workerGamesPlayed.increment();
 				long totGames = incrementTotalGameCount();
-				if (totGames % 1000 == 0) {
-					System.out.println(totGames);
-				}
 
 				expansionNode.releaseExpansionRights();
 

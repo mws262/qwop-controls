@@ -18,7 +18,7 @@ public abstract class TreeStage implements Runnable{
 
 	/** Currently only supporting one sampler per stage. Must define which sampler to use in the inheritors of this abstract class. **/
 	protected ISampler sampler;
-	
+
 	/** Data saving selection. Must define which saver to use in the inheritors of this abstract class. **/
 	protected IDataSaver saver;
 
@@ -48,24 +48,25 @@ public abstract class TreeStage implements Runnable{
 		running = true;
 		stageThread = new Thread(this);
 		stageThread.start();
+		synchronized(workerThreads) {
+			for (int i = 0; i < numWorkers; i++) {
+				// Make workers
+				TreeWorker w;
+				ISampler sam = sampler.clone(); // Sampler must be determined in the extender of this class.
+				IDataSaver sav = saver.clone();
+				w = new TreeWorker(treeRoot, sam, sav);
+				workers.add(w);
 
-		for (int i = 0; i < numWorkers; i++) {
-			// Make workers
-			TreeWorker w;
-			ISampler sam = sampler.clone(); // Sampler must be determined in the extender of this class.
-			IDataSaver sav = saver.clone();
-			w = new TreeWorker(treeRoot, sam, sav);
-			workers.add(w);
+				// Make worker threads
+				Thread wThread = new Thread(w);
+				wThread.setName(w.workerName);
+				workerThreads.add(wThread);		
+			}
 
-			// Make worker threads
-			Thread wThread = new Thread(w);
-			wThread.setName(w.workerName);
-			workerThreads.add(wThread);		
-		}
-
-		// Start threads
-		for (Thread t : workerThreads) {
-			t.start();
+			// Start threads
+			for (Thread t : workerThreads) {
+				t.start();
+			}
 		}
 
 		if (blocking) {
