@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import main.IDataSaver;
 import main.ISampler;
 import main.Node;
 import main.TreeStage;
@@ -23,8 +24,9 @@ public class TreeStage_MaxDepth extends TreeStage {
 	/** Max effective depth (i.e. absolute depth relative to the entire tree root). **/
 	private int maxEffectiveDepth;
 	
-	public TreeStage_MaxDepth(ISampler sampler, int maxDepth) {
+	public TreeStage_MaxDepth(int maxDepth, ISampler sampler, IDataSaver saver) {
 		this.sampler = sampler;
+		this.saver = saver;
 		this.maxDepth = maxDepth;
 	}
 	

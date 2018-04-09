@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import main.IDataSaver;
 import main.ISampler;
 import main.Node;
 import main.TreeStage;
@@ -26,8 +27,9 @@ public class TreeStage_MinDepth extends TreeStage {
 	/** Minimum ABSOLUTE depth (relative to absolute root) that we want to achieve. **/
 	private int minEffectiveDepth;
 	
-	public TreeStage_MinDepth(ISampler sampler, int minDepth) {
+	public TreeStage_MinDepth(int minDepth, ISampler sampler, IDataSaver saver) {
 		this.sampler = sampler;
+		this.saver = saver;
 		this.minDepth = minDepth;
 	}
 	
@@ -39,6 +41,10 @@ public class TreeStage_MinDepth extends TreeStage {
 	
 	@Override
 	public List<Node> getResults() {
+		leafList.clear();
+		getRootNode().getLeaves(leafList);
+		System.out.println(leafList.size());
+
 		List<Node> resultList = new ArrayList<Node>();
 		
 		for (Node n : leafList) {
@@ -59,6 +65,8 @@ public class TreeStage_MinDepth extends TreeStage {
 	public boolean checkTerminationConditions() {
 		Node rootNode = getRootNode();
 		if (rootNode.fullyExplored.get()) return true;
+		if (!areWorkersRunning()) return true;
+		
 		leafList.clear();
 		rootNode.getLeaves(leafList);
 

@@ -4,6 +4,7 @@
 package savers;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import data.SaveableDenseData;
 import data.SaveableFileIO;
@@ -50,4 +51,14 @@ public class DataSaver_DenseJava extends DataSaver_Dense{
 		
 	}
 
+	@Override
+	public void reportStageEnding(Node rootNode, List<Node> targetNodes) {}
+
+	@Override
+	public DataSaver_DenseJava clone() {
+		DataSaver_DenseJava newSaver = new DataSaver_DenseJava();
+		newSaver.setSaveInterval(saveInterval);
+		newSaver.setSavePath(fileLocation);
+		return newSaver;
+	}
 }

@@ -5,15 +5,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.beust.jcommander.*;
 
-import TreeStages.TreeStage_FixedGames;
 import TreeStages.TreeStage_MaxDepth;
 import TreeStages.TreeStage_MinDepth;
-import TreeStages.TreeStage_SearchForever;
 import distributions.Distribution_Normal;
 import distributions.Distribution_Uniform;
 import evaluators.Evaluator_Distance;
@@ -21,13 +18,15 @@ import evaluators.Evaluator_HandTunedOnState;
 import evaluators.Evaluator_Random;
 import samplers.Sampler_Deterministic;
 import samplers.Sampler_Distribution;
+import samplers.Sampler_FixedDepth;
 import samplers.Sampler_Greedy;
 import samplers.Sampler_Random;
 import samplers.Sampler_UCB;
 import savers.DataSaver_DenseJava;
 import savers.DataSaver_DenseTFRecord;
 import savers.DataSaver_Sparse;
-import savers.DataSaver_null;
+import savers.DataSaver_StageSelected;
+import savers.DataSaver_Null;
 import ui.UI_Full;
 import ui.UI_Headless;
 
@@ -243,12 +242,12 @@ public class MAIN_Run implements Runnable{
 			System.out.println("SAVER: Using serialized Java class data saver, densely storing state data. Frequency: " + settings.saver.get(1) + " games/save.");
 			break;
 		case "none":
-			dataSaver = new DataSaver_null(); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+			dataSaver = new DataSaver_Null(); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
 			System.out.println("SAVER: Not saving data to file. Frequency: " + settings.saver.get(1) + " games/save.");
 			break;
 		default:
 			System.out.println("SAVER: Unrecognized argument. Defaulting to no saving.");
-			dataSaver = new DataSaver_null();
+			dataSaver = new DataSaver_Null();
 
 		}
 
@@ -283,10 +282,7 @@ public class MAIN_Run implements Runnable{
 		Thread uiThread = new Thread(ui);
 		uiThread.start();
 		System.out.println("All initialized.");
-		
-		
-		// MATT
-		// MAKE A RANDOM SAMPLER WHICH ONLY GOES TO A FIXED DEPTH
+
 		
 		// Searches are divided into stages now, allowing for multiple objectives and searches in a single run.
 		// Here is the searchForever -- the equivalent to the previous code.
@@ -294,30 +290,41 @@ public class MAIN_Run implements Runnable{
 //		TreeStage searchForever = new TreeStage_SearchForever(new Sampler_Random());
 		
 		System.out.println("Starting stage 1.");
-		TreeStage searchMax = new TreeStage_MaxDepth(currentSampler.clone(), 14); // Depth to get to sorta steady state.
+		TreeStage searchMax = new TreeStage_MaxDepth(14, currentSampler.clone(), new DataSaver_StageSelected()); // Depth to get to sorta steady state.
 		searchMax.initialize(treeRoot, numWorkers);
 		List<Node> deepNode = searchMax.getResults(); // Should only return the one node way out there.
 		Node expNode = deepNode.get(0).parent.parent; // Node at depth 12
 		System.out.println("Stage 1 done.");
 		
 		System.out.println("Starting stage 2.");
-		TreeStage searchMin = new TreeStage_MinDepth(new Sampler_Random(), 2); // Two actions to get weird.
-		expNode.sweepAngle = (float)(Math.PI*1.);
-		expNode.calcNodePos_below();
-		searchMin.initialize(expNode, numWorkers); // Start from where the last stage stopped deep in the tree.
+		int screwUpDepth = 2;
+		TreeStage searchMin = new TreeStage_MinDepth(screwUpDepth, new Sampler_FixedDepth(screwUpDepth), dataSaver.clone()); // Two actions to get weird.
+		expNode.edgeLength = 12;
+		expNode.calcNodePos();
+		expNode.sweepAngle = (float)(Math.PI);
+		expNode.calcNodePosBelow();
+		
+		searchMin.initialize(expNode, numWorkers/2); // Start from where the last stage stopped deep in the tree.
 		List<Node> crazyNodes = searchMin.getResults(); // Should only return the one node way out there.
 		System.out.println("Stage 2 done.");
 		
 		System.out.println("Starting stage 3. " + crazyNodes.size() + " nodes to expand.");
 		int count = 0;
 		for (Node n : crazyNodes) {
+			n.edgeLength = 15;
+			n.calcNodePos();
+			n.notDrawnForSpeed = false;
 			System.out.println("Beginning node " + ++count + ".");
 			n.overrideNodeColor = Color.RED;
 			n.displayPoint = true;
-			TreeStage searchRecovery = new TreeStage_MaxDepth(currentSampler.clone(), 4);
-			
+			TreeStage searchRecovery = new TreeStage_MaxDepth(8, currentSampler.clone(), dataSaver.clone());
+			if (count % 5 == 0) {
+				searchRecovery.blocking = true;
+			}else {
+				searchRecovery.blocking = false;
+			}
 			//if (count < crazyNodes.size()) searchRecovery.blocking = false;
-			searchRecovery.initialize(n, 4); // Start from where the last stage stopped deep in the tree.
+			searchRecovery.initialize(n, 12); // Start from where the last stage stopped deep in the tree.
 		}
 
 //		

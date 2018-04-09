@@ -83,6 +83,10 @@ public class Sampler_UCB implements ISampler {
 			}
 		}
 		if (bestNodeSoFar == null) { // This worker can't get a lock on any of the children it wants. Starting back at startNode.
+			if (deadlockDelayCurrent > 5000) {
+				System.out.println("UCB sampler worker got really jammed up. Terminating this one.");
+				return null;
+			}
 			try {
 				Thread.sleep(deadlockDelayCurrent);
 				deadlockDelayCurrent = deadlockDelayCurrent * 2 + 1;

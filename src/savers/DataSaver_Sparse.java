@@ -1,9 +1,11 @@
 package savers;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
+import game.GameLoader;
 import game.State;
 import main.Action;
 import main.IDataSaver;
@@ -43,7 +45,7 @@ public class DataSaver_Sparse implements IDataSaver {
 	public void reportGameInitialization(State initialState) {}
 
 	@Override
-	public void reportTimestep(Action action, State state) {}
+	public void reportTimestep(Action action, GameLoader game) {}
 
 	@Override
 	public void reportGameEnding(Node endNode) {
@@ -65,5 +67,16 @@ public class DataSaver_Sparse implements IDataSaver {
 	@Override
 	public void setSavePath(String fileLoc) {
 		this.fileLocation = fileLoc;
+	}
+
+	@Override
+	public void reportStageEnding(Node rootNode, List<Node> targetNodes) {}
+	
+	@Override
+	public DataSaver_Sparse clone() {
+		DataSaver_Sparse newSaver = new DataSaver_Sparse();
+		newSaver.setSaveInterval(saveInterval);
+		newSaver.setSavePath(fileLocation);
+		return newSaver;
 	}
 }

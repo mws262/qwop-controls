@@ -73,16 +73,7 @@ public class Sampler_Random implements ISampler {
 					return currentNode;
 				}else{
 					int count = 1;
-					for (Node child : currentNode.children) {
-						if (!child.fullyExplored.get() && !child.getLockStatus()) {
-							if (count == selection) {
-								currentNode = child;
-								break;
-							}else {
-								count++;
-							}
-						}
-					}	
+					
 				}	
 			}
 		}

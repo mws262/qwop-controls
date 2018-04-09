@@ -1,5 +1,8 @@
 package savers;
 
+import java.util.List;
+
+import game.GameLoader;
 import game.State;
 import main.Action;
 import main.IDataSaver;
@@ -11,13 +14,13 @@ import main.Node;
  * @author Matt
  *
  */
-public class DataSaver_null implements IDataSaver {
+public class DataSaver_Null implements IDataSaver {
 
 	@Override
 	public void reportGameInitialization(State initialState) {}
 
 	@Override
-	public void reportTimestep(Action action, State state) {}
+	public void reportTimestep(Action action, GameLoader game) {}
 
 	@Override
 	public void reportGameEnding(Node endNode) {}
@@ -27,5 +30,13 @@ public class DataSaver_null implements IDataSaver {
 
 	@Override
 	public void setSavePath(String fileLoc) {}
+
+	@Override
+	public void reportStageEnding(Node rootNode, List<Node> targetNodes) {}
+	
+	@Override
+	public DataSaver_Null clone() {
+		return new DataSaver_Null();
+	}
 
 }

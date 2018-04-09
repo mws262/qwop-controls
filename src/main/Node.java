@@ -91,7 +91,7 @@ public class Node {
 	public boolean limitDrawing = true;
 	private static Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
 	public float drawFilterDistance = 0.1f; // Actually distance squared to avoid sqrt
-	private boolean notDrawnForSpeed = false;
+	public boolean notDrawnForSpeed = false;
 	
 	// Disable node position calculations (for when running headless)
 	public static boolean calculateNodeVisPositions = true;
@@ -536,7 +536,7 @@ public class Node {
 		}
 		rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
 		currentlyAddingSavedNodes = false;
-		rootNode.calcNodePos_below();
+		rootNode.calcNodePosBelow();
 		return rootNode;
 	}
 
@@ -608,10 +608,10 @@ public class Node {
 	}
 
 	/** Recalculate all node positions below this one (NOT including this one for the sake of root). **/
-	public void calcNodePos_below(){		
+	public void calcNodePosBelow(){		
 		for (Node current : children){
 			current.calcNodePos();	
-			current.calcNodePos_below(); // Recurse down through the tree.
+			current.calcNodePosBelow(); // Recurse down through the tree.
 		}
 	}
 

@@ -3,14 +3,16 @@ package TreeStages;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.IDataSaver;
 import main.ISampler;
 import main.Node;
 import main.TreeStage;
 
 public class TreeStage_SearchForever extends TreeStage {
 
-	public TreeStage_SearchForever(ISampler sampler) {
+	public TreeStage_SearchForever(ISampler sampler, IDataSaver saver) {
 		this.sampler = sampler;
+		this.saver = saver;
 	}
 	
 	@Override

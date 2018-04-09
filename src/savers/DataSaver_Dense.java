@@ -2,6 +2,7 @@ package savers;
 
 import java.util.ArrayList;
 
+import game.GameLoader;
 import game.State;
 import main.Action;
 import main.IDataSaver;
@@ -43,8 +44,8 @@ public abstract class DataSaver_Dense implements IDataSaver {
 	}
 
 	@Override
-	public void reportTimestep(Action action, State state) {
-		stateBuffer.add(state);
+	public void reportTimestep(Action action, GameLoader game) {
+		stateBuffer.add(game.getCurrentState());
 		actionBuffer.add(action);
 
 	}
@@ -58,5 +59,8 @@ public abstract class DataSaver_Dense implements IDataSaver {
 	public void setSavePath(String fileLoc) {
 		this.fileLocation = fileLoc;
 	}
+	
+	@Override
+	public abstract DataSaver_Dense clone();
 
 }

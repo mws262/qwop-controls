@@ -3,6 +3,7 @@ package TreeStages;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.IDataSaver;
 import main.ISampler;
 import main.Node;
 import main.TreeStage;
@@ -22,8 +23,9 @@ public class TreeStage_FixedGames extends TreeStage {
 	/** Number of games this stage should play. **/
 	private long numGamesToPlay;
 	
-	public TreeStage_FixedGames(ISampler sampler, long numGamesToPlay) {
+	public TreeStage_FixedGames(ISampler sampler, IDataSaver saver, long numGamesToPlay) {
 		this.sampler = sampler;
+		this.saver = saver;
 		this.numGamesToPlay = numGamesToPlay;
 	}
 	

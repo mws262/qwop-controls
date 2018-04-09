@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.tensorflow.example.BytesList;
 import org.tensorflow.example.Feature;
 import org.tensorflow.example.FeatureList;
@@ -216,5 +218,16 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 			this.actions.addAll(actions);
 			this.states.addAll(states);
 		}
+	}
+
+	@Override
+	public void reportStageEnding(Node rootNode, List<Node> targetNodes) {}
+
+	@Override
+	public DataSaver_DenseTFRecord clone() {
+		DataSaver_DenseTFRecord newSaver = new DataSaver_DenseTFRecord();
+		newSaver.setSaveInterval(saveInterval);
+		newSaver.setSavePath(fileLocation);
+		return newSaver;
 	}
 }

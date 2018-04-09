@@ -3,11 +3,8 @@ package main;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.stream.Collectors;
-
 import game.GameLoader;
 import game.State;
 
@@ -46,6 +43,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	/** Strategy for sampling new nodes. **/
 	private ISampler sampler;
+	
+	/** How data is saved. **/
+	private IDataSaver saver;
 
 	/** Root of tree that this FSM is operating on. **/
 	private Node rootNode;
@@ -86,8 +86,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	private final int workerID;
 	private static int workerCount = 0;
 
-	public TreeWorker(Node rootNode, ISampler sampler) {
+	public TreeWorker(Node rootNode, ISampler sampler, IDataSaver saver) {
 		this.sampler = sampler;
+		this.saver = saver;
 		this.rootNode = rootNode;
 		workerID = workerCount;
 		workerName = "worker" + workerID;
@@ -111,18 +112,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 			case INITIALIZE:
 				actionQueue.clearAll();
 				newGame(); // Create a new game world.
-
-//				if (workerGamesPlayed.intValue() % 1000000 == 0 && workerGamesPlayed.intValue() > 0) {
-//					List<Node> notFullyExploredChildren = rootNode.children.stream().filter(c -> !c.fullyExplored).collect(Collectors.toList());
-//					if (!notFullyExploredChildren.isEmpty()) {
-//						rootNode = notFullyExploredChildren.get(Utility.randInt(0, notFullyExploredChildren.size() - 1));
-//						rootNode.overrideNodeColor = Color.RED;
-//					}
-//				}
+				saver.reportGameInitialization(GameLoader.getInitialState());
+				
 				currentGameNode = rootNode;
-
-
-
 				changeStatus(Status.TREE_POLICY_CHOOSING);
 
 				break;		
@@ -133,6 +125,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 				}else {
 					expansionNode = sampler.treePolicy(currentGameNode); // This gets us through the existing tree to a place that we plan to add a new node.
+					if (expansionNode == null) {
+						terminateWorker();
+						changeStatus(Status.IDLE);
+						continue;
+					}
 					if (debugDraw) {
 						expansionNode.setBackwardsBranchColor(getColorFromWorkerID(workerID));
 						expansionNode.setBackwardsBranchZOffset(0.1f);
@@ -249,9 +246,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				if (currentGameNode.state.failedState) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
 					currentGameNode.markTerminal();
 				}else {
-					throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
+					// Not necessarily true with the FixedDepth sampler.
+					//throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
 				}
-
+				saver.reportGameEnding(currentGameNode);
 				addToTotalTimesteps(game.getTimestepsSimulated());
 				workerGamesPlayed.increment();
 				long totGames = incrementTotalGameCount();
@@ -300,12 +298,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
 		currentStatus = newStatus;
 	}
 
-
 	/** Begin a new game. **/
 	private void newGame(){
 		game.makeNewWorld();
 	}
-
 
 	public void addAction(Action action){
 		actionQueue.addAction(action);
@@ -313,12 +309,14 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	/** Pop the next action off the queue and execute one timestep. **/
 	private void executeNextOnQueue() {
+		Action action = actionQueue.peekThisAction();
 		boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
 		boolean Q = nextCommand[0];
 		boolean W = nextCommand[1]; 
 		boolean O = nextCommand[2];
 		boolean P = nextCommand[3];
 		game.stepGame(Q,W,O,P);
+		saver.reportTimestep(action, game);
 		workerStepsSimulated++;
 	}
 

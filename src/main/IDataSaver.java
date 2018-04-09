@@ -2,7 +2,9 @@ package main;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
+import game.GameLoader;
 import game.State;
 
 public interface IDataSaver {
@@ -14,21 +16,22 @@ public interface IDataSaver {
 	 *  saving of data for TFRecords or other.
 	 * @param stepNode
 	 */
-	public void reportTimestep(Action action, State state);
+	public void reportTimestep(Action action, GameLoader game);
 	
-	/** Get the final game state for this run. This will be a failed state.
-	 *  It is reported after game failure AND after final node creation.
-	 *  Hence it should be called from the EVALUATE_GAME transition of tree
-	 *  and not from the FAILED transition for game.
-	 * @param endNode
-	 */
+	/** Get the final game state for this run. **/
 	public void reportGameEnding(Node endNode);
+	
+	/** Called when the end of a TreeStage is reached. TargetNodes meaning is different depending on the saver implementation. **/
+	public void reportStageEnding(Node rootNode, List<Node> targetNodes);
 	
 	/** Set the number of games to collect in between saves. **/
 	public void setSaveInterval(int numGames);
 	
 	/** Set where the files are saved. Defaults to working directory otherwise. **/
 	public void setSavePath(String fileLoc);
+	
+	/** Get a fresh copy of this saver with the same settings. **/
+	public IDataSaver clone();
 	
 	/** Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]**/
 	static String generateFileName(String prefix, String className) {
