@@ -221,9 +221,6 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 	}
 
 	@Override
-	public void reportStageEnding(Node rootNode, List<Node> targetNodes) {}
-
-	@Override
 	public DataSaver_DenseTFRecord clone() {
 		DataSaver_DenseTFRecord newSaver = new DataSaver_DenseTFRecord();
 		newSaver.setSaveInterval(saveInterval);

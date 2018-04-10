@@ -300,6 +300,7 @@ public class MAIN_Run implements Runnable{
 		boolean doStage1 = false;
 		boolean doStage2 = false;
 		boolean doStage3 = true;
+		boolean doStage4 = false;
 
 		// This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
 		if (doStage1) {
@@ -369,6 +370,20 @@ public class MAIN_Run implements Runnable{
 			}
 
 			System.out.println("Stage 3 done.");
+		}
+		
+		if (doStage4) {
+			File[] savedRecoveries = saveLoc.listFiles();
+			for (File f : savedRecoveries) {
+				if (f.getName().toLowerCase().contains("recoveries")){
+					SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
+					Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/deviations.SaveableSingleGame"), rootNode, 11);
+					
+					
+					
+					
+				}
+			}
 		}
 
 		//		

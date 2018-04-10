@@ -70,7 +70,10 @@ public class DataSaver_Sparse implements IDataSaver {
 	}
 
 	@Override
-	public void reportStageEnding(Node rootNode, List<Node> targetNodes) {}
+	public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
+		// If the save buffer still has stuff in it, save!
+		if (!saveBuffer.isEmpty()) fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
+	}
 	
 	@Override
 	public DataSaver_Sparse clone() {

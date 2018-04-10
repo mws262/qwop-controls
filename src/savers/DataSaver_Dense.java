@@ -1,11 +1,13 @@
 package savers;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import game.GameLoader;
 import game.State;
 import main.Action;
 import main.IDataSaver;
+import main.Node;
 
 /**
  * Saving to file with full state and action data at every timestep.
@@ -49,6 +51,9 @@ public abstract class DataSaver_Dense implements IDataSaver {
 		actionBuffer.add(action);
 
 	}
+	
+	@Override
+	public void reportStageEnding(Node rootNode, List<Node> targetNodes) {}
 	
 	@Override
 	public void setSaveInterval(int numGames) {

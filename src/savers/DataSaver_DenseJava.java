@@ -52,9 +52,6 @@ public class DataSaver_DenseJava extends DataSaver_Dense{
 	}
 
 	@Override
-	public void reportStageEnding(Node rootNode, List<Node> targetNodes) {}
-
-	@Override
 	public DataSaver_DenseJava clone() {
 		DataSaver_DenseJava newSaver = new DataSaver_DenseJava();
 		newSaver.setSaveInterval(saveInterval);

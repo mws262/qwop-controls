@@ -17,7 +17,6 @@ public class SaveableSingleGame implements Serializable {
 	public Action[] actions;
 	public State[] states;
 	
-	/** New TrialNodeMinimal **/
 	public SaveableSingleGame(Node terminalNode){
 		states = new State[terminalNode.treeDepth];
 		actions = new Action[terminalNode.treeDepth];
