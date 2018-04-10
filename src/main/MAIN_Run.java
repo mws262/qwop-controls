@@ -104,7 +104,7 @@ public class MAIN_Run implements Runnable{
 		/********** Repeated action 1 -- no keys pressed. ***********/
 		//		Integer[] durations1 = new Integer[]{11,12,13,14};
 
-		Integer[] durations1 = IntStream.range(1, 20).boxed().toArray(Integer[] :: new);
+		Integer[] durations1 = IntStream.range(1, 40).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations1.length);
 
 		//Distribution<Action> dist1 = new Distribution_Uniform();
@@ -113,7 +113,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action 2 -- W-O pressed ***********/
 		//		Integer[] durations2 = new Integer[]{36,37,38,39,40,41};
-		Integer[] durations2 = IntStream.range(30, 60).boxed().toArray(Integer[] :: new);
+		Integer[] durations2 = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durations2.length);
 
 		//		Distribution<Action> dist2 = new Distribution_Uniform();
@@ -122,7 +122,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action 3 -- W-O pressed ***********/
 		//		Integer[] durations3 = new Integer[]{5,6,7,8,9,10,11};
-		Integer[] durations3 = IntStream.range(1, 20).boxed().toArray(Integer[] :: new);
+		Integer[] durations3 = IntStream.range(1, 40).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations3.length);
 
 		//		Distribution<Action> dist3 = new Distribution_Uniform();
@@ -131,7 +131,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action 4 -- Q-P pressed ***********/
 		//		Integer[] durations4 = new Integer[]{35,36,37,38,39,40};
-		Integer[] durations4 = IntStream.range(30, 60).boxed().toArray(Integer[] :: new);
+		Integer[] durations4 = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durations4.length);
 
 		//		Distribution<Action> dist4 = new Distribution_Uniform();
@@ -263,7 +263,7 @@ public class MAIN_Run implements Runnable{
 		/************************************************************/
 		Node treeRoot = new Node();
 		IUserInterface ui;
-		settings.headless = true;
+		//settings.headless = false;
 		if (settings.headless) {
 			ui = new UI_Headless();
 			System.out.println("GUI: Running in headless mode.");
@@ -354,14 +354,19 @@ public class MAIN_Run implements Runnable{
 			rootNode.getLeaves(leafList);
 
 			int count = 0;
+			int startAt = 30;
 			for (Node leaf : leafList) {
+				if (count < startAt) {
+					count++;
+					continue;
+				}
 				DataSaver_StageSelected saver = new DataSaver_StageSelected();
 				saver.overrideFilename = "recoveries" + count;
 				saver.setSavePath(saveLoc.getPath() + "/");
 
-				TreeStage searchMax = new TreeStage_MaxDepth(8, currentSampler.clone(), saver); // Depth to get to sorta steady state.
+				TreeStage searchMax = new TreeStage_MaxDepth(12, currentSampler.clone(), saver); // Depth to get to sorta steady state.
 				System.out.print("Started " + count + "...");
-				searchMax.initialize(leaf, 20);
+				searchMax.initialize(leaf, 12);
 				// Turn off drawing for this one.
 				leaf.turnOffBranchDisplay();
 				leaf.parent.children.remove(leaf);
@@ -372,19 +377,19 @@ public class MAIN_Run implements Runnable{
 			System.out.println("Stage 3 done.");
 		}
 		
-		if (doStage4) {
-			File[] savedRecoveries = saveLoc.listFiles();
-			for (File f : savedRecoveries) {
-				if (f.getName().toLowerCase().contains("recoveries")){
-					SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
-					Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/deviations.SaveableSingleGame"), rootNode, 11);
-					
-					
-					
-					
-				}
-			}
-		}
+//		if (doStage4) {
+//			File[] savedRecoveries = saveLoc.listFiles();
+//			for (File f : savedRecoveries) {
+//				if (f.getName().toLowerCase().contains("recoveries")){
+//					SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
+//					Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/deviations.SaveableSingleGame"), rootNode, 11);
+//					
+//					
+//					
+//					
+//				}
+//			}
+//		}
 
 		//		
 		//		System.out.println("Starting stage 2.");

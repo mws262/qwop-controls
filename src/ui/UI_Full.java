@@ -86,9 +86,11 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	/** Thread loop running? **/
 	public boolean running = true;
-	
+
 	/** Verbose printing? **/
 	public boolean verbose = false;
+
+	public boolean disableNonessential = true;
 
 	/** Tree root nodes associated with this interface. **/
 	ArrayList<Node> rootNodes = new ArrayList<Node>();
@@ -101,7 +103,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	/** Pane for the runner. **/
 	PanelRunner_Animated runnerPanel;
-	
+
 	/** Pane for the snapshots of the runner. **/
 	PanelRunner_Snapshot snapshotPane;
 
@@ -110,16 +112,16 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	/** State variable plots. **/
 	PanelPlot_States statePlotPane;
-	
+
 	/** Control actions vs states **/
 	PanelPlot_Controls controlsPlotPane;
 
 	/** Control actions and states on a single run. **/
 	PanelPlot_SingleRun singleRunPlotPane;
-	
+
 	/** Plots of PCA transformed data **/
 	PanelPlot_Transformed pcaPlotPane;
-	
+
 	/** Plots of autoencoder transformed data **/
 	PanelPlot_Transformed autoencPlotPane;
 
@@ -140,7 +142,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	/** Games played per second **/
 	private int gps = 0;
-	
+
 	/** Usable milliseconds per frame **/
 	private long MSPF = (long)(1f/FPS * 1000f);
 
@@ -151,7 +153,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	private long lastIterTime = System.currentTimeMillis();
 	private long totalGamesPlayed = 0;
 	private long lastGamesPlayed = 0;
-	
+
 	/** Keep track of whether we sent a pause request to the tree. **/
 	private boolean treePause = false;
 
@@ -168,43 +170,48 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		/**** Tabbed panes ****/
 		/* Make each UI component */
 		runnerPanel = new PanelRunner_AnimatedTransformed();
-		snapshotPane = new PanelRunner_Snapshot();
-		comparisonPane = new PanelRunner_Comparison();
-		statePlotPane = new PanelPlot_States(6); // 6 plots per view at the bottom.
-		
-		pcaPlotPane = new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
-		controlsPlotPane = new PanelPlot_Controls(6); // 6 plots per view at the bottom.
-		autoencPlotPane = new PanelPlot_Transformed(new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12), 6);
-		autoencPlotPane.addFilter(new NodeFilter_GoodDescendants(1));
-		singleRunPlotPane = new PanelPlot_SingleRun(6);
-		
+		if (!disableNonessential) {
+			snapshotPane = new PanelRunner_Snapshot();
+			comparisonPane = new PanelRunner_Comparison();
+			statePlotPane = new PanelPlot_States(6); // 6 plots per view at the bottom.
+
+			pcaPlotPane = new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
+			controlsPlotPane = new PanelPlot_Controls(6); // 6 plots per view at the bottom.
+			autoencPlotPane = new PanelPlot_Transformed(new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12), 6);
+			autoencPlotPane.addFilter(new NodeFilter_GoodDescendants(1));
+			singleRunPlotPane = new PanelPlot_SingleRun(6);
+		}
+
 
 		Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameLoader should have their own threads.
 		runnerPanelThread.start();
-		
+
 		/* Add components to tabs */
 		tabPane = new JTabbedPane();
 		tabPane.setBorder(BorderFactory.createRaisedBevelBorder());
 		tabPane.addTab("Run Animation", runnerPanel);
-		tabPane.addTab("State Viewer", snapshotPane);
-		tabPane.addTab("State Compare", comparisonPane);
-		tabPane.addTab("State Plots", statePlotPane);
-		tabPane.addTab("Controls Plots", controlsPlotPane);
-		tabPane.addTab("Single Run Plots", singleRunPlotPane);
-		tabPane.addTab("PCA Plots", pcaPlotPane);
-		tabPane.addTab("Autoenc Plots", autoencPlotPane);
+		if (!disableNonessential) {
+			tabPane.addTab("State Viewer", snapshotPane);
+			tabPane.addTab("State Compare", comparisonPane);
+			tabPane.addTab("State Plots", statePlotPane);
+			tabPane.addTab("Controls Plots", controlsPlotPane);
+			tabPane.addTab("Single Run Plots", singleRunPlotPane);
+			tabPane.addTab("PCA Plots", pcaPlotPane);
+			tabPane.addTab("Autoenc Plots", autoencPlotPane);
+		}
 
 		tabPane.setPreferredSize(new Dimension(1080,250));
 		tabPane.setMinimumSize(new Dimension(100,1));
 		allTabbedPanes.add(runnerPanel);
-		allTabbedPanes.add(snapshotPane);
-		allTabbedPanes.add(comparisonPane);
-		allTabbedPanes.add(statePlotPane);
-		allTabbedPanes.add(controlsPlotPane);
-		allTabbedPanes.add(singleRunPlotPane);
-		allTabbedPanes.add(pcaPlotPane);
-		allTabbedPanes.add(autoencPlotPane);
-
+		if (!disableNonessential) {
+			allTabbedPanes.add(snapshotPane);
+			allTabbedPanes.add(comparisonPane);
+			allTabbedPanes.add(statePlotPane);
+			allTabbedPanes.add(controlsPlotPane);
+			allTabbedPanes.add(singleRunPlotPane);
+			allTabbedPanes.add(pcaPlotPane);
+			allTabbedPanes.add(autoencPlotPane);
+		}
 		tabPane.addChangeListener(this);
 		//Make sure the currently active tab is actually being updated.
 		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
@@ -212,12 +219,12 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		/**** TREE PANE ****/
 		treePane = new TreePane();
 		treePane.setBorder(BorderFactory.createRaisedBevelBorder());
-		
+
 		// This makes it have that dragable border between the tab and the tree sections.
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, treePane, tabPane);
 		splitPane.setResizeWeight(0.7);
 		pane.add(splitPane);
-		
+
 		/*******************/
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setPreferredSize(new Dimension(windowWidth, windowHeight));
@@ -225,7 +232,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		this.pack();
 		this.setVisible(true); 
 		//treePane.requestFocus();
-		
+
 		currentStatus = Status.DRAW_ALL; // Fire it up.
 	}
 
@@ -278,17 +285,17 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	 */
 	@Override
 	public void selectNode(Node selected) {
-			if (selectedNode != null) { // Clear things from the old selected node.
-				selectedNode.displayPoint = false;
-				selectedNode.clearBranchColor();
-				selectedNode.clearBranchZOffset();
-			}
-			selectedNode = selected;
-			selectedNode.displayPoint = true;
-			selectedNode.nodeColor = Color.RED;
-			selectedNode.setBranchZOffset(0.4f);
-			if (runnerPanel.isActive()) runnerPanel.simRunToNode(selectedNode);
-
+		if (selectedNode != null) { // Clear things from the old selected node.
+			selectedNode.displayPoint = false;
+			selectedNode.clearBranchColor();
+			selectedNode.clearBranchZOffset();
+		}
+		selectedNode = selected;
+		selectedNode.displayPoint = true;
+		selectedNode.nodeColor = Color.RED;
+		selectedNode.setBranchZOffset(0.4f);
+		if (runnerPanel.isActive()) runnerPanel.simRunToNode(selectedNode);
+		if (!disableNonessential) {
 			if (snapshotPane.isActive()) snapshotPane.giveSelectedNode(selectedNode);
 			if (comparisonPane.isActive()) comparisonPane.giveSelectedNode(selectedNode);
 			if (statePlotPane.isActive()) statePlotPane.update(selectedNode); // Updates data being put on plots
@@ -296,6 +303,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			if (singleRunPlotPane.isActive()) singleRunPlotPane.update(selectedNode);
 			if (pcaPlotPane.isActive()) pcaPlotPane.update(selectedNode); // Updates data being put on plots
 			if (autoencPlotPane.isActive()) autoencPlotPane.update(selectedNode); // Updates data being put on plots
+		}
 	}
 
 	@Override
@@ -375,30 +383,30 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 			// ms/frame
 			avgLoopTime = (long)(((loopTimeFilter - 1f) * avgLoopTime + 1f * (System.currentTimeMillis() - lastIterTime)) / loopTimeFilter); // Filter the loop time
-			
+
 			// Draw the FPS of the tree drawer at the moment.
 			textRenderSmall.beginRendering(panelWidth, panelHeight);
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
-			
+
 			int dekafps = (int)(10000./avgLoopTime); // Only multiplying by 10000 instead of 1000 to make decimal places as desired.
 			textRenderSmall.draw( ( (Math.abs(dekafps) > 10000) ? "???" : dekafps/10f ) + " FPS", panelWidth - 75, panelHeight - 20);
 
 			// Number of imported games
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
-			
+
 			// Total games played
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			long totalTimestepsSimulated = TreeWorker.getTotalTimestepsSimulated();
 			totalGamesPlayed = TreeWorker.getTotalGamesPlayed();
 			textRenderSmall.draw(totalGamesPlayed + " total games", 20, panelHeight - 85);	
-			
+
 
 			textRenderSmall.draw(Math.round(totalTimestepsSimulated/9000f)/10f + " hours simulated!", 20, panelHeight - 100);
-			
+
 			textRenderSmall.setColor(0.1f, 0.7f, 0.1f, 1.0f);
 			textRenderSmall.draw(Math.round(totalTimestepsSimulated/(double)totalGamesPlayed * 0.4)/10f + "s Avg. game length", 20, panelHeight - 115);
-			
-			
+
+
 			textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
 			gps = (int)((gps*(loopTimeFilter - 1f) + 1000f*(totalGamesPlayed - lastGamesPlayed) / (System.currentTimeMillis() - lastIterTime))/loopTimeFilter);
 			textRenderSmall.draw(gps + " games/s", 20, panelHeight - 130);
@@ -524,7 +532,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 					case KeyEvent.VK_ESCAPE:
 						System.exit(0);
 						break;
-						
+
 					case KeyEvent.VK_SPACE:
 						if (runnerPanel.isActive()) {
 							runnerPanel.pauseToggle();
@@ -543,7 +551,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 			mouseY = e.getY();
 
 			// If the snapshot pane is displaying stuff, this lets us potentially select some of the future nodes displayed in the snapshot pane.
-			if (snapshotPane.isActive() && mouseInside) {
+			if (snapshotPane != null && snapshotPane.isActive() && mouseInside) {
 				List<Node> snapshotLeaves = snapshotPane.getDisplayedLeaves();
 				if (snapshotLeaves.size() > 0) {
 					Node nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves, 50);
@@ -658,7 +666,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	public void addRootNode(Node node) {
 		rootNodes.add(node);
 	}
-	
+
 	@Override
 	public void clearRootNodes() {
 		rootNodes.clear();

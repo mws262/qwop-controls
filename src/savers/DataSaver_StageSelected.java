@@ -52,10 +52,17 @@ public class DataSaver_StageSelected implements IDataSaver{
 		for (Node tar : targetNodes) {
 			saveBuffer.add(new SaveableSingleGame(tar));
 		}
+		
+		String successStatus = "";
+		if (targetNodes.isEmpty()) { // If we couldn't possible achieve the objective, just save the root node run and flag as unsuccessful in the filename.
+			successStatus = "_unsuccessful";
+			saveBuffer.add(new SaveableSingleGame(rootNode));
+		}
+		
 		if (overrideFilename.isEmpty()) {
-			fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
+			fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix + successStatus, fileExtension), false);
 		}else {
-			fileIO.storeObjectsOrdered(saveBuffer, fileLocation + overrideFilename + "." + fileExtension, false);
+			fileIO.storeObjectsOrdered(saveBuffer, fileLocation + overrideFilename + successStatus + "." + fileExtension, false);
 
 		}
 		saveBuffer.clear();

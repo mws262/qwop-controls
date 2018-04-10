@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import game.StateVariable;
+
 /**
  * If we want to switch and change between different 
  * 
@@ -82,11 +84,21 @@ public abstract class TreeStage implements Runnable{
 			}
 		}
 	}
-
+	int thresh = 2000;
 	@Override
 	public void run() {
 		// Monitor the progress of this stage's workers.
 		while (running) {
+			// EXPERIMENTAL MEMORY PRUNING.
+
+			
+			if (TreeWorker.getTotalGamesPlayed()  > thresh) {
+				count = 0;
+				pruneStatesForMemory(getRootNode());
+				System.out.println(count);
+				thresh += 2000;
+			}
+			
 			if (checkTerminationConditions()) {
 				terminate();
 				try {
@@ -109,6 +121,21 @@ public abstract class TreeStage implements Runnable{
 	/** Check through the tree for termination conditions. **/
 	public abstract boolean checkTerminationConditions();
 
+	private static int count = 0;
+	private void pruneStatesForMemory(Node node) {
+		if (!node.children.isEmpty() && node.state != null) {//node.uncheckedActions.size() == 0) {
+			for (StateVariable st : node.state.getStateList()) {
+				st = null;
+			}
+			node.state = null;
+			count++;
+			for (Node child : node.children) {
+				pruneStatesForMemory(child);
+			}
+		}
+		
+	}
+	
 	/** Terminate this stage, destroying the workers and their threads in the process. **/
 	public void terminate() {
 		running = false;

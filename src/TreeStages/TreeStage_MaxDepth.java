@@ -40,6 +40,8 @@ public class TreeStage_MaxDepth extends TreeStage {
 	public List<Node> getResults() {
 		List<Node> resultList = new ArrayList<Node>();
 		
+		if (getRootNode().fullyExplored.get()) return resultList; // No results. No possible way to recover.
+		
 		for (Node n : leafList) {
 			if (n.treeDepth == maxEffectiveDepth) {
 				resultList.add(n);

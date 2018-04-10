@@ -389,7 +389,7 @@ public class Node {
 	 **/
 	public void checkFullyExplored_lite(){
 		boolean flag = true;
-
+		if (state == null) return; // MATT
 		if (!state.failedState) {
 			if (!uncheckedActions.isEmpty()){
 				flag = false;
