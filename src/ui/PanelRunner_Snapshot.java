@@ -101,7 +101,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 		for (int i = 0; i < snapshotNode.children.size(); i++) {
 			Node child = snapshotNode.children.get(i);
 			child.getLeaves(descendants);
-			filter.filter(descendants);
+			//filter.filter(descendants);
 			
 			Color runnerColor = Node.getColorFromTreeDepth(i*10);
 			child.setBranchColor(runnerColor); // Change the color on the tree too.

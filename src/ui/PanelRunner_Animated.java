@@ -1,6 +1,5 @@
 package ui;
 
-import java.awt.Dimension;
 import java.awt.Graphics;
 
 import game.GameLoader;
@@ -15,7 +14,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 
 	/** Is this panel still listening and ready to draw? Only false if thread is being killed. **/
 	private boolean running = true;
-	
+
 	/** Is the current simulation paused? **/
 	private boolean pauseFlag = false;
 
@@ -34,6 +33,9 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 	private boolean O = false;
 	private boolean P = false;
 
+	/** Gets set to non-zero by simRunToNode if the start node is not root. Lets us not have to watch the animation of the beginning of a long run. **/
+	private int fastForwardTimesteps = 0;
+	
 	public PanelRunner_Animated() {
 		game = new GameLoader();
 		//this.setMinimumSize(new Dimension(100,100));
@@ -42,16 +44,28 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 	/** Give this panel a node to simulate and draw to. If a new node is supplied while another
 	 * is active, then terminate the previous and start the new one.**/
 	public void simRunToNode(Node node) {
+		fastForwardTimesteps = 0;
 		actionQueue.clearAll();
 		game.makeNewWorld();
 		Action[] actionSequence = node.getSequence();
 		actionQueue.addSequence(actionSequence);
+		fastForwardTimesteps = 0;
 		for (Action a : actionSequence) {
 			System.out.println(a);
 		}
-		
+
 	}
 
+	/** This version only animates the actions between startNode and endNode. Still simulates all of course. **/
+	public void simRunToNode(Node startNode, Node endNode) {
+		simRunToNode(endNode);
+
+		Node currNode = startNode;
+		while (currNode.treeDepth > 0) {
+			fastForwardTimesteps += currNode.getActionTimesteps();
+			currNode = currNode.parent;
+		}	
+	}
 	/** Pop the next action off the queue and execute one timestep. **/
 	private void executeNextOnQueue() {
 		if (!actionQueue.isEmpty()) {
@@ -62,6 +76,10 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 			P = nextCommand[3];
 			game.stepGame(Q,W,O,P);
 		}
+	}
+	
+	public boolean isFinishedWithRun() {
+		return (actionQueue.isEmpty());
 	}
 
 	/** Gets autocalled by the main graphics manager. **/
@@ -84,14 +102,16 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 					executeNextOnQueue();
 				}
 			}
-			try {
-				Thread.sleep(displayPause);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			if (fastForwardTimesteps-- <= 0) {
+				try {
+					Thread.sleep(displayPause);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
-	
+
 	/** Play/pause the current visualized simulation. Flag is reset by calling again or by selecting a new node to visualize. **/
 	public void pauseToggle() {
 		pauseFlag = !pauseFlag;

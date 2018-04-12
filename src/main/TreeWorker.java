@@ -203,12 +203,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					currentGameNode = targetNodeToTest;
 					if(currentGameNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
 					currentGameNode.setState(getGameState());
-					currentGameNode.isFailed.set(game.getFailureStatus());
 					sampler.expansionPolicyActionDone(currentGameNode);
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 
 					try {
-						if (currentGameNode.isFailed.get() && game.getFailureStatus()){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
+						if (currentGameNode.isFailed.get()){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
 							targetNodeToTest.checkFullyExplored_lite();
 						}
 					}catch (NullPointerException e){
@@ -238,7 +237,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					currentGameNode = targetNodeToTest;
 					if(currentGameNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
 					currentGameNode.setState(getGameState());
-					currentGameNode.isFailed.set(game.getFailureStatus());
 					sampler.rolloutPolicyActionDone(currentGameNode);
 					changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
 				}

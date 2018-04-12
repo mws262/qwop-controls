@@ -175,7 +175,7 @@ public class MAIN_Run implements Runnable{
 		ActionSet actionSetE4 = ActionSet.makeActionSet(durationsE4, keySetE4, distE4);
 
 		//////////////////////////////
-		
+
 		Integer[] durationsE15 = IntStream.range(1, 50).boxed().toArray(Integer[] :: new);
 		boolean[][] keySetE15 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE15.length);
 
@@ -210,13 +210,13 @@ public class MAIN_Run implements Runnable{
 		Distribution<Action> distE18 = new Distribution_Normal(39f,3f);
 		ActionSet actionSetE18 = ActionSet.makeActionSet(durationsE18, keySetE18, distE18);
 
-		
+
 		Map<Integer,ActionSet> actionExceptions = new HashMap<Integer,ActionSet>();
 		actionExceptions.put(0, actionSetE1);
 		actionExceptions.put(1, actionSetE2);
 		actionExceptions.put(2, actionSetE3);
 		actionExceptions.put(3, actionSetE4);
-		
+
 		actionExceptions.put(14, actionSetE15); // Are these indices right?
 		actionExceptions.put(15, actionSetE16);
 		actionExceptions.put(16, actionSetE17);
@@ -382,7 +382,6 @@ public class MAIN_Run implements Runnable{
 			System.out.println("Stage 2 done.");
 		}
 
-
 		if (doStage3) {
 			System.out.println("Starting stage 3.");
 
@@ -397,21 +396,17 @@ public class MAIN_Run implements Runnable{
 			rootNode.getLeaves(leafList);
 
 			int count = 0;
-			int startAt = 30;
+			int startAt = 150;
 			for (Node leaf : leafList) {
-				if (count < startAt) {
-					count++;
-					continue;
-				}
-				DataSaver_StageSelected saver = new DataSaver_StageSelected();
-				saver.overrideFilename = "recoveries" + count;
-				saver.setSavePath(saveLoc.getPath() + "/");
+				if (count >= startAt) {
+					DataSaver_StageSelected saver = new DataSaver_StageSelected();
+					saver.overrideFilename = "recoveries" + count;
+					saver.setSavePath(saveLoc.getPath() + "/");
 
-//				TreeStage searchRand = new TreeStage_FixedGames(new Sampler_UCB(new Evaluator_Distance()), new DataSaver_Null(), 5000l);
-//				searchRand.initialize(leaf, 12);
-				TreeStage searchMax = new TreeStage_MaxDepth(16, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
-				System.out.print("Started " + count + "...");
-				searchMax.initialize(leaf, numWorkers);
+					TreeStage searchMax = new TreeStage_MaxDepth(16, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
+					System.out.print("Started " + count + "...");
+					searchMax.initialize(leaf, 30);
+				}
 				// Turn off drawing for this one.
 				leaf.turnOffBranchDisplay();
 				leaf.parent.children.remove(leaf);
@@ -421,56 +416,19 @@ public class MAIN_Run implements Runnable{
 
 			System.out.println("Stage 3 done.");
 		}
-		
-//		if (doStage4) {
-//			File[] savedRecoveries = saveLoc.listFiles();
-//			for (File f : savedRecoveries) {
-//				if (f.getName().toLowerCase().contains("recoveries")){
-//					SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
-//					Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/deviations.SaveableSingleGame"), rootNode, 11);
-//					
-//					
-//					
-//					
-//				}
-//			}
-//		}
 
-		//		
-		//		System.out.println("Starting stage 2.");
-		//		int screwUpDepth = 2;
-		//		TreeStage searchMin = new TreeStage_MinDepth(screwUpDepth, new Sampler_FixedDepth(screwUpDepth), dataSaver.clone()); // Two actions to get weird.
-		//		expNode.edgeLength = 12;
-		//		expNode.calcNodePos();
-		//		expNode.sweepAngle = (float)(Math.PI);
-		//		expNode.calcNodePosBelow();
-		//		
-		//		searchMin.initialize(expNode, numWorkers/2); // Start from where the last stage stopped deep in the tree.
-		//		List<Node> crazyNodes = searchMin.getResults(); // Should only return the one node way out there.
-		//		System.out.println("Stage 2 done.");
-		//		
-		//		System.out.println("Starting stage 3. " + crazyNodes.size() + " nodes to expand.");
-		//		int count = 0;
-		//		for (Node n : crazyNodes) {
-		//			n.edgeLength = 15;
-		//			n.calcNodePos();
-		//			n.notDrawnForSpeed = false;
-		//			System.out.println("Beginning node " + ++count + ".");
-		//			n.overrideNodeColor = Color.RED;
-		//			n.displayPoint = true;
-		//			TreeStage searchRecovery = new TreeStage_MaxDepth(8, currentSampler.clone(), dataSaver.clone());
-		//			if (count % 5 == 0) {
-		//				searchRecovery.blocking = true;
-		//			}else {
-		//				searchRecovery.blocking = false;
+		//		if (doStage4) {
+		//			File[] savedRecoveries = saveLoc.listFiles();
+		//			for (File f : savedRecoveries) {
+		//				if (f.getName().toLowerCase().contains("recoveries")){
+		//					SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
+		//					Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/deviations.SaveableSingleGame"), rootNode, 11);
+		//					
+		//					
+		//					
+		//					
+		//				}
 		//			}
-		//			//if (count < crazyNodes.size()) searchRecovery.blocking = false;
-		//			searchRecovery.initialize(n, 12); // Start from where the last stage stopped deep in the tree.
 		//		}
-
-
-
-
-
 	}
 }

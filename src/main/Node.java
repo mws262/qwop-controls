@@ -30,7 +30,7 @@ public class Node {
 	private static LongAdder nodesImported = new LongAdder();
 	private static LongAdder gamesImported = new LongAdder();
 	private static LongAdder gamesCreated = new LongAdder();
-	
+
 	public AtomicInteger maxBranchDepth = new AtomicInteger();
 
 	/** Some sampling methods want to track how many times this node has been visited. **/
@@ -43,7 +43,7 @@ public class Node {
 
 	/** What is the state after taking this node's action? **/
 	public State state;
-	
+
 	public AtomicBoolean isFailed = new AtomicBoolean();
 
 	/** If assigned, this automatically adds potential actions to children when they are created. This makes the functionality a little
@@ -97,7 +97,7 @@ public class Node {
 	private static Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
 	public float drawFilterDistance = 0.1f; // Actually distance squared to avoid sqrt
 	public boolean notDrawnForSpeed = false;
-	
+
 	// Disable node position calculations (for when running headless)
 	public static boolean calculateNodeVisPositions = true;
 
@@ -139,7 +139,7 @@ public class Node {
 		if (treeDepth > maxDepthYet){
 			maxDepthYet = treeDepth;
 		}
-		
+
 		// Update max branch depth
 		maxBranchDepth.set(treeDepth);
 		Node currentNode = this;
@@ -194,7 +194,7 @@ public class Node {
 			if (treeDepth > maxDepthYet){
 				maxDepthYet = treeDepth;
 			}
-			
+
 			// Update max branch depth
 			maxBranchDepth.set(treeDepth);
 			Node currentNode = this;
@@ -319,17 +319,17 @@ public class Node {
 	public boolean getLockStatus() {
 		return locked.get();
 	}
-	
+
 	/** Get the node's value in a thread-safe way. **/
 	public synchronized float getValue() {
 		return value;
 	}
-	
+
 	/** Set the node's value in a thread-safe way. **/
 	public synchronized void setValue(float val) {
 		value = val;
 	}
-	
+
 	/** Add to the node's value in a thread-safe way. **/
 	public synchronized void addToValue(float val) {
 		value += val;
@@ -410,8 +410,7 @@ public class Node {
 	 **/
 	public void checkFullyExplored_lite(){
 		boolean flag = true;
-		if (state == null) return; // MATT
-		if (!state.failedState) {
+		if (!isFailed.get()) {
 			if (!uncheckedActions.isEmpty()){
 				flag = false;
 			}
@@ -491,6 +490,11 @@ public class Node {
 	/** Assign the state directly. Usually when loading nodes. **/
 	public synchronized void setState(State newState){
 		state = newState;
+		try {
+			isFailed.set(state.failedState);
+		}catch(NullPointerException e) {
+			System.out.println("WARNING: node state had no failure state assigned. This is bad unless we're just playing old runs back.");
+		}
 	}
 
 	/** Get the action object (keypress + duration) that leads to this node from its parent. **/
@@ -498,7 +502,7 @@ public class Node {
 		action.reset(); // Make sure internal counter for executing this action is reset.
 		return action;
 	}
-	
+
 	/** Get the action object (keypress + duration) that leads to this node from its parent. **/
 	public int getActionTimesteps(){
 		return action.getTimestepsTotal();
@@ -545,20 +549,22 @@ public class Node {
 					Node newNode = new Node(currentNode, run.actions[i]);
 					newNode.limitDrawing = false;
 					newNode.setState(run.states[i]);
-					newNode.calcNodePos();
+					if (rootNode.uncheckedActions != null) newNode.calcNodePos();
 					currentNode = newNode;
 					nodesImported.increment();
 				}
 			}
 			gamesImported.increment();
 		}
-		rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
-		if (trimActionAddingToDepth >= 0) stripUncheckedActionsExceptOnLeaves(rootNode, trimActionAddingToDepth);
+		if (rootNode.uncheckedActions != null) {
+			rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
+			if (trimActionAddingToDepth >= 0) stripUncheckedActionsExceptOnLeaves(rootNode, trimActionAddingToDepth);
+			rootNode.calcNodePosBelow();
+		}
 		currentlyAddingSavedNodes = false;
-		rootNode.calcNodePosBelow();
 		return rootNode;
 	}
-	
+
 	/** Helper for node adding from file. Clears unchecked actions from non-leaf nodes. 
 	 * Only does it for things below minDepth. Forces new building to happen only at the boundaries of this. **/
 	private static void stripUncheckedActionsExceptOnLeaves(Node node, int minDepth) {
@@ -594,8 +600,8 @@ public class Node {
 					ancestor = ancestor.parent;
 				}
 				angleAdj = -0.2f*(parent.nodeAngle - ancestor.nodeAngle);
-				
-				
+
+
 				if (childNo == 0) {
 					nodeAngle = parent.nodeAngle + angleAdj;
 				}else if (childNo % 2 == 0) {
@@ -612,7 +618,7 @@ public class Node {
 		nodeLocationsToAssign[0] = (float) (parent.nodeLocation[0] + edgeLength*Math.cos(nodeAngle));
 		nodeLocationsToAssign[1] = (float) (parent.nodeLocation[1] + edgeLength*Math.sin(nodeAngle));
 		nodeLocationsToAssign[2] = 0f; // No out of plane stuff yet.
-		
+
 		// Since drawing speed is a UI bottleneck, we may want to filter out some of the points that are REALLY close.
 		if (limitDrawing) {
 			float xDiff;
@@ -704,12 +710,12 @@ public class Node {
 		displayPoint = false;
 		notDrawnForSpeed = false;
 		pointsToDraw.remove(this);
-		
+
 		for (Node child : children) {
 			child.turnOffBranchDisplay();
 		}	
 	}
-	
+
 	/** Single out one run up to this node to highline the lines, while dimming the others. **/
 	public void highlightSingleRunToThisNode(){
 		Node rt = getRoot();
@@ -753,7 +759,7 @@ public class Node {
 	public static Color getColorFromTreeDepth(int depth){
 		return getColorFromTreeDepth(depth, lineBrightness_default);
 	}
-	
+
 	public static Color getColorFromScaledValue(float val, float max, float brightness){
 		float coloffset = 0.35f;
 		float scaledDepth = val/max;
