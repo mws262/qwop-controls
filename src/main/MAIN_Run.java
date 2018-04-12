@@ -396,7 +396,7 @@ public class MAIN_Run implements Runnable{
 			rootNode.getLeaves(leafList);
 
 			int count = 0;
-			int startAt = 150;
+			int startAt = 198;
 			for (Node leaf : leafList) {
 				if (count >= startAt) {
 					DataSaver_StageSelected saver = new DataSaver_StageSelected();
@@ -405,7 +405,7 @@ public class MAIN_Run implements Runnable{
 
 					TreeStage searchMax = new TreeStage_MaxDepth(16, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
 					System.out.print("Started " + count + "...");
-					searchMax.initialize(leaf, 30);
+					searchMax.initialize(leaf, 12);
 				}
 				// Turn off drawing for this one.
 				leaf.turnOffBranchDisplay();

@@ -207,7 +207,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 
 					try {
-						if (currentGameNode.isFailed.get()){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
+						if (currentGameNode.isFailed()){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
 							targetNodeToTest.checkFullyExplored_lite();
 						}
 					}catch (NullPointerException e){
@@ -243,7 +243,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 				break;		
 			case EVALUATE_GAME:
-				if (currentGameNode.isFailed.get()) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
+				if (currentGameNode.isFailed()) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
 					currentGameNode.markTerminal();
 				}else {
 					// Not necessarily true with the FixedDepth sampler.

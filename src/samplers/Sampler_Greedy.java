@@ -141,7 +141,7 @@ public class Sampler_Greedy implements ISampler {
 	@Override
 	public void expansionPolicyActionDone(Node currentNode) {
 		treePolicyDone = false;
-		if (currentNode.state.failedState) {
+		if (currentNode.state.isFailed()) {
 			expansionPolicyDone = true;
 
 			/****** Need to decide whether or not to advance the currentRoot *******/

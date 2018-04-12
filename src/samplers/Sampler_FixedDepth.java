@@ -6,7 +6,6 @@ import java.util.Set;
 import main.Action;
 import main.ISampler;
 import main.Node;
-import main.Utility;
 
 public class Sampler_FixedDepth implements ISampler {
 
@@ -36,7 +35,7 @@ public class Sampler_FixedDepth implements ISampler {
 		if (startNode.fullyExplored.get()) {
 			throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. Whoever called this is at fault.");
 		}
-		
+
 		startDepth = startNode.treeDepth;
 		effectiveHorizonDepth = startDepth + horizonDepth;
 		Node currentNode = startNode;

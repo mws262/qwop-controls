@@ -1,5 +1,7 @@
 package samplers;
 
+import java.awt.Color;
+
 import main.Action;
 import main.ISampler;
 import main.Node;
@@ -18,7 +20,7 @@ public class Sampler_Random implements ISampler {
 	private boolean rolloutPolicyDone = true; // Rollout policy not in use in the random sampler.
 	
 	public Sampler_Random() {}
-	
+
 	@Override
 	public Node treePolicy(Node startNode) {
 		if (startNode.fullyExplored.get()) {
@@ -69,7 +71,7 @@ public class Sampler_Random implements ISampler {
 				int selection = Utility.randInt(1, notFullyExploredChildren + currentNode.uncheckedActions.size());
 				// Make a new node or pick a not fully explored child.
 				if (selection > notFullyExploredChildren && currentNode.reserveExpansionRights()){
-					if (currentNode.state != null && currentNode.state.failedState) throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
+					if (currentNode.state != null && currentNode.state.isFailed()) throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
 					return currentNode;
 				}else{
 					int count = 1;
@@ -118,7 +120,7 @@ public class Sampler_Random implements ISampler {
 	@Override
 	public void expansionPolicyActionDone(Node currentNode) {
 		treePolicyDone = false;
-		if (currentNode.state.failedState) {
+		if (currentNode.state.isFailed()) {
 			expansionPolicyDone = true;
 		}else {
 			expansionPolicyDone = false;

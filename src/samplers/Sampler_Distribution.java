@@ -124,7 +124,7 @@ public class Sampler_Distribution implements ISampler{
 	@Override
 	public void expansionPolicyActionDone(Node currentNode) {
 		treePolicyDone = false;
-		if (currentNode.state.failedState) {
+		if (currentNode.state.isFailed()) {
 			expansionPolicyDone = true;
 		}else {
 			expansionPolicyDone = false;

@@ -90,18 +90,18 @@ public abstract class TreeStage implements Runnable{
 		// Monitor the progress of this stage's workers.
 		while (running) {
 			// EXPERIMENTAL MEMORY PRUNING.
-
-			
-			if (TreeWorker.getTotalGamesPlayed()  > thresh) {
-				count = 0;
-				pruneStatesForMemory(getRootNode());
-				thresh += 2000;
-			}
+//
+//			
+//			if (TreeWorker.getTotalGamesPlayed()  > thresh) {
+//				count = 0;
+//				pruneStatesForMemory(getRootNode());
+//				thresh += 2000;
+//			}
 			
 			if (checkTerminationConditions()) {
 				terminate();
 				try {
-					Thread.sleep(10);
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

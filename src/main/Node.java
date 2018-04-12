@@ -44,7 +44,7 @@ public class Node {
 	/** What is the state after taking this node's action? **/
 	public State state;
 
-	public AtomicBoolean isFailed = new AtomicBoolean();
+	private AtomicBoolean isFailed = new AtomicBoolean();
 
 	/** If assigned, this automatically adds potential actions to children when they are created. This makes the functionality a little
 	 * more like the old version which selected from a fixed pool of durations for each action in the sequence. This time, the action 
@@ -93,7 +93,7 @@ public class Node {
 	public static boolean debugDrawNodeLocking = false; // Draw which nodes are locked by command from the TreeWorkers.
 
 	// Limiting number of display nodes.
-	public boolean limitDrawing = true;
+	public boolean limitDrawing = false;
 	private static Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
 	public float drawFilterDistance = 0.1f; // Actually distance squared to avoid sqrt
 	public boolean notDrawnForSpeed = false;
@@ -478,6 +478,13 @@ public class Node {
 		gamesCreated.increment();
 	}
 
+	public boolean isFailed() {
+		return isFailed.get();
+	}
+	
+	public void setFailed(boolean failed) {
+		isFailed.set(failed);
+	}
 	/***************************************************/
 	/******* STATE & SEQUENCE SETTING/GETTING **********/
 	/***************************************************/
@@ -491,7 +498,7 @@ public class Node {
 	public synchronized void setState(State newState){
 		state = newState;
 		try {
-			isFailed.set(state.failedState);
+			isFailed.set(state.isFailed());
 		}catch(NullPointerException e) {
 			System.out.println("WARNING: node state had no failure state assigned. This is bad unless we're just playing old runs back.");
 		}
@@ -556,11 +563,11 @@ public class Node {
 			}
 			gamesImported.increment();
 		}
-		if (rootNode.uncheckedActions != null) {
+		//if (rootNode.uncheckedActions != null) {
 			rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
 			if (trimActionAddingToDepth >= 0) stripUncheckedActionsExceptOnLeaves(rootNode, trimActionAddingToDepth);
 			rootNode.calcNodePosBelow();
-		}
+		//}
 		currentlyAddingSavedNodes = false;
 		return rootNode;
 	}

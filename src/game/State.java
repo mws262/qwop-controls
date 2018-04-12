@@ -7,7 +7,7 @@ public class State implements Serializable {
 
 	private static final long serialVersionUID = 2L;
 	
-	public boolean failedState = false;
+	private boolean failedState = false;
 	
 	public StateVariable body;
 	public StateVariable rthigh;
@@ -262,6 +262,10 @@ public class State implements Serializable {
 		flatState[71] = llarm.dth;	
 
 		return flatState;
+	}
+	
+	public synchronized boolean isFailed() {
+		return failedState;
 	}
 }
 

@@ -77,11 +77,12 @@ public class MAIN_Controlled extends JFrame{
 	int toSwitchCount = Integer.MAX_VALUE;
 	public void run() {
 		game = new GameLoader();
+		game.makeNewWorld();
 
 		while (true) {
 
 			try {
-				switch(phase) {
+				switch(3) {
 				case 0:
 					game.stepGame(false,false,false,false);
 					break;

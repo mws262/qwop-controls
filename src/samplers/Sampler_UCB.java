@@ -123,7 +123,7 @@ public class Sampler_UCB implements ISampler {
 	public void expansionPolicyActionDone(Node currentNode) {
 		treePolicyDone = false;
 		expansionPolicyDone = true; // We move on after adding only one node.
-		if (currentNode.isFailed.get()) { // If expansion is to failed node, no need to do rollout.
+		if (currentNode.isFailed()) { // If expansion is to failed node, no need to do rollout.
 			rolloutPolicyDone = true;
 			propagateScore(currentNode);
 		}else {
@@ -138,7 +138,7 @@ public class Sampler_UCB implements ISampler {
 
 	@Override
 	public Node rolloutPolicy(Node startNode) {
-		if (startNode.isFailed.get()) throw new RuntimeException("Rollout policy received a starting node which corresponds to an already failed state.");
+		if (startNode.isFailed()) throw new RuntimeException("Rollout policy received a starting node which corresponds to an already failed state.");
 		// Do shit without adding nodes to the rest of the tree hierarchy.
 		Action childAction = startNode.uncheckedActions.get(Utility.randInt(0,startNode.uncheckedActions.size() - 1));
 
@@ -151,7 +151,7 @@ public class Sampler_UCB implements ISampler {
 	public void rolloutPolicyActionDone(Node currentNode) {
 		expansionPolicyDone = false;
 
-		if (currentNode.isFailed.get()) {
+		if (currentNode.isFailed()) {
 			rolloutPolicyDone = true;
 			propagateScore(currentNode);
 		}else {
