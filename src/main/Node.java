@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -29,6 +30,8 @@ public class Node {
 	private static LongAdder nodesImported = new LongAdder();
 	private static LongAdder gamesImported = new LongAdder();
 	private static LongAdder gamesCreated = new LongAdder();
+	
+	public AtomicInteger maxBranchDepth = new AtomicInteger();
 
 	/** Some sampling methods want to track how many times this node has been visited. **/
 	public AtomicLong visitCount = new AtomicLong();
@@ -40,6 +43,8 @@ public class Node {
 
 	/** What is the state after taking this node's action? **/
 	public State state;
+	
+	public AtomicBoolean isFailed = new AtomicBoolean();
 
 	/** If assigned, this automatically adds potential actions to children when they are created. This makes the functionality a little
 	 * more like the old version which selected from a fixed pool of durations for each action in the sequence. This time, the action 
@@ -134,6 +139,14 @@ public class Node {
 		if (treeDepth > maxDepthYet){
 			maxDepthYet = treeDepth;
 		}
+		
+		// Update max branch depth
+		maxBranchDepth.set(treeDepth);
+		Node currentNode = this;
+		while (currentNode.treeDepth > 0 && currentNode.parent.maxBranchDepth.get() < currentNode.maxBranchDepth.get()) {
+			currentNode.parent.maxBranchDepth.set(currentNode.maxBranchDepth.get());
+			currentNode = currentNode.parent;
+		}
 
 		// Add some child actions to try if an action generator is assigned.
 		autoAddUncheckedActions();
@@ -180,6 +193,14 @@ public class Node {
 			parent.children.add(this);
 			if (treeDepth > maxDepthYet){
 				maxDepthYet = treeDepth;
+			}
+			
+			// Update max branch depth
+			maxBranchDepth.set(treeDepth);
+			Node currentNode = this;
+			while (currentNode.treeDepth > 0 && parent.maxBranchDepth.get() < currentNode.maxBranchDepth.get()) {
+				parent.maxBranchDepth.set(currentNode.maxBranchDepth.get());
+				currentNode = parent;
 			}
 		}
 

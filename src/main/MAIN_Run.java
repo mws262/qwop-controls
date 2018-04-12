@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
 
 import com.beust.jcommander.*;
 
+import TreeStages.TreeStage_FixedGames;
 import TreeStages.TreeStage_MaxDepth;
 import TreeStages.TreeStage_MinDepth;
 import TreeStages.TreeStage_SearchForever;
@@ -104,7 +105,7 @@ public class MAIN_Run implements Runnable{
 		/********** Repeated action 1 -- no keys pressed. ***********/
 		//		Integer[] durations1 = new Integer[]{11,12,13,14};
 
-		Integer[] durations1 = IntStream.range(1, 40).boxed().toArray(Integer[] :: new);
+		Integer[] durations1 = IntStream.range(1, 25).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations1.length);
 
 		//Distribution<Action> dist1 = new Distribution_Uniform();
@@ -113,7 +114,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action 2 -- W-O pressed ***********/
 		//		Integer[] durations2 = new Integer[]{36,37,38,39,40,41};
-		Integer[] durations2 = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
+		Integer[] durations2 = IntStream.range(20, 60).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durations2.length);
 
 		//		Distribution<Action> dist2 = new Distribution_Uniform();
@@ -122,7 +123,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action 3 -- W-O pressed ***********/
 		//		Integer[] durations3 = new Integer[]{5,6,7,8,9,10,11};
-		Integer[] durations3 = IntStream.range(1, 40).boxed().toArray(Integer[] :: new);
+		Integer[] durations3 = IntStream.range(1, 25).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations3.length);
 
 		//		Distribution<Action> dist3 = new Distribution_Uniform();
@@ -131,7 +132,7 @@ public class MAIN_Run implements Runnable{
 
 		/**********  Repeated action 4 -- Q-P pressed ***********/
 		//		Integer[] durations4 = new Integer[]{35,36,37,38,39,40};
-		Integer[] durations4 = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
+		Integer[] durations4 = IntStream.range(20, 60).boxed().toArray(Integer[] :: new);
 		boolean[][] keySet4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durations4.length);
 
 		//		Distribution<Action> dist4 = new Distribution_Uniform();
@@ -173,11 +174,53 @@ public class MAIN_Run implements Runnable{
 		Distribution<Action> distE4 = new Distribution_Normal(49f,2f);
 		ActionSet actionSetE4 = ActionSet.makeActionSet(durationsE4, keySetE4, distE4);
 
+		//////////////////////////////
+		
+		Integer[] durationsE15 = IntStream.range(1, 50).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetE15 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE15.length);
+
+		//Distribution<Action> dist1 = new Distribution_Uniform();
+		Distribution<Action> distE15 = new Distribution_Normal(10f,2f);
+		ActionSet actionSetE15 = ActionSet.makeActionSet(durationsE15, keySetE15, distE15);
+
+		/**********  Repeated action 2 -- W-O pressed ***********/
+		//		Integer[] durations2 = new Integer[]{36,37,38,39,40,41};
+		Integer[] durationsE16 = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetE16 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durationsE16.length);
+
+		//		Distribution<Action> dist2 = new Distribution_Uniform();
+		Distribution<Action> distE16 = new Distribution_Normal(39f,3f);
+		ActionSet actionSetE16 = ActionSet.makeActionSet(durationsE16, keySetE16, distE16);
+
+		/**********  Repeated action 3 -- W-O pressed ***********/
+		//		Integer[] durations3 = new Integer[]{5,6,7,8,9,10,11};
+		Integer[] durationsE17 = IntStream.range(1, 50).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetE17 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE17.length);
+
+		//		Distribution<Action> dist3 = new Distribution_Uniform();
+		Distribution<Action> distE17 = new Distribution_Normal(10f,2f);
+		ActionSet actionSetE17 = ActionSet.makeActionSet(durationsE17, keySetE17, distE17);
+
+		/**********  Repeated action 4 -- Q-P pressed ***********/
+		//		Integer[] durations4 = new Integer[]{35,36,37,38,39,40};
+		Integer[] durationsE18 = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetE18 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durationsE18.length);
+
+		//		Distribution<Action> dist4 = new Distribution_Uniform();
+		Distribution<Action> distE18 = new Distribution_Normal(39f,3f);
+		ActionSet actionSetE18 = ActionSet.makeActionSet(durationsE18, keySetE18, distE18);
+
+		
 		Map<Integer,ActionSet> actionExceptions = new HashMap<Integer,ActionSet>();
 		actionExceptions.put(0, actionSetE1);
 		actionExceptions.put(1, actionSetE2);
 		actionExceptions.put(2, actionSetE3);
 		actionExceptions.put(3, actionSetE4);
+		
+		actionExceptions.put(14, actionSetE15); // Are these indices right?
+		actionExceptions.put(15, actionSetE16);
+		actionExceptions.put(16, actionSetE17);
+		actionExceptions.put(17, actionSetE18);
 
 
 		// Define the specific way that these allowed actions are assigned as potential options for nodes.
@@ -364,9 +407,11 @@ public class MAIN_Run implements Runnable{
 				saver.overrideFilename = "recoveries" + count;
 				saver.setSavePath(saveLoc.getPath() + "/");
 
-				TreeStage searchMax = new TreeStage_MaxDepth(12, currentSampler.clone(), saver); // Depth to get to sorta steady state.
+//				TreeStage searchRand = new TreeStage_FixedGames(new Sampler_UCB(new Evaluator_Distance()), new DataSaver_Null(), 5000l);
+//				searchRand.initialize(leaf, 12);
+				TreeStage searchMax = new TreeStage_MaxDepth(16, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
 				System.out.print("Started " + count + "...");
-				searchMax.initialize(leaf, 12);
+				searchMax.initialize(leaf, numWorkers);
 				// Turn off drawing for this one.
 				leaf.turnOffBranchDisplay();
 				leaf.parent.children.remove(leaf);

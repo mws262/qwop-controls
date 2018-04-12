@@ -67,7 +67,7 @@ public class TreeStage_MinDepth extends TreeStage {
 		Node rootNode = getRootNode();
 		if (rootNode.fullyExplored.get()) return true;
 		if (!areWorkersRunning()) return true;
-		
+				
 		leafList.clear();
 		rootNode.getLeaves(leafList);
 

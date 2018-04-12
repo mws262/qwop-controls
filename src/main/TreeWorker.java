@@ -203,11 +203,12 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					currentGameNode = targetNodeToTest;
 					if(currentGameNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
 					currentGameNode.setState(getGameState());
+					currentGameNode.isFailed.set(game.getFailureStatus());
 					sampler.expansionPolicyActionDone(currentGameNode);
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 
 					try {
-						if (currentGameNode.state.failedState && game.getFailureStatus()){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
+						if (currentGameNode.isFailed.get() && game.getFailureStatus()){ // If we've added a terminal node, we need to see how this affects the exploration status of the rest of the tree.
 							targetNodeToTest.checkFullyExplored_lite();
 						}
 					}catch (NullPointerException e){
@@ -237,13 +238,14 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					currentGameNode = targetNodeToTest;
 					if(currentGameNode.state != null) throw new RuntimeException("The expansion policy should only encounter new nodes. None of them should have their state assigned before now.");
 					currentGameNode.setState(getGameState());
+					currentGameNode.isFailed.set(game.getFailureStatus());
 					sampler.rolloutPolicyActionDone(currentGameNode);
 					changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
 				}
 
 				break;		
 			case EVALUATE_GAME:
-				if (currentGameNode.state.failedState) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
+				if (currentGameNode.isFailed.get()) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
 					currentGameNode.markTerminal();
 				}else {
 					// Not necessarily true with the FixedDepth sampler.

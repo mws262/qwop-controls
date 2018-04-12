@@ -39,6 +39,8 @@ public class TreeStage_MaxDepth extends TreeStage {
 	@Override
 	public List<Node> getResults() {
 		List<Node> resultList = new ArrayList<Node>();
+		leafList.clear();
+		getRootNode().getLeaves(leafList);
 		
 		if (getRootNode().fullyExplored.get()) return resultList; // No results. No possible way to recover.
 		
@@ -61,16 +63,10 @@ public class TreeStage_MaxDepth extends TreeStage {
 	@Override
 	public boolean checkTerminationConditions() {
 		Node rootNode = getRootNode();
-		if (rootNode.fullyExplored.get()) return true;
-		leafList.clear();
-		rootNode.getLeaves(leafList);
-		
-		for (Node n : leafList) {
-			if (n.treeDepth >= maxEffectiveDepth) {
-				return true;
-			}
+		if (rootNode.fullyExplored.get() || rootNode.maxBranchDepth.get() >= maxEffectiveDepth) {
+			return true;
+		}else {
+			return false;
 		}
-		return false;
 	}
-
 }

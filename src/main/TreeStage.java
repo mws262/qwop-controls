@@ -95,7 +95,6 @@ public abstract class TreeStage implements Runnable{
 			if (TreeWorker.getTotalGamesPlayed()  > thresh) {
 				count = 0;
 				pruneStatesForMemory(getRootNode());
-				System.out.println(count);
 				thresh += 2000;
 			}
 			

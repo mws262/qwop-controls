@@ -79,7 +79,7 @@ public class DataSaver_StageSelected implements IDataSaver{
 
 	@Override
 	public IDataSaver clone() {
-		DataSaver_DenseTFRecord newSaver = new DataSaver_DenseTFRecord();
+		DataSaver_StageSelected newSaver = new DataSaver_StageSelected();
 		newSaver.setSavePath(fileLocation);
 		return newSaver;
 	}
