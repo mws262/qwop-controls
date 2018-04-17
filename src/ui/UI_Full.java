@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
@@ -131,6 +132,15 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	public void addTab(TabbedPaneActivator newTab, String name) {
 		tabPane.addTab(name, (Component)newTab);
 		allTabbedPanes.add(newTab);
+
+		//Make sure the currently active tab is actually being updated.
+		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();	
+	}
+	
+	/** Add a new tab to this frame. **/
+	public void removeTab(JPanel tabToRemove) {
+		tabPane.remove((Component)tabToRemove);
+		allTabbedPanes.remove(tabToRemove);
 
 		//Make sure the currently active tab is actually being updated.
 		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();	
