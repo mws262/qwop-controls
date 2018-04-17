@@ -2,8 +2,11 @@ package main;
 
 import java.awt.Color;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
@@ -12,6 +15,8 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -25,7 +30,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 	private static final long serialVersionUID = 1L;
 
 	/** Is this panel active and drawing? **/
-	private boolean isActive = false;
+	private AtomicBoolean isActive = new AtomicBoolean();
 	
 	/** How many plots do we want to squeeze in there horizontally? **/
 	protected final int numberOfPlots;
@@ -37,7 +42,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 	protected Color plotBackgroundColor = new Color(230, 230, 230);
 	
 	/** Part of jfreechart's timing. **/
-	private Second second = new Second();
+	private Millisecond second = new Millisecond();
 	
 	protected Map<XYPlot, TimeSeriesCollection> plotsAndData = new LinkedHashMap<XYPlot, TimeSeriesCollection>(); // Retains order of insertion.
 	
@@ -76,7 +81,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 	
 	public void addToSeries(float value, int plotNum, int seriesNum) {
 		TimeSeriesCollection ts = plotsAndData.get(plotPanels[plotNum].getChart().getXYPlot());
-		ts.getSeries(seriesNum).add(second.next(), value);	
+		ts.getSeries(seriesNum).add(RegularTimePeriod.createInstance((Class)Millisecond.class, new Date(), TimeZone.getDefault()), value);	
 	}
 	
 	/** My default settings for each plot. **/
@@ -99,17 +104,17 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 	
 	@Override
 	public void activateTab() {
-		isActive = true;
+		isActive.set(true);;
 	}
 
 	@Override
 	public void deactivateTab() {
-		isActive = false;
+		isActive.set(false);
 	}
 
 	@Override
 	public boolean isActive() {
-		return isActive;
+		return isActive.get();
 	}
 
 }

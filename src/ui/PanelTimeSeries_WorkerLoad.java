@@ -12,10 +12,10 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
 
 	private final int numPlots;
 
-	public PanelTimeSeries_WorkerLoad(TreeStage stage) {
-		super(stage.workers.size());
+	public PanelTimeSeries_WorkerLoad(TreeStage stage, int numWorkers) {
+		super(numWorkers);
 		this.stage = stage;
-		numPlots = stage.workers.size();
+		numPlots = numWorkers;
 	}
 
 	@Override
@@ -25,10 +25,10 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
 	public void run() {
 		while (!stage.isFinished()) {
 			if (isActive()) {
-				for (int i = 0; i < numPlots; i++) {
-					addToSeries(stage.workers.get(i).getWorkerStepsSimulated(), i, 0);
-					applyUpdates();
+				for (int i = 0; i < stage.workers.size(); i++) {
+					addToSeries(stage.workers.get(i).getTsPerSecond(), i, 0);
 				}
+				applyUpdates();
 			}
 			try {
 				Thread.sleep(100);

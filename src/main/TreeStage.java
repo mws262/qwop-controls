@@ -35,7 +35,7 @@ public abstract class TreeStage implements Runnable{
 	protected int numWorkers;
 
 	/** Is the managing thread of this stage running? **/
-	private volatile boolean running = false;
+	private volatile boolean running = true;
 
 	/** Does this stage block the mai thread until done? **/
 	public boolean blocking = true;
@@ -181,5 +181,9 @@ public abstract class TreeStage implements Runnable{
 	/** Get the root node that this stage is operating from. It cannot change from an external caller's perspective, so no set method. **/
 	public Node getRootNode() {
 		return treeRoot;
+	}
+	
+	public int getNumberOfWorkers() {
+		return numWorkers;
 	}
 }

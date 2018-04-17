@@ -326,11 +326,12 @@ public class MAIN_Run implements Runnable{
 		//			System.out.println("GUI: Running in full graphics mode.");
 		//		}
 		//
-		//		// Root to visualize from.
-		//		ui.addRootNode(treeRoot);
 
 		UI_Full ui = new UI_Full();
 
+		// Root to visualize from.
+		ui.addRootNode(treeRoot);
+		
 		/* Make each UI component */
 		PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed();
 		PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot();
@@ -369,12 +370,6 @@ public class MAIN_Run implements Runnable{
 
 
 		System.out.println("All initialized.");
-
-
-
-
-
-
 
 
 		// note previous was 12 + 2 disturb + 16 recover
@@ -451,14 +446,15 @@ public class MAIN_Run implements Runnable{
 			
 					TreeStage searchMax = new TreeStage_MaxDepth(16, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
 					
-					PanelTimeSeries_WorkerLoad workerMonitorPanel = new PanelTimeSeries_WorkerLoad(searchMax);
+					PanelTimeSeries_WorkerLoad workerMonitorPanel = new PanelTimeSeries_WorkerLoad(searchMax, numWorkers);
 					Thread monitorThread = new Thread(workerMonitorPanel);
 					monitorThread.start();
-					
 					ui.addTab(workerMonitorPanel, "Worker status");
 					
 					System.out.print("Started " + count + "...");
 					searchMax.initialize(leaf, numWorkers);
+					
+
 				}
 				// Turn off drawing for this one.
 				leaf.turnOffBranchDisplay();

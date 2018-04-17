@@ -82,6 +82,12 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	/** Total games played by all TreeWorkers. **/
 	private static LongAdder totalGamesPlayed = new LongAdder();
 
+	/** Milli start time of last game. **/
+	private long startMs;
+	
+	/** Slightly filtered timesteps simulated per second. **/
+	private int tsPerSecond = 0;
+	
 	public String workerName = "";
 	private final int workerID;
 	private static int workerCount = 0;
@@ -110,6 +116,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				}
 				break;
 			case INITIALIZE:
+				startMs = System.currentTimeMillis();
 				actionQueue.clearAll();
 				newGame(); // Create a new game world.
 				saver.reportGameInitialization(GameLoader.getInitialState());
@@ -250,9 +257,12 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					//throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
 				}
 				saver.reportGameEnding(currentGameNode);
-				addToTotalTimesteps(game.getTimestepsSimulated());
+				long gameTs = game.getTimestepsSimulated();
+				addToTotalTimesteps(gameTs);
 				workerGamesPlayed.increment();
-				long totGames = incrementTotalGameCount();
+				
+				tsPerSecond = (int)(0.9f * tsPerSecond + 0.1f * 1000f * gameTs/(System.currentTimeMillis() - startMs));
+				incrementTotalGameCount();
 
 				expansionNode.releaseExpansionRights();
 
@@ -339,6 +349,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	/** Terminate this worker after it's done with it's current task. **/
 	public void terminateWorker() {
 		flagForTermination.set(true);
+	}
+	
+	/** Get the running average of timesteps simulated per second of realtime. **/
+	public int getTsPerSecond() {
+		return tsPerSecond;
 	}
 
 	/** Increase the the count of total games in a hopefully thread-safe way. **/
