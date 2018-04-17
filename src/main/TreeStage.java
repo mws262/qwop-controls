@@ -26,7 +26,7 @@ public abstract class TreeStage implements Runnable{
 
 	/** Each stage gets its own workers to avoid contamination. Probably could combine later if necessary. **/
 	private List<Thread> workerThreads = new ArrayList<Thread>();
-	private List<TreeWorker> workers = new ArrayList<TreeWorker>();
+	public List<TreeWorker> workers = new ArrayList<TreeWorker>();
 
 	/** Thread managing this stage and its workers. **/
 	private Thread stageThread;

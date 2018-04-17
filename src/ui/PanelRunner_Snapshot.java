@@ -66,7 +66,8 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 	}
 
 	/** Assign a selected node for the snapshot pane to display. **/
-	public void giveSelectedNode(Node node) {
+	@Override
+	public void update(Node node) {
 		transforms.clear();
 		focusLeaves.clear();
 		strokes.clear();

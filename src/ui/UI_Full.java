@@ -1,15 +1,9 @@
 package ui;
-import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Paint;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -18,63 +12,26 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowEvent;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
-
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Vector3f;
 
-import org.jblas.*;
 import com.jogamp.opengl.*;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.annotations.XYTextAnnotation;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.Range;
-import org.jfree.data.xy.AbstractXYDataset;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.ui.RectangleInsets;
 
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import filters.NodeFilter_GoodDescendants;
-import game.GameLoader;
-import game.State;
 import main.IUserInterface;
 import main.Node;
-import main.PanelPlot;
-import main.PanelRunner;
 import main.TreeWorker;
-import main.Utility;
-import transformations.Transform_Autoencoder;
-import transformations.Transform_PCA;
 
 
 /**
@@ -90,8 +47,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	/** Verbose printing? **/
 	public boolean verbose = false;
 
-	public boolean disableNonessential = true;
-
 	/** Tree root nodes associated with this interface. **/
 	ArrayList<Node> rootNodes = new ArrayList<Node>();
 
@@ -100,30 +55,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
 	/** Pane for the tabbed side of the interface. **/
 	JTabbedPane tabPane;
-
-	/** Pane for the runner. **/
-	PanelRunner_Animated runnerPanel;
-
-	/** Pane for the snapshots of the runner. **/
-	PanelRunner_Snapshot snapshotPane;
-
-	/** Pane for comparing different states across the tree. **/
-	PanelRunner_Comparison comparisonPane;
-
-	/** State variable plots. **/
-	PanelPlot_States statePlotPane;
-
-	/** Control actions vs states **/
-	PanelPlot_Controls controlsPlotPane;
-
-	/** Control actions and states on a single run. **/
-	PanelPlot_SingleRun singleRunPlotPane;
-
-	/** Plots of PCA transformed data **/
-	PanelPlot_Transformed pcaPlotPane;
-
-	/** Plots of autoencoder transformed data **/
-	PanelPlot_Transformed autoencPlotPane;
 
 	/** Selected node by user click/key **/
 	Node selectedNode;
@@ -168,53 +99,12 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	public UI_Full() {
 		Container pane = this.getContentPane();
 		/**** Tabbed panes ****/
-		/* Make each UI component */
-		runnerPanel = new PanelRunner_AnimatedTransformed();
-		if (!disableNonessential) {
-			snapshotPane = new PanelRunner_Snapshot();
-			comparisonPane = new PanelRunner_Comparison();
-			statePlotPane = new PanelPlot_States(6); // 6 plots per view at the bottom.
-
-			pcaPlotPane = new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
-			controlsPlotPane = new PanelPlot_Controls(6); // 6 plots per view at the bottom.
-			autoencPlotPane = new PanelPlot_Transformed(new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12), 6);
-			autoencPlotPane.addFilter(new NodeFilter_GoodDescendants(1));
-			singleRunPlotPane = new PanelPlot_SingleRun(6);
-		}
-
-
-		Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameLoader should have their own threads.
-		runnerPanelThread.start();
-
 		/* Add components to tabs */
 		tabPane = new JTabbedPane();
 		tabPane.setBorder(BorderFactory.createRaisedBevelBorder());
-		tabPane.addTab("Run Animation", runnerPanel);
-		if (!disableNonessential) {
-			tabPane.addTab("State Viewer", snapshotPane);
-			tabPane.addTab("State Compare", comparisonPane);
-			tabPane.addTab("State Plots", statePlotPane);
-			tabPane.addTab("Controls Plots", controlsPlotPane);
-			tabPane.addTab("Single Run Plots", singleRunPlotPane);
-			tabPane.addTab("PCA Plots", pcaPlotPane);
-			tabPane.addTab("Autoenc Plots", autoencPlotPane);
-		}
-
 		tabPane.setPreferredSize(new Dimension(1080,250));
 		tabPane.setMinimumSize(new Dimension(100,1));
-		allTabbedPanes.add(runnerPanel);
-		if (!disableNonessential) {
-			allTabbedPanes.add(snapshotPane);
-			allTabbedPanes.add(comparisonPane);
-			allTabbedPanes.add(statePlotPane);
-			allTabbedPanes.add(controlsPlotPane);
-			allTabbedPanes.add(singleRunPlotPane);
-			allTabbedPanes.add(pcaPlotPane);
-			allTabbedPanes.add(autoencPlotPane);
-		}
 		tabPane.addChangeListener(this);
-		//Make sure the currently active tab is actually being updated.
-		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
 
 		/**** TREE PANE ****/
 		treePane = new TreePane();
@@ -234,6 +124,15 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		//treePane.requestFocus();
 
 		currentStatus = Status.DRAW_ALL; // Fire it up.
+	}
+
+	/** Add a new tab to this frame. **/
+	public void addTab(TabbedPaneActivator newTab, String name) {
+		tabPane.addTab(name, (Component)newTab);
+		allTabbedPanes.add(newTab);
+
+		//Make sure the currently active tab is actually being updated.
+		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();	
 	}
 
 	/* (non-Javadoc)
@@ -294,24 +193,22 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		selectedNode.displayPoint = true;
 		selectedNode.nodeColor = Color.RED;
 		selectedNode.setBranchZOffset(0.4f);
-		if (runnerPanel.isActive()) runnerPanel.simRunToNode(selectedNode);
-		if (!disableNonessential) {
-			if (snapshotPane.isActive()) snapshotPane.giveSelectedNode(selectedNode);
-			if (comparisonPane.isActive()) comparisonPane.giveSelectedNode(selectedNode);
-			if (statePlotPane.isActive()) statePlotPane.update(selectedNode); // Updates data being put on plots
-			if (controlsPlotPane.isActive()) controlsPlotPane.update(selectedNode); // Updates data being put on plots
-			if (singleRunPlotPane.isActive()) singleRunPlotPane.update(selectedNode);
-			if (pcaPlotPane.isActive()) pcaPlotPane.update(selectedNode); // Updates data being put on plots
-			if (autoencPlotPane.isActive()) autoencPlotPane.update(selectedNode); // Updates data being put on plots
+
+		for (TabbedPaneActivator panel : allTabbedPanes) {
+			if (panel.isActive()) {
+				panel.update(selectedNode);
+			}
 		}
 	}
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		for (TabbedPaneActivator p: allTabbedPanes) {
-			p.deactivateTab();
+		if (!allTabbedPanes.isEmpty()) {
+			for (TabbedPaneActivator p: allTabbedPanes) {
+				p.deactivateTab();
+			}
+			allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
 		}
-		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
 	}
 
 	/**
@@ -534,9 +431,9 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 						break;
 
 					case KeyEvent.VK_SPACE:
-						if (runnerPanel.isActive()) {
-							runnerPanel.pauseToggle();
-						}
+//						if (runnerPanel.isActive()) {
+//							runnerPanel.pauseToggle();
+//						}
 						break;
 					}
 				}
@@ -549,17 +446,22 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		public void mouseMoved(MouseEvent e) {
 			mouseX = e.getX();
 			mouseY = e.getY();
-
 			// If the snapshot pane is displaying stuff, this lets us potentially select some of the future nodes displayed in the snapshot pane.
-			if (snapshotPane != null && snapshotPane.isActive() && mouseInside) {
-				List<Node> snapshotLeaves = snapshotPane.getDisplayedLeaves();
-				if (snapshotLeaves.size() > 0) {
-					Node nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves, 50);
-					if (nearest != null) {
-						snapshotPane.giveSelectedFuture(nearest);
-					}else{
-						snapshotPane.giveSelectedFuture(null); // clear it out if the mouse is too far away from selectable nodes.
+			if (mouseInside) {}
+			for (TabbedPaneActivator pane : allTabbedPanes) {
+				if (pane.isActive() && pane.getClass().equals(PanelRunner_Snapshot.class)) {
+					PanelRunner_Snapshot snapshotPane = (PanelRunner_Snapshot)pane;
+					
+					List<Node> snapshotLeaves = snapshotPane.getDisplayedLeaves();
+					if (snapshotLeaves.size() > 0) {
+						Node nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves, 50);
+						if (nearest != null) {
+							snapshotPane.giveSelectedFuture(nearest);
+						}else{
+							snapshotPane.giveSelectedFuture(null); // clear it out if the mouse is too far away from selectable nodes.
+						}
 					}
+					break;
 				}
 			}
 		}
@@ -658,6 +560,10 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		@Override
 		public boolean isActive() {
 			return true;
+		}
+
+		@Override
+		public void update(Node node) {			
 		}
 
 	}

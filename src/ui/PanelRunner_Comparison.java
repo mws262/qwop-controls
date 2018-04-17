@@ -39,7 +39,8 @@ public class PanelRunner_Comparison extends PanelRunner{
 	}
 
 	/** Assign a selected node for the snapshot pane to display. **/
-	public void giveSelectedNode(Node node) {
+	@Override
+	public void update(Node node) {
 		node.getRoot().clearNodeOverrideColor();
 
 		transforms.clear();

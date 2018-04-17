@@ -20,5 +20,6 @@ public interface IUserInterface extends Runnable{
 		public void activateTab();
 		public void deactivateTab();
 		public boolean isActive();
+		public void update(Node node);
 	}
 }

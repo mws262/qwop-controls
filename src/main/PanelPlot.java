@@ -61,7 +61,6 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 		plotPanels = new ChartPanel[numberOfPlots];
 
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		for (int i = 0; i < numberOfPlots; i++) {
 			PlotDataset plData = new PlotDataset();
 			JFreeChart chart = createChart(plData, null); // Null means no title yet

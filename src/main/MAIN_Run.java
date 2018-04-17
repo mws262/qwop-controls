@@ -21,6 +21,7 @@ import distributions.Distribution_Uniform;
 import evaluators.Evaluator_Distance;
 import evaluators.Evaluator_HandTunedOnState;
 import evaluators.Evaluator_Random;
+import filters.NodeFilter_GoodDescendants;
 import samplers.Sampler_Deterministic;
 import samplers.Sampler_Distribution;
 import samplers.Sampler_FixedDepth;
@@ -31,7 +32,17 @@ import savers.DataSaver_DenseJava;
 import savers.DataSaver_DenseTFRecord;
 import savers.DataSaver_Sparse;
 import savers.DataSaver_StageSelected;
+import transformations.Transform_Autoencoder;
+import transformations.Transform_PCA;
 import savers.DataSaver_Null;
+import ui.PanelPlot_Controls;
+import ui.PanelPlot_SingleRun;
+import ui.PanelPlot_States;
+import ui.PanelPlot_Transformed;
+import ui.PanelRunner_AnimatedTransformed;
+import ui.PanelRunner_Comparison;
+import ui.PanelRunner_Snapshot;
+import ui.PanelTimeSeries_WorkerLoad;
 import ui.UI_Full;
 import ui.UI_Headless;
 
@@ -218,9 +229,9 @@ public class MAIN_Run implements Runnable{
 		actionExceptions.put(3, actionSetE4);
 
 		actionExceptions.put(14, actionSetE15); // Are these indices right?
-		actionExceptions.put(15, actionSetE16);
-		actionExceptions.put(16, actionSetE17);
-		actionExceptions.put(17, actionSetE18);
+		actionExceptions.put(11, actionSetE16);
+		actionExceptions.put(12, actionSetE17);
+		actionExceptions.put(13, actionSetE18);
 
 
 		// Define the specific way that these allowed actions are assigned as potential options for nodes.
@@ -305,18 +316,47 @@ public class MAIN_Run implements Runnable{
 		/**************** Pick user interface. **********************/
 		/************************************************************/
 		Node treeRoot = new Node();
-		IUserInterface ui;
-		//settings.headless = false;
-		if (settings.headless) {
-			ui = new UI_Headless();
-			System.out.println("GUI: Running in headless mode.");
-		}else {
-			ui = new UI_Full();
-			System.out.println("GUI: Running in full graphics mode.");
-		}
+		//		IUserInterface ui;
+		//		//settings.headless = false;
+		//		if (settings.headless) {
+		//			ui = new UI_Headless();
+		//			System.out.println("GUI: Running in headless mode.");
+		//		}else {
+		//			ui = new UI_Full();
+		//			System.out.println("GUI: Running in full graphics mode.");
+		//		}
+		//
+		//		// Root to visualize from.
+		//		ui.addRootNode(treeRoot);
 
-		// Root to visualize from.
-		ui.addRootNode(treeRoot);
+		UI_Full ui = new UI_Full();
+
+		/* Make each UI component */
+		PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed();
+		PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot();
+		PanelRunner_Comparison comparisonPane = new PanelRunner_Comparison();
+		PanelPlot_States statePlotPane = new PanelPlot_States(6); // 6 plots per view at the bottom.
+
+		PanelPlot_Transformed pcaPlotPane = new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
+		PanelPlot_Controls controlsPlotPane = new PanelPlot_Controls(6); // 6 plots per view at the bottom.
+		PanelPlot_Transformed autoencPlotPane = new PanelPlot_Transformed(new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12), 6);
+		autoencPlotPane.addFilter(new NodeFilter_GoodDescendants(1));
+		PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun(6);
+
+		ui.addTab(runnerPanel, "Run Animation");
+		ui.addTab(snapshotPane, "State Viewer");
+		ui.addTab(comparisonPane, "State Compare");
+		ui.addTab(statePlotPane, "State Plots");
+		ui.addTab(controlsPlotPane, "Controls Plots");
+		ui.addTab(singleRunPlotPane, "Single Run Plots");
+		ui.addTab(pcaPlotPane, "PCA Plots");
+		ui.addTab(autoencPlotPane, "Autoenc Plots");
+
+		Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameLoader should have their own threads.
+		runnerPanelThread.start();
+
+		Thread uiThread = new Thread(ui);
+		uiThread.start();
 
 		/************************************************************/		
 		/**************** Assign workers/threads ********************/
@@ -327,13 +367,19 @@ public class MAIN_Run implements Runnable{
 		int numWorkers = (int)(0.65f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
 		System.out.println("Detected " + cores + " physical cores. Making " + numWorkers + " workers.");
 
-		Thread uiThread = new Thread(ui);
-		uiThread.start();
+
 		System.out.println("All initialized.");
 
 
+
+
+
+
+
+
+		// note previous was 12 + 2 disturb + 16 recover
 		// Make a new folder for this trial.
-		File saveLoc = new File("./4_9_18");
+		File saveLoc = new File("./4_16_18");
 		if (!saveLoc.exists()) {
 			boolean success = saveLoc.mkdir();
 			if (!success) throw new RuntimeException("Could not make save directory.");
@@ -353,7 +399,7 @@ public class MAIN_Run implements Runnable{
 			saver.overrideFilename = "steadyRunPrefix";
 			saver.setSavePath(saveLoc.getPath() + "/");
 
-			TreeStage searchMax = new TreeStage_MaxDepth(14, currentSampler.clone(), saver); // Depth to get to sorta steady state.
+			TreeStage searchMax = new TreeStage_MaxDepth(11, currentSampler.clone(), saver); // Depth to get to sorta steady state. was 
 			searchMax.initialize(treeRoot, numWorkers);
 			System.out.println("Stage 1 done.");
 		}
@@ -373,9 +419,9 @@ public class MAIN_Run implements Runnable{
 
 			TreeStage searchMin = new TreeStage_MinDepth(2, new Sampler_FixedDepth(2), saver); // Two actions to get weird.
 			SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
-			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/steadyRunPrefix.SaveableSingleGame"), rootNode, 11);
+			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/steadyRunPrefix.SaveableSingleGame"), rootNode, 8);
 			Node currNode = rootNode;
-			while (currNode.treeDepth < 12) {
+			while (currNode.treeDepth < 9) {
 				currNode = currNode.children.get(0);
 			}
 			searchMin.initialize(currNode, 8);
@@ -396,16 +442,23 @@ public class MAIN_Run implements Runnable{
 			rootNode.getLeaves(leafList);
 
 			int count = 0;
-			int startAt = 198;
+			int startAt = 44;
 			for (Node leaf : leafList) {
 				if (count >= startAt) {
 					DataSaver_StageSelected saver = new DataSaver_StageSelected();
 					saver.overrideFilename = "recoveries" + count;
 					saver.setSavePath(saveLoc.getPath() + "/");
-
+			
 					TreeStage searchMax = new TreeStage_MaxDepth(16, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
+					
+					PanelTimeSeries_WorkerLoad workerMonitorPanel = new PanelTimeSeries_WorkerLoad(searchMax);
+					Thread monitorThread = new Thread(workerMonitorPanel);
+					monitorThread.start();
+					
+					ui.addTab(workerMonitorPanel, "Worker status");
+					
 					System.out.print("Started " + count + "...");
-					searchMax.initialize(leaf, 12);
+					searchMax.initialize(leaf, numWorkers);
 				}
 				// Turn off drawing for this one.
 				leaf.turnOffBranchDisplay();

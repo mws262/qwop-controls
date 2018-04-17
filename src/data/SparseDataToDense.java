@@ -29,15 +29,12 @@ public class SparseDataToDense {
 	/** Resim and convert. **/
 	public void convert(List<File> files) {
 		for (File file : files) {
-			List<SaveableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getName());
+			List<SaveableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
 			for (SaveableSingleGame singleGame : sparseGames) {
 				sim(singleGame);
 			}
 		}
-		saver.reportStageEnding(null, null);
-		
-		// MATT START WORKING HERE 4/10
-		
+		saver.reportStageEnding(null, null);	
 	}
 	
 	private void sim(SaveableSingleGame singleGame) {
@@ -47,8 +44,8 @@ public class SparseDataToDense {
 		saver.reportGameInitialization(GameLoader.getInitialState());
 		
 		while (!actionQueue.isEmpty()) {
-			Action action = actionQueue.peekThisAction();
 			boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
+			Action action = actionQueue.peekThisAction();
 			boolean Q = nextCommand[0];
 			boolean W = nextCommand[1]; 
 			boolean O = nextCommand[2];

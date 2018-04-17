@@ -122,4 +122,9 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 		actionQueue.clearAll();
 		active = false;
 	}
+
+	@Override
+	public void update(Node node) {
+		simRunToNode(node);
+	}
 }
