@@ -44,6 +44,9 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 	/** Part of jfreechart's timing. **/
 	private Millisecond second = new Millisecond();
 	
+	/** Max in time series before old begin to be removed. **/
+	public int maxPtsPerPlot = 500;
+	
 	protected Map<XYPlot, TimeSeriesCollection> plotsAndData = new LinkedHashMap<XYPlot, TimeSeriesCollection>(); // Retains order of insertion.
 	
 	public PanelTimeSeries(int numberOfPlots) {
@@ -54,6 +57,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 		
 		for (int i = 0; i < numberOfPlots; i++) {
 			TimeSeries series = new TimeSeries("");
+			series.setMaximumItemCount(maxPtsPerPlot);
 			TimeSeriesCollection plData = new TimeSeriesCollection(series);
 			
 			JFreeChart chart = createChart(plData, null); // Null means no title yet
@@ -82,6 +86,8 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 	public void addToSeries(float value, int plotNum, int seriesNum) {
 		TimeSeriesCollection ts = plotsAndData.get(plotPanels[plotNum].getChart().getXYPlot());
 		ts.getSeries(seriesNum).add(RegularTimePeriod.createInstance((Class)Millisecond.class, new Date(), TimeZone.getDefault()), value);	
+		ts.getSeries(seriesNum).removeAgedItems(false);
+
 	}
 	
 	/** My default settings for each plot. **/
