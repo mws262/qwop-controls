@@ -1,5 +1,4 @@
 package main;
-import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,10 +9,8 @@ import java.util.stream.IntStream;
 
 import com.beust.jcommander.*;
 
-import TreeStages.TreeStage_FixedGames;
 import TreeStages.TreeStage_MaxDepth;
 import TreeStages.TreeStage_MinDepth;
-import TreeStages.TreeStage_SearchForever;
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
 import distributions.Distribution_Normal;
@@ -60,13 +57,7 @@ class Settings {
 	List<String> saver = Arrays.asList("none", "200");
 }
 
-public class MAIN_Run implements Runnable{
-
-	private int treesPlayed = 0;
-	private int treesToPlay = 1000;
-	private long secondsPerTree = 1000000;
-
-	private long initTime;
+public class MAIN_Run {
 
 	private Settings settings;
 
@@ -84,24 +75,7 @@ public class MAIN_Run implements Runnable{
 		.build()
 		.parse(args);
 
-		Thread managerThread = new Thread(manager);
-		managerThread.start();
-	}
-
-	@Override
-	public void run() {
-
-		initTime = System.currentTimeMillis();
-		doGames();
-
-		while(true) {
-			// Do managey things here.
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		manager.doGames();
 	}
 
 	public void doGames() {

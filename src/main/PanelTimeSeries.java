@@ -115,7 +115,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 				false);
 		
 		chart.setBackgroundPaint(plotBackgroundColor);
-		chart.setPadding(new RectangleInsets(-0,-12,-8,-5)); // Pack em in really tight.
+		chart.setPadding(new RectangleInsets(-0,-8,-2,-5)); // Pack em in really tight.
 		chart.setBorderVisible(false);
 		
 		return chart;

@@ -411,7 +411,7 @@ public class Node {
 	public void checkFullyExplored_lite(){
 		boolean flag = true;
 		if (!isFailed.get()) {
-			if (!uncheckedActions.isEmpty()){
+			if (uncheckedActions != null && !uncheckedActions.isEmpty()){
 				flag = false;
 			}
 			for (Node child : children){
@@ -594,7 +594,7 @@ public class Node {
 		//Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will span the required sweep.
 		if(treeDepth >= 0){
 			if (parent.children.size() + ((parent.uncheckedActions == null) ? 0 :parent.uncheckedActions.size()) > 1){ //Catch the div by 0
-				int division = parent.children.size() + parent.uncheckedActions.size(); // Split into this many chunks.
+				int division = parent.children.size() + ((parent.uncheckedActions == null) ? 0 : parent.uncheckedActions.size()); // Split into this many chunks.
 				int childNo = parent.children.indexOf(this);
 
 				sweepAngle = (float) Math.max((parent.sweepAngle/division) * (1 + treeDepth * 0.05f), 0.02);

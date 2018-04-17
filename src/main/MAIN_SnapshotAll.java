@@ -34,7 +34,7 @@ public class MAIN_SnapshotAll extends JFrame{
 	public static int windowHeight = 1000;
 
 
-	File saveLoc = new File("./4_9_18");
+	File saveLoc = new File("./4_16_18");
 
 	List<Node> leafNodes = new ArrayList<Node>(); 
 
@@ -85,14 +85,13 @@ public class MAIN_SnapshotAll extends JFrame{
 //			currNode = currNode.children.get(0);
 //		}
 		System.out.println(currNode.countDescendants());
-		snapshotPane.giveSelectedNode(currNode);
+		snapshotPane.update(currNode);
 		repaint();
 		while(true) {
 			repaint();
 			try {
 				Thread.sleep(20);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
