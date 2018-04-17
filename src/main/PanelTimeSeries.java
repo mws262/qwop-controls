@@ -32,8 +32,11 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 	/** Is this panel active and drawing? **/
 	private AtomicBoolean isActive = new AtomicBoolean();
 	
-	/** How many plots do we want to squeeze in there horizontally? **/
+	/** How many plots total? **/
 	protected final int numberOfPlots;
+	
+	/** How many plots per row? **/
+	protected final int plotsPerRow = 6;
 	
 	/** Array of the numberOfPlots number of plots we make. **/
 	protected ChartPanel[] plotPanels;
@@ -45,7 +48,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 	private Millisecond second = new Millisecond();
 	
 	/** Max in time series before old begin to be removed. **/
-	public int maxPtsPerPlot = 500;
+	public int maxPtsPerPlot = 200;
 	
 	protected Map<XYPlot, TimeSeriesCollection> plotsAndData = new LinkedHashMap<XYPlot, TimeSeriesCollection>(); // Retains order of insertion.
 	
@@ -53,7 +56,16 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 		this.numberOfPlots = numberOfPlots;
 		plotPanels = new ChartPanel[numberOfPlots];
 
-		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+		int numRows = (int)Math.ceil(numberOfPlots/(double)plotsPerRow);
+		JPanel[] rowPanels = new JPanel[numRows];
+		// Panel for each row. Makes it easier with boxlayout.
+		for (int j = 0; j < numRows; j++) {
+			JPanel rowPanel =new JPanel();
+			rowPanels[j] = rowPanel;
+			rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.X_AXIS));
+			this.add(rowPanel);
+		}
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		
 		for (int i = 0; i < numberOfPlots; i++) {
 			TimeSeries series = new TimeSeries("");
@@ -71,7 +83,8 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 			chartPanel.setRangeZoomable(false);
 			chartPanel.setVisible(true);
 			plotPanels[i] = chartPanel;
-			add(chartPanel);
+			
+			rowPanels[i/plotsPerRow].add(chartPanel);
 		}	
 	}
 	
@@ -94,8 +107,8 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 	private JFreeChart createChart(XYDataset dataset,String name) {
 		JFreeChart chart = ChartFactory.createTimeSeriesChart(
 				name,
-				"Seconds",
-				"Value",
+				"",
+				"",
 				dataset,
 				false,
 				false,

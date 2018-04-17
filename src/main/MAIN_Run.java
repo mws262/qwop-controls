@@ -446,15 +446,13 @@ public class MAIN_Run implements Runnable{
 			
 					TreeStage searchMax = new TreeStage_MaxDepth(16, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
 					
-					PanelTimeSeries_WorkerLoad workerMonitorPanel = new PanelTimeSeries_WorkerLoad(searchMax, 6);
+					PanelTimeSeries_WorkerLoad workerMonitorPanel = new PanelTimeSeries_WorkerLoad(searchMax, 4);
 					Thread monitorThread = new Thread(workerMonitorPanel);
 					monitorThread.start();
 					ui.addTab(workerMonitorPanel, "Worker status");
 					
 					System.out.print("Started " + count + "...");
-					searchMax.initialize(leaf, 6);
-					
-
+					searchMax.initialize(leaf, 4);
 				}
 				// Turn off drawing for this one.
 				leaf.turnOffBranchDisplay();

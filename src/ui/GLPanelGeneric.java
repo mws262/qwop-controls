@@ -139,7 +139,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
 	@Override
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 		GL2 gl = drawable.getGL().getGL2();
-		cam.setDims(gl, panelWidth, panelHeight);
+		cam.setDims(gl, width, height);
 	}
 
 	/** This applies to the whole panel. This one should handle resizing the canvas appropriately. **/

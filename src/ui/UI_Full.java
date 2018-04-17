@@ -124,6 +124,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 		//treePane.requestFocus();
 
 		currentStatus = Status.DRAW_ALL; // Fire it up.
+		
 	}
 
 	/** Add a new tab to this frame. **/
