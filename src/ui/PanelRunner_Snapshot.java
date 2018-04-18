@@ -28,7 +28,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 	private Node snapshotNode;
 	
 	/** Filter to keep from drawing too many and killing the graphics speed. **/
-	private INodeFilter filter = new NodeFilter_Downsample(10);
+	private INodeFilter filter = new NodeFilter_Downsample(100);
 
 	/** Potentially, a future node selected by hovering over its runner to display a specific sequence of actions in all the displayed futures. **/
 	private Node highlightedFutureMousedOver;
@@ -102,7 +102,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 		for (int i = 0; i < snapshotNode.children.size(); i++) {
 			Node child = snapshotNode.children.get(i);
 			child.getLeaves(descendants);
-			//filter.filter(descendants); // temp rm
+			filter.filter(descendants); // temp rm
 			
 			Color runnerColor = Node.getColorFromTreeDepth(i*10);
 			child.setBranchColor(runnerColor); // Change the color on the tree too.

@@ -36,14 +36,14 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	public boolean verbose = false;
 
 	/** Print debugging info? **/
-	public boolean debugDraw = true;
+	public boolean debugDraw = false;
 
 	/** The current game instance that this FSM is using. This will frequently change since a new one is created for each run. **/
 	private final GameLoader game = new GameLoader();
 
 	/** Strategy for sampling new nodes. **/
 	private ISampler sampler;
-	
+
 	/** How data is saved. **/
 	private IDataSaver saver;
 
@@ -84,10 +84,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	/** Milli start time of last game. **/
 	private long startMs;
-	
+
 	/** Slightly filtered timesteps simulated per second. **/
 	private int tsPerSecond = 0;
-	
+
 	public String workerName = "";
 	private final int workerID;
 	private static int workerCount = 0;
@@ -120,7 +120,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				actionQueue.clearAll();
 				newGame(); // Create a new game world.
 				saver.reportGameInitialization(GameLoader.getInitialState());
-				
+
 				currentGameNode = rootNode;
 				changeStatus(Status.TREE_POLICY_CHOOSING);
 
@@ -132,33 +132,14 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 				}else {
 					expansionNode = sampler.treePolicy(currentGameNode); // This gets us through the existing tree to a place that we plan to add a new node.
-//					if (expansionNode == null) {
-//						terminateWorker();
-//						changeStatus(Status.IDLE);
-//						continue;
-//					}
 					if (debugDraw) {
 						expansionNode.setBackwardsBranchColor(getColorFromWorkerID(workerID));
 						expansionNode.setBackwardsBranchZOffset(0.1f);
 					}
 					targetNodeToTest = expansionNode;
-					//System.out.println(workerName + " tree policy picked node at depth " + expansionNode.treeDepth);
-					// Check special cases.
-//					if (false && targetNodeToTest.treeDepth == rootNode.treeDepth) { //targetNodeToTest == currentGameNode) { // We must be at the fringe of the tree and we should switch to expansion policy.
-//						currentGameNode = targetNodeToTest;
-//						changeStatus(Status.EXPANSION_POLICY_CHOOSING);
-//						sampler.treePolicyActionDone(currentGameNode);
-//
-//					}else if (targetNodeToTest.treeDepth <= currentGameNode.treeDepth) {
-//						throw new RuntimeException("Picked a node in the tree policy that is further up the tree towards the root than the current node.");
-//					}else if (!targetNodeToTest.isOtherNodeAncestor(currentGameNode)) {
-//						throw new RuntimeException("Target node in the tree policy should be a descendant of the current node.");
-//					}else {
-						// Otherwise, this is a valid target point. We should add its actions and then execute.
-						actionQueue.clearAll();
-						actionQueue.addSequence(targetNodeToTest.getSequence());
-						changeStatus(Status.TREE_POLICY_EXECUTING);
-//					}
+					actionQueue.clearAll();//System.out.println(targetNodeToTest.treeDepth);
+					actionQueue.addSequence(targetNodeToTest.getSequence());
+					changeStatus(Status.TREE_POLICY_EXECUTING);
 				}
 
 				break;
@@ -260,7 +241,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				long gameTs = game.getTimestepsSimulated();
 				addToTotalTimesteps(gameTs);
 				workerGamesPlayed.increment();
-				
+
 				tsPerSecond = (int)(0.9f * tsPerSecond + 0.1f * 1000f * gameTs/(System.currentTimeMillis() - startMs));
 				incrementTotalGameCount();
 
@@ -281,14 +262,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				System.out.println("Tree is fully explored.");
 				terminateWorker();
 				changeStatus(Status.IDLE);
-//				if (rootNode.treeDepth > 0) {
-//					rootNode = rootNode.getRoot();
-//					if (rootNode.fullyExplored) {
-//						workerRunning = false;
-//					}else {
-//						changeStatus(Status.IDLE);
-//					}
-//				}
 				break;		
 			default:
 				break;
@@ -316,15 +289,17 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
 	/** Pop the next action off the queue and execute one timestep. **/
 	private void executeNextOnQueue() {
-		Action action = actionQueue.peekThisAction();
-		boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-		boolean Q = nextCommand[0];
-		boolean W = nextCommand[1]; 
-		boolean O = nextCommand[2];
-		boolean P = nextCommand[3];
-		game.stepGame(Q,W,O,P);
-		saver.reportTimestep(action, game);
-		workerStepsSimulated++;
+		if (!actionQueue.isEmpty()) {
+			Action action = actionQueue.peekThisAction();
+			boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
+			boolean Q = nextCommand[0];
+			boolean W = nextCommand[1]; 
+			boolean O = nextCommand[2];
+			boolean P = nextCommand[3];
+			game.stepGame(Q,W,O,P);
+			saver.reportTimestep(action, game);
+			workerStepsSimulated++;
+		}
 	}
 
 	/** Has the game gotten into a failed state (Either too much torso lean or body parts hitting the ground). **/
@@ -350,7 +325,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	public void terminateWorker() {
 		flagForTermination.set(true);
 	}
-	
+
 	/** Get the running average of timesteps simulated per second of realtime. **/
 	public int getTsPerSecond() {
 		return tsPerSecond;

@@ -180,8 +180,8 @@ public class MAIN_Run {
 
 		// Stage 2
 		int trimSteadyBy = 4;
-		int deviationDepth = 10;
-		int stage2Workers = 1;//Math.max(maxWorkers/4, 2);
+		int deviationDepth = 2;
+		int stage2Workers = 3;//Math.max(maxWorkers/4, 2);
 
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
