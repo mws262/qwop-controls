@@ -77,9 +77,10 @@ public class Sampler_UCB implements ISampler {
 				if (val > bestScoreSoFar){
 					bestNodeSoFar = child;
 					bestScoreSoFar = val;
-				}else {
-					child.releaseExpansionRights();
 				}
+//				}else {
+//					child.releaseExpansionRights();
+//				}
 			}
 		}
 		if (bestNodeSoFar == null) { // This worker can't get a lock on any of the children it wants. Starting back at startNode.
@@ -115,7 +116,7 @@ public class Sampler_UCB implements ISampler {
 	@Override
 	public Node expansionPolicy(Node startNode) {
 		if (startNode.uncheckedActions.size() == 0) throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
-		Action childAction = startNode.uncheckedActions.get(Utility.randInt(0,startNode.uncheckedActions.size() - 1));
+		Action childAction = startNode.uncheckedActions.get(Utility.randInt(0, startNode.uncheckedActions.size() - 1));
 		return startNode.addChild(childAction);
 	}
 

@@ -6,6 +6,7 @@ import java.util.Set;
 import main.Action;
 import main.ISampler;
 import main.Node;
+import main.Utility;
 
 public class Sampler_FixedDepth implements ISampler {
 
@@ -97,7 +98,7 @@ public class Sampler_FixedDepth implements ISampler {
 	@Override
 	public void expansionPolicyActionDone(Node currentNode) {
 		treePolicyDone = false;
-		if (currentNode.treeDepth == effectiveHorizonDepth) {
+		if (currentNode.treeDepth == effectiveHorizonDepth || currentNode.isFailed()) {
 			expansionPolicyDone = true;
 			
 			finishedNodes.add(currentNode);

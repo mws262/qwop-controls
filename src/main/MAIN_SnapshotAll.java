@@ -33,8 +33,9 @@ public class MAIN_SnapshotAll extends JFrame{
 	/** Window height **/
 	public static int windowHeight = 1000;
 
-
-	File saveLoc = new File("./4_16_18");
+	public static int playbackDepth = 5;
+	
+	File saveLoc = new File("./4_17_18");
 
 	List<Node> leafNodes = new ArrayList<Node>(); 
 
@@ -66,7 +67,7 @@ public class MAIN_SnapshotAll extends JFrame{
 
 		List<File> playbackFiles = new ArrayList<File>();
 		for (File f : allFiles){
-			if (f.getName().contains("recoveries")) {
+			if (f.getName().contains("steadyRunPrefix")) { // steadyRunPrefix.SaveableSingleGame
 				playbackFiles.add(f);
 			}
 		}
@@ -81,9 +82,9 @@ public class MAIN_SnapshotAll extends JFrame{
 		}
 		Node.makeNodesFromRunInfo(games, rootNode, -1);
 		Node currNode = rootNode;
-//		while (currNode.treeDepth < 11) {
-//			currNode = currNode.children.get(0);
-//		}
+		while (currNode.treeDepth < playbackDepth) {
+			currNode = currNode.children.get(0);
+		}
 		System.out.println(currNode.countDescendants());
 		snapshotPane.update(currNode);
 		repaint();

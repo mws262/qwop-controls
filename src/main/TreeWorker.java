@@ -36,7 +36,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	public boolean verbose = false;
 
 	/** Print debugging info? **/
-	public boolean debugDraw = false;
+	public boolean debugDraw = true;
 
 	/** The current game instance that this FSM is using. This will frequently change since a new one is created for each run. **/
 	private final GameLoader game = new GameLoader();
@@ -48,7 +48,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	private IDataSaver saver;
 
 	/** Root of tree that this FSM is operating on. **/
-	private Node rootNode;
+	private final Node rootNode;
 
 	/** Node that the game is currently operating at. **/
 	private Node currentGameNode;
@@ -132,11 +132,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 				}else {
 					expansionNode = sampler.treePolicy(currentGameNode); // This gets us through the existing tree to a place that we plan to add a new node.
-					if (expansionNode == null) {
-						terminateWorker();
-						changeStatus(Status.IDLE);
-						continue;
-					}
+//					if (expansionNode == null) {
+//						terminateWorker();
+//						changeStatus(Status.IDLE);
+//						continue;
+//					}
 					if (debugDraw) {
 						expansionNode.setBackwardsBranchColor(getColorFromWorkerID(workerID));
 						expansionNode.setBackwardsBranchZOffset(0.1f);
@@ -144,21 +144,21 @@ public class TreeWorker extends PanelRunner implements Runnable {
 					targetNodeToTest = expansionNode;
 					//System.out.println(workerName + " tree policy picked node at depth " + expansionNode.treeDepth);
 					// Check special cases.
-					if (targetNodeToTest.treeDepth == rootNode.treeDepth) { //targetNodeToTest == currentGameNode) { // We must be at the fringe of the tree and we should switch to expansion policy.
-						currentGameNode = targetNodeToTest;
-						changeStatus(Status.EXPANSION_POLICY_CHOOSING);
-						sampler.treePolicyActionDone(currentGameNode);
-
-					}else if (targetNodeToTest.treeDepth <= currentGameNode.treeDepth) {
-						throw new RuntimeException("Picked a node in the tree policy that is further up the tree towards the root than the current node.");
-					}else if (!targetNodeToTest.isOtherNodeAncestor(currentGameNode)) {
-						throw new RuntimeException("Target node in the tree policy should be a descendant of the current node.");
-					}else {
+//					if (false && targetNodeToTest.treeDepth == rootNode.treeDepth) { //targetNodeToTest == currentGameNode) { // We must be at the fringe of the tree and we should switch to expansion policy.
+//						currentGameNode = targetNodeToTest;
+//						changeStatus(Status.EXPANSION_POLICY_CHOOSING);
+//						sampler.treePolicyActionDone(currentGameNode);
+//
+//					}else if (targetNodeToTest.treeDepth <= currentGameNode.treeDepth) {
+//						throw new RuntimeException("Picked a node in the tree policy that is further up the tree towards the root than the current node.");
+//					}else if (!targetNodeToTest.isOtherNodeAncestor(currentGameNode)) {
+//						throw new RuntimeException("Target node in the tree policy should be a descendant of the current node.");
+//					}else {
 						// Otherwise, this is a valid target point. We should add its actions and then execute.
 						actionQueue.clearAll();
 						actionQueue.addSequence(targetNodeToTest.getSequence());
 						changeStatus(Status.TREE_POLICY_EXECUTING);
-					}
+//					}
 				}
 
 				break;

@@ -244,7 +244,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 	/** Distance of given coordinates from mouse location, squared. **/
 	private float getDistFromMouseSq(float x, float y) {
 		float xdist = (mouseX - (runnerScaling * x + xOffsetPixels - specificXOffset));
-		float ydist = (mouseY - (runnerScaling * y + yOffsetPixels - specificXOffset));
+		float ydist = (mouseY - (runnerScaling * y + yOffsetPixels));
 		return xdist*xdist + ydist*ydist;
 	}
 

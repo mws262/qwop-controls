@@ -155,6 +155,43 @@ public class MAIN_Run {
 		//ArrayList<SaveableSingleGame> loaded = io_sparse.loadObjectsOrdered("test_2017-10-25_16-25-38.SaveableSingleGame");
 
 		/************************************************************/		
+		/**************** Assign workers/threads ********************/
+		/************************************************************/
+
+		// Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the Box2D libraries.
+		int cores = Runtime.getRuntime().availableProcessors();
+		int maxWorkers = (int)(0.65f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
+		System.out.println("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
+
+		// Make a new folder for this trial.
+		File saveLoc = new File("./4_17_18");
+		if (!saveLoc.exists()) {
+			boolean success = saveLoc.mkdir();
+			if (!success) throw new RuntimeException("Could not make save directory.");
+		}
+
+		boolean doStage1 = false;
+		boolean doStage2 = true;
+		boolean doStage3 = false;
+
+		// Stage 1
+		int getToSteadyDepth = 10;
+		int stage1Workers = maxWorkers;
+
+		// Stage 2
+		int trimSteadyBy = 4;
+		int deviationDepth = 10;
+		int stage2Workers = 1;//Math.max(maxWorkers/4, 2);
+
+		// Stage 3
+		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
+		int recoveryResumePoint = 0; // Return here if we're restarting.
+		int getBackToSteadyDepth = 12;
+		int stage3Workers = maxWorkers;
+
+		assignAllowableActions(stage3StartDepth);
+		
+		/************************************************************/		
 		/**************** Pick user interface. **********************/
 		/************************************************************/
 		Node treeRoot = new Node();
@@ -200,43 +237,8 @@ public class MAIN_Run {
 
 		Thread uiThread = new Thread(ui);
 		uiThread.start();
-
-		/************************************************************/		
-		/**************** Assign workers/threads ********************/
-		/************************************************************/
-
-		// Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the Box2D libraries.
-		int cores = Runtime.getRuntime().availableProcessors();
-		int maxWorkers = (int)(0.65f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
-		System.out.println("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
-
-		// Make a new folder for this trial.
-		File saveLoc = new File("./4_16_18");
-		if (!saveLoc.exists()) {
-			boolean success = saveLoc.mkdir();
-			if (!success) throw new RuntimeException("Could not make save directory.");
-		}
-
-		boolean doStage1 = false;
-		boolean doStage2 = false;
-		boolean doStage3 = true;
-
-		// Stage 1
-		int getToSteadyDepth = 11;
-		int stage1Workers = maxWorkers;
-
-		// Stage 2
-		int trimSteadyBy = 2;
-		int deviationDepth = 2;
-		int stage2Workers = Math.max(maxWorkers/2, 2);
-
-		// Stage 3
-		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
-		int recoveryResumePoint = 44; // Return here if we're restarting.
-		int getBackToSteadyDepth = 12;
-		int stage3Workers = maxWorkers;
-
-		assignAllowableActions(stage3StartDepth);
+		
+		///////////////////////////////////////////////////////////
 		
 		// This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
 		if (doStage1) {
@@ -263,8 +265,8 @@ public class MAIN_Run {
 			Node rootNode = new Node();
 			ui.clearRootNodes();
 			ui.addRootNode(rootNode);
-
-			TreeStage searchMin = new TreeStage_MinDepth(deviationDepth, new Sampler_FixedDepth(deviationDepth), saver); // Two actions to get weird.
+			
+			TreeStage searchMin = new TreeStage_MinDepth(deviationDepth, new Sampler_FixedDepth(deviationDepth), saver); // Two actions to get weird. new Sampler_FixedDepth(deviationDepth)
 			SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
 			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/steadyRunPrefix.SaveableSingleGame"), rootNode, getToSteadyDepth - trimSteadyBy - 1);
 			Node currNode = rootNode;

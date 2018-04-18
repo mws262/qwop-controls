@@ -90,7 +90,7 @@ public class Node {
 
 	public boolean displayPoint = false; // Round dot at this node. Is it on?
 	public boolean displayLine = true; // Line from this node to parent. Is it on?
-	public static boolean debugDrawNodeLocking = false; // Draw which nodes are locked by command from the TreeWorkers.
+	public static boolean debugDrawNodeLocking = true; // Draw which nodes are locked by command from the TreeWorkers.
 
 	// Limiting number of display nodes.
 	public boolean limitDrawing = true;
@@ -678,6 +678,11 @@ public class Node {
 
 	/** Draw the node point if enabled **/
 	public void drawPoint(GL2 gl){
+		if (state != null && isFailed()) {
+			displayPoint = true;
+		}else {
+			displayPoint = false;
+		}
 		if(displayPoint){
 			if (overrideNodeColor == null){
 				gl.glColor3fv(nodeColor.getColorComponents(null),0);
