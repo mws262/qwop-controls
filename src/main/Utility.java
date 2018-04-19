@@ -1,8 +1,14 @@
 package main;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
@@ -11,22 +17,22 @@ public class Utility {
 
 	private static long ticTime;
 	private static long tocTime;
-	
+
 	/** Random number generator for new node selection **/
 	private final static Random rand = new Random();
-	
+
 	/** Generate a random integer between two values, inclusive. **/
 	public static int randInt(int min, int max) {
 		if (min > max) throw new IllegalArgumentException("Random int sampler should be given a minimum value which is less than or equal to the given max value.");
 		int randomNum = rand.nextInt((max - min) + 1) + min;
 		return randomNum;
 	}
-	
+
 	/** Matlab tic and toc functionality. **/
 	public static void tic(){
 		ticTime = System.nanoTime();
 	}
-	
+
 	public static long toc(){
 		tocTime = System.nanoTime();
 		long difference = tocTime - ticTime;
@@ -36,6 +42,70 @@ public class Utility {
 			System.out.println(Math.floor(difference/100000000.)/10. + " s elapsed.");
 		}
 		return difference;
+	}
+
+	
+	public static void stringToLogFile(String contents, String outPath) throws IOException {
+		BufferedWriter writer = null;
+		FileWriter fw = null;
+		
+		try {
+			fw = new FileWriter(outPath);
+			writer = new BufferedWriter(fw);
+			
+			writer.write(contents);	
+			
+		}finally {
+			if (writer != null) writer.close();
+			if (fw != null) fw.close();
+		}
+	}
+	
+	/** Write some part of a file to a log. Begin logging with !LOG_START and end with
+	 * !LOG_END. This can be done multiple times in the same file.  **/
+	public static void sectionToLogFile(String inPath, String outPath) throws IOException {
+		File inFile = new File(inPath);
+		File outFile = new File(outPath);
+
+		boolean collecting = false;
+		String divider = "**************************************************************";
+		BufferedReader reader = null;
+		BufferedWriter writer = null;
+		FileReader fr = null;
+		FileWriter fw = null;
+		
+		try {
+			fr = new FileReader(inPath);
+			reader = new BufferedReader(fr);
+			fw = new FileWriter(outPath);
+			writer = new BufferedWriter(fw);
+
+			while (reader.ready()) {
+				String nextLine = reader.readLine();
+
+				if (nextLine.contains("!LOG_START")){
+					collecting = true;
+					writer.write(divider + "\n");
+				}else if(nextLine.contains("!LOG_STOP")) {
+					collecting = false;
+					writer.write(divider + "\n");
+				}
+
+				if (collecting) {
+					writer.write(nextLine + "\n");
+				}
+			}
+
+		}finally {
+			if (writer != null) {
+				writer.close();
+				fw.close();
+			}
+			if (reader != null) {
+				reader.close();	
+				fr.close();
+			}
+		}
 	}
 
 	/** Clear out an existing file. **/
@@ -59,9 +129,17 @@ public class Utility {
 		return name;
 	}
 
+	/** Get a timestamp in string form. **/
+	public static String getTimestamp() {
+		Date date = new Date() ;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss") ;
+		String timestamp = dateFormat.format(date);
+		return timestamp;
+	}
+
 
 }
 
 
-	
-	
+
+

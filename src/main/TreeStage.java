@@ -3,6 +3,7 @@ package main;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import game.StateVariable;
 
@@ -25,7 +26,6 @@ public abstract class TreeStage implements Runnable{
 	protected IDataSaver saver;
 
 	/** Each stage gets its own workers to avoid contamination. Probably could combine later if necessary. **/
-	private List<Thread> workerThreads = new ArrayList<Thread>();
 	public List<TreeWorker> workers = new ArrayList<TreeWorker>();
 
 	/** Thread managing this stage and its workers. **/
@@ -42,7 +42,7 @@ public abstract class TreeStage implements Runnable{
 
 	private final Object lock = new Object();
 
-	public void initialize(Node treeRoot, int numWorkers) {
+	public void initialize(Node treeRoot, ExecutorService pool, int numWorkers) {
 		if (numWorkers < 1) throw new RuntimeException("Tried to assign a tree stage an invalid number of workers: " + numWorkers);
 
 		this.treeRoot = treeRoot;
@@ -50,27 +50,16 @@ public abstract class TreeStage implements Runnable{
 		running = true;
 		stageThread = new Thread(this);
 		stageThread.start();
-		synchronized(workerThreads) {
-			for (int i = 0; i < numWorkers; i++) {
-				// Make workers
-				TreeWorker w;
-				ISampler sam = sampler.clone(); // Sampler must be determined in the extender of this class.
-				IDataSaver sav = saver.clone();
-				w = new TreeWorker(treeRoot, sam, sav);
-				workers.add(w);
+		for (int i = 0; i < numWorkers; i++) {
+			// Make workers
+			TreeWorker w;
+			ISampler sam = sampler.clone(); // Sampler must be determined in the extender of this class.
+			IDataSaver sav = saver.clone();
+			w = new TreeWorker(treeRoot, sam, sav);
+			workers.add(w);
 
-				// Make worker threads
-				Thread wThread = new Thread(w);
-				wThread.setName(w.workerName);
-				workerThreads.add(wThread);		
-			}
-
-			// Start threads
-			for (Thread t : workerThreads) {
-				t.start();
-			}
+			pool.execute(w);
 		}
-
 		if (blocking) {
 			// This blocks the main thread until this stage is done.
 			synchronized(lock){
@@ -90,14 +79,14 @@ public abstract class TreeStage implements Runnable{
 		// Monitor the progress of this stage's workers.
 		while (running) {
 			// EXPERIMENTAL MEMORY PRUNING.
-//
-//			
-//			if (TreeWorker.getTotalGamesPlayed()  > thresh) {
-//				count = 0;
-//				pruneStatesForMemory(getRootNode());
-//				thresh += 2000;
-//			}
-			
+			//
+			//			
+			//			if (TreeWorker.getTotalGamesPlayed()  > thresh) {
+			//				count = 0;
+			//				pruneStatesForMemory(getRootNode());
+			//				thresh += 2000;
+			//			}
+
 			if (checkTerminationConditions()) {
 				terminate();
 				try {
@@ -132,30 +121,20 @@ public abstract class TreeStage implements Runnable{
 				pruneStatesForMemory(child);
 			}
 		}
-		
+
 	}
-	
+
 	/** Terminate this stage, destroying the workers and their threads in the process. **/
 	public void terminate() {
 		running = false;
 		System.out.println("Terminate called on a stage.");
 		saver.reportStageEnding(getRootNode(), getResults());
 		// Stop threads and get rid of them.
-		synchronized(workerThreads) {
-			Iterator<TreeWorker> iter = workers.iterator();
-			while (iter.hasNext()) {
-				TreeWorker tw = iter.next();
-				tw.terminateWorker();
-			}
-		}
 
-		// Wait for all threads to end.
-		for (Thread wt : workerThreads) {
-			try {
-				wt.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		Iterator<TreeWorker> iter = workers.iterator();
+		while (iter.hasNext()) {
+			TreeWorker tw = iter.next();
+			tw.terminateWorker();
 		}
 
 		// Stop the monitoring thread and let the main thread continue.
@@ -166,11 +145,12 @@ public abstract class TreeStage implements Runnable{
 
 	/** Check if workers are running. **/
 	public boolean areWorkersRunning() {
-		synchronized(workerThreads) {
-			Iterator<Thread> iter = workerThreads.iterator();
+		synchronized(workers) {
+
+			Iterator<TreeWorker> iter = workers.iterator();
 			if (!iter.hasNext()) return true; // It's stupid if the termination condition gets caught before any threads have a chance to get going.
 			while (iter.hasNext()) {
-				if (iter.next().getState() != Thread.State.TERMINATED) {
+				if (iter.next().isRunning()) {
 					return true;
 				}
 			}
@@ -182,7 +162,7 @@ public abstract class TreeStage implements Runnable{
 	public Node getRootNode() {
 		return treeRoot;
 	}
-	
+
 	public int getNumberOfWorkers() {
 		return numWorkers;
 	}

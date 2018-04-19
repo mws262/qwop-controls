@@ -72,8 +72,6 @@ public class Sampler_FixedDepth implements ISampler {
 			
 			// Otherwise, move down.
 			boolean foundChild = false;
-			
-			
 			// If the order of iteration is not randomized, once there are enough workers, they can manage to deadlock.
 			List<Node> children = currentNode.children.stream().collect(Collectors.toList());
 			Collections.shuffle(children);

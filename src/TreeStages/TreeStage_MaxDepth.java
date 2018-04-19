@@ -3,6 +3,7 @@ package TreeStages;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import main.IDataSaver;
 import main.ISampler;
@@ -31,9 +32,9 @@ public class TreeStage_MaxDepth extends TreeStage {
 	}
 	
 	@Override
-	public void initialize(Node treeRoot, int numWorkers) {
+	public void initialize(Node treeRoot, ExecutorService pool, int numWorkers) {
 		maxEffectiveDepth = maxDepth + treeRoot.treeDepth;
-		super.initialize(treeRoot, numWorkers);
+		super.initialize(treeRoot, pool, numWorkers);
 	}
 	
 	@Override

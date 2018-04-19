@@ -331,6 +331,12 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	public void terminateWorker() {
 		flagForTermination.set(true);
 	}
+	
+	
+	/** Check if this runner is done or not. **/
+	public synchronized boolean isRunning() {
+		return workerRunning;
+	}
 
 	/** Get the running average of timesteps simulated per second of realtime. **/
 	public int getTsPerSecond() {

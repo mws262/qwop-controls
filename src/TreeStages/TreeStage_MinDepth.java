@@ -3,6 +3,7 @@ package TreeStages;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import main.IDataSaver;
 import main.ISampler;
@@ -34,9 +35,9 @@ public class TreeStage_MinDepth extends TreeStage {
 	}
 	
 	@Override
-	public void initialize(Node treeRoot, int numWorkers) {
+	public void initialize(Node treeRoot, ExecutorService pool, int numWorkers) {
 		minEffectiveDepth = minDepth + treeRoot.treeDepth;
-		super.initialize(treeRoot, numWorkers);
+		super.initialize(treeRoot, pool, numWorkers);
 	}
 	
 	@Override

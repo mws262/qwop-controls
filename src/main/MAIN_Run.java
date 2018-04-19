@@ -1,10 +1,13 @@
 package main;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 import com.beust.jcommander.*;
@@ -60,7 +63,7 @@ class Settings {
 public class MAIN_Run {
 
 	private Settings settings;
-
+	String endLog = "";
 
 	public MAIN_Run(Settings settings) {
 		this.settings = settings;
@@ -163,17 +166,37 @@ public class MAIN_Run {
 		int maxWorkers = (int)(0.65f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
 		System.out.println("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
 
+
 		// Make a new folder for this trial.
-		File saveLoc = new File("./4_17_18");
+		File saveLoc = new File("./4_19_18");
 		if (!saveLoc.exists()) {
 			boolean success = saveLoc.mkdir();
 			if (!success) throw new RuntimeException("Could not make save directory.");
 		}
 
-		Sampler_UCB.explorationMultiplier = 2;
+		try {
+			Utility.sectionToLogFile("./src/main/" + this.getClass().getSimpleName() + ".java", saveLoc.toString() + "/" + "config_" + Utility.getTimestamp() + ".log");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// Save a progress log before shutting down.
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				try {
+					Utility.stringToLogFile(endLog, saveLoc.toString() + "/" + "summary_" + Utility.getTimestamp() + ".log");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}}); 
+
 		
+		//!LOG_START
+		Sampler_UCB.explorationMultiplier = 2;
+
 		boolean doStage1 = false;
-		boolean doStage2 = true;
+		boolean doStage2 = false;
 		boolean doStage3 = true;
 
 		// Stage 1
@@ -183,15 +206,17 @@ public class MAIN_Run {
 		// Stage 2
 		int trimSteadyBy = 12;
 		int deviationDepth = 2;
-		int stage2Workers = 15;//Math.max(maxWorkers/4, 2);
+		int stage2Workers = Math.max(maxWorkers/4, 2);
 
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
 		int recoveryResumePoint = 0; // Return here if we're restarting.
-		int getBackToSteadyDepth = 12;
+		int getBackToSteadyDepth = 12; // This many moves to recover.
 		int stage3Workers = maxWorkers;
-
+		//!LOG_STOP
+		
 		assignAllowableActions(stage3StartDepth);
+
 		
 		/************************************************************/		
 		/**************** Pick user interface. **********************/
@@ -239,10 +264,14 @@ public class MAIN_Run {
 
 		Thread uiThread = new Thread(ui);
 		uiThread.start();
-		
+
 		///////////////////////////////////////////////////////////
-		
+
 		// This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
+
+		ExecutorService pool = Executors.newFixedThreadPool(maxWorkers);
+		
+		//!LOG_START
 		if (doStage1) {
 			System.out.println("Starting stage 1.");
 			// Saver setup.
@@ -251,8 +280,9 @@ public class MAIN_Run {
 			saver.setSavePath(saveLoc.getPath() + "/");
 
 			TreeStage searchMax = new TreeStage_MaxDepth(getToSteadyDepth, currentSampler.clone(), saver); // Depth to get to sorta steady state. was 
-			searchMax.initialize(treeRoot, stage1Workers);
+			searchMax.initialize(treeRoot, pool, stage1Workers);
 			System.out.println("Stage 1 done.");
+			endLog += "Stage 1 done.\n";
 		}
 
 		// This stage generates deviations from nominal. Load nominal gait. Do not allow expansion near the root. Expand to a fixed, small depth.
@@ -267,7 +297,7 @@ public class MAIN_Run {
 			Node rootNode = new Node();
 			ui.clearRootNodes();
 			ui.addRootNode(rootNode);
-			
+
 			TreeStage searchMin = new TreeStage_MinDepth(deviationDepth, new Sampler_FixedDepth(deviationDepth), saver); // Two actions to get weird. new Sampler_FixedDepth(deviationDepth)
 			SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
 			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/steadyRunPrefix.SaveableSingleGame"), rootNode, getToSteadyDepth - trimSteadyBy - 1);
@@ -275,8 +305,10 @@ public class MAIN_Run {
 			while (currNode.treeDepth < getToSteadyDepth - trimSteadyBy) {
 				currNode = currNode.children.get(0);
 			}
-			searchMin.initialize(currNode, stage2Workers);
+			searchMin.initialize(currNode, pool, stage2Workers);
 			System.out.println("Stage 2 done.");
+			endLog += "Did " + searchMin.getResults().size() + " deviations.\n";
+			endLog += "Stage 2 done.\n";
 		}
 
 		if (doStage3) {
@@ -308,7 +340,7 @@ public class MAIN_Run {
 					((UI_Full)ui).addTab(workerMonitorPanel, "Worker status");
 
 					System.out.print("Started " + count + "...");
-					searchMax.initialize(leaf, stage3Workers);
+					searchMax.initialize(leaf, pool, stage3Workers);
 
 					((UI_Full)ui).removeTab(workerMonitorPanel);
 				}
@@ -317,134 +349,137 @@ public class MAIN_Run {
 				leaf.parent.children.remove(leaf);
 				System.out.println(" finished.");
 				count++;
+				endLog += "Expanded leaf: " + count + ".\n";
 			}
 
 			System.out.println("Stage 3 done.");
+			endLog += "Stage 3 done.\n";
 		}
+		//!LOG_STOP
 	}
-
+	
 	/** Assign the correct generator of actions based on the baseline options and exceptions. **/
 	private void assignAllowableActions(int recoveryExceptionStart) {
-			/********************************************/		
-			/******* Space of allowable actions. ********/
-			/********************************************/
+		/********************************************/		
+		/******* Space of allowable actions. ********/
+		/********************************************/
 
-			/***** Space of allowed actions to sample ******/
-			Distribution<Action> uniform_dist = new Distribution_Uniform();
+		/***** Space of allowed actions to sample ******/
+		Distribution<Action> uniform_dist = new Distribution_Uniform();
 
-			/********** Repeated action 1 -- no keys pressed. ***********/
-			Integer[] durations1 = IntStream.range(1, 25).boxed().toArray(Integer[] :: new);
-			boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations1.length);
+		/********** Repeated action 1 -- no keys pressed. ***********/
+		Integer[] durations1 = IntStream.range(1, 25).boxed().toArray(Integer[] :: new);
+		boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations1.length);
 
-			//Distribution<Action> dist1 = new Distribution_Uniform();
-			Distribution<Action> dist1 = new Distribution_Normal(10f,2f);
-			ActionSet actionSet1 = ActionSet.makeActionSet(durations1, keySet1, dist1);
+		//Distribution<Action> dist1 = new Distribution_Uniform();
+		Distribution<Action> dist1 = new Distribution_Normal(10f,2f);
+		ActionSet actionSet1 = ActionSet.makeActionSet(durations1, keySet1, dist1);
 
-			/**********  Repeated action 2 -- W-O pressed ***********/
-			Integer[] durations2 = IntStream.range(20, 60).boxed().toArray(Integer[] :: new);
-			boolean[][] keySet2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durations2.length);
+		/**********  Repeated action 2 -- W-O pressed ***********/
+		Integer[] durations2 = IntStream.range(20, 60).boxed().toArray(Integer[] :: new);
+		boolean[][] keySet2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durations2.length);
 
-			//		Distribution<Action> dist2 = new Distribution_Uniform();
-			Distribution<Action> dist2 = new Distribution_Normal(39f,3f);
-			ActionSet actionSet2 = ActionSet.makeActionSet(durations2, keySet2, dist2);
+		//		Distribution<Action> dist2 = new Distribution_Uniform();
+		Distribution<Action> dist2 = new Distribution_Normal(39f,3f);
+		ActionSet actionSet2 = ActionSet.makeActionSet(durations2, keySet2, dist2);
 
-			/**********  Repeated action 3 -- W-O pressed ***********/
-			Integer[] durations3 = IntStream.range(1, 25).boxed().toArray(Integer[] :: new);
-			boolean[][] keySet3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations3.length);
+		/**********  Repeated action 3 -- W-O pressed ***********/
+		Integer[] durations3 = IntStream.range(1, 25).boxed().toArray(Integer[] :: new);
+		boolean[][] keySet3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durations3.length);
 
-			//		Distribution<Action> dist3 = new Distribution_Uniform();
-			Distribution<Action> dist3 = new Distribution_Normal(10f,2f);
-			ActionSet actionSet3 = ActionSet.makeActionSet(durations3, keySet3, dist3);
+		//		Distribution<Action> dist3 = new Distribution_Uniform();
+		Distribution<Action> dist3 = new Distribution_Normal(10f,2f);
+		ActionSet actionSet3 = ActionSet.makeActionSet(durations3, keySet3, dist3);
 
-			/**********  Repeated action 4 -- Q-P pressed ***********/
-			Integer[] durations4 = IntStream.range(20, 60).boxed().toArray(Integer[] :: new);
-			boolean[][] keySet4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durations4.length);
+		/**********  Repeated action 4 -- Q-P pressed ***********/
+		Integer[] durations4 = IntStream.range(20, 60).boxed().toArray(Integer[] :: new);
+		boolean[][] keySet4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durations4.length);
 
-			Distribution<Action> dist4 = new Distribution_Normal(39f,3f);
-			ActionSet actionSet4 = ActionSet.makeActionSet(durations4, keySet4, dist4);
-			ActionSet[] repeatedActions = new ActionSet[] {actionSet1,actionSet2,actionSet3,actionSet4};
+		Distribution<Action> dist4 = new Distribution_Normal(39f,3f);
+		ActionSet actionSet4 = ActionSet.makeActionSet(durations4, keySet4, dist4);
+		ActionSet[] repeatedActions = new ActionSet[] {actionSet1,actionSet2,actionSet3,actionSet4};
 
-			/////// Action Exceptions for starting up. ////////
-			/********** Repeated action exceptions 1 -- no keys pressed. ***********/
-			Integer[] durationsE1 = IntStream.range(1, 25).boxed().toArray(Integer[] :: new);
-			boolean[][] keySetE1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE1.length);
+		/////// Action Exceptions for starting up. ////////
+		/********** Repeated action exceptions 1 -- no keys pressed. ***********/
+		Integer[] durationsE1 = IntStream.range(1, 25).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetE1 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE1.length);
 
-			Distribution<Action> distE1 = new Distribution_Normal(5f,1f);
-			ActionSet actionSetE1 = ActionSet.makeActionSet(durationsE1, keySetE1, distE1);
+		Distribution<Action> distE1 = new Distribution_Normal(5f,1f);
+		ActionSet actionSetE1 = ActionSet.makeActionSet(durationsE1, keySetE1, distE1);
 
-			/**********  Repeated action exceptions 2 -- W-O pressed ***********/
-			Integer[] durationsE2 = IntStream.range(20, 50).boxed().toArray(Integer[] :: new);
-			boolean[][] keySetE2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durationsE2.length);
+		/**********  Repeated action exceptions 2 -- W-O pressed ***********/
+		Integer[] durationsE2 = IntStream.range(20, 50).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetE2 = ActionSet.replicateKeyString(new boolean[]{false,true,true,false},durationsE2.length);
 
-			Distribution<Action> distE2 = new Distribution_Normal(34f,2f);
-			ActionSet actionSetE2 = ActionSet.makeActionSet(durationsE2, keySetE2, distE2);
+		Distribution<Action> distE2 = new Distribution_Normal(34f,2f);
+		ActionSet actionSetE2 = ActionSet.makeActionSet(durationsE2, keySetE2, distE2);
 
-			/**********  Repeated action exceptions 3 -- no keys pressed. ***********/
-			Integer[] durationsE3 = IntStream.range(10, 45).boxed().toArray(Integer[] :: new);
-			boolean[][] keySetE3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE3.length);
+		/**********  Repeated action exceptions 3 -- no keys pressed. ***********/
+		Integer[] durationsE3 = IntStream.range(10, 45).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetE3 = ActionSet.replicateKeyString(new boolean[]{false,false,false,false},durationsE3.length);
 
-			Distribution<Action> distE3 = new Distribution_Normal(24f,2f);
-			ActionSet actionSetE3 = ActionSet.makeActionSet(durationsE3, keySetE3, distE3);
+		Distribution<Action> distE3 = new Distribution_Normal(24f,2f);
+		ActionSet actionSetE3 = ActionSet.makeActionSet(durationsE3, keySetE3, distE3);
 
-			/**********  Repeated action exceptions 4 -- Q-P pressed ***********/
-			Integer[] durationsE4 = IntStream.range(25, 65).boxed().toArray(Integer[] :: new);
-			boolean[][] keySetE4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durationsE4.length);
+		/**********  Repeated action exceptions 4 -- Q-P pressed ***********/
+		Integer[] durationsE4 = IntStream.range(25, 65).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetE4 = ActionSet.replicateKeyString(new boolean[]{true,false,false,true},durationsE4.length);
 
-			Distribution<Action> distE4 = new Distribution_Normal(49f,2f);
-			ActionSet actionSetE4 = ActionSet.makeActionSet(durationsE4, keySetE4, distE4);
-
-
-			/////// Action Exceptions for recovery. ////////
-			/**********  Repeated action 1 and 3 -- Nothing pressed ***********/
-			Integer[] durationsFalseFalse = IntStream.range(1, 50).boxed().toArray(Integer[] :: new);
-			boolean[][] keySetFalseFalse = ActionSet.replicateKeyString(new boolean[]{false,false,false,false}, durationsFalseFalse.length);
-
-			Distribution<Action> distFalseFalse = new Distribution_Normal(10f,2f);
-			ActionSet actionSetFalseFalse = ActionSet.makeActionSet(durationsFalseFalse, keySetFalseFalse, distFalseFalse);
-
-			/**********  Repeated action 2 -- W-O pressed ***********/
-			Integer[] durationsWO = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
-			boolean[][] keySetWO = ActionSet.replicateKeyString(new boolean[]{false,true,true,false}, durationsWO.length);
-
-			Distribution<Action> distWO = new Distribution_Normal(39f,3f);
-			ActionSet actionSetWO = ActionSet.makeActionSet(durationsWO, keySetWO, distWO);
-
-			/**********  Repeated action 4 -- Q-P pressed ***********/
-			Integer[] durationsQP = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
-			boolean[][] keySetQP = ActionSet.replicateKeyString(new boolean[]{true,false,false,true}, durationsQP.length);
-
-			Distribution<Action> distQP = new Distribution_Normal(39f,3f);
-			ActionSet actionSetQP = ActionSet.makeActionSet(durationsQP, keySetQP, distQP);
+		Distribution<Action> distE4 = new Distribution_Normal(49f,2f);
+		ActionSet actionSetE4 = ActionSet.makeActionSet(durationsE4, keySetE4, distE4);
 
 
-			Map<Integer,ActionSet> actionExceptions = new HashMap<Integer,ActionSet>();
-			actionExceptions.put(0, actionSetE1);
-			actionExceptions.put(1, actionSetE2);
-			actionExceptions.put(2, actionSetE3);
-			actionExceptions.put(3, actionSetE4);
+		/////// Action Exceptions for recovery. ////////
+		/**********  Repeated action 1 and 3 -- Nothing pressed ***********/
+		Integer[] durationsFalseFalse = IntStream.range(1, 50).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetFalseFalse = ActionSet.replicateKeyString(new boolean[]{false,false,false,false}, durationsFalseFalse.length);
 
-			// Put the recovery exceptions in the right spot.
-			for (int i = 0; i < 4; i++) {
-				int sequencePos = (recoveryExceptionStart + i) % 4;
+		Distribution<Action> distFalseFalse = new Distribution_Normal(10f,2f);
+		ActionSet actionSetFalseFalse = ActionSet.makeActionSet(durationsFalseFalse, keySetFalseFalse, distFalseFalse);
 
-				switch (sequencePos) {
-				case 0:
-					actionExceptions.put(recoveryExceptionStart + i, actionSetFalseFalse);
-					break;
-				case 1:
-					actionExceptions.put(recoveryExceptionStart + i, actionSetWO);
-					break;
-				case 2:
-					actionExceptions.put(recoveryExceptionStart + i, actionSetFalseFalse);
-					break;
-				case 3:
-					actionExceptions.put(recoveryExceptionStart + i, actionSetQP);
-					break;
-				}	
-			}
+		/**********  Repeated action 2 -- W-O pressed ***********/
+		Integer[] durationsWO = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetWO = ActionSet.replicateKeyString(new boolean[]{false,true,true,false}, durationsWO.length);
 
-			// Define the specific way that these allowed actions are assigned as potential options for nodes.
-			IActionGenerator actionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
-			Node.potentialActionGenerator = actionGenerator;
+		Distribution<Action> distWO = new Distribution_Normal(39f,3f);
+		ActionSet actionSetWO = ActionSet.makeActionSet(durationsWO, keySetWO, distWO);
+
+		/**********  Repeated action 4 -- Q-P pressed ***********/
+		Integer[] durationsQP = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
+		boolean[][] keySetQP = ActionSet.replicateKeyString(new boolean[]{true,false,false,true}, durationsQP.length);
+
+		Distribution<Action> distQP = new Distribution_Normal(39f,3f);
+		ActionSet actionSetQP = ActionSet.makeActionSet(durationsQP, keySetQP, distQP);
+
+
+		Map<Integer,ActionSet> actionExceptions = new HashMap<Integer,ActionSet>();
+		actionExceptions.put(0, actionSetE1);
+		actionExceptions.put(1, actionSetE2);
+		actionExceptions.put(2, actionSetE3);
+		actionExceptions.put(3, actionSetE4);
+
+		// Put the recovery exceptions in the right spot.
+		for (int i = 0; i < 4; i++) {
+			int sequencePos = (recoveryExceptionStart + i) % 4;
+
+			switch (sequencePos) {
+			case 0:
+				actionExceptions.put(recoveryExceptionStart + i, actionSetFalseFalse);
+				break;
+			case 1:
+				actionExceptions.put(recoveryExceptionStart + i, actionSetWO);
+				break;
+			case 2:
+				actionExceptions.put(recoveryExceptionStart + i, actionSetFalseFalse);
+				break;
+			case 3:
+				actionExceptions.put(recoveryExceptionStart + i, actionSetQP);
+				break;
+			}	
 		}
+
+		// Define the specific way that these allowed actions are assigned as potential options for nodes.
+		IActionGenerator actionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
+		Node.potentialActionGenerator = actionGenerator;
 	}
+}

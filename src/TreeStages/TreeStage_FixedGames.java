@@ -2,6 +2,7 @@ package TreeStages;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import main.IDataSaver;
 import main.ISampler;
@@ -30,9 +31,9 @@ public class TreeStage_FixedGames extends TreeStage {
 	}
 	
 	@Override
-	public void initialize(Node treeRoot, int numWorkers) {
+	public void initialize(Node treeRoot, ExecutorService pool, int numWorkers) {
 		initialGamesPlayed = TreeWorker.getTotalGamesPlayed();
-		super.initialize(treeRoot, numWorkers);
+		super.initialize(treeRoot, pool, numWorkers);
 	}
 	
 	@Override
