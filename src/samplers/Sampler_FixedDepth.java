@@ -1,7 +1,14 @@
 package samplers;
 
+import java.awt.Color;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.Lists;
 
 import main.Action;
 import main.ISampler;
@@ -42,8 +49,10 @@ public class Sampler_FixedDepth implements ISampler {
 		Node currentNode = startNode;
 		
 		while(!finishedNodes.contains(startNode)) {
+
 			
 			if (currentNode.fullyExplored.get() || finishedNodes.contains(currentNode)) {
+				if (currentNode.fullyExplored.get()) finishedNodes.add(currentNode);
 				currentNode = startNode; // Just start over for now. I don't think it's a big enough problem to stress over.
 				continue;
 			}
@@ -63,14 +72,23 @@ public class Sampler_FixedDepth implements ISampler {
 			
 			// Otherwise, move down.
 			boolean foundChild = false;
-			for (Node child : currentNode.children) {
+			
+			
+			// If the order of iteration is not randomized, once there are enough workers, they can manage to deadlock.
+			List<Node> children = currentNode.children.stream().collect(Collectors.toList());
+			Collections.shuffle(children);
+			
+			for (Node child : children) {
 				if (!child.fullyExplored.get() && !finishedNodes.contains(child) && !child.getLockStatus()) {
 					currentNode = child;
 					foundChild = true;
 					break;
 				}
 			}
-			if (!foundChild) currentNode = startNode;
+			if (!foundChild) {
+				currentNode = startNode;
+				propagateFinishedNodes(startNode);
+			}
 		}
 		return null;
 	}
@@ -113,7 +131,12 @@ public class Sampler_FixedDepth implements ISampler {
 	private void propagateFinishedNodes(Node currentNode) {
 		if (currentNode.uncheckedActions.isEmpty()) {
 			for (Node child : currentNode.children) {
-				if (!finishedNodes.contains(child)) return;
+				if (child.treeDepth == effectiveHorizonDepth) {
+					finishedNodes.add(child);
+				}
+				if (!finishedNodes.contains(child)) {
+					return;
+				}
 			}
 			finishedNodes.add(currentNode);
 			// Recurse if above the start depth.

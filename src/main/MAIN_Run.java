@@ -170,18 +170,20 @@ public class MAIN_Run {
 			if (!success) throw new RuntimeException("Could not make save directory.");
 		}
 
+		Sampler_UCB.explorationMultiplier = 2;
+		
 		boolean doStage1 = false;
 		boolean doStage2 = true;
-		boolean doStage3 = false;
+		boolean doStage3 = true;
 
 		// Stage 1
-		int getToSteadyDepth = 10;
+		int getToSteadyDepth = 24;
 		int stage1Workers = maxWorkers;
 
 		// Stage 2
-		int trimSteadyBy = 4;
+		int trimSteadyBy = 12;
 		int deviationDepth = 2;
-		int stage2Workers = 3;//Math.max(maxWorkers/4, 2);
+		int stage2Workers = 15;//Math.max(maxWorkers/4, 2);
 
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;

@@ -81,7 +81,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	/** Continuously update the estimate of the display loop time in milliseconds. **/
 	private long avgLoopTime = MSPF;
 	/** Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers gives more weight to the old value. **/
-	private final float loopTimeFilter = 20f;
+	private final float loopTimeFilter = 8;
 	private long lastIterTime = System.currentTimeMillis();
 	private long totalGamesPlayed = 0;
 	private long lastGamesPlayed = 0;
@@ -132,7 +132,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 	public void addTab(TabbedPaneActivator newTab, String name) {
 		tabPane.addTab(name, (Component)newTab);
 		allTabbedPanes.add(newTab);
-
+		tabPane.revalidate();
+		
 		//Make sure the currently active tab is actually being updated.
 		allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();	
 	}

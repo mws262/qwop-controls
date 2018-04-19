@@ -136,10 +136,16 @@ public class TreeWorker extends PanelRunner implements Runnable {
 						expansionNode.setBackwardsBranchColor(getColorFromWorkerID(workerID));
 						expansionNode.setBackwardsBranchZOffset(0.1f);
 					}
-					targetNodeToTest = expansionNode;
-					actionQueue.clearAll();//System.out.println(targetNodeToTest.treeDepth);
-					actionQueue.addSequence(targetNodeToTest.getSequence());
-					changeStatus(Status.TREE_POLICY_EXECUTING);
+
+					if (expansionNode == null) { // May happen with some samplers when the stage finishes.
+						changeStatus(Status.IDLE);
+					}else {
+						targetNodeToTest = expansionNode;
+						actionQueue.clearAll();
+						actionQueue.addSequence(targetNodeToTest.getSequence());
+
+						changeStatus(Status.TREE_POLICY_EXECUTING);
+					}
 				}
 
 				break;

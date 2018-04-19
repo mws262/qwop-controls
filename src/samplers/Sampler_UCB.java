@@ -20,8 +20,11 @@ public class Sampler_UCB implements ISampler {
 	private IEvaluationFunction evaluationFunction;
 	
 	/** Explore/exploit tradeoff parameter. Higher means more exploration. Lower means more exploitation. **/
-	float c = 12f; // 7 during most long batch runs.
+	public float c = 12f; // 7 during most long batch runs.
 
+	/** A multiplier to tone down or amp up exploration. Higher means more exploration. **/
+	public static float explorationMultiplier = 1f;
+	
 	/** Are we done with the tree policy? **/
 	private boolean treePolicyDone = false;
 	/** Are we done with the expansion policy? **/
@@ -37,7 +40,7 @@ public class Sampler_UCB implements ISampler {
 	/** Must provide an evaluationFunction to get a numeric score for nodes after a rollout. **/
 	public Sampler_UCB(IEvaluationFunction evaluationFunction) {
 		this.evaluationFunction = evaluationFunction;
-		c = 10*Random.nextFloat()*c + 0.1f;
+		c = 10*explorationMultiplier*Random.nextFloat()*c + 0.1f;
 	}
 	
 	/** Propagate the score and visit count back up the tree. **/
