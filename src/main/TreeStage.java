@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.commons.pool2.impl.GenericObjectPool;
+
+import game.GameLoader;
 import game.StateVariable;
 
 /**
@@ -28,6 +31,12 @@ public abstract class TreeStage implements Runnable{
 	/** Each stage gets its own workers to avoid contamination. Probably could combine later if necessary. **/
 	public List<TreeWorker> workers = new ArrayList<TreeWorker>();
 
+	/** Set of games to be recycled. **/
+	private GenericObjectPool<GameLoader> gamePool;
+	
+	/** List of objects that this Stage is using. **/
+	private List<GameLoader> gamesInUse = new ArrayList<GameLoader>();
+	
 	/** Thread managing this stage and its workers. **/
 	private Thread stageThread;
 
@@ -42,9 +51,10 @@ public abstract class TreeStage implements Runnable{
 
 	private final Object lock = new Object();
 
-	public void initialize(Node treeRoot, ExecutorService pool, int numWorkers) {
+	public void initialize(Node treeRoot, ExecutorService threadPool, GenericObjectPool<GameLoader> gamePool, int numWorkers) {
 		if (numWorkers < 1) throw new RuntimeException("Tried to assign a tree stage an invalid number of workers: " + numWorkers);
 
+		this.gamePool = gamePool;
 		this.treeRoot = treeRoot;
 		this.numWorkers = numWorkers;
 		running = true;
@@ -52,13 +62,19 @@ public abstract class TreeStage implements Runnable{
 		stageThread.start();
 		for (int i = 0; i < numWorkers; i++) {
 			// Make workers
-			TreeWorker w;
+			TreeWorker w = null;;
 			ISampler sam = sampler.clone(); // Sampler must be determined in the extender of this class.
 			IDataSaver sav = saver.clone();
-			w = new TreeWorker(treeRoot, sam, sav);
+			GameLoader game = null;
+			try {
+				game = gamePool.borrowObject();
+				gamesInUse.add(game);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			w = new TreeWorker(treeRoot, game, sam, sav);
 			workers.add(w);
-
-			pool.execute(w);
+			threadPool.execute(w);
 		}
 		if (blocking) {
 			// This blocks the main thread until this stage is done.
@@ -136,6 +152,11 @@ public abstract class TreeStage implements Runnable{
 			TreeWorker tw = iter.next();
 			tw.terminateWorker();
 		}
+		
+		for (GameLoader game : gamesInUse) {
+			gamePool.returnObject(game);
+		}
+		gamesInUse.clear();
 
 		// Stop the monitoring thread and let the main thread continue.
 		synchronized(lock){

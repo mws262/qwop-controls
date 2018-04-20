@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.pool2.impl.GenericObjectPool;
+
 import com.beust.jcommander.*;
 
 import TreeStages.TreeStage_MaxDepth;
@@ -22,6 +24,8 @@ import evaluators.Evaluator_Distance;
 import evaluators.Evaluator_HandTunedOnState;
 import evaluators.Evaluator_Random;
 import filters.NodeFilter_GoodDescendants;
+import game.GameLoader;
+import game.GameObjectFactory;
 import samplers.Sampler_Deterministic;
 import samplers.Sampler_Distribution;
 import samplers.Sampler_FixedDepth;
@@ -81,6 +85,7 @@ public class MAIN_Run {
 		manager.doGames();
 	}
 
+	@SuppressWarnings("resource")
 	public void doGames() {
 
 		/****************************************/		
@@ -181,7 +186,6 @@ public class MAIN_Run {
 		}
 
 		// Save a progress log before shutting down.
-
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				try {
@@ -210,7 +214,7 @@ public class MAIN_Run {
 
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
-		int recoveryResumePoint = 0; // Return here if we're restarting.
+		int recoveryResumePoint = 41; // Return here if we're restarting.
 		int getBackToSteadyDepth = 12; // This many moves to recover.
 		int stage3Workers = maxWorkers;
 		//!LOG_STOP
@@ -269,7 +273,9 @@ public class MAIN_Run {
 
 		// This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
 
-		ExecutorService pool = Executors.newFixedThreadPool(maxWorkers);
+		ExecutorService threadPool = Executors.newFixedThreadPool(maxWorkers); // Pool of threads for the workers so not so many are constantly created and destroyed.		
+		GenericObjectPool<GameLoader> gamePool = new GenericObjectPool<GameLoader>(new GameObjectFactory());
+		gamePool.setMaxTotal(maxWorkers);
 		
 		//!LOG_START
 		if (doStage1) {
@@ -280,7 +286,7 @@ public class MAIN_Run {
 			saver.setSavePath(saveLoc.getPath() + "/");
 
 			TreeStage searchMax = new TreeStage_MaxDepth(getToSteadyDepth, currentSampler.clone(), saver); // Depth to get to sorta steady state. was 
-			searchMax.initialize(treeRoot, pool, stage1Workers);
+			searchMax.initialize(treeRoot, threadPool, gamePool, stage1Workers);
 			System.out.println("Stage 1 done.");
 			endLog += "Stage 1 done.\n";
 		}
@@ -305,7 +311,7 @@ public class MAIN_Run {
 			while (currNode.treeDepth < getToSteadyDepth - trimSteadyBy) {
 				currNode = currNode.children.get(0);
 			}
-			searchMin.initialize(currNode, pool, stage2Workers);
+			searchMin.initialize(currNode, threadPool, gamePool, stage2Workers);
 			System.out.println("Stage 2 done.");
 			endLog += "Did " + searchMin.getResults().size() + " deviations.\n";
 			endLog += "Stage 2 done.\n";
@@ -328,6 +334,7 @@ public class MAIN_Run {
 			int startAt = recoveryResumePoint;
 			for (Node leaf : leafList) {
 				if (count >= startAt) {
+					Utility.tic();
 					DataSaver_StageSelected saver = new DataSaver_StageSelected();
 					saver.overrideFilename = "recoveries" + count;
 					saver.setSavePath(saveLoc.getPath() + "/");
@@ -340,9 +347,10 @@ public class MAIN_Run {
 					((UI_Full)ui).addTab(workerMonitorPanel, "Worker status");
 
 					System.out.print("Started " + count + "...");
-					searchMax.initialize(leaf, pool, stage3Workers);
+					searchMax.initialize(leaf, threadPool, gamePool, stage3Workers);
 
 					((UI_Full)ui).removeTab(workerMonitorPanel);
+					Utility.toc();
 				}
 				// Turn off drawing for this one.
 				leaf.turnOffBranchDisplay();
@@ -356,6 +364,8 @@ public class MAIN_Run {
 			endLog += "Stage 3 done.\n";
 		}
 		//!LOG_STOP
+		
+		gamePool.close();
 	}
 	
 	/** Assign the correct generator of actions based on the baseline options and exceptions. **/

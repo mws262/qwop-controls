@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.commons.pool2.impl.GenericObjectPool;
+
+import game.GameLoader;
 import main.IDataSaver;
 import main.ISampler;
 import main.Node;
@@ -31,9 +34,9 @@ public class TreeStage_FixedGames extends TreeStage {
 	}
 	
 	@Override
-	public void initialize(Node treeRoot, ExecutorService pool, int numWorkers) {
+	public void initialize(Node treeRoot, ExecutorService threadPool, GenericObjectPool<GameLoader> gamePool, int numWorkers) {
 		initialGamesPlayed = TreeWorker.getTotalGamesPlayed();
-		super.initialize(treeRoot, pool, numWorkers);
+		super.initialize(treeRoot, threadPool, gamePool, numWorkers);
 	}
 	
 	@Override
@@ -48,5 +51,4 @@ public class TreeStage_FixedGames extends TreeStage {
 		if (getRootNode().fullyExplored.get()) return true;
 		return (TreeWorker.getTotalGamesPlayed() - initialGamesPlayed + numWorkers) >= numGamesToPlay; // Won't always manage to stop exactly at the right number, but close enough.
 	}
-
 }

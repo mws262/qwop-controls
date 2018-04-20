@@ -39,7 +39,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	public boolean debugDraw = false;
 
 	/** The current game instance that this FSM is using. This will frequently change since a new one is created for each run. **/
-	private final GameLoader game = new GameLoader();
+	private final GameLoader game;
 
 	/** Strategy for sampling new nodes. **/
 	private ISampler sampler;
@@ -92,7 +92,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	private final int workerID;
 	private static int workerCount = 0;
 
-	public TreeWorker(Node rootNode, ISampler sampler, IDataSaver saver) {
+	public TreeWorker(Node rootNode, GameLoader game, ISampler sampler, IDataSaver saver) {
+		this.game = game;
 		this.sampler = sampler;
 		this.saver = saver;
 		this.rootNode = rootNode;
