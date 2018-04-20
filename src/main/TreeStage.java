@@ -51,7 +51,7 @@ public abstract class TreeStage implements Runnable{
 
 	private final Object lock = new Object();
 
-	public void initialize(Node treeRoot, ExecutorService threadPool, GenericObjectPool<GameLoader> gamePool, int numWorkers) {
+	public void initialize(List<TreeWorker> treeWorkers) {
 		if (numWorkers < 1) throw new RuntimeException("Tried to assign a tree stage an invalid number of workers: " + numWorkers);
 
 		this.gamePool = gamePool;

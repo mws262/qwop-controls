@@ -85,7 +85,6 @@ public class MAIN_Run {
 		manager.doGames();
 	}
 
-	@SuppressWarnings("resource")
 	public void doGames() {
 
 		/****************************************/		
@@ -197,25 +196,25 @@ public class MAIN_Run {
 
 		
 		//!LOG_START
-		Sampler_UCB.explorationMultiplier = 2;
+		Sampler_UCB.explorationMultiplier = 0.5f;
 
-		boolean doStage1 = false;
-		boolean doStage2 = false;
+		boolean doStage1 = true;
+		boolean doStage2 = true;
 		boolean doStage3 = true;
 
 		// Stage 1
-		int getToSteadyDepth = 24;
+		int getToSteadyDepth = 5;
 		int stage1Workers = maxWorkers;
 
 		// Stage 2
-		int trimSteadyBy = 12;
+		int trimSteadyBy = 2;
 		int deviationDepth = 2;
 		int stage2Workers = Math.max(maxWorkers/4, 2);
 
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
-		int recoveryResumePoint = 41; // Return here if we're restarting.
-		int getBackToSteadyDepth = 12; // This many moves to recover.
+		int recoveryResumePoint = 0; // Return here if we're restarting.
+		int getBackToSteadyDepth = 3; // This many moves to recover.
 		int stage3Workers = maxWorkers;
 		//!LOG_STOP
 		

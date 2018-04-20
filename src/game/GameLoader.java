@@ -55,6 +55,8 @@ public class GameLoader extends ClassLoader {
 
 	/** List of shapes for use by graphics stuff. **/
 	private List<Object> shapeList;
+	
+	private static int gamesCreated = 0;
 
 	// Track
 	private static final float 	trackPosY = 8.90813f, 	trackFric = 1f, 		trackRest = 0.2f;
@@ -153,6 +155,7 @@ public class GameLoader extends ClassLoader {
 
 	public static void main(String[] args) {
 		GameLoader gl = new GameLoader();
+
 		try {
 			gl.makeNewWorld();
 			for (int i = 0; i < 50; i++) {
@@ -174,6 +177,7 @@ public class GameLoader extends ClassLoader {
 				| IllegalArgumentException | InvocationTargetException | NoSuchFieldException e) {
 			e.printStackTrace();
 		}
+		//System.out.println(++gamesCreated);
 	}
 
 	@Override

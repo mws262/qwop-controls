@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import game.GameLoader;
 import game.State;
+import samplers.Sampler_Random;
+import savers.DataSaver_Null;
 
 /**
  * Addresses limitations of the old concurrent state machine approach.
@@ -32,23 +34,29 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	/** Sets the FSM to stop running the next time it is idle. **/
 	private AtomicBoolean flagForTermination = new AtomicBoolean(false);
 
+	/** Is this worker idle and waiting for a new task? **/
+	private boolean paused = true;
+	
 	/** Print debugging info? **/
 	public boolean verbose = false;
 
 	/** Print debugging info? **/
 	public boolean debugDraw = false;
 
-	/** The current game instance that this FSM is using. This will frequently change since a new one is created for each run. **/
-	private final GameLoader game;
+	/** The current game instance that this FSM is using. This will now not change. **/
+	private final GameLoader game = new GameLoader();
 
-	/** Strategy for sampling new nodes. **/
-	private ISampler sampler;
+	/** Thread that this worker is running on. Will stay constant with this worker. **/
+	private final Thread workerThread;
+	
+	/** Strategy for sampling new nodes. Defaults to random sampling. **/
+	private ISampler sampler = new Sampler_Random();
 
-	/** How data is saved. **/
-	private IDataSaver saver;
+	/** How data is saved. Defaults to no saving. **/
+	private IDataSaver saver = new DataSaver_Null();
 
 	/** Root of tree that this FSM is operating on. **/
-	private final Node rootNode;
+	private Node rootNode;
 
 	/** Node that the game is currently operating at. **/
 	private Node currentGameNode;
@@ -92,16 +100,33 @@ public class TreeWorker extends PanelRunner implements Runnable {
 	private final int workerID;
 	private static int workerCount = 0;
 
-	public TreeWorker(Node rootNode, GameLoader game, ISampler sampler, IDataSaver saver) {
-		this.game = game;
-		this.sampler = sampler;
-		this.saver = saver;
-		this.rootNode = rootNode;
+	public TreeWorker() {
 		workerID = workerCount;
 		workerName = "worker" + workerID;
 		workerCount++;
+		workerThread = new Thread(this);
+		workerThread.setName(workerName);
+		workerThread.start();
 	}
-
+	
+	/** Set the root node to work from. Does not have to be the overall tree root.
+	 * Must be assigned, however. Must still startWorker() to get things rolling.
+	 * @param rootNode
+	 */
+	public void setRoot(Node rootNode) {
+		this.rootNode = rootNode;
+	}
+	
+	/** Set which sampler is used. Defaults to Sampler_Random. Clones when reassigned. **/
+	public void setSampler(ISampler sampler) {
+		this.sampler = sampler.clone();
+	}
+	
+	/** Set which saver to  use. Defaults to no saving, Sampler_Null. Clones when reassigned. **/
+	public void setSaver(IDataSaver saver) {
+		this.saver = saver.clone();
+	}
+	
 	/* Finite state machine loop. Runnable. */
 	@Override
 	public void run() {
@@ -109,11 +134,13 @@ public class TreeWorker extends PanelRunner implements Runnable {
 			switch(currentStatus) {
 			case IDLE:
 
-				if (flagForTermination.get()) {
+				if (flagForTermination.get()) { // Permanent stop.
 					workerRunning = false;
 					break;
+				}else if (paused){ // Temporary stop.
+					continue;
 				}else {
-					changeStatus(Status.INITIALIZE);
+					changeStatus(Status.INITIALIZE); // While running.
 				}
 				break;
 			case INITIALIZE:
@@ -240,10 +267,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
 			case EVALUATE_GAME:
 				if (currentGameNode.isFailed()) { // 2/20/18 I don't remember why I put a conditional here. I've added an error to see if this ever actually is not true.
 					currentGameNode.markTerminal();
-				}else {
-					// Not necessarily true with the FixedDepth sampler.
-					//throw new RuntimeException("FSM_tree shouldn't be entering evaluation state unless the game is in a failed state.");
 				}
+				
 				saver.reportGameEnding(currentGameNode);
 				long gameTs = game.getTimestepsSimulated();
 				addToTotalTimesteps(gameTs);
@@ -333,6 +358,16 @@ public class TreeWorker extends PanelRunner implements Runnable {
 		flagForTermination.set(true);
 	}
 	
+	/** Pause what the worker is doing. Good for changing objectives and samplers, etc. **/
+	public void pauseWorker() {
+		paused = true;
+	}
+	
+	/** Unpause what the worker is doing. Use once objectives have been set. **/
+	public void startWorker() {
+		if (rootNode == null) throw new RuntimeException("Cannot start a worker while no root node is assigned.");
+		paused = false;
+	}
 	
 	/** Check if this runner is done or not. **/
 	public synchronized boolean isRunning() {
