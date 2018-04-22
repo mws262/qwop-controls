@@ -25,6 +25,12 @@ public class TreeStage_MaxDepth extends TreeStage {
 	/** Max effective depth (i.e. absolute depth relative to the entire tree root). **/
 	private int maxEffectiveDepth;
 	
+	/** How many games were played previous to the initialization of this stage? **/
+	private long gamesPlayedAtStageStart;
+	
+	/** Alternate termination condition: We played more than this number of games without getting to the desired max depth. **/
+	public long terminateAfterXGames = 120000;
+	
 	public TreeStage_MaxDepth(int maxDepth, ISampler sampler, IDataSaver saver) {
 		this.maxDepth = maxDepth;
 		this.sampler = sampler;
@@ -34,6 +40,7 @@ public class TreeStage_MaxDepth extends TreeStage {
 	@Override
 	public void initialize(List<TreeWorker> treeWorkers, Node stageRoot) {
 		maxEffectiveDepth = maxDepth + stageRoot.treeDepth;
+		gamesPlayedAtStageStart = TreeWorker.getTotalGamesPlayed();
 		super.initialize(treeWorkers, stageRoot);
 	}
 	
@@ -43,7 +50,8 @@ public class TreeStage_MaxDepth extends TreeStage {
 		leafList.clear();
 		getRootNode().getLeaves(leafList);
 		
-		if (getRootNode().fullyExplored.get()) return resultList; // No results. No possible way to recover.
+		if (getRootNode().fullyExplored.get() || (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames)
+			return resultList; // No results. No possible way to recover.
 		
 		for (Node n : leafList) {
 			if (n.treeDepth == maxEffectiveDepth) {
@@ -72,10 +80,12 @@ public class TreeStage_MaxDepth extends TreeStage {
 //			tmpMark(child);
 //		}
 //	}
+	
 	@Override
 	public boolean checkTerminationConditions() {
 		Node rootNode = getRootNode();
-		if (rootNode.fullyExplored.get() || rootNode.maxBranchDepth.get() >= maxEffectiveDepth) {
+		if (rootNode.fullyExplored.get() || rootNode.maxBranchDepth.get() >= maxEffectiveDepth  ||
+				(TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames) { // Also terminate if it's been too long and we haven't found anything.
 			return true;
 		}else {
 			return false;

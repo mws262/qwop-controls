@@ -196,10 +196,10 @@ public class MAIN_Run {
 
 		
 		//!LOG_START
-		Sampler_UCB.explorationMultiplier = 0.5f;
+		Sampler_UCB.explorationMultiplier = 1f;
 
-		boolean doStage1 = true;
-		boolean doStage2 = true;
+		boolean doStage1 = false;
+		boolean doStage2 = false;
 		boolean doStage3 = true;
 
 		// Stage 1
@@ -214,7 +214,7 @@ public class MAIN_Run {
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
 		int recoveryResumePoint = 0; // Return here if we're restarting.
-		int getBackToSteadyDepth = 5; // This many moves to recover.
+		int getBackToSteadyDepth = 14; // This many moves to recover.
 		int stage3Workers = maxWorkers;
 		//!LOG_STOP
 		
