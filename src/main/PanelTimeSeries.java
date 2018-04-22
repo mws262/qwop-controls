@@ -73,7 +73,8 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 			TimeSeriesCollection plData = new TimeSeriesCollection(series);
 			
 			JFreeChart chart = createChart(plData, null); // Null means no title yet
-			//XYPlot pl = chart.getXYPlot();
+			XYPlot pl = chart.getXYPlot();
+			pl.getRangeAxis().setRange(0, 40000);
 			plotsAndData.put(chart.getXYPlot(), plData);
 			//pl.setRenderer(plData.getRenderer());
 

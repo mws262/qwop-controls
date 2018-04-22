@@ -275,7 +275,12 @@ public class MAIN_Run {
 		// Pool of workers recycled between stages.
 		GenericObjectPool<TreeWorker> workerPool = new GenericObjectPool<TreeWorker>(new WorkerFactory());
 		workerPool.setMaxTotal(maxWorkers);
-		workerPool.setMaxIdle(-1);
+		workerPool.setMaxIdle(-1); // No limit to idle. Would have defaulted to 8, meaning all others would get culled between stages.
+
+		PanelTimeSeries_WorkerLoad workerMonitorPanel = new PanelTimeSeries_WorkerLoad(maxWorkers);
+		Thread monitorThread = new Thread(workerMonitorPanel);
+		monitorThread.start();
+		((UI_Full)ui).addTab(workerMonitorPanel, "Worker status");
 		
 		
 		//!LOG_START
@@ -297,6 +302,7 @@ public class MAIN_Run {
 					e.printStackTrace();
 				}
 			}
+			workerMonitorPanel.setWorkers(tws1);
 			System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 			// Do stage search
 			searchMax.initialize(tws1, treeRoot);
@@ -340,6 +346,7 @@ public class MAIN_Run {
 					e.printStackTrace();
 				}
 			}
+			workerMonitorPanel.setWorkers(tws2);
 			System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 			searchMin.initialize(tws2, currNode);
 			
@@ -377,11 +384,6 @@ public class MAIN_Run {
 
 					TreeStage searchMax = new TreeStage_MaxDepth(getBackToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
 
-//					PanelTimeSeries_WorkerLoad workerMonitorPanel = new PanelTimeSeries_WorkerLoad(searchMax, stage3Workers);
-//					Thread monitorThread = new Thread(workerMonitorPanel);
-//					monitorThread.start();
-//					((UI_Full)ui).addTab(workerMonitorPanel, "Worker status");
-
 					System.out.print("Started " + count + "...");
 					
 					// Grab some workers from the pool.
@@ -393,6 +395,7 @@ public class MAIN_Run {
 							e.printStackTrace();
 						}
 					}
+					workerMonitorPanel.setWorkers(tws3);
 					System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 					searchMax.initialize(tws3, leaf);
 					
@@ -401,7 +404,6 @@ public class MAIN_Run {
 						workerPool.returnObject(w);
 					}
 					System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
-//					((UI_Full)ui).removeTab(workerMonitorPanel);
 					Utility.toc();
 				}
 				// Turn off drawing for this one.
