@@ -27,16 +27,16 @@ public class TreeStage_FixedGames extends TreeStage {
 	/** Number of games this stage should play. **/
 	private long numGamesToPlay;
 	
-	public TreeStage_FixedGames(ISampler sampler, IDataSaver saver, long numGamesToPlay) {
-		this.sampler = sampler;
-		this.saver = saver;
+	public TreeStage_FixedGames(long numGamesToPlay, ISampler sampler, IDataSaver saver) {
 		this.numGamesToPlay = numGamesToPlay;
+		this.saver = saver;
+		this.sampler = sampler;
 	}
 	
 	@Override
-	public void initialize(Node treeRoot, ExecutorService threadPool, GenericObjectPool<GameLoader> gamePool, int numWorkers) {
+	public void initialize(List<TreeWorker> workers, Node stageRoot) {
 		initialGamesPlayed = TreeWorker.getTotalGamesPlayed();
-		super.initialize(treeRoot, threadPool, gamePool, numWorkers);
+		super.initialize(workers, stageRoot);
 	}
 	
 	@Override

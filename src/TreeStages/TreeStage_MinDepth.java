@@ -3,15 +3,12 @@ package TreeStages;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
-import org.apache.commons.pool2.impl.GenericObjectPool;
-
-import game.GameLoader;
 import main.IDataSaver;
 import main.ISampler;
 import main.Node;
 import main.TreeStage;
+import main.TreeWorker;
 
 /**
  * Searches until we meet a minimum depth requirement in all branches
@@ -32,15 +29,15 @@ public class TreeStage_MinDepth extends TreeStage {
 	private int minEffectiveDepth;
 	
 	public TreeStage_MinDepth(int minDepth, ISampler sampler, IDataSaver saver) {
+		this.minDepth = minDepth;
 		this.sampler = sampler;
 		this.saver = saver;
-		this.minDepth = minDepth;
 	}
 	
 	@Override
-	public void initialize(Node treeRoot, ExecutorService threadPool, GenericObjectPool<GameLoader> gamePool, int numWorkers) {
-		minEffectiveDepth = minDepth + treeRoot.treeDepth;
-		super.initialize(treeRoot, threadPool, gamePool, numWorkers);
+	public void initialize(List<TreeWorker> workers, Node stageRoot) {
+		minEffectiveDepth = minDepth + stageRoot.treeDepth;
+		super.initialize(workers, stageRoot);
 	}
 	
 	@Override

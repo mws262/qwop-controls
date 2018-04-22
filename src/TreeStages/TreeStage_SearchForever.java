@@ -14,7 +14,7 @@ public class TreeStage_SearchForever extends TreeStage {
 		this.sampler = sampler;
 		this.saver = saver;
 	}
-	
+
 	@Override
 	public List<Node> getResults() {
 		List<Node> resultList = new ArrayList<Node>();

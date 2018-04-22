@@ -203,18 +203,18 @@ public class MAIN_Run {
 		boolean doStage3 = true;
 
 		// Stage 1
-		int getToSteadyDepth = 5;
+		int getToSteadyDepth = 18;
 		int stage1Workers = maxWorkers;
 
 		// Stage 2
-		int trimSteadyBy = 2;
+		int trimSteadyBy = 6;
 		int deviationDepth = 2;
 		int stage2Workers = Math.max(maxWorkers/4, 2);
 
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
 		int recoveryResumePoint = 0; // Return here if we're restarting.
-		int getBackToSteadyDepth = 3; // This many moves to recover.
+		int getBackToSteadyDepth = 5; // This many moves to recover.
 		int stage3Workers = maxWorkers;
 		//!LOG_STOP
 		
@@ -272,9 +272,11 @@ public class MAIN_Run {
 
 		// This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
 
-		ExecutorService threadPool = Executors.newFixedThreadPool(maxWorkers); // Pool of threads for the workers so not so many are constantly created and destroyed.		
-		GenericObjectPool<GameLoader> gamePool = new GenericObjectPool<GameLoader>(new GameObjectFactory());
-		gamePool.setMaxTotal(maxWorkers);
+		// Pool of workers recycled between stages.
+		GenericObjectPool<TreeWorker> workerPool = new GenericObjectPool<TreeWorker>(new WorkerFactory());
+		workerPool.setMaxTotal(maxWorkers);
+		workerPool.setMaxIdle(-1);
+		
 		
 		//!LOG_START
 		if (doStage1) {
@@ -285,7 +287,25 @@ public class MAIN_Run {
 			saver.setSavePath(saveLoc.getPath() + "/");
 
 			TreeStage searchMax = new TreeStage_MaxDepth(getToSteadyDepth, currentSampler.clone(), saver); // Depth to get to sorta steady state. was 
-			searchMax.initialize(treeRoot, threadPool, gamePool, stage1Workers);
+			
+			// Grab some workers from the pool.
+			List<TreeWorker> tws1 = new ArrayList<TreeWorker>();
+			for (int i = 0; i < stage1Workers; i++) {
+				try {
+					tws1.add(workerPool.borrowObject());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
+			// Do stage search
+			searchMax.initialize(tws1, treeRoot);
+			
+			// Return the checked out workers.
+			for (TreeWorker w : tws1) {
+				workerPool.returnObject(w);
+			}
+			System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 			System.out.println("Stage 1 done.");
 			endLog += "Stage 1 done.\n";
 		}
@@ -310,7 +330,24 @@ public class MAIN_Run {
 			while (currNode.treeDepth < getToSteadyDepth - trimSteadyBy) {
 				currNode = currNode.children.get(0);
 			}
-			searchMin.initialize(currNode, threadPool, gamePool, stage2Workers);
+			
+			// Grab some workers from the pool.
+			List<TreeWorker> tws2 = new ArrayList<TreeWorker>();
+			for (int i = 0; i < stage2Workers; i++) {
+				try {
+					tws2.add(workerPool.borrowObject());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
+			searchMin.initialize(tws2, currNode);
+			
+			// Return the checked out workers.
+			for (TreeWorker w : tws2) {
+				workerPool.returnObject(w);
+			}
+			System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 			System.out.println("Stage 2 done.");
 			endLog += "Did " + searchMin.getResults().size() + " deviations.\n";
 			endLog += "Stage 2 done.\n";
@@ -340,15 +377,31 @@ public class MAIN_Run {
 
 					TreeStage searchMax = new TreeStage_MaxDepth(getBackToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
 
-					PanelTimeSeries_WorkerLoad workerMonitorPanel = new PanelTimeSeries_WorkerLoad(searchMax, stage3Workers);
-					Thread monitorThread = new Thread(workerMonitorPanel);
-					monitorThread.start();
-					((UI_Full)ui).addTab(workerMonitorPanel, "Worker status");
+//					PanelTimeSeries_WorkerLoad workerMonitorPanel = new PanelTimeSeries_WorkerLoad(searchMax, stage3Workers);
+//					Thread monitorThread = new Thread(workerMonitorPanel);
+//					monitorThread.start();
+//					((UI_Full)ui).addTab(workerMonitorPanel, "Worker status");
 
 					System.out.print("Started " + count + "...");
-					searchMax.initialize(leaf, threadPool, gamePool, stage3Workers);
-
-					((UI_Full)ui).removeTab(workerMonitorPanel);
+					
+					// Grab some workers from the pool.
+					List<TreeWorker> tws3 = new ArrayList<TreeWorker>();
+					for (int i = 0; i < stage3Workers; i++) {
+						try {
+							tws3.add(workerPool.borrowObject());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
+					searchMax.initialize(tws3, leaf);
+					
+					// Return the checked out workers.
+					for (TreeWorker w : tws3) {
+						workerPool.returnObject(w);
+					}
+					System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
+//					((UI_Full)ui).removeTab(workerMonitorPanel);
 					Utility.toc();
 				}
 				// Turn off drawing for this one.
@@ -364,7 +417,7 @@ public class MAIN_Run {
 		}
 		//!LOG_STOP
 		
-		gamePool.close();
+		workerPool.close();
 	}
 	
 	/** Assign the correct generator of actions based on the baseline options and exceptions. **/

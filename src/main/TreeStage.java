@@ -20,7 +20,7 @@ import game.StateVariable;
 public abstract class TreeStage implements Runnable{
 
 	/** **/
-	private Node treeRoot;
+	private Node stageRoot;
 
 	/** Currently only supporting one sampler per stage. Must define which sampler to use in the inheritors of this abstract class. **/
 	protected ISampler sampler;
@@ -30,12 +30,6 @@ public abstract class TreeStage implements Runnable{
 
 	/** Each stage gets its own workers to avoid contamination. Probably could combine later if necessary. **/
 	public List<TreeWorker> workers = new ArrayList<TreeWorker>();
-
-	/** Set of games to be recycled. **/
-	private GenericObjectPool<GameLoader> gamePool;
-	
-	/** List of objects that this Stage is using. **/
-	private List<GameLoader> gamesInUse = new ArrayList<GameLoader>();
 	
 	/** Thread managing this stage and its workers. **/
 	private Thread stageThread;
@@ -51,31 +45,24 @@ public abstract class TreeStage implements Runnable{
 
 	private final Object lock = new Object();
 
-	public void initialize(List<TreeWorker> treeWorkers) {
+	public void initialize(List<TreeWorker> treeWorkers, Node stageRoot) {
+		numWorkers = treeWorkers.size();
 		if (numWorkers < 1) throw new RuntimeException("Tried to assign a tree stage an invalid number of workers: " + numWorkers);
 
-		this.gamePool = gamePool;
-		this.treeRoot = treeRoot;
-		this.numWorkers = numWorkers;
-		running = true;
-		stageThread = new Thread(this);
-		stageThread.start();
-		for (int i = 0; i < numWorkers; i++) {
-			// Make workers
-			TreeWorker w = null;;
-			ISampler sam = sampler.clone(); // Sampler must be determined in the extender of this class.
-			IDataSaver sav = saver.clone();
-			GameLoader game = null;
-			try {
-				game = gamePool.borrowObject();
-				gamesInUse.add(game);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			w = new TreeWorker(treeRoot, game, sam, sav);
-			workers.add(w);
-			threadPool.execute(w);
+		this.workers = treeWorkers;
+		this.stageRoot = stageRoot;
+		
+		for (TreeWorker tw : treeWorkers) {
+			tw.setRoot(stageRoot);
+			tw.setSaver(saver);
+			tw.setSampler(sampler);
+			tw.startWorker();
 		}
+		
+		running = true;
+		Thread stageThread = new Thread(this);
+		stageThread.start();
+		
 		if (blocking) {
 			// This blocks the main thread until this stage is done.
 			synchronized(lock){
@@ -89,7 +76,7 @@ public abstract class TreeStage implements Runnable{
 			}
 		}
 	}
-	int thresh = 2000;
+	//int thresh = 2000;
 	@Override
 	public void run() {
 		// Monitor the progress of this stage's workers.
@@ -137,7 +124,6 @@ public abstract class TreeStage implements Runnable{
 				pruneStatesForMemory(child);
 			}
 		}
-
 	}
 
 	/** Terminate this stage, destroying the workers and their threads in the process. **/
@@ -150,13 +136,8 @@ public abstract class TreeStage implements Runnable{
 		Iterator<TreeWorker> iter = workers.iterator();
 		while (iter.hasNext()) {
 			TreeWorker tw = iter.next();
-			tw.terminateWorker();
+			tw.pauseWorker(); // Pause the worker until another stage needs it.
 		}
-		
-		for (GameLoader game : gamesInUse) {
-			gamePool.returnObject(game);
-		}
-		gamesInUse.clear();
 
 		// Stop the monitoring thread and let the main thread continue.
 		synchronized(lock){
@@ -181,7 +162,7 @@ public abstract class TreeStage implements Runnable{
 
 	/** Get the root node that this stage is operating from. It cannot change from an external caller's perspective, so no set method. **/
 	public Node getRootNode() {
-		return treeRoot;
+		return stageRoot;
 	}
 
 	public int getNumberOfWorkers() {

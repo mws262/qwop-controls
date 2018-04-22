@@ -3,15 +3,12 @@ package TreeStages;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
-import org.apache.commons.pool2.impl.GenericObjectPool;
-
-import game.GameLoader;
 import main.IDataSaver;
 import main.ISampler;
 import main.Node;
 import main.TreeStage;
+import main.TreeWorker;
 
 /**
  * Goes until any branch reaches a certain tree depth.
@@ -29,15 +26,15 @@ public class TreeStage_MaxDepth extends TreeStage {
 	private int maxEffectiveDepth;
 	
 	public TreeStage_MaxDepth(int maxDepth, ISampler sampler, IDataSaver saver) {
+		this.maxDepth = maxDepth;
 		this.sampler = sampler;
 		this.saver = saver;
-		this.maxDepth = maxDepth;
 	}
 	
 	@Override
-	public void initialize(Node treeRoot, ExecutorService threadPool, GenericObjectPool<GameLoader> gamePool, int numWorkers) {
-		maxEffectiveDepth = maxDepth + treeRoot.treeDepth;
-		super.initialize(treeRoot, threadPool, gamePool, numWorkers);
+	public void initialize(List<TreeWorker> treeWorkers, Node stageRoot) {
+		maxEffectiveDepth = maxDepth + stageRoot.treeDepth;
+		super.initialize(treeWorkers, stageRoot);
 	}
 	
 	@Override
