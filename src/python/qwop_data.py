@@ -88,7 +88,7 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
 
 filename_list = []
 for file in os.listdir("."):
-    if file.endswith(".tfrecords"):
+    if file.endswith(".TFRecord"):
         filename_list.append(file)
 
 print('%d files in queue.' % len(filename_list))

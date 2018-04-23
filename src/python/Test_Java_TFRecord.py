@@ -55,7 +55,7 @@ print('%d files in queue.' % len(filename_list))
 options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.NONE)
 
 
-pk,tt,act,body = read_and_decode_single_example(['../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])#'../../denseData_2017-11-06_08-57-41.NEWNEWNEW', '../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])
+pk,tt,act,body = read_and_decode_single_example(['./recoveries16.TFRecord'])#'../../denseData_2017-11-06_08-57-41.NEWNEWNEW', '../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])
 with tf.Session() as sess:
     # ... init our variables, ...
     sess.run(tf.global_variables_initializer())

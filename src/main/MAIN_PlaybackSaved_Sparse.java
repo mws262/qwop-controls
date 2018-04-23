@@ -22,7 +22,7 @@ import ui.PanelRunner_Snapshot;
  */
 
 @SuppressWarnings("serial")
-public class MAIN_PlaybackSaved extends JFrame{
+public class MAIN_PlaybackSaved_Sparse extends JFrame{
 
 	public GameLoader game;
 	private PanelRunner_Animated runnerPane;
@@ -39,7 +39,7 @@ public class MAIN_PlaybackSaved extends JFrame{
 	List<Node> leafNodes = new ArrayList<Node>(); 
 
 	public static void main(String[] args) {
-		MAIN_PlaybackSaved mc = new MAIN_PlaybackSaved();
+		MAIN_PlaybackSaved_Sparse mc = new MAIN_PlaybackSaved_Sparse();
 		mc.setup();
 		mc.run();
 	}

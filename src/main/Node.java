@@ -56,7 +56,7 @@ public class Node {
 	/********* TREE CONNECTION INFO ************/
 
 	/** Node which leads up to this node. **/
-	public final Node parent; // Parentage may not be changed.
+	public Node parent; // Parentage may not be changed.
 
 	/** Child nodes. Not fixed size any more. **/
 	public CopyOnWriteArrayList<Node> children = new CopyOnWriteArrayList<Node>();
@@ -446,6 +446,27 @@ public class Node {
 		for (Node leaf : leaves){
 			leaf.checkFullyExplored_lite();
 		}
+	}
+	
+	/** Destroy a branch and try to free up its memory. Mark the trimmed branch as fully explored and propagate the status. **/
+	public void destroyAllNodesBelowAndCheckExplored() {
+		destroyAllNodesBelow();
+		checkFullyExplored_lite();
+	}
+	
+	/** Destroy a branch and try to free up its memory. **/
+	public void destroyAllNodesBelow() {
+		for (Node child : children) {
+			child.state = null;
+			child.parent = null;
+			child.destroyAllNodesBelow();
+		}
+		pointsToDraw.remove(this);
+		uncheckedActions.clear();
+		children.clear();
+		displayPoint = false;
+		displayLine = false;
+		nodeLocation = null;
 	}
 
 	/** Total number of nodes in this or any tree. **/

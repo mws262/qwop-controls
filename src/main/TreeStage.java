@@ -130,7 +130,7 @@ public abstract class TreeStage implements Runnable{
 	public void terminate() {
 		running = false;
 		System.out.println("Terminate called on a stage.");
-		saver.reportStageEnding(getRootNode(), getResults());
+		saver.reportStageEnding(getRootNode().getRoot(), getResults()); // Changed to save ALL the way back to real root, not just subtree root.
 		// Stop threads and get rid of them.
 
 		Iterator<TreeWorker> iter = workers.iterator();

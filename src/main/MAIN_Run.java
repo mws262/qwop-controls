@@ -6,8 +6,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
@@ -18,14 +16,13 @@ import TreeStages.TreeStage_MaxDepth;
 import TreeStages.TreeStage_MinDepth;
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
+import data.SparseDataToDense;
 import distributions.Distribution_Normal;
 import distributions.Distribution_Uniform;
 import evaluators.Evaluator_Distance;
 import evaluators.Evaluator_HandTunedOnState;
 import evaluators.Evaluator_Random;
 import filters.NodeFilter_GoodDescendants;
-import game.GameLoader;
-import game.GameObjectFactory;
 import samplers.Sampler_Deterministic;
 import samplers.Sampler_Distribution;
 import samplers.Sampler_FixedDepth;
@@ -172,7 +169,7 @@ public class MAIN_Run {
 
 
 		// Make a new folder for this trial.
-		File saveLoc = new File("./4_19_18");
+		File saveLoc = new File("./4_23_18");
 		if (!saveLoc.exists()) {
 			boolean success = saveLoc.mkdir();
 			if (!success) throw new RuntimeException("Could not make save directory.");
@@ -200,7 +197,8 @@ public class MAIN_Run {
 
 		boolean doStage1 = false;
 		boolean doStage2 = false;
-		boolean doStage3 = true;
+		boolean doStage3 = false;
+		boolean doStage4 = true;
 
 		// Stage 1
 		int getToSteadyDepth = 18;
@@ -216,6 +214,11 @@ public class MAIN_Run {
 		int recoveryResumePoint = 0; // Return here if we're restarting.
 		int getBackToSteadyDepth = 14; // This many moves to recover.
 		int stage3Workers = maxWorkers;
+		
+		// Stage 4
+		int trimStartBy = stage3StartDepth; 
+		int trimEndBy = 4;
+		
 		//!LOG_STOP
 		
 		assignAllowableActions(stage3StartDepth);
@@ -303,7 +306,6 @@ public class MAIN_Run {
 				}
 			}
 			workerMonitorPanel.setWorkers(tws1);
-			System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 			// Do stage search
 			searchMax.initialize(tws1, treeRoot);
 			
@@ -311,7 +313,6 @@ public class MAIN_Run {
 			for (TreeWorker w : tws1) {
 				workerPool.returnObject(w);
 			}
-			System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 			System.out.println("Stage 1 done.");
 			endLog += "Stage 1 done.\n";
 		}
@@ -347,19 +348,18 @@ public class MAIN_Run {
 				}
 			}
 			workerMonitorPanel.setWorkers(tws2);
-			System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 			searchMin.initialize(tws2, currNode);
 			
 			// Return the checked out workers.
 			for (TreeWorker w : tws2) {
 				workerPool.returnObject(w);
 			}
-			System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 			System.out.println("Stage 2 done.");
 			endLog += "Did " + searchMin.getResults().size() + " deviations.\n";
 			endLog += "Stage 2 done.\n";
 		}
-
+		
+		// Expand the deviated spots and find recoveries.
 		if (doStage3) {
 			System.out.println("Starting stage 3.");
 
@@ -375,6 +375,8 @@ public class MAIN_Run {
 
 			int count = 0;
 			int startAt = recoveryResumePoint;
+			Node previousLeaf = null;
+			
 			for (Node leaf : leafList) {
 				if (count >= startAt) {
 					Utility.tic();
@@ -396,19 +398,23 @@ public class MAIN_Run {
 						}
 					}
 					workerMonitorPanel.setWorkers(tws3);
-					System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 					searchMax.initialize(tws3, leaf);
 					
 					// Return the checked out workers.
 					for (TreeWorker w : tws3) {
 						workerPool.returnObject(w);
 					}
-					System.out.println(workerPool.getCreatedCount() + "," + workerPool.getNumActive() + "," + workerPool.getNumIdle());
 					Utility.toc();
 				}
 				// Turn off drawing for this one.
 				leaf.turnOffBranchDisplay();
 				leaf.parent.children.remove(leaf);
+				if (previousLeaf != null) {
+					previousLeaf.destroyAllNodesBelowAndCheckExplored();
+				}
+				previousLeaf = leaf;
+				
+				
 				System.out.println(" finished.");
 				count++;
 				endLog += "Expanded leaf: " + count + ".\n";
@@ -416,6 +422,28 @@ public class MAIN_Run {
 
 			System.out.println("Stage 3 done.");
 			endLog += "Stage 3 done.\n";
+		}
+		
+		// Convert the sections of the runs we care about to dense data by resimulating.
+		if (doStage4) {
+			List<File> filesToConvert = new ArrayList<File>();
+			File[] files = saveLoc.listFiles();
+			for (File f : files) {
+				if (f.toString().contains("recoveries")) {
+					filesToConvert.add(f);
+				}
+			}
+			
+			DataSaver_DenseTFRecord saver = new DataSaver_DenseTFRecord();
+			saver.setSavePath(saveLoc.getAbsolutePath() + "/");
+			saver.setSaveInterval(1);
+			SparseDataToDense converter = new SparseDataToDense(saver);
+			converter.trimFirst = trimStartBy;
+			converter.trimLast = trimEndBy;
+			converter.convert(filesToConvert);	
+			
+			System.out.println("Stage 4 done.");
+			endLog += "Stage 4 done.\n";
 		}
 		//!LOG_STOP
 		

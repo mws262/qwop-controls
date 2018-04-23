@@ -1,6 +1,7 @@
 package data;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,27 +14,7 @@ import org.tensorflow.example.FloatList;
 public class TFRecordWriteTest {
 
 	public static void main(String[] args) {
-		//		
-		//					// Validate -- not needed during batch run.
-		//					Example dataValidate = null;
-		//					String fileName = "denseData_2017-11-07_11-23-45.tfrecords";
-		//					try {
-		//						FileInputStream fIn = new FileInputStream(fileName);
-		//						
-		//						dataValidate = Example.parseFrom(new FileInputStream(fileName));
-		//					} catch (IOException e) {
-		//						// TODO Auto-generated catch block
-		//						e.printStackTrace();
-		//					}
-		//					DenseData.State state1 = dataValidate.getDenseData(0).getState(10);
-		//					float dx1 = state1.getBody().getDx();
-		//					System.out.println("From new file: " + dx1 + ". From original data: " + denseDat.get(0).getState()[10].body.dx);
-		//					
-		//					
-		//					DenseData.State state2 = dataValidate.getDenseData(10).getState(3);
-		//					float th1 = state2.getHead().getTh();
-		//					System.out.println("From new file: " + th1 + ". From original data: " + denseDat.get(10).getState()[3].head.th);
-		//					break;
+
 
 
 		Example.Builder ex = Example.newBuilder();
@@ -64,4 +45,26 @@ public class TFRecordWriteTest {
 			e.printStackTrace();
 		}
 	}
+	
+
+	// Validate -- not needed during batch run.
+	Example dataValidate = null;
+	String fileName = "denseData_2017-11-07_11-23-45.tfrecords";
+	try {
+		FileInputStream fIn = new FileInputStream(fileName);
+
+		dataValidate = Example.parseFrom(new FileInputStream(fileName));
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	DenseData.State state1 = dataValidate.getDenseData(0).getState(10);
+	float dx1 = state1.getBody().getDx();
+	System.out.println("From new file: " + dx1 + ". From original data: " + denseDat.get(0).getState()[10].body.dx);
+
+
+	DenseData.State state2 = dataValidate.getDenseData(10).getState(3);
+	float th1 = state2.getHead().getTh();
+	System.out.println("From new file: " + th1 + ". From original data: " + denseDat.get(10).getState()[3].head.th);
+	break;
 }

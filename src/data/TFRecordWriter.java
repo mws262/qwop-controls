@@ -28,7 +28,7 @@ public class TFRecordWriter {
 	
 	// Code shamelessly ripped and converted from scala from : https://stackoverflow.com/questions/34711264/pure-java-scala-code-for-writing-tensorflow-tfrecords-data-file
 	// Thank you kind stranger.
-	private static class CRC32 {
+	protected static class CRC32 {
 		private static final int MASK_DELTA = 0xa282ead8;
 
 		private static int hash(byte[] input) {

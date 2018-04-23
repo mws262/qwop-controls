@@ -31,6 +31,9 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 	/** Do not include dot before. **/
 	public String fileExtension = "TFRecord";
 	
+	/** If changed, will use this. Otherwise, a timestamp is usde. **/
+	public String filenameOverride = "";
+	
 	/** Games since last save. **/
 	private int saveCounter = 0;
 	
@@ -87,7 +90,13 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 	}
 
 	private void convertToProtobuf() throws IOException {
-		File file = new File(fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension));
+		String fullFilename = "";
+		if (filenameOverride == "") {
+			fullFilename = fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension);
+		}else {
+			fullFilename = fileLocation + "/" + filenameOverride + "." + fileExtension;
+		}
+		File file = new File(fullFilename);
 		
 		file.getParentFile().mkdirs();
 		FileOutputStream stream = new FileOutputStream(file);
