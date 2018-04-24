@@ -41,7 +41,6 @@ sequence_features = {skey: tf.FixedLenSequenceFeature([6], tf.float32, True) for
 sequence_features.update({akey: tf.FixedLenSequenceFeature([], tf.string, True) for akey in actionKeys})
 context_features = {ckey: tf.FixedLenFeature([],tf.int64,True) for ckey in contextKeys}
 
-
 '''
 FUNCTIONS IN THE NN PIPELINED
 
@@ -66,16 +65,16 @@ def _parse_function(example_proto):
         x_out_list.append(tf.reshape(body_part[:,0] - xoffsets,[-1,1]))
         x_out_list.append(body_part[:,1:])
 
-    #feats = {key: features[1][key] for key in stateKeys}  # States
     statesConcat = tf.concat(x_out_list, 1, name='concat_states')
 
     #pk = tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4]), tf.float32)
-    extended_states = tf.concat(values=[statesConcat, tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS_ONE_HOT'], tf.uint8), [-1, 3]), dtype=tf.float32)], axis=1)
     # ttt = {'TIME_TO_TRANSITION': tf.reshape(tf.decode_raw(features[1]['TIME_TO_TRANSITION'], tf.uint8),)}
     # act = {'ACTIONS': tf.reshape(tf.decode_raw(features[1]['ACTIONS'], tf.uint8),(-1, 5))}
 
-    # feats.update({key: tf.reshape(tf.decode_raw(features[1][key], tf.uint8),(1,)) for key in actionKeys})  # Attach actions too after decoding.
-    #feats.update(pk)
+    pkoh = tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS_ONE_HOT'], tf.uint8), [-1, 3]), dtype=tf.float32)
+
+    extended_states = tf.concat(values=[statesConcat, pkoh], axis=1) # States with actions attached.
+
     return extended_states
 
 
@@ -182,6 +181,8 @@ filename_list = ['denseTF_2018-04-24_13-18-00.TFRecord']
 #         print(nextFile)
 # random.shuffle(filename_list) # Shuffle so each time we restart, we get different order.
 
+global_step = tf.Variable(0)
+
 with tf.name_scope("tfrecord_input"):
     filenames = tf.placeholder(tf.string, shape=[None])
     dataset = tf.data.TFRecordDataset(filenames)
@@ -196,16 +197,10 @@ with tf.name_scope("tfrecord_input"):
     dataset = dataset.prefetch(256)
 
 # LAYERS
-
-eps = 0.001
-is_training = True
-global_step = tf.Variable(0)
-mean_update_rate = tf.train.exponential_decay(0.2, global_step, 500, 0.7)
-
-
 # Input layer -- scale and recenter data.
 with tf.name_scope('transform'):
     state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input_placeholder')
+
 # Encode the transformed input.
 with tf.name_scope('fully_connected'):
     scaled_state_in = tf.placeholder_with_default(state_batch, shape=[None, 72], name='fully_connected_input')
@@ -218,8 +213,10 @@ with tf.name_scope('fully_connected'):
 
 with tf.name_scope('softmax'):
     softmax_out = tf.nn.softmax(fully_connected_out)
+
 with tf.name_scope('loss'):
     loss_op = tf.nn.softmax_cross_entropy_with_logits(logits=fully_connected_out, labels=keys)
+    reducedLoss = tf.reduce_mean(loss_op)
    # loss_op = tf.losses.absolute_difference(softmax_out, keys)
 
 with tf.name_scope('training'):
@@ -248,10 +245,11 @@ np.set_printoptions(threshold=np.nan)
 config = tf.ConfigProto()
 config.gpu_options.force_gpu_compatible = True
 config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
+
+
 '''
 EXECUTE NET
 '''
-
 
 with tf.Session(config=config) as sess:
     # Initialize all variables.
@@ -272,51 +270,26 @@ with tf.Session(config=config) as sess:
 
    #summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
 
-    # graph = tf.get_default_graph()
-    # for i in tf.get_default_graph().get_operations():
-    #     print i.name
-
     sess.run(iterator.initializer, feed_dict={filenames: filename_list})
     old_time = time.time()
     for i in range(100000000):
 
-
         if i%print_freq == 0:
-
-            #loss, _, summary, true_state, est_state, sca, me, decomp, ss = sess.run([loss_op, train_op, merged_summary_op, state_in, state_out, scaler_so_far, mean_so_far, decompressed_state, scaled_state], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
-            loss, _ = sess.run([loss_op, train_op])#, options=run_options,run_metadata = run_metadata)
-            #print np.shape(true_state)
-            print sess.run(softmax_out)
-
+            loss, _, loss_mean = sess.run([loss_op, train_op, reducedLoss])#, options=run_options,run_metadata = run_metadata)
+           # print sess.run(softmax_out)
+           # print loss
             #summary_writer.add_summary(summary, i)
-           #summary_writer.add_run_metadata(run_metadata, str(i))
+            #summary_writer.add_run_metadata(run_metadata, str(i))
             new_time = time.time()
             ips = batch_size*print_freq/(new_time - old_time)
 
-            #print '\n' + '\033[1m'
-            #print("Iter: %d, Loss %f, runs/s %0.1f" % (i, loss, ips))
-            #print '\033[0m'
+            print '\n' + '\033[1m'
+            print("Iter: %d, Loss %f, runs/s %0.1f" % (i, loss_mean, ips))
+            print '\033[0m'
             save_path = saver.save(sess, "./logs/model2.ckpt", global_step=i)
             old_time = time.time() # Don't count the saving in our time estimate
-
-            # st_diff = est_state - true_state
-            #
-            # print tabulate([['All x', np.mean(np.abs(st_diff[:,::6])), np.max(true_state[:,::6]), np.max(est_state[:,::6]), np.min(true_state[:,::6]), np.min(est_state[:,::6])],
-            #                 ['All y', np.mean(np.abs(st_diff[:, 1::6])), np.max(true_state[:, 1::6]), np.max(est_state[:, 1::6]), np.min(true_state[:, 1::6]), np.min(est_state[:, 1::6])],
-            #                 ['All th', np.mean(np.abs(st_diff[:, 2::6])), np.max(true_state[:, 2::6]), np.max(est_state[:, 2::6]), np.min(true_state[:, 2::6]), np.min(est_state[:, 2::6])],
-            #                 ['All xd', np.mean(np.abs(st_diff[:, 3::6])), np.max(true_state[:, 3::6]), np.max(est_state[:, 3::6]), np.min(true_state[:, 3::6]), np.min(est_state[:, 3::6])],
-            #                 ['All yd', np.mean(np.abs(st_diff[:, 4::6])), np.max(true_state[:, 4::6]), np.max(est_state[:, 4::6]), np.min(true_state[:, 4::6]), np.min(est_state[:, 4::6])],
-            #                 ['All thd', np.mean(np.abs(st_diff[:, 5::6])), np.max(true_state[:, 5::6]), np.max(est_state[:, 5::6]), np.min(true_state[:, 5::6]), np.min(est_state[:, 5::6])]],
-            #                headers=['Variable', 'MeanAbsErr', 'Max actual', 'max pred', 'Min actual', 'min pred'])
-            #
-            # np.save('est_st.npy', est_state)
-            # np.save('tr_st.npy', true_state)
-            # np.save('est_st_unsc.npy', decomp)
-            # np.save('tr_st_unsc.npy', ss)
         else:
-
             sess.run([train_op])
-
 
     # trace = timeline.Timeline(step_stats=run_metadata.step_stats)
     # trace_file = open('timeline.ctf.json', 'w') # View in chrome://tracing
