@@ -27,19 +27,34 @@ public class SparseDataToDense {
 	public int trimFirst = 0;
 	public int trimLast = 0;
 
-	public SparseDataToDense(DataSaver_DenseTFRecord saver) {
-		this.saver = saver;
+	public SparseDataToDense(String fileLoc) {
+		saver = new DataSaver_DenseTFRecord();
+		saver.setSavePath(fileLoc);
 	}
 
-	/** Resim and convert. **/
-	public void convert(List<File> files) {
-		for (File file : files) {
-			List<SaveableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
-			for (SaveableSingleGame singleGame : sparseGames) {
-				saver.filenameOverride = file.getName().split("\\.(?=[^\\.]+$)")[0];
-				sim(singleGame);
+	/** Resim and convert. saveBulk means that all will be combined into one file. Otherwise into many different. **/
+	public void convert(List<File> files, boolean saveBulk) {
+		
+		if (saveBulk) {
+			saver.setSaveInterval(-1);
+			for (File file : files) {
+				List<SaveableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
+				for (SaveableSingleGame singleGame : sparseGames) {
+					sim(singleGame);
+				}
+			}
+			saver.toFile();		
+		}else {
+			saver.setSaveInterval(1);
+			for (File file : files) {
+				List<SaveableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
+				for (SaveableSingleGame singleGame : sparseGames) {
+					saver.filenameOverride = file.getName().split("\\.(?=[^\\.]+$)")[0];
+					sim(singleGame);
+				}
 			}
 		}
+		
 		saver.reportStageEnding(null, null);	
 	}
 

@@ -175,6 +175,7 @@ public class SaveableFileIO<T> {
 		} finally {
 			try {
 				if(objIs != null) objIs.close();
+				if(fileIs != null) fileIs.close();
 			} catch (Exception ex){
 
 			}

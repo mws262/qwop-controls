@@ -5,7 +5,7 @@ import java.util.List;
 
 public class StateVariable implements Serializable{
 
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 1L;
 	
 	public float x;
 	public float y;

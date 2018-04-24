@@ -46,14 +46,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 		gameData.add(new GameContainer(actionBuffer, stateBuffer));
 		
 		if (saveInterval == saveCounter) {
-			try {
-				convertToProtobuf();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			// Reset until next file write interval is up.
-			gameData.clear();
+			toFile();
 			saveCounter = 0;
 		}
 		
@@ -61,6 +54,18 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 		stateBuffer.clear();
 		actionBuffer.clear();
 		
+	}
+	
+	public void toFile() {
+		try {
+			convertToProtobuf();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// Reset until next file write interval is up.
+		gameData.clear();
+
 	}
 
 	// NOTE: The following methods were borrowed and altered from my DenseDataToTFRecord class.

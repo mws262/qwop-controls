@@ -164,7 +164,7 @@ public class MAIN_Run {
 
 		// Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the Box2D libraries.
 		int cores = Runtime.getRuntime().availableProcessors();
-		int maxWorkers = (int)(0.65f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
+		int maxWorkers = (int)(0.8f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
 		System.out.println("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
 
 
@@ -197,8 +197,8 @@ public class MAIN_Run {
 
 		boolean doStage1 = false;
 		boolean doStage2 = false;
-		boolean doStage3 = false;
-		boolean doStage4 = true;
+		boolean doStage3 = true;
+		boolean doStage4 = false;
 
 		// Stage 1
 		int getToSteadyDepth = 18;
@@ -211,7 +211,7 @@ public class MAIN_Run {
 
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
-		int recoveryResumePoint = 0; // Return here if we're restarting.
+		int recoveryResumePoint = 645; // Return here if we're restarting.
 		int getBackToSteadyDepth = 14; // This many moves to recover.
 		int stage3Workers = maxWorkers;
 		
@@ -429,18 +429,15 @@ public class MAIN_Run {
 			List<File> filesToConvert = new ArrayList<File>();
 			File[] files = saveLoc.listFiles();
 			for (File f : files) {
-				if (f.toString().contains("recoveries")) {
+				if (f.toString().toLowerCase().contains("recoveries") && f.toString().toLowerCase().contains("saveablesinglegame") && !f.toString().toLowerCase().contains("unsuccessful")) {
 					filesToConvert.add(f);
 				}
 			}
-			
-			DataSaver_DenseTFRecord saver = new DataSaver_DenseTFRecord();
-			saver.setSavePath(saveLoc.getAbsolutePath() + "/");
-			saver.setSaveInterval(1);
-			SparseDataToDense converter = new SparseDataToDense(saver);
+		
+			SparseDataToDense converter = new SparseDataToDense(saveLoc.getAbsolutePath() + "/");
 			converter.trimFirst = trimStartBy;
 			converter.trimLast = trimEndBy;
-			converter.convert(filesToConvert);	
+			converter.convert(filesToConvert, true);	
 			
 			System.out.println("Stage 4 done.");
 			endLog += "Stage 4 done.\n";

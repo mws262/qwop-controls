@@ -77,7 +77,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame{
 		SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
 		for (File f : playbackFiles) {
 			Node rootNode = new Node();
-			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(f.getAbsolutePath()), rootNode, 11);
+			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(f.getAbsolutePath()), rootNode, -1);
 			leafNodes.clear();
 			rootNode.getLeaves(leafNodes);
 			Node endNode = leafNodes.get(0);
