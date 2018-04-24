@@ -169,7 +169,7 @@ public class MAIN_Run {
 
 
 		// Make a new folder for this trial.
-		File saveLoc = new File("./4_23_18");
+		File saveLoc = new File("./4_24_18");
 		if (!saveLoc.exists()) {
 			boolean success = saveLoc.mkdir();
 			if (!success) throw new RuntimeException("Could not make save directory.");
@@ -197,8 +197,8 @@ public class MAIN_Run {
 
 		boolean doStage1 = false;
 		boolean doStage2 = false;
-		boolean doStage3 = true;
-		boolean doStage4 = false;
+		boolean doStage3 = false;
+		boolean doStage4 = true;
 
 		// Stage 1
 		int getToSteadyDepth = 18;

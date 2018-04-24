@@ -128,7 +128,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 
 			// 1) Keys pressed at individual timestep. 0 or 1 in bytes for each key
 			FeatureList.Builder keyFeatList = FeatureList.newBuilder();
-			for (Action act : actionBuffer) {
+			for (Action act : dat.actions) {
 				Feature.Builder keyFeat = Feature.newBuilder();
 				BytesList.Builder keyDat = BytesList.newBuilder();
 				byte[] keys = new byte[] {

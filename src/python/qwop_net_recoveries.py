@@ -69,14 +69,14 @@ def _parse_function(example_proto):
     #feats = {key: features[1][key] for key in stateKeys}  # States
     statesConcat = tf.concat(x_out_list, 1, name='concat_states')
 
-    pk = tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4]), tf.float32)
-    #extended_states = tf.concat(values=[statesConcat, tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4]), dtype=tf.float32)], axis=1)
+    #pk = tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4]), tf.float32)
+    extended_states = tf.concat(values=[statesConcat, tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4]), dtype=tf.float32)], axis=1)
     # ttt = {'TIME_TO_TRANSITION': tf.reshape(tf.decode_raw(features[1]['TIME_TO_TRANSITION'], tf.uint8),)}
-    # act = {'ACTIONS': tf.reshape(tf.decode_raw(features[1]['ACTIONS'], tf.uint8),(5,))}
+    # act = {'ACTIONS': tf.reshape(tf.decode_raw(features[1]['ACTIONS'], tf.uint8),(-1, 5))}
 
     # feats.update({key: tf.reshape(tf.decode_raw(features[1][key], tf.uint8),(1,)) for key in actionKeys})  # Attach actions too after decoding.
     #feats.update(pk)
-    return pk#extended_states
+    return extended_states
 
 
 def weight_variable(shape):
@@ -174,7 +174,7 @@ batch_size = 1
 print_freq = 49
 
 # Make a list of TFRecord files.
-filename_list = ['denseTF_2018-04-24_08-36-05.TFRecord']
+filename_list = ['denseTF_2018-04-24_11-31-52.TFRecord']
 # for file in os.listdir(tfrecordPath):
 #     if file.endswith(tfrecordExtension):
 #         nextFile = tfrecordPath + file
@@ -185,13 +185,13 @@ filename_list = ['denseTF_2018-04-24_08-36-05.TFRecord']
 with tf.name_scope("tfrecord_input"):
     filenames = tf.placeholder(tf.string, shape=[None])
     dataset = tf.data.TFRecordDataset(filenames)
-    dataset = dataset.map(_parse_function, num_parallel_calls=5)
+    dataset = dataset.map(_parse_function, num_parallel_calls=1)
     #dataset = dataset.shuffle(buffer_size=5000)
     dataset = dataset.repeat()
     #dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
     iterator = dataset.make_initializable_iterator()
     next = iterator.get_next()
-    next_element = tf.squeeze(tf.reshape(next, [-1, 4]))
+    next_element = tf.squeeze(tf.reshape(next, [-1, 76]))
     state_batch, keys = tf.split(next_element, [72,4], axis=1)
     dataset = dataset.prefetch(256)
 
@@ -246,9 +246,7 @@ run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
 # Config to turn on JIT compilation
 config = tf.ConfigProto()
 config.gpu_options.force_gpu_compatible = True
-
-# config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
-
+config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
 '''
 EXECUTE NET
 '''
@@ -279,8 +277,6 @@ with tf.Session(config=config) as sess:
 
     sess.run(iterator.initializer, feed_dict={filenames: filename_list})
     old_time = time.time()
-    for i in range(1000):
-        print sess.run([next_element])
     for i in range(100000000):
         if i%print_freq == 0:
             #loss, _, summary, true_state, est_state, sca, me, decomp, ss = sess.run([loss_op, train_op, merged_summary_op, state_in, state_out, scaler_so_far, mean_so_far, decompressed_state, scaled_state], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
@@ -320,4 +316,3 @@ with tf.Session(config=config) as sess:
     # trace = timeline.Timeline(step_stats=run_metadata.step_stats)
     # trace_file = open('timeline.ctf.json', 'w') # View in chrome://tracing
     # trace_file.write(trace.generate_chrome_trace_format())
-
