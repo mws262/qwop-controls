@@ -128,7 +128,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 				idx++;
 			}
 			
-		System.out.println(featureListMap.get("PRESSED_KEYS").getFeature(i).getBytesList().toString());
+		System.out.println(featureListMap.get("PRESSED_KEYS_ONE_HOT").getFeature(i).getBytesList().toString());
 
 			// Turn the StateVariables into a single State for this timestep.
 			stateVars[i] = new State(sVarBuffer[0], sVarBuffer[1], sVarBuffer[2], sVarBuffer[3], sVarBuffer[4], 

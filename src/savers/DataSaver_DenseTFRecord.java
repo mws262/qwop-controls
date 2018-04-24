@@ -122,11 +122,12 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 			}
 
 			// Pack up actions -- 3 different ways:
-			// 1) Keys pressed at individual timestep.
+			// 1) a Keys pressed at individual timestep.
+			// 1) b Key categories pressed at individual timestep i.e. WO, QP, __ are three categories, labeled one hot.
 			// 2) Timesteps until transition for each timestep.
 			// 3) Just the action sequence (shorter than number of timesteps)
 
-			// 1) Keys pressed at individual timestep. 0 or 1 in bytes for each key
+			// 1) a Keys pressed at individual timestep. 0 or 1 in bytes for each key
 			FeatureList.Builder keyFeatList = FeatureList.newBuilder();
 			for (Action act : dat.actions) {
 				Feature.Builder keyFeat = Feature.newBuilder();
@@ -150,6 +151,30 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense{
 			
 			featLists.putFeatureList("PRESSED_KEYS", keyFeatList.build());
 
+			// 1) b Keys pressed at individual timestep. 0 or 1 in bytes for each key
+			FeatureList.Builder keyCatFeatList = FeatureList.newBuilder();
+			for (Action act : dat.actions) {
+				Feature.Builder keyCatFeat = Feature.newBuilder();
+				BytesList.Builder keyCatDat = BytesList.newBuilder();
+				byte[] keysCat = new byte[] {
+						act.peek()[1] && act.peek()[2] ? (byte)(1) : (byte)(0), // WO
+						act.peek()[0] && act.peek()[3] ? (byte)(1) : (byte)(0), // QP
+						!act.peek()[1] && !act.peek()[2] && !act.peek()[0] && !act.peek()[3]  ? (byte)(1) : (byte)(0)}; // Neither
+				keyCatDat.addValue(ByteString.copyFrom(keysCat));
+				keyCatFeat.setBytesList(keyCatDat.build());
+				keyCatFeatList.addFeature(keyCatFeat.build());
+			}
+			// Pad it by one.
+			Feature.Builder keyCatFeat = Feature.newBuilder();
+			BytesList.Builder keyCatDat = BytesList.newBuilder();
+			byte[] keysCat = new byte[] {(byte)0, (byte)0, (byte)0};
+			keyCatDat.addValue(ByteString.copyFrom(keysCat));
+			keyCatFeat.setBytesList(keyCatDat.build());
+			keyCatFeatList.addFeature(keyCatFeat.build());
+			
+			featLists.putFeatureList("PRESSED_KEYS_ONE_HOT", keyCatFeatList.build());
+			
+			
 			
 			// 2) Timesteps until transition for each timestep.
 			FeatureList.Builder transitionTSList = FeatureList.newBuilder();

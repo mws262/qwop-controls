@@ -31,7 +31,7 @@ stateKeys = ['BODY', 'HEAD', 'RTHIGH', 'LTHIGH', 'RCALF', 'LCALF',
              'RFOOT', 'LFOOT', 'RUARM', 'LUARM', 'RLARM', 'LLARM']
 
 # Various action parameterizations put in the TFRECORD files
-actionKeys = ['PRESSED_KEYS', 'TIME_TO_TRANSITION', 'ACTIONS']
+actionKeys = ['PRESSED_KEYS', 'PRESSED_KEYS_ONE_HOT', 'TIME_TO_TRANSITION', 'ACTIONS']
 
 # Various information pertaining to the ENTIRE run, but not recorded at every timestep
 contextKeys = ['TIMESTEPS']
@@ -70,7 +70,7 @@ def _parse_function(example_proto):
     statesConcat = tf.concat(x_out_list, 1, name='concat_states')
 
     #pk = tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4]), tf.float32)
-    extended_states = tf.concat(values=[statesConcat, tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4]), dtype=tf.float32)], axis=1)
+    extended_states = tf.concat(values=[statesConcat, tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS_ONE_HOT'], tf.uint8), [-1, 3]), dtype=tf.float32)], axis=1)
     # ttt = {'TIME_TO_TRANSITION': tf.reshape(tf.decode_raw(features[1]['TIME_TO_TRANSITION'], tf.uint8),)}
     # act = {'ACTIONS': tf.reshape(tf.decode_raw(features[1]['ACTIONS'], tf.uint8),(-1, 5))}
 
@@ -174,7 +174,7 @@ batch_size = 1
 print_freq = 49
 
 # Make a list of TFRecord files.
-filename_list = ['denseTF_2018-04-24_11-31-52.TFRecord']
+filename_list = ['denseTF_2018-04-24_13-18-00.TFRecord']
 # for file in os.listdir(tfrecordPath):
 #     if file.endswith(tfrecordExtension):
 #         nextFile = tfrecordPath + file
@@ -191,8 +191,8 @@ with tf.name_scope("tfrecord_input"):
     #dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
     iterator = dataset.make_initializable_iterator()
     next = iterator.get_next()
-    next_element = tf.squeeze(tf.reshape(next, [-1, 76]))
-    state_batch, keys = tf.split(next_element, [72,4], axis=1)
+    next_element = tf.squeeze(tf.reshape(next, [-1, 75]))
+    state_batch, keys = tf.split(next_element, [72,3], axis=1)
     dataset = dataset.prefetch(256)
 
 # LAYERS
@@ -209,7 +209,7 @@ with tf.name_scope('transform'):
 # Encode the transformed input.
 with tf.name_scope('fully_connected'):
     scaled_state_in = tf.placeholder_with_default(state_batch, shape=[None, 72], name='fully_connected_input')
-    layers = [72,36,4]
+    layers = [72,36,3]
     out = sequential_layers(state_batch,layers, 'fully_connected')
     fully_connected_out = tf.identity(out, name='fully_connected_out') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)
@@ -219,7 +219,8 @@ with tf.name_scope('fully_connected'):
 with tf.name_scope('softmax'):
     softmax_out = tf.nn.softmax(fully_connected_out)
 with tf.name_scope('loss'):
-    loss_op = tf.losses.absolute_difference(softmax_out, keys)
+    loss_op = tf.nn.softmax_cross_entropy_with_logits(logits=fully_connected_out, labels=keys)
+   # loss_op = tf.losses.absolute_difference(softmax_out, keys)
 
 with tf.name_scope('training'):
     adam = tf.train.AdamOptimizer(learn_rate)
@@ -240,8 +241,8 @@ merged_summary_op = tf.summary.merge_all()
 coord = tf.train.Coordinator() # Can kill everything when code is done. Prevents the `Skipping cancelled enqueue attempt with queue not closed'
 np.set_printoptions(threshold=np.nan)
 
-run_metadata = tf.RunMetadata()
-run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+#run_metadata = tf.RunMetadata()
+#un_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
 
 # Config to turn on JIT compilation
 config = tf.ConfigProto()
@@ -269,7 +270,7 @@ with tf.Session(config=config) as sess:
     #     if item.endswith(".matt-desktop"):
     #         os.remove(os.path.join(dir_name, item))
 
-    summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
+   #summary_writer = tf.summary.FileWriter("./logs", graph=tf.get_default_graph())
 
     # graph = tf.get_default_graph()
     # for i in tf.get_default_graph().get_operations():
@@ -278,19 +279,23 @@ with tf.Session(config=config) as sess:
     sess.run(iterator.initializer, feed_dict={filenames: filename_list})
     old_time = time.time()
     for i in range(100000000):
-        if i%print_freq == 0:
-            #loss, _, summary, true_state, est_state, sca, me, decomp, ss = sess.run([loss_op, train_op, merged_summary_op, state_in, state_out, scaler_so_far, mean_so_far, decompressed_state, scaled_state], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
-            loss, _, summary = sess.run([loss_op, train_op, merged_summary_op], options=run_options,run_metadata = run_metadata)
-            #print np.shape(true_state)
 
-            summary_writer.add_summary(summary, i)
-            summary_writer.add_run_metadata(run_metadata, str(i))
+
+        if i%print_freq == 0:
+
+            #loss, _, summary, true_state, est_state, sca, me, decomp, ss = sess.run([loss_op, train_op, merged_summary_op, state_in, state_out, scaler_so_far, mean_so_far, decompressed_state, scaled_state], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
+            loss, _ = sess.run([loss_op, train_op])#, options=run_options,run_metadata = run_metadata)
+            #print np.shape(true_state)
+            print sess.run(softmax_out)
+
+            #summary_writer.add_summary(summary, i)
+           #summary_writer.add_run_metadata(run_metadata, str(i))
             new_time = time.time()
             ips = batch_size*print_freq/(new_time - old_time)
 
-            print '\n' + '\033[1m'
-            print("Iter: %d, Loss %f, runs/s %0.1f" % (i, loss, ips))
-            print '\033[0m'
+            #print '\n' + '\033[1m'
+            #print("Iter: %d, Loss %f, runs/s %0.1f" % (i, loss, ips))
+            #print '\033[0m'
             save_path = saver.save(sess, "./logs/model2.ckpt", global_step=i)
             old_time = time.time() # Don't count the saving in our time estimate
 
