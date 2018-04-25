@@ -1,21 +1,12 @@
 package data;
 
 import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
 import org.tensorflow.Tensor;
-
-import main.MAIN_Run;
 
 import org.tensorflow.Graph;
 import org.tensorflow.Session;
-import org.tensorflow.Output;
-import org.tensorflow.DataType;
 
 
 public class MAIN_TestTFlow {
@@ -54,11 +45,11 @@ public class MAIN_TestTFlow {
 		Tensor<Float> dropVal = Tensor.create(new float[] {1.f}, Float.class);	
 		try (Graph g = new Graph()) {
 			g.importGraphDef(graphDef);
-			MAIN_Run.tic();
+			//Utility.tic();
 			try (Session s = new Session(g); 
 					Tensor<Float> result =
 							s.runner().feed("input/x-input:0", input).feed("dropout/Placeholder:0", dropVal).fetch("layer5/activation:0").run().get(0).expect(Float.class)) {
-				MAIN_Run.toc();
+				//Utility.toc();
 				return result.copyTo(new float[1][1])[0];
 			}
 		}

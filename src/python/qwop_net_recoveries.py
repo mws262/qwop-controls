@@ -22,7 +22,7 @@ tfrecordPath = '/media/matt/Raid1_pair/QWOP_Tfrecord_1_20/'  # Location of dataf
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
-learn_rate = 1e-4
+learn_rate = 1e-5
 
 initWeightsStdev = .1
 
@@ -170,10 +170,10 @@ def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.lea
 DEFINE SPECIFIC DATAFLOW
 '''
 batch_size = 1
-print_freq = 49
+print_freq = 499
 
 # Make a list of TFRecord files.
-filename_list = ['denseTF_2018-04-24_13-18-00.TFRecord']
+filename_list = ['denseTF_2018-04-24_21-06-02.TFRecord']
 # for file in os.listdir(tfrecordPath):
 #     if file.endswith(tfrecordExtension):
 #         nextFile = tfrecordPath + file
@@ -186,7 +186,7 @@ global_step = tf.Variable(0)
 with tf.name_scope("tfrecord_input"):
     filenames = tf.placeholder(tf.string, shape=[None])
     dataset = tf.data.TFRecordDataset(filenames)
-    dataset = dataset.map(_parse_function, num_parallel_calls=1)
+    dataset = dataset.map(_parse_function, num_parallel_calls=5)
     #dataset = dataset.shuffle(buffer_size=5000)
     dataset = dataset.repeat()
     #dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
@@ -204,7 +204,7 @@ with tf.name_scope('transform'):
 # Encode the transformed input.
 with tf.name_scope('fully_connected'):
     scaled_state_in = tf.placeholder_with_default(state_batch, shape=[None, 72], name='fully_connected_input')
-    layers = [72,36,3]
+    layers = [72,36,18,3]
     out = sequential_layers(state_batch,layers, 'fully_connected')
     fully_connected_out = tf.identity(out, name='fully_connected_out') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)
@@ -215,7 +215,7 @@ with tf.name_scope('softmax'):
     softmax_out = tf.nn.softmax(fully_connected_out)
 
 with tf.name_scope('loss'):
-    loss_op = tf.nn.softmax_cross_entropy_with_logits(logits=fully_connected_out, labels=keys)
+    loss_op = tf.nn.softmax_cross_entropy_with_logits_v2(logits=fully_connected_out, labels=keys)
     reducedLoss = tf.reduce_mean(loss_op)
    # loss_op = tf.losses.absolute_difference(softmax_out, keys)
 
@@ -276,8 +276,8 @@ with tf.Session(config=config) as sess:
 
         if i%print_freq == 0:
             loss, _, loss_mean = sess.run([loss_op, train_op, reducedLoss])#, options=run_options,run_metadata = run_metadata)
-           # print sess.run(softmax_out)
-           # print loss
+            print sess.run(softmax_out)
+            # print loss
             #summary_writer.add_summary(summary, i)
             #summary_writer.add_run_metadata(run_metadata, str(i))
             new_time = time.time()

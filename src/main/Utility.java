@@ -3,6 +3,8 @@ package main;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Properties;
 import java.util.Random;
 
 public class Utility {
@@ -136,8 +139,23 @@ public class Utility {
 		String timestamp = dateFormat.format(date);
 		return timestamp;
 	}
-
-
+	
+	/** Load a configuration file. **/
+	public static Properties loadConfigFile(File file) {
+		FileInputStream fis = null;
+		Properties prop = new Properties();
+		try {
+			fis = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		try {
+			prop.load(fis);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return prop;
+	}
 }
 
 

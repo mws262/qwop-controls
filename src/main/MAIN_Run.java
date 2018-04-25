@@ -2,15 +2,14 @@ package main;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.IntStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
-
-import com.beust.jcommander.*;
 
 import TreeStages.TreeStage_MaxDepth;
 import TreeStages.TreeStage_MinDepth;
@@ -20,22 +19,12 @@ import data.SparseDataToDense;
 import distributions.Distribution_Normal;
 import distributions.Distribution_Uniform;
 import evaluators.Evaluator_Distance;
-import evaluators.Evaluator_HandTunedOnState;
-import evaluators.Evaluator_Random;
 import filters.NodeFilter_GoodDescendants;
-import samplers.Sampler_Deterministic;
-import samplers.Sampler_Distribution;
 import samplers.Sampler_FixedDepth;
-import samplers.Sampler_Greedy;
-import samplers.Sampler_Random;
 import samplers.Sampler_UCB;
-import savers.DataSaver_DenseJava;
-import savers.DataSaver_DenseTFRecord;
-import savers.DataSaver_Sparse;
 import savers.DataSaver_StageSelected;
 import transformations.Transform_Autoencoder;
 import transformations.Transform_PCA;
-import savers.DataSaver_Null;
 import ui.PanelPlot_Controls;
 import ui.PanelPlot_SingleRun;
 import ui.PanelPlot_States;
@@ -47,140 +36,74 @@ import ui.PanelTimeSeries_WorkerLoad;
 import ui.UI_Full;
 import ui.UI_Headless;
 
-class Settings {
-	@Parameter
-	List<String> parameters = new ArrayList<>();
-
-	@Parameter(names={"--headless", "-hl"},  description = "Run without graphical interface.")
-	boolean headless = false;
-
-	@Parameter(names={"--sampler", "-sm"},  description = "Pick how new nodes are selected [random, distribution, greedy, UCB].")
-	String sampler = "";
-
-	@Parameter(names={"--saver", "-sv"}, variableArity = true, description = "Pick how data is saved [tfrecord, java_dense, java_sparse, none].")
-	List<String> saver = Arrays.asList("none", "200");
-}
-
 public class MAIN_Run {
+	
+	/** Location of the configuration file for this search. **/
+	private File configFile = new File("./search.config");
+	
+	/** Settings loaded from the config file. **/
+	private Properties properties;
+	
+	/** Whether or not to run without the UI. **/
+	private boolean headless = false;
+	
+	/** Information put in a running log to be saved at shutdown. **/
+	private String endLog = "";
 
-	private Settings settings;
-	String endLog = "";
-
-	public MAIN_Run(Settings settings) {
-		this.settings = settings;
+	public MAIN_Run() {
+		properties = Utility.loadConfigFile(configFile);
 	}
 
 	public static void main(String[] args) {
 
-		Settings settings = new Settings();
-		MAIN_Run manager = new MAIN_Run(settings);
-		JCommander.newBuilder()
-		.addObject(settings)
-		.build()
-		.parse(args);
-
+		MAIN_Run manager = new MAIN_Run();
 		manager.doGames();
 	}
 
 	public void doGames() {
-
-		/****************************************/		
-		/*********** Node evaluation ************/
-		/****************************************/
-
+		// Options to consider:
+		/*
 		IEvaluationFunction evaluateRandom = new Evaluator_Random(); // Assigns a purely random score for diagnostics.
 		IEvaluationFunction evaluateDistance = new Evaluator_Distance();
 		IEvaluationFunction evaluateHandTuned = new Evaluator_HandTunedOnState();
-
 		IEvaluationFunction currentEvaluator = evaluateDistance;
 
-		/***********************************************/		
-		/*********** Tree building strategy ************/
-		/***********************************************/
+		ISampler currentSampler = new Sampler_Random();
+		ISampler currentSampler = new Sampler_Distribution();
+		ISampler currentSampler = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+		ISampler currentSampler = new Sampler_UCB(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+		ISampler currentSampler = new Sampler_Deterministic();
 
-		/******** Define how nodes are sampled from the above defined actions. *********/
-		// Can be picked with command line argument --sampler or -sm
-		ISampler currentSampler;
-		switch (settings.sampler.toLowerCase()) {
-		case "random":
-			currentSampler = new Sampler_Random(); // Random sampler does not need a value function as it acts blindly anyway.
-			System.out.println("SAMPLER: Using random node sampler.");
-			break;
-		case "distribution":
-			currentSampler = new Sampler_Distribution();
-			System.out.println("SAMPLER: Using distribution node sampler.");
-			break;
-		case "greedy":
-			currentSampler = new Sampler_Greedy(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
-			System.out.println("SAMPLER: Using greedy node sampler.");
-			break;
-		case "ucb":
-			currentSampler = new Sampler_UCB(currentEvaluator); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
-			System.out.println("SAMPLER: Using UCB node sampler.");
-			break;
-		case "deterministic":
-			currentSampler = new Sampler_Deterministic();
-			System.out.println("SAMPLER: Using deterministic DFS sampler.");
-		default:
-			currentSampler = new Sampler_UCB(currentEvaluator);
-			System.out.println("SAMPLER: Unrecognized argument. Defaulting to UCB.");
-		}
-
-		/************************************************************/		
-		/******* Decide how datasets are to be saved/loaded. ********/
-		/************************************************************/
-
-		// Can be picked with command line argument --sampler or -sm
-		IDataSaver dataSaver;
-		switch (settings.saver.get(0).toLowerCase()) { // Defaults to "" if no saver settings were passed.
-		case "tfrecord":
-			dataSaver = new DataSaver_DenseTFRecord(); // Saves full state/action info, in Tensorflow-compatible TFRecord format.
-			System.out.println("SAVER: Using TFRecord data saver, densely storing state data. Frequency: " + settings.saver.get(1) + " games/save.");
-			break;
-		case "java_sparse":
-			dataSaver = new DataSaver_Sparse(); // Saves just actions needed to recreate runs.
-			System.out.println("SAVER: Using serialized Java class data saver, sparsely storing state data. Frequency: " + settings.saver.get(1) + " games/save.");
-			break;
-		case "java_dense":
-			dataSaver = new DataSaver_DenseJava(); // Saves full state/action info, but in serialized java classes. // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
-			System.out.println("SAVER: Using serialized Java class data saver, densely storing state data. Frequency: " + settings.saver.get(1) + " games/save.");
-			break;
-		case "none":
-			dataSaver = new DataSaver_Null(); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
-			System.out.println("SAVER: Not saving data to file. Frequency: " + settings.saver.get(1) + " games/save.");
-			break;
-		default:
-			System.out.println("SAVER: Unrecognized argument. Defaulting to no saving.");
-			dataSaver = new DataSaver_Null();
-
-		}
-
+		IDataSaver dataSaver = new DataSaver_DenseTFRecord(); // Saves full state/action info, in Tensorflow-compatible TFRecord format.
+		IDataSaver dataSaver = new DataSaver_Sparse(); // Saves just actions needed to recreate runs.
+		IDataSaver dataSaver = new DataSaver_DenseJava(); // Saves full state/action info, but in serialized java classes. // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
+		IDataSaver dataSaver = new DataSaver_Null(); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
 		dataSaver.setSaveInterval(Integer.parseInt(settings.saver.get(1))); // set save frequency from parsed args if that argument has been input.
-		//ArrayList<SaveableSingleGame> loaded = io_sparse.loadObjectsOrdered("test_2017-10-25_16-25-38.SaveableSingleGame");
-
-		/************************************************************/		
-		/**************** Assign workers/threads ********************/
-		/************************************************************/
-
+		*/
+		
+		// WORKER CORES:
 		// Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the Box2D libraries.
+		float workersFractionOfCores = Float.parseFloat(properties.getProperty("workersFractionOfCores", "0.8"));
 		int cores = Runtime.getRuntime().availableProcessors();
-		int maxWorkers = (int)(0.8f*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
+		int maxWorkers = (int)(workersFractionOfCores*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
 		System.out.println("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
-
-
-		// Make a new folder for this trial.
-		File saveLoc = new File("./4_24_18");
+		
+		
+		// SAVE DIRECTORY:
+		File saveLoc = new File(properties.getProperty("saveLocation", "./"));
 		if (!saveLoc.exists()) {
 			boolean success = saveLoc.mkdir();
 			if (!success) throw new RuntimeException("Could not make save directory.");
 		}
 
+		// Copy the config file into the save directory.
+		File configSave = new File(saveLoc.getAbsolutePath() + "/config_" + Utility.getTimestamp() + ".config");
 		try {
-			Utility.sectionToLogFile("./src/main/" + this.getClass().getSimpleName() + ".java", saveLoc.toString() + "/" + "config_" + Utility.getTimestamp() + ".log");
-		} catch (IOException e) {
-			e.printStackTrace();
+			FileUtils.copyFile(configFile, configSave);
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
-
+		
 		// Save a progress log before shutting down.
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
@@ -192,34 +115,33 @@ public class MAIN_Run {
 			}}); 
 
 		
-		//!LOG_START
-		Sampler_UCB.explorationMultiplier = 0.4f;
+		Sampler_UCB.explorationMultiplier = Float.valueOf(properties.getProperty("UCBExplorationMultiplier", "1"));
 
-		boolean doStage1 = false;
-		boolean doStage2 = false;
-		boolean doStage3 = false;
-		boolean doStage4 = false;
+		headless = Boolean.valueOf(properties.getProperty("headless", "false"));
+		boolean doStage1 = Boolean.valueOf(properties.getProperty("doStage1", "false"));
+		boolean doStage2 = Boolean.valueOf(properties.getProperty("doStage2", "false"));;
+		boolean doStage3 = Boolean.valueOf(properties.getProperty("doStage3", "false"));;
+		boolean doStage4 = Boolean.valueOf(properties.getProperty("doStage4", "false"));;
 
 		// Stage 1
-		int getToSteadyDepth = 18;
-		int stage1Workers = maxWorkers;
+		int getToSteadyDepth = Integer.valueOf(properties.getProperty("getToSteadyDepth", "18"));
+		int stage1Workers = (int) Math.max(maxWorkers * Float.valueOf(properties.getProperty("fractionOfMaxWorkers1", "1")), 1);
 
 		// Stage 2
-		int trimSteadyBy = 6;
-		int deviationDepth = 2;
-		int stage2Workers = Math.max(maxWorkers/4, 2);
+		int trimSteadyBy = Integer.valueOf(properties.getProperty("trimSteadyBy", "7"));
+		int deviationDepth = Integer.valueOf(properties.getProperty("deviationDepth", "2"));
+		int stage2Workers = (int) Math.max(maxWorkers * Float.valueOf(properties.getProperty("fractionOfMaxWorkers2", "1")), 1);
 
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
-		int recoveryResumePoint = 0; // Return here if we're restarting.
-		int getBackToSteadyDepth = 14; // This many moves to recover.
-		int stage3Workers = maxWorkers;
+		int recoveryResumePoint = Integer.valueOf(properties.getProperty("resumePoint", "0")); // Return here if we're restarting.
+		int getBackToSteadyDepth = Integer.valueOf(properties.getProperty("recoveryActions", "14")); // This many moves to recover.
+		int stage3Workers = (int) Math.max(maxWorkers * Float.valueOf(properties.getProperty("fractionOfMaxWorkers3", "1")), 1);
 		
 		// Stage 4
 		int trimStartBy = stage3StartDepth; 
-		int trimEndBy = 4;
-		
-		//!LOG_STOP
+		int trimEndBy = Integer.valueOf(properties.getProperty("trimEndBy", "4"));
+
 		
 		assignAllowableActions(stage3StartDepth);
 
@@ -230,8 +152,9 @@ public class MAIN_Run {
 		Node treeRoot = new Node();
 
 		IUserInterface ui;
-
-		if (!settings.headless) {
+		PanelTimeSeries_WorkerLoad workerMonitorPanel = null;
+		
+		if (!headless) {
 			UI_Full fullUI = new UI_Full();
 
 			/* Make each UI component */
@@ -245,6 +168,7 @@ public class MAIN_Run {
 			PanelPlot_Transformed autoencPlotPane = new PanelPlot_Transformed(new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12), 6);
 			autoencPlotPane.addFilter(new NodeFilter_GoodDescendants(1));
 			PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun(6);
+			workerMonitorPanel = new PanelTimeSeries_WorkerLoad(maxWorkers);
 
 			fullUI.addTab(runnerPanel, "Run Animation");
 			fullUI.addTab(snapshotPane, "State Viewer");
@@ -254,9 +178,13 @@ public class MAIN_Run {
 			fullUI.addTab(singleRunPlotPane, "Single Run Plots");
 			fullUI.addTab(pcaPlotPane, "PCA Plots");
 			fullUI.addTab(autoencPlotPane, "Autoenc Plots");
+			fullUI.addTab(workerMonitorPanel, "Worker status");
 
 			Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameLoader should have their own threads.
 			runnerPanelThread.start();
+			
+			Thread monitorThread = new Thread(workerMonitorPanel);
+			monitorThread.start();
 
 			ui = fullUI;
 			System.out.println("GUI: Running in full graphics mode.");
@@ -280,13 +208,6 @@ public class MAIN_Run {
 		workerPool.setMaxTotal(maxWorkers);
 		workerPool.setMaxIdle(-1); // No limit to idle. Would have defaulted to 8, meaning all others would get culled between stages.
 
-		PanelTimeSeries_WorkerLoad workerMonitorPanel = new PanelTimeSeries_WorkerLoad(maxWorkers);
-		Thread monitorThread = new Thread(workerMonitorPanel);
-		monitorThread.start();
-		((UI_Full)ui).addTab(workerMonitorPanel, "Worker status");
-		
-		
-		//!LOG_START
 		if (doStage1) {
 			System.out.println("Starting stage 1.");
 			// Saver setup.
@@ -294,7 +215,8 @@ public class MAIN_Run {
 			saver.overrideFilename = "steadyRunPrefix";
 			saver.setSavePath(saveLoc.getPath() + "/");
 
-			TreeStage searchMax = new TreeStage_MaxDepth(getToSteadyDepth, currentSampler.clone(), saver); // Depth to get to sorta steady state. was 
+			TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state. was 
+			searchMax.terminateAfterXGames = Integer.valueOf(properties.getProperty("bailAfterXGames1", "1000000")); // Will terminate after this many games played regardless of whether goals have been met.
 			
 			// Grab some workers from the pool.
 			List<TreeWorker> tws1 = new ArrayList<TreeWorker>();
@@ -305,7 +227,7 @@ public class MAIN_Run {
 					e.printStackTrace();
 				}
 			}
-			workerMonitorPanel.setWorkers(tws1);
+			if (!headless) workerMonitorPanel.setWorkers(tws1);
 			// Do stage search
 			searchMax.initialize(tws1, treeRoot);
 			
@@ -347,7 +269,7 @@ public class MAIN_Run {
 					e.printStackTrace();
 				}
 			}
-			workerMonitorPanel.setWorkers(tws2);
+			if (!headless) workerMonitorPanel.setWorkers(tws2);
 			searchMin.initialize(tws2, currNode);
 			
 			// Return the checked out workers.
@@ -384,8 +306,9 @@ public class MAIN_Run {
 					saver.overrideFilename = "recoveries" + count;
 					saver.setSavePath(saveLoc.getPath() + "/");
 
-					TreeStage searchMax = new TreeStage_MaxDepth(getBackToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
-
+					TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getBackToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
+					searchMax.terminateAfterXGames = Integer.valueOf(properties.getProperty("bailAfterXGames3", "100000"));;
+					
 					System.out.print("Started " + count + "...");
 					
 					// Grab some workers from the pool.
@@ -397,7 +320,7 @@ public class MAIN_Run {
 							e.printStackTrace();
 						}
 					}
-					workerMonitorPanel.setWorkers(tws3);
+					if (!headless) workerMonitorPanel.setWorkers(tws3);
 					searchMax.initialize(tws3, leaf);
 					
 					// Return the checked out workers.
@@ -442,7 +365,6 @@ public class MAIN_Run {
 			System.out.println("Stage 4 done.");
 			endLog += "Stage 4 done.\n";
 		}
-		//!LOG_STOP
 		
 		workerPool.close();
 	}
@@ -454,7 +376,7 @@ public class MAIN_Run {
 		/********************************************/
 
 		/***** Space of allowed actions to sample ******/
-		Distribution<Action> uniform_dist = new Distribution_Uniform();
+		//Distribution<Action> uniform_dist = new Distribution_Uniform();
 
 		/********** Repeated action 1 -- no keys pressed. ***********/
 		Integer[] durations1 = IntStream.range(1, 25).boxed().toArray(Integer[] :: new);

@@ -23,10 +23,7 @@ public class MAIN_ConvertSparseToTFRecord {
 			}
 		}
 		
-		DataSaver_DenseTFRecord saver = new DataSaver_DenseTFRecord();
-		saver.setSavePath(outFile.getAbsolutePath());
-		saver.setSaveInterval(2);
-		SparseDataToDense converter = new SparseDataToDense(saver);
-		converter.convert(filesToConvert);	
+		SparseDataToDense converter = new SparseDataToDense(outFile.getAbsolutePath());
+		converter.convert(filesToConvert, true);	
 	}
 }

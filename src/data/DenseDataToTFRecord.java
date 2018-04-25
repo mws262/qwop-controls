@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.tensorflow.example.BytesList;
 import org.tensorflow.example.Example;
 import org.tensorflow.example.Feature;
@@ -63,7 +64,7 @@ public class DenseDataToTFRecord {
 		SaveableFileIO<SaveableDenseData> inFileLoader = new SaveableFileIO<SaveableDenseData>();
 		int count = 0;
 		for (File file : inFiles) {
-			ArrayList<SaveableDenseData> denseDat = inFileLoader.loadObjectsOrdered(file.getAbsolutePath());
+			List<SaveableDenseData> denseDat = inFileLoader.loadObjectsOrdered(file.getAbsolutePath());
 			System.out.print("Beginning to package " + file.getName() + ". ");
 			String fileOutName = file.getName().substring(0, file.getName().lastIndexOf('.')) + "." + outFileExt;
 			try {

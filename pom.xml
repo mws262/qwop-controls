@@ -4,7 +4,9 @@ To run files from the command line:
 		mvn install
 		mvn exec:java -e -Dexec.mainClass="main.MAIN_Run"
 		with command-line arguments:
-		mvn exec:java -e -Dexec.mainClass="main.MAIN_Run" -Dexec.args=""
+		mvn exec:java -e -Dexec.mainClass="main.MAIN_Run" -Dexec.args="-Xmx37g"
+		to change memory usage:
+		export MAVEN_OPTS="-Xmx37g"
 To update the classpath settings for Eclipse:
 		mvn eclipse:clean
 		mvn eclipse:eclipse
@@ -139,20 +141,11 @@ To update the classpath settings for Eclipse:
 				<version>1.4.0</version>
 			</dependency>
 
-			<!--			<dependency>
+			<dependency>
 				<groupId>org.jbox2d</groupId>
 				<artifactId>jbox2d</artifactId>
 				<version>0.0.1</version>
-			</dependency> 2D physics engine; old version similar to that in QWOP. Hosted locally. -->
-
-
-			<!-- Parsing command line arguments -->
-			<dependency>
-    				<groupId>com.beust</groupId>
-    				<artifactId>jcommander</artifactId>
-    				<version>1.72</version>
-			</dependency>
-			
+			</dependency> <!--			2D physics engine; old version similar to that in QWOP. Hosted locally. -->
 			<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-pool2 -->
 			<dependency>
     			<groupId>org.apache.commons</groupId>
@@ -166,6 +159,11 @@ To update the classpath settings for Eclipse:
     			<version>3.1.0</version>
     			<scope>provided</scope>
 			</dependency>
-
+			<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-io -->
+			<dependency>
+    			 <groupId>org.apache.commons</groupId>
+    			 <artifactId>commons-io</artifactId>
+   				 <version>1.3.2</version>
+			</dependency>
 		</dependencies>
 	</project>
