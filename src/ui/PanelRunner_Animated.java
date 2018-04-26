@@ -66,6 +66,12 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 			currNode = currNode.parent;
 		}	
 	}
+	
+	/** Add a single action to the end of what is already going on. **/
+	public void addAction(Action action) {
+		actionQueue.addAction(action);
+	}
+	
 	/** Pop the next action off the queue and execute one timestep. **/
 	private void executeNextOnQueue() {
 		if (!actionQueue.isEmpty()) {

@@ -17,12 +17,12 @@ PARAMETERS & SETTINGS
 # Use tfrecord_input/Squeeze as input.
 ## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "untransform/untransform_output"
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
-tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
-tfrecordPath = '/media/matt/Raid1_pair/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
+tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
+tfrecordPath = './'  # Location of datafiles on this machine. Beware of drive mounting locations.
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
-learn_rate = 1e-5
+learn_rate = 1e-6
 
 initWeightsStdev = .1
 
@@ -170,16 +170,16 @@ def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.lea
 DEFINE SPECIFIC DATAFLOW
 '''
 batch_size = 1
-print_freq = 499
+print_freq = 1999
 
 # Make a list of TFRecord files.
-filename_list = ['denseTF_2018-04-24_21-06-02.TFRecord']
-# for file in os.listdir(tfrecordPath):
-#     if file.endswith(tfrecordExtension):
-#         nextFile = tfrecordPath + file
-#         filename_list.append(nextFile)
-#         print(nextFile)
-# random.shuffle(filename_list) # Shuffle so each time we restart, we get different order.
+filename_list = [] #['denseTF_2018-04-24_21-06-02.TFRecord']
+for file in os.listdir(tfrecordPath):
+    if file.endswith(tfrecordExtension):
+        nextFile = tfrecordPath + file
+        filename_list.append(nextFile)
+        print(nextFile)
+random.shuffle(filename_list) # Shuffle so each time we restart, we get different order.
 
 global_step = tf.Variable(0)
 
@@ -197,14 +197,10 @@ with tf.name_scope("tfrecord_input"):
     dataset = dataset.prefetch(256)
 
 # LAYERS
-# Input layer -- scale and recenter data.
-with tf.name_scope('transform'):
-    state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input_placeholder')
-
 # Encode the transformed input.
 with tf.name_scope('fully_connected'):
     scaled_state_in = tf.placeholder_with_default(state_batch, shape=[None, 72], name='fully_connected_input')
-    layers = [72,36,18,3]
+    layers = [72,48,36,18,3]
     out = sequential_layers(state_batch,layers, 'fully_connected')
     fully_connected_out = tf.identity(out, name='fully_connected_out') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)
@@ -255,10 +251,10 @@ with tf.Session(config=config) as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
 
-    # if os.path.isfile("./logs/checkpoint"):
-    #   ckpt = tf.train.get_checkpoint_state("./logs")
-    #   saver.restore(sess, ckpt.model_checkpoint_path)
-    #   print('restored')
+    if os.path.isfile("./logs/checkpoint"):
+      ckpt = tf.train.get_checkpoint_state("./logs")
+      saver.restore(sess, ckpt.model_checkpoint_path)
+      print('restored')
     #
     #
     # # Clear old log files.
@@ -276,7 +272,7 @@ with tf.Session(config=config) as sess:
 
         if i%print_freq == 0:
             loss, _, loss_mean = sess.run([loss_op, train_op, reducedLoss])#, options=run_options,run_metadata = run_metadata)
-            print sess.run(softmax_out)
+           # print sess.run(softmax_out)
             # print loss
             #summary_writer.add_summary(summary, i)
             #summary_writer.add_run_metadata(run_metadata, str(i))

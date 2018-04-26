@@ -3,46 +3,96 @@ package main;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import org.tensorflow.Graph;
+import org.tensorflow.Operation;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 
 import game.State;
 
-public class Tensorflow_Predictor {
+/**
+ * Basic utilities and loaders for getting tensorflow models
+ * in here and working.
+ * 
+ * @author matt
+ *
+ */
+public abstract class TensorflowLoader {
 
-	private Tensor<Float> dropVal = Tensor.create(new float[] {1.f}, Float.class);
-	private Session sess;
+	/** Current tflow session. **/
+	private Session session;
 	
-	public Tensorflow_Predictor() {
-		String modelDir = "./src/python/models";
+	/** Computational graph loaded from tflow saves. **/
+	private Graph graph;
+	
+	private List<Float> predictionList = new ArrayList<Float>();
 
+	public TensorflowLoader(String pbFile, String directory) {
+		loadGraph(pbFile, directory);
+	}
+	
+	/** Load the computational graph from a .pb file and also make a new session. **/
+	private void loadGraph(String pbFile, String directory) {
 		byte[] graphDef = null;
 		try {
-			graphDef = Files.readAllBytes(Paths.get(modelDir, "shitty_controller.pb"));
+			graphDef = Files.readAllBytes(Paths.get(directory, pbFile));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		Graph g = new Graph();
-		g.importGraphDef(graphDef);
-		sess = new Session(g); 
-				
+		graph = new Graph();
+		graph.importGraphDef(graphDef);
+		session = new Session(graph); 
 	}
 	
-	public float getPrediction(State state) {
+	/** Simple prediction from the model where we give a state and expect a list of floats out.
+	 *  Only applies when a single output is required from the graph.
+	 * @param state
+	 * @param inputName
+	 * @param outputName
+	 * @return
+	 */
+	public List<Float> sisoFloatPrediction(State state, String inputName, String outputName) {
 		Tensor<Float> inputTensor = Tensor.create(flattenState(state), Float.class);
 		Tensor<Float> result =
-				sess.runner().feed("input/x-input:0", inputTensor)
-				.feed("dropout/Placeholder:0", dropVal)
-				.fetch("layer3/activation:0")
+				session.runner().feed(inputName + ":0", inputTensor)
+				.fetch(outputName + ":0")
 				.run().get(0).expect(Float.class);
+		long[] outputShape = result.shape();
+
+		float[] res = result.copyTo(new float[(int) outputShape[0]][(int) outputShape[1]])[0];
 		
-		float[] res = result.copyTo(new float[1][1])[0];
-		return res[0];
+		predictionList.clear();
+		for (float f : res) {
+			predictionList.add(f);
+		}
+		return predictionList;	
 	}
 	
+	/** Print out all operations in the graph for identifying which ones we want. **/
+	private void printOperations() {
+		Iterator<Operation> iter = graph.operations();
+		while (iter.hasNext()) {
+			System.out.println(iter.next().name());
+		}
+	}
+	
+	/** Get the current tflow session. **/
+	public Session getSession() {
+		return session;
+	}
+	
+	/** Get the tflow computationa graph (ie model). **/
+	public Graph getGraph() {
+		return graph;
+	}
+	
+	/** Make a state object into an array the way TFlow likes it. **/
 	public static float[][] flattenState(State state) {
 		float[][] flatState = new float[1][72];
 		float bodyX = state.body.x;
@@ -145,9 +195,4 @@ public class Tensorflow_Predictor {
 		
 		return flatState;
 	}
-	
-	
-	
-	
-	
 }

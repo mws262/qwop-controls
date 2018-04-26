@@ -51,7 +51,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 	public static int windowHeight = 1000;
 
 
-	File saveLoc = new File("./4_24_18");
+	File saveLoc = new File("./4_25_18");
 
 	List<Node> leafNodes = new ArrayList<Node>(); 
 
@@ -127,8 +127,6 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 				sVarBuffer[idx] = new StateVariable(sValList);
 				idx++;
 			}
-			
-		System.out.println(featureListMap.get("PRESSED_KEYS_ONE_HOT").getFeature(i).getBytesList().toString());
 
 			// Turn the StateVariables into a single State for this timestep.
 			stateVars[i] = new State(sVarBuffer[0], sVarBuffer[1], sVarBuffer[2], sVarBuffer[3], sVarBuffer[4], 

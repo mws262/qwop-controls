@@ -1,219 +1,163 @@
 package main;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Stroke;
-import java.lang.reflect.InvocationTargetException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.EdgeShape;
-import org.jbox2d.collision.shapes.PolygonShape;
-import org.jbox2d.collision.shapes.Shape;
-import org.jbox2d.collision.shapes.ShapeType;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.common.XForm;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.World;
 
+import controllers.Controller_Null;
+import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
+import data.SaveableFileIO;
+import data.SaveableSingleGame;
 import game.GameLoader;
-import game.State;
-import transformations.Transform_Autoencoder;
+
+/**
+ * Playback runs or sections of runs saved in SaveableSingleRun files.
+ * 
+ * @author matt
+ *
+ */
 
 @SuppressWarnings("serial")
-public class MAIN_Controlled extends JFrame{
+public class MAIN_Controlled extends JFrame implements Runnable{
 
-	public GameLoader game;
-	private Tensorflow_Predictor pred = new Tensorflow_Predictor();
-	private RunnerPane runnerPane;
+	private GameLoader game = new GameLoader();
 
 	/** Window width **/
-	public static int windowWidth = 1920;
+	private static int windowWidth = 1920;
 
 	/** Window height **/
-	public static int windowHeight = 1000;
+	private static int windowHeight = 1000;
 
-	final Font QWOPLittle = new Font("Ariel", Font.BOLD,21);
-	final Font QWOPBig = new Font("Ariel", Font.BOLD,28);
-
-	/** Runner coordinates to pixels. **/
-	public float runnerScaling = 10f;
+	/** Controller to use. Defaults to Controller_Null and should usually be reassigned. **/
+	private IController controller = new Controller_Null();
 
 	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
-	public int xOffsetPixels_init = 700;
-	public int xOffsetPixels = xOffsetPixels_init;
-	public int yOffsetPixels = 600;
+	private int xOffsetPixels = 960;
+	private int yOffsetPixels = 500;
 
-	private int phase = 0;
+	/** Runner coordinates to pixels. **/
+	private float runnerScaling = 10f;
+
+	/** Place to load any 'prefix' run data in the form of a SaveableSingleGame **/
+	private File prefixSave = new File("./4_25_18/steadyRunPrefix.SaveableSingleGame");
+
+	/** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
+	private int doPrefixToDepth = 12;
+
+	private List<Node> leafNodes = new ArrayList<Node>();
+
+
+	private ActionQueue actionQueue = new ActionQueue();
 
 	public static void main(String[] args) {
 		MAIN_Controlled mc = new MAIN_Controlled();
+		
+		// Pick the exact controller and its settings.
+		Controller_Tensorflow_ClassifyActionsPerTimestep cont = new Controller_Tensorflow_ClassifyActionsPerTimestep("frozen_model.pb", "./src/python/logs/");
+		cont.inputName = "tfrecord_input/split";
+		cont.outputName = "softmax/Softmax";
+		mc.controller = cont;
+
 		mc.setup();
-		mc.run();
+		mc.doControlled();
 	}
 
 	public void setup() {
-		/* Runner pane */   
-		runnerPane = new RunnerPane();
-		this.add(runnerPane);
-		/*******************/
+		Panel panel = new Panel();
+		add(panel);
 
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setPreferredSize(new Dimension(windowWidth, windowHeight));
-		this.setContentPane(this.getContentPane());
-		this.pack();
-		this.setVisible(true); 
+		Thread graphicsThread = new Thread(this);
+		graphicsThread.start(); // Makes it smoother by updating the graphics faster than the timestep updates.
+
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setPreferredSize(new Dimension(windowWidth, windowHeight));
+		setContentPane(this.getContentPane());
+		pack();
+		setVisible(true); 
 		repaint();
 	}
 
-	int toSwitchCount = Integer.MAX_VALUE;
-	public void run() {
-		game = new GameLoader();
-		game.makeNewWorld();
+	public void doControlled() {
 
-		while (true) {
+		// Recreate prefix part of this tree.
+		SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
+		Node rootNode = new Node();
+		Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(prefixSave.getAbsolutePath()), rootNode, -1);
+		leafNodes.clear();
+		rootNode.getLeaves(leafNodes);
+		Node endNode = leafNodes.get(0);
 
+		// Back up the tree in order to skip the end of the prefix.
+		while (endNode.treeDepth > doPrefixToDepth) {
+			endNode = endNode.parent;
+		}
+
+		// Run prefix part.
+		actionQueue.addSequence(endNode.getSequence());
+		while (!actionQueue.isEmpty()) {
+			executeNextOnQueue();
 			try {
-				switch(3) {
-				case 0:
-					game.stepGame(false,false,false,false);
-					break;
-				case 1:
-					game.stepGame(false,true,true,false);
-					break;
-				case 2:
-					game.stepGame(false,false,false,false);
-					break;
-				case 3:
-					game.stepGame(true,false,false,true);
-					break;
-				default: 
-					throw new RuntimeException("Sequence phase is busted: " + phase);
-				}
-			}catch(Exception e) {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			float prediction = pred.getPrediction(game.getCurrentState());
-			// System.out.println(prediction);
+		}
 
-			if (toSwitchCount > 10 && prediction <1.8f) {
-
-				//System.out.println("SWITCHING SOON");
-				toSwitchCount = Math.round(prediction); 
+		// Enter controller mode.
+		while (true) {
+			Action nextAction = controller.policy(game.getCurrentState());
+			actionQueue.addAction(nextAction);
+			while (!actionQueue.isEmpty()) {
+				executeNextOnQueue();
+				try {
+					Thread.sleep(40);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
+		}
+	}
 
-			if (toSwitchCount == 0) {
-				phase = (phase + 1) % 4;
-				toSwitchCount = Integer.MAX_VALUE;
-			}
-			toSwitchCount--;
+	@Override
+	public void run() {
+		while (true) {
 			repaint();
 			try {
-				Thread.sleep(20);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
-	/**
-	 * Pane for displaying the animated runner executing a sequence selected on the tree. A tab.
-	 * @author Matt
-	 */
-	public class RunnerPane extends JPanel {
 
-		public int headPos;
-
-		/** Highlight stroke for line drawing. **/
-		private final Stroke normalStroke = new BasicStroke(0.5f);
-
-		boolean active = true;
-		
-		private List<State> st = new ArrayList<State>();
-
-		Transform_Autoencoder enc = new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12);
-
-		public RunnerPane() {}
-
-		@Override
-		public void paintComponent(Graphics g) {
-			if (!active || game == null) return;
-			super.paintComponent(g);
-
-			game.draw(g, 10f, 960, 500);
-			State currState = game.getCurrentState();
-			st.add(currState);
-			List<State> predState = enc.compressAndDecompress(st);
-			st.clear();
-			game.drawExtraRunner((Graphics2D)g, game.getXForms(predState.get(0)), "Encoded->Decoded", 10f, 960, 500, Color.RED, normalStroke);
-
-			//    	g.drawString(dc.format(-(headpos+30)/40.) + " metres", 500, 110);
-			xOffsetPixels = -headPos + xOffsetPixels_init;
-		}
-
-
-		public void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
-
-			int qOffset = (q ? 10:0);
-			int wOffset = (w ? 10:0);
-			int oOffset = (o ? 10:0);
-			int pOffset = (p ? 10:0);
-
-			int offsetBetweenPairs = getWidth()/4;
-			int startX = -45;
-			int startY = yOffsetPixels - 200;
-			int size = 40;
-
-			Font activeFont;
-			FontMetrics fm;
-			Graphics2D g2 = (Graphics2D)g;
-
-			g2.setColor(Color.DARK_GRAY);
-			g2.drawRoundRect(startX + 80 - qOffset/2, startY - qOffset/2, size + qOffset, size + qOffset, (size + qOffset)/10, (size + qOffset)/10);
-			g2.drawRoundRect(startX + 160 - wOffset/2, startY - wOffset/2, size + wOffset, size + wOffset, (size + wOffset)/10, (size + wOffset)/10);
-			g2.drawRoundRect(startX + 240 - oOffset/2 + offsetBetweenPairs, startY - oOffset/2, size + oOffset, size + oOffset, (size + oOffset)/10, (size + oOffset)/10);
-			g2.drawRoundRect(startX + 320 - pOffset/2 + offsetBetweenPairs, startY - pOffset/2, size + pOffset, size + pOffset, (size + pOffset)/10, (size + pOffset)/10);
-
-			g2.setColor(Color.LIGHT_GRAY);
-			g2.fillRoundRect(startX + 80 - qOffset/2, startY - qOffset/2, size + qOffset, size + qOffset, (size + qOffset)/10, (size + qOffset)/10);
-			g2.fillRoundRect(startX + 160 - wOffset/2, startY - wOffset/2, size + wOffset, size + wOffset, (size + wOffset)/10, (size + wOffset)/10);
-			g2.fillRoundRect(startX + 240 - oOffset/2 + offsetBetweenPairs, startY - oOffset/2, size + oOffset, size + oOffset, (size + oOffset)/10, (size + oOffset)/10);
-			g2.fillRoundRect(startX + 320 - pOffset/2 + offsetBetweenPairs, startY - pOffset/2, size + pOffset, size + pOffset, (size + pOffset)/10, (size + pOffset)/10);
-
-			g2.setColor(Color.BLACK);
-
-			//Used for making sure text stays centered.
-
-			activeFont = q ? QWOPBig:QWOPLittle;
-			g2.setFont(activeFont);
-			fm = g2.getFontMetrics();
-			g2.drawString("Q", startX + 80 + size/2-fm.stringWidth("Q")/2, startY + size/2+fm.getHeight()/3);
-
-
-			activeFont = w ? QWOPBig:QWOPLittle;
-			g2.setFont(activeFont);
-			fm = g2.getFontMetrics();
-			g2.drawString("W", startX + 160 + size/2-fm.stringWidth("W")/2, startY + size/2+fm.getHeight()/3);
-
-			activeFont = o ? QWOPBig:QWOPLittle;
-			g2.setFont(activeFont);
-			fm = g2.getFontMetrics();
-			g2.drawString("O", startX + 240 + size/2-fm.stringWidth("O")/2 + offsetBetweenPairs, startY + size/2+fm.getHeight()/3);
-
-			activeFont = p ? QWOPBig:QWOPLittle;
-			g2.setFont(activeFont);
-			fm = g2.getFontMetrics();
-			g2.drawString("P", startX + 320 + size/2-fm.stringWidth("P")/2 + offsetBetweenPairs, startY + size/2+fm.getHeight()/3);
-
+	/** Pop the next action off the queue and execute one timestep. **/
+	private void executeNextOnQueue() {
+		if (!actionQueue.isEmpty()) {
+			boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
+			boolean Q = nextCommand[0];
+			boolean W = nextCommand[1]; 
+			boolean O = nextCommand[2];
+			boolean P = nextCommand[3];
+			game.stepGame(Q,W,O,P);
 		}
 	}
 
+	private class Panel extends JPanel {
+		@Override
+		public void paintComponent(Graphics g) {
+			if (!game.initialized) return;
+			super.paintComponent(g);
+			if (game != null) {
+				game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
+				//				keyDrawer(g, Q, W, O, P);
+				//				drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
+			}
+		}
+	}	
 }
