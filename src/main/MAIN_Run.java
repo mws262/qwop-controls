@@ -126,17 +126,22 @@ public class MAIN_Run {
 		// Stage 1
 		int getToSteadyDepth = Integer.valueOf(properties.getProperty("getToSteadyDepth", "18"));
 		int stage1Workers = (int) Math.max(maxWorkers * Float.valueOf(properties.getProperty("fractionOfMaxWorkers1", "1")), 1);
-
+		String fileSuffix1 = properties.getProperty("fileSuffix1", "");
+		
 		// Stage 2
 		int trimSteadyBy = Integer.valueOf(properties.getProperty("trimSteadyBy", "7"));
 		int deviationDepth = Integer.valueOf(properties.getProperty("deviationDepth", "2"));
 		int stage2Workers = (int) Math.max(maxWorkers * Float.valueOf(properties.getProperty("fractionOfMaxWorkers2", "1")), 1);
+		String fileSuffix2 = properties.getProperty("fileSuffix2", "");
+
 
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
 		int recoveryResumePoint = Integer.valueOf(properties.getProperty("resumePoint", "0")); // Return here if we're restarting.
 		int getBackToSteadyDepth = Integer.valueOf(properties.getProperty("recoveryActions", "14")); // This many moves to recover.
 		int stage3Workers = (int) Math.max(maxWorkers * Float.valueOf(properties.getProperty("fractionOfMaxWorkers3", "1")), 1);
+		String fileSuffix3 = properties.getProperty("fileSuffix3", "");
+
 		
 		// Stage 4
 		int trimStartBy = stage3StartDepth; 
@@ -212,7 +217,7 @@ public class MAIN_Run {
 			System.out.println("Starting stage 1.");
 			// Saver setup.
 			DataSaver_StageSelected saver = new DataSaver_StageSelected();
-			saver.overrideFilename = "steadyRunPrefix";
+			saver.overrideFilename = "steadyRunPrefix" + fileSuffix1;
 			saver.setSavePath(saveLoc.getPath() + "/");
 
 			TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state. was 
@@ -245,7 +250,7 @@ public class MAIN_Run {
 
 			// Saver setup.
 			DataSaver_StageSelected saver = new DataSaver_StageSelected();
-			saver.overrideFilename = "deviations";
+			saver.overrideFilename = "deviations" + fileSuffix2;
 			saver.setSavePath(saveLoc.getPath() + "/");	
 
 			Node rootNode = new Node();
@@ -254,7 +259,7 @@ public class MAIN_Run {
 
 			TreeStage searchMin = new TreeStage_MinDepth(deviationDepth, new Sampler_FixedDepth(deviationDepth), saver); // Two actions to get weird. new Sampler_FixedDepth(deviationDepth)
 			SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
-			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/steadyRunPrefix.SaveableSingleGame"), rootNode, getToSteadyDepth - trimSteadyBy - 1);
+			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/steadyRunPrefix" + fileSuffix1 + ".SaveableSingleGame"), rootNode, getToSteadyDepth - trimSteadyBy - 1);
 			Node currNode = rootNode;
 			while (currNode.treeDepth < getToSteadyDepth - trimSteadyBy) {
 				currNode = currNode.children.get(0);
@@ -291,7 +296,7 @@ public class MAIN_Run {
 			ui.addRootNode(rootNode);
 
 			SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
-			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/deviations.SaveableSingleGame"), rootNode, stage3StartDepth);
+			Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(saveLoc.getPath() + "/deviations" + fileSuffix2 + ".SaveableSingleGame"), rootNode, stage3StartDepth);
 			List<Node> leafList = new ArrayList<Node>();
 			rootNode.getLeaves(leafList);
 
@@ -303,7 +308,7 @@ public class MAIN_Run {
 				if (count >= startAt) {
 					Utility.tic();
 					DataSaver_StageSelected saver = new DataSaver_StageSelected();
-					saver.overrideFilename = "recoveries" + count;
+					saver.overrideFilename = "recoveries" + count + fileSuffix3;
 					saver.setSavePath(saveLoc.getPath() + "/");
 
 					TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getBackToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.

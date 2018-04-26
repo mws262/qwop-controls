@@ -29,6 +29,7 @@ public class SparseDataToDense {
 
 	public SparseDataToDense(String fileLoc) {
 		saver = new DataSaver_DenseTFRecord();
+		if (!fileLoc.endsWith("/")) fileLoc = fileLoc + "/";
 		saver.setSavePath(fileLoc);
 	}
 
@@ -96,7 +97,6 @@ public class SparseDataToDense {
 	private void sim(SaveableSingleGame singleGame) {
 		actionQueue.clearAll();
 		Action[] gameActions = singleGame.actions;
-
 		Action[] noSaveActions1 = Arrays.copyOfRange(gameActions, 0, trimFirst);
 		Action[] saveActions = Arrays.copyOfRange(gameActions, trimFirst, gameActions.length - trimLast);
 		Action[] noSaveActions2 = Arrays.copyOfRange(gameActions, gameActions.length - trimLast, gameActions.length);

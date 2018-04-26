@@ -82,7 +82,8 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 
 	public void run() {
 		File[] allFiles = saveLoc.listFiles();
-
+		if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
+		
 		List<File> playbackFiles = new ArrayList<File>();
 		for (File f : allFiles){
 			if (f.getName().contains("TFRecord")) {

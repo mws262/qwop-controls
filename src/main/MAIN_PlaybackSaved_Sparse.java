@@ -34,7 +34,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame{
 	public static int windowHeight = 1000;
 
 
-	File saveLoc = new File("./4_9_18");
+	File saveLoc = new File("./4_25_18");
 
 	List<Node> leafNodes = new ArrayList<Node>(); 
 
@@ -65,10 +65,11 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame{
 
 	public void run() {
 		File[] allFiles = saveLoc.listFiles();
-
+		if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
+		
 		List<File> playbackFiles = new ArrayList<File>();
 		for (File f : allFiles){
-			if (f.getName().contains("recoveries")) {
+			if (f.getName().contains("recoveries") && !f.getName().contains("unsuccessful")) {
 				playbackFiles.add(f);
 			}
 		}
