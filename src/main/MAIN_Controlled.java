@@ -14,6 +14,7 @@ import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
 import game.GameLoader;
+import game.State;
 
 /**
  * Playback runs or sections of runs saved in SaveableSingleRun files.
@@ -110,7 +111,8 @@ public class MAIN_Controlled extends JFrame implements Runnable{
 
 		// Enter controller mode.
 		while (true) {
-			Action nextAction = controller.policy(game.getCurrentState());
+			State state = game.getCurrentState();
+			Action nextAction = controller.policy(state);
 			actionQueue.addAction(nextAction);
 			while (!actionQueue.isEmpty()) {
 				executeNextOnQueue();

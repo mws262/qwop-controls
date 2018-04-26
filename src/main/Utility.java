@@ -146,13 +146,19 @@ public class Utility {
 		Properties prop = new Properties();
 		try {
 			fis = new FileInputStream(file);
+			prop.load(fis);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		}
-		try {
-			prop.load(fis);
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally {
+			if (fis != null)
+				try {
+					fis.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
 		return prop;
 	}

@@ -134,20 +134,17 @@ public class MAIN_Run {
 		int stage2Workers = (int) Math.max(maxWorkers * Float.valueOf(properties.getProperty("fractionOfMaxWorkers2", "1")), 1);
 		String fileSuffix2 = properties.getProperty("fileSuffix2", "");
 
-
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
 		int recoveryResumePoint = Integer.valueOf(properties.getProperty("resumePoint", "0")); // Return here if we're restarting.
 		int getBackToSteadyDepth = Integer.valueOf(properties.getProperty("recoveryActions", "14")); // This many moves to recover.
 		int stage3Workers = (int) Math.max(maxWorkers * Float.valueOf(properties.getProperty("fractionOfMaxWorkers3", "1")), 1);
 		String fileSuffix3 = properties.getProperty("fileSuffix3", "");
-
-		
+	
 		// Stage 4
 		int trimStartBy = stage3StartDepth; 
 		int trimEndBy = Integer.valueOf(properties.getProperty("trimEndBy", "4"));
 
-		
 		assignAllowableActions(stage3StartDepth);
 
 		
