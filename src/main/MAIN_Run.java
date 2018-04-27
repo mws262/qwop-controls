@@ -212,6 +212,19 @@ public class MAIN_Run {
 		workerPool.setMaxTotal(maxWorkers);
 		workerPool.setMaxIdle(-1); // No limit to idle. Would have defaulted to 8, meaning all others would get culled between stages.
 
+		
+		// Check if we actually need to do stage 1.
+		if (doStage1 && autoResume) {
+			File[] existingFiles = saveLoc.listFiles();
+			for (File f : existingFiles) {
+				if (f.getName().contains("steadyRunPrefix")) {
+					System.out.println("Found a completed stage 1 file. Skipping.");
+					doStage1 = false;
+					break;
+				}
+			}
+		}
+		
 		if (doStage1) {
 			System.out.println("Starting stage 1.");
 			// Saver setup.
@@ -244,6 +257,18 @@ public class MAIN_Run {
 		}
 
 		// This stage generates deviations from nominal. Load nominal gait. Do not allow expansion near the root. Expand to a fixed, small depth.
+		// Check if we actually need to do stage 2.
+		if (doStage2 && autoResume) {
+			File[] existingFiles = saveLoc.listFiles();
+			for (File f : existingFiles) {
+				if (f.getName().contains("deviations")) {
+					System.out.println("Found a completed stage 2 file. Skipping.");
+					doStage2 = false;
+					break;
+				}
+			}
+		}
+		
 		if (doStage2) {
 			System.out.println("Starting stage 2.");
 
@@ -289,27 +314,29 @@ public class MAIN_Run {
 		if (doStage3) {
 			System.out.println("Starting stage 3.");
 
-			// Auto-detect where we left off.
-			File[] existingFiles = saveLoc.listFiles();
-			int startIdx = 0;
-			boolean foundFile = false;
-			while (startIdx < existingFiles.length){
-				for (File f : existingFiles) {
-					if (f.getName().contains("recoveries" + startIdx)) {
-						System.out.println("Found file for recovery " + startIdx);
-						foundFile = true;
+			// Auto-detect where we left off if this setting is selected.
+			if (autoResume) {
+				File[] existingFiles = saveLoc.listFiles();
+				int startIdx = 0;
+				boolean foundFile = false;
+				while (startIdx < existingFiles.length){
+					for (File f : existingFiles) {
+						if (f.getName().contains("recoveries" + startIdx)) {
+							System.out.println("Found file for recovery " + startIdx);
+							foundFile = true;
+							break;
+						}
+					}
+
+					if (!foundFile) {
 						break;
 					}
+					startIdx++;
+					foundFile = false;
 				}
-				
-				if (!foundFile) {
-					break;
-				}
-				startIdx++;
-				foundFile = false;
+				System.out.println("Resuming at recovery #: " + startIdx);
+				recoveryResumePoint = startIdx;
 			}
-			System.out.println("Resuming at recovery #: " + startIdx);
-			recoveryResumePoint = startIdx;
 
 			// Saver setup.
 			Node rootNode = new Node();
