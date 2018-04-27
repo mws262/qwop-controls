@@ -15,16 +15,16 @@ PARAMETERS & SETTINGS
 # Note: if freeze_checkpoint.py won't give the nodes I need, add them to the outputs. DO NOT PUT A SPACE AROUND THE COMMAS IN THE NODE LIST.
 # Additional troubles with trying to include input layer correct names -- somehow depends on iterator, which can't be loaded and initialized for some reason.
 # Use tfrecord_input/Squeeze as input.
-## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "untransform/untransform_output"
+## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "softmax/Softmax"
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
-tfrecordPath = './'  # Location of datafiles on this machine. Beware of drive mounting locations.
+tfrecordPath = '../../training_data/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
 learn_rate = 1e-6
 
-initWeightsStdev = .1
+initWeightsStdev = 0.1
 
 # All states found in the TFRECORD files
 stateKeys = ['BODY', 'HEAD', 'RTHIGH', 'LTHIGH', 'RCALF', 'LCALF',
@@ -173,7 +173,7 @@ batch_size = 1
 print_freq = 1999
 
 # Make a list of TFRecord files.
-filename_list = []#'denseTF_2018-04-26_15-19-44.TFRecord'] # ['denseTF_2018-04-24_21-06-02.TFRecord']
+filename_list = []
 for file in os.listdir(tfrecordPath):
     if file.endswith(tfrecordExtension):
         nextFile = tfrecordPath + file

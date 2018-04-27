@@ -42,7 +42,7 @@ public class GameLoader extends ClassLoader {
 	private final int iterations = 5;
 
 	/** Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls. **/
-	public static float torsoAngUpper = 3.2f, torsoAngLower = -3.2f; // Negative is falling backwards. 0.4 is start angle.
+	public static float torsoAngUpper = 1.57f, torsoAngLower = -2.2f; // Negative is falling backwards. 0.4 is start angle.
 
 	/** Normal stroke for line drawing. **/
 	private static final Stroke normalStroke = new BasicStroke(0.5f);
@@ -868,7 +868,7 @@ public class GameLoader extends ClassLoader {
 			// Extra fail conditions besides contacts. 
 			float angle = (float) torsoBody.getClass().getMethod("getAngle").invoke(torsoBody);
 			if (angle > torsoAngUpper || angle < torsoAngLower) { // Fail if torso angles get too far out of whack.
-				//isFailed = true;
+				setFailureStatus(true);
 			}
 			timestepsSimulated++;
 		}catch(Exception e) {

@@ -48,7 +48,7 @@ public class MAIN_Controlled extends JFrame implements Runnable{
 	private File prefixSave = new File("./4_25_18/steadyRunPrefix.SaveableSingleGame");
 
 	/** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
-	private int doPrefixToDepth = 12;
+	private int doPrefixToDepth = 10;
 
 	private List<Node> leafNodes = new ArrayList<Node>();
 

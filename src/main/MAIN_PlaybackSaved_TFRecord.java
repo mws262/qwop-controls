@@ -132,7 +132,6 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 			// Turn the StateVariables into a single State for this timestep.
 			stateVars[i] = new State(sVarBuffer[0], sVarBuffer[1], sVarBuffer[2], sVarBuffer[3], sVarBuffer[4], 
 					sVarBuffer[5], sVarBuffer[6], sVarBuffer[7], sVarBuffer[8], sVarBuffer[9], sVarBuffer[10], sVarBuffer[11], false);
-
 		}
 
 		runnerPane.simRun(new LinkedList(Arrays.asList(stateVars)));

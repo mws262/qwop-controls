@@ -1,6 +1,7 @@
 package main;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,16 +38,16 @@ import ui.UI_Full;
 import ui.UI_Headless;
 
 public class MAIN_Run {
-	
+
 	/** Location of the configuration file for this search. **/
 	private File configFile = new File("./search.config");
-	
+
 	/** Settings loaded from the config file. **/
 	private Properties properties;
-	
+
 	/** Whether or not to run without the UI. **/
 	private boolean headless = false;
-	
+
 	/** Information put in a running log to be saved at shutdown. **/
 	private String endLog = "";
 
@@ -79,16 +80,16 @@ public class MAIN_Run {
 		IDataSaver dataSaver = new DataSaver_DenseJava(); // Saves full state/action info, but in serialized java classes. // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
 		IDataSaver dataSaver = new DataSaver_Null(); // Greedy sampler progresses down the tree only sampling things further back when its current expansion is exhausted.
 		dataSaver.setSaveInterval(Integer.parseInt(settings.saver.get(1))); // set save frequency from parsed args if that argument has been input.
-		*/
-		
+		 */
+
 		// WORKER CORES:
 		// Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the Box2D libraries.
 		float workersFractionOfCores = Float.parseFloat(properties.getProperty("workersFractionOfCores", "0.8"));
 		int cores = Runtime.getRuntime().availableProcessors();
 		int maxWorkers = (int)(workersFractionOfCores*cores); // Basing of number of cores including hyperthreading. May want to optimize this a tad.
 		System.out.println("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
-		
-		
+
+
 		// SAVE DIRECTORY:
 		File saveLoc = new File(properties.getProperty("saveLocation", "./"));
 		if (!saveLoc.exists()) {
@@ -103,7 +104,7 @@ public class MAIN_Run {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		// Save a progress log before shutting down.
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
@@ -114,7 +115,7 @@ public class MAIN_Run {
 				}
 			}}); 
 
-		
+
 		Sampler_UCB.explorationMultiplier = Float.valueOf(properties.getProperty("UCBExplorationMultiplier", "1"));
 
 		headless = Boolean.valueOf(properties.getProperty("headless", "false"));
@@ -127,7 +128,7 @@ public class MAIN_Run {
 		int getToSteadyDepth = Integer.valueOf(properties.getProperty("getToSteadyDepth", "18"));
 		int stage1Workers = (int) Math.max(maxWorkers * Float.valueOf(properties.getProperty("fractionOfMaxWorkers1", "1")), 1);
 		String fileSuffix1 = properties.getProperty("fileSuffix1", "");
-		
+
 		// Stage 2
 		int trimSteadyBy = Integer.valueOf(properties.getProperty("trimSteadyBy", "7"));
 		int deviationDepth = Integer.valueOf(properties.getProperty("deviationDepth", "2"));
@@ -137,17 +138,18 @@ public class MAIN_Run {
 		// Stage 3
 		int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
 		int recoveryResumePoint = Integer.valueOf(properties.getProperty("resumePoint", "0")); // Return here if we're restarting.
+		boolean autoResume = Boolean.valueOf(properties.getProperty("autoResume","true")); // If true, overrides the recoveryResumePoint and looks at which files have been completed.
 		int getBackToSteadyDepth = Integer.valueOf(properties.getProperty("recoveryActions", "14")); // This many moves to recover.
 		int stage3Workers = (int) Math.max(maxWorkers * Float.valueOf(properties.getProperty("fractionOfMaxWorkers3", "1")), 1);
 		String fileSuffix3 = properties.getProperty("fileSuffix3", "");
-	
+
 		// Stage 4
 		int trimStartBy = stage3StartDepth; 
 		int trimEndBy = Integer.valueOf(properties.getProperty("trimEndBy", "4"));
 
 		assignAllowableActions(stage3StartDepth);
 
-		
+
 		/************************************************************/		
 		/**************** Pick user interface. **********************/
 		/************************************************************/
@@ -155,7 +157,7 @@ public class MAIN_Run {
 
 		IUserInterface ui;
 		PanelTimeSeries_WorkerLoad workerMonitorPanel = null;
-		
+
 		if (!headless) {
 			UI_Full fullUI = new UI_Full();
 
@@ -184,7 +186,7 @@ public class MAIN_Run {
 
 			Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameLoader should have their own threads.
 			runnerPanelThread.start();
-			
+
 			Thread monitorThread = new Thread(workerMonitorPanel);
 			monitorThread.start();
 
@@ -219,7 +221,7 @@ public class MAIN_Run {
 
 			TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state. was 
 			searchMax.terminateAfterXGames = Integer.valueOf(properties.getProperty("bailAfterXGames1", "1000000")); // Will terminate after this many games played regardless of whether goals have been met.
-			
+
 			// Grab some workers from the pool.
 			List<TreeWorker> tws1 = new ArrayList<TreeWorker>();
 			for (int i = 0; i < stage1Workers; i++) {
@@ -232,7 +234,7 @@ public class MAIN_Run {
 			if (!headless) workerMonitorPanel.setWorkers(tws1);
 			// Do stage search
 			searchMax.initialize(tws1, treeRoot);
-			
+
 			// Return the checked out workers.
 			for (TreeWorker w : tws1) {
 				workerPool.returnObject(w);
@@ -261,7 +263,7 @@ public class MAIN_Run {
 			while (currNode.treeDepth < getToSteadyDepth - trimSteadyBy) {
 				currNode = currNode.children.get(0);
 			}
-			
+
 			// Grab some workers from the pool.
 			List<TreeWorker> tws2 = new ArrayList<TreeWorker>();
 			for (int i = 0; i < stage2Workers; i++) {
@@ -273,7 +275,7 @@ public class MAIN_Run {
 			}
 			if (!headless) workerMonitorPanel.setWorkers(tws2);
 			searchMin.initialize(tws2, currNode);
-			
+
 			// Return the checked out workers.
 			for (TreeWorker w : tws2) {
 				workerPool.returnObject(w);
@@ -282,10 +284,32 @@ public class MAIN_Run {
 			endLog += "Did " + searchMin.getResults().size() + " deviations.\n";
 			endLog += "Stage 2 done.\n";
 		}
-		
+
 		// Expand the deviated spots and find recoveries.
 		if (doStage3) {
 			System.out.println("Starting stage 3.");
+
+			// Auto-detect where we left off.
+			File[] existingFiles = saveLoc.listFiles();
+			int startIdx = 0;
+			boolean foundFile = false;
+			while (startIdx < existingFiles.length){
+				for (File f : existingFiles) {
+					if (f.getName().contains("recoveries" + startIdx)) {
+						System.out.println("Found file for recovery " + startIdx);
+						foundFile = true;
+						break;
+					}
+				}
+				
+				if (!foundFile) {
+					break;
+				}
+				startIdx++;
+				foundFile = false;
+			}
+			System.out.println("Resuming at recovery #: " + startIdx);
+			recoveryResumePoint = startIdx;
 
 			// Saver setup.
 			Node rootNode = new Node();
@@ -300,7 +324,7 @@ public class MAIN_Run {
 			int count = 0;
 			int startAt = recoveryResumePoint;
 			Node previousLeaf = null;
-			
+
 			for (Node leaf : leafList) {
 				if (count >= startAt) {
 					Utility.tic();
@@ -310,9 +334,9 @@ public class MAIN_Run {
 
 					TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getBackToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
 					searchMax.terminateAfterXGames = Integer.valueOf(properties.getProperty("bailAfterXGames3", "100000"));;
-					
+
 					System.out.print("Started " + count + "...");
-					
+
 					// Grab some workers from the pool.
 					List<TreeWorker> tws3 = new ArrayList<TreeWorker>();
 					for (int i = 0; i < stage3Workers; i++) {
@@ -324,7 +348,7 @@ public class MAIN_Run {
 					}
 					if (!headless) workerMonitorPanel.setWorkers(tws3);
 					searchMax.initialize(tws3, leaf);
-					
+
 					// Return the checked out workers.
 					for (TreeWorker w : tws3) {
 						workerPool.returnObject(w);
@@ -338,9 +362,7 @@ public class MAIN_Run {
 					previousLeaf.destroyAllNodesBelowAndCheckExplored();
 				}
 				previousLeaf = leaf;
-				
-				
-				System.out.println(" finished.");
+
 				count++;
 				endLog += "Expanded leaf: " + count + ".\n";
 			}
@@ -348,7 +370,7 @@ public class MAIN_Run {
 			System.out.println("Stage 3 done.");
 			endLog += "Stage 3 done.\n";
 		}
-		
+
 		// Convert the sections of the runs we care about to dense data by resimulating.
 		if (doStage4) {
 			List<File> filesToConvert = new ArrayList<File>();
@@ -358,19 +380,19 @@ public class MAIN_Run {
 					filesToConvert.add(f);
 				}
 			}
-		
+
 			SparseDataToDense converter = new SparseDataToDense(saveLoc.getAbsolutePath() + "/");
 			converter.trimFirst = trimStartBy;
 			converter.trimLast = trimEndBy;
 			converter.convert(filesToConvert, true);	
-			
+
 			System.out.println("Stage 4 done.");
 			endLog += "Stage 4 done.\n";
 		}
-		
+
 		workerPool.close();
 	}
-	
+
 	/** Assign the correct generator of actions based on the baseline options and exceptions. **/
 	private void assignAllowableActions(int recoveryExceptionStart) {
 		/********************************************/		
