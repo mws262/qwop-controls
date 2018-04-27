@@ -12,3 +12,4 @@ src/python/tmp/
 *.TFRecord
 src/python/venv/
 *.log
+*.config
