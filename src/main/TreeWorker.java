@@ -285,7 +285,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
 				}
 
 				if (rootNode.fullyExplored.get()) {
-					changeStatus(Status.EXHAUSTED);
+					pauseWorker();
+					changeStatus(Status.IDLE);
+					System.out.println("Tree is fully explored, but just pausing for next stage.");
+//					changeStatus(Status.EXHAUSTED); // Trying out the above instead. This causes stages to terminate early I think. 4/30/18
 				}else {
 					changeStatus(Status.IDLE);
 				}

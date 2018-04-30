@@ -23,7 +23,7 @@ public class Transform_Autoencoder implements ITransform{
 
 	public Transform_Autoencoder(String filename, int outputDim) {
 		this.outputDim = outputDim;
-		String modelDir = "./src/python/models";
+		String modelDir = "./tflow_models";
 		byte[] graphDef = null;
 		try {
 			graphDef = Files.readAllBytes(Paths.get(modelDir, filename));
