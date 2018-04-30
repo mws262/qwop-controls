@@ -3,13 +3,13 @@
 *.SaveableDenseData
 *.SaveableSingleGame
 *.tfrecords
-src/python/logs/
+/python/logs/
 *.matt-desktop
 *.local
 *.NEWNEWNEW
-src/python/tmp/
+/python/tmp/
 .DS_Store
 *.TFRecord
-src/python/venv/
+/python/venv/
 *.log
 *.config
