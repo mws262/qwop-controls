@@ -16,7 +16,7 @@ To update the classpath settings for Eclipse:
 		<modelVersion>4.0.0</modelVersion>
 		<groupId>QWOP_SaveLoad</groupId>
 		<artifactId>QWOP_SaveLoad</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>1.0</version>
 
 		<properties>
 			<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -88,16 +88,17 @@ To update the classpath settings for Eclipse:
                 				<goal>single</goal>
            		 			</goals>
             				<configuration>
-                				<archive>
-                				<manifest>
-                    				<mainClass>
-                        				main.MAIN_Run
-                    				</mainClass>
-                				</manifest>
+            					<archive>
+                					<manifest>
+                    					<mainClass>
+                        					main.MAIN_Run
+                    					</mainClass>
+                					</manifest>
                 				</archive>
-                				<descriptorRefs>
-                    				<descriptorRef>jar-with-dependencies</descriptorRef>
-                				</descriptorRefs>
+            					<descriptors>
+            						<descriptor>${project.basedir}/jar-with-dependencies.xml</descriptor>
+            						<descriptor>${project.basedir}/deploy.xml</descriptor>
+            					</descriptors>
             				</configuration>
         				</execution>
     				</executions>

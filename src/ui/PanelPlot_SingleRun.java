@@ -19,6 +19,7 @@ import main.ActionQueue;
 import main.ITransform;
 import main.Node;
 import main.PanelPlot;
+import main.Utility;
 import transformations.Transform_Autoencoder;
 import transformations.Transform_Identity;
 
@@ -38,7 +39,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 	private GameLoader game;
 	
 	/** Transformer to use to transform normal states into reduced coordinates. **/
-	private ITransform transformer = new Transform_Autoencoder("AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
+	private ITransform transformer = new Transform_Autoencoder(Utility.getExcutionPath() + "tflow_models/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
 	/** Stores the qwop actions we're going to execute. **/
 	private ActionQueue actionQueue = new ActionQueue();

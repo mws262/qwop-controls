@@ -1,7 +1,6 @@
 package main;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +17,6 @@ import data.SaveableFileIO;
 import data.SaveableSingleGame;
 import data.SparseDataToDense;
 import distributions.Distribution_Normal;
-import distributions.Distribution_Uniform;
 import evaluators.Evaluator_Distance;
 import filters.NodeFilter_GoodDescendants;
 import samplers.Sampler_FixedDepth;
@@ -40,7 +38,7 @@ import ui.UI_Headless;
 public class MAIN_Run {
 
 	/** Location of the configuration file for this search. **/
-	private File configFile = new File("./search.config");
+	private File configFile = new File(Utility.getExcutionPath() + "search.config");
 
 	/** Settings loaded from the config file. **/
 	private Properties properties;
@@ -56,7 +54,6 @@ public class MAIN_Run {
 	}
 
 	public static void main(String[] args) {
-
 		MAIN_Run manager = new MAIN_Run();
 		manager.doGames();
 	}
@@ -91,9 +88,9 @@ public class MAIN_Run {
 
 
 		// SAVE DIRECTORY:
-		File saveLoc = new File(properties.getProperty("saveLocation", "./"));
+		File saveLoc = new File(Utility.getExcutionPath() + "/saved_data/" + properties.getProperty("saveLocation", "./"));
 		if (!saveLoc.exists()) {
-			boolean success = saveLoc.mkdir();
+			boolean success = saveLoc.mkdirs();
 			if (!success) throw new RuntimeException("Could not make save directory.");
 		}
 
@@ -169,7 +166,7 @@ public class MAIN_Run {
 
 			PanelPlot_Transformed pcaPlotPane = new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
 			PanelPlot_Controls controlsPlotPane = new PanelPlot_Controls(6); // 6 plots per view at the bottom.
-			PanelPlot_Transformed autoencPlotPane = new PanelPlot_Transformed(new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12), 6);
+			PanelPlot_Transformed autoencPlotPane = new PanelPlot_Transformed(new Transform_Autoencoder(Utility.getExcutionPath() + "tflow_models/AutoEnc_72to12_6layer.pb", 12), 6);
 			autoencPlotPane.addFilter(new NodeFilter_GoodDescendants(1));
 			PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun(6);
 			workerMonitorPanel = new PanelTimeSeries_WorkerLoad(maxWorkers);
@@ -204,7 +201,7 @@ public class MAIN_Run {
 		uiThread.start();
 
 		///////////////////////////////////////////////////////////
-
+		endLog += "Save directory: " + saveLoc.getAbsolutePath() + "\n";
 		// This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
 
 		// Pool of workers recycled between stages.

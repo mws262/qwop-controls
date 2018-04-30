@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +16,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
+
+import org.apache.curator.utils.PathUtils;
 
 public class Utility {
 
@@ -162,6 +165,22 @@ public class Utility {
 		}
 		return prop;
 	}
+	
+    public static String getExcutionPath(){
+    	String path = "";
+    	try {
+			path = Utility.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+    	if (path.endsWith(".jar")) { // Executing from packaged jar.
+    		int lastDiv = path.lastIndexOf("/");
+    		path = path.substring(0, lastDiv + 1);
+    	}else { // Running in eclipse or something.
+    		path += "../../";
+    	}
+        return path;
+    }
 }
 
 

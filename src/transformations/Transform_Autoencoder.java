@@ -23,10 +23,9 @@ public class Transform_Autoencoder implements ITransform{
 
 	public Transform_Autoencoder(String filename, int outputDim) {
 		this.outputDim = outputDim;
-		String modelDir = "./tflow_models";
 		byte[] graphDef = null;
 		try {
-			graphDef = Files.readAllBytes(Paths.get(modelDir, filename));
+			graphDef = Files.readAllBytes(Paths.get(filename));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

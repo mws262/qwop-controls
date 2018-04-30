@@ -10,6 +10,7 @@ import filters.NodeFilter_Downsample;
 import game.State;
 import main.ITransform;
 import main.Node;
+import main.Utility;
 import transformations.Transform_Autoencoder;
 import transformations.Transform_PCA;
 
@@ -29,14 +30,14 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated{
 
 	public PanelRunner_AnimatedTransformed() {
 		super();
-
+		String modelDir = Utility.getExcutionPath() + "./tflow_models/";
 		encoders = new ArrayList<ITransform>();
-		encoders.add(new Transform_Autoencoder("AutoEnc_72to1_6layer.pb", 1));
-		encoders.add(new Transform_Autoencoder("AutoEnc_72to2_6layer.pb", 2));
-		encoders.add(new Transform_Autoencoder("AutoEnc_72to6_6layer.pb", 6));
-		encoders.add(new Transform_Autoencoder("AutoEnc_72to8_6layer.pb", 8));
-		encoders.add(new Transform_Autoencoder("AutoEnc_72to12_6layer.pb", 12));
-		encoders.add(new Transform_Autoencoder("AutoEnc_72to16_6layer.pb", 16));
+		encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to1_6layer.pb", 1));
+		encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to2_6layer.pb", 2));
+		encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to6_6layer.pb", 6));
+		encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to8_6layer.pb", 8));
+		encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to12_6layer.pb", 12));
+		encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to16_6layer.pb", 16));
 		encoders.add(new Transform_PCA(new int[] {0,1,2,3,4,5,6,7,8,9,10,11}));
 	}
 	

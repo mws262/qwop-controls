@@ -19,6 +19,7 @@ import main.INodeFilter;
 import main.ITransform;
 import main.Node;
 import main.PanelPlot;
+import main.Utility;
 import transformations.Transform_Autoencoder;
 
 public class PanelPlot_Controls extends PanelPlot implements KeyListener {
@@ -26,7 +27,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 	private static final long serialVersionUID = 1L;
 	
 	/** Transformer to use to transform normal states into reduced coordinates. **/
-	private ITransform transformer = new Transform_Autoencoder("AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
+	private ITransform transformer = new Transform_Autoencoder(Utility.getExcutionPath() + "tflow_models/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
 	/** Filters to be applied to the node list. **/
 	List<INodeFilter> nodeFilters = new ArrayList<INodeFilter>();
