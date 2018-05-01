@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,12 +16,14 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import TreeStages.TreeStage_MaxDepth;
 import TreeStages.TreeStage_MinDepth;
+import data.SaveableActionSequence;
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
 import data.SparseDataToDense;
 import distributions.Distribution_Normal;
 import evaluators.Evaluator_Distance;
 import filters.NodeFilter_GoodDescendants;
+import game.GameLoader;
 import samplers.Sampler_FixedDepth;
 import samplers.Sampler_UCB;
 import savers.DataSaver_StageSelected;
@@ -239,6 +242,50 @@ public class MAIN_Run {
 			}
 		}
 
+		/*{	// For extending and fixing saved games from MAIN_Controlled
+			SaveableFileIO<SaveableActionSequence> actionSequenceLoader = new SaveableFileIO<SaveableActionSequence>();
+			
+			File actionSequenceLoadPath = new File(Utility.getExcutionPath() + "saved_data/individual_expansions_todo");
+			File[] actionFiles = actionSequenceLoadPath.listFiles();
+			
+			for (File f : actionFiles) {
+				// Load and queue actions.
+				List<SaveableActionSequence> actionSequence = actionSequenceLoader.loadObjectsOrdered(f);
+				ActionQueue actQueue = new ActionQueue();
+				//actQueue.addSequence(actionSequence.get(0).getActions());
+				
+				// 
+				Node rtnd = new Node();
+				rtnd.setState(GameLoader.getInitialState());
+				Node currNode = rtnd;
+				GameLoader game = new GameLoader();
+				for (Action act : actionSequence.get(0).getActions()) {
+					act.reset();
+					Node child = currNode.addChild(act);
+					currNode = child;
+					actQueue.addAction(act);
+					
+					
+					while (!actQueue.isEmpty()) {
+						boolean[] nextCommand = actQueue.pollCommand(); // Get and remove the next keypresses
+						boolean Q = nextCommand[0];
+						boolean W = nextCommand[1]; 
+						boolean O = nextCommand[2];
+						boolean P = nextCommand[3];
+						game.stepGame(Q,W,O,P);
+					}
+					
+					currNode.setState(game.getCurrentState());	
+				}
+				
+				ui.clearRootNodes();
+				ui.addRootNode(rtnd);
+				break;
+			}	
+		}*/
+		
+		
+		
 		if (doStage1) {
 			while (endlessStage1) { // If we want to just generate lots of normal runs.
 				System.out.println("Starting stage 1.");

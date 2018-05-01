@@ -1,16 +1,21 @@
 package main;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import controllers.Controller_Null;
 import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
+import data.SaveableActionSequence;
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
 import game.GameLoader;
@@ -24,7 +29,7 @@ import game.State;
  */
 
 @SuppressWarnings("serial")
-public class MAIN_Controlled extends JFrame implements Runnable{
+public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 
 	private GameLoader game = new GameLoader();
 
@@ -48,11 +53,14 @@ public class MAIN_Controlled extends JFrame implements Runnable{
 	private File prefixSave = new File(Utility.getExcutionPath() + "saved_data/4_25_18/steadyRunPrefix.SaveableSingleGame");
 
 	/** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
-	private int doPrefixToDepth = 10;
+	private int doPrefixToDepth = 12;
 
 	private List<Node> leafNodes = new ArrayList<Node>();
 
+	private SaveableFileIO<SaveableActionSequence> actionSaver = new SaveableFileIO<SaveableActionSequence>();
 
+	private String savePath = Utility.getExcutionPath() + "saved_data/individual_expansions_todo/";
+	
 	private ActionQueue actionQueue = new ActionQueue();
 
 	public static void main(String[] args) {
@@ -70,11 +78,21 @@ public class MAIN_Controlled extends JFrame implements Runnable{
 
 	public void setup() {
 		Panel panel = new Panel();
-		add(panel);
+		this.setLayout(new BorderLayout());
+		add(panel, BorderLayout.CENTER);
 
 		Thread graphicsThread = new Thread(this);
 		graphicsThread.start(); // Makes it smoother by updating the graphics faster than the timestep updates.
 
+		JButton saveButton = new JButton();
+		saveButton.setText("Save actions");
+		saveButton.addActionListener(this);
+		saveButton.setVisible(true);
+		saveButton.setPreferredSize(new Dimension(1000,50));
+		add(saveButton, BorderLayout.PAGE_END);
+
+		
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setPreferredSize(new Dimension(windowWidth, windowHeight));
 		setContentPane(this.getContentPane());
@@ -108,7 +126,6 @@ public class MAIN_Controlled extends JFrame implements Runnable{
 				e.printStackTrace();
 			}
 		}
-
 		// Enter controller mode.
 		while (true) {
 			State state = game.getCurrentState();
@@ -121,6 +138,7 @@ public class MAIN_Controlled extends JFrame implements Runnable{
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+				break;
 			}
 		}
 	}
@@ -160,6 +178,15 @@ public class MAIN_Controlled extends JFrame implements Runnable{
 				//				keyDrawer(g, Q, W, O, P);
 				//				drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
 			}
+		}
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		
+		if (e.getActionCommand() == "Save actions") {
+			SaveableActionSequence actionSequence = new SaveableActionSequence(actionQueue.getActionsInCurrentRun());
+			actionSaver.storeObjectsOrdered(actionSequence, savePath + "actions_" + Utility.getTimestamp(), false);
 		}
 	}	
 }

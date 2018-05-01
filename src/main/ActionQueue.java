@@ -70,9 +70,9 @@ public class ActionQueue{
 		}
 
 		boolean[] nextCommand = currentAction.poll();
-
 		if (!currentAction.hasNext() && actionQueue.isEmpty()){
 			currentAction.reset();
+			currentAction = null; // 5/1 added this due to bug with controller. Keep an eye out for broader effects.
 			isEmpty = true;
 		}
 		return nextCommand;

@@ -18,6 +18,8 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
 	/** Print out each prediction. **/
 	public boolean verbose = false;
 	
+	private int prevAction = 0;
+	
 	public Controller_Tensorflow_ClassifyActionsPerTimestep(String pbFile, String directory) {
 		super(pbFile, directory);
 	}
@@ -31,20 +33,23 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
 		float probability2 = keyClassification.get(2);
 		
 		Action chosenAction = null;
-		
+		//System.out.println(probability0 + "," + probability1 + "," + probability2);
 		// WO
 		if (probability0 > probability1 && probability0 > probability2) {
 			chosenAction = new Action(1, false, true, true, false);
+			prevAction = 0;
 			if (verbose) System.out.println("WO");
 			
 		// QP
 		}else if (probability1 > probability0 && probability1 > probability2) {
 			chosenAction = new Action(1, true, false, false, true);
+			prevAction = 1;
 			if (verbose) System.out.println("QP");
 
 		// None	
 		}else if (probability2 > probability0 && probability2 > probability1) {
 			chosenAction = new Action(1, false, false, false, false);
+			prevAction = 2;
 			if (verbose) System.out.println("__");
 		}
 		
