@@ -94,7 +94,7 @@ public class Node {
 
 	// Limiting number of display nodes.
 	public boolean limitDrawing = true;
-	private static Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
+	public static Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
 	public float drawFilterDistance = 0.1f; // Actually distance squared to avoid sqrt
 	public boolean notDrawnForSpeed = false;
 

@@ -1,6 +1,8 @@
 package main;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -116,6 +118,7 @@ public class MAIN_Run {
 		Sampler_UCB.explorationMultiplier = Float.valueOf(properties.getProperty("UCBExplorationMultiplier", "1"));
 
 		headless = Boolean.valueOf(properties.getProperty("headless", "false"));
+		boolean endlessStage1 = Boolean.valueOf(properties.getProperty("endlessStage1", "false"));
 		boolean doStage1 = Boolean.valueOf(properties.getProperty("doStage1", "false"));
 		boolean doStage2 = Boolean.valueOf(properties.getProperty("doStage2", "false"));;
 		boolean doStage3 = Boolean.valueOf(properties.getProperty("doStage3", "false"));;
@@ -201,6 +204,20 @@ public class MAIN_Run {
 		uiThread.start();
 
 		///////////////////////////////////////////////////////////
+
+		// Write machine details to log.
+		endLog += "OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + "\n";
+		String hostname = "Unknown";
+		try {
+			InetAddress addr;
+			addr = InetAddress.getLocalHost();
+			hostname = addr.getHostName();
+		} catch (UnknownHostException ex) {
+			System.out.println("Hostname can not be resolved");
+		}
+
+		endLog += "Name: " + hostname + "\n";
+
 		endLog += "Save directory: " + saveLoc.getAbsolutePath() + "\n";
 		// This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
 
@@ -209,9 +226,9 @@ public class MAIN_Run {
 		workerPool.setMaxTotal(maxWorkers);
 		workerPool.setMaxIdle(-1); // No limit to idle. Would have defaulted to 8, meaning all others would get culled between stages.
 
-		
+
 		// Check if we actually need to do stage 1.
-		if (doStage1 && autoResume) {
+		if (doStage1 && autoResume && !endlessStage1) {
 			File[] existingFiles = saveLoc.listFiles();
 			for (File f : existingFiles) {
 				if (f.getName().contains("steadyRunPrefix")) {
@@ -221,36 +238,47 @@ public class MAIN_Run {
 				}
 			}
 		}
-		
+
 		if (doStage1) {
-			System.out.println("Starting stage 1.");
-			// Saver setup.
-			DataSaver_StageSelected saver = new DataSaver_StageSelected();
-			saver.overrideFilename = "steadyRunPrefix" + fileSuffix1;
-			saver.setSavePath(saveLoc.getPath() + "/");
+			while (endlessStage1) { // If we want to just generate lots of normal runs.
+				System.out.println("Starting stage 1.");
+				// Saver setup.
+				DataSaver_StageSelected saver = new DataSaver_StageSelected();
+				saver.overrideFilename = "steadyRunPrefix" + fileSuffix1;
+				if (endlessStage1) saver.overrideFilename += Utility.getTimestamp();
+				saver.setSavePath(saveLoc.getPath() + "/");
 
-			TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state. was 
-			searchMax.terminateAfterXGames = Integer.valueOf(properties.getProperty("bailAfterXGames1", "1000000")); // Will terminate after this many games played regardless of whether goals have been met.
+				TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state. was 
+				searchMax.terminateAfterXGames = Integer.valueOf(properties.getProperty("bailAfterXGames1", "1000000")); // Will terminate after this many games played regardless of whether goals have been met.
 
-			// Grab some workers from the pool.
-			List<TreeWorker> tws1 = new ArrayList<TreeWorker>();
-			for (int i = 0; i < stage1Workers; i++) {
-				try {
-					tws1.add(workerPool.borrowObject());
-				} catch (Exception e) {
-					e.printStackTrace();
+				// Grab some workers from the pool.
+				List<TreeWorker> tws1 = new ArrayList<TreeWorker>();
+				for (int i = 0; i < stage1Workers; i++) {
+					try {
+						tws1.add(workerPool.borrowObject());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				if (!headless) workerMonitorPanel.setWorkers(tws1);
+				// Do stage search
+				searchMax.initialize(tws1, treeRoot);
+
+				// Return the checked out workers.
+				for (TreeWorker w : tws1) {
+					workerPool.returnObject(w);
+				}
+				System.out.println("Stage 1 done.");
+				endLog += "Stage 1 done.\n";
+				
+				// If we want to just do lots of stage 1, then clear the old root and start over.
+				if (endlessStage1) {
+					treeRoot = new Node();
+					ui.clearRootNodes();
+					ui.addRootNode(treeRoot);
+					Node.pointsToDraw.clear();
 				}
 			}
-			if (!headless) workerMonitorPanel.setWorkers(tws1);
-			// Do stage search
-			searchMax.initialize(tws1, treeRoot);
-
-			// Return the checked out workers.
-			for (TreeWorker w : tws1) {
-				workerPool.returnObject(w);
-			}
-			System.out.println("Stage 1 done.");
-			endLog += "Stage 1 done.\n";
 		}
 
 		// This stage generates deviations from nominal. Load nominal gait. Do not allow expansion near the root. Expand to a fixed, small depth.
@@ -265,7 +293,7 @@ public class MAIN_Run {
 				}
 			}
 		}
-		
+
 		if (doStage2) {
 			System.out.println("Starting stage 2.");
 
@@ -402,11 +430,13 @@ public class MAIN_Run {
 			for (File f : files) {
 				if (f.toString().toLowerCase().contains("recoveries") && f.toString().toLowerCase().contains("saveablesinglegame") && !f.toString().toLowerCase().contains("unsuccessful")) {
 					filesToConvert.add(f);
+				}else if (endlessStage1 && f.toString().toLowerCase().contains("steadyrunprefix")) {
+					filesToConvert.add(f);
 				}
 			}
 
 			SparseDataToDense converter = new SparseDataToDense(saveLoc.getAbsolutePath() + "/");
-			converter.trimFirst = trimStartBy;
+			converter.trimFirst = (endlessStage1) ? 0 : trimStartBy;
 			converter.trimLast = trimEndBy;
 			converter.convert(filesToConvert, true);	
 

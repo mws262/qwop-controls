@@ -51,7 +51,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 	public static int windowHeight = 1000;
 
 
-	File saveLoc = new File("./4_25_18");
+	File saveLoc = new File(Utility.getExcutionPath() + "saved_data/4_27_18_em");
 
 	List<Node> leafNodes = new ArrayList<Node>(); 
 
@@ -103,6 +103,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 			DataInputStream dIn = new DataInputStream(fIn);
 
 			TFRecordReader tfReader = new TFRecordReader(dIn, true);
+	
 			dataSeries = SequenceExample.parser().parseFrom(tfReader.read());
 		} catch (IOException e) {
 			e.printStackTrace();

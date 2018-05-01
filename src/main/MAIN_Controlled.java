@@ -45,7 +45,7 @@ public class MAIN_Controlled extends JFrame implements Runnable{
 	private float runnerScaling = 10f;
 
 	/** Place to load any 'prefix' run data in the form of a SaveableSingleGame **/
-	private File prefixSave = new File("./4_25_18/steadyRunPrefix.SaveableSingleGame");
+	private File prefixSave = new File(Utility.getExcutionPath() + "saved_data/4_25_18/steadyRunPrefix.SaveableSingleGame");
 
 	/** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
 	private int doPrefixToDepth = 10;
@@ -59,7 +59,7 @@ public class MAIN_Controlled extends JFrame implements Runnable{
 		MAIN_Controlled mc = new MAIN_Controlled();
 		
 		// Pick the exact controller and its settings.
-		Controller_Tensorflow_ClassifyActionsPerTimestep cont = new Controller_Tensorflow_ClassifyActionsPerTimestep("frozen_model.pb", "./src/python/logs/");
+		Controller_Tensorflow_ClassifyActionsPerTimestep cont = new Controller_Tensorflow_ClassifyActionsPerTimestep("frozen_model.pb", "./python/logs/");
 		cont.inputName = "tfrecord_input/split";
 		cont.outputName = "softmax/Softmax";
 		mc.controller = cont;

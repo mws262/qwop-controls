@@ -34,9 +34,12 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame{
 	public static int windowHeight = 1000;
 
 
-	File saveLoc = new File("./4_25_18");
+	File saveLoc = new File(Utility.getExcutionPath() + "saved_data/4_27_18_em");
 
 	List<Node> leafNodes = new ArrayList<Node>(); 
+	
+	/** What point to start displaying from (to skip any prefix). **/
+	public int startPt = 4;
 
 	public static void main(String[] args) {
 		MAIN_PlaybackSaved_Sparse mc = new MAIN_PlaybackSaved_Sparse();
@@ -69,7 +72,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame{
 		
 		List<File> playbackFiles = new ArrayList<File>();
 		for (File f : allFiles){
-			if (f.getName().contains("recoveries") && f.getName().contains("420") && !f.getName().contains("unsuccessful")) {
+			if (f.getName().contains("recoveries") && !f.getName().contains("unsuccessful")) {
 				playbackFiles.add(f);
 			}
 		}
@@ -84,7 +87,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame{
 			rootNode.getLeaves(leafNodes);
 			Node endNode = leafNodes.get(0);
 			Node startNode = endNode;
-			while (startNode.treeDepth > 12) {
+			while (startNode.treeDepth > startPt) {
 				startNode = startNode.parent;
 			}
 			runnerPane.simRunToNode(startNode, endNode.parent.parent); // Leaving off the last two because they usually are stupid.

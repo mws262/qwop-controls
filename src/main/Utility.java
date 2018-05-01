@@ -178,7 +178,6 @@ public class Utility {
     		path = path.substring(0, lastDiv + 1);
     		path = path.replaceFirst("^/(.:/)", "$1"); // Needed to strip drive letter off of the front of the path in Windows.
     		path = path.replace("//", ""); // If we end up with a double slashed concatenated after all these replacements.
-    		System.out.println(path);
     	}else { // Running in eclipse or something.
     		path += "../../";
     	}

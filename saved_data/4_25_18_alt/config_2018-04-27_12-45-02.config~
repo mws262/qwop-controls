@@ -1,34 +1,29 @@
 # Directory for saved runs
-saveLocation=./Wow_a_directory
+saveLocation=./4_25_18_alt
 headless=false
-autoResume=true
 workersFractionOfCores=0.8
 UCBExplorationMultiplier=1
-endlessStage1=false;
 
 # Stage 1 toggle: find single long run from rest.
-doStage1=true
-fileSuffix1=
+doStage1=false
 getToSteadyDepth=18
 fractionOfMaxWorkers1=1
 bailAfterXGames1=1000000
 
 # Stage 2 toggle: find deviations from the long run.
-doStage2=true
-fileSuffix2=
-trimSteadyBy=9
+doStage2=false
+trimSteadyBy=8
 deviationDepth=2
 fractionOfMaxWorkers2=0.25
 
 # Stage 3 toggle: find recoveries from the deviations
-doStage3=true
-fileSuffix3=
+doStage3=false
 recoveryActions=14
-resumePoint=0
+resumePoint=652
 fractionOfMaxWorkers3=1
 bailAfterXGames3=80000
 
-# Stage 4 toggle: turn sparse data into a single dense TFRecord file.
+# Stage 4 toggle: turn sparse data into a single dense TFRecord file
 doStage4=true
 trimEndBy=4
 

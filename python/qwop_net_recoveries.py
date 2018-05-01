@@ -18,11 +18,11 @@ PARAMETERS & SETTINGS
 ## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "softmax/Softmax"
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
-tfrecordPath = '../../training_data/'  # Location of datafiles on this machine. Beware of drive mounting locations.
+tfrecordPath = '../saved_data/training_data/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
-learn_rate = 1e-6
+learn_rate = 1e-4
 
 initWeightsStdev = 0.1
 
@@ -189,11 +189,11 @@ global_step = tf.Variable(0)
 with tf.name_scope("tfrecord_input"):
     filenames = tf.placeholder(tf.string, shape=[None])
     dataset = tf.data.TFRecordDataset(filenames)
-    dataset = dataset.map(_parse_function, num_parallel_calls=20)
-    dataset = dataset.shuffle(buffer_size=5000)
+    dataset = dataset.map(_parse_function, num_parallel_calls=30)
+    dataset = dataset.shuffle(buffer_size=50000)
     dataset = dataset.repeat()
     dataset = dataset.apply(tf.contrib.data.unbatch())
-    dataset = dataset.batch(1000)
+    dataset = dataset.batch(5000)
     #dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
     iterator = dataset.make_initializable_iterator()
     next = iterator.get_next()
@@ -205,7 +205,7 @@ with tf.name_scope("tfrecord_input"):
 # Encode the transformed input.
 with tf.name_scope('fully_connected'):
     scaled_state_in = tf.placeholder_with_default(state_batch, shape=[None, 72], name='fully_connected_input')
-    layers = [72,48,30,20,10,3]
+    layers = [72,60,48,30,20,10,6,3]
     out = sequential_layers(state_batch,layers, 'fully_connected')
     fully_connected_out = tf.identity(out, name='fully_connected_out') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)
