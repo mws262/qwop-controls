@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -185,8 +186,12 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		
 		if (e.getActionCommand() == "Save actions") {
-			SaveableActionSequence actionSequence = new SaveableActionSequence(actionQueue.getActionsInCurrentRun());
-			actionSaver.storeObjectsOrdered(actionSequence, savePath + "actions_" + Utility.getTimestamp(), false);
+			Action[] acts = actionQueue.getActionsInCurrentRun();
+			List<Action> actsConsolidated = Action.consolidateActions(Arrays.asList(acts));
+			
+			Action[] actsOut = new Action[actsConsolidated.size()];
+			SaveableActionSequence actionSequence = new SaveableActionSequence(actsConsolidated.toArray(actsOut));
+			actionSaver.storeObjectsOrdered(actionSequence, savePath + "actions_" + Utility.getTimestamp() + ".SaveableActionSequence", false);
 		}
 	}	
 }

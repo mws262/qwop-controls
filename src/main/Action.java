@@ -1,6 +1,9 @@
 package main;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Contains the keypresses and durations for a single action. Works like an uneditable queue.
@@ -120,5 +123,33 @@ public class Action implements Serializable{
 		Action copiedAction = new Action(timestepsTotal, keysPressed);
 		copiedAction.isExecutableCopy = true;
 		return copiedAction;
+	}
+	
+	/** Take a list of actions and combine adjacent actions which have the same keypresses.
+	 * These mostly arise when doing control on a timestep-by-timestep basis. **/
+	public static List<Action> consolidateActions(List<Action> inActions){
+		List<Action> outActions = new ArrayList<Action>();
+		int consolidations = 0;
+		// Combine adjacent same button actions.
+		for (int i = 0; i < inActions.size() - 1;) {
+			Action a1 = inActions.get(i);
+			Action a2 = inActions.get(i + 1);
+			if (Arrays.equals(a1.peek(), a2.peek())) {
+				outActions.add(new Action(a1.getTimestepsTotal() + a2.getTimestepsTotal(), a1.peek()));
+				consolidations++;
+				i += 2;
+			}else {
+				outActions.add(a1);
+				i++;
+				if (inActions.size() - 1 == i) outActions.add(a2);
+			}
+		}
+
+		// Recurse until no more combinations are made.
+		if (consolidations == 0) {
+			return outActions;
+		}else{
+			return consolidateActions(outActions);
+		}
 	}
 }

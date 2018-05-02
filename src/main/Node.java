@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 import com.jogamp.opengl.GL2;
 
+import data.SaveableActionSequence;
 import data.SaveableSingleGame;
 import game.GameLoader;
 import game.State;
@@ -447,13 +448,13 @@ public class Node {
 			leaf.checkFullyExplored_lite();
 		}
 	}
-	
+
 	/** Destroy a branch and try to free up its memory. Mark the trimmed branch as fully explored and propagate the status. **/
 	public void destroyAllNodesBelowAndCheckExplored() {
 		destroyAllNodesBelow();
 		checkFullyExplored_lite();
 	}
-	
+
 	/** Destroy a branch and try to free up its memory. **/
 	public void destroyAllNodesBelow() {
 		for (Node child : children) {
@@ -502,7 +503,7 @@ public class Node {
 	public boolean isFailed() {
 		return isFailed.get();
 	}
-	
+
 	public void setFailed(boolean failed) {
 		isFailed.set(failed);
 	}
@@ -585,9 +586,9 @@ public class Node {
 			gamesImported.increment();
 		}
 		//if (rootNode.uncheckedActions != null) {
-			rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
-			if (trimActionAddingToDepth >= 0) stripUncheckedActionsExceptOnLeaves(rootNode, trimActionAddingToDepth);
-			rootNode.calcNodePosBelow();
+		rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
+		if (trimActionAddingToDepth >= 0) stripUncheckedActionsExceptOnLeaves(rootNode, trimActionAddingToDepth);
+		rootNode.calcNodePosBelow();
 		//}
 		currentlyAddingSavedNodes = false;
 		return rootNode;
@@ -599,6 +600,48 @@ public class Node {
 		if (!node.children.isEmpty() && node.treeDepth <= minDepth) node.uncheckedActions.clear();
 		for (Node child : node.children) {
 			stripUncheckedActionsExceptOnLeaves(child, minDepth);
+		}
+	}
+
+	/** Add nodes based on saved action sequences. Has to resimulate each to get the states. **/
+	public static void makeNodesFromActionSequences(List<Action[]> actions, Node root, GameLoader game) {
+
+		ActionQueue actQueue = new ActionQueue();
+		root.setState(GameLoader.getInitialState());
+
+		for (Action[] acts : actions) {
+			game.makeNewWorld();
+			Node currNode = root;
+			actQueue.clearAll();
+			
+			for (Action act : acts) {
+				act.reset();
+				
+				// If there is already a node for this action, use it.
+				boolean foundExisting = false;
+				for (Node child : currNode.children) {
+					if (child.action.equals(act)) {
+						currNode = child;
+						foundExisting = true;
+						break;
+					}
+				}
+				
+				// Otherwise, make a new one.
+				if (!foundExisting) currNode = currNode.addChild(act);
+				
+				// Simulate
+				actQueue.addAction(act);
+				while (!actQueue.isEmpty()) {
+					boolean[] nextCommand = actQueue.pollCommand(); // Get and remove the next keypresses
+					boolean Q = nextCommand[0];
+					boolean W = nextCommand[1]; 
+					boolean O = nextCommand[2];
+					boolean P = nextCommand[3];
+					game.stepGame(Q,W,O,P);
+				}
+				currNode.setState(game.getCurrentState());	
+			}
 		}
 	}
 

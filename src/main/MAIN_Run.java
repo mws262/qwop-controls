@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.io.FileUtils;
@@ -230,6 +231,30 @@ public class MAIN_Run {
 		workerPool.setMaxIdle(-1); // No limit to idle. Would have defaulted to 8, meaning all others would get culled between stages.
 
 
+		{	// For extending and fixing saved games from MAIN_Controlled
+			SaveableFileIO<SaveableActionSequence> actionSequenceLoader = new SaveableFileIO<SaveableActionSequence>();
+
+			File actionSequenceLoadPath = new File(Utility.getExcutionPath() + "saved_data/individual_expansions_todo");
+			File[] actionFiles = actionSequenceLoadPath.listFiles();
+
+			GameLoader game = new GameLoader();
+			Node rt = new Node();
+
+			List<SaveableActionSequence> actionSequences = new ArrayList<SaveableActionSequence>();
+			for (File f : actionFiles) {
+				if (f.getName().contains("SaveableActionSequence")) {
+					actionSequences.addAll(actionSequenceLoader.loadObjectsOrdered(f));
+				}
+			}
+			List<Action[]> acts = actionSequences.stream().map(seq -> seq.getActions()).collect(Collectors.toList());	
+			Node.makeNodesFromActionSequences(acts, rt, game);
+
+			ui.clearRootNodes();
+			ui.addRootNode(rt);
+			//rt.calcNodePosBelow();
+		}
+
+
 		// Check if we actually need to do stage 1.
 		if (doStage1 && autoResume && !endlessStage1) {
 			File[] existingFiles = saveLoc.listFiles();
@@ -241,51 +266,6 @@ public class MAIN_Run {
 				}
 			}
 		}
-
-		/*{	// For extending and fixing saved games from MAIN_Controlled
-			SaveableFileIO<SaveableActionSequence> actionSequenceLoader = new SaveableFileIO<SaveableActionSequence>();
-			
-			File actionSequenceLoadPath = new File(Utility.getExcutionPath() + "saved_data/individual_expansions_todo");
-			File[] actionFiles = actionSequenceLoadPath.listFiles();
-			
-			for (File f : actionFiles) {
-				// Load and queue actions.
-				List<SaveableActionSequence> actionSequence = actionSequenceLoader.loadObjectsOrdered(f);
-				ActionQueue actQueue = new ActionQueue();
-				//actQueue.addSequence(actionSequence.get(0).getActions());
-				
-				// 
-				Node rtnd = new Node();
-				rtnd.setState(GameLoader.getInitialState());
-				Node currNode = rtnd;
-				GameLoader game = new GameLoader();
-				for (Action act : actionSequence.get(0).getActions()) {
-					act.reset();
-					Node child = currNode.addChild(act);
-					currNode = child;
-					actQueue.addAction(act);
-					
-					
-					while (!actQueue.isEmpty()) {
-						boolean[] nextCommand = actQueue.pollCommand(); // Get and remove the next keypresses
-						boolean Q = nextCommand[0];
-						boolean W = nextCommand[1]; 
-						boolean O = nextCommand[2];
-						boolean P = nextCommand[3];
-						game.stepGame(Q,W,O,P);
-					}
-					
-					currNode.setState(game.getCurrentState());	
-				}
-				
-				ui.clearRootNodes();
-				ui.addRootNode(rtnd);
-				break;
-			}	
-		}*/
-		
-		
-		
 		if (doStage1) {
 			while (endlessStage1) { // If we want to just generate lots of normal runs.
 				System.out.println("Starting stage 1.");
@@ -317,7 +297,7 @@ public class MAIN_Run {
 				}
 				System.out.println("Stage 1 done.");
 				endLog += "Stage 1 done.\n";
-				
+
 				// If we want to just do lots of stage 1, then clear the old root and start over.
 				if (endlessStage1) {
 					treeRoot = new Node();
@@ -340,7 +320,6 @@ public class MAIN_Run {
 				}
 			}
 		}
-
 		if (doStage2) {
 			System.out.println("Starting stage 2.");
 
