@@ -214,7 +214,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 			SparseDataToDense converter = new SparseDataToDense(getSaveLocation().getAbsolutePath() + "/");
 			converter.trimFirst = 0;//trimStartBy;
 			converter.trimLast = trimEndBy;
-			converter.convert(filesToConvert, false);	
+			converter.convert(filesToConvert, true);	
 
 			appendSummaryLog("Stage 4 done.");
 		}
