@@ -55,7 +55,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	private File prefixSave = new File(Utility.getExcutionPath() + "saved_data/4_25_18/steadyRunPrefix.SaveableSingleGame");
 
 	/** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
-	private int doPrefixToDepth = 0;
+	private int doPrefixToDepth = 3;
 
 	private List<Node> leafNodes = new ArrayList<Node>();
 

@@ -12,7 +12,9 @@
       <directory>${project.basedir}</directory>
       <outputDirectory></outputDirectory>
       <includes>
-        <include>search.config</include>
+        <include>search.config_full</include>
+        <include>search.config_long</include>
+	<include>search.config_selected</include>
         <include>configtemplate</include>
       </includes>
     </fileSet>
