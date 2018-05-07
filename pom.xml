@@ -191,5 +191,12 @@ To update the classpath settings for Eclipse:
     			 <artifactId>commons-io</artifactId>
    				 <version>1.3.2</version>
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/weka-dev -->
+			<dependency>
+   	 			<groupId>nz.ac.waikato.cms.weka</groupId>
+    			<artifactId>weka-dev</artifactId>
+    			<version>3.9.2</version>
+			</dependency>
+			
 		</dependencies>
 	</project>

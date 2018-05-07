@@ -16,7 +16,7 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
 	public String outputName = "";
 	
 	/** Print out each prediction. **/
-	public boolean verbose = false;
+	public boolean verbose = true;
 	
 	private int prevAction = 0;
 	
@@ -33,24 +33,27 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
 		float probability2 = keyClassification.get(2);
 		
 		Action chosenAction = null;
+		
+		float thresh = 1f;
 		//System.out.println(probability0 + "," + probability1 + "," + probability2);
 		// WO
-		if (probability0 > probability1 && probability0 > probability2) {
+		if ((probability0 > thresh && prevAction == 0) || probability0 > probability1 && probability0 > probability2) {
 			chosenAction = new Action(1, false, true, true, false);
 			prevAction = 0;
-			if (verbose) System.out.println("WO");
+			if (verbose) System.out.println("WO, " + probability0);
 			
 		// QP
-		}else if (probability1 > probability0 && probability1 > probability2) {
+		}else if ((probability1 > thresh && prevAction == 1) || probability1 > probability0 && probability1 > probability2) {
 			chosenAction = new Action(1, true, false, false, true);
 			prevAction = 1;
-			if (verbose) System.out.println("QP");
+			if (verbose) System.out.println("QP, " + probability1);
 
 		// None	
 		}else if (probability2 > probability0 && probability2 > probability1) {
+//			(probability2 > thresh && prevAction == 2) ||
 			chosenAction = new Action(1, false, false, false, false);
 			prevAction = 2;
-			if (verbose) System.out.println("__");
+			if (verbose) System.out.println("__, " + probability2);
 		}
 		
 		return chosenAction;

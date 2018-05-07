@@ -94,7 +94,7 @@ public class Node {
 	public static boolean debugDrawNodeLocking = false; // Draw which nodes are locked by command from the TreeWorkers.
 
 	// Limiting number of display nodes.
-	public boolean limitDrawing = true;
+	public static boolean limitDrawing = true;
 	public static Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
 	public float drawFilterDistance = 0.1f; // Actually distance squared to avoid sqrt
 	public boolean notDrawnForSpeed = false;

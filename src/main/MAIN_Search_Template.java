@@ -37,9 +37,9 @@ import ui.UI_Headless;
 
 public abstract class MAIN_Search_Template {
 
-	/** Location of the configuration file for this search. **/
-	protected File configFile = new File(Utility.getExcutionPath() + "search.config");
-	
+	//	/** Location of the configuration file for this search. **/
+	//	protected File configFile;
+
 	/** Settings loaded from the config file. Should AT LEAST contain:
 	 * boolean headless
 	 * string saveLocation
@@ -47,12 +47,12 @@ public abstract class MAIN_Search_Template {
 	 * 
 	 * **/
 	protected Properties properties;
-	
+
 	/** Whether or not to run without the UI. **/
 	protected final boolean headless;
 
 	protected final IUserInterface ui;
-	
+
 	/** Where should data be saved? **/
 	private File saveLoc;
 
@@ -69,15 +69,10 @@ public abstract class MAIN_Search_Template {
 	/** Maximum number of workers any stage can recruit. **/
 	private final int maxWorkers;
 
-	public static void main(String[] args) {
-		MAIN_Search_Full manager = new MAIN_Search_Full();
-		manager.doGames();
-	}
-
-	public MAIN_Search_Template() {
+	public MAIN_Search_Template(File configFile) {
 		// Load the configuration file.
 		properties = Utility.loadConfigFile(configFile);
-		
+
 		String logPrefix = "MAIN: ";
 		// Create the data save directory.
 		saveLoc = new File(Utility.getExcutionPath() + "/saved_data/" + properties.getProperty("saveLocation", "./"));
@@ -85,15 +80,15 @@ public abstract class MAIN_Search_Template {
 			boolean success = saveLoc.mkdirs();
 			if (!success) throw new RuntimeException("Could not make save directory.");
 		}
-		
+
 		// UI CONFIG:
 		headless = Boolean.valueOf(properties.getProperty("headless", "false")); // Default to using fullUI
 		appendSummaryLog(logPrefix + "Full UI is " + (headless ? "not" : "") + "on.");
 		ui = (headless) ? new UI_Headless() : setupFullUI(); // Make the UI.
-		
+
 		Thread uiThread = new Thread(ui);
 		uiThread.start();
-		
+
 		// Copy the config file into the save directory.
 		File configSave = new File(saveLoc.getAbsolutePath() + "/config_" + Utility.getTimestamp() + ".config");
 		try {
@@ -167,16 +162,16 @@ public abstract class MAIN_Search_Template {
 
 	protected void doBasicMaxDepthStage(Node rootNode, String saveName, int desiredDepth, float fractionOfWorkers, int maxGames) {
 		if (fractionOfWorkers > 1) throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
-		
+
 		String logPrefix = "BasicMaxDepthSearch: ";
-		
+
 		long startTime = System.currentTimeMillis();
 		int numWorkersToUse = (int)Math.max(1, fractionOfWorkers * maxWorkers);
 		appendSummaryLog(logPrefix + "starting from a root of absolute depth " + rootNode.treeDepth);
 		appendSummaryLog(logPrefix + "save file,  " + saveName);
 		appendSummaryLog(logPrefix + "playing a max of " + maxGames + " games.");
 		appendSummaryLog(logPrefix + "checked out " + numWorkersToUse + " workers.");
-		
+
 		DataSaver_StageSelected saver = new DataSaver_StageSelected();
 		saver.overrideFilename = saveName;
 		saver.setSavePath(saveLoc.getPath() + "/");
@@ -189,10 +184,10 @@ public abstract class MAIN_Search_Template {
 		for (int i = 0; i < numWorkersToUse; i++) {
 			tws1.add(borrowWorker());
 		}
-	
+
 		// Do stage search
 		searchMax.initialize(tws1, rootNode);
-		
+
 		float elapsedSeconds = Math.floorDiv(System.currentTimeMillis() - startTime,100)/10f; // To one decimal place.
 		appendSummaryLog(logPrefix + "Finished after " + elapsedSeconds + " seconds.");
 		appendSummaryLog(logPrefix + "Results -- " + (searchMax.getResults().isEmpty() ? "<goal not met>" : searchMax.getResults().get(0).treeDepth + " depth achieved."));
@@ -201,24 +196,24 @@ public abstract class MAIN_Search_Template {
 			returnWorker(w);
 		}
 	}
-	
+
 	protected void doBasicMinDepthStage(Node rootNode, String saveName, int minDepth, float fractionOfWorkers, int maxGames) {
 		if (fractionOfWorkers > 1) throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
 
 		String logPrefix = "BasicMinDepthSearch: ";
-		
+
 		long startTime = System.currentTimeMillis();
 		int numWorkersToUse = (int)Math.max(1, fractionOfWorkers * maxWorkers);
 		appendSummaryLog(logPrefix + "starting from a root of absolute depth " + rootNode.treeDepth);
 		appendSummaryLog(logPrefix + "save file,  " + saveName);
 		appendSummaryLog(logPrefix + "playing a max of " + maxGames + " games.");
 		appendSummaryLog(logPrefix + "checked out " + numWorkersToUse + " workers.");
-		
+
 		DataSaver_StageSelected saver = new DataSaver_StageSelected();
-			
+
 		saver.overrideFilename = saveName;
 		saver.setSavePath(saveLoc.getPath() + "/");	
-		
+
 		TreeStage searchMin = new TreeStage_MinDepth(minDepth, new Sampler_FixedDepth(minDepth), saver); // Two actions to get weird. new Sampler_FixedDepth(deviationDepth)
 
 		// Grab some workers from the pool.
@@ -231,7 +226,7 @@ public abstract class MAIN_Search_Template {
 			}
 		}
 		searchMin.initialize(tws2, rootNode);
-		
+
 		float elapsedSeconds = Math.floorDiv(System.currentTimeMillis() - startTime,100)/10f; // To one decimal place.
 		appendSummaryLog(logPrefix + "Finished after " + elapsedSeconds + " seconds.");
 		appendSummaryLog(logPrefix + "Did " + searchMin.getResults().size() + " deviations.");
@@ -241,7 +236,7 @@ public abstract class MAIN_Search_Template {
 			returnWorker(w);
 		}
 	}
-	
+
 	/** This is the heavyweight, full UI. Includes some TFlow components which are troublesome on a few computers. **/
 	private UI_Full setupFullUI() {
 		UI_Full fullUI = new UI_Full();
@@ -284,13 +279,15 @@ public abstract class MAIN_Search_Template {
 		endLog += addedLine + "\n";
 		System.out.println(addedLine);
 	}
-	
+
 	/** Return the save location file. **/
 	protected File getSaveLocation() {
 		return saveLoc;
 	}
 
-	/** Assign the correct generator of actions based on the baseline options and exceptions. **/
+	/** Assign the correct generator of actions based on the baseline options and exceptions. 
+	 * Will assign a broader set of options for "recovery" at the specified starting depth. 
+	 * Pass -1 to disable this. **/
 	protected void assignAllowableActions(int recoveryExceptionStart) {
 		/********************************************/		
 		/******* Space of allowable actions. ********/
@@ -370,14 +367,14 @@ public abstract class MAIN_Search_Template {
 		ActionSet actionSetFalseFalse = ActionSet.makeActionSet(durationsFalseFalse, keySetFalseFalse, distFalseFalse);
 
 		/**********  Repeated action 2 -- W-O pressed ***********/
-		Integer[] durationsWO = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
+		Integer[] durationsWO = IntStream.range(1, 70).boxed().toArray(Integer[] :: new);
 		boolean[][] keySetWO = ActionSet.replicateKeyString(new boolean[]{false,true,true,false}, durationsWO.length);
 
 		Distribution<Action> distWO = new Distribution_Normal(39f,3f);
 		ActionSet actionSetWO = ActionSet.makeActionSet(durationsWO, keySetWO, distWO);
 
 		/**********  Repeated action 4 -- Q-P pressed ***********/
-		Integer[] durationsQP = IntStream.range(10, 70).boxed().toArray(Integer[] :: new);
+		Integer[] durationsQP = IntStream.range(1, 70).boxed().toArray(Integer[] :: new);
 		boolean[][] keySetQP = ActionSet.replicateKeyString(new boolean[]{true,false,false,true}, durationsQP.length);
 
 		Distribution<Action> distQP = new Distribution_Normal(39f,3f);
@@ -391,23 +388,25 @@ public abstract class MAIN_Search_Template {
 		actionExceptions.put(3, actionSetE4);
 
 		// Put the recovery exceptions in the right spot.
-		for (int i = 0; i < 4; i++) {
-			int sequencePos = (recoveryExceptionStart + i) % 4;
+		if (recoveryExceptionStart >= 0) {
+			for (int i = 0; i < 4; i++) {
+				int sequencePos = (recoveryExceptionStart + i) % 4;
 
-			switch (sequencePos) {
-			case 0:
-				actionExceptions.put(recoveryExceptionStart + i, actionSetFalseFalse);
-				break;
-			case 1:
-				actionExceptions.put(recoveryExceptionStart + i, actionSetWO);
-				break;
-			case 2:
-				actionExceptions.put(recoveryExceptionStart + i, actionSetFalseFalse);
-				break;
-			case 3:
-				actionExceptions.put(recoveryExceptionStart + i, actionSetQP);
-				break;
-			}	
+				switch (sequencePos) {
+				case 0:
+					actionExceptions.put(recoveryExceptionStart + i, actionSetFalseFalse);
+					break;
+				case 1:
+					actionExceptions.put(recoveryExceptionStart + i, actionSetWO);
+					break;
+				case 2:
+					actionExceptions.put(recoveryExceptionStart + i, actionSetFalseFalse);
+					break;
+				case 3:
+					actionExceptions.put(recoveryExceptionStart + i, actionSetQP);
+					break;
+				}	
+			}
 		}
 
 		// Define the specific way that these allowed actions are assigned as potential options for nodes.

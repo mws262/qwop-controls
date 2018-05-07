@@ -1,57 +1,40 @@
 package main;
 import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-
-import TreeStages.TreeStage_MaxDepth;
-import TreeStages.TreeStage_MinDepth;
-import data.SaveableActionSequence;
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
 import data.SparseDataToDense;
-import evaluators.Evaluator_Distance;
-import filters.NodeFilter_GoodDescendants;
-import game.GameLoader;
-import samplers.Sampler_FixedDepth;
 import samplers.Sampler_UCB;
-import savers.DataSaver_StageSelected;
-import transformations.Transform_Autoencoder;
-import transformations.Transform_PCA;
-import ui.PanelPlot_Controls;
-import ui.PanelPlot_SingleRun;
-import ui.PanelPlot_States;
-import ui.PanelPlot_Transformed;
-import ui.PanelRunner_AnimatedTransformed;
-import ui.PanelRunner_Comparison;
-import ui.PanelRunner_Snapshot;
-import ui.PanelTimeSeries_WorkerLoad;
-import ui.UI_Full;
-import ui.UI_Headless;
-
+/**
+ * Does the full search in 4 stages.
+ * 1. get to steady running depth.
+ * 2. expand some node with a bunch of deviations from steady.
+ * 3. find recoveries for each deviation.
+ * 4. convert sparsely saved data to dense and save to file.
+ * 
+ * @author matt
+ *
+ */
 public class MAIN_Search_Full extends MAIN_Search_Template {
-
+	
 	public MAIN_Search_Full() {
-
+		super(new File(Utility.getExcutionPath() + "search.config_full"));
 	}
 
+	public static void main(String[] args) {
+		MAIN_Search_Full manager = new MAIN_Search_Full();
+		manager.doGames();
+	}
+	
 	public void doGames() {
 
 		// Load all parameters specific to this search.
 		Sampler_UCB.explorationMultiplier = Float.valueOf(properties.getProperty("UCBExplorationMultiplier", "1"));
 		boolean doStage1 = Boolean.valueOf(properties.getProperty("doStage1", "false"));
-		boolean doStage2 = Boolean.valueOf(properties.getProperty("doStage2", "false"));;
-		boolean doStage3 = Boolean.valueOf(properties.getProperty("doStage3", "false"));;
-		boolean doStage4 = Boolean.valueOf(properties.getProperty("doStage4", "false"));;
+		boolean doStage2 = Boolean.valueOf(properties.getProperty("doStage2", "false"));
+		boolean doStage3 = Boolean.valueOf(properties.getProperty("doStage3", "false"));
+		boolean doStage4 = Boolean.valueOf(properties.getProperty("doStage4", "false"));
 		
 		boolean autoResume = Boolean.valueOf(properties.getProperty("autoResume","true")); // If true, overrides the recoveryResumePoint and looks at which files have been completed.
 
@@ -84,6 +67,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 		// Stage 4
 		int trimStartBy = stage3StartDepth; 
 		int trimEndBy = Integer.valueOf(properties.getProperty("trimEndBy", "4"));
+		
 		///////////////////////////////////////////////////////////
 
 		assignAllowableActions(stage3StartDepth);
@@ -212,7 +196,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 				}
 			}
 			SparseDataToDense converter = new SparseDataToDense(getSaveLocation().getAbsolutePath() + "/");
-			converter.trimFirst = 0;//trimStartBy;
+			converter.trimFirst = trimStartBy;
 			converter.trimLast = trimEndBy;
 			converter.convert(filesToConvert, true);	
 
@@ -220,80 +204,3 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 		}
 	}
 }
-
-
-//{	// For extending and fixing saved games from MAIN_Controlled
-//	SaveableFileIO<SaveableActionSequence> actionSequenceLoader = new SaveableFileIO<SaveableActionSequence>();
-//
-//	File actionSequenceLoadPath = new File(Utility.getExcutionPath() + "saved_data/individual_expansions_todo");
-//	File[] actionFiles = actionSequenceLoadPath.listFiles();
-//
-//	GameLoader game = new GameLoader();
-//	Node rt = new Node();
-//
-//	List<SaveableActionSequence> actionSequences = new ArrayList<SaveableActionSequence>();
-//	for (File f : actionFiles) {
-//		if (f.getName().contains("SaveableActionSequence")) {
-//			actionSequences.addAll(actionSequenceLoader.loadObjectsOrdered(f));
-//		}
-//	}
-//	List<Action[]> acts = actionSequences.stream().map(seq -> seq.getActions()).collect(Collectors.toList());	
-//	Node.makeNodesFromActionSequences(acts, rt, game);
-//
-//	ui.clearRootNodes();
-//	ui.addRootNode(rt);
-//	
-//
-//	List<Node> leafList = new ArrayList<Node>();
-//	rt.getLeaves(leafList);
-//
-//	int count = 0;
-//	int startAt = 0;
-//	Node previousLeaf = null;
-//
-//	for (Node leaf : leafList) {
-//		if (count >= startAt) {
-//			Utility.tic();
-//			DataSaver_StageSelected saver = new DataSaver_StageSelected();
-//			saver.overrideFilename = "recoveries" + count + fileSuffix3;
-//			saver.setSavePath(saveLoc.getPath() + "/");
-//
-//			TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getBackToSteadyDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state.
-//			searchMax.terminateAfterXGames = Integer.valueOf(properties.getProperty("bailAfterXGames3", "100000"));;
-//
-//			System.out.print("Started " + count + "...");
-//
-//			// Grab some workers from the pool.
-//			List<TreeWorker> tws3 = new ArrayList<TreeWorker>();
-//			for (int i = 0; i < stage3Workers; i++) {
-//				try {
-//					tws3.add(workerPool.borrowObject());
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//			if (!headless) workerMonitorPanel.setWorkers(tws3);
-//			searchMax.initialize(tws3, leaf);
-//
-//			// Return the checked out workers.
-//			for (TreeWorker w : tws3) {
-//				workerPool.returnObject(w);
-//			}
-//			Utility.toc();
-//		}
-//		// Turn off drawing for this one.
-//		leaf.turnOffBranchDisplay();
-//		leaf.parent.children.remove(leaf);
-//		if (previousLeaf != null) {
-//			previousLeaf.destroyAllNodesBelowAndCheckExplored();
-//		}
-//		previousLeaf = leaf;
-//
-//		count++;
-//		endLog += "Expanded leaf: " + count + ".\n";
-//	}
-//
-//	System.out.println("Stage 3 done.");
-//	endLog += "Stage 3 done.\n";
-//
-//}

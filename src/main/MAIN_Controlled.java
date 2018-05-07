@@ -14,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
 import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
 import data.SaveableActionSequence;
@@ -54,7 +55,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	private File prefixSave = new File(Utility.getExcutionPath() + "saved_data/4_25_18/steadyRunPrefix.SaveableSingleGame");
 
 	/** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
-	private int doPrefixToDepth = 12;
+	private int doPrefixToDepth = 0;
 
 	private List<Node> leafNodes = new ArrayList<Node>();
 
@@ -67,12 +68,30 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	public static void main(String[] args) {
 		MAIN_Controlled mc = new MAIN_Controlled();
 		
-		// Pick the exact controller and its settings.
-		Controller_Tensorflow_ClassifyActionsPerTimestep cont = new Controller_Tensorflow_ClassifyActionsPerTimestep("frozen_model.pb", "./python/logs/");
-		cont.inputName = "tfrecord_input/split";
-		cont.outputName = "softmax/Softmax";
-		mc.controller = cont;
+//		// CONTROLLER -- Neural net picks keys.
+//		Controller_Tensorflow_ClassifyActionsPerTimestep cont = new Controller_Tensorflow_ClassifyActionsPerTimestep("frozen_model.pb", "./python/logs/");
+//		cont.inputName = "tfrecord_input/split";
+//		cont.outputName = "softmax/Softmax";
 
+		
+		// CONTROLLER -- Approximate nearest neighbor.
+		File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
+
+		File[] allFiles = saveLoc.listFiles();
+		if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
+
+		List<File> exampleDataFiles = new ArrayList<File>();
+		for (File f : allFiles){
+			if (f.getName().contains("TFRecord")) {
+				System.out.println("Found save file: " + f.getName());
+				exampleDataFiles.add(f);
+			}
+		}
+		Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(exampleDataFiles);
+		
+		
+		
+		mc.controller = cont;
 		mc.setup();
 		mc.doControlled();
 	}
@@ -116,11 +135,14 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		while (endNode.treeDepth > doPrefixToDepth) {
 			endNode = endNode.parent;
 		}
-
 		// Run prefix part.
 		actionQueue.addSequence(endNode.getSequence());
 		while (!actionQueue.isEmpty()) {
 			executeNextOnQueue();
+//			
+//			if (actionQueue.peekNextAction() == null) { // Experimental -- makes the final action end early so it doesn't throw it over to the controller right at a transition.
+//				actionQueue.pollCommand();
+//			}
 			try {
 				Thread.sleep(5);
 			} catch (InterruptedException e) {
@@ -129,13 +151,15 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		}
 		// Enter controller mode.
 		while (true) {
+			long initTime = System.currentTimeMillis();
 			State state = game.getCurrentState();
 			Action nextAction = controller.policy(state);
 			actionQueue.addAction(nextAction);
+
 			while (!actionQueue.isEmpty()) {
 				executeNextOnQueue();
 				try {
-					Thread.sleep(40);
+					Thread.sleep(Long.max(40 - (System.currentTimeMillis() - initTime), 0l));
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

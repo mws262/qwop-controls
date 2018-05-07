@@ -3,6 +3,7 @@ package main;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * All things related to queueing actions should happen in here. Actions themselves act like queues,
@@ -22,7 +23,7 @@ public class ActionQueue{
 	private Action currentAction;
 
 	/** Is there anything at all queued up to execute? Includes both the currentAction and the actionQueue **/
-	private boolean isEmpty = true;
+	private AtomicBoolean isEmpty = new AtomicBoolean(true);
 
 	public ActionQueue(){}
 
@@ -46,7 +47,7 @@ public class ActionQueue{
 		Action localCopy = action.getCopy();
 		actionQueue.add(localCopy);
 		actionListFull.add(localCopy);
-		isEmpty = false;
+		isEmpty.set(false);;
 	}
 
 	/** Add a sequence of actions. NOTE: sequence is NOT reset unless clearAll is called. **/
@@ -71,9 +72,9 @@ public class ActionQueue{
 
 		boolean[] nextCommand = currentAction.poll();
 		if (!currentAction.hasNext() && actionQueue.isEmpty()){
-			currentAction.reset();
+			//currentAction.reset();
 			//currentAction = null; // 5/1 added this due to bug with controller. Keep an eye out for broader effects.
-			isEmpty = true;
+			isEmpty.set(true);
 		}
 		return nextCommand;
 	}
@@ -86,11 +87,11 @@ public class ActionQueue{
 		currentAction = null;
 
 		//while (actionQueue.size() > 0 || currentAction != null
-		isEmpty = true;
+		isEmpty.set(true);
 	}
 
 	/** Check if the queue has anything in it. **/
-	public synchronized boolean isEmpty(){ return isEmpty; }
+	public synchronized boolean isEmpty(){ return isEmpty.get(); }
 
 	public Action[] getActionsInCurrentRun(){
 		Action[] actions = new Action[actionListFull.size()];

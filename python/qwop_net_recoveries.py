@@ -24,7 +24,7 @@ tfrecordPath = '../saved_data/training_data/'  # Location of datafiles on this m
 export_dir = './models/'
 learn_rate = 1e-5
 
-initWeightsStdev = 0.1
+initWeightsStdev = 0.5
 
 # All states found in the TFRECORD files
 stateKeys = ['BODY', 'HEAD', 'RTHIGH', 'LTHIGH', 'RCALF', 'LCALF',
@@ -169,7 +169,7 @@ def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.lea
 '''
 DEFINE SPECIFIC DATAFLOW
 '''
-batch_size = 1
+batch_size = 1000
 print_freq = 1999
 
 # Make a list of TFRecord files.
@@ -190,7 +190,7 @@ with tf.name_scope("tfrecord_input"):
     dataset = dataset.shuffle(buffer_size=50000)
     dataset = dataset.repeat()
     dataset = dataset.apply(tf.contrib.data.unbatch())
-    dataset = dataset.batch(1000)
+    dataset = dataset.batch(batch_size)
     #dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
     iterator = dataset.make_initializable_iterator()
     next = iterator.get_next()
@@ -199,10 +199,46 @@ with tf.name_scope("tfrecord_input"):
     dataset = dataset.prefetch(256)
 
 # LAYERS
+
+eps = 0.001
+is_training = True
+global_step = tf.Variable(0)
+mean_update_rate = tf.train.exponential_decay(0.2, global_step, 500, 0.7)
+
+if is_training:
+    print "TRAINING MODE ON"
+else:
+    print "TRAINING MODE OFF"
+
+# Input layer -- scale and recenter data.
+with tf.name_scope('transform'):
+    state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input_placeholder')
+    state_portal = tf.identity(state_in, name="transform_input")
+
+    mins_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False, name='running_input_min')
+    maxes_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False, name='running_input_max')
+    scaler_so_far = tf.Variable(initial_value=tf.zeros([1, 72], tf.float32),trainable=False, name='running_input_scaler')
+    mean_so_far = tf.Variable(initial_value=tf.zeros([1,72], tf.float32),trainable=False)
+
+    if is_training:
+        mins_so_far = tf.assign(mins_so_far,tf.minimum(mins_so_far, tf.reduce_min(state_portal, axis=0)), name='update_running_min')
+        maxes_so_far = tf.assign(maxes_so_far,tf.maximum(mins_so_far, tf.reduce_max(state_portal, axis=0)), name='update_running_max')
+        scaler_so_far = tf.assign(scaler_so_far, tf.subtract(maxes_so_far, mins_so_far), name='update_running_scaler')
+        this_mean = tf.reduce_mean(state_portal, axis=0)
+        mean_so_far = tf.assign(mean_so_far,
+                                tf.add(tf.scalar_mul(mean_update_rate, this_mean),
+                                       tf.scalar_mul(tf.subtract(tf.constant(1, dtype=tf.float32), mean_update_rate), mean_so_far)), name='update_mean')
+
+    scaled_state = tf.div(tf.subtract(state_portal, mean_so_far, 'subtract_mean'), tf.add(scaler_so_far, eps), 'divide_scale')
+    trans_out = tf.identity(scaled_state, name='transform_output') # Solely to make a convenient output to reference in the saved graph.
+
+
+
+
 # Encode the transformed input.
 with tf.name_scope('fully_connected'):
-    scaled_state_in = tf.placeholder_with_default(state_batch, shape=[None, 72], name='fully_connected_input')
-    layers = [72,30,10,3]
+    scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='fully_connected_input')
+    layers = [72,54,36,18,3]
     out = sequential_layers(state_batch,layers, 'fully_connected')
     fully_connected_out = tf.identity(out, name='fully_connected_out') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)

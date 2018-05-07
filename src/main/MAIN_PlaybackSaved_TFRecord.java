@@ -51,7 +51,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 	public static int windowHeight = 1000;
 
 
-	File saveLoc = new File(Utility.getExcutionPath() + "saved_data/5_1_18_tmp");
+	File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
 
 	List<Node> leafNodes = new ArrayList<Node>(); 
 
@@ -83,17 +83,18 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 	public void run() {
 		File[] allFiles = saveLoc.listFiles();
 		if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
-		
+
 		List<File> playbackFiles = new ArrayList<File>();
 		for (File f : allFiles){
-			if (f.getName().contains("TFRecord")) {
+			if (f.getName().contains("TFRecord") && f.getName().contains("controller_recovery_2018-05-04_11-22-59")) {
 				playbackFiles.add(f);
 			}
 		}
+
 		Collections.shuffle(playbackFiles);
 
 		// Validate -- not needed during batch run.
-		SequenceExample dataSeries = null;
+		List<SequenceExample> dataSeries = new ArrayList<SequenceExample>();
 		String fileName = playbackFiles.get(0).getAbsolutePath();
 		System.out.println(fileName);
 		FileInputStream fIn = null;
@@ -103,8 +104,11 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 			DataInputStream dIn = new DataInputStream(fIn);
 
 			TFRecordReader tfReader = new TFRecordReader(dIn, true);
-	
-			dataSeries = SequenceExample.parser().parseFrom(tfReader.read());
+
+			while (fIn.available() > 0) {
+				dataSeries.add(SequenceExample.parser().parseFrom(tfReader.read()));
+			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -115,34 +119,37 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 			}
 		}
 
-		int totalTimestepsInRun = dataSeries.getFeatureLists().getFeatureListMap().get("BODY").getFeatureCount();
-		State[] stateVars = new State[totalTimestepsInRun];
+		System.out.println("Read " + dataSeries.size() + " runs from file " + fileName);
+		for (SequenceExample seq : dataSeries) {
+			int totalTimestepsInRun = seq.getFeatureLists().getFeatureListMap().get("BODY").getFeatureCount();
+			State[] stateVars = new State[totalTimestepsInRun];
 
-		for (int i = 0; i < totalTimestepsInRun; i++) {
-			// Unpack each x y th... value in a given timestep. Turn them into StateVariables.
-			Map<String, FeatureList> featureListMap = dataSeries.getFeatureLists().getFeatureListMap();
-			StateVariable[] sVarBuffer = new StateVariable[State.ObjectName.values().length];
-			int idx = 0;
-			for (State.ObjectName bodyPart : State.ObjectName.values()) {
-				List<Float> sValList = featureListMap.get(bodyPart.toString()).getFeature(i).getFloatList().getValueList();
+			for (int i = 0; i < totalTimestepsInRun; i++) {
+				// Unpack each x y th... value in a given timestep. Turn them into StateVariables.
+				Map<String, FeatureList> featureListMap = seq.getFeatureLists().getFeatureListMap();
+				StateVariable[] sVarBuffer = new StateVariable[State.ObjectName.values().length];
+				int idx = 0;
+				for (State.ObjectName bodyPart : State.ObjectName.values()) {
+					List<Float> sValList = featureListMap.get(bodyPart.toString()).getFeature(i).getFloatList().getValueList();
 
-				sVarBuffer[idx] = new StateVariable(sValList);
-				idx++;
+					sVarBuffer[idx] = new StateVariable(sValList);
+					idx++;
+				}
+
+				// Turn the StateVariables into a single State for this timestep.
+				stateVars[i] = new State(sVarBuffer[0], sVarBuffer[1], sVarBuffer[2], sVarBuffer[3], sVarBuffer[4], 
+						sVarBuffer[5], sVarBuffer[6], sVarBuffer[7], sVarBuffer[8], sVarBuffer[9], sVarBuffer[10], sVarBuffer[11], false);
 			}
 
-			// Turn the StateVariables into a single State for this timestep.
-			stateVars[i] = new State(sVarBuffer[0], sVarBuffer[1], sVarBuffer[2], sVarBuffer[3], sVarBuffer[4], 
-					sVarBuffer[5], sVarBuffer[6], sVarBuffer[7], sVarBuffer[8], sVarBuffer[9], sVarBuffer[10], sVarBuffer[11], false);
-		}
+			runnerPane.simRun(new LinkedList<State>(Arrays.asList(stateVars)));
 
-		runnerPane.simRun(new LinkedList(Arrays.asList(stateVars)));
-		
-		while (!runnerPane.isFinishedWithRun()) {
-			runnerPane.repaint();
-			try {
-				Thread.sleep(20);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			while (!runnerPane.isFinishedWithRun()) {
+				runnerPane.repaint();
+				try {
+					Thread.sleep(20);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
