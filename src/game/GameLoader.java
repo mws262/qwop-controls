@@ -711,6 +711,17 @@ public class GameLoader extends ClassLoader {
 		
 		initialized = true;
 	}
+	
+	/** Apply a disturbance impulse to the body COM. **/
+	public void applyBodyImpulse(float xComp, float yComp) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, InstantiationException {
+		Object worldCenter = torsoBody.getClass().getMethod("getWorldCenter").invoke(torsoBody);
+		torsoBody.getClass().getMethod("applyImpulse", _Vec2, _Vec2).invoke(torsoBody, makeVec2(xComp, yComp), worldCenter);
+	}
+	
+	/** Apply a disturbance torque to the body. **/
+	public void applyBodyTorque(float cwTorque) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, InstantiationException {
+		torsoBody.getClass().getMethod("applyTorque", float.class).invoke(torsoBody, cwTorque);
+	}
 
 	/** Convenience method to avoid the verbose reflection stuff every time. 
 	 * @throws SecurityException 

@@ -1,7 +1,9 @@
 package controllers;
 
+import java.awt.Graphics;
 import java.util.List;
 
+import game.GameLoader;
 import game.State;
 import main.Action;
 import main.IController;
@@ -58,5 +60,8 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
 		
 		return chosenAction;
 	}
+
+	@Override
+	public void draw(Graphics g, GameLoader game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {}
 
 }

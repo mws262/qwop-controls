@@ -576,7 +576,6 @@ public class Node {
 				// If this action is unique at this point in the tree, we need to add a new node there.
 				if (!foundExistingMatch){
 					Node newNode = new Node(currentNode, run.actions[i]);
-					newNode.limitDrawing = false;
 					newNode.setState(run.states[i]);
 					if (rootNode.uncheckedActions != null) newNode.calcNodePos();
 					currentNode = newNode;

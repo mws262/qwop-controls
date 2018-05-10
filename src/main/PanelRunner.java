@@ -31,13 +31,13 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 	protected final static Font bigFont = new Font("Ariel", Font.BOLD,28);
 	
 	/** Normal stroke for line drawing. **/
-	protected final static Stroke normalStroke = new BasicStroke(0.5f);
+	public final static Stroke normalStroke = new BasicStroke(0.5f);
 	
 	/** Highlight stroke for line drawing. **/
-	protected final static Stroke boldStroke = new BasicStroke(2);
+	public final static Stroke boldStroke = new BasicStroke(2);
 	
 	/** Faded out gray for drawing past states and such. **/
-	protected final static Color ghostGray = new Color(0.6f,0.6f,0.6f);
+	public final static Color ghostGray = new Color(0.6f,0.6f,0.6f);
 	
 	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
 	public int xOffsetPixels = 960;

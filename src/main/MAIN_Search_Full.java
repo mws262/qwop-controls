@@ -87,6 +87,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 
 		if (doStage1) {
 			Node rootNode = new Node();
+			Node.pointsToDraw.clear();
 			ui.clearRootNodes();
 			ui.addRootNode(rootNode);
 			
@@ -110,6 +111,8 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 		if (doStage2) {
 			appendSummaryLog("Starting stage 2.");
 			Node rootNode = new Node();
+			
+			Node.pointsToDraw.clear();
 			ui.clearRootNodes();
 			ui.addRootNode(rootNode);
 			
@@ -155,6 +158,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 
 			// Saver setup.
 			Node rootNode = new Node();
+			Node.pointsToDraw.clear();
 			ui.clearRootNodes();
 			ui.addRootNode(rootNode);
 

@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,9 +15,10 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.jblas.util.Random;
+
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
-import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
 import data.SaveableActionSequence;
 import data.SaveableFileIO;
 import data.SaveableSingleGame;
@@ -55,25 +57,25 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	private File prefixSave = new File(Utility.getExcutionPath() + "saved_data/4_25_18/steadyRunPrefix.SaveableSingleGame");
 
 	/** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
-	private int doPrefixToDepth = 3;
+	private int doPrefixToDepth = 5;
 
 	private List<Node> leafNodes = new ArrayList<Node>();
 
 	private SaveableFileIO<SaveableActionSequence> actionSaver = new SaveableFileIO<SaveableActionSequence>();
 
 	private String savePath = Utility.getExcutionPath() + "saved_data/individual_expansions_todo/";
-	
+
 	private ActionQueue actionQueue = new ActionQueue();
 
 	public static void main(String[] args) {
 		MAIN_Controlled mc = new MAIN_Controlled();
-		
-//		// CONTROLLER -- Neural net picks keys.
-//		Controller_Tensorflow_ClassifyActionsPerTimestep cont = new Controller_Tensorflow_ClassifyActionsPerTimestep("frozen_model.pb", "./python/logs/");
-//		cont.inputName = "tfrecord_input/split";
-//		cont.outputName = "softmax/Softmax";
 
-		
+		//		// CONTROLLER -- Neural net picks keys.
+		//		Controller_Tensorflow_ClassifyActionsPerTimestep cont = new Controller_Tensorflow_ClassifyActionsPerTimestep("frozen_model.pb", "./python/logs/");
+		//		cont.inputName = "tfrecord_input/split";
+		//		cont.outputName = "softmax/Softmax";
+
+
 		// CONTROLLER -- Approximate nearest neighbor.
 		File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
 
@@ -88,9 +90,9 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 			}
 		}
 		Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(exampleDataFiles);
-		
-		
-		
+
+
+
 		mc.controller = cont;
 		mc.setup();
 		mc.doControlled();
@@ -111,8 +113,8 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		saveButton.setPreferredSize(new Dimension(1000,50));
 		add(saveButton, BorderLayout.PAGE_END);
 
-		
-		
+
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setPreferredSize(new Dimension(windowWidth, windowHeight));
 		setContentPane(this.getContentPane());
@@ -139,10 +141,10 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		actionQueue.addSequence(endNode.getSequence());
 		while (!actionQueue.isEmpty()) {
 			executeNextOnQueue();
-//			
-//			if (actionQueue.peekNextAction() == null) { // Experimental -- makes the final action end early so it doesn't throw it over to the controller right at a transition.
-//				actionQueue.pollCommand();
-//			}
+			//			
+			//			if (actionQueue.peekNextAction() == null) { // Experimental -- makes the final action end early so it doesn't throw it over to the controller right at a transition.
+			//				actionQueue.pollCommand();
+			//			}
 			try {
 				Thread.sleep(5);
 			} catch (InterruptedException e) {
@@ -157,9 +159,20 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 			actionQueue.addAction(nextAction);
 
 			while (!actionQueue.isEmpty()) {
+
+				try {
+					if (Random.nextFloat() > 0.5f) {
+						game.applyBodyImpulse(Random.nextFloat() - 0.5f, Random.nextFloat() - 0.5f);
+					}
+					//game.applyBodyTorque(-2f);
+				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+						| NoSuchMethodException | SecurityException | InstantiationException e1) {
+					e1.printStackTrace();
+				}
+
 				executeNextOnQueue();
 				try {
-					Thread.sleep(Long.max(40 - (System.currentTimeMillis() - initTime), 0l));
+					Thread.sleep(Long.max(20 - (System.currentTimeMillis() - initTime), 0l));
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -200,6 +213,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 			super.paintComponent(g);
 			if (game != null) {
 				game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
+				controller.draw(g, game, runnerScaling, xOffsetPixels, yOffsetPixels); // Optionally, the controller may want to draw some stuff for debugging.
 				//				keyDrawer(g, Q, W, O, P);
 				//				drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
 			}
@@ -208,11 +222,11 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
+
 		if (e.getActionCommand() == "Save actions") {
 			Action[] acts = actionQueue.getActionsInCurrentRun();
 			List<Action> actsConsolidated = Action.consolidateActions(Arrays.asList(acts));
-			
+
 			Action[] actsOut = new Action[actsConsolidated.size()];
 			SaveableActionSequence actionSequence = new SaveableActionSequence(actsConsolidated.toArray(actsOut));
 			actionSaver.storeObjectsOrdered(actionSequence, savePath + "actions_" + Utility.getTimestamp() + ".SaveableActionSequence", false);
