@@ -1,4 +1,4 @@
-package main;
+package flash;
 
 import java.awt.BorderLayout;
 
@@ -9,12 +9,13 @@ import javax.swing.SwingUtilities;
 import chrriis.common.UIUtils;
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 import chrriis.dj.nativeswing.swtimpl.components.JFlashPlayer;
+import main.Utility;
 
 public class TestRealQWOP {
 
 	  public static JComponent createContent() {
 	    JFlashPlayer flashPlayer = new JFlashPlayer();
-	    flashPlayer.load(Utility.getExcutionPath() + "./Andy.swf");
+	    flashPlayer.load(Utility.getExcutionPath() + "./flash_files/Andy.swf");
 	    return flashPlayer;
 	  }
 
