@@ -22,7 +22,7 @@ tfrecordPath = '../saved_data/training_data/'  # Location of datafiles on this m
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
-learn_rate = 1e-5
+learn_rate = 1e-6
 
 initWeightsStdev = 0.5
 
@@ -169,8 +169,8 @@ def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.lea
 '''
 DEFINE SPECIFIC DATAFLOW
 '''
-batch_size = 1000
-print_freq = 1999
+batch_size = 50000
+print_freq = 10
 
 # Make a list of TFRecord files.
 filename_list = [] # tfrecordPath+'denseTF_2018-05-01_08-37-16.TFRecord', tfrecordPath+'denseTF_2018-05-01_08-38-39.TFRecord']
@@ -187,7 +187,7 @@ with tf.name_scope("tfrecord_input"):
     filenames = tf.placeholder(tf.string, shape=[None])
     dataset = tf.data.TFRecordDataset(filenames)
     dataset = dataset.map(_parse_function, num_parallel_calls=30)
-    dataset = dataset.shuffle(buffer_size=50000)
+    dataset = dataset.shuffle(buffer_size=150000)
     dataset = dataset.repeat()
     dataset = dataset.apply(tf.contrib.data.unbatch())
     dataset = dataset.batch(batch_size)

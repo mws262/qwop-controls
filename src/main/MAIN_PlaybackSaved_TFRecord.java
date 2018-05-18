@@ -86,7 +86,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame{
 
 		List<File> playbackFiles = new ArrayList<File>();
 		for (File f : allFiles){
-			if (f.getName().contains("TFRecord") && f.getName().contains("controller_recovery_2018-05-04_11-22-59")) {
+			if (f.getName().contains("TFRecord") && f.getName().contains("denseTF_2018-05-11_13-35-18.TFRecord")) {
 				playbackFiles.add(f);
 			}
 		}

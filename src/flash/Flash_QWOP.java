@@ -4,10 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -23,6 +20,7 @@ import controllers.Controller_NearestNeighborApprox;
 import game.GameLoader;
 import game.State;
 import main.Action;
+import main.ActionQueue;
 import main.IController;
 import main.Utility;
 import ui.PanelRunner_SimpleState;
@@ -40,11 +38,13 @@ public class Flash_QWOP extends JFrame {
 	public boolean O = false;
 	public boolean P = false;
 
-	public boolean resetFlag = false;
+	private boolean resetFlag = false;
 	public State currentState;
 
 	public float currentTime = 0f;
 	public int timestep = 0;
+
+	private ActionQueue actionQueue = new ActionQueue();
 
 	public JComponent setupFlash() {
 		JFlashPlayer flashPlayer = new JFlashPlayer();
@@ -59,28 +59,19 @@ public class Flash_QWOP extends JFrame {
 				//System.out.println(e.getCommand());
 				switch(e.getCommand()) {
 				case "getQWOPData":
-					List<Float> stateValues = // Zombeast code -> csv string to list of actual flots
-					Arrays.asList(((String)e.getParameters()[0]).split(","))
-					.stream()
-					.map(String :: trim)
-					.map(s -> Float.valueOf(s))
-					.collect(Collectors.toList());
 
-					timestep = stateValues.get(0).intValue();
-					float[] states = new float[State.ObjectName.values().length * State.StateName.values().length];
+					String[] stateString = ((String)e.getParameters()[0]).split(",");
+					timestep = Float.valueOf(stateString[0].trim()).intValue();
 
+					float[] states = new float[State.ObjectName.values().length * State.StateName.values().length];	
 					for (int i = 0; i < states.length; i++) {
-						states[i] = stateValues.get(i + 1);
+						states[i] = Float.valueOf(stateString[i + 1].trim());
 					}
+
 					currentState = new State(states);
 					GameLoader.adjustRealQWOPStateToSimState(currentState);
+					actionQueue.addAction(controller.policy(currentState));
 
-					Action act = controller.policy(currentState);
-					Q = act.peek()[0];
-					W = act.peek()[1];
-					O = act.peek()[2];
-					P = act.peek()[3];
-					
 					runnerPane.updateState(currentState);
 					break;
 
@@ -94,25 +85,34 @@ public class Flash_QWOP extends JFrame {
 		// The game asks this for the control inputs. Can't return values with the normal FlashPlayerListener.
 		flashPlayer.getWebBrowser().registerFunction(new WebBrowserFunction("getQWOPControls") {
 			public Object invoke(JWebBrowser webBrowser, Object... args) {
+
+				if (!actionQueue.isEmpty()) {
+					boolean[] keys = actionQueue.pollCommand();
+					Q = keys[0]; W = keys[1]; O = keys[2]; P = keys[3];
+				}else {
+					System.out.println("Warning: No updated command available to the Flash game in time. Using the previously set keys.");
+				}
+
 				int qNum = Q ? 1 : 0;
 				int wNum = W ? 1 : 0;
 				int oNum = O ? 1 : 0;
 				int pNum = P ? 1 : 0;
-				int resetNum = resetFlag ? 1 : 0;
 
-				return (Object)(new Number[] {qNum, wNum, oNum, pNum, resetNum, 0, 0});
+				if (resetFlag) {
+					System.out.println("Flash game reset.");
+					resetFlag = false;
+					return (Object)(new Number[] {0, 0, 0, 0, 1, 0, 0});
+				}else {
+					System.out.println(timestep + "," + Q + "," + W + "," + O + "," + P);
+					return (Object)(new Number[] {qNum, wNum, oNum, pNum, 0, 0, 0});
+				}
 			}
 		});
 		return flashPlayer;
 	}
 
-	public static void testPrint(FlashPlayerCommandEvent e) {
-		StringBuilder sb = new StringBuilder();
-		Object[] parameters = e.getParameters();
-		for (Object obj : parameters) {
-			sb.append((String)(obj));
-		}
-		System.out.println(sb.toString());
+	public void flagForReset() {
+		resetFlag = true;
 	}
 
 	public void setupUI() {
@@ -162,7 +162,16 @@ public class Flash_QWOP extends JFrame {
 	public static void main(String[] args) {
 		Flash_QWOP gameQWOP = new Flash_QWOP();
 
+		gameQWOP.actionQueue.addAction(new Action(8,false,false,false,false));
+		gameQWOP.actionQueue.addAction(new Action(50,false,true,true,false));
+		gameQWOP.actionQueue.addAction(new Action(1,false,false,false,false));
+		gameQWOP.actionQueue.addAction(new Action(54,true,false,false,true));
+		
+		gameQWOP.flagForReset();
 		gameQWOP.setupController();
 		gameQWOP.setupUI();
+
+
 	}
+
 }

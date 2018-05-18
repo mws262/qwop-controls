@@ -57,7 +57,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	private File prefixSave = new File(Utility.getExcutionPath() + "saved_data/4_25_18/steadyRunPrefix.SaveableSingleGame");
 
 	/** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
-	private int doPrefixToDepth = 5;
+	private int doPrefixToDepth = 2;
 
 	private List<Node> leafNodes = new ArrayList<Node>();
 
@@ -160,15 +160,15 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 
 			while (!actionQueue.isEmpty()) {
 
-				try {
-					if (Random.nextFloat() > 0.5f) {
-						game.applyBodyImpulse(Random.nextFloat() - 0.5f, Random.nextFloat() - 0.5f);
-					}
-					//game.applyBodyTorque(-2f);
-				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-						| NoSuchMethodException | SecurityException | InstantiationException e1) {
-					e1.printStackTrace();
-				}
+//				try {
+//					if (Random.nextFloat() > 0.5f) {
+//						game.applyBodyImpulse(Random.nextFloat() - 0.5f, Random.nextFloat() - 0.5f);
+//					}
+//					//game.applyBodyTorque(-2f);
+//				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+//						| NoSuchMethodException | SecurityException | InstantiationException e1) {
+//					e1.printStackTrace();
+//				}
 
 				executeNextOnQueue();
 				try {
