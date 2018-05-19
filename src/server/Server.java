@@ -27,13 +27,13 @@ import main.Utility;
 public class Server {
 	public static final int port = 50000;
 	protected ServerSocket ss = null;
-	
+
 	boolean active = true;
 	NavigableMap<Float, StateHolder> allStates;
 	Set<RunHolder> runs;
-	
+
 	Controller_NearestNeighborApprox receivedController;
-	
+
 	public void runServer() throws IOException, ClassNotFoundException {
 		Socket socket = null;
 		ss = new ServerSocket(port);
@@ -46,7 +46,7 @@ public class Server {
 		receivedController.runs = runs;
 		receivedController.allStates = allStates;
 		System.out.println("received controller from client");
-		
+
 		while(active) {
 			State stateToProcess = (State)is.readObject();
 			System.out.println("Received state to process from client.");
@@ -54,17 +54,17 @@ public class Server {
 			System.out.println("Sending state back to client.");
 			os.writeObject(actToSend);
 		}
-		
+
 		//os.writeObject(m);
-		
+
 		ss.close();
 		socket.close();
 	}
 
 	public static void main(String[] args) {
-		
+
 		Server s = new Server();
-		
+
 		// CONTROLLER -- Get files loaded up.
 		File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
 
@@ -81,20 +81,24 @@ public class Server {
 		Controller_NearestNeighborApprox controllerTemplate = new Controller_NearestNeighborApprox(exampleDataFiles);
 		s.runs = controllerTemplate.runs;
 		s.allStates = controllerTemplate.allStates;
-		
+
+		s.launch();
+
+	}
+	private void launch() {
 		final Runnable listen = new Thread() {
 			@Override 
 			public void run() { 
 				try {
-				s.runServer();
+					runServer();
 				} catch (ClassNotFoundException | IOException e) {
 					// IO exception go back and relaunch.
 					System.out.println("IO interrupted. Launching anew.");
-					main(new String[0]);
+					launch();
 					//e.printStackTrace();
 				}finally {
 					try {
-						s.ss.close();
+						ss.close();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -118,13 +122,13 @@ public class Server {
 			ee.printStackTrace();
 		}
 		catch (TimeoutException te) { 
-				try {
-					System.out.println("killing socket");
-					s.ss.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			try {
+				System.out.println("killing socket");
+				ss.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			te.printStackTrace();
 		}
 		if (!executor.isTerminated())
