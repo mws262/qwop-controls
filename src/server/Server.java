@@ -53,6 +53,12 @@ public class Server {
 			Action actToSend = receivedController.policy(stateToProcess);
 			System.out.println("Sending state back to client.");
 			os.writeObject(actToSend);
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}
 		
@@ -82,8 +88,6 @@ public class Server {
 		Controller_NearestNeighborApprox controllerTemplate = new Controller_NearestNeighborApprox(exampleDataFiles);
 		s.runs = controllerTemplate.runs;
 		s.allStates = controllerTemplate.allStates;
-		
-
 		
 		final Runnable listen = new Thread() {
 			@Override 

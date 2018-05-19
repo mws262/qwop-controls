@@ -9,6 +9,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import controllers.Controller_NearestNeighborApprox;
+import game.GameLoader;
+import game.State;
+import main.Action;
 import main.IController;
 
 public class Client {
@@ -20,11 +23,18 @@ public class Client {
         System.out.println("Ok");
         Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(new ArrayList<File>());
         os.writeObject(cont);
-        System.out.println("Envoi des informations au serveur ...");
+        System.out.println("Sent controller template");
+        
+        GameLoader game = new GameLoader();
+        State st = GameLoader.getInitialState();
+        
+        os.writeObject(st);
+        
 
+       
         ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
-        IController returnMessage = (IController) is.readObject();
-        System.out.println("return Message is=" + returnMessage);
+        Action returnMessage = (Action) is.readObject();
+        System.out.println("return Message is=" + returnMessage.toString());
         socket.close();
     }
 }
