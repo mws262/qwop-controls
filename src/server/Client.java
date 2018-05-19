@@ -24,7 +24,7 @@ public class Client {
         System.out.println("Envoi des informations au serveur ...");
 
         ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
-        Message returnMessage = (Message) is.readObject();
+        IController returnMessage = (IController) is.readObject();
         System.out.println("return Message is=" + returnMessage);
         socket.close();
     }
