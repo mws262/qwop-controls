@@ -68,7 +68,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 	private int numStatesLoaded = 0;
 
 	/** All states loaded, regardless of run, in sorted order, by body theta. **/
-	private NavigableMap<Float, StateHolder> allStates = new TreeMap<Float, StateHolder>();
+	public NavigableMap<Float, StateHolder> allStates = new TreeMap<Float, StateHolder>();
 
 	/** All runs loaded. **/
 	public Set<RunHolder> runs = new HashSet<RunHolder>(); 
@@ -304,7 +304,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		Utility.toc();
 	}
 
-	private class StateHolder implements Serializable {
+	public class StateHolder implements Serializable {
 	
 		private static final long serialVersionUID = 1L;
 
@@ -324,7 +324,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 			parentRun.addState(this); // Each StateHolder adds itself to the run it's part of. Probably terrible programming, but I'm keeping it pretty contained here.
 		}
 	}
-	private class RunHolder implements Serializable {
+	public class RunHolder implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 		

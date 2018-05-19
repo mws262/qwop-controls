@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.List;
 
 import controllers.Controller_NearestNeighborApprox;
 import main.IController;
@@ -19,7 +18,7 @@ public class Client {
         System.out.println("Client connected");
         ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
         System.out.println("Ok");
-        IController cont = new Controller_NearestNeighborApprox(new ArrayList<File>());
+        Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(new ArrayList<File>());
         os.writeObject(cont);
         System.out.println("Envoi des informations au serveur ...");
 
