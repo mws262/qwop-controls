@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,7 +39,10 @@ import main.State_Weights;
 import main.Utility;
 
 
-public class Controller_NearestNeighborApprox implements IController {
+public class Controller_NearestNeighborApprox implements IController, Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
 	/** Selection options! **/
 	State.ObjectName sortByPart = State.ObjectName.BODY;
 	State.StateName sortBySt = State.StateName.TH;
@@ -300,7 +304,10 @@ public class Controller_NearestNeighborApprox implements IController {
 		Utility.toc();
 	}
 
-	private class StateHolder{
+	private class StateHolder implements Serializable {
+	
+		private static final long serialVersionUID = 1L;
+
 		/** Actual physical state variables. **/
 		final State state;
 
@@ -317,7 +324,10 @@ public class Controller_NearestNeighborApprox implements IController {
 			parentRun.addState(this); // Each StateHolder adds itself to the run it's part of. Probably terrible programming, but I'm keeping it pretty contained here.
 		}
 	}
-	private class RunHolder {
+	private class RunHolder implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+		
 		/** All the states seen in this single run. **/
 		List<StateHolder> states = new ArrayList<StateHolder>();
 
