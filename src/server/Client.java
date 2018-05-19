@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 public class Client {
     public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
         System.out.println("welcome client");
-        Socket socket = new Socket("localhost", 4444);
+        Socket socket = new Socket("mattlinux.ddns.net", 22);
         System.out.println("Client connected");
         ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
         System.out.println("Ok");
