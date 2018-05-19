@@ -14,8 +14,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import main.IController;
+
 public class Server {
-	public static final int port = 22;
+	public static final int port = 50000;
 	protected ServerSocket ss = null;
 
 	public void runServer() throws IOException, ClassNotFoundException {
@@ -26,17 +28,12 @@ public class Server {
 		ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
 		ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
 
-		Message m = (Message) is.readObject();
-		doSomething(m);
+		IController m = (IController) is.readObject();
 
 		os.writeObject(m);
 		
 		ss.close();
 		socket.close();
-	}
-
-	private void doSomething(Message m) {
-		m.setResult(new Integer(m.getA().intValue()*m.getB().intValue()));
 	}
 
 	public static void main(String[] args) throws ClassNotFoundException, IOException {
