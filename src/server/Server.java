@@ -61,7 +61,7 @@ public class Server {
 		socket.close();
 	}
 
-	public static void main(String[] args) throws ClassNotFoundException, IOException {
+	public static void main(String[] args) {
 		
 		Server s = new Server();
 		
@@ -88,7 +88,10 @@ public class Server {
 				try {
 				s.runServer();
 				} catch (ClassNotFoundException | IOException e) {
-					e.printStackTrace();
+					// IO exception go back and relaunch.
+					System.out.println("IO interrupted. Launching anew.");
+					main(new String[0]);
+					//e.printStackTrace();
 				}finally {
 					try {
 						s.ss.close();
