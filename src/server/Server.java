@@ -113,12 +113,18 @@ public class Server {
 					// IO exception go back and relaunch.
 					System.out.println("IO interrupted. Client probably disconnected. Waiting for a new controller.");
 					try {
+						socket.close();
+						serverSocket.close();
+						outStream.close();
+						inStream.close();
+						initialize();
 						awaitController();
 						awaitStates();
 					} catch (ClassNotFoundException | IOException e1) {
 						e1.printStackTrace();
 					}finally {
 						try {
+							socket.close();
 							serverSocket.close();
 						} catch (IOException e1) {
 							e1.printStackTrace();
@@ -126,6 +132,7 @@ public class Server {
 					}	
 				}finally {
 					try {
+						socket.close();
 						serverSocket.close();
 					} catch (IOException e) {
 						e.printStackTrace();

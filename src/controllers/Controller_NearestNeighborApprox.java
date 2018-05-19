@@ -251,7 +251,6 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 				while (fIn.available() > 0) {
 					dataSeries.add(SequenceExample.parser().parseFrom(tfReader.read()));
 				}
-
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
