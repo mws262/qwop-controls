@@ -115,21 +115,10 @@ public class Server {
 					try {
 						socket.close();
 						serverSocket.close();
-						outStream.close();
-						inStream.close();
-						initialize();
-						awaitController();
-						awaitStates();
-					} catch (ClassNotFoundException | IOException e1) {
-						e1.printStackTrace();
-					}finally {
-						try {
-							socket.close();
-							serverSocket.close();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-					}	
+					} catch (IOException e2) {
+						e2.printStackTrace();
+					}
+					run();	
 				}finally {
 					try {
 						socket.close();
