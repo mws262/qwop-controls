@@ -25,46 +25,27 @@ import main.Action;
 import main.Utility;
 
 public class Server {
+	/** Communication port. Router has 50000-51000 enabled **/
 	public static final int port = 50000;
-	protected ServerSocket ss = null;
+	
+	/** Still listening for the client to send States? **/
+	public boolean active = true;
+	
+	/** States and runs to be loaded from the TFRecord files. These will be inserted into whatever controller is sent in. **/
+	private NavigableMap<Float, StateHolder> allStates;
+	private Set<RunHolder> runs;
 
-	boolean active = true;
-	NavigableMap<Float, StateHolder> allStates;
-	Set<RunHolder> runs;
-
-	Controller_NearestNeighborApprox receivedController;
-
-	public void runServer() throws IOException, ClassNotFoundException {
-		Socket socket = null;
-		ss = new ServerSocket(port);
-		System.out.println("Waiting for connections on port " + port);
-		socket = ss.accept();
-		ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
-		ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
-
-		receivedController = (Controller_NearestNeighborApprox) is.readObject();
-		receivedController.runs = runs;
-		receivedController.allStates = allStates;
-		System.out.println("received controller from client");
-
-		while(active) {
-			State stateToProcess = (State)is.readObject();
-			System.out.println("Received state to process from client.");
-			Action actToSend = receivedController.policy(stateToProcess);
-			System.out.println("Sending state back to client.");
-			os.writeObject(actToSend);
-		}
-
-		//os.writeObject(m);
-
-		ss.close();
-		socket.close();
-	}
-
-	public static void main(String[] args) {
-
-		Server s = new Server();
-
+	/** Controller sent in from the client. Allows the client to decide what settings to use. **/
+	private Controller_NearestNeighborApprox receivedController;
+	
+	private ServerSocket serverSocket = null;
+	private Socket socket = null;
+	private ObjectOutputStream outStream;
+	private ObjectInputStream inStream;
+	
+	
+	private void loadFiles() {
+		
 		// CONTROLLER -- Get files loaded up.
 		File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
 
@@ -79,26 +60,73 @@ public class Server {
 			}
 		}
 		Controller_NearestNeighborApprox controllerTemplate = new Controller_NearestNeighborApprox(exampleDataFiles);
-		s.runs = controllerTemplate.runs;
-		s.allStates = controllerTemplate.allStates;
+		allStates = controllerTemplate.allStates;
+		runs = controllerTemplate.runs;
+	}
+	
+	/** Open the IO. **/
+	private void initialize() throws IOException, ClassNotFoundException {
+		serverSocket = new ServerSocket(port);
+		System.out.println("Waiting for connections on port " + port + ".");
+		socket = serverSocket.accept();
+		outStream = new ObjectOutputStream(socket.getOutputStream());
+		inStream = new ObjectInputStream(socket.getInputStream());
+	}
+	
+	/** Wait for the client to send a controller along. **/
+	private void awaitController() throws ClassNotFoundException, IOException {
+		System.out.println("Waiting for a controller from the client.");
+		receivedController = (Controller_NearestNeighborApprox) inStream.readObject();
+		receivedController.runs = runs;
+		receivedController.allStates = allStates;
+		System.out.println("Received controller from client.");
+	}
+	
+	/** Wait for the client to send in states for the server to process. **/
+	public void awaitStates() throws IOException, ClassNotFoundException {
+		while(active) {
+			State stateToProcess = (State)inStream.readObject();
+			System.out.println("Received state to process from client.");
+			Action actToSend = receivedController.policy(stateToProcess);
+			System.out.println("Sending state back to client.");
+			outStream.writeObject(actToSend);
+		}
+		serverSocket.close();
+		socket.close();
+	}
 
-		s.launch();
+	public static void main(String[] args) {
 
+		Server server = new Server();
+		server.loadFiles();
+		server.launch();	
 	}
 	private void launch() {
-		final Runnable listen = new Thread() {
+		final Runnable serverListen = new Thread() {
 			@Override 
 			public void run() { 
 				try {
-					runServer();
+					initialize();
+					awaitController();
+					awaitStates();
 				} catch (ClassNotFoundException | IOException e) {
 					// IO exception go back and relaunch.
-					System.out.println("IO interrupted. Launching anew.");
-					launch();
-					//e.printStackTrace();
+					System.out.println("IO interrupted. Client probably disconnected. Waiting for a new controller.");
+					try {
+						awaitController();
+						awaitStates();
+					} catch (ClassNotFoundException | IOException e1) {
+						e1.printStackTrace();
+					}finally {
+						try {
+							serverSocket.close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}	
 				}finally {
 					try {
-						ss.close();
+						serverSocket.close();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -107,7 +135,7 @@ public class Server {
 		};
 
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
-		final Future future = executor.submit(listen);
+		final Future future = executor.submit(serverListen);
 		executor.shutdown(); // This does not cancel the already-scheduled task.
 
 		try { 
@@ -124,9 +152,8 @@ public class Server {
 		catch (TimeoutException te) { 
 			try {
 				System.out.println("killing socket");
-				ss.close();
+				serverSocket.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			te.printStackTrace();
