@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 public class Client {
 	
 	/** Server details. **/
-	final String server = "localhost";//mattlinux.ddns.net";
+	final String server = "localhost";
 	final int port = 50000; // 50000 - 50100 currently open on router at home.
 	
 	

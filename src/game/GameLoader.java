@@ -154,6 +154,7 @@ public class GameLoader extends ClassLoader {
 	private final int markingWidth = 2000;
 
 	public Color mainRunnerColor = Color.BLACK;
+	public Stroke mainRunnerStroke = new BasicStroke(1);
 	
 	public static void main(String[] args) {
 		GameLoader gl = new GameLoader();
@@ -979,6 +980,7 @@ public class GameLoader extends ClassLoader {
 	public void draw(Graphics g, float scaling, int xOffset, int yOffset) {
 		try {
 			g.setColor(mainRunnerColor);
+			((Graphics2D)g).setStroke(mainRunnerStroke);
 			Object newBody = world.getClass().getMethod("getBodyList").invoke(world);
 			float currTorsoPos = torsoPosX;
 			while (newBody != null) {
@@ -993,6 +995,8 @@ public class GameLoader extends ClassLoader {
 					// Most links are polygon shapes
 					Object fixtureType = newFixture.getClass().getMethod("getType").invoke(newFixture);
 					if(fixtureType == _ShapeType.getField("POLYGON_SHAPE").get(null)) {
+						g.setColor(mainRunnerColor);
+						((Graphics2D)g).setStroke(mainRunnerStroke);
 						Object newShape = _PolygonShape.cast(newFixture); // PolygonShape
 						Object[] shapeVerts = (Object[]) newShape.getClass().getField("m_vertices").get(newShape); // Vec2[]
 
@@ -1007,6 +1011,8 @@ public class GameLoader extends ClassLoader {
 									(int)(scaling * ptB.getClass().getField("y").getFloat(ptB)) + yOffset);			    		
 						}
 					}else if (fixtureType == _ShapeType.getField("CIRCLE_SHAPE").get(null)) { // Basically just head
+						g.setColor(mainRunnerColor);
+						((Graphics2D)g).setStroke(mainRunnerStroke);
 						Object newShape = _CircleShape.cast(newFixture); // CircleShape
 						float radius = newShape.getClass().getField("m_radius").getFloat(newShape);
 						Object pos = newBody.getClass().getMethod("getPosition").invoke(newBody);
@@ -1017,7 +1023,8 @@ public class GameLoader extends ClassLoader {
 								(int)(scaling * radius * 2));		
 
 					}else if(fixtureType == _ShapeType.getField("EDGE_SHAPE").get(null)) { // The track.
-
+						g.setColor(mainRunnerColor);
+						((Graphics2D)g).setStroke(normalStroke);
 						Object newShape = newFixture.getClass().cast(_EdgeShape); // EdgeShape
 						Object trans = newBody.getClass().getMethod("getXForm").invoke(newBody); // XForm
 

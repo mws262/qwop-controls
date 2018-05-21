@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -10,12 +11,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import controllers.Controller_AskServer;
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
 import data.SaveableActionSequence;
@@ -23,6 +22,7 @@ import data.SaveableFileIO;
 import data.SaveableSingleGame;
 import game.GameLoader;
 import game.State;
+import ui.GLPanelGeneric;
 
 /**
  * Playback runs or sections of runs saved in SaveableSingleRun files.
@@ -65,6 +65,8 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	private String savePath = Utility.getExcutionPath() + "saved_data/individual_expansions_todo/";
 
 	private ActionQueue actionQueue = new ActionQueue();
+	
+	private Color backgroundColor = new Color(GLPanelGeneric.darkBackground[0],GLPanelGeneric.darkBackground[1],GLPanelGeneric.darkBackground[2],GLPanelGeneric.darkBackground[3]);
 
 	public static void main(String[] args) {
 		MAIN_Controlled mc = new MAIN_Controlled();
@@ -82,44 +84,76 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
 
 		List<File> exampleDataFiles = new ArrayList<File>();
+		int count = 0;
 		for (File f : allFiles){
 			if (f.getName().contains("TFRecord")) {
 				System.out.println("Found save file: " + f.getName());
-				exampleDataFiles.add(f);
-				//if (exampleDataFiles.size() > 30) break;
+				if (count < 30) {;
+					exampleDataFiles.add(f);
+				}
+
+				count++;
 			}
 		}
 		Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(exampleDataFiles);
 		mc.controller = cont;
 		mc.setup();
 		mc.doControlled();
-		
-		
-		// Have the server do the calculations for me.
-//		Controller_NearestNeighborApprox subCont = new Controller_NearestNeighborApprox(new ArrayList<File>());
-//		//subCont.comparePreviousStates = false;
-////		subCont.upperSetLimit = 50;
-////		subCont.lowerSetLimit = 50;
-//		subCont.penalizeEndOfSequences = false;
-//		//subCont.enableVoting = true;
-//		//subCont.maxPenaltyForEndOfSequence = 0f;
-//		subCont.previousStatePenaltyMult = 0.9f;
-//		subCont.enableTrajectorySnapping = false;
-//		subCont.trajectorySnappingThreshold = 5f;
-//		Controller_AskServer serverCont = new Controller_AskServer(subCont);
-//
-//		mc.controller = serverCont;
-//		mc.setup();
-//		mc.doControlled();
-//		
-//		serverCont.closeAll();
+
+
+		//		// Have the server do the calculations for me.
+		//		Controller_NearestNeighborApprox subCont = new Controller_NearestNeighborApprox(new ArrayList<File>());
+		//		//subCont.comparePreviousStates = false;
+		////		subCont.upperSetLimit = 50;
+		////		subCont.lowerSetLimit = 50;
+		//		subCont.penalizeEndOfSequences = false;
+		//		//subCont.enableVoting = true;
+		//		//subCont.maxPenaltyForEndOfSequence = 0f;
+		//		subCont.previousStatePenaltyMult = 0.9f;
+		//		subCont.enableTrajectorySnapping = false;
+		//		subCont.trajectorySnappingThreshold = 5f;
+		//		Controller_AskServer serverCont = new Controller_AskServer(subCont);
+		//
+		//		mc.controller = serverCont;
+		//		mc.setup();
+		//		mc.doControlled();
+		//		
+		//		serverCont.closeAll();
+
+		//		Client grabData = new Client();
+		//		Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(new ArrayList<File>());
+		//		
+		//		try {
+		//			grabData.initialize();
+		//			System.out.println("Asking server for run data...");
+		//			grabData.sendObject("runs");
+		//			cont.runs = (Set<RunHolder>) grabData.receiveObject();
+		//			System.out.println("Complete...");
+		//			
+		//			System.out.println("Asking server for state data...");
+		//			grabData.sendObject("states");
+		//			cont.allStates = (NavigableMap<Float, StateHolder>) grabData.receiveObject();
+		//			System.out.println("Complete...");
+		//			
+		//		} catch (IOException e) {
+		//			e.printStackTrace();
+		//		} catch (ClassNotFoundException e) {
+		//			e.printStackTrace();
+		//		}finally {
+		//			grabData.closeAll();
+		//		}
+		//		mc.controller = cont;
+		//		mc.setup();
+		//		mc.doControlled();
+
 	}
 
 	public void setup() {
+		game.mainRunnerStroke = new BasicStroke(5);
 		Panel panel = new Panel();
 		this.setLayout(new BorderLayout());
 		add(panel, BorderLayout.CENTER);
-		panel.setVisible(true);
+
 		Thread graphicsThread = new Thread(this);
 		graphicsThread.start(); // Makes it smoother by updating the graphics faster than the timestep updates.
 
@@ -131,11 +165,12 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		add(saveButton, BorderLayout.PAGE_END);
 
 		game.mainRunnerColor = Color.ORANGE;
-		panel.setBackground(Color.BLACK);
+		panel.setBackground(backgroundColor);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setPreferredSize(new Dimension(windowWidth, windowHeight));
 		setContentPane(this.getContentPane());
 		pack();
+
 		setVisible(true); 
 		repaint();
 	}
@@ -178,15 +213,15 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 
 			while (!actionQueue.isEmpty()) {
 
-//				try {
-//					if (Random.nextFloat() > 0.5f) {
-//						game.applyBodyImpulse(Random.nextFloat() - 0.5f, Random.nextFloat() - 0.5f);
-//					}
-//					//game.applyBodyTorque(-2f);
-//				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-//						| NoSuchMethodException | SecurityException | InstantiationException e1) {
-//					e1.printStackTrace();
-//				}
+				//				try {
+				//					if (Random.nextFloat() > 0.5f) {
+				//						game.applyBodyImpulse(Random.nextFloat() - 0.5f, Random.nextFloat() - 0.5f);
+				//					}
+				//					//game.applyBodyTorque(-2f);
+				//				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				//						| NoSuchMethodException | SecurityException | InstantiationException e1) {
+				//					e1.printStackTrace();
+				//				}
 
 				executeNextOnQueue();
 				try {
@@ -230,8 +265,9 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 			if (!game.initialized) return;
 			super.paintComponent(g);
 			if (game != null) {
+				controller.draw(g, game, runnerScaling, xOffsetPixels-25, yOffsetPixels); // Optionally, the controller may want to draw some stuff for debugging.
 				game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
-				controller.draw(g, game, runnerScaling, xOffsetPixels, yOffsetPixels); // Optionally, the controller may want to draw some stuff for debugging.
+
 				//				keyDrawer(g, Q, W, O, P);
 				//				drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
 			}

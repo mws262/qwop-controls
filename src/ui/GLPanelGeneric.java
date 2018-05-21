@@ -44,8 +44,8 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
 	
 	/***** Theme colors *****/
 	// Dark theme - default
-	float[] darkBackground = {0.f/255.f, 43f/255.f, 54.f/255.f, 0.2f}; // Solarized background color
-	float[] darkText = {0.7f, 0.7f, 0.7f, 1.0f}; // Gray color
+	public static final float[] darkBackground = {0.f/255.f, 43f/255.f, 54.f/255.f, 0.2f}; // Solarized background color
+	public static final float[] darkText = {0.7f, 0.7f, 0.7f, 1.0f}; // Gray color
 
 	/***** Camera management *****/
 	/** Camera manager for this scene **/

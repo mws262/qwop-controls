@@ -1,5 +1,6 @@
 package controllers;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.io.DataInputStream;
@@ -9,8 +10,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,9 +19,6 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
@@ -34,6 +30,7 @@ import game.State;
 import game.StateVariable;
 import main.Action;
 import main.IController;
+import main.Node;
 import main.PanelRunner;
 import main.State_Weights;
 import main.Utility;
@@ -48,21 +45,21 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 	State.StateName sortBySt = State.StateName.TH;
 
 	public boolean penalizeEndOfSequences = true;
-	public float maxPenaltyForEndOfSequence = 15f; // Penalty towards choosing runs near the end of their sequences.
+	public float maxPenaltyForEndOfSequence = 100f; // Penalty towards choosing runs near the end of their sequences.
 
 	public boolean comparePreviousStates = true;
-	public int numPreviousStatesToCompare = 5;
-	public float previousStatePenaltyMult = 1f;
+	public int numPreviousStatesToCompare = 15;
+	public float previousStatePenaltyMult = 5f;
 
 	public boolean enableVoting = false;
-	public int numTopMatchesToConsider = 10;
+	public int numTopMatchesToConsider = 100;
 	
 	public boolean enableTrajectorySnapping = false;
-	public float trajectorySnappingThreshold = 5f;
+	public float trajectorySnappingThreshold = 2f;
 
 	/** How many nearby (in terms of body theta) states are compared when determining the "closest" one. **/
-	public int upperSetLimit = 10000;
-	public int lowerSetLimit = 10000;
+	public int upperSetLimit = 20000;
+	public int lowerSetLimit = 20000;
 
 	/** Total number of states loaded from TFRecord file. **/
 	private int numStatesLoaded = 0;
@@ -76,6 +73,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 	/** Keep track of which total run that the currently selected action comes from. **/
 	private RunHolder currentTrajectory;
 	private StateHolder currentTrajectoryStateMatch;
+	private DecisionHolder currentDecision;
 	private Deque<State> previousStatesLIFO = new LIFOFixedSize<State>(numPreviousStatesToCompare);
 
 	EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<Float, StateHolder>(numTopMatchesToConsider);
@@ -175,7 +173,10 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		
 		previousStatesLIFO.push(state); // Keep previous states too.
 
-		return new Action(1, chosenKeys);
+		Action currentAction = new Action(1, chosenKeys);
+		
+		currentDecision = new DecisionHolder(currentAction, currentTrajectory, currentTrajectory.states.indexOf(currentTrajectoryStateMatch));
+		return currentAction;
 	}
 
 
@@ -235,6 +236,11 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		return errorAccumulator;
 	}
 
+	/** Return current nearest trajectory (if one is chosen). **/
+	public DecisionHolder getCurrentDecision() {
+		return currentDecision;
+	}
+	
 	/** Handle loading the TFRecords and making the appropriate data structures. **/
 	public void loadAll(List<File> files) {
 		Utility.tic();
@@ -333,16 +339,49 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		/** Adds a state, in the order it's seen, to this run. Should only be automatically called. **/
 		private void addState(StateHolder sh) { states.add(sh); }
 	}
+	
+	public class DecisionHolder implements Serializable {
+		
+		private static final long serialVersionUID = 8L;
+		
+		public Action chosenAction;
+		
+		//public RunHolder chosenTrajectory;
+		
+		public int chosenIdx;
+		
+		public DecisionHolder(Action chosenAction, RunHolder chosenTrajectory, int chosenIdx) {
+			this.chosenAction = chosenAction;
+			this.chosenIdx = chosenIdx/20;
+			
+//			// Thin them down a little.
+//			chosenTrajectory = new RunHolder();
+//			for (int i = 0; i < chosenTrajectory.states.size(); i += 20) {
+//				chosenTrajectory.addState(chosenTrajectory.states.get(i));
+//				break;
+//			}
+		}
+		
+	}
 
 	@Override
 	public void draw(Graphics g, GameLoader game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
 		if (!previousStatesLIFO.isEmpty()) g.drawString(String.valueOf(previousStatesLIFO.peek().body.x), 500, 200);
+		
 		if (currentTrajectory != null && currentTrajectoryStateMatch != null) {
-			int startIdx = currentTrajectory.states.indexOf(currentTrajectoryStateMatch);
+			RunHolder drawTraj = currentTrajectory;
+			StateHolder drawState = currentTrajectoryStateMatch;
+			int startIdx = drawTraj.states.indexOf(drawState);
 			float bodyX = currentTrajectoryStateMatch.state.body.x;
-			for (int i = 0; i < currentTrajectory.states.size(); i++) {
-				if (i % 20 == 0) {
-					game.drawExtraRunner((Graphics2D)g, currentTrajectory.states.get(i).state, "", runnerScaling, xOffsetPixels - (int)(runnerScaling * bodyX), yOffsetPixels, PanelRunner.ghostGray, PanelRunner.normalStroke);
+			game.drawExtraRunner((Graphics2D)g, drawState.state, "", runnerScaling, xOffsetPixels - (int)(runnerScaling * bodyX), yOffsetPixels, Color.CYAN, PanelRunner.normalStroke);
+			
+			
+			int viewingHorizon = 80;
+			for (int i = 0; i < drawTraj.states.size(); i ++) {
+				if ((i > startIdx && i < startIdx + viewingHorizon) ) { //|| i % 10 == 0) {
+					game.drawExtraRunner((Graphics2D)g, drawTraj.states.get(i).state, "", runnerScaling, xOffsetPixels - (int)(runnerScaling * bodyX), yOffsetPixels, Node.getColorFromScaledValue(i - startIdx + viewingHorizon, 2*viewingHorizon, (viewingHorizon - Math.abs(i - startIdx))/(float)viewingHorizon), PanelRunner.normalStroke);
+				}else if (i < startIdx && i > startIdx - viewingHorizon) {
+					game.drawExtraRunner((Graphics2D)g, drawTraj.states.get(i).state, "", runnerScaling, xOffsetPixels - (int)(runnerScaling * bodyX), yOffsetPixels, Node.getColorFromScaledValue(i - startIdx + viewingHorizon, 2*viewingHorizon, (viewingHorizon - Math.abs(i - startIdx))/(float)viewingHorizon), PanelRunner.normalStroke);
 				}
 			}
 		}

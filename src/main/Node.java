@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.LongAdder;
 
 import com.jogamp.opengl.GL2;
 
-import data.SaveableActionSequence;
 import data.SaveableSingleGame;
 import game.GameLoader;
 import game.State;

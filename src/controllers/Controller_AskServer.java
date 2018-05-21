@@ -1,20 +1,23 @@
 package controllers;
 
 import java.awt.Graphics;
-import java.io.File;
+import java.awt.Graphics2D;
 import java.io.IOException;
-import java.util.ArrayList;
 
+import controllers.Controller_NearestNeighborApprox.DecisionHolder;
 import game.GameLoader;
 import game.State;
 import main.Action;
 import main.IController;
+import main.PanelRunner;
+import main.Utility;
 import server.Client;
 
 public class Controller_AskServer extends Client implements IController {
-	
+
 	private final IController subController;
-	
+	private DecisionHolder currentDecision;
+
 	public Controller_AskServer(IController controller) {
 		subController = controller;		
 		try {
@@ -28,10 +31,17 @@ public class Controller_AskServer extends Client implements IController {
 
 	@Override
 	public Action policy(State state) {
-		
+
 		try {
 			sendObject(state);
-			return (Action)receiveObject();
+			Utility.tic();
+			System.out.println("Trying to receive decision.");
+			Action nextDecision = (Action)receiveObject();
+			System.out.println("Received decision.");
+
+			Utility.toc();
+			//currentDecision = nextDecision;
+			return nextDecision;//.chosenAction;
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
@@ -41,5 +51,11 @@ public class Controller_AskServer extends Client implements IController {
 	@Override
 	public void draw(Graphics g, GameLoader game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
 		subController.draw(g, game, runnerScaling, xOffsetPixels, yOffsetPixels);
+//		if (currentDecision != null) {
+//			float offset = currentDecision.chosenTrajectory.states.get(currentDecision.chosenIdx).state.body.x;
+//			for (StateHolder sh : currentDecision.chosenTrajectory.states) {
+//				game.drawExtraRunner((Graphics2D)g, sh.state, "", runnerScaling, xOffsetPixels - (int)(runnerScaling*offset), yOffsetPixels, PanelRunner.ghostGray, PanelRunner.normalStroke);
+//			}
+//		}
 	}
 }

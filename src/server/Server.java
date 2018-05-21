@@ -87,9 +87,10 @@ public class Server {
 		while(active) {
 			State stateToProcess = (State)inStream.readObject();
 			System.out.println("Received state to process from client.");
-			Action actToSend = receivedController.policy(stateToProcess);
-			System.out.println("Sending state back to client.");
-			outStream.writeObject(actToSend);
+			receivedController.policy(stateToProcess);
+			System.out.println("Trying to send full decision back.");
+			outStream.writeObject(receivedController.getCurrentDecision().chosenAction);
+			System.out.println("Sent state back to client.");
 		}
 		serverSocket.close();
 		socket.close();
