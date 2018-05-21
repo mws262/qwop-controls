@@ -153,6 +153,8 @@ public class GameLoader extends ClassLoader {
 	/** How far out to mark road dashes. **/
 	private final int markingWidth = 2000;
 
+	public Color mainRunnerColor = Color.BLACK;
+	
 	public static void main(String[] args) {
 		GameLoader gl = new GameLoader();
 
@@ -976,6 +978,7 @@ public class GameLoader extends ClassLoader {
 	 * @throws NoSuchFieldException **/
 	public void draw(Graphics g, float scaling, int xOffset, int yOffset) {
 		try {
+			g.setColor(mainRunnerColor);
 			Object newBody = world.getClass().getMethod("getBodyList").invoke(world);
 			float currTorsoPos = torsoPosX;
 			while (newBody != null) {

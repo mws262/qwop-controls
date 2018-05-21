@@ -211,18 +211,18 @@ To update the classpath settings for Eclipse:
 			</dependency>
 
 			<!-- https://mvnrepository.com/artifact/org.eclipse.swt/org.eclipse.swt.gtk.linux.x86_64 -->
-			<dependency>
+<!-- 			<dependency>
 				<groupId>org.eclipse.swt</groupId>
 				<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
 				<version>4.3</version>
-			</dependency>
+			</dependency> -->
 
 			<!-- https://mvnrepository.com/artifact/org.eclipse.swt/org.eclipse.swt.cocoa.macosx.x86_64 -->
-<!-- <dependency>
+<dependency>
     <groupId>org.eclipse.swt</groupId>
     <artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
     <version>4.3</version>
-</dependency> -->
+</dependency>
 
 <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna -->
 <dependency>

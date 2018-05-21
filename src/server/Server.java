@@ -142,7 +142,7 @@ public class Server {
 			ie.printStackTrace();
 		}
 		catch (ExecutionException ee) { 
-			/* Handle the error. Or ignore it. */ 
+			launch();
 			ee.printStackTrace();
 		}
 		catch (TimeoutException te) { 

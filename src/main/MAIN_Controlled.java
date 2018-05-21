@@ -1,6 +1,7 @@
 package main;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -17,6 +18,7 @@ import javax.swing.JPanel;
 
 import org.jblas.util.Random;
 
+import controllers.Controller_AskServer;
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
 import data.SaveableActionSequence;
@@ -77,32 +79,50 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 
 
 		// CONTROLLER -- Approximate nearest neighbor.
-		File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
+//		File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
+//
+//		File[] allFiles = saveLoc.listFiles();
+//		if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
+//
+//		List<File> exampleDataFiles = new ArrayList<File>();
+//		for (File f : allFiles){
+//			if (f.getName().contains("TFRecord")) {
+//				System.out.println("Found save file: " + f.getName());
+//				exampleDataFiles.add(f);
+//				break;
+//			}
+//		}
+//		Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(exampleDataFiles);
+//		mc.controller = cont;
+//		mc.setup();
+//		mc.doControlled();
+		
+		
+		// Have the server do the calculations for me.
+		Controller_NearestNeighborApprox subCont = new Controller_NearestNeighborApprox(new ArrayList<File>());
+		//subCont.comparePreviousStates = false;
+//		subCont.upperSetLimit = 50;
+//		subCont.lowerSetLimit = 50;
+		subCont.penalizeEndOfSequences = false;
+		//subCont.enableVoting = true;
+		//subCont.maxPenaltyForEndOfSequence = 0f;
+		subCont.previousStatePenaltyMult = 0.9f;
+		subCont.enableTrajectorySnapping = false;
+		subCont.trajectorySnappingThreshold = 5f;
+		Controller_AskServer serverCont = new Controller_AskServer(subCont);
 
-		File[] allFiles = saveLoc.listFiles();
-		if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
-
-		List<File> exampleDataFiles = new ArrayList<File>();
-		for (File f : allFiles){
-			if (f.getName().contains("TFRecord")) {
-				System.out.println("Found save file: " + f.getName());
-				exampleDataFiles.add(f);
-			}
-		}
-		Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(exampleDataFiles);
-
-
-
-		mc.controller = cont;
+		mc.controller = serverCont;
 		mc.setup();
 		mc.doControlled();
+		
+		serverCont.closeAll();
 	}
 
 	public void setup() {
 		Panel panel = new Panel();
 		this.setLayout(new BorderLayout());
 		add(panel, BorderLayout.CENTER);
-
+		panel.setVisible(true);
 		Thread graphicsThread = new Thread(this);
 		graphicsThread.start(); // Makes it smoother by updating the graphics faster than the timestep updates.
 
@@ -113,8 +133,8 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		saveButton.setPreferredSize(new Dimension(1000,50));
 		add(saveButton, BorderLayout.PAGE_END);
 
-
-
+		game.mainRunnerColor = Color.ORANGE;
+		panel.setBackground(Color.BLACK);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setPreferredSize(new Dimension(windowWidth, windowHeight));
 		setContentPane(this.getContentPane());
@@ -155,6 +175,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		while (true) {
 			long initTime = System.currentTimeMillis();
 			State state = game.getCurrentState();
+			System.out.println(state.body.x);
 			Action nextAction = controller.policy(state);
 			actionQueue.addAction(nextAction);
 
