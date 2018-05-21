@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,8 +14,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
-import org.jblas.util.Random;
 
 import controllers.Controller_AskServer;
 import controllers.Controller_NearestNeighborApprox;
@@ -79,43 +76,43 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 
 
 		// CONTROLLER -- Approximate nearest neighbor.
-//		File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
-//
-//		File[] allFiles = saveLoc.listFiles();
-//		if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
-//
-//		List<File> exampleDataFiles = new ArrayList<File>();
-//		for (File f : allFiles){
-//			if (f.getName().contains("TFRecord")) {
-//				System.out.println("Found save file: " + f.getName());
-//				exampleDataFiles.add(f);
-//				break;
-//			}
-//		}
-//		Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(exampleDataFiles);
-//		mc.controller = cont;
-//		mc.setup();
-//		mc.doControlled();
-		
-		
-		// Have the server do the calculations for me.
-		Controller_NearestNeighborApprox subCont = new Controller_NearestNeighborApprox(new ArrayList<File>());
-		//subCont.comparePreviousStates = false;
-//		subCont.upperSetLimit = 50;
-//		subCont.lowerSetLimit = 50;
-		subCont.penalizeEndOfSequences = false;
-		//subCont.enableVoting = true;
-		//subCont.maxPenaltyForEndOfSequence = 0f;
-		subCont.previousStatePenaltyMult = 0.9f;
-		subCont.enableTrajectorySnapping = false;
-		subCont.trajectorySnappingThreshold = 5f;
-		Controller_AskServer serverCont = new Controller_AskServer(subCont);
+		File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
 
-		mc.controller = serverCont;
+		File[] allFiles = saveLoc.listFiles();
+		if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
+
+		List<File> exampleDataFiles = new ArrayList<File>();
+		for (File f : allFiles){
+			if (f.getName().contains("TFRecord")) {
+				System.out.println("Found save file: " + f.getName());
+				exampleDataFiles.add(f);
+				//if (exampleDataFiles.size() > 30) break;
+			}
+		}
+		Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(exampleDataFiles);
+		mc.controller = cont;
 		mc.setup();
 		mc.doControlled();
 		
-		serverCont.closeAll();
+		
+		// Have the server do the calculations for me.
+//		Controller_NearestNeighborApprox subCont = new Controller_NearestNeighborApprox(new ArrayList<File>());
+//		//subCont.comparePreviousStates = false;
+////		subCont.upperSetLimit = 50;
+////		subCont.lowerSetLimit = 50;
+//		subCont.penalizeEndOfSequences = false;
+//		//subCont.enableVoting = true;
+//		//subCont.maxPenaltyForEndOfSequence = 0f;
+//		subCont.previousStatePenaltyMult = 0.9f;
+//		subCont.enableTrajectorySnapping = false;
+//		subCont.trajectorySnappingThreshold = 5f;
+//		Controller_AskServer serverCont = new Controller_AskServer(subCont);
+//
+//		mc.controller = serverCont;
+//		mc.setup();
+//		mc.doControlled();
+//		
+//		serverCont.closeAll();
 	}
 
 	public void setup() {
