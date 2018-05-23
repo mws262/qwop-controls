@@ -165,4 +165,6 @@
   <classpathentry kind="var" path="M2_REPO/org/eclipse/swt/3.7.2/swt-3.7.2.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/eclipse/swt/org.eclipse.swt.cocoa.macosx.x86_64/4.4/org.eclipse.swt.cocoa.macosx.x86_64-4.4.jar"/>
   <classpathentry kind="var" path="M2_REPO/net/java/dev/jna/jna/4.5.1/jna-4.5.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jcodec/jcodec/0.2.2/jcodec-0.2.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jcodec/jcodec-javase/0.2.2/jcodec-javase-0.2.2.jar"/>
 </classpath>

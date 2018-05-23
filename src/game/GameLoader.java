@@ -1056,7 +1056,7 @@ public class GameLoader extends ClassLoader {
 
 			//This draws the "road" markings to show that the ground is moving relative to the dude.
 			for (int i = 0; i < markingWidth/69; i++) {
-				g.drawString("_", ((-(int)(scaling * currTorsoPos) - i * 70) % markingWidth) + markingWidth, yOffset + 92);
+				g.drawString("_", ((-(int)(scaling * currTorsoPos) - i * 70) % markingWidth) + markingWidth, yOffset + (int)(scaling*9.2f));
 			}
 		}catch(Exception e) {
 			e.printStackTrace();

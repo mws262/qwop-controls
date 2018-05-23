@@ -2,6 +2,7 @@
 /aziokbd/
 *.SaveableDenseData
 *.SaveableSingleGame
+*.SaveableActionSequence
 *.tfrecords
 /python/logs/
 *.matt-desktop
@@ -13,3 +14,8 @@
 /python/venv/
 *.log
 *.config
+/bin/
+*.mp4
+*.avi
+*.mov
+

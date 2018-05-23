@@ -5,9 +5,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +25,7 @@ import data.SaveableSingleGame;
 import game.GameLoader;
 import game.State;
 import ui.GLPanelGeneric;
+import ui.ScreenCapture;
 
 /**
  * Playback runs or sections of runs saved in SaveableSingleRun files.
@@ -46,11 +49,11 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	private IController controller = new Controller_Null();
 
 	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
-	private int xOffsetPixels = 960;
-	private int yOffsetPixels = 500;
+	private int xOffsetPixels = 675;
+	private int yOffsetPixels = 450;
 
 	/** Runner coordinates to pixels. **/
-	private float runnerScaling = 10f;
+	private float runnerScaling = 25f;
 
 	/** Place to load any 'prefix' run data in the form of a SaveableSingleGame **/
 	private File prefixSave = new File(Utility.getExcutionPath() + "saved_data/4_25_18/steadyRunPrefix.SaveableSingleGame");
@@ -65,12 +68,19 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	private String savePath = Utility.getExcutionPath() + "saved_data/individual_expansions_todo/";
 
 	private ActionQueue actionQueue = new ActionQueue();
-	
-	private Color backgroundColor = new Color(GLPanelGeneric.darkBackground[0],GLPanelGeneric.darkBackground[1],GLPanelGeneric.darkBackground[2],GLPanelGeneric.darkBackground[3]);
+
+	private Color backgroundColor = Color.DARK_GRAY; //new Color(GLPanelGeneric.darkBackground[0],GLPanelGeneric.darkBackground[1],GLPanelGeneric.darkBackground[2]);
+
+	/** Screen capture settings. **/
+	ScreenCapture screenCap;
+	private boolean doScreenCapture = false;
+	private Rectangle screenCapRectangle = new Rectangle(50, 200, 1200, 550);
+
+	Panel mainViewPanel;
 
 	public static void main(String[] args) {
 		MAIN_Controlled mc = new MAIN_Controlled();
-
+		mc.setup();
 		//		// CONTROLLER -- Neural net picks keys.
 		//		Controller_Tensorflow_ClassifyActionsPerTimestep cont = new Controller_Tensorflow_ClassifyActionsPerTimestep("frozen_model.pb", "./python/logs/");
 		//		cont.inputName = "tfrecord_input/split";
@@ -86,10 +96,10 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		List<File> exampleDataFiles = new ArrayList<File>();
 		int count = 0;
 		for (File f : allFiles){
-			if (f.getName().contains("TFRecord")) {
+			if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
 				System.out.println("Found save file: " + f.getName());
-				if (count < 30) {;
-					exampleDataFiles.add(f);
+				if (count == 12) {//if (count < 10 && count > 6) { // 10 is bad? 9 meh, 8 good
+				exampleDataFiles.add(f);
 				}
 
 				count++;
@@ -97,9 +107,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		}
 		Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(exampleDataFiles);
 		mc.controller = cont;
-		mc.setup();
 		mc.doControlled();
-
 
 		//		// Have the server do the calculations for me.
 		//		Controller_NearestNeighborApprox subCont = new Controller_NearestNeighborApprox(new ArrayList<File>());
@@ -149,10 +157,11 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	}
 
 	public void setup() {
+		if (doScreenCapture)  screenCap = new ScreenCapture(new File(Utility.getExcutionPath() + "./" + Utility.generateFileName("vid", "mp4")));
 		game.mainRunnerStroke = new BasicStroke(5);
-		Panel panel = new Panel();
+		mainViewPanel = new Panel();
 		this.setLayout(new BorderLayout());
-		add(panel, BorderLayout.CENTER);
+		add(mainViewPanel, BorderLayout.CENTER);
 
 		Thread graphicsThread = new Thread(this);
 		graphicsThread.start(); // Makes it smoother by updating the graphics faster than the timestep updates.
@@ -165,7 +174,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		add(saveButton, BorderLayout.PAGE_END);
 
 		game.mainRunnerColor = Color.ORANGE;
-		panel.setBackground(backgroundColor);
+		mainViewPanel.setBackground(backgroundColor);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setPreferredSize(new Dimension(windowWidth, windowHeight));
 		setContentPane(this.getContentPane());
@@ -173,6 +182,18 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 
 		setVisible(true); 
 		repaint();
+
+		if (doScreenCapture) {
+			// Save a progress log before shutting down.
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				public void run() {
+					try {
+						screenCap.finalize();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}}); 
+		}
 	}
 
 	public void doControlled() {
@@ -246,16 +267,24 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		}
 	}
 
-
+	int count = 0;
 	/** Pop the next action off the queue and execute one timestep. **/
 	private void executeNextOnQueue() {
 		if (!actionQueue.isEmpty()) {
+
 			boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
 			boolean Q = nextCommand[0];
 			boolean W = nextCommand[1]; 
 			boolean O = nextCommand[2];
 			boolean P = nextCommand[3];
+			//if (doScreenCapture) screenCap.takeFrame(screenCapRectangle);
 			game.stepGame(Q,W,O,P);
+			try {
+				if (doScreenCapture && count++ > 20) screenCap.takeFrameFromJPanel(mainViewPanel);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}	
 		}
 	}
 
@@ -265,7 +294,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 			if (!game.initialized) return;
 			super.paintComponent(g);
 			if (game != null) {
-				controller.draw(g, game, runnerScaling, xOffsetPixels-25, yOffsetPixels); // Optionally, the controller may want to draw some stuff for debugging.
+				controller.draw(g, game, runnerScaling, xOffsetPixels-(int)(runnerScaling*2.5f), yOffsetPixels); // Optionally, the controller may want to draw some stuff for debugging.
 				game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
 
 				//				keyDrawer(g, Q, W, O, P);

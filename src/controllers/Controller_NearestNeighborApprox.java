@@ -45,17 +45,21 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 	State.StateName sortBySt = State.StateName.TH;
 
 	public boolean penalizeEndOfSequences = true;
-	public float maxPenaltyForEndOfSequence = 100f; // Penalty towards choosing runs near the end of their sequences.
+	public float maxPenaltyForEndOfSequence = 50f; // Penalty towards choosing runs near the end of their sequences.
 
 	public boolean comparePreviousStates = true;
-	public int numPreviousStatesToCompare = 15;
-	public float previousStatePenaltyMult = 5f;
+	public int numPreviousStatesToCompare = 10;//10;
+	public float previousStatePenaltyMult = 2f;//8f;
 
 	public boolean enableVoting = false;
 	public int numTopMatchesToConsider = 100;
 	
 	public boolean enableTrajectorySnapping = false;
-	public float trajectorySnappingThreshold = 2f;
+	public float trajectorySnappingThreshold = 5f;
+	
+	public boolean penalizeSlow = false;
+	public float penalizeSlowMult = 25;
+	public int penalizeSlowHorizon = 50;
 
 	/** How many nearby (in terms of body theta) states are compared when determining the "closest" one. **/
 	public int upperSetLimit = 20000;
@@ -186,7 +190,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		// Error relative to current state.
 		float currentStateError = sqError(sh.state, actualState);
 		cost += currentStateError;
-
+		//System.out.print("state error: " + currentStateError);
 		int parentRunLength = sh.parentRun.states.size();
 		int stateLocInSequence = sh.parentRun.states.indexOf(sh);
 
@@ -194,6 +198,17 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		if (penalizeEndOfSequences) {
 			float futureSequenceSizeError = maxPenaltyForEndOfSequence/(float)(parentRunLength - stateLocInSequence + 1);
 			cost += futureSequenceSizeError;
+		}
+		if (penalizeSlow) {
+			
+			float slowError = -penalizeSlowMult * (sh.parentRun.states.get(Integer.min(stateLocInSequence + penalizeSlowHorizon, sh.parentRun.states.size() - 1)).state.body.x - sh.parentRun.states.get(stateLocInSequence).state.body.x)/penalizeSlowHorizon;
+//			float accumulatedVel = 0;
+//			for (int i = stateLocInSequence; i < Integer.min(sh.parentRun.states.size(), stateLocInSequence + penalizeSlowHorizon); i++) {
+//				accumulatedVel += sh.parentRun.states.get(i).state.body.dx;
+//			}
+//			float slowError = penalizeSlowMult/Float.max(0.001f, accumulatedVel);
+			cost += slowError;
+			//System.out.println("slow error: " + slowError);
 		}
 
 		// Also compare previous states.
@@ -208,7 +223,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 					State stateFromLibrary = sh.parentRun.states.get(idx).state;
 					oldStateError += (previousStatePenaltyMult/(float)count)*sqError(oldState, stateFromLibrary);
 				}else {
-					oldStateError += previousStatePenaltyMult * currentStateError;
+					oldStateError += previousStatePenaltyMult * currentStateError*0.5f;
 				}
 				count++;
 			}
@@ -366,7 +381,10 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 
 	@Override
 	public void draw(Graphics g, GameLoader game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
-		if (!previousStatesLIFO.isEmpty()) g.drawString(String.valueOf(previousStatesLIFO.peek().body.x), 500, 200);
+		if (!previousStatesLIFO.isEmpty()) {
+			g.setColor(Color.WHITE);
+			g.drawString(String.valueOf(previousStatesLIFO.peek().body.x), 50, 50);
+		}
 		
 		if (currentTrajectory != null && currentTrajectoryStateMatch != null) {
 			RunHolder drawTraj = currentTrajectory;
