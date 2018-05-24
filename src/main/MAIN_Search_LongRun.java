@@ -58,6 +58,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
 			int count = 0;
 			while (count < runsToGenerate) {
 				Node rootNode = new Node();
+				Node.pointsToDraw.clear();
 				ui.clearRootNodes();
 				ui.addRootNode(rootNode);
 

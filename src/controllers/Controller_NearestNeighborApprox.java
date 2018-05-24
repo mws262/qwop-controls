@@ -19,6 +19,8 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
+
+import org.tensorflow.example.Feature;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
@@ -83,6 +85,9 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 	EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<Float, StateHolder>(numTopMatchesToConsider);
 
 	private boolean[] chosenKeys = new boolean[4];
+	
+	//IMPORTANT  DUE TO COLLECTION BUG
+	public boolean killFirstTwoActions = true;
 	
 	public Controller_NearestNeighborApprox(List<File> files) {
 		loadAll(files);
@@ -287,10 +292,22 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 			// Process into appropriate objects.
 			for (SequenceExample seq : dataSeries) {
 				int totalTimestepsInRun = seq.getFeatureLists().getFeatureListMap().get("BODY").getFeatureCount();
-
 				RunHolder rh = new RunHolder();
+				
+				//System.out.println("numacts " + seq.getFeatureLists().getFeatureListMap().get("ACTIONS").getFeatureCount());
+				for (int i = 0; i < seq.getFeatureLists().getFeatureListMap().get("ACTIONS").getFeatureCount(); i++) {
+					
+					rh.actionDurations.add(Byte.toUnsignedInt(seq.getFeatureLists().getFeatureListMap()
+					.get("ACTIONS").getFeature(i) // This is the action number
+					.getBytesList().getValue(0) // This only has one element lol
+					.byteAt(0))); // this is the [duration, q,w,o,p]
+					//System.out.print(rh.actionDurations.get(i) + ",");
+				}
+				//System.out.println();
+				
+				int startPt = killFirstTwoActions ? rh.actionDurations.get(0) + rh.actionDurations.get(1) : 0;
 				//System.out.println(totalTimestepsInRun);
-				for (int i = 0; i < totalTimestepsInRun; i++) {
+				for (int i = startPt; i < totalTimestepsInRun; i++) {
 					// Unpack each x y th... value in a given timestep. Turn them into StateVariables.
 					Map<String, FeatureList> featureListMap = seq.getFeatureLists().getFeatureListMap();
 					StateVariable[] sVarBuffer = new StateVariable[State.ObjectName.values().length];
@@ -329,10 +346,10 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		private static final long serialVersionUID = 1L;
 
 		/** Actual physical state variables. **/
-		final State state;
+		public final State state;
 
 		/** QWOP keys pressed. **/
-		final boolean[] keys;
+		public final boolean[] keys;
 
 		/** What run is this state a part of? **/
 		final RunHolder parentRun;
@@ -348,8 +365,10 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 
 		private static final long serialVersionUID = 1L;
 		
+		public List<Integer> actionDurations = new ArrayList<Integer>();
+		
 		/** All the states seen in this single run. **/
-		List<StateHolder> states = new ArrayList<StateHolder>();
+		public List<StateHolder> states = new ArrayList<StateHolder>();
 
 		/** Adds a state, in the order it's seen, to this run. Should only be automatically called. **/
 		private void addState(StateHolder sh) { states.add(sh); }

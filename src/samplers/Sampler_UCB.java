@@ -40,7 +40,7 @@ public class Sampler_UCB implements ISampler {
 	/** Must provide an evaluationFunction to get a numeric score for nodes after a rollout. **/
 	public Sampler_UCB(IEvaluationFunction evaluationFunction) {
 		this.evaluationFunction = evaluationFunction;
-		c = 10*explorationMultiplier*Random.nextFloat()*c + 0.1f;
+		c = 0.001f*explorationMultiplier*Random.nextFloat()*c + 0.0001f;
 	}
 	
 	/** Propagate the score and visit count back up the tree. **/

@@ -56,7 +56,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 	private float runnerScaling = 25f;
 
 	/** Place to load any 'prefix' run data in the form of a SaveableSingleGame **/
-	private File prefixSave = new File(Utility.getExcutionPath() + "saved_data/4_25_18/steadyRunPrefix.SaveableSingleGame");
+	private File prefixSave = new File(Utility.getExcutionPath() + "saved_data/5_1_18_tmp2/single_run_2018-05-23_10-26-05.SaveableSingleGame");///4_25_18/steadyRunPrefix.SaveableSingleGame");
 
 	/** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
 	private int doPrefixToDepth = 2;
@@ -98,7 +98,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		for (File f : allFiles){
 			if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
 				System.out.println("Found save file: " + f.getName());
-				if (count == 12) {//if (count < 10 && count > 6) { // 10 is bad? 9 meh, 8 good
+				if (count < 400) { // 10 is bad? 9 meh, 8 good
 				exampleDataFiles.add(f);
 				}
 

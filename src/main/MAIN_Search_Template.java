@@ -176,7 +176,8 @@ public abstract class MAIN_Search_Template {
 		saver.overrideFilename = saveName;
 		saver.setSavePath(saveLoc.getPath() + "/");
 
-		TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, new Sampler_UCB(new Evaluator_Distance()), saver); // Depth to get to sorta steady state. was 
+		Sampler_UCB ucbSampler = new Sampler_UCB(new Evaluator_Distance());
+		TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, ucbSampler, saver); // Depth to get to sorta steady state. was 
 		searchMax.terminateAfterXGames = maxGames; // Will terminate after this many games played regardless of whether goals have been met.
 
 		// Grab some workers from the pool.
