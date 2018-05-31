@@ -10,9 +10,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -73,8 +76,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 
 	/** Screen capture settings. **/
 	ScreenCapture screenCap;
-	private boolean doScreenCapture = false;
-	private Rectangle screenCapRectangle = new Rectangle(50, 200, 1200, 550);
+	private boolean doScreenCapture = true;
 
 	Panel mainViewPanel;
 
@@ -98,7 +100,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		for (File f : allFiles){
 			if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
 				System.out.println("Found save file: " + f.getName());
-				if (count < 400) { // 10 is bad? 9 meh, 8 good
+				if (count <20 ) { 
 				exampleDataFiles.add(f);
 				}
 
@@ -231,18 +233,35 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 			System.out.println(state.body.x);
 			Action nextAction = controller.policy(state);
 			actionQueue.addAction(nextAction);
-
+			Random rand = new Random();
 			while (!actionQueue.isEmpty()) {
 
-				//				try {
-				//					if (Random.nextFloat() > 0.5f) {
-				//						game.applyBodyImpulse(Random.nextFloat() - 0.5f, Random.nextFloat() - 0.5f);
-				//					}
-				//					//game.applyBodyTorque(-2f);
-				//				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-				//						| NoSuchMethodException | SecurityException | InstantiationException e1) {
-				//					e1.printStackTrace();
-				//				}
+				
+//									if (rand.nextFloat() > 0.5f) {
+//										try {
+//											game.applyBodyImpulse(rand.nextFloat() - 0.5f, rand.nextFloat() - 0.5f);
+//										} catch (IllegalAccessException e) {
+//											// TODO Auto-generated catch block
+//											e.printStackTrace();
+//										} catch (IllegalArgumentException e) {
+//											// TODO Auto-generated catch block
+//											e.printStackTrace();
+//										} catch (InvocationTargetException e) {
+//											// TODO Auto-generated catch block
+//											e.printStackTrace();
+//										} catch (NoSuchMethodException e) {
+//											// TODO Auto-generated catch block
+//											e.printStackTrace();
+//										} catch (SecurityException e) {
+//											// TODO Auto-generated catch block
+//											e.printStackTrace();
+//										} catch (InstantiationException e) {
+//											// TODO Auto-generated catch block
+//											e.printStackTrace();
+//										}
+//									}
+									//game.applyBodyTorque(-2f);
+								
 
 				executeNextOnQueue();
 				try {
@@ -260,7 +279,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener{
 		while (true) {
 			repaint();
 			try {
-				Thread.sleep(10);
+				Thread.sleep(40);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

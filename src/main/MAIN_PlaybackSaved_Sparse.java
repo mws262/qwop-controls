@@ -91,6 +91,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame{
 				startNode = startNode.parent;
 			}
 			runnerPane.simRunToNode(startNode, endNode.parent.parent); // Leaving off the last two because they usually are stupid.
+			
 			repaint();
 
 			while (!runnerPane.isFinishedWithRun()) {

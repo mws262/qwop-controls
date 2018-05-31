@@ -3,6 +3,7 @@ package ui;
 import java.awt.Graphics;
 
 import game.GameLoader;
+import game.State;
 import main.Action;
 import main.ActionQueue;
 import main.Node;
@@ -81,6 +82,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable{
 			O = nextCommand[2];
 			P = nextCommand[3];
 			game.stepGame(Q,W,O,P);
+			State st = game.getCurrentState();
+			System.out.println(st.body.x + "," + st.body.dx + "," + game.getTimestepsSimulated());
 		}
 	}
 	

@@ -46,8 +46,8 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 	State.ObjectName sortByPart = State.ObjectName.BODY;
 	State.StateName sortBySt = State.StateName.TH;
 
-	public boolean penalizeEndOfSequences = true;
-	public float maxPenaltyForEndOfSequence = 50f; // Penalty towards choosing runs near the end of their sequences.
+	public boolean penalizeEndOfSequences = false;
+	public float maxPenaltyForEndOfSequence = 50; // Penalty towards choosing runs near the end of their sequences.
 
 	public boolean comparePreviousStates = true;
 	public int numPreviousStatesToCompare = 10;//10;
@@ -57,10 +57,10 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 	public int numTopMatchesToConsider = 100;
 	
 	public boolean enableTrajectorySnapping = false;
-	public float trajectorySnappingThreshold = 5f;
+	public float trajectorySnappingThreshold = 1f;
 	
 	public boolean penalizeSlow = false;
-	public float penalizeSlowMult = 25;
+	public float penalizeSlowMult = 50;
 	public int penalizeSlowHorizon = 50;
 
 	/** How many nearby (in terms of body theta) states are compared when determining the "closest" one. **/
@@ -167,7 +167,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 					currentTrajectory = bestMatch.parentRun;
 					currentTrajectoryStateMatch = bestMatch;
 				}else {
-					//System.out.print("SNAP");
+					System.out.print("SNAP");
 					currentTrajectoryStateMatch = nextStateOnOldTraj;
 					chosenKeys = currentTrajectoryStateMatch.keys;
 				}

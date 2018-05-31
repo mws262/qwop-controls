@@ -40,7 +40,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 	public final static Color ghostGray = new Color(0.6f,0.6f,0.6f);
 	
 	/** Drawing offsets within the viewing panel (i.e. non-physical) **/
-	public int xOffsetPixels = 960;
+	public int xOffsetPixels = 500;
 	public int yOffsetPixels = 100;
 	
 	/** Runner coordinates to pixels. **/
