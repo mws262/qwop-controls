@@ -20,7 +20,6 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.tensorflow.example.Feature;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
@@ -108,8 +107,8 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<Float, StateHolder>(10);
 
 		//Utility.tic();
-		lowerSet.values().parallelStream().limit(lowerSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state),v));
-		upperSet.values().parallelStream().limit(upperSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state),v));
+		lowerSet.values().stream().limit(lowerSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state),v));
+		upperSet.values().stream().limit(upperSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state),v));
 		//Utility.toc();
 		Entry<Float, StateHolder> bestEntry = topMatches.firstEntry();
 		bestMatch = bestEntry.getValue();

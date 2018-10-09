@@ -220,18 +220,18 @@ To update the classpath settings for Eclipse:
 			</dependency>
 
 			<!-- https://mvnrepository.com/artifact/org.eclipse.swt/org.eclipse.swt.gtk.linux.x86_64 -->
-<!-- 			<dependency>
+			<dependency>
 				<groupId>org.eclipse.swt</groupId>
 				<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
 				<version>4.3</version>
-			</dependency> -->
+			</dependency>
 
 			<!-- https://mvnrepository.com/artifact/org.eclipse.swt/org.eclipse.swt.cocoa.macosx.x86_64 -->
-			<dependency>
+<!-- 			<dependency>
 				<groupId>org.eclipse.swt</groupId>
 				<artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
 				<version>4.4</version>
-			</dependency>
+			</dependency> -->
 
 			<!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna -->
 			<dependency>
@@ -255,6 +255,14 @@ To update the classpath settings for Eclipse:
 				<groupId>org.jcodec</groupId>
 				<artifactId>jcodec-javase</artifactId>
 				<version>0.2.2</version>
+			</dependency>
+
+			<!-- JUNIT Unit testing -->
+			<!-- https://mvnrepository.com/artifact/junit/junit -->
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.9</version>
 			</dependency>
 
 		</dependencies>

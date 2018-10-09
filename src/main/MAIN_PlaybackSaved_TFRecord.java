@@ -1,9 +1,6 @@
 package main;
 
 import java.awt.Dimension;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,16 +11,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-
 import javax.swing.JFrame;
 
-import org.tensorflow.example.Example;
-import org.tensorflow.example.Feature;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
-
-import com.google.common.io.LittleEndianDataInputStream;
 
 import data.TFRecordReader;
 import game.GameLoader;

@@ -8,100 +8,170 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * All things related to queueing actions should happen in here. Actions themselves act like queues,
  * so this action queue decides when to switch actions when one is depleted.
- * @author Matt
  *
+ * @author Matt
  */
-public class ActionQueue{
+public class ActionQueue {
 
-	/** Actions are the delays between keypresses. **/
-	private Queue<Action> actionQueue = new LinkedList<Action>();
+    /**
+     * Actions are the delays between keypresses.
+     **/
+    private Queue<Action> actionQueue = new LinkedList<>();
 
-	/** All actions done or queued since the last reset. Unlike the queue, things aren't removed until reset. **/
-	private ArrayList<Action> actionListFull = new ArrayList<Action>();
+    /**
+     * All actions done or queued since the last reset. Unlike the queue, things aren't removed until reset.
+     **/
+    private ArrayList<Action> actionListFull = new ArrayList<>();
 
-	/** Integer action currently in progress. If the action is 20, this will be 20 even when 15 commands have been issued. **/
-	private Action currentAction;
+    /**
+     * Integer action currently in progress. If the action is 20, this will be 20 even when 15 commands have been
+     * issued.
+     **/
+    private Action currentAction;
 
-	/** Is there anything at all queued up to execute? Includes both the currentAction and the actionQueue **/
-	private AtomicBoolean isEmpty = new AtomicBoolean(true);
+    /**
+     * Is there anything at all queued up to execute? Includes both the currentAction and the actionQueue.
+     **/
+    private AtomicBoolean isEmpty = new AtomicBoolean(true);
 
-	public ActionQueue(){}
+    public ActionQueue() {
+    }
 
-	/** See the action we are currently executing. Does not change the queue. **/
-	public Action peekThisAction(){
-		return currentAction;
-	}
+    /**
+     * See the action we are currently executing. Does not change the queue.
+     *
+     * @return Action which is currently being executed (i.e. timings and keypresses).
+     */
+    public Action peekThisAction() {
+        if (isEmpty()) throw new IndexOutOfBoundsException("No actions have been added to this queue (or remain).");
+        return currentAction;
+    }
 
-	/** See the next action we will execute. Does not change the queue. **/
-	public Action peekNextAction(){
-		return actionQueue.peek();
-	}
+    /**
+     * See the next action we will execute. Does not change the queue.
+     *
+     * @return Next full action that will run (i.e. timings and keys). Returns null if no future actions remain.
+     */
+    public Action peekNextAction() {
+        if (isEmpty()) throw new IndexOutOfBoundsException("No actions have been added to this queue. " +
+                "Cannot peek.");
+        return actionQueue.peek();
+    }
 
-	/** See the next keypresses. **/
-	public boolean[] peekCommand(){
-		return currentAction.peek();
-	}
+    /**
+     * See the next keypresses.
+     *
+     * @return Next QWOP keypresses as a boolean array. True is pressed, false is not pressed.
+     */
+    public boolean[] peekCommand() {
+        if (currentAction == null) throw new IndexOutOfBoundsException("No current action in the queue for us to peek" +
+                " at.");
+        return currentAction.peek();
+    }
 
-	/** Adds a new action to the end of the queue. **/
-	public synchronized void addAction(Action action){
-		Action localCopy = action.getCopy();
-		actionQueue.add(localCopy);
-		actionListFull.add(localCopy);
-		isEmpty.set(false);;
-	}
+    /**
+     * Adds a new action to the end of the queue. If this is the first action to be added, it is loaded up as the
+     * current action. All added actions are copied internally.
+     *
+     * @param action Action to add to the end of the queue as a copy. Does not influence current polling of the queue
+     *               elements.
+     */
+    public synchronized void addAction(Action action) {
+        if (action.getTimestepsTotal() == 0) return; // Zero-duration actions are tolerated, but not added to the queue.
 
-	/** Add a sequence of actions. NOTE: sequence is NOT reset unless clearAll is called. **/
-	public synchronized void addSequence(Action[] actions){
-		for (int i = 0; i < actions.length; i++){
-			addAction(actions[i].getCopy());
-		}
-	}
+        Action localCopy = action.getCopy();
+        actionQueue.add(localCopy);
+        actionListFull.add(localCopy);
 
-	/** Request the next QWOP keypress commands from the added sequence. **/
-	public synchronized boolean[] pollCommand(){
-		if (actionQueue.isEmpty() && (currentAction == null || !currentAction.hasNext())){
-			throw new RuntimeException("Tried to get a command off the queue when nothing is queued up.");
-		}
+        // If it's the first action, load it up.
+        if (currentAction == null) {
+            currentAction = actionQueue.poll();
+        }
 
-		// If the current action has no more keypresses, load up the next one.
-		if (currentAction == null || !currentAction.hasNext()){
-			if (currentAction != null) currentAction.reset();
-			currentAction = actionQueue.poll();
-			//if (currentAction == null) System.out.println("WTF");
-		}
+        isEmpty.set(false);
+    }
 
-		boolean[] nextCommand = currentAction.poll();
-		if (!currentAction.hasNext() && actionQueue.isEmpty()){
-			//currentAction.reset();
-			//currentAction = null; // 5/1 added this due to bug with controller. Keep an eye out for broader effects.
-			isEmpty.set(true);
-		}
-		return nextCommand;
-	}
+    /**
+     * Add a sequence of actions. All added actions are copied.
+     *
+     * @param actions Array of actions to add to the end of the queue. They are copied, and adding does not influence
+     *                polling of the existing queue.
+     */
+    public synchronized void addSequence(Action[] actions) {
+        if (actions.length == 0)
+            throw new IllegalArgumentException("Tried to add an empty array of actions to a queue.");
 
-	/** Remove everything from the queues and reset the sequence. **/
-	public synchronized void clearAll(){
-		actionQueue.clear();
-		actionListFull.clear();
-		if (currentAction != null) currentAction.reset();
-		currentAction = null;
+        for (int i = 0; i < actions.length; i++) {
+            addAction(actions[i]); // Copy happens in addAction. No need to duplicate here.
+        }
+    }
 
-		//while (actionQueue.size() > 0 || currentAction != null
-		isEmpty.set(true);
-	}
+    /**
+     * Request the next QWOP keypress commands from the added sequence. Automatically advances between actions.
+     *
+     * @return Get the next command (QWOP true/false array) on the queue.
+     */
+    public synchronized boolean[] pollCommand() {
+        if (actionQueue.isEmpty() && !currentAction.hasNext()) {
+            throw new IndexOutOfBoundsException("Tried to get a command off the queue when nothing is queued up.");
+        }
 
-	/** Check if the queue has anything in it. **/
-	public synchronized boolean isEmpty(){ return isEmpty.get(); }
+        // If the current action has no more keypresses, load up the next one.
+        if (!currentAction.hasNext()) {
+            currentAction.reset(); // Reset the previous current action so it can be polled again in the future.
+            currentAction = actionQueue.poll();
+            assert currentAction.getTimestepsTotal() == currentAction.getTimestepsRemaining(); // If the newly loaded
+            // action doesn't have all of its timesteps remaining, we have issues.
+        }
 
-	public Action[] getActionsInCurrentRun(){
-		Action[] actions = new Action[actionListFull.size()];
-		for (int i = 0; i < actions.length; i++){
-			actions[i] = actionListFull.get(i);
-		}
-		return actions;
-	}
+        // Get next command from the current action.
+        boolean[] nextCommand = currentAction.poll();
 
-	public int getCurrentActionIdx(){
-		return actionListFull.size() - actionQueue.size() - 1;
-	}
+        // If this empties the queue, then mark this as empty.
+        if (!currentAction.hasNext() && actionQueue.isEmpty()) {
+            isEmpty.set(true);
+        }
+        return nextCommand;
+    }
+
+    /**
+     * Remove everything from the queues and reset the sequence.
+     */
+    public synchronized void clearAll() {
+        actionQueue.clear();
+        actionListFull.clear();
+        if (currentAction != null) currentAction.reset();
+        currentAction = null;
+
+        isEmpty.set(true);
+    }
+
+    /**
+     * Check if the queue has anything in it.
+     *
+     * @return Whether this queue has more commands left to poll.
+     */
+    public synchronized boolean isEmpty() {
+        return isEmpty.get();
+    }
+
+    /**
+     * Get all the actions in this queue.
+     *
+     * @return All actions in this queue, including ones which have already been executed.
+     */
+    public Action[] getActionsInCurrentRun() {
+        return actionListFull.toArray(new Action[actionListFull.size()]);
+    }
+
+    /**
+     * Index of the current action. 0 is the first action.
+     *
+     * @return Index of the current action.
+     */
+    public int getCurrentActionIdx() {
+        int currIdx = actionListFull.size() - actionQueue.size() - 1;
+        assert currIdx >= 0;
+        return currIdx;
+    }
 }

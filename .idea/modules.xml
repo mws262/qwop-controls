@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/qwop_saveload.iml" filepath="$PROJECT_DIR$/.idea/qwop_saveload.iml" />
+      <module fileurl="file://$PROJECT_DIR$/QWOP_SaveLoad.iml" filepath="$PROJECT_DIR$/QWOP_SaveLoad.iml" />
     </modules>
   </component>
 </project>
