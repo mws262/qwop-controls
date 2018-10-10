@@ -11,161 +11,190 @@ import game.GameLoader;
 import game.StateVariable;
 
 /**
- * If we want to switch and change between different 
- * 
- * 
- * @author matt
+ * If we want to switch and change between different
  *
+ * @author matt
  */
-public abstract class TreeStage implements Runnable{
+public abstract class TreeStage implements Runnable {
 
-	/** **/
-	private Node stageRoot;
+    /** **/
+    private Node stageRoot;
 
-	/** Currently only supporting one sampler per stage. Must define which sampler to use in the inheritors of this abstract class. **/
-	protected ISampler sampler;
+    /**
+     * Currently only supporting one sampler per stage. Must define which sampler to use in the inheritors of this
+     * abstract class.
+     **/
+    protected ISampler sampler;
 
-	/** Data saving selection. Must define which saver to use in the inheritors of this abstract class. **/
-	protected IDataSaver saver;
+    /**
+     * Data saving selection. Must define which saver to use in the inheritors of this abstract class.
+     **/
+    protected IDataSaver saver;
 
-	/** Each stage gets its own workers to avoid contamination. Probably could combine later if necessary. **/
-	public List<TreeWorker> workers = new ArrayList<TreeWorker>();
-	
-	/** Thread managing this stage and its workers. **/
-	private Thread stageThread;
+    /**
+     * Each stage gets its own workers to avoid contamination. Probably could combine later if necessary.
+     **/
+    public List<TreeWorker> workers = new ArrayList<>();
 
-	/** Number of TreeWorkers to be used. **/
-	protected int numWorkers;
+    /**
+     * Thread managing this stage and its workers.
+     **/
+    private Thread stageThread;
 
-	/** Is the managing thread of this stage running? **/
-	private volatile boolean running = true;
+    /**
+     * Number of TreeWorkers to be used.
+     **/
+    protected int numWorkers;
 
-	/** Does this stage block the mai thread until done? **/
-	public boolean blocking = true;
+    /**
+     * Is the managing thread of this stage running?
+     **/
+    private volatile boolean running = true;
 
-	private final Object lock = new Object();
+    /**
+     * Does this stage block the mai thread until done?
+     **/
+    public boolean blocking = true;
 
-	public void initialize(List<TreeWorker> treeWorkers, Node stageRoot) {
-		numWorkers = treeWorkers.size();
-		if (numWorkers < 1) throw new RuntimeException("Tried to assign a tree stage an invalid number of workers: " + numWorkers);
+    private final Object lock = new Object();
 
-		this.workers = treeWorkers;
-		this.stageRoot = stageRoot;
-		
-		for (TreeWorker tw : treeWorkers) {
-			tw.setRoot(stageRoot);
-			tw.setSaver(saver);
-			tw.setSampler(sampler);
-			tw.startWorker();
-		}
-		
-		running = true;
-		Thread stageThread = new Thread(this);
-		stageThread.start();
-		
-		if (blocking) {
-			// This blocks the main thread until this stage is done.
-			synchronized(lock){
-				while (running) {
-					try {
-						lock.wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-	}
-	//int thresh = 2000;
-	@Override
-	public void run() {
-		// Monitor the progress of this stage's workers.
-		while (running) {
-			// EXPERIMENTAL MEMORY PRUNING.
-			//
-			//			
-			//			if (TreeWorker.getTotalGamesPlayed()  > thresh) {
-			//				count = 0;
-			//				pruneStatesForMemory(getRootNode());
-			//				thresh += 2000;
-			//			}
+    public void initialize(List<TreeWorker> treeWorkers, Node stageRoot) {
+        numWorkers = treeWorkers.size();
+        if (numWorkers < 1)
+            throw new RuntimeException("Tried to assign a tree stage an invalid number of workers: " + numWorkers);
 
-			if (checkTerminationConditions()) {
-				terminate();
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+        this.workers = treeWorkers;
+        this.stageRoot = stageRoot;
 
-	/** Externally check if this stage has wrapped up yet. **/
-	public boolean isFinished() {
-		return !running;
-	}
+        for (TreeWorker tw : treeWorkers) {
+            tw.setRoot(stageRoot);
+            tw.setSaver(saver);
+            tw.setSampler(sampler);
+            tw.startWorker();
+        }
 
-	/** Query the stage for its final results. **/
-	public abstract List<Node> getResults();
+        running = true;
+        Thread stageThread = new Thread(this);
+        stageThread.start();
 
-	/** Check through the tree for termination conditions. **/
-	public abstract boolean checkTerminationConditions();
+        if (blocking) {
+            // This blocks the main thread until this stage is done.
+            synchronized (lock) {
+                while (running) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
 
-	private static int count = 0;
-	private void pruneStatesForMemory(Node node) {
-		if (!node.children.isEmpty() && node.state != null) {//node.uncheckedActions.size() == 0) {
-			for (StateVariable st : node.state.getStateList()) {
-				st = null;
-			}
-			node.state = null;
-			count++;
-			for (Node child : node.children) {
-				pruneStatesForMemory(child);
-			}
-		}
-	}
+    //int thresh = 2000;
+    @Override
+    public void run() {
+        // Monitor the progress of this stage's workers.
+        while (running) {
+            // EXPERIMENTAL MEMORY PRUNING.
+            //
+            //
+            //			if (TreeWorker.getTotalGamesPlayed()  > thresh) {
+            //				count = 0;
+            //				pruneStatesForMemory(getRootNode());
+            //				thresh += 2000;
+            //			}
 
-	/** Terminate this stage, destroying the workers and their threads in the process. **/
-	public void terminate() {
-		running = false;
-		System.out.println("Terminate called on a stage.");
-		saver.reportStageEnding(getRootNode().getRoot(), getResults()); // Changed to save ALL the way back to real root, not just subtree root.
-		// Stop threads and get rid of them.
+            if (checkTerminationConditions()) {
+                terminate();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
-		Iterator<TreeWorker> iter = workers.iterator();
-		while (iter.hasNext()) {
-			TreeWorker tw = iter.next();
-			tw.pauseWorker(); // Pause the worker until another stage needs it.
-		}
+    /**
+     * Externally check if this stage has wrapped up yet.
+     **/
+    public boolean isFinished() {
+        return !running;
+    }
 
-		// Stop the monitoring thread and let the main thread continue.
-		synchronized(lock){
-			lock.notify();
-		}
-	}
+    /**
+     * Query the stage for its final results.
+     **/
+    public abstract List<Node> getResults();
 
-	/** Check if workers are running. **/
-	public boolean areWorkersRunning() {
-		synchronized(workers) {
+    /**
+     * Check through the tree for termination conditions.
+     **/
+    public abstract boolean checkTerminationConditions();
 
-			Iterator<TreeWorker> iter = workers.iterator();
-			if (!iter.hasNext()) return true; // It's stupid if the termination condition gets caught before any threads have a chance to get going.
-			while (iter.hasNext()) {
-				if (iter.next().isRunning()) {
-					return true;
-				}
-			}
-			return false;
-		}
-	}
+    private static int count = 0;
 
-	/** Get the root node that this stage is operating from. It cannot change from an external caller's perspective, so no set method. **/
-	public Node getRootNode() {
-		return stageRoot;
-	}
+    private void pruneStatesForMemory(Node node) {
+        if (!node.children.isEmpty() && node.state != null) {//node.uncheckedActions.size() == 0) {
+            for (StateVariable st : node.state.getStateList()) {
+                st = null;
+            }
+            node.state = null;
+            count++;
+            for (Node child : node.children) {
+                pruneStatesForMemory(child);
+            }
+        }
+    }
 
-	public int getNumberOfWorkers() {
-		return numWorkers;
-	}
+    /**
+     * Terminate this stage, destroying the workers and their threads in the process.
+     **/
+    public void terminate() {
+        running = false;
+        System.out.println("Terminate called on a stage.");
+        saver.reportStageEnding(getRootNode().getRoot(), getResults()); // Changed to save ALL the way back to real
+        // root, not just subtree root.
+        // Stop threads and get rid of them.
+
+        for (TreeWorker tw : workers) {
+            tw.pauseWorker(); // Pause the worker until another stage needs it.
+        }
+
+        // Stop the monitoring thread and let the main thread continue.
+        synchronized (lock) {
+            lock.notify();
+        }
+    }
+
+    /**
+     * Check if workers are running.
+     **/
+    public boolean areWorkersRunning() {
+        synchronized (workers) {
+
+            Iterator<TreeWorker> iter = workers.iterator();
+            if (!iter.hasNext())
+                return true; // It's stupid if the termination condition gets caught before any threads have a chance to get going.
+            while (iter.hasNext()) {
+                if (iter.next().isRunning()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Get the root node that this stage is operating from. It cannot change from an external caller's perspective,
+     * so no set method.
+     **/
+    public Node getRootNode() {
+        return stageRoot;
+    }
+
+    public int getNumberOfWorkers() {
+        return numWorkers;
+    }
 }

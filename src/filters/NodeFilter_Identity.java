@@ -7,17 +7,18 @@ import main.Node;
 
 /**
  * Filter which accepts all nodes and rejects none.
- * @author matt
  *
+ * @author matt
  */
 public class NodeFilter_Identity implements INodeFilter {
 
-	@Override
-	public boolean filter(Node node) {
-		return true;
-	}
+    @Override
+    public boolean filter(Node node) {
+        return true;
+    }
 
-	@Override
-	public void filter(List<Node> nodes) {}
+    @Override
+    public void filter(List<Node> nodes) {
+    }
 
 }

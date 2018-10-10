@@ -42,51 +42,51 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 	private static final long serialVersionUID = 1L;
 	
 	/** Selection options! **/
-	State.ObjectName sortByPart = State.ObjectName.BODY;
-	State.StateName sortBySt = State.StateName.TH;
+	private State.ObjectName sortByPart = State.ObjectName.BODY;
+	private State.StateName sortBySt = State.StateName.TH;
 
-	public boolean penalizeEndOfSequences = false;
-	public float maxPenaltyForEndOfSequence = 50; // Penalty towards choosing runs near the end of their sequences.
+	private boolean penalizeEndOfSequences = false;
+	private float maxPenaltyForEndOfSequence = 50; // Penalty towards choosing runs near the end of their sequences.
 
-	public boolean comparePreviousStates = true;
-	public int numPreviousStatesToCompare = 10;//10;
-	public float previousStatePenaltyMult = 2f;//8f;
+	private boolean comparePreviousStates = true;
+	private int numPreviousStatesToCompare = 10;//10;
+	private float previousStatePenaltyMult = 2f;//8f;
 
-	public boolean enableVoting = false;
-	public int numTopMatchesToConsider = 100;
+	private boolean enableVoting = false;
+	private int numTopMatchesToConsider = 100;
 	
-	public boolean enableTrajectorySnapping = false;
-	public float trajectorySnappingThreshold = 1f;
+	private boolean enableTrajectorySnapping = false;
+	private float trajectorySnappingThreshold = 1f;
 	
-	public boolean penalizeSlow = false;
-	public float penalizeSlowMult = 50;
-	public int penalizeSlowHorizon = 50;
+	private boolean penalizeSlow = false;
+	private float penalizeSlowMult = 50;
+	private int penalizeSlowHorizon = 50;
 
 	/** How many nearby (in terms of body theta) states are compared when determining the "closest" one. **/
-	public int upperSetLimit = 20000;
-	public int lowerSetLimit = 20000;
+	private int upperSetLimit = 20000;
+	private int lowerSetLimit = 20000;
 
 	/** Total number of states loaded from TFRecord file. **/
 	private int numStatesLoaded = 0;
 
 	/** All states loaded, regardless of run, in sorted order, by body theta. **/
-	public NavigableMap<Float, StateHolder> allStates = new TreeMap<Float, StateHolder>();
+	public NavigableMap<Float, StateHolder> allStates = new TreeMap<>();
 
 	/** All runs loaded. **/
-	public Set<RunHolder> runs = new HashSet<RunHolder>(); 
+	public Set<RunHolder> runs = new HashSet<>();
 
 	/** Keep track of which total run that the currently selected action comes from. **/
 	private RunHolder currentTrajectory;
 	private StateHolder currentTrajectoryStateMatch;
 	private DecisionHolder currentDecision;
-	private Deque<State> previousStatesLIFO = new LIFOFixedSize<State>(numPreviousStatesToCompare);
+	private Deque<State> previousStatesLIFO = new LIFOFixedSize<>(numPreviousStatesToCompare);
 
-	EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<Float, StateHolder>(numTopMatchesToConsider);
+	EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<>(numTopMatchesToConsider);
 
 	private boolean[] chosenKeys = new boolean[4];
 	
 	//IMPORTANT  DUE TO COLLECTION BUG
-	public boolean killFirstTwoActions = true;
+	private boolean killFirstTwoActions = true;
 	
 	public Controller_NearestNeighborApprox(List<File> files) {
 		loadAll(files);
@@ -104,7 +104,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		StateHolder bestMatch = null;
 		float bestMatchError = Float.MAX_VALUE;
 
-		EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<Float, StateHolder>(10);
+		EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<>(10);
 
 		//Utility.tic();
 		lowerSet.values().stream().limit(lowerSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state),v));
@@ -188,7 +188,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 	}
 
 
-	public float totalEvalFunction(StateHolder sh, State actualState) {
+	private float totalEvalFunction(StateHolder sh, State actualState) {
 		float cost = 0f;
 
 		// Error relative to current state.
@@ -261,9 +261,9 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 	}
 	
 	/** Handle loading the TFRecords and making the appropriate data structures. **/
-	public void loadAll(List<File> files) {
+	private void loadAll(List<File> files) {
 		Utility.tic();
-		List<SequenceExample> dataSeries = new ArrayList<SequenceExample>();
+		List<SequenceExample> dataSeries = new ArrayList<>();
 		FileInputStream fIn = null;
 		for (File f : files) {
 			dataSeries.clear();
@@ -324,10 +324,10 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 
 					byte[] keyPressBytes = seq.getFeatureLists().getFeatureListMap().get("PRESSED_KEYS").getFeature(i).getBytesList().getValue(0).toByteArray();
 					boolean[] keyPress = new boolean[4];
-					keyPress[0] = (keyPressBytes[0] == (byte)1) ? true : false;
-					keyPress[1] = (keyPressBytes[1] == (byte)1) ? true : false;
-					keyPress[2] = (keyPressBytes[2] == (byte)1) ? true : false;
-					keyPress[3] = (keyPressBytes[3] == (byte)1) ? true : false;
+					keyPress[0] = keyPressBytes[0] == (byte) 1;
+					keyPress[1] = keyPressBytes[1] == (byte) 1;
+					keyPress[2] = keyPressBytes[2] == (byte) 1;
+					keyPress[3] = keyPressBytes[3] == (byte) 1;
 
 					StateHolder newState = new StateHolder(st, keyPress, rh);
 					allStates.put(st.getStateVarFromName(sortByPart, sortBySt), newState);
@@ -348,7 +348,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		public final State state;
 
 		/** QWOP keys pressed. **/
-		public final boolean[] keys;
+		final boolean[] keys;
 
 		/** What run is this state a part of? **/
 		final RunHolder parentRun;
@@ -364,10 +364,10 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 
 		private static final long serialVersionUID = 1L;
 		
-		public List<Integer> actionDurations = new ArrayList<Integer>();
+		public List<Integer> actionDurations = new ArrayList<>();
 		
 		/** All the states seen in this single run. **/
-		public List<StateHolder> states = new ArrayList<StateHolder>();
+		public List<StateHolder> states = new ArrayList<>();
 
 		/** Adds a state, in the order it's seen, to this run. Should only be automatically called. **/
 		private void addState(StateHolder sh) { states.add(sh); }
@@ -381,9 +381,9 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 		
 		//public RunHolder chosenTrajectory;
 		
-		public int chosenIdx;
+		int chosenIdx;
 		
-		public DecisionHolder(Action chosenAction, RunHolder chosenTrajectory, int chosenIdx) {
+		DecisionHolder(Action chosenAction, RunHolder chosenTrajectory, int chosenIdx) {
 			this.chosenAction = chosenAction;
 			this.chosenIdx = chosenIdx/20;
 			

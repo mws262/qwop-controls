@@ -40,7 +40,7 @@ public final class DenseDataProtos {
    * Protobuf type {@code data.DataSet}
    *
    * <pre>
-   * Converting my serialized .SaveableDenseData
+   * Converting my serialized .SavableDenseData
    * </pre>
    */
   public static final class DataSet extends
@@ -6098,7 +6098,7 @@ public final class DenseDataProtos {
      * Protobuf type {@code data.DataSet}
      *
      * <pre>
-     * Converting my serialized .SaveableDenseData
+     * Converting my serialized .SavableDenseData
      * </pre>
      */
     public static final class Builder extends

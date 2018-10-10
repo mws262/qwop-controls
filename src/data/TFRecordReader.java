@@ -20,76 +20,76 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class TFRecordReader {
-  private final DataInput input;
-  private final boolean crcCheck;
+    private final DataInput input;
+    private final boolean crcCheck;
 
-  public TFRecordReader(DataInput input, boolean crcCheck) {
-    this.input = input;
-    this.crcCheck = crcCheck;
-  }
-
-  public byte[] read() throws IOException {
-    /**
-     * TFRecord format:
-     * uint64 length
-     * uint32 masked_crc32_of_length
-     * byte   data[length]
-     * uint32 masked_crc32_of_data
-     */
-    byte[] lenBytes = new byte[8];
-    try {
-      // Only catch EOF here, other case means corrupted file
-      input.readFully(lenBytes);
-    } catch (EOFException eof) {
-      return null; // return null means EOF
-    }
-    Long len = fromInt64LE(lenBytes);
-
-    // Verify length crc32
-    if (!crcCheck) {
-      input.skipBytes(4);
-    } else {
-      byte[] lenCrc32Bytes = new byte[4];
-      input.readFully(lenCrc32Bytes);
-      int lenCrc32 = fromInt32LE(lenCrc32Bytes);
-      if (lenCrc32 != Crc32C.maskedCrc32c(lenBytes)) {
-        throw new IOException("Length header crc32 checking failed: " + lenCrc32 + " != " +
-            Crc32C.maskedCrc32c(lenBytes) + ", length = " + len);
-      }
+    public TFRecordReader(DataInput input, boolean crcCheck) {
+        this.input = input;
+        this.crcCheck = crcCheck;
     }
 
-    if (len > Integer.MAX_VALUE) {
-      throw new IOException("Record size exceeds max value of int32: " + len);
+    public byte[] read() throws IOException {
+        /**
+         * TFRecord format:
+         * uint64 length
+         * uint32 masked_crc32_of_length
+         * byte   data[length]
+         * uint32 masked_crc32_of_data
+         */
+        byte[] lenBytes = new byte[8];
+        try {
+            // Only catch EOF here, other case means corrupted file
+            input.readFully(lenBytes);
+        } catch (EOFException eof) {
+            return null; // return null means EOF
+        }
+        Long len = fromInt64LE(lenBytes);
+
+        // Verify length crc32
+        if (!crcCheck) {
+            input.skipBytes(4);
+        } else {
+            byte[] lenCrc32Bytes = new byte[4];
+            input.readFully(lenCrc32Bytes);
+            int lenCrc32 = fromInt32LE(lenCrc32Bytes);
+            if (lenCrc32 != Crc32C.maskedCrc32c(lenBytes)) {
+                throw new IOException("Length header crc32 checking failed: " + lenCrc32 + " != " +
+                        Crc32C.maskedCrc32c(lenBytes) + ", length = " + len);
+            }
+        }
+
+        if (len > Integer.MAX_VALUE) {
+            throw new IOException("Record size exceeds max value of int32: " + len);
+        }
+        byte[] data = new byte[len.intValue()];
+        input.readFully(data);
+
+        // Verify data crc32
+        if (!crcCheck) {
+            input.skipBytes(4);
+        } else {
+            byte[] dataCrc32Bytes = new byte[4];
+            input.readFully(dataCrc32Bytes);
+            int dataCrc32 = fromInt32LE(dataCrc32Bytes);
+            if (dataCrc32 != Crc32C.maskedCrc32c(data)) {
+                throw new IOException("Data crc32 checking failed: " + dataCrc32 + " != " +
+                        Crc32C.maskedCrc32c(data));
+            }
+        }
+        return data;
     }
-    byte[] data = new byte[len.intValue()];
-    input.readFully(data);
 
-    // Verify data crc32
-    if (!crcCheck) {
-      input.skipBytes(4);
-    } else {
-      byte[] dataCrc32Bytes = new byte[4];
-      input.readFully(dataCrc32Bytes);
-      int dataCrc32 = fromInt32LE(dataCrc32Bytes);
-      if (dataCrc32 != Crc32C.maskedCrc32c(data)) {
-        throw new IOException("Data crc32 checking failed: " + dataCrc32 + " != " +
-            Crc32C.maskedCrc32c(data));
-      }
+    private long fromInt64LE(byte[] data) {
+        assert data.length == 8;
+        ByteBuffer bb = ByteBuffer.wrap(data);
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        return bb.getLong();
     }
-    return data;
-  }
 
-  private long fromInt64LE(byte[] data) {
-    assert data.length == 8;
-    ByteBuffer bb = ByteBuffer.wrap(data);
-    bb.order(ByteOrder.LITTLE_ENDIAN);
-    return bb.getLong();
-  }
-
-  private int fromInt32LE(byte[] data) {
-    assert data.length == 4;
-    ByteBuffer bb = ByteBuffer.wrap(data);
-    bb.order(ByteOrder.LITTLE_ENDIAN);
-    return bb.getInt();
-  }
+    private int fromInt32LE(byte[] data) {
+        assert data.length == 4;
+        ByteBuffer bb = ByteBuffer.wrap(data);
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        return bb.getInt();
+    }
 }

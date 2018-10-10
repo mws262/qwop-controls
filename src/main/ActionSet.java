@@ -1,5 +1,7 @@
 package main;
 
+import distributions.Distribution;
+
 import java.util.ArrayList;
 
 /**
@@ -13,7 +15,7 @@ public class ActionSet extends ArrayList<Action> {
 
     public Distribution<Action> samplingDist;
 
-    public ActionSet(Distribution<Action> samplingDist) {
+    private ActionSet(Distribution<Action> samplingDist) {
         this.samplingDist = samplingDist;
     }
 

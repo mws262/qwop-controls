@@ -12,97 +12,111 @@ import main.ActionQueue;
 import main.Node;
 import main.PanelRunner;
 
-public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runnable{
+public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runnable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/** Is this panel still listening and ready to draw? Only false if thread is being killed. **/
-	private boolean running = true;
+    /**
+     * Is the current simulation paused?
+     **/
+    private boolean pauseFlag = false;
 
-	/** Is the current simulation paused? **/
-	private boolean pauseFlag = false;
+    /**
+     * This panel's copy of the game it uses to run games for visualization.
+     **/
+    protected GameLoader game;
 
-	/** This panel's copy of the game it uses to run games for visualization. **/
-	protected GameLoader game;
+    /**
+     * States to animate through.
+     **/
+    private Queue<State> states;
 
-	/** How long the panel pauses between drawing in millis. Assuming that simulation basically takes no time. **/
-	private long displayPause = 35;
+    /**
+     * Current state being displayed.
+     **/
+    private State currState;
 
-	/** States to animate through. **/
-	private Queue<State> states;
+    public PanelRunner_AnimatedFromStates() {
+        game = new GameLoader();
+        game.makeNewWorld();
+        //this.setMinimumSize(new Dimension(100,100));
+    }
 
-	/** Current state being displayed. **/
-	private State currState;
+    public void simRun(Queue<State> states) {
+        this.states = states;
+        active = true;
+    }
 
-	/** Current status of each keypress. **/
-	private boolean Q = false;
-	private boolean W = false;
-	private boolean O = false;
-	private boolean P = false;
+    /**
+     * Gets autocalled by the main graphics manager.
+     **/
+    @Override
+    public void paintComponent(Graphics g) {
+        if (!active && game.initialized) return;
+        super.paintComponent(g);
+        if (game != null && currState != null) {
 
-	public PanelRunner_AnimatedFromStates() {
-		game = new GameLoader();
-		game.makeNewWorld();
-		//this.setMinimumSize(new Dimension(100,100));
-	}
+            game.drawExtraRunner((Graphics2D) g, currState, "", runnerScaling,
+                    (int) (xOffsetPixels - currState.body.x * runnerScaling), yOffsetPixels, Color.BLACK, normalStroke);
+            boolean p = false;
+            boolean o = false;
+            boolean w = false; /** Current status of each keypress. **/boolean q = false;
+            keyDrawer(g, q, w, o, p);
 
-	public void simRun(Queue<State> states) {
-		this.states = states;
-		active = true;
-	}
+            //This draws the "road" markings to show that the ground is moving relative to the dude.
+            for (int i = 0; i < 2000 / 69; i++) {
+                g.drawString("_", ((-(int) (runnerScaling * currState.body.x) - i * 70) % 2000) + 2000,
+                        yOffsetPixels + 92);
+            }
+            //drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
+        }
+    }
 
-	/** Gets autocalled by the main graphics manager. **/
-	@Override
-	public void paintComponent(Graphics g) {
-		if (!active && game.initialized) return;
-		super.paintComponent(g);
-		if (game != null && currState != null) {
+    @Override
+    public void run() {
+        /** Is this panel still listening and ready to draw? Only false if thread is being killed. **/
+        boolean running = true;
+        while (running) {
+            if (active && !pauseFlag) {
+                if (game != null) {
+                    if (states != null && !states.isEmpty()) {
+                        currState = states.poll();
+                    }
+                }
+            }
+            try {
+                /** How long the panel pauses between drawing in millis. Assuming that simulation basically takes no
+                 * time. **/
+                long displayPause = 35;
+                Thread.sleep(displayPause);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-			game.drawExtraRunner((Graphics2D)g, currState, "", runnerScaling, (int)(xOffsetPixels - currState.body.x*runnerScaling), yOffsetPixels, Color.BLACK, normalStroke);
-			keyDrawer(g, Q, W, O, P);
-			
-			//This draws the "road" markings to show that the ground is moving relative to the dude.
-			for (int i = 0; i < 2000/69; i++) {
-				g.drawString("_", ((-(int)(runnerScaling * currState.body.x) - i * 70) % 2000) + 2000, yOffsetPixels + 92);
-			}
-			//drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
-		}
-	}
+    /**
+     * Play/pause the current visualized simulation. Flag is reset by calling again or by selecting a new node to
+     * visualize.
+     **/
+    public void pauseToggle() {
+        pauseFlag = !pauseFlag;
+    }
 
-	@Override
-	public void run() {
-		while (running) {
-			if (active && !pauseFlag) {
-				if (game != null) {
-					if (states != null && !states.isEmpty()) {
-						currState = states.poll();
-					}
-				}
-			}
-			try {
-				Thread.sleep(displayPause);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+    @Override
+    public void deactivateTab() {
+        active = false;
+    }
 
-	/** Play/pause the current visualized simulation. Flag is reset by calling again or by selecting a new node to visualize. **/
-	public void pauseToggle() {
-		pauseFlag = !pauseFlag;
-	}
-
-	@Override
-	public void deactivateTab() {
-		active = false;
-	}
-
-	@Override
-	public void update(Node node) {}
+    @Override
+    public void update(Node node) {
+    }
 
 
-	/** Check if the current run is finished. **/
-	public boolean isFinishedWithRun() {
-		return states.isEmpty();
-	}
+    /**
+     * Check if the current run is finished.
+     **/
+    public boolean isFinishedWithRun() {
+        return states.isEmpty();
+    }
 }

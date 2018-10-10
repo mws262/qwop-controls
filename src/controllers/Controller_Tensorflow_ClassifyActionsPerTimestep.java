@@ -12,13 +12,13 @@ import main.TensorflowLoader;
 public class Controller_Tensorflow_ClassifyActionsPerTimestep extends TensorflowLoader implements IController {
 
 	/** Name of the input in the tflow graph. **/
-	public String inputName = "";
+    private String inputName = "";
 	
 	/** Name of the output in the tflow graph. **/
-	public String outputName = "";
+    private String outputName = "";
 	
 	/** Print out each prediction. **/
-	public boolean verbose = true;
+    private boolean verbose = true;
 	
 	private int prevAction = 0;
 	

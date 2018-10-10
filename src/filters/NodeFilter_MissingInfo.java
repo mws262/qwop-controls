@@ -8,26 +8,26 @@ import main.Node;
 
 /**
  * Very new nodes might not have state or action assigned yet. This will filter those out.
- * @author matt
  *
+ * @author matt
  */
 public class NodeFilter_MissingInfo implements INodeFilter {
 
-	@Override
-	public boolean filter(Node node) { // true means keep
-		return !(node.state == null || node.action == null);
-	}
+    @Override
+    public boolean filter(Node node) { // true means keep
+        return !(node.state == null || node.action == null);
+    }
 
-	@Override
-	public void filter(List<Node> nodes) {
-		Iterator<Node> iter = nodes.iterator();
-		
-		while (iter.hasNext()) {
-			Node n = iter.next();
-			
-			if (!filter(n)) {
-				iter.remove();
-			}
-		}
-	}
+    @Override
+    public void filter(List<Node> nodes) {
+        Iterator<Node> iter = nodes.iterator();
+
+        while (iter.hasNext()) {
+            Node n = iter.next();
+
+            if (!filter(n)) {
+                iter.remove();
+            }
+        }
+    }
 }

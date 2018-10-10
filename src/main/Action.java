@@ -174,7 +174,9 @@ public class Action implements Serializable {
     /**
      * Is this a mutable copy of the original action? Important if we plan to use this as a pollable queue.
      */
-    public boolean isMutable() { return isExecutableCopy; }
+    public boolean isMutable() {
+        return isExecutableCopy;
+    }
 
     /**
      * Take a list of actions and combine adjacent actions which have the same keypresses.

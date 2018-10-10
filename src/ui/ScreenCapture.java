@@ -20,38 +20,39 @@ import org.jcodec.common.tools.MainUtils.Flag;
 import main.Utility;
 
 public class ScreenCapture {
-	
-	private AWTSequenceEncoder encoder;
-	private Robot robot;
-	
-	public ScreenCapture(File saveFile) {
+
+    private AWTSequenceEncoder encoder;
+    private Robot robot;
+
+    public ScreenCapture(File saveFile) {
         try {
-			this.encoder = AWTSequenceEncoder.create25Fps(saveFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+            this.encoder = AWTSequenceEncoder.create25Fps(saveFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         try {
-			this.robot = new Robot();
-		} catch (AWTException e) {
-			e.printStackTrace();
-		}finally {
-			
-		}
-	}
-	
-	public void takeFrame(Rectangle rectangle) throws IOException {
-		BufferedImage image = robot.createScreenCapture(rectangle);
-		encoder.encodeImage(image);
-	}
-	public void takeFrameFromJPanel(JPanel panel) throws IOException {
-	    BufferedImage bi = new BufferedImage(1440,720,1); // This is evil hacks
-	    Graphics2D g = bi.createGraphics();
-	    panel.print(g);
-	    encoder.encodeImage(bi);
-	    g.dispose();
-	}
-	
-	public void finalize() throws IOException {
-		encoder.finish();
-	}
+            this.robot = new Robot();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        } finally {
+
+        }
+    }
+
+    public void takeFrame(Rectangle rectangle) throws IOException {
+        BufferedImage image = robot.createScreenCapture(rectangle);
+        encoder.encodeImage(image);
+    }
+
+    public void takeFrameFromJPanel(JPanel panel) throws IOException {
+        BufferedImage bi = new BufferedImage(1440, 720, 1); // This is evil hacks
+        Graphics2D g = bi.createGraphics();
+        panel.print(g);
+        encoder.encodeImage(bi);
+        g.dispose();
+    }
+
+    public void finalize() throws IOException {
+        encoder.finish();
+    }
 }

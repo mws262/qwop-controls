@@ -11,104 +11,116 @@ import savers.DataSaver_DenseTFRecord;
 
 public class SparseDataToDense {
 
-	/** Personal copy of the game. **/
-	private GameLoader game = new GameLoader();
+    /**
+     * Personal copy of the game.
+     **/
+    private GameLoader game = new GameLoader();
 
-	/** Saver that this will use. Use a dense one most likely. **/
-	private DataSaver_DenseTFRecord saver;
+    /**
+     * Saver that this will use. Use a dense one most likely.
+     **/
+    private DataSaver_DenseTFRecord saver;
 
-	/** Saves and loads. **/
-	private SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
+    /**
+     * Saves and loads.
+     **/
+    private SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
 
-	/** Queued commands, IE QWOP key presses **/
-	public ActionQueue actionQueue = new ActionQueue();
+    /**
+     * Queued commands, IE QWOP key presses
+     **/
+    public ActionQueue actionQueue = new ActionQueue();
 
-	/** If we don't want to save data for the first or last actions in a sequence. **/
-	public int trimFirst = 0;
-	public int trimLast = 0;
+    /**
+     * If we don't want to save data for the first or last actions in a sequence.
+     **/
+    public int trimFirst = 0;
+    public int trimLast = 0;
 
-	public SparseDataToDense(String fileLoc) {
-		saver = new DataSaver_DenseTFRecord();
-		if (!fileLoc.endsWith("/")) fileLoc = fileLoc + "/";
-		saver.setSavePath(fileLoc);
-	}
+    public SparseDataToDense(String fileLoc) {
+        saver = new DataSaver_DenseTFRecord();
+        if (!fileLoc.endsWith("/")) fileLoc = fileLoc + "/";
+        saver.setSavePath(fileLoc);
+    }
 
-	/** Resim and convert. saveBulk means that all will be combined into one file. Otherwise into many different. **/
-	public void convert(List<File> files, boolean saveBulk) {
-		
-		if (saveBulk) {
-			saver.setSaveInterval(-1);
-			for (File file : files) {
-				List<SaveableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
-				for (SaveableSingleGame singleGame : sparseGames) {
-					sim(singleGame);
-				}
-			}
-			saver.toFile();		
-		}else {
-			saver.setSaveInterval(1);
-			for (File file : files) {
-				List<SaveableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
-				for (SaveableSingleGame singleGame : sparseGames) {
-					saver.filenameOverride = file.getName().split("\\.(?=[^\\.]+$)")[0];
-					sim(singleGame);
-				}
-			}
-		}
-		
-		saver.reportStageEnding(null, null);	
-	}
+    /**
+     * Resim and convert. saveBulk means that all will be combined into one file. Otherwise into many different.
+     **/
+    public void convert(List<File> files, boolean saveBulk) {
 
-	private void simWithoutSave(Action[] actions) {
-		actionQueue.clearAll();
-		actionQueue.addSequence(actions);
-		while (!actionQueue.isEmpty()) {
-			boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-			Action action = actionQueue.peekThisAction();
-			boolean Q = nextCommand[0];
-			boolean W = nextCommand[1]; 
-			boolean O = nextCommand[2];
-			boolean P = nextCommand[3];
-			game.stepGame(Q,W,O,P);
-			if (game.getFailureStatus()) {
-				System.out.println("Game saver is seeing a failed state");
-			}
-		}
-	}
+        if (saveBulk) {
+            saver.setSaveInterval(-1);
+            for (File file : files) {
+                List<SavableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
+                for (SavableSingleGame singleGame : sparseGames) {
+                    sim(singleGame);
+                }
+            }
+            saver.toFile();
+        } else {
+            saver.setSaveInterval(1);
+            for (File file : files) {
+                List<SavableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
+                for (SavableSingleGame singleGame : sparseGames) {
+                    saver.filenameOverride = file.getName().split("\\.(?=[^\\.]+$)")[0];
+                    sim(singleGame);
+                }
+            }
+        }
 
-	private void simWithSave(Action[] actions) {
-		actionQueue.clearAll();
-		actionQueue.addSequence(actions);
-		while (!actionQueue.isEmpty()) {
-			boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-			Action action = actionQueue.peekThisAction();
-			boolean Q = nextCommand[0];
-			boolean W = nextCommand[1]; 
-			boolean O = nextCommand[2];
-			boolean P = nextCommand[3];
-			game.stepGame(Q,W,O,P);
-			saver.reportTimestep(action, game); // Key difference
-			if (game.getFailureStatus()) {
-				System.out.println("Game saver is seeing a failed state");
-			}
-		}
-	}
+        saver.reportStageEnding(null, null);
+    }
 
-	private void sim(SaveableSingleGame singleGame) {
-		actionQueue.clearAll();
-		Action[] gameActions = singleGame.actions;
-		Action[] noSaveActions1 = Arrays.copyOfRange(gameActions, 0, trimFirst);
-		Action[] saveActions = Arrays.copyOfRange(gameActions, trimFirst, gameActions.length - trimLast);
-		Action[] noSaveActions2 = Arrays.copyOfRange(gameActions, gameActions.length - trimLast, gameActions.length);
+    private void simWithoutSave(Action[] actions) {
+        actionQueue.clearAll();
+        actionQueue.addSequence(actions);
+        while (!actionQueue.isEmpty()) {
+            boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
+            Action action = actionQueue.peekThisAction();
+            boolean Q = nextCommand[0];
+            boolean W = nextCommand[1];
+            boolean O = nextCommand[2];
+            boolean P = nextCommand[3];
+            game.stepGame(Q, W, O, P);
+            if (game.getFailureStatus()) {
+                System.out.println("Game saver is seeing a failed state");
+            }
+        }
+    }
 
-		if (noSaveActions1.length + saveActions.length + noSaveActions2.length != gameActions.length)
-			throw new RuntimeException("Split the game actions into an incorrect number which does not add up to the original total.");
+    private void simWithSave(Action[] actions) {
+        actionQueue.clearAll();
+        actionQueue.addSequence(actions);
+        while (!actionQueue.isEmpty()) {
+            boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
+            Action action = actionQueue.peekThisAction();
+            boolean Q = nextCommand[0];
+            boolean W = nextCommand[1];
+            boolean O = nextCommand[2];
+            boolean P = nextCommand[3];
+            game.stepGame(Q, W, O, P);
+            saver.reportTimestep(action, game); // Key difference
+            if (game.getFailureStatus()) {
+                System.out.println("Game saver is seeing a failed state");
+            }
+        }
+    }
 
-		game.makeNewWorld();
-		simWithoutSave(noSaveActions1);
-		saver.reportGameInitialization(game.getCurrentState()); // Wait to initialize until the ignored section is done.
-		simWithSave(saveActions);
+    private void sim(SavableSingleGame singleGame) {
+        actionQueue.clearAll();
+        Action[] gameActions = singleGame.actions;
+        Action[] noSaveActions1 = Arrays.copyOfRange(gameActions, 0, trimFirst);
+        Action[] saveActions = Arrays.copyOfRange(gameActions, trimFirst, gameActions.length - trimLast);
+        Action[] noSaveActions2 = Arrays.copyOfRange(gameActions, gameActions.length - trimLast, gameActions.length);
 
-		saver.reportGameEnding(null);
-	}
+        if (noSaveActions1.length + saveActions.length + noSaveActions2.length != gameActions.length)
+            throw new RuntimeException("Split the game actions into an incorrect number which does not add up to the original total.");
+
+        game.makeNewWorld();
+        simWithoutSave(noSaveActions1);
+        saver.reportGameInitialization(game.getCurrentState()); // Wait to initialize until the ignored section is done.
+        simWithSave(saveActions);
+
+        saver.reportGameEnding(null);
+    }
 }

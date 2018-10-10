@@ -23,7 +23,7 @@ public class Controller_AskServer extends Client implements IController {
 		try {
 			initialize();
 			sendObject(controller);
-		} catch (ClassNotFoundException | IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		System.out.println("Sent controller template.");
@@ -40,12 +40,11 @@ public class Controller_AskServer extends Client implements IController {
 			System.out.println("Received decision.");
 
 			Utility.toc();
-			//currentDecision = nextDecision;
-			return nextDecision;//.chosenAction;
+			return nextDecision;
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
+			return null;
 		}
-		return null;
 	}
 
 	@Override

@@ -3,8 +3,8 @@ package savers;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.SaveableFileIO;
-import data.SaveableSingleGame;
+import data.SavableFileIO;
+import data.SavableSingleGame;
 import game.GameLoader;
 import game.State;
 import main.Action;
@@ -14,72 +14,92 @@ import main.Node;
 /**
  * Saver for sparse game information. Basically this includes actions
  * needed to recreate a run, but not full state information at every timestep.
- * @author matt
  *
+ * @author matt
  */
 
 public class DataSaver_Sparse implements IDataSaver {
 
-	/** File prefix. Goes in front of date. **/
-	public String filePrefix = "qwop_sparse_java";
-	
-	/** Do not include dot before. **/
-	public String fileExtension = "SaveableSingleGame";
-	
-	/** File save location. **/
-	private String fileLocation = "./";
-	
-	/** How many games in between saves. **/
-	private int saveInterval = 100;
-	
-	/** Games since last file write. **/
-	private int gamesSinceFile = 0;
-	
-	/** Handles class serialization and writing to file. **/
-	private SaveableFileIO<SaveableSingleGame> fileIO = new SaveableFileIO<SaveableSingleGame>();
-	
-	/** Buffered games awaiting file write. **/
-	private ArrayList<SaveableSingleGame> saveBuffer = new ArrayList<SaveableSingleGame>();
-	
-	@Override
-	public void reportGameInitialization(State initialState) {}
+    /**
+     * File prefix. Goes in front of date.
+     **/
+    @SuppressWarnings("WeakerAccess")
+    public String filePrefix = "qwop_sparse_java";
 
-	@Override
-	public void reportTimestep(Action action, GameLoader game) {}
+    /**
+     * Do not include dot before.
+     **/
+    @SuppressWarnings("WeakerAccess")
+    public String fileExtension = "SavableSingleGame";
 
-	@Override
-	public void reportGameEnding(Node endNode) {
-		saveBuffer.add(new SaveableSingleGame(endNode));
-		gamesSinceFile++;
-		
-		if (saveInterval == gamesSinceFile) {	
-			fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
-			saveBuffer.clear();
-			gamesSinceFile = 0;
-		}
-	}
+    /**
+     * File save location.
+     **/
+    private String fileLocation = "./";
 
-	@Override
-	public void setSaveInterval(int numGames) {
-		saveInterval = numGames;
-	}
+    /**
+     * How many games in between saves.
+     **/
+    private int saveInterval = 100;
 
-	@Override
-	public void setSavePath(String fileLoc) {
-		this.fileLocation = fileLoc;
-	}
+    /**
+     * Games since last file write.
+     **/
+    private int gamesSinceFile = 0;
 
-	@Override
-	public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
-		// If the save buffer still has stuff in it, save!
-		if (!saveBuffer.isEmpty()) fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
-	}
-	
-	@Override
-	public DataSaver_Sparse clone() {
-		DataSaver_Sparse newSaver = new DataSaver_Sparse();
-		newSaver.setSaveInterval(saveInterval);
-		newSaver.setSavePath(fileLocation);
-		return newSaver;
-	}
+    /**
+     * Handles class serialization and writing to file.
+     **/
+    private SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
+
+    /**
+     * Buffered games awaiting file write.
+     **/
+    private ArrayList<SavableSingleGame> saveBuffer = new ArrayList<>();
+
+    @Override
+    public void reportGameInitialization(State initialState) {
+    }
+
+    @Override
+    public void reportTimestep(Action action, GameLoader game) {
+    }
+
+    @Override
+    public void reportGameEnding(Node endNode) {
+        saveBuffer.add(new SavableSingleGame(endNode));
+        gamesSinceFile++;
+
+        if (saveInterval == gamesSinceFile) {
+            fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix,
+					fileExtension), false);
+            saveBuffer.clear();
+            gamesSinceFile = 0;
+        }
+    }
+
+    @Override
+    public void setSaveInterval(int numGames) {
+        saveInterval = numGames;
+    }
+
+    @Override
+    public void setSavePath(String fileLoc) {
+        this.fileLocation = fileLoc;
+    }
+
+    @Override
+    public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
+        // If the save buffer still has stuff in it, save!
+        if (!saveBuffer.isEmpty())
+            fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
+    }
+
+    @Override
+    public DataSaver_Sparse clone() {
+        DataSaver_Sparse newSaver = new DataSaver_Sparse();
+        newSaver.setSaveInterval(saveInterval);
+        newSaver.setSavePath(fileLocation);
+        return newSaver;
+    }
 }

@@ -12,54 +12,62 @@ import main.PanelRunner;
 /**
  * Simple runner displayer that either takes a node and gets its state or takes a state
  * directly and displays it.
- * 
- * @author matt
  *
+ * @author matt
  */
 public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
-	private static final long serialVersionUID = 1L;
-	
-	/** Access to the game for the sake of the drawing methods. **/
-	private GameLoader game = new GameLoader();
-	
-	/** Current state being displayed. **/
-	private State currentState;
-	
-	@Override
-	public void update(Node node) {
-		currentState = node.state;
-	}
-	
-	/** Update the state to be displayed. **/
-	public void updateState(State state) {
+    private static final long serialVersionUID = 1L;
 
-		currentState = state;
-	}
+    /**
+     * Access to the game for the sake of the drawing methods.
+     **/
+    private GameLoader game = new GameLoader();
 
-	@Override
-	public void deactivateTab() {
-		active = false;
-	}
+    /**
+     * Current state being displayed.
+     **/
+    private State currentState;
 
-	/** Draws the selected node state and potentially previous and future states. **/
-	@Override
-	public void paintComponent(Graphics g) {
-		if (!active || currentState == null) return;
-		super.paintComponent(g);
-		Graphics2D g2 = (Graphics2D)g;
-		game.drawExtraRunner(g2, game.getXForms(currentState), "", runnerScaling, 500 - (int)(currentState.body.x * runnerScaling), yOffsetPixels + 100, Color.BLACK, normalStroke);
-	}
+    @Override
+    public void update(Node node) {
+        currentState = node.state;
+    }
 
-	@Override
-	public void run() {
-		while (true) {
-			repaint();
-			try {
-				Thread.sleep(30);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+    /**
+     * Update the state to be displayed.
+     **/
+    public void updateState(State state) {
+
+        currentState = state;
+    }
+
+    @Override
+    public void deactivateTab() {
+        active = false;
+    }
+
+    /**
+     * Draws the selected node state and potentially previous and future states.
+     **/
+    @Override
+    public void paintComponent(Graphics g) {
+        if (!active || currentState == null) return;
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+        game.drawExtraRunner(g2, game.getXForms(currentState), "", runnerScaling,
+				500 - (int) (currentState.body.x * runnerScaling), yOffsetPixels + 100, Color.BLACK, normalStroke);
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            repaint();
+            try {
+                Thread.sleep(30);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }

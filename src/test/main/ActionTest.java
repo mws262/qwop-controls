@@ -9,17 +9,17 @@ import java.util.List;
 
 public class ActionTest {
 
-    int actTimesteps1 = 10;
-    int actTimesteps2 = 50;
-    int actTimesteps3 = 0;
+    private int actTimesteps1 = 10;
+    private int actTimesteps2 = 50;
+    private int actTimesteps3 = 0;
 
-    boolean[] keys1 = {false, true, true, false};
-    boolean[] keys2 = {true, false, false, true};
-    boolean[] keys3 = {false, false, false, false};
+    private boolean[] keys1 = {false, true, true, false};
+    private boolean[] keys2 = {true, false, false, true};
+    private boolean[] keys3 = {false, false, false, false};
 
-    Action validAction1 = new Action(actTimesteps1, keys1[0], keys1[1], keys1[2], keys1[3]);
-    Action validAction2 = new Action(actTimesteps2, keys2);
-    Action validAction3 = new Action(actTimesteps3, keys3);
+    private Action validAction1 = new Action(actTimesteps1, keys1[0], keys1[1], keys1[2], keys1[3]);
+    private Action validAction2 = new Action(actTimesteps2, keys2);
+    private Action validAction3 = new Action(actTimesteps3, keys3);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.

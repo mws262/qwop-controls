@@ -53,7 +53,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
     /**
      * Tree root nodes associated with this interface.
      **/
-    ArrayList<Node> rootNodes = new ArrayList<Node>();
+    ArrayList<Node> rootNodes = new ArrayList<>();
 
     /**
      * Individual pane for the tree.
@@ -73,7 +73,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
     /**
      * List of panes which can be activated, deactivated.
      **/
-    private ArrayList<TabbedPaneActivator> allTabbedPanes = new ArrayList<TabbedPaneActivator>(); //List of all panes
+    private ArrayList<TabbedPaneActivator> allTabbedPanes = new ArrayList<>(); //List of all panes
     // in the tabbed part
 
     /**
@@ -105,13 +105,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
      * Continuously update the estimate of the display loop time in milliseconds.
      **/
     private long avgLoopTime = MSPF;
-    /**
-     * Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers gives more
-     * weight to the old value.
-     **/
-    private final float loopTimeFilter = 8;
     private long lastIterTime = System.currentTimeMillis();
-    private long totalGamesPlayed = 0;
     private long lastGamesPlayed = 0;
 
     /**
@@ -131,7 +125,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
     public UI_Full() {
         Container pane = this.getContentPane();
-        /**** Tabbed panes ****/
+        /* Tabbed panes */
         /* Add components to tabs */
         tabPane = new JTabbedPane();
         tabPane.setBorder(BorderFactory.createRaisedBevelBorder());
@@ -139,7 +133,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
         tabPane.setMinimumSize(new Dimension(100, 1));
         tabPane.addChangeListener(this);
 
-        /**** TREE PANE ****/
+        /* TREE PANE */
         treePane = new TreePane();
         treePane.setBorder(BorderFactory.createRaisedBevelBorder());
 
@@ -148,7 +142,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
         splitPane.setResizeWeight(0.7);
         pane.add(splitPane);
 
-        /*******************/
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         this.setPreferredSize(new Dimension(windowWidth, windowHeight));
@@ -162,7 +155,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
         this.pack();
         this.setVisible(true);
-        //treePane.requestFocus();
 
         currentStatus = Status.DRAW_ALL; // Fire it up.
 
@@ -184,7 +176,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
      * Add a new tab to this frame.
      **/
     public void removeTab(JPanel tabToRemove) {
-        tabPane.remove((Component) tabToRemove);
+        tabPane.remove(tabToRemove);
         allTabbedPanes.remove(tabToRemove);
 
         //Make sure the currently active tab is actually being updated.
@@ -349,7 +341,12 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
             }
             textRenderBig.endRendering();
 
-            // ms/frame
+            /**
+             * Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers
+             * gives more
+             * weight to the old value.
+             **/
+            float loopTimeFilter = 8;
             avgLoopTime =
                     (long) (((loopTimeFilter - 1f) * avgLoopTime + 1f * (System.currentTimeMillis() - lastIterTime)) / loopTimeFilter); // Filter the loop time
 
@@ -368,7 +365,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
             // Total games played
             textRenderSmall.setColor(0.7f, 0.7f, 0.7f, 1.0f);
             long totalTimestepsSimulated = TreeWorker.getTotalTimestepsSimulated();
-            totalGamesPlayed = TreeWorker.getTotalGamesPlayed();
+            long totalGamesPlayed = TreeWorker.getTotalGamesPlayed();
             textRenderSmall.draw(totalGamesPlayed + " total games", 20, panelHeight - 85);
 
             textRenderSmall.draw(Math.round(totalTimestepsSimulated / 9000f) / 10f + " hours simulated!", 20,
@@ -579,7 +576,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
                     //This set of logicals eliminates the edge cases, then takes the proposed action as default
                     if (thisIndex == 0 && direction == -1) { //We're at the lowest index of this node and must head
                         // to a new parent node.
-                        ArrayList<Node> blacklist = new ArrayList<Node>(); //Keep a blacklist of nodes that already
+                        ArrayList<Node> blacklist = new ArrayList<>(); //Keep a blacklist of nodes that already
                         // proved to be duds.
                         blacklist.add(selectedNode);
                         nextOver(selectedNode.parent, blacklist, 1, direction,
@@ -587,7 +584,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
                     } else if (thisIndex == selectedNode.parent.children.size() - 1 && direction == 1) { //We're at
                         // the highest index of this node and must head to a new parent node.
-                        ArrayList<Node> blacklist = new ArrayList<Node>();
+                        ArrayList<Node> blacklist = new ArrayList<>();
                         blacklist.add(selectedNode);
                         nextOver(selectedNode.parent, blacklist, 1, direction,
                                 selectedNode.parent.children.indexOf(selectedNode), 0);

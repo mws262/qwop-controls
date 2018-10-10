@@ -66,7 +66,16 @@ public class ActionQueue {
     public boolean[] peekCommand() {
         if (currentAction == null) throw new IndexOutOfBoundsException("No current action in the queue for us to peek" +
                 " at.");
-        return currentAction.peek();
+
+        if (currentAction.getTimestepsRemaining() == 0) {
+            if (actionQueue.isEmpty()) {
+                return null;
+            } else {
+                return actionQueue.peek().peek();
+            }
+        } else {
+            return currentAction.peek();
+        }
     }
 
     /**
@@ -101,8 +110,8 @@ public class ActionQueue {
         if (actions.length == 0)
             throw new IllegalArgumentException("Tried to add an empty array of actions to a queue.");
 
-        for (int i = 0; i < actions.length; i++) {
-            addAction(actions[i]); // Copy happens in addAction. No need to duplicate here.
+        for (Action action : actions) {
+            addAction(action); // Copy happens in addAction. No need to duplicate here.
         }
     }
 
@@ -161,7 +170,7 @@ public class ActionQueue {
      * @return All actions in this queue, including ones which have already been executed.
      */
     public Action[] getActionsInCurrentRun() {
-        return actionListFull.toArray(new Action[actionListFull.size()]);
+        return actionListFull.toArray(new Action[0]);
     }
 
     /**

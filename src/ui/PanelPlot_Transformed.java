@@ -21,142 +21,162 @@ import main.PanelPlot;
 
 public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
-	private static final long serialVersionUID = 1L;
-	
-	/** Transformer to use to transform normal states into reduced coordinates. **/
-	private final ITransform transformer;
+    private static final long serialVersionUID = 1L;
 
-	/** Filters to be applied to the node list. **/
-	List<INodeFilter> nodeFilters = new ArrayList<INodeFilter>();
-	
-	/** Downsampler to reduce the number of nodes we're trying to process and display **/
-	private NodeFilter_Downsample plotDownsampler = new NodeFilter_Downsample(5000);
-	private NodeFilter_Downsample transformDownsampler = new NodeFilter_Downsample(2000);
-	
-	/** Total number of plots -- not necessarily all displayed at once. **/
-	private final int numPlots;
+    /**
+     * Transformer to use to transform normal states into reduced coordinates.
+     **/
+    private final ITransform transformer;
 
-	/** How many plots to squeeze in one displayed row. **/
-	private int plotsPerView;
+    /**
+     * Filters to be applied to the node list.
+     **/
+    List<INodeFilter> nodeFilters = new ArrayList<>();
 
-	/** Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation. **/
-	List<Node> nodesToTransform = new ArrayList<Node>();
-	List<float[]> transformedStates;
+    /**
+     * Downsampler to reduce the number of nodes we're trying to process and display
+     **/
+    private NodeFilter_Downsample plotDownsampler = new NodeFilter_Downsample(5000);
+    private NodeFilter_Downsample transformDownsampler = new NodeFilter_Downsample(2000);
 
-	/** Which plot, in the grid of potential plots, is currently being plotted in the first spot on the left. **/
-	private int firstPlotRow = 0;
-	private int firstPlotCol = 0;
+    /**
+     * How many plots to squeeze in one displayed row.
+     **/
+    private int plotsPerView;
 
-	public PanelPlot_Transformed(ITransform transformer, int plotsPerView) {
-		super(plotsPerView);
-		this.plotsPerView = plotsPerView;
+    /**
+     * Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation.
+     **/
+    List<Node> nodesToTransform = new ArrayList<>();
+    List<float[]> transformedStates;
 
-		this.transformer = transformer;
-		numPlots = transformer.getOutputStateSize() * transformer.getOutputStateSize(); // Every output vs. every other output.
+    /**
+     * Which plot, in the grid of potential plots, is currently being plotted in the first spot on the left.
+     **/
+    private int firstPlotRow = 0;
+    private int firstPlotCol = 0;
 
-		addKeyListener(this);
-		setFocusable(true);
-	}
+    public PanelPlot_Transformed(ITransform transformer, int plotsPerView) {
+        super(plotsPerView);
+        this.plotsPerView = plotsPerView;
 
-	@Override
-	public synchronized void update(Node plotNode) {
-		// Do transform update if necessary:
-		nodesToTransform.clear();
-		plotNode.getRoot().getNodesBelow(nodesToTransform);
-		transformDownsampler.filter(nodesToTransform);
-		List<State> statesBelow = nodesToTransform.stream().map(n -> n.state).collect(Collectors.toList()); // Convert from node list to state list.
-		transformer.updateTransform(statesBelow); // Update transform with all states.
+        this.transformer = transformer;
+        /** Total number of plots -- not necessarily all displayed at once. **/
+        int numPlots = transformer.getOutputStateSize() * transformer.getOutputStateSize();
 
-		// Pick which to actually plot.
-		nodesToTransform.clear();
-		plotNode.getNodesBelow(nodesToTransform);
+        addKeyListener(this);
+        setFocusable(true);
+    }
 
-		// Apply any added filters (may be none).
-		for (INodeFilter filter : nodeFilters) {
-			filter.filter(nodesToTransform);
-		}
-		plotDownsampler.filter(nodesToTransform); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.
+    @Override
+    public synchronized void update(Node plotNode) {
+        // Do transform update if necessary:
+        nodesToTransform.clear();
+        plotNode.getRoot().getNodesBelow(nodesToTransform);
+        transformDownsampler.filter(nodesToTransform);
+        List<State> statesBelow = nodesToTransform.stream().map(n -> n.state).collect(Collectors.toList()); //
+        // Convert from node list to state list.
+        transformer.updateTransform(statesBelow); // Update transform with all states.
 
-		statesBelow = nodesToTransform.stream().map(n -> n.state).collect(Collectors.toList()); // Convert from node list to state list.
-		transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
+        // Pick which to actually plot.
+        nodesToTransform.clear();
+        plotNode.getNodesBelow(nodesToTransform);
 
-		changePlots();
-	}
+        // Apply any added filters (may be none).
+        for (INodeFilter filter : nodeFilters) {
+            filter.filter(nodesToTransform);
+        }
+        plotDownsampler.filter(nodesToTransform); // Reduce number of nodes to transform if necessary. Plotting is a
+        // bottleneck.
 
-	public void changePlots() {
-		requestFocus();
+        statesBelow = nodesToTransform.stream().map(n -> n.state).collect(Collectors.toList()); // Convert from node
+        // list to state list.
+        transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
 
-		Iterator<Entry<XYPlot, PlotDataset>> it = plotsAndData.entrySet().iterator();	
-		int count = 0;
-		while (it.hasNext()) {
-			Entry<XYPlot, PlotDataset> plotAndData = it.next();
-			XYPlot pl = plotAndData.getKey();
-			PlotDataset dat = plotAndData.getValue();
+        changePlots();
+    }
 
-			int currCol = firstPlotCol + count;
-			Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[] :: new);
-			Float[] yData = transformedStates.stream().map(ts -> ts[firstPlotRow]).toArray(Float[] :: new);
-			Color[] cData = nodesToTransform.stream().map(n -> Node.getColorFromTreeDepth(n.treeDepth)).toArray(Color[] :: new);
+    public void changePlots() {
+        requestFocus();
 
-			pl.getRangeAxis().setLabel("Component" + " " + firstPlotRow);
-			pl.getDomainAxis().setLabel("Component" + " " + currCol);
+        Iterator<Entry<XYPlot, PlotDataset>> it = plotsAndData.entrySet().iterator();
+        int count = 0;
+        while (it.hasNext()) {
+            Entry<XYPlot, PlotDataset> plotAndData = it.next();
+            XYPlot pl = plotAndData.getKey();
+            PlotDataset dat = plotAndData.getValue();
 
-			dat.addSeries(0, xData, yData, cData);
+            int currCol = firstPlotCol + count;
+            Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
+            Float[] yData = transformedStates.stream().map(ts -> ts[firstPlotRow]).toArray(Float[]::new);
+            Color[] cData =
+                    nodesToTransform.stream().map(n -> Node.getColorFromTreeDepth(n.treeDepth)).toArray(Color[]::new);
 
-			if (xData.length > 0) {
-				float xLow = Arrays.stream(xData).min(Float :: compare).get();
-				float xHi = Arrays.stream(xData).max(Float :: compare).get();
+            pl.getRangeAxis().setLabel("Component" + " " + firstPlotRow);
+            pl.getDomainAxis().setLabel("Component" + " " + currCol);
 
-				float yLow = Arrays.stream(yData).min(Float :: compare).get();
-				float yHi = Arrays.stream(yData).max(Float :: compare).get();
+            dat.addSeries(0, xData, yData, cData);
 
-				pl.getDomainAxis().setRange(xLow - 0.05, xHi + 0.05); // Range gets whiney if you select one node and try to set the range upper and lower to the same thing.
-				pl.getRangeAxis().setRange(yLow - 0.05, yHi + 0.05);
-			}
-			count++;
-		}
-		//addCommandLegend(firstPlot);
-		applyUpdates();
-	}
+            if (xData.length > 0) {
+                float xLow = Arrays.stream(xData).min(Float::compare).get();
+                float xHi = Arrays.stream(xData).max(Float::compare).get();
 
-	/** Add a filter to be applied to the list of nodes to be plotted. **/
-	public void addFilter(INodeFilter filter) {
-		nodeFilters.add(filter);
-	}
+                float yLow = Arrays.stream(yData).min(Float::compare).get();
+                float yHi = Arrays.stream(yData).max(Float::compare).get();
 
-	@Override
-	public void plotClicked(int plotIdx) {}
+                pl.getDomainAxis().setRange(xLow - 0.05, xHi + 0.05); // Range gets whiney if you select one node and
+                // try to set the range upper and lower to the same thing.
+                pl.getRangeAxis().setRange(yLow - 0.05, yHi + 0.05);
+            }
+            count++;
+        }
+        //addCommandLegend(firstPlot);
+        applyUpdates();
+    }
 
-	@Override
-	public void keyTyped(KeyEvent e) {}
+    /**
+     * Add a filter to be applied to the list of nodes to be plotted.
+     **/
+    public void addFilter(INodeFilter filter) {
+        nodeFilters.add(filter);
+    }
 
-	@Override
-	public void keyPressed(KeyEvent e) {
+    @Override
+    public void plotClicked(int plotIdx) {
+    }
 
-		if (transformedStates.isEmpty()) return;
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
 
-		switch(e.getKeyCode()) {
-		case KeyEvent.VK_RIGHT:
-			if (firstPlotCol >= transformer.getOutputStateSize() - plotsPerView) return;
-			firstPlotCol++;
-			break;
-		case KeyEvent.VK_LEFT:
-			if (firstPlotCol <= 0) return;
-			firstPlotCol--;
-			break;
-		case KeyEvent.VK_UP:
-			if (firstPlotRow <= 0) return;
-			firstPlotRow--;
-			break;
-		case KeyEvent.VK_DOWN:
-			if (firstPlotRow >= transformer.getOutputStateSize() - plotsPerView) return;
-			firstPlotRow++;
-			break;
-		}
-		changePlots();
+    @Override
+    public void keyPressed(KeyEvent e) {
 
-	}
+        if (transformedStates.isEmpty()) return;
 
-	@Override
-	public void keyReleased(KeyEvent e) {}
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_RIGHT:
+                if (firstPlotCol >= transformer.getOutputStateSize() - plotsPerView) return;
+                firstPlotCol++;
+                break;
+            case KeyEvent.VK_LEFT:
+                if (firstPlotCol <= 0) return;
+                firstPlotCol--;
+                break;
+            case KeyEvent.VK_UP:
+                if (firstPlotRow <= 0) return;
+                firstPlotRow--;
+                break;
+            case KeyEvent.VK_DOWN:
+                if (firstPlotRow >= transformer.getOutputStateSize() - plotsPerView) return;
+                firstPlotRow++;
+                break;
+        }
+        changePlots();
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+    }
 }
