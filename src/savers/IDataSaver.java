@@ -1,4 +1,4 @@
-package main;
+package savers;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -6,6 +6,8 @@ import java.util.List;
 
 import game.GameLoader;
 import game.State;
+import main.Action;
+import main.Node;
 
 public interface IDataSaver {
 

@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
+import controllers.IController;
 import data.SavableActionSequence;
 import data.SavableFileIO;
 import data.SavableSingleGame;

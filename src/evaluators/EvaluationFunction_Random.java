@@ -2,7 +2,6 @@ package evaluators;
 
 import java.util.Random;
 
-import main.IEvaluationFunction;
 import main.Node;
 
 /**
@@ -11,7 +10,7 @@ import main.Node;
  *
  * @author Matt
  */
-public class Evaluator_Random implements IEvaluationFunction {
+public class EvaluationFunction_Random implements IEvaluationFunction {
     private Random rand = new Random();
 
     @Override
@@ -25,8 +24,8 @@ public class Evaluator_Random implements IEvaluationFunction {
     }
 
     @Override
-    public Evaluator_Random clone() {
-        return new Evaluator_Random();
+    public EvaluationFunction_Random clone() {
+        return new EvaluationFunction_Random();
     }
 
 }

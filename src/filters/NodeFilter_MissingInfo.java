@@ -3,7 +3,6 @@ package filters;
 import java.util.Iterator;
 import java.util.List;
 
-import main.INodeFilter;
 import main.Node;
 
 /**

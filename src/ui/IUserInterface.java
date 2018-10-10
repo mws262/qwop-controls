@@ -1,4 +1,6 @@
-package main;
+package ui;
+
+import main.Node;
 
 public interface IUserInterface extends Runnable {
 

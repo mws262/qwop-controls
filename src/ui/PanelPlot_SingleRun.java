@@ -16,12 +16,11 @@ import game.GameLoader;
 import game.State;
 import main.Action;
 import main.ActionQueue;
-import main.ITransform;
+import transformations.ITransform;
 import main.Node;
 import main.PanelPlot;
 import main.Utility;
 import transformations.Transform_Autoencoder;
-import transformations.Transform_Identity;
 
 /**
  * This plotter makes plots from all the states along a single run, not

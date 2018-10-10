@@ -3,7 +3,6 @@ package samplers;
 import java.util.ArrayList;
 
 import main.Action;
-import main.ISampler;
 import main.Node;
 
 /**
@@ -37,7 +36,7 @@ public class Sampler_Distribution implements ISampler {
             // Count the number of available children to go to next.
             ArrayList<Node> notFullyExploredChildren = new ArrayList<>();
             ArrayList<Action> notFullyExploredActions = new ArrayList<>();
-            for (Node child : currentNode.children) {
+            for (Node child : currentNode.getChildren()) {
                 if (!child.fullyExplored.get()) {
                     notFullyExploredChildren.add(child);
                     notFullyExploredActions.add(child.getAction());

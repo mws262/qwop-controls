@@ -2,7 +2,6 @@ package filters;
 
 import java.util.List;
 
-import main.INodeFilter;
 import main.Node;
 import main.Utility;
 

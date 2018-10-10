@@ -27,7 +27,6 @@ import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import main.IUserInterface;
 import main.Node;
 import main.TreeWorker;
 
@@ -184,7 +183,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
     }
 
     /* (non-Javadoc)
-     * @see main.IUserInterface#run()
+     * @see ui.IUserInterface#run()
      */
     @Override
     public void run() {
@@ -218,7 +217,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
     }
 
     /* (non-Javadoc)
-     * @see main.IUserInterface#kill()
+     * @see ui.IUserInterface#kill()
      */
     @Override
     public void kill() {
@@ -228,7 +227,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
     }
 
     /* (non-Javadoc)
-     * @see main.IUserInterface#selectNode(main.Node)
+     * @see ui.IUserInterface#selectNode(main.Node)
      */
     @Override
     public void selectNode(Node selected) {
@@ -572,22 +571,22 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
                 if (selectedNode.treeDepth == 0) { // At root, don't try to look at parent.
                     // <nothing>
                 } else {
-                    int thisIndex = selectedNode.parent.children.indexOf(selectedNode);
+                    int thisIndex = selectedNode.getIndexAccordingToParent();
                     //This set of logicals eliminates the edge cases, then takes the proposed action as default
                     if (thisIndex == 0 && direction == -1) { //We're at the lowest index of this node and must head
                         // to a new parent node.
                         ArrayList<Node> blacklist = new ArrayList<>(); //Keep a blacklist of nodes that already
                         // proved to be duds.
                         blacklist.add(selectedNode);
-                        nextOver(selectedNode.parent, blacklist, 1, direction,
-                                selectedNode.parent.children.indexOf(selectedNode), 0);
+                        nextOver(selectedNode.getParent(), blacklist, 1, direction,
+                                selectedNode.getIndexAccordingToParent(), 0);
 
-                    } else if (thisIndex == selectedNode.parent.children.size() - 1 && direction == 1) { //We're at
+                    } else if (thisIndex == selectedNode.getSiblingCount() && direction == 1) { //We're at
                         // the highest index of this node and must head to a new parent node.
                         ArrayList<Node> blacklist = new ArrayList<>();
                         blacklist.add(selectedNode);
-                        nextOver(selectedNode.parent, blacklist, 1, direction,
-                                selectedNode.parent.children.indexOf(selectedNode), 0);
+                        nextOver(selectedNode.getParent(), blacklist, 1, direction,
+                                selectedNode.get.children.indexOf(selectedNode), 0);
 
                     } else { //Otherwise we can just switch nodes within the scope of this parent.
                         selectNode(selectedNode.parent.children.get(thisIndex + direction));

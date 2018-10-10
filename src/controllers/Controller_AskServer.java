@@ -1,15 +1,12 @@
 package controllers;
 
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.io.IOException;
 
 import controllers.Controller_NearestNeighborApprox.DecisionHolder;
 import game.GameLoader;
 import game.State;
 import main.Action;
-import main.IController;
-import main.PanelRunner;
 import main.Utility;
 import server.Client;
 

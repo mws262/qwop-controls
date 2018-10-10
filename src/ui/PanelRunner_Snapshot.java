@@ -12,7 +12,7 @@ import java.util.List;
 
 import filters.NodeFilter_Downsample;
 import game.GameLoader;
-import main.INodeFilter;
+import filters.INodeFilter;
 import main.Node;
 import main.PanelRunner;
 

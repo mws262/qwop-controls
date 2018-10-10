@@ -18,23 +18,14 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import TreeStages.TreeStage_MaxDepth;
 import TreeStages.TreeStage_MinDepth;
 import distributions.Distribution_Normal;
-import evaluators.Evaluator_Distance;
+import evaluators.EvaluationFunction_Distance;
 import filters.NodeFilter_GoodDescendants;
 import samplers.Sampler_FixedDepth;
 import samplers.Sampler_UCB;
 import savers.DataSaver_StageSelected;
 import transformations.Transform_Autoencoder;
 import transformations.Transform_PCA;
-import ui.PanelPlot_Controls;
-import ui.PanelPlot_SingleRun;
-import ui.PanelPlot_States;
-import ui.PanelPlot_Transformed;
-import ui.PanelRunner_AnimatedTransformed;
-import ui.PanelRunner_Comparison;
-import ui.PanelRunner_Snapshot;
-import ui.PanelTimeSeries_WorkerLoad;
-import ui.UI_Full;
-import ui.UI_Headless;
+import ui.*;
 
 public abstract class MAIN_Search_Template {
 
@@ -198,7 +189,7 @@ public abstract class MAIN_Search_Template {
         saver.overrideFilename = saveName;
         saver.setSavePath(saveLoc.getPath() + "/");
 
-        Sampler_UCB ucbSampler = new Sampler_UCB(new Evaluator_Distance());
+        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Distance());
         TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, ucbSampler, saver); // Depth to get to
 		// sorta steady state. was
         searchMax.terminateAfterXGames = maxGames; // Will terminate after this many games played regardless of

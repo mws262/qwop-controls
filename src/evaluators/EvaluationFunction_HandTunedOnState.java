@@ -3,10 +3,9 @@ package evaluators;
 import org.jblas.util.Random;
 
 import game.State;
-import main.IEvaluationFunction;
 import main.Node;
 
-public class Evaluator_HandTunedOnState implements IEvaluationFunction {
+public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction {
 
     @Override
     public float getValue(Node nodeToEvaluate) {
@@ -53,7 +52,7 @@ public class Evaluator_HandTunedOnState implements IEvaluationFunction {
     }
 
     @Override
-    public Evaluator_HandTunedOnState clone() {
-        return new Evaluator_HandTunedOnState();
+    public EvaluationFunction_HandTunedOnState clone() {
+        return new EvaluationFunction_HandTunedOnState();
     }
 }

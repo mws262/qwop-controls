@@ -3,7 +3,6 @@ package controllers;
 import game.GameLoader;
 import game.State;
 import main.Action;
-import main.IController;
 
 import java.awt.*;
 

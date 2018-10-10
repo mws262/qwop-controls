@@ -2,13 +2,9 @@ package TreeStages;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
-import org.apache.commons.pool2.impl.GenericObjectPool;
-
-import game.GameLoader;
-import main.IDataSaver;
-import main.ISampler;
+import savers.IDataSaver;
+import samplers.ISampler;
 import main.Node;
 import main.TreeStage;
 import main.TreeWorker;

@@ -6,7 +6,6 @@ import java.util.List;
 import game.GameLoader;
 import game.State;
 import main.Action;
-import main.IController;
 import main.TensorflowLoader;
 
 public class Controller_Tensorflow_ClassifyActionsPerTimestep extends TensorflowLoader implements IController {

@@ -10,7 +10,7 @@ import java.awt.Stroke;
 
 import javax.swing.JPanel;
 
-import main.IUserInterface.TabbedPaneActivator;
+import ui.IUserInterface.TabbedPaneActivator;
 
 /**
  * Snapshot viewers of the runner and animations of the runner share a lot of features and dimensions.

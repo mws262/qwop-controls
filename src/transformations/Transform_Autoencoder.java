@@ -11,7 +11,6 @@ import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 
 import game.State;
-import main.ITransform;
 
 public class Transform_Autoencoder implements ITransform {
 

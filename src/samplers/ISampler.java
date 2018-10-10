@@ -1,4 +1,6 @@
-package main;
+package samplers;
+
+import main.Node;
 
 /**
  * Defines a strategy for sampling nodes.

@@ -8,7 +8,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
@@ -29,7 +28,7 @@ import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 
-import main.IUserInterface.TabbedPaneActivator;
+import ui.IUserInterface.TabbedPaneActivator;
 
 public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, ChartMouseListener {
 

@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.util.Iterator;
 import java.util.List;
 
-import main.INodeFilter;
 import main.Node;
 
 public class NodeFilter_GoodDescendants implements INodeFilter {

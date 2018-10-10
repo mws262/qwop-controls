@@ -17,40 +17,84 @@ import data.SavableSingleGame;
 import game.GameLoader;
 import game.State;
 
-/*
- * This version will hopefully get rid of many legacy features.
- * Also, this should handle adding actions which are not from a
- * predetermined set.
+/**
+ * Representation of a node in a tree of actions for QWOP. Most of the tree management stuff is handled by recursing
+ * through up and down the linked connections of nodes. All nodes past the root node contain a game state and the
+ * single action since the previous node taken to get there. The root node is the same, except it has only a state
+ * and not an action associated with it.
+ * <p>
+ * The convention "up the tree" is used to mean towards the root node, or towards lower tree depth. "Down the tree"
+ * means towards the leaves, or to greater tree depth.
  *
+ * @author matt
  */
+
 public class Node {
 
-    /******** All node stats *********/
-    private static final LongAdder nodesCreated = new LongAdder();
-    private static final LongAdder nodesImported = new LongAdder();
-    private static final LongAdder gamesImported = new LongAdder();
-    private static final LongAdder gamesCreated = new LongAdder();
-
-    public final AtomicInteger maxBranchDepth = new AtomicInteger();
-
     /**
-     * Some sampling methods want to track how many times this node has been visited.
+     * Node which leads up to this node.
      **/
-    public AtomicLong visitCount = new AtomicLong();
-    private float value = 0;
+    private Node parent; // Parentage may not be changed.
 
-    /********* QWOP IN/OUT ************/
     /**
-     * Keys and duration
+     * Child nodes. Not fixed size any more.
      **/
-    public final Action action; //Actual delay used as control.
+    private final List<Node> children = new ArrayList<>();
 
     /**
-     * What is the state after taking this node's action?
+     * Action which takes the game from the parent node's state to this node's state.
+     **/
+    public final Action action;
+
+    /**
+     * State after taking this node's action from the parent node's state.
      **/
     public State state;
 
+    /**
+     * True if this node represents a failed state.
+     */
     private final AtomicBoolean isFailed = new AtomicBoolean();
+
+    /**
+     * A "score" or value associated with this node's performance. The usage of this field is up to the sampler.
+     */
+    private float value = 0;
+
+    /**
+     * Some sampling methods want to track how many times this node has been visited during tree sampling.
+     **/
+    public AtomicLong visitCount = new AtomicLong();
+
+
+    /* Global, thread-safe sampling statistics. */
+
+    /**
+     * Total number of nodes created this execution.
+     */
+    private static final LongAdder nodesCreated = new LongAdder();
+
+    /**
+     * Total number of games played during this execution. Should be greater than or equal to the number of nodes
+     * created this execution.
+     */
+    private static final LongAdder gamesCreated = new LongAdder();
+
+    /**
+     * Total number of nodes imported from a save file.
+     */
+    private static final LongAdder nodesImported = new LongAdder();
+
+    /**
+     * Total number of games imported from a save file.
+     */
+    private static final LongAdder gamesImported = new LongAdder();
+
+    /**
+     * Maximum depth anywhere below this node in the tree. The tree root is 0.
+     */
+    public final AtomicInteger maxBranchDepth = new AtomicInteger();
+
 
     /**
      * If assigned, this automatically adds potential actions to children when they are created. This makes the
@@ -63,17 +107,6 @@ public class Node {
      **/
     public static IActionGenerator potentialActionGenerator;
 
-    /********* TREE CONNECTION INFO ************/
-
-    /**
-     * Node which leads up to this node.
-     **/
-    public Node parent; // Parentage may not be changed.
-
-    /**
-     * Child nodes. Not fixed size any more.
-     **/
-    public final CopyOnWriteArrayList<Node> children = new CopyOnWriteArrayList<>();
 
     /**
      * Untried child actions.
@@ -128,7 +161,7 @@ public class Node {
     // Disable node position calculations (for when running headless)
     private static final boolean calculateNodeVisPositions = true;
 
-    /********* NODE PLACEMENT ************/
+    /* NODE PLACEMENT */
 
     /**
      * Parameters for visualizing the tree
@@ -145,7 +178,8 @@ public class Node {
      **/
     private float zOffset = 0.f;
 
-    /*********** UTILITY **************/
+    /* UTILITY */
+
     /**
      * Are we bulk adding saved nodes? If so, some construction things are deferred.
      **/
@@ -159,44 +193,7 @@ public class Node {
      * Make a new node which is NOT the root. Add this to the tree hierarchy.
      **/
     private Node(Node parent, Action action) {
-        this.parent = parent;
-        treeDepth = parent.treeDepth + 1;
-        this.action = action;
-
-        // Error check for duplicate actions.
-        for (Node parentChildren : parent.children) {
-            if (parentChildren.action == action) {
-                throw new RuntimeException("Tried to add a duplicate action node at depth " + treeDepth + ". Action " +
-                        "was: " + action.toString() + ".");
-            }
-        }
-
-        if (treeDepth > maxDepthYet) {
-            maxDepthYet = treeDepth;
-        }
-
-        // Update max branch depth
-        maxBranchDepth.set(treeDepth);
-        Node currentNode = this;
-        while (currentNode.treeDepth > 0 && currentNode.parent.maxBranchDepth.get() < currentNode.maxBranchDepth.get()) {
-            currentNode.parent.maxBranchDepth.set(currentNode.maxBranchDepth.get());
-            currentNode = currentNode.parent;
-        }
-
-        // Add some child actions to try if an action generator is assigned.
-        autoAddUncheckedActions();
-
-        edgeLength = 5.00f * (float) Math.pow(0.6947, 0.1903 * treeDepth) + 1.5f;
-        //(float)Math.pow(0.787, 0.495) + 1.0f; // Optimized exponential in Matlab
-
-        lineBrightness = parent.lineBrightness;
-        zOffset = parent.zOffset;
-
-        parent.children.add(this);
-
-        if (!currentlyAddingSavedNodes && calculateNodeVisPositions) {
-            calcNodePos(); // Must be called after this node has been added to its parent's list!
-        }
+        this(parent, action, true);
     }
 
     /**
@@ -218,8 +215,7 @@ public class Node {
         // Add some child actions to try if an action generator is assigned.
         autoAddUncheckedActions();
 
-        edgeLength = 5.00f;// * (float)Math.pow(0.6947, 0.1903 * treeDepth ) + 1.5f;
-        //(float)Math.pow(0.787, 0.495) + 1.0f; // Optimized exponential in Matlab
+        edgeLength = 5.00f * (float) Math.pow(0.6947, 0.1903 * treeDepth) + 1.5f;
 
         lineBrightness = parent.lineBrightness;
         zOffset = parent.zOffset;
@@ -267,13 +263,14 @@ public class Node {
         autoAddUncheckedActions();
     }
 
-    /************************************/
-    /******* ADDING TO THE TREE *********/
-    /************************************/
 
     /**
      * Add a new child node from a given action. If the action is in uncheckedActions, remove it.
-     **/
+     *
+     * @param childAction The action which defines a child node, i.e. it takes this node's state to the new child's
+     *                    state.
+     * @return A new child node defined by the provided action.
+     */
     public synchronized Node addChild(Action childAction) {
         uncheckedActions.remove(childAction);
         nodesCreated.increment();
@@ -282,7 +279,7 @@ public class Node {
 
     /**
      * If we've assigned a potentialActionGenerator, this can auto-add potential child actions. Ignores duplicates.
-     **/
+     */
     private synchronized void autoAddUncheckedActions() {
         // If we've set rules to auto-select potential children, do so.
         if (potentialActionGenerator != null) {
@@ -302,7 +299,14 @@ public class Node {
         }
     }
 
-    /**
+    /*
+     * LOCKING AND UNLOCKING NODES:
+     *
+     * Due to multithreading, it is a major headache if several threads are sampling from the same node at the same
+     * time. Hence, we lock nodes to prevent sampling by other threads while another one is working in that part of
+     * the tree. In general, we try to be overzealous in locking. For broad trees, there is minimal blocking slowdown
+     * . For narrow trees, however, we may get only minimal gains from multithreading.
+     *
      * Cases:
      * 1. Select node to expand. It has only 1 untried option. We lock the node, and expand.
      * 2. Select node to expand. It has multiple options. We still lock the node for now. This could be changed.
@@ -314,7 +318,61 @@ public class Node {
      * When unlocking, we should propagate fully-explored statuses back up the tree first, and then remove locks as
      * far up the tree as possible.
      */
+
+    /**
+     * Set a flag to indicate that the invoking TreeWorker has temporary exclusive rights to expand from this node.
+     *
+     * @return Whether the lock was successfully obtained. True means that the caller obtained the lock. False means
+     * that someone else got to it first.
+     */
+    public synchronized boolean reserveExpansionRights() {
+        if (locked.get()) { // Already owned by another worker.
+            return false;
+
+        } else {
+            if (uncheckedActions.isEmpty()) // No child actions remain to sample. FIXME: This shouldn't actually
+                // occur. Replace with an exception.
+                return false;
+
+            locked.set(true);
+
+            if (debugDrawNodeLocking) { // For highlighting points in the visualizer representing nodes which have
+                // locks.
+                displayPoint = true;
+                overrideNodeColor = Color.RED;
+            }
+
+            // May need to add locks to nodes further up the tree towards root. For example, if calling
+            // reserveExpansionRights locks the final available node of this node's parent, then the parent should be
+            // locked off too. This effect can chain all the way up the tree towards the root.
+            if (treeDepth > 0) parent.propagateLock();
+
+            return true;
+        }
+    }
+
+    /**
+     * Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node.
+     **/
+    public synchronized void releaseExpansionRights() {
+        locked.set(false); // Release the lock.
+
+        if (debugDrawNodeLocking) { // Stop drawing red dots for locked nodes, if this is on.
+            displayPoint = false;
+            overrideNodeColor = null;
+        }
+
+        // Unlocking this node may cause nodes further up the tree to become available.
+        if (treeDepth > 0) parent.propagateUnlock();
+    }
+
+    /**
+     * Locking one node may cause some parent nodes to become unavailable also. propagateLock will check as far up
+     * the tree towards the root node as necessary.
+     */
     private synchronized void propagateLock() {
+
+        // Lock this node unless we find evidence that we don't need to.
         for (Node child : children) {
             if (!child.isTerminal && !child.getLockStatus()) { // Neither terminal node, nor locked.
                 return; // In this case, we don't need to continue locking things further up the tree.
@@ -324,83 +382,109 @@ public class Node {
     }
 
     /**
-     * Set a flag to indicate that the invoking TreeWorker has temporary exclusive rights to expand from this node.
-     **/
-    public synchronized boolean reserveExpansionRights() {
-        if (locked.get()) {
-            return false;
-        } else {
-            if (uncheckedActions.isEmpty())
-                return false;//throw new RuntimeException("A worker tried to reserve a node to expand, but found that
-            // there were no untried actions to check here.");
-            locked.set(true);
-            if (debugDrawNodeLocking) {
-                displayPoint = true;
-                overrideNodeColor = Color.RED;
-            }
-            if (treeDepth > 0) parent.propagateLock();
-            return true;
-        }
-    }
-
+     * Releasing one node's lock may make others further up the tree towards the root node become available.
+     */
     private synchronized void propagateUnlock() {
-        if (!getLockStatus()) return;
+        if (!getLockStatus()) return; // We've worked our way up to a node which is already not locked. No need to
+        // propagate further.
+
+        // A single free child means we can unlock this node.
         for (Node child : children) {
             if (!child.isTerminal && !child.getLockStatus()) {  // Neither terminal node, nor locked -> does not need
                 // to stay locked.
                 releaseExpansionRights();
+
                 return;
             }
         }
     }
 
     /**
-     * Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node.
-     **/
-    public synchronized void releaseExpansionRights() {
-        locked.set(false);
-        if (debugDrawNodeLocking) {
-            displayPoint = false;
-            overrideNodeColor = null;
-        }
-        if (treeDepth > 0) parent.propagateUnlock();
-    }
-
-    /**
-     * Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node.
-     **/
+     * Determine whether any sampler has exclusive rights to sample from this node.
+     *
+     * @return Whether any worker has exclusive rights to expand from this node (true/false).
+     */
     public boolean getLockStatus() {
         return locked.get();
     }
 
     /**
-     * Get the node's value in a thread-safe way.
-     **/
+     * Get the node's value in a thread-safe way. The value or 'score' is totally at the discretion of the sampler.
+     * The node value is 0 until otherwise set.
+     *
+     * @return A score/cost/value associated with this node.
+     */
     public synchronized float getValue() {
         return value;
     }
 
     /**
-     * Set the node's value in a thread-safe way.
-     **/
+     * Set the node's value in a thread-safe way. The sampler must decide how to use this.
+     *
+     * @param val A new value for this node.
+     */
     public synchronized void setValue(float val) {
         value = val;
     }
 
     /**
-     * Add to the node's value in a thread-safe way.
-     **/
+     * Add to the node's existing value in a thread-safe way. The sampler must decide how to use this.
+     *
+     * @param val A value to add to this node's existing value.
+     */
     public synchronized void addToValue(float val) {
         value += val;
     }
 
-    /***********************************************/
-    /******* GETTING CERTAIN SETS OF NODES *********/
-    /***********************************************/
+    /* ********************************************* */
+    /* ****** GETTING CERTAIN SETS OF NODES ******** */
+    /* ********************************************* */
 
     /**
-     * Get a random child
-     **/
+     * Get the parent node of this node. If called from root, will return null.
+     *
+     * @return Parent node of this node.
+     */
+    public Node getParent() {
+        return parent;
+    }
+
+    /**
+     * Get the children of this node.
+     *
+     * @return A copy of the list of children of this node. Removing the nodes from this list will not remove them
+     * from this node's actual children, but the nodes in the list are the originals.
+     */
+    public List<Node> getChildren() {
+        return new ArrayList<>(children);
+    }
+
+    /**
+     * Get the index of this node in it's parent list of nodes. Hence, parent.children.get(index) == this.
+     *
+     * @return This node's index in its parent's list of nodes.
+     */
+    public int getIndexAccordingToParent() {
+        return parent.children.indexOf(this);
+    }
+
+    /**
+     * Get the number of siblings, i.e. other nodes in this node's parent's list of children. Does not include this
+     * node itself.
+     *
+     * @return Number of sibling nodes of this one.
+     */
+    public int getSiblingCount() {
+        int siblings = parent.children.size() - 1;
+        assert siblings >= 0;
+        return siblings;
+    }
+
+    /**
+     * Get a random already-created child of this node. Can be useful for sampling.
+     *
+     * @return A random child node of this node.
+     */
     public Node getRandomChild() {
         return children.get(Utility.randInt(0, children.size() - 1));
     }
@@ -408,34 +492,42 @@ public class Node {
     /**
      * Add all the nodes below and including this one to a list. Does not include nodes whose state have not yet been
      * assigned.
-     **/
-    public List<Node> getNodesBelow(List<Node> nodeList) {
+     *
+     * @param nodeList A list to add all of this branches' nodes to. This list must be caller-provided, and will not
+     *                 be cleared.
+     */
+    public void getNodesBelow(List<Node> nodeList) {
         if (state != null) {
             nodeList.add(this);
         }
         for (Node child : children) {
             child.getNodesBelow(nodeList);
         }
-        return nodeList;
     }
 
 
     /**
-     * Locate all the endpoints in the tree. Starts from the node it is called from.
-     **/
-    public void getLeaves(List<Node> descendants) {
+     * Get a list of all tree endpoints (leaves) below this node, i.e. on this branch.
+     *
+     * @param leaves A list of leaves below this node. The list must be provided by the caller, and will not be
+     *               cleared by this method.
+     */
+    public void getLeaves(List<Node> leaves) {
         for (Node child : children) {
             if (child.children.isEmpty()) {
-                descendants.add(child);
+                leaves.add(child);
             } else {
-                child.getLeaves(descendants);
+                child.getLeaves(leaves);
             }
         }
     }
 
     /**
-     * Returns the tree root no matter which node in the tree this is called from.
-     **/
+     * Returns the tree root no matter which node in the tree this is called from. This method defines the tree root
+     * to be the node with a depth of 0.
+     *
+     * @return The tree root node.
+     */
     public Node getRoot() {
         Node currentNode = this;
         while (currentNode.treeDepth > 0) {
@@ -445,8 +537,10 @@ public class Node {
     }
 
     /**
-     * Recount how many descendants this node has.
-     **/
+     * Count the number of descendants this node has.
+     *
+     * @return Number of descendants, i.e. number of nodes on the branch below this node.
+     */
     public int countDescendants() {
         int count = 0;
         for (Node current : children) {
@@ -457,30 +551,39 @@ public class Node {
     }
 
     /**
-     * Check whether a node is an ancestor of this one.
+     * Check whether a node is an ancestor of this node. This means that there is a direct path from this node to the
+     * given node that only requires decreasing tree depth.
+     *
+     * @param possibleAncestorNode Node to check whether is an ancestor of this node.
+     * @return Whether the provided node is an ancestor of this node (true/false).
      */
-    public boolean isOtherNodeAncestor(Node otherNode) {
-        if (otherNode.treeDepth >= this.treeDepth) { // Don't need to check if this is as far down the tree.
+    public boolean isOtherNodeAncestor(Node possibleAncestorNode) {
+        if (possibleAncestorNode.treeDepth >= this.treeDepth) { // Don't need to check if this is as far down the tree.
             return false;
         }
         Node currNode = parent;
 
-        while (currNode.treeDepth != otherNode.treeDepth) { // Find the node at the same depth as the one we're
+        while (currNode.treeDepth != possibleAncestorNode.treeDepth) { // Find the node at the same depth as the one
+            // we're
             // checking.
             currNode = currNode.parent;
         }
 
-        return currNode.equals(otherNode);
+        return currNode.equals(possibleAncestorNode);
 
     }
 
     /**
-     * Change whether this node or any above it have become fully explored.
-     * This is lite because it assumes all existing fullyExplored tags in its children are accurate.
-     * Call from a leaf node that we just assigned to be fully explored.
-     **/
-    public void checkFullyExplored_lite() {
-        boolean flag = true;
+     * Change whether this node or any above it have become fully explored. Generally called from a leaf node which
+     * has just been assigned fully-explored status, and we need to propagate the effects back up the tree.
+     * <p>
+     * This is the "lite" version because it assumes that all child nodes it encounters have correct fully-explored
+     * statuses already assigned. This should be true during normal operation, but when a bunch of saved nodes are
+     * imported, it is useful to do a {@link Node#propagateFullyExplored_complete() complete check}.
+     */
+    private void propagateFullyExploredStatus_lite() {
+        boolean flag = true; // Assume this node is fully-explored and negate if we find evidence that it is not.
+
         if (!isFailed.get()) {
             if (uncheckedActions != null && !uncheckedActions.isEmpty()) {
                 flag = false;
@@ -492,23 +595,29 @@ public class Node {
             }
         }
         fullyExplored.set(flag);
+
         if (treeDepth > 0) { // We already know this node is fully explored, check the parent.
-            parent.checkFullyExplored_lite();
+            parent.propagateFullyExploredStatus_lite();
         }
     }
 
     /**
-     * Check from this node and below which nodes are fully explored. Good to call this after a
-     * bunch of nodes have been loaded.
+     * Change whether this node or any above it have become fully explored. This is the complete version, which
+     * resets any existing fully-explored tags from the descendants of this node before redoing all checks. Call from
+     * root to re-label the whole tree. During normal tree-building, a {@link Node#propagateFullyExplored_complete()
+     * lite check} should suffice and is more computationally efficient.
+     * <p>
+     * This should only be used when a bunch of nodes are imported at once and need to all be checked, or if we need
+     * to validate correct behavior of some feature.
      **/
-    private void checkFullyExplored_complete() {
+    private void propagateFullyExplored_complete() {
         ArrayList<Node> leaves = new ArrayList<>();
         getLeaves(leaves);
 
         // Reset all existing exploration flags out there.
         for (Node leaf : leaves) {
             Node currNode = leaf;
-            while (currNode.treeDepth > 0) {
+            while (currNode.treeDepth > treeDepth) {
                 currNode.fullyExplored.set(false);
                 currNode = currNode.parent;
             }
@@ -516,17 +625,18 @@ public class Node {
         }
 
         for (Node leaf : leaves) {
-            leaf.checkFullyExplored_lite();
+            leaf.propagateFullyExploredStatus_lite();
         }
     }
 
     /**
      * Destroy a branch and try to free up its memory. Mark the trimmed branch as fully explored and propagate the
-     * status.
+     * status. This method can be useful when the sampler or user decides that one branch is bad and wants to keep it
+     * from being used later in sampling.
      **/
     public void destroyAllNodesBelowAndCheckExplored() {
         destroyAllNodesBelow();
-        checkFullyExplored_lite();
+        propagateFullyExploredStatus_lite();
     }
 
     /**
@@ -547,36 +657,46 @@ public class Node {
     }
 
     /**
-     * Total number of nodes in this or any tree.
-     **/
+     * Get the number of nodes in this or any tree.
+     *
+     * @return Total number of nodes, both imported and created.
+     */
     public static long getTotalNodeCount() {
         return nodesImported.longValue() + nodesCreated.longValue();
     }
 
     /**
-     * Total number of nodes imported from save file.
-     **/
+     * Get the number of nodes imported from save file.
+     *
+     * @return Number of nodes imported from a save file.
+     */
     public static long getImportedNodeCount() {
         return nodesImported.longValue();
     }
 
     /**
-     * Total number of nodes created this session.
-     **/
+     * Get the total number of nodes created this session.
+     *
+     * @return Number of nodes created during this execution.
+     */
     public static long getCreatedNodeCount() {
         return nodesCreated.longValue();
     }
 
     /**
-     * Total number of nodes created this session.
-     **/
+     * Get the total number of games (not nodes) imported from save file.
+     *
+     * @return Number of imported games.
+     */
     public static long getImportedGameCount() {
         return gamesImported.longValue();
     }
 
     /**
-     * Total number of nodes created this session.
-     **/
+     * Get the total number of games created during this session. Only includes games for which nodes are created.
+     *
+     * @return Total number of created games during this session.
+     */
     public static long getCreatedGameCount() {
         return gamesCreated.longValue();
     }
@@ -589,10 +709,22 @@ public class Node {
         gamesCreated.increment();
     }
 
+    /**
+     * Does this node represent a failed state?
+     *
+     * @return Whether this node represents a failed state (true/false).
+     */
     public boolean isFailed() {
         return isFailed.get();
     }
 
+    /**
+     * Manually set that this node represents a failed state. Failure status will be automatically set when assigning
+     * this node a state and does not need to be manually done. Only useful if we want to assign failure status
+     * without assigning a state.
+     *
+     * @param failed Whether this node should represent a failed state.
+     */
     public void setFailed(boolean failed) {
         isFailed.set(failed);
     }
@@ -600,14 +732,12 @@ public class Node {
     /******* STATE & SEQUENCE SETTING/GETTING **********/
     /***************************************************/
 
-    //	/** Capture the state from an active game **/
-    //	public void captureState(QWOPGame game){
-    //		state = new State(game); // MATT add 8/22/17
-    //	}
-
     /**
-     * Assign the state directly. Usually when loading nodes.
-     **/
+     * Assign a state to this node. This state should represent the state after performing this node's action from
+     * its parent's node's state.
+     *
+     * @param newState State to assign to this node.
+     */
     public synchronized void setState(State newState) {
         state = newState;
         try {
@@ -619,23 +749,20 @@ public class Node {
     }
 
     /**
-     * Get the action object (keypress + duration) that leads to this node from its parent.
-     **/
+     * Get the action object (most likely keypress + duration) that leads to this node from its parent.
+     *
+     * @return This node's action.
+     */
     public Action getAction() {
         action.reset(); // Make sure internal counter for executing this action is reset.
         return action;
     }
 
     /**
-     * Get the action object (keypress + duration) that leads to this node from its parent.
-     **/
-    public int getActionTimesteps() {
-        return action.getTimestepsTotal();
-    }
-
-    /**
-     * Get the sequence of actions up to, and including this node
-     **/
+     * Get the sequence of actions up to, and including this node.
+     *
+     * @return An array of actions which, when executed from the initial state will lead to the state at this node.
+     */
     public synchronized Action[] getSequence() {
         Action[] sequence = new Action[treeDepth];
         if (treeDepth == 0) return sequence; // Empty array for root node.
@@ -689,7 +816,7 @@ public class Node {
             gamesImported.increment();
         }
         //if (rootNode.uncheckedActions != null) {
-        rootNode.checkFullyExplored_complete(); // Handle marking the nodes which are fully explored.
+        rootNode.propagateFullyExplored_complete(); // Handle marking the nodes which are fully explored.
         if (trimActionAddingToDepth >= 0) stripUncheckedActionsExceptOnLeaves(rootNode, trimActionAddingToDepth);
         rootNode.calcNodePosBelow();
         //}

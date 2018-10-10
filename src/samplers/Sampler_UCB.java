@@ -3,8 +3,7 @@ package samplers;
 import org.jblas.util.Random;
 
 import main.Action;
-import main.IEvaluationFunction;
-import main.ISampler;
+import evaluators.IEvaluationFunction;
 import main.Node;
 import main.Utility;
 

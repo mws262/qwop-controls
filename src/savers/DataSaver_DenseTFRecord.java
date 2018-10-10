@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.tensorflow.example.BytesList;
 import org.tensorflow.example.Feature;
@@ -20,7 +19,6 @@ import com.google.protobuf.ByteString;
 import data.TFRecordWriter;
 import game.State;
 import main.Action;
-import main.IDataSaver;
 import main.Node;
 
 public class DataSaver_DenseTFRecord extends DataSaver_Dense {

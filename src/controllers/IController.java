@@ -1,9 +1,10 @@
-package main;
+package controllers;
 
 import java.awt.Graphics;
 
 import game.GameLoader;
 import game.State;
+import main.Action;
 
 public interface IController {
 

@@ -1,9 +1,7 @@
 package samplers;
 
 import main.Action;
-import main.ISampler;
 import main.Node;
-import main.Utility;
 
 /**
  * Super-simple depth-first search with NO random selection. Tries to pick the first node it finds with an untried
@@ -16,9 +14,6 @@ public class Sampler_Deterministic implements ISampler {
 
     private boolean treePolicyDone = false;
     private boolean expansionPolicyDone = false;
-
-    public Sampler_Deterministic() {
-    }
 
     @Override
     public Node treePolicy(Node startNode) {
@@ -35,7 +30,7 @@ public class Sampler_Deterministic implements ISampler {
             if (currentNode.getLockStatus()) {
                 currentNode = startNode;
                 if (currentNode.treeDepth > startNode.treeDepth) {
-                    currentNode = currentNode.parent;
+                    currentNode = currentNode.getParent();
                 }
                 continue;
                 //throw new RuntimeException("Deterministic sampler stuck on locked node at depth: " + currentNode
@@ -47,7 +42,7 @@ public class Sampler_Deterministic implements ISampler {
 
             // Get the first child with some untried actions after it, or at least a not-fully-explored one.
             boolean foundViableChild = false;
-            for (Node child : currentNode.children) {
+            for (Node child : currentNode.getChildren()) {
                 if (!child.uncheckedActions.isEmpty() && child.reserveExpansionRights()) {
                     return child;
                 } else if (!child.fullyExplored.get()) {

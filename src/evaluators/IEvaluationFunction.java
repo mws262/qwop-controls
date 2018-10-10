@@ -1,4 +1,6 @@
-package main;
+package evaluators;
+
+import main.Node;
 
 /**
  * Generic evaluation of a node based on any factors. Going with "higher-is-better" interpretation of evaluation.

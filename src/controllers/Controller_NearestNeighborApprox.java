@@ -30,7 +30,6 @@ import game.GameLoader;
 import game.State;
 import game.StateVariable;
 import main.Action;
-import main.IController;
 import main.Node;
 import main.PanelRunner;
 import main.State_Weights;

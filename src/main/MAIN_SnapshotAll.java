@@ -84,7 +84,7 @@ public class MAIN_SnapshotAll extends JFrame {
         Node.makeNodesFromRunInfo(games, rootNode, -1);
         Node currNode = rootNode;
         while (currNode.treeDepth < playbackDepth) {
-            currNode = currNode.children.get(0);
+            currNode = currNode.getChildren().get(0);
         }
         System.out.println(currNode.countDescendants());
         snapshotPane.update(currNode);

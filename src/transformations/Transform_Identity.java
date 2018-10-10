@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import game.State;
-import main.ITransform;
 
 /**
  * Transform that simply turns a state into an array of numbers and back.

@@ -1,4 +1,6 @@
-package main;
+package filters;
+
+import main.Node;
 
 import java.util.List;
 

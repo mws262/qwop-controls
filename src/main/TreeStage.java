@@ -3,12 +3,10 @@ package main;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
-import org.apache.commons.pool2.impl.GenericObjectPool;
-
-import game.GameLoader;
 import game.StateVariable;
+import samplers.ISampler;
+import savers.IDataSaver;
 
 /**
  * If we want to switch and change between different

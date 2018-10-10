@@ -1,9 +1,6 @@
 package samplers;
 
-import java.awt.Color;
-
 import main.Action;
-import main.ISampler;
 import main.Node;
 import main.Utility;
 

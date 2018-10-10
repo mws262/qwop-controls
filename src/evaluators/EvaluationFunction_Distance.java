@@ -1,6 +1,5 @@
 package evaluators;
 
-import main.IEvaluationFunction;
 import main.Node;
 
 /**
@@ -8,7 +7,7 @@ import main.Node;
  *
  * @author Matt
  */
-public class Evaluator_Distance implements IEvaluationFunction {
+public class EvaluationFunction_Distance implements IEvaluationFunction {
 
     @Override
     public float getValue(Node nodeToEvaluate) {
@@ -37,7 +36,7 @@ public class Evaluator_Distance implements IEvaluationFunction {
     }
 
     @Override
-    public Evaluator_Distance clone() {
-        return new Evaluator_Distance();
+    public EvaluationFunction_Distance clone() {
+        return new EvaluationFunction_Distance();
     }
 }

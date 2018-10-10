@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import filters.NodeFilter_Downsample;
 import game.State;
-import main.ITransform;
+import transformations.ITransform;
 import main.Node;
 import main.Utility;
 import transformations.Transform_Autoencoder;

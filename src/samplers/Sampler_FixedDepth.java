@@ -1,19 +1,13 @@
 package samplers;
 
-import java.awt.Color;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
-
 import main.Action;
-import main.ISampler;
 import main.Node;
-import main.Utility;
 
 public class Sampler_FixedDepth implements ISampler {
 
@@ -71,7 +65,7 @@ public class Sampler_FixedDepth implements ISampler {
             // If this worker doesn't yet know that this is a finished node, fix that and move back.
             if (currentNode.treeDepth == effectiveHorizonDepth) {
                 finishedNodes.add(currentNode);
-                propagateFinishedNodes(currentNode.parent);
+                propagateFinishedNodes(currentNode.getParent());
                 currentNode = startNode;
                 continue;
             }
@@ -84,7 +78,7 @@ public class Sampler_FixedDepth implements ISampler {
             // Otherwise, move down.
             boolean foundChild = false;
             // If the order of iteration is not randomized, once there are enough workers, they can manage to deadlock.
-            List<Node> children = currentNode.children.stream().collect(Collectors.toList());
+            List<Node> children = currentNode.getChildren().stream().collect(Collectors.toList());
             Collections.shuffle(children);
 
             for (Node child : children) {
@@ -130,7 +124,7 @@ public class Sampler_FixedDepth implements ISampler {
             expansionPolicyDone = true;
 
             finishedNodes.add(currentNode);
-            propagateFinishedNodes(currentNode.parent);
+            propagateFinishedNodes(currentNode.getParent());
         } else {
             expansionPolicyDone = false;
         }
@@ -142,7 +136,7 @@ public class Sampler_FixedDepth implements ISampler {
      **/
     private void propagateFinishedNodes(Node currentNode) {
         if (currentNode.uncheckedActions.isEmpty()) {
-            for (Node child : currentNode.children) {
+            for (Node child : currentNode.getChildren()) {
                 if (child.treeDepth == effectiveHorizonDepth) {
                     finishedNodes.add(child);
                 }
@@ -152,7 +146,7 @@ public class Sampler_FixedDepth implements ISampler {
             }
             finishedNodes.add(currentNode);
             // Recurse if above the start depth.
-            if (currentNode.treeDepth > startDepth) propagateFinishedNodes(currentNode.parent);
+            if (currentNode.treeDepth > startDepth) propagateFinishedNodes(currentNode.getParent());
         }
     }
 

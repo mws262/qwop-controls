@@ -7,7 +7,7 @@ import java.util.Random;
 import static main.Utility.randInt;
 
 /**
- * 
+ *
  *
  * @param <T>
  */

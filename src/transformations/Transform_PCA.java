@@ -7,7 +7,6 @@ import org.jblas.FloatMatrix;
 import org.jblas.Singular;
 
 import game.State;
-import main.ITransform;
 
 public class Transform_PCA implements ITransform {
 

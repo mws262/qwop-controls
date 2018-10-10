@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import evaluators.Evaluator_SqDistFromOther;
+import evaluators.EvaluationFunction_SqDistFromOther;
 import game.GameLoader;
 import main.Node;
 import main.PanelRunner;
@@ -69,7 +69,7 @@ public class PanelRunner_Comparison extends PanelRunner {
         focusNodes.add(node);
 
         /***** Get the nearest ones, according to the provided metric *****/
-        Evaluator_SqDistFromOther evFun = new Evaluator_SqDistFromOther(selectedNode);
+        EvaluationFunction_SqDistFromOther evFun = new EvaluationFunction_SqDistFromOther(selectedNode);
 
         Map<Float, Node> evaluatedNodeList = new TreeMap<>();
         List<Node> allNodes = node.getRoot().getNodesBelow(new ArrayList<>());

@@ -3,10 +3,9 @@ package evaluators;
 import java.util.List;
 
 import game.StateVariable;
-import main.IEvaluationFunction;
 import main.Node;
 
-public class Evaluator_SqDistFromOther implements IEvaluationFunction {
+public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
 
     /**
      * All nodes will be compared to this one by square distance in state space.
@@ -15,7 +14,7 @@ public class Evaluator_SqDistFromOther implements IEvaluationFunction {
 
     private final List<StateVariable> baseStateVarList;
 
-    public Evaluator_SqDistFromOther(Node nodeToCompareAllOthersTo) {
+    public EvaluationFunction_SqDistFromOther(Node nodeToCompareAllOthersTo) {
         this.nodeToCompareAllOthersTo = nodeToCompareAllOthersTo;
         baseStateVarList = nodeToCompareAllOthersTo.state.getStateList();
     }
@@ -68,8 +67,8 @@ public class Evaluator_SqDistFromOther implements IEvaluationFunction {
     }
 
     @Override
-    public Evaluator_SqDistFromOther clone() {
-        return new Evaluator_SqDistFromOther(nodeToCompareAllOthersTo);
+    public EvaluationFunction_SqDistFromOther clone() {
+        return new EvaluationFunction_SqDistFromOther(nodeToCompareAllOthersTo);
     }
 
 }

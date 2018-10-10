@@ -1,6 +1,5 @@
 package ui;
 
-import main.IUserInterface;
 import main.Node;
 
 public class UI_Headless implements IUserInterface {

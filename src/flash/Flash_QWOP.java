@@ -21,7 +21,7 @@ import game.GameLoader;
 import game.State;
 import main.Action;
 import main.ActionQueue;
-import main.IController;
+import controllers.IController;
 import main.Utility;
 import ui.PanelRunner_SimpleState;
 
