@@ -32,6 +32,8 @@ public class Distribution_Normal extends Distribution<Action> {
      * @param stdev Standard deviation of the created distribution.
      */
     public Distribution_Normal(float mean, float stdev) {
+        if (stdev < 0)
+            throw new IllegalArgumentException("Standard deviation argument may not be negative.");
         this.mean = mean;
         this.standardDeviation = stdev;
     }
@@ -48,22 +50,10 @@ public class Distribution_Normal extends Distribution<Action> {
     public Action randOnDistribution(List<Action> set) {
         double r = rand.nextGaussian(); // Gets a new value on bell curve. 0 mean, 1 stddev.
         double rScaled = r * standardDeviation + mean; // Scale to our possible action range.
-        Action best = set.get(0);
-        float diff = Float.MAX_VALUE;
 
         final Comparator<Action> comp = Comparator.comparingDouble(p -> Math.abs(p.getTimestepsTotal() - rScaled));
 
-        set.stream().min(comp); // TODO FINISH THIS
-
-
-        for (Action a : set) { // Find the closest action value to the generated one.
-            float candidate = (float) Math.abs(a.getTimestepsTotal() - rScaled);
-            if (candidate < diff) {
-                diff = candidate;
-                best = a;
-            }
-        }
-        return best;
+        return set.stream().min(comp).get();
     }
 
 }
