@@ -204,7 +204,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         /** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
         int doPrefixToDepth = 2;
         while (endNode.treeDepth > doPrefixToDepth) {
-            endNode = endNode.parent;
+            endNode = endNode.getParent();
         }
         // Run prefix part.
         actionQueue.addSequence(endNode.getSequence());

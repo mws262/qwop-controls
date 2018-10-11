@@ -131,7 +131,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                     ".SavableSingleGame"), rootNode, getToSteadyDepth - trimSteadyBy - 1);
             Node currNode = rootNode;
             while (currNode.treeDepth < getToSteadyDepth - trimSteadyBy) {
-                currNode = currNode.children.get(0);
+                currNode = currNode.getChildByIndex(0);
             }
 
             doBasicMinDepthStage(currNode, filename2, deviationDepth, maxWorkerFraction2, bailAfterXGames2);

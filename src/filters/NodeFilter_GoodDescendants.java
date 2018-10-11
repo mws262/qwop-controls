@@ -49,7 +49,7 @@ public class NodeFilter_GoodDescendants implements INodeFilter {
         currentCount++;
         if (currentCount > requiredSurvivalHorizon) return currentCount;
         int currentBest = 0;
-        for (Node child : node.children) {
+        for (Node child : node.getChildren()) {
             int newCount = countBelow(child, currentCount);
             if (newCount > currentBest) {
                 currentBest = newCount;

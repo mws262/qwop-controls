@@ -269,8 +269,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
         /**
          * For rendering text overlays. Note that textrenderer is for overlays while GLUT is for labels in world space
          **/
-        TextRenderer textRenderBig;
-        TextRenderer textRenderSmall;
+        private final TextRenderer textRenderBig = new TextRenderer(new Font("Calibri", Font.BOLD, 36));
+        private final TextRenderer textRenderSmall = new TextRenderer(new Font("Calibri", Font.PLAIN, 18));
 
         /**
          * Currently tracked mouse x location in screen coordinates of the panel
@@ -294,9 +294,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
             canvas.addMouseListener(this);
             canvas.addMouseMotionListener(this);
             canvas.addMouseWheelListener(this);
-
-            textRenderBig = new TextRenderer(new Font("Calibri", Font.BOLD, 36));
-            textRenderSmall = new TextRenderer(new Font("Calibri", Font.PLAIN, 18));
         }
 
         @Override
@@ -566,8 +563,9 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
          * Called by key listener to change our focused node to the next adjacent one in the +1 or -1 direction
          **/
         private void arrowSwitchNode(int direction, int depth) {
-            //Stupid way of getting this one's index according to its parent.
-            if (selectedNode != null) {
+
+            if (selectedNode != null) { // Do nothing if no node is selected to begin with.
+
                 if (selectedNode.treeDepth == 0) { // At root, don't try to look at parent.
                     // <nothing>
                 } else {
@@ -586,19 +584,19 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
                         ArrayList<Node> blacklist = new ArrayList<>();
                         blacklist.add(selectedNode);
                         nextOver(selectedNode.getParent(), blacklist, 1, direction,
-                                selectedNode.get.children.indexOf(selectedNode), 0);
+                                selectedNode.getIndexAccordingToParent(), 0);
 
                     } else { //Otherwise we can just switch nodes within the scope of this parent.
-                        selectNode(selectedNode.parent.children.get(thisIndex + direction));
+                        selectNode(selectedNode.getParent().getChildByIndex(thisIndex + direction));
                     }
                 }
 
                 //These logicals just take the proposed motion (or not) and ignore any edges.
-                if (depth == 1 && selectedNode.children.size() > 0) { //Go further down the tree if this node has
+                if (depth == 1 && selectedNode.getChildCount() > 0) { //Go further down the tree if this node has
                     // children
-                    selectNode(selectedNode.children.get(0));
+                    selectNode(selectedNode.getChildByIndex(0));
                 } else if (depth == -1 && selectedNode.treeDepth > 0) { //Go up the tree if this is not root.
-                    selectNode(selectedNode.parent);
+                    selectNode(selectedNode.getParent());
                 }
                 repaint();
             }
@@ -614,6 +612,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
             // of iterations, just fail quietly.
             numTimesTried++;
             boolean success = false;
+
             //TERMINATING CONDITIONS-- fail quietly if we get back to root with nothing. Succeed if we get back to
             // the same depth we started at.
             if (deficitDepth == 0) { //We've successfully gotten back to the same level. Great.
@@ -625,22 +624,22 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
             } else if (numTimesTried > 100) {// If it takes >100 movements between nodes, we'll just give up.
                 return true;
             } else {
-                //CCONDITIONS WE NEED TO STEP BACKWARDS TOWARDS ROOT.
+                //CONDITIONS WE NEED TO STEP BACKWARDS TOWARDS ROOT.
                 //If this new node has no children OR it's 1 child is on the blacklist, move back up the tree.
-                if ((prevIndexAbove + 1 == current.children.size() && direction == 1) || (prevIndexAbove == 0 && direction == -1)) {
+                if ((prevIndexAbove + 1 == current.getChildCount() && direction == 1) || (prevIndexAbove == 0 && direction == -1)) {
                     blacklist.add(current);
-                    success = nextOver(current.parent, blacklist, deficitDepth + 1, direction,
-                            current.parent.children.indexOf(current), numTimesTried); //Recurse back another node.
-                } else if (!(current.children.size() > 0) || (blacklist.contains(current.children.get(0)) && current.children.size() == 1)) {
+                    success = nextOver(current.getParent(), blacklist, deficitDepth + 1, direction,
+                            current.getIndexAccordingToParent(), numTimesTried); //Recurse back another node.
+                } else if (!(current.getChildCount() > 0) || (blacklist.contains(current.getChildByIndex(0)) && current.getChildCount() == 1)) {
                     blacklist.add(current);
-                    success = nextOver(current.parent, blacklist, deficitDepth + 1, direction,
-                            current.parent.children.indexOf(current), numTimesTried); //Recurse back another node.
+                    success = nextOver(current.getParent(), blacklist, deficitDepth + 1, direction,
+                            current.getIndexAccordingToParent(), numTimesTried); //Recurse back another node.
                 } else {
 
                     //CONDITIONS WE NEED TO GO DEEPER:
                     if (direction == 1) { //March right along this previous node.
-                        for (int i = prevIndexAbove + 1; i < current.children.size(); i++) {
-                            success = nextOver(current.children.get(i), blacklist, deficitDepth - 1, direction, -1,
+                        for (int i = prevIndexAbove + 1; i < current.getChildCount(); i++) {
+                            success = nextOver(current.getChildByIndex(i), blacklist, deficitDepth - 1, direction, -1,
                                     numTimesTried);
                             if (success) {
                                 return true;
@@ -648,8 +647,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
                         }
                     } else if (direction == -1) { //March left along this previous node
                         for (int i = prevIndexAbove - 1; i >= 0; i--) {
-                            success = nextOver(current.children.get(i), blacklist, deficitDepth - 1, direction,
-                                    current.children.get(i).children.size(), numTimesTried);
+                            success = nextOver(current.getChildByIndex(i), blacklist, deficitDepth - 1, direction,
+                                    current.getChildByIndex(i).getChildCount(), numTimesTried);
                             if (success) {
                                 return true;
                             }
@@ -669,7 +668,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
         @Override
         public void update(Node node) {
         }
-
     }
 
     @Override

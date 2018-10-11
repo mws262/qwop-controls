@@ -58,7 +58,7 @@ public class TreeStage_MinDepth extends TreeStage {
             } else if (n.treeDepth > minEffectiveDepth) {
                 Node atDepth = n;
                 while (atDepth.treeDepth > minEffectiveDepth) {
-                    atDepth = atDepth.parent;
+                    atDepth = atDepth.getParent();
                 }
                 resultList.add(atDepth);
             }
@@ -86,12 +86,12 @@ public class TreeStage_MinDepth extends TreeStage {
                 Node currNode = n;
                 // Get back from the leaf to the horizon we wish to achieve.
                 while (currNode.treeDepth > minEffectiveDepth) {
-                    currNode = currNode.parent;
+                    currNode = currNode.getParent();
                 }
 
                 // Make sure everything under that horizon has been tried.
                 while (currNode.treeDepth > rootNode.treeDepth) {
-                    currNode = currNode.parent;
+                    currNode = currNode.getParent();
                     if (currNode.uncheckedActions.size() > 0) {
                         return false;
                     }

@@ -68,7 +68,7 @@ public class Sampler_UCB implements ISampler {
         failureNode.visitCount.incrementAndGet();
         failureNode.addToValue(score);
         while (failureNode.treeDepth > 0) {//TODO test 0
-            failureNode = failureNode.parent;
+            failureNode = failureNode.getParent();
             failureNode.visitCount.incrementAndGet();
             failureNode.addToValue(score);
         }
@@ -92,7 +92,7 @@ public class Sampler_UCB implements ISampler {
         Node bestNodeSoFar = null;
 
         // Otherwise, we go through the existing tree picking the "best."
-        for (Node child : startNode.children) {
+        for (Node child : startNode.getChildren()) {
 
             if (!child.fullyExplored.get() && !child.getLockStatus()) {// && child.reserveExpansionRights()){
                 float val =

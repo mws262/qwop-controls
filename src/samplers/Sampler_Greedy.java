@@ -133,7 +133,7 @@ public class Sampler_Greedy implements ISampler {
             int count = 0;
             Node movingNode = currentRoot;
             while (movingNode.treeDepth > 0 && (movingNode.fullyExplored.get() || count < backwardsJump)) {
-                movingNode = movingNode.parent;
+                movingNode = movingNode.getParent();
                 count++;
             }
             backwardsJump *= backwardsJumpFailureMultiplier;
@@ -192,7 +192,7 @@ public class Sampler_Greedy implements ISampler {
                 }
                 // Go back from the leaf to its ancestor only forwardJump ahead of the current root.
                 while (bestNode.treeDepth > currentRoot.treeDepth + forwardJump) {
-                    bestNode = bestNode.parent;
+                    bestNode = bestNode.getParent();
                 }
                 backwardsJump -= 1;
                 backwardsJump = Math.max(backwardsJump, backwardsJumpMin);

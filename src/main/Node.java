@@ -481,6 +481,25 @@ public class Node {
     }
 
     /**
+     * Get the total number of children of this node. Only includes actually created children, not potential children.
+     *
+     * @return Total created children of this node.
+     */
+    public int getChildCount() {
+        return children.size();
+    }
+
+    /**
+     * Get a created child node of this node by its index (order of creation).
+     *
+     * @param childIndex
+     * @return A child of this node, with the index as specified.
+     */
+    public Node getChildByIndex(int childIndex) {
+        return children.get(childIndex);
+    }
+
+    /**
      * Get a random already-created child of this node. Can be useful for sampling.
      *
      * @return A random child node of this node.
@@ -495,14 +514,16 @@ public class Node {
      *
      * @param nodeList A list to add all of this branches' nodes to. This list must be caller-provided, and will not
      *                 be cleared.
+     * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public void getNodesBelow(List<Node> nodeList) {
+    public List<Node> getNodesBelow(List<Node> nodeList) {
         if (state != null) {
             nodeList.add(this);
         }
         for (Node child : children) {
             child.getNodesBelow(nodeList);
         }
+        return nodeList;
     }
 
 
@@ -511,8 +532,9 @@ public class Node {
      *
      * @param leaves A list of leaves below this node. The list must be provided by the caller, and will not be
      *               cleared by this method.
+     * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public void getLeaves(List<Node> leaves) {
+    public List<Node> getLeaves(List<Node> leaves) {
         for (Node child : children) {
             if (child.children.isEmpty()) {
                 leaves.add(child);
@@ -520,6 +542,7 @@ public class Node {
                 child.getLeaves(leaves);
             }
         }
+        return leaves;
     }
 
     /**

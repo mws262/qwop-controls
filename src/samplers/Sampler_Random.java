@@ -35,7 +35,7 @@ public class Sampler_Random implements ISampler {
 
             // Count the number of available children to go to next.
             int notFullyExploredChildren = 0;
-            for (Node child : currentNode.children) {
+            for (Node child : currentNode.getChildren()) {
                 if (!child.fullyExplored.get() && !child.getLockStatus()) notFullyExploredChildren++;
             }
 
@@ -59,7 +59,7 @@ public class Sampler_Random implements ISampler {
                 // Pick random not fully explored child. Keep going.
                 int selection = Utility.randInt(0, notFullyExploredChildren - 1);
                 int count = 0;
-                for (Node child : currentNode.children) {
+                for (Node child : currentNode.getChildren()) {
                     if (!child.fullyExplored.get() && !child.getLockStatus()) {
                         if (count == selection) {
                             currentNode = child;

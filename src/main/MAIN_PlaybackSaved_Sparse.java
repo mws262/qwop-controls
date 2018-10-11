@@ -92,9 +92,10 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
             Node endNode = leafNodes.get(0);
             Node startNode = endNode;
             while (startNode.treeDepth > startPt) {
-                startNode = startNode.parent;
+                startNode = startNode.getParent();
             }
-            runnerPane.simRunToNode(startNode, endNode.parent.parent); // Leaving off the last two because they usually are stupid.
+            runnerPane.simRunToNode(startNode, endNode.getParent().getParent()); // Leaving off the last two because they
+            // usually are stupid.
 
             repaint();
 

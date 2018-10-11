@@ -110,7 +110,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         Node historyNode = snapshotNode;
         for (int i = 0; i < numHistoryStatesDisplay; i++) {
             if (historyNode.treeDepth > 0) {
-                historyNode = historyNode.parent;
+                historyNode = historyNode.getParent();
                 nodeTransform = game.getXForms(historyNode.state);
                 transforms.add(nodeTransform);
                 strokes.add(normalStroke);
@@ -121,8 +121,8 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
         /***** Future leaf nodes *****/
         List<Node> descendants = new ArrayList<>();
-        for (int i = 0; i < snapshotNode.children.size(); i++) {
-            Node child = snapshotNode.children.get(i);
+        for (int i = 0; i < snapshotNode.getChildCount(); i++) {
+            Node child = snapshotNode.getChildByIndex(i);
             child.getLeaves(descendants);
             filter.filter(descendants); // temp rm
 
@@ -267,7 +267,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                         everyOtherEvenColor = everyOtherEvenColor.darker();
                     }
                     game.drawExtraRunner(g2, game.getXForms(currentNode.state), currentNode.getAction().toStringLite(), runnerScaling, xOffsetPixels - specificXOffset, yOffsetPixels, everyOtherEvenColor, boldStroke);
-                    currentNode = currentNode.parent;
+                    currentNode = currentNode.getParent();
                 }
             } catch (IndexOutOfBoundsException e) {
                 // I don't really care tbh. Just skip this one.

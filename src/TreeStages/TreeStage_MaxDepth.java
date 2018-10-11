@@ -68,7 +68,7 @@ public class TreeStage_MaxDepth extends TreeStage {
             } else if (n.treeDepth > maxEffectiveDepth) {
                 Node atDepth = n;
                 while (atDepth.treeDepth > maxEffectiveDepth) {
-                    atDepth = atDepth.parent;
+                    atDepth = atDepth.getParent();
                 }
                 resultList.add(n);
                 return resultList;

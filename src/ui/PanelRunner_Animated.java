@@ -72,8 +72,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
         Node currNode = startNode;
         while (currNode.treeDepth > 0) {
-            fastForwardTimesteps += currNode.getActionTimesteps();
-            currNode = currNode.parent;
+            fastForwardTimesteps += currNode.getAction().getTimestepsTotal();
+            currNode = currNode.getParent();
         }
     }
 
