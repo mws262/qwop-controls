@@ -7,38 +7,51 @@ import java.util.Random;
 import static main.Utility.randInt;
 
 /**
+ * Framework for sampling from a discrete set on different distributions. Extend this to make specific distribution
+ * types.
  *
- *
- * @param <T>
+ * @param <T> The types of objects to be sampled over, typically {@link main.Action actions}.
  */
 public abstract class Distribution<T> {
 
-    protected static Random rand = new Random();
+    static Random rand = new Random();
 
     /**
-     * Return a sample from the distribution.
-     **/
-    public abstract T randOnDistribution(List<T> set);
+     * Return a sample from a given set according to the rules of the distribution. Selection should be random, but
+     * weighted in whatever way the distribution defines.
+     *
+     * @param pool Set of objects from which the sample will be selected.
+     * @return An element of the input list selected randomly according to the rules of the distribution.
+     */
+    public abstract T randOnDistribution(List<T> pool);
+
 
     /**
-     * Return a random sample from the set.
-     **/
-    public T randSample(List<T> set) {
-        return set.get(randInt(0, set.size() - 1));
+     * Return a random sample from a given set. The element is randomly selected without any regards to the
+     * distribution's rules.
+     *
+     * @param pool Set of objects from which the sample will be selected.
+     * @return An element of the input list selected randomly according to the rules of the distribution.
+     */
+    public T randSample(List<T> pool) {
+        return pool.get(randInt(0, pool.size() - 1));
     }
 
     /**
-     * Use this distribution's rules to choose between two sets.
-     * Makes the distribution also work for the tree policy
-     * Returns true for set 1, false for set 2.
-     **/
-    public boolean chooseASet(List<T> set1, List<T> set2) {
+     * Choose between two lists of objects according to the rules of the distribution. A sample is picked from the
+     * combined list of objects and then checked to see which input list it came from.
+     *
+     * @param list1 First candidate list of objects.
+     * @param list2 Second candidate list of objects.
+     * @return Boolean representing which candidate list was chosen. True means list1, false means list2.
+     */
+    public boolean chooseASet(List<T> list1, List<T> list2) {
         List<T> totalSet = new ArrayList<>();
-        totalSet.addAll(set1);
-        totalSet.addAll(set2);
+        totalSet.addAll(list1);
+        totalSet.addAll(list2);
 
         T sample = randOnDistribution(totalSet);
 
-        return set1.contains(sample);
+        return list1.contains(sample);
     }
 }

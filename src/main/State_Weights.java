@@ -4,11 +4,11 @@ import game.State;
 
 public class State_Weights {
 
-    public static final float W_BODY = 1f, W_HEAD = 1.2f, W_RTHIGH = 1f, W_LTHIGH = 1f,
+    private static final float W_BODY = 1f, W_HEAD = 1.2f, W_RTHIGH = 1f, W_LTHIGH = 1f,
             W_RCALF = 1f, W_LCALF = 1f, W_RFOOT = 1.2f, W_LFOOT = 1.2f,
             W_RUARM = 1f, W_LUARM = 1f, W_RLARM = 0.8f, W_LLARM = 0.8f;
 
-    public static final float W_X = 1f, W_Y = 1f, W_TH = 1f,
+    private static final float W_X = 1f, W_Y = 1f, W_TH = 1f,
             W_DX = 1f, W_DY = 1f, W_DTH = 1f;
 
     public static float getWeight(State.ObjectName obj, State.StateName st) {

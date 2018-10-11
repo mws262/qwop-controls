@@ -78,9 +78,6 @@ public class Utility {
      * !LOG_END. This can be done multiple times in the same file.
      **/
     public static void sectionToLogFile(String inPath, String outPath) throws IOException {
-        File inFile = new File(inPath);
-        File outFile = new File(outPath);
-
         boolean collecting = false;
         String divider = "**************************************************************";
         BufferedReader reader = null;

@@ -55,15 +55,15 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * Background color for the plots.
      **/
-    protected Color plotBackgroundColor = new Color(230, 230, 230);
+    private Color plotBackgroundColor = new Color(230, 230, 230);
 
     /**
      * Plotting colors for dots.
      **/
-    public final Color actionColor1 = Node.getColorFromTreeDepth(0);
-    public final Color actionColor2 = Node.getColorFromTreeDepth(10);
-    public final Color actionColor3 = Node.getColorFromTreeDepth(20);
-    public final Color actionColor4 = Node.getColorFromTreeDepth(30);
+    private final Color actionColor1 = Node.getColorFromTreeDepth(0);
+    private final Color actionColor2 = Node.getColorFromTreeDepth(10);
+    private final Color actionColor3 = Node.getColorFromTreeDepth(20);
+    private final Color actionColor4 = Node.getColorFromTreeDepth(30);
 
     public PanelPlot(int numberOfPlots) {
         this.numberOfPlots = numberOfPlots;
@@ -91,7 +91,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * Command all plots to apply updates.
      **/
-    public void applyUpdates() {
+    protected void applyUpdates() {
         Arrays.stream(plotPanels).forEach(panel -> panel.getChart().fireChartChanged());
     }
 
@@ -221,7 +221,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
          **/
         private Map<Integer, DataSeries> series = new HashMap<>();
 
-        public PlotDataset() {
+        PlotDataset() {
             super();
         }
 
@@ -267,7 +267,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
             return null;
         }
 
-        public XYLineAndShapeRenderer getRenderer() {
+        XYLineAndShapeRenderer getRenderer() {
             return renderer;
         }
 
@@ -344,7 +344,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
         public class PlotRenderer extends XYLineAndShapeRenderer {
             private static final long serialVersionUID = 1L;
 
-            public PlotRenderer() {
+            PlotRenderer() {
                 super(false, true); //boolean lines, boolean shapes
                 setSeriesShape(0, new Rectangle2D.Double(-1.0, -1.0, 1.0, 1.0));
                 setUseOutlinePaint(false);

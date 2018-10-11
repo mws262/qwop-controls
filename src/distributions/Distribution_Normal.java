@@ -1,5 +1,6 @@
 package distributions;
 
+import java.util.Comparator;
 import java.util.List;
 
 import main.Action;
@@ -49,6 +50,12 @@ public class Distribution_Normal extends Distribution<Action> {
         double rScaled = r * standardDeviation + mean; // Scale to our possible action range.
         Action best = set.get(0);
         float diff = Float.MAX_VALUE;
+
+        final Comparator<Action> comp = Comparator.comparingDouble(p -> Math.abs(p.getTimestepsTotal() - rScaled));
+
+        set.stream().min(comp); // TODO FINISH THIS
+
+
         for (Action a : set) { // Find the closest action value to the generated one.
             float candidate = (float) Math.abs(a.getTimestepsTotal() - rScaled);
             if (candidate < diff) {

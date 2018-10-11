@@ -604,7 +604,7 @@ public class Node {
      * statuses already assigned. This should be true during normal operation, but when a bunch of saved nodes are
      * imported, it is useful to do a {@link Node#propagateFullyExplored_complete() complete check}.
      */
-    private void propagateFullyExploredStatus_lite() {
+    public void propagateFullyExploredStatus_lite() {
         boolean flag = true; // Assume this node is fully-explored and negate if we find evidence that it is not.
 
         if (!isFailed.get()) {
@@ -751,6 +751,7 @@ public class Node {
     public void setFailed(boolean failed) {
         isFailed.set(failed);
     }
+
     /***************************************************/
     /******* STATE & SEQUENCE SETTING/GETTING **********/
     /***************************************************/

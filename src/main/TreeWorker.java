@@ -293,7 +293,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         try {
                             if (currentGameNode.isFailed()) { // If we've added a terminal node, we need to see how
                                 // this affects the exploration status of the rest of the tree.
-                                targetNodeToTest.checkFullyExplored_lite();
+                                targetNodeToTest.propagateFullyExploredStatus_lite(); //TODO see about making this
+                                // private.
                             }
                         } catch (NullPointerException e) {
                             e.printStackTrace();

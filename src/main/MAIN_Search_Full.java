@@ -190,7 +190,8 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                 }
                 // Turn off drawing for this one.
                 leaf.turnOffBranchDisplay();
-                leaf.parent.children.remove(leaf);
+                //FIXME: Fix line below to agree with new methods.
+//                leaf.parent.children.remove(leaf);
                 if (previousLeaf != null) {
                     previousLeaf.destroyAllNodesBelowAndCheckExplored();
                 }

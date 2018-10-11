@@ -53,8 +53,6 @@ public class MAIN_SnapshotAll extends JFrame {
         snapshotPane.yOffsetPixels = 600;
         this.add(snapshotPane);
 
-        /*******************/
-
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setPreferredSize(new Dimension(windowWidth, windowHeight));
         this.setContentPane(this.getContentPane());
