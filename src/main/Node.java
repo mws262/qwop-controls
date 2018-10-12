@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -49,7 +48,7 @@ public class Node {
     /**
      * State after taking this node's action from the parent node's state.
      **/
-    public State state;
+    private State state;
 
     /**
      * True if this node represents a failed state.
@@ -763,6 +762,9 @@ public class Node {
      * @param newState State to assign to this node.
      */
     public synchronized void setState(State newState) {
+        if (state != null)
+            throw new IllegalStateException("Trying to assign a node's state after a state has been previously " +
+                    "assigned. Examine behavior carefully before allowing this.");
         state = newState;
         try {
             isFailed.set(state.isFailed());
@@ -770,6 +772,25 @@ public class Node {
             System.out.println("WARNING: node state had no failure state assigned. This is bad unless we're just " +
                     "playing old runs back.");
         }
+    }
+
+    /**
+     * Get the game state associated with this node. Represents the state achieved from the parent node's state after
+     * performing the action in this node.
+     *
+     * @return Game state at this node.
+     */
+    public State getState() {
+        return state;
+    }
+
+    /**
+     * Check whether a game state has been assigned to this node.
+     *
+     * @return Whether the game state is assigned or not (true/false).
+     */
+    public boolean isStateAvailable() {
+        return state != null;
     }
 
     /**

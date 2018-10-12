@@ -19,6 +19,8 @@ import java.util.List;
 
 
 /**
+ * Handles creating and interacting with the QWOP game world in Box2D.
+ * <p>
  * This loads all the Box2D classes needed on a unique ClassLoader. This means that World.class from one instance
  * of this loader is different from the World.class of another loader. This means that they will have their
  * own static variables and should not interfere with each other. This solves the problem of having multithreaded
@@ -35,7 +37,7 @@ public class GameLoader extends ClassLoader {
     /**
      * Has a game world been created yet?
      **/
-    public boolean initialized = false;
+    private boolean initialized = false;
 
     /**
      * Initial runner state.
@@ -69,73 +71,100 @@ public class GameLoader extends ClassLoader {
      **/
     private List<Object> shapeList;
 
-    private static int gamesCreated = 0;
-
-    // Track
+    /**
+     * Track parameters.
+     */
     private static final float trackPosY = 8.90813f, trackFric = 1f, trackRest = 0.2f;
-    // Feet
-    private static final float rFootPosX = -0.96750f, rFootPosY = 7.77200f,
-            lFootPosX = 3.763f, lFootPosY = 8.101f;
+
+    /**
+     * Foot parameters.
+     */
+    private static final float rFootPosX = -0.96750f, rFootPosY = 7.77200f, lFootPosX = 3.763f, lFootPosY = 8.101f;
     private static final float rFootAng = 0.7498f, rFootMass = 11.630f, rFootInertia = 9.017f, rFootL = 2.68750f,
-            rFootH = 1.44249f, rFootFric = 1.5f, rFootDensity = 3f,
-            lFootAng = 0.1429f, lFootMass = 10.895f, lFootInertia = 8.242f, lFootL = 2.695f, lFootH = 1.34750f,
-            lFootFric = 1.5f, lFootDensity = 3f;
-    // Calves
-    private static final float rCalfPosX = 0.0850f, rCalfPosY = 5.381f,
-            lCalfPosX = 2.986f, lCalfPosY = 5.523f;
+            rFootH = 1.44249f, rFootFric = 1.5f, rFootDensity = 3f, lFootAng = 0.1429f, lFootMass = 10.895f,
+            lFootInertia = 8.242f, lFootL = 2.695f, lFootH = 1.34750f, lFootFric = 1.5f, lFootDensity = 3f;
+
+    /**
+     * Shank parameters.
+     */
+    private static final float rCalfPosX = 0.0850f, rCalfPosY = 5.381f, lCalfPosX = 2.986f, lCalfPosY = 5.523f;
     private static final float rCalfAng = -0.821f, lCalfAng = -1.582f, rCalfAngAdj = 1.606188724f, lCalfAngAdj =
-            1.607108307f,
-            rCalfMass = 7.407f, lCalfMass = 7.464f, rCalfInertia = 16.644f, lCalfInertia = 16.893f;
+            1.607108307f, rCalfMass = 7.407f, lCalfMass = 7.464f, rCalfInertia = 16.644f, lCalfInertia = 16.893f;
     // Length and width for the calves are just for collisions with the ground, so not very important.
-    private static final float rCalfL = 4.21f, lCalfL = 4.43f, rCalfW = 0.4f, lCalfW = 0.4f,
-            rCalfFric = 0.2f, lCalfFric = 0.2f, rCalfDensity = 1f, lCalfDensity = 1f;
-    // Thighs
+    private static final float rCalfL = 4.21f, lCalfL = 4.43f, rCalfW = 0.4f, lCalfW = 0.4f, rCalfFric = 0.2f,
+            lCalfFric = 0.2f, rCalfDensity = 1f, lCalfDensity = 1f;
+
+    /**
+     * Thigh parameters.
+     */
     private static final float rThighPosX = 1.659f, rThighPosY = 1.999f, lThighPosX = 2.52f, lThighPosY = 1.615f,
             rThighAng = 1.468f, lThighAng = -1.977f, rThighAngAdj = -1.544382589f, lThighAngAdj = 1.619256373f,
             rThighMass = 10.54f, lThighMass = 10.037f, rThighInertia = 28.067f, lThighInertia = 24.546f;
     // Length and width for the calves are just for collisions with the ground, so not very important.
-    private static final float rThighL = 4.19f, lThighL = 3.56f, rThighW = 0.6f, lThighW = 0.6f,
-            rThighFric = 0.2f, lThighFric = 0.2f, rThighDensity = 1f, lThighDensity = 1f;
-    // Torso
-    private static final float torsoPosX = 2.525f, torsoPosY = -1.926f,
-            torsoAng = -1.251f, torsoAngAdj = 1.651902129f,
-            torsoMass = 18.668f, torsoInertia = 79.376f;
+    private static final float rThighL = 4.19f, lThighL = 3.56f, rThighW = 0.6f, lThighW = 0.6f, rThighFric = 0.2f,
+            lThighFric = 0.2f, rThighDensity = 1f, lThighDensity = 1f;
+
+    /**
+     * Torso parameters.
+     */
+    private static final float torsoPosX = 2.525f, torsoPosY = -1.926f, torsoAng = -1.251f, torsoAngAdj =
+            1.651902129f, torsoMass = 18.668f, torsoInertia = 79.376f;
     // Length and width for the calves are just for collisions with the ground, so not very important.
     private static final float torsoL = 5f, torsoW = 1.5f, torsoFric = 0.2f, torsoDensity = 1f;
-    // Head
+
+    /**
+     * Head parameters.
+     */
     private static final float headPosX = 3.896f, headPosY = -5.679f,
             headAng = 0.058f, headAngAdj = 0.201921414f,
             headMass = 5.674f, headInertia = 5.483f;
     // Radius is just for collision shape
     private static final float headR = 1.1f, headFric = 0.2f, headDensity = 1f;
-    // Upper arms
+
+    /**
+     * Upper arm parameters.
+     */
     private static final float rUArmPosX = 1.165f, rUArmPosY = -3.616f, lUArmPosX = 4.475f, lUArmPosY = -2.911f,
             rUArmAng = -0.466f, lUArmAng = 0.843f, rUArmAngAdj = 1.571196588f, lUArmAngAdj = -1.690706418f,
             rUArmMass = 5.837f, lUArmMass = 4.6065f, rUArmInertia = 8.479f, lUArmInertia = 5.85f;
     // Dimensions for collision shapes
     private static final float rUArmL = 2.58f, lUArmL = 2.68f, rUArmW = 0.2f, lUArmW = 0.15f,
             rUArmFric = 0.2f, lUArmFric = 0.2f, rUArmDensity = 1f, lUArmDensity = 1f;
-    // Lower Arms
+
+    /**
+     * Lower arm parameters.
+     */
     private static final float rLArmPosX = 0.3662f, rLArmPosY = -1.248f, lLArmPosX = 5.899f, lLArmPosY = -3.06f,
             rLArmAng = -1.762f, lLArmAng = -1.251f, rLArmAngAdj = 1.521319096f, lLArmAngAdj = 1.447045854f,
             rLArmMass = 5.99f, lLArmMass = 3.8445f, rLArmInertia = 10.768f, lLArmInertia = 4.301f;
     // For collision shapes
     private static final float rLArmL = 3.56f, lLArmL = 2.54f, rLArmW = 0.15f, lLArmW = 0.12f,
             rLArmFric = 0.2f, lLArmFric = 0.2f, rLArmDensity = 1f, lLArmDensity = 1f;
-    // Ankle speeds setpoints:
+
+    /**
+     * Joint speed setpoints.
+     */
     private static final float rAnkleSpeed1 = 2f, rAnkleSpeed2 = -2f, lAnkleSpeed1 = -2f, lAnkleSpeed2 = 2f,
             rKneeSpeed1 = -2.5f, rKneeSpeed2 = 2.5f, lKneeSpeed1 = 2.5f, lKneeSpeed2 = -2.5f,
             rHipSpeed1 = -2.5f, rHipSpeed2 = 2.5f, lHipSpeed1 = 2.5f, lHipSpeed2 = -2.5f,
             rShoulderSpeed1 = 2f, rShoulderSpeed2 = -2f, lShoulderSpeed1 = -2f, lShoulderSpeed2 = 2f;
-    // Hip limits
+
+    /**
+     * Joint limits.
+     */
     private static final float oRHipLimLo = -1.3f, oRHipLimHi = 0.7f, oLHipLimLo = -1f, oLHipLimHi = 1f, //O Hip
     // limits (changed to this when o is pressed):
-    pRHipLimLo = -0.8f, pRHipLimHi = 1.2f, pLHipLimLo = -1.5f, pLHipLimHi = 0.5f; //P Hip limits:
-    // Springs and things:
-    private static final float neckStiff = 15f, neckDamp = 5f,
-            rElbowStiff = 1f, lElbowStiff = 1f,
-            rElbowDamp = 0f, lElbowDamp = 0f;
-    /* Joints Positions*/
+    pRHipLimLo = -0.8f, pRHipLimHi = 1.2f, pLHipLimLo = -1.5f, pLHipLimHi = 0.5f; //P Hip limits
+
+    /**
+     * Springs and things.
+     */
+    private static final float neckStiff = 15f, neckDamp = 5f, rElbowStiff = 1f, lElbowStiff = 1f, rElbowDamp = 0f,
+            lElbowDamp = 0f;
+
+    /**
+     * Initial joint positions.
+     */
     private static final float rAnklePosX = -0.96750f, rAnklePosY = 7.77200f, lAnklePosX = 3.763f, lAnklePosY = 8.101f,
             rKneePosX = 1.58f, rKneePosY = 4.11375f, lKneePosX = 3.26250f, lKneePosY = 3.51625f,
             rHipPosX = 1.260f, rHipPosY = -0.06750f, lHipPosX = 2.01625f, lHipPosY = 0.18125f,
@@ -143,47 +172,30 @@ public class GameLoader extends ClassLoader {
             rElbowPosX = -0.06f, rElbowPosY = -2.985f, lElbowPosX = 5.65125f, lElbowPosY = -1.8125f,
             neckPosX = 3.60400f, neckPosY = -4.581f;
 
-    private Class<?> _World;
-    private Class<?> _MassData;
-    private Class<?> _BodyDef;
-    private Class<?> _Vec2;
-    private Class<?> _PolygonDef;
-    private Class<?> _CircleDef;
-    private Class<?> _AABB;
-    private Class<?> _RevoluteJointDef;
-    private Class<?> _Body;
-    private Class<?> _ContactListener;
-    private Class<?> _ShapeType;
-    private Class<?> _PolygonShape;
-    private Class<?> _CircleShape;
-    private Class<?> _EdgeShape;
-    private Class<?> _XForm;
-    private Class<?> _ShapeDef;
-    private Class<?> _JointDef;
+    private Class<?> _World, _MassData, _BodyDef, _Vec2, _PolygonDef, _CircleDef, _AABB, _RevoluteJointDef, _Body,
+            _ContactListener, _ShapeType, _PolygonShape, _CircleShape, _EdgeShape, _XForm, _ShapeDef, _JointDef;
+
     // World definition:
     private Object world;
+
     // Body/shape definitions:
     private Object trackDef, rFootDef, lFootDef, rCalfDef, lCalfDef, rThighDef, lThighDef, torsoDef, headDef, rUArmDef,
             lUArmDef, rLArmDef, lLArmDef;
+
     private Object trackShape, rFootShape, lFootShape, rCalfShape, lCalfShape, rThighShape, lThighShape, torsoShape,
             headShape, rUArmShape, lUArmShape, rLArmShape, lLArmShape;
-    private Object rFootBody;
-    private Object lFootBody;
-    private Object rCalfBody;
-    private Object lCalfBody;
-    private Object rThighBody;
-    private Object lThighBody;
-    private Object torsoBody;
-    private Object headBody;
-    private Object rUArmBody;
-    private Object lUArmBody;
-    private Object rLArmBody;
-    private Object lLArmBody;
+
+    private Object rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, headBody, rUArmBody
+            , lUArmBody, rLArmBody, lLArmBody;
+
     // Joint definitions
+    @SuppressWarnings("unused")
     public Object rHipJDef, lHipJDef, rKneeJDef, lKneeJDef, rAnkleJDef, lAnkleJDef, rShoulderJDef, lShoulderJDef,
             rElbowJDef, lElbowJDef, neckJDef;
+
     // Joint objects
     public Object rHipJ, lHipJ, rKneeJ, lKneeJ, rAnkleJ, lAnkleJ, rShoulderJ, lShoulderJ, rElbowJ, lElbowJ, neckJ;
+
     // Contact listener
     private Object contactListenerProxy;
 
@@ -193,6 +205,11 @@ public class GameLoader extends ClassLoader {
     public Color mainRunnerColor = Color.BLACK;
     public Stroke mainRunnerStroke = new BasicStroke(1);
 
+    /**
+     * Just to see if game loader is working. TODO: Make a unit test instead.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         GameLoader gl = new GameLoader();
 
@@ -205,11 +222,14 @@ public class GameLoader extends ClassLoader {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
+    /**
+     * Make a new game on its own ClassLoader.
+     */
     public GameLoader() {
         loadClasses(); // Load all the necessary classes on a new class loader (this).
+
         try {
             oneTimeSetup(); // Create all the shape and body definitions that never need changing.
             makeNewWorld();
@@ -217,7 +237,6 @@ public class GameLoader extends ClassLoader {
                 | IllegalArgumentException | InvocationTargetException | NoSuchFieldException e) {
             e.printStackTrace();
         }
-        //System.out.println(++gamesCreated);
     }
 
     @Override
@@ -228,13 +247,17 @@ public class GameLoader extends ClassLoader {
 
     /**
      * Loads individual classes.
-     **/
+     *
+     * @param className Name of a class to load. Does not nead .class at the end.
+     * @return Byte array containing that class's data.
+     */
     private byte[] loadClassData(String className) {
-        //read class
+        // Read class
         InputStream is = getClass().getClassLoader().getResourceAsStream(className.replace(".", "/") + ".class");
         ByteArrayOutputStream byteSt = new ByteArrayOutputStream();
-        //write into byte
-        int len = 0;
+
+        // Write into byte stream.
+        int len;
         try {
             while ((len = is.read()) != -1) {
                 byteSt.write(len);
@@ -242,13 +265,15 @@ public class GameLoader extends ClassLoader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //convert into byte array
+        // Convert into byte array.
         return byteSt.toByteArray();
     }
 
     /**
-     * Loads all the classes we need.
-     **/
+     * Loads all the classes we need to create a new game.
+     * <p>
+     * Some of this importing could be refined further (e.g. ordering, maybe some redundant or unnecessary classes).
+     */
     private void loadClasses() {
 
         try {
@@ -268,9 +293,9 @@ public class GameLoader extends ClassLoader {
             _ShapeDef = findClass("org.jbox2d.collision.shapes.ShapeDef");
             _AABB = findClass("org.jbox2d.collision.AABB");
             _World = findClass("org.jbox2d.dynamics.World");
-            Class<?> _ContactPoint = findClass("org.jbox2d.dynamics.contacts.ContactPoint");
+            findClass("org.jbox2d.dynamics.contacts.ContactPoint");
             _ContactListener = findClass("org.jbox2d.dynamics.ContactListener");
-            Class<?> _Shape = findClass("org.jbox2d.collision.shapes.Shape");
+            findClass("org.jbox2d.collision.shapes.Shape");
 
             findClass("org.jbox2d.dynamics.World$1");
             findClass("org.jbox2d.dynamics.Island");
@@ -341,7 +366,7 @@ public class GameLoader extends ClassLoader {
             _JointDef = findClass("org.jbox2d.dynamics.joints.JointDef");
             findClass("org.jbox2d.dynamics.joints.Joint");
             _RevoluteJointDef = findClass("org.jbox2d.dynamics.joints.RevoluteJointDef");
-            Class<?> _RevoluteJoint = findClass("org.jbox2d.dynamics.joints.RevoluteJoint");
+            findClass("org.jbox2d.dynamics.joints.RevoluteJoint");
             findClass("org.jbox2d.dynamics.joints.DistanceJointDef");
             findClass("org.jbox2d.dynamics.joints.DistanceJoint");
             findClass("org.jbox2d.dynamics.joints.MouseJointDef");
@@ -357,7 +382,6 @@ public class GameLoader extends ClassLoader {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -541,8 +565,6 @@ public class GameLoader extends ClassLoader {
         return cons.newInstance(x, y);
     }
 
-    /******* SET UP THINGS *********/
-
     /**
      * Call once to initialize a lot of shape definitions which only need to be created once.
      *
@@ -566,8 +588,9 @@ public class GameLoader extends ClassLoader {
         /* FEET */
         //Create the fixture shapes, IE collision shapes
         rFootDef = makeBodyDef(rFootPosX, rFootPosY, rFootAng, rFootMass, rFootInertia);
-        /** Filters collisions. Prevents body parts from hitting other body parts. **/
-        int BODY_GROUP = -1;
+
+        int BODY_GROUP = -1; // Filters collisions. Prevents body parts from hitting other body parts.
+
         rFootShape = makeBoxShapeDef(rFootL / 2f, rFootH / 2f, rFootFric, rFootDensity, BODY_GROUP);
         lFootDef = makeBodyDef(lFootPosX, lFootPosY, lFootAng, lFootMass, lFootInertia);
         lFootShape = makeBoxShapeDef(lFootL / 2f, lFootH / 2f, lFootFric, lFootDensity, BODY_GROUP);
@@ -621,8 +644,7 @@ public class GameLoader extends ClassLoader {
             isFailed = false;
             timestepsSimulated = 0;
 
-            /******* WORLD ********/
-            // Make the world object:
+            /* World setup */
             Constructor<?> aabbCons = _AABB.getConstructor(_Vec2, _Vec2);
             Object vecAABBLower = makeVec2(-100f, -30f);
             Object vecAABBUpper = makeVec2(5000f, 80f);
@@ -638,9 +660,7 @@ public class GameLoader extends ClassLoader {
             world.getClass().getMethod("setContinuousPhysics", boolean.class).invoke(world, true);
 
 
-            /******* BODIES ********/
-            // Add bodies:
-            // Actual bodies:
+            /* Body setup */
             Object trackBody = world.getClass().getMethod("createBody", _BodyDef).invoke(world, trackDef);
             trackBody.getClass().getMethod("createShape", _ShapeDef).invoke(trackBody, trackShape);
 
@@ -692,10 +712,7 @@ public class GameLoader extends ClassLoader {
                 shapeList.add(trackBody.getClass().getMethod("getShapeList").invoke(trackBody));
             }
 
-            /******* JOINTS ********/
-            //			makeJointDef(Object body1, Object body2, float jointPosX, float jointPosY, float lowerAngle,
-            //					float upperAngle, float maxTorque, float motorSpeed, boolean enableLimit, boolean
-            // enableMotor, boolean collideConnected)
+            /* Joint setup */
             Object rAnkleJDef = makeJointDef(rFootBody, rCalfBody, rAnklePosX, rAnklePosY, -0.5f, 0.5f, 2000f, 0f,
                     true, false, false);
             rAnkleJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rAnkleJDef);
@@ -746,64 +763,61 @@ public class GameLoader extends ClassLoader {
         // loaded with this custom class loader.
         // The dynamic proxy lets this implement a class that is defined at runtime.
         contactListenerProxy = Proxy.newProxyInstance(_ContactListener.getClassLoader(), new Class[]{_ContactListener},
-                new InvocationHandler() {
-                    @Override
-                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                        String method_name = method.getName();
-                        Object fixtureAShape;
-                        Object fixtureBShape;
-                        Object fixtureABody;
-                        Object fixtureBBody;
+                (proxy, method, args) -> {
+                    String method_name = method.getName();
+                    Object fixtureAShape;
+                    Object fixtureBShape;
+                    Object fixtureABody;
+                    Object fixtureBBody;
 
-                        switch (method_name) {
-                            case "add":
-                                fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
-                                fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
-                                fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
-                                fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
-                                //Failure when head, arms, or thighs hit the ground.
-                                if (fixtureABody.equals(headBody) ||
-                                        fixtureBBody.equals(headBody) ||
-                                        fixtureABody.equals(lLArmBody) ||
-                                        fixtureBBody.equals(lLArmBody) ||
-                                        fixtureABody.equals(rLArmBody) ||
-                                        fixtureBBody.equals(rLArmBody)) {
-                                    setFailureStatus(true);
-//					}
-//					
+                    switch (method_name) {
+                        case "add":
+                            fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
+                            fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
+                            fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
+                            fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
+                            //Failure when head, arms, or thighs hit the ground.
+                            if (fixtureABody.equals(headBody) ||
+                                    fixtureBBody.equals(headBody) ||
+                                    fixtureABody.equals(lLArmBody) ||
+                                    fixtureBBody.equals(lLArmBody) ||
+                                    fixtureABody.equals(rLArmBody) ||
+                                    fixtureBBody.equals(rLArmBody)) {
+                                isFailed = true;
+//					} TODO: Figure out it really is bad for the thighs to hit the ground.
+//
 //					else if(fixtureABody.equals(lThighBody)||
 //							fixtureBBody.equals(lThighBody)||
 //							fixtureABody.equals(rThighBody)||
 //							fixtureBBody.equals(rThighBody)){
 
-                                    //setFailureStatus(true); // Thighs hitting the ground happens due to ankles
-                                    // being loose. Not a big deal.
-                                } else if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) {//Track
-                                    // when each foot hits the ground.
-                                    rFootDown = true;
-                                } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
-                                    lFootDown = true;
-                                }
-                                break;
-                            case "persist":
-                                break;
-                            case "remove":
-                                //Track when each foot leaves the ground.
-                                fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
-                                fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
-                                fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
-                                fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
-                                if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) {
-                                    rFootDown = false;
-                                } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
-                                    lFootDown = false;
-                                }
-                                break;
-                            case "result":
-                                break;
-                        }
-                        return null;
+                                //setFailureStatus(true); // Thighs hitting the ground happens due to ankles
+                                // being loose. Not a big deal.
+                            } else if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) { // Track
+                                // when each foot hits the ground.
+                                rFootDown = true;
+                            } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
+                                lFootDown = true;
+                            }
+                            break;
+                        case "persist":
+                            break;
+                        case "remove":
+                            // Track when each foot leaves the ground.
+                            fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
+                            fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
+                            fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
+                            fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
+                            if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) {
+                                rFootDown = false;
+                            } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
+                                lFootDown = false;
+                            }
+                            break;
+                        case "result":
+                            break;
                     }
+                    return null;
                 });
 
         initialized = true;
@@ -942,7 +956,7 @@ public class GameLoader extends ClassLoader {
                 setMotorSpeed(rShoulderJ, 0f);
             }
 
-            //Ankle/Hip Coupling -+ 0*Requires either Q or W pressed.
+            // Ankle/Hip Coupling -+ 0*Requires either Q or W pressed.
             if (q || w) {
                 //Get world ankle positions (using foot and torso anchors -+ 0*TODO: see if this is correct)
                 Object rAnkleCurr = rAnkleJ.getClass().getMethod("getAnchor1").invoke(rAnkleJ);
@@ -1005,7 +1019,7 @@ public class GameLoader extends ClassLoader {
             // Extra fail conditions besides contacts.
             float angle = (float) torsoBody.getClass().getMethod("getAngle").invoke(torsoBody);
             if (angle > torsoAngUpper || angle < torsoAngLower) { // Fail if torso angles get too far out of whack.
-                setFailureStatus(true);
+                isFailed = true;
             }
             timestepsSimulated++;
         } catch (Exception e) {
@@ -1110,14 +1124,7 @@ public class GameLoader extends ClassLoader {
 
     /**
      * Draw this game's runner. Must provide scaling from game units to pixels, as well as pixel offsets in x and y.
-     *
-     * @throws SecurityException
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalArgumentException
-     * @throws IllegalAccessException
-     * @throws NoSuchFieldException
-     **/
+     */
     public void draw(Graphics g, float scaling, int xOffset, int yOffset) {
         try {
             g.setColor(mainRunnerColor);
@@ -1198,7 +1205,6 @@ public class GameLoader extends ClassLoader {
             }
 
             //This draws the "road" markings to show that the ground is moving relative to the dude.
-            /** How far out to mark road dashes. **/
             int markingWidth = 2000;
             for (int i = 0; i < markingWidth / 69; i++) {
                 g.drawString("_", ((-(int) (scaling * currTorsoPos) - i * 70) % markingWidth) + markingWidth,
@@ -1210,7 +1216,7 @@ public class GameLoader extends ClassLoader {
     }
 
     /**
-     * Draw the runner at a specified set of transforms..
+     * Draw the runner at a specified set of transforms.
      **/
     public void drawExtraRunner(Graphics2D g, State st, String label, float scaling, int xOffset, int yOffset,
                                 Color drawColor, Stroke stroke) {
@@ -1283,10 +1289,84 @@ public class GameLoader extends ClassLoader {
         }
     }
 
+    /**
+     * Check if the game has reached a failed state.
+     *
+     * @return Failure status of this game instance.
+     */
+    public synchronized boolean getFailureStatus() {
+        return isFailed;
+    }
+
+    /**
+     * Check whether this game has completed its setup process.
+     *
+     * @return Whether this game has finished being set up. True - yes, false - no.
+     */
+    public boolean isGameInitialized() {
+        return initialized;
+    }
+
+    /**
+     * Check if the right foot is touching the ground.
+     *
+     * @return Whether the right foot is touching the ground (true/false).
+     */
+    public boolean isRightFootDown() {
+        return rFootDown;
+    }
+
+    /**
+     * Check if the left foot is touching the ground.
+     *
+     * @return Whether the left foot is touching the ground (true/false).
+     */
+    public boolean isLeftFootDown() {
+        return lFootDown;
+    }
+
+    /**
+     * Get the QWOP initial condition. Good way to give the root node a state.
+     *
+     * @return The initial state of the QWOP runner.
+     */
+    public static State getInitialState() {
+        return initState;
+    }
+
+    /**
+     * Get the number of timesteps simulated by all instances of the game since the beginning of execution.
+     *
+     * @return Number of timesteps simulated, total.
+     */
+    public static long getTimestepsSimulated() {
+        return timestepsSimulated;
+    }
+
+    /**
+     * Take a state generated by the real Flash game and convert angles to work with my simulated version of QWOP.
+     *
+     * @param realQWOPState A state using angle offsets found in the real Flash QWOP game. This will be changed in
+     *                      place to have the offsets used in this simulated version.
+     */
+    public static void adjustRealQWOPStateToSimState(State realQWOPState) {
+        realQWOPState.body.th += torsoAngAdj;
+        realQWOPState.head.th += headAngAdj;
+        realQWOPState.rthigh.th += rThighAngAdj;
+        realQWOPState.lthigh.th += lThighAngAdj;
+        realQWOPState.rcalf.th += rCalfAngAdj;
+        realQWOPState.lcalf.th += lCalfAngAdj;
+        realQWOPState.ruarm.th += rUArmAngAdj;
+        realQWOPState.luarm.th += lUArmAngAdj;
+        realQWOPState.rlarm.th += rLArmAngAdj;
+        realQWOPState.llarm.th += lLArmAngAdj;
+    }
 
     /**
      * Print methods and fields of the object for debugging all the reflected crap in here.
-     **/
+     *
+     * @param obj Object to print the fields and methods of.
+     */
     private void debugPrintObjectInfo(Object obj) {
         for (Field m : obj.getClass().getFields()) {
             System.out.println(m.getName());
@@ -1296,47 +1376,4 @@ public class GameLoader extends ClassLoader {
         }
     }
 
-    /**
-     * Get the number of timesteps simulated since the beginning of execution.
-     **/
-    public long getTimestepsSimulated() {
-        return timestepsSimulated;
-    }
-
-    /**
-     * Is this state in failure?
-     **/
-    public synchronized boolean getFailureStatus() {
-        return isFailed;
-    }
-
-    protected synchronized void setFailureStatus(boolean status) {
-        isFailed = status;
-    }
-
-    /**
-     * QWOP initial condition. Good way to give the root node a state.
-     **/
-    public static State getInitialState() {
-        return initState;
-    }
-
-    /**
-     * Take a state generated by the real Flash game and convert angles to work with my simulated version of QWOP.
-     **/
-    public static void adjustRealQWOPStateToSimState(State realQWOPState) {
-        realQWOPState.body.th += torsoAngAdj;
-        realQWOPState.head.th += headAngAdj;
-        realQWOPState.rthigh.th += rThighAngAdj;
-        realQWOPState.lthigh.th += lThighAngAdj;
-        realQWOPState.rcalf.th += rCalfAngAdj;
-        realQWOPState.lcalf.th += lCalfAngAdj;
-//		realQWOPState.rfoot.th += rFootAngAdj; no foot angle adjustments.
-//		realQWOPState.lfoot.th += lFootAngAdj;
-        realQWOPState.ruarm.th += rUArmAngAdj;
-        realQWOPState.luarm.th += lUArmAngAdj;
-        realQWOPState.rlarm.th += rLArmAngAdj;
-        realQWOPState.llarm.th += lLArmAngAdj;
-
-    }
 }

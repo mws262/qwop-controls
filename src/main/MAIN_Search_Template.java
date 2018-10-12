@@ -19,7 +19,7 @@ import TreeStages.TreeStage_MaxDepth;
 import TreeStages.TreeStage_MinDepth;
 import distributions.Distribution_Normal;
 import evaluators.EvaluationFunction_Distance;
-import filters.NodeFilter_GoodDescendants;
+import filters.NodeFilter_SurvivalHorizon;
 import samplers.Sampler_FixedDepth;
 import samplers.Sampler_UCB;
 import savers.DataSaver_StageSelected;
@@ -277,7 +277,7 @@ public abstract class MAIN_Search_Template {
         PanelPlot_Transformed autoencPlotPane =
 				new PanelPlot_Transformed(new Transform_Autoencoder(Utility.getExcutionPath() + "tflow_models" +
 						"/AutoEnc_72to12_6layer.pb", 12), 6);
-        autoencPlotPane.addFilter(new NodeFilter_GoodDescendants(1));
+        autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon(1));
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun(6);
         workerMonitorPanel = new PanelTimeSeries_WorkerLoad(maxWorkers);
 

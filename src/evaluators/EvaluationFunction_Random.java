@@ -11,7 +11,11 @@ import main.Node;
  * @author Matt
  */
 public class EvaluationFunction_Random implements IEvaluationFunction {
-    private Random rand = new Random();
+
+    /**
+     * Random number generator for generating random node scores.
+     */
+    private static final Random rand = new Random();
 
     @Override
     public float getValue(Node nodeToEvaluate) {
@@ -20,7 +24,7 @@ public class EvaluationFunction_Random implements IEvaluationFunction {
 
     @Override
     public String getValueString(Node nodeToEvaluate) {
-        return String.valueOf(rand.nextFloat());
+        return "Random score is not particularly meaningful.";
     }
 
     @Override

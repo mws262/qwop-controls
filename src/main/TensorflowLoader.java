@@ -3,11 +3,10 @@ package main;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.primitives.Floats;
 import org.tensorflow.Graph;
 import org.tensorflow.Operation;
 import org.tensorflow.Session;
@@ -16,33 +15,30 @@ import org.tensorflow.Tensor;
 import game.State;
 
 /**
- * Basic utilities and loaders for getting tensorflow models
- * in here and working.
+ * Basic utilities and loaders for getting TensorFlow models in here and working. Users should extend this class.
+ * Specifically applies to networks which take a game state and return a single list of numbers.
  *
  * @author matt
  */
 public abstract class TensorflowLoader {
 
     /**
-     * Current tflow session.
+     * Current TensorFlow session.
      **/
-    private Session session;
+    private final Session session;
 
     /**
-     * Computational graph loaded from tflow saves.
+     * Computational graph loaded from TensorFlow saves.
      **/
-    private Graph graph;
-
-    private List<Float> predictionList = new ArrayList<>();
-
-    public TensorflowLoader(String pbFile, String directory) {
-        loadGraph(pbFile, directory);
-    }
+    private final Graph graph;
 
     /**
      * Load the computational graph from a .pb file and also make a new session.
-     **/
-    private void loadGraph(String pbFile, String directory) {
+     *
+     * @param pbFile    Name of the graph save file (usually *.pb), including the file extension.
+     * @param directory Directory name containing the graph save file.
+     */
+    public TensorflowLoader(String pbFile, String directory) {
         byte[] graphDef = null;
         try {
             graphDef = Files.readAllBytes(Paths.get(directory, pbFile));
@@ -57,12 +53,12 @@ public abstract class TensorflowLoader {
 
     /**
      * Simple prediction from the model where we give a state and expect a list of floats out.
-     * Only applies when a single output is required from the graph.
+     * Only applies when a single output (could be multi-element though) is required from the graph.
      *
-     * @param state
-     * @param inputName
-     * @param outputName
-     * @return
+     * @param state      State to feed into the computational graph.
+     * @param inputName  Name of the graph input to shove the state into.
+     * @param outputName Name of the graph output to fetch.
+     * @return List of values returned by the specified graph output.
      */
     public List<Float> sisoFloatPrediction(State state, String inputName, String outputName) {
         Tensor<Float> inputTensor = Tensor.create(flattenState(state), Float.class);
@@ -72,19 +68,16 @@ public abstract class TensorflowLoader {
                         .run().get(0).expect(Float.class);
         long[] outputShape = result.shape();
 
-        float[] res = result.copyTo(new float[(int) outputShape[0]][(int) outputShape[1]])[0];
+        float[] reshapedResult = result.copyTo(new float[(int) outputShape[0]][(int) outputShape[1]])[0];
 
-        predictionList.clear();
-        for (float f : res) {
-            predictionList.add(f);
-        }
-        return predictionList;
+        return Floats.asList(reshapedResult);
     }
 
     /**
-     * Print out all operations in the graph for identifying which ones we want.
+     * Print out all operations in the TensorFlow graph to help determine which ones we want to use. There can be an
+     * incredible number, and sometimes TensorBoard is the best way to sort this out.
      **/
-    private void printOperations() {
+    public void printTensorflowGraphOperations() {
         Iterator<Operation> iter = graph.operations();
         while (iter.hasNext()) {
             System.out.println(iter.next().name());
@@ -92,28 +85,37 @@ public abstract class TensorflowLoader {
     }
 
     /**
-     * Get the current tflow session.
-     **/
+     * Get the current TensorFlow session.
+     *
+     * @return A TensorFlow session object.
+     */
     public Session getSession() {
         return session;
     }
 
     /**
-     * Get the tflow computational graph (ie model).
-     **/
+     * Get the TensorFlow computational graph (ie model).
+     *
+     * @return The TensorFlow graph object.
+     */
     public Graph getGraph() {
         return graph;
     }
 
     /**
-     * Make a state object into an array the way TFlow likes it.
-     **/
+     * Make a State object into a 72-element array the way TensorFlow wants it. This method also subtracts the torso
+     * x-component out of all body parts.
+     *
+     * @param state Input state to flatten into an array.
+     * @return A 1x72 element array containing all the concatenated state variable values, with the torso x-component
+     * subtracted out.
+     */
     public static float[][] flattenState(State state) {
         float[][] flatState = new float[1][72];
         float bodyX = state.body.x;
 
         // Body
-        flatState[0][0] = 0;
+        flatState[0][0] = 0; //TODO this ordering is different from that used in State. Make sure that's ok...
         flatState[0][1] = state.body.y;
         flatState[0][2] = state.body.th;
         flatState[0][3] = state.body.dx;

@@ -3,7 +3,7 @@ package data;
 import java.util.TreeMap;
 
 /**
- * TreeMap with limited size. Only keeps the elements with SMALLEST KEYS. Also trying to be thread-safe.
+ * TreeMap with limited size. Only keeps the elements with the smallest keys. Also trying to be thread-safe.
  *
  * @param <K>
  * @param <V>
@@ -12,8 +12,17 @@ import java.util.TreeMap;
 public class EvictingTreeMap<K, V> extends TreeMap<K, V> {
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Maximum number of allowed elements in this map before smaller ones get thrown out.
+     */
     private final int maxSize;
 
+    /**
+     * Make a new map which keeps a limited number of elements.
+     *
+     * @param maxSize Maximum number of elements this map will hold before throwing some out.
+     */
     public EvictingTreeMap(int maxSize) {
         super();
         this.maxSize = maxSize;
@@ -25,7 +34,6 @@ public class EvictingTreeMap<K, V> extends TreeMap<K, V> {
         while (this.size() > maxSize) {
             this.pollLastEntry();
         }
-
         return null; // Return isn't particularly important.
     }
 
