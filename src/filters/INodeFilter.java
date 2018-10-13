@@ -2,7 +2,6 @@ package filters;
 
 import main.Node;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -27,13 +26,6 @@ public interface INodeFilter {
      * @param nodes A list of nodes to filter. This list will be modified in place.
      */
     default void filter(List<Node> nodes) {
-        Iterator<Node> iter = nodes.iterator();
-        while (iter.hasNext()) {
-            Node n = iter.next();
-
-            if (!filter(n)) {
-                iter.remove();
-            }
-        }
+        nodes.removeIf(n -> !filter(n));
     }
 }

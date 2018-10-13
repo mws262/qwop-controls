@@ -75,7 +75,7 @@ public class Transform_Autoencoder implements ITransform {
                             .run().get(0).expect(Float.class);
 
             float[][] res = result.copyTo(new float[1][72]);
-            transformedStates.add(new State(res[0]));
+            transformedStates.add(new State(res[0], false));
         }
         return transformedStates;
     }
@@ -90,6 +90,7 @@ public class Transform_Autoencoder implements ITransform {
         return "AutoEnc " + getOutputStateSize();
     }
 
+    //TODO move to unit test.
     // Example usage:
     //	public static void main(String[] args) {
     //		TensorflowAutoencoder enc = new TensorflowAutoencoder();

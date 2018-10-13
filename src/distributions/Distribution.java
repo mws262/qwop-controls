@@ -34,6 +34,9 @@ public abstract class Distribution<T> {
      * @return An element of the input list selected randomly according to the rules of the distribution.
      */
     public T randSample(List<T> pool) {
+        if (pool.size() < 1)
+            throw new IllegalArgumentException("Argument sampling pool must contain at least 1 element.");
+
         return pool.get(randInt(0, pool.size() - 1));
     }
 
@@ -46,6 +49,9 @@ public abstract class Distribution<T> {
      * @return Boolean representing which candidate list was chosen. True means list1, false means list2.
      */
     public boolean chooseASet(List<T> list1, List<T> list2) {
+        if (list1.size() < 1 && list2.size() < 1)
+            throw new IllegalArgumentException("At least one of the lists must have at least one element.");
+
         List<T> totalSet = new ArrayList<>();
         totalSet.addAll(list1);
         totalSet.addAll(list2);

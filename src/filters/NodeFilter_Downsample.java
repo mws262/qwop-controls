@@ -50,6 +50,7 @@ public class NodeFilter_Downsample implements INodeFilter {
      * @param maxNodesToKeep Maximum allowable nodes after filtering a list of nodes.
      * @param filteringStrategy Which strategy should be used for downsampling ({@link Strategy strategies}).
      */
+    @SuppressWarnings("unused")
     public NodeFilter_Downsample(int maxNodesToKeep, Strategy filteringStrategy) {
         if (maxNodesToKeep < 0)
             throw new IllegalArgumentException("Cannot have a negative maximum number of nodes to keep.");

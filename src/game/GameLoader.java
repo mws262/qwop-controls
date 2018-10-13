@@ -1114,10 +1114,10 @@ public class GameLoader extends ClassLoader {
             NoSuchMethodException {
         Object xf = _XForm.newInstance();
         Object pos = xf.getClass().getField("position").get(xf); // Position
-        pos.getClass().getField("x").setFloat(pos, sv.x);
-        pos.getClass().getField("y").setFloat(pos, sv.y);
+        pos.getClass().getField("x").setFloat(pos, sv.getX());
+        pos.getClass().getField("y").setFloat(pos, sv.getY());
         Object R = xf.getClass().getField("R").get(xf); // Rotation
-        R.getClass().getMethod("set", float.class).invoke(R, sv.th);
+        R.getClass().getMethod("set", float.class).invoke(R, sv.getTh());
 
         return xf;
     }

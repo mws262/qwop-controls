@@ -5,8 +5,9 @@ import java.util.TreeMap;
 /**
  * TreeMap with limited size. Only keeps the elements with the smallest keys. Also trying to be thread-safe.
  *
- * @param <K>
- * @param <V>
+ * @param <K> Object type of the map key.
+ * @param <V> Object type of the map value.
+ *
  * @author matt
  */
 public class EvictingTreeMap<K, V> extends TreeMap<K, V> {

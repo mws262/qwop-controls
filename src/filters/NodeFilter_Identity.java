@@ -9,6 +9,7 @@ import main.Node;
  *
  * @author matt
  */
+@SuppressWarnings("unused")
 public class NodeFilter_Identity implements INodeFilter {
 
     @Override

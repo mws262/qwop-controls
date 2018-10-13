@@ -48,12 +48,15 @@ public class Distribution_Normal extends Distribution<Action> {
      */
     @Override
     public Action randOnDistribution(List<Action> set) {
+        if (set.size() < 1)
+            throw new IllegalArgumentException("Argument action set must have at least 1 element.");
+
         double r = rand.nextGaussian(); // Gets a new value on bell curve. 0 mean, 1 stddev.
         double rScaled = r * standardDeviation + mean; // Scale to our possible action range.
 
         final Comparator<Action> comp = Comparator.comparingDouble(p -> Math.abs(p.getTimestepsTotal() - rScaled));
 
-        return set.stream().min(comp).get();
+        return set.stream().min(comp).orElse(null); // Returns value (or null if something goes WEIRD).
     }
 
 }

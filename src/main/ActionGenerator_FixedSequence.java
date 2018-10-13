@@ -31,7 +31,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
      * @param repeatedActions
      * @param actionExceptions
      */
-    public ActionGenerator_FixedSequence(ActionSet[] repeatedActions, Map<Integer, ActionSet> actionExceptions) {
+    ActionGenerator_FixedSequence(ActionSet[] repeatedActions, Map<Integer, ActionSet> actionExceptions) {
 
         cycleLength = repeatedActions.length;
 

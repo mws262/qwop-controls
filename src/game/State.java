@@ -4,20 +4,41 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Container class for holding the configurations and velocities of the entire runner at a single instance in time.
+ * Has x, y, th, dx, dy, dth for 12 bodys, meaning that one State represents 72 state values.
+ *
+ * @author matt
+ */
 public class State implements Serializable {
 
     private static final long serialVersionUID = 2L;
 
-    private boolean failedState = false;
+    /**
+     * Does this state represent a fallen configuration?
+     */
+    private boolean failedState;
 
+    /**
+     * Objects which hold the x, y, thetha, dx, dy, dtheta values for all body parts.
+     */
     public final StateVariable body, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm, head;
 
+    /**
+     * List holding a StateVariable for each body part.
+     */
     private List<StateVariable> stateVariableList;
 
+    /**
+     * Name of each body part.
+     */
     public enum ObjectName {
         BODY, HEAD, RTHIGH, LTHIGH, RCALF, LCALF, RFOOT, LFOOT, RUARM, LUARM, RLARM, LLARM
     }
 
+    /**
+     * Name of each state value (configurations and velocities).
+     */
     public enum StateName {
         X, Y, TH, DX, DY, DTH
     }
@@ -28,8 +49,9 @@ public class State implements Serializable {
      *
      * @param stateVars Array of state variable values. Order matches TensorFlow in/out
      *                  {@link transformations.Transform_Autoencoder order}.
+     * @param isFailed  Whether this state represents a fallen runner.
      */
-    public State(float[] stateVars) { // Order matches order in TensorflowAutoencoder.java
+    public State(float[] stateVars, boolean isFailed) { // Order matches order in TensorflowAutoencoder.java
         body = new StateVariable(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
         head = new StateVariable(stateVars[6], stateVars[7], stateVars[8], stateVars[9], stateVars[10], stateVars[11]);
         rthigh = new StateVariable(stateVars[12], stateVars[13], stateVars[14], stateVars[15], stateVars[16],
@@ -56,25 +78,26 @@ public class State implements Serializable {
         stateVariableList = Arrays.asList(body, rthigh, lthigh, rcalf, lcalf,
                 rfoot, lfoot, ruarm, luarm, rlarm, llarm, head);
 
+        failedState = isFailed;
     }
 
     /**
      * Make new state from a list of StateVariables. This is now the default way that the GameLoader does it. To make
-     * a new State from an existing game,
-     * the best bet is to call myGameLoader.getCurrentState().
+     * a new State from an existing game, the best bet is to call {@link GameLoader#getCurrentState()}.
      *
-     * @param bodyS
-     * @param headS
-     * @param rthighS
-     * @param lthighS
-     * @param rcalfS
-     * @param lcalfS
-     * @param rfootS
-     * @param lfootS
-     * @param ruarmS
-     * @param luarmS
-     * @param rlarmS
-     * @param llarmS
+     * @param bodyS    State of the torso.
+     * @param headS    State of the head.
+     * @param rthighS  State of the right thigh.
+     * @param lthighS  State of the left thigh.
+     * @param rcalfS   State of the right shank.
+     * @param lcalfS   State of the left shank.
+     * @param rfootS   State of the right foot.
+     * @param lfootS   State of the left foot.
+     * @param ruarmS   State of the right upper arm.
+     * @param luarmS   State of the left upper arm.
+     * @param rlarmS   State of the right lower arm.
+     * @param llarmS   State of the left lower arm.
+     * @param isFailed Whether this state represents a fallen runner.
      */
     public State(StateVariable bodyS, StateVariable headS, StateVariable rthighS, StateVariable lthighS,
                  StateVariable rcalfS, StateVariable lcalfS, StateVariable rfootS, StateVariable lfootS,
@@ -100,14 +123,20 @@ public class State implements Serializable {
 
     /**
      * Get the whole list of state variables.
-     **/
+     *
+     * @return List containing a {@link StateVariable StateVariable} for each runner link.
+     */
     public List<StateVariable> getStateList() {
         return stateVariableList;
     }
 
     /**
-     * Get the value of the state you want using their names. I'll bet hashmaps do this better.
-     **/
+     * Get a specific state value by specifying the link and desired configuration/velocity.
+     *
+     * @param obj   Runner body who we want to fetch a state value from.
+     * @param state Configuration/velocity we want to fetch for the specified runner link.
+     * @return Value of the requested state.
+     */
     public float getStateVarFromName(ObjectName obj, StateName state) {
         StateVariable st;
         switch (obj) {
@@ -153,22 +182,22 @@ public class State implements Serializable {
         float stateValue;
         switch (state) {
             case DTH:
-                stateValue = st.dth;
+                stateValue = st.getDth();
                 break;
             case DX:
-                stateValue = st.dx;
+                stateValue = st.getDx();
                 break;
             case DY:
-                stateValue = st.dy;
+                stateValue = st.getDy();
                 break;
             case TH:
-                stateValue = st.th;
+                stateValue = st.getTh();
                 break;
             case X:
-                stateValue = st.x;
+                stateValue = st.getDx();
                 break;
             case Y:
-                stateValue = st.y;
+                stateValue = st.getDy();
                 break;
             default:
                 throw new RuntimeException("Unknown object state queried.");
@@ -181,106 +210,111 @@ public class State implements Serializable {
      **/
     public float[] flattenState() {
         float[] flatState = new float[72];
-        float bodyX = body.x;
+        float bodyX = body.getX();
 
         // Body
         flatState[0] = 0;
-        flatState[1] = body.y;
-        flatState[2] = body.th;
-        flatState[3] = body.dx;
-        flatState[4] = body.dy;
-        flatState[5] = body.dth;
+        flatState[1] = body.getY();
+        flatState[2] = body.getTh();
+        flatState[3] = body.getDx();
+        flatState[4] = body.getDy();
+        flatState[5] = body.getDth();
 
         // head
-        flatState[6] = head.x - bodyX;
-        flatState[7] = head.y;
-        flatState[8] = head.th;
-        flatState[9] = head.dx;
-        flatState[10] = head.dy;
-        flatState[11] = head.dth;
+        flatState[6] = head.getX() - bodyX;
+        flatState[7] = head.getY();
+        flatState[8] = head.getTh();
+        flatState[9] = head.getDx();
+        flatState[10] = head.getDy();
+        flatState[11] = head.getDth();
 
         // rthigh
-        flatState[12] = rthigh.x - bodyX;
-        flatState[13] = rthigh.y;
-        flatState[14] = rthigh.th;
-        flatState[15] = rthigh.dx;
-        flatState[16] = rthigh.dy;
-        flatState[17] = rthigh.dth;
+        flatState[12] = rthigh.getX() - bodyX;
+        flatState[13] = rthigh.getY();
+        flatState[14] = rthigh.getTh();
+        flatState[15] = rthigh.getDx();
+        flatState[16] = rthigh.getDy();
+        flatState[17] = rthigh.getDth();
 
         // lthigh
-        flatState[18] = lthigh.x - bodyX;
-        flatState[19] = lthigh.y;
-        flatState[20] = lthigh.th;
-        flatState[21] = lthigh.dx;
-        flatState[22] = lthigh.dy;
-        flatState[23] = lthigh.dth;
+        flatState[18] = lthigh.getX() - bodyX;
+        flatState[19] = lthigh.getY();
+        flatState[20] = lthigh.getTh();
+        flatState[21] = lthigh.getDx();
+        flatState[22] = lthigh.getDy();
+        flatState[23] = lthigh.getDth();
 
         // rcalf
-        flatState[24] = rcalf.x - bodyX;
-        flatState[25] = rcalf.y;
-        flatState[26] = rcalf.th;
-        flatState[27] = rcalf.dx;
-        flatState[28] = rcalf.dy;
-        flatState[29] = rcalf.dth;
+        flatState[24] = rcalf.getX() - bodyX;
+        flatState[25] = rcalf.getY();
+        flatState[26] = rcalf.getTh();
+        flatState[27] = rcalf.getDx();
+        flatState[28] = rcalf.getDy();
+        flatState[29] = rcalf.getDth();
 
         // lcalf
-        flatState[30] = lcalf.x - bodyX;
-        flatState[31] = lcalf.y;
-        flatState[32] = lcalf.th;
-        flatState[33] = lcalf.dx;
-        flatState[34] = lcalf.dy;
-        flatState[35] = lcalf.dth;
+        flatState[30] = lcalf.getX() - bodyX;
+        flatState[31] = lcalf.getY();
+        flatState[32] = lcalf.getTh();
+        flatState[33] = lcalf.getDx();
+        flatState[34] = lcalf.getDy();
+        flatState[35] = lcalf.getDth();
 
         // rfoot
-        flatState[36] = rfoot.x - bodyX;
-        flatState[37] = rfoot.y;
-        flatState[38] = rfoot.th;
-        flatState[39] = rfoot.dx;
-        flatState[40] = rfoot.dy;
-        flatState[41] = rfoot.dth;
+        flatState[36] = rfoot.getX() - bodyX;
+        flatState[37] = rfoot.getY();
+        flatState[38] = rfoot.getTh();
+        flatState[39] = rfoot.getDx();
+        flatState[40] = rfoot.getDy();
+        flatState[41] = rfoot.getDth();
 
         // lfoot
-        flatState[42] = lfoot.x - bodyX;
-        flatState[43] = lfoot.y;
-        flatState[44] = lfoot.th;
-        flatState[45] = lfoot.dx;
-        flatState[46] = lfoot.dy;
-        flatState[47] = lfoot.dth;
+        flatState[42] = lfoot.getX() - bodyX;
+        flatState[43] = lfoot.getY();
+        flatState[44] = lfoot.getTh();
+        flatState[45] = lfoot.getDx();
+        flatState[46] = lfoot.getDy();
+        flatState[47] = lfoot.getDth();
 
         // ruarm
-        flatState[48] = ruarm.x - bodyX;
-        flatState[49] = ruarm.y;
-        flatState[50] = ruarm.th;
-        flatState[51] = ruarm.dx;
-        flatState[52] = ruarm.dy;
-        flatState[53] = ruarm.dth;
+        flatState[48] = ruarm.getX() - bodyX;
+        flatState[49] = ruarm.getY();
+        flatState[50] = ruarm.getTh();
+        flatState[51] = ruarm.getDx();
+        flatState[52] = ruarm.getDy();
+        flatState[53] = ruarm.getDth();
 
         // luarm
-        flatState[54] = luarm.x - bodyX;
-        flatState[55] = luarm.y;
-        flatState[56] = luarm.th;
-        flatState[57] = luarm.dx;
-        flatState[58] = luarm.dy;
-        flatState[59] = luarm.dth;
+        flatState[54] = luarm.getX() - bodyX;
+        flatState[55] = luarm.getY();
+        flatState[56] = luarm.getTh();
+        flatState[57] = luarm.getDx();
+        flatState[58] = luarm.getDy();
+        flatState[59] = luarm.getDth();
         // rlarm
-        flatState[60] = rlarm.x - bodyX;
-        flatState[61] = rlarm.y;
-        flatState[62] = rlarm.th;
-        flatState[63] = rlarm.dx;
-        flatState[64] = rlarm.dy;
-        flatState[65] = rlarm.dth;
+        flatState[60] = rlarm.getX() - bodyX;
+        flatState[61] = rlarm.getY();
+        flatState[62] = rlarm.getTh();
+        flatState[63] = rlarm.getDx();
+        flatState[64] = rlarm.getDy();
+        flatState[65] = rlarm.getDth();
 
         // llarm
-        flatState[66] = llarm.x - bodyX;
-        flatState[67] = llarm.y;
-        flatState[68] = llarm.th;
-        flatState[69] = llarm.dx;
-        flatState[70] = llarm.dy;
-        flatState[71] = llarm.dth;
+        flatState[66] = llarm.getX() - bodyX;
+        flatState[67] = llarm.getY();
+        flatState[68] = llarm.getTh();
+        flatState[69] = llarm.getDx();
+        flatState[70] = llarm.getDy();
+        flatState[71] = llarm.getDth();
 
         return flatState;
     }
 
+    /**
+     * Get whether this state represents a failed runner configuration.
+     *
+     * @return Runner "fallen" status. True means failed. False means not failed.
+     */
     public synchronized boolean isFailed() {
         return failedState;
     }
