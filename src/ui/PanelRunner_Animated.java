@@ -96,7 +96,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
             P = nextCommand[3];
             game.stepGame(Q, W, O, P);
             State st = game.getCurrentState();
-            System.out.println(st.body.x + "," + st.body.dx + "," + game.getTimestepsSimulated());
+            System.out.println(st.body.getX() + "," + st.body.getDx() + "," + game.getTimestepsSimulated());
         }
     }
 
@@ -109,7 +109,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
      **/
     @Override
     public void paintComponent(Graphics g) {
-        if (!active && game.initialized) return;
+        if (!active && game.isGameInitialized()) return;
         super.paintComponent(g);
         if (game != null) {
             game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);

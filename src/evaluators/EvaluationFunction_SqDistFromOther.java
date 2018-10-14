@@ -46,17 +46,18 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
 
         for (int i = 0; i < baseStateVarList.size(); i++) {
             float diff =
-                    (baseStateVarList.get(i).x - baseStateVarList.get(0).x) - (otherStateVarList.get(i).x - otherStateVarList.get(0).x); // Subtract out the absolute x of body.
+                    (baseStateVarList.get(i).getX() - baseStateVarList.get(0).getX()) - (otherStateVarList.get(i).getX() - otherStateVarList.get(0).getX()); // Subtract out the absolute x of body.
             sqError += diff * diff;
-            diff = baseStateVarList.get(i).y - otherStateVarList.get(i).y;
+            diff = baseStateVarList.get(i).getY() - otherStateVarList.get(i).getY();
             sqError += diff * diff;
-            diff = baseStateVarList.get(i).th - otherStateVarList.get(i).th;
+            diff = baseStateVarList.get(i).getTh() - otherStateVarList.get(i).getTh();
             sqError += diff * diff;
-            diff = baseStateVarList.get(i).dx - otherStateVarList.get(i).dx;
+            diff = baseStateVarList.get(i).getDx() - otherStateVarList.get(i).getDx();
             sqError += diff * diff;
-            diff = baseStateVarList.get(i).dy - otherStateVarList.get(i).dy;
+            diff = baseStateVarList.get(i).getDy() - otherStateVarList.get(i).getDy();
             sqError += diff * diff;
-            diff = baseStateVarList.get(i).dth - otherStateVarList.get(i).dth;
+            diff = baseStateVarList.get(i).getDth() - otherStateVarList.get(i).getDth();
+            sqError += diff * diff;
         }
         return -sqError; // Negative error, so higher is better.
     }
@@ -72,24 +73,24 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
 
         for (int i = 0; i < baseStateVarList.size(); i++) {
             float diff =
-                    (baseStateVarList.get(i).x - baseStateVarList.get(0).x) - (otherStateVarList.get(i).x - otherStateVarList.get(0).x);
+                    (baseStateVarList.get(i).getX() - baseStateVarList.get(0).getX()) - (otherStateVarList.get(i).getX() - otherStateVarList.get(0).getX());
             valueString.append("x: ").append(diff * diff).append(", ");
-            diff = baseStateVarList.get(i).y - otherStateVarList.get(i).y;
+            diff = baseStateVarList.get(i).getY() - otherStateVarList.get(i).getY();
             valueString.append("y: ").append(diff * diff).append(", ");
-            diff = baseStateVarList.get(i).th - otherStateVarList.get(i).th;
+            diff = baseStateVarList.get(i).getTh() - otherStateVarList.get(i).getTh();
             valueString.append("th: ").append(diff * diff).append(", ");
-            diff = baseStateVarList.get(i).dx - otherStateVarList.get(i).dx;
+            diff = baseStateVarList.get(i).getDx() - otherStateVarList.get(i).getDx();
             valueString.append("dx: ").append(diff * diff).append(", ");
-            diff = baseStateVarList.get(i).dy - otherStateVarList.get(i).dy;
+            diff = baseStateVarList.get(i).getDy() - otherStateVarList.get(i).getDy();
             valueString.append("dy: ").append(diff * diff).append(", ");
-            diff = baseStateVarList.get(i).dth - otherStateVarList.get(i).dth;
+            diff = baseStateVarList.get(i).getDth() - otherStateVarList.get(i).getDth();
             valueString.append("dth: ").append(diff * diff);
         }
         return valueString.toString();
     }
 
     @Override
-    public EvaluationFunction_SqDistFromOther clone() {
+    public EvaluationFunction_SqDistFromOther getCopy() {
         return new EvaluationFunction_SqDistFromOther(nodeToCompareAllOthersTo);
     }
 

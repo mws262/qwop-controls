@@ -74,7 +74,7 @@ public class Sampler_Random implements ISampler {
                 int selection = Utility.randInt(1, notFullyExploredChildren + currentNode.uncheckedActions.size());
                 // Make a new node or pick a not fully explored child.
                 if (selection > notFullyExploredChildren && currentNode.reserveExpansionRights()) {
-                    if (currentNode.state != null && currentNode.state.isFailed())
+                    if (currentNode.getState() != null && currentNode.getState().isFailed())
                         throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
                     return currentNode;
                 } else {
@@ -126,7 +126,7 @@ public class Sampler_Random implements ISampler {
     @Override
     public void expansionPolicyActionDone(Node currentNode) {
         treePolicyDone = false;
-        expansionPolicyDone = currentNode.state.isFailed();
+        expansionPolicyDone = currentNode.getState().isFailed();
     }
 
     @Override
@@ -134,7 +134,7 @@ public class Sampler_Random implements ISampler {
     } // No rollout in random sampler.
 
     @Override
-    public Sampler_Random clone() {
+    public Sampler_Random getCopy() {
         return new Sampler_Random();
     }
 

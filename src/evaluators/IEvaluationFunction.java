@@ -32,5 +32,5 @@ public interface IEvaluationFunction {
      *
      * @return A copy of this object.
      */
-    IEvaluationFunction clone();
+    IEvaluationFunction getCopy();
 }

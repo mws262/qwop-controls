@@ -15,7 +15,7 @@ public class EvaluationFunction_Distance implements IEvaluationFunction {
             throw new NullPointerException("Trying to evaluate a node based on state information which has not yet " +
                     "been assigned in that node.");
         if (nodeToEvaluate.treeDepth > 0) {
-            return nodeToEvaluate.getState().body.x;
+            return nodeToEvaluate.getState().body.getX();
         } else {
             return 0.f; // Root gets score of 0.
         }
@@ -27,7 +27,7 @@ public class EvaluationFunction_Distance implements IEvaluationFunction {
     }
 
     @Override
-    public EvaluationFunction_Distance clone() {
+    public EvaluationFunction_Distance getCopy() {
         return new EvaluationFunction_Distance();
     }
 }

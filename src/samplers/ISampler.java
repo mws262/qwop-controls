@@ -60,5 +60,5 @@ public interface ISampler {
     /**
      * Copy this sampler and its settings. Each worker needs an individual copy.
      **/
-    ISampler clone();
+    ISampler getCopy();
 }

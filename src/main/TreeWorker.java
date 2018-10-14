@@ -166,7 +166,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Set which sampler is used. Defaults to Sampler_Random. Clones when reassigned.
      **/
     public void setSampler(ISampler sampler) {
-        this.sampler = sampler.clone();
+        this.sampler = sampler.getCopy();
     }
 
     /**

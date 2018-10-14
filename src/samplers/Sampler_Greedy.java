@@ -168,7 +168,7 @@ public class Sampler_Greedy implements ISampler {
     @Override
     public void expansionPolicyActionDone(Node currentNode) {
         treePolicyDone = false;
-        if (currentNode.state.isFailed()) {
+        if (currentNode.getState().isFailed()) {
             expansionPolicyDone = true;
 
             /****** Need to decide whether or not to advance the currentRoot *******/
@@ -226,8 +226,8 @@ public class Sampler_Greedy implements ISampler {
     }
 
     @Override
-    public Sampler_Greedy clone() {
-        return new Sampler_Greedy(evaluationFunction.clone()); // No rollout policy
+    public Sampler_Greedy getCopy() {
+        return new Sampler_Greedy(evaluationFunction.getCopy()); // No rollout policy
     }
 
 }

@@ -74,7 +74,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
         nodesToTransform.clear();
         plotNode.getRoot().getNodesBelow(nodesToTransform);
         transformDownsampler.filter(nodesToTransform);
-        List<State> statesBelow = nodesToTransform.stream().map(n -> n.state).collect(Collectors.toList()); //
+        List<State> statesBelow = nodesToTransform.stream().map(n -> n.getState()).collect(Collectors.toList()); //
         // Convert from node list to state list.
         transformer.updateTransform(statesBelow); // Update transform with all states.
 
@@ -89,7 +89,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
         plotDownsampler.filter(nodesToTransform); // Reduce number of nodes to transform if necessary. Plotting is a
         // bottleneck.
 
-        statesBelow = nodesToTransform.stream().map(n -> n.state).collect(Collectors.toList()); // Convert from node
+        statesBelow = nodesToTransform.stream().map(n -> n.getState()).collect(Collectors.toList()); // Convert from node
         // list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
 

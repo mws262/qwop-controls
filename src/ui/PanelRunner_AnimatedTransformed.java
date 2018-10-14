@@ -48,7 +48,7 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
         node.getRoot().getNodesBelow(nlist);
 
         transformDownsampler.filter(nlist);
-        List<State> slist = nlist.stream().map(n -> n.state).collect(Collectors.toList());
+        List<State> slist = nlist.stream().map(Node::getState).collect(Collectors.toList());
 
         for (ITransform trans : encoders) {
             trans.updateTransform(slist);
@@ -60,7 +60,7 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (super.isActive() && game.initialized && transformsInitialized) {
+        if (super.isActive() && game.isGameInitialized() && transformsInitialized) {
             State currState = game.getCurrentState();
             if (currState != null) inStates.add(currState);
             for (int i = 0; i < encoders.size(); i++) {

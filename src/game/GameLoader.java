@@ -1350,16 +1350,17 @@ public class GameLoader extends ClassLoader {
      *                      place to have the offsets used in this simulated version.
      */
     public static void adjustRealQWOPStateToSimState(State realQWOPState) {
-        realQWOPState.body.th += torsoAngAdj;
-        realQWOPState.head.th += headAngAdj;
-        realQWOPState.rthigh.th += rThighAngAdj;
-        realQWOPState.lthigh.th += lThighAngAdj;
-        realQWOPState.rcalf.th += rCalfAngAdj;
-        realQWOPState.lcalf.th += lCalfAngAdj;
-        realQWOPState.ruarm.th += rUArmAngAdj;
-        realQWOPState.luarm.th += lUArmAngAdj;
-        realQWOPState.rlarm.th += rLArmAngAdj;
-        realQWOPState.llarm.th += lLArmAngAdj;
+        //TODO find a better way to manage access to th.
+//        realQWOPState.body.th += torsoAngAdj;
+//        realQWOPState.head.th += headAngAdj;
+//        realQWOPState.rthigh.th += rThighAngAdj;
+//        realQWOPState.lthigh.th += lThighAngAdj;
+//        realQWOPState.rcalf.th += rCalfAngAdj;
+//        realQWOPState.lcalf.th += lCalfAngAdj;
+//        realQWOPState.ruarm.th += rUArmAngAdj;
+//        realQWOPState.luarm.th += lUArmAngAdj;
+//        realQWOPState.rlarm.th += rLArmAngAdj;
+//        realQWOPState.llarm.th += lLArmAngAdj;
     }
 
     /**

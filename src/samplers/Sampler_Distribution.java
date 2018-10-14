@@ -85,7 +85,6 @@ public class Sampler_Distribution implements ISampler {
                         break;
                     }
                 }
-                continue;
             }
         }
     }
@@ -133,7 +132,7 @@ public class Sampler_Distribution implements ISampler {
     @Override
     public void expansionPolicyActionDone(Node currentNode) {
         treePolicyDone = false;
-        expansionPolicyDone = currentNode.state.isFailed();
+        expansionPolicyDone = currentNode.getState().isFailed();
     }
 
     @Override
@@ -141,7 +140,7 @@ public class Sampler_Distribution implements ISampler {
     } // No rollout in random sampler.
 
     @Override
-    public Sampler_Distribution clone() {
+    public Sampler_Distribution getCopy() {
         return new Sampler_Distribution();
     }
 }

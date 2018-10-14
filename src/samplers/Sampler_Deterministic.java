@@ -10,6 +10,7 @@ import main.Node;
  *
  * @author Matt
  */
+@SuppressWarnings("unused")
 public class Sampler_Deterministic implements ISampler {
 
     private boolean treePolicyDone = false;
@@ -82,7 +83,7 @@ public class Sampler_Deterministic implements ISampler {
     @Override
     public void expansionPolicyActionDone(Node currentNode) {
         treePolicyDone = false;
-        expansionPolicyDone = currentNode.state.isFailed();
+        expansionPolicyDone = currentNode.getState().isFailed();
     }
 
     @Override
@@ -106,7 +107,7 @@ public class Sampler_Deterministic implements ISampler {
     }
 
     @Override
-    public Sampler_Deterministic clone() {
+    public Sampler_Deterministic getCopy() {
         return new Sampler_Deterministic();
     }
 

@@ -136,7 +136,7 @@ public abstract class TreeStage implements Runnable {
             for (StateVariable st : node.getState().getStateList()) {
                 st = null;
             }
-            node.state = null;
+//            node.state = null; //TODO find a better way to do this now that access is restricted.
             for (Node child : node.getChildren()) {
                 pruneStatesForMemory(child);
             }

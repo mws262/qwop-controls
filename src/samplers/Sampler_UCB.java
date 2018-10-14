@@ -190,7 +190,7 @@ public class Sampler_UCB implements ISampler {
     }
 
     @Override
-    public Sampler_UCB clone() {
-        return new Sampler_UCB(evaluationFunction.clone());
+    public Sampler_UCB getCopy() {
+        return new Sampler_UCB(evaluationFunction.getCopy());
     }
 }

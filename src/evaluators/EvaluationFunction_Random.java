@@ -28,7 +28,7 @@ public class EvaluationFunction_Random implements IEvaluationFunction {
     }
 
     @Override
-    public EvaluationFunction_Random clone() {
+    public EvaluationFunction_Random getCopy() {
         return new EvaluationFunction_Random();
     }
 

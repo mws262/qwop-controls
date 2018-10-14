@@ -8,6 +8,7 @@ import main.Node;
  *
  * @author matt
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class EvaluationFunction_Constant implements IEvaluationFunction {
 
     /**
@@ -35,7 +36,7 @@ public class EvaluationFunction_Constant implements IEvaluationFunction {
     }
 
     @Override
-    public IEvaluationFunction clone() {
+    public IEvaluationFunction getCopy() {
         return new EvaluationFunction_Constant(constantValue);
     }
 }

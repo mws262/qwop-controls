@@ -256,7 +256,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 
             float slowError =
                     -penalizeSlowMult * (sh.parentRun.states.get(Integer.min(stateLocInSequence + penalizeSlowHorizon
-                            , sh.parentRun.states.size() - 1)).state.body.x - sh.parentRun.states.get(stateLocInSequence).state.body.x) / penalizeSlowHorizon;
+                            , sh.parentRun.states.size() - 1)).state.body.getX() - sh.parentRun.states.get(stateLocInSequence).state.body.getX()) / penalizeSlowHorizon;
 //			float accumulatedVel = 0;
 //			for (int i = stateLocInSequence; i < Integer.min(sh.parentRun.states.size(), stateLocInSequence +
 // penalizeSlowHorizon); i++) {
@@ -336,7 +336,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 
             // Read trajectory information as a TFRecord file. The TFRecord protobuf is using the SequenceExample
             // template.
-            try (FileInputStream fIn = new FileInputStream(singleSaveFile)){
+            try (FileInputStream fIn = new FileInputStream(singleSaveFile)) {
 
                 DataInputStream dIn = new DataInputStream(fIn);
                 TFRecordReader tfReader = new TFRecordReader(dIn, true);
@@ -408,7 +408,6 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
     }
 
     /**
-     *
      * @author matt
      */
     public class StateHolder implements Serializable {
@@ -440,7 +439,6 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
     }
 
     /**
-     *
      * @author matt
      */
     public class RunHolder implements Serializable {
@@ -490,14 +488,14 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
     public void draw(Graphics g, GameLoader game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
         if (!previousStatesLIFO.isEmpty()) {
             g.setColor(Color.WHITE);
-            g.drawString(String.valueOf(previousStatesLIFO.peek().body.x), 50, 50);
+            g.drawString(String.valueOf(previousStatesLIFO.peek().body.getX()), 50, 50);
         }
 
         if (currentTrajectory != null && currentTrajectoryStateMatch != null) {
             RunHolder drawTraj = currentTrajectory;
             StateHolder drawState = currentTrajectoryStateMatch;
             int startIdx = drawTraj.states.indexOf(drawState);
-            float bodyX = currentTrajectoryStateMatch.state.body.x;
+            float bodyX = currentTrajectoryStateMatch.state.body.getX();
             game.drawExtraRunner((Graphics2D) g, drawState.state, "", runnerScaling, xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels, Color.CYAN, PanelRunner.normalStroke);
 
 

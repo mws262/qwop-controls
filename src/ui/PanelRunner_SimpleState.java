@@ -30,7 +30,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
 
     @Override
     public void update(Node node) {
-        currentState = node.state;
+        currentState = node.getState();
     }
 
     /**
@@ -55,7 +55,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         game.drawExtraRunner(g2, game.getXForms(currentState), "", runnerScaling,
-				500 - (int) (currentState.body.x * runnerScaling), yOffsetPixels + 100, Color.BLACK, normalStroke);
+				500 - (int) (currentState.body.getX() * runnerScaling), yOffsetPixels + 100, Color.BLACK, normalStroke);
     }
 
     @Override

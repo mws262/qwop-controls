@@ -68,7 +68,7 @@ public class Flash_QWOP extends JFrame {
                             states[i] = Float.valueOf(stateString[i + 1].trim());
                         }
 
-                        currentState = new State(states);
+                        currentState = new State(states, false);
                         GameLoader.adjustRealQWOPStateToSimState(currentState);
                         actionQueue.addAction(controller.policy(currentState));
 

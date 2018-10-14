@@ -8,6 +8,7 @@ import main.Node;
  *
  * @author matt
  */
+@SuppressWarnings("unused")
 public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction {
 
     @Override
@@ -45,7 +46,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @return A scalar value associated with state angles.
      */
     private float getAngleValue(Node nodeToEvaluate) {
-        return nodeToEvaluate.getState().body.th;
+        return nodeToEvaluate.getState().body.getTh();
     }
 
     /**
@@ -55,7 +56,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @return A scalar value associated with horizontal positions.
      */
     private float getDistanceValue(Node nodeToEvaluate) {
-        return nodeToEvaluate.getState().body.x;
+        return nodeToEvaluate.getState().body.getX();
     }
 
     /**
@@ -65,11 +66,11 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @return A scalar value associated with state velocities.
      */
     private float getVelocityValue(Node nodeToEvaluate) {
-        return nodeToEvaluate.getState().body.dx;
+        return nodeToEvaluate.getState().body.getDx();
     }
 
     @Override
-    public EvaluationFunction_HandTunedOnState clone() {
+    public EvaluationFunction_HandTunedOnState getCopy() {
         return new EvaluationFunction_HandTunedOnState();
     }
 }

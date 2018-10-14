@@ -60,7 +60,7 @@ public class PanelRunner_Comparison extends PanelRunner {
         selectedNode = node;
         selectedNode.overrideNodeColor = Color.PINK; // Restore its red color
         selectedNode.displayPoint = true;
-        Object[] nodeTransform = game.getXForms(selectedNode.state);
+        Object[] nodeTransform = game.getXForms(selectedNode.getState());
 
         // Make the sequence centered around the selected node state.
         transforms.add(nodeTransform);
@@ -83,7 +83,7 @@ public class PanelRunner_Comparison extends PanelRunner {
             if (orderedNodes.hasNext()) {
                 Node closeNode = orderedNodes.next();
                 focusNodes.add(closeNode);
-                transforms.add(game.getXForms(closeNode.state));
+                transforms.add(game.getXForms(closeNode.getState()));
                 strokes.add(normalStroke);
                 Color matchColor = Node.getColorFromTreeDepth(i * 5);
                 colors.add(matchColor);
@@ -101,10 +101,10 @@ public class PanelRunner_Comparison extends PanelRunner {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        if (selectedNode != null && selectedNode.state != null) {
+        if (selectedNode != null && selectedNode.getState() != null) {
             for (int i = 0; i < transforms.size(); i++) {
                 game.drawExtraRunner(g2, transforms.get(i), "", runnerScaling,
-                        xOffsetPixels + (int) (-runnerScaling * focusNodes.get(i).state.body.x), yOffsetPixels,
+                        xOffsetPixels + (int) (-runnerScaling * focusNodes.get(i).getState().body.getX()), yOffsetPixels,
                         colors.get(i), strokes.get(i));
             }
         }

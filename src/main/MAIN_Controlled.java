@@ -225,7 +225,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         while (true) {
             long initTime = System.currentTimeMillis();
             State state = game.getCurrentState();
-            System.out.println(state.body.x);
+            System.out.println(state.body.getX());
             Action nextAction = controller.policy(state);
             actionQueue.addAction(nextAction);
             Random rand = new Random();
@@ -308,7 +308,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
     private class Panel extends JPanel {
         @Override
         public void paintComponent(Graphics g) {
-            if (!game.initialized) return;
+            if (!game.isGameInitialized()) return;
             super.paintComponent(g);
             if (game != null) {
                 /** Runner coordinates to pixels. **/

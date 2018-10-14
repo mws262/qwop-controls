@@ -171,7 +171,7 @@ public class Sampler_FixedDepth implements ISampler {
     }
 
     @Override
-    public Sampler_FixedDepth clone() {
+    public Sampler_FixedDepth getCopy() {
         return new Sampler_FixedDepth(horizonDepth);
     }
 

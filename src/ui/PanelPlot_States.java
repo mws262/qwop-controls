@@ -144,10 +144,10 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
                 PlotDataset dat = plotAndData.getValue();
 
                 Float[] xData =
-						nodesBelow.stream().map(n -> n.state.getStateVarFromName(plotObjectsX[countDataCollect],
+						nodesBelow.stream().map(n -> n.getState().getStateVarFromName(plotObjectsX[countDataCollect],
 								plotStatesX[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
                 Float[] yData =
-						nodesBelow.stream().map(n -> n.state.getStateVarFromName(plotObjectsY[countDataCollect],
+						nodesBelow.stream().map(n -> n.getState().getStateVarFromName(plotObjectsY[countDataCollect],
 								plotStatesY[countDataCollect])).toArray(Float[]::new);
                 Color[] cData =
 						nodesBelow.stream().map(n -> Node.getColorFromTreeDepth(n.treeDepth)).toArray(Color[]::new);
