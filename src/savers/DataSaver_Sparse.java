@@ -95,7 +95,7 @@ public class DataSaver_Sparse implements IDataSaver {
     }
 
     @Override
-    public DataSaver_Sparse clone() {
+    public DataSaver_Sparse getCopy() {
         DataSaver_Sparse newSaver = new DataSaver_Sparse();
         newSaver.setSaveInterval(saveInterval);
         newSaver.setSavePath(fileLocation);

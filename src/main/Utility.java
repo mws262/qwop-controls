@@ -16,10 +16,15 @@ import java.util.Random;
 
 /**
  * Various shared static utility methods.
+ *
  * @author matt
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Utility {
 
+    /**
+     * Internal holder of the last time {@link Utility#tic()} was called.
+     */
     private static long ticTime;
 
     /**
@@ -29,21 +34,34 @@ public class Utility {
 
     /**
      * Generate a random integer between two values, inclusive.
-     **/
+     *
+     * @param min Minimum in the range of possible integers generated.
+     * @param max Maximum in the range of possible integers generated.
+     * @return A randomly generated integer in the specified range.
+     * @see Random#nextInt()
+     */
     public static int randInt(int min, int max) {
         if (min > max)
             throw new IllegalArgumentException("Random int sampler should be given a minimum value which is less than" +
-					" or equal to the given max value.");
+                    " or equal to the given max value.");
         return rand.nextInt((max - min) + 1) + min;
     }
 
     /**
-     * Matlab tic and toc functionality.
-     **/
+     * Start timing. tic and toc are basically equivalent to the MATLAB versions. Because this is static, any piece
+     * of code which calls these will be messing with the same timer. This can be useful, but means that if we want
+     * to time many processes at once, we should use a different timing approach.
+     */
     public static void tic() {
         ticTime = System.nanoTime();
     }
 
+    /**
+     * Return the elapsed time in nanoseconds since the last time {@link Utility#tic()} was called. Also prints a
+     * human-readable seconds or milliseconds count.
+     *
+     * @return Nanoseconds since last tic call.
+     */
     public static long toc() {
         long tocTime = System.nanoTime();
         long difference = tocTime - ticTime;
@@ -55,22 +73,36 @@ public class Utility {
         return difference;
     }
 
+    /**
+     * Write a string to file.
+     *
+     * @param contents String to be written in the file.
+     * @param outPath  Full path and filename of the log file.
+     * @throws IOException File cannot be opened or written to.
+     */
     public static void stringToLogFile(String contents, String outPath) throws IOException {
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
             writer.write(contents);
         }
     }
 
     /**
-     * Write some part of a file to a log. Begin logging with !LOG_START and end with
-     * !LOG_END. This can be done multiple times in the same file.
+     * Write some part of a file to a log. Begin logging with !LOG_START and end with !LOG_END. This can be done
+     * multiple times in the same file. This is useful when we want to record the settings specified in a configuration
+     * file to a log file.
+     *
+     * @param inPath  Full path and filename of the file to selectively send to log.
+     * @param outPath Full path and filename of the log file.
+     * @throws IOException File cannot be opened or written to.
      **/
     public static void sectionToLogFile(String inPath, String outPath) throws IOException {
         boolean collecting = false;
+
         String divider = "**************************************************************";
 
-        try(BufferedReader reader = new BufferedReader(new FileReader(inPath));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(inPath));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
+
             while (reader.ready()) {
                 String nextLine = reader.readLine();
 
@@ -78,6 +110,9 @@ public class Utility {
                     collecting = true;
                     writer.write(divider + "\n");
                 } else if (nextLine.contains("!LOG_STOP")) {
+                    if (!collecting)
+                        System.out.println("WARNING: sectionToLogFile found mismatched !LOG_START and !LOG_STOP commands. This is" +
+                                " tolerated, but could represent a larger problem.");
                     collecting = false;
                     writer.write(divider + "\n");
                 }
@@ -86,32 +121,42 @@ public class Utility {
                 }
             }
         }
+        if (collecting)
+            System.out.println("WARNING: sectionToLogFile found mismatched !LOG_START and !LOG_STOP commands. This is" +
+                    " tolerated, but could represent a larger problem.");
     }
 
     /**
-     * Clear out an existing file.
-     **/
-    public static void clearExistingFile(String fileName) {
+     * Delete a specified file, if it exists.
+     *
+     * @param fileName File we wish to delete.
+     * @return True if the file was deleted by this method; false if the file could not be deleted or did not exist.
+     */
+    public static boolean clearExistingFile(String fileName) {
+        boolean success = false;
         File file = new File(fileName);
         try {
-            boolean result = Files.deleteIfExists(file.toPath());
-            if (result) System.out.println("Cleared file: " + file.getName());
+            success = Files.deleteIfExists(file.toPath());
+            if (success) System.out.println("Cleared file: " + file.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return success;
     }
 
     /**
-     * Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]
+     * Generate a timestamped filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[fileExtension].
+     *
+     * @param prefix        String to place at the beginning of the filename.
+     * @param fileExtension String to place at the end of the file name as a file extension.
+     * @return String for a timestamped file name.
+     * @see Utility#getTimestamp()
      **/
-    public static String generateFileName(String prefix, String className) {
+    public static String generateFileName(String prefix, String fileExtension) {
         Date date = new Date();
         SimpleDateFormat dateFormat =
-				new SimpleDateFormat("'" + prefix + "_'" + "yyyy-MM-dd_HH-mm-ss" + "'." + className + "'");
-        String name = dateFormat.format(date);
-        System.out.println("Generated file: " + name);
-
-        return name;
+                new SimpleDateFormat("'" + prefix + "_'" + "yyyy-MM-dd_HH-mm-ss" + "'." + fileExtension + "'");
+        return dateFormat.format(date);
     }
 
     /**
@@ -125,10 +170,14 @@ public class Utility {
 
     /**
      * Load a configuration file.
-     **/
+     *
+     * @param file File (not filename) of the config file we wish to load.
+     * @return Properties object which is a {@link java.util.Hashtable} containing property names and property
+     * settings as key/value pairs.
+     */
     public static Properties loadConfigFile(File file) {
         Properties prop = new Properties();
-        try(FileInputStream fis = new FileInputStream(file)) {
+        try (FileInputStream fis = new FileInputStream(file)) {
             prop.load(fis);
         } catch (IOException e) {
             e.printStackTrace();
@@ -136,6 +185,12 @@ public class Utility {
         return prop;
     }
 
+    /**
+     * Returns the path that the code is being executed from. Can be useful since relative paths can get screwy
+     * depending on whether the code is running in the IDE, command line, .jar, etc.
+     *
+     * @return String name of the path the the code is executing from.
+     */
     public static String getExcutionPath() {
         String path = "";
         try {

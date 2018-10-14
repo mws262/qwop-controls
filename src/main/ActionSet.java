@@ -54,7 +54,7 @@ public class ActionSet extends ArrayList<Action> {
      * Duplicate this ActionSet, producing a copy with the same {@link Action} elements and same sampling
      * {@link Distribution}.
      *
-     * @return A clone of this ActionSet.
+     * @return A getCopy of this ActionSet.
      */
     @Override
     public ActionSet clone() {

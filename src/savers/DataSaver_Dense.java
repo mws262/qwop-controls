@@ -73,6 +73,6 @@ public abstract class DataSaver_Dense implements IDataSaver {
     }
 
     @Override
-    public abstract DataSaver_Dense clone();
+    public abstract DataSaver_Dense getCopy();
 
 }

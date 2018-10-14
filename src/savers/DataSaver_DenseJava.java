@@ -59,7 +59,7 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
     }
 
     @Override
-    public DataSaver_DenseJava clone() {
+    public DataSaver_DenseJava getCopy() {
         DataSaver_DenseJava newSaver = new DataSaver_DenseJava();
         newSaver.setSaveInterval(saveInterval);
         newSaver.setSavePath(fileLocation);

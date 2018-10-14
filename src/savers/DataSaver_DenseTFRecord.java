@@ -277,7 +277,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     }
 
     @Override
-    public DataSaver_DenseTFRecord clone() {
+    public DataSaver_DenseTFRecord getCopy() {
         DataSaver_DenseTFRecord newSaver = new DataSaver_DenseTFRecord();
         newSaver.setSaveInterval(saveInterval);
         newSaver.setSavePath(fileLocation);

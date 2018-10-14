@@ -97,7 +97,7 @@ public class DataSaver_StageSelected implements IDataSaver {
     }
 
     @Override
-    public IDataSaver clone() {
+    public IDataSaver getCopy() {
         DataSaver_StageSelected newSaver = new DataSaver_StageSelected();
         newSaver.setSavePath(fileLocation);
         return newSaver;

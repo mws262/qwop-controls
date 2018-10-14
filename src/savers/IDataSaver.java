@@ -20,7 +20,8 @@ public interface IDataSaver {
      * Report intermediate nodes as they are being run. Useful for dense
      * saving of data for TFRecords or other.
      *
-     * @param stepNode
+     * @param action
+     * @param game
      */
     void reportTimestep(Action action, GameLoader game);
 
@@ -48,7 +49,7 @@ public interface IDataSaver {
     /**
      * Get a fresh copy of this saver with the same settings.
      **/
-    IDataSaver clone();
+    IDataSaver getCopy();
 
     /**
      * Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]

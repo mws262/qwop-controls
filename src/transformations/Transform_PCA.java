@@ -53,8 +53,9 @@ public class Transform_PCA implements ITransform {
         FloatMatrix dataSet = conditionData(unpackData(nodesToUpdateFrom));
         FloatMatrix[] USV = Singular.fullSVD(dataSet);
         evecs = USV[2]; // Eigenvectors
-        /** During SVD we find the eigenvalues, the weights for what portion of variance is explained by the
-         * corresponding eigenvector. **/
+
+        /* During SVD we find the eigenvalues, the weights for what portion of variance is explained by the
+         * corresponding eigenvector. */
         FloatMatrix evals = USV[1].mul(USV[1]).div(dataSet.rows);
 
         // Also make the vector of normalized eigenvalues.
@@ -62,7 +63,7 @@ public class Transform_PCA implements ITransform {
         for (int i = 0; i < evals.length; i++) {
             evalSum += evals.get(i);
         }
-        /** Normalized so the sum of the evals == 1 **/
+        // Normalize so the sum of the evals == 1
         FloatMatrix evalsNormalized = new FloatMatrix(evals.length);
         for (int i = 0; i < evals.length; i++) {
             evalsNormalized.put(i, evals.get(i) / evalSum);
@@ -99,7 +100,7 @@ public class Transform_PCA implements ITransform {
 		// in a FloatMatrix
 
         // Lambda mapping the list FloatMatrix's to states's
-        return splitRowRestoredDimData.stream().map(floatmat -> new State(floatmat.data)).collect(Collectors.toList());
+        return splitRowRestoredDimData.stream().map(floatmat -> new State(floatmat.data, false)).collect(Collectors.toList());
     }
 
     @Override

@@ -132,8 +132,8 @@ public abstract class TreeStage implements Runnable {
     public abstract boolean checkTerminationConditions();
 
     private void pruneStatesForMemory(Node node) {
-        if (node.getChildCount() != 0 && node.state != null) {//node.uncheckedActions.size() == 0) {
-            for (StateVariable st : node.state.getStateList()) {
+        if (node.getChildCount() != 0 && node.getState() != null) {//node.uncheckedActions.size() == 0) {
+            for (StateVariable st : node.getState().getStateList()) {
                 st = null;
             }
             node.state = null;

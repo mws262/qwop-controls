@@ -39,7 +39,7 @@ public class DataSaver_Null implements IDataSaver {
     }
 
     @Override
-    public DataSaver_Null clone() {
+    public DataSaver_Null getCopy() {
         return new DataSaver_Null();
     }
 

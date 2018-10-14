@@ -173,7 +173,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Set which saver to  use. Defaults to no saving, Sampler_Null. Clones when reassigned.
      **/
     public void setSaver(IDataSaver saver) {
-        this.saver = saver.clone();
+        this.saver = saver.getCopy();
     }
 
     /** Finite state machine loop. Runnable. **/

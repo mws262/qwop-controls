@@ -19,7 +19,6 @@ import ui.PanelRunner_Animated;
  * @author matt
  */
 
-@SuppressWarnings("serial")
 public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
     public GameLoader game;
@@ -59,8 +58,6 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
         this.add(runnerPane);
         Thread runnerThread = new Thread(runnerPane);
         runnerThread.start();
-
-        /*******************/
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setPreferredSize(new Dimension(windowWidth, windowHeight));

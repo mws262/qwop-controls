@@ -30,7 +30,7 @@ public class SparseDataToDense {
     /**
      * Saver that this will use. Use a dense one most likely.
      **/
-    private final DataSaver_DenseTFRecord saver = new DataSaver_DenseTFRecord();;
+    private final DataSaver_DenseTFRecord saver = new DataSaver_DenseTFRecord();
 
     /**
      * Saves and loads.
@@ -72,7 +72,7 @@ public class SparseDataToDense {
             for (File file : files) {
                 List<SavableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
                 for (SavableSingleGame singleGame : sparseGames) {
-                    saver.filenameOverride = file.getName().split("\\.(?=[^\\.]+$)")[0];
+                    saver.filenameOverride = file.getName().split("\\.(?=[^.]+$)")[0];
                     sim(singleGame);
                 }
             }
