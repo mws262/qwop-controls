@@ -6,19 +6,25 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Contains the keypresses and durations for a single action. Works like an uneditable queue.
- * Call poll() to get the keystrokes at each timestep execution. Call hasNext() to make sure
- * there are timesteps left in this action. Call reset() to restore the duration of the action
- * back to original.
+ * Contains the keypresses and durations for a single action. Works like an uneditable {@link java.util.Queue}. Call
+ * {@link Action#poll()} to get the keystrokes at each timestep execution. Call {@link Action#hasNext()} to make
+ * sure there are timesteps left in this action. Call {@link Action#reset()} to restore the duration of the action back to
+ * original.
+ *
+ * Note that when constructed, actions may not be changed or polled. They serve as an "immutable" backup of the
+ * action. To get a pollable version of the {@link Action}, call {@link Action#getCopy()}.
  *
  * @author Matt
+ *
+ * @see java.util.Queue
+ * @see ActionSet
  */
 public class Action implements Serializable {
 
     private static final long serialVersionUID = 2L;
 
     /**
-     * Total number of box2d timesteps that this key combination should be held.
+     * Total number of Box2d timesteps that this key combination should be held.
      **/
     private final int timestepsTotal;
 
@@ -40,7 +46,11 @@ public class Action implements Serializable {
 
     /**
      * Create an action containing the time to hold and the key combination.
-     **/
+     *
+     * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
+     * @param keysPressed          4-element boolean array representing whether the Q, W, O, and P keys are pressed.
+     *                             True means pressed down. False means not pressed.
+     */
     public Action(int totalTimestepsToHold, boolean[] keysPressed) {
         if (keysPressed.length != 4)
             throw new IllegalArgumentException("A QWOP action should have booleans for exactly 4 keys. Tried to " +
@@ -54,14 +64,22 @@ public class Action implements Serializable {
 
     /**
      * Create an action containing the time to hold and the key combination.
-     **/
+     *
+     * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
+     * @param Q                    Whether the Q key is pressed during this action.
+     * @param W                    Whether the W key is pressed during this action.
+     * @param O                    Whether the O key is pressed during this action.
+     * @param P                    Whether the P key is pressed during this action.
+     */
     public Action(int totalTimestepsToHold, boolean Q, boolean W, boolean O, boolean P) {
-        this(totalTimestepsToHold, new boolean[]{Q, W, O, P});
+        this(totalTimestepsToHold, new boolean[]{Q, W, O, P}); // Chain to the other constructor.
     }
 
     /**
      * Return the keys for this action and decrement the timestepsRemaining.
-     **/
+     *
+     * @return A 4-element array containing true/false for whether each of the Q, W, O, and P keys are pressed.
+     */
     public boolean[] poll() {
         if (!isExecutableCopy)
             throw new RuntimeException("Trying to execute the base version of the Action. Due to multi-threading, " +
@@ -75,15 +93,20 @@ public class Action implements Serializable {
     }
 
     /**
-     * Return the keys pressed in this action without incrementing the timesteps.
-     **/
+     * Return the keys pressed in this action without changing the number of timesteps remaining in this action.
+     *
+     * @return A 4-element array containing true/false for whether each of the Q, W, O, and P keys are pressed in
+     * this action.
+     */
     public boolean[] peek() {
         return keysPressed;
     }
 
     /**
      * Check whether this action is finished (i.e. internal step counter hit zero).
-     **/
+     *
+     * @return Whether this action is finished.
+     */
     public boolean hasNext() {
         return timestepsRemaining > 0;
     }
@@ -99,23 +122,31 @@ public class Action implements Serializable {
 
     /**
      * Get the number of timesteps left to hold this key combination.
-     **/
+     *
+     * @return The number of timesteps remaining in this action.
+     */
     public int getTimestepsRemaining() {
         return timestepsRemaining;
     }
 
     /**
-     * Get the total number of timesteps for this action.
-     **/
+     * Get the total duration of this action in timesteps.
+     *
+     * @return Total duration of this action (timesteps).
+     */
     public int getTimestepsTotal() {
         return timestepsTotal;
     }
 
     /**
-     * Check if this action is equal to another in regards to keypresses and durations.
-     * Completely overrides default equals, so when doing ArrayList checks, this will
-     * be the only way to judge.
-     **/
+     * Check if this action is equal to another in regards to keypresses and durations. Completely overrides default
+     * equals, so when doing ArrayList checks, this will be the only way to judge. Note that the actions do not need
+     * to have the same number of timesteps remaining to be judged as equal as long as their timestep totals and keys
+     * are the same.
+     *
+     * @param other An action to check whether it is equivalent to this action.
+     * @return Whether the other action is equivalent to this one.
+     */
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof Action)) {
@@ -140,8 +171,11 @@ public class Action implements Serializable {
     }
 
     /**
-     * Return a string with the current action keys, total time to hold, and time remaining.
-     **/
+     * Return a string with the current action keys, total time to hold, and time remaining. This method does not
+     * print, it just returns the string for the caller to use.
+     *
+     * @return String of information about this action.
+     */
     @Override
     public String toString() {
         String reportString = " Keys pressed: ";
@@ -156,15 +190,10 @@ public class Action implements Serializable {
     }
 
     /**
-     * Just returns the total delay time, assuming the user remembers the key sequence stuff.
-     **/
-    public String toStringLite() {
-        return String.valueOf(timestepsTotal);
-    }
-
-    /**
      * Get a copy of this action. This avoid multi-threading issues.
-     **/
+     *
+     * @return A poll-able copy of this Action with all timesteps of the duration remaining.
+     */
     public synchronized Action getCopy() {
         Action copiedAction = new Action(timestepsTotal, keysPressed);
         copiedAction.isExecutableCopy = true;
@@ -172,7 +201,10 @@ public class Action implements Serializable {
     }
 
     /**
-     * Is this a mutable copy of the original action? Important if we plan to use this as a pollable queue.
+     * Is this a mutable copy of the original action? Important if we plan to use this as a pollable queue. If the
+     * action is not mutable, then you must get a copy with {@link Action#getCopy()}.
+     *
+     * @return Returns whether this action can be polled. If false, then it is the original version of the action.
      */
     public boolean isMutable() {
         return isExecutableCopy;
@@ -183,9 +215,13 @@ public class Action implements Serializable {
      * These mostly arise when doing control on a timestep-by-timestep basis. Only timestepsTotal are
      * used. Timesteps remaining are not preserved. 0-duration actions are squashed away.
      * An empty array input or one containing nothing but 0 length actions will produce an exception.
+     *
+     * @param inActions A list of actions which we wish to consolidate.
+     * @return A new list of actions which is the consolidated version of the input action list.
      **/
     public static List<Action> consolidateActions(List<Action> inActions) {
-        List<Action> outActions = new ArrayList<>();
+        List<Action> outActions = new ArrayList<>(); //TODO: keeps making lists even when recursing. May just want to
+        // modify in place.
 
         // Single element input.
         if (inActions.size() == 1) {

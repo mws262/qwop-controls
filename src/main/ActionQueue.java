@@ -6,10 +6,16 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * All things related to queueing actions should happen in here. Actions themselves act like queues,
- * so this action queue decides when to switch actions when one is depleted.
+ * All things related to storing and going through sequences of actions. {@link ActionQueue} itself acts like a
+ * {@link Queue} of {@link Action actions}, while actions act like queues of keypresses (commands). When
+ * calling {@link ActionQueue#pollCommand()}, this will return the next set of keypresses from the current action,
+ * while automatically advancing through actions when one's duration is complete.
  *
  * @author Matt
+ *
+ * @see Queue
+ * @see Action
+ * @see ActionSet
  */
 public class ActionQueue {
 
@@ -129,6 +135,7 @@ public class ActionQueue {
         if (!currentAction.hasNext()) {
             currentAction.reset(); // Reset the previous current action so it can be polled again in the future.
             currentAction = actionQueue.poll();
+            assert currentAction != null;
             assert currentAction.getTimestepsTotal() == currentAction.getTimestepsRemaining(); // If the newly loaded
             // action doesn't have all of its timesteps remaining, we have issues.
         }
@@ -174,7 +181,7 @@ public class ActionQueue {
     }
 
     /**
-     * Index of the current action. 0 is the first action.
+     * Index of the current action. 0 is the first {@link Action}.
      *
      * @return Index of the current action.
      */

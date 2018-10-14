@@ -4,21 +4,20 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
 
-import org.apache.curator.utils.PathUtils;
-
+/**
+ * Various shared static utility methods.
+ * @author matt
+ */
 public class Utility {
 
     private static long ticTime;
@@ -48,7 +47,7 @@ public class Utility {
     public static long toc() {
         long tocTime = System.nanoTime();
         long difference = tocTime - ticTime;
-        if (difference < 1000000000) {
+        if (difference < Long.MAX_VALUE) {
             System.out.println(Math.floor(difference / 10000.) / 100 + " ms elapsed.");
         } else {
             System.out.println(Math.floor(difference / 100000000.) / 10. + " s elapsed.");
@@ -56,20 +55,9 @@ public class Utility {
         return difference;
     }
 
-
     public static void stringToLogFile(String contents, String outPath) throws IOException {
-        BufferedWriter writer = null;
-        FileWriter fw = null;
-
-        try {
-            fw = new FileWriter(outPath);
-            writer = new BufferedWriter(fw);
-
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
             writer.write(contents);
-
-        } finally {
-            if (writer != null) writer.close();
-            if (fw != null) fw.close();
         }
     }
 
@@ -80,17 +68,9 @@ public class Utility {
     public static void sectionToLogFile(String inPath, String outPath) throws IOException {
         boolean collecting = false;
         String divider = "**************************************************************";
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
-        FileReader fr = null;
-        FileWriter fw = null;
 
-        try {
-            fr = new FileReader(inPath);
-            reader = new BufferedReader(fr);
-            fw = new FileWriter(outPath);
-            writer = new BufferedWriter(fw);
-
+        try(BufferedReader reader = new BufferedReader(new FileReader(inPath));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
             while (reader.ready()) {
                 String nextLine = reader.readLine();
 
@@ -101,20 +81,9 @@ public class Utility {
                     collecting = false;
                     writer.write(divider + "\n");
                 }
-
                 if (collecting) {
                     writer.write(nextLine + "\n");
                 }
-            }
-
-        } finally {
-            if (writer != null) {
-                writer.close();
-                fw.close();
-            }
-            if (reader != null) {
-                reader.close();
-                fr.close();
             }
         }
     }
@@ -158,21 +127,11 @@ public class Utility {
      * Load a configuration file.
      **/
     public static Properties loadConfigFile(File file) {
-        FileInputStream fis = null;
         Properties prop = new Properties();
-        try {
-            fis = new FileInputStream(file);
+        try(FileInputStream fis = new FileInputStream(file)) {
             prop.load(fis);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
-            if (fis != null)
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
         }
         return prop;
     }
@@ -195,7 +154,3 @@ public class Utility {
         return path;
     }
 }
-
-
-
-

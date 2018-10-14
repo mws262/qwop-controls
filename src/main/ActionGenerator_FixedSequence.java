@@ -14,7 +14,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
      * tree depth this applies to. Value is the set of Actions. The keySequence booleans
      * are still obeyed. Usually exceptions are at the beginning of a sequence.
      */
-    private Map<Integer, ActionSet> actionExceptions;
+    private final Map<Integer, ActionSet> actionExceptions;
 
     /**
      * How many actions are in one repeated cycle.

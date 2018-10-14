@@ -13,6 +13,7 @@ import java.util.List;
 import filters.NodeFilter_Downsample;
 import game.GameLoader;
 import filters.INodeFilter;
+import game.State;
 import main.Node;
 import main.PanelRunner;
 
@@ -97,8 +98,9 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
         /***** Focused node first *****/
         snapshotNode = node;
-        Object[] nodeTransform = game.getXForms(snapshotNode.state);
-        specificXOffset = (int) (runnerScaling * snapshotNode.state.body.x);
+        Object[] nodeTransform = game.getXForms(snapshotNode.getState());
+        specificXOffset =
+                (int) (runnerScaling * snapshotNode.getState().body.getX());
         // Make the sequence centered around the selected node state.
         //xOffsetNet = xOffsetPixels + (int)(-runnerScaling * nodeTransform[1].position.x);
         transforms.add(nodeTransform);
@@ -111,7 +113,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         for (int i = 0; i < numHistoryStatesDisplay; i++) {
             if (historyNode.treeDepth > 0) {
                 historyNode = historyNode.getParent();
-                nodeTransform = game.getXForms(historyNode.state);
+                nodeTransform = game.getXForms(historyNode.getState());
                 transforms.add(nodeTransform);
                 strokes.add(normalStroke);
                 colors.add(ghostGray);
@@ -130,16 +132,15 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             child.setBranchColor(runnerColor); // Change the color on the tree too.
 
             for (Node descendant : descendants) {
-                if (descendant.state != null) {
+                if (descendant.getState() != null) {
                     focusLeaves.add(descendant);
-                    transforms.add(game.getXForms(descendant.state));
+                    transforms.add(game.getXForms(descendant.getState()));
                     strokes.add(normalStroke);
                     colors.add(runnerColor);
                 }
             }
         }
     }
-
 
     /**
      * Draws the selected node state and potentially previous and future states.
@@ -150,7 +151,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        if (snapshotNode != null && snapshotNode.state != null) {
+        if (snapshotNode != null && snapshotNode.getState() != null) {
             float bestSoFar = Float.MAX_VALUE;
             int bestIdx = Integer.MIN_VALUE;
 
@@ -160,7 +161,8 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
                 // Check body first
                 for (int i = 0; i < focusLeaves.size(); i++) {
-                    float distSq = getDistFromMouseSq(focusLeaves.get(i).state.body.x, focusLeaves.get(i).state.body.y);
+                    float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().body.getX(),
+                            focusLeaves.get(i).getState().body.getY());
                     if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                         bestSoFar = distSq;
                         bestIdx = i;
@@ -169,8 +171,8 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 // Then head
                 if (bestIdx < 0) { // Only goes to this if we didn't find a near-enough torso.
                     for (int i = 0; i < focusLeaves.size(); i++) {
-                        float distSq = getDistFromMouseSq(focusLeaves.get(i).state.head.x,
-                                focusLeaves.get(i).state.head.y);
+                        float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().head.getX(),
+                                focusLeaves.get(i).getState().head.getY());
                         if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                             bestSoFar = distSq;
                             bestIdx = i;
@@ -180,13 +182,14 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 // Then both feet equally
                 if (bestIdx < 0) { // Only goes to this if we didn't find a near-enough torso OR head.
                     for (int i = 0; i < focusLeaves.size(); i++) {
-                        float distSq = getDistFromMouseSq(focusLeaves.get(i).state.lfoot.x,
-                                focusLeaves.get(i).state.lfoot.y);
+                        float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().lfoot.getX(),
+                                focusLeaves.get(i).getState().lfoot.getY());
                         if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                             bestSoFar = distSq;
                             bestIdx = i;
                         }
-                        distSq = getDistFromMouseSq(focusLeaves.get(i).state.rfoot.x, focusLeaves.get(i).state.rfoot.y);
+                        distSq = getDistFromMouseSq(focusLeaves.get(i).getState().rfoot.getX(),
+                                focusLeaves.get(i).getState().rfoot.getY());
                         if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                             bestSoFar = distSq;
                             bestIdx = i;
@@ -266,7 +269,9 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                     if (currentNode.treeDepth % 2 == 0) {
                         everyOtherEvenColor = everyOtherEvenColor.darker();
                     }
-                    game.drawExtraRunner(g2, game.getXForms(currentNode.state), currentNode.getAction().toStringLite(), runnerScaling, xOffsetPixels - specificXOffset, yOffsetPixels, everyOtherEvenColor, boldStroke);
+                    game.drawExtraRunner(g2, game.getXForms(currentNode.getState()),
+                            Integer.toString(currentNode.getAction().getTimestepsRemaining()),
+                            runnerScaling, xOffsetPixels - specificXOffset, yOffsetPixels, everyOtherEvenColor, boldStroke);
                     currentNode = currentNode.getParent();
                 }
             } catch (IndexOutOfBoundsException e) {

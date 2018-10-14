@@ -36,27 +36,22 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
     /**
      * How many plots total?
      **/
-    protected final int numberOfPlots;
+    private final int numberOfPlots;
 
     /**
      * How many plots per row?
      **/
-    protected final int plotsPerRow = 6;
+    private final int plotsPerRow = 6;
 
     /**
      * Array of the numberOfPlots number of plots we make.
      **/
-    protected ChartPanel[] plotPanels;
+    private ChartPanel[] plotPanels;
 
     /**
      * Background color for the plots.
      **/
-    protected Color plotBackgroundColor = new Color(230, 230, 230);
-
-    /**
-     * Part of jfreechart's timing.
-     **/
-    private Millisecond second = new Millisecond();
+    private Color plotBackgroundColor = new Color(230, 230, 230);
 
     /**
      * Max in time series before old begin to be removed.
@@ -119,7 +114,6 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
         ts.getSeries(seriesNum).add(RegularTimePeriod.createInstance(Millisecond.class, new Date(),
 				TimeZone.getDefault()), value);
         ts.getSeries(seriesNum).removeAgedItems(false);
-
     }
 
     /**
@@ -156,5 +150,4 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
     public boolean isActive() {
         return isActive.get();
     }
-
 }

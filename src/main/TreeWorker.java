@@ -145,7 +145,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
         workerID = workerCount;
         workerName = "worker" + workerID;
         workerCount++;
-        /** Thread that this worker is running on. Will stay constant with this worker. **/
+
+        // Thread that this worker is running on. Will stay constant with this worker.
         Thread workerThread = new Thread(this);
         workerThread.setName(workerName);
         workerThread.start();
@@ -175,7 +176,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
         this.saver = saver.clone();
     }
 
-    /* Finite state machine loop. Runnable. */
+    /** Finite state machine loop. Runnable. **/
     @Override
     public void run() {
         while (workerRunning) {
@@ -283,7 +284,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         // TODO possibly update the action to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
                         currentGameNode = targetNodeToTest;
-                        if (currentGameNode.state != null)
+                        if (currentGameNode.getState() != null)
                             throw new RuntimeException("The expansion policy should only encounter new nodes. None of" +
                                     " them should have their state assigned before now.");
                         currentGameNode.setState(getGameState());
@@ -323,7 +324,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         // TODO possibly update the action to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
                         currentGameNode = targetNodeToTest;
-                        if (currentGameNode.state != null)
+                        if (currentGameNode.getState() != null)
                             throw new RuntimeException("The expansion policy should only encounter new nodes. None of" +
                                     " them should have their state assigned before now.");
                         currentGameNode.setState(getGameState());
@@ -339,7 +340,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     }
 
                     saver.reportGameEnding(currentGameNode);
-                    long gameTs = game.getTimestepsSimulated();
+                    long gameTs = GameLoader.getTimestepsSimulated();
                     addToTotalTimesteps(gameTs);
                     workerGamesPlayed.increment();
 

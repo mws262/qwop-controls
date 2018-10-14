@@ -52,7 +52,6 @@ public class State_Weights {
                 break;
             default:
                 break;
-
         }
 
         switch (st) {
@@ -75,8 +74,6 @@ public class State_Weights {
                 multiplier *= W_DTH;
                 break;
         }
-
         return multiplier;
     }
-
 }

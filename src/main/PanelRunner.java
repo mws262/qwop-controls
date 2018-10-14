@@ -149,7 +149,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
         int lineNum = 1;
         int vertTextAnchor = 60;
         do {
-            String line = sequence[currIdx].toStringLite() + ",";
+            String line = sequence[currIdx].getTimestepsTotal() + ",";
 
             if (currIdx == highlightIdx) {
                 g.setColor(Color.GREEN);
