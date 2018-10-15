@@ -218,7 +218,7 @@ def run_training():
                 data_sets.test)
 
 
-def main(_):
+def goals(_):
   if tf.gfile.Exists(FLAGS.log_dir):
     tf.gfile.DeleteRecursively(FLAGS.log_dir)
   tf.gfile.MakeDirs(FLAGS.log_dir)
@@ -279,4 +279,4 @@ if __name__ == '__main__':
   )
 
   FLAGS, unparsed = parser.parse_known_args()
-  tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+  tf.app.run(goals=goals, argv=[sys.argv[0]] + unparsed)

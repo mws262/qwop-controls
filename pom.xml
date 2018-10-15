@@ -2,9 +2,9 @@
 To run files from the command line:
 		mvn clean
 		mvn install
-		mvn exec:java -e -Dexec.mainClass="main.MAIN_Run"
+		mvn exec:java -e -Dexec.mainClass="goals.MAIN_Run"
 		with command-line arguments:
-		mvn exec:java -e -Dexec.mainClass="main.MAIN_Run" -Dexec.args="-Xmx37g"
+		mvn exec:java -e -Dexec.mainClass="goals.MAIN_Run" -Dexec.args="-Xmx37g"
 		to change memory usage:
 		export MAVEN_OPTS="-Xmx37g"
 To update the classpath settings for Eclipse:
@@ -25,8 +25,9 @@ To update the classpath settings for Eclipse:
     </properties>
 
     <build>
-        <!-- Define main location of source code. -->
-        <sourceDirectory>src</sourceDirectory>
+        <!-- Define goals location of source code. -->
+        <!--<sourceDirectory>src</sourceDirectory>-->
+
         <resources>
             <resource>
                 <directory>src</directory>
@@ -94,7 +95,7 @@ To update the classpath settings for Eclipse:
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        main.MAIN_Search_Full
+                                        goals.MAIN_Search_Full
                                     </mainClass>
                                 </manifest>
                             </archive>
@@ -106,7 +107,16 @@ To update the classpath settings for Eclipse:
                     </execution>
                 </executions>
             </plugin>
-
+            <!-- Unit test helper plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.1</version>
+                <configuration>
+                    <parallel>methods</parallel>
+                    <threadCount>4</threadCount>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <repositories>
@@ -265,36 +275,7 @@ To update the classpath settings for Eclipse:
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

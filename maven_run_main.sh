@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Selected main class: $1"
+echo "Selected goals class: $1"
 if [ -n "$1" ];
 then
 	mvn -e exec:java -Dexec.mainClass="$1"
