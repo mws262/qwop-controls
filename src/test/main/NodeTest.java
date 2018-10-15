@@ -199,4 +199,220 @@ public class NodeTest {
     @Test
     public void clearBranchZOffset() {
     }
+
+    @Test
+    public void addChild1() {
+    }
+
+    @Test
+    public void reserveExpansionRights1() {
+    }
+
+    @Test
+    public void releaseExpansionRights1() {
+    }
+
+    @Test
+    public void getLockStatus1() {
+    }
+
+    @Test
+    public void getValue1() {
+    }
+
+    @Test
+    public void setValue1() {
+    }
+
+    @Test
+    public void addToValue1() {
+    }
+
+    @Test
+    public void getParent1() {
+    }
+
+    @Test
+    public void getChildren() {
+    }
+
+    @Test
+    public void getIndexAccordingToParent() {
+    }
+
+    @Test
+    public void getSiblingCount() {
+    }
+
+    @Test
+    public void getChildCount() {
+    }
+
+    @Test
+    public void getChildByIndex() {
+    }
+
+    @Test
+    public void getRandomChild1() {
+    }
+
+    @Test
+    public void getNodesBelow1() {
+    }
+
+    @Test
+    public void getLeaves1() {
+    }
+
+    @Test
+    public void getRoot1() {
+    }
+
+    @Test
+    public void countDescendants1() {
+    }
+
+    @Test
+    public void isOtherNodeAncestor1() {
+    }
+
+    @Test
+    public void propagateFullyExploredStatus_lite() {
+    }
+
+    @Test
+    public void destroyAllNodesBelowAndCheckExplored1() {
+    }
+
+    @Test
+    public void getTotalNodeCount1() {
+    }
+
+    @Test
+    public void getImportedNodeCount1() {
+    }
+
+    @Test
+    public void getCreatedNodeCount1() {
+    }
+
+    @Test
+    public void getImportedGameCount1() {
+    }
+
+    @Test
+    public void getCreatedGameCount1() {
+    }
+
+    @Test
+    public void markTerminal1() {
+    }
+
+    @Test
+    public void isFailed1() {
+    }
+
+    @Test
+    public void setFailed1() {
+    }
+
+    @Test
+    public void setState1() {
+    }
+
+    @Test
+    public void getState() {
+    }
+
+    @Test
+    public void isStateAvailable() {
+    }
+
+    @Test
+    public void getAction1() {
+    }
+
+    @Test
+    public void getSequence1() {
+    }
+
+    @Test
+    public void makeNodesFromRunInfo1() {
+    }
+
+    @Test
+    public void makeNodesFromActionSequences1() {
+    }
+
+    @Test
+    public void calcNodePosBelow1() {
+    }
+
+    @Test
+    public void drawLines_below1() {
+    }
+
+    @Test
+    public void drawNodes_below1() {
+    }
+
+    @Test
+    public void turnOffBranchDisplay1() {
+    }
+
+    @Test
+    public void highlightSingleRunToThisNode1() {
+    }
+
+    @Test
+    public void resetLineBrightness_below1() {
+    }
+
+    @Test
+    public void getColorFromTreeDepth1() {
+    }
+
+    @Test
+    public void getColorFromScaledValue1() {
+    }
+
+    @Test
+    public void setBranchColor1() {
+    }
+
+    @Test
+    public void setBackwardsBranchColor1() {
+    }
+
+    @Test
+    public void clearBranchColor1() {
+    }
+
+    @Test
+    public void clearBackwardsBranchColor1() {
+    }
+
+    @Test
+    public void clearNodeOverrideColor1() {
+    }
+
+    @Test
+    public void setBranchZOffset1() {
+    }
+
+    @Test
+    public void setBackwardsBranchZOffset1() {
+    }
+
+    @Test
+    public void clearBackwardsBranchZOffset1() {
+    }
+
+    @Test
+    public void clearBranchZOffset1() {
+    }
+
+    @Test
+    public void getTreeDepth() {
+    }
 }
