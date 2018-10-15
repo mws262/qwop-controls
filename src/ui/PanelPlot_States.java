@@ -150,7 +150,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
 						nodesBelow.stream().map(n -> n.getState().getStateVarFromName(plotObjectsY[countDataCollect],
 								plotStatesY[countDataCollect])).toArray(Float[]::new);
                 Color[] cData =
-						nodesBelow.stream().map(n -> Node.getColorFromTreeDepth(n.treeDepth)).toArray(Color[]::new);
+						nodesBelow.stream().map(n -> Node.getColorFromTreeDepth(n.getTreeDepth())).toArray(Color[]::new);
 
                 float xLow = Arrays.stream(xData).min(Float::compare).get();
                 float xHi = Arrays.stream(xData).max(Float::compare).get();

@@ -48,7 +48,7 @@ public class Sampler_FixedDepth implements ISampler {
                     "Whoever called this is at fault.");
         }
 
-        startDepth = startNode.treeDepth;
+        startDepth = startNode.getTreeDepth();
         effectiveHorizonDepth = startDepth + horizonDepth;
         Node currentNode = startNode;
 
@@ -63,7 +63,7 @@ public class Sampler_FixedDepth implements ISampler {
             }
 
             // If this worker doesn't yet know that this is a finished node, fix that and move back.
-            if (currentNode.treeDepth == effectiveHorizonDepth) {
+            if (currentNode.getTreeDepth() == effectiveHorizonDepth) {
                 finishedNodes.add(currentNode);
                 propagateFinishedNodes(currentNode.getParent());
                 currentNode = startNode;
@@ -120,7 +120,7 @@ public class Sampler_FixedDepth implements ISampler {
     @Override
     public void expansionPolicyActionDone(Node currentNode) {
         treePolicyDone = false;
-        if (currentNode.treeDepth == effectiveHorizonDepth || currentNode.isFailed()) {
+        if (currentNode.getTreeDepth() == effectiveHorizonDepth || currentNode.isFailed()) {
             expansionPolicyDone = true;
 
             finishedNodes.add(currentNode);
@@ -137,7 +137,7 @@ public class Sampler_FixedDepth implements ISampler {
     private void propagateFinishedNodes(Node currentNode) {
         if (currentNode.uncheckedActions.isEmpty()) {
             for (Node child : currentNode.getChildren()) {
-                if (child.treeDepth == effectiveHorizonDepth) {
+                if (child.getTreeDepth() == effectiveHorizonDepth) {
                     finishedNodes.add(child);
                 }
                 if (!finishedNodes.contains(child)) {
@@ -146,7 +146,7 @@ public class Sampler_FixedDepth implements ISampler {
             }
             finishedNodes.add(currentNode);
             // Recurse if above the start depth.
-            if (currentNode.treeDepth > startDepth) propagateFinishedNodes(currentNode.getParent());
+            if (currentNode.getTreeDepth() > startDepth) propagateFinishedNodes(currentNode.getParent());
         }
     }
 

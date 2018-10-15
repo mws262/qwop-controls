@@ -103,7 +103,7 @@ public class Sampler_Greedy implements ISampler {
         currentRoot.nodeColor = Color.RED;
         currentRoot.displayPoint = true;
 
-        totalSamplesToTakeAtThisNode = numSamplesAtDepth(currentRoot.treeDepth);
+        totalSamplesToTakeAtThisNode = numSamplesAtDepth(currentRoot.getTreeDepth());
         samplesSoFarAtThisNode = 0;
     }
 
@@ -132,7 +132,7 @@ public class Sampler_Greedy implements ISampler {
         if (currentRoot.fullyExplored.get()) {
             int count = 0;
             Node movingNode = currentRoot;
-            while (movingNode.treeDepth > 0 && (movingNode.fullyExplored.get() || count < backwardsJump)) {
+            while (movingNode.getTreeDepth() > 0 && (movingNode.fullyExplored.get() || count < backwardsJump)) {
                 movingNode = movingNode.getParent();
                 count++;
             }
@@ -191,7 +191,7 @@ public class Sampler_Greedy implements ISampler {
                     }
                 }
                 // Go back from the leaf to its ancestor only forwardJump ahead of the current root.
-                while (bestNode.treeDepth > currentRoot.treeDepth + forwardJump) {
+                while (bestNode.getTreeDepth() > currentRoot.getTreeDepth() + forwardJump) {
                     bestNode = bestNode.getParent();
                 }
                 backwardsJump -= 1;

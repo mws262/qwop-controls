@@ -39,7 +39,7 @@ public class TreeStage_MinDepth extends TreeStage {
 
     @Override
     public void initialize(List<TreeWorker> workers, Node stageRoot) {
-        minEffectiveDepth = minDepth + stageRoot.treeDepth;
+        minEffectiveDepth = minDepth + stageRoot.getTreeDepth();
         super.initialize(workers, stageRoot);
     }
 
@@ -53,11 +53,11 @@ public class TreeStage_MinDepth extends TreeStage {
 
         for (Node n : leafList) {
             if (n.getState() == null) continue;
-            if (n.treeDepth == minEffectiveDepth) {
+            if (n.getTreeDepth() == minEffectiveDepth) {
                 resultList.add(n);
-            } else if (n.treeDepth > minEffectiveDepth) {
+            } else if (n.getTreeDepth() > minEffectiveDepth) {
                 Node atDepth = n;
-                while (atDepth.treeDepth > minEffectiveDepth) {
+                while (atDepth.getTreeDepth() > minEffectiveDepth) {
                     atDepth = atDepth.getParent();
                 }
                 resultList.add(atDepth);
@@ -80,17 +80,17 @@ public class TreeStage_MinDepth extends TreeStage {
 
         for (Node n : leafList) {
             // We find a leaf which is not deep enough AND not terminal
-            if (n.treeDepth < minEffectiveDepth && !n.isTerminal) {
+            if (n.getTreeDepth() < minEffectiveDepth && !n.isTerminal) {
                 return false;
             } else {
                 Node currNode = n;
                 // Get back from the leaf to the horizon we wish to achieve.
-                while (currNode.treeDepth > minEffectiveDepth) {
+                while (currNode.getTreeDepth() > minEffectiveDepth) {
                     currNode = currNode.getParent();
                 }
 
                 // Make sure everything under that horizon has been tried.
-                while (currNode.treeDepth > rootNode.treeDepth) {
+                while (currNode.getTreeDepth() > rootNode.getTreeDepth()) {
                     currNode = currNode.getParent();
                     if (currNode.uncheckedActions.size() > 0) {
                         return false;

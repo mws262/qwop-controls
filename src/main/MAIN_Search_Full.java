@@ -130,7 +130,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
             Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(getSaveLocation().getPath() + "/" + filename1 +
                     ".SavableSingleGame"), rootNode, getToSteadyDepth - trimSteadyBy - 1);
             Node currNode = rootNode;
-            while (currNode.treeDepth < getToSteadyDepth - trimSteadyBy) {
+            while (currNode.getTreeDepth() < getToSteadyDepth - trimSteadyBy) {
                 currNode = currNode.getChildByIndex(0);
             }
 

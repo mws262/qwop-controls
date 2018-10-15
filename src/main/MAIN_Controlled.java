@@ -203,7 +203,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         // Back up the tree in order to skip the end of the prefix.
         /** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
         int doPrefixToDepth = 2;
-        while (endNode.treeDepth > doPrefixToDepth) {
+        while (endNode.getTreeDepth() > doPrefixToDepth) {
             endNode = endNode.getParent();
         }
         // Run prefix part.

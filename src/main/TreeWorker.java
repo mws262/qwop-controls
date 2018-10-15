@@ -263,7 +263,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         sampler.expansionPolicyActionDone(currentGameNode);
                     } else {
                         targetNodeToTest = sampler.expansionPolicy(currentGameNode);
-                        if (currentGameNode.treeDepth + 1 != targetNodeToTest.treeDepth) {
+                        if (currentGameNode.getTreeDepth() + 1 != targetNodeToTest.getTreeDepth()) {
                             throw new RuntimeException("Expansion policy tried to sample a node more than 1 depth " +
                                     "below it in the tree. This is bad since tree policy should be used"
                                     + "to traverse the existing tree and expansion policy should only be used for " +

@@ -19,7 +19,7 @@ public class Sampler_Deterministic implements ISampler {
     @Override
     public Node treePolicy(Node startNode) {
         if (startNode.fullyExplored.get())
-            throw new RuntimeException("Trying to do tree policy on a given node at depth " + startNode.treeDepth +
+            throw new RuntimeException("Trying to do tree policy on a given node at depth " + startNode.getTreeDepth() +
 					" which is already fully-explored. Whoever called this is at fault.");
         Node currentNode = startNode;
 
@@ -30,7 +30,7 @@ public class Sampler_Deterministic implements ISampler {
 						"fault.");
             if (currentNode.getLockStatus()) {
                 currentNode = startNode;
-                if (currentNode.treeDepth > startNode.treeDepth) {
+                if (currentNode.getTreeDepth() > startNode.getTreeDepth()) {
                     currentNode = currentNode.getParent();
                 }
                 continue;
@@ -53,7 +53,7 @@ public class Sampler_Deterministic implements ISampler {
                 }
             }
             if (!foundViableChild) {
-                System.out.println("One worker has to start over because its options were taken. Back to depth: " + startNode.treeDepth);
+                System.out.println("One worker has to start over because its options were taken. Back to depth: " + startNode.getTreeDepth());
                 currentNode = startNode;
             }
         }

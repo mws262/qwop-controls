@@ -110,7 +110,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
             Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
             Float[] yData = transformedStates.stream().map(ts -> ts[firstPlotRow]).toArray(Float[]::new);
             Color[] cData =
-                    nodesToTransform.stream().map(n -> Node.getColorFromTreeDepth(n.treeDepth)).toArray(Color[]::new);
+                    nodesToTransform.stream().map(n -> Node.getColorFromTreeDepth(n.getTreeDepth())).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Component" + " " + firstPlotRow);
             pl.getDomainAxis().setLabel("Component" + " " + currCol);

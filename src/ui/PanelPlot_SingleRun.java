@@ -113,7 +113,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     @Override
     public void update(Node plotNode) { // Note that this is different from the other PlotPanes. It plots UP TO this
         // node rather than below this node.
-        if (plotNode.treeDepth == 0) return; // Nothing to see from root.
+        if (plotNode.getTreeDepth() == 0) return; // Nothing to see from root.
         selectedNode = plotNode;
         simRunToNode(plotNode);
         transformedStates = transformer.transform(stateList); // Dimensionally reduced states
@@ -138,7 +138,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
             Float[] yData = commandList.stream().map(b -> Float.valueOf((b[0] ? 1 : 0) + (b[1] ? 2 : 0) + (b[2] ? 4 :
                     0) + (b[3] ? 8 : 0))).toArray(Float[]::new);
             Color[] cData =
-                    IntStream.range(0, yData.length).mapToObj(i -> Node.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.treeDepth))).toArray(Color[]::new);
+                    IntStream.range(0, yData.length).mapToObj(i -> Node.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.getTreeDepth()))).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Command combination");
             pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +

@@ -109,7 +109,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
             int currCol = count + firstPlotRow * plotsPerView;
             Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
             Float[] yData = nodes.stream().map(n -> (float) n.getAction().getTimestepsTotal()).toArray(Float[]::new);
-            Color[] cData = nodes.stream().map(n -> Node.getColorFromTreeDepth(n.treeDepth)).toArray(Color[]::new);
+            Color[] cData = nodes.stream().map(n -> Node.getColorFromTreeDepth(n.getTreeDepth())).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Command duration");
             pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +

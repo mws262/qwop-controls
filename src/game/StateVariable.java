@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Container for state values for a single body link at a single timestep.
- *
+ * <p>
  * These StateVariables are generally stored by {@link State State} to represent the full runner state.
  *
  * @author matt
@@ -47,11 +47,11 @@ public class StateVariable implements Serializable {
     /**
      * Make a new StateVariables holding the configuration and velocity information for a single runner link.
      *
-     * @param x Horizontal position of the body.
-     * @param y Vertical position of the body.
-     * @param th Counterclockwise angle of the body.
-     * @param dx Horizontal velocity of the body.
-     * @param dy Vertical velocity of the body.
+     * @param x   Horizontal position of the body.
+     * @param y   Vertical position of the body.
+     * @param th  Counterclockwise angle of the body.
+     * @param dx  Horizontal velocity of the body.
+     * @param dy  Vertical velocity of the body.
      * @param dth Counterclockwise angular rate of the body.
      */
     public StateVariable(float x, float y, float th, float dx, float dy, float dth) {
@@ -82,6 +82,7 @@ public class StateVariable implements Serializable {
 
     /**
      * Get the horizontal position of the body.
+     *
      * @return Horizontal position of the body.
      */
     public float getX() {
@@ -90,6 +91,7 @@ public class StateVariable implements Serializable {
 
     /**
      * Get the vertical position of the body.
+     *
      * @return Vertical position of the body.
      */
     public float getY() {
@@ -98,6 +100,7 @@ public class StateVariable implements Serializable {
 
     /**
      * Get the counterclockwise angle of the body.
+     *
      * @return Counterclockwise angle of the body.
      */
     public float getTh() {
@@ -106,6 +109,7 @@ public class StateVariable implements Serializable {
 
     /**
      * Get the horizontal velocity of the body.
+     *
      * @return Horizontal velocity of the body.
      */
     public float getDx() {
@@ -114,6 +118,7 @@ public class StateVariable implements Serializable {
 
     /**
      * Get the vertical velocity of the body.
+     *
      * @return Vertical velocity of the body.
      */
     public float getDy() {
@@ -122,6 +127,7 @@ public class StateVariable implements Serializable {
 
     /**
      * Get the counterclockwise angular rate of the body.
+     *
      * @return Counterclockwise angular rate of the body.
      */
     public float getDth() {

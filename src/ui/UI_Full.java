@@ -566,7 +566,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
             if (selectedNode != null) { // Do nothing if no node is selected to begin with.
 
-                if (selectedNode.treeDepth == 0) { // At root, don't try to look at parent.
+                if (selectedNode.getTreeDepth() == 0) { // At root, don't try to look at parent.
                     // <nothing>
                 } else {
                     int thisIndex = selectedNode.getIndexAccordingToParent();
@@ -595,7 +595,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
                 if (depth == 1 && selectedNode.getChildCount() > 0) { //Go further down the tree if this node has
                     // children
                     selectNode(selectedNode.getChildByIndex(0));
-                } else if (depth == -1 && selectedNode.treeDepth > 0) { //Go up the tree if this is not root.
+                } else if (depth == -1 && selectedNode.getTreeDepth() > 0) { //Go up the tree if this is not root.
                     selectNode(selectedNode.getParent());
                 }
                 repaint();
@@ -618,7 +618,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
             if (deficitDepth == 0) { //We've successfully gotten back to the same level. Great.
                 selectNode(current);
                 return true;
-            } else if (current.treeDepth == 0) {
+            } else if (current.getTreeDepth() == 0) {
                 return true; // We made it back to the tree's root without any success. Just return.
 
             } else if (numTimesTried > 100) {// If it takes >100 movements between nodes, we'll just give up.

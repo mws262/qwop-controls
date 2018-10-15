@@ -41,7 +41,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
     @Override
     public ActionSet getPotentialChildActionSet(Node parentNode) {
-        int actionDepth = parentNode.treeDepth;
+        int actionDepth = parentNode.getTreeDepth();
 
         // Check if this is an exception case.
         if (actionExceptions != null && actionExceptions.containsKey(actionDepth))

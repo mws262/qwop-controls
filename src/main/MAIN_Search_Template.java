@@ -180,7 +180,7 @@ public abstract class MAIN_Search_Template {
 
         long startTime = System.currentTimeMillis();
         int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
-        appendSummaryLog(logPrefix + "starting from a root of absolute depth " + rootNode.treeDepth);
+        appendSummaryLog(logPrefix + "starting from a root of absolute depth " + rootNode.getTreeDepth());
         appendSummaryLog(logPrefix + "save file,  " + saveName);
         appendSummaryLog(logPrefix + "playing a max of " + maxGames + " games.");
         appendSummaryLog(logPrefix + "checked out " + numWorkersToUse + " workers.");
@@ -208,7 +208,7 @@ public abstract class MAIN_Search_Template {
 		// place.
         appendSummaryLog(logPrefix + "Finished after " + elapsedSeconds + " seconds.");
         appendSummaryLog(logPrefix + "Results -- " + (searchMax.getResults().isEmpty() ? "<goal not met>" :
-				searchMax.getResults().get(0).treeDepth + " depth achieved."));
+				searchMax.getResults().get(0).getTreeDepth() + " depth achieved."));
         // Return the checked out workers.
         for (TreeWorker w : tws1) {
             returnWorker(w);
@@ -224,7 +224,7 @@ public abstract class MAIN_Search_Template {
 
         long startTime = System.currentTimeMillis();
         int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
-        appendSummaryLog(logPrefix + "starting from a root of absolute depth " + rootNode.treeDepth);
+        appendSummaryLog(logPrefix + "starting from a root of absolute depth " + rootNode.getTreeDepth());
         appendSummaryLog(logPrefix + "save file,  " + saveName);
         appendSummaryLog(logPrefix + "playing a max of " + maxGames + " games.");
         appendSummaryLog(logPrefix + "checked out " + numWorkersToUse + " workers.");

@@ -13,7 +13,6 @@ import java.util.List;
 import filters.NodeFilter_Downsample;
 import game.GameLoader;
 import filters.INodeFilter;
-import game.State;
 import main.Node;
 import main.PanelRunner;
 
@@ -111,7 +110,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         /***** History nodes *****/
         Node historyNode = snapshotNode;
         for (int i = 0; i < numHistoryStatesDisplay; i++) {
-            if (historyNode.treeDepth > 0) {
+            if (historyNode.getTreeDepth() > 0) {
                 historyNode = historyNode.getParent();
                 nodeTransform = game.getXForms(historyNode.getState());
                 transforms.add(nodeTransform);
@@ -202,7 +201,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             for (int i = transforms.size() - 1; i >= 0; i--) {
                 if (!mouseIsIn || bestIdx != i) {
                     Color nextRunnerColor =
-                            (highlightedFutureMousedOver != null && focusLeaves.get(i).treeDepth > snapshotNode.treeDepth) ? colors.get(i).brighter() : colors.get(i); // Make the nodes after the selected one lighter if one is highlighted.
+                            (highlightedFutureMousedOver != null && focusLeaves.get(i).getTreeDepth() > snapshotNode.getTreeDepth()) ? colors.get(i).brighter() : colors.get(i); // Make the nodes after the selected one lighter if one is highlighted.
                     game.drawExtraRunner(g2, transforms.get(i), "", runnerScaling, xOffsetPixels - specificXOffset,
                             yOffsetPixels, nextRunnerColor, strokes.get(i));
                 }
@@ -263,10 +262,10 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 // Also draw parent nodes back the the selected one to view the run that leads to the highlighted
                 // failure.
                 //int prevX = Integer.MAX_VALUE;
-                while (currentNode.treeDepth > snapshotNode.treeDepth) {
+                while (currentNode.getTreeDepth() > snapshotNode.getTreeDepth()) {
                     // Make color shades slightly alternate between subsequent move frames.
                     Color everyOtherEvenColor = colors.get(idx).darker();
-                    if (currentNode.treeDepth % 2 == 0) {
+                    if (currentNode.getTreeDepth() % 2 == 0) {
                         everyOtherEvenColor = everyOtherEvenColor.darker();
                     }
                     game.drawExtraRunner(g2, game.getXForms(currentNode.getState()),

@@ -67,7 +67,7 @@ public class Sampler_UCB implements ISampler {
         // Do evaluation and propagation of scores.
         failureNode.visitCount.incrementAndGet();
         failureNode.addToValue(score);
-        while (failureNode.treeDepth > 0) {//TODO test 0
+        while (failureNode.getTreeDepth() > 0) {//TODO test 0
             failureNode = failureNode.getParent();
             failureNode.visitCount.incrementAndGet();
             failureNode.addToValue(score);

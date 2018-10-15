@@ -129,9 +129,9 @@ public class Node {
     private final AtomicBoolean locked = new AtomicBoolean(false);
 
     /**
-     * How deep is this node down the tree? 0 is root.
-     **/
-    public final int treeDepth;
+     * Depth of this node in the tree. Root node is 0; its children are 1, etc.
+     */
+    private final int treeDepth;
 
     /**
      * Maximum depth yet seen in this tree.
@@ -200,13 +200,13 @@ public class Node {
      **/
     public Node(Node parent, Action action, boolean connectNodeToTree) {
         this.parent = parent;
-        treeDepth = parent.treeDepth + 1;
+        treeDepth = parent.getTreeDepth() + 1;
         this.action = action;
 
         // Error check for duplicate actions.
         for (Node parentChildren : parent.children) {
             if (parentChildren.action == action) {
-                throw new RuntimeException("Tried to add a duplicate action node at depth " + treeDepth + ". Action " +
+                throw new RuntimeException("Tried to add a duplicate action node at depth " + getTreeDepth() + ". Action " +
                         "was: " + action.toString() + ".");
             }
         }
@@ -214,7 +214,7 @@ public class Node {
         // Add some child actions to try if an action generator is assigned.
         autoAddUncheckedActions();
 
-        edgeLength = 5.00f * (float) Math.pow(0.6947, 0.1903 * treeDepth) + 1.5f;
+        edgeLength = 5.00f * (float) Math.pow(0.6947, 0.1903 * getTreeDepth()) + 1.5f;
 
         lineBrightness = parent.lineBrightness;
         zOffset = parent.zOffset;
@@ -223,14 +223,14 @@ public class Node {
         // from being used by other workers.
         if (connectNodeToTree) {
             parent.children.add(this);
-            if (treeDepth > maxDepthYet) {
-                maxDepthYet = treeDepth;
+            if (getTreeDepth() > maxDepthYet) {
+                maxDepthYet = getTreeDepth();
             }
 
             // Update max branch depth
-            maxBranchDepth.set(treeDepth);
+            maxBranchDepth.set(getTreeDepth());
             Node currentNode = this;
-            while (currentNode.treeDepth > 0 && parent.maxBranchDepth.get() < currentNode.maxBranchDepth.get()) {
+            while (currentNode.getTreeDepth() > 0 && parent.maxBranchDepth.get() < currentNode.maxBranchDepth.get()) {
                 parent.maxBranchDepth.set(currentNode.maxBranchDepth.get());
                 currentNode = parent;
             }
@@ -344,7 +344,7 @@ public class Node {
             // May need to add locks to nodes further up the tree towards root. For example, if calling
             // reserveExpansionRights locks the final available node of this node's parent, then the parent should be
             // locked off too. This effect can chain all the way up the tree towards the root.
-            if (treeDepth > 0) parent.propagateLock();
+            if (getTreeDepth() > 0) parent.propagateLock();
 
             return true;
         }
@@ -362,7 +362,7 @@ public class Node {
         }
 
         // Unlocking this node may cause nodes further up the tree to become available.
-        if (treeDepth > 0) parent.propagateUnlock();
+        if (getTreeDepth() > 0) parent.propagateUnlock();
     }
 
     /**
@@ -552,7 +552,7 @@ public class Node {
      */
     public Node getRoot() {
         Node currentNode = this;
-        while (currentNode.treeDepth > 0) {
+        while (currentNode.getTreeDepth() > 0) {
             currentNode = currentNode.parent;
         }
         return currentNode;
@@ -580,12 +580,12 @@ public class Node {
      * @return Whether the provided node is an ancestor of this node (true/false).
      */
     public boolean isOtherNodeAncestor(Node possibleAncestorNode) {
-        if (possibleAncestorNode.treeDepth >= this.treeDepth) { // Don't need to check if this is as far down the tree.
+        if (possibleAncestorNode.getTreeDepth() >= this.getTreeDepth()) { // Don't need to check if this is as far down the tree.
             return false;
         }
         Node currNode = parent;
 
-        while (currNode.treeDepth != possibleAncestorNode.treeDepth) { // Find the node at the same depth as the one
+        while (currNode.getTreeDepth() != possibleAncestorNode.getTreeDepth()) { // Find the node at the same depth as the one
             // we're
             // checking.
             currNode = currNode.parent;
@@ -618,7 +618,7 @@ public class Node {
         }
         fullyExplored.set(flag);
 
-        if (treeDepth > 0) { // We already know this node is fully explored, check the parent.
+        if (getTreeDepth() > 0) { // We already know this node is fully explored, check the parent.
             parent.propagateFullyExploredStatus_lite();
         }
     }
@@ -639,7 +639,7 @@ public class Node {
         // Reset all existing exploration flags out there.
         for (Node leaf : leaves) {
             Node currNode = leaf;
-            while (currNode.treeDepth > treeDepth) {
+            while (currNode.getTreeDepth() > getTreeDepth()) {
                 currNode.fullyExplored.set(false);
                 currNode = currNode.parent;
             }
@@ -809,11 +809,11 @@ public class Node {
      * @return An array of actions which, when executed from the initial state will lead to the state at this node.
      */
     public synchronized Action[] getSequence() {
-        Action[] sequence = new Action[treeDepth];
-        if (treeDepth == 0) return sequence; // Empty array for root node.
+        Action[] sequence = new Action[getTreeDepth()];
+        if (getTreeDepth() == 0) return sequence; // Empty array for root node.
         Node current = this;
-        sequence[treeDepth - 1] = current.action;
-        for (int i = treeDepth - 2; i >= 0; i--) {
+        sequence[getTreeDepth() - 1] = current.action;
+        for (int i = getTreeDepth() - 2; i >= 0; i--) {
             current = current.parent;
             sequence[i] = current.action;
         }
@@ -874,7 +874,7 @@ public class Node {
      * Only does it for things below minDepth. Forces new building to happen only at the boundaries of this.
      **/
     private static void stripUncheckedActionsExceptOnLeaves(Node node, int minDepth) {
-        if (!node.children.isEmpty() && node.treeDepth <= minDepth) node.uncheckedActions.clear();
+        if (!node.children.isEmpty() && node.getTreeDepth() <= minDepth) node.uncheckedActions.clear();
         for (Node child : node.children) {
             stripUncheckedActionsExceptOnLeaves(child, minDepth);
         }
@@ -937,20 +937,20 @@ public class Node {
     private void calcNodePos(float[] nodeLocationsToAssign) {
         //Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will
         // span the required sweep.
-        if (treeDepth >= 0) {
+        if (getTreeDepth() >= 0) {
             if (parent.children.size() + ((parent.uncheckedActions == null) ? 0 : parent.uncheckedActions.size()) > 1) { //Catch the div by 0
                 int division = parent.children.size() + ((parent.uncheckedActions == null) ? 0 :
                         parent.uncheckedActions.size()); // Split into this many chunks.
                 int childNo = parent.children.indexOf(this);
 
-                sweepAngle = (float) Math.max((parent.sweepAngle / division) * (1 + treeDepth * 0.05f), 0.02);
+                sweepAngle = (float) Math.max((parent.sweepAngle / division) * (1 + getTreeDepth() * 0.05f), 0.02);
 
                 // This is to straighten out branches that are curving off to one side due to asymmetric expansion.
                 // Acts like a controller to bring the angle
                 // towards the angle of the first node in this branch after root.
                 float angleAdj;
                 Node ancestor = this;
-                while (ancestor.treeDepth > 1) {
+                while (ancestor.getTreeDepth() > 1) {
                     ancestor = ancestor.parent;
                 }
                 angleAdj = -0.2f * (parent.nodeAngle - ancestor.nodeAngle);
@@ -1017,9 +1017,9 @@ public class Node {
      * Draw the line connecting this node to its parent.
      **/
     private void drawLine(GL2 gl) {
-        if (treeDepth > 0 && displayLine) { // No lines for root.
+        if (getTreeDepth() > 0 && displayLine) { // No lines for root.
             if (overrideLineColor == null) {
-                gl.glColor3fv(getColorFromTreeDepth(treeDepth, lineBrightness).getColorComponents(null), 0);
+                gl.glColor3fv(getColorFromTreeDepth(getTreeDepth(), lineBrightness).getColorComponents(null), 0);
                 //getColorFromScaledValue(value/visitCount.floatValue()/(float)treeDepth, 20, lineBrightness)
                 // .getColorComponents(null),0);
             } else {
@@ -1055,9 +1055,9 @@ public class Node {
     public void drawLines_below(GL2 gl) {
         for (Node current : children) {
             if (!current.notDrawnForSpeed) current.drawLine(gl);
-            if (current.treeDepth <= this.treeDepth)
+            if (current.getTreeDepth() <= this.getTreeDepth())
                 throw new RuntimeException("Node hierarchy problem. Node with an " +
-                        "equal or lesser depth is below another. At " + current.treeDepth + " and " + this.treeDepth + ".");
+                        "equal or lesser depth is below another. At " + current.getTreeDepth() + " and " + this.getTreeDepth() + ".");
             current.drawLines_below(gl); // Recurse down through the tree.
         }
     }
@@ -1095,7 +1095,7 @@ public class Node {
         rt.setLineBrightness_below(0.4f); // Fade the entire tree, then go and highlight the run we care about.
 
         Node currentNode = this;
-        while (currentNode.treeDepth > 0) {
+        while (currentNode.getTreeDepth() > 0) {
             currentNode.setLineBrightness(0.85f);
             currentNode = currentNode.parent;
         }
@@ -1166,7 +1166,7 @@ public class Node {
      **/
     public void setBackwardsBranchColor(Color newColor) {
         overrideLineColor = newColor;
-        if (treeDepth > 0) {
+        if (getTreeDepth() > 0) {
             parent.setBackwardsBranchColor(newColor);
         }
     }
@@ -1186,7 +1186,7 @@ public class Node {
      **/
     public void clearBackwardsBranchColor() {
         overrideLineColor = null;
-        if (treeDepth > 0) {
+        if (getTreeDepth() > 0) {
             parent.clearBackwardsBranchColor();
         }
     }
@@ -1212,7 +1212,7 @@ public class Node {
             overrideNodeColor = null;
             displayPoint = false;
         }
-        if (treeDepth > 0) {
+        if (getTreeDepth() > 0) {
             parent.clearBackwardsNodeOverrideColor(colorToClear);
         }
     }
@@ -1238,7 +1238,7 @@ public class Node {
             overrideNodeColor = null;
             displayPoint = false;
         }
-        if (treeDepth > 0) {
+        if (getTreeDepth() > 0) {
             parent.clearBackwardsNodeOverrideColor();
         }
     }
@@ -1259,7 +1259,7 @@ public class Node {
     public void setBackwardsBranchZOffset(float zOffset) {
         this.zOffset = zOffset;
         Node currentNode = this;
-        while (currentNode.treeDepth > 0) {
+        while (currentNode.getTreeDepth() > 0) {
             currentNode.zOffset = zOffset;
             currentNode = currentNode.parent;
         }
@@ -1277,5 +1277,12 @@ public class Node {
      **/
     public void clearBranchZOffset() {
         setBranchZOffset(0f);
+    }
+
+    /**
+     * How deep is this node down the tree? 0 is root.
+     **/
+    public int getTreeDepth() {
+        return treeDepth;
     }
 }

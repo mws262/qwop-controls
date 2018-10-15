@@ -47,7 +47,7 @@ public class TreeStage_MaxDepth extends TreeStage {
 
     @Override
     public void initialize(List<TreeWorker> treeWorkers, Node stageRoot) {
-        maxEffectiveDepth = maxDepth + stageRoot.treeDepth;
+        maxEffectiveDepth = maxDepth + stageRoot.getTreeDepth();
         gamesPlayedAtStageStart = TreeWorker.getTotalGamesPlayed();
         super.initialize(treeWorkers, stageRoot);
     }
@@ -62,12 +62,12 @@ public class TreeStage_MaxDepth extends TreeStage {
             return resultList; // No results. No possible way to recover.
 
         for (Node n : leafList) {
-            if (n.treeDepth == maxEffectiveDepth) {
+            if (n.getTreeDepth() == maxEffectiveDepth) {
                 resultList.add(n);
                 return resultList;
-            } else if (n.treeDepth > maxEffectiveDepth) {
+            } else if (n.getTreeDepth() > maxEffectiveDepth) {
                 Node atDepth = n;
-                while (atDepth.treeDepth > maxEffectiveDepth) {
+                while (atDepth.getTreeDepth() > maxEffectiveDepth) {
                     atDepth = atDepth.getParent();
                 }
                 resultList.add(n);
