@@ -1,5 +1,7 @@
 # QWOP Tree Builder
-Version with exporting to protobuf file ready for tensorflow.
+[![Build Status](https://travis-ci.com/mws262/qwop-controls.svg?branch=master)](https://travis-ci.com/mws262/qwop-controls)
+
+Migrating from BitBucket and refactoring.
 
 ## Things to note:
 1. Increase Java heap space to prevent OutOfMemoryError. e.g. for 10gig
