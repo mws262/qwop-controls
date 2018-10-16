@@ -10,7 +10,6 @@
 *.local
 *.NEWNEWNEW
 /python/tmp/
-.DS_Store
 *.TFRecord
 /python/venv/
 *.log
@@ -19,7 +18,12 @@
 *.mp4
 *.avi
 *.mov
-
+/saved_data/
+gc.log
+/python/~/
+*.txt~
+*.DS_Store
+*.config~
 
 # Created by https://www.gitignore.io/api/intellij
 
