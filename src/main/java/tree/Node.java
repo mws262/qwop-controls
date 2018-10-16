@@ -748,6 +748,7 @@ public class Node {
             throw new IllegalStateException("Trying to assign a node's state after a state has been previously " +
                     "assigned. Examine behavior carefully before allowing this.");
         state = newState;
+
         try {
             isFailed.set(state.isFailed());
         } catch (NullPointerException e) {

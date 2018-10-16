@@ -396,6 +396,18 @@ public class NodeTest {
 
     @Test
     public void setState() {
+        setupTree();
+
+        Assert.assertTrue(node1_1_1.isStateUnassigned());
+        node1_1_1.setState(unfailedState);
+        Assert.assertEquals(unfailedState, node1_1_1.getState());
+
+        Assert.assertTrue(node3_3_4.isStateUnassigned());
+        node3_3_4.setState(unfailedState);
+        Assert.assertEquals(unfailedState, node3_3_4.getState());
+
+        exception.expect(IllegalStateException.class);
+        rootNode.setState(unfailedState);
     }
 
     @Test
