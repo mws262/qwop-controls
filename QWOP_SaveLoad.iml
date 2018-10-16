@@ -1400,7 +1400,15 @@
     <orderEntry type="library" name="Maven: org.tensorflow:tensorflow:1.4.0" level="project" />
     <orderEntry type="library" name="Maven: org.tensorflow:libtensorflow:1.4.0" level="project" />
     <orderEntry type="library" name="Maven: org.tensorflow:libtensorflow_jni:1.4.0" level="project" />
-    <orderEntry type="library" name="Maven: org.jbox2d:jbox2d:0.0.1" level="project" />
+    <orderEntry type="module-library">
+      <library name="Maven: org.jbox2d:jbox2d:0.0.1">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/jbox2d.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="library" name="Maven: org.apache.commons:commons-pool2:2.5.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-common:3.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-annotations:3.1.0" level="project" />
@@ -1497,7 +1505,6 @@
     <orderEntry type="library" name="Maven: chrriis:dj-nativeswing:1.0.2.20120308" level="project" />
     <orderEntry type="library" name="Maven: chrriis:dj-nativeswing-swt:1.0.2.20120308" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse:swt:3.7.2" level="project" />
-    <orderEntry type="library" name="Maven: org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:4.3" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna:4.5.1" level="project" />
     <orderEntry type="library" name="Maven: org.jcodec:jcodec:0.2.2" level="project" />
     <orderEntry type="library" name="Maven: org.jcodec:jcodec-javase:0.2.2" level="project" />
