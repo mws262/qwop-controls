@@ -24,6 +24,7 @@ gc.log
 *.txt~
 *.DS_Store
 *.config~
+*.fseventsd
 
 # Created by https://www.gitignore.io/api/intellij
 
