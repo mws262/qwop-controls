@@ -15,10 +15,10 @@
 -docencoding
 'UTF-8'
 -doctitle
-'QWOP_SaveLoad 1.0 API'
+'qwop-controls 1.0 API'
 -linkoffline
 'https://docs.oracle.com/javase/8/docs/api' 'C:/Users/matth/git/qwop-controls/target/javadoc-bundle-options'
 -use
 -version
 -windowtitle
-'QWOP_SaveLoad 1.0 API'
+'qwop-controls 1.0 API'

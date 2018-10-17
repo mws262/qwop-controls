@@ -16,8 +16,8 @@ To update the classpath settings for Eclipse:
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>QWOP_SaveLoad</groupId>
-    <artifactId>QWOP_SaveLoad</artifactId>
+    <groupId>qwop-controls</groupId>
+    <artifactId>qwop-controls</artifactId>
     <version>1.0</version>
 
     <properties>
@@ -26,8 +26,6 @@ To update the classpath settings for Eclipse:
 
     <build>
         <!-- Define goals location of source code. -->
-        <!--<sourceDirectory>src</sourceDirectory>-->
-
         <resources>
             <resource>
                 <directory>src</directory>
@@ -48,31 +46,6 @@ To update the classpath settings for Eclipse:
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
-            <!--&lt;!&ndash; Needed to import the local .jar file for box2d &ndash;&gt;-->
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-install-plugin</artifactId>-->
-                <!--<version>2.5.2</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>install-external</id>-->
-                        <!--<phase>clean</phase>-->
-                        <!--<configuration>-->
-                            <!--<file>${project.basedir}/jbox2d.jar</file>-->
-                            <!--<repositoryLayout>default</repositoryLayout>-->
-                            <!--<groupId>org.jbox2d</groupId>-->
-                            <!--<artifactId>jbox2d</artifactId>-->
-                            <!--<version>0.0.1</version>-->
-                            <!--<packaging>jar</packaging>-->
-                            <!--<generatePom>true</generatePom>-->
-                        <!--</configuration>-->
-                        <!--<goals>-->
-                            <!--<goal>install-file</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
 
             <!-- Defines how/what to run when executing code. -->
             <plugin>
@@ -125,7 +98,6 @@ To update the classpath settings for Eclipse:
                     <destDir>.</destDir>
                     <reportOutputDirectory>${basedir}/docs</reportOutputDirectory>
                     <failOnError>false</failOnError>
-                    <!--<overview>${basedir}/overview.html</overview>-->
                 </configuration>
             </plugin>
         </plugins>
@@ -210,19 +182,21 @@ To update the classpath settings for Eclipse:
             <version>1.4.0</version>
         </dependency>
 
+        <!-- 2D physics engine; old version similar to that in QWOP. From local .jar. -->
         <dependency>
             <groupId>org.jbox2d</groupId>
             <artifactId>jbox2d</artifactId>
             <version>0.0.1</version>
             <scope>system</scope >
             <systemPath>${project.basedir}/jbox2d.jar</systemPath>
-        </dependency> <!--			2D physics engine; old version similar to that in QWOP. Hosted locally. -->
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-pool2 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
             <version>2.5.0</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-common -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -230,6 +204,7 @@ To update the classpath settings for Eclipse:
             <version>3.1.0</version>
             <!--<scope>provided</scope> -->
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
@@ -244,33 +219,14 @@ To update the classpath settings for Eclipse:
             <version>1.0.2.20120308</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.eclipse.swt/org.eclipse.swt.gtk.linux.x86_64 -->
-        <!--<dependency>-->
-            <!--<groupId>org.eclipse.swt</groupId>-->
-            <!--<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>-->
-            <!--<version>4.3</version>-->
-        <!--</dependency>-->
-
-        <!-- https://mvnrepository.com/artifact/org.eclipse.swt/org.eclipse.swt.cocoa.macosx.x86_64 -->
-        <!-- 			<dependency>
-                        <groupId>org.eclipse.swt</groupId>
-                        <artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
-                        <version>4.4</version>
-                    </dependency> -->
-
         <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna -->
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
             <version>4.5.1</version>
         </dependency>
+
         <!-- Video capture -->
-        <!-- https://mvnrepository.com/artifact/xuggle/xuggle-xuggler -->
-        <!-- 			<dependency>
-                        <groupId>xuggle</groupId>
-                        <artifactId>xuggle-xuggler</artifactId>
-                        <version>5.4</version>
-                    </dependency> -->
         <dependency>
             <groupId>org.jcodec</groupId>
             <artifactId>jcodec</artifactId>
