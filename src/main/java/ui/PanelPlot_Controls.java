@@ -78,7 +78,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     public void update(Node plotNode) {
 
         nodes.clear();
-        plotNode.getNodesBelow(nodes);
+        plotNode.getNodesBelow(nodes, true);
 
         filterMissingInfo.filter(nodes);
         // Apply any added filters (may be none).

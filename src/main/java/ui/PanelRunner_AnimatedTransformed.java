@@ -45,7 +45,7 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
     @Override
     public void simRunToNode(Node node) {
         List<Node> nlist = new ArrayList<>();
-        node.getRoot().getNodesBelow(nlist);
+        node.getRoot().getNodesBelow(nlist,true);
 
         transformDownsampler.filter(nlist);
         List<State> slist = nlist.stream().map(Node::getState).collect(Collectors.toList());
