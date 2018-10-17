@@ -35,9 +35,9 @@ import game.State;
 public class Node {
 
     /**
-     * Node which leads up to this node.
+     * Node which leads up to this node. Parentage should not be changed externally.
      **/
-    private Node parent; // Parentage may not be changed.
+    private Node parent;
 
     /**
      * Child nodes. Not fixed size any more.
@@ -69,9 +69,6 @@ public class Node {
      **/
     public AtomicLong visitCount = new AtomicLong();
 
-
-    /* Global, thread-safe sampling statistics. */
-
     /**
      * Total number of nodes created this execution.
      */
@@ -94,12 +91,9 @@ public class Node {
 
     /**
      * If assigned, this automatically adds potential actions to children when they are created. This makes the
-     * functionality a little
-     * more like the old version which selected from a fixed pool of durations for each action in the sequence. This
-     * time, the action
-     * generator can use anything arbitrary to decide what the potential children are, and the
-     * potentialActionGenerator can be hot swapped
-     * at any point.
+     * functionality a little more like the old version which selected from a fixed pool of durations for each action
+     * in the sequence. This time, the action generator can use anything arbitrary to decide what the potential
+     * children are, and the potentialActionGenerator can be hot swapped at any point.
      **/
     public static IActionGenerator potentialActionGenerator;
 
@@ -126,32 +120,64 @@ public class Node {
     private final int treeDepth;
 
     /**
-     * Maximum depth yet seen in this tree.
+     * Maximum depth yet seen anywhere in this tree.
      **/
     private static int maxDepthYet = 1;
 
-    public Color overrideLineColor = null; // Only set when the color is overridden.
+    /**
+     * Should a round dot be displayed at each node? The color will be determined by {@link Node#nodeColor} or
+     * {@link Node#overrideNodeColor}, if set. By default, only lines are shown.
+     */
+    public boolean displayPoint = false;
+
+    /**
+     * Should lines be shown between connected nodes? The color will be determined by tree depth from
+     * {@link Node#getColorFromTreeDepth(int)} or {@link Node#overrideLineColor}, if set.
+     */
+    private boolean displayLine = true;
+
+    /**
+     * Tree node connection line color override. Will override the default gradient coloring with this color if not
+     * null. If null, the default depth-based coloring will be used. No lines drawn regardless if {@link Node#displayLine} is
+     * false.
+     */
+    public Color overrideLineColor = null;
+
+    /**
+     * Tree node dot color override. Will override the default node color if this field is not null and
+     * {@link Node#displayPoint} is true.
+     * is true.
+     */
     public Color overrideNodeColor = null; // Only set when the color is overridden.
 
+    /**
+     * Default node point color. Will not be drawn if {@link Node#displayPoint} is not true. Can also be overridden
+     * by {@link Node#overrideNodeColor}.
+     */
     public Color nodeColor = Color.GREEN;
 
     private static final float lineBrightness_default = 0.85f;
     private float lineBrightness = lineBrightness_default;
 
-    public boolean displayPoint = false; // Round dot at this node. Is it on?
-    private boolean displayLine = true; // Line from this node to parent. Is it on?
+    // TODO Make these drawing "filters" more clear, and make access to them uniform.
+
     private static final boolean debugDrawNodeLocking = false; // Draw which nodes are locked by command from the
     // TreeWorkers.
 
-    // Limiting number of display nodes.
+    /**
+     * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
+     */
     private static final boolean limitDrawing = false;
     public static final Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
-    private boolean notDrawnForSpeed = false;
 
+    /**
+     * Specifies whether this node has been ignored for drawing purposes. This only gets manipulated if
+     * {@link Node#limitDrawing} is true.
+     */
+    private boolean notDrawnForSpeed = false;
+    private static final float nodeDrawFilterDistSq = 0.1f;
     // Disable node position calculations (for when running headless)
     private static final boolean calculateNodeVisPositions = true;
-
-    /* NODE PLACEMENT */
 
     /**
      * Parameters for visualizing the tree
@@ -166,9 +192,7 @@ public class Node {
      * If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z
      * offset.
      **/
-    public float nodeLocationZOffset = 0.f;
-
-    /* UTILITY */
+    float nodeLocationZOffset = 0.f;
 
     /**
      * Are we bulk adding saved nodes? If so, some construction things are deferred.
@@ -185,10 +209,10 @@ public class Node {
     /**
      * Make a new node which is NOT the root. connectNodeToTree is the default.
      *
-     * @param parent Parent node of this new node to be created.
-     * @param action Action associated with the new node which takes the parent node's state to this node's state.
+     * @param parent            Parent node of this new node to be created.
+     * @param action            Action associated with the new node which takes the parent node's state to this node's state.
      * @param connectNodeToTree Whether this node is connected to the tree, i.e. does the parent node know about this
-     *                         child.
+     *                          child.
      * @throws IllegalArgumentException Trying to add a node with the same action as another in the parent.
      */
     public Node(Node parent, Action action, boolean connectNodeToTree) {
@@ -232,7 +256,6 @@ public class Node {
         if (connectNodeToTree && !currentlyAddingSavedNodes && calculateNodeVisPositions) {
             calcNodePos(); // Must be called after this node has been added to its parent's list!
         }
-
         nodesCreated.increment();
     }
 
@@ -258,7 +281,6 @@ public class Node {
 
         nodesCreated.increment();
     }
-
 
     /**
      * Add a new child node from a given action. If the action is in uncheckedActions, remove it.
@@ -307,10 +329,8 @@ public class Node {
      * 1. Select node to expand. It has only 1 untried option. We lock the node, and expand.
      * 2. Select node to expand. It has multiple options. We still lock the node for now. This could be changed.
      * 3. Select node to expand. It is now locked according to 1 and 2. This node's parent only has fully explored
-     * children and locked children. For all
-     * practical purposes, this node is also out of play. Lock it too and recurse up the tree until we reach a node
-     * with at least one unlocked and not
-     * fully explored child.
+     * children and locked children. For all practical purposes, this node is also out of play. Lock it too and
+     * recurse up the tree until we reach a node with at least one unlocked and not fully explored child.
      * When unlocking, we should propagate fully-explored statuses back up the tree first, and then remove locks as
      * far up the tree as possible.
      */
@@ -326,14 +346,13 @@ public class Node {
             return false;
 
         } else {
-            if (uncheckedActions.isEmpty()) // No child actions remain to sample. FIXME: This shouldn't actually
-                // occur. Replace with an exception.
-                return false;
-
+            // Trying to see if we can remove this check. A smart sampler shouldn't get itself tied up this way anyway.
+//            if (uncheckedActions.isEmpty()) // No child actions remain to sample. FIXME: This shouldn't actually
+//                // occur. Replace with an exception.
+//                return false;
             locked.set(true);
 
-            if (debugDrawNodeLocking) { // For highlighting points in the visualizer representing nodes which have
-                // locks.
+            if (debugDrawNodeLocking) { // For highlighting nodes which are locked in the UI, if desired.
                 displayPoint = true;
                 overrideNodeColor = Color.RED;
             }
@@ -352,12 +371,10 @@ public class Node {
      **/
     public synchronized void releaseExpansionRights() {
         locked.set(false); // Release the lock.
-
         if (debugDrawNodeLocking) { // Stop drawing red dots for locked nodes, if this is on.
             displayPoint = false;
             overrideNodeColor = null;
         }
-
         // Unlocking this node may cause nodes further up the tree to become available.
         if (getTreeDepth() > 0) parent.propagateUnlock();
     }
@@ -369,7 +386,7 @@ public class Node {
     private synchronized void propagateLock() {
         // Lock this node unless we find evidence that we don't need to.
         for (Node child : children) {
-            if (!child.getLockStatus()) {
+            if (!child.isLocked()) {
                 return; // In this case, we don't need to continue locking things further up the tree.
             }
         }
@@ -380,12 +397,12 @@ public class Node {
      * Releasing one node's lock may make others further up the tree towards the root node become available.
      */
     private synchronized void propagateUnlock() {
-        if (!getLockStatus()) return; // We've worked our way up to a node which is already not locked. No need to
+        if (!isLocked()) return; // We've worked our way up to a node which is already not locked. No need to
         // propagate further.
 
         // A single free child means we can unlock this node.
         for (Node child : children) {
-            if (!child.getLockStatus()) {  // Does not need to stay locked.
+            if (!child.isLocked()) {  // Does not need to stay locked.
                 releaseExpansionRights();
                 return;
             }
@@ -397,7 +414,7 @@ public class Node {
      *
      * @return Whether any worker has exclusive rights to expand from this node (true/false).
      */
-    public boolean getLockStatus() {
+    public boolean isLocked() {
         return locked.get();
     }
 
@@ -514,8 +531,8 @@ public class Node {
      * Add all the nodes below and including this one to a list. Does not include nodes whose state have not yet been
      * assigned.
      *
-     * @param nodeList A list to add all of this branches' nodes to. This list must be caller-provided, and will not
-     *                 be cleared.
+     * @param nodeList                  A list to add all of this branches' nodes to. This list must be caller-provided, and will not
+     *                                  be cleared.
      * @param includeOnlyNodesWithState If true, this will only get nodes which have a state assigned to them.
      * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
@@ -946,7 +963,6 @@ public class Node {
                 }
                 angleAdj = -0.2f * (parent.nodeAngle - ancestor.nodeAngle);
 
-
                 if (childNo == 0) {
                     nodeAngle = parent.nodeAngle + angleAdj;
                 } else if (childNo % 2 == 0) {
@@ -972,10 +988,9 @@ public class Node {
                 xDiff = n.nodeLocation[0] - nodeLocationsToAssign[0];
                 yDiff = n.nodeLocation[1] - nodeLocationsToAssign[1];
                 // Actually distance squared to avoid sqrt
-                float drawFilterDistance = 0.1f;
-                if ((xDiff * xDiff + yDiff * yDiff) < drawFilterDistance) {
+                if ((xDiff * xDiff + yDiff * yDiff) < nodeDrawFilterDistSq) {
                     notDrawnForSpeed = true;
-                    return; // To close. Turn it off and get out.
+                    return; // Too close. Turn it off and get out.
                 }
             }
             notDrawnForSpeed = false;
@@ -1007,8 +1022,6 @@ public class Node {
         if (getTreeDepth() > 0 && displayLine) { // No lines for root.
             if (overrideLineColor == null) {
                 gl.glColor3fv(getColorFromTreeDepth(getTreeDepth(), lineBrightness).getColorComponents(null), 0);
-                //getColorFromScaledValue(value/visitCount.floatValue()/(float)treeDepth, 20, lineBrightness)
-                // .getColorComponents(null),0);
             } else {
                 // The most obtuse possible way to change just the brightness of the color. Ridiculous, but I can't
                 // find anything else.
@@ -1034,7 +1047,6 @@ public class Node {
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
         }
     }
-
 
     /**
      * Draw all lines in the subtree below this node.
@@ -1086,7 +1098,7 @@ public class Node {
 
         Node currentNode = this;
         while (currentNode.getTreeDepth() > 0) {
-            currentNode.setLineBrightness(0.85f);
+            currentNode.setLineBrightness(lineBrightness_default);
             currentNode = currentNode.parent;
         }
     }

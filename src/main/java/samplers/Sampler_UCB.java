@@ -94,7 +94,7 @@ public class Sampler_UCB implements ISampler {
         // Otherwise, we go through the existing tree picking the "best."
         for (Node child : startNode.getChildren()) {
 
-            if (!child.fullyExplored.get() && !child.getLockStatus()) {// && child.reserveExpansionRights()){
+            if (!child.fullyExplored.get() && !child.isLocked()) {// && child.reserveExpansionRights()){
                 float val =
 						(float) (child.getValue() / child.visitCount.doubleValue() + c * (float) Math.sqrt(2. * Math.log(startNode.visitCount.doubleValue()) / child.visitCount.doubleValue()));
                 if (val > bestScoreSoFar) {

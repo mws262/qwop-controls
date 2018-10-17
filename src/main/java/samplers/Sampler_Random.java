@@ -36,14 +36,14 @@ public class Sampler_Random implements ISampler {
             // Count the number of available children to go to next.
             int notFullyExploredChildren = 0;
             for (Node child : currentNode.getChildren()) {
-                if (!child.fullyExplored.get() && !child.getLockStatus()) notFullyExploredChildren++;
+                if (!child.fullyExplored.get() && !child.isLocked()) notFullyExploredChildren++;
             }
 
             if (notFullyExploredChildren == 0 && currentNode.uncheckedActions.isEmpty()) {
                 currentNode = startNode;
                 continue; // TODO: investigate this error further.
 //				currentNode.nodeColor = Color.PINK;
-//				System.out.println(currentNode.getLockStatus());
+//				System.out.println(currentNode.isLocked());
 //				currentNode.displayPoint = true;
 //				throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully
 // explored before.");
@@ -60,7 +60,7 @@ public class Sampler_Random implements ISampler {
                 int selection = Utility.randInt(0, notFullyExploredChildren - 1);
                 int count = 0;
                 for (Node child : currentNode.getChildren()) {
-                    if (!child.fullyExplored.get() && !child.getLockStatus()) {
+                    if (!child.fullyExplored.get() && !child.isLocked()) {
                         if (count == selection) {
                             currentNode = child;
                             break;

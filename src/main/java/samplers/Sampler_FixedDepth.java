@@ -82,7 +82,7 @@ public class Sampler_FixedDepth implements ISampler {
             Collections.shuffle(children);
 
             for (Node child : children) {
-                if (!child.fullyExplored.get() && !finishedNodes.contains(child) && !child.getLockStatus()) {
+                if (!child.fullyExplored.get() && !finishedNodes.contains(child) && !child.isLocked()) {
                     currentNode = child;
                     foundChild = true;
                     break;
