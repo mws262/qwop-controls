@@ -130,7 +130,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
         // Fetching new data.
         List<Node> nodesBelow = new ArrayList<>();
         if (selectedNode != null) {
-            selectedNode.getNodesBelow(nodesBelow);
+            selectedNode.getNodesBelow(nodesBelow, true);
 
             // Reduce the list size to something which renders quickly.
             plotDownsampler.filter(nodesBelow);

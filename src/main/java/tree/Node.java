@@ -166,7 +166,7 @@ public class Node {
      * If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z
      * offset.
      **/
-    private float zOffset = 0.f;
+    public float nodeLocationZOffset = 0.f;
 
     /* UTILITY */
 
@@ -185,9 +185,10 @@ public class Node {
     /**
      * Make a new node which is NOT the root. connectNodeToTree is the default.
      *
-     * @param parent
-     * @param action
-     * @param connectNodeToTree
+     * @param parent Parent node of this new node to be created.
+     * @param action Action associated with the new node which takes the parent node's state to this node's state.
+     * @param connectNodeToTree Whether this node is connected to the tree, i.e. does the parent node know about this
+     *                         child.
      * @throws IllegalArgumentException Trying to add a node with the same action as another in the parent.
      */
     public Node(Node parent, Action action, boolean connectNodeToTree) {
@@ -209,7 +210,7 @@ public class Node {
         edgeLength = 5.00f * (float) Math.pow(0.6947, 0.1903 * getTreeDepth()) + 1.5f;
 
         lineBrightness = parent.lineBrightness;
-        zOffset = parent.zOffset;
+        nodeLocationZOffset = parent.nodeLocationZOffset;
 
         // Should only add to parent's list after everything else has been done to prevent half-initialized nodes
         // from being used by other workers.
@@ -490,7 +491,7 @@ public class Node {
     /**
      * Get a created child node of this node by its index (order of creation).
      *
-     * @param childIndex
+     * @param childIndex Index of the child node to retrieve.
      * @return A child of this node, with the index as specified.
      */
     public Node getChildByIndex(int childIndex) {
@@ -515,31 +516,36 @@ public class Node {
      *
      * @param nodeList A list to add all of this branches' nodes to. This list must be caller-provided, and will not
      *                 be cleared.
+     * @param includeOnlyNodesWithState If true, this will only get nodes which have a state assigned to them.
      * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public List<Node> getNodesBelow(List<Node> nodeList) {
-        if (state != null) {
+    public List<Node> getNodesBelow(List<Node> nodeList, boolean includeOnlyNodesWithState) {
+        if (!includeOnlyNodesWithState) { // Include regardless.
+            nodeList.add(this);
+        } else if (!isStateUnassigned()) { // Include only if state is assigned.
             nodeList.add(this);
         }
         for (Node child : children) {
-            child.getNodesBelow(nodeList);
+            child.getNodesBelow(nodeList, includeOnlyNodesWithState);
         }
         return nodeList;
     }
 
 
     /**
-     * Get a list of all tree endpoints (leaves) below this node, i.e. on this branch.
+     * Get a list of all tree endpoints (leaves) below this node, i.e. on this branch. If called from a leaf, the
+     * list will only contain that leaf itself.
      *
      * @param leaves A list of leaves below this node. The list must be provided by the caller, and will not be
      *               cleared by this method.
      * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
     public List<Node> getLeaves(List<Node> leaves) {
-        for (Node child : children) {
-            if (child.children.isEmpty()) {
-                leaves.add(child);
-            } else {
+
+        if (children.isEmpty()) { // If leaf, add itself.
+            leaves.add(this);
+        } else { // Otherwise keep traversing down.
+            for (Node child : children) {
                 child.getLeaves(leaves);
             }
         }
@@ -628,7 +634,7 @@ public class Node {
     /**
      * Change whether this node or any above it have become fully explored. This is the complete version, which
      * resets any existing fully-explored tags from the descendants of this node before redoing all checks. Call from
-     * root to re-label the whole tree. During normal tree-building, a {@link Node#propagateFullyExplored_complete()
+     * root to re-label the whole tree. During normal tree-building, a {@link Node#propagateFullyExploredStatus_lite()
      * lite check} should suffice and is more computationally efficient.
      * <p>
      * This should only be used when a bunch of nodes are imported at once and need to all be checked, or if we need
@@ -796,10 +802,14 @@ public class Node {
      * Get the sequence of actions up to, and including this node.
      *
      * @return An array of actions which, when executed from the initial state will lead to the state at this node.
+     * @throws IndexOutOfBoundsException If called on the root node.
      */
     public synchronized Action[] getSequence() {
         Action[] sequence = new Action[getTreeDepth()];
-        if (getTreeDepth() == 0) return sequence; // Empty array for root node.
+        if (getTreeDepth() == 0)
+            throw new IndexOutOfBoundsException("Cannot get a sequence at the root node, since it has no actions " +
+                    "leading up to it.");
+
         Node current = this;
         sequence[getTreeDepth() - 1] = current.action;
         for (int i = getTreeDepth() - 2; i >= 0; i--) {
@@ -990,10 +1000,6 @@ public class Node {
         }
     }
 
-    /*******************************/
-    /******* TREE DRAWING **********/
-    /*******************************/
-
     /**
      * Draw the line connecting this node to its parent.
      **/
@@ -1010,8 +1016,8 @@ public class Node {
                         overrideLineColor.getBlue(), null);
                 gl.glColor3fv(Color.getHSBColor(color[0], color[1], lineBrightness).getColorComponents(null), 0);
             }
-            gl.glVertex3d(parent.nodeLocation[0], parent.nodeLocation[1], parent.nodeLocation[2] + zOffset);
-            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + zOffset);
+            gl.glVertex3d(parent.nodeLocation[0], parent.nodeLocation[1], parent.nodeLocation[2] + nodeLocationZOffset);
+            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
         }
     }
 
@@ -1025,7 +1031,7 @@ public class Node {
             } else {
                 gl.glColor3fv(overrideNodeColor.getColorComponents(null), 0);
             }
-            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + zOffset);
+            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
         }
     }
 
@@ -1228,24 +1234,23 @@ public class Node {
     }
 
     /**
-     * Give this branch a zOffset to make it stand out.
+     * Give this branch a nodeLocationZOffset to make it stand out.
      **/
     public void setBranchZOffset(float zOffset) {
-        this.zOffset = zOffset;
+        this.nodeLocationZOffset = zOffset;
         for (Node child : children) {
             child.setBranchZOffset(zOffset);
         }
     }
 
     /**
-     * Give this branch a zOffset to make it stand out. Goes backwards towards root.
+     * Give this branch a nodeLocationZOffset to make it stand out. Goes backwards towards root.
      **/
     public void setBackwardsBranchZOffset(float zOffset) {
-        this.zOffset = zOffset;
-        Node currentNode = this;
-        while (currentNode.getTreeDepth() > 0) {
-            currentNode.zOffset = zOffset;
-            currentNode = currentNode.parent;
+        this.nodeLocationZOffset = zOffset;
+
+        if (treeDepth > 0) {
+            parent.setBackwardsBranchZOffset(zOffset);
         }
     }
 

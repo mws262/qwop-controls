@@ -4,6 +4,14 @@
 
 Controlling the game [QWOP](http://www.foddy.net/Athletics.html).
 
+Personal research code, not well-formatted for external use.
+
+### Development
+All development is being done in IntelliJ after a recent switch from Eclipse. The IntelliJ project files are included
+ in the repository here. 
+ 
+ Maven is used to handle fetching dependencies and building.
+
 ### Running
         mvn -e exec:java -Dexec.mainClass=FOO
 

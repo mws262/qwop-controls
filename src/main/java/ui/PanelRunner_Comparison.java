@@ -71,7 +71,7 @@ public class PanelRunner_Comparison extends PanelRunner {
         EvaluationFunction_SqDistFromOther evFun = new EvaluationFunction_SqDistFromOther(selectedNode);
 
         Map<Float, Node> evaluatedNodeList = new TreeMap<>();
-        List<Node> allNodes = node.getRoot().getNodesBelow(new ArrayList<>());
+        List<Node> allNodes = node.getRoot().getNodesBelow(new ArrayList<>(), true);
 
         for (Node n : allNodes) {
             evaluatedNodeList.put(evFun.getValue(n), n);
