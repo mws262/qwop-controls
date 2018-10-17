@@ -9,11 +9,9 @@ import org.junit.Test;
 import actions.Action;
 import org.junit.rules.ExpectedException;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.LongAdder;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -198,15 +196,81 @@ public class NodeTest {
     }
 
     @Test
-    public void reserveExpansionRights() {// TODO
-    }
+    public void expansionRights() {
+        // Combination test for reserveExpansionRights(), isLocked(), and releaseExpansionRights().
+        setupTree();
 
-    @Test
-    public void releaseExpansionRights() {// TODO
-    }
+        // First half is reserving rights.
+        Assert.assertTrue(node1_2_1_2_2_4.reserveExpansionRights());
+        Assert.assertFalse(node1_2_1_2_2_4.reserveExpansionRights()); // Can only reserve once.
 
-    @Test
-    public void getLockStatus() {// TODO
+        // The parent of node1_2_1_2_2_4 only has one child, so locking it should also lock the parent.
+        Assert.assertTrue(node1_2_1_2_2.isLocked());
+        // Should NOT propagate the lock further up the tree since node1_2_1_2_2's parent has multiple children.
+        Assert.assertFalse(node1_2_1_2.isLocked());
+        Assert.assertFalse(node1_2_1_2_1.isLocked());
+
+        // Now reserve that sibling node.
+        Assert.assertTrue(node1_2_1_2_1.reserveExpansionRights());
+        Assert.assertFalse(node1_2_1_2_1.reserveExpansionRights());
+
+        // Should have locked the parent too, propagated back a few generations.
+        Assert.assertTrue(node1_2_1_2.isLocked());
+        Assert.assertTrue(node1_2_1.isLocked());
+        Assert.assertTrue(node1_2.isLocked());
+        Assert.assertFalse(node1.isLocked());
+
+        // Keep going until node1 totally locks out.
+        Assert.assertTrue(node1_1_2.reserveExpansionRights());
+        Assert.assertTrue(node1_1_1.reserveExpansionRights());
+        Assert.assertTrue(node1_1.isLocked());
+        Assert.assertFalse(node1.isLocked());
+        Assert.assertTrue(node1_3.reserveExpansionRights());
+        Assert.assertFalse(node1.isLocked());
+        Assert.assertTrue(node1_4.reserveExpansionRights());
+        Assert.assertTrue(node1.isLocked());
+        Assert.assertFalse(node1.reserveExpansionRights());
+
+        // Second half is releasing rights.
+        node1_2_1_2_2_4.releaseExpansionRights();
+        Assert.assertFalse(node1_2_1_2_2_4.isLocked());
+        Assert.assertFalse(node1_2_1_2_2.isLocked());
+        Assert.assertFalse(node1_2_1_2.isLocked());
+        Assert.assertFalse(node1_2_1.isLocked());
+        Assert.assertFalse(node1_2.isLocked());
+        Assert.assertFalse(node1.isLocked()); // Unlocks node1.
+
+        Assert.assertTrue(node1_2_1_2_1.isLocked());
+        Assert.assertTrue(node1_1.isLocked());
+        Assert.assertTrue(node1_4.isLocked());
+
+        node1_4.releaseExpansionRights();
+        Assert.assertFalse(node1_4.isLocked());
+        Assert.assertFalse(node1.isLocked());
+
+        node1_3.releaseExpansionRights();
+        Assert.assertFalse(node1_3.isLocked());
+        Assert.assertFalse(node1.isLocked());
+
+        node1_1_2.releaseExpansionRights();
+        Assert.assertFalse(node1_1_2.isLocked());
+        Assert.assertFalse(node1_1.isLocked());
+        Assert.assertTrue(node1_1_1.isLocked());
+
+        // Special cases.
+        // 1) Lock until root is locked too.
+        setupTree();
+        node1.reserveExpansionRights();
+        node2.reserveExpansionRights();
+        node3.reserveExpansionRights();
+        Assert.assertTrue(rootNode.isLocked());
+
+        // 2) Direct lock on rootNode.
+        setupTree();
+        rootNode.reserveExpansionRights();
+        Assert.assertTrue(rootNode.isLocked());
+        rootNode.releaseExpansionRights();
+        Assert.assertFalse(rootNode.isLocked());
     }
 
     @Test
@@ -682,23 +746,152 @@ public class NodeTest {
     }
 
     @Test
-    public void setBranchColor() {// TODO
+    public void setBranchColor() {
+        setupTree();
+        Color col1 = new Color(210, 100, 34);
+        Color col2 = new Color(33, 87, 101);
+
+        // Apply to leaf node.
+        node2_2_3.setBranchColor(col1);
+        Assert.assertEquals(col1, node2_2_3.overrideLineColor);
+        Assert.assertNull(node2_2_2.overrideLineColor);
+        Assert.assertNull(node2_2.overrideLineColor);
+        node2_2_3.setBranchColor(null); // set it back.
+
+        // Apply to some other middle node.
+        node2.setBranchColor(col1);
+        Assert.assertEquals(col1, node2.overrideLineColor);
+        Assert.assertEquals(col1, node2_1.overrideLineColor);
+        Assert.assertEquals(col1, node2_2.overrideLineColor);
+        Assert.assertEquals(col1, node2_2_1.overrideLineColor);
+        Assert.assertEquals(col1, node2_2_2.overrideLineColor);
+        Assert.assertEquals(col1, node2_2_3.overrideLineColor);
+        Assert.assertNull(rootNode.overrideLineColor);
+        Assert.assertNull(node1.overrideLineColor);
+        Assert.assertNull(node3.overrideLineColor);
+
+        // Calling from root should change EVERY node.
+        rootNode.setBranchColor(col2);
+        for (Node n : allNodes) {
+            Assert.assertEquals(col2, n.overrideLineColor);
+        }
     }
 
     @Test
-    public void setBackwardsBranchColor() {// TODO
+    public void setBackwardsBranchColor() {
+        setupTree();
+        Color col1 = new Color(210, 100, 34);
+        Color col2 = new Color(33, 87, 101);
+
+        // Call from root
+        rootNode.setBackwardsBranchColor(col1);
+        Assert.assertEquals(col1, rootNode.overrideLineColor);
+        Assert.assertNull(node1.overrideLineColor); // Should not change any but root.
+        rootNode.overrideLineColor = null;
+
+        // Call from some leaf node.
+        node3_3_3.setBackwardsBranchColor(col1);
+        Assert.assertEquals(col1, node3_3_3.overrideLineColor);
+        Assert.assertEquals(col1, node3_3.overrideLineColor);
+        Assert.assertEquals(col1, node3.overrideLineColor);
+        Assert.assertEquals(col1, rootNode.overrideLineColor);
+        Assert.assertNull(node3_3_2.overrideLineColor);
+        Assert.assertNull(node2_2_3.overrideLineColor);
+        Assert.assertNull(node2.overrideLineColor);
+        Assert.assertNull(node1_1.overrideLineColor);
+        node3_3_3.overrideLineColor = null;
+        node3_3.overrideLineColor = null;
+        node3.overrideLineColor = null;
+        rootNode.overrideLineColor = null;
+
+        //Call from a middle node. Also set a color somewhere else in the tree that we don't want to change.
+        node2_1.overrideLineColor = col1;
+        node1_2_1_2.setBackwardsBranchColor(col2);
+        Assert.assertEquals(col1, node2_1.overrideLineColor); // Should still be changed in its different way.
+        Assert.assertEquals(col2, node1_2_1_2.overrideLineColor);
+        Assert.assertEquals(col2, node1_2_1.overrideLineColor);
+        Assert.assertEquals(col2, node1_2.overrideLineColor);
+        Assert.assertEquals(col2, node1.overrideLineColor);
+        Assert.assertEquals(col2, rootNode.overrideLineColor);
+        Assert.assertNull(node1_2_1_2_2.overrideLineColor);
+        Assert.assertNull(node2_2_1.overrideLineColor);
     }
 
     @Test
-    public void clearBranchColor() {// TODO
+    public void clearBranchColor() {
+        setupTree();
+        Color col1 = new Color(210, 100, 34);
+        Color col2 = new Color(33, 87, 101);
+
+        // Root with only root colored.
+        rootNode.overrideLineColor = col1;
+        rootNode.clearBranchColor();
+        Assert.assertNull(rootNode.overrideLineColor);
+
+        // Mid node.
+        node1_2_1_2.overrideLineColor = col2;
+        node1_2_1_2_1.overrideLineColor = col2;
+        node1_1_1.overrideLineColor = col1;
+        node1_2_1_2.clearBranchColor();
+        Assert.assertNull(node1_2_1_2.overrideLineColor);
+        Assert.assertNull(node1_2_1_2_1.overrideLineColor);
+        Assert.assertNull(node1_2_1_2_2.overrideLineColor);
+        Assert.assertNull(node1_2_1_2_2_4.overrideLineColor);
+        Assert.assertEquals(col1, node1_1_1.overrideLineColor);
+
+        // Clearing from root should clear up the remaining one.
+        rootNode.clearBranchColor();
+        Assert.assertNull(node1_1_1.overrideLineColor);
+
+        node1_4.overrideLineColor = col1;
+        node1.clearBranchColor();
+        Assert.assertNull(node1_4.overrideLineColor);
+        node1_4.overrideLineColor = col1;
+        node1_4.clearBranchColor();
+        Assert.assertNull(node1_4.overrideLineColor);
     }
 
     @Test
-    public void clearBackwardsBranchColor() {// TODO
+    public void clearBackwardsBranchColor() {
+        setupTree();
+        Color col1 = new Color(210, 100, 34);
+        Color col2 = new Color(33, 87, 101);
+
+        // Clear a color from root.
+        rootNode.overrideLineColor = col1;
+        node1.overrideLineColor = col1;
+        rootNode.clearBackwardsBranchColor();
+        Assert.assertNull(rootNode.overrideLineColor);
+        Assert.assertEquals(col1, node1.overrideLineColor); // Preserves this color further down the tree.
+
+        // Middle node.
+        node1_2_1.overrideLineColor = col2;
+        node1_2_1_2.overrideLineColor = col2;
+        node1_2.overrideLineColor = col2;
+        node1_1.overrideLineColor = col2;
+        node1_2_1.clearBackwardsBranchColor();
+        Assert.assertNull(node1_2_1.overrideLineColor);
+        Assert.assertNull(node1_2.overrideLineColor);
+        Assert.assertNull(node1.overrideLineColor);
+        Assert.assertNull(rootNode.overrideLineColor);
+        Assert.assertEquals(col2, node1_2_1_2.overrideLineColor);
+        Assert.assertEquals(col2, node1_1.overrideLineColor);
+
+        // Some leaf node.
+        node2_1.overrideLineColor = col1;
+        node2_2.overrideLineColor = col1;
+        rootNode.overrideLineColor = col1;
+        node2_1.clearBackwardsBranchColor();
+        Assert.assertNull(node2_1.overrideLineColor);
+        Assert.assertNull(node2.overrideLineColor);
+        Assert.assertNull(rootNode.overrideLineColor);
+        Assert.assertEquals(col1, node2_2.overrideLineColor);
     }
 
     @Test
-    public void clearNodeOverrideColor() {// TODO
+    public void clearNodeOverrideColor() { // TODO
+
+
     }
 
     @Test
@@ -733,14 +926,11 @@ public class NodeTest {
         Assert.assertEquals(0, node1_4.nodeLocationZOffset, 1e-10);
         Assert.assertEquals(0, rootNode.nodeLocationZOffset, 1e-10);
 
-
         // Changing from root should change all nodes.
         rootNode.setBranchZOffset(-1f);
         for (Node n : allNodes) {
             Assert.assertEquals(-1, n.nodeLocationZOffset, 1e-10);
         }
-
-
     }
 
     @Test
@@ -818,7 +1008,43 @@ public class NodeTest {
     }
 
     @Test
-    public void clearBackwardsBranchZOffset() {// TODO
+    public void clearBackwardsBranchZOffset() {
+        setupTree();
+
+        // Clearing shouldn't make zoffset stop being zero anywhere.
+        node1_2_1_2_2_4.clearBackwardsBranchZOffset();
+        for (Node n : allNodes) {
+            Assert.assertEquals(0f, n.nodeLocationZOffset, 1e-10);
+        }
+
+        // Calling from root should be ok regardless of the offset there.
+        rootNode.clearBackwardsBranchZOffset();
+        Assert.assertEquals(0f, rootNode.nodeLocationZOffset, 1e-10);
+        rootNode.nodeLocationZOffset = 5f;
+        rootNode.clearBackwardsBranchZOffset(); // Should bring it back to 0.
+        Assert.assertEquals(0f, rootNode.nodeLocationZOffset, 1e-10);
+
+        // If one node in the middle has an offset, we should be able to clear it by calling clear from a descendant
+        // node.
+        node2.nodeLocationZOffset = 6f;
+        node2_2_3.clearBackwardsBranchZOffset();
+        Assert.assertEquals(0f, node2.nodeLocationZOffset, 1e-10);
+
+        // Calling it from a sibling node should not affect that node's offset.
+        node3.nodeLocationZOffset = 1f;
+        node2.clearBackwardsBranchZOffset();
+        Assert.assertEquals(1f, node3.nodeLocationZOffset, 1e-10);
+        node3.nodeLocationZOffset = 0f;
+
+        // Interaction with setting the branch offset.
+        node1_2.setBranchZOffset(-2f);
+        node1_2_1_2_2_4.clearBackwardsBranchZOffset();
+        Assert.assertEquals(0f, node1_2_1_2_2_4.nodeLocationZOffset, 1e-10);
+        Assert.assertEquals(0f, node1_2_1_2_2.nodeLocationZOffset, 1e-10);
+        Assert.assertEquals(0f, node1_2_1_2.nodeLocationZOffset, 1e-10);
+        Assert.assertEquals(0f, node1_2_1.nodeLocationZOffset, 1e-10);
+        Assert.assertEquals(0f, node1_2.nodeLocationZOffset, 1e-10);
+        Assert.assertEquals(-2f, node1_2_1_2_1.nodeLocationZOffset, 1e-10);
     }
 
     @Test

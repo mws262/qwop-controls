@@ -31,7 +31,7 @@ public class Sampler_Distribution implements ISampler {
             if (currentNode.fullyExplored.get())
                 throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its " +
 						"fault.");
-            if (currentNode.getLockStatus()) currentNode = currentNode.getRoot();
+            if (currentNode.isLocked()) currentNode = currentNode.getRoot();
 
             // Count the number of available children to go to next.
             ArrayList<Node> notFullyExploredChildren = new ArrayList<>();

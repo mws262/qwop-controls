@@ -28,7 +28,7 @@ public class Sampler_Deterministic implements ISampler {
             if (currentNode.fullyExplored.get())
                 throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its " +
 						"fault.");
-            if (currentNode.getLockStatus()) {
+            if (currentNode.isLocked()) {
                 currentNode = startNode;
                 if (currentNode.getTreeDepth() > startNode.getTreeDepth()) {
                     currentNode = currentNode.getParent();
