@@ -366,20 +366,7 @@ public class NodeTest {
 
     @Test
     public void getCreatedNodeCount() {
-//        // Reset the static field containing the node creation count. Hacky, but hey, it's a unit test.
-//        try {
-//            Field nodeCounter = Node.class.getDeclaredField("nodesCreated");
-//            nodeCounter.setAccessible(true);
-//            LongAdder.class.getMethod("reset").invoke(nodeCounter.get(null));
-//        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-//            e.printStackTrace();
-//        }
-//        setupTree();
-//
-//        Assert.assertEquals(27, Node.getTotalNodeCount());
-//        rootNode.addChild(a4);
-//
-//        Assert.assertEquals(28, Node.getTotalNodeCount());
+        //TODO change from static counter. Too hard to test.
     }
 
     @Test
@@ -388,10 +375,56 @@ public class NodeTest {
 
     @Test
     public void isFailed() {
+        setupTree();
+
+        // Try some unfailed states.
+        node1_1_2.setState(unfailedState);
+        Assert.assertFalse(node1_1_2.isFailed());
+        node3.setState(unfailedState);
+        Assert.assertFalse(node3.isFailed());
+
+        // Try some failed states.
+        node2_2_3.setState(failedState);
+        Assert.assertTrue(node2_2_3.isFailed());
+        node2.setState(failedState);
+        Assert.assertTrue(node2.isFailed());
+
+        // Check root node.
+        Assert.assertFalse(rootNode.isFailed());
     }
 
     @Test
     public void setFailed() {
+        setupTree();
+
+        // Can override any failure flag.
+        // No state assigned.
+        Assert.assertFalse(node2.isFailed());
+        node2.setFailed(true);
+        Assert.assertTrue(node2.isFailed());
+
+        // Unfailed state.
+        node1_2_1_2_1.setState(unfailedState);
+        Assert.assertFalse(node1_2_1_2_1.isFailed());
+        node1_2_1_2_1.setFailed(true);
+        Assert.assertTrue(node1_2_1_2_1.isFailed());
+        node1_2_1_2_1.setFailed(false);
+        Assert.assertFalse(node1_2_1_2_1.isFailed());
+
+        // Failed state.
+        Assert.assertFalse(node1_1.isFailed());
+        node1_1.setState(failedState);
+        Assert.assertTrue(node1_1.isFailed());
+        node1_1.setFailed(false);
+        Assert.assertFalse(node1_1.isFailed());
+        node1_1.setFailed(true);
+        Assert.assertTrue(node1_1.isFailed());
+
+        Assert.assertFalse(rootNode.isFailed());
+        rootNode.setFailed(true);
+        Assert.assertTrue(rootNode.isFailed());
+        rootNode.setFailed(false);
+        Assert.assertFalse(rootNode.isFailed());
     }
 
     @Test
