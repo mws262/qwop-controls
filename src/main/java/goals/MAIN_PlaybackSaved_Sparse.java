@@ -37,9 +37,9 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
     public static int windowHeight = 1000;
 
 
-    File saveLoc = new File(Utility.getExcutionPath() + "saved_data/5_11_18");
+    private File saveLoc = new File(Utility.getExcutionPath() + "saved_data/5_11_18");
 
-    List<Node> leafNodes = new ArrayList<>();
+    private List<Node> leafNodes = new ArrayList<>();
 
     /**
      * What point to start displaying from (to skip any prefix).
@@ -84,7 +84,9 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
         SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
         for (File f : playbackFiles) {
             Node rootNode = new Node();
-            List<SavableSingleGame> loadedGames = fileIO.loadObjectsOrdered(f.getAbsolutePath());
+
+            List<SavableSingleGame> loadedGames = new ArrayList<>();
+            fileIO.loadObjectsToCollection(f, loadedGames);
             Node.makeNodesFromRunInfo(loadedGames, rootNode, -1);
             leafNodes.clear();
             rootNode.getLeaves(leafNodes);

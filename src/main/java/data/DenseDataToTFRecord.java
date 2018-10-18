@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.tensorflow.example.BytesList;
 import org.tensorflow.example.Example;
@@ -42,7 +43,7 @@ public class DenseDataToTFRecord {
 
         double megabyteCount = 0;
         ArrayList<File> inFiles = new ArrayList<>();
-        for (File file : inDir.listFiles()) {
+        for (File file : Objects.requireNonNull(inDir.listFiles())) {
             if (!file.isDirectory()) {
                 String extension = "";
                 // Get only files with the correct file extension.
@@ -68,13 +69,13 @@ public class DenseDataToTFRecord {
         SavableFileIO<SavableDenseData> inFileLoader = new SavableFileIO<>();
         int count = 0;
         for (File file : inFiles) {
-            List<SavableDenseData> denseDat = inFileLoader.loadObjectsOrdered(file.getAbsolutePath());
+            List<SavableDenseData> denseDat = new ArrayList<>();
+            inFileLoader.loadObjectsToCollection(file, denseDat);
             System.out.print("Beginning to package " + file.getName() + ". ");
             String fileOutName = file.getName().substring(0, file.getName().lastIndexOf('.')) + "." + outFileExt;
             try {
                 convertToProtobuf(denseDat, fileOutName, outDir);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             count++;

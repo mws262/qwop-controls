@@ -50,7 +50,7 @@ public class SavableNode implements Serializable {
                     	// to place, just use it.
                         currentNode = child;
                         foundExistingMatch = true;
-                        continue; // We found a match, move on.
+                        break; // We found a match, move on.
                     }
                 }
                 // If this action is unique at this point in the tree, we need to add a new node there.

@@ -76,10 +76,10 @@ public class DataSaver_StageSelected implements IDataSaver {
         }
 
         if (overrideFilename.isEmpty()) {
-            fileIO.storeObjectsOrdered(saveBuffer,
+            fileIO.storeObjects(saveBuffer,
 					fileLocation + IDataSaver.generateFileName(filePrefix + successStatus, fileExtension), false);
         } else {
-            fileIO.storeObjectsOrdered(saveBuffer,
+            fileIO.storeObjects(saveBuffer,
 					fileLocation + overrideFilename + successStatus + "." + fileExtension, false);
 
         }

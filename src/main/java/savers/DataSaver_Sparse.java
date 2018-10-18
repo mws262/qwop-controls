@@ -70,7 +70,7 @@ public class DataSaver_Sparse implements IDataSaver {
         gamesSinceFile++;
 
         if (saveInterval == gamesSinceFile) {
-            fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix,
+            fileIO.storeObjects(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix,
 					fileExtension), false);
             saveBuffer.clear();
             gamesSinceFile = 0;
@@ -91,7 +91,7 @@ public class DataSaver_Sparse implements IDataSaver {
     public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
         // If the save buffer still has stuff in it, save!
         if (!saveBuffer.isEmpty())
-            fileIO.storeObjectsOrdered(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
+            fileIO.storeObjects(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
     }
 
     @Override

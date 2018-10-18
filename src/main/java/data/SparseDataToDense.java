@@ -1,6 +1,7 @@
 package data;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -61,7 +62,8 @@ public class SparseDataToDense {
         if (saveBulk) {
             saver.setSaveInterval(-1);
             for (File file : files) {
-                List<SavableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
+                List<SavableSingleGame> sparseGames = new ArrayList<>();
+                fileIO.loadObjectsToCollection(file, sparseGames);
                 for (SavableSingleGame singleGame : sparseGames) {
                     sim(singleGame);
                 }
@@ -70,7 +72,8 @@ public class SparseDataToDense {
         } else {
             saver.setSaveInterval(1);
             for (File file : files) {
-                List<SavableSingleGame> sparseGames = fileIO.loadObjectsOrdered(file.getAbsolutePath());
+                List<SavableSingleGame> sparseGames = new ArrayList<>();
+                fileIO.loadObjectsToCollection(file, sparseGames);
                 for (SavableSingleGame singleGame : sparseGames) {
                     saver.filenameOverride = file.getName().split("\\.(?=[^.]+$)")[0];
                     sim(singleGame);
