@@ -119,8 +119,6 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
     private DecisionHolder currentDecision;
     private Deque<State> previousStatesLIFO = new LIFOFixedSize<>(numPreviousStatesToCompare);
 
-    EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<>(numTopMatchesToConsider);
-
     private boolean[] chosenKeys = new boolean[4];
 
     //IMPORTANT  DUE TO COLLECTION BUG
@@ -130,6 +128,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
      * Create a trajectory library-type controller by providing a list of files to look through.
      *
      * @param files A list of .TFRecord SequenceExample files from which to load trajectories.
+     * @throws IOException Files are not successfully loaded.
      */
     public Controller_NearestNeighborApprox(List<File> files) {
         try {
@@ -148,9 +147,6 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
         NavigableMap<Float, StateHolder> lowerSet = allStates.headMap(sortBy, true);
         NavigableMap<Float, StateHolder> upperSet = allStates.tailMap(sortBy, false);
 
-        StateHolder bestMatch;
-        float bestMatchError = Float.MAX_VALUE;
-
         EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<>(10);
 
         //Utility.tic();
@@ -158,8 +154,8 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
         upperSet.values().stream().limit(upperSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state), v));
         //Utility.toc();
         Entry<Float, StateHolder> bestEntry = topMatches.firstEntry();
-        bestMatch = bestEntry.getValue();
-        bestMatchError = bestEntry.getKey();
+        StateHolder bestMatch = bestEntry.getValue();
+        float bestMatchError = bestEntry.getKey();
 
 
         // Voting?

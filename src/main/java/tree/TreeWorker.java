@@ -140,7 +140,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      **/
     private int tsPerSecond = 0;
 
-    public String workerName = "";
+    public String workerName;
     private final int workerID;
     private static int workerCount = 0;
 
@@ -159,7 +159,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Set the root node to work from. Does not have to be the overall tree root.
      * Must be assigned, however. Must still startWorker() to get things rolling.
      *
-     * @param rootNode
+     * @param rootNode Root node that this worker expands from.
      */
     public void setRoot(Node rootNode) {
         this.rootNode = rootNode;
@@ -179,7 +179,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
         this.saver = saver.getCopy();
     }
 
-    /** Finite state machine loop. Runnable. **/
+    /**
+     * Finite state machine loop. Runnable.
+     **/
     @Override
     public void run() {
         while (workerRunning) {

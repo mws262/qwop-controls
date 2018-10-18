@@ -14,7 +14,7 @@ public class Transform_PCA implements ITransform {
      * Eigenvectors found during SVD of the conditioned states. They represent the principle directions that explain
      * most of the state variance.
      **/
-    private FloatMatrix evecs;
+    private FloatMatrix eigenvectors;
 
     /**
      * Number of state values per node as seen in the calculations.
@@ -52,23 +52,22 @@ public class Transform_PCA implements ITransform {
         // Do PCA!
         FloatMatrix dataSet = conditionData(unpackData(nodesToUpdateFrom));
         FloatMatrix[] USV = Singular.fullSVD(dataSet);
-        evecs = USV[2]; // Eigenvectors
+        eigenvectors = USV[2];
 
         /* During SVD we find the eigenvalues, the weights for what portion of variance is explained by the
          * corresponding eigenvector. */
-        FloatMatrix evals = USV[1].mul(USV[1]).div(dataSet.rows);
+        FloatMatrix eigenvalues = USV[1].mul(USV[1]).div(dataSet.rows);
 
         // Also make the vector of normalized eigenvalues.
         float evalSum = 0;
-        for (int i = 0; i < evals.length; i++) {
-            evalSum += evals.get(i);
+        for (int i = 0; i < eigenvalues.length; i++) {
+            evalSum += eigenvalues.get(i);
         }
-        // Normalize so the sum of the evals == 1
-        FloatMatrix evalsNormalized = new FloatMatrix(evals.length);
-        for (int i = 0; i < evals.length; i++) {
-            evalsNormalized.put(i, evals.get(i) / evalSum);
+        // Normalize so the sum of the eigenvalues == 1
+        FloatMatrix evalsNormalized = new FloatMatrix(eigenvalues.length);
+        for (int i = 0; i < eigenvalues.length; i++) {
+            evalsNormalized.put(i, eigenvalues.get(i) / evalSum);
         }
-
     }
 
     @Override
@@ -76,7 +75,7 @@ public class Transform_PCA implements ITransform {
         FloatMatrix preppedDat = unpackData(originalStates);
         preppedDat.subiRowVector(stateAvgs);
         preppedDat.diviRowVector(stateSTDs);
-        FloatMatrix lowDimData = preppedDat.mmul(evecs.getColumns(transformPCAComponents));
+        FloatMatrix lowDimData = preppedDat.mmul(eigenvectors.getColumns(transformPCAComponents));
         List<FloatMatrix> splitLowDimData = lowDimData.rowsAsList(); // Each data point is a list entry in a FloatMatrix
         // Lambda mapping the list FloatMatrix's to float[]'s
         return splitLowDimData.stream().map(floatmat -> floatmat.data).collect(Collectors.toList());
@@ -91,7 +90,7 @@ public class Transform_PCA implements ITransform {
             }
         }
 
-        FloatMatrix restoredDimData = lowDimData.mmul(evecs.getColumns(transformPCAComponents).transpose());
+        FloatMatrix restoredDimData = lowDimData.mmul(eigenvectors.getColumns(transformPCAComponents).transpose());
 
         restoredDimData.muliRowVector(stateSTDs);
         restoredDimData.addiRowVector(stateAvgs);

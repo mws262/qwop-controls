@@ -62,7 +62,6 @@ public class SavableNode implements Serializable {
                 }
             }
         }
-
         return rootNode;
     }
 }

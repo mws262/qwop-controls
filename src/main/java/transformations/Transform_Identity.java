@@ -16,8 +16,7 @@ import game.State;
 public class Transform_Identity implements ITransform {
 
     @Override
-    public void updateTransform(List<State> nodesToUpdateFrom) {
-    }
+    public void updateTransform(List<State> nodesToUpdateFrom) {}
 
     @Override
     public List<float[]> transform(List<State> originalStates) {
@@ -43,5 +42,4 @@ public class Transform_Identity implements ITransform {
     public String getName() {
         return "identity";
     }
-
 }

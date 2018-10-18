@@ -10,12 +10,11 @@ import java.util.List;
  * {@link Action#poll()} to get the keystrokes at each timestep execution. Call {@link Action#hasNext()} to make
  * sure there are timesteps left in this action. Call {@link Action#reset()} to restore the duration of the action back to
  * original.
- *
+ * <p>
  * Note that when constructed, actions may not be changed or polled. They serve as an "immutable" backup of the
  * action. To get a pollable version of the {@link Action}, call {@link Action#getCopy()}.
  *
  * @author Matt
- *
  * @see java.util.Queue
  * @see ActionSet
  */
@@ -218,7 +217,9 @@ public class Action implements Serializable {
      *
      * @param inActions A list of actions which we wish to consolidate.
      * @return A new list of actions which is the consolidated version of the input action list.
-     **/
+     * @throws IllegalArgumentException When trying to consolidate a list of actions containing nothing but 0-length
+     *                                  actions.
+     */
     public static List<Action> consolidateActions(List<Action> inActions) {
         List<Action> outActions = new ArrayList<>(); //TODO: keeps making lists even when recursing. May just want to
         // modify in place.
