@@ -890,8 +890,6 @@ public class NodeTest {
 
     @Test
     public void clearNodeOverrideColor() { // TODO
-
-
     }
 
     @Test

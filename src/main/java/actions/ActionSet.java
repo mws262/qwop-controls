@@ -25,7 +25,8 @@ public class ActionSet extends ArrayList<Action> {
      * Create a new ActionSet which can sample according to the rules of a {@link Distribution}. It may otherwise be
      * treated as an {@link ArrayList}.
      *
-     * @param samplingDist
+     * @param samplingDist Distribution that samples of the action set will be pulled when calling
+     * {@link ActionSet#sampleDistribution}.
      */
     private ActionSet(Distribution<Action> samplingDist) {
         this.samplingDist = samplingDist;
@@ -85,8 +86,8 @@ public class ActionSet extends ArrayList<Action> {
     /**
      * Simply return many instances of the given keyString. Useful when making action sets sometimes.
      *
-     * @param keyString
-     * @param times
+     * @param keyString Boolean array representing QWOP keys.
+     * @param times Number of times to replicate the given keyString in the 1st dimension.
      * @return
      */
     @Deprecated
