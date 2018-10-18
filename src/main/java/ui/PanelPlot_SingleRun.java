@@ -134,7 +134,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
             int currCol = count + firstPlotRow * plotsPerView;
             Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
-            Float[] yData = commandList.stream().map(b -> Float.valueOf((b[0] ? 1 : 0) + (b[1] ? 2 : 0) + (b[2] ? 4 :
+            Float[] yData = commandList.stream().map(b -> (float) ((b[0] ? 1 : 0) + (b[1] ? 2 : 0) + (b[2] ? 4 :
                     0) + (b[3] ? 8 : 0))).toArray(Float[]::new);
             Color[] cData =
                     IntStream.range(0, yData.length).mapToObj(i -> Node.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.getTreeDepth()))).toArray(Color[]::new);

@@ -55,7 +55,7 @@ public class PanelRunner_Comparison extends PanelRunner {
         strokes.clear();
         colors.clear();
 
-        /***** Focused node first *****/
+        /* Focused node first */
         selectedNode = node;
         selectedNode.overrideNodeColor = Color.PINK; // Restore its red color
         selectedNode.displayPoint = true;
@@ -67,7 +67,7 @@ public class PanelRunner_Comparison extends PanelRunner {
         colors.add(Color.PINK);
         focusNodes.add(node);
 
-        /***** Get the nearest ones, according to the provided metric *****/
+        /* Get the nearest ones, according to the provided metric. */
         EvaluationFunction_SqDistFromOther evFun = new EvaluationFunction_SqDistFromOther(selectedNode);
 
         Map<Float, Node> evaluatedNodeList = new TreeMap<>();

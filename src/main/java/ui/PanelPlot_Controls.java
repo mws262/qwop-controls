@@ -34,7 +34,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     /**
      * Filters to be applied to the node list.
      **/
-    List<INodeFilter> nodeFilters = new ArrayList<>();
+    private List<INodeFilter> nodeFilters = new ArrayList<>();
 
     /**
      * Downsampler to reduce the number of nodes we're trying to process and display
@@ -44,7 +44,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 
     private INodeFilter filterMissingInfo = new NodeFilter_MissingInfo();
 
-    List<float[]> transformedStates;
+    private List<float[]> transformedStates;
 
     /**
      * How many plots to squeeze in one displayed row.
@@ -64,7 +64,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     /**
      * Nodes to be processed and plotted.
      **/
-    List<Node> nodes = new ArrayList<>();
+    private List<Node> nodes = new ArrayList<>();
 
     public PanelPlot_Controls(int numberOfPlots) {
         super(numberOfPlots);
