@@ -117,7 +117,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
     private RunHolder currentTrajectory;
     private StateHolder currentTrajectoryStateMatch;
     private DecisionHolder currentDecision;
-    private Deque<State> previousStatesLIFO = new LIFOFixedSize<>(numPreviousStatesToCompare);
+    private LIFOFixedSize<State> previousStatesLIFO = new LIFOFixedSize<>(numPreviousStatesToCompare);
 
     private boolean[] chosenKeys = new boolean[4];
 
