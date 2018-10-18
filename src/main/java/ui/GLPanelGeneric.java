@@ -29,7 +29,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 @SuppressWarnings("serial")
 public class GLPanelGeneric extends GLJPanel implements GLEventListener, ComponentListener {
 
-    /***** GL objects *****/
+    /* GL objects */
     /**
      * If using openGL, we have to put a special GLCanvas inside the frame
      **/
@@ -38,22 +38,16 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
     /**
      * GLU is the line/point graphics
      **/
-    GLU glu;
-
-    /**
-     * GLUT is used for text rendering.
-     **/
-    GLUT glut = new GLUT();
+    private GLU glu;
 
     GL2 gl;
 
-    /***** Theme colors *****/
+    /* Theme colors */
     // Dark theme - default
     public static final float[] darkBackground = {0.f / 255.f, 43f / 255.f, 54.f / 255.f, 0.2f}; // Solarized
 	// background color
     public static final float[] darkText = {0.7f, 0.7f, 0.7f, 1.0f}; // Gray color
 
-    /***** Camera management *****/
     /**
      * Camera manager for this scene
      **/

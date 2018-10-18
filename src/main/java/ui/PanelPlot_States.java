@@ -44,7 +44,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     /**
      * Which plot index has an active menu.
      **/
-    int activePlotIdx = 0;
+    private int activePlotIdx = 0;
 
     /**
      * Body parts associated with each plot and axis.
@@ -77,14 +77,14 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
         super(numPlots);
         // Make string arrays of the body part and state variable names.
         int count = 0;
-        /** String names of the body parts. **/
+        // String names of the body parts.
         String[] objNames = new String[State.ObjectName.values().length];
         for (State.ObjectName obj : State.ObjectName.values()) {
             objNames[count] = obj.name();
             count++;
         }
         count = 0;
-        /** String names of the state variables. **/
+        // String names of the state variables.
         String[] stateNames = new String[State.StateName.values().length];
         for (State.StateName st : State.StateName.values()) {
             stateNames[count] = st.name();
@@ -181,7 +181,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     public void plotClicked(int plotIdx) {
         activePlotIdx = plotIdx;
         menu.setTitle("Select plot " + (plotIdx + 1) + " data.");
-        int menuYOffset = -30; /** Offsets to put the data selection menu right above the correct panel. **/
+        int menuYOffset = -30; // Offsets to put the data selection menu right above the correct panel.
         int menuXOffset = 30;
         menu.setLocation(plotPanels[plotIdx].getX() + menuXOffset, menuYOffset);
         objListX.setSelectedIndex(plotObjectsX[plotIdx].ordinal()); // Make the drop down menus match the current plots.

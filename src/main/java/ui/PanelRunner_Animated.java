@@ -95,7 +95,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
             P = nextCommand[3];
             game.stepGame(Q, W, O, P);
             State st = game.getCurrentState();
-            System.out.println(st.body.getX() + "," + st.body.getDx() + "," + game.getTimestepsSimulated());
+            System.out.println(st.body.getX() + "," + st.body.getDx() + "," + GameLoader.getTimestepsSimulated());
         }
     }
 
@@ -119,7 +119,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     @Override
     public void run() {
-        /** Is this panel still listening and ready to draw? Only false if thread is being killed. **/
+        /* Is this panel still listening and ready to draw? Only false if thread is being killed. */
         boolean running = true;
         while (running) {
             if (active && !pauseFlag) {
@@ -129,8 +129,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
             }
             if (fastForwardTimesteps-- <= 0) {
                 try {
-                    /** How long the panel pauses between drawing in millis. Assuming that simulation basically takes
-					 *  no time. **/
+                    // How long the panel pauses between drawing in millis. Assuming that simulation basically takes
+                    // no time.
                     long displayPause = 35;
                     Thread.sleep(displayPause);
                 } catch (InterruptedException e) {

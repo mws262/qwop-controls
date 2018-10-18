@@ -157,7 +157,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
             } else {
                 g.setColor(Color.DARK_GRAY);
             }
-            /** Spacing for sequence number drawing on the left side panel. **/
+            // Spacing for sequence number drawing on the left side panel.
             int vertTextSpacing = 18;
             g.drawString(line, 10 + (currIdx % 4) * 50 + lineNum / 7 * 210,
                     vertTextAnchor + vertTextSpacing * (lineNum % 7 + 2)); // Wrap horizontally after 7 lines

@@ -52,22 +52,22 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
     /**
      * Tree root nodes associated with this interface.
      **/
-    ArrayList<Node> rootNodes = new ArrayList<>();
+    private ArrayList<Node> rootNodes = new ArrayList<>();
 
     /**
      * Individual pane for the tree.
      **/
-    TreePane treePane;
+    private TreePane treePane;
 
     /**
      * Pane for the tabbed side of the interface.
      **/
-    JTabbedPane tabPane;
+    private JTabbedPane tabPane;
 
     /**
      * Selected node by user click/key
      **/
-    Node selectedNode;
+    private Node selectedNode;
 
     /**
      * List of panes which can be activated, deactivated.
@@ -337,11 +337,11 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
             }
             textRenderBig.endRendering();
 
-            /**
+            /*
              * Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers
              * gives more
              * weight to the old value.
-             **/
+             */
             float loopTimeFilter = 8;
             avgLoopTime =
                     (long) (((loopTimeFilter - 1f) * avgLoopTime + 1f * (System.currentTimeMillis() - lastIterTime)) / loopTimeFilter); // Filter the loop time
@@ -389,7 +389,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
          * Draw a text string using GLUT (for openGL rendering version of my stuff)
          **/
         public void drawString(String toDraw, float x, float y, float z, GL2 gl, GLUT glut) {
-            // Fomat numbers with Java.
+            // Format numbers with Java.
             NumberFormat format = NumberFormat.getNumberInstance();
             format.setMinimumFractionDigits(2);
             format.setMaximumFractionDigits(2);
@@ -415,7 +415,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
             cam.smoothTranslateRelative(relCamMove, relCamMove, 5);
             mouseX = e.getX();
             mouseY = e.getY();
-
         }
 
         @Override
@@ -487,8 +486,6 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
                             treePause = !treePause;
                             if (treePause) {
                                 rootNodes.get(0).calcNodePosBelow();
-                            } else {
-                                //tmp remove negotiator.unpauseTree();
                             }
                             break;
                         case KeyEvent.VK_C:
@@ -566,9 +563,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
             if (selectedNode != null) { // Do nothing if no node is selected to begin with.
 
-                if (selectedNode.getTreeDepth() == 0) { // At root, don't try to look at parent.
-                    // <nothing>
-                } else {
+                if (selectedNode.getTreeDepth() != 0) {
                     int thisIndex = selectedNode.getIndexAccordingToParent();
                     //This set of logicals eliminates the edge cases, then takes the proposed action as default
                     if (thisIndex == 0 && direction == -1) { //We're at the lowest index of this node and must head

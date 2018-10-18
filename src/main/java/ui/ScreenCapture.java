@@ -27,8 +27,6 @@ public class ScreenCapture {
             this.robot = new Robot();
         } catch (AWTException e) {
             e.printStackTrace();
-        } finally {
-
         }
     }
 

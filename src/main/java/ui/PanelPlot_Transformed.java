@@ -30,7 +30,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     /**
      * Filters to be applied to the node list.
      **/
-    List<INodeFilter> nodeFilters = new ArrayList<>();
+    private List<INodeFilter> nodeFilters = new ArrayList<>();
 
     /**
      * Downsampler to reduce the number of nodes we're trying to process and display
@@ -46,8 +46,8 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     /**
      * Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation.
      **/
-    List<Node> nodesToTransform = new ArrayList<>();
-    List<float[]> transformedStates;
+    private List<Node> nodesToTransform = new ArrayList<>();
+    private List<float[]> transformedStates;
 
     /**
      * Which plot, in the grid of potential plots, is currently being plotted in the first spot on the left.
@@ -58,10 +58,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     public PanelPlot_Transformed(ITransform transformer, int plotsPerView) {
         super(plotsPerView);
         this.plotsPerView = plotsPerView;
-
         this.transformer = transformer;
-        /** Total number of plots -- not necessarily all displayed at once. **/
-        int numPlots = transformer.getOutputStateSize() * transformer.getOutputStateSize();
 
         addKeyListener(this);
         setFocusable(true);
@@ -73,7 +70,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
         nodesToTransform.clear();
         plotNode.getRoot().getNodesBelow(nodesToTransform, true);
         transformDownsampler.filter(nodesToTransform);
-        List<State> statesBelow = nodesToTransform.stream().map(n -> n.getState()).collect(Collectors.toList()); //
+        List<State> statesBelow = nodesToTransform.stream().map(Node::getState).collect(Collectors.toList());
         // Convert from node list to state list.
         transformer.updateTransform(statesBelow); // Update transform with all states.
 
@@ -88,7 +85,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
         plotDownsampler.filter(nodesToTransform); // Reduce number of nodes to transform if necessary. Plotting is a
         // bottleneck.
 
-        statesBelow = nodesToTransform.stream().map(n -> n.getState()).collect(Collectors.toList()); // Convert from node
+        statesBelow = nodesToTransform.stream().map(Node::getState).collect(Collectors.toList()); // Convert from node
         // list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
 

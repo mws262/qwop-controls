@@ -45,7 +45,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     }
 
     /**
-     * Gets autocalled by the goals graphics manager.
+     * Gets auto-called by the goals graphics manager.
      **/
     @Override
     public void paintComponent(Graphics g) {
@@ -56,9 +56,11 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
             game.drawExtraRunner((Graphics2D) g, currState, "", runnerScaling,
                     (int) (xOffsetPixels - currState.body.getX() * runnerScaling), yOffsetPixels, Color.BLACK,
                     normalStroke);
+            /* Current status of each keypress. */
             boolean p = false;
             boolean o = false;
-            boolean w = false; /** Current status of each keypress. **/boolean q = false;
+            boolean w = false;
+            boolean q = false;
             keyDrawer(g, q, w, o, p);
 
             //This draws the "road" markings to show that the ground is moving relative to the dude.
@@ -72,7 +74,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
 
     @Override
     public void run() {
-        /** Is this panel still listening and ready to draw? Only false if thread is being killed. **/
+        /* Is this panel still listening and ready to draw? Only false if thread is being killed. */
         boolean running = true;
         while (running) {
             if (active && !pauseFlag) {
@@ -83,8 +85,8 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
                 }
             }
             try {
-                /** How long the panel pauses between drawing in millis. Assuming that simulation basically takes no
-                 * time. **/
+                // How long the panel pauses between drawing in millis. Assuming that simulation basically takes no
+                // time.
                 long displayPause = 35;
                 Thread.sleep(displayPause);
             } catch (InterruptedException e) {

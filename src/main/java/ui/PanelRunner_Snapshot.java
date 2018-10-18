@@ -20,6 +20,7 @@ import tree.Node;
  *
  * @author Matt
  */
+@SuppressWarnings("FieldCanBeLocal")
 public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, MouseMotionListener {
 
     private static final long serialVersionUID = 1L;
@@ -58,7 +59,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     /**
      * How close do we have to be (squared) from the body of a single runner for it to be eligible for selection.
      **/
-    float figureSelectThreshSq = 150;
+    private float figureSelectThreshSq = 150;
 
     /**
      * Current mouse location.
@@ -94,7 +95,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         strokes.clear();
         colors.clear();
 
-        /***** Focused node first *****/
+        /* Focused node first */
         snapshotNode = node;
         Object[] nodeTransform = game.getXForms(snapshotNode.getState());
         specificXOffset =
@@ -106,7 +107,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         colors.add(Color.BLACK);
         focusLeaves.add(node);
 
-        /***** History nodes *****/
+        /* History nodes */
         Node historyNode = snapshotNode;
         for (int i = 0; i < numHistoryStatesDisplay; i++) {
             if (historyNode.getTreeDepth() > 0) {
@@ -119,7 +120,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             }
         }
 
-        /***** Future leaf nodes *****/
+        /* Future leaf nodes */
         List<Node> descendants = new ArrayList<>();
         for (int i = 0; i < snapshotNode.getChildCount(); i++) {
             Node child = snapshotNode.getChildByIndex(i);
