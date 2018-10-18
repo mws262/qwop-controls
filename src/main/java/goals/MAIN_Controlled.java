@@ -68,10 +68,10 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
     /**
      * Screen capture settings.
      **/
-    ScreenCapture screenCap;
+    private ScreenCapture screenCap;
     private boolean doScreenCapture = true;
 
-    Panel mainViewPanel;
+    private Panel mainViewPanel;
 
     public static void main(String[] args) {
         MAIN_Controlled mc = new MAIN_Controlled();
@@ -173,8 +173,10 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         game.mainRunnerColor = Color.ORANGE;
         mainViewPanel.setBackground(backgroundColor);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        /** Window height **/
-        int windowHeight = 1000; /** Window width **/int windowWidth = 1920;
+        // Window height
+        int windowHeight = 1000;
+        // Window width
+        int windowWidth = 1920;
         setPreferredSize(new Dimension(windowWidth, windowHeight));
         setContentPane(this.getContentPane());
         pack();
@@ -182,16 +184,14 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         setVisible(true);
         repaint();
 
-        if (doScreenCapture) {
-            // Save a progress log before shutting down.
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try {
-                    screenCap.finalize();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }));
-        }
+        // Save a progress log before shutting down.
+        if (doScreenCapture) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                screenCap.finalize();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }));
     }
 
     public void doControlled() {
@@ -199,13 +199,15 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         // Recreate prefix part of this tree.
         SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
         Node rootNode = new Node();
-        Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(prefixSave.getAbsolutePath()), rootNode, -1);
+        List<SavableSingleGame> glist = new ArrayList<>();
+        fileIO.loadObjectsToCollection(prefixSave, glist);
+        Node.makeNodesFromRunInfo(glist, rootNode, -1);
         leafNodes.clear();
         rootNode.getLeaves(leafNodes);
         Node endNode = leafNodes.get(0);
 
         // Back up the tree in order to skip the end of the prefix.
-        /** Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. **/
+        /* Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. */
         int doPrefixToDepth = 2;
         while (endNode.getTreeDepth() > doPrefixToDepth) {
             endNode = endNode.getParent();
@@ -315,7 +317,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             if (!game.isGameInitialized()) return;
             super.paintComponent(g);
             if (game != null) {
-                /** Runner coordinates to pixels. **/
+                /* Runner coordinates to pixels. */
                 float runnerScaling = 25f;
                 int yOffsetPixels = 450; /** Drawing offsets within the viewing panel (i.e. non-physical) **/
                 int xOffsetPixels = 675;
@@ -337,7 +339,9 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
             Action[] actsOut = new Action[actsConsolidated.size()];
             SavableActionSequence actionSequence = new SavableActionSequence(actsConsolidated.toArray(actsOut));
-            actionSaver.storeObjectsOrdered(actionSequence, savePath + "actions_" + Utility.getTimestamp() + ".SavableActionSequence", false);
+            List<SavableActionSequence> actionList = new ArrayList<>();
+            actionSaver.storeObjects(actionList, savePath + "actions_" + Utility.getTimestamp() +
+                    ".SavableActionSequence", false);
         }
     }
 }

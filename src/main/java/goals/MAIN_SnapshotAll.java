@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.JFrame;
 
@@ -37,9 +38,7 @@ public class MAIN_SnapshotAll extends JFrame {
 
     public static int playbackDepth = 5;
 
-    File saveLoc = new File("./4_17_18");
-
-    List<Node> leafNodes = new ArrayList<>();
+    private File saveLoc = new File("./4_17_18");
 
     public static void main(String[] args) {
         MAIN_SnapshotAll mc = new MAIN_SnapshotAll();
@@ -66,7 +65,7 @@ public class MAIN_SnapshotAll extends JFrame {
         File[] allFiles = saveLoc.listFiles();
 
         List<File> playbackFiles = new ArrayList<>();
-        for (File f : allFiles) {
+        for (File f : Objects.requireNonNull(allFiles)) {
             if (f.getName().contains("steadyRunPrefix")) { // steadyRunPrefix.SavableSingleGame
                 playbackFiles.add(f);
             }
@@ -78,7 +77,7 @@ public class MAIN_SnapshotAll extends JFrame {
         List<SavableSingleGame> games = new ArrayList<>();
 
         for (File f : playbackFiles) {
-            games.addAll(fileIO.loadObjectsOrdered(f.getAbsolutePath()));
+            fileIO.loadObjectsToCollection(f, games);
         }
         Node.makeNodesFromRunInfo(games, rootNode, -1);
         Node currNode = rootNode;

@@ -3,40 +3,35 @@ package data;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 public class SavableFileManipulation {
 
-    static String origin = "test3";
-    static String destination = "test3";
-
-    public static void main(String[] args) {
-        //ArrayList<File> qwopFiles = getQWOPFiles();
-        String[] filesToCombine = new String[]{"test1", "test2"};
-        combineFiles(filesToCombine, "test_out");
-    }
-
     /**
-     * Get all .qwop files in the working directory.
+     * Get all files in the working directory with a specified file extension.
+     * @param extension File extension. Do not include the dot before the extension.
+     * @return List of files with the specified file extension.
      **/
-    public static ArrayList<File> getQWOPFiles(String extension) {
+    public static List<File> getFilesByExtension(String extension) {
         File folder = new File(".");
         File[] listOfFiles = folder.listFiles();
         ArrayList<File> qwopFiles = new ArrayList<>();
-        System.out.println("Found the following QWOP files: ");
+
+        if (listOfFiles == null) {
+            throw new NullPointerException("Unable to open the current directory.");
+        }
+
+        System.out.println("Found the following files: ");
         for (File listOfFile : listOfFiles) {
             if (listOfFile.isFile()) {
 
+                int indexOfLastSeparator = listOfFile.getName().lastIndexOf(".");
 
-                File f = listOfFile;
-                int indexOfLastSeparator = f.getName().lastIndexOf(".");
-
-                // Only get the .qwop files
-                if (f.getName().substring(indexOfLastSeparator).equalsIgnoreCase(extension)) {
-                    System.out.println("File " + f.getName());
-                    qwopFiles.add(f);
+                // Only get the files with the specified file extension.
+                if (listOfFile.getName().substring(indexOfLastSeparator).equalsIgnoreCase(extension)) {
+                    System.out.println("File " + listOfFile.getName());
+                    qwopFiles.add(listOfFile);
                 }
-            } else if (listOfFile.isDirectory()) {
-                //System.out.println("Directory " + listOfFiles[i].getName());
             }
         }
         return qwopFiles;
@@ -56,9 +51,9 @@ public class SavableFileManipulation {
         }
 
         SavableFileIO<SavableSingleGame> io = new SavableFileIO<>();
-        HashSet<SavableSingleGame> loaded = io.loadObjectsUnordered(origin);
-        io.storeObjectsUnordered(loaded, destination, false);
-
+        HashSet<SavableSingleGame> loaded = new HashSet<>();
+        io.loadObjectsToCollection(file, loaded);
+        io.storeObjects(loaded, destination, false);
 
         file = new File(destination);
         if (file.exists()) {
@@ -76,15 +71,15 @@ public class SavableFileManipulation {
         SavableFileIO<SavableSingleGame> io = new SavableFileIO<>();
         HashSet<SavableSingleGame> loaded = new HashSet<>();
         System.out.println("Combining .QWOP files: ");
-        // Load them all into the same hashset.
+        // Load them all into the same set.
         for (String file : inputFiles) {
-            HashSet<SavableSingleGame> loadedSet = io.loadObjectsUnordered(file);
+            HashSet<SavableSingleGame> loadedSet = new HashSet<>();
+            io.loadObjectsToCollection(new File(file), loadedSet);
             loaded.addAll(loadedSet);
-            //System.out.println("File " + file + " has " + loadedSet.size() + " games in it.");
         }
         System.out.println("Output file " + destination + " has " + loaded.size() + " games in it.");
 
-        io.storeObjectsUnordered(loaded, destination, false);
+        io.storeObjects(loaded, destination, false);
     }
 
 }

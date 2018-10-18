@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import actions.Action;
@@ -54,7 +55,7 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
         String filename1 = "controller_recovery_" + fileSuffix1;
 
         // Stage 2 saving
-        int trimStartBy = 0;
+        int trimStartBy;
         int trimEndBy = Integer.valueOf(properties.getProperty("trimEndBy", "4"));
 
         ///////////////////////////////////////////////////////////
@@ -64,7 +65,7 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
         // See which files need to be covered.
         SavableFileIO<SavableActionSequence> actionSequenceLoader = new SavableFileIO<>();
         File[] actionFiles = getSaveLocation().listFiles();
-        Arrays.sort(actionFiles);
+        Arrays.sort(Objects.requireNonNull(actionFiles));
         ArrayUtils.reverse(actionFiles);
 
         GameLoader game = new GameLoader();
@@ -72,8 +73,10 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
         for (File f : actionFiles) {
             if (f.getName().contains("SavableActionSequence") && f.getName().contains("6_08")) {
                 appendSummaryLog("Processing file: " + f.getName());
-                List<SavableActionSequence> actionSeq = actionSequenceLoader.loadObjectsOrdered(f);
-                List<Action[]> acts = actionSeq.stream().map(seq -> seq.getActions()).collect(Collectors.toList());
+                List<SavableActionSequence> actionSeq = new ArrayList<>();
+                actionSequenceLoader.loadObjectsToCollection(f, actionSeq);
+
+                List<Action[]> acts = actionSeq.stream().map(SavableActionSequence::getActions).collect(Collectors.toList());
 
                 trimStartBy = acts.get(0).length;
                 assignAllowableActions(trimStartBy); // Assign the broader recovery action sets to the depth at the
@@ -102,7 +105,7 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
 
                     // Save results
                     File[] files = getSaveLocation().listFiles();
-                    for (File dfiles : files) {
+                    for (File dfiles : Objects.requireNonNull(files)) {
                         if (dfiles.toString().toLowerCase().contains(name) && !dfiles.toString().toLowerCase().contains("unsuccessful")) {
                             SparseDataToDense converter =
 									new SparseDataToDense(getSaveLocation().getAbsolutePath() + "/");

@@ -3,6 +3,7 @@ package goals;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
@@ -87,7 +88,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
         // Check if we actually need to do stage 1.
         if (doStage1 && autoResume) {
             File[] existingFiles = getSaveLocation().listFiles();
-            for (File f : existingFiles) {
+            for (File f : Objects.requireNonNull(existingFiles)) {
                 if (f.getName().contains("steadyRunPrefix")) {
                     appendSummaryLog("Found a completed stage 1 file. Skipping.");
                     doStage1 = false;
@@ -112,7 +113,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
         // Check if we actually need to do stage 2.
         if (doStage2 && autoResume) {
             File[] existingFiles = getSaveLocation().listFiles();
-            for (File f : existingFiles) {
+            for (File f : Objects.requireNonNull(existingFiles)) {
                 if (f.getName().contains("deviations")) {
                     appendSummaryLog("Found a completed stage 2 file. Skipping.");
                     doStage2 = false;
@@ -129,8 +130,11 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
             ui.addRootNode(rootNode);
 
             SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
-            Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(getSaveLocation().getPath() + "/" + filename1 +
-                    ".SavableSingleGame"), rootNode, getToSteadyDepth - trimSteadyBy - 1);
+            List<SavableSingleGame> glist = new ArrayList<>();
+            File saveFile = new File(getSaveLocation().getPath() + "/" + filename1 +
+                    ".SavableSingleGame");
+            fileIO.loadObjectsToCollection(saveFile, glist);
+            Node.makeNodesFromRunInfo(glist, rootNode, getToSteadyDepth - trimSteadyBy - 1);
             Node currNode = rootNode;
             while (currNode.getTreeDepth() < getToSteadyDepth - trimSteadyBy) {
                 currNode = currNode.getChildByIndex(0);
@@ -150,7 +154,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                 File[] existingFiles = getSaveLocation().listFiles();
                 int startIdx = 0;
                 boolean foundFile = false;
-                while (startIdx < existingFiles.length) {
+                while (startIdx < Objects.requireNonNull(existingFiles).length) {
                     for (File f : existingFiles) {
                         if (f.getName().contains("recoveries" + startIdx)) {
                             appendSummaryLog("Found file for recovery " + startIdx);
@@ -176,8 +180,11 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
             ui.addRootNode(rootNode);
 
             SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
-            Node.makeNodesFromRunInfo(fileIO.loadObjectsOrdered(getSaveLocation().getPath() + "/" + filename2 +
-                    ".SavableSingleGame"), rootNode, stage3StartDepth);
+            List<SavableSingleGame> glist = new ArrayList<>();
+            File saveFile = new File(getSaveLocation().getPath() + "/" + filename2 +
+                    ".SavableSingleGame");
+            fileIO.loadObjectsToCollection(saveFile, glist);
+            Node.makeNodesFromRunInfo(glist, rootNode, stage3StartDepth);
 
             List<Node> leafList = new ArrayList<>();
             rootNode.getLeaves(leafList);
@@ -209,7 +216,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
         if (doStage4) {
             List<File> filesToConvert = new ArrayList<>();
             File[] files = getSaveLocation().listFiles();
-            for (File f : files) {
+            for (File f : Objects.requireNonNull(files)) {
                 if (f.toString().toLowerCase().contains("recoveries") && f.toString().toLowerCase().contains("savablesinglegame") && !f.toString().toLowerCase().contains("unsuccessful")) {
                     filesToConvert.add(f);
                 }
