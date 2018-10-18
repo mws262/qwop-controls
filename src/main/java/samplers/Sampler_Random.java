@@ -77,9 +77,6 @@ public class Sampler_Random implements ISampler {
                     if (currentNode.getState() != null && currentNode.getState().isFailed())
                         throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
                     return currentNode;
-                } else {
-                    int count = 1;
-
                 }
             }
         }
@@ -130,8 +127,7 @@ public class Sampler_Random implements ISampler {
     }
 
     @Override
-    public void rolloutPolicyActionDone(Node currentNode) {
-    } // No rollout in random sampler.
+    public void rolloutPolicyActionDone(Node currentNode) {} // No rollout in random sampler.
 
     @Override
     public Sampler_Random getCopy() {

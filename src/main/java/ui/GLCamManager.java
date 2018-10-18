@@ -2,6 +2,7 @@ package ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix3f;
@@ -21,7 +22,6 @@ import tree.Node;
  * @author Matt
  */
 public class GLCamManager {
-
     /**
      * Keep track of the current zoom factor. Absolute number is not significant. Relative to initial zoom.
      */
@@ -29,7 +29,7 @@ public class GLCamManager {
 
     /**
      * Vector from camera position to target position
-     **/
+     */
     private Vector3f eyeToTarget = new Vector3f();
 
     /**
@@ -54,18 +54,18 @@ public class GLCamManager {
 
     /**
      * Camera rotation. Updated every display cycle.
-     **/
+     */
     private float[] modelViewMat = new float[16];
 
     /**
      * Width of window.
-     **/
-    private float width = 0;
+     */
+    private float width;
 
     /**
      * Height of window.
-     **/
-    private float height = 0;
+     */
+    private float height;
 
     /**
      * Position of the light. Fixed at the location of the camera.
@@ -94,18 +94,15 @@ public class GLCamManager {
     private ArrayList<Float> twistIncrement = new ArrayList<>();
     private ArrayList<Integer> twistSteps = new ArrayList<>();
 
-    //temporary var for when adding up camera movements.
+    // temporary var for when adding up camera movements.
     private Vector3f netMovement = new Vector3f();
 
-    // For doing raycast point selection:
-    private Node chosenNode; // selected point
-    private double smallestDist = Double.MAX_VALUE;
     private Vector3f clickVec = new Vector3f(0, 0, 0); // Vector ray of the mouse click.
     private Vector3f EyeToPoint = new Vector3f(0, 0, 0); // vector from camera to a selected point.
 
     /**
      * Provide camera's target, etc.
-     **/
+     */
     public GLCamManager(float width, float height, Vector3f eyePos, Vector3f targetPos) {
         this.eyePos = eyePos;
         this.targetPos = targetPos;
@@ -115,7 +112,7 @@ public class GLCamManager {
 
     /**
      * Use default camera position, target, etc
-     **/
+     */
     public GLCamManager(float width, float height) {
         this.width = width;
         this.height = height;
@@ -123,7 +120,7 @@ public class GLCamManager {
 
     /**
      * Setup Lighting
-     **/
+     */
     public void initLighting(GL2 gl) {
         // SETUP LIGHTING
         gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
@@ -137,12 +134,12 @@ public class GLCamManager {
 
     /**
      * Update all camera views and bookkeeping info. Any queued camera movements will be incremented.
-     **/
+     */
     public void update(GL2 gl, GLU glu) {
 
         /* Do all the queued actions. **/
 
-        //Sum eye movements.
+        // Sum eye movements.
         netMovement.scale(0);
         for (int i = 0; i < eyeIncrement.size(); i++) {
             netMovement.add(eyeIncrement.get(i));
@@ -154,10 +151,10 @@ public class GLCamManager {
                 eyeIncrement.remove(i);
             }
         }
-        //Put the net change back into the actual position.
+        // Put the net change back into the actual position.
         eyePos.add(netMovement);
 
-        //Sum target movements.
+        // Sum target movements.
         netMovement.scale(0);
         for (int i = 0; i < targetIncrement.size(); i++) {
             netMovement.add(targetIncrement.get(i));
@@ -169,10 +166,10 @@ public class GLCamManager {
                 targetIncrement.remove(i);
             }
         }
-        //Put the net change back into the actual position.
+        // Put the net change back into the actual position.
         targetPos.add(netMovement);
 
-        //Sum longitude movements.
+        // Sum longitude movements.
         float net = 0;
         for (int i = 0; i < longitudeIncrement.size(); i++) {
             net += (longitudeIncrement.get(i));
@@ -185,10 +182,10 @@ public class GLCamManager {
             }
         }
 
-        //Put the net change back into the actual position.
+        // Put the net change back into the actual position.
         rotateLongitude(net);
 
-        //Sum latitude movements.
+        // Sum latitude movements.
         net = 0;
         for (int i = 0; i < latitudeIncrement.size(); i++) {
             net += (latitudeIncrement.get(i));
@@ -201,10 +198,10 @@ public class GLCamManager {
             }
         }
 
-        //Put the net change back into the actual position.
+        // Put the net change back into the actual position.
         rotateLatitude(net);
 
-        //Sum twist movements.
+        // Sum twist movements.
         net = 0;
         for (int i = 0; i < twistIncrement.size(); i++) {
             net += (twistIncrement.get(i));
@@ -217,10 +214,10 @@ public class GLCamManager {
             }
         }
 
-        //Put the net change back into the actual position.
+        // Put the net change back into the actual position.
         twistCW(net);
 
-        //Put together all zooms
+        // Put together all zooms
         net = -1;
         for (int i = 0; i < zoomIncrement.size(); i++) {
             net *= zoomIncrement.get(i);
@@ -231,22 +228,25 @@ public class GLCamManager {
                 zoomIncrement.remove(i);
             }
         }
-        //Now do the zoom:
-        eyeToTarget.sub(targetPos, eyePos); //Find vector from the camera eye to the target pos
+
+        // Now do the zoom:
+        eyeToTarget.sub(targetPos, eyePos); // Find vector from the camera eye to the target pos
         eyeToTarget.scale(net);
         eyePos.add(eyeToTarget, targetPos);
         zoomFactor *= -net; // MATT ADD 8/25/17
-
 
         upVec.cross(eyeToTarget, upVec);
         upVec.cross(upVec, eyeToTarget);
         upVec.normalize();
 
-        //Actually change the camera settings now.
-        //Camera perspective.
+        // Actually change the camera settings now.
+        // Camera perspective.
         gl.glLoadIdentity();
-        /** View frustum far plane distance. */
-        float farPlane = 10000; /** View frustum near plane distance. */float nearPlane = 5;
+
+        // View frustum far plane distance.
+        float farPlane = 10000;
+        // View frustum near plane distance.
+        float nearPlane = 5;
         glu.gluPerspective(viewAng, width / height, nearPlane, farPlane);
         glu.gluLookAt(eyePos.x, eyePos.y, eyePos.z, targetPos.x, targetPos.y, targetPos.z, upVec.x, upVec.y, upVec.z);
         gl.glPopMatrix();
@@ -255,7 +255,7 @@ public class GLCamManager {
 
     /**
      * Change window dims
-     **/
+     */
     public void setDims(GL2 gl, int width, int height) {
         height = Math.max(height, 1); // avoid height=0;
         width = Math.max(width, 1); // avoid height=0;
@@ -268,13 +268,12 @@ public class GLCamManager {
 
     /**
      * Transform a 2d coordinate click in window coordinates to a 3d coordinate in the world frame.
-     **/
+     */
     public Vector3f windowFrameToWorldFrameDiff(int mouseXnew, int mouseYnew, int mouseXold, int mouseYold) {
         //Find x transformed from front plane coordinates (click) to world camera coordinates
         eyeToTarget.sub(targetPos, eyePos);
         // Temporary. just don't want to keep reallocating memory.
-        Vector3f temp1 = new Vector3f();
-        temp1 = (Vector3f) upVec.clone();
+        Vector3f temp1 = (Vector3f) upVec.clone();
         temp1.scale((mouseYnew - mouseYold) * zoomFactor * 0.1f); // Hand-tuned the multiplier.
 
         Vector3f temp2 = new Vector3f();
@@ -284,7 +283,6 @@ public class GLCamManager {
         temp2.normalize();
         temp2.scale((mouseXnew - mouseXold) * zoomFactor * 0.1f);
 
-
         temp1.add(temp2);
 
         return temp1;
@@ -292,13 +290,13 @@ public class GLCamManager {
 
     /**
      * Twist up vector by provided angle
-     **/
+     */
     public void twistCW(float radians) {
         eyeToTarget.sub(targetPos);
         Vector3f perp = new Vector3f();
         perp.set(eyeToTarget);
 
-        perp.cross(perp, upVec); //perpendicular to the upvec in the plane of the camera
+        perp.cross(perp, upVec); // Perpendicular to the up vector in the plane of the camera.
 
         if (perp.dot(perp) > 0) {
             perp.normalize();
@@ -314,27 +312,26 @@ public class GLCamManager {
 
     /**
      * Zoom in/zoom out. Also spread out over a certain number of update calls
-     **/ //TODO: make sure that other updates are also scaled?
+     */ //TODO: make sure that other updates are also scaled?
     public void smoothZoom(float zoomFactor, int speed) {
-        float zoominc = (float) Math.pow(zoomFactor, 1. / speed);
-        zoomIncrement.add(zoominc);
+        float zoomIncrement = (float) Math.pow(zoomFactor, 1. / speed);
+        this.zoomIncrement.add(zoomIncrement);
         zoomSteps.add(speed);
 
     }
 
     /**
      * Rotate the camera about the axis it's aiming
-     **/
+     */
     public void smoothTwist(float zoomFactor, int speed) {
         twistIncrement.add(zoomFactor / speed);
         twistSteps.add(speed);
-
     }
 
     /**
      * Orbit camera longitudinally by a magnitude in radians with a speed factor of 'speed.'
      * The speed means how many update calls does it take to achieve the change.
-     **/
+     */
     public void smoothRotateLong(float magnitude, int speed) {
         longitudeIncrement.add(magnitude / speed); //find the magnitude of rotation per step
         longitudeSteps.add(speed);
@@ -343,7 +340,7 @@ public class GLCamManager {
     /**
      * Orbit camera latitudinally by a magnitude in radians with a speed factor of 'speed'.
      * The speed means how many update calls does it take to achieve the change.
-     **/
+     */
     public void smoothRotateLat(float magnitude, int speed) {
         latitudeIncrement.add(magnitude / speed); //find the magnitude of rotation per step
         latitudeSteps.add(speed);
@@ -352,12 +349,11 @@ public class GLCamManager {
     /**
      * Move camera eye and target positions to absolute positions given. This will be done in speed number of update
      * calls.
-     **/
+     */
     public void smoothTranslateAbsolute(Vector3f campos, Vector3f tarpos, int speed) {
         Vector3f eye = new Vector3f();
         eye.set(campos);
-        Vector3f target = new Vector3f();
-        target = (Vector3f) tarpos.clone();
+        Vector3f target = (Vector3f) tarpos.clone();
 
         //if we move absolutely, then remove all previously queued camera translations
         targetIncrement.clear();
@@ -373,7 +369,6 @@ public class GLCamManager {
         eye.scale(1f / speed);
         target.scale(1f / speed);
 
-
         eyeIncrement.add(eye); //find the magnitude of rotation per step
         eyeSteps.add(speed);
 
@@ -383,7 +378,7 @@ public class GLCamManager {
 
     /**
      * Move camera eye and target by offset amounts given. This will be done in speed number of update calls.
-     **/
+     */
     public void smoothTranslateRelative(Vector3f campos, Vector3f tarpos, int speed) {
         Vector3f eye = (Vector3f) campos.clone();
         Vector3f target = (Vector3f) tarpos.clone();
@@ -401,7 +396,7 @@ public class GLCamManager {
 
     /**
      * User interaction to rotate the camera latitudinally. Magnitude of rotation is in radians and may be negative.
-     **/
+     */
     public void rotateLatitude(float magnitude) {
 
         //Vector from target to eye:
@@ -423,34 +418,30 @@ public class GLCamManager {
 
     /**
      * User interaction to rotate the camera longitudinally. Magnitude of rotation is in radians and may be negative.
-     **/
+     */
     public void rotateLongitude(float magnitude) {
 
-        //Vector from target to eye:
+        // Vector from target to eye:
         Vector3f distVec = new Vector3f();
         distVec.sub(eyePos, targetPos);
 
-        //Axis to the left in the camera world. Magnitude provided by user.
+        // Axis to the left in the camera world. Magnitude provided by user.
         AxisAngle4f rotation = new AxisAngle4f(modelViewMat[0], modelViewMat[4], modelViewMat[8], magnitude);
-        //TODO fix singularity.
+        // TODO fix singularity.
         Matrix3f rotMat = new Matrix3f();
         rotMat.set(rotation);
 
-        //Transform the target to eye vector
+        // Transform the target to eye vector
         rotMat.transform(distVec);
 
-        //Add back to get absolute position and set this to be the eye position of the camera.
+        // Add back to get absolute position and set this to be the eye position of the camera.
         eyePos.add(targetPos, distVec);
-
     }
-
 
     /**
      * Find a vector which represents the click ray in 3D space. Mostly stolen from my cloth simulator.
-     **/
+     */
     private Vector3f clickVector(int mouseX, int mouseY) {
-        //Find the vector of the clicked ray in world coordinates.
-
         //Frame height in world dimensions (not pixels)
         float frameHeight;
         float frameWidth;
@@ -470,7 +461,7 @@ public class GLCamManager {
 
         Vector3f LocalCamUp = new Vector3f(1, 0, 0);
 
-        // Axis and angle of rotation from world coords to camera coords.
+        // Axis and angle of rotation from world coordinates to camera coordinates.
         Vector3f RotAxis = new Vector3f(0, 0, 0);
         float TransAngle;
 
@@ -520,125 +511,74 @@ public class GLCamManager {
         RotMatrix.transform(ClickVec);
 
         return ClickVec;
-
     }
 
     /**
-     * Take a click vector, find the nearest node to this line.
-     **/
-    public Node nodeFromRay(Vector3f clickVec, ArrayList<Node> rootNodes) {
+     * Take a click vector, find the nearest {@link Node} to this line.
+     *
+     * @param clickVec Click direction as defined by the view frustum.
+     * @param root Root of a tree. All the nodes in this tree will be evaluated to find the closest.
+     * @return Nearest {@link Node} to the click ray.
+     *
+     * @see GLCamManager#clickVector(int, int)
+     */
+    public Node nodeFromRay(Vector3f clickVec, Node root) {
         // Determine which point is closest to the clicked ray.
-        double closestSoFar = Double.MAX_VALUE;
-        Node bestSoFar = null;
-
-        for (Node root : rootNodes) { //Loop through all trees
-            chosenNode = nodeFromRay(clickVec, root);
-
-            if (smallestDist < closestSoFar) {
-                bestSoFar = chosenNode;
-            }
-        }
-
-        return bestSoFar;
-    }
-
-    /**
-     * Take a click vector, find the nearest node to this line.
-     **/
-    public Node nodeFromRay(Vector3f clickVec, Node root) { //Alt flag says whether to use Node location 2 or 1.
-        // Determine which point is closest to the clicked ray.
-
-        double tanDist;
-        double normDistSq;
         ArrayList<Node> nodeList = new ArrayList<>();
 
         root.getNodesBelow(nodeList, true);
-
-        smallestDist = Double.MAX_VALUE;
-
-        for (Node node : nodeList) {
-            //Vector from eye to a vertex.
-            Vector3f nodePos = new Vector3f();
-
-            nodePos = new Vector3f(node.nodeLocation[0], node.nodeLocation[1], node.nodeLocation[2]);
-
-            EyeToPoint.sub(nodePos, eyePos);
-
-            tanDist = EyeToPoint.dot(clickVec);
-            normDistSq = EyeToPoint.lengthSquared() - tanDist * tanDist;
-
-            if (normDistSq < smallestDist) {
-                smallestDist = normDistSq;
-                chosenNode = node;
-            }
-        }
-        return chosenNode;
+        return nodeFromRay_set(clickVec, nodeList);
     }
 
     /**
      * Take a click vector, find the nearest node to this line.
-     **/
-    public Node nodeFromRay_set(Vector3f clickVec, List<Node> snapshotLeaves, float toleranceThresh) { //Alt flag says whether to use Node location 2 or 1.
-        // Determine which point is closest to the clicked ray.
-
+     */
+    private Node nodeFromRay_set(Vector3f clickVec, List<Node> nodes) {
+        Node closestNodeInList = null;
+        double smallestDistance = Double.MAX_VALUE;
         double tanDist;
         double normDistSq;
 
-
-        smallestDist = Double.MAX_VALUE;
-
-        for (Node node : snapshotLeaves) {
+        for (Node node : nodes) {
             //Vector from eye to a vertex.
-            Vector3f nodePos = new Vector3f();
-
-            nodePos = new Vector3f(node.nodeLocation[0], node.nodeLocation[1], node.nodeLocation[2]);
-
+            Vector3f nodePos = new Vector3f(node.nodeLocation[0], node.nodeLocation[1], node.nodeLocation[2]);
             EyeToPoint.sub(nodePos, eyePos);
 
             tanDist = EyeToPoint.dot(clickVec);
             normDistSq = EyeToPoint.lengthSquared() - tanDist * tanDist;
 
-            if (normDistSq < smallestDist) {
-                smallestDist = normDistSq;
-                chosenNode = node;
+            if (normDistSq < smallestDistance) {
+                smallestDistance = normDistSq;
+                closestNodeInList = node;
             }
         }
+        Objects.requireNonNull(closestNodeInList);
 
-        if (smallestDist < toleranceThresh) {
-            return chosenNode;
-        } else {
-            return null;
-        }
+        return closestNodeInList;
     }
 
     /**
      * Return the closest node to a click.
-     **/
+     */
     public Node nodeFromClick(int mouseX, int mouseY, Node root) {
         clickVec = clickVector(mouseX, mouseY);
         return nodeFromRay(clickVec, root);
     }
 
     /**
-     * Return the closest node to a click, given many trees.
-     **/
-    public Node nodeFromClick(int mouseX, int mouseY, ArrayList<Node> roots) {
-        clickVec = clickVector(mouseX, mouseY);
-        return nodeFromRay(clickVec, roots);
-    }
-
-    /**
      * Given a set of nodes
-     **/
-    public Node nodeFromClick_set(int mouseX, int mouseY, List<Node> snapshotLeaves, float toleranceThresh) {
+     */
+    public Node nodeFromClick_set(int mouseX, int mouseY, List<Node> snapshotLeaves) {
         clickVec = clickVector(mouseX, mouseY);
-        return nodeFromRay_set(clickVec, snapshotLeaves, toleranceThresh / zoomFactor);
+        return nodeFromRay_set(clickVec, snapshotLeaves);
     }
 
     /**
      * Take a click vector, find the coordinates of the projected point at a given level.
-     **/ //Note: assumes trees always stay perpendicular to the z-axis.
-    public Vector3f planePtFromRay(int mouseX, int mouseY, float levelset) { //Alt flag says whether to use Node location 2 or 1.
+     * Note: assumes trees always stay perpendicular to the z-axis.
+     *
+     */
+    public Vector3f planePtFromRay(int mouseX, int mouseY, float levelset) {
         // Determine which point is closest to the clicked ray.
 
         clickVec = clickVector(mouseX, mouseY); //Make a copy so scaling doesn't do weird things further up.
@@ -653,7 +593,7 @@ public class GLCamManager {
 
     /**
      * Keeping zoom factor private to keep meddling without using the correct functions.
-     **/
+     */
     public float getZoomFactor() {
         return zoomFactor;
     }

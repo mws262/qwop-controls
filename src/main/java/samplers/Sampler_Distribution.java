@@ -20,8 +20,7 @@ public class Sampler_Distribution implements ISampler {
 
     @Override
     public Node treePolicy(Node startNode) {
-        /******** Normal random sampling now, but using distribution to decide when to switch to expand policy.
-		 *  **********/
+        /* Normal random sampling now, but using distribution to decide when to switch to expand policy. */
         if (startNode.fullyExplored.get())
             throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. " +
 					"Whoever called this is at fault.");

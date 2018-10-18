@@ -319,7 +319,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             if (game != null) {
                 /* Runner coordinates to pixels. */
                 float runnerScaling = 25f;
-                int yOffsetPixels = 450; /** Drawing offsets within the viewing panel (i.e. non-physical) **/
+                int yOffsetPixels = 450; // Drawing offsets within the viewing panel (i.e. non-physical).
                 int xOffsetPixels = 675;
                 controller.draw(g, game, runnerScaling, xOffsetPixels - (int) (runnerScaling * 2.5f), yOffsetPixels); // Optionally, the controller may want to draw some stuff for debugging.
                 game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
@@ -333,7 +333,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        if (e.getActionCommand() == "Save actions") {
+        if (e.getActionCommand().equals("Save actions")) {
             Action[] acts = actionQueue.getActionsInCurrentRun();
             List<Action> actsConsolidated = Action.consolidateActions(Arrays.asList(acts));
 

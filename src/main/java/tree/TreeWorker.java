@@ -388,7 +388,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
         if (verbose) {
             System.out.println("Worker " + workerID + ": " + currentStatus + " --->  " + newStatus + "     game: " + workerGamesPlayed);
         }
-        Status prevStatus = currentStatus;
         currentStatus = newStatus;
     }
 

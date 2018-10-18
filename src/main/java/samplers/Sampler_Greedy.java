@@ -10,14 +10,14 @@ import tree.Utility;
 
 public class Sampler_Greedy implements ISampler {
 
-    /******* NODE EVALUATION *******/
+    /* NODE EVALUATION */
 
     /**
      * How are individual nodes scored?
      **/
     private IEvaluationFunction evaluationFunction;
 
-    /******* HOW MANY SAMPLES BETWEEN JUMPS ********/
+    /* HOW MANY SAMPLES BETWEEN JUMPS */
     /**
      * Number of samples to take before moving on from tree depth 0.
      **/
@@ -35,7 +35,7 @@ public class Sampler_Greedy implements ISampler {
      **/
     public int samplesAtInf = 75;
 
-    /****** JUMP SIZES ******/
+    /* JUMP SIZES */
     public int forwardJump = 1;
     public int backwardsJump = 10;
     public int backwardsJumpMin = 5;
@@ -171,7 +171,7 @@ public class Sampler_Greedy implements ISampler {
         if (currentNode.getState().isFailed()) {
             expansionPolicyDone = true;
 
-            /****** Need to decide whether or not to advance the currentRoot *******/
+            // Need to decide whether or not to advance the currentRoot
             samplesSoFarAtThisNode++;
 
             //Sampled enough. Go deeper.
@@ -220,14 +220,12 @@ public class Sampler_Greedy implements ISampler {
 
     @Override
     public boolean rolloutPolicyGuard(Node currentNode) {
-        /** Are we done with the rollout policy? **/
         // Rollout policy not in use in the random sampler.
-        return true; // No rollout policy
+        return true;
     }
 
     @Override
     public Sampler_Greedy getCopy() {
-        return new Sampler_Greedy(evaluationFunction.getCopy()); // No rollout policy
+        return new Sampler_Greedy(evaluationFunction.getCopy());
     }
-
 }

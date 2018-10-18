@@ -3,6 +3,7 @@ package goals;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import data.SparseDataToDense;
 
@@ -18,7 +19,7 @@ public class MAIN_ConvertSparseToTFRecord {
 
         List<File> filesToConvert = new ArrayList<>();
         File[] files = loadFile.listFiles();
-        for (File f : files) {
+        for (File f : Objects.requireNonNull(files)) {
             if (f.toString().contains("SavableSingleGame") && f.toString().contains(filterTerm)) {
                 filesToConvert.add(f);
             }

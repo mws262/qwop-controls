@@ -5,8 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import game.StateVariable;
-import tree.Node;
-import tree.TreeWorker;
 import samplers.ISampler;
 import savers.IDataSaver;
 
@@ -35,11 +33,6 @@ public abstract class TreeStage implements Runnable {
      * Each stage gets its own workers to avoid contamination. Probably could combine later if necessary.
      **/
     public List<TreeWorker> workers = new ArrayList<>();
-
-    /**
-     * Thread managing this stage and its workers.
-     **/
-    private Thread stageThread;
 
     /**
      * Number of TreeWorkers to be used.

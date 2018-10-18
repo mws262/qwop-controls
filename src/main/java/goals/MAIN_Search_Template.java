@@ -338,7 +338,7 @@ public abstract class MAIN_Search_Template {
         /***** Space of allowed actions to sample ******/
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
-        /********** Repeated action 1 -- no keys pressed. ***********/
+        /* Repeated action 1 -- no keys pressed. ***********/
         Integer[] durations1 = IntStream.range(1, 25).boxed().toArray(Integer[]::new);
         boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
 				durations1.length);

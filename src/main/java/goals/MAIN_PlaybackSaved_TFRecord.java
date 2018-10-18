@@ -47,7 +47,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
     public static int windowHeight = 1000;
 
 
-    File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
+    private File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
 
     List<Node> leafNodes = new ArrayList<>();
 
@@ -65,8 +65,6 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
         this.add(runnerPane);
         Thread runnerThread = new Thread(runnerPane);
         runnerThread.start();
-
-        /*******************/
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setPreferredSize(new Dimension(windowWidth, windowHeight));
@@ -93,26 +91,14 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
         List<SequenceExample> dataSeries = new ArrayList<>();
         String fileName = playbackFiles.get(0).getAbsolutePath();
         System.out.println(fileName);
-        FileInputStream fIn = null;
 
-        try {
-            fIn = new FileInputStream(fileName);
-            DataInputStream dIn = new DataInputStream(fIn);
-
+        try (FileInputStream fIn = new FileInputStream(fileName); DataInputStream dIn = new DataInputStream(fIn)){
             TFRecordReader tfReader = new TFRecordReader(dIn, true);
-
             while (fIn.available() > 0) {
                 dataSeries.add(SequenceExample.parser().parseFrom(tfReader.read()));
             }
-
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                fIn.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
 
         System.out.println("Read " + dataSeries.size() + " runs from file " + fileName);

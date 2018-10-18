@@ -29,7 +29,7 @@ public class TFRecordReader {
     }
 
     public byte[] read() throws IOException {
-        /**
+        /*
          * TFRecord format:
          * uint64 length
          * uint32 masked_crc32_of_length
