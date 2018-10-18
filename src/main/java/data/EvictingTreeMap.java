@@ -23,9 +23,12 @@ public class EvictingTreeMap<K, V> extends TreeMap<K, V> {
      * Make a new map which keeps a limited number of elements.
      *
      * @param maxSize Maximum number of elements this map will hold before throwing some out.
+     * @throws IllegalArgumentException When the specified size is less than 1.
      */
     public EvictingTreeMap(int maxSize) {
         super();
+        if (maxSize < 1)
+            throw new IllegalArgumentException("Cannot make with size less than 1.");
         this.maxSize = maxSize;
     }
 
