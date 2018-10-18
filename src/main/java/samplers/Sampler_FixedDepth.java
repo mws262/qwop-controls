@@ -1,9 +1,6 @@
 package samplers;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import actions.Action;
@@ -78,7 +75,7 @@ public class Sampler_FixedDepth implements ISampler {
             // Otherwise, move down.
             boolean foundChild = false;
             // If the order of iteration is not randomized, once there are enough workers, they can manage to deadlock.
-            List<Node> children = currentNode.getChildren().stream().collect(Collectors.toList());
+            List<Node> children = new ArrayList<>(currentNode.getChildren());
             Collections.shuffle(children);
 
             for (Node child : children) {
@@ -174,5 +171,4 @@ public class Sampler_FixedDepth implements ISampler {
     public Sampler_FixedDepth getCopy() {
         return new Sampler_FixedDepth(horizonDepth);
     }
-
 }

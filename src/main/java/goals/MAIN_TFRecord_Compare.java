@@ -35,13 +35,9 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
     private Controller_NearestNeighborApprox justForLoading;
 
-    int bodyXOffset = -1000;
-
     private Color backgroundColor = Color.DARK_GRAY; //new Color(GLPanelGeneric.darkBackground[0],GLPanelGeneric
-	// .darkBackground[1],GLPanelGeneric.darkBackground[2]);
-    Panel mainViewPanel;
 
-    boolean doneInit = false;
+    private boolean doneInit = false;
 
     public static void main(String[] args) {
         MAIN_TFRecord_Compare mc = new MAIN_TFRecord_Compare();
@@ -74,7 +70,8 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
 
         game.mainRunnerStroke = new BasicStroke(5);
-        mainViewPanel = new Panel();
+        // .darkBackground[1],GLPanelGeneric.darkBackground[2]);
+        Panel mainViewPanel = new Panel();
         this.setLayout(new BorderLayout());
         add(mainViewPanel, BorderLayout.CENTER);
 
@@ -84,8 +81,10 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        /** Window height **/
-        int windowHeight = 1000; /** Window width **/int windowWidth = 1920;
+        // Window height
+        int windowHeight = 1000;
+        // Window width
+        int windowWidth = 1920;
         setPreferredSize(new Dimension(windowWidth, windowHeight));
         setContentPane(this.getContentPane());
         revalidate();
@@ -101,7 +100,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
         mainViewPanel.setVisible(true);
     }
 
-    Iterator<RunHolder> iter;
+    private Iterator<RunHolder> iter;
 
     @Override
     public void run() {
@@ -117,25 +116,22 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
         }
     }
 
-    List<RunHolder> toDraw = new ArrayList<>();
+    private List<RunHolder> toDraw = new ArrayList<>();
 
     private void draw(Graphics g) {
         if (!doneInit) return;
         if (game != null) {
-
-            //System.out.println(justForLoading.runs.size());
             if (iter.hasNext()) {
                 RunHolder drawTraj = iter.next();
-
-//while (iter.hasNext()) {
                 toDraw.add(drawTraj);
             }
-//}
+
             for (int j = toDraw.size() - 1; j >= 0; j--) {
                 RunHolder rh = toDraw.get(j);
-                /** Runner coordinates to pixels. **/
+                /* Runner coordinates to pixels. */
                 float runnerScaling = 20f;
-                int yOffsetPixels = 450; /** Drawing offsets within the viewing panel (i.e. non-physical) **/
+                int yOffsetPixels = 450;
+                /* Drawing offsets within the viewing panel (i.e. non-physical) */
                 int xOffsetPixels = 250;
                 if (rh != null) {
                     int killThis = rh.actionDurations.get(0) + rh.actionDurations.get(1);
@@ -150,10 +146,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
                                 Node.getColorFromScaledValue(2 * i, rh.states.size(),
                                         0.8f), PanelRunner.normalStroke);
                         if (count >= rh.actionDurations.size() - 1) break;
-
                     }
-
-
                 }
                 for (RunHolder rh2 : toDraw) {
                     int killThis = rh2.actionDurations.get(0) + rh2.actionDurations.get(1);
