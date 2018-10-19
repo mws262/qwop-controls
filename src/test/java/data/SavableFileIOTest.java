@@ -1,0 +1,203 @@
+package data;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
+
+public class SavableFileIOTest implements Serializable {
+
+    private final String tmpFileDir = "./src/test/resources/tmp/";
+
+    @Test
+    public void storeAndLoadObjects() {
+        // Combined testing of saving and loading objects.
+
+        SavableFileIO<String> stringSaver = new SavableFileIO<>();
+        stringSaver.verbose = false;
+
+        List<String> stringList = new ArrayList<>();
+        stringList.add("a");
+        stringList.add("b");
+        stringList.add("c");
+        stringList.add("d");
+        stringList.add("d"); // Should preserve a duplicate if saved from a list.
+
+        // Save to file from list.
+        File tempStringFile = new File(tmpFileDir + "string_test.tmp");
+        Assert.assertFalse(tempStringFile.exists());
+        stringSaver.storeObjects(stringList, tempStringFile, false);
+        Assert.assertTrue(tempStringFile.exists());
+
+        // Load and compare, to List.
+        List<String> loadedStringList = new ArrayList<>();
+        stringSaver.loadObjectsToCollection(tempStringFile, loadedStringList);
+        Assert.assertEquals(stringList.size(), loadedStringList.size());
+        for (int i = 0; i < loadedStringList.size(); i++) {
+            Assert.assertEquals(stringList.get(i), loadedStringList.get(i));
+        }
+
+        // Load and compare, to Set.
+        Set<String> loadedStringSet = new HashSet<>();
+        stringSaver.loadObjectsToCollection(tempStringFile, loadedStringSet);
+        Assert.assertEquals(stringList.size() - 1, loadedStringSet.size()); // Should be 1 smaller as duplicate is
+        // eliminated.
+        for (String s : stringList) {
+            Assert.assertTrue(loadedStringSet.contains(s));
+        }
+
+        // Appending
+        List<String> strListAppend = new ArrayList<>();
+        strListAppend.add("WOW");
+        strListAppend.add("APPENDING!");
+        SavableFileIO<String> stringSaverAppend = new SavableFileIO<>(); // Making sure it can be done with a
+        // different saver object.
+        stringSaverAppend.verbose = false;
+
+        stringSaverAppend.storeObjects(strListAppend, tempStringFile, true);
+
+        // Load
+        loadedStringList.clear();
+        stringSaverAppend.loadObjectsToCollection(tempStringFile, loadedStringList);
+        Assert.assertEquals(7, loadedStringList.size());
+        Assert.assertEquals("a", loadedStringList.get(0));
+        Assert.assertEquals("b", loadedStringList.get(1));
+        Assert.assertEquals("c", loadedStringList.get(2));
+        Assert.assertEquals("d", loadedStringList.get(3));
+        Assert.assertEquals("d", loadedStringList.get(4));
+        Assert.assertEquals("WOW", loadedStringList.get(5));
+        Assert.assertEquals("APPENDING!", loadedStringList.get(6));
+
+        // Appending when file does not exist.
+        // Save to file from list.
+        tempStringFile = new File(tmpFileDir + "string_test_append.tmp");
+        Assert.assertFalse(tempStringFile.exists());
+        stringSaver.storeObjects(stringList, tempStringFile, true);
+        Assert.assertTrue(tempStringFile.exists());
+
+        // Load and compare, to List.
+        loadedStringList = new ArrayList<>();
+        stringSaver.loadObjectsToCollection(tempStringFile, loadedStringList);
+        Assert.assertEquals(stringList.size(), loadedStringList.size());
+        for (int i = 0; i < loadedStringList.size(); i++) {
+            Assert.assertEquals(stringList.get(i), loadedStringList.get(i));
+        }
+
+
+        /* For more complicated objects. */
+        SavableFileIO<TestClass> testClassSaver = new SavableFileIO<>();
+        testClassSaver.verbose = false;
+
+        TestClassLower tcl1 = new TestClassLower(0.5d);
+        TestClass tc1 = new TestClass(4, "qw", 0.7f, tcl1);
+
+        TestClassLower tcl2 = new TestClassLower(0.9d);
+        TestClass tc2 = new TestClass(-77, "op", 0.1f, tcl2);
+
+        List<TestClass> testClassList = new ArrayList<>();
+        testClassList.add(tc1);
+        testClassList.add(tc2);
+
+        File tempTestClassFile = new File(tmpFileDir + "test_class.tmp");
+        Assert.assertFalse(tempTestClassFile.exists());
+        testClassSaver.storeObjects(testClassList, tempTestClassFile, false);
+        Assert.assertTrue(tempTestClassFile.exists());
+
+        List<TestClass> loadedTestClassList = new ArrayList<>();
+        testClassSaver.loadObjectsToCollection(tempTestClassFile, loadedTestClassList);
+
+        Assert.assertEquals(testClassList.size(), loadedTestClassList.size());
+
+        TestClass tc1Loaded = loadedTestClassList.get(0);
+        TestClass tc2Loaded = loadedTestClassList.get(1);
+
+        Assert.assertEquals(tc1.a, tc1Loaded.a);
+        Assert.assertEquals(tc1.b, tc1Loaded.b);
+        Assert.assertEquals(tc1.c, tc1Loaded.c, 1e-10);
+        Assert.assertEquals(tc1.d.num, tc1Loaded.d.num, 1e-10); // Has same contents although class hash will not be
+        // equal after loading.
+
+        Assert.assertEquals(tc2.a, tc2Loaded.a);
+        Assert.assertEquals(tc2.b, tc2Loaded.b);
+        Assert.assertEquals(tc2.c, tc2Loaded.c, 1e-10);
+        Assert.assertEquals(tc2.d.num, tc2Loaded.d.num, 1e-10);
+
+        // Append
+        TestClassLower tcl3 = new TestClassLower(0.76d);
+        TestClass tc3 = new TestClass(10, "wow", 0.34f, tcl3);
+
+        testClassList.clear();
+        testClassList.add(tc3);
+        testClassSaver.storeObjects(testClassList, tempTestClassFile, true);
+
+        loadedTestClassList.clear();
+        testClassSaver.loadObjectsToCollection(tempTestClassFile, loadedTestClassList);
+        tc1Loaded = loadedTestClassList.get(0);
+        tc2Loaded = loadedTestClassList.get(1);
+        TestClass tc3Loaded = loadedTestClassList.get(2);
+
+        Assert.assertEquals(3, loadedTestClassList.size());
+
+        Assert.assertEquals(tc1.a, tc1Loaded.a);
+        Assert.assertEquals(tc1.b, tc1Loaded.b);
+        Assert.assertEquals(tc1.c, tc1Loaded.c, 1e-10);
+        Assert.assertEquals(tc1.d.num, tc1Loaded.d.num, 1e-10);
+
+        Assert.assertEquals(tc2.a, tc2Loaded.a);
+        Assert.assertEquals(tc2.b, tc2Loaded.b);
+        Assert.assertEquals(tc2.c, tc2Loaded.c, 1e-10);
+        Assert.assertEquals(tc2.d.num, tc2Loaded.d.num, 1e-10);
+
+        Assert.assertEquals(tc3.a, tc3Loaded.a);
+        Assert.assertEquals(tc3.b, tc3Loaded.b);
+        Assert.assertEquals(tc3.c, tc3Loaded.c, 1e-10);
+        Assert.assertEquals(tc3.d.num, tc3Loaded.d.num, 1e-10);
+    }
+
+    @After
+    public void cleanup() {
+        try {
+            FileUtils.deleteDirectory(new File(tmpFileDir)); // Get rid of the entire temporary test directory on
+            // completion.
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class TestClass implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        int a;
+        String b;
+        float c;
+        TestClassLower d;
+
+        TestClass(int a, String b, float c, TestClassLower d) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+        }
+
+    }
+
+    private class TestClassLower implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        double num;
+
+        TestClassLower(double num) {
+            this.num = num;
+        }
+    }
+}

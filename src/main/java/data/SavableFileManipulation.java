@@ -40,11 +40,9 @@ public class SavableFileManipulation {
     /**
      * Eliminate all duplicate runs in the given file and save to destination file.
      **/
-    public static void eliminateDuplicateRuns(String origin, String destination) {
-        File file = new File(origin);
-
-        if (file.exists()) {
-            double bytes = file.length();
+    public static void eliminateDuplicateRuns(File origin, File destination) {
+        if (origin.exists()) {
+            double bytes = origin.length();
             double kilobytes = (bytes / 1024);
             double megabytes = (kilobytes / 1024);
             System.out.println(Math.round(megabytes * 100) / 100. + " megabyte file input: " + origin);
@@ -52,12 +50,11 @@ public class SavableFileManipulation {
 
         SavableFileIO<SavableSingleGame> io = new SavableFileIO<>();
         HashSet<SavableSingleGame> loaded = new HashSet<>();
-        io.loadObjectsToCollection(file, loaded);
+        io.loadObjectsToCollection(origin, loaded);
         io.storeObjects(loaded, destination, false);
 
-        file = new File(destination);
-        if (file.exists()) {
-            double bytes = file.length();
+        if (destination.exists()) {
+            double bytes = destination.length();
             double kilobytes = (bytes / 1024);
             double megabytes = (kilobytes / 1024);
             System.out.println(Math.round(megabytes * 100) / 100. + " megabyte file output: " + destination);
@@ -67,14 +64,14 @@ public class SavableFileManipulation {
     /**
      * Combine multiple .qwop files into a single one containing the data of both with duplicates removed.
      **/
-    public static void combineFiles(String[] inputFiles, String destination) {
+    public static void combineFiles(File[] inputFiles, File destination) {
         SavableFileIO<SavableSingleGame> io = new SavableFileIO<>();
         HashSet<SavableSingleGame> loaded = new HashSet<>();
         System.out.println("Combining .QWOP files: ");
         // Load them all into the same set.
-        for (String file : inputFiles) {
+        for (File file : inputFiles) {
             HashSet<SavableSingleGame> loadedSet = new HashSet<>();
-            io.loadObjectsToCollection(new File(file), loadedSet);
+            io.loadObjectsToCollection(file, loadedSet);
             loaded.addAll(loadedSet);
         }
         System.out.println("Output file " + destination + " has " + loaded.size() + " games in it.");
