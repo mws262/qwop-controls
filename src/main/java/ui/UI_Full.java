@@ -420,7 +420,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
         @Override
         public void mouseClicked(MouseEvent e) {
             if (e.isMetaDown()) {
-                selectNode(cam.nodeFromClick(e.getX(), e.getY(), rootNodes));
+                selectNode(cam.nodeFromClick_set(e.getX(), e.getY(), rootNodes));
             }
         }
 
@@ -526,7 +526,7 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
 
                     List<Node> snapshotLeaves = snapshotPane.getDisplayedLeaves();
                     if (snapshotLeaves.size() > 0) {
-                        Node nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves, 50);
+                        Node nearest = cam.nodeFromClick_set(mouseX, mouseY, snapshotLeaves);
                         if (nearest != null) {
                             snapshotPane.giveSelectedFuture(nearest);
                         } else {
