@@ -1,5 +1,6 @@
 package savers;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import data.SavableDenseData;
@@ -48,8 +49,9 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
         saveCounter++;
 
         if (saveInterval == saveCounter) {
-            fileIO.storeObjects(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix,
-                    fileExtension), false);
+            File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix,
+                    fileExtension));
+            fileIO.storeObjects(saveBuffer, saveFile, false);
             saveCounter = 0;
         }
         // Clear out for the next run to begin.

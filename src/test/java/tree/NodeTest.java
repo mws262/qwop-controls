@@ -192,7 +192,6 @@ public class NodeTest {
         // Trying to add a duplicate action child.
         exception.expect(IllegalArgumentException.class);
         node1_1.addChild(a1);
-
     }
 
     @Test

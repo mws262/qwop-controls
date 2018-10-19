@@ -1,5 +1,6 @@
 package savers;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,11 +77,12 @@ public class DataSaver_StageSelected implements IDataSaver {
         }
 
         if (overrideFilename.isEmpty()) {
-            fileIO.storeObjects(saveBuffer,
-					fileLocation + IDataSaver.generateFileName(filePrefix + successStatus, fileExtension), false);
+            File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix + successStatus,
+                    fileExtension));
+            fileIO.storeObjects(saveBuffer, saveFile, false);
         } else {
-            fileIO.storeObjects(saveBuffer,
-					fileLocation + overrideFilename + successStatus + "." + fileExtension, false);
+            File saveFile = new File(fileLocation + overrideFilename + successStatus + "." + fileExtension);
+            fileIO.storeObjects(saveBuffer, saveFile, false);
 
         }
         saveBuffer.clear();

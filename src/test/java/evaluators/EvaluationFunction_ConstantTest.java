@@ -9,6 +9,7 @@ import tree.Node;
 
 import static org.mockito.Mockito.mock;
 
+@SuppressWarnings("Duplicates")
 public class EvaluationFunction_ConstantTest {
 
     // Some sample actions (mocked).

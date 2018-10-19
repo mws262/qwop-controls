@@ -93,5 +93,4 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
     public EvaluationFunction_SqDistFromOther getCopy() {
         return new EvaluationFunction_SqDistFromOther(nodeToCompareAllOthersTo);
     }
-
 }

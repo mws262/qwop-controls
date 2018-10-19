@@ -1,5 +1,6 @@
 package savers;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,8 +71,9 @@ public class DataSaver_Sparse implements IDataSaver {
         gamesSinceFile++;
 
         if (saveInterval == gamesSinceFile) {
-            fileIO.storeObjects(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix,
-					fileExtension), false);
+            File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix,
+                    fileExtension));
+            fileIO.storeObjects(saveBuffer, saveFile, false);
             saveBuffer.clear();
             gamesSinceFile = 0;
         }
@@ -90,8 +92,10 @@ public class DataSaver_Sparse implements IDataSaver {
     @Override
     public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
         // If the save buffer still has stuff in it, save!
-        if (!saveBuffer.isEmpty())
-            fileIO.storeObjects(saveBuffer, fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension), false);
+        if (!saveBuffer.isEmpty()) {
+            File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension));
+            fileIO.storeObjects(saveBuffer, saveFile, false);
+        }
     }
 
     @Override

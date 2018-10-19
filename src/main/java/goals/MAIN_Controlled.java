@@ -340,8 +340,9 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             Action[] actsOut = new Action[actsConsolidated.size()];
             SavableActionSequence actionSequence = new SavableActionSequence(actsConsolidated.toArray(actsOut));
             List<SavableActionSequence> actionList = new ArrayList<>();
-            actionSaver.storeObjects(actionList, savePath + "actions_" + Utility.getTimestamp() +
-                    ".SavableActionSequence", false);
+            File saveFile = new File(savePath + "actions_" + Utility.getTimestamp() +
+                    ".SavableActionSequence");
+            actionSaver.storeObjects(actionList, saveFile, false);
         }
     }
 }
