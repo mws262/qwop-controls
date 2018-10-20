@@ -57,7 +57,6 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
         // Clear out for the next run to begin.
         stateBuffer.clear();
         actionBuffer.clear();
-
     }
 
     @Override
