@@ -8,7 +8,7 @@ class Crc32C implements Checksum {
     private static final int MASK_DELTA = 0xa282ead8;
     private PureJavaCrc32C crc32C;
 
-    public static int maskedCrc32c(byte[] data) {
+    static int maskedCrc32c(byte[] data) {
         return maskedCrc32c(data, 0, data.length);
     }
 

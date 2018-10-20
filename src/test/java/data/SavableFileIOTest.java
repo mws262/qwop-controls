@@ -93,7 +93,6 @@ public class SavableFileIOTest implements Serializable {
             Assert.assertEquals(stringList.get(i), loadedStringList.get(i));
         }
 
-
         /* For more complicated objects. */
         SavableFileIO<TestClass> testClassSaver = new SavableFileIO<>();
         testClassSaver.verbose = false;
@@ -174,6 +173,90 @@ public class SavableFileIOTest implements Serializable {
         }
     }
 
+    @Test
+    public void combineFiles() {
+        SavableFileIO<String> stringSaver = new SavableFileIO<>();
+        stringSaver.verbose = false;
+
+        List<String> stringList1 = new ArrayList<>();
+        stringList1.add("a");
+        stringList1.add("b");
+        stringList1.add("c");
+        stringList1.add("d");
+        stringList1.add("d"); // Should preserve a duplicate if saved from a list.
+
+        // Save to file from list.
+        File tempStringFile1 = new File(tmpFileDir + "f1.tmp");
+        stringSaver.storeObjects(stringList1, tempStringFile1, false);
+
+        List<String> stringList2 = new ArrayList<>();
+        stringList2.add("e");
+        stringList2.add("f");
+        stringList2.add("c");
+        stringList2.add("q");
+        stringList2.add("d"); // Should preserve a duplicate if saved from a list.
+
+        // Save to file from list.
+        File tempStringFile2 = new File(tmpFileDir + "f2.tmp");
+        stringSaver.storeObjects(stringList2, tempStringFile2, false);
+
+        // Combine to single file.
+        File[] filesToCombine = new File[2];
+        filesToCombine[0] = tempStringFile1;
+        filesToCombine[1] = tempStringFile2;
+
+        File outFile = new File(tmpFileDir + "fcomb.tmp");
+        stringSaver.combineFiles(filesToCombine, outFile);
+
+        // Load it back and check.
+        List<String> loadedStr = new ArrayList<>();
+        stringSaver.loadObjectsToCollection(outFile, loadedStr);
+
+        Assert.assertEquals(7, loadedStr.size());
+        Assert.assertTrue(loadedStr.contains("a"));
+        Assert.assertTrue(loadedStr.contains("b"));
+        Assert.assertTrue(loadedStr.contains("c"));
+        Assert.assertTrue(loadedStr.contains("d"));
+        Assert.assertTrue(loadedStr.contains("e"));
+        Assert.assertTrue(loadedStr.contains("f"));
+        Assert.assertTrue(loadedStr.contains("q"));
+    }
+
+    @Test
+    public void getFilesByExtension() {
+        File dir = new File(tmpFileDir);
+        if (!dir.exists())
+            dir.mkdirs();
+
+        // Create some files in a directory.
+        try {
+            new File(tmpFileDir + "file1.RedHerring").createNewFile();
+            new File(tmpFileDir + "file2.BlueHerring").createNewFile();
+            new File(tmpFileDir + "file3.PurpleHerring").createNewFile();
+            new File(tmpFileDir + "file4.blueherring").createNewFile();
+            new File(tmpFileDir + "file5.blueHerring").createNewFile();
+            new File(tmpFileDir + "file6.JustAHerring").createNewFile();
+            new File(tmpFileDir + "HerringWithoutExtension").createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Make sure it finds all the ones of a correct file extension.
+        // Without . before extension.
+        Set<File> filesFiltered = SavableFileIO.getFilesByExtension(dir, "blueherring");
+        Assert.assertEquals(3, filesFiltered.size());
+        Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file4.blueherring")));
+        Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file5.blueHerring")));
+        Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file2.BlueHerring")));
+
+        // With . before extension.
+        filesFiltered = SavableFileIO.getFilesByExtension(dir, ".blueherring");
+        Assert.assertEquals(3, filesFiltered.size());
+        Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file4.blueherring")));
+        Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file5.blueHerring")));
+        Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file2.BlueHerring")));
+    }
+
     private class TestClass implements Serializable {
         private static final long serialVersionUID = 1L;
 
@@ -188,7 +271,6 @@ public class SavableFileIOTest implements Serializable {
             this.c = c;
             this.d = d;
         }
-
     }
 
     private class TestClassLower implements Serializable {

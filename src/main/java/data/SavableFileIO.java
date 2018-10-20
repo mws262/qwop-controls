@@ -115,10 +115,12 @@ public class SavableFileIO<T> {
     }
 
     /**
-     * Get all files in the working directory with a specified file extension.
-     * @param extension File extension. Do not include the dot before the extension.
+     * Get all files in the working directory with a specified file extension. Case insensitive.
+     *
+     * @param directory File directory to look in.
+     * @param extension File extension. Tolerates ".foo" or "foo".
      * @return List of files with the specified file extension.
-     **/
+     */
     public static Set<File> getFilesByExtension(File directory, String extension) {
         File[] filesInDirectory = directory.listFiles();
         Objects.requireNonNull(filesInDirectory, "Unable to open the current directory.");
@@ -128,7 +130,8 @@ public class SavableFileIO<T> {
             if (file.isFile()) {
                 int indexOfLastSeparator = file.getName().lastIndexOf(".");
                 // Only get the files with the specified file extension.
-                if (file.getName().substring(indexOfLastSeparator).equalsIgnoreCase(extension)) {
+                if (indexOfLastSeparator >= 0 && (file.getName().substring(indexOfLastSeparator).equalsIgnoreCase(extension) ||
+                        file.getName().substring(indexOfLastSeparator + 1).equalsIgnoreCase(extension))) {
                     files.add(file);
                 }
             }
