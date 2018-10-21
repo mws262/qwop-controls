@@ -191,17 +191,22 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     // Overall behavior does not switch until the worker reaches IDLE in order to not leave some task
                     // half-complete. At IDLE, the worker can permanently stop, temporarily pause, or return to the
                     // INITIALIZATION state.
-                    if (flagForTermination.get()) { // Permanent stop.
+
+                    if (flagForTermination.get()) { // Permanent stop. Call terminateWorker() to trigger at next time
+                        // the worker reaches IDLE.
                         workerRunning = false;
                         break;
-                    } else if (paused) { // Temporary stop.
+                    } else if (paused) { // Temporary stop. Call pauseWorker().
                         continue;
                     } else {
-                        changeStatus(Status.INITIALIZE); // While running.
+                        changeStatus(Status.INITIALIZE); // While running. Go immediately to making a new game.
                     }
+
                     break;
                 case INITIALIZE:
-                    startMs = System.currentTimeMillis();
+
+                    startMs = System.currentTimeMillis(); // Just for keeping statistics on worker running speed.
+
                     actionQueue.clearAll();
                     newGame(); // Create a new game world.
                     saver.reportGameInitialization(GameLoader.getInitialState());
@@ -390,10 +395,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
         game.makeNewWorld();
     }
 
-    public void addAction(Action action) {
-        actionQueue.addAction(action);
-    }
-
     /**
      * Pop the next action off the queue and execute one timestep.
      **/
@@ -478,17 +479,15 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Increase the the count of total games in a hopefully thread-safe way.
      **/
-    private static long incrementTotalGameCount() {
+    private static void incrementTotalGameCount() {
         totalGamesPlayed.increment();
-        return totalGamesPlayed.longValue();
     }
 
     /**
      * Increase the number of timesteps simulated in a hopefully thread-safe way.
      **/
-    private static long addToTotalTimesteps(long timesteps) {
+    private static void addToTotalTimesteps(long timesteps) {
         totalStepsSimulated.add(timesteps);
-        return totalStepsSimulated.longValue();
     }
 
     /**
@@ -522,7 +521,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      **/
     @Override
     public void paintComponent(Graphics g) {
-        if (!active || game == null) return;
+        if (!active) return;
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
