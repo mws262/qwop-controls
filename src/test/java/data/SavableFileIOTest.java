@@ -1,6 +1,5 @@
 package data;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,8 +11,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static org.junit.Assert.*;
 
 public class SavableFileIOTest implements Serializable {
 
@@ -163,16 +160,6 @@ public class SavableFileIOTest implements Serializable {
         Assert.assertEquals(tc3.d.num, tc3Loaded.d.num, 1e-10);
     }
 
-    @After
-    public void cleanup() {
-        try {
-            FileUtils.deleteDirectory(new File(tmpFileDir)); // Get rid of the entire temporary test directory on
-            // completion.
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Test
     public void combineFiles() {
         SavableFileIO<String> stringSaver = new SavableFileIO<>();
@@ -255,6 +242,19 @@ public class SavableFileIOTest implements Serializable {
         Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file4.blueherring")));
         Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file5.blueHerring")));
         Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file2.BlueHerring")));
+    }
+
+    @After
+    public void cleanup() {
+        File tmpDir = new File(tmpFileDir);
+        File[] files = tmpDir.listFiles();
+
+        for (File file : files) {
+            if (file != null && file.exists()) {
+                file.deleteOnExit();
+            }
+        }
+        tmpDir.deleteOnExit();
     }
 
     private class TestClass implements Serializable {

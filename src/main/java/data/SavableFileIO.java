@@ -35,13 +35,15 @@ public class SavableFileIO<T> {
 
         if (!append || !saveFile.exists()) { // If the file doesn't exist, or we just don't want to append, then
             // don't use the appending version of the output stream.
-            try (ObjectOutputStream objOps = new ObjectOutputStream(new FileOutputStream(saveFile, false))) {
+            try (FileOutputStream fin = new FileOutputStream(saveFile, false); ObjectOutputStream objOps =
+                    new ObjectOutputStream(fin)) {
                 dataToStream(data, objOps);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else { // Appending should instead use the version below which overrides the WriteStreamHeader method.
-            try (ObjectOutputStream objOps = new AppendingObjectOutputStream(new FileOutputStream(saveFile, true))) {
+            try (FileOutputStream fin = new FileOutputStream(saveFile, true); ObjectOutputStream objOps =
+                    new AppendingObjectOutputStream(fin)) {
                 dataToStream(data, objOps);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -58,7 +60,7 @@ public class SavableFileIO<T> {
      */
     public void loadObjectsToCollection(File file, Collection<T> collection) {
         int counter = 0;
-        try (ObjectInputStream objIs = new ObjectInputStream(new FileInputStream(file))) {
+        try (FileInputStream fin = new FileInputStream(file); ObjectInputStream objIs = new ObjectInputStream(fin)) {
             if (verbose) {
                 final String dir = System.getProperty("user.dir");
                 System.out.println("current directory: " + dir);
