@@ -3,7 +3,8 @@ package filters;
 import tree.Node;
 
 /**
- * Very new nodes might not have state or action assigned yet. This will filter those out.
+ * Very new nodes might not have state or action assigned yet. This will filter those out. Note that this will filter
+ * the root node out.
  *
  * @author matt
  */
