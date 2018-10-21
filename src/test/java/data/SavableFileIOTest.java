@@ -7,10 +7,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class SavableFileIOTest implements Serializable {
 
@@ -249,7 +246,7 @@ public class SavableFileIOTest implements Serializable {
         File tmpDir = new File(tmpFileDir);
         File[] files = tmpDir.listFiles();
 
-        for (File file : files) {
+        for (File file : Objects.requireNonNull(files)) {
             if (file != null && file.exists()) {
                 file.deleteOnExit();
             }

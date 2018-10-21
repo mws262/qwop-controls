@@ -31,7 +31,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     public enum Status {
         IDLE, INITIALIZE, TREE_POLICY_CHOOSING, TREE_POLICY_EXECUTING, EXPANSION_POLICY_CHOOSING,
-        EXPANSION_POLICY_EXECUTING, ROLLOUT_POLICY_CHOOSING, ROLLOUT_POLICY_EXECUTING, EVALUATE_GAME, EXHAUSTED
+        EXPANSION_POLICY_EXECUTING, ROLLOUT_POLICY_CHOOSING, ROLLOUT_POLICY_EXECUTING, EVALUATE_GAME
     }
 
     /**
@@ -188,6 +188,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
             switch (currentStatus) {
                 case IDLE:
 
+                    // Overall behavior does not switch until the worker reaches IDLE in order to not leave some task
+                    // half-complete. At IDLE, the worker can permanently stop, temporarily pause, or return to the
+                    // INITIALIZATION state.
                     if (flagForTermination.get()) { // Permanent stop.
                         workerRunning = false;
                         break;
@@ -202,7 +205,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     actionQueue.clearAll();
                     newGame(); // Create a new game world.
                     saver.reportGameInitialization(GameLoader.getInitialState());
-
                     currentGameNode = rootNode;
                     changeStatus(Status.TREE_POLICY_CHOOSING);
 
@@ -215,9 +217,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (sampler.treePolicyGuard(currentGameNode)) { // Sampler tells us when we're done with the tree
                         // policy.
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
+
                     } else {
                         expansionNode = sampler.treePolicy(currentGameNode); // This gets us through the existing
                         // tree to a place that we plan to add a new node.
+
                         if (debugDraw) {
                             expansionNode.setBackwardsBranchColor(getColorFromWorkerID(workerID));
                             expansionNode.setBackwardsBranchZOffset(0.1f);
@@ -339,11 +343,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
                     break;
                 case EVALUATE_GAME:
-//                    if (currentGameNode.isFailed()) { // 2/20/18 I don't remember why I put a conditional here. I've
-//                        // added an error to see if this ever actually is not true.
-//                        currentGameNode.markTerminal();
-//                    }
-
                     saver.reportGameEnding(currentGameNode);
                     long gameTs = GameLoader.getTimestepsSimulated();
                     addToTotalTimesteps(gameTs);
@@ -364,16 +363,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         pauseWorker();
                         changeStatus(Status.IDLE);
                         System.out.println("Tree is fully explored, but just pausing for next stage.");
-//					changeStatus(Status.EXHAUSTED); // Trying out the above instead. This causes stages to terminate
-// early I think. 4/30/18
                     } else {
                         changeStatus(Status.IDLE);
                     }
-                    break;
-                case EXHAUSTED:
-                    System.out.println("Tree is fully explored.");
-                    terminateWorker();
-                    changeStatus(Status.IDLE);
                     break;
                 default:
                     break;
