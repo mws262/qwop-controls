@@ -26,5 +26,8 @@ public class NodeFilter_IdentityTest {
         int originalSize = listOfNodes.size();
         filter.filter(listOfNodes);
         Assert.assertEquals(originalSize, listOfNodes.size());
+
+        Node badNode = null;
+        Assert.assertTrue(filter.filter(badNode)); // Should still allow even null.
     }
 }

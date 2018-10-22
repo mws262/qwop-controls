@@ -12,7 +12,7 @@ public class NodeFilter_MissingInfo implements INodeFilter {
 
     @Override
     public boolean filter(Node node) { // true means keep
-        return !(node.isStateUnassigned() || node.action == null);
+        return !(node == null || node.isStateUnassigned() || node.action == null);
     }
 
 }

@@ -15,7 +15,6 @@ public class NodeFilter_SurvivalHorizon implements INodeFilter {
      **/
     private final int requiredSurvivalHorizon;
 
-
     /**
      * Creates a new node filter which keeps only nodes who have descendants deep enough beyond them.
      *

@@ -297,12 +297,10 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
         }
 
         @Override
-        public void activateTab() {
-        }
+        public void activateTab() {}
 
         @Override
-        public void deactivateTab() {
-        }
+        public void deactivateTab() {}
 
         @Override
         public void display(GLAutoDrawable drawable) {
@@ -675,4 +673,3 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
         rootNodes.clear();
     }
 }
-

@@ -191,5 +191,12 @@ public class NodeFilter_MissingInfoTest {
         for (Node n : nodesWithStates) {
             Assert.assertTrue(allNodes.contains(n));
         }
+
+        Node badNode = null;
+        Assert.assertFalse(nodeFilter.filter(badNode)); // Null nodes should return false.
+
+        nodesWithStates.clear();
+        nodeFilter.filter(nodesWithStates); // Should tolerate an empty list.
+        Assert.assertEquals(0, nodesWithStates.size());
     }
 }
