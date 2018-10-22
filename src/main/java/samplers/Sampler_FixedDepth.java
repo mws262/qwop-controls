@@ -51,7 +51,6 @@ public class Sampler_FixedDepth implements ISampler {
 
         while (!finishedNodes.contains(startNode)) {
 
-
             if (currentNode.fullyExplored.get() || finishedNodes.contains(currentNode)) {
                 if (currentNode.fullyExplored.get()) finishedNodes.add(currentNode);
                 currentNode = startNode; // Just start over for now. I don't think it's a big enough problem to

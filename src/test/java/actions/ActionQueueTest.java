@@ -1,7 +1,5 @@
 package actions;
 
-import actions.Action;
-import actions.ActionQueue;
 import org.junit.Assert;
 import org.junit.Test;
 
