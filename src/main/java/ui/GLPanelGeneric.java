@@ -1,7 +1,6 @@
 package ui;
 
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
@@ -13,11 +12,9 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.glu.GLU;
-import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
  * This attempts to hold all the things I normally do when making a new panel that uses GL.
@@ -26,15 +23,9 @@ import com.jogamp.opengl.util.gl2.GLUT;
  * @author Matt
  */
 
-@SuppressWarnings("serial")
 public class GLPanelGeneric extends GLJPanel implements GLEventListener, ComponentListener {
 
     /* GL objects */
-    /**
-     * If using openGL, we have to put a GLCanvas inside the panel.
-     **/
-    GLCanvas canvas;
-
     /**
      * GLU is the line/point graphics
      **/
@@ -57,45 +48,13 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
     int panelHeight = 700;
 
     public GLPanelGeneric() {
-        // Canvas setup and sizing -- GL stuff exists in a CANVAS that we put in a PANEL (not fully understood TBH)
-        GLProfile glp = GLProfile.getDefault();
-        GLCapabilities caps = new GLCapabilities(glp);
-        canvas = new GLCanvas(caps);
-        canvas.setSize(new Dimension(panelWidth, panelHeight));
-        //canvas.setMaximumSize(new Dimension(panelWidth,panelHeight));
-        //canvas.setMinimumSize(new Dimension(panelWidth,panelHeight));
-
+        super(new GLCapabilities(GLProfile.getDefault()));
+        setSize(new Dimension(panelWidth, panelHeight));
         // Listeners for user interaction
-        canvas.addGLEventListener(this);
+        addGLEventListener(this);
         addComponentListener(this);
-        this.add(canvas); // Add the canvas to the panel.
-
         // Default camera positioning.
         cam = new GLCamManager(panelWidth, panelHeight);
-
-    }
-
-    /**
-     * Paint for this JPanel pretty much just asks the sub-canvas to paint. Somewhat a relic of the old graphics
-     **/
-    @Override
-    public void paintComponent(Graphics g) {
-        if (canvas != null) {
-            canvas.display();
-        }
-    }
-
-    /**
-     * Set the size of this window
-     **/
-    @Override
-    public void setSize(int width, int height) {
-        panelWidth = width;
-        panelHeight = height;
-
-        canvas.setSize(new Dimension(panelWidth, panelHeight));
-        //canvas.setMaximumSize(new Dimension(panelWidth,panelHeight));
-        canvas.setMinimumSize(new Dimension(100, 100));
     }
 
     @Override
@@ -113,8 +72,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
     }
 
     @Override
-    public void dispose(GLAutoDrawable drawable) {
-    }
+    public void dispose(GLAutoDrawable drawable) {}
 
     @Override
     public void init(GLAutoDrawable drawable) {
@@ -148,9 +106,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
      **/
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-        GL2 gl = drawable.getGL().getGL2();
         cam = new GLCamManager(panelWidth, panelHeight);
-        //cam.setDims(gl, width, height);
     }
 
     /**
@@ -165,14 +121,11 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
     }
 
     @Override
-    public void componentMoved(ComponentEvent e) {
-    }
+    public void componentMoved(ComponentEvent e) {}
 
     @Override
-    public void componentShown(ComponentEvent e) {
-    }
+    public void componentShown(ComponentEvent e) {}
 
     @Override
-    public void componentHidden(ComponentEvent e) {
-    }
+    public void componentHidden(ComponentEvent e) {}
 }

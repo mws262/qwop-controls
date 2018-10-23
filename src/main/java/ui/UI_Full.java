@@ -20,13 +20,12 @@ import tree.Node;
  *
  * @author Matt
  */
-@SuppressWarnings("serial")
 public class UI_Full extends JFrame implements ChangeListener, NodeSelectionListener, Runnable, IUserInterface {
 
     /**
      * Thread loop running?
      **/
-    public boolean running = true;
+    private boolean running = true;
 
     /**
      * Verbose printing?
@@ -79,21 +78,10 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
      **/
     private long MSPF = (long) (1f / FPS * 1000f);
 
-
-    /**
-     * State machine states for all UI
-     **/
-    public enum Status {
-        IDLE_ALL, DRAW_ALL
-    }
-
-    private Status currentStatus;
-    private Status previousStatus = Status.IDLE_ALL;
-
     public UI_Full() {
-        Container pane = this.getContentPane();
+        Container pane = getContentPane();
+
         /* Tabbed panes */
-        /* Add components to tabs */
         tabPane = new JTabbedPane();
         tabPane.setBorder(BorderFactory.createRaisedBevelBorder());
         tabPane.setPreferredSize(new Dimension(1080, 250));
@@ -103,7 +91,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
         /* TREE PANE */
         panelTree = new PanelTree();
         panelTree.addNodeSelectionListener(this); // Add this UI as a listener for selections of nodes on the tree.
-        panelTree.setBorder(BorderFactory.createRaisedBevelBorder());
+//        panelTree.setBorder(BorderFactory.createRaisedBevelBorder());
 
         // This makes it have that dragable border between the tab and the tree sections.
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panelTree, tabPane);
@@ -113,7 +101,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         this.setPreferredSize(new Dimension(windowWidth, windowHeight));
-        this.setContentPane(this.getContentPane());
+        this.setContentPane(getContentPane());
 
         // Add toolbar icon.
         Toolkit kit = Toolkit.getDefaultToolkit();
@@ -122,8 +110,6 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
 
         this.pack();
         this.setVisible(true);
-
-        currentStatus = Status.DRAW_ALL; // Fire it up.
     }
 
     /**
@@ -156,21 +142,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     public void run() {
         while (running) {
             long currentTime = System.currentTimeMillis();
-            switch (currentStatus) {
-                case IDLE_ALL:
-                    break;
-                case DRAW_ALL:
-                    repaint();
-                    break;
-                default:
-                    break;
-            }
-
-            if (verbose && currentStatus != previousStatus) {
-                System.out.println(previousStatus + " -> " + currentStatus);
-            }
-
-            previousStatus = currentStatus;
+            repaint();
 
             long extraTime = MSPF - (System.currentTimeMillis() - currentTime);
             if (extraTime > 5) {

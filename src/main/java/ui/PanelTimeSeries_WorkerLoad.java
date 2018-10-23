@@ -19,7 +19,6 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
     public void setWorkers(List<TreeWorker> workers) {
         workerList.clear();
         workerList.addAll(workers);
-
     }
 
     @Override

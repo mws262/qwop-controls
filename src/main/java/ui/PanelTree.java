@@ -81,11 +81,11 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     public PanelTree() {
         super();
-        canvas.setFocusable(true);
-        canvas.addKeyListener(this);
-        canvas.addMouseListener(this);
-        canvas.addMouseMotionListener(this);
-        canvas.addMouseWheelListener(this);
+        setFocusable(true);
+        addKeyListener(this);
+        addMouseListener(this);
+        addMouseMotionListener(this);
+        addMouseWheelListener(this);
     }
 
     /**
