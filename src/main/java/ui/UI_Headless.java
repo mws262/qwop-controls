@@ -13,9 +13,6 @@ public class UI_Headless implements IUserInterface {
     public void kill() {}
 
     @Override
-    public void selectNode(Node selected) {}
-
-    @Override
     public void addRootNode(Node node) {}
 
     @Override

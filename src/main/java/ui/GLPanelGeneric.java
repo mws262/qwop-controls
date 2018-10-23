@@ -31,7 +31,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
 
     /* GL objects */
     /**
-     * If using openGL, we have to put a special GLCanvas inside the frame
+     * If using openGL, we have to put a GLCanvas inside the panel.
      **/
     GLCanvas canvas;
 

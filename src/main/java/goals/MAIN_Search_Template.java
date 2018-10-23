@@ -86,8 +86,9 @@ public abstract class MAIN_Search_Template {
         properties = Utility.loadConfigFile(configFile);
 
         String logPrefix = "MAIN: ";
+
         // Create the data save directory.
-        saveLoc = new File(Utility.getExcutionPath() + "/saved_data/" + properties.getProperty("saveLocation", "./"));
+        saveLoc = new File("src/main/resources/saved_data/" + properties.getProperty("saveLocation", "./"));
         if (!saveLoc.exists()) {
             boolean success = saveLoc.mkdirs();
             if (!success) throw new RuntimeException("Could not make save directory.");
@@ -102,7 +103,7 @@ public abstract class MAIN_Search_Template {
         uiThread.start();
 
         // Copy the config file into the save directory.
-        File configSave = new File(saveLoc.getAbsolutePath() + "/config_" + Utility.getTimestamp() + ".config");
+        File configSave = new File(saveLoc.toString() + "/config_" + Utility.getTimestamp() + ".config");
         try {
             FileUtils.copyFile(configFile, configSave);
         } catch (IOException e1) {
@@ -111,7 +112,7 @@ public abstract class MAIN_Search_Template {
 
         // WORKER CORES:
         // Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the
-		// Box2D libraries.
+        // Box2D libraries.
         float workersFractionOfCores = Float.parseFloat(properties.getProperty("workersFractionOfCores", "0.8"));
         int cores = Runtime.getRuntime().availableProcessors();
         maxWorkers = (int) (workersFractionOfCores * cores); // Basing of number of cores including hyperthreading.
@@ -151,9 +152,8 @@ public abstract class MAIN_Search_Template {
         }));
     }
 
-
     /**
-     * Borrow a treeworker from the pool. Be sure to return it later!
+     * Borrow a {@link TreeWorker} from the pool. Be sure to return it later!
      **/
     private TreeWorker borrowWorker() {
         TreeWorker worker = null;
@@ -177,7 +177,6 @@ public abstract class MAIN_Search_Template {
         activeWorkers.remove(finishedWorker);
         if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
     }
-
 
     protected void doBasicMaxDepthStage(Node rootNode, String saveName, int desiredDepth, float fractionOfWorkers,
                                         int maxGames) {
@@ -331,14 +330,10 @@ public abstract class MAIN_Search_Template {
      * Pass -1 to disable this.
      **/
     protected void assignAllowableActions(int recoveryExceptionStart) {
-        /********************************************/
-        /******* Space of allowable actions. ********/
-        /********************************************/
-
-        /***** Space of allowed actions to sample ******/
+        /* Space of allowed actions to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
-        /* Repeated action 1 -- no keys pressed. ***********/
+        /* Repeated action 1 -- no keys pressed. */
         Integer[] durations1 = IntStream.range(1, 25).boxed().toArray(Integer[]::new);
         boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
 				durations1.length);
@@ -347,7 +342,7 @@ public abstract class MAIN_Search_Template {
         Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
         ActionSet actionSet1 = ActionSet.makeActionSet(durations1, keySet1, dist1);
 
-        /**********  Repeated action 2 -- W-O pressed ***********/
+        /*  Repeated action 2 -- W-O pressed */
         Integer[] durations2 = IntStream.range(20, 60).boxed().toArray(Integer[]::new);
         boolean[][] keySet2 = ActionSet.replicateKeyString(new boolean[]{false, true, true, false}, durations2.length);
 
@@ -355,7 +350,7 @@ public abstract class MAIN_Search_Template {
         Distribution<Action> dist2 = new Distribution_Normal(39f, 3f);
         ActionSet actionSet2 = ActionSet.makeActionSet(durations2, keySet2, dist2);
 
-        /**********  Repeated action 3 -- W-O pressed ***********/
+        /* Repeated action 3 -- W-O pressed */
         Integer[] durations3 = IntStream.range(1, 25).boxed().toArray(Integer[]::new);
         boolean[][] keySet3 = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
 				durations3.length);
@@ -364,7 +359,7 @@ public abstract class MAIN_Search_Template {
         Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
         ActionSet actionSet3 = ActionSet.makeActionSet(durations3, keySet3, dist3);
 
-        /**********  Repeated action 4 -- Q-P pressed ***********/
+        /*  Repeated action 4 -- Q-P pressed */
         Integer[] durations4 = IntStream.range(20, 60).boxed().toArray(Integer[]::new);
         boolean[][] keySet4 = ActionSet.replicateKeyString(new boolean[]{true, false, false, true}, durations4.length);
 
@@ -373,7 +368,7 @@ public abstract class MAIN_Search_Template {
         ActionSet[] repeatedActions = new ActionSet[]{actionSet1, actionSet2, actionSet3, actionSet4};
 
         /////// Action Exceptions for starting up. ////////
-        /********** Repeated action exceptions 1 -- no keys pressed. ***********/
+        /* Repeated action exceptions 1 -- no keys pressed. */
         Integer[] durationsE1 = IntStream.range(1, 25).boxed().toArray(Integer[]::new);
         boolean[][] keySetE1 = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
 				durationsE1.length);
@@ -381,7 +376,7 @@ public abstract class MAIN_Search_Template {
         Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
         ActionSet actionSetE1 = ActionSet.makeActionSet(durationsE1, keySetE1, distE1);
 
-        /**********  Repeated action exceptions 2 -- W-O pressed ***********/
+        /*  Repeated action exceptions 2 -- W-O pressed */
         Integer[] durationsE2 = IntStream.range(20, 50).boxed().toArray(Integer[]::new);
         boolean[][] keySetE2 = ActionSet.replicateKeyString(new boolean[]{false, true, true, false},
 				durationsE2.length);
@@ -389,7 +384,7 @@ public abstract class MAIN_Search_Template {
         Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
         ActionSet actionSetE2 = ActionSet.makeActionSet(durationsE2, keySetE2, distE2);
 
-        /**********  Repeated action exceptions 3 -- no keys pressed. ***********/
+        /*  Repeated action exceptions 3 -- no keys pressed. */
         Integer[] durationsE3 = IntStream.range(10, 45).boxed().toArray(Integer[]::new);
         boolean[][] keySetE3 = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
 				durationsE3.length);
@@ -397,7 +392,7 @@ public abstract class MAIN_Search_Template {
         Distribution<Action> distE3 = new Distribution_Normal(24f, 2f);
         ActionSet actionSetE3 = ActionSet.makeActionSet(durationsE3, keySetE3, distE3);
 
-        /**********  Repeated action exceptions 4 -- Q-P pressed ***********/
+        /*  Repeated action exceptions 4 -- Q-P pressed */
         Integer[] durationsE4 = IntStream.range(25, 65).boxed().toArray(Integer[]::new);
         boolean[][] keySetE4 = ActionSet.replicateKeyString(new boolean[]{true, false, false, true},
 				durationsE4.length);
@@ -405,9 +400,8 @@ public abstract class MAIN_Search_Template {
         Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
         ActionSet actionSetE4 = ActionSet.makeActionSet(durationsE4, keySetE4, distE4);
 
-
         /////// Action Exceptions for recovery. ////////
-        /**********  Repeated action 1 and 3 -- Nothing pressed ***********/
+        /*  Repeated action 1 and 3 -- Nothing pressed */
         Integer[] durationsFalseFalse = IntStream.range(1, 50).boxed().toArray(Integer[]::new);
         boolean[][] keySetFalseFalse = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
 				durationsFalseFalse.length);
@@ -415,20 +409,19 @@ public abstract class MAIN_Search_Template {
         Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
         ActionSet actionSetFalseFalse = ActionSet.makeActionSet(durationsFalseFalse, keySetFalseFalse, distFalseFalse);
 
-        /**********  Repeated action 2 -- W-O pressed ***********/
+        /*  Repeated action 2 -- W-O pressed */
         Integer[] durationsWO = IntStream.range(1, 70).boxed().toArray(Integer[]::new);
         boolean[][] keySetWO = ActionSet.replicateKeyString(new boolean[]{false, true, true, false}, durationsWO.length);
 
         Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
         ActionSet actionSetWO = ActionSet.makeActionSet(durationsWO, keySetWO, distWO);
 
-        /**********  Repeated action 4 -- Q-P pressed ***********/
+        /*  Repeated action 4 -- Q-P pressed */
         Integer[] durationsQP = IntStream.range(1, 70).boxed().toArray(Integer[]::new);
         boolean[][] keySetQP = ActionSet.replicateKeyString(new boolean[]{true, false, false, true}, durationsQP.length);
 
         Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
         ActionSet actionSetQP = ActionSet.makeActionSet(durationsQP, keySetQP, distQP);
-
 
         Map<Integer, ActionSet> actionExceptions = new HashMap<>();
         actionExceptions.put(0, actionSetE1);
@@ -461,5 +454,4 @@ public abstract class MAIN_Search_Template {
         // Define the specific way that these allowed actions are assigned as potential options for nodes.
         Node.potentialActionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
-
 }

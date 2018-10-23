@@ -51,7 +51,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
     /**
      * Place to load any 'prefix' run data in the form of a SavableSingleGame
      **/
-    private File prefixSave = new File(Utility.getExcutionPath() +
+    private File prefixSave = new File("src/main/resources/" +
             "saved_data/4_25_18/steadyRunPrefix.SavableSingleGame");
 
     private List<Node> leafNodes = new ArrayList<>();
@@ -84,7 +84,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
 
         // CONTROLLER -- Approximate nearest neighbor.
-        File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
+        File saveLoc = new File("src/main/resources/training_data");
 
         File[] allFiles = saveLoc.listFiles();
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
@@ -213,7 +213,9 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             endNode = endNode.getParent();
         }
         // Run prefix part.
-        actionQueue.addSequence(endNode.getSequence());
+        if (endNode.getTreeDepth() > 0)
+            actionQueue.addSequence(endNode.getSequence());
+
         while (!actionQueue.isEmpty()) {
             executeNextOnQueue();
             //
@@ -238,7 +240,6 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             while (!actionQueue.isEmpty()) {
 //                game.applyBodyImpulse(rand.nextFloat() - 0.5f, rand.nextFloat() - 0.5f);
 //                game.applyBodyTorque(-2f);
-
                 executeNextOnQueue();
                 try {
                     Thread.sleep(Long.max(20 - (System.currentTimeMillis() - initTime), 0L));

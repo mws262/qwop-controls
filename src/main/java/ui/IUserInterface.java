@@ -15,11 +15,6 @@ public interface IUserInterface extends Runnable {
      **/
     void kill();
 
-    /**
-     * Pick a node for the UI to highlight and potentially display.
-     **/
-    void selectNode(Node selected);
-
     void addRootNode(Node node);
 
     void clearRootNodes();

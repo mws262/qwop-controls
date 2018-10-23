@@ -191,6 +191,7 @@ public class Utility {
      *
      * @return String name of the path the the code is executing from.
      */
+    @Deprecated
     public static String getExcutionPath() {
         String path = "";
         try {
