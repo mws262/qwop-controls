@@ -828,10 +828,10 @@ public class Node {
                     "leading up to it.");
 
         Node current = this;
-        sequence[getTreeDepth() - 1] = current.action;
+        sequence[getTreeDepth() - 1] = current.getAction();
         for (int i = getTreeDepth() - 2; i >= 0; i--) {
             current = current.parent;
-            sequence[i] = current.action;
+            sequence[i] = current.getAction();
         }
         return sequence;
     }

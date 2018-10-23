@@ -311,13 +311,21 @@ public class GLCamManager {
     }
 
     /**
-     * Zoom in/zoom out. Also spread out over a certain number of update calls
-     */ //TODO: make sure that other updates are also scaled?
-    public void smoothZoom(float zoomFactor, int speed) {
-        float zoomIncrement = (float) Math.pow(zoomFactor, 1. / speed);
-        this.zoomIncrement.add(zoomIncrement);
-        zoomSteps.add(speed);
+     * Zoom in/zoom out. Also spread out over a certain number of update calls to smooth it out.
+     *
+     * @param zoomFactor How the current zoom factor is changed, multiplicatively, by this zoom. So, 1 is no change,
+     *                   <1 is zoom in. >1 is zoom out.
+     * @param speed Number of timesteps that this change is spread over.
+     */
 
+    public void smoothZoom(float zoomFactor, int speed) {
+        eyeToTarget.sub(targetPos, eyePos);
+        if (zoomFactor > 1 || eyeToTarget.dot(eyeToTarget) > 500) { // Don't allow zooming in too far. Tree
+            // disappears if we get too close. The 500 is a square distance threshold for camera->target.
+            float zoomIncrement = (float) Math.pow(zoomFactor, 1. / speed);
+            this.zoomIncrement.add(zoomIncrement);
+            zoomSteps.add(speed);
+        }
     }
 
     /**
@@ -517,9 +525,8 @@ public class GLCamManager {
      * Take a click vector, find the nearest {@link Node} to this line.
      *
      * @param clickVec Click direction as defined by the view frustum.
-     * @param root Root of a tree. All the nodes in this tree will be evaluated to find the closest.
+     * @param root     Root of a tree. All the nodes in this tree will be evaluated to find the closest.
      * @return Nearest {@link Node} to the click ray.
-     *
      * @see GLCamManager#clickVector(int, int)
      */
     public Node nodeFromRay(Vector3f clickVec, Node root) {
@@ -576,7 +583,6 @@ public class GLCamManager {
     /**
      * Take a click vector, find the coordinates of the projected point at a given level.
      * Note: assumes trees always stay perpendicular to the z-axis.
-     *
      */
     public Vector3f planePtFromRay(int mouseX, int mouseY, float levelset) {
         // Determine which point is closest to the clicked ray.

@@ -24,7 +24,7 @@ import tree.Utility;
 public class MAIN_Search_Full extends MAIN_Search_Template {
 
     public MAIN_Search_Full() {
-        super(new File(Utility.getExcutionPath() + "search.config_full"));
+        super(new File("src/main/resources/config/search.config_full"));
     }
 
     public static void main(String[] args) {
