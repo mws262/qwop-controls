@@ -13,6 +13,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import tree.Node;
+import tree.Utility;
 
 
 /**
@@ -84,7 +85,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
         /* Tabbed panes */
         tabPane = new JTabbedPane();
         tabPane.setBorder(BorderFactory.createRaisedBevelBorder());
-        tabPane.setPreferredSize(new Dimension(1080, 250));
+        tabPane.setPreferredSize(new Dimension(1080, 150));
         tabPane.setMinimumSize(new Dimension(100, 1));
         tabPane.addChangeListener(this);
 
@@ -95,7 +96,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
 
         // This makes it have that dragable border between the tab and the tree sections.
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panelTree, tabPane);
-        splitPane.setResizeWeight(0.7);
+        splitPane.setResizeWeight(0.85);
         pane.add(splitPane);
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -110,6 +111,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
 
         this.pack();
         this.setVisible(true);
+        Utility.showOnScreen(this, 0, false); // Choose the monitor to display on, filling that monitor.
     }
 
     /**
