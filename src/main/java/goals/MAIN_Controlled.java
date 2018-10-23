@@ -236,33 +236,8 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             actionQueue.addAction(nextAction);
             Random rand = new Random();
             while (!actionQueue.isEmpty()) {
-
-
-//									if (rand.nextFloat() > 0.5f) {
-//										try {
-//											game.applyBodyImpulse(rand.nextFloat() - 0.5f, rand.nextFloat() - 0.5f);
-//										} catch (IllegalAccessException e) {
-//											// TODO Auto-generated catch block
-//											e.printStackTrace();
-//										} catch (IllegalArgumentException e) {
-//											// TODO Auto-generated catch block
-//											e.printStackTrace();
-//										} catch (InvocationTargetException e) {
-//											// TODO Auto-generated catch block
-//											e.printStackTrace();
-//										} catch (NoSuchMethodException e) {
-//											// TODO Auto-generated catch block
-//											e.printStackTrace();
-//										} catch (SecurityException e) {
-//											// TODO Auto-generated catch block
-//											e.printStackTrace();
-//										} catch (InstantiationException e) {
-//											// TODO Auto-generated catch block
-//											e.printStackTrace();
-//										}
-//									}
-                //game.applyBodyTorque(-2f);
-
+//                game.applyBodyImpulse(rand.nextFloat() - 0.5f, rand.nextFloat() - 0.5f);
+//                game.applyBodyTorque(-2f);
 
                 executeNextOnQueue();
                 try {

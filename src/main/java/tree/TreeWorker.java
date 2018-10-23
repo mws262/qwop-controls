@@ -236,10 +236,12 @@ public class TreeWorker extends PanelRunner implements Runnable {
                             changeStatus(Status.IDLE);
                         } else {
                             targetNodeToTest = expansionNode;
-                            actionQueue.clearAll();
-                            actionQueue.addSequence(targetNodeToTest.getSequence());
-
+                            if (targetNodeToTest.getTreeDepth() != 0) { // No action sequence to add if target node
+                                // is root (we're already there!).
+                                actionQueue.addSequence(targetNodeToTest.getSequence());
+                            }
                             changeStatus(Status.TREE_POLICY_EXECUTING);
+                            actionQueue.clearAll();
                         }
                     }
 
@@ -298,7 +300,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         // TODO possibly update the action to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
                         currentGameNode = targetNodeToTest;
-                        if (currentGameNode.getState() != null)
+                        if (!currentGameNode.isStateUnassigned())
                             throw new RuntimeException("The expansion policy should only encounter new nodes. None of" +
                                     " them should have their state assigned before now.");
                         currentGameNode.setState(getGameState());
@@ -338,7 +340,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         // TODO possibly update the action to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
                         currentGameNode = targetNodeToTest;
-                        if (currentGameNode.getState() != null)
+                        if (!currentGameNode.isStateUnassigned())
                             throw new RuntimeException("The expansion policy should only encounter new nodes. None of" +
                                     " them should have their state assigned before now.");
                         currentGameNode.setState(getGameState());

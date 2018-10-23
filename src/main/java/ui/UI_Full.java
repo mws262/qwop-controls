@@ -9,6 +9,8 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -147,9 +149,8 @@ public class UI_Full extends JFrame implements ChangeListener, Runnable, IUserIn
         this.setContentPane(this.getContentPane());
 
         // Add toolbar icon.
-        java.net.URL url = ClassLoader.getSystemResource("./ui/ico/QWOP_tree_ico.png");
         Toolkit kit = Toolkit.getDefaultToolkit();
-        Image img = kit.createImage(url);
+        Image img = kit.createImage("src/main/resources/icons/QWOP_tree_ico.png");
         setIconImage(img);
 
         this.pack();

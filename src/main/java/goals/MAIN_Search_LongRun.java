@@ -1,6 +1,8 @@
 package goals;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +23,7 @@ import tree.Utility;
 public class MAIN_Search_LongRun extends MAIN_Search_Template {
 
     public MAIN_Search_LongRun() {
-        super(new File(Utility.getExcutionPath() + "search.config_long"));
+        super(new File("src/main/resources/config/" + "search.config_long"));
     }
 
     public static void main(String[] args) {

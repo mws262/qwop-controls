@@ -40,7 +40,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     /**
      * Transformer to use to transform normal states into reduced coordinates.
      **/
-    private ITransform transformer = new Transform_Autoencoder(Utility.getExcutionPath() + "tflow_models" +
+    private ITransform transformer = new Transform_Autoencoder("src/main/resources/tflow_models" +
             "/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
     /**
