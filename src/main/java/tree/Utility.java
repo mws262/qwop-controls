@@ -1,5 +1,7 @@
 package tree;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -208,5 +210,36 @@ public class Utility {
             path += "../../";
         }
         return path;
+    }
+
+    /**
+     * Make a JFrame go to the specified monitor (by index) and match its size. Choose whether to make it full screen
+     * or not.
+     * @param frame Frame to move and resize.
+     * @param screen Index of the monitor to use.
+     * @param fullScreen Maximize to completely full screen? This will not have an upper toolbar.
+     *
+     * @see <a href="https://stackoverflow.com/questions/4627553/show-jframe-in-a-specific-screen-in-dual-monitor
+     * -configuration">StackOverflow thread</a>
+     */
+    public static void showOnScreen(JFrame frame, int screen, boolean fullScreen) {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gd = ge.getScreenDevices();
+        if( screen > -1 && screen < gd.length ) {
+            if (fullScreen) {
+                gd[screen].setFullScreenWindow( frame );
+            } else {
+                frame.setLocation(gd[screen].getDefaultConfiguration().getBounds().x, gd[screen].getDefaultConfiguration().getBounds().y + frame.getY());
+            }
+        } else if( gd.length > 0 ) {
+            if (fullScreen) {
+                gd[0].setFullScreenWindow( frame );
+            } else {
+                frame.setLocation(gd[0].getDefaultConfiguration().getBounds().x, gd[0].getDefaultConfiguration().getBounds().y + frame.getY());
+            }
+        } else {
+            throw new RuntimeException( "No Screens Found" );
+        }
+        frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
     }
 }
