@@ -283,7 +283,7 @@ public abstract class MAIN_Search_Template {
 				new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
         PanelPlot_Controls controlsPlotPane = new PanelPlot_Controls(6); // 6 plots per view at the bottom.
         PanelPlot_Transformed autoencPlotPane =
-				new PanelPlot_Transformed(new Transform_Autoencoder(Utility.getExcutionPath() + "tflow_models" +
+				new PanelPlot_Transformed(new Transform_Autoencoder("src/main/resources/tflow_models" +
 						"/AutoEnc_72to12_6layer.pb", 12), 6);
         autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon(1));
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun(6);

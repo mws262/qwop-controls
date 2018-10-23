@@ -31,7 +31,7 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
 
     public PanelRunner_AnimatedTransformed() {
         super();
-        String modelDir = Utility.getExcutionPath() + "./tflow_models/";
+        String modelDir = "src/main/resources/tflow_models/";
         encoders = new ArrayList<>();
         encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to1_6layer.pb", 1));
         encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to2_6layer.pb", 2));

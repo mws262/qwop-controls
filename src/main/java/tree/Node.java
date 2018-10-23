@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -42,7 +43,7 @@ public class Node {
     /**
      * Child nodes. Not fixed size any more.
      **/
-    private final List<Node> children = new ArrayList<>();
+    private final List<Node> children = new CopyOnWriteArrayList<>();
 
     /**
      * Action which takes the game from the parent node's state to this node's state.
@@ -811,7 +812,6 @@ public class Node {
     public Action getAction() {
         if (treeDepth == 0) // Root has no action
             throw new NullPointerException("Root node does not have an action associated with it.");
-        action.reset(); // Make sure internal counter for executing this action is reset.
         return action;
     }
 
