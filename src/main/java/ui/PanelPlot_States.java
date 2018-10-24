@@ -33,34 +33,34 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
 
     /**
      * Maximum allowed datapoints. Will downsample if above. Prevents extreme lag.
-     **/
+     */
     private NodeFilter_Downsample plotDownsampler = new NodeFilter_Downsample(5000);
 
     /**
      * Node from which states are referenced.
-     **/
+     */
     private Node selectedNode;
 
     /**
      * Which plot index has an active menu.
-     **/
+     */
     private int activePlotIdx = 0;
 
     /**
      * Body parts associated with each plot and axis.
-     **/
+     */
     private State.ObjectName[] plotObjectsX = new State.ObjectName[numberOfPlots];
     private State.ObjectName[] plotObjectsY = new State.ObjectName[numberOfPlots];
 
     /**
      * State variables associated with each plot and axis.
-     **/
+     */
     private State.StateName[] plotStatesX = new State.StateName[numberOfPlots];
     private State.StateName[] plotStatesY = new State.StateName[numberOfPlots];
 
     /**
      * Drop down menus for the things to plot.
-     **/
+     */
     private JComboBox<String> objListX;
     private JComboBox<String> stateListX;
     private JComboBox<String> objListY;
@@ -68,7 +68,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
 
     /**
      * Menu for selecting which data is displayed.
-     **/
+     */
     private final JDialog menu;
 
     private int countDataCollect = 0;
@@ -151,15 +151,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
                 Color[] cData =
 						nodesBelow.stream().map(n -> Node.getColorFromTreeDepth(n.getTreeDepth())).toArray(Color[]::new);
 
-                float xLow = Arrays.stream(xData).min(Float::compare).get();
-                float xHi = Arrays.stream(xData).max(Float::compare).get();
-
-                float yLow = Arrays.stream(yData).min(Float::compare).get();
-                float yHi = Arrays.stream(yData).max(Float::compare).get();
-
-                pl.getDomainAxis().setRange(xLow - 0.05, xHi + 0.05); // Range gets whiney if you select one node and
-				// try to set the range upper and lower to the same thing.
-                pl.getRangeAxis().setRange(yLow - 0.05, yHi + 0.05);
+                setPlotBoundsFromData(pl, xData, yData);
 
                 dat.addSeries(0, xData, yData, cData);
                 pl.getRangeAxis().setLabel(plotObjectsX[countDataCollect].toString() + " " + plotStatesX[countDataCollect].toString());

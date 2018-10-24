@@ -22,28 +22,25 @@ import tree.Node;
  */
 @SuppressWarnings("FieldCanBeLocal")
 public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, MouseMotionListener {
-
-    private static final long serialVersionUID = 1L;
-
     /**
      * The node that is the current focus of this panel.
-     **/
+     */
     private Node snapshotNode;
 
     /**
      * Filter to keep from drawing too many and killing the graphics speed.
-     **/
+     */
     private INodeFilter filter = new NodeFilter_Downsample(50);
 
     /**
      * Potentially, a future node selected by hovering over its runner to display a specific sequence of actions in
      * all the displayed futures.
-     **/
+     */
     private Node highlightedFutureMousedOver;
 
     /**
      * Externally selected version to be highlighted. Mostly just commanded by selecting tree nodes instead.
-     **/
+     */
     private Node highlightedFutureExternal;
 
     private List<Node> focusLeaves = new ArrayList<>();
@@ -53,28 +50,28 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
     /**
      * Number of runner states in the past to display.
-     **/
+     */
     public int numHistoryStatesDisplay = 25;
 
     /**
      * How close do we have to be (squared) from the body of a single runner for it to be eligible for selection.
-     **/
+     */
     private float figureSelectThreshSq = 150;
 
     /**
      * Current mouse location.
-     **/
+     */
     private int mouseX = 0;
     private int mouseY = 0;
 
     /**
      * X offset in frame pixel coordinates determined by the focused body's x coordinate.
-     **/
+     */
     private int specificXOffset = 0;
 
     /**
      * Mouse currently over this panel?
-     **/
+     */
     private boolean mouseIsIn = false;
 
     private final GameLoader game = new GameLoader();
@@ -87,7 +84,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
     /**
      * Assign a selected node for the snapshot pane to display.
-     **/
+     */
     @Override
     public void update(Node node) {
         transforms.clear();
@@ -143,7 +140,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
     /**
      * Draws the selected node state and potentially previous and future states.
-     **/
+     */
     @Override
     public void paintComponent(Graphics g) {
         if (!active) return;
@@ -236,7 +233,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
     /**
      * Change highlighting on both the tree and the snapshot when selections change.
-     **/
+     */
     private void changeFocusedFuture(Graphics2D g2, Node oldFuture, Node newFuture) {
         // Clear out highlights from the old node.
         if (oldFuture != null && !oldFuture.equals(newFuture)) {
@@ -284,7 +281,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
     /**
      * Distance of given coordinates from mouse location, squared.
-     **/
+     */
     private float getDistFromMouseSq(float x, float y) {
         float xdist = (mouseX - (runnerScaling * x + xOffsetPixels - specificXOffset));
         float ydist = (mouseY - (runnerScaling * y + yOffsetPixels));
@@ -293,21 +290,20 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
     /**
      * Get the list of leave nodes (failure states) that we're displaying in the snapshot pane.
-     **/
+     */
     public List<Node> getDisplayedLeaves() {
         return focusLeaves;
     }
 
     /**
      * Focus a single future leaf
-     **/
+     */
     public void giveSelectedFuture(Node queuedFutureLeaf) {
         this.highlightedFutureExternal = queuedFutureLeaf;
     }
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-    }
+    public void mouseDragged(MouseEvent e) {}
 
     @Override
     public void mouseMoved(MouseEvent e) {
@@ -316,16 +312,13 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-    }
+    public void mouseClicked(MouseEvent e) {}
 
     @Override
-    public void mousePressed(MouseEvent e) {
-    }
+    public void mousePressed(MouseEvent e) {}
 
     @Override
-    public void mouseReleased(MouseEvent e) {
-    }
+    public void mouseReleased(MouseEvent e) {}
 
     @Override
     public void mouseEntered(MouseEvent e) {

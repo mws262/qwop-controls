@@ -10,14 +10,21 @@ import filters.NodeFilter_Downsample;
 import game.State;
 import transformations.ITransform;
 import tree.Node;
-import tree.Utility;
 import transformations.Transform_Autoencoder;
 import transformations.Transform_PCA;
 
+/**
+ * For running animations of the QWOP runner side-by-side with compressed then decompressed versions of those states.
+ * Useful as a way to gauge how well a reduced model is approximating the full state.
+ *
+ * @author matt
+ */
 public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
 
-    private static final long serialVersionUID = 1L;
-
+    /**
+     * Some {@link ITransform} require an initial calculation before working. This flag records whether this
+     * initialization has occurred.
+     */
     private boolean transformsInitialized = false;
 
     /**
@@ -44,14 +51,14 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
 
     @Override
     public void simRunToNode(Node node) {
-        List<Node> nlist = new ArrayList<>();
-        node.getRoot().getNodesBelow(nlist,true);
+        List<Node> nodeList = new ArrayList<>();
+        node.getRoot().getNodesBelow(nodeList,true);
 
-        transformDownsampler.filter(nlist);
-        List<State> slist = nlist.stream().map(Node::getState).collect(Collectors.toList());
+        transformDownsampler.filter(nodeList);
+        List<State> stateList = nodeList.stream().map(Node::getState).collect(Collectors.toList());
 
         for (ITransform trans : encoders) {
-            trans.updateTransform(slist);
+            trans.updateTransform(stateList);
         }
         transformsInitialized = true;
         super.simRunToNode(node);
@@ -64,9 +71,9 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
             State currState = game.getCurrentState();
             if (currState != null) inStates.add(currState);
             for (int i = 0; i < encoders.size(); i++) {
-                List<State> predStateList = encoders.get(i).compressAndDecompress(inStates);
-                State predState = predStateList.get(0);
-                game.drawExtraRunner((Graphics2D) g, game.getXForms(predState), encoders.get(i).getName(), super.runnerScaling, super.xOffsetPixels + i * 100 + 150, super.yOffsetPixels, Node.getColorFromTreeDepth(i), normalStroke);
+                List<State> predictedStateList = encoders.get(i).compressAndDecompress(inStates);
+                State predictedState = predictedStateList.get(0);
+                game.drawExtraRunner((Graphics2D) g, game.getXForms(predictedState), encoders.get(i).getName(), super.runnerScaling, super.xOffsetPixels + i * 100 + 150, super.yOffsetPixels, Node.getColorFromTreeDepth(i), normalStroke);
             }
             inStates.clear();
         }
@@ -75,6 +82,5 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
     @Override
     public void deactivateTab() {
         super.deactivateTab();
-
     }
 }

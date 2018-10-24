@@ -18,7 +18,6 @@ import game.State;
 import filters.INodeFilter;
 import transformations.ITransform;
 import tree.Node;
-import tree.Utility;
 import transformations.Transform_Autoencoder;
 
 public class PanelPlot_Controls extends PanelPlot implements KeyListener {
@@ -27,18 +26,18 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
-     **/
+     */
     private ITransform transformer = new Transform_Autoencoder("src/main/resources/tflow_models" +
 			"/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
     /**
      * Filters to be applied to the node list.
-     **/
+     */
     private List<INodeFilter> nodeFilters = new ArrayList<>();
 
     /**
      * Downsampler to reduce the number of nodes we're trying to process and display
-     **/
+     */
     private INodeFilter plotDownsampler = new NodeFilter_Downsample(5000);
     private INodeFilter transformDownsampler = new NodeFilter_Downsample(2000);
 
@@ -48,22 +47,22 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 
     /**
      * How many plots to squeeze in one displayed row.
-     **/
+     */
     private int plotsPerView;
 
     /**
      * Which plot, in the grid of potential plots, is currently being plotted in the first spot on the left.
-     **/
+     */
     private int firstPlotRow = 0;
 
     /**
      * Total number of plots -- not necessarily all displayed at once.
-     **/
+     */
     private final int numPlots;
 
     /**
      * Nodes to be processed and plotted.
-     **/
+     */
     private List<Node> nodes = new ArrayList<>();
 
     public PanelPlot_Controls(int numberOfPlots) {
@@ -87,7 +86,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
         }
         plotDownsampler.filter(nodes); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.
 
-        List<State> statesBelow = nodes.stream().map(n -> n.getState()).collect(Collectors.toList()); // Convert from node
+        List<State> statesBelow = nodes.stream().map(Node::getState).collect(Collectors.toList()); // Convert from node
 		// list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
 
@@ -115,18 +114,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
                     State.StateName.values()[count].toString());
 
             dat.addSeries(0, xData, yData, cData);
-
-            if (xData.length > 0) {
-                float xLow = Arrays.stream(xData).min(Float::compare).get();
-                float xHi = Arrays.stream(xData).max(Float::compare).get();
-
-                float yLow = Arrays.stream(yData).min(Float::compare).get();
-                float yHi = Arrays.stream(yData).max(Float::compare).get();
-
-                pl.getDomainAxis().setRange(xLow - 0.05, xHi + 0.05); // Range gets whiney if you select one node and
-				// try to set the range upper and lower to the same thing.
-                pl.getRangeAxis().setRange(yLow - 0.05, yHi + 0.05);
-            }
+            setPlotBoundsFromData(pl, xData, yData);
             count++;
         }
         //addCommandLegend(firstPlot);

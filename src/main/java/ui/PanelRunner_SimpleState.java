@@ -9,35 +9,32 @@ import game.State;
 import tree.Node;
 
 /**
- * Simple runner displayer that either takes a node and gets its state or takes a state
+ * Simple runner visualizer that either takes a node and gets its state or takes a state
  * directly and displays it.
  *
  * @author matt
  */
 public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
-    private static final long serialVersionUID = 1L;
-
     /**
      * Access to the game for the sake of the drawing methods.
-     **/
+     */
     private GameLoader game = new GameLoader();
 
     /**
      * Current state being displayed.
-     **/
+     */
     private State currentState;
+
+    /**
+     * Update the state to be displayed.
+     */
+    public void updateState(State state) {
+        currentState = state;
+    }
 
     @Override
     public void update(Node node) {
         currentState = node.getState();
-    }
-
-    /**
-     * Update the state to be displayed.
-     **/
-    public void updateState(State state) {
-
-        currentState = state;
     }
 
     @Override
@@ -47,7 +44,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
 
     /**
      * Draws the selected node state and potentially previous and future states.
-     **/
+     */
     @Override
     public void paintComponent(Graphics g) {
         if (!active || currentState == null) return;
@@ -68,5 +65,4 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
             }
         }
     }
-
 }

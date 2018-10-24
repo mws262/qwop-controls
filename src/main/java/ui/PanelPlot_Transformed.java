@@ -113,17 +113,8 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
             dat.addSeries(0, xData, yData, cData);
 
-            if (xData.length > 0) {
-                float xLow = Arrays.stream(xData).min(Float::compare).get();
-                float xHi = Arrays.stream(xData).max(Float::compare).get();
+            setPlotBoundsFromData(pl, xData, yData);
 
-                float yLow = Arrays.stream(yData).min(Float::compare).get();
-                float yHi = Arrays.stream(yData).max(Float::compare).get();
-
-                pl.getDomainAxis().setRange(xLow - 0.05, xHi + 0.05); // Range gets whiney if you select one node and
-                // try to set the range upper and lower to the same thing.
-                pl.getRangeAxis().setRange(yLow - 0.05, yHi + 0.05);
-            }
             count++;
         }
         //addCommandLegend(firstPlot);

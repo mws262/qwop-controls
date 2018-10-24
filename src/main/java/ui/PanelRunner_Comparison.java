@@ -16,21 +16,19 @@ import tree.Node;
 
 public class PanelRunner_Comparison extends PanelRunner {
 
-    private static final long serialVersionUID = 1L;
-
     /**
      * Maximum number of similar node states to display.
-     **/
+     */
     public int maxNumStatesToShow = 50;
 
     /**
      * Its unique copy of the game. Only used for plotting, but important to keep separate.
-     **/
+     */
     private final GameLoader game = new GameLoader();
 
     /**
      * Node used for base comparison.
-     **/
+     */
     private Node selectedNode;
 
     private List<Node> focusNodes = new ArrayList<>();
@@ -38,14 +36,8 @@ public class PanelRunner_Comparison extends PanelRunner {
     private List<Stroke> strokes = new ArrayList<>();
     private List<Color> colors = new ArrayList<>();
 
+    public PanelRunner_Comparison() {}
 
-    public PanelRunner_Comparison() {
-
-    }
-
-    /**
-     * Assign a selected node for the snapshot pane to display.
-     **/
     @Override
     public void update(Node node) {
         node.getRoot().clearNodeOverrideColor();

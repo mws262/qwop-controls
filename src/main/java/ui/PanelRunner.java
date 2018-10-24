@@ -25,40 +25,40 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 
     /**
      * Should this panel be drawing or is it hidden.
-     **/
+     */
     protected boolean active = false;
 
     /**
      * Fonts for drawing the keyboard keys when pressed/not pressed.
-     **/
+     */
     protected final static Font smallFont = new Font("Ariel", Font.BOLD, 12);
     protected final static Font medFont = new Font("Ariel", Font.BOLD, 21);
     protected final static Font bigFont = new Font("Ariel", Font.BOLD, 28);
 
     /**
      * Normal stroke for line drawing.
-     **/
+     */
     public final static Stroke normalStroke = new BasicStroke(0.5f);
 
     /**
      * Highlight stroke for line drawing.
-     **/
+     */
     public final static Stroke boldStroke = new BasicStroke(2);
 
     /**
      * Faded out gray for drawing past states and such.
-     **/
+     */
     public final static Color ghostGray = new Color(0.6f, 0.6f, 0.6f);
 
     /**
      * Drawing offsets within the viewing panel (i.e. non-physical)
-     **/
+     */
     public int xOffsetPixels = 500;
     public int yOffsetPixels = 100;
 
     /**
      * Runner coordinates to pixels.
-     **/
+     */
     public float runnerScaling = 10f;
 
     private final int startY = yOffsetPixels - 85;
@@ -66,7 +66,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 
     /**
      * Draw the pressed keys in the panel during running.
-     **/
+     */
     protected void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
 
         int qOffset = (q ? 10 : 0);
@@ -85,7 +85,8 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
                 (size + qOffset) / 10, (size + qOffset) / 10);
         g2.drawRoundRect(startX + 160 - wOffset / 2, startY - wOffset / 2, size + wOffset, size + wOffset,
                 (size + wOffset) / 10, (size + wOffset) / 10);
-        /** Parameters for placing the "keys" graphically. **/
+
+        /* Parameters for placing the "keys" graphically. */
         int offsetBetweenPairs = 30;
         g2.drawRoundRect(startX + 240 - oOffset / 2 + offsetBetweenPairs, startY - oOffset / 2, size + oOffset,
                 size + oOffset, (size + oOffset) / 10, (size + oOffset) / 10);
@@ -104,13 +105,11 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 
         g2.setColor(Color.BLACK);
 
-        //Used for making sure text stays centered.
-
+        // Used for making sure text stays centered.
         activeFont = q ? bigFont : medFont;
         g2.setFont(activeFont);
         fm = g2.getFontMetrics();
         g2.drawString("Q", startX + 80 + size / 2 - fm.stringWidth("Q") / 2, startY + size / 2 + fm.getHeight() / 3);
-
 
         activeFont = w ? bigFont : medFont;
         g2.setFont(activeFont);
@@ -132,7 +131,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 
     /**
      * Draw the actions on the left side pane.
-     **/
+     */
     protected void drawActionString(Action[] sequence, Graphics g) {
         drawActionString(g, sequence, -1);
     }
@@ -201,5 +200,4 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
     public boolean isActive() {
         return active;
     }
-
 }

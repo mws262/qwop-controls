@@ -18,7 +18,6 @@ import actions.Action;
 import actions.ActionQueue;
 import transformations.ITransform;
 import tree.Node;
-import tree.Utility;
 import transformations.Transform_Autoencoder;
 
 /**
@@ -34,45 +33,45 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
     /**
      * Copy of the game used to obtain all the states along a single run by resimulating it.
-     **/
+     */
     private GameLoader game;
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
-     **/
+     */
     private ITransform transformer = new Transform_Autoencoder("src/main/resources/tflow_models" +
             "/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
     /**
      * Stores the qwop actions we're going to execute.
-     **/
+     */
     private ActionQueue actionQueue = new ActionQueue();
 
     /**
      * List of all the states that we got from simulating. Not just at nodes.
-     **/
+     */
     private List<State> stateList = new ArrayList<>();
     private List<float[]> transformedStates = new ArrayList<>();
     private List<boolean[]> commandList = new ArrayList<>();
 
     /**
      * How many plots to squeeze in one displayed row.
-     **/
+     */
     private int plotsPerView;
 
     /**
      * Which plot, in the grid of potential plots, is currently being plotted in the first spot on the left.
-     **/
+     */
     private int firstPlotRow = 0;
 
     /**
      * Total number of plots -- not necessarily all displayed at once.
-     **/
+     */
     private final int numPlots;
 
     /**
      * Node that we're plotting the actions/states up to.
-     **/
+     */
     private Node selectedNode;
 
     public PanelPlot_SingleRun(int numberOfPlots) {
@@ -87,7 +86,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
     /**
      * Run the simulation to collect the state info we want to plot.
-     **/
+     */
     private void simRunToNode(Node node) {
         stateList.clear();
         transformedStates.clear();
@@ -146,17 +145,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
             dat.addSeries(0, Arrays.copyOf(xData, xData.length - 1), yData, cData); // Have more states than actions,
             // so will kill the last one.
 
-            if (xData.length > 0) {
-                float xLow = Arrays.stream(xData).min(Float::compare).get();
-                float xHi = Arrays.stream(xData).max(Float::compare).get();
-
-                float yLow = Arrays.stream(yData).min(Float::compare).get();
-                float yHi = Arrays.stream(yData).max(Float::compare).get();
-
-                pl.getDomainAxis().setRange(xLow - 1, xHi + 1); // Range gets whiney if you select one node and try
-                // to set the range upper and lower to the same thing.
-                pl.getRangeAxis().setRange(yLow - 1, yHi + 1);
-            }
+            setPlotBoundsFromData(pl, xData, yData);
             count++;
         }
         //addCommandLegend(firstPlot);
@@ -196,5 +185,4 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     @Override
     public void plotClicked(int plotIdx) {
     }
-
 }

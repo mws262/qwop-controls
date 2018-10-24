@@ -14,22 +14,22 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     /**
      * Is the current simulation paused?
-     **/
+     */
     private boolean pauseFlag = false;
 
     /**
      * This panel's copy of the game it uses to run games for visualization.
-     **/
+     */
     protected GameLoader game;
 
     /**
-     * Stores the qwop actions we're going to execute.
-     **/
+     * Stores the QWOP actions we're going to execute.
+     */
     private ActionQueue actionQueue = new ActionQueue();
 
     /**
      * Current status of each keypress.
-     **/
+     */
     private boolean Q = false;
     private boolean W = false;
     private boolean O = false;
@@ -38,7 +38,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     /**
      * Gets set to non-zero by simRunToNode if the start node is not root. Lets us not have to watch the animation of
      * the beginning of a long run.
-     **/
+     */
     private int fastForwardTimesteps = 0;
 
     public PanelRunner_Animated() {
@@ -49,7 +49,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     /**
      * Give this panel a node to simulate and draw to. If a new node is supplied while another
      * is active, then terminate the previous and start the new one.
-     **/
+     */
     public void simRunToNode(Node node) {
         assert node.getTreeDepth() > 0; // Doesn't make sense to simulate to the starting configuration.
 
@@ -66,7 +66,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     /**
      * This version only animates the actions between startNode and endNode. Still simulates all of course.
-     **/
+     */
     public void simRunToNode(Node startNode, Node endNode) {
         simRunToNode(endNode);
 
@@ -79,14 +79,14 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     /**
      * Add a single action to the end of what is already going on.
-     **/
+     */
     public void addAction(Action action) {
         actionQueue.addAction(action);
     }
 
     /**
      * Pop the next action off the queue and execute one timestep.
-     **/
+     */
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {
             boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
@@ -105,8 +105,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     /**
-     * Gets autocalled by the goals graphics manager.
-     **/
+     * Gets auto-called by the goals graphics manager.
+     */
     @Override
     public void paintComponent(Graphics g) {
         if (!active && game.isGameInitialized()) return;
@@ -120,9 +120,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     @Override
     public void run() {
-        /* Is this panel still listening and ready to draw? Only false if thread is being killed. */
-        boolean running = true;
-        while (running) {
+        while (true) {
             if (active && !pauseFlag) {
                 if (game != null) {
                     executeNextOnQueue();
@@ -144,7 +142,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     /**
      * Play/pause the current visualized simulation. Flag is reset by calling again or by selecting a new node to
      * visualize.
-     **/
+     */
     public void pauseToggle() {
         pauseFlag = !pauseFlag;
     }
