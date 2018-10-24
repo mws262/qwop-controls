@@ -62,6 +62,12 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
         for (Action a : actionSequence) {
             System.out.println(a);
         }
+        Node currNode = node;
+        while (currNode.getTreeDepth() > 0) {
+            System.out.println(currNode.getAction().getTimestepsTotal());
+                    currNode = currNode.getParent();
+        }
+
     }
 
     /**
@@ -95,8 +101,6 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
             O = nextCommand[2];
             P = nextCommand[3];
             game.stepGame(Q, W, O, P);
-            State st = game.getCurrentState();
-            System.out.println(st.body.getX() + "," + st.body.getDx() + "," + GameLoader.getTimestepsSimulated());
         }
     }
 

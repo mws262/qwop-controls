@@ -195,6 +195,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (flagForTermination.get()) { // Permanent stop. Call terminateWorker() to trigger at next time
                         // the worker reaches IDLE.
                         workerRunning = false;
+                        tsPerSecond = 0; // Set to 0 so plots of worker speed don't get stuck at whatever value they
+                        // were at before terminating the worker.
                         break;
                     } else if (paused) { // Temporary stop. Call pauseWorker().
                         continue;
@@ -235,13 +237,13 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         if (expansionNode == null) { // May happen with some samplers when the stage finishes.
                             changeStatus(Status.IDLE);
                         } else {
+                            actionQueue.clearAll();
                             targetNodeToTest = expansionNode;
                             if (targetNodeToTest.getTreeDepth() != 0) { // No action sequence to add if target node
                                 // is root (we're already there!).
                                 actionQueue.addSequence(targetNodeToTest.getSequence());
                             }
                             changeStatus(Status.TREE_POLICY_EXECUTING);
-                            actionQueue.clearAll();
                         }
                     }
 
@@ -351,7 +353,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case EVALUATE_GAME:
                     saver.reportGameEnding(currentGameNode);
-                    long gameTs = GameLoader.getTimestepsSimulated();
+                    long gameTs = game.getTimestepsSimulatedThisGame();
                     addToTotalTimesteps(gameTs);
                     workerGamesPlayed.increment();
 

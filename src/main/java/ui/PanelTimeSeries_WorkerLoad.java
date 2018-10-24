@@ -6,6 +6,8 @@ import java.util.List;
 import tree.Node;
 import tree.TreeWorker;
 
+import javax.swing.*;
+
 public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runnable {
 
     private static final long serialVersionUID = 1L;
@@ -14,6 +16,9 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
 
     public PanelTimeSeries_WorkerLoad(int maxWorkers) {
         super(maxWorkers);
+        JLabel label = new JLabel();
+        label.setText("All plots are game timesteps simulated per wall time vs. wall time.");
+        add(label);
     }
 
     public void setWorkers(List<TreeWorker> workers) {
@@ -22,8 +27,7 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
     }
 
     @Override
-    public void update(Node plotNode) {
-    }
+    public void update(Node plotNode) { }
 
     @Override
     public void run() {
