@@ -128,7 +128,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             child.setBranchColor(runnerColor); // Change the color on the tree too.
 
             for (Node descendant : descendants) {
-                if (descendant.getState() != null) {
+                if (!descendant.isStateUnassigned()) {
                     focusLeaves.add(descendant);
                     transforms.add(game.getXForms(descendant.getState()));
                     strokes.add(normalStroke);

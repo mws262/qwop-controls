@@ -1,8 +1,14 @@
 package actions;
 
+import game.GameLoader;
+import game.State;
 import org.junit.Assert;
 import org.junit.Test;
+import ui.PanelRunner_SimpleState;
+import ui.StandaloneRunnerDrawer;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.Arrays;
 
 public class ActionQueueTest {
@@ -194,6 +200,12 @@ public class ActionQueueTest {
         Action a3 = new Action(7, false, true, false, false);
         Action a4 = new Action(8, false, false, true, false);
 
+        Assert.assertEquals(5, a1.getTimestepsTotal());
+        Assert.assertEquals(6, a2.getTimestepsTotal());
+        Assert.assertEquals(7, a3.getTimestepsTotal());
+        Assert.assertEquals(8, a4.getTimestepsTotal());
+
+
         Action[] acts = new Action[]{a1, a2, a3, a4};
 
         actQueue.addSequence(acts);
@@ -201,22 +213,22 @@ public class ActionQueueTest {
         // Make sure that as we poll the added sequence we get out what we put in.
         for (int i = 0; i < a1.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, a1.peek()));
+            Assert.assertTrue(Arrays.equals(command, new boolean[]{false, false, false, false}));
         }
 
         for (int i = 0; i < a2.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, a2.peek()));
+            Assert.assertTrue(Arrays.equals(command, new boolean[]{true, false, false, false}));
         }
 
         for (int i = 0; i < a3.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, a3.peek()));
+            Assert.assertTrue(Arrays.equals(command, new boolean[]{false, true, false, false}));
         }
 
         for (int i = 0; i < a4.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, a4.peek()));
+            Assert.assertTrue(Arrays.equals(command, new boolean[]{false, false, true, false}));
         }
         Assert.assertTrue(actQueue.isEmpty());
     }
@@ -297,6 +309,78 @@ public class ActionQueueTest {
         }
     }
 
+    @Test
+    public void integrateWithGame() {
+        // This is super-thorough because I'm an idiot who can't tell the difference between true false true false
+        // and false false true false.
+
+        // Try simulating a game using an ActionQueue
+        GameLoader game = new GameLoader();
+
+        game.stepGame(false, false, true, false);
+        float[] s1 = game.getCurrentState().flattenState();
+
+        game.makeNewWorld();
+        game.stepGame(false, false, true, false);
+        float[] s2 = game.getCurrentState().flattenState();
+
+        for (int i = 0; i < s1.length; i++) {
+            Assert.assertEquals(s1[i], s2[i], 1e-10);
+        }
+
+        ActionQueue actionQueue = makeTestQueue();
+
+        game.makeNewWorld();
+        float[] initialState1 = game.getCurrentState().flattenState();
+        int counter = 0;
+        while (!actionQueue.isEmpty()) {
+            boolean[] commands = actionQueue.pollCommand();
+            game.stepGame(commands[0], commands[1], commands[2], commands[3]);
+            counter++;
+        }
+        Assert.assertEquals(26, counter);
+
+        State finalStateWithQueue = game.getCurrentState();
+
+        // Try simulating the game by manually sending a bunch of commands.
+        game.makeNewWorld();
+        float[] initialState2 = game.getCurrentState().flattenState();
+        counter = 0;
+        for (int i = 0; i < 5; i++) {
+            game.stepGame(false, false, false, false);
+            counter++;
+        }
+
+        for (int i = 0; i < 6; i++) {
+            game.stepGame(true, false, false, false);
+            counter++;
+        }
+
+        for (int i = 0; i < 7; i++) {
+            game.stepGame(false, true, false, false);
+            counter++;
+        }
+
+        for (int i = 0; i < 8; i++) {
+            game.stepGame(false, false, true, false);
+            counter++;
+        }
+        Assert.assertEquals(26, counter);
+
+        // Assert that we started at the same state.
+        for (int i = 0; i < initialState1.length; i++) {
+            Assert.assertEquals(initialState1[i], initialState2[i], 1e-10f);
+        }
+
+        State finalStateManualActions = game.getCurrentState();
+
+        float[] autoStateVals = finalStateWithQueue.flattenState();
+        float[] manualStateVals = finalStateManualActions.flattenState();
+
+        for (int i = 0; i < autoStateVals.length; i++) {
+            Assert.assertEquals(autoStateVals[i], manualStateVals[i], 1e-10);
+        }
+    }
     /**
      * Generic 4-action queue for testing here.
      *

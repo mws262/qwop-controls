@@ -93,6 +93,19 @@ public abstract class MAIN_Search_Template {
             boolean success = saveLoc.mkdirs();
             if (!success) throw new RuntimeException("Could not make save directory.");
         }
+        // WORKER CORES:
+        // Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the
+        // Box2D libraries.
+        float workersFractionOfCores = Float.parseFloat(properties.getProperty("workersFractionOfCores", "0.8"));
+        int cores = Runtime.getRuntime().availableProcessors();
+        maxWorkers = (int) (workersFractionOfCores * cores); // Basing of number of cores including hyperthreading.
+        // May want to optimize this a tad.
+        System.out.println("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
+
+        workerPool = new GenericObjectPool<>(new WorkerFactory());
+        workerPool.setMaxTotal(maxWorkers);
+        workerPool.setMaxIdle(-1); // No limit to idle. Would have defaulted to 8, meaning all others would get
+        // culled between stages.
 
         // UI CONFIG:
         headless = Boolean.valueOf(properties.getProperty("headless", "false")); // Default to using fullUI
@@ -110,19 +123,6 @@ public abstract class MAIN_Search_Template {
             e1.printStackTrace();
         }
 
-        // WORKER CORES:
-        // Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the
-        // Box2D libraries.
-        float workersFractionOfCores = Float.parseFloat(properties.getProperty("workersFractionOfCores", "0.8"));
-        int cores = Runtime.getRuntime().availableProcessors();
-        maxWorkers = (int) (workersFractionOfCores * cores); // Basing of number of cores including hyperthreading.
-		// May want to optimize this a tad.
-        System.out.println("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
-
-        workerPool = new GenericObjectPool<>(new WorkerFactory());
-        workerPool.setMaxTotal(maxWorkers);
-        workerPool.setMaxIdle(-1); // No limit to idle. Would have defaulted to 8, meaning all others would get
-		// culled between stages.
 
         // Write machine details to log.
         appendSummaryLog(logPrefix + "OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version"));

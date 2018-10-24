@@ -1279,11 +1279,11 @@ public class GameLoader extends ClassLoader {
     }
 
     /**
-     * Get the number of timesteps simulated by all instances of the game since the beginning of execution.
+     * Get the number of timesteps simulated so far this game.
      *
-     * @return Number of timesteps simulated, total.
+     * @return Number of timesteps simulated so far in this game.
      */
-    public static long getTimestepsSimulated() {
+    public long getTimestepsSimulatedThisGame() {
         return timestepsSimulated;
     }
 
