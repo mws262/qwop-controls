@@ -12,7 +12,7 @@ public class NodeFilter_SurvivalHorizon implements INodeFilter {
 
     /**
      * How many tree layers beyond this node is required for it to be included by the filter.
-     **/
+     */
     private final int requiredSurvivalHorizon;
 
     /**

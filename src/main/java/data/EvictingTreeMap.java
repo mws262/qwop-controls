@@ -40,5 +40,4 @@ public class EvictingTreeMap<K, V> extends TreeMap<K, V> {
         }
         return null; // Return isn't particularly important.
     }
-
 }

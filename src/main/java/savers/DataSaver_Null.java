@@ -42,5 +42,4 @@ public class DataSaver_Null implements IDataSaver {
     public DataSaver_Null getCopy() {
         return new DataSaver_Null();
     }
-
 }

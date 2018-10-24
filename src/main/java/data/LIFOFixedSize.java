@@ -87,4 +87,3 @@ public class LIFOFixedSize<T> {
         return deque.size();
     }
 }
-

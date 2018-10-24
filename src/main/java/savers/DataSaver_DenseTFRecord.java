@@ -25,29 +25,29 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
     /**
      * File prefix. Goes in front of date.
-     **/
+     */
     @SuppressWarnings("WeakerAccess")
     public String filePrefix = "denseTF";
 
     /**
      * Do not include dot before.
-     **/
+     */
     @SuppressWarnings("WeakerAccess")
     public String fileExtension = "TFRecord";
 
     /**
      * If changed, will use this. Otherwise, a timestamp is usde.
-     **/
+     */
     public String filenameOverride = "";
 
     /**
      * Games since last save.
-     **/
+     */
     private int saveCounter = 0;
 
     /**
      * List of sets of states and actions for individual games awaiting file write.
-     **/
+     */
     private ArrayList<GameContainer> gameData = new ArrayList<>();
 
     @Override
@@ -83,7 +83,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     /**
      * Make a single feature representing the 6 state variables for a single
      * body part at a single timestep. Append to existing FeatureList for that body part.
-     **/
+     */
     private static void makeFeature(State.ObjectName bodyPart, State state, FeatureList.Builder listToAppendTo) {
         Feature.Builder feat = Feature.newBuilder();
         FloatList.Builder featVals = FloatList.newBuilder();
@@ -97,7 +97,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     /**
      * Make a time series for a single run of a single state variable as a
      * FeatureList. Add to the broader list of FeatureList for this run.
-     **/
+     */
     private static void makeStateFeatureList(ArrayList<State> states, State.ObjectName bodyPart,
 											 FeatureLists.Builder featLists) {
         FeatureList.Builder featList = FeatureList.newBuilder();

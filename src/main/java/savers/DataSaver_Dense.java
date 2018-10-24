@@ -21,21 +21,21 @@ public abstract class DataSaver_Dense implements IDataSaver {
 
     /**
      * Action buffer cleared once per game.
-     **/
+     */
     ArrayList<Action> actionBuffer = new ArrayList<>();
     /**
      * State buffer cleared once per game.
-     **/
+     */
     ArrayList<State> stateBuffer = new ArrayList<>();
 
     /**
      * Number of games in between saves to file.
-     **/
+     */
     int saveInterval;
 
     /**
      * File save location.
-     **/
+     */
     String fileLocation = "./";
 
     DataSaver_Dense() {
@@ -48,19 +48,16 @@ public abstract class DataSaver_Dense implements IDataSaver {
         actionBuffer.clear();
         stateBuffer.clear();
         stateBuffer.add(initialState);
-
     }
 
     @Override
     public void reportTimestep(Action action, GameLoader game) {
         stateBuffer.add(game.getCurrentState());
         actionBuffer.add(action);
-
     }
 
     @Override
-    public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
-    }
+    public void reportStageEnding(Node rootNode, List<Node> targetNodes) {}
 
     @Override
     public void setSaveInterval(int numGames) {
@@ -74,5 +71,4 @@ public abstract class DataSaver_Dense implements IDataSaver {
 
     @Override
     public abstract DataSaver_Dense getCopy();
-
 }

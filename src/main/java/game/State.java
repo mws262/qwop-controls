@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * Container class for holding the configurations and velocities of the entire runner at a single instance in time.
- * Has x, y, th, dx, dy, dth for 12 bodys, meaning that one State represents 72 state values.
+ * Has x, y, th, dx, dy, dth for 12 bodies, meaning that one State represents 72 state values.
  *
  * @author matt
  */

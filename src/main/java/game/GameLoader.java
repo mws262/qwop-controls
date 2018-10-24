@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -31,44 +30,44 @@ import java.util.List;
 public class GameLoader extends ClassLoader {
     /**
      * Number of timesteps in this game.
-     **/
+     */
     private static long timestepsSimulated = 0;
 
     /**
      * Has a game world been created yet?
-     **/
+     */
     private boolean initialized = false;
 
     /**
      * Initial runner state.
-     **/
+     */
     private static final State initState = new GameLoader().getCurrentState(); // Make sure this stays below all the
     // other static assignments to avoid null pointers.
 
     /**
      * Physics engine stepping parameters.
-     **/
+     */
     public static final float timestep = 0.04f;
 
     /**
      * Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls.
-     **/
+     */
     private static final float torsoAngUpper = 1.57f, torsoAngLower = -2.2f; // Negative is falling backwards. 0.4 is
     // start angle.
 
     /**
      * Normal stroke for line drawing.
-     **/
+     */
     private static final Stroke normalStroke = new BasicStroke(0.5f);
 
     /**
      * Has this game reached failure conditions?
-     **/
+     */
     private boolean isFailed = false;
 
     /**
      * List of shapes for use by graphics stuff.
-     **/
+     */
     private List<Object> shapeList;
 
     /**
@@ -185,8 +184,7 @@ public class GameLoader extends ClassLoader {
     private Object trackShape, rFootShape, lFootShape, rCalfShape, lCalfShape, rThighShape, lThighShape, torsoShape,
             headShape, rUArmShape, lUArmShape, rLArmShape, lLArmShape;
 
-    private Object rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, headBody, rUArmBody
-            , lUArmBody, rLArmBody, lLArmBody;
+    private Object rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, headBody, rUArmBody, lUArmBody, rLArmBody, lLArmBody;
 
     // Joint definitions
     @SuppressWarnings("unused")
@@ -233,8 +231,7 @@ public class GameLoader extends ClassLoader {
         try {
             oneTimeSetup(); // Create all the shape and body definitions that never need changing.
             makeNewWorld();
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException
-                | IllegalArgumentException | InvocationTargetException | NoSuchFieldException e) {
+        } catch (SecurityException | IllegalArgumentException e) {
             e.printStackTrace();
         }
     }
@@ -386,198 +383,160 @@ public class GameLoader extends ClassLoader {
 
     /**
      * Convenience method to avoid dealing with reflection in the code constantly.
-     *
-     * @throws InstantiationException
-     * @throws SecurityException
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     * @throws InvocationTargetException
-     * @throws NoSuchMethodException
-     **/
-    private Object makeBodyDef(float positionX, float positionY, float angle, float mass, float inertia) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-
-        Object bodyDef = _BodyDef.newInstance();
-        Object massData = makeMassData(mass, inertia);
-        Object position = makeVec2(positionX, positionY);
-
-        bodyDef.getClass().getField("massData").set(bodyDef, massData);
-        bodyDef.getClass().getField("position").set(bodyDef, position);
-        bodyDef.getClass().getField("angle").setFloat(bodyDef, angle);
+     */
+    private Object makeBodyDef(float positionX, float positionY, float angle, float mass, float inertia) {
+        Object bodyDef = null;
+        try {
+            bodyDef = _BodyDef.newInstance();
+            Object massData = makeMassData(mass, inertia);
+            Object position = null;
+            position = makeVec2(positionX, positionY);
+            bodyDef.getClass().getField("massData").set(bodyDef, massData);
+            bodyDef.getClass().getField("position").set(bodyDef, position);
+            bodyDef.getClass().getField("angle").setFloat(bodyDef, angle);
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
 
         return bodyDef;
     }
 
     /**
      * Make a joint definition.
-     *
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws InvocationTargetException
-     * @throws IllegalArgumentException
-     * @throws SecurityException
-     * @throws NoSuchMethodException
-     * @throws NoSuchFieldException
-     **/
+     */
     private Object makeJointDef(Object body1, Object body2, float jointPosX, float jointPosY, float lowerAngle,
                                 float upperAngle, float maxTorque, float motorSpeed, boolean enableLimit,
-                                boolean enableMotor, boolean collideConnected) throws InstantiationException,
-            IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException,
-            InvocationTargetException, NoSuchFieldException {
+                                boolean enableMotor, boolean collideConnected) {
+        Object jDef = null;
+        try {
+            jDef = _RevoluteJointDef.newInstance();
+            Object posVec = makeVec2(jointPosX, jointPosY);
 
-        Object jDef = _RevoluteJointDef.newInstance();
-        Object posVec = makeVec2(jointPosX, jointPosY);
+            jDef.getClass().getMethod("initialize", _Body, _Body, _Vec2).invoke(jDef, body1, body2, posVec);
+            jDef.getClass().getField("lowerAngle").setFloat(jDef, lowerAngle);
+            jDef.getClass().getField("upperAngle").setFloat(jDef, upperAngle);
+            jDef.getClass().getField("maxMotorTorque").setFloat(jDef, maxTorque);
+            jDef.getClass().getField("motorSpeed").setFloat(jDef, motorSpeed);
 
-        jDef.getClass().getMethod("initialize", _Body, _Body, _Vec2).invoke(jDef, body1, body2, posVec);
-        jDef.getClass().getField("lowerAngle").setFloat(jDef, lowerAngle);
-        jDef.getClass().getField("upperAngle").setFloat(jDef, upperAngle);
-        jDef.getClass().getField("maxMotorTorque").setFloat(jDef, maxTorque);
-        jDef.getClass().getField("motorSpeed").setFloat(jDef, motorSpeed);
+            jDef.getClass().getField("enableLimit").setBoolean(jDef, enableLimit);
+            jDef.getClass().getField("enableMotor").setBoolean(jDef, enableMotor);
+            jDef.getClass().getField("collideConnected").setBoolean(jDef, collideConnected);
 
-        jDef.getClass().getField("enableLimit").setBoolean(jDef, enableLimit);
-        jDef.getClass().getField("enableMotor").setBoolean(jDef, enableMotor);
-        jDef.getClass().getField("collideConnected").setBoolean(jDef, collideConnected);
-
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
         return jDef;
     }
 
     /**
      * Convenience method to avoid dealing with reflection in the code constantly.
-     *
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws SecurityException
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalArgumentException
-     * @throws NoSuchFieldException
-     **/
+     */
     private Object makeBoxShapeDef(float boxX, float boxY, float restitution, float friction, float density,
-                                   int groupIdx) throws InstantiationException, IllegalAccessException,
-            NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException,
-            NoSuchFieldException {
-        Object boxShapeDef = _PolygonDef.newInstance();
-
-        boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(boxShapeDef, boxX, boxY);
-        boxShapeDef.getClass().getField("friction").setFloat(boxShapeDef, friction);
-        boxShapeDef.getClass().getField("density").setFloat(boxShapeDef, density);
-        boxShapeDef.getClass().getField("restitution").setFloat(boxShapeDef, restitution);
-        Object shapeFilter = boxShapeDef.getClass().getField("filter").get(boxShapeDef);
-        shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
-
-        return boxShapeDef;
-    }
-
-    /**
-     * Convenience method to avoid dealing with reflection in the code constantly.
-     *
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws SecurityException
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalArgumentException
-     * @throws NoSuchFieldException
-     **/
-    private Object makeBoxShapeDef(float boxX, float boxY, float friction, float density, int groupIdx) throws InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
-        Object boxShapeDef = _PolygonDef.newInstance();
-
-        boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(boxShapeDef, boxX, boxY);
-        boxShapeDef.getClass().getField("friction").setFloat(boxShapeDef, friction);
-        boxShapeDef.getClass().getField("density").setFloat(boxShapeDef, density);
-        Object shapeFilter = boxShapeDef.getClass().getField("filter").get(boxShapeDef);
-        shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
+                                   int groupIdx) {
+        Object boxShapeDef = null;
+        try {
+            boxShapeDef = _PolygonDef.newInstance();
+            boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(boxShapeDef, boxX, boxY);
+            boxShapeDef.getClass().getField("friction").setFloat(boxShapeDef, friction);
+            boxShapeDef.getClass().getField("density").setFloat(boxShapeDef, density);
+            boxShapeDef.getClass().getField("restitution").setFloat(boxShapeDef, restitution);
+            Object shapeFilter = boxShapeDef.getClass().getField("filter").get(boxShapeDef);
+            shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
 
         return boxShapeDef;
     }
 
     /**
      * Convenience method to avoid dealing with reflection in the code constantly.
-     *
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws SecurityException
-     * @throws IllegalArgumentException
-     * @throws NoSuchFieldException
-     **/
-    private Object makeCircleShapeDef(float radius, float restitution, float friction, float density, int groupIdx) throws InstantiationException, IllegalAccessException, SecurityException, IllegalArgumentException, NoSuchFieldException {
-        Object circleShapeDef = _CircleDef.newInstance();
+     */
+    private Object makeBoxShapeDef(float boxX, float boxY, float friction, float density, int groupIdx) {
+        Object boxShapeDef = null;
+        try {
+            boxShapeDef = _PolygonDef.newInstance();
+            boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(boxShapeDef, boxX, boxY);
+            boxShapeDef.getClass().getField("friction").setFloat(boxShapeDef, friction);
+            boxShapeDef.getClass().getField("density").setFloat(boxShapeDef, density);
+            Object shapeFilter = boxShapeDef.getClass().getField("filter").get(boxShapeDef);
+            shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        return boxShapeDef;
+    }
 
-        circleShapeDef.getClass().getField("radius").setFloat(null, radius);
-        circleShapeDef.getClass().getField("friction").setFloat(null, friction);
-        circleShapeDef.getClass().getField("density").setFloat(null, density);
-        circleShapeDef.getClass().getField("restitution").setFloat(null, restitution);
-        circleShapeDef.getClass().getField("groupIndex").setInt(null, groupIdx);
-
+    /**
+     * Convenience method to avoid dealing with reflection in the code constantly.
+     */
+    private Object makeCircleShapeDef(float radius, float restitution, float friction, float density, int groupIdx) {
+        Object circleShapeDef = null;
+        try {
+            circleShapeDef = _CircleDef.newInstance();
+            circleShapeDef.getClass().getField("radius").setFloat(null, radius);
+            circleShapeDef.getClass().getField("friction").setFloat(null, friction);
+            circleShapeDef.getClass().getField("density").setFloat(null, density);
+            circleShapeDef.getClass().getField("restitution").setFloat(null, restitution);
+            circleShapeDef.getClass().getField("groupIndex").setInt(null, groupIdx);
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
         return circleShapeDef;
     }
 
     /**
      * Convenience method to avoid dealing with reflection in the code constantly.
-     *
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws SecurityException
-     * @throws IllegalArgumentException
-     * @throws NoSuchFieldException
-     **/
-    private Object makeCircleShapeDef(float radius, float friction, float density, int groupIdx) throws InstantiationException, IllegalAccessException, SecurityException, IllegalArgumentException, NoSuchFieldException {
-        Object circleShapeDef = _CircleDef.newInstance();
-
-        circleShapeDef.getClass().getField("radius").setFloat(circleShapeDef, radius);
-        circleShapeDef.getClass().getField("friction").setFloat(circleShapeDef, friction);
-        circleShapeDef.getClass().getField("density").setFloat(circleShapeDef, density);
-        Object shapeFilter = circleShapeDef.getClass().getField("filter").get(circleShapeDef);
-        shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
-
+     */
+    private Object makeCircleShapeDef(float radius, float friction, float density, int groupIdx) {
+        Object circleShapeDef = null;
+        try {
+            circleShapeDef = _CircleDef.newInstance();
+            circleShapeDef.getClass().getField("radius").setFloat(circleShapeDef, radius);
+            circleShapeDef.getClass().getField("friction").setFloat(circleShapeDef, friction);
+            circleShapeDef.getClass().getField("density").setFloat(circleShapeDef, density);
+            Object shapeFilter = circleShapeDef.getClass().getField("filter").get(circleShapeDef);
+            shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
         return circleShapeDef;
     }
 
     /**
      * Convenience method to avoid dealing with reflection in the code constantly.
-     *
-     * @throws SecurityException
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     * @throws InstantiationException
-     **/
-    private Object makeMassData(float mass, float inertia) throws IllegalArgumentException, IllegalAccessException,
-            NoSuchFieldException, SecurityException, InstantiationException {
-        Object md = _MassData.newInstance();
-        md.getClass().getField("mass").setFloat(md, mass);
-        md.getClass().getField("I").setFloat(md, inertia);
+     */
+    private Object makeMassData(float mass, float inertia) {
+        Object md = null;
+        try {
+            md = _MassData.newInstance();
+            md.getClass().getField("mass").setFloat(md, mass);
+            md.getClass().getField("I").setFloat(md, inertia);
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
         return md;
     }
 
     /**
      * Convenience method to avoid dealing with reflection in the code constantly.
-     *
-     * @throws SecurityException
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     * @throws InstantiationException
-     **/
-    private Object makeVec2(float x, float y) throws NoSuchMethodException, SecurityException, InstantiationException,
-            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Constructor<?> cons = _Vec2.getConstructor(float.class, float.class);
-        return cons.newInstance(x, y);
+     */
+    private Object makeVec2(float x, float y) {
+        Object vec = null;
+        try {
+            Constructor<?> cons = _Vec2.getConstructor(float.class, float.class);
+            vec = cons.newInstance(x, y);
+
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return vec;
     }
 
     /**
      * Call once to initialize a lot of shape definitions which only need to be created once.
-     *
-     * @throws NoSuchFieldException
-     * @throws InvocationTargetException
-     * @throws IllegalArgumentException
-     * @throws SecurityException
-     * @throws NoSuchMethodException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     **/
-    private void oneTimeSetup() throws InstantiationException, IllegalAccessException, NoSuchMethodException,
-            SecurityException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+     */
+    private void oneTimeSetup() {
         /*
          * Make the bodies and collision shapes
          */
@@ -630,15 +589,7 @@ public class GameLoader extends ClassLoader {
 
     /**
      * Make (or remake) the world with all the body parts at their initial locations.
-     *
-     * @throws SecurityException
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalArgumentException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws NoSuchFieldException
-     **/
+     */
     public void makeNewWorld() {
         try {
             isFailed = false;
@@ -658,7 +609,6 @@ public class GameLoader extends ClassLoader {
             world.getClass().getMethod("setWarmStarting", boolean.class).invoke(world, true);
             world.getClass().getMethod("setPositionCorrection", boolean.class).invoke(world, true);
             world.getClass().getMethod("setContinuousPhysics", boolean.class).invoke(world, true);
-
 
             /* Body setup */
             Object trackBody = world.getClass().getMethod("createBody", _BodyDef).invoke(world, trackDef);
@@ -758,7 +708,6 @@ public class GameLoader extends ClassLoader {
             e.printStackTrace();
         }
 
-
         // This proxy nonsense solves the problem that I need a class to implement _ContactListener, the version I
         // loaded with this custom class loader.
         // The dynamic proxy lets this implement a class that is defined at runtime.
@@ -825,84 +774,75 @@ public class GameLoader extends ClassLoader {
 
     /**
      * Apply a disturbance impulse to the body COM.
-     **/
-    public void applyBodyImpulse(float xComp, float yComp) throws IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException, NoSuchMethodException, SecurityException, InstantiationException {
-        Object worldCenter = torsoBody.getClass().getMethod("getWorldCenter").invoke(torsoBody);
-        torsoBody.getClass().getMethod("applyImpulse", _Vec2, _Vec2).invoke(torsoBody, makeVec2(xComp, yComp),
-                worldCenter);
+     */
+    public void applyBodyImpulse(float xComp, float yComp) {
+        try {
+            Object worldCenter = torsoBody.getClass().getMethod("getWorldCenter").invoke(torsoBody);
+            torsoBody.getClass().getMethod("applyImpulse", _Vec2, _Vec2).invoke(torsoBody, makeVec2(xComp, yComp),
+                    worldCenter);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Apply a disturbance torque to the body.
-     **/
-    public void applyBodyTorque(float cwTorque) throws IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException, NoSuchMethodException, SecurityException {
-        torsoBody.getClass().getMethod("applyTorque", float.class).invoke(torsoBody, cwTorque);
+     */
+    public void applyBodyTorque(float cwTorque) {
+        try {
+            torsoBody.getClass().getMethod("applyTorque", float.class).invoke(torsoBody, cwTorque);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Convenience method to avoid the verbose reflection stuff every time.
-     *
-     * @throws SecurityException
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     **/
-    private void setMotorSpeed(Object joint, float motorSpeed) throws IllegalArgumentException,
-            IllegalAccessException, NoSuchFieldException, SecurityException {
-        joint.getClass().getField("m_motorSpeed").setFloat(joint, motorSpeed);
+     */
+    private void setMotorSpeed(Object joint, float motorSpeed) {
+        try {
+            joint.getClass().getField("m_motorSpeed").setFloat(joint, motorSpeed);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Convenience method to avoid the verbose reflection stuff every time.
-     *
-     * @throws SecurityException
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     **/
-    private void setMaxMotorTorque(Object joint, float motorTorque) throws IllegalArgumentException,
-            IllegalAccessException, NoSuchFieldException, SecurityException {
-        joint.getClass().getField("m_maxMotorTorque").setFloat(joint, motorTorque);
+     */
+    private void setMaxMotorTorque(Object joint, float motorTorque) {
+        try {
+            joint.getClass().getField("m_maxMotorTorque").setFloat(joint, motorTorque);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Convenience method to avoid the verbose reflection stuff every time.
-     *
-     * @throws SecurityException
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     **/
-    private void setJointLowerBound(Object joint, float lowerBound) throws IllegalArgumentException,
-            IllegalAccessException, NoSuchFieldException, SecurityException {
-        joint.getClass().getField("m_lowerAngle").setFloat(joint, lowerBound);
+     */
+    private void setJointLowerBound(Object joint, float lowerBound) {
+        try {
+            joint.getClass().getField("m_lowerAngle").setFloat(joint, lowerBound);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Convenience method to avoid the verbose reflection stuff every time.
-     *
-     * @throws SecurityException
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     **/
-    private void setJointUpperBound(Object joint, float upperBound) throws IllegalArgumentException,
-            IllegalAccessException, NoSuchFieldException, SecurityException {
-        joint.getClass().getField("m_upperAngle").setFloat(joint, upperBound);
+     */
+    private void setJointUpperBound(Object joint, float upperBound) {
+        try {
+            joint.getClass().getField("m_upperAngle").setFloat(joint, upperBound);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Step the game forward 1 timestep with the specified keys pressed.
-     *
-     * @throws SecurityException
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     **/
+     */
     public void stepGame(boolean q, boolean w, boolean o, boolean p) {
         try {
             // Involuntary couplings (no QWOP presses).
@@ -989,22 +929,14 @@ public class GameLoader extends ClassLoader {
                 //Set speed 1 for knees
                 // set l hip limits(-1 1)
                 //set right hip limits (-1.3,0.7)
-                setMotorSpeed(rKneeJ, rKneeSpeed2);
-                setMotorSpeed(lKneeJ, lKneeSpeed2);
-                setJointLowerBound(rHipJ, oRHipLimLo);
-                setJointUpperBound(rHipJ, oRHipLimHi);
-                setJointLowerBound(lHipJ, oLHipLimLo);
-                setJointUpperBound(lHipJ, oLHipLimHi);
+                setJointSpeedAndLimits(rKneeJ, rKneeSpeed2, oRHipLimLo, oRHipLimHi);
+                setJointSpeedAndLimits(lKneeJ, lKneeSpeed2, oLHipLimLo, oLHipLimHi);
             } else if (p) {
                 //Set speed 2 for knees
                 // set L hip limits(-1.5,0.5)
                 // set R hip limits(-0.8,1.2)
-                setMotorSpeed(rKneeJ, rKneeSpeed1);
-                setMotorSpeed(lKneeJ, lKneeSpeed1);
-                setJointLowerBound(rHipJ, pRHipLimLo);
-                setJointUpperBound(rHipJ, pRHipLimHi);
-                setJointLowerBound(lHipJ, pLHipLimLo);
-                setJointUpperBound(lHipJ, pLHipLimHi);
+                setJointSpeedAndLimits(rKneeJ, rKneeSpeed1, pRHipLimLo, pRHipLimHi);
+                setJointSpeedAndLimits(lKneeJ, lKneeSpeed1, pLHipLimLo, pLHipLimHi);
             } else {
                 // Set knee speeds to 0
                 //Joint limits not changed!!
@@ -1028,8 +960,21 @@ public class GameLoader extends ClassLoader {
     }
 
     /**
+     * Convenience method for setting both joint speed and limits when different input keys are pressed.
+     * @param joint Joint to change properties of.
+     * @param speed Joint motor target speed.
+     * @param lowLim Lower angle bound.
+     * @param hiLim Upper angle bound.
+     */
+    private void setJointSpeedAndLimits(Object joint, float speed, float lowLim, float hiLim) {
+        setMotorSpeed(joint, speed);
+        setJointLowerBound(joint, lowLim);
+        setJointUpperBound(joint, hiLim);
+    }
+
+    /**
      * Get the current full state of the runner.
-     **/
+     */
     public synchronized State getCurrentState() {
         State st = null;
         try {
@@ -1055,33 +1000,30 @@ public class GameLoader extends ClassLoader {
 
     /**
      * Get a new StateVariable for a given body.
-     *
-     * @throws SecurityException
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalArgumentException
-     * @throws IllegalAccessException
-     * @throws NoSuchFieldException
-     **/
-    public StateVariable getCurrentBodyState(Object body) throws IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException, NoSuchMethodException, SecurityException, NoSuchFieldException {
-        Object pos = body.getClass().getMethod("getPosition").invoke(body);
-        float x = pos.getClass().getField("x").getFloat(pos);
-        float y = pos.getClass().getField("y").getFloat(pos);
-        float th = (float) body.getClass().getMethod("getAngle").invoke(body);
+     */
+    public StateVariable getCurrentBodyState(Object body) {
+        StateVariable currentState = null;
+        try {
+            Object pos = body.getClass().getMethod("getPosition").invoke(body);
+            float x = pos.getClass().getField("x").getFloat(pos);
+            float y = pos.getClass().getField("y").getFloat(pos);
+            float th = (float) body.getClass().getMethod("getAngle").invoke(body);
 
-        Object vel = body.getClass().getMethod("getLinearVelocity").invoke(body);
-        float dx = vel.getClass().getField("x").getFloat(vel);
-        float dy = vel.getClass().getField("y").getFloat(vel);
-        float dth = (float) body.getClass().getMethod("getAngularVelocity").invoke(body);
-
-        return new StateVariable(x, y, th, dx, dy, dth);
+            Object vel = body.getClass().getMethod("getLinearVelocity").invoke(body);
+            float dx = vel.getClass().getField("x").getFloat(vel);
+            float dy = vel.getClass().getField("y").getFloat(vel);
+            float dth = (float) body.getClass().getMethod("getAngularVelocity").invoke(body);
+            currentState = new StateVariable(x, y, th, dx, dy, dth);
+        } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return currentState;
     }
 
     /**
      * Get the transform associated with this State. Note that these transforms can ONLY be used with this instance
      * of GameLoader.
-     **/
+     */
     public Object[] getXForms(State st) {
         Object[] transforms = new Object[13];
         try {
@@ -1108,17 +1050,19 @@ public class GameLoader extends ClassLoader {
     /**
      * Get the transform associated with this body's state variables. Note that these transforms can ONLY be used
      * with this instance of GameLoader.
-     **/
-    public Object getXForm(StateVariable sv) throws InstantiationException, IllegalAccessException,
-            IllegalArgumentException, NoSuchFieldException, SecurityException, InvocationTargetException,
-            NoSuchMethodException {
-        Object xf = _XForm.newInstance();
-        Object pos = xf.getClass().getField("position").get(xf); // Position
-        pos.getClass().getField("x").setFloat(pos, sv.getX());
-        pos.getClass().getField("y").setFloat(pos, sv.getY());
-        Object R = xf.getClass().getField("R").get(xf); // Rotation
-        R.getClass().getMethod("set", float.class).invoke(R, sv.getTh());
-
+     */
+    public Object getXForm(StateVariable sv) {
+        Object xf = null;
+        try {
+            xf = _XForm.newInstance();
+            Object pos = xf.getClass().getField("position").get(xf); // Position
+            pos.getClass().getField("x").setFloat(pos, sv.getX());
+            pos.getClass().getField("y").setFloat(pos, sv.getY());
+            Object R = xf.getClass().getField("R").get(xf); // Rotation
+            R.getClass().getMethod("set", float.class).invoke(R, sv.getTh());
+        } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
+            e.printStackTrace();
+        }
         return xf;
     }
 
@@ -1217,7 +1161,7 @@ public class GameLoader extends ClassLoader {
 
     /**
      * Draw the runner at a specified set of transforms.
-     **/
+     */
     public void drawExtraRunner(Graphics2D g, State st, String label, float scaling, int xOffset, int yOffset,
                                 Color drawColor, Stroke stroke) {
         drawExtraRunner(g, getXForms(st), label, scaling, xOffset, yOffset, drawColor, stroke);
@@ -1225,7 +1169,7 @@ public class GameLoader extends ClassLoader {
 
     /**
      * Draw the runner at a specified set of transforms..
-     **/
+     */
     public void drawExtraRunner(Graphics2D g, Object[] transforms, String label, float scaling, int xOffset,
                                 int yOffset, Color drawColor, Stroke stroke) {
         try {
@@ -1278,8 +1222,8 @@ public class GameLoader extends ClassLoader {
                             (int) (scaling * radius * 2),
                             (int) (scaling * radius * 2));
 
-                } else if (fixtureType == _ShapeType.getField("EDGE_SHAPE").get(null)) { // The track.
-
+                } else if (fixtureType == _ShapeType.getField("EDGE_SHAPE").get(null)) {
+                    // The track.
                 } else {
                     System.out.println("Shape type unknown.");
                 }
@@ -1351,6 +1295,7 @@ public class GameLoader extends ClassLoader {
      */
     public static void adjustRealQWOPStateToSimState(State realQWOPState) {
         //TODO find a better way to manage access to th.
+
 //        realQWOPState.body.th += torsoAngAdj;
 //        realQWOPState.head.th += headAngAdj;
 //        realQWOPState.rthigh.th += rThighAngAdj;
@@ -1376,5 +1321,4 @@ public class GameLoader extends ClassLoader {
             System.out.println(m.getName());
         }
     }
-
 }

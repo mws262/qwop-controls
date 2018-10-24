@@ -13,7 +13,7 @@ public interface IDataSaver {
 
     /**
      * Report initial state.
-     **/
+     */
     void reportGameInitialization(State initialState);
 
     /**
@@ -27,33 +27,33 @@ public interface IDataSaver {
 
     /**
      * Get the final game state for this run.
-     **/
+     */
     void reportGameEnding(Node endNode);
 
     /**
      * Called when the end of a TreeStage is reached. TargetNodes meaning is different depending on the saver
      * implementation.
-     **/
+     */
     void reportStageEnding(Node rootNode, List<Node> targetNodes);
 
     /**
      * Set the number of games to collect in between saves.
-     **/
+     */
     void setSaveInterval(int numGames);
 
     /**
      * Set where the files are saved. Defaults to working directory otherwise.
-     **/
+     */
     void setSavePath(String fileLoc);
 
     /**
      * Get a fresh copy of this saver with the same settings.
-     **/
+     */
     IDataSaver getCopy();
 
     /**
      * Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]
-     **/
+     */
     static String generateFileName(String prefix, String className) {
         Date date = new Date();
         SimpleDateFormat dateFormat =

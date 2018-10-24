@@ -37,22 +37,22 @@ public class Node {
 
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
-     **/
+     */
     private Node parent;
 
     /**
      * Child nodes. Not fixed size any more.
-     **/
+     */
     private final List<Node> children = new CopyOnWriteArrayList<>();
 
     /**
      * Action which takes the game from the parent node's state to this node's state.
-     **/
+     */
     public final Action action;
 
     /**
      * State after taking this node's action from the parent node's state.
-     **/
+     */
     private State state;
 
     /**
@@ -67,7 +67,7 @@ public class Node {
 
     /**
      * Some sampling methods want to track how many times this node has been visited during tree sampling.
-     **/
+     */
     public AtomicLong visitCount = new AtomicLong();
 
     /**
@@ -95,24 +95,24 @@ public class Node {
      * functionality a little more like the old version which selected from a fixed pool of durations for each action
      * in the sequence. This time, the action generator can use anything arbitrary to decide what the potential
      * children are, and the potentialActionGenerator can be hot swapped at any point.
-     **/
+     */
     public static IActionGenerator potentialActionGenerator;
 
     /**
      * Untried child actions.
-     **/
+     */
     public ActionSet uncheckedActions;
 
     /**
      * Are there any untried things below this node? This is not necessarily a TERMINAL node, it is simply a node
      * past which there are no potential child actions to try.
-     **/
+     */
     public final AtomicBoolean fullyExplored = new AtomicBoolean(false);
 
     /**
      * If one TreeWorker is expanding from this leaf node (if it is one), then no other worker should try to
      * simultaneously expand from here too.
-     **/
+     */
     private final AtomicBoolean locked = new AtomicBoolean(false);
 
     /**
@@ -122,7 +122,7 @@ public class Node {
 
     /**
      * Maximum depth yet seen anywhere in this tree.
-     **/
+     */
     private static int maxDepthYet = 1;
 
     /**
@@ -182,7 +182,7 @@ public class Node {
 
     /**
      * Parameters for visualizing the tree
-     **/
+     */
     public float[] nodeLocation = new float[3]; // Location that this node appears on the tree visualization
     private float nodeAngle = 0; // Keep track of the angle that the line previous node to this node makes.
     private float sweepAngle = 2f * (float) Math.PI;
@@ -192,17 +192,17 @@ public class Node {
     /**
      * If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z
      * offset.
-     **/
+     */
     float nodeLocationZOffset = 0.f;
 
     /**
      * Are we bulk adding saved nodes? If so, some construction things are deferred.
-     **/
+     */
     private static boolean currentlyAddingSavedNodes = false;
 
     /**
      * Make a new node which is NOT the root. Add this to the tree hierarchy.
-     **/
+     */
     public Node(Node parent, Action action) {
         this(parent, action, true);
     }
@@ -228,7 +228,6 @@ public class Node {
                         "was: " + action.toString() + ".");
             }
         }
-
         // Add some child actions to try if an action generator is assigned.
         autoAddUncheckedActions();
 
@@ -369,7 +368,7 @@ public class Node {
 
     /**
      * Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node.
-     **/
+     */
     public synchronized void releaseExpansionRights() {
         locked.set(false); // Release the lock.
         if (debugDrawNodeLocking) { // Stop drawing red dots for locked nodes, if this is on.
@@ -681,7 +680,7 @@ public class Node {
      * Destroy a branch and try to free up its memory. Mark the trimmed branch as fully explored and propagate the
      * status. This method can be useful when the sampler or user decides that one branch is bad and wants to keep it
      * from being used later in sampling.
-     **/
+     */
     public void destroyAllNodesBelowAndCheckExplored() {
         destroyAllNodesBelow();
         propagateFullyExploredStatus_lite();
@@ -689,7 +688,7 @@ public class Node {
 
     /**
      * Destroy a branch and try to free up its memory.
-     **/
+     */
     private void destroyAllNodesBelow() {
         for (Node child : children) {
             child.state = null;
@@ -884,7 +883,7 @@ public class Node {
     /**
      * Helper for node adding from file. Clears unchecked actions from non-leaf nodes.
      * Only does it for things below minDepth. Forces new building to happen only at the boundaries of this.
-     **/
+     */
     private static void stripUncheckedActionsExceptOnLeaves(Node node, int minDepth) {
         if (!node.children.isEmpty() && node.getTreeDepth() <= minDepth) node.uncheckedActions.clear();
         for (Node child : node.children) {
@@ -894,7 +893,7 @@ public class Node {
 
     /**
      * Add nodes based on saved action sequences. Has to re-simulate each to get the states.
-     **/
+     */
     public static void makeNodesFromActionSequences(List<Action[]> actions, Node root, GameLoader game) {
 
         ActionQueue actQueue = new ActionQueue();
@@ -941,7 +940,7 @@ public class Node {
      * Makes a rough best guess for position based on its parent.
      * Should still be used for initial conditions before letting
      * the physics kick in.
-     **/
+     */
     private void calcNodePos(float[] nodeLocationsToAssign) {
         //Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will
         // span the required sweep.
@@ -1000,14 +999,14 @@ public class Node {
 
     /**
      * Same, but assumes that we're talking about this node's nodeLocation
-     **/
+     */
     private void calcNodePos() {
         calcNodePos(nodeLocation);
     }
 
     /**
      * Recalculate all node positions below this one (NOT including this one for the sake of root).
-     **/
+     */
     public void calcNodePosBelow() {
         for (Node current : children) {
             current.calcNodePos();
@@ -1017,7 +1016,7 @@ public class Node {
 
     /**
      * Draw the line connecting this node to its parent.
-     **/
+     */
     private void drawLine(GL2 gl) {
         if (getTreeDepth() > 0 && displayLine) { // No lines for root.
             if (overrideLineColor == null) {
@@ -1036,7 +1035,7 @@ public class Node {
 
     /**
      * Draw the node point if enabled
-     **/
+     */
     private void drawPoint(GL2 gl) {
         if (displayPoint) {
             if (overrideNodeColor == null) {
@@ -1077,7 +1076,7 @@ public class Node {
 
     /**
      * Turn off all display for this node onward.
-     **/
+     */
     public void turnOffBranchDisplay() {
         displayLine = false;
         displayPoint = false;
@@ -1091,7 +1090,7 @@ public class Node {
 
     /**
      * Single out one run up to this node to highlight the lines, while dimming the others.
-     **/
+     */
     public void highlightSingleRunToThisNode() {
         Node rt = getRoot();
         rt.setLineBrightness_below(0.4f); // Fade the entire tree, then go and highlight the run we care about.
@@ -1105,14 +1104,14 @@ public class Node {
 
     /**
      * Fade a single line going from this node to its parent.
-     **/
+     */
     private void setLineBrightness(float brightness) {
         lineBrightness = brightness;
     }
 
     /**
      * Fade a certain part of the tree.
-     **/
+     */
     private void setLineBrightness_below(float brightness) {
         setLineBrightness(brightness);
         for (Node child : children) {
@@ -1122,14 +1121,14 @@ public class Node {
 
     /**
      * Reset line brightnesses to default.
-     **/
+     */
     public void resetLineBrightness_below() {
         setLineBrightness_below(lineBrightness_default);
     }
 
     /**
      * Color the node scaled by depth in the tree. Skip the brightness argument for default value.
-     **/
+     */
     private static Color getColorFromTreeDepth(int depth, float brightness) {
         float colorOffset = 0.35f;
         float scaledDepth = (float) depth / (float) maxDepthYet;
@@ -1140,7 +1139,7 @@ public class Node {
 
     /**
      * Color the node scaled by depth in the tree. Totally for gradient pleasantness.
-     **/
+     */
     public static Color getColorFromTreeDepth(int depth) {
         return getColorFromTreeDepth(depth, lineBrightness_default);
     }
@@ -1155,7 +1154,7 @@ public class Node {
 
     /**
      * Set an override line color for this branch (all descendants).
-     **/
+     */
     public void setBranchColor(Color newColor) {
         overrideLineColor = newColor;
         for (Node child : children) {
@@ -1165,7 +1164,7 @@ public class Node {
 
     /**
      * Set an override line color for this path (all ancestors).
-     **/
+     */
     public void setBackwardsBranchColor(Color newColor) {
         overrideLineColor = newColor;
         if (getTreeDepth() > 0) {
@@ -1175,7 +1174,7 @@ public class Node {
 
     /**
      * Clear an overridden line color on this branch. Call from root to get all line colors back to default.
-     **/
+     */
     public void clearBranchColor() {
         overrideLineColor = null;
         for (Node child : children) {
@@ -1185,7 +1184,7 @@ public class Node {
 
     /**
      * Clear an overridden line color on this branch. Goes back towards root.
-     **/
+     */
     public void clearBackwardsBranchColor() {
         overrideLineColor = null;
         if (getTreeDepth() > 0) {
@@ -1195,7 +1194,7 @@ public class Node {
 
     /**
      * Clear node override colors from this node onward. Only clear the specified color. Call from root to clear all.
-     **/
+     */
     private void clearNodeOverrideColor(Color colorToClear) {
         if (overrideNodeColor == colorToClear) {
             overrideNodeColor = null;
@@ -1208,7 +1207,7 @@ public class Node {
 
     /**
      * Clear node override colors from this node backwards. Only clear the specified color. Goes towards root.
-     **/
+     */
     private void clearBackwardsNodeOverrideColor(Color colorToClear) {
         if (overrideNodeColor == colorToClear) {
             overrideNodeColor = null;
@@ -1221,7 +1220,7 @@ public class Node {
 
     /**
      * Clear all node override colors from this node onward. Call from root to clear all.
-     **/
+     */
     public void clearNodeOverrideColor() {
         if (overrideNodeColor != null) {
             overrideNodeColor = null;
@@ -1234,7 +1233,7 @@ public class Node {
 
     /**
      * Clear all node override colors from this node onward. Call from root to clear all.
-     **/
+     */
     private void clearBackwardsNodeOverrideColor() {
         if (overrideNodeColor != null) {
             overrideNodeColor = null;
@@ -1247,7 +1246,7 @@ public class Node {
 
     /**
      * Give this branch a nodeLocationZOffset to make it stand out.
-     **/
+     */
     public void setBranchZOffset(float zOffset) {
         this.nodeLocationZOffset = zOffset;
         for (Node child : children) {
@@ -1257,7 +1256,7 @@ public class Node {
 
     /**
      * Give this branch a nodeLocationZOffset to make it stand out. Goes backwards towards root.
-     **/
+     */
     public void setBackwardsBranchZOffset(float zOffset) {
         this.nodeLocationZOffset = zOffset;
 
@@ -1268,21 +1267,21 @@ public class Node {
 
     /**
      * Clear z offsets in this branch. Works backwards towards root.
-     **/
+     */
     public void clearBackwardsBranchZOffset() {
         setBackwardsBranchZOffset(0f);
     }
 
     /**
      * Clear z offsets in this branch. Called from root, it resets all back to 0.
-     **/
+     */
     public void clearBranchZOffset() {
         setBranchZOffset(0f);
     }
 
     /**
      * How deep is this node down the tree? 0 is root.
-     **/
+     */
     public int getTreeDepth() {
         return treeDepth;
     }

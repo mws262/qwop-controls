@@ -22,48 +22,46 @@ public class DataSaver_Sparse implements IDataSaver {
 
     /**
      * File prefix. Goes in front of date.
-     **/
+     */
     @SuppressWarnings("WeakerAccess")
     public String filePrefix = "qwop_sparse_java";
 
     /**
      * Do not include dot before.
-     **/
+     */
     @SuppressWarnings("WeakerAccess")
     public String fileExtension = "SavableSingleGame";
 
     /**
      * File save location.
-     **/
+     */
     private String fileLocation = "./";
 
     /**
      * How many games in between saves.
-     **/
+     */
     private int saveInterval = 100;
 
     /**
      * Games since last file write.
-     **/
+     */
     private int gamesSinceFile = 0;
 
     /**
      * Handles class serialization and writing to file.
-     **/
+     */
     private SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
 
     /**
      * Buffered games awaiting file write.
-     **/
+     */
     private ArrayList<SavableSingleGame> saveBuffer = new ArrayList<>();
 
     @Override
-    public void reportGameInitialization(State initialState) {
-    }
+    public void reportGameInitialization(State initialState) {}
 
     @Override
-    public void reportTimestep(Action action, GameLoader game) {
-    }
+    public void reportTimestep(Action action, GameLoader game) {}
 
     @Override
     public void reportGameEnding(Node endNode) {

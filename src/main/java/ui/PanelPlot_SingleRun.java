@@ -119,7 +119,6 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
         changePlots();
     }
 
-
     public void changePlots() {
         requestFocus();
 

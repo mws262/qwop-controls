@@ -5,7 +5,6 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
@@ -24,58 +23,58 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
 
     /**
      * Thread loop running?
-     **/
+     */
     private boolean running = true;
 
     /**
      * Verbose printing?
-     **/
+     */
     public boolean verbose = false;
 
     /**
      * Tree root nodes associated with this interface.
-     **/
+     */
     private ArrayList<Node> rootNodes = new ArrayList<>();
 
     /**
      * Individual pane for the tree.
-     **/
+     */
     private PanelTree panelTree;
 
     /**
      * Pane for the tabbed side of the interface.
-     **/
+     */
     private JTabbedPane tabPane;
 
     /**
      * Selected node by user click/key
-     **/
+     */
     private Node selectedNode;
 
     /**
      * List of panes which can be activated, deactivated.
-     **/
+     */
     private ArrayList<TabbedPaneActivator> allTabbedPanes = new ArrayList<>(); //List of all panes
     // in the tabbed part
 
     /**
      * Window width
-     **/
+     */
     public static int windowWidth = 1920;
 
     /**
      * Window height
-     **/
+     */
     public static int windowHeight = 1000;
 
     /**
      * Attempted frame rate
-     **/
+     */
     private int targetFramesPerSecond = 25;
 
     /**
      * Usable milliseconds per frame
-     **/
+     */
     private long millisecondsPerFrame = (long) (1f / targetFramesPerSecond * 1000f);
 
     public UI_Full() {

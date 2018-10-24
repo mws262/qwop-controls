@@ -20,12 +20,12 @@ public class TreeStage_MinDepth extends TreeStage {
 
     /**
      * Minimum relative depth (relative to given root) that we want to achieve.
-     **/
+     */
     private int minDepth;
 
     /**
      * Minimum ABSOLUTE depth (relative to absolute root) that we want to achieve.
-     **/
+     */
     private int minEffectiveDepth;
 
     public TreeStage_MinDepth(int minDepth, ISampler sampler, IDataSaver saver) {

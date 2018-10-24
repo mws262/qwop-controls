@@ -21,32 +21,32 @@ public abstract class TreeStage implements Runnable {
     /**
      * Currently only supporting one sampler per stage. Must define which sampler to use in the inheritors of this
      * abstract class.
-     **/
+     */
     protected ISampler sampler;
 
     /**
      * Data saving selection. Must define which saver to use in the inheritors of this abstract class.
-     **/
+     */
     protected IDataSaver saver;
 
     /**
      * Each stage gets its own workers to avoid contamination. Probably could combine later if necessary.
-     **/
+     */
     public List<TreeWorker> workers = new ArrayList<>();
 
     /**
      * Number of TreeWorkers to be used.
-     **/
+     */
     protected int numWorkers;
 
     /**
      * Is the managing thread of this stage running?
-     **/
+     */
     private volatile boolean running = true;
 
     /**
      * Does this stage block the mai thread until done?
-     **/
+     */
     public boolean blocking = true;
 
     private final Object lock = new Object();
@@ -111,19 +111,19 @@ public abstract class TreeStage implements Runnable {
 
     /**
      * Externally check if this stage has wrapped up yet.
-     **/
+     */
     public boolean isFinished() {
         return !running;
     }
 
     /**
      * Query the stage for its final results.
-     **/
+     */
     public abstract List<Node> getResults();
 
     /**
      * Check through the tree for termination conditions.
-     **/
+     */
     public abstract boolean checkTerminationConditions();
 
     private void pruneStatesForMemory(Node node) {
@@ -140,7 +140,7 @@ public abstract class TreeStage implements Runnable {
 
     /**
      * Terminate this stage, destroying the workers and their threads in the process.
-     **/
+     */
     public void terminate() {
         running = false;
         System.out.println("Terminate called on a stage.");
@@ -160,7 +160,7 @@ public abstract class TreeStage implements Runnable {
 
     /**
      * Check if workers are running.
-     **/
+     */
     public boolean areWorkersRunning() {
         synchronized (workers) {
 
@@ -179,7 +179,7 @@ public abstract class TreeStage implements Runnable {
     /**
      * Get the root node that this stage is operating from. It cannot change from an external caller's perspective,
      * so no set method.
-     **/
+     */
     public Node getRootNode() {
         return stageRoot;
     }

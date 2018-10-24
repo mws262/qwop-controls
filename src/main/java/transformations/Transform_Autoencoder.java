@@ -91,7 +91,6 @@ public class Transform_Autoencoder implements ITransform {
         return null; // TODO figure out how to get the correct layers in/out for this.
     }
 
-
     @Override
     public List<State> compressAndDecompress(List<State> originalStates) {
         List<State> transformedStates = new ArrayList<>();
