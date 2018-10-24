@@ -51,6 +51,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
      * is active, then terminate the previous and start the new one.
      **/
     public void simRunToNode(Node node) {
+        assert node.getTreeDepth() > 0; // Doesn't make sense to simulate to the starting configuration.
+
         fastForwardTimesteps = 0;
         actionQueue.clearAll();
         game.makeNewWorld();
@@ -60,7 +62,6 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
         for (Action a : actionSequence) {
             System.out.println(a);
         }
-
     }
 
     /**
@@ -156,6 +157,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     @Override
     public void update(Node node) {
-        simRunToNode(node);
+        if (node.getTreeDepth() > 0)
+            simRunToNode(node);
     }
 }

@@ -15,7 +15,6 @@ import javax.swing.event.ChangeListener;
 import tree.Node;
 import tree.Utility;
 
-
 /**
  * All UI stuff happens here and most of the analysis that individual panes show happens here too.
  *
@@ -72,12 +71,12 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     /**
      * Attempted frame rate
      **/
-    private int FPS = 25;
+    private int targetFramesPerSecond = 25;
 
     /**
      * Usable milliseconds per frame
      **/
-    private long MSPF = (long) (1f / FPS * 1000f);
+    private long millisecondsPerFrame = (long) (1f / targetFramesPerSecond * 1000f);
 
     public UI_Full() {
         Container pane = getContentPane();
@@ -89,12 +88,11 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
         tabPane.setMinimumSize(new Dimension(100, 1));
         tabPane.addChangeListener(this);
 
-        /* TREE PANE */
+        /* Tree pane */
         panelTree = new PanelTree();
         panelTree.addNodeSelectionListener(this); // Add this UI as a listener for selections of nodes on the tree.
-//        panelTree.setBorder(BorderFactory.createRaisedBevelBorder());
 
-        // This makes it have that dragable border between the tab and the tree sections.
+        // This makes it have that draggable border between the tab and the tree sections.
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panelTree, tabPane);
         splitPane.setResizeWeight(0.85);
         pane.add(splitPane);
@@ -111,12 +109,16 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
 
         this.pack();
         this.setVisible(true);
+
         Utility.showOnScreen(this, 0, false); // Choose the monitor to display on, filling that monitor.
     }
 
     /**
-     * Add a new tab to this frame.
-     **/
+     * Add a new tab to this frame's set of tabbed panels.
+     *
+     * @param newTab New tab to add to the existing set of tabbed panels in this frame.
+     * @param name Name of the tab to display on the tab itself.
+     */
     public void addTab(TabbedPaneActivator newTab, String name) {
         tabPane.addTab(name, (Component) newTab);
         allTabbedPanes.add(newTab);
@@ -127,11 +129,15 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     }
 
     /**
-     * Add a new tab to this frame.
-     **/
-    public void removeTab(JPanel tabToRemove) {
-        tabPane.remove(tabToRemove);
-        allTabbedPanes.remove(tabToRemove);
+     * Remove a specified UI element which is part of a tabbed set of panels.
+     *
+     * @param tabToRemove Tab to be removed from the set. Throws if the tab is not part of the group.
+     */
+    public void removeTab(TabbedPaneActivator tabToRemove) {
+        if (allTabbedPanes.contains(tabToRemove))
+            allTabbedPanes.remove(tabToRemove);
+        else
+            throw new IllegalArgumentException("Tried to remove a UI tab which did not exist.");
 
         //Make sure the currently active tab is actually being updated.
         allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
@@ -146,7 +152,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
             long currentTime = System.currentTimeMillis();
             repaint();
 
-            long extraTime = MSPF - (System.currentTimeMillis() - currentTime);
+            long extraTime = millisecondsPerFrame - (System.currentTimeMillis() - currentTime);
             if (extraTime > 5) {
                 try {
                     Thread.sleep(extraTime);

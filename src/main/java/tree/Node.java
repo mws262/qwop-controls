@@ -168,7 +168,7 @@ public class Node {
     /**
      * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
      */
-    private static final boolean limitDrawing = false;
+    private static final boolean limitDrawing = true;
     public static final Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
 
     /**

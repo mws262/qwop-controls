@@ -9,11 +9,13 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import tree.Node;
 import tree.TreeWorker;
 
+import javax.swing.*;
 import javax.vecmath.Vector3f;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +25,7 @@ import java.util.Set;
  * @author Matt
  */
 public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPaneActivator, GLEventListener, MouseListener,
-        MouseMotionListener, MouseWheelListener, KeyListener {
+        MouseMotionListener, MouseWheelListener, KeyListener, ActionListener {
 
     /**
      * For rendering text overlays. Note that {@link TextRenderer} is for overlays while GLUT is for labels in world
@@ -50,7 +52,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     /**
      * Continuously update the estimate of the display loop time in milliseconds.
      **/
-    private long avgLoopTime = (long) 1000f/30; // Initial guess doesn't matter too much.
+    private long avgLoopTime = (long) 1000f / 30; // Initial guess doesn't matter too much.
     private long lastIterTime = System.currentTimeMillis();
     private long lastGamesPlayed = 0;
 
@@ -79,6 +81,11 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      */
     private Set<NodeSelectionListener> nodeSelectionListeners = new HashSet<>();
 
+    /**
+     * Button for resetting the camera view.
+     */
+    private JButton resetButton;
+
     public PanelTree() {
         super();
         setFocusable(true);
@@ -86,6 +93,18 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         addMouseListener(this);
         addMouseMotionListener(this);
         addMouseWheelListener(this);
+
+        FlowLayout layout = new FlowLayout();
+        layout.setAlignment(FlowLayout.LEFT); // So the button goes to the top left corner.
+        setLayout(layout);
+
+        // Button for resetting the camera to default position/target.
+        resetButton = new JButton("Reset camera");
+        resetButton.setToolTipText("Reset the camera view back to the initial view if you're lost.");
+        resetButton.addActionListener(this);
+        resetButton.setBackground(new Color(255,255,255,100));
+        
+        add(resetButton);
     }
 
     /**
@@ -120,8 +139,9 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      */
     private void selectNode(Node node) {
         selectedNode = node;
-        for (NodeSelectionListener listener : nodeSelectionListeners)
+        for (NodeSelectionListener listener : nodeSelectionListeners) {
             listener.nodeSelected(node);
+        }
     }
 
     @Override
@@ -153,12 +173,12 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             gl.glPointSize(ptSize);
 
             gl.glBegin(GL.GL_POINTS);
-            node.drawNodes_below(gl);
+            node.drawNodes_below(gl); // Recurses through the whole tree.
             gl.glEnd();
 
             gl.glColor3f(1f, 1f, 1f);
             gl.glBegin(GL.GL_LINES);
-            node.drawLines_below(gl);
+            node.drawLines_below(gl); // Recurses through the whole tree.
             gl.glEnd();
         }
 
@@ -167,7 +187,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         textRenderBig.setColor(0.7f, 0.7f, 0.7f, 1.0f);
         //tmp remove textRenderBig.draw(negotiator.getGamesPlayed() + " games", 20, panelHeight - 50);
 
-        if (treePause) {
+        if (treePause) { // TODO Fix pausing.
             textRenderBig.setColor(0.7f, 0.1f, 0.1f, 1.0f);
             textRenderBig.draw("PAUSED", panelWidth / 2, panelHeight - 50);
         }
@@ -237,11 +257,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        if (e.getWheelRotation() < 0) { //Negative mouse direction -> zoom in.
-            cam.smoothZoom(0.9f, 5);
-        } else {
-            cam.smoothZoom(1.1f, 5);
-        }
+        cam.smoothZoom(1f + (float)e.getPreciseWheelRotation(), 3);
     }
 
     @Override
@@ -254,8 +270,14 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (e.isMetaDown()) {
-            selectNode(cam.nodeFromClick_set(e.getX(), e.getY(), rootNodes));
+        if (e.isControlDown()) {
+
+            // Get all nodes below all roots.
+            List<Node> nodesBelow = new ArrayList<>();
+            for (Node node : rootNodes) {
+                node.getNodesBelow(nodesBelow, true);
+            }
+            selectNode(cam.nodeFromClick_set(e.getX(), e.getY(), nodesBelow));
         }
     }
 
@@ -498,5 +520,13 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     @Override
     public void update(Node node) {
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Reset the camera view back to initial view.
+        if (e.getSource().equals(resetButton)) {
+            cam = new GLCamManager(panelWidth, panelHeight);
+        }
     }
 }

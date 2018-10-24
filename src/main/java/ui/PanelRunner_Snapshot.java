@@ -228,7 +228,9 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             }
 
             // Draw the sequence too.
-            drawActionString(snapshotNode.getSequence(), g);
+            if (snapshotNode.getTreeDepth() > 0) {
+                drawActionString(snapshotNode.getSequence(), g);
+            }
         }
     }
 
@@ -275,6 +277,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 }
             } catch (IndexOutOfBoundsException e) {
                 // I don't really care tbh. Just skip this one.
+                // TODO Fix this shit?
             }
         }
     }

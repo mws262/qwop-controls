@@ -320,8 +320,11 @@ public class GLCamManager {
 
     public void smoothZoom(float zoomFactor, int speed) {
         eyeToTarget.sub(targetPos, eyePos);
-        if (zoomFactor > 1 || eyeToTarget.dot(eyeToTarget) > 500) { // Don't allow zooming in too far. Tree
-            // disappears if we get too close. The 500 is a square distance threshold for camera->target.
+        float distToTarSq = eyeToTarget.dot(eyeToTarget);
+        zoomFactor = Float.min(zoomFactor, 1.1f);
+        zoomFactor = Float.max(zoomFactor, 0.9f);
+        if ((zoomFactor > 1 || distToTarSq > 500) && // Don't allow zooming in too far or zooming out too far.
+                (zoomFactor < 1 || distToTarSq < 1e6)) {
             float zoomIncrement = (float) Math.pow(zoomFactor, 1. / speed);
             this.zoomIncrement.add(zoomIncrement);
             zoomSteps.add(speed);
