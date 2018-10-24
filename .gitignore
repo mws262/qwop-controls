@@ -1,8 +1,8 @@
 ### Custom ###
 /target/
 /aziokbd/
-*.SaveableDenseData
-*.SaveableSingleGame
+*.SavableDenseData
+*.SavableSingleGame
 *.SaveableActionSequence
 *.tfrecords
 /python/logs/
