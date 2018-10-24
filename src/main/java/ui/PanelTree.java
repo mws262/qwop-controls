@@ -28,15 +28,20 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         MouseMotionListener, MouseWheelListener, KeyListener, ActionListener {
 
     /**
-     * For rendering text overlays. Note that {@link TextRenderer} is for overlays while GLUT is for labels in world
-     * space.
-     **/
+     * For rendering text overlays. Large 36pt font. Note that {@link TextRenderer} is for overlays while GLUT is for
+     * labels in world space.
+     */
     private final TextRenderer textRenderBig = new TextRenderer(new Font("Calibri", Font.BOLD, 36));
+
+    /**
+     * For rendering text overlays. Small 18pt font. Note that {@link TextRenderer} is for overlays while GLUT is for
+     * labels in world space.
+     */
     private final TextRenderer textRenderSmall = new TextRenderer(new Font("Calibri", Font.PLAIN, 18));
 
     /**
      * Tree root nodes associated with this interface.
-     **/
+     */
     private ArrayList<Node> rootNodes = new ArrayList<>();
 
     /**
@@ -46,14 +51,22 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     /**
      * Games played per second
-     **/
+     */
     private int gps = 0;
 
     /**
      * Continuously update the estimate of the display loop time in milliseconds.
-     **/
+     */
     private long avgLoopTime = (long) 1000f / 30; // Initial guess doesn't matter too much.
+
+    /**
+     * Last system draw time in milliseconds.
+     */
     private long lastIterTime = System.currentTimeMillis();
+
+    /**
+     * Number of games played at last drawing. Used to estimate games played per second.
+     */
     private long lastGamesPlayed = 0;
 
     /**
@@ -102,8 +115,8 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         resetButton = new JButton("Reset camera");
         resetButton.setToolTipText("Reset the camera view back to the initial view if you're lost.");
         resetButton.addActionListener(this);
-        resetButton.setBackground(new Color(255,255,255,100));
-        
+        resetButton.setBackground(new Color(255, 255, 255, 100));
+
         add(resetButton);
     }
 
@@ -144,20 +157,29 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         }
     }
 
+    /**
+     * Add the root of a tree for drawing. Note that {@link Node} locations are dictated by {@link Node#nodeLocation}.
+     *
+     * @param node A root node whose tree we want to draw. Does not literally need to be a zero-depth tree root, just
+     *             some node with children we want to draw.
+     */
+    public void addRootNode(Node node) {
+        rootNodes.add(node);
+    }
+
+    /**
+     * Remove all root nodes from the list to draw. Will result in no trees being drawn.
+     */
+    public void clearRootNodes() {
+        rootNodes.clear();
+    }
+
     @Override
     public void activateTab() {
     }
 
     @Override
     public void deactivateTab() {
-    }
-
-    public void addRootNode(Node node) {
-        rootNodes.add(node);
-    }
-
-    public void clearRootNodes() {
-        rootNodes.clear();
     }
 
     @Override
@@ -257,7 +279,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        cam.smoothZoom(1f + (float)e.getPreciseWheelRotation(), 3);
+        cam.smoothZoom(1f + (float) e.getPreciseWheelRotation(), 3);
     }
 
     @Override
@@ -324,6 +346,9 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                     case KeyEvent.VK_RIGHT: //Go right along an isobranch
                         cam.smoothTwist(-0.1f, 5);
                         break;
+                    case KeyEvent.VK_ESCAPE:
+                        System.exit(0);
+                        break;
                 }
             } else {
                 switch (keyCode) {
@@ -351,9 +376,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                     case KeyEvent.VK_B:
                         //tmp remove negotiator.toggleSampler();
                         break;
-                    case KeyEvent.VK_ESCAPE:
-                        //System.exit(0);
-                        break;
+
 
                     case KeyEvent.VK_SPACE:
 //						if (runnerPanel.isActive()) {

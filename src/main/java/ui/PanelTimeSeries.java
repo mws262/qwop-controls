@@ -26,9 +26,7 @@ import org.jfree.ui.RectangleInsets;
 import ui.IUserInterface.TabbedPaneActivator;
 
 public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActivator {
-
-    private static final long serialVersionUID = 1L;
-
+    
     /**
      * Is this panel active and drawing?
      **/

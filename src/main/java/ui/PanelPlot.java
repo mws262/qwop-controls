@@ -37,17 +37,17 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 
     /**
      * Should this panel be drawing or is it hidden.
-     **/
+     */
     protected boolean active = false;
 
     /**
      * How many plots do we want to squeeze in there horizontally?
-     **/
+     */
     protected final int numberOfPlots;
 
     /**
      * Array of the numberOfPlots number of plots we make.
-     **/
+     */
     protected ChartPanel[] plotPanels;
 
     /****/
@@ -55,12 +55,12 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 
     /**
      * Background color for the plots.
-     **/
+     */
     private Color plotBackgroundColor = new Color(230, 230, 230);
 
     /**
      * Plotting colors for dots.
-     **/
+     */
     private final Color actionColor1 = Node.getColorFromTreeDepth(0);
     private final Color actionColor2 = Node.getColorFromTreeDepth(10);
     private final Color actionColor3 = Node.getColorFromTreeDepth(20);
@@ -91,29 +91,29 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 
     /**
      * Command all plots to apply updates.
-     **/
+     */
     protected void applyUpdates() {
         Arrays.stream(plotPanels).forEach(panel -> panel.getChart().fireChartChanged());
     }
 
     /**
      * Check if the bounds need expanding, tell JFreeChart to update, and set the bounds correctly
-     **/
+     */
     public abstract void update(Node plotNode);
 
     /**
      * Tells what plot is clicked by the user.
-     **/
+     */
     public abstract void plotClicked(int plotIdx);
 
     /**
      * Axis label font.
-     **/
+     */
     private final Font axisFont = new Font("Ariel", Font.BOLD, 12);
 
     /**
      * My default settings for each plot.
-     **/
+     */
     private JFreeChart createChart(XYDataset dataset, String name) {
         JFreeChart chart = ChartFactory.createScatterPlot(name,
                 "X", "Y", dataset, PlotOrientation.VERTICAL, false, false, false);
@@ -147,7 +147,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 
     /**
      * Add some labels for which action led to this state. Hackish.
-     **/
+     */
     public void addCommandLegend(XYPlot pl) {
         double axisDUB = pl.getDomainAxis().getUpperBound();
         double axisDLB = pl.getDomainAxis().getLowerBound();
@@ -176,6 +176,27 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
         pl.addAnnotation(a2);
         pl.addAnnotation(a3);
         pl.addAnnotation(a4);
+    }
+
+    /**
+     * Set {@link XYPlot} axis bounds from x and y data. It will make the plot bounds big enough to see all the data,
+     * plus a little bit of buffer room all around.
+     * @param plot Plot to set the axes bounds of.
+     * @param xData Set of data whose min/max will be used to size the horizontal axis bounds.
+     * @param yData Set of data whose min/max will be used to size the vertical axis bounds.
+     */
+    static void setPlotBoundsFromData(XYPlot plot, Float[] xData, Float[] yData) {
+        float xLow = Arrays.stream(xData).min(Float::compare).orElse(-1f);
+        float xHi = Arrays.stream(xData).max(Float::compare).orElse(1f);
+        float xRange = xHi - xLow;
+
+        float yLow = Arrays.stream(yData).min(Float::compare).orElse(-1f);
+        float yHi = Arrays.stream(yData).max(Float::compare).orElse(1f);
+        float yRange = yHi - yLow;
+
+        // Add a small buffer beyond the range of data in either direction.
+        plot.getDomainAxis().setRange(xLow - xRange/25f, xHi + xRange/25f);
+        plot.getRangeAxis().setRange(yLow - yRange/25f, yHi + yRange/25f);
     }
 
     @Override
@@ -210,7 +231,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 
     /**
      * XYDataset gets data for plotting transformed data from PCA here.
-     **/
+     */
     public class PlotDataset extends AbstractXYDataset {
 
         private static final long serialVersionUID = 1L;
@@ -219,7 +240,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 
         /**
          * Specific series of data to by plotted. Integer is the plotindex,
-         **/
+         */
         private Map<Integer, DataSeries> series = new HashMap<>();
 
         PlotDataset() {
@@ -228,7 +249,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 
         /**
          * Add another data series at the specified plot index.
-         **/
+         */
         public void addSeries(int plotIdx, float[] xData, float[] yData, Color[] cData) {
             DataSeries newDat = new DataSeries_FloatPrimitive(xData, yData, cData);
             series.put(plotIdx, newDat);
@@ -236,7 +257,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
 
         /**
          * Add another data series at the specified plot index.
-         **/
+         */
         public void addSeries(int plotIdx, Float[] xData, Float[] yData, Color[] cData) {
             DataSeries newDat = new DataSeries_FloatObj(xData, yData, cData);
             series.put(plotIdx, newDat);

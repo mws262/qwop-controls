@@ -10,33 +10,29 @@ import game.State;
 import tree.Node;
 
 public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runnable {
-
-    private static final long serialVersionUID = 1L;
-
     /**
      * Is the current simulation paused?
-     **/
+     */
     private boolean pauseFlag = false;
 
     /**
      * This panel's copy of the game it uses to run games for visualization.
-     **/
+     */
     protected GameLoader game;
 
     /**
      * States to animate through.
-     **/
+     */
     private Queue<State> states;
 
     /**
      * Current state being displayed.
-     **/
+     */
     private State currState;
 
     public PanelRunner_AnimatedFromStates() {
         game = new GameLoader();
         game.makeNewWorld();
-        //this.setMinimumSize(new Dimension(100,100));
     }
 
     public void simRun(Queue<State> states) {
@@ -46,7 +42,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
 
     /**
      * Gets auto-called by the goals graphics manager.
-     **/
+     */
     @Override
     public void paintComponent(Graphics g) {
         if (!active && game.isGameInitialized()) return;
@@ -56,12 +52,9 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
             game.drawExtraRunner((Graphics2D) g, currState, "", runnerScaling,
                     (int) (xOffsetPixels - currState.body.getX() * runnerScaling), yOffsetPixels, Color.BLACK,
                     normalStroke);
-            /* Current status of each keypress. */
-            boolean p = false;
-            boolean o = false;
-            boolean w = false;
-            boolean q = false;
-            keyDrawer(g, q, w, o, p);
+
+            // No actions being displayed, so just draw the keys.
+            keyDrawer(g, false, false, false, false);
 
             //This draws the "road" markings to show that the ground is moving relative to the dude.
             for (int i = 0; i < 2000 / 69; i++) {
@@ -74,9 +67,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
 
     @Override
     public void run() {
-        /* Is this panel still listening and ready to draw? Only false if thread is being killed. */
-        boolean running = true;
-        while (running) {
+        while (true) {
             if (active && !pauseFlag) {
                 if (game != null) {
                     if (states != null && !states.isEmpty()) {
@@ -98,7 +89,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     /**
      * Play/pause the current visualized simulation. Flag is reset by calling again or by selecting a new node to
      * visualize.
-     **/
+     */
     public void pauseToggle() {
         pauseFlag = !pauseFlag;
     }
@@ -112,10 +103,9 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     public void update(Node node) {
     }
 
-
     /**
      * Check if the current run is finished.
-     **/
+     */
     public boolean isFinishedWithRun() {
         return states.isEmpty();
     }
