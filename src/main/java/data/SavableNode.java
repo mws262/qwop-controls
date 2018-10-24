@@ -28,9 +28,7 @@ public class SavableNode implements Serializable {
     }
 
     /* Create as placeholder. For root node */
-    public SavableNode() {
-
-    }
+    public SavableNode() {}
 
     /* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Returns the ROOT of a tree. */
     public static SavableNode makeNodesFromRunInfo(ArrayList<SavableSingleGame> runs) {

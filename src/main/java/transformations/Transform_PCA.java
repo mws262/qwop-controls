@@ -13,27 +13,27 @@ public class Transform_PCA implements ITransform {
     /**
      * Eigenvectors found during SVD of the conditioned states. They represent the principle directions that explain
      * most of the state variance.
-     **/
+     */
     private FloatMatrix eigenvectors;
 
     /**
      * Number of state values per node as seen in the calculations.
-     **/
+     */
     private final int numStates = State.StateName.values().length * State.ObjectName.values().length;
 
     /**
      * Averages of the states of the data given to calculate the PCA.
-     **/
+     */
     private FloatMatrix stateAvgs = new FloatMatrix(1, numStates);
 
     /**
      * Standard deviations of the states of the data given to calculate the PCA.
-     **/
+     */
     private FloatMatrix stateSTDs = new FloatMatrix(1, numStates);
 
     /**
      * PCA components used to do transforms. Usually will only be the first couple.
-     **/
+     */
     private int[] transformPCAComponents;
 
     /**
@@ -110,7 +110,7 @@ public class Transform_PCA implements ITransform {
     /**
      * Unpack the state data from the nodes, pulling only the stuff we want.
      * Subtract mean, make unit variance.
-     **/
+     */
     private FloatMatrix unpackData(List<State> states) {
 
         FloatMatrix dat = new FloatMatrix(states.size(), numStates);

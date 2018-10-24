@@ -36,108 +36,108 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     /**
      * Is this worker running the FSM repeatedly?
-     **/
+     */
     private boolean workerRunning = true;
 
     /**
      * Sets the FSM to stop running the next time it is idle.
-     **/
+     */
     private AtomicBoolean flagForTermination = new AtomicBoolean(false);
 
     /**
      * Is this worker idle and waiting for a new task?
-     **/
+     */
     private boolean paused = true;
 
     /**
      * Print debugging info?
-     **/
+     */
     public boolean verbose = false;
 
     /**
      * Print debugging info?
-     **/
+     */
     public boolean debugDraw = false;
 
     /**
      * The current game instance that this FSM is using. This will now not change.
-     **/
+     */
     private final GameLoader game = new GameLoader();
 
     /**
      * Strategy for sampling new nodes. Defaults to random sampling.
-     **/
+     */
     private ISampler sampler = new Sampler_Random();
 
     /**
      * How data is saved. Defaults to no saving.
-     **/
+     */
     private IDataSaver saver = new DataSaver_Null();
 
     /**
      * Root of tree that this FSM is operating on.
-     **/
+     */
     private Node rootNode;
 
     /**
      * Node that the game is currently operating at.
-     **/
+     */
     private Node currentGameNode;
 
     /**
      * Node the game is attempting to run to.
-     **/
+     */
     private Node targetNodeToTest;
 
     /**
      * Node the game is initially expanding from.
-     **/
+     */
     private Node expansionNode;
     private Node lastNodeAdded;
 
     /**
      * Queued commands, IE QWOP key presses
-     **/
+     */
     public ActionQueue actionQueue = new ActionQueue();
 
     /**
      * Initial runner state.
-     **/
+     */
     private State initState = GameLoader.getInitialState();
 
     /**
      * Current status of this FSM
-     **/
+     */
     private Status currentStatus = Status.IDLE;
 
     /**
      * Number of physics timesteps simulated by this TreeWorker.
-     **/
+     */
     private long workerStepsSimulated = 0;
 
     /**
      * Number of games simulated by this TreeWorker.
-     **/
+     */
     private LongAdder workerGamesPlayed = new LongAdder();
 
     /**
      * Total timesteps simulated by all TreeWorkers.
-     **/
+     */
     private static LongAdder totalStepsSimulated = new LongAdder();
 
     /**
      * Total games played by all TreeWorkers.
-     **/
+     */
     private static LongAdder totalGamesPlayed = new LongAdder();
 
     /**
      * Milli start time of last game.
-     **/
+     */
     private long startMs;
 
     /**
      * Slightly filtered timesteps simulated per second.
-     **/
+     */
     private int tsPerSecond = 0;
 
     public String workerName;
@@ -167,21 +167,21 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     /**
      * Set which sampler is used. Defaults to Sampler_Random. Clones when reassigned.
-     **/
+     */
     public void setSampler(ISampler sampler) {
         this.sampler = sampler.getCopy();
     }
 
     /**
      * Set which saver to  use. Defaults to no saving, Sampler_Null. Clones when reassigned.
-     **/
+     */
     public void setSaver(IDataSaver saver) {
         this.saver = saver.getCopy();
     }
 
     /**
      * Finite state machine loop. Runnable.
-     **/
+     */
     @Override
     public void run() {
         while (workerRunning) {
@@ -382,7 +382,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     /**
      * Do not directly change the game status. Use this.
-     **/
+     */
     private void changeStatus(Status newStatus) {
         if (verbose) {
             System.out.println("Worker " + workerID + ": " + currentStatus + " --->  " + newStatus + "     game: " + workerGamesPlayed);
@@ -392,14 +392,14 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     /**
      * Begin a new game.
-     **/
+     */
     private void newGame() {
         game.makeNewWorld();
     }
 
     /**
      * Pop the next action off the queue and execute one timestep.
-     **/
+     */
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {
             Action action = actionQueue.peekThisAction();
@@ -416,49 +416,49 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     /**
      * Has the game gotten into a failed state (Either too much torso lean or body parts hitting the ground).
-     **/
+     */
     public boolean isGameFailed() {
         return game.getFailureStatus();
     }
 
     /**
      * QWOP initial condition. Good way to give the root node a state.
-     **/
+     */
     public State getInitialState() {
         return initState;
     }
 
     /**
      * Get the state of the runner.
-     **/
+     */
     public State getGameState() {
         return game.getCurrentState();
     }
 
     /**
      * How many physics timesteps has this particular worker simulated?
-     **/
+     */
     public long getWorkerStepsSimulated() {
         return workerStepsSimulated;
     }
 
     /**
      * Terminate this worker after it's done with it's current task.
-     **/
+     */
     public void terminateWorker() {
         flagForTermination.set(true);
     }
 
     /**
      * Pause what the worker is doing. Good for changing objectives and samplers, etc.
-     **/
+     */
     public void pauseWorker() {
         paused = true;
     }
 
     /**
      * Unpause what the worker is doing. Use once objectives have been set.
-     **/
+     */
     public void startWorker() {
         if (rootNode == null) throw new RuntimeException("Cannot start a worker while no root node is assigned.");
         paused = false;
@@ -466,49 +466,49 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     /**
      * Check if this runner is done or not.
-     **/
+     */
     public synchronized boolean isRunning() {
         return workerRunning;
     }
 
     /**
      * Get the running average of timesteps simulated per second of realtime.
-     **/
+     */
     public int getTsPerSecond() {
         return tsPerSecond;
     }
 
     /**
      * Increase the the count of total games in a hopefully thread-safe way.
-     **/
+     */
     private static void incrementTotalGameCount() {
         totalGamesPlayed.increment();
     }
 
     /**
      * Increase the number of timesteps simulated in a hopefully thread-safe way.
-     **/
+     */
     private static void addToTotalTimesteps(long timesteps) {
         totalStepsSimulated.add(timesteps);
     }
 
     /**
      * Get the number of games played by all workers, total.
-     **/
+     */
     public static long getTotalGamesPlayed() {
         return totalGamesPlayed.longValue();
     }
 
     /**
      * Get the number of games played by all workers, total.
-     **/
+     */
     public static long getTotalTimestepsSimulated() {
         return totalStepsSimulated.longValue();
     }
 
     /**
      * Color the node scaled by depth in the tree. Skip the brightness argument for default value.
-     **/
+     */
     public static Color getColorFromWorkerID(int ID) {
         float brightness = 0.85f;
         float colorOffset = 0f;
@@ -520,7 +520,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     /**
      * Debug drawer. If you just want to display a run, use one of the other PanelRunner implementations.
-     **/
+     */
     @Override
     public void paintComponent(Graphics g) {
         if (!active) return;

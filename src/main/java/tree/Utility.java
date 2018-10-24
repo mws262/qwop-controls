@@ -31,7 +31,7 @@ public class Utility {
 
     /**
      * Random number generator for new node selection
-     **/
+     */
     private final static Random rand = new Random();
 
     /**
@@ -96,7 +96,7 @@ public class Utility {
      * @param inPath  Full path and filename of the file to selectively send to log.
      * @param outPath Full path and filename of the log file.
      * @throws IOException File cannot be opened or written to.
-     **/
+     */
     public static void sectionToLogFile(String inPath, String outPath) throws IOException {
         boolean collecting = false;
 
@@ -153,7 +153,7 @@ public class Utility {
      * @param fileExtension String to place at the end of the file name as a file extension.
      * @return String for a timestamped file name.
      * @see Utility#getTimestamp()
-     **/
+     */
     public static String generateFileName(String prefix, String fileExtension) {
         Date date = new Date();
         SimpleDateFormat dateFormat =
@@ -163,7 +163,7 @@ public class Utility {
 
     /**
      * Get a timestamp in string form.
-     **/
+     */
     public static String getTimestamp() {
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");

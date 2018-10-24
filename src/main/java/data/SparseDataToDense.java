@@ -25,27 +25,27 @@ public class SparseDataToDense {
 
     /**
      * Personal copy of the game.
-     **/
+     */
     private final GameLoader game = new GameLoader();
 
     /**
      * Saver that this will use. Use a dense one most likely.
-     **/
+     */
     private final DataSaver_DenseTFRecord saver = new DataSaver_DenseTFRecord();
 
     /**
      * Saves and loads.
-     **/
+     */
     private final SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
 
     /**
      * Queued commands, IE QWOP key presses
-     **/
+     */
     private final ActionQueue actionQueue = new ActionQueue();
 
     /**
      * If we don't want to save data for the first or last actions in a sequence.
-     **/
+     */
     public int trimFirst = 0;
     public int trimLast = 0;
 
@@ -55,8 +55,8 @@ public class SparseDataToDense {
     }
 
     /**
-     * Resim and convert. saveBulk means that all will be combined into one file. Otherwise into many different.
-     **/
+     * Re-simulate and convert. saveBulk means that all will be combined into one file. Otherwise into many different.
+     */
     public void convert(List<File> files, boolean saveBulk) {
 
         if (saveBulk) {

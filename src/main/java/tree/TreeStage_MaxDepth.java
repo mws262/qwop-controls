@@ -17,23 +17,23 @@ public class TreeStage_MaxDepth extends TreeStage {
 
     /**
      * Max relative depth (i.e. specified relative to the given root node).
-     **/
+     */
     private int maxDepth;
 
     /**
      * Max effective depth (i.e. absolute depth relative to the entire tree root).
-     **/
+     */
     private int maxEffectiveDepth;
 
     /**
      * How many games were played previous to the initialization of this stage?
-     **/
+     */
     private long gamesPlayedAtStageStart;
 
     /**
      * Alternate termination condition: We played more than this number of games without getting to the desired max
      * depth.
-     **/
+     */
     public long terminateAfterXGames = 120000;
 
     public TreeStage_MaxDepth(int maxDepth, ISampler sampler, IDataSaver saver) {

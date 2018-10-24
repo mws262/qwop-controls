@@ -16,7 +16,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
 
     /**
      * All nodes will be compared to this one by square distance in state space.
-     **/
+     */
     private final Node nodeToCompareAllOthersTo;
 
     /**

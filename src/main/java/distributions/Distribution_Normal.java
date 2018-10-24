@@ -17,12 +17,12 @@ public class Distribution_Normal extends Distribution<Action> {
 
     /**
      * Mean of this Gaussian distribution.
-     **/
+     */
     private final float mean;
 
     /**
      * Standard deviation of this Gaussian distribution.
-     **/
+     */
     private final float standardDeviation;
 
     /**

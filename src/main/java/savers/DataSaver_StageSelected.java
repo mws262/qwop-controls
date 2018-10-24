@@ -21,34 +21,34 @@ public class DataSaver_StageSelected implements IDataSaver {
 
     /**
      * File prefix. Goes in front of date.
-     **/
+     */
     @SuppressWarnings("WeakerAccess")
     public String filePrefix = "qwop_stage_sparse_java";
 
     /**
      * Do not include dot before.
-     **/
+     */
     @SuppressWarnings("WeakerAccess")
     public String fileExtension = "SavableSingleGame";
 
     /**
      * If this string is not empty, use this as the filename instead.
-     **/
+     */
     public String overrideFilename = "";
 
     /**
      * Handles class serialization and writing to file.
-     **/
+     */
     private SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
 
     /**
      * Buffered games awaiting file write.
-     **/
+     */
     private ArrayList<SavableSingleGame> saveBuffer = new ArrayList<>();
 
     /**
      * File save location.
-     **/
+     */
     private String fileLocation = "./";
 
     @Override
@@ -90,8 +90,7 @@ public class DataSaver_StageSelected implements IDataSaver {
     }
 
     @Override
-    public void setSaveInterval(int numGames) {
-    } // Not applicable for once-per-stage saving.
+    public void setSaveInterval(int numGames) {} // Not applicable for once-per-stage saving.
 
     @Override
     public void setSavePath(String fileLoc) {
@@ -104,5 +103,4 @@ public class DataSaver_StageSelected implements IDataSaver {
         newSaver.setSavePath(fileLocation);
         return newSaver;
     }
-
 }

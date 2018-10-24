@@ -15,12 +15,12 @@ public class TreeStage_FixedGames extends TreeStage {
 
     /**
      * How many games were played before this stage started?
-     **/
+     */
     private long initialGamesPlayed;
 
     /**
      * Number of games this stage should play.
-     **/
+     */
     private long numGamesToPlay;
 
     public TreeStage_FixedGames(long numGamesToPlay, ISampler sampler, IDataSaver saver) {

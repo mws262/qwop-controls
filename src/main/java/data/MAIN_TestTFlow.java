@@ -12,10 +12,7 @@ import org.tensorflow.Session;
 
 public class MAIN_TestTFlow {
 
-
-    public MAIN_TestTFlow() {
-
-    }
+    public MAIN_TestTFlow() {}
 
     public static void main(String[] args) {
 

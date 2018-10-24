@@ -71,22 +71,22 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     /**
      * Keep track of whether we sent a pause request to the tree.
-     **/
+     */
     private boolean treePause = false; // TODO this doesn't work yet.
 
     /**
      * Currently tracked mouse x location in screen coordinates of the panel
-     **/
+     */
     private int mouseX;
 
     /**
      * Currently tracked mouse x location in screen coordinates of the panel
-     **/
+     */
     private int mouseY;
 
     /**
      * Is the mouse cursor inside the bounds of the tree panel?
-     **/
+     */
     private boolean mouseInside = false;
 
     /**
@@ -126,7 +126,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      *
      * @param listener {@link NodeSelectionListener} to add to the tree visualizer.
      */
-    public void addNodeSelectionListener(NodeSelectionListener listener) {
+    void addNodeSelectionListener(NodeSelectionListener listener) {
         if (nodeSelectionListeners.contains(listener))
             throw new IllegalArgumentException("The tree panel already has this listener assigned!");
         nodeSelectionListeners.add(listener);
@@ -264,7 +264,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     /**
      * Draw a text string using GLUT (for openGL rendering version of my stuff)
-     **/
+     */
     public void drawString(String toDraw, float x, float y, float z, GL2 gl, GLUT glut) {
         // Format numbers with Java.
         NumberFormat format = NumberFormat.getNumberInstance();
@@ -389,8 +389,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-    }
+    public void keyReleased(KeyEvent e) {}
 
     @Override
     public void mouseMoved(MouseEvent e) {
@@ -421,8 +420,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
-    }
+    public void mouseReleased(MouseEvent e) {}
 
     @Override
     public void mouseEntered(MouseEvent e) {
@@ -439,7 +437,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     /**
      * Called by key listener to change our focused node to the next adjacent one in the +1 or -1 direction
-     **/
+     */
     private void arrowSwitchNode(int direction, int depth) {
 
         if (selectedNode != null) { // Do nothing if no node is selected to begin with.
@@ -481,7 +479,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     /**
      * Take a node back a layer. Don't return to node past. Try to go back out by the deficit depth amount in the
      * +1 or -1 direction left/right
-     **/
+     */
     private boolean nextOver(Node current, ArrayList<Node> blacklist, int deficitDepth, int direction,
                              int prevIndexAbove, int numTimesTried) { // numTimesTried added to prevent some really
         // deep node for causing some really huge search through the whole tree. If we don't succeed in a handful

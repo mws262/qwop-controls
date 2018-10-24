@@ -17,29 +17,29 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
 
     /**
      * File prefix. Goes in front of date.
-     **/
+     */
     @SuppressWarnings("WeakerAccess")
     public String filePrefix = "qwop_dense_java";
 
     /**
      * Do not include dot before.
-     **/
+     */
     @SuppressWarnings("WeakerAccess")
     public String fileExtension = "SavableDenseData";
 
     /**
      * Games since last save.
-     **/
+     */
     private int saveCounter = 0;
 
     /**
      * Handles class serialization and writing to file.
-     **/
+     */
     private SavableFileIO<SavableDenseData> fileIO = new SavableFileIO<>();
 
     /**
      * Buffered games waiting to be written to file.
-     **/
+     */
     private ArrayList<SavableDenseData> saveBuffer = new ArrayList<>();
 
     @Override

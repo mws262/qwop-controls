@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -24,34 +23,34 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
-     **/
+     */
     private final ITransform transformer;
 
     /**
      * Filters to be applied to the node list.
-     **/
+     */
     private List<INodeFilter> nodeFilters = new ArrayList<>();
 
     /**
      * Downsampler to reduce the number of nodes we're trying to process and display
-     **/
+     */
     private NodeFilter_Downsample plotDownsampler = new NodeFilter_Downsample(5000);
     private NodeFilter_Downsample transformDownsampler = new NodeFilter_Downsample(2000);
 
     /**
      * How many plots to squeeze in one displayed row.
-     **/
+     */
     private int plotsPerView;
 
     /**
      * Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation.
-     **/
+     */
     private List<Node> nodesToTransform = new ArrayList<>();
     private List<float[]> transformedStates;
 
     /**
      * Which plot, in the grid of potential plots, is currently being plotted in the first spot on the left.
-     **/
+     */
     private int firstPlotRow = 0;
     private int firstPlotCol = 0;
 
@@ -123,7 +122,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
     /**
      * Add a filter to be applied to the list of nodes to be plotted.
-     **/
+     */
     public void addFilter(INodeFilter filter) {
         nodeFilters.add(filter);
     }
@@ -160,7 +159,6 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
                 break;
         }
         changePlots();
-
     }
 
     @Override

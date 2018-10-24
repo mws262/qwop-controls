@@ -15,12 +15,12 @@ public class NodeFilter_Downsample implements INodeFilter {
 
     /**
      * Given a list, the downsampler will keep a maximum of this number of nodes.
-     **/
+     */
     private final int maxNodesToKeep;
 
     /**
      * What strategy is used to downsample?
-     **/
+     */
     private final Strategy downsamplingStrategy;
 
     /**

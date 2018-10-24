@@ -2,7 +2,6 @@ package evaluators;
 
 import tree.Node;
 
-
 /**
  * Scores nodes by returning a constant value no matter what node is input. Mainly useful for testing.
  *

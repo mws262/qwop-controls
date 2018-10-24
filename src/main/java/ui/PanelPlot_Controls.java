@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -153,5 +152,4 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
     }
-
 }

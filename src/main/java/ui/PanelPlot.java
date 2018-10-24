@@ -50,7 +50,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
      */
     protected ChartPanel[] plotPanels;
 
-    /****/
+    /** **/
     protected Map<XYPlot, PlotDataset> plotsAndData = new LinkedHashMap<>(); // Retains order of insertion.
 
     /**

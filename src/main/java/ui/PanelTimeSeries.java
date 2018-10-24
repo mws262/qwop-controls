@@ -29,32 +29,32 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
     
     /**
      * Is this panel active and drawing?
-     **/
+     */
     private AtomicBoolean isActive = new AtomicBoolean();
 
     /**
      * How many plots total?
-     **/
+     */
     private final int numberOfPlots;
 
     /**
      * How many plots per row?
-     **/
+     */
     private final int plotsPerRow = 6;
 
     /**
      * Array of the numberOfPlots number of plots we make.
-     **/
+     */
     private ChartPanel[] plotPanels;
 
     /**
      * Background color for the plots.
-     **/
+     */
     private Color plotBackgroundColor = new Color(230, 230, 230);
 
     /**
      * Max in time series before old begin to be removed.
-     **/
+     */
     public int maxPtsPerPlot = 200;
 
     protected Map<XYPlot, TimeSeriesCollection> plotsAndData = new LinkedHashMap<>(); // Retains order of insertion.
@@ -98,12 +98,12 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 
     /**
      * Check if the bounds need expanding, tell JFreeChart to update, and set the bounds correctly
-     **/
+     */
     public abstract void update(Node plotNode);
 
     /**
      * Command all plots to apply updates.
-     **/
+     */
     public void applyUpdates() {
         Arrays.stream(plotPanels).forEach(panel -> panel.getChart().fireChartChanged());
     }
@@ -117,7 +117,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 
     /**
      * My default settings for each plot.
-     **/
+     */
     private JFreeChart createChart(XYDataset dataset, String name) {
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 name,
