@@ -162,7 +162,7 @@ public class Node {
 
     // TODO Make these drawing "filters" more clear, and make access to them uniform.
 
-    private static final boolean debugDrawNodeLocking = false; // Draw which nodes are locked by command from the
+    private static final boolean debugDrawNodeLocking = true; // Draw which nodes are locked by command from the
     // TreeWorkers.
 
     /**
@@ -386,7 +386,7 @@ public class Node {
     private synchronized void propagateLock() {
         // Lock this node unless we find evidence that we don't need to.
         for (Node child : children) {
-            if (!child.isLocked()) {
+            if (!child.isLocked() && !child.fullyExplored.get()) {
                 return; // In this case, we don't need to continue locking things further up the tree.
             }
         }

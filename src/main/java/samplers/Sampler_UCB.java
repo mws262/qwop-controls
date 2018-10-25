@@ -17,50 +17,52 @@ public class Sampler_UCB implements ISampler {
 
     /**
      * Evaluation function used to score single nodes after rollouts are done.
-     **/
+     */
     private IEvaluationFunction evaluationFunction;
 
     /**
      * Explore/exploit tradeoff parameter. Higher means more exploration. Lower means more exploitation.
-     **/
+     */
     public float c = 12f; // 7 during most long batch runs.
 
     /**
      * A multiplier to tone down or amp up exploration. Higher means more exploration.
-     **/
+     */
     public static float explorationMultiplier = 1f;
 
     /**
      * Are we done with the tree policy?
-     **/
+     */
     private boolean treePolicyDone = false;
+
     /**
      * Are we done with the expansion policy?
-     **/
+     */
     private boolean expansionPolicyDone = false;
+
     /**
      * Are we done with the rollout policy?
-     **/
+     */
     private boolean rolloutPolicyDone = false;
 
     /**
      * Individual workers can deadlock rarely. This causes overflow errors when the tree policy is recursively called.
      * Solution here is to wait a short period of time, doubling it until the worker is successful again. This happens
      * maybe 1 in 5k games or so near the beginning only, so it's not worth finding something more elegant.
-     **/
+     */
     private long deadlockDelayCurrent = 0;
 
     /**
      * Must provide an evaluationFunction to get a numeric score for nodes after a rollout.
-     **/
+     */
     public Sampler_UCB(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
-        c = 0.001f * explorationMultiplier * Random.nextFloat() * c + 0.0001f;
+        c = explorationMultiplier * Random.nextFloat() * c + 3f;
     }
 
     /**
      * Propagate the score and visit count back up the tree.
-     **/
+     */
     private void propagateScore(Node failureNode) {
         float score = evaluationFunction.getValue(failureNode);
 
@@ -76,15 +78,13 @@ public class Sampler_UCB implements ISampler {
 
     /**
      * Set a new evaluation function for this sampler. Should be hot-swappable at any point.
-     **/
+     */
     public void setEvaluationFunction(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
     }
 
     @Override
     public Node treePolicy(Node startNode) {
-        startNode.reserveExpansionRights(); // TODO make locks better
-
         if (!startNode.uncheckedActions.isEmpty()) { // We immediately expand
         	// if there's an untried action.
             return startNode;
@@ -96,16 +96,13 @@ public class Sampler_UCB implements ISampler {
         // Otherwise, we go through the existing tree picking the "best."
         for (Node child : startNode.getChildren()) {
 
-            if (!child.fullyExplored.get() && !child.isLocked()) {// && child.reserveExpansionRights()){
+            if (!child.fullyExplored.get() && !child.isLocked()) {
                 float val =
 						(float) (child.getValue() / child.visitCount.doubleValue() + c * (float) Math.sqrt(2. * Math.log(startNode.visitCount.doubleValue()) / child.visitCount.doubleValue()));
                 if (val > bestScoreSoFar) {
                     bestNodeSoFar = child;
                     bestScoreSoFar = val;
                 }
-//				}else {
-//					child.releaseExpansionRights();
-//				}
             }
         }
         if (bestNodeSoFar == null) { // This worker can't get a lock on any of the children it wants. Starting back
@@ -124,8 +121,6 @@ public class Sampler_UCB implements ISampler {
         } else {
             deadlockDelayCurrent = 0; // Reset delay if we're successful again.
         }
-
-        startNode.releaseExpansionRights();
         return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked action.;
     }
 
