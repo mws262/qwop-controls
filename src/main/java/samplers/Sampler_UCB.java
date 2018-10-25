@@ -83,7 +83,9 @@ public class Sampler_UCB implements ISampler {
 
     @Override
     public Node treePolicy(Node startNode) {
-        if (!startNode.uncheckedActions.isEmpty() && startNode.reserveExpansionRights()) { // We immediately expand
+        startNode.reserveExpansionRights(); // TODO make locks better
+
+        if (!startNode.uncheckedActions.isEmpty()) { // We immediately expand
         	// if there's an untried action.
             return startNode;
         }
@@ -123,6 +125,7 @@ public class Sampler_UCB implements ISampler {
             deadlockDelayCurrent = 0; // Reset delay if we're successful again.
         }
 
+        startNode.releaseExpansionRights();
         return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked action.;
     }
 

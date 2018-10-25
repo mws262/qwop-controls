@@ -43,7 +43,6 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     public PanelRunner_Animated() {
         game = new GameLoader();
-        //this.setMinimumSize(new Dimension(100,100));
     }
 
     /**

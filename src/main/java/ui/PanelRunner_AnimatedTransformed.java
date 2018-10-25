@@ -1,7 +1,8 @@
 package ui;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,13 +14,15 @@ import tree.Node;
 import transformations.Transform_Autoencoder;
 import transformations.Transform_PCA;
 
+import javax.swing.*;
+
 /**
  * For running animations of the QWOP runner side-by-side with compressed then decompressed versions of those states.
  * Useful as a way to gauge how well a reduced model is approximating the full state.
  *
  * @author matt
  */
-public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
+public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implements ActionListener {
 
     /**
      * Some {@link ITransform} require an initial calculation before working. This flag records whether this
@@ -36,6 +39,16 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
     private List<ITransform> encoders;
     private List<State> inStates = new ArrayList<>();
 
+    /**
+     * Checkbox for enabling the drawing of transformed runners.
+     */
+    private JCheckBox enableTransformedRunners;
+
+    /**
+     * Whether or not the extra transformed runners are being drawn right now.
+     */
+    private boolean drawTransformedRunners = false;
+
     public PanelRunner_AnimatedTransformed() {
         super();
         String modelDir = "src/main/resources/tflow_models/";
@@ -47,6 +60,21 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
         encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to12_6layer.pb", 12));
         encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to16_6layer.pb", 16));
         encoders.add(new Transform_PCA(new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}));
+
+
+        /* Add a checkbox for enabling or disabling the transformed runner display. */
+        BorderLayout borderLayout = new BorderLayout(); // Border layout for the whole panel to set alignment to the
+        // bottom of the panel.
+        setLayout(borderLayout);
+
+        enableTransformedRunners = new JCheckBox("Show transformed runners?");
+        FlowLayout checkLayout = new FlowLayout();
+        checkLayout.setAlignment(FlowLayout.LEFT); // Flow layout for the checkbox to get the left alignment.
+        enableTransformedRunners.setLayout(checkLayout);
+
+        enableTransformedRunners.setSelected(drawTransformedRunners);
+        enableTransformedRunners.addActionListener(this);
+        add(enableTransformedRunners, BorderLayout.PAGE_END);
     }
 
     @Override
@@ -67,7 +95,7 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (super.isActive() && game.isGameInitialized() && transformsInitialized) {
+        if (drawTransformedRunners && super.isActive() && game.isGameInitialized() && transformsInitialized) {
             State currState = game.getCurrentState();
             if (currState != null) inStates.add(currState);
             for (int i = 0; i < encoders.size(); i++) {
@@ -82,5 +110,12 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated {
     @Override
     public void deactivateTab() {
         super.deactivateTab();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource().equals(enableTransformedRunners)) {
+            drawTransformedRunners = enableTransformedRunners.isSelected();
+        }
     }
 }
