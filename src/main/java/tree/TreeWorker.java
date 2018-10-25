@@ -131,14 +131,19 @@ public class TreeWorker extends PanelRunner implements Runnable {
     private static LongAdder totalGamesPlayed = new LongAdder();
 
     /**
-     * Milli start time of last game.
+     * Last system time that we estimated timesteps per second at. This field is in milliseconds.
      */
-    private long startMs;
+    private long lastTsTimeMs;
+
+    /**
+     * Counter since last estimate of timesteps per second. This is done once per 1000 timesteps, so it's not so noisy.
+     */
+    private int tsPerSecondUpdateCounter = 0;
 
     /**
      * Slightly filtered timesteps simulated per second.
      */
-    private int tsPerSecond = 0;
+    private double tsPerSecond = 0;
 
     public String workerName;
     private final int workerID;
@@ -148,6 +153,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
         workerID = workerCount;
         workerName = "worker" + workerID;
         workerCount++;
+
+        lastTsTimeMs = System.currentTimeMillis();
 
         // Thread that this worker is running on. Will stay constant with this worker.
         Thread workerThread = new Thread(this);
@@ -206,9 +213,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
                     break;
                 case INITIALIZE:
-
-                    startMs = System.currentTimeMillis(); // Just for keeping statistics on worker running speed.
-
                     actionQueue.clearAll();
                     newGame(); // Create a new game world.
                     saver.reportGameInitialization(GameLoader.getInitialState());
@@ -355,10 +359,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     saver.reportGameEnding(currentGameNode);
                     long gameTs = game.getTimestepsSimulatedThisGame();
                     addToTotalTimesteps(gameTs);
-                    workerGamesPlayed.increment();
 
-                    tsPerSecond =
-                            (int) (0.9f * tsPerSecond + 0.1f * 1000f * gameTs / (System.currentTimeMillis() - startMs));
+                    workerGamesPlayed.increment();
                     incrementTotalGameCount();
 
                     expansionNode.releaseExpansionRights();
@@ -413,6 +415,16 @@ public class TreeWorker extends PanelRunner implements Runnable {
             game.stepGame(Q, W, O, P);
             saver.reportTimestep(action, game);
             workerStepsSimulated++;
+            tsPerSecondUpdateCounter++;
+
+            // Estimate timesteps simulated per second by this worker.
+            if (tsPerSecondUpdateCounter % 1000 == 0) { // Update every 1000 timesteps
+                long currTime = System.currentTimeMillis();
+                // 9/10 to old estimate, 1/10 to new estimate.
+                tsPerSecond = tsPerSecond * 0.9 + 0.1 * 1000. * 1000. / (currTime - lastTsTimeMs);
+                lastTsTimeMs = currTime;
+                tsPerSecondUpdateCounter = 0;
+            }
         }
     }
 
@@ -476,7 +488,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Get the running average of timesteps simulated per second of realtime.
      */
-    public int getTsPerSecond() {
+    public double getTsPerSecond() {
         return tsPerSecond;
     }
 
