@@ -138,7 +138,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
 
-        if (transformedStates.isEmpty()) return;
+        if (transformedStates == null || transformedStates.isEmpty()) return;
 
         switch (e.getKeyCode()) {
             case KeyEvent.VK_RIGHT:

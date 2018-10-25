@@ -34,7 +34,7 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
         while (true) {
             if (isActive()) {
                 for (int i = 0; i < workerList.size(); i++) {
-                    addToSeries(workerList.get(i).getTsPerSecond(), i, 0);
+                    addToSeries((float) workerList.get(i).getTsPerSecond(), i, 0);
                 }
                 applyUpdates();
             }

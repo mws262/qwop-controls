@@ -59,14 +59,14 @@ public class PanelRunner_Comparison extends PanelRunner {
         colors.add(Color.PINK);
         focusNodes.add(node);
 
-        /* Get the nearest ones, according to the provided metric. */
+        // Get the nearest ones, according to the provided metric.
         EvaluationFunction_SqDistFromOther evFun = new EvaluationFunction_SqDistFromOther(selectedNode);
 
         Map<Float, Node> evaluatedNodeList = new TreeMap<>();
         List<Node> allNodes = node.getRoot().getNodesBelow(new ArrayList<>(), true);
 
         for (Node n : allNodes) {
-            evaluatedNodeList.put(evFun.getValue(n), n);
+            evaluatedNodeList.put(-evFun.getValue(n), n); // Low is better, so reverse so the lowest are at the top.
         }
 
         Iterator<Node> orderedNodes = evaluatedNodeList.values().iterator();

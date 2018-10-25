@@ -188,11 +188,12 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     static void setPlotBoundsFromData(XYPlot plot, Float[] xData, Float[] yData) {
         float xLow = Arrays.stream(xData).min(Float::compare).orElse(-1f);
         float xHi = Arrays.stream(xData).max(Float::compare).orElse(1f);
-        float xRange = xHi - xLow;
+        float xRange = Float.max(xHi - xLow, 0.001f); // Just to keep the the range from ever being zero which can
+        // make the upper and lower bounds be equal, which throws an exception.
 
         float yLow = Arrays.stream(yData).min(Float::compare).orElse(-1f);
         float yHi = Arrays.stream(yData).max(Float::compare).orElse(1f);
-        float yRange = yHi - yLow;
+        float yRange = Float.max(yHi - yLow, 0.001f);
 
         // Add a small buffer beyond the range of data in either direction.
         plot.getDomainAxis().setRange(xLow - xRange/25f, xHi + xRange/25f);
