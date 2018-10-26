@@ -950,7 +950,7 @@ public class Node {
                         parent.uncheckedActions.size()); // Split into this many chunks.
                 int childNo = parent.children.indexOf(this);
 
-                sweepAngle = (float) Math.max((parent.sweepAngle / division) * (1 + getTreeDepth() * 0.05f), 0.02);
+                sweepAngle = (float) Math.max((parent.sweepAngle / division) * (1 + getTreeDepth() * 0.05f), 0.005);
 
                 // This is to straighten out branches that are curving off to one side due to asymmetric expansion.
                 // Acts like a controller to bring the angle
