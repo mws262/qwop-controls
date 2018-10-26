@@ -30,7 +30,7 @@ import tree.Utility;
 public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
 
     public MAIN_Search_RecoverFromSelected() {
-        super(new File(Utility.getExcutionPath() + "search.config_selected"));
+        super(new File("src/main/resources/config/" + "search.config_selected"));
     }
 
     public static void main(String[] args) {
@@ -57,9 +57,6 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
         // Stage 2 saving
         int trimStartBy;
         int trimEndBy = Integer.valueOf(properties.getProperty("trimEndBy", "4"));
-
-        ///////////////////////////////////////////////////////////
-
 
         // For extending and fixing saved games from MAIN_Controlled
         // See which files need to be covered.

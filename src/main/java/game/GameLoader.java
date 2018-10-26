@@ -960,6 +960,19 @@ public class GameLoader extends ClassLoader {
     }
 
     /**
+     * Step the game forward 1 timestep with the specified keys pressed.
+     *
+     * @param keys 4 element array for whether the Q,W,O,P keys are pressed (true -> pressed).
+     */
+    public void stepGame(boolean[] keys) {
+        if (keys.length != 4) {
+            throw new IndexOutOfBoundsException("Provided a key sequence to execute which did not contain 4 key " +
+                    "booleans.");
+        }
+        stepGame(keys[0], keys[1], keys[2], keys[3]);
+    }
+
+    /**
      * Convenience method for setting both joint speed and limits when different input keys are pressed.
      * @param joint Joint to change properties of.
      * @param speed Joint motor target speed.
@@ -1018,6 +1031,50 @@ public class GameLoader extends ClassLoader {
             e.printStackTrace();
         }
         return currentState;
+    }
+
+    /**
+     * Set the visible state of the runner (positions, velocities). Does not change the internal solver states, and
+     * can be a dangerous command to use. Determinism is out the window here.
+     * @param state
+     */
+    public void setState(State state) {
+        setBodyToStateVariable(rFootBody, state.rfoot);
+        setBodyToStateVariable(lFootBody, state.lfoot);
+
+        setBodyToStateVariable(rThighBody, state.rthigh);
+        setBodyToStateVariable(lThighBody, state.lthigh);
+
+        setBodyToStateVariable(rCalfBody, state.rcalf);
+        setBodyToStateVariable(lCalfBody, state.lcalf);
+
+        setBodyToStateVariable(rUArmBody, state.ruarm);
+        setBodyToStateVariable(lUArmBody, state.luarm);
+
+        setBodyToStateVariable(rLArmBody, state.rlarm);
+        setBodyToStateVariable(lLArmBody, state.llarm);
+
+        setBodyToStateVariable(headBody, state.head);
+        setBodyToStateVariable(torsoBody, state.body);
+    }
+
+    /**
+     * Set an individual body to a specified {@link StateVariable}. This sets both positions and velocities.
+     *
+     * @param body Body to set the state of.
+     * @param stateVariable Full state to assign to that body.
+     */
+    private void setBodyToStateVariable(Object body, StateVariable stateVariable) {
+        try {
+            Object bodyXform = getXForm(stateVariable);
+            body.getClass().getMethod("setXForm", _Vec2, float.class).invoke(body, makeVec2(stateVariable.getX(),
+                    stateVariable.getY()), stateVariable.getTh());
+            body.getClass().getMethod("setLinearVelocity", _Vec2).invoke(body, makeVec2(stateVariable.getDx(),
+                    stateVariable.getDy()));
+            body.getClass().getMethod("setAngularVelocity", float.class).invoke(body, stateVariable.getDth());
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

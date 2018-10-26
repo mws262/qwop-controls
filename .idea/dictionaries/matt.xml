@@ -5,6 +5,7 @@
       <w>calibri</w>
       <w>downsampler</w>
       <w>downsampling</w>
+      <w>hyperthreading</w>
       <w>keypresses</w>
       <w>lcalf</w>
       <w>lfoot</w>
@@ -13,6 +14,7 @@
       <w>luarm</w>
       <w>qwop</w>
       <w>rcalf</w>
+      <w>realtime</w>
       <w>rfoot</w>
       <w>rlarm</w>
       <w>rollout</w>

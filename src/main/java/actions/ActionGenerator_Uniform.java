@@ -11,6 +11,8 @@ import java.util.stream.IntStream;
 /**
  * Gives the same choice of actions at every node, with the exception that a new Node must not be given the same key
  * combination options as its parent (i.e. two nodes in a row shouldn't be QP).
+ *
+ * @author matt
  */
 public class ActionGenerator_Uniform implements IActionGenerator {
 
@@ -29,11 +31,6 @@ public class ActionGenerator_Uniform implements IActionGenerator {
                 {false, false, false, true}};
         Distribution<Action> distribution = new Distribution_Equal();
         allActionSets = new ArrayList<>();
-
-//        for (int i = 0; i < keyRange.length; i++) {
-//            allActionSets.add(ActionSet.makeActionSet(durationRange, keyRange[i], distribution));
-//        }
-
         allActionSets.add(ActionSet.makeActionSet(IntStream.range(5, 25).toArray(), keyRange[0], distribution));//ffff*
         allActionSets.add(ActionSet.makeActionSet(IntStream.range(5, 25).toArray(), keyRange[1], distribution));//tfff
         allActionSets.add(ActionSet.makeActionSet(IntStream.range(5, 25).toArray(), keyRange[2], distribution));//tftf
@@ -48,15 +45,12 @@ public class ActionGenerator_Uniform implements IActionGenerator {
     @Override
     public ActionSet getPotentialChildActionSet(Node parentNode) {
         ActionSet as = new ActionSet(new Distribution_Equal());
-        for (int i = 0; i < allActionSets.size(); i++) {
-            if (parentNode.getTreeDepth() == 0 || !allActionSets.get(i).contains(parentNode.getAction())) { // Get all
-                // except the set
-                // that the parent
-                // had.
-                as.addAll(allActionSets.get(i));
+        for (ActionSet allActionSet : allActionSets) {
+            if (parentNode.getTreeDepth() == 0 || !allActionSet.contains(parentNode.getAction())) { // Get all
+                // except the set that the parent had.
+                as.addAll(allActionSet);
             }
         }
-
         return as;
     }
 }
