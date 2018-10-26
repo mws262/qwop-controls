@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
-import actions.ActionGenerator_Uniform;
 import tree.TreeStage;
 import actions.Action;
 import actions.ActionGenerator_FixedSequence;
@@ -38,48 +37,49 @@ import ui.*;
 
 public abstract class MAIN_Search_Template {
 
-    //	/** Location of the configuration file for this search. **/
-    //	protected File configFile;
-
     /**
      * Settings loaded from the config file. Should AT LEAST contain:
      * boolean headless
      * string saveLocation
      * workersFractionOfCores
-     **/
+     */
     protected Properties properties;
 
     /**
      * Whether or not to run without the UI.
-     **/
+     */
     protected final boolean headless;
 
     protected final IUserInterface ui;
 
     /**
      * Where should data be saved?
-     **/
+     */
     private File saveLoc;
 
     /**
      * Information put in a running log to be saved at shutdown.
-     **/
+     */
     protected String endLog = "";
 
     /**
-     * Pool of treeworkers to be shared for building the tree.
-     **/
+     * Pool of {@link TreeWorker} to be shared for building the tree.
+     */
     private final GenericObjectPool<TreeWorker> workerPool;
 
     /**
      * Keep a list of the checked out workers so they can be added to the monitor panel if it exists.
-     **/
+     */
     private List<TreeWorker> activeWorkers = new ArrayList<>();
+
+    /**
+     * A tabbed panel for displaying how many games per second each worker is running.
+     */
     private PanelTimeSeries_WorkerLoad workerMonitorPanel;
 
     /**
      * Maximum number of workers any stage can recruit.
-     **/
+     */
     private final int maxWorkers;
 
     public MAIN_Search_Template(File configFile) {
@@ -124,7 +124,6 @@ public abstract class MAIN_Search_Template {
             e1.printStackTrace();
         }
 
-
         // Write machine details to log.
         appendSummaryLog(logPrefix + "OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version"));
         String hostname = "Unknown";
@@ -155,7 +154,7 @@ public abstract class MAIN_Search_Template {
 
     /**
      * Borrow a {@link TreeWorker} from the pool. Be sure to return it later!
-     **/
+     */
     private TreeWorker borrowWorker() {
         TreeWorker worker = null;
         try {
@@ -172,13 +171,23 @@ public abstract class MAIN_Search_Template {
 
     /**
      * Give the worker back to the pool to be reused later.
-     **/
+     */
     private void returnWorker(TreeWorker finishedWorker) {
         workerPool.returnObject(finishedWorker);
         activeWorkers.remove(finishedWorker);
         if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
     }
 
+    /**
+     *  Setup and perform a {@link TreeStage_MaxDepth} search. Tries to get at least one branch to the specified
+     *  depth. Uses {@link Sampler_UCB} with {@link EvaluationFunction_Distance}.
+     *
+     * @param rootNode Tree root node.
+     * @param saveName Name of the file to save stage data to. This is sparse.
+     * @param desiredDepth Depth to get a branch to.
+     * @param fractionOfWorkers 0 to 1, proportion of workers to allot to this stage.
+     * @param maxGames Maximum number of games to play before giving up.
+     */
     protected void doBasicMaxDepthStage(Node rootNode, String saveName, int desiredDepth, float fractionOfWorkers,
                                         int maxGames) {
         if (fractionOfWorkers > 1)
@@ -223,6 +232,16 @@ public abstract class MAIN_Search_Template {
         }
     }
 
+    /**
+     * Setup and perform a {@link TreeStage_MinDepth} search. Tries to get ALL branches to a minimum depth (if
+     * possible). Uses {@link Sampler_FixedDepth}
+     *
+     * @param rootNode Tree root node.
+     * @param saveName Name of the file to save stage data to. This is sparse.
+     * @param minDepth Depth to get all branches to, if failure doesn't happen first.
+     * @param fractionOfWorkers 0 to 1, proportion of workers to allot to this stage.
+     * @param maxGames Maximum number of games to play before giving up.
+     */
     protected void doBasicMinDepthStage(Node rootNode, String saveName, int minDepth, float fractionOfWorkers,
 										int maxGames) {
         if (fractionOfWorkers > 1)
@@ -242,8 +261,7 @@ public abstract class MAIN_Search_Template {
         saver.overrideFilename = saveName;
         saver.setSavePath(saveLoc.getPath() + "/");
 
-        TreeStage searchMin = new TreeStage_MinDepth(minDepth, new Sampler_FixedDepth(minDepth), saver); // Two
-		// actions to get weird. new Sampler_FixedDepth(deviationDepth)
+        TreeStage searchMin = new TreeStage_MinDepth(minDepth, new Sampler_FixedDepth(minDepth), saver);
 
         // Grab some workers from the pool.
         List<TreeWorker> tws2 = new ArrayList<>();
@@ -268,8 +286,9 @@ public abstract class MAIN_Search_Template {
     }
 
     /**
-     * This is the heavyweight, full UI. Includes some TFlow components which are troublesome on a few computers.
-     **/
+     * This is the heavyweight, full UI, with tree visualization and a bunch of data visualization tabs. Includes some
+     * TFlow components which are troublesome on some computers.
+     */
     private UI_Full setupFullUI() {
         UI_Full fullUI = new UI_Full();
 
@@ -312,7 +331,7 @@ public abstract class MAIN_Search_Template {
 
     /**
      * Add something to the log which will be finalized when the program is closed.
-     **/
+     */
     public void appendSummaryLog(String addedLine) {
         endLog += addedLine + "\n";
         System.out.println(addedLine);
@@ -320,7 +339,7 @@ public abstract class MAIN_Search_Template {
 
     /**
      * Return the save location file.
-     **/
+     */
     protected File getSaveLocation() {
         return saveLoc;
     }
@@ -329,100 +348,69 @@ public abstract class MAIN_Search_Template {
      * Assign the correct generator of actions based on the baseline options and exceptions.
      * Will assign a broader set of options for "recovery" at the specified starting depth.
      * Pass -1 to disable this.
-     **/
+     */
     protected void assignAllowableActions(int recoveryExceptionStart) {
         /* Space of allowed actions to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
         /* Repeated action 1 -- no keys pressed. */
-        Integer[] durations1 = IntStream.range(1, 25).boxed().toArray(Integer[]::new);
-        boolean[][] keySet1 = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
-				durations1.length);
-
-        //Distribution<Action> dist1 = new Distribution_Equal();
         Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionSet actionSet1 = ActionSet.makeActionSet(durations1, keySet1, dist1);
+        ActionSet actionSet1 = ActionSet.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
+                false}, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
-        Integer[] durations2 = IntStream.range(20, 60).boxed().toArray(Integer[]::new);
-        boolean[][] keySet2 = ActionSet.replicateKeyString(new boolean[]{false, true, true, false}, durations2.length);
-
-        //		Distribution<Action> dist2 = new Distribution_Equal();
         Distribution<Action> dist2 = new Distribution_Normal(39f, 3f);
-        ActionSet actionSet2 = ActionSet.makeActionSet(durations2, keySet2, dist2);
+        ActionSet actionSet2 = ActionSet.makeActionSet(IntStream.range(20, 60).toArray(), new boolean[]{false, true, true,
+                false}, dist2);
 
         /* Repeated action 3 -- W-O pressed */
-        Integer[] durations3 = IntStream.range(1, 25).boxed().toArray(Integer[]::new);
-        boolean[][] keySet3 = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
-				durations3.length);
-
-        //		Distribution<Action> dist3 = new Distribution_Equal();
         Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionSet actionSet3 = ActionSet.makeActionSet(durations3, keySet3, dist3);
+        ActionSet actionSet3 = ActionSet.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
+                false}, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
-        Integer[] durations4 = IntStream.range(20, 60).boxed().toArray(Integer[]::new);
-        boolean[][] keySet4 = ActionSet.replicateKeyString(new boolean[]{true, false, false, true}, durations4.length);
-
         Distribution<Action> dist4 = new Distribution_Normal(39f, 3f);
-        ActionSet actionSet4 = ActionSet.makeActionSet(durations4, keySet4, dist4);
+        ActionSet actionSet4 = ActionSet.makeActionSet(IntStream.range(20, 60).toArray(), new boolean[]{true, false, false,
+                true}, dist4);
+
         ActionSet[] repeatedActions = new ActionSet[]{actionSet1, actionSet2, actionSet3, actionSet4};
 
         /////// Action Exceptions for starting up. ////////
         /* Repeated action exceptions 1 -- no keys pressed. */
-        Integer[] durationsE1 = IntStream.range(1, 25).boxed().toArray(Integer[]::new);
-        boolean[][] keySetE1 = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
-				durationsE1.length);
-
         Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
-        ActionSet actionSetE1 = ActionSet.makeActionSet(durationsE1, keySetE1, distE1);
+        ActionSet actionSetE1 = ActionSet.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
+                false}, distE1);
 
         /*  Repeated action exceptions 2 -- W-O pressed */
-        Integer[] durationsE2 = IntStream.range(20, 50).boxed().toArray(Integer[]::new);
-        boolean[][] keySetE2 = ActionSet.replicateKeyString(new boolean[]{false, true, true, false},
-				durationsE2.length);
-
         Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionSet actionSetE2 = ActionSet.makeActionSet(durationsE2, keySetE2, distE2);
+        ActionSet actionSetE2 = ActionSet.makeActionSet(IntStream.range(20, 50).toArray(), new boolean[]{false, true, true,
+                false}, distE2);
 
         /*  Repeated action exceptions 3 -- no keys pressed. */
-        Integer[] durationsE3 = IntStream.range(10, 45).boxed().toArray(Integer[]::new);
-        boolean[][] keySetE3 = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
-				durationsE3.length);
-
         Distribution<Action> distE3 = new Distribution_Normal(24f, 2f);
-        ActionSet actionSetE3 = ActionSet.makeActionSet(durationsE3, keySetE3, distE3);
+        ActionSet actionSetE3 = ActionSet.makeActionSet(IntStream.range(10, 45).toArray(), new boolean[]{false, false, false,
+                false}, distE3);
 
         /*  Repeated action exceptions 4 -- Q-P pressed */
-        Integer[] durationsE4 = IntStream.range(25, 65).boxed().toArray(Integer[]::new);
-        boolean[][] keySetE4 = ActionSet.replicateKeyString(new boolean[]{true, false, false, true},
-				durationsE4.length);
-
         Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
-        ActionSet actionSetE4 = ActionSet.makeActionSet(durationsE4, keySetE4, distE4);
+        ActionSet actionSetE4 = ActionSet.makeActionSet(IntStream.range(25, 65).toArray(), new boolean[]{true, false, false,
+                true}, distE4);
 
         /////// Action Exceptions for recovery. ////////
         /*  Repeated action 1 and 3 -- Nothing pressed */
-        Integer[] durationsFalseFalse = IntStream.range(1, 50).boxed().toArray(Integer[]::new);
-        boolean[][] keySetFalseFalse = ActionSet.replicateKeyString(new boolean[]{false, false, false, false},
-				durationsFalseFalse.length);
-
         Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
-        ActionSet actionSetFalseFalse = ActionSet.makeActionSet(durationsFalseFalse, keySetFalseFalse, distFalseFalse);
+        ActionSet actionSetFalseFalse = ActionSet.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{false, false,
+                false, false}, distFalseFalse);
 
         /*  Repeated action 2 -- W-O pressed */
-        Integer[] durationsWO = IntStream.range(1, 70).boxed().toArray(Integer[]::new);
-        boolean[][] keySetWO = ActionSet.replicateKeyString(new boolean[]{false, true, true, false}, durationsWO.length);
-
         Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
-        ActionSet actionSetWO = ActionSet.makeActionSet(durationsWO, keySetWO, distWO);
+        ActionSet actionSetWO = ActionSet.makeActionSet(IntStream.range(1, 70).toArray(), new boolean[]{false, true, true,
+                false}, distWO);
 
         /*  Repeated action 4 -- Q-P pressed */
-        Integer[] durationsQP = IntStream.range(1, 70).boxed().toArray(Integer[]::new);
-        boolean[][] keySetQP = ActionSet.replicateKeyString(new boolean[]{true, false, false, true}, durationsQP.length);
-
         Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
-        ActionSet actionSetQP = ActionSet.makeActionSet(durationsQP, keySetQP, distQP);
+        ActionSet actionSetQP = ActionSet.makeActionSet(IntStream.range(1, 70).toArray(), new boolean[]{true, false, false,
+                true}, distQP);
 
         Map<Integer, ActionSet> actionExceptions = new HashMap<>();
         actionExceptions.put(0, actionSetE1);
@@ -453,6 +441,6 @@ public abstract class MAIN_Search_Template {
         }
 
         // Define the specific way that these allowed actions are assigned as potential options for nodes.
-        Node.potentialActionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);//new ActionGenerator_Uniform(); //
+        Node.potentialActionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 }

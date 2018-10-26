@@ -55,6 +55,7 @@ public class Sampler_UCB implements ISampler {
      * Current number of rollout actions executed during this iteration.
      */
     private int currentRolloutActions = 0;
+
     /**
      * Individual workers can deadlock rarely. This causes overflow errors when the tree policy is recursively called.
      * Solution here is to wait a short period of time, doubling it until the worker is successful again. This happens
@@ -67,7 +68,7 @@ public class Sampler_UCB implements ISampler {
      */
     public Sampler_UCB(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
-        c = 1f*explorationMultiplier * Random.nextFloat() * c + 0.1f;
+        c = 5f*explorationMultiplier * Random.nextFloat() * c + 15f;
     }
 
     /**

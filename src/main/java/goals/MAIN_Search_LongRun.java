@@ -76,7 +76,6 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
             }
         }
 
-
         // Convert the sections of the runs we care about to dense data by re-simulating.
         if (doStage2) {
             List<File> filesToConvert = new ArrayList<>();

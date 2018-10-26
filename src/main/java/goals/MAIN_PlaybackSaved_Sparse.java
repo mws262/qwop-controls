@@ -12,7 +12,6 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameLoader;
 import tree.Node;
-import tree.Utility;
 import ui.PanelRunner_Animated;
 
 /**
@@ -37,7 +36,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
     public static int windowHeight = 1000;
 
 
-    private File saveLoc = new File(Utility.getExcutionPath() + "saved_data/5_11_18");
+    private File saveLoc = new File("src/main/resources/config/" + "saved_data/5_11_18");
 
     private List<Node> leafNodes = new ArrayList<>();
 
