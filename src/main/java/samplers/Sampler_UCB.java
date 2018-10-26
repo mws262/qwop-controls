@@ -46,6 +46,16 @@ public class Sampler_UCB implements ISampler {
     private boolean rolloutPolicyDone = false;
 
     /**
+     * Maximum number of rollout actions to take. Should rarely be necessary, unless tons of short duration actions
+     * are available and the runner just starts rocking back and forth forever.
+     */
+    private final int maxRolloutActions = 100;
+
+    /**
+     * Current number of rollout actions executed during this iteration.
+     */
+    private int currentRolloutActions = 0;
+    /**
      * Individual workers can deadlock rarely. This causes overflow errors when the tree policy is recursively called.
      * Solution here is to wait a short period of time, doubling it until the worker is successful again. This happens
      * maybe 1 in 5k games or so near the beginning only, so it's not worth finding something more elegant.
@@ -57,7 +67,7 @@ public class Sampler_UCB implements ISampler {
      */
     public Sampler_UCB(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
-        c = explorationMultiplier * Random.nextFloat() * c + 3f;
+        c = 1f*explorationMultiplier * Random.nextFloat() * c + 0.1f;
     }
 
     /**
@@ -85,7 +95,7 @@ public class Sampler_UCB implements ISampler {
 
     @Override
     public Node treePolicy(Node startNode) {
-        if (!startNode.uncheckedActions.isEmpty()) { // We immediately expand
+        if (!startNode.uncheckedActions.isEmpty() && startNode.reserveExpansionRights()) { // We immediately expand
         	// if there's an untried action.
             return startNode;
         }
@@ -166,7 +176,6 @@ public class Sampler_UCB implements ISampler {
             throw new RuntimeException("Rollout policy received a starting node which corresponds to an already failed state.");
         // Do shit without adding nodes to the rest of the tree hierarchy.
         Action childAction = startNode.uncheckedActions.get(Utility.randInt(0, startNode.uncheckedActions.size() - 1));
-
         return new Node(startNode, childAction, false);
     }
 
@@ -174,8 +183,11 @@ public class Sampler_UCB implements ISampler {
     public void rolloutPolicyActionDone(Node currentNode) {
         expansionPolicyDone = false;
 
-        if (currentNode.isFailed()) {
+        currentRolloutActions++;
+
+        if (currentNode.isFailed() || currentRolloutActions > maxRolloutActions) {
             rolloutPolicyDone = true;
+            currentRolloutActions = 0;
             propagateScore(currentNode);
         } else {
             rolloutPolicyDone = false;

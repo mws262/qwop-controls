@@ -28,7 +28,7 @@ public class ActionSet extends ArrayList<Action> {
      * @param samplingDist Distribution that samples of the action set will be pulled when calling
      * {@link ActionSet#sampleDistribution}.
      */
-    private ActionSet(Distribution<Action> samplingDist) {
+    public ActionSet(Distribution<Action> samplingDist) {
         this.samplingDist = samplingDist;
     }
 
@@ -79,6 +79,38 @@ public class ActionSet extends ArrayList<Action> {
         ActionSet set = new ActionSet(dist);
         for (int i = 0; i < durations.length; i++) {
             set.add(new Action(durations[i], keys[i]));
+        }
+        return set;
+    }
+
+    public static ActionSet makeActionSet(int[] durations, boolean[][] keys, Distribution<Action> dist) {
+        ActionSet set = new ActionSet(dist);
+        for (int i = 0; i < durations.length; i++) {
+            set.add(new Action(durations[i], keys[i]));
+        }
+        return set;
+    }
+
+    /**
+     * Same but for one set of keys and multiple durations.
+     *
+     * @param durations
+     * @param keys
+     * @param dist
+     * @return
+     */
+    @Deprecated
+    public static ActionSet makeActionSet(Integer[] durations, boolean[] keys, Distribution<Action> dist) {
+        ActionSet set = new ActionSet(dist);
+        for (Integer duration : durations) {
+            set.add(new Action(duration, keys));
+        }
+        return set;
+    }
+    public static ActionSet makeActionSet(int[] durations, boolean[] keys, Distribution<Action> dist) {
+        ActionSet set = new ActionSet(dist);
+        for (Integer duration : durations) {
+            set.add(new Action(duration, keys));
         }
         return set;
     }

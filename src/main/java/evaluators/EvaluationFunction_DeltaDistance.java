@@ -3,18 +3,21 @@ package evaluators;
 import tree.Node;
 
 /**
- * Evaluation of a node based strictly on torso horizontal position.
+ * Evaluation of a node based distance traveled since the last node.
  *
  * @author Matt
  */
-public class EvaluationFunction_Distance implements IEvaluationFunction {
+public class EvaluationFunction_DeltaDistance implements IEvaluationFunction {
 
     @Override
     public float getValue(Node nodeToEvaluate) {
         if (nodeToEvaluate.isStateUnassigned())
             throw new NullPointerException("Trying to evaluate a node based on state information which has not yet " +
                     "been assigned in that node.");
-        return -nodeToEvaluate.getState().body.getX();
+        if (nodeToEvaluate.getTreeDepth() > 0)
+            return nodeToEvaluate.getState().body.getDx() - nodeToEvaluate.getParent().getState().body.getX();
+        else
+            return 0;
     }
 
     @Override
@@ -23,7 +26,7 @@ public class EvaluationFunction_Distance implements IEvaluationFunction {
     }
 
     @Override
-    public EvaluationFunction_Distance getCopy() {
-        return new EvaluationFunction_Distance();
+    public EvaluationFunction_DeltaDistance getCopy() {
+        return new EvaluationFunction_DeltaDistance();
     }
 }
