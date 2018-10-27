@@ -1,5 +1,7 @@
-##How much does the warm-start matter?
-####Background
+## How much does the warm-start matter?
+
+#### Background
+
 QWOP's physics engine, Box2D (or [JBox2D](http://www.jbox2d.org/) for my Java version), enforces all constraints with
  impulses. At every timestep, these impulses apply gravity, keep the joints from drifting apart, and keep the feet from 
  sinking through the ground. Box2D has to solve for impulses which simultaneously satisfy all these constraints.
