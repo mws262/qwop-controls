@@ -16,7 +16,7 @@ import java.awt.*;
  *
  * @author matt
  */
-public class MAIN_CompareWarmStartToColdSingle extends JFrame {
+public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBase {
 
     /**
      * Decide at which action to introduce a cold-started runner.
@@ -28,55 +28,7 @@ public class MAIN_CompareWarmStartToColdSingle extends JFrame {
     }
     public void run() {
         // Ran MAIN_Search_LongRun to get these.
-        ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addAction(new Action(5, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(38, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(35, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(45, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(6, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(45, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(6, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(20, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(9, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(38, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(17, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(30, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(18, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(31, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(19, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(37, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(10, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(46, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(10, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(20, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(17, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(25, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(20, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(20, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(12, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(31, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(12, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(22, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(16, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(21, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(20, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(20, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(15, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(24, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(21, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(46, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(3, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(46, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(17, new boolean[]{false, false, false, false}));
+        ActionQueue actionQueue = getSampleActions();
 
         GameLoader gameFullRun = new GameLoader(); // This game will run all the commands, start to finish.
         GameLoader gameColdStart = new GameLoader(); // This will start at some point in the middle of the sequence,
@@ -89,16 +41,8 @@ public class MAIN_CompareWarmStartToColdSingle extends JFrame {
         State coldStartState = gameFullRun.getCurrentState();
         gameColdStart.setState(coldStartState);
 
-        // Vis setup.
-        PanelRunner_MultiState panel = new PanelRunner_MultiState();
-        panel.activateTab();
-        getContentPane().add(panel);
-        setPreferredSize(new Dimension(1000, 400));
-        pack();
-        setVisible(true);
-
-        panel.setMainState(gameFullRun.getCurrentState());
-        panel.addSecondaryState(gameColdStart.getCurrentState(), Color.RED);
+        runnerPanel.setMainState(gameFullRun.getCurrentState());
+        runnerPanel.addSecondaryState(gameColdStart.getCurrentState(), Color.RED);
         repaint();
         try { // Pause for a moment so the user can see that the initial positions of the runners match.
             Thread.sleep(1500);
@@ -113,9 +57,9 @@ public class MAIN_CompareWarmStartToColdSingle extends JFrame {
             gameFullRun.stepGame(nextCommand);
             gameColdStart.stepGame(nextCommand);
 
-            panel.clearSecondaryStates();
-            panel.setMainState(gameFullRun.getCurrentState());
-            panel.addSecondaryState(gameColdStart.getCurrentState(), Color.RED);
+            runnerPanel.clearSecondaryStates();
+            runnerPanel.setMainState(gameFullRun.getCurrentState());
+            runnerPanel.addSecondaryState(gameColdStart.getCurrentState(), Color.RED);
 
             repaint();
             try {

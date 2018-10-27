@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
+import evaluators.EvaluationFunction_DeltaDistance;
 import tree.TreeStage;
 import actions.Action;
 import actions.ActionGenerator_FixedSequence;
@@ -206,7 +207,7 @@ public abstract class MAIN_Search_Template {
         saver.overrideFilename = saveName;
         saver.setSavePath(saveLoc.getPath() + "/");
 
-        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Distance());
+        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_DeltaDistance());
         TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, ucbSampler, saver); // Depth to get to
 		// sorta steady state. was
         searchMax.terminateAfterXGames = maxGames; // Will terminate after this many games played regardless of

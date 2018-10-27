@@ -51,6 +51,16 @@ As a result, if two QWOP runners look like they are in the same state and we app
 6. Investigate when the sensitivity is highest/lowest. When, throughout the gait, are the warm-start's effects most 
 significant?
 
+##### Faking warm starts
+
+There is a middle ground between a completely cold-start and a warm-start which is the result of an entire history of
+ actions. We can fake a warm start by simulating a cold-start runner in some generic way as an approximation of a 
+ full warm start. I can see two approaches:
+ 1. (easier) Start a new runner. Simulate it with no control actions for 10-100 timesteps. Use this warm-start.
+ 2. (harder) Start a new runner. Use a previously-generated run to warm-start the runner. Stop the warm-start 
+ simulation in the same general part of the gait cycle, or the same contact configuration,  as in the place we want to 
+ apply this simulation.
+
 #### Results
 TBD. Seems like divergence happens really quickly, maybe 
 1.5 - 3 steps.
