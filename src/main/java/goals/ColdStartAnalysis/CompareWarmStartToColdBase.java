@@ -2,21 +2,22 @@ package goals.ColdStartAnalysis;
 
 import actions.Action;
 import actions.ActionQueue;
+import game.GameLoader;
 import ui.PanelRunner_MultiState;
 
 import javax.swing.*;
 import java.awt.*;
 
-public abstract class MAIN_CompareWarmStartToColdBase extends JFrame {
+abstract class CompareWarmStartToColdBase extends JFrame {
 
     PanelRunner_MultiState runnerPanel;
 
 
-    public MAIN_CompareWarmStartToColdBase() {
+    CompareWarmStartToColdBase() {
         // Vis setup.
         runnerPanel = new PanelRunner_MultiState();
-        panel.activateTab();
-        getContentPane().add(panel);
+        runnerPanel.activateTab();
+        getContentPane().add(runnerPanel);
         setPreferredSize(new Dimension(1000, 400));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
@@ -74,5 +75,20 @@ public abstract class MAIN_CompareWarmStartToColdBase extends JFrame {
         actionQueue.addAction(new Action(3, new boolean[]{false, false, false, false}));
         actionQueue.addAction(new Action(46, new boolean[]{false, true, true, false}));
         actionQueue.addAction(new Action(17, new boolean[]{false, false, false, false}));
+        return actionQueue;
+    }
+
+    /**
+     * Just simulate a runner from rest with no input commands for the given number of timesteps. This gives the
+     * solvers SOME kind of warm start, even if it doesn't directly apply to other states.
+     * @param timesteps Number of timesteps to 'warmstart' the solvers.
+     * @return A QWOP game which has been run for a specified number of timesteps with no control inputs.
+     */
+    GameLoader getFakedWarmStart(int timesteps) {
+        GameLoader game = new GameLoader();
+        for (int i = 0; i < timesteps; i++) {
+            game.stepGame(false, false, false, false);
+        }
+        return game;
     }
 }

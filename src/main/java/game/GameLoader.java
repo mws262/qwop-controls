@@ -703,36 +703,34 @@ public class GameLoader extends ClassLoader {
                     , true, false);
             lElbowJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lElbowJDef);
 
-            world.getClass().getMethod("setContactListener", _ContactListener).invoke(world, contactListenerProxy);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        // This proxy nonsense solves the problem that I need a class to implement _ContactListener, the version I
-        // loaded with this custom class loader.
-        // The dynamic proxy lets this implement a class that is defined at runtime.
-        contactListenerProxy = Proxy.newProxyInstance(_ContactListener.getClassLoader(), new Class[]{_ContactListener},
-                (proxy, method, args) -> {
-                    String method_name = method.getName();
-                    Object fixtureAShape;
-                    Object fixtureBShape;
-                    Object fixtureABody;
-                    Object fixtureBBody;
+            // This proxy nonsense solves the problem that I need a class to implement _ContactListener, the version I
+            // loaded with this custom class loader.
+            // The dynamic proxy lets this implement a class that is defined at runtime.
+            contactListenerProxy = Proxy.newProxyInstance(_ContactListener.getClassLoader(), new Class[]{_ContactListener},
+                    (proxy, method, args) -> {
+                        String method_name = method.getName();
+                        Object fixtureAShape;
+                        Object fixtureBShape;
+                        Object fixtureABody;
+                        Object fixtureBBody;
 
-                    switch (method_name) {
-                        case "add":
-                            fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
-                            fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
-                            fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
-                            fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
-                            //Failure when head, arms, or thighs hit the ground.
-                            if (fixtureABody.equals(headBody) ||
-                                    fixtureBBody.equals(headBody) ||
-                                    fixtureABody.equals(lLArmBody) ||
-                                    fixtureBBody.equals(lLArmBody) ||
-                                    fixtureABody.equals(rLArmBody) ||
-                                    fixtureBBody.equals(rLArmBody)) {
-                                isFailed = true;
+                        switch (method_name) {
+                            case "add":
+                                fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
+                                fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
+                                fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
+                                fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
+                                //Failure when head, arms, or thighs hit the ground.
+                                if (fixtureABody.equals(headBody) ||
+                                        fixtureBBody.equals(headBody) ||
+                                        fixtureABody.equals(lLArmBody) ||
+                                        fixtureBBody.equals(lLArmBody) ||
+                                        fixtureABody.equals(rLArmBody) ||
+                                        fixtureBBody.equals(rLArmBody) ||
+                                        fixtureABody.equals(torsoBody) ||
+                                        fixtureBBody.equals(torsoBody)) {
+                                    isFailed = true;
 //					} TODO: Figure out it really is bad for the thighs to hit the ground.
 //
 //					else if(fixtureABody.equals(lThighBody)||
@@ -740,34 +738,40 @@ public class GameLoader extends ClassLoader {
 //							fixtureABody.equals(rThighBody)||
 //							fixtureBBody.equals(rThighBody)){
 
-                                //setFailureStatus(true); // Thighs hitting the ground happens due to ankles
-                                // being loose. Not a big deal.
-                            } else if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) { // Track
-                                // when each foot hits the ground.
-                                rFootDown = true;
-                            } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
-                                lFootDown = true;
-                            }
-                            break;
-                        case "persist":
-                            break;
-                        case "remove":
-                            // Track when each foot leaves the ground.
-                            fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
-                            fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
-                            fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
-                            fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
-                            if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) {
-                                rFootDown = false;
-                            } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
-                                lFootDown = false;
-                            }
-                            break;
-                        case "result":
-                            break;
-                    }
-                    return null;
-                });
+                                    //setFailureStatus(true); // Thighs hitting the ground happens due to ankles
+                                    // being loose. Not a big deal.
+                                } else if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) { // Track
+                                    // when each foot hits the ground.
+                                    rFootDown = true;
+                                } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
+                                    lFootDown = true;
+                                }
+                                break;
+                            case "persist":
+                                break;
+                            case "remove":
+                                // Track when each foot leaves the ground.
+                                fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
+                                fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
+                                fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
+                                fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
+                                if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) {
+                                    rFootDown = false;
+                                } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
+                                    lFootDown = false;
+                                }
+                                break;
+                            case "result":
+                                break;
+                        }
+                        return null;
+                    });
+
+
+            world.getClass().getMethod("setContactListener", _ContactListener).invoke(world, contactListenerProxy);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         initialized = true;
     }
