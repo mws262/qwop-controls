@@ -1,12 +1,9 @@
 package goals.ColdStartAnalysis;
 
-import actions.Action;
 import actions.ActionQueue;
 import game.GameLoader;
 import game.State;
-import ui.PanelRunner_MultiState;
 
-import javax.swing.*;
 import java.awt.*;
 
 /**
