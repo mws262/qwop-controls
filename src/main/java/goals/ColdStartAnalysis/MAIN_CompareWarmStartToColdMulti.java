@@ -1,14 +1,10 @@
 package goals.ColdStartAnalysis;
 
-import actions.Action;
 import actions.ActionQueue;
 import game.GameLoader;
 import game.State;
 import tree.Node;
-import ui.PanelRunner_MultiState;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +67,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
             }
 
             // Add a new cold started runner at the full game's current state.
-            GameLoader coldStartGame = getFakedWarmStart(100);
+            GameLoader coldStartGame = getFakedWarmStart(2);
             coldStartGame.setState(gameFullRun.getCurrentState());
             coldStartGames.add(coldStartGame);
 

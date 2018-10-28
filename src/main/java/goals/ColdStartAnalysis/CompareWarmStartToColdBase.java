@@ -12,7 +12,6 @@ abstract class CompareWarmStartToColdBase extends JFrame {
 
     PanelRunner_MultiState runnerPanel;
 
-
     CompareWarmStartToColdBase() {
         // Vis setup.
         runnerPanel = new PanelRunner_MultiState();
@@ -81,7 +80,7 @@ abstract class CompareWarmStartToColdBase extends JFrame {
     /**
      * Just simulate a runner from rest with no input commands for the given number of timesteps. This gives the
      * solvers SOME kind of warm start, even if it doesn't directly apply to other states.
-     * @param timesteps Number of timesteps to 'warmstart' the solvers.
+     * @param timesteps Number of timesteps to 'warm-start' the solvers.
      * @return A QWOP game which has been run for a specified number of timesteps with no control inputs.
      */
     GameLoader getFakedWarmStart(int timesteps) {

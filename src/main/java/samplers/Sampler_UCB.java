@@ -68,7 +68,7 @@ public class Sampler_UCB implements ISampler {
      */
     public Sampler_UCB(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
-        c = 5f * explorationMultiplier * Random.nextFloat() * c + 15f;
+        c = 5f * explorationMultiplier * Random.nextFloat() * c + 1f;
     }
 
     /**

@@ -381,6 +381,68 @@ public class ActionQueueTest {
             Assert.assertEquals(autoStateVals[i], manualStateVals[i], 1e-10);
         }
     }
+
+    @Test
+    public void getCopyOfUnexecutedQueue() {
+        ActionQueue baseTestQueue = makeTestQueue();
+        ActionQueue copyTestQueue = baseTestQueue.getCopyOfUnexecutedQueue();
+
+        // Both copy and original are started at the same point.
+        while (!baseTestQueue.isEmpty()) {
+            boolean[] baseCommand = baseTestQueue.pollCommand();
+            boolean[] testCommand = copyTestQueue.pollCommand();
+            Assert.assertTrue(Arrays.equals(baseCommand, testCommand));
+        }
+        Assert.assertTrue(copyTestQueue.isEmpty());
+        baseTestQueue.addAction(new Action(34, false, false, false, false));
+        Assert.assertTrue(copyTestQueue.isEmpty());
+
+        // Give the original a head start and make sure that the copy starts at the beginning.
+        baseTestQueue = makeTestQueue();
+        for (int i = 0; i < 10; i++){
+            baseTestQueue.pollCommand();
+        }
+        copyTestQueue = baseTestQueue.getCopyOfUnexecutedQueue();
+        int counter = 0;
+        while (!copyTestQueue.isEmpty()) { // Copy should still have all timesteps remaining.
+            copyTestQueue.pollCommand();
+            counter++;
+        }
+        Assert.assertEquals(26, counter);
+    }
+
+    @Test
+    public void getCopyOfQueueAtExecutionPoint() {
+        ActionQueue baseTestQueue = makeTestQueue();
+        ActionQueue copyTestQueue = baseTestQueue.getCopyOfUnexecutedQueue();
+
+        // Both copy and original are started at the beginning (trivial case).
+        while (!baseTestQueue.isEmpty()) {
+            boolean[] baseCommand = baseTestQueue.pollCommand();
+            boolean[] testCommand = copyTestQueue.pollCommand();
+            Assert.assertTrue(Arrays.equals(baseCommand, testCommand));
+        }
+        Assert.assertTrue(copyTestQueue.isEmpty());
+        baseTestQueue.addAction(new Action(34, false, false, false, false));
+        Assert.assertTrue(copyTestQueue.isEmpty());
+
+        // Original makes some progress before making a copy.
+        baseTestQueue = makeTestQueue();
+        for (int i = 0; i < 7; i++) {
+            baseTestQueue.pollCommand();
+        }
+
+        copyTestQueue = baseTestQueue.getCopyOfQueueAtExecutionPoint();
+        while (!baseTestQueue.isEmpty()) {
+            boolean[] baseCommand = baseTestQueue.pollCommand();
+            boolean[] testCommand = copyTestQueue.pollCommand();
+            Assert.assertTrue(Arrays.equals(baseCommand, testCommand));
+        }
+        Assert.assertTrue(copyTestQueue.isEmpty());
+        baseTestQueue.addAction(new Action(34, false, false, false, false));
+        Assert.assertTrue(copyTestQueue.isEmpty());
+    }
+
     /**
      * Generic 4-action queue for testing here.
      *

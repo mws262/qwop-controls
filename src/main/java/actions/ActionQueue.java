@@ -21,27 +21,31 @@ public class ActionQueue {
 
     /**
      * Actions are the delays between keypresses.
-     **/
+     */
     private Queue<Action> actionQueue = new LinkedList<>();
 
     /**
      * All actions done or queued since the last reset. Unlike the queue, things aren't removed until reset.
-     **/
+     */
     private ArrayList<Action> actionListFull = new ArrayList<>();
 
     /**
      * Integer action currently in progress. If the action is 20, this will be 20 even when 15 commands have been
      * issued.
-     **/
+     */
     private Action currentAction;
 
     /**
      * Is there anything at all queued up to execute? Includes both the currentAction and the actionQueue.
-     **/
+     */
     private AtomicBoolean isEmpty = new AtomicBoolean(true);
 
-    public ActionQueue() {
-    }
+    /**
+     * Number of commands polled from the ActionQueue during its life.
+     */
+    private int commandsPolled = 0;
+
+    public ActionQueue() {}
 
     /**
      * See the action we are currently executing. Does not change the queue.
@@ -147,6 +151,7 @@ public class ActionQueue {
         if (!currentAction.hasNext() && actionQueue.isEmpty()) {
             isEmpty.set(true);
         }
+        commandsPolled ++;
         return nextCommand;
     }
 
@@ -189,5 +194,29 @@ public class ActionQueue {
         int currIdx = actionListFull.size() - actionQueue.size() - 1;
         assert currIdx >= 0;
         return currIdx;
+    }
+
+    /**
+     * Get a copy of this ActionQueue, with none of the actions performed yet.
+     *
+     * @return An ActionQueue with all the same actions, but no progress in them done yet.
+     */
+    public ActionQueue getCopyOfUnexecutedQueue() {
+        ActionQueue actionQueueCopy = new ActionQueue();
+        actionQueueCopy.addSequence(getActionsInCurrentRun());
+        return actionQueueCopy;
+    }
+
+    /**
+     * Get a copy of this ActionQueue, with the same actions, and the same progress made on those actions.
+     *
+     * @return An ActionQueue which should behave identically to the original.
+     */
+    public ActionQueue getCopyOfQueueAtExecutionPoint() {
+        ActionQueue actionQueueCopy = getCopyOfUnexecutedQueue();
+        for (int i = 0; i < commandsPolled; i++) {
+            actionQueueCopy.pollCommand();
+        }
+        return actionQueueCopy;
     }
 }
