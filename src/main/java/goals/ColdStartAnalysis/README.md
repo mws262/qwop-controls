@@ -62,6 +62,19 @@ There is a middle ground between a completely cold-start and a warm-start which 
  apply this simulation.
 
 #### Results
-TBD. Seems like divergence happens really quickly, maybe 
-1.5 - 3 steps.
+Nothing formal yet, but my thoughts so far:
+* The cold-started runners travelled about 1.75 steps (in distance 24m), before falling. This is neglecting the 
+starting few steps, which were lower (albeit the test didn't have a very graceful start). 
+* Small changes that didn't help much:
+    1.  "fake warm start", version 1 above. Just simulating for a few timesteps with no inputs made the results 
+    slightly different, but not better.
+    2. Simulate the cold-start runner with the warm-start, and for a few timesteps, keep resetting the cold-start 
+    runner's state to that of the warm-start runner.
+    3. Set the cold-start runner's Box2D solver iterations higher. 
+    
+    
+#### TODO
+* Idea to try: see if certain parts of the gait cycle result in worse cold-starts. It looked like there might be a 
+vague pattern in the single example tried so far, but it was too noisy to conclude anything. Would need to do this as
+ an average over many runs.
 

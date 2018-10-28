@@ -1,26 +1,48 @@
-package goals.ColdStartAnalysis;
+package goals.PhaseVariableTesting;
 
 import actions.Action;
 import actions.ActionQueue;
 import game.GameLoader;
-import ui.PanelRunner_MultiState;
+import game.State;
+import transformations.Transform_Autoencoder;
 
-import javax.swing.*;
-import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
-abstract class CompareWarmStartToColdBase extends JFrame {
+/**
+ * Trying to see what sorts of things would work as a phase variable to indicate what part of the gait cycle we are
+ * in. One logical choice is a neural network which compresses the full 72 state values to a single 1. This runs a
+ * sample set of actions through and spits out what the network says.
+ *
+ * @author matt
+ */
+public class MAIN_SingleVarAutoencoder {
 
-    PanelRunner_MultiState runnerPanel;
+    public static void main(String[] args) {
+        new MAIN_SingleVarAutoencoder().run();
+    }
+    public void run() {
+        GameLoader game = new GameLoader();
 
-    CompareWarmStartToColdBase() {
-        // Vis setup.
-        runnerPanel = new PanelRunner_MultiState();
-        runnerPanel.activateTab();
-        getContentPane().add(runnerPanel);
-        setPreferredSize(new Dimension(1000, 400));
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        pack();
-        setVisible(true);
+        String modelDir = "src/main/resources/tflow_models/";
+        Transform_Autoencoder autoencoder = new Transform_Autoencoder(modelDir + "AutoEnc_72to1_6layer.pb", 1);
+
+        ActionQueue actionQueue = getSampleActions();
+
+        List<State> stateList = new ArrayList<>();
+        stateList.add(GameLoader.getInitialState());
+        while (!actionQueue.isEmpty()) {
+            game.stepGame(actionQueue.pollCommand());
+            State st = game.getCurrentState();
+//            System.out.println(st.body.getTh());
+            stateList.add(st);
+        }
+
+        List<float[]> tformedSt = autoencoder.transform(stateList);
+        for (float[] tf : tformedSt) {
+            System.out.println(tf[0]);
+        }
+
     }
 
     static ActionQueue getSampleActions() {
@@ -75,19 +97,5 @@ abstract class CompareWarmStartToColdBase extends JFrame {
         actionQueue.addAction(new Action(46, new boolean[]{false, true, true, false}));
         actionQueue.addAction(new Action(17, new boolean[]{false, false, false, false}));
         return actionQueue;
-    }
-
-    /**
-     * Just simulate a runner from rest with no input commands for the given number of timesteps. This gives the
-     * solvers SOME kind of warm start, even if it doesn't directly apply to other states.
-     * @param timesteps Number of timesteps to 'warm-start' the solvers.
-     * @return A QWOP game which has been run for a specified number of timesteps with no control inputs.
-     */
-    GameLoader getFakedWarmStart(int timesteps) {
-        GameLoader game = new GameLoader();
-        for (int i = 0; i < timesteps; i++) {
-            game.stepGame(false, false, false, false);
-        }
-        return game;
     }
 }

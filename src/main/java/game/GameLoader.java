@@ -8,6 +8,7 @@ import java.awt.Stroke;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -27,7 +28,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class GameLoader extends ClassLoader {
+public class GameLoader extends ClassLoader implements Serializable {
     /**
      * Number of timesteps in this game.
      */
@@ -48,6 +49,11 @@ public class GameLoader extends ClassLoader {
      * Physics engine stepping parameters.
      */
     public static final float timestep = 0.04f;
+
+    /**
+     * Number of Box2D solver iterations.
+     */
+    private static final int physIterations = 5;
 
     /**
      * Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls.
@@ -949,8 +955,7 @@ public class GameLoader extends ClassLoader {
             }
 
             // Step the world forward one timestep:
-            int iterations = 5;
-            world.getClass().getMethod("step", float.class, int.class).invoke(world, timestep, iterations);
+            world.getClass().getMethod("step", float.class, int.class).invoke(world, timestep, physIterations);
 
             // Extra fail conditions besides contacts.
             float angle = (float) torsoBody.getClass().getMethod("getAngle").invoke(torsoBody);
