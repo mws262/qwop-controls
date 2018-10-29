@@ -4,15 +4,12 @@ import actions.Action;
 import actions.ActionQueue;
 import game.GameLoader;
 import game.State;
-import org.jfree.chart.ChartPanel;
 import transformations.Transform_Autoencoder;
 import tree.Node;
 import ui.PanelPlot_Simple;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +24,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
     /**
      * Number of outputs to plot. Needs to have a corresponding neural network .pb file!
      */
-    int numOutputs = 10;
+    int numOutputs = 1;
 
     public static void main(String[] args) {
         new MAIN_SingleVarAutoencoder().run();
