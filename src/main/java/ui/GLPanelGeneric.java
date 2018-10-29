@@ -25,23 +25,25 @@ import com.jogamp.opengl.glu.GLU;
 
 public class GLPanelGeneric extends GLJPanel implements GLEventListener, ComponentListener {
 
-    /* GL objects */
     /**
      * GLU is the line/point graphics
      **/
     private GLU glu;
-
     GL2 gl;
 
-    /* Theme colors */
-    // Dark theme - default
-    public static final float[] darkBackground = {0.f / 255.f, 43f / 255.f, 54.f / 255.f, 0.2f}; // Solarized
-	// background color
-    public static final float[] darkText = {0.7f, 0.7f, 0.7f, 1.0f}; // Gray color
+    /**
+     * Dark theme background. From the Solarized palette.
+     */
+    public static final float[] darkBackground = {0.f / 255.f, 43f / 255.f, 54.f / 255.f, 0.2f};
+
+    /**
+     * Gray text color.
+     */
+    public static final float[] darkText = {0.7f, 0.7f, 0.7f, 1.0f};
 
     /**
      * Camera manager for this scene
-     **/
+     */
     GLCamManager cam;
 
     int panelWidth = 1920;
@@ -61,7 +63,6 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
     public void display(GLAutoDrawable drawable) {
         gl = drawable.getGL().getGL2();
         if (glu == null) glu = GLU.createGLU();
-
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
         /* Run any camera updates. Note the camera updates are smoothed,
@@ -77,13 +78,10 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
     @Override
     public void init(GLAutoDrawable drawable) {
         gl = drawable.getGL().getGL2();
-
         gl.setSwapInterval(1);
         gl.glEnable(GL.GL_DEPTH_TEST);
         gl.glLineWidth(2);
-
         gl.glEnable(GLLightingFunc.GL_NORMALIZE);
-
         cam.initLighting(gl);
 
         //Line smoothing -- get rid of the pixelated look.
@@ -103,7 +101,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
     /**
      * This reshape only relates to the canvas. It won't get correct width and height values. Tends to just return the
      * current values.
-     **/
+     */
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         cam = new GLCamManager(panelWidth, panelHeight);
@@ -111,7 +109,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
 
     /**
      * This applies to the whole panel. This one should handle resizing the canvas appropriately.
-     **/
+     */
     @Override
     public void componentResized(ComponentEvent e) {
         panelHeight = e.getComponent().getHeight();

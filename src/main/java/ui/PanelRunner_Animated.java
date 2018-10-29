@@ -3,14 +3,11 @@ package ui;
 import java.awt.Graphics;
 
 import game.GameLoader;
-import game.State;
 import actions.Action;
 import actions.ActionQueue;
 import tree.Node;
 
 public class PanelRunner_Animated extends PanelRunner implements Runnable {
-
-    private static final long serialVersionUID = 1L;
 
     /**
      * Is the current simulation paused?
@@ -66,7 +63,6 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
             System.out.println(currNode.getAction().getTimestepsTotal());
                     currNode = currNode.getParent();
         }
-
     }
 
     /**

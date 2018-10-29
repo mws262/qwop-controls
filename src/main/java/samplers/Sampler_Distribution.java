@@ -94,9 +94,6 @@ public class Sampler_Distribution implements ISampler {
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
         Action childAction = startNode.uncheckedActions.sampleDistribution();
-
-        //startNode.uncheckedActions.get(Node.randInt(0,startNode.uncheckedActions.size() - 1));
-
         return startNode.addChild(childAction);
     }
 
@@ -118,7 +115,6 @@ public class Sampler_Distribution implements ISampler {
 
     @Override
     public boolean rolloutPolicyGuard(Node currentNode) {
-        // Rollout policy not in use in the random sampler.
         return true; // No rollout policy
     }
 
@@ -135,8 +131,7 @@ public class Sampler_Distribution implements ISampler {
     }
 
     @Override
-    public void rolloutPolicyActionDone(Node currentNode) {
-    } // No rollout in random sampler.
+    public void rolloutPolicyActionDone(Node currentNode) {} // No rollout in random sampler.
 
     @Override
     public Sampler_Distribution getCopy() {

@@ -10,18 +10,18 @@ public class Sampler_FixedDepth implements ISampler {
 
     /**
      * Sampler only goes to this horizon.
-     **/
+     */
     private final int horizonDepth;
 
     /**
      * Depth of the starting node.
-     **/
+     */
     private int startDepth;
 
     /**
      * If given a start node which is not at tree depth 0, this will be important for getting the absolute tree depth
      * to go to.
-     **/
+     */
     private int effectiveHorizonDepth;
 
     private boolean treePolicyDone = false;
@@ -30,7 +30,7 @@ public class Sampler_FixedDepth implements ISampler {
     /**
      * Since we're only going to a certain depth, the whole "fullyExplored" thing doesn't really work
      * to tell us when to terminate. Here we track nodes we're done with.
-     **/
+     */
     private Set<Node> finishedNodes = new HashSet<>(); // Note: each worker populates its own list. This is kind of
     // dumb, but I don't expect to use this sampler enough for it to be a big deal.
 
@@ -124,12 +124,11 @@ public class Sampler_FixedDepth implements ISampler {
         } else {
             expansionPolicyDone = false;
         }
-
     }
 
     /**
      * Propagate the finished status back up the tree towards the start node.
-     **/
+     */
     private void propagateFinishedNodes(Node currentNode) {
         if (currentNode.uncheckedActions.isEmpty()) {
             for (Node child : currentNode.getChildren()) {
@@ -162,7 +161,6 @@ public class Sampler_FixedDepth implements ISampler {
 
     @Override
     public boolean rolloutPolicyGuard(Node currentNode) {
-        // Rollout policy not in use in the random sampler.
         return true; // No rollout policy
     }
 

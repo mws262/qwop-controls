@@ -30,8 +30,6 @@ public class Sampler_Random implements ISampler {
             if (currentNode.fullyExplored.get())
                 currentNode = startNode; // Just start over for now. I don't think it's a big enough problem to
 			// stress over.
-            //throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its fault
-			// .");
 
             // Count the number of available children to go to next.
             int notFullyExploredChildren = 0;
@@ -42,11 +40,6 @@ public class Sampler_Random implements ISampler {
             if (notFullyExploredChildren == 0 && currentNode.uncheckedActions.isEmpty()) {
                 currentNode = startNode;
                 continue; // TODO: investigate this error further.
-//				currentNode.nodeColor = Color.PINK;
-//				System.out.println(currentNode.isLocked());
-//				currentNode.displayPoint = true;
-//				throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully
-// explored before.");
             }
 
             if (notFullyExploredChildren == 0 && currentNode.reserveExpansionRights()) {
@@ -86,9 +79,7 @@ public class Sampler_Random implements ISampler {
     public Node expansionPolicy(Node startNode) {
         if (startNode.uncheckedActions.size() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
-
         Action childAction = startNode.uncheckedActions.getRandom();
-
         return startNode.addChild(childAction);
     }
 
@@ -110,7 +101,6 @@ public class Sampler_Random implements ISampler {
 
     @Override
     public boolean rolloutPolicyGuard(Node currentNode) {
-        // Rollout policy not in use in the random sampler.
         return true; // No rollout policy
     }
 
@@ -133,5 +123,4 @@ public class Sampler_Random implements ISampler {
     public Sampler_Random getCopy() {
         return new Sampler_Random();
     }
-
 }

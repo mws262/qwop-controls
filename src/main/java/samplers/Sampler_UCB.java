@@ -21,7 +21,7 @@ public class Sampler_UCB implements ISampler {
     private IEvaluationFunction evaluationFunction;
 
     /**
-     * Explore/exploit tradeoff parameter. Higher means more exploration. Lower means more exploitation.
+     * Explore/exploit trade-off parameter. Higher means more exploration. Lower means more exploitation.
      */
     public float c = 12f; // 7 during most long batch runs.
 
@@ -183,9 +183,7 @@ public class Sampler_UCB implements ISampler {
     @Override
     public void rolloutPolicyActionDone(Node currentNode) {
         expansionPolicyDone = false;
-
         currentRolloutActions++;
-
         if (currentNode.isFailed() || currentRolloutActions > maxRolloutActions) {
             rolloutPolicyDone = true;
             currentRolloutActions = 0;

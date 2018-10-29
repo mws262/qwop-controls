@@ -116,7 +116,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         resetButton.setToolTipText("Reset the camera view back to the initial view if you're lost.");
         resetButton.addActionListener(this);
         resetButton.setBackground(new Color(255, 255, 255, 100));
-
         add(resetButton);
     }
 
@@ -175,12 +174,10 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     }
 
     @Override
-    public void activateTab() {
-    }
+    public void activateTab() {}
 
     @Override
-    public void deactivateTab() {
-    }
+    public void deactivateTab() {}
 
     @Override
     public void display(GLAutoDrawable drawable) {
@@ -334,9 +331,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                     case KeyEvent.VK_RIGHT: //Go right along an isobranch
                         cam.smoothRotateLat(-0.1f, 5);
                         break;
-                    case KeyEvent.VK_S: // toggle the score text at the end of all branches
-                        //TODO
-                        break;
                 }
             } else if (e.isShiftDown()) {
                 switch (keyCode) {
@@ -370,14 +364,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                             rootNodes.get(0).calcNodePosBelow();
                         }
                         break;
-                    case KeyEvent.VK_C:
-                        //tmp remove negotiator.redistributeNodes();
-                        break;
-                    case KeyEvent.VK_B:
-                        //tmp remove negotiator.toggleSampler();
-                        break;
-
-
                     case KeyEvent.VK_SPACE:
 //						if (runnerPanel.isActive()) {
 //							runnerPanel.pauseToggle();
@@ -452,7 +438,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                     blacklist.add(selectedNode);
                     nextOver(selectedNode.getParent(), blacklist, 1, direction,
                             selectedNode.getIndexAccordingToParent(), 0);
-
                 } else if (thisIndex == selectedNode.getSiblingCount() && direction == 1) { //We're at
                     // the highest index of this node and must head to a new parent node.
                     ArrayList<Node> blacklist = new ArrayList<>();
@@ -494,7 +479,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             return true;
         } else if (current.getTreeDepth() == 0) {
             return true; // We made it back to the tree's root without any success. Just return.
-
         } else if (numTimesTried > 100) {// If it takes >100 movements between nodes, we'll just give up.
             return true;
         } else {
@@ -540,8 +524,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     }
 
     @Override
-    public void update(Node node) {
-    }
+    public void update(Node node) { }
 
     @Override
     public void actionPerformed(ActionEvent e) {

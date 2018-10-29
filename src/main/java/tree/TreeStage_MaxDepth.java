@@ -74,18 +74,6 @@ public class TreeStage_MaxDepth extends TreeStage {
         throw new RuntimeException("Tried to get tree stage results before the stage was complete.");
     }
 
-//	private void tmpMark(Node currNode) {
-//		for (Node child : currNode.children) {
-//			if (child.isFailed.get()) {
-//				child.overrideNodeColor = Color.PINK;
-//				child.displayPoint = true;
-//			}else {
-//				child.overrideNodeColor = null;
-//			}
-//			tmpMark(child);
-//		}
-//	}
-
     @Override
     public boolean checkTerminationConditions() {
         Node rootNode = getRootNode();

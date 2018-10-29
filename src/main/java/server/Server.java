@@ -26,23 +26,23 @@ import tree.Utility;
 public class Server {
     /**
      * Communication port. Router has 50000-51000 enabled
-     **/
+     */
     public static final int port = 50000;
 
     /**
      * Still listening for the client to send States?
-     **/
+     */
     public boolean active = true;
 
     /**
      * States and runs to be loaded from the TFRecord files. These will be inserted into whatever controller is sent in.
-     **/
+     */
     private NavigableMap<Float, StateHolder> allStates;
     private Set<RunHolder> runs;
 
     /**
      * Controller sent in from the client. Allows the client to decide what settings to use.
-     **/
+     */
     private Controller_NearestNeighborApprox receivedController;
 
     private ServerSocket serverSocket = null;
@@ -50,11 +50,9 @@ public class Server {
     private ObjectOutputStream outStream;
     private ObjectInputStream inStream;
 
-
     private void loadFiles() {
-
         // CONTROLLER -- Get files loaded up.
-        File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
+        File saveLoc = new File("src/main/resources/saved_data/training_data");
 
         File[] allFiles = saveLoc.listFiles();
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
@@ -73,7 +71,7 @@ public class Server {
 
     /**
      * Open the IO.
-     **/
+     */
     private void initialize() throws IOException {
         serverSocket = new ServerSocket(port);
         System.out.println("Waiting for connections on port " + port + ".");
@@ -84,7 +82,7 @@ public class Server {
 
     /**
      * Wait for the client to send a controller along.
-     **/
+     */
     private void awaitController() throws ClassNotFoundException, IOException {
         System.out.println("Waiting for a controller from the client.");
         receivedController = (Controller_NearestNeighborApprox) inStream.readObject();
@@ -95,7 +93,7 @@ public class Server {
 
     /**
      * Wait for the client to send in states for the server to process.
-     **/
+     */
     public void awaitStates() throws IOException, ClassNotFoundException {
         while (active) {
             State stateToProcess = (State) inStream.readObject();
@@ -110,7 +108,6 @@ public class Server {
     }
 
     public static void main(String[] args) {
-
         Server server = new Server();
         server.loadFiles();
         server.launch();

@@ -27,22 +27,22 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
     /**
      * Window width
-     **/
+     */
     public static int windowWidth = 1920;
 
     /**
      * Window height
-     **/
+     */
     public static int windowHeight = 1000;
 
 
-    private File saveLoc = new File("src/main/resources/config/" + "saved_data/5_11_18");
+    private File saveLoc = new File("src/main/resources/config/saved_data/5_11_18");
 
     private List<Node> leafNodes = new ArrayList<>();
 
     /**
      * What point to start displaying from (to skip any prefix).
-     **/
+     */
     public int startPt = 4;
 
     public static void main(String[] args) {

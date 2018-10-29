@@ -64,7 +64,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 
         int numRows = (int) Math.ceil(numberOfPlots / (double) plotsPerRow);
         JPanel[] rowPanels = new JPanel[numRows];
-        // Panel for each row. Makes it easier with boxlayout.
+        // Panel for each row. Makes it easier with BoxLayout.
         for (int j = 0; j < numRows; j++) {
             JPanel rowPanel = new JPanel();
             rowPanels[j] = rowPanel;
@@ -82,7 +82,6 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
             XYPlot pl = chart.getXYPlot();
             pl.getRangeAxis().setRange(0, 40000);
             plotsAndData.put(chart.getXYPlot(), plData);
-            //pl.setRenderer(plData.getRenderer());
 
             ChartPanel chartPanel = new ChartPanel(chart);
             chartPanel.setPopupMenu(null);

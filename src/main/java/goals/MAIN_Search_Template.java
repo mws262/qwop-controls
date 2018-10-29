@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
-import evaluators.EvaluationFunction_DeltaDistance;
 import tree.TreeStage;
 import actions.Action;
 import actions.ActionGenerator_FixedSequence;
@@ -440,7 +439,6 @@ public abstract class MAIN_Search_Template {
                 }
             }
         }
-
         // Define the specific way that these allowed actions are assigned as potential options for nodes.
         Node.potentialActionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }

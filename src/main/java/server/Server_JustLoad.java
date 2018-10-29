@@ -30,17 +30,17 @@ import tree.Utility;
 public class Server_JustLoad {
     /**
      * Communication port. Router has 50000-51000 enabled
-     **/
+     */
     public static final int port = 50000;
 
     /**
      * Still listening for the client to send States?
-     **/
+     */
     public boolean active = true;
 
     /**
      * States and runs to be loaded from the TFRecord files. These will be inserted into whatever controller is sent in.
-     **/
+     */
     private NavigableMap<Float, StateHolder> allStates;
     private Set<RunHolder> runs;
 
@@ -50,9 +50,8 @@ public class Server_JustLoad {
     private ObjectInputStream inStream;
 
     private void loadFiles() {
-
         // CONTROLLER -- Get files loaded up.
-        File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
+        File saveLoc = new File("src/main/resources/saved_data/training_data");
 
         File[] allFiles = saveLoc.listFiles();
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
@@ -71,7 +70,7 @@ public class Server_JustLoad {
 
     /**
      * Open the IO.
-     **/
+     */
     private void initialize() throws IOException {
         serverSocket = new ServerSocket(port);
         System.out.println("Waiting for connections on port " + port + ".");
@@ -85,7 +84,7 @@ public class Server_JustLoad {
      *
      * @throws IOException
      * @throws ClassNotFoundException
-     **/
+     */
     public void awaitRequest() throws ClassNotFoundException, IOException {
         while (active) {
             String requestString = (String) inStream.readObject();
@@ -100,13 +99,11 @@ public class Server_JustLoad {
                 default:
                     outStream.writeObject(null);
             }
-
             System.out.println("Request complete.");
         }
     }
 
     public static void main(String[] args) {
-
         Server_JustLoad server = new Server_JustLoad();
         server.loadFiles();
         server.launch();

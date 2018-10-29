@@ -11,8 +11,6 @@ import javax.swing.SwingUtilities;
 
 import chrriis.common.UIUtils;
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
-import chrriis.dj.nativeswing.swtimpl.components.FlashPlayerCommandEvent;
-import chrriis.dj.nativeswing.swtimpl.components.FlashPlayerListener;
 import chrriis.dj.nativeswing.swtimpl.components.JFlashPlayer;
 import chrriis.dj.nativeswing.swtimpl.components.JWebBrowser;
 import chrriis.dj.nativeswing.swtimpl.components.WebBrowserFunction;
@@ -22,7 +20,6 @@ import game.State;
 import actions.Action;
 import actions.ActionQueue;
 import controllers.IController;
-import tree.Utility;
 import ui.PanelRunner_SimpleState;
 
 public class Flash_QWOP extends JFrame {
@@ -50,35 +47,33 @@ public class Flash_QWOP extends JFrame {
         JFlashPlayer flashPlayer = new JFlashPlayer();
 
         // Load flash QWOP.
-        flashPlayer.load(Utility.getExcutionPath() + "./flash_files/athleticsFullState_twoDigits.swf");
+        flashPlayer.load("src/main/resources/flash/athleticsFullState_twoDigits.swf");
 
         // Function calls from QWOP. Can only include the function calls which do no have return values.
-        flashPlayer.addFlashPlayerListener(new FlashPlayerListener() {
-            public void commandReceived(FlashPlayerCommandEvent e) {
-                // receiveState
-                //System.out.println(e.getCommand());
-                switch (e.getCommand()) {
-                    case "getQWOPData":
+        flashPlayer.addFlashPlayerListener(e -> {
+            // receiveState
+            //System.out.println(e.getCommand());
+            switch (e.getCommand()) {
+                case "getQWOPData":
 
-                        String[] stateString = ((String) e.getParameters()[0]).split(",");
-                        timestep = Float.valueOf(stateString[0].trim()).intValue();
+                    String[] stateString = ((String) e.getParameters()[0]).split(",");
+                    timestep = Float.valueOf(stateString[0].trim()).intValue();
 
-                        float[] states = new float[State.ObjectName.values().length * State.StateName.values().length];
-                        for (int i = 0; i < states.length; i++) {
-                            states[i] = Float.valueOf(stateString[i + 1].trim());
-                        }
+                    float[] states = new float[State.ObjectName.values().length * State.StateName.values().length];
+                    for (int i = 0; i < states.length; i++) {
+                        states[i] = Float.valueOf(stateString[i + 1].trim());
+                    }
 
-                        currentState = new State(states, false);
-                        GameLoader.adjustRealQWOPStateToSimState(currentState);
-                        actionQueue.addAction(controller.policy(currentState));
+                    currentState = new State(states, false);
+                    GameLoader.adjustRealQWOPStateToSimState(currentState);
+                    actionQueue.addAction(controller.policy(currentState));
 
-                        runnerPane.updateState(currentState);
-                        break;
+                    runnerPane.updateState(currentState);
+                    break;
 
-                    case "flashTime":
-                        currentTime = Float.valueOf((String) e.getParameters()[0]);
-                        break;
-                }
+                case "flashTime":
+                    currentTime = Float.valueOf((String) e.getParameters()[0]);
+                    break;
             }
         });
 
@@ -122,24 +117,22 @@ public class Flash_QWOP extends JFrame {
     private void setupUI() {
         NativeInterface.open();
         UIUtils.setPreferredLookAndFeel();
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                getContentPane().add(setupFlash(), BorderLayout.CENTER);
-                getContentPane().setPreferredSize(new Dimension(1000, 1000));
-                /* Runner pane */
-                runnerPane = new PanelRunner_SimpleState();
-                runnerPane.activateTab();
-                runnerPane.setPreferredSize(new Dimension(1000, 400));
-                add(runnerPane, BorderLayout.PAGE_END);
-                Thread drawThread = new Thread(runnerPane);
-                drawThread.start();
+        SwingUtilities.invokeLater(() -> {
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            getContentPane().add(setupFlash(), BorderLayout.CENTER);
+            getContentPane().setPreferredSize(new Dimension(1000, 1000));
+            /* Runner pane */
+            runnerPane = new PanelRunner_SimpleState();
+            runnerPane.activateTab();
+            runnerPane.setPreferredSize(new Dimension(1000, 400));
+            add(runnerPane, BorderLayout.PAGE_END);
+            Thread drawThread = new Thread(runnerPane);
+            drawThread.start();
 
-                setSize(1000, 2000);
-                setLocationByPlatform(true);
-                setVisible(true);
-                pack();
-            }
+            setSize(1000, 2000);
+            setLocationByPlatform(true);
+            setVisible(true);
+            pack();
         });
 
         NativeInterface.runEventPump();
@@ -147,7 +140,7 @@ public class Flash_QWOP extends JFrame {
 
     private void setupController() {
         // CONTROLLER -- Approximate nearest neighbor.
-        File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
+        File saveLoc = new File("src/main/resources/saved_data/training_data");
 
         File[] allFiles = saveLoc.listFiles();
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
@@ -162,20 +155,15 @@ public class Flash_QWOP extends JFrame {
         controller = new Controller_NearestNeighborApprox(exampleDataFiles);
     }
 
-    /* Standard goals method to try that test as a standalone application. */
+    /** Standard goals method to try that test as a standalone application. **/
     public static void main(String[] args) {
         Flash_QWOP gameQWOP = new Flash_QWOP();
-
         gameQWOP.actionQueue.addAction(new Action(8, false, false, false, false));
         gameQWOP.actionQueue.addAction(new Action(50, false, true, true, false));
         gameQWOP.actionQueue.addAction(new Action(1, false, false, false, false));
         gameQWOP.actionQueue.addAction(new Action(54, true, false, false, true));
-
         gameQWOP.flagForReset();
         gameQWOP.setupController();
         gameQWOP.setupUI();
-
-
     }
-
 }

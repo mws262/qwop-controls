@@ -17,7 +17,6 @@ import java.util.List;
  */
 public class PanelPlot_Simple extends PanelPlot {
 
-
     public PanelPlot_Simple() {
         super(1); // Currently only does 1 plot in a single panel.
     }
@@ -102,10 +101,8 @@ public class PanelPlot_Simple extends PanelPlot {
     }
 
     @Override
-    public void update(Node plotNode) {
-    }
+    public void update(Node plotNode) {}
 
     @Override
-    public void plotClicked(int plotIdx) {
-    }
+    public void plotClicked(int plotIdx) {}
 }

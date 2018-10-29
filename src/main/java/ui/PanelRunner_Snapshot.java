@@ -95,10 +95,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         /* Focused node first */
         snapshotNode = node;
         Object[] nodeTransform = game.getXForms(snapshotNode.getState());
-        specificXOffset =
-                (int) (runnerScaling * snapshotNode.getState().body.getX());
-        // Make the sequence centered around the selected node state.
-        //xOffsetNet = xOffsetPixels + (int)(-runnerScaling * nodeTransform[1].position.x);
+        specificXOffset = (int) (runnerScaling * snapshotNode.getState().body.getX());
         transforms.add(nodeTransform);
         strokes.add(boldStroke);
         colors.add(Color.BLACK);
@@ -283,9 +280,9 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
      * Distance of given coordinates from mouse location, squared.
      */
     private float getDistFromMouseSq(float x, float y) {
-        float xdist = (mouseX - (runnerScaling * x + xOffsetPixels - specificXOffset));
-        float ydist = (mouseY - (runnerScaling * y + yOffsetPixels));
-        return xdist * xdist + ydist * ydist;
+        float xDistance = (mouseX - (runnerScaling * x + xOffsetPixels - specificXOffset));
+        float yDistance = (mouseY - (runnerScaling * y + yOffsetPixels));
+        return xDistance * xDistance + yDistance * yDistance;
     }
 
     /**

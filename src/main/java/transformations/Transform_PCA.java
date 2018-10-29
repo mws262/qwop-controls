@@ -89,7 +89,6 @@ public class Transform_PCA implements ITransform {
                 lowDimData.put(i, j, transformedStates.get(i)[j]);
             }
         }
-
         FloatMatrix restoredDimData = lowDimData.mmul(eigenvectors.getColumns(transformPCAComponents).transpose());
 
         restoredDimData.muliRowVector(stateSTDs);
@@ -99,7 +98,7 @@ public class Transform_PCA implements ITransform {
 		// in a FloatMatrix
 
         // Lambda mapping the list FloatMatrix's to states's
-        return splitRowRestoredDimData.stream().map(floatmat -> new State(floatmat.data, false)).collect(Collectors.toList());
+        return splitRowRestoredDimData.stream().map(matrix -> new State(matrix.data, false)).collect(Collectors.toList());
     }
 
     @Override

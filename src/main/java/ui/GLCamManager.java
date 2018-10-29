@@ -265,7 +265,6 @@ public class GLCamManager {
         gl.glViewport(0, 0, width, height);
     }
 
-
     /**
      * Transform a 2d coordinate click in window coordinates to a 3d coordinate in the world frame.
      */
@@ -275,14 +274,12 @@ public class GLCamManager {
         // Temporary. just don't want to keep reallocating memory.
         Vector3f temp1 = (Vector3f) upVec.clone();
         temp1.scale((mouseYnew - mouseYold) * zoomFactor * 0.1f); // Hand-tuned the multiplier.
-
         Vector3f temp2 = new Vector3f();
 
         //Find y transformed
         temp2.cross(upVec, eyeToTarget);
         temp2.normalize();
         temp2.scale((mouseXnew - mouseXold) * zoomFactor * 0.1f);
-
         temp1.add(temp2);
 
         return temp1;
@@ -306,7 +303,6 @@ public class GLCamManager {
 
         perp.scale((float) Math.sin(radians));
         upVec.scale((float) Math.cos(radians));
-
         upVec.add(perp);
     }
 
@@ -366,13 +362,13 @@ public class GLCamManager {
         eye.set(campos);
         Vector3f target = (Vector3f) tarpos.clone();
 
-        //if we move absolutely, then remove all previously queued camera translations
+        // If we move absolutely, then remove all previously queued camera translations.
         targetIncrement.clear();
         targetSteps.clear();
         eyeIncrement.clear();
         eyeSteps.clear();
 
-        //Find the difference between where we are and where we want to go.
+        // Find the difference between where we are and where we want to go.
         eye.sub(eyePos);
         target.sub(targetPos);
 
@@ -380,10 +376,10 @@ public class GLCamManager {
         eye.scale(1f / speed);
         target.scale(1f / speed);
 
-        eyeIncrement.add(eye); //find the magnitude of rotation per step
+        eyeIncrement.add(eye); // Find the magnitude of rotation per step.
         eyeSteps.add(speed);
 
-        targetIncrement.add(target); //find the magnitude of rotation per step
+        targetIncrement.add(target); // Find the magnitude of rotation per step.
         targetSteps.add(speed);
     }
 
@@ -462,22 +458,22 @@ public class GLCamManager {
         float yClick;
 
         //Vector of click direction.
-        Vector3f ClickVec;
+        Vector3f clickVec;
 
         //Vector of eye position to target position.
-        Vector3f CamVec = new Vector3f(0, 0, 0);
+        Vector3f camVec = new Vector3f(0, 0, 0);
 
         //Camera locally defined to face in y-direction:
-        Vector3f LocalCamLookat = new Vector3f(0, 1, 0);
+        Vector3f localCamLookat = new Vector3f(0, 1, 0);
 
-        Vector3f LocalCamUp = new Vector3f(1, 0, 0);
+        Vector3f localCamUp = new Vector3f(1, 0, 0);
 
         // Axis and angle of rotation from world coordinates to camera coordinates.
-        Vector3f RotAxis = new Vector3f(0, 0, 0);
-        float TransAngle;
+        Vector3f rotAxis = new Vector3f(0, 0, 0);
+        float transAngle;
 
         //Rotation from world coordinates to camera coordinates in both axis angle and matrix forms.
-        AxisAngle4f CamToGlobalRot = new AxisAngle4f(0, 0, 0, 0);
+        AxisAngle4f camToGlobalRot = new AxisAngle4f(0, 0, 0, 0);
         Matrix3f RotMatrix = new Matrix3f(0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 
@@ -489,39 +485,37 @@ public class GLCamManager {
         yClick = frameHeight * (mouseY - height / 2) / height;
 
         // Vector of click in camera coordinates.
-        ClickVec = new Vector3f(-yClick, 1, -xClick);
-        ClickVec.normalize();
+        clickVec = new Vector3f(-yClick, 1, -xClick);
+        clickVec.normalize();
 
         // Camera facing origin in world coordinates.
-        CamVec.sub(targetPos, eyePos);
-        CamVec.normalize();
-
+        camVec.sub(targetPos, eyePos);
+        camVec.normalize();
 
         //Find transformation -- world frame <-> cam frame
         // Two step process. First I align the camera facing vector direction.
         // Second, I align the "up" vector.
 
         //1st rotation
-        RotAxis.cross(LocalCamLookat, CamVec);
-        RotAxis.normalize();
-        TransAngle = (float) Math.acos(LocalCamLookat.dot(CamVec));
-        CamToGlobalRot.set(RotAxis, TransAngle);
-        RotMatrix.set(CamToGlobalRot);
+        rotAxis.cross(localCamLookat, camVec);
+        rotAxis.normalize();
+        transAngle = (float) Math.acos(localCamLookat.dot(camVec));
+        camToGlobalRot.set(rotAxis, transAngle);
+        RotMatrix.set(camToGlobalRot);
 
         //2nd rotation
-        RotMatrix.transform(LocalCamUp);
-        RotMatrix.transform(ClickVec);
+        RotMatrix.transform(localCamUp);
+        RotMatrix.transform(clickVec);
 
-        RotAxis.cross(LocalCamUp, upVec);
-        RotAxis.normalize();
-        TransAngle = (float) Math.acos(LocalCamUp.dot(upVec));
-        CamToGlobalRot.set(RotAxis, TransAngle);
-        RotMatrix.set(CamToGlobalRot);
+        rotAxis.cross(localCamUp, upVec);
+        rotAxis.normalize();
+        transAngle = (float) Math.acos(localCamUp.dot(upVec));
+        camToGlobalRot.set(rotAxis, transAngle);
+        RotMatrix.set(camToGlobalRot);
 
         //Transform the click vector to world coordinates
-        RotMatrix.transform(ClickVec);
-
-        return ClickVec;
+        RotMatrix.transform(clickVec);
+        return clickVec;
     }
 
     /**

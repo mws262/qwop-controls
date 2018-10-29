@@ -101,8 +101,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     }
 
     @Override
-    public void update(Node node) {
-    }
+    public void update(Node node) {}
 
     /**
      * Check if the current run is finished.

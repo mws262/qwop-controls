@@ -132,7 +132,6 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
         plot.setRangeZeroBaselineVisible(true);
         plot.setBackgroundPaint(Color.WHITE); // Background of actual plotting area, not the surrounding border area.
 
-
         NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
         domainAxis.setAutoRangeIncludesZero(false);
         domainAxis.setTickMarkInsideLength(2.0f);
@@ -184,6 +183,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * Set {@link XYPlot} axis bounds from x and y data. It will make the plot bounds big enough to see all the data,
      * plus a little bit of buffer room all around.
+     *
      * @param plot Plot to set the axes bounds of.
      * @param xData Set of data whose min/max will be used to size the horizontal axis bounds.
      * @param yData Set of data whose min/max will be used to size the vertical axis bounds.
@@ -219,8 +219,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     }
 
     @Override
-    public void chartMouseMoved(ChartMouseEvent event) {
-    }
+    public void chartMouseMoved(ChartMouseEvent event) {}
 
     @Override
     public void activateTab() {
@@ -238,7 +237,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     }
 
     /**
-     * XYDataset gets data for plotting transformed data from PCA here.
+     * {@link XYDataset} gets data for plotting transformed data from PCA here.
      */
     public class PlotDataset extends AbstractXYDataset {
 
@@ -247,7 +246,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
         private PlotRenderer renderer = new PlotRenderer();
 
         /**
-         * Specific series of data to by plotted. Integer is the plotindex,
+         * Specific series of data to by plotted. Integer is the plot index.
          */
         private Map<Integer, DataSeries> series = new HashMap<>();
 

@@ -28,8 +28,6 @@ import tree.Utility;
  */
 public class PanelPlot_States extends PanelPlot implements ItemListener {
 
-    private static final long serialVersionUID = 1L;
-
     /**
      * Maximum allowed datapoints. Will downsample if above. Prevents extreme lag.
      */

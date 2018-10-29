@@ -19,8 +19,6 @@ import tree.Node;
 
 public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
-    private static final long serialVersionUID = 1L;
-
     /**
      * Transformer to use to transform normal states into reduced coordinates.
      */
@@ -111,12 +109,9 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
             pl.getDomainAxis().setLabel("Component" + " " + currCol);
 
             dat.addSeries(0, xData, yData, cData);
-
             setPlotBoundsFromData(pl, xData, yData);
-
             count++;
         }
-        //addCommandLegend(firstPlot);
         applyUpdates();
     }
 
@@ -128,16 +123,13 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void plotClicked(int plotIdx) {
-    }
+    public void plotClicked(int plotIdx) {}
 
     @Override
-    public void keyTyped(KeyEvent e) {
-    }
+    public void keyTyped(KeyEvent e) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
-
         if (transformedStates == null || transformedStates.isEmpty()) return;
 
         switch (e.getKeyCode()) {
@@ -162,6 +154,5 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-    }
+    public void keyReleased(KeyEvent e) {}
 }
