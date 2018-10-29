@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
+import org.apache.commons.lang.ArrayUtils;
 import tree.Node;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -79,6 +80,8 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
             pl.setRenderer(plData.getRenderer());
 
             ChartPanel chartPanel = new ChartPanel(chart);
+            chartPanel.setMaximumDrawHeight(1440);
+            chartPanel.setMaximumDrawWidth(2560);
             chartPanel.addChartMouseListener(this);
             chartPanel.setPopupMenu(null);
             chartPanel.setDomainZoomable(false);
@@ -198,6 +201,10 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
         // Add a small buffer beyond the range of data in either direction.
         plot.getDomainAxis().setRange(xLow - xRange/25f, xHi + xRange/25f);
         plot.getRangeAxis().setRange(yLow - yRange/25f, yHi + yRange/25f);
+    }
+
+    static void setPlotBoundsFromData(XYPlot plot, float[] xData, float[] yData) {
+        setPlotBoundsFromData(plot, ArrayUtils.toObject(xData), ArrayUtils.toObject(yData));
     }
 
     @Override

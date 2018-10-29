@@ -4,8 +4,15 @@ import actions.Action;
 import actions.ActionQueue;
 import game.GameLoader;
 import game.State;
+import org.jfree.chart.ChartPanel;
 import transformations.Transform_Autoencoder;
+import tree.Node;
+import ui.PanelPlot_Simple;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,16 +23,30 @@ import java.util.List;
  *
  * @author matt
  */
-public class MAIN_SingleVarAutoencoder {
+public class MAIN_SingleVarAutoencoder extends JFrame {
+    /**
+     * Number of outputs to plot. Needs to have a corresponding neural network .pb file!
+     */
+    int numOutputs = 10;
 
     public static void main(String[] args) {
         new MAIN_SingleVarAutoencoder().run();
     }
     public void run() {
-        GameLoader game = new GameLoader();
+        // Vis setup.
+        PanelPlot_Simple plotPanel = new PanelPlot_Simple();
+        plotPanel.activateTab();
+        getContentPane().add(plotPanel);
+        setPreferredSize(new Dimension(1000, 400));
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
+        setVisible(true);
 
+        GameLoader game = new GameLoader();
         String modelDir = "src/main/resources/tflow_models/";
-        Transform_Autoencoder autoencoder = new Transform_Autoencoder(modelDir + "AutoEnc_72to1_6layer.pb", 1);
+        Transform_Autoencoder autoencoder =
+                new Transform_Autoencoder(modelDir + "AutoEnc_72to" + String.valueOf(numOutputs) + "_6layer.pb",
+                        numOutputs);
 
         ActionQueue actionQueue = getSampleActions();
 
@@ -34,16 +55,38 @@ public class MAIN_SingleVarAutoencoder {
         while (!actionQueue.isEmpty()) {
             game.stepGame(actionQueue.pollCommand());
             State st = game.getCurrentState();
-//            System.out.println(st.body.getTh());
             stateList.add(st);
         }
 
         List<float[]> tformedSt = autoencoder.transform(stateList);
-        for (float[] tf : tformedSt) {
-            System.out.println(tf[0]);
+
+        float[] xData = new float[stateList.size()];
+        for (int i = 0; i < stateList.size(); i++) {
+            xData[i] = i;
         }
 
+        List<float[]> xDataList = new ArrayList<>();
+        List<float[]> yDataList = new ArrayList<>();
+        for (int i = 0; i < tformedSt.get(0).length; i++) {
+            yDataList.add(new float[tformedSt.size()]);
+            xDataList.add(xData);
+        }
+
+        for (int i = 0; i < tformedSt.size(); i++) { // For each state transformed.
+            for (int j = 0; j < tformedSt.get(i).length; j++) { // For each reduced state var.
+                yDataList.get(j)[i] = tformedSt.get(i)[j];
+
+            }
+        }
+
+        List<Color> colorList = new ArrayList<>();
+        for (int i = 0; i < xDataList.size(); i++) {
+            colorList.add(Node.getColorFromTreeDepth(i));
+        }
+
+        plotPanel.setPlotData(xDataList, yDataList, colorList, "timestep idx", "autoencoder output");
     }
+
 
     static ActionQueue getSampleActions() {
         // Ran MAIN_Search_LongRun to get these. 19 steps.
