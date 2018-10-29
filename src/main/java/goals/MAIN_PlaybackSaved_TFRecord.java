@@ -20,8 +20,6 @@ import data.TFRecordReader;
 import game.GameLoader;
 import game.State;
 import game.StateVariable;
-import tree.Node;
-import tree.Utility;
 import ui.PanelRunner_AnimatedFromStates;
 
 /**
@@ -47,9 +45,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
     public static int windowHeight = 1000;
 
 
-    private File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
-
-    List<Node> leafNodes = new ArrayList<>();
+    private File saveLoc = new File("src/main/resources/saved_data/training_data");
 
     public static void main(String[] args) {
         MAIN_PlaybackSaved_TFRecord mc = new MAIN_PlaybackSaved_TFRecord();

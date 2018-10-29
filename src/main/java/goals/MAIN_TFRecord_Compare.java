@@ -47,7 +47,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
     public void setup() {
 
-        File saveLoc = new File(Utility.getExcutionPath() + "saved_data/training_data");
+        File saveLoc = new File("src/main/resources/saved_data/training_data");
 
         File[] allFiles = saveLoc.listFiles();
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());

@@ -32,7 +32,6 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
     }
 
     public void doGames() {
-
         // Load all parameters specific to this search.
         Sampler_UCB.explorationMultiplier = Float.valueOf(properties.getProperty("UCBExplorationMultiplier", "1"));
         boolean doStage1 = Boolean.valueOf(properties.getProperty("doStage1", "false"));

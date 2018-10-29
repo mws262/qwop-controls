@@ -9,7 +9,7 @@ import tree.Node;
 
 /**
  * Saves data at every timestep. Old saver which serializes java classes.
- * Useful for manipulating data in java, not good for tensorflow stuff.
+ * Useful for manipulating data in java, not good for TensorFlow stuff.
  *
  * @author matt
  */

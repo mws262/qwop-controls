@@ -107,7 +107,6 @@ public class Utility {
 
             while (reader.ready()) {
                 String nextLine = reader.readLine();
-
                 if (nextLine.contains("!LOG_START")) {
                     collecting = true;
                     writer.write(divider + "\n");

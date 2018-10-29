@@ -57,7 +57,8 @@ public abstract class DataSaver_Dense implements IDataSaver {
     }
 
     @Override
-    public void reportStageEnding(Node rootNode, List<Node> targetNodes) {}
+    public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
+    }
 
     @Override
     public void setSaveInterval(int numGames) {

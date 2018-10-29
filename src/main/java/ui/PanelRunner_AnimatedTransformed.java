@@ -61,7 +61,6 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
         encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to16_6layer.pb", 16));
         encoders.add(new Transform_PCA(new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}));
 
-
         /* Add a checkbox for enabling or disabling the transformed runner display. */
         BorderLayout borderLayout = new BorderLayout(); // Border layout for the whole panel to set alignment to the
         // bottom of the panel.

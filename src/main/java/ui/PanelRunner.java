@@ -21,8 +21,6 @@ import ui.IUserInterface.TabbedPaneActivator;
  */
 public abstract class PanelRunner extends JPanel implements TabbedPaneActivator {
 
-    private static final long serialVersionUID = 1L;
-
     /**
      * Should this panel be drawing or is it hidden.
      */
@@ -141,8 +139,6 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
         if (sequence.length == 0) return; // Happens when clicking root node.
 
         g.setFont(smallFont);
-        // g.setColor(Color.BLACK);
-        // g.drawString("Selected sequence: ", 10, vertTextAnchor);
         g.setColor(Color.DARK_GRAY);
 
         int currIdx = 0;

@@ -2,12 +2,15 @@
   <dictionary name="matth">
     <words>
       <w>datapoints</w>
+      <w>dataset</w>
       <w>downsample</w>
       <w>downsampler</w>
+      <w>jbox</w>
       <w>keypress</w>
       <w>multiplicatively</w>
       <w>qwop</w>
       <w>recurses</w>
+      <w>solarized</w>
       <w>timestep</w>
       <w>timesteps</w>
     </words>

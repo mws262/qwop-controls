@@ -58,16 +58,15 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
     private SavableFileIO<SavableActionSequence> actionSaver = new SavableFileIO<>();
 
-    private String savePath = Utility.getExcutionPath() + "saved_data/individual_expansions_todo/";
+    private String savePath = "src/main/resources/saved_data/individual_expansions_todo/";
 
     private ActionQueue actionQueue = new ActionQueue();
 
-    private Color backgroundColor = Color.DARK_GRAY; //new Color(GLPanelGeneric.darkBackground[0],GLPanelGeneric
-    // .darkBackground[1],GLPanelGeneric.darkBackground[2]);
+    private Color backgroundColor = Color.DARK_GRAY;
 
     /**
      * Screen capture settings.
-     **/
+     */
     private ScreenCapture screenCap;
     private boolean doScreenCapture = true;
 

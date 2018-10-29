@@ -32,7 +32,7 @@ public class GameLoader extends ClassLoader implements Serializable {
     /**
      * Number of timesteps in this game.
      */
-    private static long timestepsSimulated = 0;
+    private long timestepsSimulated = 0;
 
     /**
      * Has a game world been created yet?
@@ -200,9 +200,6 @@ public class GameLoader extends ClassLoader implements Serializable {
     // Joint objects
     public Object rHipJ, lHipJ, rKneeJ, lKneeJ, rAnkleJ, lAnkleJ, rShoulderJ, lShoulderJ, rElbowJ, lElbowJ, neckJ;
 
-    // Contact listener
-    private Object contactListenerProxy;
-
     private boolean rFootDown = false;
     private boolean lFootDown = false;
 
@@ -210,30 +207,10 @@ public class GameLoader extends ClassLoader implements Serializable {
     public Stroke mainRunnerStroke = new BasicStroke(1);
 
     /**
-     * Just to see if game loader is working. TODO: Make a unit test instead.
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-        GameLoader gl = new GameLoader();
-
-        try {
-            gl.makeNewWorld();
-            for (int i = 0; i < 50; i++) {
-                gl.stepGame(true, false, false, true);
-                System.out.println(gl.lKneeJ.getClass().getMethod("getJointAngle").invoke(gl.lKneeJ));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Make a new game on its own ClassLoader.
      */
     public GameLoader() {
         loadClasses(); // Load all the necessary classes on a new class loader (this).
-
         try {
             oneTimeSetup(); // Create all the shape and body definitions that never need changing.
             makeNewWorld();
@@ -251,7 +228,7 @@ public class GameLoader extends ClassLoader implements Serializable {
     /**
      * Loads individual classes.
      *
-     * @param className Name of a class to load. Does not nead .class at the end.
+     * @param className Name of a class to load. Does not need .class at the end.
      * @return Byte array containing that class's data.
      */
     private byte[] loadClassData(String className) {
@@ -393,17 +370,15 @@ public class GameLoader extends ClassLoader implements Serializable {
     private Object makeBodyDef(float positionX, float positionY, float angle, float mass, float inertia) {
         Object bodyDef = null;
         try {
-            bodyDef = _BodyDef.newInstance();
+            bodyDef = _BodyDef.getDeclaredConstructor().newInstance();
             Object massData = makeMassData(mass, inertia);
-            Object position = null;
-            position = makeVec2(positionX, positionY);
+            Object position = makeVec2(positionX, positionY);
             bodyDef.getClass().getField("massData").set(bodyDef, massData);
             bodyDef.getClass().getField("position").set(bodyDef, position);
             bodyDef.getClass().getField("angle").setFloat(bodyDef, angle);
-        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
-
         return bodyDef;
     }
 
@@ -415,7 +390,7 @@ public class GameLoader extends ClassLoader implements Serializable {
                                 boolean enableMotor, boolean collideConnected) {
         Object jDef = null;
         try {
-            jDef = _RevoluteJointDef.newInstance();
+            jDef = _RevoluteJointDef.getDeclaredConstructor().newInstance();
             Object posVec = makeVec2(jointPosX, jointPosY);
 
             jDef.getClass().getMethod("initialize", _Body, _Body, _Vec2).invoke(jDef, body1, body2, posVec);
@@ -427,7 +402,6 @@ public class GameLoader extends ClassLoader implements Serializable {
             jDef.getClass().getField("enableLimit").setBoolean(jDef, enableLimit);
             jDef.getClass().getField("enableMotor").setBoolean(jDef, enableMotor);
             jDef.getClass().getField("collideConnected").setBoolean(jDef, collideConnected);
-
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
             e.printStackTrace();
         }
@@ -441,7 +415,7 @@ public class GameLoader extends ClassLoader implements Serializable {
                                    int groupIdx) {
         Object boxShapeDef = null;
         try {
-            boxShapeDef = _PolygonDef.newInstance();
+            boxShapeDef = _PolygonDef.getDeclaredConstructor().newInstance();
             boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(boxShapeDef, boxX, boxY);
             boxShapeDef.getClass().getField("friction").setFloat(boxShapeDef, friction);
             boxShapeDef.getClass().getField("density").setFloat(boxShapeDef, density);
@@ -461,7 +435,7 @@ public class GameLoader extends ClassLoader implements Serializable {
     private Object makeBoxShapeDef(float boxX, float boxY, float friction, float density, int groupIdx) {
         Object boxShapeDef = null;
         try {
-            boxShapeDef = _PolygonDef.newInstance();
+            boxShapeDef = _PolygonDef.getDeclaredConstructor().newInstance();
             boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(boxShapeDef, boxX, boxY);
             boxShapeDef.getClass().getField("friction").setFloat(boxShapeDef, friction);
             boxShapeDef.getClass().getField("density").setFloat(boxShapeDef, density);
@@ -479,13 +453,13 @@ public class GameLoader extends ClassLoader implements Serializable {
     private Object makeCircleShapeDef(float radius, float restitution, float friction, float density, int groupIdx) {
         Object circleShapeDef = null;
         try {
-            circleShapeDef = _CircleDef.newInstance();
+            circleShapeDef = _CircleDef.getDeclaredConstructor().newInstance();
             circleShapeDef.getClass().getField("radius").setFloat(null, radius);
             circleShapeDef.getClass().getField("friction").setFloat(null, friction);
             circleShapeDef.getClass().getField("density").setFloat(null, density);
             circleShapeDef.getClass().getField("restitution").setFloat(null, restitution);
             circleShapeDef.getClass().getField("groupIndex").setInt(null, groupIdx);
-        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return circleShapeDef;
@@ -497,13 +471,13 @@ public class GameLoader extends ClassLoader implements Serializable {
     private Object makeCircleShapeDef(float radius, float friction, float density, int groupIdx) {
         Object circleShapeDef = null;
         try {
-            circleShapeDef = _CircleDef.newInstance();
+            circleShapeDef = _CircleDef.getDeclaredConstructor().newInstance();
             circleShapeDef.getClass().getField("radius").setFloat(circleShapeDef, radius);
             circleShapeDef.getClass().getField("friction").setFloat(circleShapeDef, friction);
             circleShapeDef.getClass().getField("density").setFloat(circleShapeDef, density);
             Object shapeFilter = circleShapeDef.getClass().getField("filter").get(circleShapeDef);
             shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
-        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return circleShapeDef;
@@ -515,10 +489,10 @@ public class GameLoader extends ClassLoader implements Serializable {
     private Object makeMassData(float mass, float inertia) {
         Object md = null;
         try {
-            md = _MassData.newInstance();
+            md = _MassData.getDeclaredConstructor().newInstance();
             md.getClass().getField("mass").setFloat(md, mass);
             md.getClass().getField("I").setFloat(md, inertia);
-        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return md;
@@ -530,9 +504,7 @@ public class GameLoader extends ClassLoader implements Serializable {
     private Object makeVec2(float x, float y) {
         Object vec = null;
         try {
-            Constructor<?> cons = _Vec2.getConstructor(float.class, float.class);
-            vec = cons.newInstance(x, y);
-
+            vec = _Vec2.getConstructor(float.class, float.class).newInstance(x, y);
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
@@ -599,6 +571,8 @@ public class GameLoader extends ClassLoader implements Serializable {
     public void makeNewWorld() {
         try {
             isFailed = false;
+            rFootDown = false;
+            lFootDown = false;
             timestepsSimulated = 0;
 
             /* World setup */
@@ -713,7 +687,8 @@ public class GameLoader extends ClassLoader implements Serializable {
             // This proxy nonsense solves the problem that I need a class to implement _ContactListener, the version I
             // loaded with this custom class loader.
             // The dynamic proxy lets this implement a class that is defined at runtime.
-            contactListenerProxy = Proxy.newProxyInstance(_ContactListener.getClassLoader(), new Class[]{_ContactListener},
+            // Contact listener
+            Object contactListenerProxy = Proxy.newProxyInstance(_ContactListener.getClassLoader(), new Class[]{_ContactListener},
                     (proxy, method, args) -> {
                         String method_name = method.getName();
                         Object fixtureAShape;
@@ -1023,7 +998,7 @@ public class GameLoader extends ClassLoader implements Serializable {
     /**
      * Get a new StateVariable for a given body.
      */
-    public StateVariable getCurrentBodyState(Object body) {
+    private StateVariable getCurrentBodyState(Object body) {
         StateVariable currentState = null;
         try {
             Object pos = body.getClass().getMethod("getPosition").invoke(body);
@@ -1045,7 +1020,8 @@ public class GameLoader extends ClassLoader implements Serializable {
     /**
      * Set the visible state of the runner (positions, velocities). Does not change the internal solver states, and
      * can be a dangerous command to use. Determinism is out the window here.
-     * @param state
+     *
+     * @param state {@link State} to set this game's runner at.
      */
     public void setState(State state) {
         setBodyToStateVariable(rFootBody, state.rfoot);
@@ -1075,7 +1051,6 @@ public class GameLoader extends ClassLoader implements Serializable {
      */
     private void setBodyToStateVariable(Object body, StateVariable stateVariable) {
         try {
-            Object bodyXform = getXForm(stateVariable);
             body.getClass().getMethod("setXForm", _Vec2, float.class).invoke(body, makeVec2(stateVariable.getX(),
                     stateVariable.getY()), stateVariable.getTh());
             body.getClass().getMethod("setLinearVelocity", _Vec2).invoke(body, makeVec2(stateVariable.getDx(),
@@ -1120,7 +1095,7 @@ public class GameLoader extends ClassLoader implements Serializable {
     public Object getXForm(StateVariable sv) {
         Object xf = null;
         try {
-            xf = _XForm.newInstance();
+            xf = _XForm.getConstructor().newInstance();
             Object pos = xf.getClass().getField("position").get(xf); // Position
             pos.getClass().getField("x").setFloat(pos, sv.getX());
             pos.getClass().getField("y").setFloat(pos, sv.getY());
@@ -1149,7 +1124,6 @@ public class GameLoader extends ClassLoader implements Serializable {
                 Object newFixture = newBody.getClass().getMethod("getShapeList").invoke(newBody);
 
                 while (newFixture != null) {
-
                     // Most links are polygon shapes
                     Object fixtureType = newFixture.getClass().getMethod("getType").invoke(newFixture);
                     if (fixtureType == _ShapeType.getField("POLYGON_SHAPE").get(null)) {
@@ -1188,14 +1162,14 @@ public class GameLoader extends ClassLoader implements Serializable {
                         Object newShape = newFixture.getClass().cast(_EdgeShape); // EdgeShape
                         Object trans = newBody.getClass().getMethod("getXForm").invoke(newBody); // XForm
 
-                        Object vert1 = newShape.getClass().getMethod("getVertex1").invoke(newShape); // Vec2
-                        Object vert2 = newShape.getClass().getMethod("getVertex2").invoke(newShape);
-                        Object vert3 = newShape.getClass().getMethod("getVertex3").invoke(newShape);
+                        Object vertex1 = newShape.getClass().getMethod("getVertex1").invoke(newShape); // Vec2
+                        Object vertex2 = newShape.getClass().getMethod("getVertex2").invoke(newShape);
+                        Object vertex3 = newShape.getClass().getMethod("getVertex3").invoke(newShape);
 
 
-                        Object ptA = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vert1); // Vec2
-                        Object ptB = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vert2);
-                        Object ptC = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vert3);
+                        Object ptA = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vertex1); // Vec2
+                        Object ptB = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vertex2);
+                        Object ptC = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vertex3);
 
                         g.drawLine((int) (scaling * ptA.getClass().getField("x").getFloat(ptA)) + xOffsetPixels,
                                 (int) (scaling * ptA.getClass().getField("y").getFloat(ptA)) + yOffset,
@@ -1265,7 +1239,6 @@ public class GameLoader extends ClassLoader implements Serializable {
                     int vertexCount = (int) polygonShape.getClass().getMethod("getVertexCount").invoke(polygonShape);
                     for (int j = 0; j < vertexCount; j++) { // Loop through polygon vertices and draw lines between
                         // them.
-
                         Object ptA =
                                 _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, transforms[i], polyVerts[j]); //
                         // Vec2
@@ -1276,7 +1249,6 @@ public class GameLoader extends ClassLoader implements Serializable {
                                 (int) (scaling * ptB.getClass().getField("x").getFloat(ptB)) + xOffset,
                                 (int) (scaling * ptB.getClass().getField("y").getFloat(ptB)) + yOffset);
                     }
-
                 } else if (fixtureType == _ShapeType.getField("CIRCLE_SHAPE").get(null)) { // Basically just head
 
                     Object circleShape = _CircleShape.cast(shape);
@@ -1361,7 +1333,6 @@ public class GameLoader extends ClassLoader implements Serializable {
      */
     public static void adjustRealQWOPStateToSimState(State realQWOPState) {
         //TODO find a better way to manage access to th.
-
 //        realQWOPState.body.th += torsoAngAdj;
 //        realQWOPState.head.th += headAngAdj;
 //        realQWOPState.rthigh.th += rThighAngAdj;
@@ -1379,6 +1350,7 @@ public class GameLoader extends ClassLoader implements Serializable {
      *
      * @param obj Object to print the fields and methods of.
      */
+    @SuppressWarnings("unused")
     private void debugPrintObjectInfo(Object obj) {
         for (Field m : obj.getClass().getFields()) {
             System.out.println(m.getName());

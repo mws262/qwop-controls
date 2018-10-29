@@ -54,8 +54,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     /**
      * List of panes which can be activated, deactivated.
      */
-    private ArrayList<TabbedPaneActivator> allTabbedPanes = new ArrayList<>(); //List of all panes
-    // in the tabbed part
+    private ArrayList<TabbedPaneActivator> allTabbedPanes = new ArrayList<>();
 
     /**
      * Window width

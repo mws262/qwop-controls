@@ -39,7 +39,6 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
     }
 
     public void doGames() {
-
         // Load all parameters specific to this search.
         Sampler_UCB.explorationMultiplier = Float.valueOf(properties.getProperty("UCBExplorationMultiplier", "1"));
 

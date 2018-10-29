@@ -29,10 +29,8 @@ import transformations.Transform_Autoencoder;
  */
 public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
-    private static final long serialVersionUID = 1L;
-
     /**
-     * Copy of the game used to obtain all the states along a single run by resimulating it.
+     * Copy of the game used to obtain all the states along a single run by re-simulating it.
      */
     private GameLoader game;
 
@@ -147,7 +145,6 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
             setPlotBoundsFromData(pl, xData, yData);
             count++;
         }
-        //addCommandLegend(firstPlot);
         applyUpdates();
     }
 
@@ -178,10 +175,8 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-    }
+    public void keyReleased(KeyEvent e) {}
 
     @Override
-    public void plotClicked(int plotIdx) {
-    }
+    public void plotClicked(int plotIdx) {}
 }

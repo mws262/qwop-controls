@@ -11,28 +11,27 @@ import tree.Utility;
 public class Sampler_Greedy implements ISampler {
 
     /* NODE EVALUATION */
-
     /**
      * How are individual nodes scored?
-     **/
+     */
     private IEvaluationFunction evaluationFunction;
 
     /* HOW MANY SAMPLES BETWEEN JUMPS */
     /**
      * Number of samples to take before moving on from tree depth 0.
-     **/
+     */
     public int samplesAt0 = 1000;
     /**
      * Another depth specified.
-     **/
+     */
     public int depthN = 5;
     /**
      * Number of samples to take before moving on from tree depth N.
-     **/
+     */
     public int samplesAtN = 200;
     /**
      * Number of samples to take before moving on from large depth.
-     **/
+     */
     public int samplesAtInf = 75;
 
     /* JUMP SIZES */
@@ -43,34 +42,33 @@ public class Sampler_Greedy implements ISampler {
 
     /**
      * Are we done with the tree policy?
-     **/
+     */
     private boolean treePolicyDone = false;
 
     /**
      * Are we done with the expansion policy?
-     **/
+     */
     private boolean expansionPolicyDone = false;
 
     /**
      * Current node from which all sampling is done further down the tree among its descendants.
-     **/
+     */
     private Node currentRoot;
 
     /**
      * Number of samples being taken from this node before going deeper into the tree.
-     **/
+     */
     private int totalSamplesToTakeAtThisNode;
 
     /**
      * Number of samples done so far at this node and depth.
-     **/
+     */
     private int samplesSoFarAtThisNode;
 
     /**
      * Some random sampling features used.
-     **/
+     */
     private Sampler_Distribution distributionSampler = new Sampler_Distribution();
-
 
     public Sampler_Greedy(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
@@ -93,7 +91,7 @@ public class Sampler_Greedy implements ISampler {
 
     /**
      * We've changed the node we're sampling from. Reset the appropriate stuff.
-     **/
+     */
     private void chooseNewRoot(Node newRoot) {
         if (currentRoot != null) {
             currentRoot.nodeColor = null;
@@ -109,7 +107,7 @@ public class Sampler_Greedy implements ISampler {
 
     /**
      * Set a new evaluation function for this sampler. Should be hot-swappable at any point.
-     **/
+     */
     public void setEvaluationFunction(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
     }
@@ -147,7 +145,6 @@ public class Sampler_Greedy implements ISampler {
     public void treePolicyActionDone(Node currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
-
     }
 
     @Override
@@ -183,8 +180,7 @@ public class Sampler_Greedy implements ISampler {
                 Node bestNode = currentRoot;
                 float bestScore = -Float.MAX_VALUE;
                 for (Node leaf : leaves) {
-                    float score = evaluationFunction.getValue(leaf);//(leaf.state.body.x - rootX)/rootX;// + 5f*leaf
-					// .state.body.th;
+                    float score = evaluationFunction.getValue(leaf);
                     if (score > bestScore) {
                         bestScore = score;
                         bestNode = leaf;

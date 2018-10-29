@@ -28,12 +28,12 @@ public class MAIN_SnapshotAll extends JFrame {
 
     /**
      * Window width
-     **/
+     */
     public static int windowWidth = 1920;
 
     /**
      * Window height
-     **/
+     */
     public static int windowHeight = 1000;
 
     public static int playbackDepth = 5;
@@ -95,6 +95,5 @@ public class MAIN_SnapshotAll extends JFrame {
                 e.printStackTrace();
             }
         }
-
     }
 }

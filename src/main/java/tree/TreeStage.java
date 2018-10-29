@@ -146,7 +146,6 @@ public abstract class TreeStage implements Runnable {
         System.out.println("Terminate called on a stage.");
         saver.reportStageEnding(getRootNode().getRoot(), getResults()); // Changed to save ALL the way back to real
         // root, not just subtree root.
-        // Stop threads and get rid of them.
 
         for (TreeWorker tw : workers) {
             tw.pauseWorker(); // Pause the worker until another stage needs it.
@@ -163,12 +162,11 @@ public abstract class TreeStage implements Runnable {
      */
     public boolean areWorkersRunning() {
         synchronized (workers) {
-
-            Iterator<TreeWorker> iter = workers.iterator();
-            if (!iter.hasNext())
+            Iterator<TreeWorker> iterator = workers.iterator();
+            if (!iterator.hasNext())
                 return true; // It's stupid if the termination condition gets caught before any threads have a chance to get going.
-            while (iter.hasNext()) {
-                if (iter.next().isRunning()) {
+            while (iterator.hasNext()) {
+                if (iterator.next().isRunning()) {
                     return true;
                 }
             }

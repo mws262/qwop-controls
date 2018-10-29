@@ -20,8 +20,8 @@ public interface IDataSaver {
      * Report intermediate nodes as they are being run. Useful for dense
      * saving of data for TFRecords or other.
      *
-     * @param action
-     * @param game
+     * @param action Current action being run.
+     * @param game Instance of the game used for simulation.
      */
     void reportTimestep(Action action, GameLoader game);
 

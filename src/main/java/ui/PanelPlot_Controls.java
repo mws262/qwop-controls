@@ -21,8 +21,6 @@ import transformations.Transform_Autoencoder;
 
 public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 
-    private static final long serialVersionUID = 1L;
-
     /**
      * Transformer to use to transform normal states into reduced coordinates.
      */
@@ -74,7 +72,6 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 
     @Override
     public void update(Node plotNode) {
-
         nodes.clear();
         plotNode.getNodesBelow(nodes, true);
 
@@ -88,7 +85,6 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
         List<State> statesBelow = nodes.stream().map(Node::getState).collect(Collectors.toList()); // Convert from node
 		// list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
-
         changePlots();
     }
 
@@ -116,17 +112,14 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
             setPlotBoundsFromData(pl, xData, yData);
             count++;
         }
-        //addCommandLegend(firstPlot);
         applyUpdates();
     }
 
     @Override
-    public void plotClicked(int plotIdx) {
-    }
+    public void plotClicked(int plotIdx) {}
 
     @Override
-    public void keyTyped(KeyEvent e) {
-    }
+    public void keyTyped(KeyEvent e) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -150,6 +143,5 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-    }
+    public void keyReleased(KeyEvent e) {}
 }
