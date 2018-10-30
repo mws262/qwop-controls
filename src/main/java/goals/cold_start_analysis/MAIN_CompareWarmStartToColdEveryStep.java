@@ -1,4 +1,4 @@
-package goals.ColdStartAnalysis;
+package goals.cold_start_analysis;
 
 import actions.ActionQueue;
 import game.GameLoader;

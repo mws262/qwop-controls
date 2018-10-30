@@ -7,6 +7,7 @@ import tree.Node;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * An slightly more fully-featured version of {@link PanelRunner_SimpleState}. Allows drawing of multiple states.
@@ -18,7 +19,6 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
      */
     private GameLoader game = new GameLoader();
 
-
     /**
      * Main state to draw. It will provide the x-reference position.
      */
@@ -27,7 +27,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     /**
      * Additional states to draw, and their colors. x-coordinate will be relative to the mainState.
      */
-    private Map<State, Color> secondaryStates = new HashMap<>();
+    private Map<State, Color> secondaryStates = new ConcurrentHashMap<>();
 
     /**
      * Add a state to be displayed.
