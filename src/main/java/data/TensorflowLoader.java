@@ -24,12 +24,12 @@ public abstract class TensorflowLoader {
 
     /**
      * Current TensorFlow session.
-     **/
+     */
     private final Session session;
 
     /**
      * Computational graph loaded from TensorFlow saves.
-     **/
+     */
     private final Graph graph;
 
     /**
@@ -79,7 +79,7 @@ public abstract class TensorflowLoader {
     /**
      * Print out all operations in the TensorFlow graph to help determine which ones we want to use. There can be an
      * incredible number, and sometimes TensorBoard is the best way to sort this out.
-     **/
+     */
     @SuppressWarnings("unused")
     public void printTensorflowGraphOperations() {
         Iterator<Operation> iter = graph.operations();

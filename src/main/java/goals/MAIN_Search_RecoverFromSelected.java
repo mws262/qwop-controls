@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 
 import actions.Action;
 import data.SavableActionSequence;
+import data.SparseDataToDenseTFRecord;
 import org.apache.commons.lang3.ArrayUtils;
 
 import data.SavableFileIO;
-import data.SparseDataToDense;
 import game.GameLoader;
 import samplers.Sampler_UCB;
 import tree.Node;
@@ -103,8 +103,8 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
                     File[] files = getSaveLocation().listFiles();
                     for (File dfiles : Objects.requireNonNull(files)) {
                         if (dfiles.toString().toLowerCase().contains(name) && !dfiles.toString().toLowerCase().contains("unsuccessful")) {
-                            SparseDataToDense converter =
-									new SparseDataToDense(getSaveLocation().getAbsolutePath() + "/");
+                            SparseDataToDenseTFRecord converter =
+									new SparseDataToDenseTFRecord(getSaveLocation().getAbsolutePath() + "/");
                             converter.trimFirst = trimStartBy;
                             converter.trimLast = trimEndBy;
                             List<File> toConvert = new ArrayList<>();

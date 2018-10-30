@@ -1,6 +1,6 @@
 package game;
 
-public class State_Weights {
+public class StateWeights {
 
     private static final float W_BODY = 1f, W_HEAD = 1.2f, W_RTHIGH = 1f, W_LTHIGH = 1f,
             W_RCALF = 1f, W_LCALF = 1f, W_RFOOT = 1.2f, W_LFOOT = 1.2f,

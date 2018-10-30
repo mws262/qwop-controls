@@ -1,12 +1,10 @@
 package goals;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.SparseDataToDense;
+import data.SparseDataToDenseTFRecord;
 import samplers.Sampler_UCB;
 import tree.Node;
 import tree.Utility;
@@ -85,7 +83,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
                     filesToConvert.add(f);
                 }
             }
-            SparseDataToDense converter = new SparseDataToDense(getSaveLocation().getAbsolutePath() + "/");
+            SparseDataToDenseTFRecord converter = new SparseDataToDenseTFRecord(getSaveLocation().getAbsolutePath() + "/");
             converter.trimFirst = trimStartBy;
             converter.trimLast = trimEndBy;
             converter.convert(filesToConvert, true);

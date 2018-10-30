@@ -20,8 +20,10 @@ import savers.DataSaver_DenseTFRecord;
  * log data at every timestep, and save this data in TFRecord form.
  *
  * @author matt
+ *
+ * See {@link SavableSingleGame}, {@link DataSaver_DenseTFRecord}.
  */
-public class SparseDataToDense {
+public class SparseDataToDenseTFRecord {
 
     /**
      * Personal copy of the game.
@@ -49,7 +51,7 @@ public class SparseDataToDense {
     public int trimFirst = 0;
     public int trimLast = 0;
 
-    public SparseDataToDense(String fileLoc) {
+    public SparseDataToDenseTFRecord(String fileLoc) {
         if (!fileLoc.endsWith("/")) fileLoc = fileLoc + "/";
         saver.setSavePath(fileLoc);
     }

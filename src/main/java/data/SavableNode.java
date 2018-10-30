@@ -27,7 +27,9 @@ public class SavableNode implements Serializable {
         this.parent = parent;
     }
 
-    /* Create as placeholder. For root node */
+    /**
+     * Create as placeholder for root node.
+     */
     public SavableNode() {}
 
     /* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Returns the ROOT of a tree. */
