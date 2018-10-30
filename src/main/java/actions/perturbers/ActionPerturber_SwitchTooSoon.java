@@ -11,6 +11,10 @@ import java.util.Map;
  */
 public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
 
+    /**
+     * Action indices as keys and number of timesteps to move as values. Timesteps are moved from the previous action
+     * to the specified one.
+     */
     private Map<Integer, Integer> perturbationIndexAndSize;
 
     /**
@@ -28,6 +32,11 @@ public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
         }
         if (perturbationIndexAndSize.containsKey(0)) {
             throw new IllegalArgumentException("A SwitchTooSoon perturbation cannot happen on the first");
+        }
+        for (Integer size : perturbationIndexAndSize.keySet()) {
+            if (size < 0) {
+                throw new IllegalArgumentException("Perturbations indices should be positive integers. Given was: " + size + ".");
+            }
         }
         this.perturbationIndexAndSize = perturbationIndexAndSize;
     }
