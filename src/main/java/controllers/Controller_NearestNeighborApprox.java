@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +19,7 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
+import game.StateWeights;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
@@ -32,7 +32,6 @@ import game.StateVariable;
 import actions.Action;
 import tree.Node;
 import ui.PanelRunner;
-import game.State_Weights;
 import tree.Utility;
 
 /**
@@ -302,7 +301,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
                 float otherVal = s2.getStateVarFromName(bodyPart, stateVar) - ((stateVar == State.StateName.X) ?
                         xOffset2 : 0);
                 float diff = thisVal - otherVal;
-                errorAccumulator += State_Weights.getWeight(bodyPart, stateVar) * diff * diff;
+                errorAccumulator += StateWeights.getWeight(bodyPart, stateVar) * diff * diff;
             }
         }
         return errorAccumulator;

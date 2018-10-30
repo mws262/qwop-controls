@@ -7,10 +7,9 @@ import java.util.Objects;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import data.SparseDataToDense;
+import data.SparseDataToDenseTFRecord;
 import samplers.Sampler_UCB;
 import tree.Node;
-import tree.Utility;
 
 /**
  * Does the full search in 4 stages.
@@ -221,7 +220,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                     filesToConvert.add(f);
                 }
             }
-            SparseDataToDense converter = new SparseDataToDense(getSaveLocation().getAbsolutePath() + "/");
+            SparseDataToDenseTFRecord converter = new SparseDataToDenseTFRecord(getSaveLocation().getAbsolutePath() + "/");
             converter.trimFirst = stage3StartDepth;
             converter.trimLast = trimEndBy;
             converter.convert(filesToConvert, true);

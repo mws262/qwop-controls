@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import data.SparseDataToDense;
+import data.SparseDataToDenseTFRecord;
 
 public class MAIN_ConvertSparseToTFRecord {
 
@@ -25,7 +25,7 @@ public class MAIN_ConvertSparseToTFRecord {
             }
         }
 
-        SparseDataToDense converter = new SparseDataToDense(outFile.getAbsolutePath());
+        SparseDataToDenseTFRecord converter = new SparseDataToDenseTFRecord(outFile.getAbsolutePath());
         converter.trimLast = 4;
         converter.convert(filesToConvert, true);
     }
