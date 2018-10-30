@@ -1,4 +1,4 @@
-package goals.PhaseVariableTesting;
+package goals.phase_variable_testing;
 
 import actions.Action;
 import actions.ActionQueue;

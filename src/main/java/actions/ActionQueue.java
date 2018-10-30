@@ -219,4 +219,18 @@ public class ActionQueue {
         }
         return actionQueueCopy;
     }
+
+    /**
+     * Gives the total duration of this action queue in timesteps. This does not depend on the number of timesteps
+     * already executed on this queue.
+     *
+     * @return Total duration of this queue in timesteps.
+     */
+    public int getTotalQueueLengthTimesteps() {
+        int totalTS = 0;
+        for (Action a : actionListFull) {
+            totalTS += a.getTimestepsTotal();
+        }
+        return totalTS;
+    }
 }

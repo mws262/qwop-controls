@@ -1,13 +1,17 @@
-package goals.PerturbationAnalysis;
+package goals.perturbation_analysis;
 
 import actions.Action;
 import actions.ActionQueue;
+import actions.perturbers.ActionPerturber_SwitchTooSoon;
 import game.GameLoader;
+import org.jcodec.common.DictionaryCompressor;
 import ui.PanelRunner_MultiState;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MAIN_PerturbationSimple extends JFrame {
 
@@ -26,42 +30,46 @@ public class MAIN_PerturbationSimple extends JFrame {
 
 
         ActionQueue actionQueue = getSampleActions();
+        Map<Integer, Integer> perturbationLocations = new HashMap<>();
+        perturbationLocations.put(18, 1);
+        ActionPerturber_SwitchTooSoon perturber = new ActionPerturber_SwitchTooSoon(perturbationLocations);
+        ActionQueue actionQueuePerturbed = perturber.perturb(actionQueue);
 
-        GameLoader game = new GameLoader();
+        GameLoader gameUnperturbed = new GameLoader();
+        GameLoader gamePerturbed = new GameLoader();
 
-        boolean simRealtime = false;
-        int addTsAtTransition = 11;
-        int count = 0;
-        boolean[] prevCommand = null;
-        while (!actionQueue.isEmpty() && !game.getFailureStatus()) {
+        boolean reachedFirstPerturbation = false;
+        while (!actionQueue.isEmpty()) {
 
-            boolean[] command = actionQueue.pollCommand();
+            boolean[] commandUnperturbed = actionQueue.pollCommand();
+            boolean[] commandPerturbed = actionQueuePerturbed.pollCommand();
 
-            if (count > 0 && !Arrays.equals(command, prevCommand) && --addTsAtTransition == 0) {
-                game.stepGame(prevCommand); //Step the game once too many.
-                runnerPanel.addSecondaryState(game.getCurrentState(), Color.red);
-                game.stepGame(command);
-                count = -1;
-                simRealtime = true;
-            } else {
-                game.stepGame(command);
-                runnerPanel.setMainState(game.getCurrentState());
-            }
+            gameUnperturbed.stepGame(commandUnperturbed);
+            gamePerturbed.stepGame(commandPerturbed);
+
+            runnerPanel.clearSecondaryStates();
+            runnerPanel.setMainState(gameUnperturbed.getCurrentState());
+            runnerPanel.addSecondaryState(gamePerturbed.getCurrentState(), Color.RED);
 
             repaint();
 
-            if (simRealtime) {
+            if (!reachedFirstPerturbation && !Arrays.equals(commandPerturbed, commandUnperturbed)) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                reachedFirstPerturbation = true;
+            }
+
+            if (reachedFirstPerturbation) {
                 try {
                     Thread.sleep(30);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-            prevCommand = command;
-            count++;
         }
-        System.out.println(actionQueue.isEmpty());
-        System.out.println(count);
     }
 
     static ActionQueue getSampleActions() {

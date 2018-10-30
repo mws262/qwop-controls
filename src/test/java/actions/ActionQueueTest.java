@@ -443,6 +443,17 @@ public class ActionQueueTest {
         Assert.assertTrue(copyTestQueue.isEmpty());
     }
 
+    @Test
+    public void getTotalQueueLengthTimesteps() {
+        ActionQueue actQueue = makeTestQueue();
+        Assert.assertEquals(26, actQueue.getTotalQueueLengthTimesteps());
+
+        for (int i = 0; i < 3; i++) {
+            actQueue.pollCommand(); // Should not change even after actions have been polled.
+        }
+        Assert.assertEquals(26, actQueue.getTotalQueueLengthTimesteps());
+    }
+
     /**
      * Generic 4-action queue for testing here.
      *
