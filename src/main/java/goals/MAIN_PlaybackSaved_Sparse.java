@@ -36,7 +36,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
     public static int windowHeight = 1000;
 
 
-    private File saveLoc = new File("src/main/resources/config/saved_data/5_11_18");
+    private File saveLoc = new File("src/main/resources/saved_data/");
 
     private List<Node> leafNodes = new ArrayList<>();
 
@@ -74,7 +74,8 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
         List<File> playbackFiles = new ArrayList<>();
         for (File f : allFiles) {
-            if (f.getName().contains("recoveries") && !f.getName().contains("unsuccessful")) {
+            if (f.getName().contains("recoveries") || f.getName().contains("Prefix") && !f.getName().contains(
+                    "unsuccessful")) {
                 playbackFiles.add(f);
             }
         }
