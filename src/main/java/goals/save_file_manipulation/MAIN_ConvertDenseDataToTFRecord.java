@@ -1,4 +1,4 @@
-package data;
+package goals.save_file_manipulation;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import data.SavableDenseData;
+import data.SavableFileIO;
+import data.TFRecordWriter;
 import org.tensorflow.example.BytesList;
 import org.tensorflow.example.Example;
 import org.tensorflow.example.Feature;
@@ -22,8 +25,7 @@ import com.google.protobuf.ByteString;
 import game.State;
 import actions.Action;
 
-
-public class DenseDataToTFRecord {
+public class MAIN_ConvertDenseDataToTFRecord {
 
     @SuppressWarnings("WeakerAccess")
     static String sourceDir = "/media/matt/Storage/QWOP_SaveableDenseData/";

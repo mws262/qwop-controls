@@ -78,7 +78,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
     }
 
-    // NOTE: The following methods were borrowed and altered from my DenseDataToTFRecord class.
+    // NOTE: The following methods were borrowed and altered from my MAIN_ConvertDenseDataToTFRecord class.
 
     /**
      * Make a single feature representing the 6 state variables for a single
