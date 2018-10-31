@@ -2,6 +2,7 @@ package actions;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -118,6 +119,21 @@ public class ActionQueue {
      */
     public synchronized void addSequence(Action[] actions) {
         if (actions.length == 0)
+            throw new IllegalArgumentException("Tried to add an empty array of actions to a queue.");
+
+        for (Action action : actions) {
+            addAction(action); // Copy happens in addAction. No need to duplicate here.
+        }
+    }
+
+    /**
+     * Add a sequence of actions. All added actions are copied.
+     *
+     * @param actions List of actions to add to the end of the queue. They are copied, and adding does not influence
+     *                polling of the existing queue.
+     */
+    public synchronized void addSequence(List<Action> actions) {
+        if (actions.size() == 0)
             throw new IllegalArgumentException("Tried to add an empty array of actions to a queue.");
 
         for (Action action : actions) {

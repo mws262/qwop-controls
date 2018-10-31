@@ -8,8 +8,9 @@ import data.SavableFileIO;
 import tree.Node;
 
 /**
- * Saves data at every timestep. Old saver which serializes java classes.
- * Useful for manipulating data in java, not good for TensorFlow stuff.
+ * Saves data at every timestep. Old saver which serializes java classes. Useful for manipulating data in java, not
+ * good for TensorFlow stuff. Another disadvantage is that if any of the Java code, packages, or names change, then
+ * the data might become unloadable.
  *
  * @author matt
  */

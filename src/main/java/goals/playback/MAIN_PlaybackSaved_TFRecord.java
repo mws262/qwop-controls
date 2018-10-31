@@ -5,13 +5,10 @@ import java.io.*;
 import java.util.*;
 import javax.swing.JFrame;
 
-import org.tensorflow.example.FeatureList;
+import data.TFRecordDataParsers;
 import org.tensorflow.example.SequenceExample;
 
-import data.TFRecordReader;
-import game.GameLoader;
 import game.State;
-import game.StateVariable;
 import ui.PanelRunner_AnimatedFromStates;
 
 /**
@@ -88,39 +85,14 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
         for (File tfrecordFile : playbackFiles) {
 
             // Read all the sequences from a file.
-            List<SequenceExample> dataSeries = new ArrayList<>();
-            try (FileInputStream fIn = new FileInputStream(tfrecordFile); DataInputStream dIn = new DataInputStream(fIn)) {
-                TFRecordReader tfReader = new TFRecordReader(dIn, true);
-                while (fIn.available() > 0) {
-                    dataSeries.add(SequenceExample.parser().parseFrom(tfReader.read()));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            List<SequenceExample> dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(tfrecordFile);
+
             System.out.println("Read " + dataSeries.size() + " runs from file " + tfrecordFile + ".");
 
             // Playback each sequence one at a time.
             for (SequenceExample seq : dataSeries) {
-                int totalTimestepsInRun = seq.getFeatureLists().getFeatureListMap().get("BODY").getFeatureCount();
-                State[] stateVars = new State[totalTimestepsInRun];
-
-                for (int i = 0; i < totalTimestepsInRun; i++) {
-                    // Unpack each x y th... value in a given timestep. Turn them into StateVariables.
-                    Map<String, FeatureList> featureListMap = seq.getFeatureLists().getFeatureListMap();
-                    StateVariable[] sVarBuffer = new StateVariable[State.ObjectName.values().length];
-                    int idx = 0;
-                    for (State.ObjectName bodyPart : State.ObjectName.values()) {
-                        List<Float> sValList =
-                                featureListMap.get(bodyPart.toString()).getFeature(i).getFloatList().getValueList();
-
-                        sVarBuffer[idx] = new StateVariable(sValList);
-                        idx++;
-                    }
-
-                    // Turn the StateVariables into a single State for this timestep.
-                    stateVars[i] = new State(sVarBuffer[0], sVarBuffer[1], sVarBuffer[2], sVarBuffer[3], sVarBuffer[4],
-                            sVarBuffer[5], sVarBuffer[6], sVarBuffer[7], sVarBuffer[8], sVarBuffer[9], sVarBuffer[10], sVarBuffer[11], false);
-                }
+                // Pull the states out of the Protobuf-like structure.
+                State[] stateVars = TFRecordDataParsers.getStatesFromLoadedSequence(seq);
 
                 // Have the runner panel simulate, and wait until it is done to advance to the next one.
                 runnerPane.simRun(new LinkedList<>(Arrays.asList(stateVars)));

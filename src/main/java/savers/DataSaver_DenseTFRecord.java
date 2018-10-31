@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import org.tensorflow.example.BytesList;
 import org.tensorflow.example.Feature;
@@ -110,13 +111,14 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
     private void convertToProtobuf() throws IOException {
         String fullFilename = "";
-        if (filenameOverride == "") {
+        if (Objects.equals(filenameOverride, "")) {
             fullFilename = fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension);
         } else {
             fullFilename = fileLocation + "/" + filenameOverride + "." + fileExtension;
         }
         File file = new File(fullFilename);
 
+        //noinspection ResultOfMethodCallIgnored
         file.getParentFile().mkdirs();
         FileOutputStream stream = new FileOutputStream(file);
 
@@ -223,9 +225,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
             int prevAct = -1;
             for (Action act : dat.actions) {
                 int action = act.getTimestepsTotal();
-                if (action == prevAct) {
-                    continue;
-                } else {
+                if (action != prevAct) {
                     prevAct = action;
                     Feature.Builder sequenceFeat = Feature.newBuilder();
                     BytesList.Builder seqList = BytesList.newBuilder();

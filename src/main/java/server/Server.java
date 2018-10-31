@@ -21,7 +21,6 @@ import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_NearestNeighborApprox.RunHolder;
 import controllers.Controller_NearestNeighborApprox.StateHolder;
 import game.State;
-import tree.Utility;
 
 public class Server {
     /**

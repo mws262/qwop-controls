@@ -193,7 +193,7 @@ public class Utility {
      * @return String name of the path the the code is executing from.
      */
     @Deprecated
-    public static String getExcutionPath() {
+    public static String getExecutionPath() {
         String path = "";
         try {
             path = Utility.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();

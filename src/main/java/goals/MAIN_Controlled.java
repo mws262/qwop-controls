@@ -152,7 +152,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
     public void setup() {
         if (doScreenCapture)
-            screenCap = new ScreenCapture(new File(Utility.getExcutionPath() + "./" + Utility.generateFileName("vid",
+            screenCap = new ScreenCapture(new File(Utility.generateFileName("vid",
                     "mp4")));
         game.mainRunnerStroke = new BasicStroke(5);
         mainViewPanel = new Panel();

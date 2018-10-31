@@ -63,7 +63,7 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
         float probability1 = keyClassification.get(1);
         float probability2 = keyClassification.get(2);
 
-        Action chosenAction = null;
+        Action chosenAction;
 
         // WO
         if ((probability0 > actionLatchingThreshold && prevAction == 0) || probability0 >= probability1 && probability0 >= probability2) {

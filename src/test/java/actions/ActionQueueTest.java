@@ -4,11 +4,7 @@ import game.GameLoader;
 import game.State;
 import org.junit.Assert;
 import org.junit.Test;
-import ui.PanelRunner_SimpleState;
-import ui.StandaloneRunnerDrawer;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.Arrays;
 
 public class ActionQueueTest {

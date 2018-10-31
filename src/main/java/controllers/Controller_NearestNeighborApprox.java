@@ -3,9 +3,7 @@ package controllers;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,13 +17,13 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
+import data.TFRecordDataParsers;
 import game.StateWeights;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
 import data.EvictingTreeMap;
 import data.LIFOFixedSize;
-import data.TFRecordReader;
 import game.GameLoader;
 import game.State;
 import game.StateVariable;
@@ -322,24 +320,11 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
      */
     private void loadAll(List<File> files) throws IOException {
         Utility.tic();
-        List<SequenceExample> dataSeries = new ArrayList<>();
-
 
         for (File singleSaveFile : files) { // Each file may contain many runs.
 
-            dataSeries.clear();
-
-            // Read trajectory information as a TFRecord file. The TFRecord protobuf is using the SequenceExample
-            // template.
-            try (FileInputStream fIn = new FileInputStream(singleSaveFile)) {
-
-                DataInputStream dIn = new DataInputStream(fIn);
-                TFRecordReader tfReader = new TFRecordReader(dIn, true);
-
-                while (fIn.available() > 0) {
-                    dataSeries.add(SequenceExample.parser().parseFrom(tfReader.read()));
-                }
-            }
+            // Read from binary TFRecord to SequenceExample objects.
+            List<SequenceExample> dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(singleSaveFile);
 
             System.out.println("Read " + dataSeries.size() + " runs from file " + singleSaveFile.getName());
 

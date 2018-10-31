@@ -5,8 +5,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.junit.Assert.*;
-
 public class LIFOFixedSizeTest {
 
     @Rule
@@ -50,6 +48,6 @@ public class LIFOFixedSizeTest {
 
         // Errors out with less than 1 element allowed.
         exception.expect(IllegalArgumentException.class);
-        lifo = new LIFOFixedSize<>(0);
+        new LIFOFixedSize<>(0);
     }
 }
