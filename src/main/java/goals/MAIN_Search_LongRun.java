@@ -3,6 +3,7 @@ package goals;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import data.SparseDataToDenseTFRecord;
 import samplers.Sampler_UCB;
@@ -77,7 +78,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
         if (doStage2) {
             List<File> filesToConvert = new ArrayList<>();
             File[] files = getSaveLocation().listFiles();
-            for (File f : files) {
+            for (File f : Objects.requireNonNull(files)) {
                 if (f.toString().toLowerCase().contains("single_run_") && f.toString().toLowerCase().contains(
                         "savablesinglegame") && !f.toString().toLowerCase().contains("unsuccessful")) {
                     filesToConvert.add(f);

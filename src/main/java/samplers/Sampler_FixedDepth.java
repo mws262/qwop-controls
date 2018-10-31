@@ -1,7 +1,6 @@
 package samplers;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import actions.Action;
 import tree.Node;

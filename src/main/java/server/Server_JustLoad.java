@@ -20,7 +20,6 @@ import java.util.concurrent.TimeoutException;
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_NearestNeighborApprox.RunHolder;
 import controllers.Controller_NearestNeighborApprox.StateHolder;
-import tree.Utility;
 
 /**
  * This server just loads up all the TFRecord data and then awaits requests for that data.

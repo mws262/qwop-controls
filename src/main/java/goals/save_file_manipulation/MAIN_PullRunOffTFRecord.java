@@ -1,11 +1,10 @@
 package goals.save_file_manipulation;
 
-import data.TFRecordReader;
+import data.TFRecordDataParsers;
 import data.TFRecordWriter;
 import org.tensorflow.example.SequenceExample;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,15 +35,7 @@ public class MAIN_PullRunOffTFRecord {
         }
 
         // Read all the sequences from a file.
-        List<SequenceExample> dataSeries = new ArrayList<>();
-        try (FileInputStream fIn = new FileInputStream(inFile); DataInputStream dIn = new DataInputStream(fIn)) {
-            TFRecordReader tfReader = new TFRecordReader(dIn, true);
-            while (fIn.available() > 0) {
-                dataSeries.add(SequenceExample.parser().parseFrom(tfReader.read()));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        List<SequenceExample> dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(inFile);
 
         if (dataSeries.isEmpty()) {
             throw new IndexOutOfBoundsException("Could not locate any runs in the TFRecord file specified.");

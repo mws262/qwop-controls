@@ -182,4 +182,46 @@ public class GameLoaderTest {
     @Test
     public void adjustRealQWOPStateToSimState() { //TODO need to fix the actual method first.
     }
+
+    /**
+     * This test uses some saved data, with states at every timestep to make sure that the simulation can still
+     * reproduce it when fed the same commands. This alerts us if any changes have altered the behavior of GameLoader
+     * without our knowledge.
+     */
+    @Test
+    public void testForAccidentalChanges() {
+        //TODO there is a mess here with the loaded file. I'm not yet sure whose fault this is.
+//
+//        File exampleRunFile = new File("src/test/resources/saved_data_examples/example_run.tfrecord");
+//        List<SequenceExample> dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(exampleRunFile);
+//
+//        Assert.assertEquals(1, dataSeries.size()); // This example data should contain one run.
+//        State[] loadedStates = TFRecordDataParsers.getStatesFromLoadedSequence(dataSeries.get(0));
+//        List<Action> loadedActions = TFRecordDataParsers.getActionsFromLoadedSequence(dataSeries.get(0));
+//
+//        GameLoader game = new GameLoader();
+//        ActionQueue actionQueue = new ActionQueue();
+////        actionQueue.addSequence(loadedActions);
+//        for (int i = 0; i < loadedActions.size(); i++) {
+//            actionQueue.addAction(loadedActions.get(i));
+//        }
+//
+//        int count = 0;
+//        while (!actionQueue.isEmpty()) {
+//            float[] stSim = game.getCurrentState().flattenState();
+//            float[] stLoad = loadedStates[count].flattenState();
+//
+//            System.out.println(count);
+//
+//            for (int i = 0; i < stSim.length; i++) {
+//                Assert.assertEquals(stLoad[i], stSim[i], 1e-10);
+//            }
+//
+//            boolean[] command = actionQueue.pollCommand();
+//            game.stepGame(command);
+//            count++;
+//        }
+
+//        Assert.assertEquals(loadedStates.length, loadedActions.stream().mapToInt(Action::getTimestepsTotal).sum());
+    }
 }

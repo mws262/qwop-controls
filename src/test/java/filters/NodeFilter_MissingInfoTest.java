@@ -2,17 +2,13 @@ package filters;
 
 import actions.Action;
 import game.State;
-import org.apache.avro.generic.GenericData;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import tree.Node;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -192,8 +188,7 @@ public class NodeFilter_MissingInfoTest {
             Assert.assertTrue(allNodes.contains(n));
         }
 
-        Node badNode = null;
-        Assert.assertFalse(nodeFilter.filter(badNode)); // Null nodes should return false.
+        Assert.assertFalse(nodeFilter.filter((Node) null)); // Null nodes should return false.
 
         nodesWithStates.clear();
         nodeFilter.filter(nodesWithStates); // Should tolerate an empty list.

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class SavableFileIOTest implements Serializable {
 
     private final String tmpFileDir = "./src/test/resources/tmp/";

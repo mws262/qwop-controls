@@ -5,16 +5,22 @@
       <w>dataset</w>
       <w>downsample</w>
       <w>downsampler</w>
+      <w>hashtable</w>
       <w>jbox</w>
       <w>keypress</w>
+      <w>matlab</w>
       <w>multiplicatively</w>
+      <w>perturber</w>
       <w>protobuf</w>
       <w>qwop</w>
       <w>recurses</w>
+      <w>recursing</w>
       <w>solarized</w>
       <w>tfrecord</w>
       <w>timestep</w>
       <w>timesteps</w>
+      <w>unexecuted</w>
+      <w>unloadable</w>
     </words>
   </dictionary>
 </component>

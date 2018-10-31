@@ -28,6 +28,6 @@ public class NodeFilter_IdentityTest {
         Assert.assertEquals(originalSize, listOfNodes.size());
 
         Node badNode = null;
-        Assert.assertTrue(filter.filter(badNode)); // Should still allow even null.
+        Assert.assertTrue(filter.filter((Node) null)); // Should still allow even null.
     }
 }

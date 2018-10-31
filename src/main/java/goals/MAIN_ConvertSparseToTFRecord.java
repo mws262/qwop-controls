@@ -15,6 +15,7 @@ public class MAIN_ConvertSparseToTFRecord {
         File outFile = new File("./4_26_18/");
         String filterTerm = "steadyRunPrefix";
 
+        //noinspection ResultOfMethodCallIgnored
         outFile.mkdir();
 
         List<File> filesToConvert = new ArrayList<>();

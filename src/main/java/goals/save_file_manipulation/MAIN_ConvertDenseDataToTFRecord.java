@@ -116,6 +116,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
     private static void convertToProtobuf(List<SavableDenseData> denseData, String fileName, String destinationPath) throws IOException {
         File file = new File(destinationPath + fileName);
 
+        //noinspection ResultOfMethodCallIgnored
         file.getParentFile().mkdirs();
         FileOutputStream stream = new FileOutputStream(file);
 
@@ -199,9 +200,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
             int prevAct = -1;
             for (Action act : dat.getAction()) {
                 int action = act.getTimestepsTotal();
-                if (action == prevAct) {
-                    continue;
-                } else {
+                if (action != prevAct) {
                     prevAct = action;
                     Feature.Builder sequenceFeat = Feature.newBuilder();
                     BytesList.Builder seqList = BytesList.newBuilder();

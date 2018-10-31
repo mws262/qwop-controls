@@ -59,9 +59,9 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
         // Check if this is an exception case.
         if (actionExceptions != null && actionExceptions.containsKey(actionDepth))
-            return actionExceptions.get(actionDepth).clone();
+            return actionExceptions.get(actionDepth).getCopy();
 
         // Otherwise, pick based on cycle.
-        return repeatedActions[actionDepth % cycleLength].clone();
+        return repeatedActions[actionDepth % cycleLength].getCopy();
     }
 }

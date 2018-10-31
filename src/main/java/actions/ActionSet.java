@@ -57,8 +57,7 @@ public class ActionSet extends ArrayList<Action> {
      *
      * @return A getCopy of this ActionSet.
      */
-    @Override
-    public ActionSet clone() {
+    public ActionSet getCopy() {
         ActionSet duplicate = new ActionSet(samplingDist);
         duplicate.addAll(this);
         return duplicate;

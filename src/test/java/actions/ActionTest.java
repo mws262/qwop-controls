@@ -1,7 +1,8 @@
 package actions;
 
-import actions.Action;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.ArrayList;
@@ -189,35 +190,35 @@ public class ActionTest {
         Assert.assertFalse(validAction1.equals(String.valueOf(5)));
         Assert.assertFalse(validAction1.equals(validAction2));
 
-        Assert.assertTrue(validAction1.equals(validAction1));
-        Assert.assertTrue(validAction2.equals(validAction2));
-        Assert.assertTrue(validAction3.equals(validAction3));
+        Assert.assertEquals(validAction1, validAction1);
+        Assert.assertEquals(validAction2, validAction2);
+        Assert.assertEquals(validAction3, validAction3);
 
         // Must copy to get a pollable version of the action.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
 
-        Assert.assertTrue(validAction1.equals(action1Copy));
-        Assert.assertTrue(validAction2.equals(action2Copy));
-        Assert.assertTrue(validAction3.equals(action3Copy));
+        Assert.assertEquals(validAction1, action1Copy);
+        Assert.assertEquals(validAction2, action2Copy);
+        Assert.assertEquals(validAction3, action3Copy);
 
         Action equivAction = new Action(actTimesteps1, keys1).getCopy();
-        Assert.assertTrue(equivAction.equals(action1Copy));
+        Assert.assertEquals(equivAction, action1Copy);
 
 
         for (int i = 0; i < 5; i++) {
             action1Copy.poll();
             equivAction.poll();
         }
-        Assert.assertTrue(equivAction.equals(action1Copy));
+        Assert.assertEquals(equivAction, action1Copy);
     }
 
     @Test
     public void getCopy() {
-        Assert.assertTrue(validAction1.equals(validAction1.getCopy()));
-        Assert.assertTrue(validAction2.equals(validAction2.getCopy()));
-        Assert.assertTrue(validAction3.equals(validAction3.getCopy()));
+        Assert.assertEquals(validAction1, validAction1.getCopy());
+        Assert.assertEquals(validAction2, validAction2.getCopy());
+        Assert.assertEquals(validAction3, validAction3.getCopy());
     }
 
     @Test
