@@ -26,22 +26,22 @@ import savers.DataSaver_DenseTFRecord;
 public class SparseDataToDenseTFRecord {
 
     /**
-     * Personal copy of the game.
+     * Interface to the game and Box2D physics for simulation actions.
      */
     private final GameLoader game = new GameLoader();
 
     /**
-     * Saver that this will use. Use a dense one most likely.
+     * Saver that this converted will use. Uses a dense saver (every timestep saved) most likely.
      */
     private final DataSaver_DenseTFRecord saver = new DataSaver_DenseTFRecord();
 
     /**
-     * Saves and loads.
+     * Saving and loading of Java objects.
      */
     private final SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
 
     /**
-     * Queued commands, IE QWOP key presses
+     * Queued {@link Action}, i.e. durations and keypresses.
      */
     private final ActionQueue actionQueue = new ActionQueue();
 
@@ -51,13 +51,22 @@ public class SparseDataToDenseTFRecord {
     public int trimFirst = 0;
     public int trimLast = 0;
 
+    /**
+     * Make a new converter for making binary TFRecord files from {@link SavableSingleGame} which were
+     * previoiusly serialized to file by {@link SavableFileIO}.
+     *
+     * @param fileLoc Directory for saving converted data.
+     */
     public SparseDataToDenseTFRecord(String fileLoc) {
         if (!fileLoc.endsWith("/")) fileLoc = fileLoc + "/";
         saver.setSavePath(fileLoc);
     }
 
     /**
-     * Re-simulate and convert. saveBulk means that all will be combined into one file. Otherwise into many different.
+     * Given files containing sparsely saved information (i.e. just at actions transitions, not at every timestep),
+     * convert to densely saved data by re-simulating.
+     * @param files Files containing sparsely saved run data, {@link SavableSingleGame}.
+     * @param saveBulk Whether to
      */
     public void convert(List<File> files, boolean saveBulk) {
 
@@ -82,10 +91,14 @@ public class SparseDataToDenseTFRecord {
                 }
             }
         }
-
         saver.reportStageEnding(null, null);
     }
 
+    /**
+     * Simulate some actions without saving. Useful when some beginning actions are being trimmed from the data.
+     *
+     * @param actions Array of {@link Action actions} to simulate without saving.
+     */
     private void simWithoutSave(Action[] actions) {
         actionQueue.clearAll();
         actionQueue.addSequence(actions);
@@ -102,6 +115,11 @@ public class SparseDataToDenseTFRecord {
         }
     }
 
+    /**
+     * Simulate actions with data stored at every timestep.
+     *
+     * @param actions Array of {@link Action actions} to simulate with saving of full state data at every timestep.
+     */
     private void simWithSave(Action[] actions) {
         actionQueue.clearAll();
         actionQueue.addSequence(actions);
@@ -120,21 +138,35 @@ public class SparseDataToDenseTFRecord {
         }
     }
 
+    /**
+     * Simulate a sparsely-saved game stored as a {@link SavableSingleGame}. Save data at every timestep which is
+     * included between {@link SparseDataToDenseTFRecord#trimFirst} and {@link SparseDataToDenseTFRecord#trimLast}.
+     *
+     * @param singleGame Sparsely-saved data to re-simulate and convert.
+     */
     private void sim(SavableSingleGame singleGame) {
         actionQueue.clearAll();
         Action[] gameActions = singleGame.actions;
+
+        if (trimLast + trimFirst > gameActions.length) {
+            throw new IndexOutOfBoundsException("Number of trimmed actions (beginning + end) exceeds the total number" +
+                    " of actions in the run.");
+        }
+
+        // Divide the actions up into ones which shouldn't be saved at the beginning, ones which should be saved in
+        // the middle, and ones which shouldn't be saved at the end.
         Action[] noSaveActions1 = Arrays.copyOfRange(gameActions, 0, trimFirst);
         Action[] saveActions = Arrays.copyOfRange(gameActions, trimFirst, gameActions.length - trimLast);
         Action[] noSaveActions2 = Arrays.copyOfRange(gameActions, gameActions.length - trimLast, gameActions.length);
 
-        if (noSaveActions1.length + saveActions.length + noSaveActions2.length != gameActions.length)
-            throw new RuntimeException("Split the game actions into an incorrect number which does not add up to the " +
-                    "original total.");
+        // Total number of actions should be preserved by trimming.
+        assert noSaveActions1.length + saveActions.length + noSaveActions2.length == gameActions.length;
 
         game.makeNewWorld();
         simWithoutSave(noSaveActions1);
         saver.reportGameInitialization(game.getCurrentState()); // Wait to initialize until the ignored section is done.
         simWithSave(saveActions);
+        // No need to simulate the unsaved actions at the end.
 
         saver.reportGameEnding(null);
     }

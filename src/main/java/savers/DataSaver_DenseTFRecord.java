@@ -21,23 +21,24 @@ import data.TFRecordWriter;
 import game.State;
 import actions.Action;
 import tree.Node;
+import tree.Utility;
 
 public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
     /**
-     * File prefix. Goes in front of date.
+     * Filename prefix. Goes in front of date.
      */
     @SuppressWarnings("WeakerAccess")
     public String filePrefix = "denseTF";
 
     /**
-     * Do not include dot before.
+     * File extension. Do not include dot before.
      */
     @SuppressWarnings("WeakerAccess")
     public String fileExtension = "TFRecord";
 
     /**
-     * If changed, will use this. Otherwise, a timestamp is usde.
+     * If changed, will use this. Otherwise, a timestamp is used.
      */
     public String filenameOverride = "";
 
@@ -51,6 +52,12 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      */
     private ArrayList<GameContainer> gameData = new ArrayList<>();
 
+    /**
+     * Finalize data stored during a run and send to file. If not called, data will not be saved. Data will be sent
+     * to file every {@link DataSaver_DenseTFRecord#saveInterval} games.
+     *
+     * @param endNode Not required. Null may be given.
+     */
     @Override
     public void reportGameEnding(Node endNode) {
         saveCounter++;
@@ -64,7 +71,6 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
         // Clear out for the next run to begin.
         stateBuffer.clear();
         actionBuffer.clear();
-
     }
 
     public void toFile() {
@@ -82,8 +88,12 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     // NOTE: The following methods were borrowed and altered from my MAIN_ConvertDenseDataToTFRecord class.
 
     /**
-     * Make a single feature representing the 6 state variables for a single
-     * body part at a single timestep. Append to existing FeatureList for that body part.
+     * Make a single feature representing the 6 state variables for a single body part at a single timestep. Append
+     * to existing FeatureList for that body part.
+     *
+     * @param bodyPart Body part that the data is being given for. Comes from {@link State.ObjectName}.
+     * @param state
+     * @param listToAppendTo
      */
     private static void makeFeature(State.ObjectName bodyPart, State state, FeatureList.Builder listToAppendTo) {
         Feature.Builder feat = Feature.newBuilder();
