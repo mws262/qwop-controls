@@ -914,14 +914,22 @@ public class GameLoader extends ClassLoader implements Serializable {
                 //Set speed 1 for knees
                 // set l hip limits(-1 1)
                 //set right hip limits (-1.3,0.7)
-                setJointSpeedAndLimits(rKneeJ, rKneeSpeed2, oRHipLimLo, oRHipLimHi);
-                setJointSpeedAndLimits(lKneeJ, lKneeSpeed2, oLHipLimLo, oLHipLimHi);
+                setMotorSpeed(rKneeJ, rKneeSpeed2);
+                setMotorSpeed(lKneeJ, lKneeSpeed2);
+                setJointLowerBound(rHipJ, oRHipLimLo);
+                setJointUpperBound(rHipJ, oRHipLimHi);
+                setJointLowerBound(lHipJ, oLHipLimLo);
+                setJointUpperBound(lHipJ, oLHipLimHi);
             } else if (p) {
                 //Set speed 2 for knees
                 // set L hip limits(-1.5,0.5)
                 // set R hip limits(-0.8,1.2)
-                setJointSpeedAndLimits(rKneeJ, rKneeSpeed1, pRHipLimLo, pRHipLimHi);
-                setJointSpeedAndLimits(lKneeJ, lKneeSpeed1, pLHipLimLo, pLHipLimHi);
+                setMotorSpeed(rKneeJ, rKneeSpeed1);
+                setMotorSpeed(lKneeJ, lKneeSpeed1);
+                setJointLowerBound(rHipJ, pRHipLimLo);
+                setJointUpperBound(rHipJ, pRHipLimHi);
+                setJointLowerBound(lHipJ, pLHipLimLo);
+                setJointUpperBound(lHipJ, pLHipLimHi);
             } else {
                 // Set knee speeds to 0
                 //Joint limits not changed!!
@@ -954,19 +962,6 @@ public class GameLoader extends ClassLoader implements Serializable {
                     "booleans.");
         }
         stepGame(keys[0], keys[1], keys[2], keys[3]);
-    }
-
-    /**
-     * Convenience method for setting both joint speed and limits when different input keys are pressed.
-     * @param joint Joint to change properties of.
-     * @param speed Joint motor target speed.
-     * @param lowLim Lower angle bound.
-     * @param hiLim Upper angle bound.
-     */
-    private void setJointSpeedAndLimits(Object joint, float speed, float lowLim, float hiLim) {
-        setMotorSpeed(joint, speed);
-        setJointLowerBound(joint, lowLim);
-        setJointUpperBound(joint, hiLim);
     }
 
     /**
