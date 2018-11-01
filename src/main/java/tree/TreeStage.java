@@ -3,6 +3,7 @@ package tree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import game.StateVariable;
 import samplers.ISampler;
@@ -184,5 +185,27 @@ public abstract class TreeStage implements Runnable {
 
     public int getNumberOfWorkers() {
         return numWorkers;
+    }
+
+    /**
+     * Sometimes a stage end is triggered before a necessary state is assigned to a node. This method can waste time
+     * for us until the state is assigned!
+     * @param n Node to wait for its state to be assigned.
+     */
+    void waitForStateAssignment(Node n) throws TimeoutException {
+        int max = 1000; // Maximum waiting intervals before timing out.
+        int count = 0;
+        while (n.isStateUnassigned()) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            count++;
+            if (count > max) {
+                throw new TimeoutException("Waited for a state to be assigned to a node for too long. Something " +
+                        "bigger is up.");
+            }
+        }
     }
 }

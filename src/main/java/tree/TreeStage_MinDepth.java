@@ -3,6 +3,7 @@ package tree;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import savers.IDataSaver;
 import samplers.ISampler;
@@ -49,7 +50,11 @@ public class TreeStage_MinDepth extends TreeStage {
         List<Node> resultList = new ArrayList<>();
 
         for (Node n : leafList) {
-            if (n.getState() == null) continue;
+            try {
+                waitForStateAssignment(n);
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+            }
             if (n.getTreeDepth() == minEffectiveDepth) {
                 resultList.add(n);
             } else if (n.getTreeDepth() > minEffectiveDepth) {

@@ -84,6 +84,12 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
             game.drawExtraRunner(g2, game.getXForms(st), "", runnerScaling,
                     500 - xOffset, yOffsetPixels + 100, secondaryStates.get(st), normalStroke);
         }
+
+        //This draws the "road" markings to show that the ground is moving relative to the dude.
+        for (int i = 0; i < 2000 / 69; i++) {
+            g.drawString("_", ((-(int) (runnerScaling * mainState.body.getX()) - i * 70) % 2000) + 2000,
+                    yOffsetPixels + 195);
+        }
     }
 
     @Override
