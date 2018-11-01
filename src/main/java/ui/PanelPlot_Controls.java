@@ -36,7 +36,6 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
      * Downsampler to reduce the number of nodes we're trying to process and display
      */
     private INodeFilter plotDownsampler = new NodeFilter_Downsample(5000);
-    private INodeFilter transformDownsampler = new NodeFilter_Downsample(2000);
 
     private INodeFilter filterMissingInfo = new NodeFilter_MissingInfo();
 
