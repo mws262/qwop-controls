@@ -21,7 +21,6 @@ import data.TFRecordWriter;
 import game.State;
 import actions.Action;
 import tree.Node;
-import tree.Utility;
 
 public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
@@ -90,12 +89,11 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     /**
      * Make a single feature representing the 6 state variables for a single body part at a single timestep. Append
      * to existing FeatureList for that body part.
-     *
-     * @param bodyPart Body part that the data is being given for. Comes from {@link State.ObjectName}.
      * @param state
+     * @param bodyPart Body part that the data is being given for. Comes from {@link State.ObjectName}.
      * @param listToAppendTo
      */
-    private static void makeFeature(State.ObjectName bodyPart, State state, FeatureList.Builder listToAppendTo) {
+    private static void makeFeature(State state, State.ObjectName bodyPart, FeatureList.Builder listToAppendTo) {
         Feature.Builder feat = Feature.newBuilder();
         FloatList.Builder featVals = FloatList.newBuilder();
         for (State.StateName stateName : State.StateName.values()) { // Iterate over all 6 state variables.
@@ -113,7 +111,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 											 FeatureLists.Builder featLists) {
         FeatureList.Builder featList = FeatureList.newBuilder();
         for (State st : states) { // Iterate through the timesteps in a single run.
-            makeFeature(bodyPart, st, featList);
+            makeFeature(st, bodyPart, featList);
         }
         featLists.putFeatureList(bodyPart.toString(), featList.build()); // Add this feature to the broader list of
 		// features.

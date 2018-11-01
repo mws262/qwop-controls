@@ -30,7 +30,7 @@ public class MAIN_PerturbationSimple extends JFrame {
 
         ActionQueue actionQueue = getSampleActions();
         Map<Integer, Integer> perturbationLocations = new HashMap<>();
-        perturbationLocations.put(18, 1);
+        perturbationLocations.put(23, 1);
         ActionPerturber_SwitchTooSoon perturber = new ActionPerturber_SwitchTooSoon(perturbationLocations);
         ActionQueue actionQueuePerturbed = perturber.perturb(actionQueue);
 
