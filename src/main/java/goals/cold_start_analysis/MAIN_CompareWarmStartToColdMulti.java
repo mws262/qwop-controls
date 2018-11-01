@@ -67,7 +67,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
             }
 
             // Add a new cold started runner at the full game's current state.
-            GameLoader coldStartGame = getFakedWarmStart(2);
+            GameLoader coldStartGame = getFakedWarmStart(0);
             coldStartGame.setState(gameFullRun.getCurrentState());
             coldStartGames.add(coldStartGame);
 

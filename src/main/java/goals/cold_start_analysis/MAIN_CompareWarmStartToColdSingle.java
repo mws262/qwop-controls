@@ -18,7 +18,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
     /**
      * Decide at which action to introduce a cold-started runner.
      */
-    private int coldStartAction = 11;
+    private int coldStartAction = 12;
 
     public static void main(String[] args) {
         new MAIN_CompareWarmStartToColdSingle().run();

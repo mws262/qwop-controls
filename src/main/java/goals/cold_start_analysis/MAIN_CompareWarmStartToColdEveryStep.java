@@ -10,8 +10,8 @@ import game.State;
  * @author matt
  */
 public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToColdBase {
-    // 19 steps in the sample run. -> about 14 meters per step.
-    // About 1.75 steps on average before failure after a cold start.
+    // 14 steps in the sample run. -> about 17 meters per step.
+    // About 2.2 steps-worth of distance on average before failure after a cold start.
 
     public static void main(String[] args) {
         new MAIN_CompareWarmStartToColdEveryStep().run();
@@ -40,11 +40,11 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
                 coldStartGame.stepGame(nextCommand);
                 counter++;
                 if (coldStartGame.getFailureStatus()) {
-                    System.out.println((coldStartGame.getCurrentState().body.getX() - initX)/14.);
+                    System.out.println((coldStartGame.getCurrentState().body.getX() - initX)/17.);
                     break;
                 }
             }
         }
-        System.out.println((gameFullRun.getCurrentState().body.getX() - GameLoader.getInitialState().body.getX())/19.);
+//        System.out.println((gameFullRun.getCurrentState().body.getX() - GameLoader.getInitialState().body.getX()));
     }
 }

@@ -247,9 +247,9 @@ public class Node {
             // Update max branch depth
             maxBranchDepth.set(getTreeDepth());
             Node currentNode = this;
-            while (currentNode.getTreeDepth() > 0 && parent.maxBranchDepth.get() < currentNode.maxBranchDepth.get()) {
-                parent.maxBranchDepth.set(currentNode.maxBranchDepth.get());
-                currentNode = parent;
+            while (currentNode.getTreeDepth() > 0 && currentNode.parent.maxBranchDepth.get() < currentNode.maxBranchDepth.get()) {
+                currentNode.parent.maxBranchDepth.set(currentNode.maxBranchDepth.get());
+                currentNode = currentNode.parent;
             }
         }
 

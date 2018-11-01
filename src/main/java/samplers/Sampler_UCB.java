@@ -23,7 +23,7 @@ public class Sampler_UCB implements ISampler {
     /**
      * Explore/exploit trade-off parameter. Higher means more exploration. Lower means more exploitation.
      */
-    public float c = 12f; // 7 during most long batch runs.
+    public float c = 6; // 7 during most long batch runs.
 
     /**
      * A multiplier to tone down or amp up exploration. Higher means more exploration.

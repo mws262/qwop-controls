@@ -1,19 +1,25 @@
 package goals.playback;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 import javax.swing.JFrame;
 
+import actions.Action;
+import actions.ActionQueue;
 import data.TFRecordDataParsers;
+import game.GameLoader;
 import org.tensorflow.example.SequenceExample;
 
 import game.State;
 import ui.PanelRunner_AnimatedFromStates;
+import ui.PanelRunner_MultiState;
 
 /**
- * Playback runs or sections of runs saved densely in TFRecord files. These are simply played-back states.
- * Re-simulation is not done.
+ * Playback runs or sections of runs saved densely in TFRecord files. This draws three things: state data drawn over
+ * time, Actions simulated (from timestep duration, keys data), and commands simulated (keys every timestep). This is
+ * partially to make sure that all the data sources from a run match up.
  *
  * @author matt
  */
@@ -23,17 +29,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
     /**
      * Visual panel for animating the runner.
      */
-    private PanelRunner_AnimatedFromStates runnerPane;
-
-    /**
-     * Window width.
-     */
-    public static int windowWidth = 1920;
-
-    /**
-     * Window height.
-     */
-    public static int windowHeight = 1000;
+    private PanelRunner_MultiState runnerPane;
 
     /**
      * Directory containing the TFRecord files of runs to replay.
@@ -47,16 +43,15 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
     }
 
     public void setup() {
-        runnerPane = new PanelRunner_AnimatedFromStates();
+        runnerPane = new PanelRunner_MultiState();
         runnerPane.activateTab();
-        runnerPane.yOffsetPixels = 600;
         add(runnerPane);
         Thread runnerThread = new Thread(runnerPane);
         runnerThread.start();
 
         setTitle("TFRecord run playback");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setPreferredSize(new Dimension(windowWidth, windowHeight));
+        setPreferredSize(new Dimension(1000, 400));
         pack();
         setVisible(true);
         repaint();
@@ -81,25 +76,42 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
 
         Collections.shuffle(playbackFiles);
 
+        GameLoader gameForActionSim = new GameLoader();
+        GameLoader gameForCommandSim = new GameLoader();
+
         // Load files one at a time.
         for (File tfrecordFile : playbackFiles) {
-
             // Read all the sequences from a file.
             List<SequenceExample> dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(tfrecordFile);
-
             System.out.println("Read " + dataSeries.size() + " runs from file " + tfrecordFile + ".");
+            Collections.shuffle(dataSeries);
 
             // Playback each sequence one at a time.
             for (SequenceExample seq : dataSeries) {
                 // Pull the states out of the Protobuf-like structure.
                 State[] stateVars = TFRecordDataParsers.getStatesFromLoadedSequence(seq);
+                List<Action> actions = TFRecordDataParsers.getActionsFromLoadedSequence(seq);
+                boolean[][] commands = TFRecordDataParsers.getCommandSequenceFromLoadedSequence(seq);
 
-                // Have the runner panel simulate, and wait until it is done to advance to the next one.
-                runnerPane.simRun(new LinkedList<>(Arrays.asList(stateVars)));
-                while (!runnerPane.isFinishedWithRun()) {
-                    runnerPane.repaint();
+                ActionQueue actionQueue = new ActionQueue();
+                actionQueue.addSequence(actions);
+
+                for (int i = 0; i < stateVars.length; i++) {
+                    runnerPane.clearSecondaryStates();
+                    runnerPane.setMainState(stateVars[i]);
+                    runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
+                    runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
+                    boolean[] actionQueueCommand = actionQueue.pollCommand();
+                    gameForActionSim.stepGame(actionQueueCommand);
+                    gameForCommandSim.stepGame(commands[i]);
+
+                    if (!Arrays.equals(actionQueueCommand, commands[i])) {
+                        throw new RuntimeException("Commands taken from Action and boolean sources of the TFRecord do" +
+                                " not match. Issue happened at action index: " + actionQueue.getCurrentActionIdx() +
+                                ", and timestep: " + i + ". Queue says: " + actionQueueCommand[0] + "," + actionQueueCommand[1] + "," + actionQueueCommand[2] + "," + actionQueueCommand[3]);
+                    }
                     try {
-                        Thread.sleep(20);
+                        Thread.sleep(10);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

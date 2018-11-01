@@ -3,6 +3,7 @@ package tree;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import savers.IDataSaver;
 import samplers.ISampler;
@@ -58,9 +59,16 @@ public class TreeStage_MaxDepth extends TreeStage {
         if (getRootNode().fullyExplored.get() || (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames)
             return resultList; // No results. No possible way to recover.
 
+        assert leafList.size() > 1;
+
         for (Node n : leafList) {
             if (n.getTreeDepth() == maxEffectiveDepth) {
                 resultList.add(n);
+                try {
+                    waitForStateAssignment(n);
+                } catch (TimeoutException e) {
+                    e.printStackTrace();
+                }
                 return resultList;
             } else if (n.getTreeDepth() > maxEffectiveDepth) {
                 Node atDepth = n;
@@ -68,6 +76,11 @@ public class TreeStage_MaxDepth extends TreeStage {
                     atDepth = atDepth.getParent();
                 }
                 resultList.add(n);
+                try {
+                    waitForStateAssignment(n);
+                } catch (TimeoutException e) {
+                    e.printStackTrace();
+                }
                 return resultList;
             }
         }
