@@ -99,17 +99,17 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                 for (int i = 0; i < stateVars.length; i++) {
                     runnerPane.clearSecondaryStates();
                     runnerPane.setMainState(stateVars[i]);
-                    runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
-                    runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
-                    boolean[] actionQueueCommand = actionQueue.pollCommand();
-                    gameForActionSim.stepGame(actionQueueCommand);
-                    gameForCommandSim.stepGame(commands[i]);
-
-                    if (!Arrays.equals(actionQueueCommand, commands[i])) {
-                        throw new RuntimeException("Commands taken from Action and boolean sources of the TFRecord do" +
-                                " not match. Issue happened at action index: " + actionQueue.getCurrentActionIdx() +
-                                ", and timestep: " + i + ". Queue says: " + actionQueueCommand[0] + "," + actionQueueCommand[1] + "," + actionQueueCommand[2] + "," + actionQueueCommand[3]);
-                    }
+//                    runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
+//                    runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
+//                    boolean[] actionQueueCommand = actionQueue.pollCommand();
+//                    gameForActionSim.stepGame(actionQueueCommand);
+//                    gameForCommandSim.stepGame(commands[i]);
+//
+//                    if (!Arrays.equals(actionQueueCommand, commands[i])) {
+//                        throw new RuntimeException("Commands taken from Action and boolean sources of the TFRecord do" +
+//                                " not match. Issue happened at action index: " + actionQueue.getCurrentActionIdx() +
+//                                ", and timestep: " + i + ". Queue says: " + actionQueueCommand[0] + "," + actionQueueCommand[1] + "," + actionQueueCommand[2] + "," + actionQueueCommand[3]);
+//                    }
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException e) {

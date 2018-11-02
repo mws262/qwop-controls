@@ -1,4 +1,4 @@
-package goals;
+package goals.playback;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -43,7 +43,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
     /**
      * What point to start displaying from (to skip any prefix).
      */
-    public int startPt = 4;
+    public int startPt = 0;
 
     public static void main(String[] args) {
         MAIN_PlaybackSaved_Sparse mc = new MAIN_PlaybackSaved_Sparse();
@@ -56,15 +56,15 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
         runnerPane = new PanelRunner_Animated();
         runnerPane.activateTab();
         runnerPane.yOffsetPixels = 600;
-        this.add(runnerPane);
+        add(runnerPane);
         Thread runnerThread = new Thread(runnerPane);
         runnerThread.start();
 
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setPreferredSize(new Dimension(windowWidth, windowHeight));
-        this.setContentPane(this.getContentPane());
-        this.pack();
-        this.setVisible(true);
+        setTitle("Simulate saved actions from file");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setPreferredSize(new Dimension(windowWidth, windowHeight));
+        pack();
+        setVisible(true);
         repaint();
     }
 
@@ -74,8 +74,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
         List<File> playbackFiles = new ArrayList<>();
         for (File f : allFiles) {
-            if (f.getName().contains("recoveries") || f.getName().contains("Prefix") && !f.getName().contains(
-                    "unsuccessful")) {
+            if (f.getName().contains("SavableSingleGame")) {
                 playbackFiles.add(f);
             }
         }

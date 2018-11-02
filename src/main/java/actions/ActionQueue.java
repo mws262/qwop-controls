@@ -1,9 +1,6 @@
 package actions;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -54,7 +51,6 @@ public class ActionQueue {
      * @return Action which is currently being executed (i.e. timings and keypresses).
      */
     public Action peekThisAction() {
-        if (isEmpty()) throw new IndexOutOfBoundsException("No actions have been added to this queue (or remain).");
         return currentAction;
     }
 
@@ -155,7 +151,7 @@ public class ActionQueue {
         if (!currentAction.hasNext()) {
             currentAction.reset(); // Reset the previous current action so it can be polled again in the future.
             currentAction = actionQueue.poll();
-            assert currentAction != null;
+            Objects.requireNonNull(currentAction);
             assert currentAction.getTimestepsTotal() == currentAction.getTimestepsRemaining(); // If the newly loaded
             // action doesn't have all of its timesteps remaining, we have issues.
         }

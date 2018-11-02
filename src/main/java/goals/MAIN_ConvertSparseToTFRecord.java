@@ -11,9 +11,9 @@ public class MAIN_ConvertSparseToTFRecord {
 
     public static void main(String[] args) {
 
-        File loadFile = new File("./4_26_18/");
-        File outFile = new File("./4_26_18/");
-        String filterTerm = "steadyRunPrefix";
+        File loadFile = new File("src/main/resources/saved_data/11_1_18/");
+        File outFile = new File("./src/main/resources/saved_data/11_1_18/");
+        String filterTerm = "";
 
         //noinspection ResultOfMethodCallIgnored
         outFile.mkdir();
