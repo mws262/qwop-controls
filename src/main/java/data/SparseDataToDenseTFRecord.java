@@ -163,7 +163,7 @@ public class SparseDataToDenseTFRecord {
         assert noSaveActions1.length + saveActions.length + noSaveActions2.length == gameActions.length;
 
         game.makeNewWorld();
-        simWithoutSave(noSaveActions1);
+        if (noSaveActions1.length > 0) simWithoutSave(noSaveActions1);
         saver.reportGameInitialization(game.getCurrentState()); // Wait to initialize until the ignored section is done.
         simWithSave(saveActions);
         // No need to simulate the unsaved actions at the end.

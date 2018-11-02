@@ -38,19 +38,18 @@ import ui.ScreenCapture;
  * @author matt
  */
 
-@SuppressWarnings("serial")
 public class MAIN_Controlled extends JFrame implements Runnable, ActionListener {
 
     private GameLoader game = new GameLoader();
 
     /**
      * Controller to use. Defaults to Controller_Null and should usually be reassigned.
-     **/
+     */
     private IController controller = new Controller_Null();
 
     /**
      * Place to load any 'prefix' run data in the form of a SavableSingleGame
-     **/
+     */
     private File prefixSave = new File("src/main/resources/" +
             "saved_data/4_25_18/steadyRunPrefix.SavableSingleGame");
 
@@ -229,6 +228,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             }
         }
         // Enter controller mode.
+        //noinspection InfiniteLoopStatement
         while (true) {
             long initTime = System.currentTimeMillis();
             State state = game.getCurrentState();
@@ -252,6 +252,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
     @Override
     public void run() {
+        //noinspection InfiniteLoopStatement
         while (true) {
             repaint();
             try {

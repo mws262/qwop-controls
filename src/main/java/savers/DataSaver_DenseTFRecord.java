@@ -118,7 +118,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     }
 
     private void convertToProtobuf() throws IOException {
-        String fullFilename = "";
+        String fullFilename;
         if (Objects.equals(filenameOverride, "")) {
             fullFilename = fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension);
         } else {

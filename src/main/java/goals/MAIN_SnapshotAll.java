@@ -20,7 +20,6 @@ import ui.PanelRunner_Snapshot;
  * @author matt
  */
 
-@SuppressWarnings("serial")
 public class MAIN_SnapshotAll extends JFrame {
 
     public GameLoader game;
@@ -51,13 +50,12 @@ public class MAIN_SnapshotAll extends JFrame {
         snapshotPane = new PanelRunner_Snapshot();
         snapshotPane.activateTab();
         snapshotPane.yOffsetPixels = 600;
-        this.add(snapshotPane);
+        add(snapshotPane);
 
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setPreferredSize(new Dimension(windowWidth, windowHeight));
-        this.setContentPane(this.getContentPane());
-        this.pack();
-        this.setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setPreferredSize(new Dimension(windowWidth, windowHeight));
+        pack();
+        setVisible(true);
         repaint();
     }
 
@@ -87,6 +85,8 @@ public class MAIN_SnapshotAll extends JFrame {
         System.out.println(currNode.countDescendants());
         snapshotPane.update(currNode);
         repaint();
+
+        //noinspection InfiniteLoopStatement
         while (true) {
             repaint();
             try {

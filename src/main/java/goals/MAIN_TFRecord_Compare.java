@@ -27,7 +27,6 @@ import ui.PanelRunner;
  * @author matt
  */
 
-@SuppressWarnings("serial")
 public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
     private GameLoader game = new GameLoader();
@@ -85,7 +84,6 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
         // Window width
         int windowWidth = 1920;
         setPreferredSize(new Dimension(windowWidth, windowHeight));
-        setContentPane(this.getContentPane());
         revalidate();
         repaint();
         pack();
@@ -104,12 +102,12 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
     @Override
     public void run() {
         iter = justForLoading.runs.iterator();
+        //noinspection InfiniteLoopStatement
         while (true) {
             repaint();
             try {
                 Thread.sleep(5);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
