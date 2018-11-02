@@ -91,6 +91,9 @@ public class TFRecordDataParsers {
         for (int i = 0; i < actionFeatures.getFeatureCount(); i++) {
             ByteString byteStringOfAction = actionFeatures.getFeature(i).getBytesList().getValue(0);
             int actionLength = Byte.toUnsignedInt(byteStringOfAction.byteAt(0)); // this is the [duration, q,w,o,p]
+
+            assert !(Byte.toUnsignedInt(byteStringOfAction.byteAt(1)) > 1 || Byte.toUnsignedInt(byteStringOfAction.byteAt(2)) > 1 || Byte.toUnsignedInt(byteStringOfAction.byteAt(3)) > 1 || Byte.toUnsignedInt(byteStringOfAction.byteAt(4)) > 1);
+
             boolean Q = (byte)1 == byteStringOfAction.byteAt(1);
             boolean W = (byte)1 == byteStringOfAction.byteAt(2);
             boolean O = (byte)1 == byteStringOfAction.byteAt(3);

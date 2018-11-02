@@ -34,7 +34,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
     /**
      * Directory containing the TFRecord files of runs to replay.
      */
-    private File saveLoc = new File("src/main/resources/saved_data/");
+    private File saveLoc = new File("src/main/resources/saved_data/11_1_18");
 
     public static void main(String[] args) {
         MAIN_PlaybackSaved_TFRecord mc = new MAIN_PlaybackSaved_TFRecord();
@@ -96,20 +96,26 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                 ActionQueue actionQueue = new ActionQueue();
                 actionQueue.addSequence(actions);
 
-                for (int i = 0; i < stateVars.length; i++) {
+                gameForActionSim.makeNewWorld();
+                gameForCommandSim.makeNewWorld();
+                
+                for (int i = 0; i < stateVars.length - 1; i++) {
                     runnerPane.clearSecondaryStates();
                     runnerPane.setMainState(stateVars[i]);
-//                    runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
-//                    runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
-//                    boolean[] actionQueueCommand = actionQueue.pollCommand();
-//                    gameForActionSim.stepGame(actionQueueCommand);
-//                    gameForCommandSim.stepGame(commands[i]);
-//
-//                    if (!Arrays.equals(actionQueueCommand, commands[i])) {
-//                        throw new RuntimeException("Commands taken from Action and boolean sources of the TFRecord do" +
-//                                " not match. Issue happened at action index: " + actionQueue.getCurrentActionIdx() +
-//                                ", and timestep: " + i + ". Queue says: " + actionQueueCommand[0] + "," + actionQueueCommand[1] + "," + actionQueueCommand[2] + "," + actionQueueCommand[3]);
-//                    }
+                    runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
+                    runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
+                    boolean[] actionQueueCommand = actionQueue.pollCommand();
+                    gameForActionSim.stepGame(actionQueueCommand);
+                    gameForCommandSim.stepGame(commands[i]);
+
+                    if (!Arrays.equals(actionQueueCommand, commands[i])) {
+                        throw new RuntimeException("Commands taken from Action and boolean sources of the TFRecord do" +
+                                " not match. Issue happened at action index: " + actionQueue.getCurrentActionIdx() +
+                                ", and timestep: " + i + ". Queue says: " + actionQueueCommand[0] + "," +
+                                actionQueueCommand[1] + "," + actionQueueCommand[2] + "," + actionQueueCommand[3] +
+                                "; commands say " + commands[i][0] + ", " + commands[i][1] + ", " + commands[i][2] +
+                                ", " + commands[i][3]);
+                    }
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException e) {

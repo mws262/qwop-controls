@@ -178,7 +178,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
             featLists.putFeatureList("PRESSED_KEYS", keyFeatList.build());
 
-            // 1) b Keys pressed at individual timestep. 0 or 1 in bytes for each key
+            // 1) b Key combinations categorized, one-hot.
             FeatureList.Builder keyCatFeatList = FeatureList.newBuilder();
             for (Action act : dat.actions) {
                 Feature.Builder keyCatFeat = Feature.newBuilder();
@@ -230,15 +230,14 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
             // 3) Just the action sequence (shorter than number of timesteps) -- bytestrings e.g. [15, 1, 0, 0, 1]
             FeatureList.Builder actionList = FeatureList.newBuilder();
-            int prevAct = -1;
+            Action prevAct = null;
             for (Action act : dat.actions) {
-                int action = act.getTimestepsTotal();
-                if (action != prevAct) {
-                    prevAct = action;
+                if (!act.equals(prevAct)) {
+                    prevAct = act;
                     Feature.Builder sequenceFeat = Feature.newBuilder();
                     BytesList.Builder seqList = BytesList.newBuilder();
 
-                    byte[] actionBytes = new byte[]{(byte) action,
+                    byte[] actionBytes = new byte[]{(byte) act.getTimestepsTotal(),
                             act.peek()[0] ? (byte) (1) : (byte) (0),
                             act.peek()[1] ? (byte) (1) : (byte) (0),
                             act.peek()[2] ? (byte) (1) : (byte) (0),
