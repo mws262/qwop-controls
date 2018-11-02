@@ -194,10 +194,10 @@ public class State implements Serializable {
                 stateValue = st.getTh();
                 break;
             case X:
-                stateValue = st.getDx();
+                stateValue = st.getX();
                 break;
             case Y:
-                stateValue = st.getDy();
+                stateValue = st.getY();
                 break;
             default:
                 throw new RuntimeException("Unknown object state queried.");

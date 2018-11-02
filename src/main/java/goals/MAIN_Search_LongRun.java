@@ -92,5 +92,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
 
             appendSummaryLog("Stage 2 done.");
         }
+
+        System.exit(0);
     }
 }
