@@ -71,6 +71,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
                 doBasicMaxDepthStage(rootNode, filename1 + Utility.getTimestamp(), getToSteadyDepth,
                         maxWorkerFraction1, bailAfterXGames1);
                 appendSummaryLog("Stage 1 done. Run: " + count + ".");
+                count++;
             }
         }
 
