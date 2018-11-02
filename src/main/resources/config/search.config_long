@@ -1,6 +1,6 @@
 # Directory for saved runs
-saveLocation=./11_1_18
-headless=true
+saveLocation=./11_2_18
+headless=false
 workersFractionOfCores=0.8
 UCBExplorationMultiplier=1
 
