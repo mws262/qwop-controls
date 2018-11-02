@@ -13,7 +13,6 @@ import game.GameLoader;
 import org.tensorflow.example.SequenceExample;
 
 import game.State;
-import ui.PanelRunner_AnimatedFromStates;
 import ui.PanelRunner_MultiState;
 
 /**
@@ -23,8 +22,6 @@ import ui.PanelRunner_MultiState;
  *
  * @author matt
  */
-
-@SuppressWarnings("serial")
 public class MAIN_PlaybackSaved_TFRecord extends JFrame {
     /**
      * Visual panel for animating the runner.
@@ -98,7 +95,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
 
                 gameForActionSim.makeNewWorld();
                 gameForCommandSim.makeNewWorld();
-                
+
                 for (int i = 0; i < stateVars.length - 1; i++) {
                     runnerPane.clearSecondaryStates();
                     runnerPane.setMainState(stateVars[i]);

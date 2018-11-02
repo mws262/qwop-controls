@@ -24,6 +24,13 @@ public class MAIN_PullRunOffTFRecord {
         }
     }
 
+    /**
+     * Load runs from a TFRecord file, save a specified one to its own file.
+     * @param inFile Input file to load runs from.
+     * @param outFile Output file to save the selected run to.
+     * @param runIndex Index of the run to save to its own file.
+     * @throws FileNotFoundException Input file could not be found, or was not a TFRecord.
+     */
     private static void saveIndividualRunToFile(File inFile, File outFile, int runIndex) throws FileNotFoundException {
 
         if (!inFile.exists()) {
