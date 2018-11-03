@@ -1,4 +1,4 @@
-package goals;
+package goals.save_file_manipulation;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -7,6 +7,12 @@ import java.util.Objects;
 
 import data.SparseDataToDenseTFRecord;
 
+/**
+ * Take a sparsely-saved datafile (i.e. states not recorded at every timestep), and turn it into a densely-saved
+ * TFRecord binary which can be used here or in the Python TensorFlow stuff.
+ *
+ * @author matt
+ */
 public class MAIN_ConvertSparseToTFRecord {
 
     public static void main(String[] args) {

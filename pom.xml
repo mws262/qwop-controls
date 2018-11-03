@@ -68,7 +68,7 @@ To update the classpath settings for Eclipse:
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        goals.MAIN_Search_Full
+                                        goals.tree_search.MAIN_Search_Full
                                     </mainClass>
                                 </manifest>
                             </archive>
