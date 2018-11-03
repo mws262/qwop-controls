@@ -37,7 +37,7 @@ public class MAIN_SnapshotAll extends JFrame {
 
     public static int playbackDepth = 5;
 
-    private File saveLoc = new File("./4_17_18");
+    private File saveLoc = new File("src/main/resources/11_2_18");
 
     public static void main(String[] args) {
         MAIN_SnapshotAll mc = new MAIN_SnapshotAll();

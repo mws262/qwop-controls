@@ -15,7 +15,7 @@ import tree.Node;
 import ui.PanelRunner_Animated;
 
 /**
- * Playback runs or sections of runs saved in SavableSingleRun files.
+ * Playback runs or sections of runs saved in {@link SavableSingleGame} files.
  *
  * @author matt
  */
@@ -36,7 +36,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
     public static int windowHeight = 1000;
 
 
-    private File saveLoc = new File("src/main/resources/saved_data/");
+    private File saveLoc = new File("src/main/resources/saved_data/11_2_18");
 
     private List<Node> leafNodes = new ArrayList<>();
 

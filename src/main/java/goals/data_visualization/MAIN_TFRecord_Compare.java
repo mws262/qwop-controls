@@ -1,4 +1,4 @@
-package goals;
+package goals.data_visualization;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -22,7 +22,8 @@ import ui.PanelRunner;
 
 
 /**
- * Playback runs or sections of runs saved in SavableSingleRun files.
+ * Visualizer for looking at a whole bunch of recovery snapshots overlaid. This produced one of the videos from the
+ * 2018 Dynamic Walking presentation.
  *
  * @author matt
  */
@@ -45,7 +46,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
     public void setup() {
 
-        File saveLoc = new File("src/main/resources/saved_data/training_data");
+        File saveLoc = new File("src/main/resources/saved_data/11_2_18");
 
         File[] allFiles = saveLoc.listFiles();
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());

@@ -1,4 +1,4 @@
-package goals;
+package goals.tree_search;
 
 import java.io.File;
 import java.util.ArrayList;
