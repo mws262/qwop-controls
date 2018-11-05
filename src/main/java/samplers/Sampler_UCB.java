@@ -195,7 +195,7 @@ public class Sampler_UCB implements ISampler {
 
     @Override
     public boolean rolloutPolicyGuard(Node currentNode) {
-        return rolloutPolicyDone;
+        return rolloutPolicyDone || currentNode.isFailed();
     }
 
     @Override

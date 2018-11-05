@@ -2,6 +2,7 @@ package tree;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -176,6 +177,7 @@ public class Node {
      * {@link Node#limitDrawing} is true.
      */
     private boolean notDrawnForSpeed = false;
+    public static boolean includeZOffsetInDrawFiltering = false;
     private static final float nodeDrawFilterDistSq = 0.1f;
     // Disable node position calculations (for when running headless)
     private static final boolean calculateNodeVisPositions = true;
@@ -376,7 +378,7 @@ public class Node {
             overrideNodeColor = null;
         }
         // Unlocking this node may cause nodes further up the tree to become available.
-        if (getTreeDepth() > 0) parent.propagateUnlock();
+        if ((getTreeDepth() > 0) && (parent != null)) parent.propagateUnlock();
     }
 
     /**
@@ -983,11 +985,14 @@ public class Node {
         if (limitDrawing) {
             float xDiff;
             float yDiff;
+            float zDiff;
             for (Node n : pointsToDraw) {
                 xDiff = n.nodeLocation[0] - nodeLocationsToAssign[0];
                 yDiff = n.nodeLocation[1] - nodeLocationsToAssign[1];
+                zDiff = n.nodeLocation[2] - nodeLocationsToAssign[2] + (Node.includeZOffsetInDrawFiltering ?
+                        n.nodeLocationZOffset - nodeLocationZOffset : 0);
                 // Actually distance squared to avoid sqrt
-                if ((xDiff * xDiff + yDiff * yDiff) < nodeDrawFilterDistSq) {
+                if ((xDiff * xDiff + yDiff * yDiff + zDiff * zDiff) < nodeDrawFilterDistSq) {
                     notDrawnForSpeed = true;
                     return; // Too close. Turn it off and get out.
                 }
@@ -1015,10 +1020,70 @@ public class Node {
     }
 
     /**
+     * Try to de-reference everything on this branch so garbage collection throws out all the state values and other
+     * info stored for this branch to keep memory in check.
+     */
+    public void destroyNodesBelow() {
+        Node[] childrenCopy = children.toArray(new Node[children.size()]);
+        children.clear();
+
+        for (Node child : childrenCopy) {
+            pointsToDraw.remove(child);
+            child.state = null;
+            child.parent = null;
+            child.destroyNodesBelow();
+        }
+        children.clear();
+    }
+
+    /**
+     * Resets the angle at which child nodes will fan out from this node in the visualization. This must be done
+     * before the children are created. The angle is set to 3pi/2.
+     */
+    public void resetSweepAngle() {
+        sweepAngle = (float)(3.*Math.PI/2.);
+    }
+
+    /**
+     * Update which nodes are being drawn based on a distance threshold from other nodes. This is usually done
+     * automatically, but sometimes it's nice to aggressively prune areas of the tree which aren't important any more.
+     * @param threshold Distance squared threshold. Nodes closer to another drawn node than this threshold are not
+     *                  drawn.
+     */
+    public void postPruneDrawingBelow(float threshold) {
+        float xDiff;
+        float yDiff;
+        float zDiff;
+
+        pointsToDraw.remove(this);
+        notDrawnForSpeed = false;
+
+        for (Node n : pointsToDraw) {
+            xDiff = n.nodeLocation[0] - nodeLocation[0];
+            yDiff = n.nodeLocation[1] - nodeLocation[1];
+            zDiff = n.nodeLocation[2] - nodeLocation[2] + (Node.includeZOffsetInDrawFiltering ?
+                    n.nodeLocationZOffset - nodeLocationZOffset : 0);
+
+            // Actually distance squared to avoid sqrt.
+            if ((xDiff * xDiff + yDiff * yDiff + zDiff * zDiff) < threshold) {
+                notDrawnForSpeed = true;
+                break;
+            }
+        }
+
+        if (!notDrawnForSpeed)
+            pointsToDraw.add(this);
+
+        for (Node child : children) {
+            child.postPruneDrawingBelow(threshold);
+        }
+    }
+
+    /**
      * Draw the line connecting this node to its parent.
      */
     private void drawLine(GL2 gl) {
-        if (getTreeDepth() > 0 && displayLine) { // No lines for root.
+        if ((getTreeDepth() > 0) && displayLine && (parent != null)) { // No lines for root.
             if (overrideLineColor == null) {
                 gl.glColor3fv(getColorFromTreeDepth(getTreeDepth(), lineBrightness).getColorComponents(null), 0);
             } else {
@@ -1112,7 +1177,7 @@ public class Node {
     /**
      * Fade a certain part of the tree.
      */
-    private void setLineBrightness_below(float brightness) {
+    public void setLineBrightness_below(float brightness) {
         setLineBrightness(brightness);
         for (Node child : children) {
             child.setLineBrightness_below(brightness);
