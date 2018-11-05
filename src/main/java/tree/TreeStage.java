@@ -127,18 +127,6 @@ public abstract class TreeStage implements Runnable {
      */
     public abstract boolean checkTerminationConditions();
 
-    private void pruneStatesForMemory(Node node) {
-        if (node.getChildCount() != 0 && node.getState() != null) {//node.uncheckedActions.size() == 0) {
-            for (StateVariable st : node.getState().getStateList()) {
-                st = null;
-            }
-//            node.state = null; //TODO find a better way to do this now that access is restricted.
-            for (Node child : node.getChildren()) {
-                pruneStatesForMemory(child);
-            }
-        }
-    }
-
     /**
      * Terminate this stage, destroying the workers and their threads in the process.
      */

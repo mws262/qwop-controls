@@ -3,7 +3,7 @@ saveLocation=./tmp_testing
 headless=false
 autoResume=false
 workersFractionOfCores=0.8
-UCBExplorationMultiplier=1
+UCBExplorationMultiplier=0.2
 
 # Stage 1 toggle: find single long run from rest.
 doStage1=true
