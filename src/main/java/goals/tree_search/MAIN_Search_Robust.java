@@ -33,9 +33,11 @@ public class MAIN_Search_Robust extends MAIN_Search_Template {
         for (Node node : leaves) {
             node.resetSweepAngle();
             node.setBranchZOffset(0.1f);
-            System.out.println(evaluateNode(node));
+            float score = evaluateNode(node);
+            System.out.println(score);
             node.setBranchZOffset(-0.5f);
             node.destroyNodesBelow();
+            node.nodeLabel = String.valueOf(score);
 //            node.postPruneDrawingBelow(0.4f);
         }
     }

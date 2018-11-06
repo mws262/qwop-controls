@@ -241,4 +241,18 @@ public class Utility {
         }
         frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
     }
+
+    // Implementing Fisher–Yates shuffle
+    public static void shuffleArray(Object[] ar)
+    {
+        // If running on Java 6 or older, use `new Random()` on RHS here
+        for (int i = ar.length - 1; i > 0; i--)
+        {
+            int index = rand.nextInt(i + 1);
+            // Simple swap
+            Object a = ar[index];
+            ar[index] = ar[i];
+            ar[i] = a;
+        }
+    }
 }

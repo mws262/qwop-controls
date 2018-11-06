@@ -4,6 +4,7 @@ import java.util.*;
 
 import actions.Action;
 import tree.Node;
+import tree.Utility;
 
 public class Sampler_FixedDepth implements ISampler {
 
@@ -73,8 +74,8 @@ public class Sampler_FixedDepth implements ISampler {
             // Otherwise, move down.
             boolean foundChild = false;
             // If the order of iteration is not randomized, once there are enough workers, they can manage to deadlock.
-            List<Node> children = new ArrayList<>(currentNode.getChildren());
-            Collections.shuffle(children);
+            Node[] children = currentNode.getChildren();
+            Utility.shuffleArray(children);
 
             for (Node child : children) {
                 if (!child.fullyExplored.get() && !finishedNodes.contains(child) && !child.isLocked()) {
