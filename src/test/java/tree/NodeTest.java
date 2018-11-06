@@ -11,6 +11,7 @@ import org.junit.rules.ExpectedException;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
@@ -1093,33 +1094,33 @@ public class NodeTest {
     public void getChildren() {
         setupTree();
 
-        List<Node> children = rootNode.getChildren();
+        List<Node> children = Arrays.asList(rootNode.getChildren());
         Assert.assertEquals(3, children.size());
         Assert.assertTrue(children.contains(node1));
         Assert.assertTrue(children.contains(node2));
         Assert.assertTrue(children.contains(node3));
 
-        children = node1.getChildren();
+        children = Arrays.asList(node1.getChildren());
         Assert.assertEquals(4, children.size());
         Assert.assertTrue(children.contains(node1_1));
         Assert.assertTrue(children.contains(node1_2));
         Assert.assertTrue(children.contains(node1_3));
         Assert.assertTrue(children.contains(node1_4));
 
-        children = node2_2.getChildren();
+        children = Arrays.asList(node2_2.getChildren());
         Assert.assertEquals(3, children.size());
         Assert.assertTrue(children.contains(node2_2_1));
         Assert.assertTrue(children.contains(node2_2_2));
         Assert.assertTrue(children.contains(node2_2_3));
 
-        children = node1_2_1_2_2.getChildren();
+        children = Arrays.asList(node1_2_1_2_2.getChildren());
         Assert.assertEquals(1, children.size());
         Assert.assertTrue(children.contains(node1_2_1_2_2_4));
 
-        children = node2_2_3.getChildren();
+        children = Arrays.asList(node2_2_3.getChildren());
         Assert.assertTrue(children.isEmpty());
 
-        children = node3_3_3.getChildren();
+        children = Arrays.asList(node3_3_3.getChildren());
         Assert.assertTrue(children.isEmpty());
     }
 

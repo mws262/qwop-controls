@@ -1,8 +1,6 @@
 package game;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Container class for holding the configurations and velocities of the entire runner at a single instance in time.
@@ -25,9 +23,9 @@ public class State implements Serializable {
     public final StateVariable body, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm, head;
 
     /**
-     * List holding a StateVariable for each body part.
+     * Array holding a StateVariable for each body part.
      */
-    private List<StateVariable> stateVariableList;
+    private final StateVariable[] stateVariables;
 
     /**
      * Name of each body part.
@@ -75,8 +73,8 @@ public class State implements Serializable {
         llarm = new StateVariable(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70],
                 stateVars[71]);
 
-        stateVariableList = Arrays.asList(body, rthigh, lthigh, rcalf, lcalf,
-                rfoot, lfoot, ruarm, luarm, rlarm, llarm, head);
+        stateVariables = new StateVariable[]{body, rthigh, lthigh, rcalf, lcalf,
+                rfoot, lfoot, ruarm, luarm, rlarm, llarm, head};
 
         failedState = isFailed;
     }
@@ -117,17 +115,17 @@ public class State implements Serializable {
         llarm = llarmS;
         failedState = isFailed;
 
-        stateVariableList = Arrays.asList(body, rthigh, lthigh, rcalf, lcalf,
-                rfoot, lfoot, ruarm, luarm, rlarm, llarm, head);
+        stateVariables = new StateVariable[]{body, rthigh, lthigh, rcalf, lcalf,
+                rfoot, lfoot, ruarm, luarm, rlarm, llarm, head};
     }
 
     /**
-     * Get the whole list of state variables.
+     * Get the whole array of state variables.
      *
-     * @return List containing a {@link StateVariable StateVariable} for each runner link.
+     * @return Array containing a {@link StateVariable StateVariable} for each runner link.
      */
-    public List<StateVariable> getStateList() {
-        return stateVariableList;
+    public StateVariable[] getStates() {
+        return stateVariables;
     }
 
     /**

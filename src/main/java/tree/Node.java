@@ -466,11 +466,11 @@ public class Node {
     /**
      * Get the children of this node.
      *
-     * @return A copy of the list of children of this node. Removing the nodes from this list will not remove them
-     * from this node's actual children, but the nodes in the list are the originals.
+     * @return A copy of the list of children of this node. Removing the nodes from this array will not remove them
+     * from this node's actual children, but the nodes in the array are the originals.
      */
-    public List<Node> getChildren() {
-        return new ArrayList<>(children);
+    public Node[] getChildren() {
+        return children.toArray(new Node[0]);
     }
 
     /**

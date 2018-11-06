@@ -185,6 +185,11 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         ptSize = Math.min(ptSize, 10f);
 
         for (Node node : rootNodes) {
+            node.recurseOnTreeInclusive((n) -> {if (!n.nodeLabel.isEmpty()) { drawString(n.nodeLabel,
+                    n.nodeLocation[0],
+                    n.nodeLocation[1],
+                    n.nodeLocation[2], Node.getColorFromTreeDepth(n.getTreeDepth() + 20)); }});
+
             gl.glColor3f(1f, 0.1f, 0.1f);
             gl.glPointSize(ptSize);
 
@@ -196,12 +201,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             gl.glBegin(GL.GL_LINES);
             node.drawLines_below(gl); // Recurses through the whole tree.
             gl.glEnd();
-
-            node.recurseOnTreeInclusive((n) -> {if (!n.nodeLabel.isEmpty()) { drawString(n.nodeLabel,
-                    n.nodeLocation[0],
-                    n.nodeLocation[1],
-                    n.nodeLocation[2], Node.getColorFromTreeDepth(n.getTreeDepth() + 20)); }});
-
         }
 
         // Draw games played and games/sec in upper left.
@@ -304,7 +303,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             //Navigating the focused node tree
             int keyCode = e.getKeyCode();
 
-            if (e.isMetaDown()) { //if we're using GL, then we'll move the camera with mac key + arrows
+            if (e.isAltDown()) { //if we're using GL, then we'll move the camera with mac key + arrows
                 switch (keyCode) {
                     case KeyEvent.VK_UP: //Go out the branches of the tree
 
