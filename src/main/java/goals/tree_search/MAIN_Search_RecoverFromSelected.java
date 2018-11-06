@@ -119,7 +119,7 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
                     //FIXME: Fix line below since some methods have become private.
 //                    leaf.parent.children.remove(leaf);
                     if (previousLeaf != null) {
-                        previousLeaf.destroyAllNodesBelowAndCheckExplored();
+                        previousLeaf.destroyNodesBelowAndCheckExplored();
                     }
                     previousLeaf = leaf;
 
