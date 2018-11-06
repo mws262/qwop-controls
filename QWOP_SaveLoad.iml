@@ -1361,8 +1361,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="Maven: org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:3.7.2" level="project" />
-    <orderEntry type="library" name="Maven: org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:3.7.2" level="project" />
     <orderEntry type="library" name="Maven: org.jblas:jblas:1.2.4" level="project" />
     <orderEntry type="library" name="Maven: org.jfree:jfreechart:1.0.19" level="project" />
     <orderEntry type="library" name="Maven: org.jfree:jcommon:1.0.23" level="project" />
@@ -1508,6 +1506,7 @@
     <orderEntry type="library" name="Maven: chrriis:dj-nativeswing:1.0.2.20120308" level="project" />
     <orderEntry type="library" name="Maven: chrriis:dj-nativeswing-swt:1.0.2.20120308" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse:swt:3.7.2" level="project" />
+    <orderEntry type="library" name="Maven: org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:3.7.2" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna:5.0.0" level="project" />
     <orderEntry type="library" name="Maven: org.jcodec:jcodec:0.2.2" level="project" />
     <orderEntry type="library" name="Maven: org.jcodec:jcodec-javase:0.2.2" level="project" />

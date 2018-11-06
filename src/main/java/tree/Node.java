@@ -2,7 +2,6 @@ package tree;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Consumer;
 
 import actions.Action;
 import actions.ActionQueue;
@@ -165,6 +165,8 @@ public class Node {
 
     private static final boolean debugDrawNodeLocking = true; // Draw which nodes are locked by command from the
     // TreeWorkers.
+
+    public String nodeLabel = "";
 
     /**
      * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
@@ -611,15 +613,12 @@ public class Node {
             return false;
         }
         Node currNode = parent;
-
         while (currNode.getTreeDepth() != possibleAncestorNode.getTreeDepth()) { // Find the node at the same depth as the one
             // we're
             // checking.
             currNode = currNode.parent;
         }
-
         return currNode.equals(possibleAncestorNode);
-
     }
 
     /**
@@ -683,26 +682,27 @@ public class Node {
      * status. This method can be useful when the sampler or user decides that one branch is bad and wants to keep it
      * from being used later in sampling.
      */
-    public void destroyAllNodesBelowAndCheckExplored() {
-        destroyAllNodesBelow();
+    public void destroyNodesBelowAndCheckExplored() {
+        destroyNodesBelow();
         propagateFullyExploredStatus_lite();
     }
 
     /**
-     * Destroy a branch and try to free up its memory.
+     * Try to de-reference everything on this branch so garbage collection throws out all the state values and other
+     * info stored for this branch to keep memory in check.
      */
-    private void destroyAllNodesBelow() {
-        for (Node child : children) {
+    public void destroyNodesBelow() {
+        Node[] childrenCopy = children.toArray(new Node[children.size()]);
+        children.clear();
+
+        for (Node child : childrenCopy) {
+            pointsToDraw.remove(child);
             child.state = null;
             child.parent = null;
-            child.destroyAllNodesBelow();
+            child.nodeLocation = null;
+            child.destroyNodesBelow();
         }
-        pointsToDraw.remove(this);
-        uncheckedActions.clear();
         children.clear();
-        displayPoint = false;
-        displayLine = false;
-        nodeLocation = null;
     }
 
     /**
@@ -1020,23 +1020,6 @@ public class Node {
     }
 
     /**
-     * Try to de-reference everything on this branch so garbage collection throws out all the state values and other
-     * info stored for this branch to keep memory in check.
-     */
-    public void destroyNodesBelow() {
-        Node[] childrenCopy = children.toArray(new Node[children.size()]);
-        children.clear();
-
-        for (Node child : childrenCopy) {
-            pointsToDraw.remove(child);
-            child.state = null;
-            child.parent = null;
-            child.destroyNodesBelow();
-        }
-        children.clear();
-    }
-
-    /**
      * Resets the angle at which child nodes will fan out from this node in the visualization. This must be done
      * before the children are created. The angle is set to 3pi/2.
      */
@@ -1349,5 +1332,27 @@ public class Node {
      */
     public int getTreeDepth() {
         return treeDepth;
+    }
+
+    /**
+     * Can pass a lambda to recurse down the tree. Will include the node called.
+     * @param operation Lambda to run on all the nodes in the branch below and including the node called upon.
+     */
+    public void recurseOnTreeInclusive(Consumer<Node> operation) {
+        operation.accept(this);
+        for (Node child : children) {
+            child.recurseOnTreeInclusive(operation);
+        }
+    }
+
+    /**
+     * Can pass a lambda to recurse down the tree. Will NOT include the node called.
+     * @param operation Lambda to run on all the nodes in the branch below and excluding the node called upon.
+     */
+    public void recurseOnTreeExclusive(Consumer<Node> operation) {
+        for (Node child : children) {
+            operation.accept(child);
+            child.recurseOnTreeExclusive(operation);
+        }
     }
 }

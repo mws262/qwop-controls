@@ -1,11 +1,9 @@
 package ui;
 
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
-import com.jogamp.opengl.util.gl2.GLUT;
 import tree.Node;
 import tree.TreeWorker;
 
@@ -13,7 +11,6 @@ import javax.swing.*;
 import javax.vecmath.Vector3f;
 import java.awt.*;
 import java.awt.event.*;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
@@ -199,6 +196,12 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             gl.glBegin(GL.GL_LINES);
             node.drawLines_below(gl); // Recurses through the whole tree.
             gl.glEnd();
+
+            node.recurseOnTreeInclusive((n) -> {if (!n.nodeLabel.isEmpty()) { drawString(n.nodeLabel,
+                    n.nodeLocation[0],
+                    n.nodeLocation[1],
+                    n.nodeLocation[2], Node.getColorFromTreeDepth(n.getTreeDepth() + 20)); }});
+
         }
 
         // Draw games played and games/sec in upper left.
@@ -257,21 +260,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         textRenderSmall.endRendering();
         lastGamesPlayed = totalGamesPlayed;
         lastIterTime = System.currentTimeMillis();
-    }
-
-    /**
-     * Draw a text string using GLUT (for openGL rendering version of my stuff)
-     */
-    public void drawString(String toDraw, float x, float y, float z, GL2 gl, GLUT glut) {
-        // Format numbers with Java.
-        NumberFormat format = NumberFormat.getNumberInstance();
-        format.setMinimumFractionDigits(2);
-        format.setMaximumFractionDigits(2);
-
-        // Printing fonts, letters and numbers is much simpler with GLUT.
-        // We do not have to use our own bitmap for the font.
-        gl.glRasterPos3d(x, y, z);
-        glut.glutBitmapString(GLUT.BITMAP_HELVETICA_12, toDraw);
     }
 
     @Override
@@ -463,7 +451,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     /**
      * Take a node back a layer. Don't return to node past. Try to go back out by the deficit depth amount in the
-     * +1 or -1 direction left/right
+     * +1 or -1 direction left/right -- TODO this is an old mess.
      */
     private boolean nextOver(Node current, ArrayList<Node> blacklist, int deficitDepth, int direction,
                              int prevIndexAbove, int numTimesTried) { // numTimesTried added to prevent some really

@@ -1,8 +1,9 @@
 package ui;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.text.NumberFormat;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
@@ -15,6 +16,7 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
  * This attempts to hold all the things I normally do when making a new panel that uses GL.
@@ -30,6 +32,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
      **/
     private GLU glu;
     GL2 gl;
+    private GLUT glut = new GLUT();
 
     /**
      * Dark theme background. From the Solarized palette.
@@ -116,6 +119,17 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
         panelWidth = e.getComponent().getWidth();
         setSize(panelWidth, panelHeight);
         cam = new GLCamManager(panelWidth, panelHeight);
+    }
+
+    /**
+     * Draw a text string using GLUT.
+     */
+    public void drawString(String toDraw, float x, float y, float z, Color color) {
+        // Printing fonts, letters and numbers is much simpler with GLUT.
+        // We do not have to use our own bitmap for the font.
+        gl.glColor3f(color.getRed()/255f, color.getGreen()/255f, color.getBlue()/255f);
+        gl.glRasterPos3d(x, y, z);
+        glut.glutBitmapString(GLUT.BITMAP_HELVETICA_12, toDraw);
     }
 
     @Override
