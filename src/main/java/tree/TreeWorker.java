@@ -329,7 +329,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                                     "status assigned.");
                         }
                     }
-
                     break;
                 case ROLLOUT_POLICY_CHOOSING:
                     if (sampler.rolloutPolicyGuard(currentGameNode)) {
@@ -340,7 +339,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         actionQueue.addAction(targetNodeToTest.getAction());
                         changeStatus(Status.ROLLOUT_POLICY_EXECUTING);
                     }
-
                     break;
                 case ROLLOUT_POLICY_EXECUTING:
                     executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
@@ -357,7 +355,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         sampler.rolloutPolicyActionDone(currentGameNode);
                         changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
                     }
-
                     break;
                 case EVALUATE_GAME:
                     saver.reportGameEnding(currentGameNode);

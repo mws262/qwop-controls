@@ -172,7 +172,7 @@ public class Node {
      * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
      */
     private static final boolean limitDrawing = true;
-    public static final Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet();
+    public static final Set<Node> pointsToDraw = ConcurrentHashMap.newKeySet(10000);
 
     /**
      * Specifies whether this node has been ignored for drawing purposes. This only gets manipulated if
@@ -659,7 +659,7 @@ public class Node {
      * to validate correct behavior of some feature.
      **/
     private void propagateFullyExplored_complete() {
-        ArrayList<Node> leaves = new ArrayList<>();
+        ArrayList<Node> leaves = new ArrayList<>(5000);
         getLeaves(leaves);
 
         // Reset all existing exploration flags out there.
@@ -692,7 +692,7 @@ public class Node {
      * info stored for this branch to keep memory in check.
      */
     public void destroyNodesBelow() {
-        Node[] childrenCopy = children.toArray(new Node[children.size()]);
+        Node[] childrenCopy = children.toArray(new Node[0]);
         children.clear();
 
         for (Node child : childrenCopy) {
