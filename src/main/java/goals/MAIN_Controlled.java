@@ -22,6 +22,7 @@ import actions.Action;
 import actions.ActionQueue;
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
+import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
 import controllers.IController;
 import data.SavableActionSequence;
 import data.SavableFileIO;
@@ -51,7 +52,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
      * Place to load any 'prefix' run data in the form of a SavableSingleGame
      */
     private File prefixSave = new File("src/main/resources/" +
-            "saved_data/4_25_18/steadyRunPrefix.SavableSingleGame");
+            "saved_data/11_2_18/single_run_2018-11-08_08-41-13.SavableSingleGame");
 
     private List<Node> leafNodes = new ArrayList<>();
 
@@ -67,22 +68,19 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
      * Screen capture settings.
      */
     private ScreenCapture screenCap;
-    private boolean doScreenCapture = true;
+    private boolean doScreenCapture = false;
 
     private Panel mainViewPanel;
 
     public static void main(String[] args) {
         MAIN_Controlled mc = new MAIN_Controlled();
         mc.setup();
-        //		// CONTROLLER -- Neural net picks keys.
-        //		Controller_Tensorflow_ClassifyActionsPerTimestep cont = new
-        // Controller_Tensorflow_ClassifyActionsPerTimestep("frozen_model.pb", "./python/logs/");
-        //		cont.inputName = "tfrecord_input/split";
-        //		cont.outputName = "softmax/Softmax";
-
+        // CONTROLLER -- Neural net picks keys.
+//        mc.controller = new Controller_Tensorflow_ClassifyActionsPerTimestep(
+//                "frozen_model.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
 
         // CONTROLLER -- Approximate nearest neighbor.
-        File saveLoc = new File("src/main/resources/training_data");
+        File saveLoc = new File("src/main/resources/saved_data/training_data");
 
         File[] allFiles = saveLoc.listFiles();
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
@@ -101,52 +99,6 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         }
         mc.controller = new Controller_NearestNeighborApprox(exampleDataFiles);
         mc.doControlled();
-
-        //		// Have the server do the calculations for me.
-        //		Controller_NearestNeighborApprox subCont = new Controller_NearestNeighborApprox(new ArrayList<File>());
-        //		//subCont.comparePreviousStates = false;
-        ////		subCont.upperSetLimit = 50;
-        ////		subCont.lowerSetLimit = 50;
-        //		subCont.penalizeEndOfSequences = false;
-        //		//subCont.enableVoting = true;
-        //		//subCont.maxPenaltyForEndOfSequence = 0f;
-        //		subCont.previousStatePenaltyMult = 0.9f;
-        //		subCont.enableTrajectorySnapping = false;
-        //		subCont.trajectorySnappingThreshold = 5f;
-        //		Controller_AskServer serverCont = new Controller_AskServer(subCont);
-        //
-        //		mc.controller = serverCont;
-        //		mc.setup();
-        //		mc.doControlled();
-        //
-        //		serverCont.closeAll();
-
-        //		Client grabData = new Client();
-        //		Controller_NearestNeighborApprox cont = new Controller_NearestNeighborApprox(new ArrayList<File>());
-        //
-        //		try {
-        //			grabData.initialize();
-        //			System.out.println("Asking server for run data...");
-        //			grabData.sendObject("runs");
-        //			cont.runs = (Set<RunHolder>) grabData.receiveObject();
-        //			System.out.println("Complete...");
-        //
-        //			System.out.println("Asking server for state data...");
-        //			grabData.sendObject("states");
-        //			cont.allStates = (NavigableMap<Float, StateHolder>) grabData.receiveObject();
-        //			System.out.println("Complete...");
-        //
-        //		} catch (IOException e) {
-        //			e.printStackTrace();
-        //		} catch (ClassNotFoundException e) {
-        //			e.printStackTrace();
-        //		}finally {
-        //			grabData.closeAll();
-        //		}
-        //		mc.controller = cont;
-        //		mc.setup();
-        //		mc.doControlled();
-
     }
 
     public void setup() {
@@ -176,7 +128,6 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         // Window width
         int windowWidth = 1920;
         setPreferredSize(new Dimension(windowWidth, windowHeight));
-        setContentPane(this.getContentPane());
         pack();
 
         setVisible(true);
@@ -206,7 +157,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
         // Back up the tree in order to skip the end of the prefix.
         /* Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. */
-        int doPrefixToDepth = 2;
+        int doPrefixToDepth = 20;
         while (endNode.getTreeDepth() > doPrefixToDepth) {
             endNode = endNode.getParent();
         }
