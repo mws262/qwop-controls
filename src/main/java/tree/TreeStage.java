@@ -1,11 +1,9 @@
 package tree;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-import game.StateVariable;
 import samplers.ISampler;
 import savers.IDataSaver;
 
@@ -33,7 +31,7 @@ public abstract class TreeStage implements Runnable {
     /**
      * Each stage gets its own workers to avoid contamination. Probably could combine later if necessary.
      */
-    public List<TreeWorker> workers = new ArrayList<>();
+    public List<TreeWorker> workers;
 
     /**
      * Number of TreeWorkers to be used.
@@ -85,20 +83,10 @@ public abstract class TreeStage implements Runnable {
         }
     }
 
-    //int thresh = 2000;
     @Override
     public void run() {
         // Monitor the progress of this stage's workers.
         while (running) {
-            // EXPERIMENTAL MEMORY PRUNING.
-            //
-            //
-            //			if (TreeWorker.getTotalGamesPlayed()  > thresh) {
-            //				count = 0;
-            //				pruneStatesForMemory(getRootNode());
-            //				thresh += 2000;
-            //			}
-
             if (checkTerminationConditions()) {
                 terminate();
                 try {
