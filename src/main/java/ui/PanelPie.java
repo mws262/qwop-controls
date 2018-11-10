@@ -7,22 +7,26 @@ import org.jfree.chart.labels.PieSectionLabelGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.general.PieDataset;
 
 import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 
-public class PanelPie extends JPanel {
+public class PanelPie extends ChartPanel {
+
+    private DefaultPieDataset dataset =  new DefaultPieDataset();
 
     public PanelPie() {
+        this("");
+    }
 
-        // Create dataset
-        PieDataset dataset = createDataset();
+    public PanelPie(String title) {
+        super(null);
+
 
         // Create chart
         JFreeChart chart = ChartFactory.createPieChart(
-                "Pie Chart Example",
+                title,
                 dataset,
                 true,
                 true,
@@ -39,31 +43,36 @@ public class PanelPie extends JPanel {
         plot.setShadowGenerator(null);
         plot.setBackgroundPaint(Color.WHITE);
 
-        add(new ChartPanel(chart));
-        add(new ChartPanel(chart));
-        add(new ChartPanel(chart));
+        setMaximumDrawHeight(1440);
+        setMaximumDrawWidth(2560);
+        setMinimumDrawHeight(100);
+        setMinimumDrawWidth(100);
+
+        setChart(chart);
     }
 
-    private PieDataset createDataset() {
-
-        DefaultPieDataset dataset = new DefaultPieDataset();
-        dataset.setValue("80-100", 120);
-        dataset.setValue("60-79", 80);
-        dataset.setValue("40-59", 20);
-        dataset.setValue("20-39", 7);
-        dataset.setValue("0-19", 3);
+    public DefaultPieDataset getDataset() {
         return dataset;
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             PanelPie example = new PanelPie();
             JFrame jframe = new JFrame();
+            BoxLayout bl = new BoxLayout(jframe.getContentPane(), BoxLayout.X_AXIS);
+            jframe.setLayout(bl);
             jframe.add(example);
+            jframe.add(new PanelPie());
+            jframe.add(new PanelPie());
+            jframe.add(new PanelPie());
+
             jframe.setSize(800, 400);
             jframe.setLocationRelativeTo(null);
             jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             jframe.setVisible(true);
+
+            example.getDataset().insertValue(0, "DFDFDF", 1000);
         });
     }
 
