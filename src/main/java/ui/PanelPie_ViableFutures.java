@@ -54,7 +54,6 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
             }
         }
 
-
         DefaultPieDataset data = getDataset();
         data.clear();
         data.insertValue(0, "Untried", currentNode.uncheckedActions.size());
@@ -63,7 +62,5 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
         data.insertValue(3, "<3 depth", cat2);
         data.insertValue(4, "<6 depth", cat3);
         data.insertValue(5, ">6 depth", cat4);
-
-
     }
 }
