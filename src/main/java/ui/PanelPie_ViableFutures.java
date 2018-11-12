@@ -11,7 +11,6 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
 
 
     public PanelPie_ViableFutures() {
-
     }
 
     @Override

@@ -303,28 +303,27 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             //Navigating the focused node tree
             int keyCode = e.getKeyCode();
 
-            if (e.isAltDown()) { //if we're using GL, then we'll move the camera with mac key + arrows
+            if (e.isShiftDown()) {
                 switch (keyCode) {
-                    case KeyEvent.VK_UP: //Go out the branches of the tree
-
+                    case KeyEvent.VK_UP:
                         cam.smoothRotateLong(0.1f, 5);
                         break;
-                    case KeyEvent.VK_DOWN: //Go back towards root one level
+                    case KeyEvent.VK_DOWN:
                         cam.smoothRotateLong(-0.1f, 5);
                         break;
-                    case KeyEvent.VK_LEFT: //Go left along an isobranch (like that word?)
+                    case KeyEvent.VK_LEFT:
                         cam.smoothRotateLat(0.1f, 5);
                         break;
-                    case KeyEvent.VK_RIGHT: //Go right along an isobranch
+                    case KeyEvent.VK_RIGHT:
                         cam.smoothRotateLat(-0.1f, 5);
                         break;
                 }
             } else if (e.isShiftDown()) {
                 switch (keyCode) {
-                    case KeyEvent.VK_LEFT: //Go left along an isobranch (like that word?)
+                    case KeyEvent.VK_LEFT:
                         cam.smoothTwist(0.1f, 5);
                         break;
-                    case KeyEvent.VK_RIGHT: //Go right along an isobranch
+                    case KeyEvent.VK_RIGHT:
                         cam.smoothTwist(-0.1f, 5);
                         break;
                     case KeyEvent.VK_ESCAPE:
