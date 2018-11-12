@@ -165,6 +165,7 @@ public class Node {
 
     private static final boolean debugDrawNodeLocking = true; // Draw which nodes are locked by command from the
     // TreeWorkers.
+    private static final Color lockColor = new Color(194, 148, 184);
 
     public String nodeLabel = "";
 
@@ -346,6 +347,7 @@ public class Node {
      * that someone else got to it first.
      */
     public synchronized boolean reserveExpansionRights() {
+
         if (locked.get()) { // Already owned by another worker.
             return false;
 
@@ -358,7 +360,7 @@ public class Node {
 
             if (debugDrawNodeLocking) { // For highlighting nodes which are locked in the UI, if desired.
                 displayPoint = true;
-                overrideNodeColor = Color.RED;
+                overrideNodeColor = lockColor;
             }
 
             // May need to add locks to nodes further up the tree towards root. For example, if calling

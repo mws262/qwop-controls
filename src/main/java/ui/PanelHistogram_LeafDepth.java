@@ -1,5 +1,7 @@
 package ui;
 
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.statistics.HistogramDataset;
 import tree.Node;
 
@@ -15,6 +17,10 @@ public class PanelHistogram_LeafDepth extends PanelHistogram implements IUserInt
 
     public PanelHistogram_LeafDepth() {
         super("Leaf depth beyond selected Node");
+        XYPlot plot = (XYPlot) chart.getPlot();
+        NumberAxis xAxis = (NumberAxis) plot.getDomainAxis();
+        xAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        chart.getLegend().setVisible(false);
     }
 
     @Override

@@ -17,7 +17,8 @@ import java.util.Random;
 public class PanelHistogram extends ChartPanel {
 
     private HistogramDataset dataset = new HistogramDataset();
-    private JFreeChart chart;
+
+    JFreeChart chart;
 
     public PanelHistogram() {
         this("");
