@@ -289,21 +289,23 @@ public class GLCamManager {
      * Twist up vector by provided angle
      */
     public void twistCW(float radians) {
-        eyeToTarget.sub(targetPos);
-        Vector3f perp = new Vector3f();
-        perp.set(eyeToTarget);
+        if (radians != 0f) {
+            eyeToTarget.sub(targetPos);
+            Vector3f perp = new Vector3f();
+            perp.set(eyeToTarget);
 
-        perp.cross(perp, upVec); // Perpendicular to the up vector in the plane of the camera.
+            perp.cross(perp, upVec); // Perpendicular to the up vector in the plane of the camera.
 
-        if (perp.dot(perp) > 0) {
-            perp.normalize();
-        } else {
-            return;
+            if (perp.dot(perp) > 0) {
+                perp.normalize();
+            } else {
+                return;
+            }
+
+            perp.scale((float) Math.sin(radians));
+            upVec.scale((float) Math.cos(radians));
+            upVec.add(perp);
         }
-
-        perp.scale((float) Math.sin(radians));
-        upVec.scale((float) Math.cos(radians));
-        upVec.add(perp);
     }
 
     /**

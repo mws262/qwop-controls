@@ -303,7 +303,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             //Navigating the focused node tree
             int keyCode = e.getKeyCode();
 
-            if (e.isShiftDown()) {
+            if (e.isAltDown()) {
                 switch (keyCode) {
                     case KeyEvent.VK_UP:
                         cam.smoothRotateLong(0.1f, 5);

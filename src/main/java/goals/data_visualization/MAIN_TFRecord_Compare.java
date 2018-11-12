@@ -46,7 +46,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
     public void setup() {
 
-        File saveLoc = new File("src/main/resources/saved_data/11_2_18");
+        File saveLoc = new File("src/main/resources/saved_data/training_data");
 
         File[] allFiles = saveLoc.listFiles();
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
@@ -56,9 +56,9 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
         for (File f : allFiles) {
             if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
                 System.out.println("Found save file: " + f.getName());
-                if (count < 5 && count > 0) { // 10 is bad? 9 meh, 8 good
+                //if (count < 5 && count > 0) { // 10 is bad? 9 meh, 8 good
                     exampleDataFiles.add(f);
-                }
+                //}
 //8 not match
 // 9 not match
                 count++;
