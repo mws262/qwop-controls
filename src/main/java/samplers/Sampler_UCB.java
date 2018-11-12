@@ -181,7 +181,7 @@ public class Sampler_UCB implements ISampler {
             throw new RuntimeException("Rollout policy received a starting node which corresponds to an already failed state.");
         // Do shit without adding nodes to the rest of the tree hierarchy.
         // Action childAction = con.policy(startNode.getState());
-        Action childAction = startNode.uncheckedActions.get(Utility.randInt(0, startNode.uncheckedActions.size() - 1));
+        Action childAction = startNode.uncheckedActions.getRandom();
         return new Node(startNode, childAction, false);
     }
 
