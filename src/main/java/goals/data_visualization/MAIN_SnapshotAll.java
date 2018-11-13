@@ -1,4 +1,4 @@
-package goals;
+package goals.data_visualization;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -37,7 +37,7 @@ public class MAIN_SnapshotAll extends JFrame {
 
     public static int playbackDepth = 5;
 
-    private File saveLoc = new File("src/main/resources/11_2_18");
+    private File saveLoc = new File("src/main/resources/saved_data/11_2_18");
 
     public static void main(String[] args) {
         MAIN_SnapshotAll mc = new MAIN_SnapshotAll();
@@ -64,7 +64,7 @@ public class MAIN_SnapshotAll extends JFrame {
 
         List<File> playbackFiles = new ArrayList<>();
         for (File f : Objects.requireNonNull(allFiles)) {
-            if (f.getName().contains("steadyRunPrefix")) { // steadyRunPrefix.SavableSingleGame
+            if (f.getName().contains("SavableSingleGame")) { // steadyRunPrefix.SavableSingleGame
                 playbackFiles.add(f);
             }
         }

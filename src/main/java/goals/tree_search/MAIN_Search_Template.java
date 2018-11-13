@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
-import samplers.Sampler_Random;
 import tree.TreeStage;
 import actions.Action;
 import actions.ActionGenerator_FixedSequence;
@@ -298,7 +297,8 @@ public abstract class MAIN_Search_Template {
         PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot();
         PanelRunner_Comparison comparisonPane = new PanelRunner_Comparison();
         PanelPlot_States statePlotPane = new PanelPlot_States(6); // 6 plots per view at the bottom.
-
+        PanelPie_ViableFutures viableFuturesPane = new PanelPie_ViableFutures();
+        PanelHistogram_LeafDepth leafDepthPane = new PanelHistogram_LeafDepth();
         PanelPlot_Transformed pcaPlotPane =
 				new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
         PanelPlot_Controls controlsPlotPane = new PanelPlot_Controls(6); // 6 plots per view at the bottom.
@@ -313,6 +313,8 @@ public abstract class MAIN_Search_Template {
         fullUI.addTab(snapshotPane, "State Viewer");
         fullUI.addTab(comparisonPane, "State Compare");
         fullUI.addTab(statePlotPane, "State Plots");
+        fullUI.addTab(viableFuturesPane, "Viable Futures");
+        fullUI.addTab(leafDepthPane, "Leaf depth distribution");
         fullUI.addTab(controlsPlotPane, "Controls Plots");
         fullUI.addTab(singleRunPlotPane, "Single Run Plots");
         fullUI.addTab(pcaPlotPane, "PCA Plots");
