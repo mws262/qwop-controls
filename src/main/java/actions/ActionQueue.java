@@ -209,6 +209,16 @@ public class ActionQueue {
     }
 
     /**
+     * Resets all progress on the queue making it ready to execute the same actions again. Note that to actually
+     * remove actions, you should use {@link ActionQueue#clearAll()}.
+     */
+    public void resetQueue() {
+        Action[] actions = getActionsInCurrentRun();
+        clearAll();
+        this.addSequence(actions);
+    }
+
+    /**
      * Get a copy of this ActionQueue, with none of the actions performed yet.
      *
      * @return An ActionQueue with all the same actions, but no progress in them done yet.
