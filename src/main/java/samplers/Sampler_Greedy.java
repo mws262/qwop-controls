@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import actions.Action;
 import evaluators.IEvaluationFunction;
+import game.GameLoader;
 import tree.Node;
 import tree.Utility;
 
@@ -205,13 +206,8 @@ public class Sampler_Greedy implements ISampler {
     }
 
     @Override
-    public Node rolloutPolicy(Node startNode) {
+    public void rolloutPolicy(Node startNode, GameLoader game) {
         // No rollout policy.
-        return null;
-    }
-
-    @Override
-    public void rolloutPolicyActionDone(Node currentNode) {
     }
 
     @Override

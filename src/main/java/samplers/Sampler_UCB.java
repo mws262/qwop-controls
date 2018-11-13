@@ -1,6 +1,8 @@
 package samplers;
 
+import actions.ActionQueue;
 import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
+import game.GameLoader;
 import org.jblas.util.Random;
 
 import actions.Action;
@@ -176,31 +178,87 @@ public class Sampler_UCB implements ISampler {
     //        "frozen_model.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
 
     @Override
-    public Node rolloutPolicy(Node startNode) {
+    public void rolloutPolicy(Node startNode, GameLoader game) {
         if (startNode.isFailed())
-            throw new RuntimeException("Rollout policy received a starting node which corresponds to an already failed state.");
-        // Do shit without adding nodes to the rest of the tree hierarchy.
-        // Action childAction = con.policy(startNode.getState());
-        Action childAction = startNode.uncheckedActions.getRandom();
-        return new Node(startNode, childAction, false);
+            throw new IllegalStateException("Rollout policy received a starting node which corresponds to an already failed " +
+                    "state.");
+
+        ActionQueue actionQueue = new ActionQueue();
+
+        Node rolloutNode = startNode;
+        while (!rolloutNode.isFailed()) {
+            Action childAction = rolloutNode.uncheckedActions.getRandom();
+            rolloutNode = new Node(rolloutNode, childAction, false);
+            actionQueue.addAction(childAction);
+
+            while (!actionQueue.isEmpty()) {
+                game.stepGame(actionQueue.pollCommand());
+            }
+
+            rolloutNode.setState(game.getCurrentState());
+        }
+        propagateScore(rolloutNode);
+
+        // Cold start
+        game.makeNewWorld();
+        game.setState(rolloutNode.getState());
+
+        rolloutNode = startNode;
+        while (!rolloutNode.isFailed()) {
+            Action childAction = rolloutNode.uncheckedActions.getRandom();
+            rolloutNode = new Node(rolloutNode, childAction, false);
+            actionQueue.addAction(childAction);
+
+            while (!actionQueue.isEmpty()) {
+                game.stepGame(actionQueue.pollCommand());
+            }
+
+            rolloutNode.setState(game.getCurrentState());
+        }
+        propagateScore(rolloutNode);
+//        for (int i = 0; i < startNode.uncheckedActions.size(); i++) {
+//
+//            Node rolloutNode = startNode;
+//
+//            int count = 0;
+//            while (!rolloutNode.isFailed()) {
+//                Action childAction;
+//                if (count++ == 0) {
+//                    childAction = rolloutNode.uncheckedActions.get(i);
+//                } else {
+//                    childAction = rolloutNode.uncheckedActions.getRandom();
+//                }
+//
+//                rolloutNode = new Node(rolloutNode, childAction, false);
+//                actionQueue.addAction(childAction);
+//
+//                while (!actionQueue.isEmpty()) {
+//                    game.stepGame(actionQueue.pollCommand());
+//                }
+//
+//                rolloutNode.setState(game.getCurrentState());
+//
+//            }
+//
+//            propagateScore(rolloutNode);
+//
+//
+//            game.makeNewWorld();
+//            actionQueue.clearAll();
+//            actionQueue.addSequence(startNode.getSequence());
+//
+//            while (!actionQueue.isEmpty()) {
+//                game.stepGame(actionQueue.pollCommand());
+//            }
+//        }
+
+        rolloutPolicyDone = true;
     }
 
-    @Override
-    public void rolloutPolicyActionDone(Node currentNode) {
-        expansionPolicyDone = false;
-        currentRolloutActions++;
-        if (currentNode.isFailed() || currentRolloutActions > maxRolloutActions) {
-            rolloutPolicyDone = true;
-            currentRolloutActions = 0;
-            propagateScore(currentNode);
-        } else {
-            rolloutPolicyDone = false;
-        }
-    }
 
     @Override
     public boolean rolloutPolicyGuard(Node currentNode) {
-        return rolloutPolicyDone || currentNode.isFailed();
+        return rolloutPolicyDone;
     }
 
     @Override
