@@ -1,6 +1,7 @@
 package samplers;
 
 import actions.Action;
+import game.GameLoader;
 import tree.Node;
 import tree.Utility;
 
@@ -84,9 +85,7 @@ public class Sampler_Random implements ISampler {
     }
 
     @Override
-    public Node rolloutPolicy(Node startNode) {
-        // No rollout policy.
-        return null;
+    public void rolloutPolicy(Node startNode, GameLoader game) {
     }
 
     @Override
@@ -115,9 +114,6 @@ public class Sampler_Random implements ISampler {
         treePolicyDone = false;
         expansionPolicyDone = currentNode.getState().isFailed();
     }
-
-    @Override
-    public void rolloutPolicyActionDone(Node currentNode) {} // No rollout in random sampler.
 
     @Override
     public Sampler_Random getCopy() {

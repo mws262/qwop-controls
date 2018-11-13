@@ -3,6 +3,7 @@ package samplers;
 import java.util.ArrayList;
 
 import actions.Action;
+import game.GameLoader;
 import tree.Node;
 
 /**
@@ -98,10 +99,7 @@ public class Sampler_Distribution implements ISampler {
     }
 
     @Override
-    public Node rolloutPolicy(Node startNode) {
-        // No rollout policy.
-        return null;
-    }
+    public void rolloutPolicy(Node startNode, GameLoader game) {}
 
     @Override
     public boolean treePolicyGuard(Node currentNode) {
@@ -129,9 +127,6 @@ public class Sampler_Distribution implements ISampler {
         treePolicyDone = false;
         expansionPolicyDone = currentNode.getState().isFailed();
     }
-
-    @Override
-    public void rolloutPolicyActionDone(Node currentNode) {} // No rollout in random sampler.
 
     @Override
     public Sampler_Distribution getCopy() {

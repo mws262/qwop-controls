@@ -31,7 +31,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     public enum Status {
         IDLE, INITIALIZE, TREE_POLICY_CHOOSING, TREE_POLICY_EXECUTING, EXPANSION_POLICY_CHOOSING,
-        EXPANSION_POLICY_EXECUTING, ROLLOUT_POLICY_CHOOSING, ROLLOUT_POLICY_EXECUTING, EVALUATE_GAME
+        EXPANSION_POLICY_EXECUTING, ROLLOUT_POLICY, EVALUATE_GAME
     }
 
     /**
@@ -282,7 +282,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                 case EXPANSION_POLICY_CHOOSING:
                     if (sampler.expansionPolicyGuard(currentGameNode)) { // Some samplers keep adding nodes until
                         // failure, others add a fewer number and move to rollout before failure.
-                        changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
+                        changeStatus(Status.ROLLOUT_POLICY);
                         if (debugDraw && lastNodeAdded != null) lastNodeAdded.clearNodeOverrideColor();
                         lastNodeAdded = currentGameNode;
                         if (debugDraw) lastNodeAdded.setBranchColor(getColorFromWorkerID(workerID));
@@ -331,31 +331,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     }
 
                     break;
-                case ROLLOUT_POLICY_CHOOSING:
+                case ROLLOUT_POLICY:
                     if (sampler.rolloutPolicyGuard(currentGameNode)) {
                         changeStatus(Status.EVALUATE_GAME);
                     } else {
-                        targetNodeToTest = sampler.rolloutPolicy(currentGameNode);
-                        actionQueue.clearAll();
-                        actionQueue.addAction(targetNodeToTest.getAction());
-                        changeStatus(Status.ROLLOUT_POLICY_EXECUTING);
-                    }
-
-                    break;
-                case ROLLOUT_POLICY_EXECUTING:
-                    executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
-
-                    // When done, record state and go back to choosing. If failed, the sampler guards will tell us.
-                    if (actionQueue.isEmpty() || game.getFailureStatus()) {
-                        // TODO possibly update the action to what was actually possible until the runner fell.
-                        // Subtract out the extra timesteps that weren't possible due to failure.
-                        currentGameNode = targetNodeToTest;
-                        if (!currentGameNode.isStateUnassigned())
-                            throw new RuntimeException("The expansion policy should only encounter new nodes. None of" +
-                                    " them should have their state assigned before now.");
-                        currentGameNode.setState(getGameState());
-                        sampler.rolloutPolicyActionDone(currentGameNode);
-                        changeStatus(Status.ROLLOUT_POLICY_CHOOSING);
+                        sampler.rolloutPolicy(currentGameNode, game);
                     }
 
                     break;
@@ -411,12 +391,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {
             Action action = actionQueue.peekThisAction();
-            boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-            boolean Q = nextCommand[0];
-            boolean W = nextCommand[1];
-            boolean O = nextCommand[2];
-            boolean P = nextCommand[3];
-            game.stepGame(Q, W, O, P);
+            game.stepGame(actionQueue.pollCommand());
             saver.reportTimestep(action, game);
             workerStepsSimulated++;
             tsPerSecondUpdateCounter++;
