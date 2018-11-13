@@ -172,16 +172,16 @@ public class Sampler_UCB implements ISampler {
         return expansionPolicyDone;
     }
 
-//    Controller_Tensorflow_ClassifyActionsPerTimestep cont =
-//            new Controller_Tensorflow_ClassifyActionsPerTimestep("shitty_controller.pb",
-//                    "src/main/resources/tflow_models/", "tfrecord_input/split", "softmax/Softmax");
+    //Controller_Tensorflow_ClassifyActionsPerTimestep con = new Controller_Tensorflow_ClassifyActionsPerTimestep(
+    //        "frozen_model.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
+
     @Override
     public Node rolloutPolicy(Node startNode) {
         if (startNode.isFailed())
             throw new RuntimeException("Rollout policy received a starting node which corresponds to an already failed state.");
         // Do shit without adding nodes to the rest of the tree hierarchy.
-//        Action childAction = cont.policy(startNode.getState());
-        Action childAction = startNode.uncheckedActions.get(Utility.randInt(0, startNode.uncheckedActions.size() - 1));
+        // Action childAction = con.policy(startNode.getState());
+        Action childAction = startNode.uncheckedActions.getRandom();
         return new Node(startNode, childAction, false);
     }
 

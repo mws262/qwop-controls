@@ -8,6 +8,7 @@ import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 
+import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
@@ -123,7 +124,7 @@ public class GLCamManager {
      */
     public void initLighting(GL2 gl) {
         // SETUP LIGHTING
-        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
         gl.glLightfv(GLLightingFunc.GL_LIGHT0, GLLightingFunc.GL_POSITION, lightPos, 0);
         gl.glLightfv(GLLightingFunc.GL_LIGHT0, GLLightingFunc.GL_AMBIENT, lightAmbient, 0);
@@ -138,7 +139,6 @@ public class GLCamManager {
     public void update(GL2 gl, GLU glu) {
 
         /* Do all the queued actions. **/
-
         // Sum eye movements.
         netMovement.scale(0);
         for (int i = 0; i < eyeIncrement.size(); i++) {
@@ -250,7 +250,7 @@ public class GLCamManager {
         glu.gluPerspective(viewAng, width / height, nearPlane, farPlane);
         glu.gluLookAt(eyePos.x, eyePos.y, eyePos.z, targetPos.x, targetPos.y, targetPos.z, upVec.x, upVec.y, upVec.z);
         gl.glPopMatrix();
-        gl.glGetFloatv(GLMatrixFunc.GL_MODELVIEW, modelViewMat, 0);
+        gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, modelViewMat, 0);
     }
 
     /**
@@ -289,21 +289,23 @@ public class GLCamManager {
      * Twist up vector by provided angle
      */
     public void twistCW(float radians) {
-        eyeToTarget.sub(targetPos);
-        Vector3f perp = new Vector3f();
-        perp.set(eyeToTarget);
+        if (radians != 0f) {
+            eyeToTarget.sub(targetPos);
+            Vector3f perp = new Vector3f();
+            perp.set(eyeToTarget);
 
-        perp.cross(perp, upVec); // Perpendicular to the up vector in the plane of the camera.
+            perp.cross(perp, upVec); // Perpendicular to the up vector in the plane of the camera.
 
-        if (perp.dot(perp) > 0) {
-            perp.normalize();
-        } else {
-            return;
+            if (perp.dot(perp) > 0) {
+                perp.normalize();
+            } else {
+                return;
+            }
+
+            perp.scale((float) Math.sin(radians));
+            upVec.scale((float) Math.cos(radians));
+            upVec.add(perp);
         }
-
-        perp.scale((float) Math.sin(radians));
-        upVec.scale((float) Math.cos(radians));
-        upVec.add(perp);
     }
 
     /**
@@ -428,21 +430,23 @@ public class GLCamManager {
      */
     public void rotateLongitude(float magnitude) {
 
-        // Vector from target to eye:
-        Vector3f distVec = new Vector3f();
-        distVec.sub(eyePos, targetPos);
+        if (magnitude != 0f) {
+            // Vector from target to eye:
+            Vector3f distVec = new Vector3f();
+            distVec.sub(eyePos, targetPos);
 
-        // Axis to the left in the camera world. Magnitude provided by user.
-        AxisAngle4f rotation = new AxisAngle4f(modelViewMat[0], modelViewMat[4], modelViewMat[8], magnitude);
-        // TODO fix singularity.
-        Matrix3f rotMat = new Matrix3f();
-        rotMat.set(rotation);
+            // Axis to the left in the camera world. Magnitude provided by user.
+            AxisAngle4f rotation = new AxisAngle4f(modelViewMat[0], modelViewMat[4], modelViewMat[8], magnitude);
+            // TODO fix singularity.
+            Matrix3f rotMat = new Matrix3f();
+            rotMat.set(rotation);
 
-        // Transform the target to eye vector
-        rotMat.transform(distVec);
+            // Transform the target to eye vector
+            rotMat.transform(distVec);
 
-        // Add back to get absolute position and set this to be the eye position of the camera.
-        eyePos.add(targetPos, distVec);
+            // Add back to get absolute position and set this to be the eye position of the camera.
+            eyePos.add(targetPos, distVec);
+        }
     }
 
     /**
