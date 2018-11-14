@@ -5,34 +5,64 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameLoader;
 import actions.Action;
+import game.State;
 import tree.Node;
 import ui.PanelRunner_MultiState;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
-
+/**
+ * Takes a known running sequence, adds a disturbance impulse at one point along the trajectory in a number of
+ * different directions. Visualizes when each of the disturbed runners falls. Displays arrow above each failed runner
+ * indicating the direction of the impulse which lead to this fall.
+ *
+ * @author matt
+ */
 public class MAIN_PerturbationImpulse extends JFrame {
 
-    public static void main(String[] args) {
-        MAIN_PerturbationImpulse viewPerturbations = new MAIN_PerturbationImpulse();
-        viewPerturbations.run("src/main/resources/saved_data/11_2_18/single_run_2018-11-13_09-30-25.SavableSingleGame");
+    /**
+     * Number of disturbed runners simulated. Each will receive an impulse in a direction around the unit circle,
+     * evenly divided by the number of runners.
+     */
+    private int numPerturbedRunners = 30;
 
+    /**
+     * Location of the perturbation, in terms of actions along the known, good sequence.
+     */
+    private int perturbationLocation = 15;
+
+    /**
+     * Scaling of the applied disturbance impulse. Directions are along the unit circle, with the magnitude specified
+     * here.
+     */
+    private float impulseScaling = 40f;
+
+    /**
+     * Display snapshots of the runners at this number of timestep intervals.
+     */
+    private int drawInterval = 30;
+
+    public static void main(String[] args) {
+        String fileName = "src/main/resources/saved_data/example_run.SavableSingleGame";
+
+        MAIN_PerturbationImpulse viewPerturbations = new MAIN_PerturbationImpulse();
+        viewPerturbations.run(fileName);
     }
 
     public void run(String fileName) {
         // Vis setup.
-        PanelRunner_MultiState panelRunner = new PanelRunner_MultiState();
+        PanelRunner_MultiStateWithArrows panelRunner = new PanelRunner_MultiStateWithArrows();
         panelRunner.activateTab();
         getContentPane().add(panelRunner);
         setPreferredSize(new Dimension(2000, 400));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
         setVisible(true);
-
 
         // Load a saved game.
         List<SavableSingleGame> gameList = new ArrayList<>();
@@ -47,17 +77,13 @@ public class MAIN_PerturbationImpulse extends JFrame {
         GameLoader game = new GameLoader();
 
         // These are the runners which will be perturbed.
-        int numPerturbedRunners = 10;
         List<GameLoader> perturbedGames = new ArrayList<>();
         for (int i = 0; i < numPerturbedRunners; i++) {
             perturbedGames.add(new GameLoader());
         }
-
-
         ActionQueue actionQueue = new ActionQueue();
         actionQueue.addSequence(baseActions);
 
-        int perturbationLocation = 15;
         // Get all runners to the perturbation location.
         while (actionQueue.getCurrentActionIdx() < perturbationLocation) {
 
@@ -70,13 +96,15 @@ public class MAIN_PerturbationImpulse extends JFrame {
         }
 
         // Apply impulse disturbances.
-        float impulseScaling = 2f;
+        Map<GameLoader, float[]> gameToDisturbanceDir = new HashMap<>();
+
         for (int i = 0; i < numPerturbedRunners; i++) {
-            perturbedGames.get(i).applyBodyImpulse(impulseScaling  * (float)Math.cos((double)i/(double)numPerturbedRunners * 2. *
-                    Math.PI), impulseScaling * (float)Math.sin((double)i/(double)numPerturbedRunners * 2. * Math.PI));
+            float[] disturbance = new float[]{(float) Math.cos((double) i / (double) numPerturbedRunners * 2. *
+                    Math.PI), (float) Math.sin((double) i / (double) numPerturbedRunners * 2. * Math.PI)};
+            gameToDisturbanceDir.put(perturbedGames.get(i), disturbance);
+            perturbedGames.get(i).applyBodyImpulse(impulseScaling * disturbance[0], impulseScaling * disturbance[1]);
         }
 
-        int drawInterval = 30;
         panelRunner.setMainState(game.getCurrentState());
 
         int count = 0;
@@ -92,14 +120,14 @@ public class MAIN_PerturbationImpulse extends JFrame {
                 thisGame.stepGame(command);
                 if (count % drawInterval == 0)
                     panelRunner.addSecondaryState(perturbedGames.get(i).getCurrentState(), Node.getColorFromScaledValue(i
-                        , numPerturbedRunners, 0.8f));
+                            , numPerturbedRunners, 0.8f));
 
                 // Remove and draw if failure.
                 if (thisGame.getFailureStatus()) {
-                    panelRunner.addSecondaryState(thisGame.getCurrentState(), Color.RED);
+                    float[] distDir = gameToDisturbanceDir.get(thisGame);
+                    panelRunner.addSecondaryStateWithArrow(thisGame.getCurrentState(), Color.RED, distDir);
                     perturbedGames.remove(thisGame);
                 }
-
             }
 
             panelRunner.repaint();
@@ -109,10 +137,71 @@ public class MAIN_PerturbationImpulse extends JFrame {
                 e.printStackTrace();
             }
             count++;
+        }
+    }
 
+    /**
+     * Same as the superclass, but with the capability of displaying directed arrows above each runner.
+     *
+     * @author matt
+     */
+    class PanelRunner_MultiStateWithArrows extends PanelRunner_MultiState {
+
+        private final int ARR_SIZE = 4;
+
+        private List<Integer[]> arrowCoords = new Vector<>();
+
+        @Override
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            for (Integer[] coord : arrowCoords) {
+                drawArrow(g, coord[0], coord[1], coord[2], coord[3]);
+            }
         }
 
+        /**
+         * Add a secondary state to draw. Same as {@link PanelRunner_MultiState#addSecondaryState(State, Color)}
+         * except with an arrow drawn from the runner center.
+         *
+         * @param state          State to add to drawing list.
+         * @param color          Color to outline the runner in.
+         * @param arrowDirection Direction of the arrow.
+         */
+        void addSecondaryStateWithArrow(State state, Color color, float[] arrowDirection) {
+            super.addSecondaryState(state, color);
+            Integer[] arrowCoord = new Integer[4];
+            arrowCoord[0] = offset[0] + (int) (state.body.getX() * runnerScaling);
+            arrowCoord[1] = offset[1] - 100;
+            arrowCoord[2] = (int) (50 * arrowDirection[0]) + arrowCoord[0];
+            arrowCoord[3] = (int) (50 * arrowDirection[1]) + arrowCoord[1];
+            arrowCoords.add(arrowCoord);
+        }
 
+        /**
+         * Draw an arrow on screen.
+         *
+         * @param g1 Graphics object.
+         * @param x1 X screen coordinate of arrow origin.
+         * @param y1 Y screen coordinate of arrow origin.
+         * @param x2 X screen coordinate of arrow endpoint.
+         * @param y2 Y screen coordinate of arrow endpoint.
+         */
+        private void drawArrow(Graphics g1, int x1, int y1, int x2, int y2) {
+            Graphics2D g = (Graphics2D) g1.create();
+
+            double dx = x2 - x1, dy = y2 - y1;
+            double angle = Math.atan2(dy, dx);
+            int len = (int) Math.sqrt(dx * dx + dy * dy);
+            AffineTransform at = AffineTransform.getTranslateInstance(x1, y1);
+            at.concatenate(AffineTransform.getRotateInstance(angle));
+            g.transform(at);
+
+            // Draw horizontal arrow starting in (0, 0)
+            g.drawLine(0, 0, len, 0);
+            g.fillPolygon(new int[]{len, len - ARR_SIZE, len - ARR_SIZE, len},
+                    new int[]{0, -ARR_SIZE, ARR_SIZE, 0}, 4);
+        }
 
     }
 }

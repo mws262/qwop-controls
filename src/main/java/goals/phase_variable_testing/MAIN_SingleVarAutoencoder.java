@@ -24,7 +24,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
     /**
      * Number of outputs to plot. Needs to have a corresponding neural network .pb file!
      */
-    int numOutputs = 1;
+    int numOutputs = 6;
 
     public static void main(String[] args) {
         new MAIN_SingleVarAutoencoder().run();

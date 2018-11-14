@@ -475,6 +475,15 @@ public class Node {
         return children.toArray(new Node[0]);
     }
 
+
+    /**
+     * Remove a node from this node's list of children if the node is present. Do NOT use this method lightly.
+     * Usually want to do something else.
+     * @param node Child node to remove.
+     */
+    public void removeFromChildren(Node node) {
+        children.remove(node);
+    }
     /**
      * Get the index of this node in it's parent list of nodes. Hence, parent.children.get(index) == this.
      *
@@ -846,8 +855,7 @@ public class Node {
      * Set to -1 or something if you don't want this.**/
     public static synchronized Node makeNodesFromRunInfo(List<SavableSingleGame> runs, Node existingRootToAddTo,
                                                          int trimActionAddingToDepth) {
-        Node rootNode;
-        rootNode = existingRootToAddTo;
+        Node rootNode = existingRootToAddTo;
         currentlyAddingSavedNodes = true;
         for (SavableSingleGame run : runs) { // Go through all runs, placing them in the tree.
             Node currentNode = rootNode;
@@ -1130,7 +1138,7 @@ public class Node {
     public void turnOffBranchDisplay() {
         displayLine = false;
         displayPoint = false;
-        notDrawnForSpeed = false;
+        notDrawnForSpeed = true;
         pointsToDraw.remove(this);
 
         for (Node child : children) {

@@ -161,10 +161,8 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                             break;
                         }
                     }
-
-                    if (!foundFile) {
+                    if (!foundFile)
                         break;
-                    }
                     startIdx++;
                     foundFile = false;
                 }
@@ -198,8 +196,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                 }
                 // Turn off drawing for this one.
                 leaf.turnOffBranchDisplay();
-                //FIXME: Fix line below to agree with new methods.
-//                leaf.parent.children.remove(leaf);
+                leaf.getParent().removeFromChildren(leaf);
                 if (previousLeaf != null) {
                     previousLeaf.destroyNodesBelowAndCheckExplored();
                 }

@@ -5,6 +5,7 @@ import game.State;
 import tree.Node;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,6 +29,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
      */
     private Map<State, Color> secondaryStates = new ConcurrentHashMap<>();
 
+    public int[] offset = new int[2];
     /**
      * Add a state to be displayed.
      * @param state State to draw the runner at.
@@ -75,14 +77,17 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
         // x offset comes from the main state and is applied to all states drawn.
         int xOffset = (int) (mainState.body.getX() * runnerScaling);
 
+        offset[0] = 500 - xOffset;
+        offset[1] = 100 + yOffsetPixels;
+
         // Draw the main state.
         game.drawExtraRunner(g2, game.getXForms(mainState), "", runnerScaling,
-				500 - xOffset, yOffsetPixels + 100, Color.BLACK, boldStroke);
+                offset[0], offset[1], Color.BLACK, boldStroke);
 
         // Draw secondary states, if any.
         for (State st : secondaryStates.keySet()) {
             game.drawExtraRunner(g2, game.getXForms(st), "", runnerScaling,
-                    500 - xOffset, yOffsetPixels + 100, secondaryStates.get(st), normalStroke);
+                    offset[0], offset[1], secondaryStates.get(st), normalStroke);
         }
 
         //This draws the "road" markings to show that the ground is moving relative to the dude.
@@ -91,6 +96,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
                     yOffsetPixels + 195);
         }
     }
+
 
     @Override
     public void run() {

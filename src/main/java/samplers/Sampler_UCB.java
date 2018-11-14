@@ -8,6 +8,7 @@ import evaluators.IEvaluationFunction;
 import samplers.rollout.RolloutPolicy;
 import samplers.rollout.RolloutPolicy_MultiChildren;
 import samplers.rollout.RolloutPolicy_RandomColdStart;
+import samplers.rollout.RolloutPolicy_SingleRandom;
 import tree.Node;
 import tree.Utility;
 
@@ -66,7 +67,8 @@ public class Sampler_UCB implements ISampler {
      */
     public Sampler_UCB(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
-        rolloutPolicy = new RolloutPolicy_RandomColdStart(evaluationFunction);
+        rolloutPolicy = new RolloutPolicy_RandomColdStart(evaluationFunction);// RolloutPolicy_RandomColdStart
+        // (evaluationFunction);
         c = 5f * explorationMultiplier * Random.nextFloat() * c + 1f;
     }
 
