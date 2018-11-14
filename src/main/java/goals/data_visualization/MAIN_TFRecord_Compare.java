@@ -41,7 +41,6 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
     public static void main(String[] args) {
         MAIN_TFRecord_Compare mc = new MAIN_TFRecord_Compare();
         mc.setup();
-
     }
 
     public void setup() {
@@ -67,17 +66,13 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
         justForLoading = new Controller_NearestNeighborApprox(exampleDataFiles);
 
-
         game.mainRunnerStroke = new BasicStroke(5);
         // .darkBackground[1],GLPanelGeneric.darkBackground[2]);
         Panel mainViewPanel = new Panel();
         this.setLayout(new BorderLayout());
         add(mainViewPanel, BorderLayout.CENTER);
-
-
         game.mainRunnerColor = Color.ORANGE;
         mainViewPanel.setBackground(backgroundColor);
-
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // Window height
@@ -88,7 +83,6 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
         revalidate();
         repaint();
         pack();
-
 
         doneInit = true;
         Thread graphicsThread = new Thread(this);
