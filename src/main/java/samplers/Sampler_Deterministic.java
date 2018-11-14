@@ -1,6 +1,7 @@
 package samplers;
 
 import actions.Action;
+import game.GameLoader;
 import tree.Node;
 
 /**
@@ -92,13 +93,7 @@ public class Sampler_Deterministic implements ISampler {
     }
 
     @Override
-    public Node rolloutPolicy(Node startNode) {
-        return null;
-    }
-
-    @Override
-    public void rolloutPolicyActionDone(Node currentNode) {
-    }
+    public void rolloutPolicy(Node startNode, GameLoader game) {}
 
     @Override
     public boolean rolloutPolicyGuard(Node currentNode) {

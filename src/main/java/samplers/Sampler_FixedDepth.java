@@ -3,6 +3,7 @@ package samplers;
 import java.util.*;
 
 import actions.Action;
+import game.GameLoader;
 import tree.Node;
 import tree.Utility;
 
@@ -151,13 +152,7 @@ public class Sampler_FixedDepth implements ISampler {
     }
 
     @Override
-    public Node rolloutPolicy(Node startNode) {
-        return null;
-    }
-
-    @Override
-    public void rolloutPolicyActionDone(Node currentNode) {
-    }
+    public void rolloutPolicy(Node startNode, GameLoader gameLoader) {}
 
     @Override
     public boolean rolloutPolicyGuard(Node currentNode) {
