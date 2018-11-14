@@ -1,5 +1,6 @@
 package samplers;
 
+import game.GameLoader;
 import tree.Node;
 
 /**
@@ -44,13 +45,7 @@ public interface ISampler {
     /**
      * Continued expansion which is NOT added to the tree as nodes. Only used for scoring as in UCB.
      **/
-    Node rolloutPolicy(Node startNode);
-
-    /**
-     * Lets the sampler know that the previously requested game moves have occurred and the tree FSM is ready to do
-     * more stuff.
-     **/
-    void rolloutPolicyActionDone(Node currentNode);
+    void rolloutPolicy(Node startNode, GameLoader game);
 
     /**
      * Are we ready to switch from rollout policy to tree policy?

@@ -1,10 +1,13 @@
 package samplers;
 
-import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
+import game.GameLoader;
 import org.jblas.util.Random;
 
 import actions.Action;
 import evaluators.IEvaluationFunction;
+import samplers.rollout.RolloutPolicy;
+import samplers.rollout.RolloutPolicy_MultiChildren;
+import samplers.rollout.RolloutPolicy_RandomColdStart;
 import tree.Node;
 import tree.Utility;
 
@@ -20,6 +23,11 @@ public class Sampler_UCB implements ISampler {
      * Evaluation function used to score single nodes after rollouts are done.
      */
     private IEvaluationFunction evaluationFunction;
+
+    /**
+     * Policy used to evaluate the score of a tree expansion Node by doing rollout(s).
+     */
+    private RolloutPolicy rolloutPolicy;
 
     /**
      * Explore/exploit trade-off parameter. Higher means more exploration. Lower means more exploitation.
@@ -47,17 +55,6 @@ public class Sampler_UCB implements ISampler {
     private boolean rolloutPolicyDone = false;
 
     /**
-     * Maximum number of rollout actions to take. Should rarely be necessary, unless tons of short duration actions
-     * are available and the runner just starts rocking back and forth forever.
-     */
-    private final int maxRolloutActions = 100;
-
-    /**
-     * Current number of rollout actions executed during this iteration.
-     */
-    private int currentRolloutActions = 0;
-
-    /**
      * Individual workers can deadlock rarely. This causes overflow errors when the tree policy is recursively called.
      * Solution here is to wait a short period of time, doubling it until the worker is successful again. This happens
      * maybe 1 in 5k games or so near the beginning only, so it's not worth finding something more elegant.
@@ -69,19 +66,18 @@ public class Sampler_UCB implements ISampler {
      */
     public Sampler_UCB(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
+        rolloutPolicy = new RolloutPolicy_RandomColdStart(evaluationFunction);
         c = 5f * explorationMultiplier * Random.nextFloat() * c + 1f;
     }
 
     /**
      * Propagate the score and visit count back up the tree.
      */
-    private void propagateScore(Node failureNode) {
-        float score = evaluationFunction.getValue(failureNode);
-
+    private void propagateScore(Node failureNode, float score) {
         // Do evaluation and propagation of scores.
         failureNode.visitCount.incrementAndGet();
         failureNode.addToValue(score);
-        while (failureNode.getTreeDepth() > 0) {//TODO test 0
+        while (failureNode.getTreeDepth() > 0) { // TODO test 0
             failureNode = failureNode.getParent();
             failureNode.visitCount.incrementAndGet();
             failureNode.addToValue(score);
@@ -161,7 +157,7 @@ public class Sampler_UCB implements ISampler {
         expansionPolicyDone = true; // We move on after adding only one node.
         if (currentNode.isFailed()) { // If expansion is to failed node, no need to do rollout.
             rolloutPolicyDone = true;
-            propagateScore(currentNode);
+            propagateScore(currentNode, evaluationFunction.getValue(currentNode));
         } else {
             rolloutPolicyDone = false;
         }
@@ -176,31 +172,19 @@ public class Sampler_UCB implements ISampler {
     //        "frozen_model.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
 
     @Override
-    public Node rolloutPolicy(Node startNode) {
+    public void rolloutPolicy(Node startNode, GameLoader game) {
         if (startNode.isFailed())
-            throw new RuntimeException("Rollout policy received a starting node which corresponds to an already failed state.");
-        // Do shit without adding nodes to the rest of the tree hierarchy.
-        // Action childAction = con.policy(startNode.getState());
-        Action childAction = startNode.uncheckedActions.getRandom();
-        return new Node(startNode, childAction, false);
-    }
+            throw new IllegalStateException("Rollout policy received a starting node which corresponds to an already failed " +
+                    "state.");
+        float score = rolloutPolicy.rollout(startNode, game);
+        propagateScore(startNode, score);
 
-    @Override
-    public void rolloutPolicyActionDone(Node currentNode) {
-        expansionPolicyDone = false;
-        currentRolloutActions++;
-        if (currentNode.isFailed() || currentRolloutActions > maxRolloutActions) {
-            rolloutPolicyDone = true;
-            currentRolloutActions = 0;
-            propagateScore(currentNode);
-        } else {
-            rolloutPolicyDone = false;
-        }
+        rolloutPolicyDone = true;
     }
 
     @Override
     public boolean rolloutPolicyGuard(Node currentNode) {
-        return rolloutPolicyDone || currentNode.isFailed();
+        return rolloutPolicyDone;
     }
 
     @Override
