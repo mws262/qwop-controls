@@ -2,16 +2,17 @@ import tensorflow as tf
 import numpy as np
 import os.path
 from tensorflow.python.ops import rnn, rnn_cell
+import matplotlib.pyplot as plt
 
 '''
 PARAMETERS & SETTINGS
 '''
 
-tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
-tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
+tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
+tfrecordPath = '../src/main/resources/saved_data/training_data/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 
 export_dir = './models/'
-learn_rate = 1e-3
+learn_rate = 1e-4
 
 initWeightsStdev = 0.1
 initBiasVal = 0.1
@@ -21,7 +22,7 @@ stateKeys = ['BODY', 'HEAD', 'RTHIGH', 'LTHIGH', 'RCALF', 'LCALF',
              'RFOOT', 'LFOOT', 'RUARM', 'LUARM', 'RLARM', 'LLARM']
 
 # Various action parameterizations put in the TFRECORD files
-actionKeys = ['PRESSED_KEYS', 'TIME_TO_TRANSITION', 'ACTIONS']
+actionKeys = ['PRESSED_KEYS', 'PRESSED_KEYS_ONE_HOT', 'TIME_TO_TRANSITION', 'ACTIONS']
 
 # Various information pertaining to the ENTIRE run, but not recorded at every timestep
 contextKeys = ['TIMESTEPS']
@@ -29,34 +30,41 @@ contextKeys = ['TIMESTEPS']
 # Tensorflow placeholders for for sequence and action features as defined by the stateKeys and actionKeys above.
 sequence_features = {skey: tf.FixedLenSequenceFeature([6], tf.float32, True) for skey in stateKeys}
 sequence_features.update({akey: tf.FixedLenSequenceFeature([], tf.string, True) for akey in actionKeys})
-context_features = {ckey: tf.FixedLenFeature([],tf.int64,True) for ckey in contextKeys}
-
+context_features = {ckey: tf.FixedLenFeature([], tf.int64, True) for ckey in contextKeys}
 
 '''
 FUNCTIONS IN THE NN PIPELINE
 '''
+
 
 def _parse_function(example_proto):
     # The serialized example is converted back to actual values.
     features = tf.parse_single_sequence_example(
         serialized=example_proto,
         context_features=context_features,
-        sequence_features=sequence_features
+        sequence_features=sequence_features,
+        name='parse_sequence'
     )
     context = features[0]  # Total number of timesteps in here with key 'TIMESTEPS'
-    ts = context['TIMESTEPS']
-    ts_padded = tf.fill([1,], ts, name='timesteps_padded')
-    feats = {key: features[1][key] for key in stateKeys}  # States
+    timesteps = context['TIMESTEPS']
+    # feats = {key: features[1][key] for key in stateKeys}  # States
+    xoffsets = features[1]['BODY'][:, 0]  # Get first column.
+    x_out_list = []
+    for key in stateKeys:
+        body_part = features[1][key]
+        x_out_list.append(tf.reshape(body_part[:, 0] - xoffsets, [-1, 1]))
+        x_out_list.append(body_part[:, 1:])
 
-    statesConcat = tf.concat(feats.values(),1)
+    statesConcat = tf.concat(x_out_list, 1, name='concat_states')
 
-    # pk = {'PRESSED_KEYS': tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4])}
-    # ttt = {'TIME_TO_TRANSITION': tf.reshape(tf.decode_raw(features[1]['TIME_TO_TRANSITION'], tf.uint8),)}
-    # act = {'ACTIONS': tf.reshape(tf.decode_raw(features[1]['ACTIONS'], tf.uint8),(5,))}
+    # pressedKeys = tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4])
+    pressedKeyClassification = tf.cast(
+        tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS_ONE_HOT'], tf.uint8), [-1, 3]), dtype=tf.float32)
 
-    # feats.update({key: tf.reshape(tf.decode_raw(features[1][key], tf.uint8),(1,)) for key in actionKeys})  # Attach actions too after decoding.
-    #feats.update(pk)
-    return statesConcat
+    # ttt = tf.reshape(tf.decode_raw(features[1]['TIME_TO_TRANSITION'], tf.uint8),)
+    # act = tf.reshape(tf.decode_raw(features[1]['ACTIONS'], tf.uint8),(5,))
+
+    return timesteps, statesConcat, pressedKeyClassification
 
 
 def weight_variable(shape):
@@ -103,7 +111,6 @@ def variable_summaries(var):
 
 
 def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
-
     """Reusable code for making a simple neural net layer.
 
     It does a matrix multiply, bias add, and then uses relu to nonlinearize.
@@ -135,8 +142,8 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
 
         return activations
 
-def lstm_layer(input_tensor, input_dim, output_dim, layer_name):
 
+def lstm_layer(input_tensor, input_dim, output_dim, layer_name):
     # Adding a name scope ensures logical grouping of the layers in the graph.
     with tf.name_scope(layer_name):
         # This Variable will hold the state of the weights for the layer
@@ -153,9 +160,33 @@ def lstm_layer(input_tensor, input_dim, output_dim, layer_name):
             activations = tf.matmul(outputs[-1], weights) + biases
         return activations
 
+
+def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.leaky_relu):
+    current_tensor = input
+    for idx in range(len(layer_sizes) - 1):
+        if idx == range(len(layer_sizes) - 1):
+            current_tensor = nn_layer(current_tensor, layer_sizes[idx], layer_sizes[idx + 1], name_prefix + str(idx),
+                                      act=last_activation)
+        else:
+            current_tensor = nn_layer(current_tensor, layer_sizes[idx], layer_sizes[idx + 1], name_prefix + str(idx))
+
+    return current_tensor
+
+
+def _create_one_cell():
+    return tf.contrib.rnn.LSTMCell(72, state_is_tuple=True)
+    # if config.keep_prob < 1.0:
+    #     return tf.contrib.rnn.DropoutWrapper(lstm_cell, output_keep_prob=config.keep_prob)
+
+
 '''
 DEFINE SPECIFIC DATAFLOW
 '''
+
+file = open("saved_normalization.info", 'r')
+norm_data = np.load(file)
+data_mins = tf.convert_to_tensor(norm_data['min'], dtype=tf.float32)
+data_ranges = tf.convert_to_tensor(norm_data['range'] + 1e-6, dtype=tf.float32)
 
 # Make a list of TFRecord files.
 filename_list = []
@@ -168,129 +199,132 @@ for file in os.listdir(tfrecordPath):
 filenames = tf.placeholder(tf.string, shape=[None])
 dataset = tf.data.TFRecordDataset(filenames)
 dataset = dataset.map(_parse_function)
-dataset = dataset.shuffle(buffer_size=5000)
+dataset = dataset.shuffle(buffer_size=100)
 dataset = dataset.repeat()  # Repeat the input indefinitely.
 dataset = dataset.batch(1)  # .padded_batch(4, padded_shapes=[None])
 iterator = dataset.make_initializable_iterator()
 
 next_element = iterator.get_next()
 
-# print('%d files in queue.' % len(filename_list))
-
+print('%d files in queue.' % len(filename_list))
 
 # LAYERS
-n_output = 72 # 72 state vector elements + 4 key presses.
-n_input = 76 # (I think) How many previous steps are fed into to get the prediction. This is the short-term memory part of LSTM.
-n_hidden = 144 # (I think) How many hidden state variables are passed from timestep to timestep.
+n_hidden = 72  # (I think) How many hidden state variables are passed from timestep to timestep.
+global_step = tf.Variable(0)
 
+#
 # Input layer.
 with tf.name_scope('input'):
-    qwop_state = tf.placeholder(tf.float32, shape=[None,72], name='qwop-state-input')
-    qwop_action = tf.placeholder(tf.float32, shape=[None,4], name='qwop-action-input')
-    init_net_state = tf.placeholder(tf.int32, shape=[None, 1], name='action-input')
+    sequence_length = tf.placeholder(tf.int32, shape=[1], name='run-timestep-count')
+    qwop_state = tf.placeholder(tf.float32, shape=[None, None, 72], name='qwop-state-input')
+    qwop_state_tform = tf.divide(tf.subtract(qwop_state, data_mins), data_ranges)
 
+    qwop_action = tf.placeholder(tf.float32, shape=[None, None, 3], name='qwop-action-input')
+    extended_state = tf.concat([qwop_state_tform, qwop_action], axis=2, name='concat-state-action')
 
-combined_qwop_state = tf.stack([qwop_state, qwop_action])
+with tf.name_scope('rnn'):
+    # rnn_cell = tf.nn.rnn_cell.BasicLSTMCell(n_hidden)
 
-rnn_cell = rnn.BasicLSTMCell(n_hidden)
-outputs, state = rnn.static_rnn(cell=rnn_cell,inputs=combined_qwop_state)
+    rnn_cell = tf.contrib.rnn.MultiRNNCell(
+        [_create_one_cell() for _ in range(3)],
+        state_is_tuple=True
+    ) if 3 > 1 else _create_one_cell()
+    init_state = rnn_cell.zero_state(1, tf.float32)
+    outputs, internal_state = rnn.dynamic_rnn(cell=rnn_cell, inputs=extended_state, initial_state=init_state,
+                                              dtype=tf.float32)
 
+with tf.name_scope('fully_connected'):
+    layers = [72, 3]
+    fully_connected_out = sequential_layers(tf.squeeze(outputs), layers, 'fully_connected')
 
-# num_hidden = 24
-# data = tf.placeholder(tf.float32, [None, 20,1])
-# target = tf.placeholder(tf.float32, [None, 21])
-# cell = tf.nn.rnn_cell.LSTMCell(num_hidden,state_is_tuple=True)
-# val, state = tf.nn.dynamic_rnn(cell, data, dtype=tf.float32)
-#
-#
-# with tf.name_scope('Loss'):
-#     loss_op = tf.losses.mean_squared_error(state, layer4)
+with tf.name_scope('softmax'):
+    softmax_out = tf.nn.softmax(fully_connected_out)
 
+with tf.name_scope('output'):
+    untformed_state_out = tf.add(tf.multiply(outputs, data_ranges), data_mins)
 
-    ################
-    #
-    # # tf Graph input
-    # X = tf.placeholder("float", [None, timesteps, 72])
-    #
-    # # Define weights
-    # weights = {
-    #     'out': tf.Variable(tf.random_normal([num_hidden, num_classes]))
-    # }
-    # biases = {
-    #     'out': tf.Variable(tf.random_normal([num_classes]))
-    # }
-    #
-    #
-    # def RNN(x, weights, biases):
-    #     # Prepare data shape to match `rnn` function requirements
-    #     # Current data input shape: (batch_size, timesteps, n_input)
-    #     # Required shape: 'timesteps' tensors list of shape (batch_size, n_input)
-    #
-    #     # Unstack to get a list of 'timesteps' tensors of shape (batch_size, n_input)
-    #     x = tf.unstack(x, timesteps, 1)
-    #
-    #     # Define a lstm cell with tensorflow
-    #     lstm_cell = rnn.BasicLSTMCell(num_hidden, forget_bias=1.0)
-    #
-    #     # Get lstm cell output
-    #     outputs, states = rnn.static_rnn(lstm_cell, x, dtype=tf.float32)
-    #
-    #     # Linear activation, using rnn inner loop last output
-    #     return tf.matmul(outputs[-1], weights['out']) + biases['out']
-    #
+with tf.name_scope('loss'):
+    # loss_op = tf.nn.softmax_cross_entropy_with_logits_v2(logits=softmax_out, labels=qwop_action)
+    # reducedLoss = tf.reduce_mean(loss_op)
+    loss_op = tf.losses.mean_squared_error(qwop_state_tform, outputs)
+    reducedLoss = tf.reduce_mean(loss_op)
 
-# Training operation.
-adam = tf.train.AdamOptimizer(learn_rate)
-train_op = adam.minimize(loss_op, name="optimizer")
+with tf.name_scope('training'):
+    optim = tf.train.RMSPropOptimizer(learn_rate)
+    train_op = optim.minimize(loss_op, global_step=global_step, name='optimizer')
+    # adam = tf.train.AdamOptimizer(learn_rate)
+    # train_op = adam.minimize(loss_op, global_step=global_step, name='optimizer')
 
-
-# FINAL SETUP
-
-# Add ops to save and restore all the variables -- checkpoint style
 saver = tf.train.Saver()
-
-# Create a summary to monitor cost tensor
-tf.summary.scalar("loss", loss_op)
-
-# Merge all summaries into a single op
+tf.summary.scalar('loss', loss_op)
 merged_summary_op = tf.summary.merge_all()
+np.set_printoptions(threshold=np.nan)
 
+coord = tf.train.Coordinator()  # Can kill everything when code is done. Prevents the `Skipping cancelled enqueue attempt with queue not closed'
 
-coord = tf.train.Coordinator() # Can kill everything when code is done. Prevents the `Skipping cancelled enqueue attempt with queue not closed'
+config = tf.ConfigProto(
+    device_count={'GPU': 0}
+)
 
 '''
 EXECUTE NET
 '''
-
-
-with tf.Session() as sess:
+train = False
+with tf.Session(config=config) as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
 
-    if os.path.isfile("./tmp/model.ckpt"):
-      saver.restore(sess, "./tmp/model.ckpt")
-
-    threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+    if os.path.isfile("./logs/checkpoint"):
+        ckpt = tf.train.get_checkpoint_state("./logs")
+        saver.restore(sess, ckpt.model_checkpoint_path)
+        print('restored')
 
     sess.run(iterator.initializer, feed_dict={filenames: filename_list})
 
-    for i in range(10000000):
-        state_next = sess.run([next_element])
-        loss, _ = sess.run([loss_op,train_op], feed_dict={state: np.squeeze(state_next)})
-        if i%99 == 0:
-            print("Iter: %d, Loss %f\n", [i,loss])
-            save_path = saver.save(sess, "./tmp/model1.ckpt")
+    if not train:
+        for q in range(100):
+            state_next = sess.run([next_element])
 
-    # print np.shape(sess.run([next_element]))
+            st_in = np.expand_dims(state_next[0][1][0][0], axis=0)
+            st_in = np.expand_dims(st_in, axis=0)
 
+            act_in = np.expand_dims(state_next[0][2][0][0], axis=0)
+            act_in = np.expand_dims(act_in, axis=0)
 
-    # for i in range(100000):
-    #
-    #     state_input = sess.run([state_in])
-    #     layer1_out, loss_out, _ = sess.run([layer1,loss_op,train_op], feed_dict={state: np.squeeze(state_input)})
-    #
-    #     print('iter:%d - loss:%f' % (i, loss_out))
+            rnn_out, int_st, next_st = sess.run([outputs, internal_state, untformed_state_out],
+                                                feed_dict={qwop_state: st_in,
+                                                           qwop_action: act_in})
 
-    # Stop all the queue threads.
-    # coord.request_stop()
-    # coord.join(threads)
+            pred_sim = np.zeros(shape=[int(state_next[0][0]), 72])
+            actual = state_next[0][1][0]
+            pred_sim[0, :] = st_in
+            pred_sim[1, :] = next_st
+            for i in range(2, state_next[0][0]):
+                # st_in = np.expand_dims(state_next[0][1][0][i], axis=0)
+                # st_in = np.expand_dims(st_in, axis=0)
+
+                act_in = np.expand_dims(state_next[0][2][0][i], axis=0)
+                act_in = np.expand_dims(act_in, axis=0)
+                rnn_out, int_st, next_st = sess.run([outputs, internal_state, untformed_state_out],
+                                                    feed_dict={qwop_state: next_st, qwop_action: act_in,
+                                                               init_state: int_st})
+                pred_sim[i, :] = next_st
+
+            plot_end = int(state_next[0][0])
+            plt.subplot(2, 1, 1)
+            plt.plot(range(plot_end), pred_sim[0:plot_end, 1:6])
+
+            plt.subplot(2, 1, 2)
+            plt.plot(range(plot_end), actual[0:plot_end, 1:6])
+            plt.show()
+    else:
+        for i in range(100000):
+            state_next = sess.run([next_element])
+            loss, _, meanLoss = sess.run([loss_op, train_op, reducedLoss],
+                                         feed_dict={sequence_length: state_next[0][0],
+                                                    qwop_state: state_next[0][1],
+                                                    qwop_action: state_next[0][2]})
+            print(meanLoss)
+
+            if i % 10 == 0:
+                save_path = saver.save(sess, "./logs/model.ckpt", global_step=i)

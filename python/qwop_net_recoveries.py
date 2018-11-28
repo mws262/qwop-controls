@@ -16,13 +16,16 @@ PARAMETERS & SETTINGS
 # Additional troubles with trying to include input layer correct names -- somehow depends on iterator, which can't be loaded and initialized for some reason.
 # Use tfrecord_input/Squeeze as input.
 ## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "softmax/Softmax"
+# python optimize_for_inference.py --input=../../../../qwop-controls/python/logs/frozen_model.pb --output=../../../../qwop-controls/python/logs/inference.pb --frozen_graph=True --input_names=tfrecord_input/split --output_names=softmax/Softmax
+# python ../../tensorflow/tensorflow/python/tools/optimize_for_inference.py --input=./logs/frozen_model.pb --output=./logs/inference.pb --frozen_graph=True --input_names=tfrecord_input/split --output_names=softmax/Softmax
+
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
-tfrecordPath = '../saved_data/training_data/'  # Location of datafiles on this machine. Beware of drive mounting locations.
+tfrecordPath = '../src/main/resources/saved_data/training_data/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
-learn_rate = 1e-6
+learn_rate = 1e-4
 
 initWeightsStdev = 0.5
 
@@ -169,7 +172,7 @@ def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.lea
 '''
 DEFINE SPECIFIC DATAFLOW
 '''
-batch_size = 50000
+batch_size = 10000
 print_freq = 10
 
 # Make a list of TFRecord files.
@@ -189,7 +192,7 @@ with tf.name_scope("tfrecord_input"):
     dataset = dataset.map(_parse_function, num_parallel_calls=30)
     dataset = dataset.shuffle(buffer_size=150000)
     dataset = dataset.repeat()
-    dataset = dataset.apply(tf.contrib.data.unbatch())
+    dataset = dataset.apply(tf.data.experimental.unbatch())
     dataset = dataset.batch(batch_size)
     #dataset = dataset.padded_batch(batch_size, padded_shapes=([None,72])) # Pad to max-length sequence
     iterator = dataset.make_initializable_iterator()
@@ -201,7 +204,7 @@ with tf.name_scope("tfrecord_input"):
 # LAYERS
 
 eps = 0.001
-is_training = True
+is_training = False
 global_step = tf.Variable(0)
 mean_update_rate = tf.train.exponential_decay(0.2, global_step, 500, 0.7)
 
@@ -212,6 +215,7 @@ else:
 
 # Input layer -- scale and recenter data.
 with tf.name_scope('transform'):
+    # state_in = tf.placeholder(tf.float32, shape=[None,72], name='transform_input_placeholder')
     state_in = tf.placeholder_with_default(state_batch, shape=[None,72], name='transform_input_placeholder')
     state_portal = tf.identity(state_in, name="transform_input")
 
@@ -238,8 +242,8 @@ with tf.name_scope('transform'):
 # Encode the transformed input.
 with tf.name_scope('fully_connected'):
     scaled_state_in = tf.placeholder_with_default(scaled_state, shape=[None, 72], name='fully_connected_input')
-    layers = [72,54,36,18,3]
-    out = sequential_layers(state_batch,layers, 'fully_connected')
+    layers = [72, 72, 36, 3]
+    out = sequential_layers(scaled_state_in,layers, 'fully_connected')
     fully_connected_out = tf.identity(out, name='fully_connected_out') # Solely to make a convenient output to reference in the saved graph.
     mean_encodings = tf.reduce_mean(out, axis=0)
     for i in range(layers[-1]):

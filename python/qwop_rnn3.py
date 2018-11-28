@@ -18,7 +18,7 @@ PARAMETERS & SETTINGS
 ## python freeze_checkpoint.py --model_dir "./logs" --output_node_names "transform_out/unscaled_output,encoder/encoder_output"
 ## tensorboard --logdir=~/git/qwop_saveload/src/python/logs
 tfrecordExtension = '.tfrecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
-tfrecordPath = '/mnt/QWOP_Tfrecord_1_20/'  # Location of datafiles on this machine. Beware of drive mounting locations.
+tfrecordPath = '../src/main/resources/saved_data/training_data/''  # Location of datafiles on this machine. Beware of drive mounting locations.'
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
