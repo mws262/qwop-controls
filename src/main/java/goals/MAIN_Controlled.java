@@ -75,29 +75,29 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
     public static void main(String[] args) {
         MAIN_Controlled mc = new MAIN_Controlled();
         mc.setup();
-        // CONTROLLER -- Neural net picks keys.
-//        mc.controller = new Controller_Tensorflow_ClassifyActionsPerTimestep(
-//                "frozen_model.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
+//         CONTROLLER -- Neural net picks keys.
+        mc.controller = new Controller_Tensorflow_ClassifyActionsPerTimestep(
+                "inference.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
 
-        // CONTROLLER -- Approximate nearest neighbor.
-        File saveLoc = new File("src/main/resources/saved_data/training_data");
-
-        File[] allFiles = saveLoc.listFiles();
-        if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
-
-        List<File> exampleDataFiles = new ArrayList<>();
-        int count = 0;
-        for (File f : allFiles) {
-            if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
-                System.out.println("Found save file: " + f.getName());
-                if (count < 20) {
-                    exampleDataFiles.add(f);
-                }
-
-                count++;
-            }
-        }
-        mc.controller = new Controller_NearestNeighborApprox(exampleDataFiles);
+//        // CONTROLLER -- Approximate nearest neighbor.
+//        File saveLoc = new File("src/main/resources/saved_data/training_data");
+//
+//        File[] allFiles = saveLoc.listFiles();
+//        if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
+//
+//        List<File> exampleDataFiles = new ArrayList<>();
+//        int count = 0;
+//        for (File f : allFiles) {
+//            if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
+//                System.out.println("Found save file: " + f.getName());
+//                if (count < 20) {
+//                    exampleDataFiles.add(f);
+//                }
+//
+//                count++;
+//            }
+//        }
+//        mc.controller = new Controller_NearestNeighborApprox(exampleDataFiles);
         mc.doControlled();
     }
 
@@ -157,7 +157,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
         // Back up the tree in order to skip the end of the prefix.
         /* Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. */
-        int doPrefixToDepth = 20;
+        int doPrefixToDepth = 10;
         while (endNode.getTreeDepth() > doPrefixToDepth) {
             endNode = endNode.getParent();
         }
