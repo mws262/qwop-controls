@@ -188,7 +188,7 @@ To update the classpath settings for Eclipse:
         <dependency>
             <groupId>org.tensorflow</groupId>
             <artifactId>tensorflow</artifactId>
-            <version>1.4.0</version>
+            <version>1.12.0</version>
         </dependency>
 
         <!-- 2D physics engine; old version similar to that in QWOP. From local .jar. -->

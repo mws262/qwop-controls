@@ -8,7 +8,7 @@ import ui.PanelRunner_MultiState;
 import javax.swing.*;
 import java.awt.*;
 
-abstract class CompareWarmStartToColdBase extends JFrame {
+public abstract class CompareWarmStartToColdBase extends JFrame {
 
     PanelRunner_MultiState runnerPanel;
 
@@ -23,7 +23,7 @@ abstract class CompareWarmStartToColdBase extends JFrame {
         setVisible(true);
     }
 
-    static ActionQueue getSampleActions() {
+    public static ActionQueue getSampleActions() {
         // Ran MAIN_Search_LongRun to get these. 19 steps.
         ActionQueue actionQueue = new ActionQueue();
         actionQueue.addAction(new Action(1, new boolean[]{false, false, false, false}));
