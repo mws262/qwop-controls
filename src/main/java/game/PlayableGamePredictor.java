@@ -94,16 +94,8 @@ public class PlayableGamePredictor extends TensorflowLoader {
     }
 
     public static void main(String[] args) {
-        PlayableGamePredictor gp = new PlayableGamePredictor("frozen_model.pb", "src/main/resources/tflow_models" +
-                "/sim_models");
-
-        State initState = GameLoader.getInitialState();
-        Action singleAction = new Action(1000, false, true, true, false);
-
-        ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addAction(singleAction);
-//        ActionQueue actionQueue = CompareWarmStartToColdBase.getSampleActions();
-
+        PlayableGamePredictor gp = new PlayableGamePredictor("frozen_model.pb", "src/main/resources/tflow_models");// +
+                //"/sim_models");
 
         JFrame frame = new JFrame();
         PanelRunner_SimpleState panelRunner = new PanelRunner_SimpleState();
@@ -150,7 +142,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
             }
         });
 
-        while (!actionQueue.isEmpty()) {
+        while (true) {
             long time1 = System.currentTimeMillis();
             panelRunner.updateState(gp.advance(keys)
             );

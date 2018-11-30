@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import os.path
-from tensorflow.python.ops import rnn, rnn_cell
+from tensorflow.python.ops import rnn
 import matplotlib.pyplot as plt
 
 '''
@@ -12,7 +12,7 @@ tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles
 tfrecordPath = '../src/main/resources/saved_data/training_data/'  # Location of datafiles on this machine. Beware of drive mounting locations.
 
 export_dir = './models/'
-learn_rate = 1e-5
+learn_rate = 1e-4
 
 initWeightsStdev = 0.1
 initBiasVal = 0.1
@@ -36,7 +36,6 @@ context_features = {ckey: tf.FixedLenFeature([], tf.int64, True) for ckey in con
 FUNCTIONS IN THE NN PIPELINE
 '''
 
-
 def _parse_function(example_proto):
     # The serialized example is converted back to actual values.
     features = tf.parse_single_sequence_example(
@@ -47,7 +46,6 @@ def _parse_function(example_proto):
     )
     context = features[0]  # Total number of timesteps in here with key 'TIMESTEPS'
     timesteps = context['TIMESTEPS']
-    # feats = {key: features[1][key] for key in stateKeys}  # States
     xoffsets = features[1]['BODY'][:, 0]  # Get first column.
     x_out_list = []
     for key in stateKeys:
@@ -143,24 +141,6 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
         return activations
 
 
-def lstm_layer(input_tensor, input_dim, output_dim, layer_name):
-    # Adding a name scope ensures logical grouping of the layers in the graph.
-    with tf.name_scope(layer_name):
-        # This Variable will hold the state of the weights for the layer
-        with tf.name_scope('weights'):
-            weights = weight_variable([input_dim, output_dim])
-            variable_summaries(weights)
-        with tf.name_scope('biases'):
-            biases = bias_variable([output_dim])
-            variable_summaries(biases)
-        with tf.name_scope('LSTM'):
-            lstm_cell = rnn_cell.BasicLSTMCell(input_dim, state_is_tuple=True)
-            outputs, states = rnn.static_rnn(lstm_cell, input_tensor, dtype=tf.float32)
-        with tf.name_scope('Wx_plus_b'):
-            activations = tf.matmul(outputs[-1], weights) + biases
-        return activations
-
-
 def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.leaky_relu):
     current_tensor = input
     for idx in range(len(layer_sizes) - 1):
@@ -173,8 +153,8 @@ def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.nn.lea
     return current_tensor
 
 
-def _create_one_cell():
-    return tf.contrib.rnn.LSTMCell(72, state_is_tuple=True, name='rnn_cell')
+def _create_one_cell(dim):
+    return tf.contrib.rnn.LSTMCell(dim, state_is_tuple=True, name='rnn_cell')
     # if config.keep_prob < 1.0:
     #     return tf.contrib.rnn.DropoutWrapper(lstm_cell, output_keep_prob=config.keep_prob)
 
@@ -183,8 +163,8 @@ def _create_one_cell():
 DEFINE SPECIFIC DATAFLOW
 '''
 
-file = open("saved_normalization.info", 'r')
-norm_data = np.load(file)
+file = open("saved_normalization.info", 'rb')
+norm_data = np.load(file, encoding='latin1')
 data_mins = tf.convert_to_tensor(norm_data['min'], dtype=tf.float32)
 data_ranges = tf.convert_to_tensor(norm_data['range'] + 1e-6, dtype=tf.float32)
 
@@ -201,7 +181,7 @@ dataset = tf.data.TFRecordDataset(filenames)
 dataset = dataset.map(_parse_function)
 dataset = dataset.shuffle(buffer_size=100)
 dataset = dataset.repeat()  # Repeat the input indefinitely.
-dataset = dataset.batch(1)  # .padded_batch(4, padded_shapes=[None])
+dataset = dataset.batch(1)
 iterator = dataset.make_initializable_iterator()
 
 next_element = iterator.get_next()
@@ -211,7 +191,6 @@ print('%d files in queue.' % len(filename_list))
 # LAYERS
 global_step = tf.Variable(0)
 
-#
 # Input layer.
 with tf.name_scope('input'):
     # sequence_length = tf.placeholder(tf.int32, shape=[1], name='run-timestep-count')
@@ -221,43 +200,51 @@ with tf.name_scope('input'):
     qwop_action = tf.placeholder(tf.float32, shape=[None, None, 3], name='qwop_action_input')
     extended_state = tf.concat([qwop_state_tform, qwop_action], axis=2, name='concat_state_action')
 
+with tf.name_scope('compression'):
+        weights1 = weight_variable([1, 75, 50])
+        biases1 = bias_variable([1, 50])
+        pre_act1 = tf.matmul(extended_state, weights1) + biases1
+        compressed = tf.nn.relu(pre_act1)
+
+        # weights2 = weight_variable([1, 60, 42])
+        # biases2 = bias_variable([1, 42])
+        # pre_act2 = tf.matmul(compressed, weights2) + biases2
+        # compressed = tf.nn.relu(pre_act2)
+
 with tf.name_scope('rnn'):
-    # rnn_cell = tf.nn.rnn_cell.BasicLSTMCell(n_hidden)
-
-    layers = 2;
+    layers = 3
+    dim = 50
     rnn_cell = tf.contrib.rnn.MultiRNNCell(
-        [_create_one_cell() for _ in range(layers)],
+        [_create_one_cell(dim) for _ in range(layers)],
         state_is_tuple=True
-    ) if layers > 1 else _create_one_cell()
-    rnn_internal_state_input = rnn_cell.zero_state(1, tf.float32)
+    ) #if layers > 1 else _create_one_cell(dim)
 
-    # This is a stupid way of making placeholders for the internal state of the RNN. As far as I know, this is the "official" way of doing it >_<.
+    # Construct internal state.
+    full_internal_state_input = tf.placeholder_with_default(tf.zeros(shape=[layers, 2, 1, dim], dtype=tf.float32), shape=[layers, 2, 1, dim], name='full_internal_state_input')
 
-    full_internal_state_input = tf.placeholder_with_default(tf.zeros(shape=[layers,2,1,72], dtype=tf.float32), shape=[layers,2,1,72], name='full_internal_state_input')
+    rnn_internal_state_input = ()
+    for i in range(layers):
+        c_st = tf.reshape(full_internal_state_input[i, 0, 0, :], shape=[1, dim])
+        h_st = tf.reshape(full_internal_state_input[i, 1, 0, :], shape=[1, dim])
+        rnn_internal_state_input = rnn_internal_state_input + (tf.nn.rnn_cell.LSTMStateTuple(c_st, h_st),)
 
-    c_state1 = tf.placeholder_with_default(tf.reshape(full_internal_state_input[0,0,0,:], shape=[1,72]), shape=[1,72], name='internal_state_c1')
-    h_state1 = tf.placeholder_with_default(tf.reshape(full_internal_state_input[0,1,0,:], shape=[1,72]), shape=[1,72], name='internal_state_h1')
-    c_state2 = tf.placeholder_with_default(tf.reshape(full_internal_state_input[min(1, layers-1),0,0,:], shape=[1,72]), shape=[1,72], name='internal_state_c2')
-    h_state2 = tf.placeholder_with_default(tf.reshape(full_internal_state_input[min(1, layers-1),1,0,:], shape=[1,72]), shape=[1,72], name='internal_state_h2')
-    c_state3 = tf.placeholder_with_default(tf.reshape(full_internal_state_input[min(2, layers-1),0,0,:], shape=[1,72]), shape=[1,72], name='internal_state_c3')
-    h_state3 = tf.placeholder_with_default(tf.reshape(full_internal_state_input[min(2, layers-1),1,0,:], shape=[1,72]), shape=[1,72], name='internal_state_h3')
-    c_state4 = tf.placeholder_with_default(tf.reshape(full_internal_state_input[min(3, layers-1), 0, 0, :], shape=[1, 72]),
-                                           shape=[1, 72], name='internal_state_c4')
-    h_state4 = tf.placeholder_with_default(tf.reshape(full_internal_state_input[min(3, layers-1), 1, 0, :], shape=[1, 72]),
-                                           shape=[1, 72], name='internal_state_h4')
-
-    init_st1 = tf.nn.rnn_cell.LSTMStateTuple(c_state1, h_state1)
-    init_st2 = tf.nn.rnn_cell.LSTMStateTuple(c_state2, h_state2)
-    init_st3 = tf.nn.rnn_cell.LSTMStateTuple(c_state3, h_state3)
-    init_st4 = tf.nn.rnn_cell.LSTMStateTuple(c_state4, h_state4)
-    rnn_internal_state_input = (init_st1, init_st2, init_st3, init_st4)[0:layers]
-    game_state_from_rnn, rnn_internal_state_output = rnn.dynamic_rnn(cell=rnn_cell, inputs=extended_state,
+    game_state_from_rnn, rnn_internal_state_output = rnn.dynamic_rnn(cell=rnn_cell, inputs=compressed,
                                                                      initial_state=rnn_internal_state_input,
                                                                      dtype=tf.float32)
 
+with tf.name_scope('decompression'):
+    weights1 = weight_variable([1, 50, 72])
+    biases1 = bias_variable([1, 72])
+    pre_act1 = tf.matmul(game_state_from_rnn, weights1) + biases1
+    decompressed = tf.nn.relu(pre_act1)
+
+    # weights2 = weight_variable([1, 60, 72])
+    # biases2 = bias_variable([1, 72])
+    # pre_act2 = tf.matmul(decompressed, weights2) + biases2
+    # decompressed = tf.nn.relu(pre_act2)
 
 with tf.name_scope('output'):
-    predicted_state_out = tf.add(tf.multiply(game_state_from_rnn, data_ranges, name='rescale_by_data_range'),
+    predicted_state_out = tf.add(tf.multiply(decompressed, data_ranges, name='rescale_by_data_range'),
                                  data_mins, name='reoffset_by_data_min')
     state_out = tf.identity(predicted_state_out, name='state_output')
     internal_state_out = tf.identity(rnn_internal_state_output, name='internal_state_output')
@@ -265,7 +252,7 @@ with tf.name_scope('output'):
 with tf.name_scope('loss'):
     # loss_op = tf.nn.softmax_cross_entropy_with_logits_v2(logits=softmax_out, labels=qwop_action)
     # reducedLoss = tf.reduce_mean(loss_op)
-    loss_op = tf.losses.mean_squared_error(qwop_state_tform, game_state_from_rnn)
+    loss_op = tf.losses.mean_squared_error(qwop_state_tform, decompressed)
     reducedLoss = tf.reduce_mean(loss_op, name='single_number_loss')
 
 with tf.name_scope('training'):
