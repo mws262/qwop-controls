@@ -45,8 +45,8 @@ def freeze_graph(model_dir, output_node_names, blacklist_node_names, whitelist_n
         saver.restore(sess, input_checkpoint)
         for op in tf.get_default_graph().get_operations():
             print(op.name)
-        print output_node_names.split(",")
-        print blacklist_node_names.split(",")
+        print(output_node_names.split(","))
+        print(blacklist_node_names.split(","))
         # We use a built-in TF helper to export variables to constants
         output_graph_def = tf.graph_util.convert_variables_to_constants(
             sess,  # The session is used to retrieve the weights
