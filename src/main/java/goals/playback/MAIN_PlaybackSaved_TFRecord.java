@@ -31,7 +31,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
     /**
      * Directory containing the TFRecord files of runs to replay.
      */
-    private File saveLoc = new File("src/main/resources/saved_data/11_1_18");
+    private File saveLoc = new File("src/main/resources/saved_data/11_2_18");
 
     public static void main(String[] args) {
         MAIN_PlaybackSaved_TFRecord mc = new MAIN_PlaybackSaved_TFRecord();
@@ -79,7 +79,12 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
         // Load files one at a time.
         for (File tfrecordFile : playbackFiles) {
             // Read all the sequences from a file.
-            List<SequenceExample> dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(tfrecordFile);
+            List<SequenceExample> dataSeries = null;
+            try {
+                dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(tfrecordFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             System.out.println("Read " + dataSeries.size() + " runs from file " + tfrecordFile + ".");
             Collections.shuffle(dataSeries);
 
@@ -105,14 +110,14 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                     gameForActionSim.stepGame(actionQueueCommand);
                     gameForCommandSim.stepGame(commands[i]);
 
-                    if (!Arrays.equals(actionQueueCommand, commands[i])) {
-                        throw new RuntimeException("Commands taken from Action and boolean sources of the TFRecord do" +
-                                " not match. Issue happened at action index: " + actionQueue.getCurrentActionIdx() +
-                                ", and timestep: " + i + ". Queue says: " + actionQueueCommand[0] + "," +
-                                actionQueueCommand[1] + "," + actionQueueCommand[2] + "," + actionQueueCommand[3] +
-                                "; commands say " + commands[i][0] + ", " + commands[i][1] + ", " + commands[i][2] +
-                                ", " + commands[i][3]);
-                    }
+//                    if (!Arrays.equals(actionQueueCommand, commands[i])) {
+//                        throw new RuntimeException("Commands taken from Action and boolean sources of the TFRecord do" +
+//                                " not match. Issue happened at action index: " + actionQueue.getCurrentActionIdx() +
+//                                ", and timestep: " + i + ". Queue says: " + actionQueueCommand[0] + "," +
+//                                actionQueueCommand[1] + "," + actionQueueCommand[2] + "," + actionQueueCommand[3] +
+//                                "; commands say " + commands[i][0] + ", " + commands[i][1] + ", " + commands[i][2] +
+//                                ", " + commands[i][3]);
+//                    }
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException e) {

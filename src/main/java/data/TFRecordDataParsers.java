@@ -7,10 +7,7 @@ import game.StateVariable;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,15 +30,13 @@ public class TFRecordDataParsers {
      * @param tfrecordFile TFRecord binary file containing one or more SequenceExamples.
      * @return A list of loaded sequence examples.
      */
-    public static List<SequenceExample> loadSequencesFromTFRecord(File tfrecordFile) {
+    public static List<SequenceExample> loadSequencesFromTFRecord(File tfrecordFile) throws IOException {
         List<SequenceExample> dataSeries = new ArrayList<>();
         try (FileInputStream fIn = new FileInputStream(tfrecordFile); DataInputStream dIn = new DataInputStream(fIn)) {
             TFRecordReader tfReader = new TFRecordReader(dIn, true);
             while (fIn.available() > 0) {
                 dataSeries.add(SequenceExample.parser().parseFrom(tfReader.read()));
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return dataSeries;
     }

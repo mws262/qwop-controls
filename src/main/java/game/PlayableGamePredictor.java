@@ -36,6 +36,11 @@ public class PlayableGamePredictor extends TensorflowLoader {
         super(pbFile, directory);
     }
 
+    public void reset() {
+        currentGameStateTensor = null;
+        currentInternalState = null;
+    }
+
     public State advance(boolean[] keys) {
 
         if (currentInternalState == null) { // First timestep we don't supply an internal state.
@@ -120,6 +125,8 @@ public class PlayableGamePredictor extends TensorflowLoader {
                     keys[2] = true;
                 }else if(event.getKeyCode() == KeyEvent.VK_P) {
                     keys[3] = true;
+                }else if(event.getKeyCode() == KeyEvent.VK_R) {
+                    gp.reset();
                 }
                 System.out.println(event.getKeyCode());
             }
@@ -144,8 +151,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
 
         while (true) {
             long time1 = System.currentTimeMillis();
-            panelRunner.updateState(gp.advance(keys)
-            );
+            panelRunner.updateState(gp.advance(keys));
             panelRunner.repaint();
             long time2 = System.currentTimeMillis();
 

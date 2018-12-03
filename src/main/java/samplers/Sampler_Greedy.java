@@ -181,6 +181,8 @@ public class Sampler_Greedy implements ISampler {
                 Node bestNode = currentRoot;
                 float bestScore = -Float.MAX_VALUE;
                 for (Node leaf : leaves) {
+                    if (leaf.isStateUnassigned())
+                        continue;
                     float score = evaluationFunction.getValue(leaf);
                     if (score > bestScore) {
                         bestScore = score;

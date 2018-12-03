@@ -90,6 +90,9 @@ public class DataSaver_StageSelected implements IDataSaver {
     }
 
     @Override
+    public void finalizeSaverData() {}
+
+    @Override
     public void setSaveInterval(int numGames) {} // Not applicable for once-per-stage saving.
 
     @Override

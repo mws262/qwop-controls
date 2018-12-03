@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.tensorflow.example.SequenceExample;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class GameLoaderTest {
@@ -198,7 +199,12 @@ public class GameLoaderTest {
     @Test
     public void testForAccidentalChanges() {
         File exampleRunFile = new File("src/test/resources/saved_data_examples/example_run.TFRecord");
-        List<SequenceExample> dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(exampleRunFile);
+        List<SequenceExample> dataSeries = null;
+        try {
+            dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(exampleRunFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         Assert.assertEquals(1, dataSeries.size()); // This example data should contain one run.
         State[] loadedStates = TFRecordDataParsers.getStatesFromLoadedSequence(dataSeries.get(0));

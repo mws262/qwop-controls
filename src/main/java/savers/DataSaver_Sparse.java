@@ -97,6 +97,11 @@ public class DataSaver_Sparse implements IDataSaver {
     }
 
     @Override
+    public void finalizeSaverData() {
+
+    }
+
+    @Override
     public DataSaver_Sparse getCopy() {
         DataSaver_Sparse newSaver = new DataSaver_Sparse();
         newSaver.setSaveInterval(saveInterval);

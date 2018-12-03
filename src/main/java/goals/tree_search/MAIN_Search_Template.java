@@ -11,7 +11,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
-import tree.TreeStage;
+import samplers.Sampler_Distribution;
+import samplers.Sampler_Greedy;
+import savers.DataSaver_DenseTFRecord;
+import tree.*;
 import actions.Action;
 import actions.ActionGenerator_FixedSequence;
 import actions.ActionSet;
@@ -19,8 +22,6 @@ import distributions.Distribution;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import tree.TreeStage_MaxDepth;
-import tree.TreeStage_MinDepth;
 import distributions.Distribution_Normal;
 import evaluators.EvaluationFunction_Distance;
 import filters.NodeFilter_SurvivalHorizon;
@@ -29,10 +30,6 @@ import samplers.Sampler_UCB;
 import savers.DataSaver_StageSelected;
 import transformations.Transform_Autoencoder;
 import transformations.Transform_PCA;
-import tree.Node;
-import tree.TreeWorker;
-import tree.Utility;
-import tree.WorkerFactory;
 import ui.*;
 
 public abstract class MAIN_Search_Template {
@@ -197,10 +194,7 @@ public abstract class MAIN_Search_Template {
 
         long startTime = System.currentTimeMillis();
         int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
-        appendSummaryLog(logPrefix + "starting from a root of absolute depth " + rootNode.getTreeDepth());
-        appendSummaryLog(logPrefix + "save file,  " + saveName);
-        appendSummaryLog(logPrefix + "playing a max of " + maxGames + " games.");
-        appendSummaryLog(logPrefix + "checked out " + numWorkersToUse + " workers.");
+        writeLogStageHeader(logPrefix, saveName, rootNode.getTreeDepth(), numWorkersToUse, maxGames);
 
         DataSaver_StageSelected saver = new DataSaver_StageSelected();
         saver.overrideFilename = saveName;
@@ -251,10 +245,7 @@ public abstract class MAIN_Search_Template {
 
         long startTime = System.currentTimeMillis();
         int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
-        appendSummaryLog(logPrefix + "starting from a root of absolute depth " + rootNode.getTreeDepth());
-        appendSummaryLog(logPrefix + "save file,  " + saveName);
-        appendSummaryLog(logPrefix + "playing a max of " + maxGames + " games.");
-        appendSummaryLog(logPrefix + "checked out " + numWorkersToUse + " workers.");
+        writeLogStageHeader(logPrefix, saveName, rootNode.getTreeDepth(), numWorkersToUse, maxGames);
 
         DataSaver_StageSelected saver = new DataSaver_StageSelected();
 
@@ -281,6 +272,53 @@ public abstract class MAIN_Search_Template {
 
         // Return the checked out workers.
         for (TreeWorker w : tws2) {
+            returnWorker(w);
+        }
+    }
+
+    /**
+     * Does a search where all games are played until failure, and all games are saved densely. The search is greedy.
+     * The goal is to collect a lot of running data, including falls.
+     *
+     * @param rootNode Root node that the tree is built from.
+     * @param saveName Save file name prefix. Timestamp will be appended in the final name.
+     * @param fractionOfWorkers Portion of max workers used by this stage.
+     * @param numGames Number of games to play.
+     */
+    protected void doFixedGamesToFailureStage(Node rootNode, String saveName, float fractionOfWorkers, int numGames) {
+        if (fractionOfWorkers > 1)
+            throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
+
+        String logPrefix = "FixedGamesToFailureStage: ";
+
+        long startTime = System.currentTimeMillis();
+        int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
+        writeLogStageHeader(logPrefix, saveName, rootNode.getTreeDepth(), numWorkersToUse, numGames);
+
+        DataSaver_DenseTFRecord saver = new DataSaver_DenseTFRecord();
+        saver.filePrefix = saveName;
+        saver.setSavePath(saveLoc.getPath() + "/");
+
+        saver.setSaveInterval(1000);
+        Sampler_Greedy sampler = new Sampler_Greedy(new EvaluationFunction_Distance());
+        TreeStage_FixedGames search = new TreeStage_FixedGames(numGames, sampler, saver); // Depth to get to
+
+        // Grab some workers from the pool.
+        List<TreeWorker> tws1 = new ArrayList<>();
+        for (int i = 0; i < numWorkersToUse; i++) {
+            tws1.add(borrowWorker());
+        }
+
+        // Do stage search
+        search.initialize(tws1, rootNode);
+
+        float elapsedSeconds = Math.floorDiv(System.currentTimeMillis() - startTime, 100) / 10f; // To one decimal
+        // place.
+        appendSummaryLog(logPrefix + "Finished after " + elapsedSeconds + " seconds.");
+        appendSummaryLog(logPrefix + "Results -- " + (search.getResults().isEmpty() ? "<goal not met>" :
+                search.getResults().get(0).maxBranchDepth.get() + " depth achieved."));
+        // Return the checked out workers.
+        for (TreeWorker w : tws1) {
             returnWorker(w);
         }
     }
@@ -341,6 +379,22 @@ public abstract class MAIN_Search_Template {
     }
 
     /**
+     * Write the standard log header for a {@link TreeStage} to the log file.
+     *
+     * @param stageName Name of the stage to be executed.
+     * @param saveName Name of the file to which data is going to be saved.
+     * @param treedepth Starting tree depth of this stage.
+     * @param numWorkers Number of {@link TreeWorker workers} assigned to this stage.
+     * @param maxGames Maximum number of games to be played by this stage.
+     */
+    private void writeLogStageHeader(String stageName, String saveName, int treedepth, int numWorkers, int maxGames) {
+        appendSummaryLog(stageName + "starting from a root of absolute depth " + treedepth);
+        appendSummaryLog(stageName + "save file,  " + saveName);
+        appendSummaryLog(stageName + "playing a max of " + maxGames + " games.");
+        appendSummaryLog(stageName + "checked out " + numWorkers + " workers.");
+    }
+
+    /**
      * Return the save location file.
      */
     protected File getSaveLocation() {
@@ -397,6 +451,108 @@ public abstract class MAIN_Search_Template {
         /*  Repeated action exceptions 4 -- Q-P pressed */
         Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
         ActionSet actionSetE4 = ActionSet.makeActionSet(IntStream.range(25, 65).toArray(), new boolean[]{true, false, false,
+                true}, distE4);
+
+        /////// Action Exceptions for recovery. ////////
+        /*  Repeated action 1 and 3 -- Nothing pressed */
+        Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
+        ActionSet actionSetFalseFalse = ActionSet.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{false, false,
+                false, false}, distFalseFalse);
+
+        /*  Repeated action 2 -- W-O pressed */
+        Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
+        ActionSet actionSetWO = ActionSet.makeActionSet(IntStream.range(1, 70).toArray(), new boolean[]{false, true, true,
+                false}, distWO);
+
+        /*  Repeated action 4 -- Q-P pressed */
+        Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
+        ActionSet actionSetQP = ActionSet.makeActionSet(IntStream.range(1, 70).toArray(), new boolean[]{true, false, false,
+                true}, distQP);
+
+        Map<Integer, ActionSet> actionExceptions = new HashMap<>();
+        actionExceptions.put(0, actionSetE1);
+        actionExceptions.put(1, actionSetE2);
+        actionExceptions.put(2, actionSetE3);
+        actionExceptions.put(3, actionSetE4);
+
+        // Put the recovery exceptions in the right spot.
+        if (recoveryExceptionStart >= 0) {
+            for (int i = 0; i < 4; i++) {
+                int sequencePos = (recoveryExceptionStart + i) % 4;
+
+                switch (sequencePos) {
+                    case 0:
+                        actionExceptions.put(recoveryExceptionStart + i, actionSetFalseFalse);
+                        break;
+                    case 1:
+                        actionExceptions.put(recoveryExceptionStart + i, actionSetWO);
+                        break;
+                    case 2:
+                        actionExceptions.put(recoveryExceptionStart + i, actionSetFalseFalse);
+                        break;
+                    case 3:
+                        actionExceptions.put(recoveryExceptionStart + i, actionSetQP);
+                        break;
+                }
+            }
+        }
+        // Define the specific way that these allowed actions are assigned as potential options for nodes.
+        Node.potentialActionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
+    }
+
+    protected void assignAllowableActionsWider(int recoveryExceptionStart) {
+        /* Space of allowed actions to sample */
+        //Distribution<Action> uniform_dist = new Distribution_Equal();
+
+        /* Repeated action 1 -- no keys pressed. */
+        Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
+        ActionSet actionSet1 = ActionSet.makeActionSet(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
+                false,
+                false}, dist1);
+
+        /*  Repeated action 2 -- W-O pressed */
+        Distribution<Action> dist2 = new Distribution_Normal(39f, 3f);
+        ActionSet actionSet2 = ActionSet.makeActionSet(IntStream.range(5, 60).toArray(), new boolean[]{false, true,
+                true,
+                false}, dist2);
+
+        /* Repeated action 3 -- W-O pressed */
+        Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
+        ActionSet actionSet3 = ActionSet.makeActionSet(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
+                false,
+                false}, dist3);
+
+        /*  Repeated action 4 -- Q-P pressed */
+        Distribution<Action> dist4 = new Distribution_Normal(39f, 3f);
+        ActionSet actionSet4 = ActionSet.makeActionSet(IntStream.range(5, 60).toArray(), new boolean[]{true, false,
+                false,
+                true}, dist4);
+
+        ActionSet[] repeatedActions = new ActionSet[]{actionSet1, actionSet2, actionSet3, actionSet4};
+
+        /////// Action Exceptions for starting up. ////////
+        /* Repeated action exceptions 1 -- no keys pressed. */
+        Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
+        ActionSet actionSetE1 = ActionSet.makeActionSet(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
+                false,
+                false}, distE1);
+
+        /*  Repeated action exceptions 2 -- W-O pressed */
+        Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
+        ActionSet actionSetE2 = ActionSet.makeActionSet(IntStream.range(5, 65).toArray(), new boolean[]{false, true,
+                true,
+                false}, distE2);
+
+        /*  Repeated action exceptions 3 -- no keys pressed. */
+        Distribution<Action> distE3 = new Distribution_Normal(24f, 2f);
+        ActionSet actionSetE3 = ActionSet.makeActionSet(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
+                false,
+                false}, distE3);
+
+        /*  Repeated action exceptions 4 -- Q-P pressed */
+        Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
+        ActionSet actionSetE4 = ActionSet.makeActionSet(IntStream.range(5, 65).toArray(), new boolean[]{true, false,
+                false,
                 true}, distE4);
 
         /////// Action Exceptions for recovery. ////////

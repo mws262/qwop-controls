@@ -61,6 +61,15 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
     }
 
     @Override
+    public void finalizeSaverData() {
+        if (saveInterval == 0) {
+            File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix,
+                    fileExtension));
+            fileIO.storeObjects(saveBuffer, saveFile, false);
+        }
+    }
+
+    @Override
     public DataSaver_DenseJava getCopy() {
         DataSaver_DenseJava newSaver = new DataSaver_DenseJava();
         newSaver.setSaveInterval(saveInterval);

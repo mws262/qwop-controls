@@ -37,6 +37,11 @@ public interface IDataSaver {
     void reportStageEnding(Node rootNode, List<Node> targetNodes);
 
     /**
+     * Store and dump any buffered data, often when a stage has ended but nothing specific needs to be reported.
+     */
+    void finalizeSaverData();
+
+    /**
      * Set the number of games to collect in between saves.
      */
     void setSaveInterval(int numGames);

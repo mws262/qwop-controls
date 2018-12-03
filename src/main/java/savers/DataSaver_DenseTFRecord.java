@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.tensorflow.example.BytesList;
@@ -24,6 +25,8 @@ import tree.Node;
 
 public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
+    static int id_max = 0;
+    int id;
     /**
      * Filename prefix. Goes in front of date.
      */
@@ -51,6 +54,9 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      */
     private ArrayList<GameContainer> gameData = new ArrayList<>();
 
+    public DataSaver_DenseTFRecord() {
+        id = id_max++;
+    }
     /**
      * Finalize data stored during a run and send to file. If not called, data will not be saved. Data will be sent
      * to file every {@link DataSaver_DenseTFRecord#saveInterval} games.
@@ -72,6 +78,13 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
         actionBuffer.clear();
     }
 
+    @Override
+    public void finalizeSaverData() {
+        if (saveInterval == 0) {
+            toFile(); // If save interval is unset, then a single save at the end of the stage will be done.
+        }
+    }
+
     public void toFile() {
         try {
             convertToProtobuf();
@@ -81,7 +94,6 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
         // Reset until next file write interval is up.
         gameData.clear();
-
     }
 
     // NOTE: The following methods were borrowed and altered from my MAIN_ConvertDenseDataToTFRecord class.
@@ -120,9 +132,9 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     private void convertToProtobuf() throws IOException {
         String fullFilename;
         if (Objects.equals(filenameOverride, "")) {
-            fullFilename = fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension);
+            fullFilename = fileLocation + IDataSaver.generateFileName(filePrefix + "_" + id, fileExtension);
         } else {
-            fullFilename = fileLocation + "/" + filenameOverride + "." + fileExtension;
+            fullFilename = fileLocation + "/" + filenameOverride + "_" + id + "." + fileExtension;
         }
         File file = new File(fullFilename);
 
