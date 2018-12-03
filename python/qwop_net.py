@@ -8,6 +8,7 @@ import numpy as np
 import time
 from tabulate import tabulate
 import matplotlib.pyplot as plt
+#python freeze_checkpoint.py --model_dir "./logs" --output_node_names "output/internal_state_output,output/state_output"
 
 '''
 PARAMETERS & SETTINGS
@@ -22,7 +23,7 @@ tfrecordPath = '/media/matt/Raid1_pair/QWOP_Tfrecord_1_20/'  # Location of dataf
 # On external drive ^. use sudo mount /dev/sdb1 /mnt OR /dev/sda2 for SSD
 
 export_dir = './models/'
-learn_rate = 1e-4
+learn_rate = 1e-2
 
 initWeightsStdev = .1
 

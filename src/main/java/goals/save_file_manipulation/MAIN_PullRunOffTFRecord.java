@@ -42,7 +42,12 @@ public class MAIN_PullRunOffTFRecord {
         }
 
         // Read all the sequences from a file.
-        List<SequenceExample> dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(inFile);
+        List<SequenceExample> dataSeries = null;
+        try {
+            dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(inFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         if (dataSeries.isEmpty()) {
             throw new IndexOutOfBoundsException("Could not locate any runs in the TFRecord file specified.");

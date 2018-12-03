@@ -36,6 +36,7 @@ context_features = {ckey: tf.FixedLenFeature([], tf.int64, True) for ckey in con
 FUNCTIONS IN THE NN PIPELINE
 '''
 
+
 def _parse_function(example_proto):
     # The serialized example is converted back to actual values.
     features = tf.parse_single_sequence_example(
@@ -163,23 +164,35 @@ def _create_one_cell(dim):
 DEFINE SPECIFIC DATAFLOW
 '''
 
-file = open("saved_normalization.info", 'rb')
-norm_data = np.load(file, encoding='latin1')
+avg_file = open("saved_normalization.info", 'rb')
+norm_data = np.load(avg_file, encoding='latin1')
 data_mins = tf.convert_to_tensor(norm_data['min'], dtype=tf.float32)
 data_ranges = tf.convert_to_tensor(norm_data['range'] + 1e-6, dtype=tf.float32)
 
 # Make a list of TFRecord files.
 filename_list = []
-for file in os.listdir(tfrecordPath):
-    if file.endswith(tfrecordExtension):
-        nextFile = tfrecordPath + file
+
+for avg_file in os.listdir('../src/main/resources/saved_data/11_2_18/'):
+    if avg_file.endswith(tfrecordExtension):
+        nextFile = '../src/main/resources/saved_data/11_2_18/' + avg_file
         filename_list.append(nextFile)
         print(nextFile)
 
+for avg_file in os.listdir(tfrecordPath):
+    if avg_file.endswith(tfrecordExtension):
+        nextFile = tfrecordPath + avg_file
+        filename_list.append(nextFile)
+        print(nextFile)
+
+from random import shuffle
+avg_file = [[i] for i in avg_file]
+shuffle(avg_file)
+
+
 filenames = tf.placeholder(tf.string, shape=[None])
 dataset = tf.data.TFRecordDataset(filenames)
-dataset = dataset.map(_parse_function)
-dataset = dataset.shuffle(buffer_size=100)
+dataset = dataset.map(_parse_function, num_parallel_calls=20)
+dataset = dataset.shuffle(buffer_size=2000)
 dataset = dataset.repeat()  # Repeat the input indefinitely.
 dataset = dataset.batch(1)
 iterator = dataset.make_initializable_iterator()
@@ -201,8 +214,9 @@ with tf.name_scope('input'):
     extended_state = tf.concat([qwop_state_tform, qwop_action], axis=2, name='concat_state_action')
 
 with tf.name_scope('compression'):
-        weights1 = weight_variable([1, 75, 50])
-        biases1 = bias_variable([1, 50])
+        dim = 35
+        weights1 = weight_variable([1, 75, dim])
+        biases1 = bias_variable([1, dim])
         pre_act1 = tf.matmul(extended_state, weights1) + biases1
         compressed = tf.nn.relu(pre_act1)
 
@@ -212,8 +226,7 @@ with tf.name_scope('compression'):
         # compressed = tf.nn.relu(pre_act2)
 
 with tf.name_scope('rnn'):
-    layers = 3
-    dim = 50
+    layers = 2
     rnn_cell = tf.contrib.rnn.MultiRNNCell(
         [_create_one_cell(dim) for _ in range(layers)],
         state_is_tuple=True
@@ -233,7 +246,7 @@ with tf.name_scope('rnn'):
                                                                      dtype=tf.float32)
 
 with tf.name_scope('decompression'):
-    weights1 = weight_variable([1, 50, 72])
+    weights1 = weight_variable([1, dim, 72])
     biases1 = bias_variable([1, 72])
     pre_act1 = tf.matmul(game_state_from_rnn, weights1) + biases1
     decompressed = tf.nn.relu(pre_act1)
@@ -268,15 +281,15 @@ np.set_printoptions(threshold=np.nan)
 
 coord = tf.train.Coordinator()  # Can kill everything when code is done. Prevents the `Skipping cancelled enqueue attempt with queue not closed'
 
-# config = tf.ConfigProto(
-#     device_count={'GPU': 1}
-# )
+config = tf.ConfigProto(
+    device_count={'GPU': 0}
+)
 
 '''
 EXECUTE NET
 '''
 train = True
-with tf.Session() as sess:
+with tf.Session(config=config) as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
 

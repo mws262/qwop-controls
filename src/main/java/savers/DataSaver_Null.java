@@ -39,6 +39,10 @@ public class DataSaver_Null implements IDataSaver {
     }
 
     @Override
+    public void finalizeSaverData() {
+    }
+
+    @Override
     public DataSaver_Null getCopy() {
         return new DataSaver_Null();
     }

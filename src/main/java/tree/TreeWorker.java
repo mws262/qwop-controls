@@ -390,8 +390,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
      */
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {
-            Action action = actionQueue.peekThisAction();
+//            Action action = actionQueue.pollCommand();
             game.stepGame(actionQueue.pollCommand());
+            Action action = actionQueue.peekThisAction();
             saver.reportTimestep(action, game);
             workerStepsSimulated++;
             tsPerSecondUpdateCounter++;
@@ -447,6 +448,14 @@ public class TreeWorker extends PanelRunner implements Runnable {
      */
     public void pauseWorker() {
         paused = true;
+    }
+
+    /**
+     * Pause what the worker is doing. Tells its saver to do whatever it should when the stage is complete.
+     */
+    public void triggerStageCompleted() {
+        paused = true;
+        saver.finalizeSaverData();
     }
 
     /**

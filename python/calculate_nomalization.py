@@ -1,3 +1,5 @@
+from PIL import Image
+
 import tensorflow as tf
 import numpy as np
 import os.path
@@ -11,7 +13,7 @@ PARAMETERS & SETTINGS
 '''
 
 tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
-tfrecordPath = '../src/main/resources/saved_data/training_data/'  # Location of datafiles on this machine. Beware of drive mounting locations.
+tfrecordPaths = ['../src/main/resources/saved_data/training_data/', '../src/main/resources/saved_data/11_2_18/']  # Location of datafiles on this machine. Beware of drive mounting locations.,
 
 export_dir = './models/'
 learn_rate = 1e-3
@@ -74,11 +76,12 @@ DEFINE SPECIFIC DATAFLOW
 
 # Make a list of TFRecord files.
 filename_list = []
-for file in os.listdir(tfrecordPath):
-    if file.endswith(tfrecordExtension):
-        nextFile = tfrecordPath + file
-        filename_list.append(nextFile)
-        print(nextFile)
+for tfrecordPath in tfrecordPaths:
+    for file in os.listdir(tfrecordPath):
+        if file.endswith(tfrecordExtension):
+            nextFile = tfrecordPath + file
+            filename_list.append(nextFile)
+            print(nextFile)
 
 filenames = tf.placeholder(tf.string, shape=[None])
 dataset = tf.data.TFRecordDataset(filenames)
@@ -91,7 +94,7 @@ next_element = iterator.get_next()
 
 print('%d files in queue.' % len(filename_list))
 
-do_calc = False
+do_calc = True
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
 
@@ -108,7 +111,11 @@ with tf.Session() as sess:
         state_count = 0
         try:
             while True:
+                # try:
                 next_state = sess.run([next_element])[0][0]
+                # except:
+                #     print("caught one")
+
                 state_sum += np.sum(next_state, axis=0)
                 state_count += np.shape(next_state)[0] - 1
 
@@ -135,7 +142,6 @@ with tf.Session() as sess:
             state_stdev = np.sqrt(np.divide(stdev_sum, state_count - 1))
             print(state_stdev)
             pass
-
 
         file = open("saved_normalization.info", 'w')
 
