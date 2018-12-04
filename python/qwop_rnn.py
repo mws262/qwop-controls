@@ -15,7 +15,6 @@ tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles
 tfrecordPaths = ['../src/main/resources/saved_data/training_data/', '../src/main/resources/saved_data/11_2_18/']  # Location of datafiles on this machine. Beware of drive mounting locations.
 
 export_dir = './models/'
-learn_rate = 1e-10
 
 initWeightsStdev = 0.1
 initBiasVal = 0.1
@@ -185,11 +184,11 @@ for tfrecordPath in tfrecordPaths:
 avg_file = [[i] for i in avg_file]
 shuffle(avg_file)
 
-batch_size = 1
+batch_size = 100
 
 filenames = tf.placeholder(tf.string, shape=[None])
 dataset = tf.data.TFRecordDataset(filenames)
-dataset = dataset.map(_parse_function, num_parallel_calls=4)
+dataset = dataset.map(_parse_function, num_parallel_calls=30)
 dataset = dataset.shuffle(buffer_size=2000)
 dataset = dataset.repeat()  # Repeat the input indefinitely.
 dataset = dataset.padded_batch(batch_size, padded_shapes=((), (None, 72), (None, 3)))
@@ -204,7 +203,7 @@ global_step = tf.Variable(0)
 
 # Input layer.
 with tf.name_scope('input'):
-    # sequence_length = tf.placeholder(tf.int32, shape=[1], name='run-timestep-count')
+    sequence_length = tf.placeholder(tf.int32, shape=[None], name='run-timestep-count')
     qwop_state = tf.placeholder(tf.float32, shape=[None, None, 72], name='qwop_state_input')
     qwop_state_tform = tf.divide(tf.subtract(qwop_state, data_mins, name='subtract_data_mean'), data_ranges, name='divide_data_range')
 
@@ -212,11 +211,11 @@ with tf.name_scope('input'):
     extended_state = tf.concat([qwop_state_tform, qwop_action], axis=2, name='concat_state_action')
 
 with tf.name_scope('compression'):
-        dim = 35
+        dim = 40
         weights1 = weight_variable([1, 75, dim])
         biases1 = bias_variable([1, dim])
         pre_act1 = tf.matmul(extended_state, tf.tile(weights1, multiples=[batch_size, 1, 1])) + biases1
-        compressed = tf.nn.sigmoid(pre_act1)
+        compressed = tf.nn.relu(pre_act1)
 
         # weights2 = weight_variable([1, 60, 42])
         # biases2 = bias_variable([1, 42])
@@ -251,7 +250,7 @@ with tf.name_scope('decompression'):
     weights1 = weight_variable([1, dim, 72])
     biases1 = bias_variable([1, 72])
     pre_act1 = tf.matmul(game_state_from_rnn, tf.tile(weights1, multiples=[batch_size, 1, 1])) + biases1
-    decompressed = tf.nn.sigmoid(pre_act1)
+    decompressed = tf.nn.relu(pre_act1)
 
     # weights2 = weight_variable([1, 60, 72])
     # biases2 = bias_variable([1, 72])
@@ -267,11 +266,18 @@ with tf.name_scope('output'):
 with tf.name_scope('loss'):
     # loss_op = tf.nn.softmax_cross_entropy_with_logits_v2(logits=softmax_out, labels=qwop_action)
     # reducedLoss = tf.reduce_mean(loss_op)
-    loss_op = tf.losses.mean_squared_error(qwop_state_tform, decompressed)
+    mask = tf.sequence_mask(sequence_length, name='sequence_mask_for_loss')
+    loss_op = tf.losses.mean_squared_error(tf.boolean_mask(qwop_state_tform, mask), tf.boolean_mask(decompressed, mask))
+    #loss_op = tf.losses.mean_squared_error(qwop_state_tform, decompressed)
+
+    # masked_loss = tf.boolean_mask(loss_op, mask, name='mask_op')
     reducedLoss = tf.reduce_mean(loss_op, name='single_number_loss')
 
 with tf.name_scope('training'):
-    optim = tf.train.RMSPropOptimizer(learn_rate, name='optimizer')
+    starter_learning_rate = 1e-2
+    learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,
+                                               500, 0.96)
+    optim = tf.train.RMSPropOptimizer(learning_rate, name='optimizer')
     train_op = optim.minimize(loss_op, global_step=global_step, name='train_op')
     # adam = tf.train.AdamOptimizer(learn_rate)
     # train_op = adam.minimize(loss_op, global_step=global_step, name='optimizer')
@@ -291,7 +297,7 @@ config = tf.ConfigProto(
 EXECUTE NET
 '''
 train = True
-with tf.Session(config=config) as sess:
+with tf.Session() as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
 
@@ -341,12 +347,12 @@ with tf.Session(config=config) as sess:
             plt.show()
     else:
         # Do training for an arbitrarily long time.
-        for i in range(100000):
+        for i in range(10000000):
             state_next = sess.run([next_element])
             loss, _, meanLoss = sess.run([loss_op, train_op, reducedLoss],
-                                         feed_dict={qwop_state: state_next[0][1],
+                                         feed_dict={sequence_length: state_next[0][0],
+                                                    qwop_state: state_next[0][1],
                                                     qwop_action: state_next[0][2]})
             print(meanLoss)
-
             if i % 5 == 0:
                 save_path = saver.save(sess, "./logs/model.ckpt", global_step=i)
