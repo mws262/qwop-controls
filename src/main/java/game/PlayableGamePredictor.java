@@ -1,7 +1,5 @@
 package game;
 
-import actions.Action;
-import actions.ActionQueue;
 import data.TensorflowLoader;
 import org.tensorflow.Tensor;
 import ui.PanelRunner_SimpleState;
@@ -10,7 +8,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.WindowEvent;
 import java.util.List;
 
 public class PlayableGamePredictor extends TensorflowLoader {

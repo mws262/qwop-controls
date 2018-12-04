@@ -3,16 +3,19 @@ import numpy as np
 import os.path
 from tensorflow.python.ops import rnn
 import matplotlib.pyplot as plt
+from random import shuffle
 
 '''
 PARAMETERS & SETTINGS
 '''
 
+#python freeze_checkpoint.py --model_dir "./logs" --output_node_names "output/internal_state_output,output/state_output"
+
 tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
-tfrecordPath = '../src/main/resources/saved_data/training_data/'  # Location of datafiles on this machine. Beware of drive mounting locations.
+tfrecordPaths = ['../src/main/resources/saved_data/training_data/', '../src/main/resources/saved_data/11_2_18/']  # Location of datafiles on this machine. Beware of drive mounting locations.
 
 export_dir = './models/'
-learn_rate = 1e-4
+learn_rate = 1e-10
 
 initWeightsStdev = 0.1
 initBiasVal = 0.1
@@ -172,29 +175,24 @@ data_ranges = tf.convert_to_tensor(norm_data['range'] + 1e-6, dtype=tf.float32)
 # Make a list of TFRecord files.
 filename_list = []
 
-for avg_file in os.listdir('../src/main/resources/saved_data/11_2_18/'):
-    if avg_file.endswith(tfrecordExtension):
-        nextFile = '../src/main/resources/saved_data/11_2_18/' + avg_file
-        filename_list.append(nextFile)
-        print(nextFile)
+for tfrecordPath in tfrecordPaths:
+    for avg_file in os.listdir(tfrecordPath):
+        if avg_file.endswith(tfrecordExtension):
+            nextFile = tfrecordPath + avg_file
+            filename_list.append(nextFile)
+            print(nextFile)
 
-for avg_file in os.listdir(tfrecordPath):
-    if avg_file.endswith(tfrecordExtension):
-        nextFile = tfrecordPath + avg_file
-        filename_list.append(nextFile)
-        print(nextFile)
-
-from random import shuffle
 avg_file = [[i] for i in avg_file]
 shuffle(avg_file)
 
+batch_size = 1
 
 filenames = tf.placeholder(tf.string, shape=[None])
 dataset = tf.data.TFRecordDataset(filenames)
-dataset = dataset.map(_parse_function, num_parallel_calls=20)
+dataset = dataset.map(_parse_function, num_parallel_calls=4)
 dataset = dataset.shuffle(buffer_size=2000)
 dataset = dataset.repeat()  # Repeat the input indefinitely.
-dataset = dataset.batch(1)
+dataset = dataset.padded_batch(batch_size, padded_shapes=((), (None, 72), (None, 3)))
 iterator = dataset.make_initializable_iterator()
 
 next_element = iterator.get_next()
@@ -217,8 +215,8 @@ with tf.name_scope('compression'):
         dim = 35
         weights1 = weight_variable([1, 75, dim])
         biases1 = bias_variable([1, dim])
-        pre_act1 = tf.matmul(extended_state, weights1) + biases1
-        compressed = tf.nn.relu(pre_act1)
+        pre_act1 = tf.matmul(extended_state, tf.tile(weights1, multiples=[batch_size, 1, 1])) + biases1
+        compressed = tf.nn.sigmoid(pre_act1)
 
         # weights2 = weight_variable([1, 60, 42])
         # biases2 = bias_variable([1, 42])
@@ -235,10 +233,14 @@ with tf.name_scope('rnn'):
     # Construct internal state.
     full_internal_state_input = tf.placeholder_with_default(tf.zeros(shape=[layers, 2, 1, dim], dtype=tf.float32), shape=[layers, 2, 1, dim], name='full_internal_state_input')
 
+    initial_state = rnn_cell.zero_state(batch_size, dtype=tf.float32)
+
     rnn_internal_state_input = ()
     for i in range(layers):
-        c_st = tf.reshape(full_internal_state_input[i, 0, 0, :], shape=[1, dim])
-        h_st = tf.reshape(full_internal_state_input[i, 1, 0, :], shape=[1, dim])
+        c_st = tf.tile(tf.reshape(full_internal_state_input[i, 0, 0, :], shape=[1, dim]), multiples=[batch_size, 1])
+        h_st = tf.tile(tf.reshape(full_internal_state_input[i, 1, 0, :], shape=[1, dim]), multiples=[batch_size, 1])
+        # c_st = tf.reshape(full_internal_state_input[i, 0, 0, :], shape=[1, dim])
+        # h_st = tf.reshape(full_internal_state_input[i, 1, 0, :], shape=[1, dim])
         rnn_internal_state_input = rnn_internal_state_input + (tf.nn.rnn_cell.LSTMStateTuple(c_st, h_st),)
 
     game_state_from_rnn, rnn_internal_state_output = rnn.dynamic_rnn(cell=rnn_cell, inputs=compressed,
@@ -248,8 +250,8 @@ with tf.name_scope('rnn'):
 with tf.name_scope('decompression'):
     weights1 = weight_variable([1, dim, 72])
     biases1 = bias_variable([1, 72])
-    pre_act1 = tf.matmul(game_state_from_rnn, weights1) + biases1
-    decompressed = tf.nn.relu(pre_act1)
+    pre_act1 = tf.matmul(game_state_from_rnn, tf.tile(weights1, multiples=[batch_size, 1, 1])) + biases1
+    decompressed = tf.nn.sigmoid(pre_act1)
 
     # weights2 = weight_variable([1, 60, 72])
     # biases2 = bias_variable([1, 72])
@@ -346,5 +348,5 @@ with tf.Session(config=config) as sess:
                                                     qwop_action: state_next[0][2]})
             print(meanLoss)
 
-            if i % 10 == 0:
+            if i % 5 == 0:
                 save_path = saver.save(sess, "./logs/model.ckpt", global_step=i)
