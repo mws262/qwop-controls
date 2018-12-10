@@ -184,7 +184,7 @@ for tfrecordPath in tfrecordPaths:
 avg_file = [[i] for i in avg_file]
 shuffle(avg_file)
 
-batch_size = 100
+batch_size = 1
 
 filenames = tf.placeholder(tf.string, shape=[None])
 dataset = tf.data.TFRecordDataset(filenames)
@@ -274,7 +274,7 @@ with tf.name_scope('loss'):
     reducedLoss = tf.reduce_mean(loss_op, name='single_number_loss')
 
 with tf.name_scope('training'):
-    starter_learning_rate = 1e-2
+    starter_learning_rate = 1e-8
     learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,
                                                500, 0.96)
     optim = tf.train.RMSPropOptimizer(learning_rate, name='optimizer')

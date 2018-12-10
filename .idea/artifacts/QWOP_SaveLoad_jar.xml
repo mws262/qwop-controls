@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="QWOP_SaveLoad:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/QWOP_SaveLoad_jar</output-path>
+    <root id="archive" name="QWOP_SaveLoad.jar">
+      <element id="module-output" name="QWOP_SaveLoad" />
+    </root>
+  </artifact>
+</component>
