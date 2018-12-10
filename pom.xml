@@ -55,28 +55,38 @@ To update the classpath settings for Eclipse:
             </plugin>
 
             <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*.TFRecord</exclude>
+                        <exclude>**/*.tfrecord</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.1.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>
+                                goals.tree_search.MAIN_Search_Full
+                            </mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptors>
+                        <descriptor>jar-with-dependencies.xml</descriptor>
+                        <descriptor>deploy.xml</descriptor>
+                    </descriptors>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>
-                                        goals.tree_search.MAIN_Search_Full
-                                    </mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptors>
-                                <descriptor>${project.basedir}/jar-with-dependencies.xml</descriptor>
-                                <descriptor>${project.basedir}/deploy.xml</descriptor>
-                            </descriptors>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
