@@ -78,11 +78,11 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
 
     // Joint definitions
     @SuppressWarnings("unused")
-    public Object rHipJDef, lHipJDef, rKneeJDef, lKneeJDef, rAnkleJDef, lAnkleJDef, rShoulderJDef, lShoulderJDef,
+    private Object rHipJDef, lHipJDef, rKneeJDef, lKneeJDef, rAnkleJDef, lAnkleJDef, rShoulderJDef, lShoulderJDef,
             rElbowJDef, lElbowJDef, neckJDef;
 
     // Joint objects
-    public Object rHipJ, lHipJ, rKneeJ, lKneeJ, rAnkleJ, lAnkleJ, rShoulderJ, lShoulderJ, rElbowJ, lElbowJ, neckJ;
+    private Object rHipJ, lHipJ, rKneeJ, lKneeJ, rAnkleJ, lAnkleJ, rShoulderJ, lShoulderJ, rElbowJ, lElbowJ, neckJ;
 
     private boolean rFootDown = false;
     private boolean lFootDown = false;
