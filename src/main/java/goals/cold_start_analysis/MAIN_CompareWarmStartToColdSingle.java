@@ -2,6 +2,7 @@ package goals.cold_start_analysis;
 
 import actions.ActionQueue;
 import game.GameLoader;
+import game.GameSingleThread;
 import game.State;
 
 import java.awt.*;
@@ -18,7 +19,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
     /**
      * Decide at which action to introduce a cold-started runner.
      */
-    private int coldStartAction = 12;
+    private int coldStartAction = 0;
 
     public static void main(String[] args) {
         new MAIN_CompareWarmStartToColdSingle().run();
@@ -27,7 +28,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
         // Ran MAIN_Search_LongRun to get these.
         ActionQueue actionQueue = getSampleActions();
 
-        GameLoader gameFullRun = new GameLoader(); // This game will run all the commands, start to finish.
+        GameSingleThread gameFullRun = new GameSingleThread(); // This game will run all the commands, start to finish.
         GameLoader gameColdStart = new GameLoader(); // This will start at some point in the middle of the sequence,
         // with a cloned state from gameFullRun, but a cold start on all the internal solvers.
 
@@ -60,7 +61,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
 
             repaint();
             try {
-                Thread.sleep(40);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -343,7 +343,8 @@ public class GameSingleThread {
     /**
      * Initial runner state.
      **/
-    private static final State initState = new GameSingleThread().getCurrentGameState(); // Make sure this stays below all the other static assignments to avoid null pointers.
+    private static final State initState = new GameSingleThread().getCurrentState(); // Make sure this stays below all
+    // the other static assignments to avoid null pointers.
 
     public GameSingleThread() {
         if (!hasOneTimeInitializationHappened) {
@@ -728,6 +729,12 @@ public class GameSingleThread {
         }
     }
 
+    public void stepGame(boolean[] command) {
+        if (command.length != 4) {
+            throw new IllegalArgumentException("Command is not the correct length. Expected 4, got: " + command.length);
+        }
+        stepGame(command[0], command[1], command[2], command[3]);
+    }
     /**
      * Step the game forward 1 timestep with the specified keys pressed.
      **/
@@ -744,9 +751,9 @@ public class GameSingleThread {
 
         //For now, using motors with high speed settings and torque limits to simulate springs. I don't know a better way for now.
 
-        neckJ.m_motorSpeed = (1000 * Math.signum(NeckTorque)); //If torque is negative, make motor speed negative.
-        rElbowJ.m_motorSpeed = (1000 * Math.signum(RElbowTorque));
-        lElbowJ.m_motorSpeed = (1000 * Math.signum(LElbowTorque));
+        neckJ.m_motorSpeed = (1000f * Math.signum(NeckTorque)); //If torque is negative, make motor speed negative.
+        rElbowJ.m_motorSpeed = (1000f * Math.signum(RElbowTorque));
+        lElbowJ.m_motorSpeed = (1000f * Math.signum(LElbowTorque));
 
         neckJ.m_maxMotorTorque = (Math.abs(NeckTorque));
         rElbowJ.m_maxMotorTorque = (Math.abs(RElbowTorque));
@@ -876,7 +883,7 @@ public class GameSingleThread {
     /**
      * Get the current full state of the runner.
      */
-    public synchronized State getCurrentGameState() {
+    public synchronized State getCurrentState() {
         return new State(
                 getCurrentBodyState(torsoBody),
                 getCurrentBodyState(headBody),
