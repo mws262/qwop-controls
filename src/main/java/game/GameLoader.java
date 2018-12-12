@@ -849,9 +849,9 @@ public class GameLoader extends ClassLoader implements Serializable {
             //For now, using motors with high speed settings and torque limits to simulate springs. I don't know a
             // better way for now.
 
-            setMotorSpeed(neckJ, 1000 * Math.signum(neckTorque));
-            setMotorSpeed(rElbowJ, 1000 * Math.signum(rElbowTorque));
-            setMotorSpeed(lElbowJ, 1000 * Math.signum(lElbowTorque));
+            setMotorSpeed(neckJ, 1000f * Math.signum(neckTorque));
+            setMotorSpeed(rElbowJ, 1000f * Math.signum(rElbowTorque));
+            setMotorSpeed(lElbowJ, 1000f * Math.signum(lElbowTorque));
 
             setMaxMotorTorque(neckJ, Math.abs(neckTorque));
             setMaxMotorTorque(rElbowJ, Math.abs(rElbowTorque));
@@ -1041,7 +1041,7 @@ public class GameLoader extends ClassLoader implements Serializable {
     /**
      * Set an individual body to a specified {@link StateVariable}. This sets both positions and velocities.
      *
-     * @param body Body to set the state of.
+     * @param body          Body to set the state of.
      * @param stateVariable Full state to assign to that body.
      */
     private void setBodyToStateVariable(Object body, StateVariable stateVariable) {
