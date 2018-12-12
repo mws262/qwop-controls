@@ -15,7 +15,7 @@ import chrriis.dj.nativeswing.swtimpl.components.JFlashPlayer;
 import chrriis.dj.nativeswing.swtimpl.components.JWebBrowser;
 import chrriis.dj.nativeswing.swtimpl.components.WebBrowserFunction;
 import controllers.Controller_NearestNeighborApprox;
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import actions.Action;
 import actions.ActionQueue;
@@ -65,7 +65,7 @@ public class Flash_QWOP extends JFrame {
                     }
 
                     currentState = new State(states, false);
-                    GameLoader.adjustRealQWOPStateToSimState(currentState);
+                    GameThreadSafe.adjustRealQWOPStateToSimState(currentState);
                     actionQueue.addAction(controller.policy(currentState));
 
                     runnerPane.updateState(currentState);

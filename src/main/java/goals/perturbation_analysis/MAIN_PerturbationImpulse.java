@@ -3,7 +3,7 @@ package goals.perturbation_analysis;
 import actions.ActionQueue;
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameLoader;
+import game.GameThreadSafe;
 import actions.Action;
 import game.State;
 import tree.Node;
@@ -74,12 +74,12 @@ public class MAIN_PerturbationImpulse extends JFrame {
         Action[] baseActions = gameList.get(0).actions;
 
         // Simulate the base actions.
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
 
         // These are the runners which will be perturbed.
-        List<GameLoader> perturbedGames = new ArrayList<>();
+        List<GameThreadSafe> perturbedGames = new ArrayList<>();
         for (int i = 0; i < numPerturbedRunners; i++) {
-            perturbedGames.add(new GameLoader());
+            perturbedGames.add(new GameThreadSafe());
         }
         ActionQueue actionQueue = new ActionQueue();
         actionQueue.addSequence(baseActions);
@@ -90,13 +90,13 @@ public class MAIN_PerturbationImpulse extends JFrame {
             boolean[] command = actionQueue.pollCommand();
             game.stepGame(command);
 
-            for (GameLoader perturbedGame : perturbedGames) {
+            for (GameThreadSafe perturbedGame : perturbedGames) {
                 perturbedGame.stepGame(command);
             }
         }
 
         // Apply impulse disturbances.
-        Map<GameLoader, float[]> gameToDisturbanceDir = new HashMap<>();
+        Map<GameThreadSafe, float[]> gameToDisturbanceDir = new HashMap<>();
 
         for (int i = 0; i < numPerturbedRunners; i++) {
             float[] disturbance = new float[]{(float) Math.cos((double) i / (double) numPerturbedRunners * 2. *
@@ -116,7 +116,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
 
             // Step perturbed runners.
             for (int i = 0; i < perturbedGames.size(); i++) {
-                GameLoader thisGame = perturbedGames.get(i);
+                GameThreadSafe thisGame = perturbedGames.get(i);
                 thisGame.stepGame(command);
                 if (count % drawInterval == 0)
                     panelRunner.addSecondaryState(perturbedGames.get(i).getCurrentState(), Node.getColorFromScaledValue(i

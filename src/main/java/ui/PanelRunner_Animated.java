@@ -2,7 +2,7 @@ package ui;
 
 import java.awt.Graphics;
 
-import game.GameLoader;
+import game.GameThreadSafe;
 import actions.Action;
 import actions.ActionQueue;
 import tree.Node;
@@ -17,7 +17,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     /**
      * This panel's copy of the game it uses to run games for visualization.
      */
-    protected GameLoader game;
+    protected GameThreadSafe game;
 
     /**
      * Stores the QWOP actions we're going to execute.
@@ -39,7 +39,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     private int fastForwardTimesteps = 0;
 
     public PanelRunner_Animated() {
-        game = new GameLoader();
+        game = new GameThreadSafe();
     }
 
     /**

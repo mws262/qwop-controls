@@ -1,7 +1,7 @@
 package samplers;
 
 import actions.Action;
-import game.GameLoader;
+import game.GameThreadSafe;
 import tree.Node;
 
 /**
@@ -93,7 +93,7 @@ public class Sampler_Deterministic implements ISampler {
     }
 
     @Override
-    public void rolloutPolicy(Node startNode, GameLoader game) {}
+    public void rolloutPolicy(Node startNode, GameThreadSafe game) {}
 
     @Override
     public boolean rolloutPolicyGuard(Node currentNode) {

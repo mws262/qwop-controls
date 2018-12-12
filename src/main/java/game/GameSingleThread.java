@@ -14,39 +14,29 @@ import org.jbox2d.dynamics.contacts.ContactPoint;
 import org.jbox2d.dynamics.contacts.ContactResult;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
+import static game.GameConstants.*;
 
 import java.awt.*;
 
 
 /**'
- * NOTE: PREFER {@link GameLoader} OVER THIS IMPLEMENTATION.
+ * NOTE: PREFER {@link GameThreadSafe} OVER THIS IMPLEMENTATION.
  *
  * This creates the QWOP game using the Box2D library. This operates on the primary classloader. This means that
  * multiple instances of this class will interfere with others due to static information inside Box2D.
- * {@link GameLoader} uses a separate classloader for each instance and can be done in multithreaded applications.
- * However, dealing with all the reflection in GameLoader is really annoying. Hence, this class is more readable.
+ * {@link GameThreadSafe} uses a separate classloader for each instance and can be done in multithreaded applications.
+ * However, dealing with all the reflection in GameThreadSafe is really annoying. Hence, this class is more readable.
  *
  *
  * @author matt
  */
+@SuppressWarnings("Duplicates")
 public class GameSingleThread {
 
     /**
      * Keep track of sim stats since beginning of execution.
      **/
     private static long timestepsSimulated = 0;
-
-    /**
-     * Physics engine stepping parameters.
-     **/
-    public static final float timestep = 0.04f;
-    private final int iterations = 5;
-
-    /**
-     * Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls.
-     **/
-    private static float torsoAngUpper = 1.2f, torsoAngLower = - .2f; // Negative is falling backwards. 0.4 is start
-    // angle.
 
     /**
      * Normal stroke for line drawing.
@@ -66,48 +56,19 @@ public class GameSingleThread {
     /**
      * Should enclose the entire area we want collision checked.
      **/
-    private static final AABB worldAABB = new AABB(new Vec2(-100, -30f), new Vec2(5000f, 80f));
+    private static final AABB worldAABB = new AABB(new Vec2(aabbMinX, aabbMinY), new Vec2(aabbMaxX, aabbMaxY));
 
     /* Individual body objects */
-    private Body rFootBody;
-    private Body lFootBody;
-    private Body rCalfBody;
-    private Body lCalfBody;
-    private Body rThighBody;
-    private Body lThighBody;
-    private Body torsoBody;
-    private Body rUArmBody;
-    private Body lUArmBody;
-    private Body rLArmBody;
-    private Body lLArmBody;
-    private Body headBody;
-    private Body trackBody;
+    private Body rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody, lUArmBody,
+            rLArmBody, lLArmBody, headBody, trackBody;
 
     /* Joint Definitions */
-    public RevoluteJointDef rHipJDef;
-    public RevoluteJointDef lHipJDef;
-    public RevoluteJointDef rKneeJDef;
-    public RevoluteJointDef lKneeJDef;
-    public RevoluteJointDef rAnkleJDef;
-    public RevoluteJointDef lAnkleJDef;
-    public RevoluteJointDef rShoulderJDef;
-    public RevoluteJointDef lShoulderJDef;
-    public RevoluteJointDef rElbowJDef;
-    public RevoluteJointDef lElbowJDef;
-    public RevoluteJointDef neckJDef;
+    public RevoluteJointDef rHipJDef, lHipJDef, rKneeJDef, lKneeJDef, rAnkleJDef, lAnkleJDef, rShoulderJDef,
+            lShoulderJDef, rElbowJDef, lElbowJDef, neckJDef;
 
     /* Joint objects */
-    public RevoluteJoint rHipJ;
-    public RevoluteJoint lHipJ;
-    public RevoluteJoint rKneeJ;
-    public RevoluteJoint lKneeJ;
-    public RevoluteJoint rAnkleJ;
-    public RevoluteJoint lAnkleJ;
-    public RevoluteJoint rShoulderJ;
-    public RevoluteJoint lShoulderJ;
-    public RevoluteJoint rElbowJ;
-    public RevoluteJoint lElbowJ;
-    public RevoluteJoint neckJ;
+    public RevoluteJoint rHipJ, lHipJ, rKneeJ, lKneeJ, rAnkleJ, lAnkleJ, rShoulderJ, lShoulderJ, rElbowJ, lElbowJ,
+            neckJ;
 
     /**
      * Filters collisions. Prevents body parts from hitting other body parts.
@@ -117,226 +78,77 @@ public class GameSingleThread {
     /**
      * Gravity vector. Positive since -y is up.
      **/
-    private static final Vec2 gravity = new Vec2(0, 10f);
+    private static final Vec2 gravity = new Vec2(0, gravityMagnitude);
 
-    // Track
-    private static final float trackPosY = 8.90813f, trackFric = 1f, trackRest = 0.2f;
-
-    // Feet
-    private static final Vec2 rFootPos = new Vec2(-0.96750f, 7.77200f), lFootPos = new Vec2(3.763f, 8.101f);
-
-    private static final float rFootAng = 0.7498f,
-            lFootAng = 0.1429f,
-            rFootMass = 11.630f,
-            lFootMass = 10.895f,
-            rFootInertia = 9.017f,
-            lFootInertia = 8.242f,
-            rFootL = 2.68750f,
-            lFootL = 2.695f,
-            rFootH = 1.44249f,
-            lFootH = 1.34750f,
-            rFootFric = 1.5f,
-            lFootFric = 1.5f,
-            rFootDensity = 3f,
-            lFootDensity = 3f;
-
-    // Calves
-    private static final Vec2 rCalfPos = new Vec2(0.0850f, 5.381f), lCalfPos = new Vec2(2.986f, 5.523f);
-    private static final float rCalfAng = -0.821f,
-            lCalfAng = -1.582f,
-            rCalfAngAdj = 1.606188724f,
-            lCalfAngAdj = 1.607108307f,
-            rCalfMass = 7.407f,
-            lCalfMass = 7.464f,
-            rCalfInertia = 16.644f,
-            lCalfInertia = 16.893f;
-
-    //Length and width for the calves are just for collisions with the ground, so not very important.
-    private static final float rCalfL = 4.21f,
-            lCalfL = 4.43f,
-            rCalfW = 0.4f,
-            lCalfW = 0.4f,
-            rCalfFric = 0.2f,
-            lCalfFric = 0.2f,
-            rCalfDensity = 1f,
-            lCalfDensity = 1f;
-
-    // Thighs
-    private static final Vec2 rThighPos = new Vec2(1.659f, 1.999f), lThighPos = new Vec2(2.52f, 1.615f);
-    private static final float rThighAng = 1.468f,
-            lThighAng = -1.977f,
-            rThighAngAdj = -1.544382589f,
-            lThighAngAdj = 1.619256373f,
-            rThighMass = 10.54f,
-            lThighMass = 10.037f,
-            rThighInertia = 28.067f,
-            lThighInertia = 24.546f;
-
-    //Length and width for the calves are just for collisions with the ground, so not very important.
-    private static final float rThighL = 4.19f,
-            lThighL = 3.56f,
-            rThighW = 0.6f,
-            lThighW = 0.6f,
-            rThighFric = 0.2f,
-            lThighFric = 0.2f,
-            rThighDensity = 1f,
-            lThighDensity = 1f;
-
-    // Torso
-    private static final Vec2 torsoPos = new Vec2(2.525f, -1.926f);
-    private static final float torsoAng = -1.251f,
-            torsoAngAdj = 1.651902129f,
-            torsoMass = 18.668f,
-            torsoInertia = 79.376f;
-
-    //Length and width for the calves are just for collisions with the ground, so not very important.
-    private static final float torsoL = 5f,
-            torsoW = 1.5f,
-            torsoFric = 0.2f,
-            torsoDensity = 1f;
-
-    // Head
-    private static final Vec2 headPos = new Vec2(3.896f, -5.679f);
-    private static final float headAng = 0.058f,
-            headMass = 5.674f,
-            headAngAdj = 0.201921414f,
-            headInertia = 5.483f;
-
-    //Radius is just for collision shape
-    private static final float headR = 1.1f,
-            headFric = 0.2f,
-            headDensity = 1f;
-
-    // Upper arms
-    private static final Vec2 rUArmPos = new Vec2(1.165f, -3.616f), lUArmPos = new Vec2(4.475f, -2.911f);
-    private static final float rUArmAng = -0.466f,
-            lUArmAng = 0.843f,
-            rUArmAngAdj = 1.571196588f,
-            lUArmAngAdj = -1.690706418f;
-
-    private static final float rUArmMass = 5.837f,
-            lUArmMass = 4.6065f,
-            rUArmInertia = 8.479f,
-            lUArmInertia = 5.85f;
-
-    //for collision shapes
-    private static final float rUArmL = 2.58f,
-            lUArmL = 2.68f,
-            rUArmW = 0.2f,
-            lUArmW = 0.15f,
-            rUArmFric = 0.2f,
-            lUArmFric = 0.2f,
-            rUArmDensity = 1f,
-            lUArmDensity = 1f;
-
-    // Lower Arms
-    private static final Vec2 rLArmPos = new Vec2(0.3662f, -1.248f), lLArmPos = new Vec2(5.899f, -3.06f);
-    private static final float rLArmAng = -1.762f,
-            lLArmAng = -1.251f,
-            rLArmAngAdj = 1.521319096f,
-            lLArmAngAdj = 1.447045854f,
-            rLArmMass = 5.99f,
-            lLArmMass = 3.8445f,
-            rLArmInertia = 10.768f,
-            lLArmInertia = 4.301f;
-
-    // For collision shapes
-    private static final float rLArmL = 3.56f,
-            lLArmL = 2.54f,
-            rLArmW = 0.15f,
-            lLArmW = 0.12f,
-            rLArmFric = 0.2f,
-            lLArmFric = 0.2f,
-            rLArmDensity = 1f,
-            lLArmDensity = 1f;
-
-
-    // Ankle speeds setpoints:
-    private static final float rAnkleSpeed1 = 2f,
-            rAnkleSpeed2 = -2f,
-            lAnkleSpeed1 = -2f,
-            lAnkleSpeed2 = 2f,
-            rKneeSpeed1 = -2.5f,
-            rKneeSpeed2 = 2.5f,
-            lKneeSpeed1 = 2.5f,
-            lKneeSpeed2 = -2.5f,
-            rHipSpeed1 = -2.5f,
-            rHipSpeed2 = 2.5f,
-            lHipSpeed1 = 2.5f,
-            lHipSpeed2 = -2.5f,
-            rShoulderSpeed1 = 2f,
-            rShoulderSpeed2 = -2f,
-            lShoulderSpeed1 = -2f,
-            lShoulderSpeed2 = 2f;
-
-    //O Hip limits (changed to this when o is pressed):
-    private static final float oRHipLimLo = -1.3f,
-            oRHipLimHi = 0.7f,
-            oLHipLimLo = -1f,
-            oLHipLimHi = 1f;
-
-    //P Hip limits:
-    private static final float pRHipLimLo = -0.8f,
-            pRHipLimHi = 1.2f,
-            pLHipLimLo = -1.5f,
-            pLHipLimHi = 0.5f;
-
-    //Springs:
-    private static final float neckStiff = 15f,
-            neckDamp = 5f,
-            rElbowStiff = 1f,
-            lElbowStiff = 1f,
-            rElbowDamp = 0f,
-            lElbowDamp = 0f;
+    private static final Vec2 rFootPos = new Vec2(rFootPosX, rFootPosY), lFootPos = new Vec2(lFootPosX, lFootPosY),
+            rCalfPos = new Vec2(rCalfPosX, rCalfPosY), lCalfPos = new Vec2(lCalfPosX, lCalfPosY),
+            rThighPos = new Vec2(rThighPosX, rThighPosY), lThighPos = new Vec2(lThighPosX, lThighPosY),
+            torsoPos = new Vec2(torsoPosX, torsoPosY),
+            headPos = new Vec2(headPosX, headPosY),
+            rUArmPos = new Vec2(rUArmPosX, rUArmPosY),
+            lUArmPos = new Vec2(lUArmPosX, lUArmPosY),
+            rLArmPos = new Vec2(rLArmPosX, rLArmPosY),
+            lLArmPos = new Vec2(lLArmPosX, lLArmPosY);
 
     /* Joints Positions*/
-    private static final Vec2 rAnklePos = new Vec2(-0.96750f, 7.77200f),
-            lAnklePos = new Vec2(3.763f, 8.101f),
-            rKneePos = new Vec2(1.58f, 4.11375f),
-            lKneePos = new Vec2(3.26250f, 3.51625f),
-            rHipPos = new Vec2(1.260f, -0.06750f),
-            lHipPos = new Vec2(2.01625f, 0.18125f),
-            rShoulderPos = new Vec2(2.24375f, -4.14250f),
-            lShoulderPos = new Vec2(3.63875f, -3.58875f),
-            rElbowPos = new Vec2(-0.06f, -2.985f),
-            lElbowPos = new Vec2(5.65125f, -1.8125f),
-            neckPos = new Vec2(3.60400f, -4.581f);
+    private static final Vec2 rAnklePos = new Vec2(rAnklePosX, rAnklePosY),
+            lAnklePos = new Vec2(lAnklePosX, lAnklePosY),
+            rKneePos = new Vec2(rKneePosX, rKneePosY),
+            lKneePos = new Vec2(lKneePosX, lKneePosY),
+            rHipPos = new Vec2(rHipPosX, rHipPosY),
+            lHipPos = new Vec2(lHipPosX, lHipPosY),
+            rShoulderPos = new Vec2(rShoulderPosX, rShoulderPosY),
+            lShoulderPos = new Vec2(lShoulderPosX, lShoulderPosY),
+            rElbowPos = new Vec2(rElbowPosX, rElbowPosY),
+            lElbowPos = new Vec2(lElbowPosX, lElbowPosY),
+            neckPos = new Vec2(neckPosX, neckPosY);
 
     /**
      * List of shapes for use by graphics stuff. Making it static -- IE, assuming that in multiple games, the runner doesn't change shape.
      **/
     private static Shape[] shapeList = new Shape[13];
 
-    private static final BodyDef trackDef = new BodyDef();
-    private static final PolygonDef trackShape = new PolygonDef();
+    private static final BodyDef trackDef = new BodyDef(),
+            rFootDef = new BodyDef(),
+            lFootDef = new BodyDef(),
+            rCalfDef = new BodyDef(),
+            lCalfDef = new BodyDef(),
+            rThighDef = new BodyDef(),
+            lThighDef = new BodyDef(),
+            torsoDef = new BodyDef(),
+            headDef = new BodyDef(),
+            rUArmDef = new BodyDef(),
+            lUArmDef = new BodyDef(),
+            rLArmDef = new BodyDef(),
+            lLArmDef = new BodyDef();
 
-    private static final BodyDef rFootDef = new BodyDef(), lFootDef = new BodyDef();
-    private static final PolygonDef rFootShape = new PolygonDef(), lFootShape = new PolygonDef();
-    private static final MassData rFootMassData = new MassData(), lFootMassData = new MassData();
-
-    private static final BodyDef rCalfDef = new BodyDef(), lCalfDef = new BodyDef();
-    private static final PolygonDef rCalfShape = new PolygonDef(), lCalfShape = new PolygonDef();
-    private static final MassData rCalfMassData = new MassData(), lCalfMassData = new MassData();
-
-    private static final PolygonDef rThighShape = new PolygonDef(), lThighShape = new PolygonDef();
-    private static final BodyDef rThighDef = new BodyDef(), lThighDef = new BodyDef();
-    private static final MassData rThighMassData = new MassData(), lThighMassData = new MassData();
-
-    private static final PolygonDef torsoShape = new PolygonDef();
-    private static final BodyDef torsoDef = new BodyDef();
-    private static final MassData torsoMassData = new MassData();
+    private static final PolygonDef trackShape = new PolygonDef(),
+            rFootShape = new PolygonDef(),
+            lFootShape = new PolygonDef(),
+            rCalfShape = new PolygonDef(),
+            lCalfShape = new PolygonDef(),
+            rThighShape = new PolygonDef(),
+            lThighShape = new PolygonDef(),
+            torsoShape = new PolygonDef(),
+            rUArmShape = new PolygonDef(),
+            lUArmShape = new PolygonDef(),
+            rLArmShape = new PolygonDef(),
+            lLArmShape = new PolygonDef();
 
     private static final CircleDef headShape = new CircleDef();
-    private static final BodyDef headDef = new BodyDef();
-    private static final MassData headMassData = new MassData();
 
-    private static final PolygonDef rUArmShape = new PolygonDef(), lUArmShape = new PolygonDef();
-    private static final BodyDef rUArmDef = new BodyDef(), lUArmDef = new BodyDef();
-    private static final MassData rUArmMassData = new MassData(), lUArmMassData = new MassData();
-
-    private static final PolygonDef rLArmShape = new PolygonDef(), lLArmShape = new PolygonDef();
-    private static final BodyDef rLArmDef = new BodyDef(), lLArmDef = new BodyDef();
-    private static final MassData rLArmMassData = new MassData(), lLArmMassData = new MassData();
+    private static final MassData rFootMassData = new MassData(),
+            lFootMassData = new MassData(),
+            rCalfMassData = new MassData(),
+            lCalfMassData = new MassData(),
+            rThighMassData = new MassData(),
+            lThighMassData = new MassData(),
+            torsoMassData = new MassData(),
+            headMassData = new MassData(),
+            rUArmMassData = new MassData(),
+            lUArmMassData = new MassData(),
+            rLArmMassData = new MassData(),
+            lLArmMassData = new MassData();
 
     private static boolean hasOneTimeInitializationHappened = false;
 
@@ -364,8 +176,8 @@ public class GameSingleThread {
          */
 
         /* TRACK */
-        trackDef.position = new Vec2(-30, trackPosY + 20);
-        trackShape.setAsBox(1000, 20);
+        trackDef.position = new Vec2(trackPosX, trackPosY);
+        trackShape.setAsBox(trackXDim, trackYDim);
         trackShape.restitution = trackRest;
         trackShape.friction = trackFric;
         trackShape.filter.groupIndex = 1;
@@ -513,7 +325,6 @@ public class GameSingleThread {
     }
 
     private void setup() {
-
         isFailed = false;
 
         /* World Settings */
@@ -521,6 +332,9 @@ public class GameSingleThread {
         m_world.setWarmStarting(true);
         m_world.setPositionCorrection(true);
         m_world.setContinuousPhysics(true);
+
+        // NOTE: The order of creating bodies actually changes the answers slightly!! This is really dumb, but will
+        // affect us if we are trying to match the single and multithreaded version.
 
         /* TRACK */
         trackBody = m_world.createBody(trackDef);
@@ -544,14 +358,6 @@ public class GameSingleThread {
         rThighBody.createShape(rThighShape);
         lThighBody.createShape(lThighShape);
 
-        /* TORSO */
-        torsoBody = getWorld().createBody(torsoDef);
-        torsoBody.createShape(torsoShape);
-
-        /* HEAD */
-        headBody = getWorld().createBody(headDef);
-        headBody.createShape(headShape);
-
         /* UPPER ARMS */
         rUArmBody = getWorld().createBody(rUArmDef);
         lUArmBody = getWorld().createBody(lUArmDef);
@@ -563,6 +369,15 @@ public class GameSingleThread {
         lLArmBody = getWorld().createBody(lLArmDef);
         rLArmBody.createShape(rLArmShape);
         lLArmBody.createShape(lLArmShape);
+
+        /* TORSO */
+        torsoBody = getWorld().createBody(torsoDef);
+        torsoBody.createShape(torsoShape);
+
+        /* HEAD */
+        headBody = getWorld().createBody(headDef);
+        headBody.createShape(headShape);
+
 
         /*
          *  Joints
@@ -634,7 +449,6 @@ public class GameSingleThread {
         rHipJDef.motorSpeed = 0f;
         rHipJDef.maxMotorTorque = 6000f;
         rHipJDef.collideConnected = false;
-
         rHipJ = (RevoluteJoint) getWorld().createJoint(rHipJDef);
 
         //Left Hip:
@@ -649,7 +463,6 @@ public class GameSingleThread {
         lHipJDef.collideConnected = false;
         lHipJ = (RevoluteJoint) getWorld().createJoint(lHipJDef);
 
-
         //Neck Joint
         neckJDef = new RevoluteJointDef();
         neckJDef.initialize(headBody, torsoBody, neckPos);
@@ -657,11 +470,13 @@ public class GameSingleThread {
         neckJDef.upperAngle = 0f;
         neckJDef.lowerAngle = -0.5f;
         neckJDef.enableMotor = true;
-        neckJDef.maxMotorTorque = 0f;
-        neckJDef.motorSpeed = 1000f; //Arbitrarily large to allow for torque control.
+        neckJDef.maxMotorTorque = 1000f; //Arbitrarily large to allow for torque control.
+        neckJDef.motorSpeed = 0f;
         neckJDef.collideConnected = false;
         neckJ = (RevoluteJoint) getWorld().createJoint(neckJDef);
 
+        Body rUFake = getWorld().createBody(rUArmDef);
+        rUFake.createShape(rUArmShape);
         /* Arm Joints */
         //Right shoulder
         rShoulderJDef = new RevoluteJointDef();
@@ -854,7 +669,7 @@ public class GameSingleThread {
         }
 
 
-        getWorld().step(timestep, iterations);
+        getWorld().step(timestep, physIterations);
 
 
         // Extra fail conditions besides contacts.

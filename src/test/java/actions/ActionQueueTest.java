@@ -1,6 +1,6 @@
 package actions;
 
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import org.junit.Assert;
 import org.junit.Test;
@@ -311,7 +311,7 @@ public class ActionQueueTest {
         // and false false true false.
 
         // Try simulating a game using an ActionQueue
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
 
         game.stepGame(false, false, true, false);
         float[] s1 = game.getCurrentState().flattenState();

@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_NearestNeighborApprox.RunHolder;
-import game.GameLoader;
+import game.GameThreadSafe;
 import tree.Node;
 import ui.PanelRunner;
 
@@ -30,7 +30,7 @@ import ui.PanelRunner;
 
 public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
-    private GameLoader game = new GameLoader();
+    private GameThreadSafe game = new GameThreadSafe();
 
     private Controller_NearestNeighborApprox justForLoading;
 

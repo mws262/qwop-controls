@@ -3,7 +3,7 @@ package samplers;
 import java.util.ArrayList;
 
 import actions.Action;
-import game.GameLoader;
+import game.GameThreadSafe;
 import tree.Node;
 
 /**
@@ -99,7 +99,7 @@ public class Sampler_Distribution implements ISampler {
     }
 
     @Override
-    public void rolloutPolicy(Node startNode, GameLoader game) {}
+    public void rolloutPolicy(Node startNode, GameThreadSafe game) {}
 
     @Override
     public boolean treePolicyGuard(Node currentNode) {

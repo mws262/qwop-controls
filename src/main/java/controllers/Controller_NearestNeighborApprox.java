@@ -24,7 +24,7 @@ import org.tensorflow.example.SequenceExample;
 
 import data.EvictingTreeMap;
 import data.LIFOFixedSize;
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import game.StateVariable;
 import actions.Action;
@@ -465,7 +465,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
     }
 
     @Override
-    public void draw(Graphics g, GameLoader game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
+    public void draw(Graphics g, GameThreadSafe game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
         if (!previousStatesLIFO.isEmpty()) {
             g.setColor(Color.WHITE);
             g.drawString(String.valueOf(previousStatesLIFO.peek().body.getX()), 50, 50);
