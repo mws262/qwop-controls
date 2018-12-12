@@ -2,7 +2,7 @@ package goals.phase_variable_testing;
 
 import actions.Action;
 import actions.ActionQueue;
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import transformations.Transform_Autoencoder;
 import tree.Node;
@@ -39,7 +39,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
         pack();
         setVisible(true);
 
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
         String modelDir = "src/main/resources/tflow_models/";
         Transform_Autoencoder autoencoder =
                 new Transform_Autoencoder(modelDir + "AutoEnc_72to" + String.valueOf(numOutputs) + "_6layer.pb",
@@ -48,7 +48,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
         ActionQueue actionQueue = getSampleActions();
 
         List<State> stateList = new ArrayList<>();
-        stateList.add(GameLoader.getInitialState());
+        stateList.add(GameThreadSafe.getInitialState());
         while (!actionQueue.isEmpty()) {
             game.stepGame(actionQueue.pollCommand());
             State st = game.getCurrentState();

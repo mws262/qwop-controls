@@ -359,7 +359,7 @@ public abstract class MAIN_Search_Template {
         fullUI.addTab(autoencPlotPane, "Autoenc Plots");
         fullUI.addTab(workerMonitorPanel, "Worker status");
 
-        Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameLoader should
+        Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameThreadSafe should
 		// have their own threads.
         runnerPanelThread.start();
 

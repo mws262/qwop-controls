@@ -1,7 +1,7 @@
 package samplers.rollout;
 
 import evaluators.IEvaluationFunction;
-import game.GameLoader;
+import game.GameThreadSafe;
 import tree.Node;
 
 /**
@@ -17,7 +17,7 @@ public class RolloutPolicy_RandomColdStart extends RolloutPolicy{
     }
 
     @Override
-    public float rollout(Node startNode, GameLoader game) {
+    public float rollout(Node startNode, GameThreadSafe game) {
         actionQueue.clearAll();
 
         Node normalRolloutEndNode = randomRollout(startNode, game);

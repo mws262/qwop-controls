@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 import actions.Action;
 import data.SavableActionSequence;
 import data.SparseDataToDenseTFRecord;
+import game.GameThreadSafe;
 import org.apache.commons.lang3.ArrayUtils;
 
 import data.SavableFileIO;
-import game.GameLoader;
 import samplers.Sampler_UCB;
 import tree.Node;
 import tree.Utility;
@@ -64,7 +64,7 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
         Arrays.sort(Objects.requireNonNull(actionFiles));
         ArrayUtils.reverse(actionFiles);
 
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
 
         for (File f : actionFiles) {
             if (f.getName().contains("SavableActionSequence") && f.getName().contains("6_08")) {

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import evaluators.EvaluationFunction_SqDistFromOther;
-import game.GameLoader;
+import game.GameThreadSafe;
 import tree.Node;
 
 public class PanelRunner_Comparison extends PanelRunner {
@@ -24,7 +24,7 @@ public class PanelRunner_Comparison extends PanelRunner {
     /**
      * Its unique copy of the game. Only used for plotting, but important to keep separate.
      */
-    private final GameLoader game = new GameLoader();
+    private final GameThreadSafe game = new GameThreadSafe();
 
     /**
      * Node used for base comparison.

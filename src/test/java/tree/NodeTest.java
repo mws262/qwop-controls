@@ -1,6 +1,6 @@
 package tree;
 
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -1246,7 +1246,7 @@ public class NodeTest {
     public void getState() {
         setupTree();
 
-        Assert.assertEquals(rootNode.getState(), GameLoader.getInitialState());
+        Assert.assertEquals(rootNode.getState(), GameThreadSafe.getInitialState());
 
         exception.expect(NullPointerException.class);
         for (Node n : allNodes) {

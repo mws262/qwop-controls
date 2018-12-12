@@ -2,9 +2,8 @@ package goals.phase_variable_testing;
 
 import actions.Action;
 import actions.ActionQueue;
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
-import transformations.Transform_Autoencoder;
 import tree.Node;
 import ui.PanelPlot_Simple;
 
@@ -39,12 +38,12 @@ public class MAIN_StateCombinations extends JFrame {
         pack();
         setVisible(true);
 
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
 
         ActionQueue actionQueue = getSampleActions();
 
         List<State> stateList = new ArrayList<>();
-        stateList.add(GameLoader.getInitialState());
+        stateList.add(GameThreadSafe.getInitialState());
         while (!actionQueue.isEmpty()) {
             game.stepGame(actionQueue.pollCommand());
             State st = game.getCurrentState();

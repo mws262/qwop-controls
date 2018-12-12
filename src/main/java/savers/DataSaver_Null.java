@@ -2,7 +2,7 @@ package savers;
 
 import java.util.List;
 
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import actions.Action;
 import tree.Node;
@@ -19,7 +19,7 @@ public class DataSaver_Null implements IDataSaver {
     }
 
     @Override
-    public void reportTimestep(Action action, GameLoader game) {
+    public void reportTimestep(Action action, GameThreadSafe game) {
     }
 
     @Override

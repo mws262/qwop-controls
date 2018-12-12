@@ -5,7 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.Queue;
 
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import tree.Node;
 
@@ -19,7 +19,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     /**
      * This panel's copy of the game it uses to run games for visualization.
      */
-    protected GameLoader game;
+    protected GameThreadSafe game;
 
     /**
      * States to animate through.
@@ -32,7 +32,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     private State currState;
 
     public PanelRunner_AnimatedFromStates() {
-        game = new GameLoader();
+        game = new GameThreadSafe();
         game.makeNewWorld();
     }
 

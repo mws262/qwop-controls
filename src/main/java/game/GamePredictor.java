@@ -2,13 +2,9 @@ package game;
 
 import actions.Action;
 import actions.ActionQueue;
-import com.google.common.primitives.Floats;
 import data.TensorflowLoader;
-import goals.cold_start_analysis.CompareWarmStartToColdBase;
-import org.apache.avro.generic.GenericData;
 import org.tensorflow.Tensor;
 import ui.PanelRunner_SimpleState;
-import ui.StandaloneRunnerDrawer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -111,7 +107,7 @@ public class GamePredictor extends TensorflowLoader {
     public static void main(String[] args) {
         GamePredictor gp = new GamePredictor("frozen_model.pb", "src/main/resources/tflow_models");
 
-        State initState = GameLoader.getInitialState();
+        State initState = GameThreadSafe.getInitialState();
         Action singleAction = new Action(1000, false, true, true, false);
 
         ActionQueue actionQueue = new ActionQueue();

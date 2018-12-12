@@ -1,7 +1,7 @@
 package goals.cold_start_analysis;
 
 import actions.ActionQueue;
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 
 /**
@@ -19,8 +19,8 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
 
     private void run() {
         ActionQueue actionQueue = getSampleActions();
-        GameLoader gameFullRun = new GameLoader();
-        GameLoader coldStartGame = new GameLoader();
+        GameThreadSafe gameFullRun = new GameThreadSafe();
+        GameThreadSafe coldStartGame = new GameThreadSafe();
 
         // Start simulating the entire "good" run on the normal game.
         while (!actionQueue.isEmpty()) {
@@ -45,6 +45,6 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
                 }
             }
         }
-//        System.out.println((gameFullRun.getCurrentState().body.getX() - GameLoader.getInitialState().body.getX()));
+//        System.out.println((gameFullRun.getCurrentState().body.getX() - GameThreadSafe.getInitialState().body.getX()));
     }
 }

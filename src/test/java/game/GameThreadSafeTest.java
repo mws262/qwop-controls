@@ -11,13 +11,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class GameLoaderTest {
+public class GameThreadSafeTest {
 
     @Test
     public void makeNewWorld() {
-        float[] initState = GameLoader.getInitialState().flattenState();
+        float[] initState = GameThreadSafe.getInitialState().flattenState();
 
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
         float[] currState = game.getCurrentState().flattenState();
         for (int i = 0; i < initState.length; i++) {
             Assert.assertEquals(initState[i], currState[i], 1e-12);
@@ -60,7 +60,7 @@ public class GameLoaderTest {
     public void stepGame() {
         // Hard to test against "ground truth." Mostly going to make sure it's error free and that there aren't any
         // huge logical problems.
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
         float bodyTh = game.getCurrentState().body.getTh();
         Assert.assertEquals(0, game.getTimestepsSimulatedThisGame());
 
@@ -78,8 +78,8 @@ public class GameLoaderTest {
 
     @Test
     public void stepGame1() {
-        GameLoader game1 = new GameLoader();
-        GameLoader game2 = new GameLoader();
+        GameThreadSafe game1 = new GameThreadSafe();
+        GameThreadSafe game2 = new GameThreadSafe();
 
         game1.stepGame(true, false, true, false);
         game2.stepGame(new boolean[]{true, false, true, false});
@@ -94,8 +94,8 @@ public class GameLoaderTest {
 
     @Test
     public void setState() {
-        GameLoader game1 = new GameLoader();
-        GameLoader game2 = new GameLoader();
+        GameThreadSafe game1 = new GameThreadSafe();
+        GameThreadSafe game2 = new GameThreadSafe();
 
         for (int i = 0; i < 10; i++) {
             game1.stepGame(true, false, true, false);
@@ -120,7 +120,7 @@ public class GameLoaderTest {
 
     @Test
     public void getFailureStatus() {
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
         Assert.assertFalse(game.getFailureStatus());
         for (int i = 0; i < 100; i++) {
             game.stepGame(true, false, false, true);
@@ -130,13 +130,13 @@ public class GameLoaderTest {
 
     @Test
     public void isGameInitialized() {
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
         Assert.assertTrue(game.isGameInitialized());
     }
 
     @Test
     public void isRightFootDown() {
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
         Assert.assertFalse(game.isRightFootDown());
         game.stepGame(false,false,false,false);
         Assert.assertTrue(game.isRightFootDown());
@@ -144,7 +144,7 @@ public class GameLoaderTest {
 
     @Test
     public void isLeftFootDown() {
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
         Assert.assertFalse(game.isLeftFootDown());
         game.stepGame(false,false,false,false);
         Assert.assertTrue(game.isLeftFootDown());
@@ -152,9 +152,9 @@ public class GameLoaderTest {
 
     @Test
     public void getInitialState() {
-        float[] initState = GameLoader.getInitialState().flattenState();
+        float[] initState = GameThreadSafe.getInitialState().flattenState();
 
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
         game.stepGame(true,true,true,true);
         float[] initStateAgain = game.getInitialState().flattenState(); // Make sure a second call gets the same
         // thing, even after the game has stepped a bit.
@@ -167,8 +167,8 @@ public class GameLoaderTest {
 
     @Test
     public void getTimestepsSimulatedThisGame() {
-        GameLoader game1 = new GameLoader();
-        GameLoader game2 = new GameLoader();
+        GameThreadSafe game1 = new GameThreadSafe();
+        GameThreadSafe game2 = new GameThreadSafe();
 
         Assert.assertEquals(0, game1.getTimestepsSimulatedThisGame());
         Assert.assertEquals(0, game2.getTimestepsSimulatedThisGame());
@@ -193,7 +193,7 @@ public class GameLoaderTest {
 
     /**
      * This test uses some saved data, with states at every timestep to make sure that the simulation can still
-     * reproduce it when fed the same commands. This alerts us if any changes have altered the behavior of GameLoader
+     * reproduce it when fed the same commands. This alerts us if any changes have altered the behavior of GameThreadSafe
      * without our knowledge.
      */
     @Test
@@ -210,7 +210,7 @@ public class GameLoaderTest {
         State[] loadedStates = TFRecordDataParsers.getStatesFromLoadedSequence(dataSeries.get(0));
         List<Action> loadedActions = TFRecordDataParsers.getActionsFromLoadedSequence(dataSeries.get(0));
 
-        GameLoader game = new GameLoader();
+        GameThreadSafe game = new GameThreadSafe();
         ActionQueue actionQueue = new ActionQueue();
         actionQueue.addSequence(loadedActions);
 

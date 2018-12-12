@@ -4,7 +4,7 @@ import java.awt.Graphics;
 import java.io.IOException;
 
 import controllers.Controller_NearestNeighborApprox.DecisionHolder;
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import actions.Action;
 import tree.Utility;
@@ -50,7 +50,7 @@ public class Controller_AskServer extends Client implements IController {
     }
 
     @Override
-    public void draw(Graphics g, GameLoader game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
+    public void draw(Graphics g, GameThreadSafe game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
         subController.draw(g, game, runnerScaling, xOffsetPixels, yOffsetPixels);
 //		if (currentDecision != null) {
 //			float offset = currentDecision.chosenTrajectory.states.get(currentDecision.chosenIdx).state.body.x;

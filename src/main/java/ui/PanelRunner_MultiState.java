@@ -1,11 +1,10 @@
 package ui;
 
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import tree.Node;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,7 +16,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     /**
      * Access to the game for the sake of the drawing methods.
      */
-    private GameLoader game = new GameLoader();
+    private GameThreadSafe game = new GameThreadSafe();
 
     /**
      * Main state to draw. It will provide the x-reference position.

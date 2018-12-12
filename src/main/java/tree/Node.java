@@ -19,7 +19,7 @@ import actions.IActionGenerator;
 import com.jogamp.opengl.GL2;
 
 import data.SavableSingleGame;
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 
 /**
@@ -279,7 +279,7 @@ public class Node {
         displayPoint = true;
 
         // Root node gets the QWOP initial condition.
-        setState(GameLoader.getInitialState());
+        setState(GameThreadSafe.getInitialState());
 
         // Add some child actions to try if an action generator is assigned.
         autoAddUncheckedActions();
@@ -906,10 +906,10 @@ public class Node {
     /**
      * Add nodes based on saved action sequences. Has to re-simulate each to get the states.
      */
-    public static void makeNodesFromActionSequences(List<Action[]> actions, Node root, GameLoader game) {
+    public static void makeNodesFromActionSequences(List<Action[]> actions, Node root, GameThreadSafe game) {
 
         ActionQueue actQueue = new ActionQueue();
-        root.setState(GameLoader.getInitialState());
+        root.setState(GameThreadSafe.getInitialState());
 
         for (Action[] acts : actions) {
             game.makeNewWorld();

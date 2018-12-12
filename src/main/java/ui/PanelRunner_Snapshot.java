@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import filters.NodeFilter_Downsample;
-import game.GameLoader;
+import game.GameThreadSafe;
 import filters.INodeFilter;
 import tree.Node;
 
@@ -74,7 +74,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
      */
     private boolean mouseIsIn = false;
 
-    private final GameLoader game = new GameLoader();
+    private final GameThreadSafe game = new GameThreadSafe();
 
     public PanelRunner_Snapshot() {
         super();

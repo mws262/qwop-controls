@@ -20,14 +20,13 @@ import javax.swing.JPanel;
 
 import actions.Action;
 import actions.ActionQueue;
-import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
 import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
 import controllers.IController;
 import data.SavableActionSequence;
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import tree.Node;
 import tree.Utility;
@@ -41,7 +40,7 @@ import ui.ScreenCapture;
 
 public class MAIN_Controlled extends JFrame implements Runnable, ActionListener {
 
-    private GameLoader game = new GameLoader();
+    private GameThreadSafe game = new GameThreadSafe();
 
     /**
      * Controller to use. Defaults to Controller_Null and should usually be reassigned.

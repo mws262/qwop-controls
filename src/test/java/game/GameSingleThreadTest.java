@@ -5,18 +5,17 @@ import actions.ActionQueue;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
+/**
+ * Make sure that the single-threaded and multi-threadable versions of the game match perfectly.
+ */
 public class GameSingleThreadTest {
 
     @Test
     public void stepGame() {
-        GameLoader gameMulti = new GameLoader();
+        GameThreadSafe gameMulti = new GameThreadSafe();
         GameSingleThread gameSingle = new GameSingleThread();
-
         ActionQueue actionQueue = getSampleActions();
 
-        int count = 0;
         while (!actionQueue.isEmpty()) {
             boolean[] command = actionQueue.pollCommand();
             gameMulti.stepGame(command);
@@ -24,22 +23,16 @@ public class GameSingleThreadTest {
 
             float[] initStateMulti = gameMulti.getCurrentState().flattenState();
             float[] initStateSingle = gameSingle.getCurrentState().flattenState();
-            //System.out.println(count);
-            //Assert.assertArrayEquals(initStateMulti, initStateSingle, 1e-2f);
-            System.out.println(initStateMulti[1] + "," + initStateSingle[1]);
-            count++;
+            Assert.assertArrayEquals(initStateMulti, initStateSingle, 1e-12f);
         }
     }
 
     @Test
     public void getInitialState() {
-//        GameLoader gameMulti = new GameLoader();
-//        GameSingleThread gameSingle = new GameSingleThread();
-//
-//        float[] initStateMulti = gameMulti.getInitialState().flattenState();
-//        float[] initStateSingle = gameSingle.getInitialState().flattenState();
-//
-//        Assert.assertArrayEquals(initStateMulti, initStateSingle, 1e-12f);
+        float[] initStateMulti = GameThreadSafe.getInitialState().flattenState();
+        float[] initStateSingle = GameSingleThread.getInitialState().flattenState();
+
+        Assert.assertArrayEquals(initStateMulti, initStateSingle, 1e-12f);
     }
 
     private static ActionQueue getSampleActions() {

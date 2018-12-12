@@ -21,7 +21,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
     Tensor<Float> currentGameStateTensor;
     Tensor<Float> currentInternalState;
 
-    State currentGameState =  GameLoader.getInitialState();
+    State currentGameState =  GameThreadSafe.getInitialState();
 
     /**
      * Load the computational graph from a .pb file and also make a new session.

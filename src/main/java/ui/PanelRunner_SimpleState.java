@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import tree.Node;
 
@@ -18,7 +18,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     /**
      * Access to the game for the sake of the drawing methods.
      */
-    private GameLoader game = new GameLoader();
+    private GameThreadSafe game = new GameThreadSafe();
 
     /**
      * Current state being displayed.

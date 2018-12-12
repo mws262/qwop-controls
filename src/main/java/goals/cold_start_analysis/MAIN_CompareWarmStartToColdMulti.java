@@ -1,7 +1,7 @@
 package goals.cold_start_analysis;
 
 import actions.ActionQueue;
-import game.GameLoader;
+import game.GameThreadSafe;
 import game.State;
 import tree.Node;
 
@@ -29,8 +29,8 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
     public void run() {
         ActionQueue actionQueue = getSampleActions();
 
-        GameLoader gameFullRun = new GameLoader(); // This game will run all the commands, start to finish.
-        List<GameLoader> coldStartGames = new ArrayList<>();
+        GameThreadSafe gameFullRun = new GameThreadSafe(); // This game will run all the commands, start to finish.
+        List<GameThreadSafe> coldStartGames = new ArrayList<>();
 
         int coldStartAction = 2; // Starts the first cold start runner at this command index.
 
@@ -45,9 +45,9 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
 
                 // Simulate the additional cold-started runners.
                 int count = 0;
-                Iterator<GameLoader> coldStartGameIter = coldStartGames.iterator();
+                Iterator<GameThreadSafe> coldStartGameIter = coldStartGames.iterator();
                 while (coldStartGameIter.hasNext()) {
-                    GameLoader gm = coldStartGameIter.next();
+                    GameThreadSafe gm = coldStartGameIter.next();
                     gm.stepGame(nextCommand);
                     State st = gm.getCurrentState();
                     if (st.isFailed()) {
@@ -67,7 +67,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
             }
 
             // Add a new cold started runner at the full game's current state.
-            GameLoader coldStartGame = getFakedWarmStart(0);
+            GameThreadSafe coldStartGame = getFakedWarmStart(0);
             coldStartGame.setState(gameFullRun.getCurrentState());
             coldStartGames.add(coldStartGame);
 
