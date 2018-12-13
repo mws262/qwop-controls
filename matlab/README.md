@@ -1,5 +1,6 @@
 ## MATLAB interface to QWOP
-Gradually adding basic support for running the game in MATLAB.
+Gradually adding basic support for running the game in MATLAB. Make sure `maven package:single` has occurred at some 
+point so the right `.jar` has been created. 
 
 ### What's available
 
