@@ -170,7 +170,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                 recoveryResumePoint = startIdx;
             }
 
-            // Saver setup.
+            // Saver makeNewWorld.
             Node rootNode = new Node();
             Node.pointsToDraw.clear();
             ui.clearRootNodes();

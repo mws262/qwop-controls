@@ -14,16 +14,22 @@ public class GameSingleThreadTest {
     public void stepGame() {
         GameThreadSafe gameMulti = new GameThreadSafe();
         GameSingleThread gameSingle = new GameSingleThread();
-        ActionQueue actionQueue = getSampleActions();
 
-        while (!actionQueue.isEmpty()) {
-            boolean[] command = actionQueue.pollCommand();
-            gameMulti.stepGame(command);
-            gameSingle.stepGame(command[0], command[1], command[2], command[3]);
+        for (int i = 0; i < 4; i++) {
+            ActionQueue actionQueue = getSampleActions();
+            while (!actionQueue.isEmpty()) {
+                boolean[] command = actionQueue.pollCommand();
+                gameMulti.stepGame(command);
+                gameSingle.stepGame(command[0], command[1], command[2], command[3]);
 
-            float[] initStateMulti = gameMulti.getCurrentState().flattenState();
-            float[] initStateSingle = gameSingle.getCurrentState().flattenState();
-            Assert.assertArrayEquals(initStateMulti, initStateSingle, 1e-12f);
+                float[] initStateMulti = gameMulti.getCurrentState().flattenState();
+                float[] initStateSingle = gameSingle.getCurrentState().flattenState();
+                Assert.assertArrayEquals(initStateMulti, initStateSingle, 1e-12f);
+            }
+
+            // Make sure that creating a new world does not affect the results.
+            gameMulti.makeNewWorld();
+            gameSingle.makeNewWorld();
         }
     }
 

@@ -527,7 +527,7 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
                 shapeList.add(trackBody.getClass().getMethod("getShapeList").invoke(trackBody));
             }
 
-            /* Joint setup */
+            /* Joint makeNewWorld */
             Object rAnkleJDef = makeJointDef(rFootBody, rCalfBody, rAnklePosX, rAnklePosY, -0.5f, 0.5f, 2000f, 0f,
                     true, false, false);
             rAnkleJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rAnkleJDef);
@@ -1160,7 +1160,7 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
     }
 
     /**
-     * Check whether this game has completed its setup process.
+     * Check whether this game has completed its makeNewWorld process.
      *
      * @return Whether this game has finished being set up. True - yes, false - no.
      */
