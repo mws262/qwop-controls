@@ -7,27 +7,6 @@
   </formats>
   <fileSets>
 
-  	<!-- Config files -->
-    <fileSet>
-      <directory>${project.basedir}</directory>
-      <outputDirectory></outputDirectory>
-      <includes>
-        <include>search.config_full</include>
-        <include>search.config_long</include>
-	<include>search.config_selected</include>
-        <include>configtemplate</include>
-      </includes>
-    </fileSet>
-
-    <!-- Tensorflow models are included too. -->
-    <fileSet>
-    	<directory>${project.basedir}/tflow_models</directory>
-    	<outputDirectory>tflow_models</outputDirectory>
-    	<includes>
-      		<include>*.*</include>
-    	</includes>
-  	</fileSet>
-
   	<!-- Executable jar. -->
   	<fileSet>
     	<directory>target</directory>
