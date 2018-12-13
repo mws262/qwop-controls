@@ -30,7 +30,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
         new MAIN_SingleVarAutoencoder().run();
     }
     public void run() {
-        // Vis setup.
+        // Vis makeNewWorld.
         PanelPlot_Simple plotPanel = new PanelPlot_Simple();
         plotPanel.activateTab();
         getContentPane().add(plotPanel);

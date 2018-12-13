@@ -13,7 +13,7 @@ public abstract class CompareWarmStartToColdBase extends JFrame {
     PanelRunner_MultiState runnerPanel;
 
     CompareWarmStartToColdBase() {
-        // Vis setup.
+        // Vis makeNewWorld.
         runnerPanel = new PanelRunner_MultiState();
         runnerPanel.activateTab();
         getContentPane().add(runnerPanel);

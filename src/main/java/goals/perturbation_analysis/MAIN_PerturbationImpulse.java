@@ -55,7 +55,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
     }
 
     public void run(String fileName) {
-        // Vis setup.
+        // Vis makeNewWorld.
         PanelRunner_MultiStateWithArrows panelRunner = new PanelRunner_MultiStateWithArrows();
         panelRunner.activateTab();
         getContentPane().add(panelRunner);

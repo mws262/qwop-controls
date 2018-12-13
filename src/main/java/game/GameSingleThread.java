@@ -163,7 +163,7 @@ public class GameSingleThread {
             oneTimeSetup();
             hasOneTimeInitializationHappened = true;
         }
-        setup();
+        makeNewWorld();
         getWorld().setContactListener(new CollisionListener());
     }
 
@@ -324,8 +324,9 @@ public class GameSingleThread {
         lLArmDef.massData = lLArmMassData;
     }
 
-    private void setup() {
+    public void makeNewWorld() {
         isFailed = false;
+        timestepsSimulated = 0;
 
         /* World Settings */
         m_world = new World(worldAABB, gravity, true);
@@ -744,6 +745,49 @@ public class GameSingleThread {
      **/
     public long getTimestepsSimulated() {
         return timestepsSimulated;
+    }
+
+    /**
+     * Get vertices for debug drawing. Each array in the list will have:
+     * 8 floats for rectangles (x1,y1,x2,y2,...).
+     * 3 floats for circles (x,y,radius).
+     * 1 float for ground (height).
+     *
+     * This is primarily for drawing using external tools, e.g. in MATLAB.
+     **/
+    public VertHolder getDebugVertices() {
+
+        VertHolder vertHolder = new VertHolder();
+
+        vertHolder.groundHeight = XForm.mul(trackBody.getXForm(), trackShape.vertices.get(0)).y; // Never changes.
+        vertHolder.torsoX = torsoBody.getPosition().x;
+
+        Body[] bodies = new Body[]{rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody, lUArmBody,
+                rLArmBody, lLArmBody};
+
+        for (int i = 0; i < bodies.length; i++) {
+            XForm xf = bodies[i].getXForm();
+            PolygonShape shape = (PolygonShape) bodies[i].getShapeList();
+            Vec2[] shapeVerts = shape.m_vertices;
+            for (int j = 0; j < shapeVerts.length; j++) {
+                Vec2 vert = XForm.mul(xf, shapeVerts[j]);
+                vertHolder.bodyVerts[i][2*j] = vert.x;
+                vertHolder.bodyVerts[i][2*j + 1] = vert.y;
+            }
+        }
+
+        vertHolder.headLocAndRadius[0] = headBody.getPosition().x;
+        vertHolder.headLocAndRadius[1] = headBody.getPosition().y;
+        vertHolder.headLocAndRadius[2] = headR;
+
+        return vertHolder;
+    }
+
+    class VertHolder {
+        public float torsoX;
+        public float groundHeight;
+        public float[][] bodyVerts = new float[11][8];
+        public float[] headLocAndRadius = new float[3];
     }
 
     /**
