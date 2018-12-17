@@ -8,7 +8,7 @@ function MAIN_PlayLive
 % Handle Java imports.
 eval('javaaddpath ../target/qwop-controls-1.0.jar'); % Strange issues with trying to directly call these commands. Eval seems to fix it.
 eval('javaaddpath ../jbox2d.jar');
-eval('import game.State game.StateVariable game.GameSingleThreadWithDraw');
+eval('import game.State game.StateVariable game.GameSingleThread');
 
 % Make a new game (implementation in Java).
 game = GameSingleThread;
