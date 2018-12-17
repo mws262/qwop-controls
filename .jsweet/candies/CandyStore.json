@@ -1,0 +1,14 @@
+{
+  "candies": [
+    {
+      "name": "jsweet-core",
+      "version": "6-SNAPSHOT",
+      "lastUpdateTimestamp": 1538950496000,
+      "modelVersion": "unknown",
+      "transpilerVersion": "2.0.0",
+      "jsOutputDirPath": "/home/matt/git/qwop-controls/webapp",
+      "jsDirPath": "META-INF/resources/webjars/jsweet-core/6-SNAPSHOT",
+      "jsFilesPaths": []
+    }
+  ]
+}

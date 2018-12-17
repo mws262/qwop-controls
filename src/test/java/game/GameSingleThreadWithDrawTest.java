@@ -8,12 +8,12 @@ import org.junit.Test;
 /**
  * Make sure that the single-threaded and multi-threadable versions of the game match perfectly.
  */
-public class GameSingleThreadTest {
+public class GameSingleThreadWithDrawTest {
 
     @Test
     public void stepGame() {
         GameThreadSafe gameMulti = new GameThreadSafe();
-        GameSingleThread gameSingle = new GameSingleThread();
+        GameSingleThreadWithDraw gameSingle = new GameSingleThreadWithDraw();
 
         for (int i = 0; i < 4; i++) {
             ActionQueue actionQueue = getSampleActions();
@@ -36,7 +36,7 @@ public class GameSingleThreadTest {
     @Test
     public void getInitialState() {
         float[] initStateMulti = GameThreadSafe.getInitialState().flattenState();
-        float[] initStateSingle = GameSingleThread.getInitialState().flattenState();
+        float[] initStateSingle = GameSingleThreadWithDraw.getInitialState().flattenState();
 
         Assert.assertArrayEquals(initStateMulti, initStateSingle, 1e-12f);
     }
