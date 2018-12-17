@@ -115,8 +115,45 @@ To update the classpath settings for Eclipse:
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>2.8</version>
             </plugin>
+            <plugin>
+                <groupId>org.jsweet</groupId>
+                <artifactId>jsweet-maven-plugin</artifactId>
+                <version>2.2.0-SNAPSHOT</version>
+                <configuration>
+                    <verbose>true</verbose>
+                    <includes>src/java/main/game/GameSingleThread.java</includes>
+                    <tsOut>target/ts</tsOut>
+                    <outDir>target/js</outDir>
+                    <candiesJsOut>webapp</candiesJsOut>
+                    <targetVersion>ES6</targetVersion>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate-js</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>jsweet</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jsweet-plugins-release</id>
+            <name>plugins-release</name>
+            <url>http://repository.jsweet.org/artifactory/plugins-release-local</url>
+        </pluginRepository>
+        <pluginRepository>
+            <snapshots />
+            <id>jsweet-plugins-snapshots</id>
+            <name>plugins-snapshot</name>
+            <url>http://repository.jsweet.org/artifactory/plugins-snapshot-local</url>
+        </pluginRepository>
+    </pluginRepositories>
+
     <repositories>
         <repository>
             <id>jspresso-repository</id>
@@ -279,6 +316,12 @@ To update the classpath settings for Eclipse:
             <artifactId>mockito-core</artifactId>
             <version>2.23.0</version>
             <!--<scope>test</scope>-->
+        </dependency>
+
+        <dependency>
+            <groupId>org.jsweet</groupId>
+            <artifactId>jsweet-core</artifactId>
+            <version>6-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

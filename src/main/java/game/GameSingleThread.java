@@ -16,9 +16,6 @@ import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 import static game.GameConstants.*;
 
-import java.awt.*;
-
-
 /**'
  * NOTE: PREFER {@link GameThreadSafe} OVER THIS IMPLEMENTATION.
  *
@@ -39,11 +36,6 @@ public class GameSingleThread {
     private static long timestepsSimulated = 0;
 
     /**
-     * Normal stroke for line drawing.
-     **/
-    private static final Stroke normalStroke = new BasicStroke(0.5f);
-
-    /**
      * Box2D world to be populated for QWOP.
      **/
     private World m_world;
@@ -59,7 +51,7 @@ public class GameSingleThread {
     private static final AABB worldAABB = new AABB(new Vec2(aabbMinX, aabbMinY), new Vec2(aabbMaxX, aabbMaxY));
 
     /* Individual body objects */
-    private Body rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody, lUArmBody,
+    Body rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody, lUArmBody,
             rLArmBody, lLArmBody, headBody, trackBody;
 
     /* Joint Definitions */
@@ -106,7 +98,7 @@ public class GameSingleThread {
     /**
      * List of shapes for use by graphics stuff. Making it static -- IE, assuming that in multiple games, the runner doesn't change shape.
      **/
-    private static Shape[] shapeList = new Shape[13];
+    static Shape[] shapeList = new Shape[13];
 
     private static final BodyDef trackDef = new BodyDef(),
             rFootDef = new BodyDef(),
@@ -157,6 +149,8 @@ public class GameSingleThread {
      **/
     private static final State initState = new GameSingleThread().getCurrentState(); // Make sure this stays below all
     // the other static assignments to avoid null pointers.
+
+    private static boolean noFeet = false;
 
     public GameSingleThread() {
         if (!hasOneTimeInitializationHappened) {
@@ -341,11 +335,13 @@ public class GameSingleThread {
         trackBody = m_world.createBody(trackDef);
         trackBody.createShape(trackShape);
 
-        /* CALVES */
-        rFootBody = getWorld().createBody(rFootDef);
-        lFootBody = getWorld().createBody(lFootDef);
-        rFootBody.createShape(rFootShape);
-        lFootBody.createShape(lFootShape);
+        /* FEET */
+        if (!noFeet) {
+            rFootBody = getWorld().createBody(rFootDef);
+            lFootBody = getWorld().createBody(lFootDef);
+            rFootBody.createShape(rFootShape);
+            lFootBody.createShape(lFootShape);
+        }
 
         /* CALVES */
         rCalfBody = getWorld().createBody(rCalfDef);
@@ -383,35 +379,37 @@ public class GameSingleThread {
         /*
          *  Joints
          */
-        //Right Ankle:
 
-        rAnkleJDef = new RevoluteJointDef();
-        rAnkleJDef.initialize(rFootBody, rCalfBody, rAnklePos); //Body1, body2, anchor in world coords
-        rAnkleJDef.enableLimit = true;
-        rAnkleJDef.upperAngle = 0.5f;
-        rAnkleJDef.lowerAngle = -0.5f;
-        rAnkleJDef.enableMotor = false;
-        rAnkleJDef.maxMotorTorque = 2000f;
-        rAnkleJDef.motorSpeed = 0f; // Speed1,2: -2,2
-        rAnkleJDef.collideConnected = false;
+        if (!noFeet) {
+            //Right Ankle:
 
-        rAnkleJ = (RevoluteJoint) getWorld().createJoint(rAnkleJDef);
+            rAnkleJDef = new RevoluteJointDef();
+            rAnkleJDef.initialize(rFootBody, rCalfBody, rAnklePos); //Body1, body2, anchor in world coords
+            rAnkleJDef.enableLimit = true;
+            rAnkleJDef.upperAngle = 0.5f;
+            rAnkleJDef.lowerAngle = -0.5f;
+            rAnkleJDef.enableMotor = false;
+            rAnkleJDef.maxMotorTorque = 2000f;
+            rAnkleJDef.motorSpeed = 0f; // Speed1,2: -2,2
+            rAnkleJDef.collideConnected = false;
 
-        //Left Ankle:
-        lAnkleJDef = new RevoluteJointDef();
-        lAnkleJDef.initialize(lFootBody, lCalfBody, lAnklePos);
-        lAnkleJDef.enableLimit = true;
-        lAnkleJDef.upperAngle = 0.5f;
-        lAnkleJDef.lowerAngle = -0.5f;
-        lAnkleJDef.enableMotor = false;
-        lAnkleJDef.maxMotorTorque = 2000;
-        lAnkleJDef.motorSpeed = 0f;// Speed1,2: 2,-2
-        lAnkleJDef.collideConnected = false;
+            rAnkleJ = (RevoluteJoint) getWorld().createJoint(rAnkleJDef);
 
-        lAnkleJ = (RevoluteJoint) getWorld().createJoint(lAnkleJDef);
+            //Left Ankle:
+            lAnkleJDef = new RevoluteJointDef();
+            lAnkleJDef.initialize(lFootBody, lCalfBody, lAnklePos);
+            lAnkleJDef.enableLimit = true;
+            lAnkleJDef.upperAngle = 0.5f;
+            lAnkleJDef.lowerAngle = -0.5f;
+            lAnkleJDef.enableMotor = false;
+            lAnkleJDef.maxMotorTorque = 2000f;
+            lAnkleJDef.motorSpeed = 0f;// Speed1,2: 2,-2
+            lAnkleJDef.collideConnected = false;
+
+            lAnkleJ = (RevoluteJoint) getWorld().createJoint(lAnkleJDef);
+        }
 
         /* Knee joints */
-
         //Right Knee:
         rKneeJDef = new RevoluteJointDef();
         rKneeJDef.initialize(rCalfBody, rThighBody, rKneePos);
@@ -419,7 +417,7 @@ public class GameSingleThread {
         rKneeJDef.upperAngle = 0.3f;
         rKneeJDef.lowerAngle = -1.3f;
         rKneeJDef.enableMotor = true;//?
-        rKneeJDef.maxMotorTorque = 3000;
+        rKneeJDef.maxMotorTorque = 3000f;
         rKneeJDef.motorSpeed = 0f; //Speeds 1,2: -2.5,2.5
         rKneeJDef.collideConnected = false;
 
@@ -432,7 +430,7 @@ public class GameSingleThread {
         lKneeJDef.upperAngle = 0f;
         lKneeJDef.lowerAngle = -1.6f;
         lKneeJDef.enableMotor = true;
-        lKneeJDef.maxMotorTorque = 3000;
+        lKneeJDef.maxMotorTorque = 3000f;
         lKneeJDef.motorSpeed = 0f;// Speed1,2: -2.5,2.5
         lKneeJDef.collideConnected = false;
 
@@ -545,6 +543,27 @@ public class GameSingleThread {
         }
     }
 
+    private void setMaxMotorTorque(float torqueLimitMultiplier) {
+        if (!noFeet) {
+            rAnkleJ.setMaxMotorTorque(2000f * torqueLimitMultiplier);
+            lAnkleJ.setMaxMotorTorque(2000f * torqueLimitMultiplier);
+        }
+
+        rKneeJ.setMaxMotorTorque(3000f * torqueLimitMultiplier);
+        lKneeJ.setMaxMotorTorque(3000f * torqueLimitMultiplier);
+
+        rHipJ.setMaxMotorTorque(6000f * torqueLimitMultiplier);
+        lHipJ.setMaxMotorTorque(6000f * torqueLimitMultiplier);
+
+        neckJ.setMaxMotorTorque(1000f * torqueLimitMultiplier);
+
+        rShoulderJ.setMaxMotorTorque(1000f * torqueLimitMultiplier);
+        lShoulderJ.setMaxMotorTorque(1000f * torqueLimitMultiplier);
+
+        rElbowJ.setMaxMotorTorque(0f);
+        lElbowJ.setMaxMotorTorque(0f);
+    }
+
     public void stepGame(boolean[] command) {
         if (command.length != 4) {
             throw new IllegalArgumentException("Command is not the correct length. Expected 4, got: " + command.length);
@@ -605,7 +624,7 @@ public class GameSingleThread {
         }
 
         //Ankle/Hip Coupling -+ 0*Requires either Q or W pressed.
-        if (q || w) {
+        if (q || w && !noFeet) {
             //Get world ankle positions (using foot and torso anchors -+ 0
             Vec2 RAnkleCur = rAnkleJ.getAnchor1();
             Vec2 LAnkleCur = lAnkleJ.getAnchor1();
@@ -707,8 +726,8 @@ public class GameSingleThread {
                 getCurrentBodyState(lThighBody),
                 getCurrentBodyState(rCalfBody),
                 getCurrentBodyState(lCalfBody),
-                getCurrentBodyState(rFootBody),
-                getCurrentBodyState(lFootBody),
+                noFeet ? new StateVariable(0,0,0,0,0,0) : getCurrentBodyState(rFootBody),
+                noFeet ? new StateVariable(0,0,0,0,0,0) : getCurrentBodyState(lFootBody),
                 getCurrentBodyState(rUArmBody),
                 getCurrentBodyState(lUArmBody),
                 getCurrentBodyState(rLArmBody),
@@ -748,6 +767,24 @@ public class GameSingleThread {
     }
 
     /**
+     * Change world gravity.
+     *
+     * @param xGrav x component of gravity.
+     * @param yGrav y component of gravity -- positive is down.
+     */
+    public void setGravity(float xGrav, float yGrav) {
+        getWorld().setGravity(new Vec2(xGrav, yGrav));
+    }
+
+    public void setMaxTorqueMultiplier(float multiplier) {
+        setMaxMotorTorque(multiplier);
+    }
+
+    public void setPointFeet(boolean usePointFeet) {
+        noFeet = usePointFeet;
+    }
+
+    /**
      * Get vertices for debug drawing. Each array in the list will have:
      * 8 floats for rectangles (x1,y1,x2,y2,...).
      * 3 floats for circles (x,y,radius).
@@ -762,8 +799,15 @@ public class GameSingleThread {
         vertHolder.groundHeight = XForm.mul(trackBody.getXForm(), trackShape.vertices.get(0)).y; // Never changes.
         vertHolder.torsoX = torsoBody.getPosition().x;
 
-        Body[] bodies = new Body[]{rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody, lUArmBody,
-                rLArmBody, lLArmBody};
+        Body[] bodies;
+        if (!noFeet) {
+            bodies = new Body[]{rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
+                    lUArmBody, rLArmBody, lLArmBody};
+        } else {
+            bodies = new Body[]{rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
+                    lUArmBody, rLArmBody, lLArmBody};
+        }
+
 
         for (int i = 0; i < bodies.length; i++) {
             XForm xf = bodies[i].getXForm();
@@ -783,125 +827,13 @@ public class GameSingleThread {
         return vertHolder;
     }
 
+    @SuppressWarnings("WeakerAccess")
     class VertHolder {
         public float torsoX;
         public float groundHeight;
         public float[][] bodyVerts = new float[11][8];
         public float[] headLocAndRadius = new float[3];
     }
-
-    /**
-     * Draw this game's runner. Must provide scaling from game units to pixels, as well as pixel offsets in x and y.
-     **/
-    public void draw(Graphics g, float scaling, int xOffset, int yOffset) {
-
-        Body newBody = getWorld().getBodyList();
-        while (newBody != null) {
-            int xOffsetPixels = -(int) (scaling * torsoBody.getPosition().x) + xOffset; // Basic offset, plus centering x on torso.
-            Shape newfixture = newBody.getShapeList();
-
-            while (newfixture != null) {
-
-                // Most links are polygon shapes
-                if (newfixture.getType() == ShapeType.POLYGON_SHAPE) {
-
-                    PolygonShape newShape = (PolygonShape) newfixture;
-                    Vec2[] shapeVerts = newShape.m_vertices;
-                    for (int k = 0; k < newShape.m_vertexCount; k++) {
-
-                        XForm xf = newBody.getXForm();
-                        Vec2 ptA = XForm.mul(xf, shapeVerts[k]);
-                        Vec2 ptB = XForm.mul(xf, shapeVerts[(k + 1) % (newShape.m_vertexCount)]);
-                        g.drawLine((int) (scaling * ptA.x) + xOffsetPixels,
-                                (int) (scaling * ptA.y) + yOffset,
-                                (int) (scaling * ptB.x) + xOffsetPixels,
-                                (int) (scaling * ptB.y) + yOffset);
-                    }
-                } else if (newfixture.getType() == ShapeType.CIRCLE_SHAPE) { // Basically just head
-                    CircleShape newShape = (CircleShape) newfixture;
-                    float radius = newShape.m_radius;
-                    g.drawOval((int) (scaling * (newBody.getPosition().x - radius) + xOffsetPixels),
-                            (int) (scaling * (newBody.getPosition().y - radius) + yOffset),
-                            (int) (scaling * radius * 2),
-                            (int) (scaling * radius * 2));
-
-                } else if (newfixture.getType() == ShapeType.EDGE_SHAPE) { // The track.
-
-                    EdgeShape newShape = (EdgeShape) newfixture;
-                    XForm trans = newBody.getXForm();
-
-                    Vec2 ptA = XForm.mul(trans, newShape.getVertex1());
-                    Vec2 ptB = XForm.mul(trans, newShape.getVertex2());
-                    Vec2 ptC = XForm.mul(trans, newShape.getVertex2());
-
-                    g.drawLine((int) (scaling * ptA.x) + xOffsetPixels,
-                            (int) (scaling * ptA.y) + yOffset,
-                            (int) (scaling * ptB.x) + xOffsetPixels,
-                            (int) (scaling * ptB.y) + yOffset);
-                    g.drawLine((int) (scaling * ptA.x) + xOffsetPixels,
-                            (int) (scaling * ptA.y) + yOffset,
-                            (int) (scaling * ptC.x) + xOffsetPixels,
-                            (int) (scaling * ptC.y) + yOffset);
-
-                } else {
-                    System.out.println("Not found: " + newfixture.m_type.name());
-                }
-                newfixture = newfixture.getNext();
-            }
-            newBody = newBody.getNext();
-        }
-
-        //This draws the "road" markings to show that the ground is moving relative to the dude.
-        int markingWidth = 2000;
-        for (int i = 0; i < markingWidth / 69; i++) {
-            g.drawString("_", ((-(int) (scaling * torsoBody.getPosition().x) - i * 70) % markingWidth) + markingWidth, yOffset + 92);
-        }
-    }
-
-    /**
-     * Draw the runner at a specified set of transforms..
-     **/
-    public static void drawExtraRunner(Graphics2D g, XForm[] transforms, String label, float scaling, int xOffset, int yOffset, Color drawColor, Stroke stroke) {
-        g.setColor(drawColor);
-        g.drawString(label, xOffset + (int) (transforms[1].position.x * scaling) - 20, yOffset - 75);
-        for (int i = 0; i < shapeList.length; i++) {
-            g.setColor(drawColor);
-            g.setStroke(stroke);
-            switch (shapeList[i].getType()) {
-                case CIRCLE_SHAPE:
-                    CircleShape circleShape = (CircleShape) shapeList[i];
-                    float radius = circleShape.getRadius();
-                    Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
-                    g.drawOval((int) (scaling * (circleCenter.x - radius) + xOffset),
-                            (int) (scaling * (circleCenter.y - radius) + yOffset),
-                            (int) (scaling * radius * 2),
-                            (int) (scaling * radius * 2));
-                    break;
-                case POLYGON_SHAPE:
-                    //Get both the shape and its transform.
-                    PolygonShape polygonShape = (PolygonShape) shapeList[i];
-                    XForm transform = transforms[i];
-
-                    // Ground is black regardless.
-                    if (shapeList[i].m_filter.groupIndex == 1) {
-                        g.setColor(Color.BLACK);
-                        g.setStroke(normalStroke);
-                    }
-                    for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
-                        Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
-                        Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
-                        g.drawLine((int) (scaling * ptA.x) + xOffset,
-                                (int) (scaling * ptA.y) + yOffset,
-                                (int) (scaling * ptB.x) + xOffset,
-                                (int) (scaling * ptB.y) + yOffset);
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
 
     /**
      * Listens for collisions involving lower arms and head (implicitly with the ground)
@@ -940,9 +872,10 @@ public class GameSingleThread {
                     fixtureB.m_body.equals(rThighBody)) {
 
                 isFailed = true;
-            } else if (fixtureA.m_body.equals(rFootBody) || fixtureB.m_body.equals(rFootBody)) {//Track when each foot hits the ground.
+            } else if (!noFeet && fixtureA.m_body.equals(rFootBody) || fixtureB.m_body.equals(rFootBody)) {//Track when
+                // each foot hits the ground.
                 rFootDown = true;
-            } else if (fixtureA.m_body.equals(lFootBody) || fixtureB.m_body.equals(lFootBody)) {
+            } else if (!noFeet && fixtureA.m_body.equals(lFootBody) || fixtureB.m_body.equals(lFootBody)) {
                 lFootDown = true;
             }
         }
@@ -956,9 +889,9 @@ public class GameSingleThread {
             //Track when each foot leaves the ground.
             Shape fixtureA = point.shape1;
             Shape fixtureB = point.shape2;
-            if (fixtureA.m_body.equals(rFootBody) || fixtureB.m_body.equals(rFootBody)) {
+            if (!noFeet && fixtureA.m_body.equals(rFootBody) || fixtureB.m_body.equals(rFootBody)) {
                 rFootDown = false;
-            } else if (fixtureA.m_body.equals(lFootBody) || fixtureB.m_body.equals(lFootBody)) {
+            } else if (!noFeet && fixtureA.m_body.equals(lFootBody) || fixtureB.m_body.equals(lFootBody)) {
                 lFootDown = false;
             }
         }
