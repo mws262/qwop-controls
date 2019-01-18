@@ -477,8 +477,6 @@ public class GameSingleThread {
         neckJDef.collideConnected = false;
         neckJ = (RevoluteJoint) getWorld().createJoint(neckJDef);
 
-        Body rUFake = getWorld().createBody(rUArmDef);
-        rUFake.createShape(rUArmShape);
         /* Arm Joints */
         //Right shoulder
         rShoulderJDef = new RevoluteJointDef();
