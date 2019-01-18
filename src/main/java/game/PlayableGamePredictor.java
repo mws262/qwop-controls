@@ -96,7 +96,9 @@ public class PlayableGamePredictor extends TensorflowLoader {
     }
 
     public static void main(String[] args) {
-        PlayableGamePredictor gp = new PlayableGamePredictor("frozen_model.pb", "src/main/resources/tflow_models");// +
+        PlayableGamePredictor gp = new PlayableGamePredictor("frozen_model9.pb", "src/main/resources/tflow_models" +
+                "/sim_models/");
+        // +
                 //"/sim_models");
 
         JFrame frame = new JFrame();
