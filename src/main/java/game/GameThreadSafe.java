@@ -520,7 +520,7 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
                 shapeList.add(lCalfBody.getClass().getMethod("getShapeList").invoke(lCalfBody));
                 shapeList.add(rThighBody.getClass().getMethod("getShapeList").invoke(rThighBody));
                 shapeList.add(lThighBody.getClass().getMethod("getShapeList").invoke(lThighBody));
-                //shapeList.add(rUArmBody.getClass().getMethod("getShapeList").invoke(rUArmBody));
+                shapeList.add(rUArmBody.getClass().getMethod("getShapeList").invoke(rUArmBody));
                 shapeList.add(lUArmBody.getClass().getMethod("getShapeList").invoke(lUArmBody));
                 shapeList.add(rLArmBody.getClass().getMethod("getShapeList").invoke(rLArmBody));
                 shapeList.add(lLArmBody.getClass().getMethod("getShapeList").invoke(lLArmBody));
@@ -959,7 +959,7 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
             transforms[9] = getXForm(st.luarm);
             transforms[10] = getXForm(st.rlarm);
             transforms[11] = getXForm(st.llarm);
-            transforms[12] = getXForm(new StateVariable(0, trackPosY + 20, 0, 0, 0, 0)); // Hardcoded for track.
+            transforms[12] = getXForm(new StateVariable(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
             // Offset by 20 because its now a box.
         } catch (Exception e) {
             e.printStackTrace();
