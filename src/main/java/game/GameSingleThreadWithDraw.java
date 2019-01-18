@@ -10,7 +10,7 @@ import java.awt.*;
 
 
 /**'
- * NOTE: PREFER {@link GameThreadSafe} OVER THIS IMPLEMENTATION.
+ * NOTE: PREFER {@link GameThreadSafe} OVER THIS IMPLEMENTATION FOR LARGE SEARCHES.
  *
  * This creates the QWOP game using the Box2D library. This operates on the primary classloader. This means that
  * multiple instances of this class will interfere with others due to static information inside Box2D.
@@ -96,7 +96,7 @@ public class GameSingleThreadWithDraw extends GameSingleThread {
         }
 
         //This draws the "road" markings to show that the ground is moving relative to the dude.
-        int markingWidth = 2000;
+        int markingWidth = 5000;
         for (int i = 0; i < markingWidth / 69; i++) {
             g.drawString("_", ((-(int) (scaling * torsoBody.getPosition().x) - i * 70) % markingWidth) + markingWidth, yOffset + 92);
         }
