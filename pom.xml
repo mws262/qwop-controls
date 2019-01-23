@@ -280,5 +280,13 @@ To update the classpath settings for Eclipse:
             <version>2.23.0</version>
             <!--<scope>test</scope>-->
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.deeplearning4j/rl4j-api -->
+        <dependency>
+            <groupId>org.deeplearning4j</groupId>
+            <artifactId>rl4j-api</artifactId>
+            <version>1.0.0-beta3</version>
+        </dependency>
+
     </dependencies>
 </project>
