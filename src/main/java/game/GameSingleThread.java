@@ -147,6 +147,7 @@ public class GameSingleThread {
 
     private static boolean hasOneTimeInitializationHappened = false;
 
+    private CollisionListener collisionListener = new CollisionListener();
     /**
      * Initial runner state.
      **/
@@ -161,7 +162,6 @@ public class GameSingleThread {
             hasOneTimeInitializationHappened = true;
         }
         makeNewWorld();
-        getWorld().setContactListener(new CollisionListener());
     }
 
     /**
@@ -322,6 +322,9 @@ public class GameSingleThread {
     }
 
     public void makeNewWorld() {
+        if (timestepsSimulated > 0)
+            System.out.println(getCurrentState().body.getX() + "," + timestepsSimulated);
+
         isFailed = false;
         timestepsSimulated = 0;
 
@@ -542,6 +545,8 @@ public class GameSingleThread {
             shapeList[11] = lLArmBody.getShapeList();
             shapeList[12] = trackBody.getShapeList();
         }
+
+        m_world.setContactListener(collisionListener);
     }
 
     private void setMaxMotorTorque(float torqueLimitMultiplier) {

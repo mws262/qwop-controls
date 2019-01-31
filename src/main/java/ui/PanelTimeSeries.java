@@ -94,6 +94,11 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
         }
     }
 
+    // TEMP IMPROVE TODO
+    public void updateRange(float low, float high) {
+        plotsAndData.keySet().iterator().next().getRangeAxis().setRange(low, high);
+    }
+
     /**
      * Check if the bounds need expanding, tell JFreeChart to update, and set the bounds correctly
      */
@@ -110,7 +115,8 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
         TimeSeriesCollection ts = plotsAndData.get(plotPanels[plotNum].getChart().getXYPlot());
         ts.getSeries(seriesNum).add(RegularTimePeriod.createInstance(Millisecond.class, new Date(),
 				TimeZone.getDefault()), value);
-        ts.getSeries(seriesNum).removeAgedItems(false);
+        // TODO TEMP REMOVED. WILL NOW SHOW ALL, NOT JUST RECENT DATA.
+        //ts.getSeries(seriesNum).removeAgedItems(false);
     }
 
     /**

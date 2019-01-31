@@ -281,12 +281,48 @@ To update the classpath settings for Eclipse:
             <!--<scope>test</scope>-->
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.deeplearning4j/rl4j-api -->
+        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.deeplearning4j/rl4j-api &ndash;&gt;-->
+        <!--<dependency>-->
+            <!--<groupId>org.deeplearning4j</groupId>-->
+            <!--<artifactId>rl4j-api</artifactId>-->
+            <!--<version>1.0.0-beta3</version>-->
+        <!--</dependency>-->
+        <!-- https://mvnrepository.com/artifact/org.deeplearning4j/rl4j-core -->
         <dependency>
             <groupId>org.deeplearning4j</groupId>
-            <artifactId>rl4j-api</artifactId>
+            <artifactId>rl4j-core</artifactId>
             <version>1.0.0-beta3</version>
+
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+
         </dependency>
+
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.deeplearning4j/deeplearning4j-core &ndash;&gt;-->
+        <!--<dependency>-->
+            <!--<groupId>org.deeplearning4j</groupId>-->
+            <!--<artifactId>deeplearning4j-core</artifactId>-->
+            <!--<version>1.0.0-beta3</version>-->
+        <!--</dependency>-->
 
     </dependencies>
 </project>

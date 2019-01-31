@@ -464,6 +464,7 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
      * Make (or remake) the world with all the body parts at their initial locations.
      */
     public void makeNewWorld() {
+
         try {
             isFailed = false;
             rFootDown = false;
@@ -596,14 +597,14 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
                                         fixtureABody.equals(torsoBody) ||
                                         fixtureBBody.equals(torsoBody)) {
                                     isFailed = true;
-//					} TODO: Figure out it really is bad for the thighs to hit the ground.
-//
-//					else if(fixtureABody.equals(lThighBody)||
-//							fixtureBBody.equals(lThighBody)||
-//							fixtureABody.equals(rThighBody)||
-//							fixtureBBody.equals(rThighBody)){
+					} //TODO: Figure out it really is bad for the thighs to hit the ground.
 
-                                    //setFailureStatus(true); // Thighs hitting the ground happens due to ankles
+					else if(fixtureABody.equals(lThighBody)||
+							fixtureBBody.equals(lThighBody)||
+							fixtureABody.equals(rThighBody)||
+							fixtureBBody.equals(rThighBody)){
+
+                                    isFailed = true; // Thighs hitting the ground happens due to ankles
                                     // being loose. Not a big deal.
                                 } else if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) { // Track
                                     // when each foot hits the ground.

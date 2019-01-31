@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 import actions.Action;
 import actions.ActionQueue;
 import controllers.Controller_Null;
+import controllers.Controller_RL4J;
 import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
 import controllers.IController;
 import data.SavableActionSequence;
@@ -75,8 +76,10 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         MAIN_Controlled mc = new MAIN_Controlled();
         mc.setup();
 //         CONTROLLER -- Neural net picks keys.
-        mc.controller = new Controller_Tensorflow_ClassifyActionsPerTimestep(
-                "inference.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
+//        mc.controller = new Controller_Tensorflow_ClassifyActionsPerTimestep(
+//                "inference.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
+
+        mc.controller = new Controller_RL4J("/tmp/pol3");
 
 //        // CONTROLLER -- Approximate nearest neighbor.
 //        File saveLoc = new File("src/main/resources/saved_data/training_data");
@@ -156,7 +159,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
         // Back up the tree in order to skip the end of the prefix.
         /* Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. */
-        int doPrefixToDepth = 10;
+        int doPrefixToDepth = 0;
         while (endNode.getTreeDepth() > doPrefixToDepth) {
             endNode = endNode.getParent();
         }
