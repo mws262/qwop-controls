@@ -153,7 +153,11 @@ public class GameSingleThread {
     private static final State initState = new GameSingleThread().getCurrentState(); // Make sure this stays below all
     // the other static assignments to avoid null pointers.
 
+    /** Can turn off feet (just leg stumps) for trying stuff out. **/
     private static boolean noFeet = false;
+
+    /** Listens for collisions between any body part and the ground. **/
+    private CollisionListener collisionListener = new CollisionListener();
 
     public GameSingleThread() {
         if (!hasOneTimeInitializationHappened) {
@@ -161,7 +165,6 @@ public class GameSingleThread {
             hasOneTimeInitializationHappened = true;
         }
         makeNewWorld();
-        getWorld().setContactListener(new CollisionListener());
     }
 
     /**
@@ -542,6 +545,9 @@ public class GameSingleThread {
             shapeList[11] = lLArmBody.getShapeList();
             shapeList[12] = trackBody.getShapeList();
         }
+
+        // Listen for ground-body contacts.
+        m_world.setContactListener(collisionListener);
     }
 
     private void setMaxMotorTorque(float torqueLimitMultiplier) {
