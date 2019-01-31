@@ -27,7 +27,7 @@ public class RolloutPolicy_RandomColdStart extends RolloutPolicy{
 //        Node coldStartRolloutEndNode = randomRollout(startNode, game);
 
         while (!actionQueue.isEmpty() && !game.getFailureStatus()) {
-            game.stepGame(actionQueue.pollCommand());
+            game.step(actionQueue.pollCommand());
         }
 
 

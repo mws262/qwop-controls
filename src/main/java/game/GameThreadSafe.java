@@ -30,7 +30,7 @@ import static game.GameConstants.*;
  * @author matt
  */
 @SuppressWarnings("Duplicates")
-public class GameThreadSafe extends ClassLoader implements Serializable {
+public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
     /**
      * Number of timesteps in this game.
      */
@@ -89,6 +89,9 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
 
     public Color mainRunnerColor = Color.BLACK;
     public Stroke mainRunnerStroke = new BasicStroke(1);
+
+    /** Should the game be marked as failed if the thighs touch the ground? (happens with knees touching the ground. **/
+    public boolean failOnThighContact = false;
 
     /**
      * Make a new game on its own ClassLoader.
@@ -586,7 +589,7 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
                                 fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
                                 fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
                                 fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
-                                //Failure when head, arms, or thighs hit the ground.
+                                //Failure when head, arms, or torso hits the ground.
                                 if (fixtureABody.equals(headBody) ||
                                         fixtureBBody.equals(headBody) ||
                                         fixtureABody.equals(lLArmBody) ||
@@ -596,15 +599,13 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
                                         fixtureABody.equals(torsoBody) ||
                                         fixtureBBody.equals(torsoBody)) {
                                     isFailed = true;
-//					} TODO: Figure out it really is bad for the thighs to hit the ground.
-//
-//					else if(fixtureABody.equals(lThighBody)||
-//							fixtureBBody.equals(lThighBody)||
-//							fixtureABody.equals(rThighBody)||
-//							fixtureBBody.equals(rThighBody)){
+                                } else if(failOnThighContact &&
+                                        (fixtureABody.equals(lThighBody)||
+                                                fixtureBBody.equals(lThighBody)||
+                                                fixtureABody.equals(rThighBody)||
+                                                fixtureBBody.equals(rThighBody))){
 
-                                    //setFailureStatus(true); // Thighs hitting the ground happens due to ankles
-                                    // being loose. Not a big deal.
+                                    isFailed = true;
                                 } else if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) { // Track
                                     // when each foot hits the ground.
                                     rFootDown = true;
@@ -712,7 +713,7 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
     /**
      * Step the game forward 1 timestep with the specified keys pressed.
      */
-    public void stepGame(boolean q, boolean w, boolean o, boolean p) {
+    public void step(boolean q, boolean w, boolean o, boolean p) {
         try {
             // Involuntary couplings (no QWOP presses).
             float neckAngle = (float) neckJ.getClass().getMethod("getJointAngle").invoke(neckJ);
@@ -840,12 +841,12 @@ public class GameThreadSafe extends ClassLoader implements Serializable {
      *
      * @param keys 4 element array for whether the Q,W,O,P keys are pressed (true -> pressed).
      */
-    public void stepGame(boolean[] keys) {
+    public void step(boolean[] keys) {
         if (keys.length != 4) {
             throw new IndexOutOfBoundsException("Provided a key sequence to execute which did not contain 4 key " +
                     "booleans.");
         }
-        stepGame(keys[0], keys[1], keys[2], keys[3]);
+        step(keys[0], keys[1], keys[2], keys[3]);
     }
 
     /**

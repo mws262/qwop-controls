@@ -42,8 +42,8 @@ public class MAIN_PerturbationSimple extends JFrame {
             boolean[] commandUnperturbed = actionQueue.pollCommand();
             boolean[] commandPerturbed = actionQueuePerturbed.pollCommand();
 
-            gameUnperturbed.stepGame(commandUnperturbed);
-            gamePerturbed.stepGame(commandPerturbed);
+            gameUnperturbed.step(commandUnperturbed);
+            gamePerturbed.step(commandPerturbed);
 
             runnerPanel.clearSecondaryStates();
             runnerPanel.setMainState(gameUnperturbed.getCurrentState());

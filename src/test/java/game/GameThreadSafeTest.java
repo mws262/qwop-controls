@@ -22,7 +22,7 @@ public class GameThreadSafeTest {
         for (int i = 0; i < initState.length; i++) {
             Assert.assertEquals(initState[i], currState[i], 1e-12);
         }
-        game.stepGame(true, false, true, false);
+        game.step(true, false, true, false);
         currState = game.getCurrentState().flattenState();
         Assert.assertEquals(1, game.getTimestepsSimulatedThisGame());
 
@@ -33,7 +33,7 @@ public class GameThreadSafeTest {
         Assert.assertTrue(stateDiff > 1e-10);
 
         for (int i = 0; i < 100; i++) {
-            game.stepGame(true, false, false, true);
+            game.step(true, false, false, true);
         }
         Assert.assertTrue(game.getFailureStatus());
 
@@ -64,13 +64,13 @@ public class GameThreadSafeTest {
         float bodyTh = game.getCurrentState().body.getTh();
         Assert.assertEquals(0, game.getTimestepsSimulatedThisGame());
 
-        game.stepGame(true, true, false, false);
+        game.step(true, true, false, false);
         float bodyThNext = game.getCurrentState().body.getTh();
-        Assert.assertFalse(bodyTh == bodyThNext); // States should change after stepGame().
+        Assert.assertFalse(bodyTh == bodyThNext); // States should change after step().
         bodyTh = bodyThNext;
         Assert.assertEquals(1, game.getTimestepsSimulatedThisGame()); // Counter should have advanced.
 
-        game.stepGame(true, false, true, false);
+        game.step(true, false, true, false);
         bodyThNext = game.getCurrentState().body.getTh();
         Assert.assertFalse(bodyTh == bodyThNext);
         Assert.assertEquals(2, game.getTimestepsSimulatedThisGame());
@@ -81,8 +81,8 @@ public class GameThreadSafeTest {
         GameThreadSafe game1 = new GameThreadSafe();
         GameThreadSafe game2 = new GameThreadSafe();
 
-        game1.stepGame(true, false, true, false);
-        game2.stepGame(new boolean[]{true, false, true, false});
+        game1.step(true, false, true, false);
+        game2.step(new boolean[]{true, false, true, false});
 
         State gameState1 = game1.getCurrentState();
         State gameState2 = game2.getCurrentState();
@@ -98,7 +98,7 @@ public class GameThreadSafeTest {
         GameThreadSafe game2 = new GameThreadSafe();
 
         for (int i = 0; i < 10; i++) {
-            game1.stepGame(true, false, true, false);
+            game1.step(true, false, true, false);
         }
         State gameState1 = game1.getCurrentState();
         game2.setState(gameState1);
@@ -123,7 +123,7 @@ public class GameThreadSafeTest {
         GameThreadSafe game = new GameThreadSafe();
         Assert.assertFalse(game.getFailureStatus());
         for (int i = 0; i < 100; i++) {
-            game.stepGame(true, false, false, true);
+            game.step(true, false, false, true);
         }
         Assert.assertTrue(game.getFailureStatus());
     }
@@ -138,7 +138,7 @@ public class GameThreadSafeTest {
     public void isRightFootDown() {
         GameThreadSafe game = new GameThreadSafe();
         Assert.assertFalse(game.isRightFootDown());
-        game.stepGame(false,false,false,false);
+        game.step(false,false,false,false);
         Assert.assertTrue(game.isRightFootDown());
     }
 
@@ -146,7 +146,7 @@ public class GameThreadSafeTest {
     public void isLeftFootDown() {
         GameThreadSafe game = new GameThreadSafe();
         Assert.assertFalse(game.isLeftFootDown());
-        game.stepGame(false,false,false,false);
+        game.step(false,false,false,false);
         Assert.assertTrue(game.isLeftFootDown());
     }
 
@@ -155,7 +155,7 @@ public class GameThreadSafeTest {
         float[] initState = GameThreadSafe.getInitialState().flattenState();
 
         GameThreadSafe game = new GameThreadSafe();
-        game.stepGame(true,true,true,true);
+        game.step(true,true,true,true);
         float[] initStateAgain = game.getInitialState().flattenState(); // Make sure a second call gets the same
         // thing, even after the game has stepped a bit.
 
@@ -173,14 +173,14 @@ public class GameThreadSafeTest {
         Assert.assertEquals(0, game1.getTimestepsSimulatedThisGame());
         Assert.assertEquals(0, game2.getTimestepsSimulatedThisGame());
 
-        game1.stepGame(false, true, false, true);
+        game1.step(false, true, false, true);
         Assert.assertEquals(1, game1.getTimestepsSimulatedThisGame());
         Assert.assertEquals(0, game2.getTimestepsSimulatedThisGame());
-        game2.stepGame(true, false, false, false);
+        game2.step(true, false, false, false);
         Assert.assertEquals(1, game2.getTimestepsSimulatedThisGame());
 
         for (int i = 0; i < 5; i++) {
-            game2.stepGame(true, true, true, true);
+            game2.step(true, true, true, true);
         }
         Assert.assertEquals(6, game2.getTimestepsSimulatedThisGame());
         Assert.assertEquals(1, game1.getTimestepsSimulatedThisGame());
@@ -224,7 +224,7 @@ public class GameThreadSafeTest {
             }
 
             boolean[] command = actionQueue.pollCommand();
-            game.stepGame(command);
+            game.step(command);
             count++;
         }
     }

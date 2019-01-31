@@ -100,7 +100,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
         stateList.add(game.getCurrentState()); // Add initial state.
         while (!actionQueue.isEmpty()) {
             boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-            game.stepGame(nextCommand[0], nextCommand[1], nextCommand[2], nextCommand[3]); // Execute timestep.
+            game.step(nextCommand[0], nextCommand[1], nextCommand[2], nextCommand[3]); // Execute timestep.
             stateList.add(game.getCurrentState());
             commandList.add(nextCommand);
         }

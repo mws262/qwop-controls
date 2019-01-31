@@ -108,7 +108,7 @@ public class SparseDataToDenseTFRecord {
             boolean W = nextCommand[1];
             boolean O = nextCommand[2];
             boolean P = nextCommand[3];
-            game.stepGame(Q, W, O, P);
+            game.step(Q, W, O, P);
             if (game.getFailureStatus()) {
                 System.out.println("Game saver is seeing a failed state");
             }
@@ -130,7 +130,7 @@ public class SparseDataToDenseTFRecord {
             boolean W = nextCommand[1];
             boolean O = nextCommand[2];
             boolean P = nextCommand[3];
-            game.stepGame(Q, W, O, P);
+            game.step(Q, W, O, P);
             saver.reportTimestep(action, game); // Key difference
             if (game.getFailureStatus()) {
                 System.out.println("Game saver is seeing a failed state");

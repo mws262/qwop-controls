@@ -42,7 +42,7 @@ public abstract class RolloutPolicy {
         actionQueue.addSequence(targetNode.getSequence());
 
         while (!actionQueue.isEmpty()) {
-            game.stepGame(actionQueue.pollCommand());
+            game.step(actionQueue.pollCommand());
         }
     }
 
@@ -73,7 +73,7 @@ public abstract class RolloutPolicy {
             actionQueue.addAction(childAction);
 
             while (!actionQueue.isEmpty() && !game.getFailureStatus()) {
-                game.stepGame(actionQueue.pollCommand());
+                game.step(actionQueue.pollCommand());
             }
 
             rolloutNode.setState(game.getCurrentState());

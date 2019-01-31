@@ -50,7 +50,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
         List<State> stateList = new ArrayList<>();
         stateList.add(GameThreadSafe.getInitialState());
         while (!actionQueue.isEmpty()) {
-            game.stepGame(actionQueue.pollCommand());
+            game.step(actionQueue.pollCommand());
             State st = game.getCurrentState();
             stateList.add(st);
         }

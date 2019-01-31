@@ -95,7 +95,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
             W = nextCommand[1];
             O = nextCommand[2];
             P = nextCommand[3];
-            game.stepGame(Q, W, O, P);
+            game.step(Q, W, O, P);
         }
     }
 

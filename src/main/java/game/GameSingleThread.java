@@ -15,8 +15,6 @@ import org.jbox2d.dynamics.contacts.ContactResult;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
-import java.lang.reflect.InvocationTargetException;
-
 import static game.GameConstants.*;
 
 /**
@@ -31,7 +29,7 @@ import static game.GameConstants.*;
  * @author matt
  */
 @SuppressWarnings("Duplicates")
-public class GameSingleThread {
+public class GameSingleThread implements IGame {
 
     /**
      * Keep track of sim stats since beginning of execution.
@@ -158,6 +156,9 @@ public class GameSingleThread {
 
     /** Listens for collisions between any body part and the ground. **/
     private CollisionListener collisionListener = new CollisionListener();
+
+    /** Should the game be marked as failed if the thighs touch the ground? (happens with knees touching the ground. **/
+    public boolean failOnThighContact = false;
 
     public GameSingleThread() {
         if (!hasOneTimeInitializationHappened) {
@@ -571,17 +572,17 @@ public class GameSingleThread {
         lElbowJ.setMaxMotorTorque(0f);
     }
 
-    public void stepGame(boolean[] command) {
+    public void step(boolean[] command) {
         if (command.length != 4) {
             throw new IllegalArgumentException("Command is not the correct length. Expected 4, got: " + command.length);
         }
-        stepGame(command[0], command[1], command[2], command[3]);
+        step(command[0], command[1], command[2], command[3]);
     }
 
     /**
      * Step the game forward 1 timestep with the specified keys pressed.
      **/
-    public void stepGame(boolean q, boolean w, boolean o, boolean p) {
+    public void step(boolean q, boolean w, boolean o, boolean p) {
         /* Involuntary Couplings (no QWOP presses) */
 
         //Neck spring torque
@@ -887,19 +888,23 @@ public class GameSingleThread {
             Shape fixtureA = point.shape1;
             Shape fixtureB = point.shape2;
 
-            //Failure when head, arms, or thighs hit the ground.
+            //Failure when head, arms, torso hit the ground. Note that failing on calf contact is a bad idea. The
+            // ankles are loose enough that the calfs hit the ground sometimes during ok running.
             if (fixtureA.m_body.equals(headBody) ||
                     fixtureB.m_body.equals(headBody) ||
                     fixtureA.m_body.equals(lLArmBody) ||
                     fixtureB.m_body.equals(lLArmBody) ||
                     fixtureA.m_body.equals(rLArmBody) ||
-                    fixtureB.m_body.equals(rLArmBody)) {
+                    fixtureB.m_body.equals(rLArmBody) ||
+                    fixtureA.m_body.equals(torsoBody) ||
+                    fixtureB.m_body.equals(torsoBody)) {
                 isFailed = true;
-            } else if (fixtureA.m_body.equals(lThighBody) ||
+            } else if (failOnThighContact && // Only fail on thigh contact if this is turned on. Cannot kneel without
+                    // failure with this on.
+                    (fixtureA.m_body.equals(lThighBody) ||
                     fixtureB.m_body.equals(lThighBody) ||
                     fixtureA.m_body.equals(rThighBody) ||
-                    fixtureB.m_body.equals(rThighBody)) {
-
+                    fixtureB.m_body.equals(rThighBody))) {
                 isFailed = true;
             } else if (!noFeet && fixtureA.m_body.equals(rFootBody) || fixtureB.m_body.equals(rFootBody)) {//Track when
                 // each foot hits the ground.
@@ -910,8 +915,7 @@ public class GameSingleThread {
         }
 
         @Override
-        public void persist(ContactPoint point) {
-        }
+        public void persist(ContactPoint point) {}
 
         @Override
         public void remove(ContactPoint point) {

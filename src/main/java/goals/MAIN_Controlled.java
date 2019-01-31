@@ -227,7 +227,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             boolean O = nextCommand[2];
             boolean P = nextCommand[3];
             //if (doScreenCapture) screenCap.takeFrame(screenCapRectangle);
-            game.stepGame(Q, W, O, P);
+            game.step(Q, W, O, P);
             try {
                 if (doScreenCapture && count++ > 20) screenCap.takeFrameFromJPanel(mainViewPanel);
 

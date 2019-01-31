@@ -88,10 +88,10 @@ public class MAIN_PerturbationImpulse extends JFrame {
         while (actionQueue.getCurrentActionIdx() < perturbationLocation) {
 
             boolean[] command = actionQueue.pollCommand();
-            game.stepGame(command);
+            game.step(command);
 
             for (GameThreadSafe perturbedGame : perturbedGames) {
-                perturbedGame.stepGame(command);
+                perturbedGame.step(command);
             }
         }
 
@@ -110,14 +110,14 @@ public class MAIN_PerturbationImpulse extends JFrame {
         int count = 0;
         while (!actionQueue.isEmpty()) {
             boolean[] command = actionQueue.pollCommand();
-            game.stepGame(command);
+            game.step(command);
             if (count % drawInterval == 0)
                 panelRunner.addSecondaryState(game.getCurrentState(), Color.BLACK);
 
             // Step perturbed runners.
             for (int i = 0; i < perturbedGames.size(); i++) {
                 GameThreadSafe thisGame = perturbedGames.get(i);
-                thisGame.stepGame(command);
+                thisGame.step(command);
                 if (count % drawInterval == 0)
                     panelRunner.addSecondaryState(perturbedGames.get(i).getCurrentState(), Node.getColorFromScaledValue(i
                             , numPerturbedRunners, 0.8f));

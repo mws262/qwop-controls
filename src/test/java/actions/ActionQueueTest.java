@@ -313,11 +313,11 @@ public class ActionQueueTest {
         // Try simulating a game using an ActionQueue
         GameThreadSafe game = new GameThreadSafe();
 
-        game.stepGame(false, false, true, false);
+        game.step(false, false, true, false);
         float[] s1 = game.getCurrentState().flattenState();
 
         game.makeNewWorld();
-        game.stepGame(false, false, true, false);
+        game.step(false, false, true, false);
         float[] s2 = game.getCurrentState().flattenState();
 
         for (int i = 0; i < s1.length; i++) {
@@ -331,7 +331,7 @@ public class ActionQueueTest {
         int counter = 0;
         while (!actionQueue.isEmpty()) {
             boolean[] commands = actionQueue.pollCommand();
-            game.stepGame(commands[0], commands[1], commands[2], commands[3]);
+            game.step(commands[0], commands[1], commands[2], commands[3]);
             counter++;
         }
         Assert.assertEquals(26, counter);
@@ -343,22 +343,22 @@ public class ActionQueueTest {
         float[] initialState2 = game.getCurrentState().flattenState();
         counter = 0;
         for (int i = 0; i < 5; i++) {
-            game.stepGame(false, false, false, false);
+            game.step(false, false, false, false);
             counter++;
         }
 
         for (int i = 0; i < 6; i++) {
-            game.stepGame(true, false, false, false);
+            game.step(true, false, false, false);
             counter++;
         }
 
         for (int i = 0; i < 7; i++) {
-            game.stepGame(false, true, false, false);
+            game.step(false, true, false, false);
             counter++;
         }
 
         for (int i = 0; i < 8; i++) {
-            game.stepGame(false, false, true, false);
+            game.step(false, false, true, false);
             counter++;
         }
         Assert.assertEquals(26, counter);

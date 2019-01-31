@@ -40,7 +40,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
                 runnerPanel.clearSecondaryStates(); // Clear all the visualized runners.
 
                 boolean[] nextCommand = actionQueue.pollCommand(); // Next command.
-                gameFullRun.stepGame(nextCommand); // Sim the main runner and put on screen.
+                gameFullRun.step(nextCommand); // Sim the main runner and put on screen.
                 runnerPanel.setMainState(gameFullRun.getCurrentState());
 
                 // Simulate the additional cold-started runners.
@@ -48,7 +48,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
                 Iterator<GameThreadSafe> coldStartGameIter = coldStartGames.iterator();
                 while (coldStartGameIter.hasNext()) {
                     GameThreadSafe gm = coldStartGameIter.next();
-                    gm.stepGame(nextCommand);
+                    gm.step(nextCommand);
                     State st = gm.getCurrentState();
                     if (st.isFailed()) {
                         coldStartGameIter.remove();

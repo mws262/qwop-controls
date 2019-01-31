@@ -75,7 +75,7 @@ public abstract class CompareWarmStartToColdBase extends JFrame {
     GameThreadSafe getFakedWarmStart(int timesteps) {
         GameThreadSafe game = new GameThreadSafe();
         for (int i = 0; i < timesteps; i++) {
-            game.stepGame(false, false, false, false);
+            game.step(false, false, false, false);
         }
         return game;
     }

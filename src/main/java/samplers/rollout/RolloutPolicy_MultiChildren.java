@@ -54,7 +54,7 @@ public class RolloutPolicy_MultiChildren extends RolloutPolicy {
             actionQueue.addAction(startNode.uncheckedActions.get((int)i));
             Node childNode = new Node(startNode, startNode.uncheckedActions.get((int)i), false);
             while (!actionQueue.isEmpty() && !game.getFailureStatus()) {
-                game.stepGame(actionQueue.pollCommand());
+                game.step(actionQueue.pollCommand());
             }
             childNode.setState(game.getCurrentState());
 
