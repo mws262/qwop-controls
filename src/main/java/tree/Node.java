@@ -940,7 +940,7 @@ public class Node {
                     boolean W = nextCommand[1];
                     boolean O = nextCommand[2];
                     boolean P = nextCommand[3];
-                    game.stepGame(Q, W, O, P);
+                    game.step(Q, W, O, P);
                 }
                 currNode.setState(game.getCurrentState());
             }

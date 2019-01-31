@@ -29,7 +29,7 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
 
     @Override
     public void actionPerformed(ActionEvent e) { // Gets called every 40ms
-        game.stepGame(q, w, o, p); // Step the game forward 1 timestep with the specified keys pressed.
+        game.step(q, w, o, p); // Step the game forward 1 timestep with the specified keys pressed.
         repaint(); // Redraw the runner and scene.
     }
 

@@ -33,7 +33,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
 
         // Get to a certain part of the run where we want to introduce another cold start runner.
         while (actionQueue.getCurrentActionIdx() < coldStartAction) {
-            gameFullRun.stepGame(actionQueue.pollCommand());
+            gameFullRun.step(actionQueue.pollCommand());
         }
         State coldStartState = gameFullRun.getCurrentState();
         gameColdStart.setState(coldStartState);
@@ -51,8 +51,8 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
         while (!actionQueue.isEmpty()) {
             boolean[] nextCommand = actionQueue.pollCommand();
 
-            gameFullRun.stepGame(nextCommand);
-            gameColdStart.stepGame(nextCommand);
+            gameFullRun.step(nextCommand);
+            gameColdStart.step(nextCommand);
 
             runnerPanel.clearSecondaryStates();
             runnerPanel.setMainState(gameFullRun.getCurrentState());

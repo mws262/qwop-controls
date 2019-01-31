@@ -107,8 +107,8 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                     runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
                     runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
                     boolean[] actionQueueCommand = actionQueue.pollCommand();
-                    gameForActionSim.stepGame(actionQueueCommand);
-                    gameForCommandSim.stepGame(commands[i]);
+                    gameForActionSim.step(actionQueueCommand);
+                    gameForCommandSim.step(commands[i]);
 
 //                    if (!Arrays.equals(actionQueueCommand, commands[i])) {
 //                        throw new RuntimeException("Commands taken from Action and boolean sources of the TFRecord do" +

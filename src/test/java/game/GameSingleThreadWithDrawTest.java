@@ -19,8 +19,8 @@ public class GameSingleThreadWithDrawTest {
             ActionQueue actionQueue = getSampleActions();
             while (!actionQueue.isEmpty()) {
                 boolean[] command = actionQueue.pollCommand();
-                gameMulti.stepGame(command);
-                gameSingle.stepGame(command[0], command[1], command[2], command[3]);
+                gameMulti.step(command);
+                gameSingle.step(command[0], command[1], command[2], command[3]);
 
                 float[] initStateMulti = gameMulti.getCurrentState().flattenState();
                 float[] initStateSingle = gameSingle.getCurrentState().flattenState();

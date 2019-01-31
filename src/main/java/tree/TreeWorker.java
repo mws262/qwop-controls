@@ -391,7 +391,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {
 //            Action action = actionQueue.pollCommand();
-            game.stepGame(actionQueue.pollCommand());
+            game.step(actionQueue.pollCommand());
             Action action = actionQueue.peekThisAction();
             saver.reportTimestep(action, game);
             workerStepsSimulated++;

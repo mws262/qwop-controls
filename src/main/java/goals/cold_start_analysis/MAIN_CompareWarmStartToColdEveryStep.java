@@ -25,7 +25,7 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
         // Start simulating the entire "good" run on the normal game.
         while (!actionQueue.isEmpty()) {
             boolean[] nextCommand = actionQueue.pollCommand(); // Next command.
-            gameFullRun.stepGame(nextCommand); // Sim the main runner and put on screen.
+            gameFullRun.step(nextCommand); // Sim the main runner and put on screen.
 
             coldStartGame.makeNewWorld();
             State st = gameFullRun.getCurrentState();
@@ -37,7 +37,7 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
             float initX = st.body.getX();
             while (!coldStartActionQueue.isEmpty()) {
                 nextCommand = coldStartActionQueue.pollCommand();
-                coldStartGame.stepGame(nextCommand);
+                coldStartGame.step(nextCommand);
                 counter++;
                 if (coldStartGame.getFailureStatus()) {
                     System.out.println((coldStartGame.getCurrentState().body.getX() - initX)/17.);
