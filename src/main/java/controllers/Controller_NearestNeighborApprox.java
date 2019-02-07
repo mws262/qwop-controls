@@ -146,10 +146,10 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
 
         EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<>(10);
 
-        //Utility.tic();
+        Utility.tic();
         lowerSet.values().stream().limit(lowerSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state), v));
         upperSet.values().stream().limit(upperSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state), v));
-        //Utility.toc();
+        Utility.toc();
         Entry<Float, StateHolder> bestEntry = topMatches.firstEntry();
         StateHolder bestMatch = bestEntry.getValue();
         float bestMatchError = bestEntry.getKey();
