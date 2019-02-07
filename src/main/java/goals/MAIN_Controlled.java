@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 
 import actions.Action;
 import actions.ActionQueue;
+import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
 import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
 import controllers.IController;
@@ -75,28 +76,28 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         MAIN_Controlled mc = new MAIN_Controlled();
         mc.setup();
 //         CONTROLLER -- Neural net picks keys.
-        mc.controller = new Controller_Tensorflow_ClassifyActionsPerTimestep(
-                "inference.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
+//        mc.controller = new Controller_Tensorflow_ClassifyActionsPerTimestep(
+//                "inference.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
 
-//        // CONTROLLER -- Approximate nearest neighbor.
-//        File saveLoc = new File("src/main/resources/saved_data/training_data");
-//
-//        File[] allFiles = saveLoc.listFiles();
-//        if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
-//
-//        List<File> exampleDataFiles = new ArrayList<>();
-//        int count = 0;
-//        for (File f : allFiles) {
-//            if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
-//                System.out.println("Found save file: " + f.getName());
-//                if (count < 20) {
-//                    exampleDataFiles.add(f);
-//                }
-//
-//                count++;
-//            }
-//        }
-//        mc.controller = new Controller_NearestNeighborApprox(exampleDataFiles);
+        // CONTROLLER -- Approximate nearest neighbor.
+        File saveLoc = new File("src/main/resources/saved_data/training_data");
+
+        File[] allFiles = saveLoc.listFiles();
+        if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
+
+        List<File> exampleDataFiles = new ArrayList<>();
+        int count = 0;
+        for (File f : allFiles) {
+            if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
+                System.out.println("Found save file: " + f.getName());
+                //if (count < 20) {
+                    exampleDataFiles.add(f);
+                //}
+
+                count++;
+            }
+        }
+        mc.controller = new Controller_NearestNeighborApprox(exampleDataFiles);
         mc.doControlled();
     }
 
