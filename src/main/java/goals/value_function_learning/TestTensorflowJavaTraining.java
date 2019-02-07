@@ -21,7 +21,6 @@ public class TestTensorflowJavaTraining {
         final String checkpointDir = "src/main/resources/tflow_models/checkpoints";
         final boolean checkpointExists = Files.exists(Paths.get(checkpointDir));
 
-
         try (Graph graph = new Graph();
              Session sess = new Session(graph);
              Tensor<String> checkpointPrefix =

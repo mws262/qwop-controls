@@ -24,7 +24,8 @@ activation_options = {
     "relu" : tf.nn.relu,
     "leaky_relu" : tf.nn.leaky_relu,
     "sigmoid" : tf.nn.sigmoid,
-    "tanh" : tf.nn.tanh
+    "tanh" : tf.nn.tanh,
+    "identity" : tf.identity
 }
 
 # Get user specified options (or defaults).
@@ -88,7 +89,7 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=activations):
         return activations
 
 
-def sequential_layers(input, layer_sizes, name_prefix, last_activation=activations):
+def sequential_layers(input, layer_sizes, name_prefix, last_activation=tf.identity):
     """ Create a series of fully-connected layers.
 
     It is possible to make the last activation different (e.g. softmax), although this hasn't been added to argument
