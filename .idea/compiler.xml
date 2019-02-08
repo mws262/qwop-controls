@@ -11,7 +11,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="qwop-controls" target="1.8" />
+      <module name="qwop-controls" target="8" />
       <module name="QWOP_SaveLoad" target="11" />
     </bytecodeTargetLevel>
   </component>
