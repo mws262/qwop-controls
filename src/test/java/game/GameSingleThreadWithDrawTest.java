@@ -36,7 +36,7 @@ public class GameSingleThreadWithDrawTest {
     @Test
     public void getInitialState() {
         float[] initStateMulti = GameThreadSafe.getInitialState().flattenState();
-        float[] initStateSingle = GameSingleThreadWithDraw.getInitialState().flattenState();
+        float[] initStateSingle = GameSingleThread.getInitialState().flattenState();
 
         Assert.assertArrayEquals(initStateMulti, initStateSingle, 1e-12f);
     }

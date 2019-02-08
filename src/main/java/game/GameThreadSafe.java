@@ -97,6 +97,7 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
      * Make a new game on its own ClassLoader.
      */
     public GameThreadSafe() {
+        registerAsParallelCapable();
         loadClasses(); // Load all the necessary classes on a new class loader (this).
         try {
             oneTimeSetup(); // Create all the shape and body definitions that never need changing.

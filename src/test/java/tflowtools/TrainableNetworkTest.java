@@ -115,7 +115,4 @@ public class TrainableNetworkTest {
 
         Assert.assertTrue("Same evaluation should be replicable.", Arrays.equals(singleOutput[0], multiOutput[1]));
     }
-
-    @Test
-    public void makeNewNetwork() {}
 }
