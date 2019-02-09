@@ -153,7 +153,7 @@ public class TrainableNetwork {
                                                   List<String> additionalArgs) {
         // Add all command line arguments for the python script to a list.
         List<String> commandList = new ArrayList<>();
-        commandList.add("python3");
+        commandList.add("python");
         commandList.add(pythonGraphCreatorScript);
         commandList.add("--layers");
         commandList.addAll(layerSizes.stream().map(String::valueOf).collect(Collectors.toList()));
