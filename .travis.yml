@@ -4,3 +4,5 @@ jdk:
 before_install:
   - sudo apt-get update
   - sudo apt-get install python3
+  - sudo apt install python-dev python-pip
+  - pip install --upgrade tensorflow
