@@ -71,6 +71,16 @@ public class Sampler_UCB implements ISampler {
     }
 
     /**
+     * Must provide an evaluationFunction to get a numeric score for nodes after a rollout.
+     * Also specify a rollout policy to use.
+     */
+    public Sampler_UCB(IEvaluationFunction evaluationFunction, RolloutPolicy rolloutPolicy) {
+        this.evaluationFunction = evaluationFunction;
+        this.rolloutPolicy = rolloutPolicy;
+        c = 5f * explorationMultiplier * Random.nextFloat() * c + 1f;
+    }
+
+    /**
      * Propagate the score and visit count back up the tree.
      */
     private void propagateScore(Node failureNode, float score) {
@@ -189,6 +199,6 @@ public class Sampler_UCB implements ISampler {
 
     @Override
     public Sampler_UCB getCopy() {
-        return new Sampler_UCB(evaluationFunction.getCopy());
+        return new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy());
     }
 }
