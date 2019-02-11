@@ -157,6 +157,8 @@ public class Node {
      * by {@link Node#overrideNodeColor}.
      */
     public Color nodeColor = Color.GREEN;
+    public boolean nodeColorValue = true;
+    public static float maxVal = 1;
 
     private static final float lineBrightness_default = 0.85f;
     private float lineBrightness = lineBrightness_default;
@@ -441,6 +443,9 @@ public class Node {
      */
     public synchronized void setValue(float val) {
         value = val;
+        if (val > maxVal) {
+            maxVal = val;
+        }
     }
 
     /**
@@ -450,6 +455,9 @@ public class Node {
      */
     public synchronized void addToValue(float val) {
         value += val;
+        if (val > maxVal) {
+            maxVal = val;
+        }
     }
 
     /* ********************************************* */
@@ -1095,12 +1103,16 @@ public class Node {
      * Draw the node point if enabled
      */
     private void drawPoint(GL2 gl) {
+
         if (displayPoint) {
             if (overrideNodeColor == null) {
                 gl.glColor3fv(nodeColor.getColorComponents(null), 0);
             } else {
                 gl.glColor3fv(overrideNodeColor.getColorComponents(null), 0);
             }
+            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
+        }else if (nodeColorValue) {
+            gl.glColor3fv(getColorFromScaledValue(getValue()/visitCount.floatValue(), maxVal, 0.5f).getColorComponents(null), 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
         }
     }

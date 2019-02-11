@@ -80,4 +80,6 @@ public abstract class RolloutPolicy {
         }
         return rolloutNode;
     }
+
+    public abstract RolloutPolicy getCopy();
 }

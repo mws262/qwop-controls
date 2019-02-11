@@ -152,7 +152,7 @@ public abstract class MAIN_Search_Template {
     /**
      * Borrow a {@link TreeWorker} from the pool. Be sure to return it later!
      */
-    private TreeWorker borrowWorker() {
+    protected TreeWorker borrowWorker() {
         TreeWorker worker = null;
         try {
             worker = workerPool.borrowObject();
@@ -169,7 +169,7 @@ public abstract class MAIN_Search_Template {
     /**
      * Give the worker back to the pool to be reused later.
      */
-    private void returnWorker(TreeWorker finishedWorker) {
+    protected void returnWorker(TreeWorker finishedWorker) {
         workerPool.returnObject(finishedWorker);
         activeWorkers.remove(finishedWorker);
         if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);

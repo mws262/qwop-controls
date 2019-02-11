@@ -26,7 +26,7 @@ class GameConstants {
      * Track parameters.
      */
     static final float trackPosX = -30f, trackPosY = 8.90813f + 20f, trackFric = 1f, trackRest = 0.2f,
-    trackXDim = 1000f, trackYDim = 20f;
+    trackXDim = 2000f, trackYDim = 20f;
 
     /**
      * Foot parameters.
