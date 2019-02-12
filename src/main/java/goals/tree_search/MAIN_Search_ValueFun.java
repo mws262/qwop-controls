@@ -5,7 +5,10 @@ import actions.ActionGenerator_FixedSequence;
 import actions.ActionSet;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
+import evaluators.EvaluationFunction_Constant;
+import evaluators.EvaluationFunction_DeltaDistance;
 import evaluators.EvaluationFunction_Distance;
+import evaluators.EvaluationFunction_Velocity;
 import samplers.Sampler_UCB;
 import samplers.rollout.RolloutPolicy;
 import samplers.rollout.RolloutPolicy_ValueFunction;
@@ -67,17 +70,18 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        extraNetworkArgs.add("--activationsout");
 //        extraNetworkArgs.add("softmax");
 
-        TrainableNetwork valueNetwork = TrainableNetwork.makeNewNetwork(
-                "tmp", layerSizes);
-//        TrainableNetwork valueNetwork = new TrainableNetwork(new File("src/main/resources/tflow_models/tmp.pb"));
-//        valueNetwork.loadCheckpoint("chk1");
+//        TrainableNetwork valueNetwork = TrainableNetwork.makeNewNetwork(
+//                "tmp", layerSizes);
+        TrainableNetwork valueNetwork = new TrainableNetwork(new File("src/main/resources/tflow_models/tmp.pb"));
+        valueNetwork.loadCheckpoint("chk1");
 
         for (int k = 0; k < 1000; k++) {
             RolloutPolicy_ValueFunction valueFunction  =
                     new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueNetwork);
 
             valueFunction.maxRolloutTimesteps = 200;
-            Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Distance(), valueFunction);
+            Sampler_UCB.explorationMultiplier = 0.000001f;
+            Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), valueFunction);
 
             TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, ucbSampler, saver);
             searchMax.terminateAfterXGames = bailAfterXGames;

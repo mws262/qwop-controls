@@ -67,7 +67,7 @@ public class Sampler_UCB implements ISampler {
         this.evaluationFunction = evaluationFunction;
         rolloutPolicy = new RolloutPolicy_RandomColdStart(evaluationFunction);// RolloutPolicy_RandomColdStart
         // (evaluationFunction);
-        c = 5f * explorationMultiplier * Random.nextFloat() * c + 1f;
+        c = 5f * explorationMultiplier * Random.nextFloat() * c + 0.0001f;
     }
 
     /**

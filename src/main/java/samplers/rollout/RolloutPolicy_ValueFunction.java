@@ -67,7 +67,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
         }
 
         // System.out.println("Rollout: " + currentNode.getState().body.getX() + ", " + rolloutTimesteps);
-        return evaluationFunction.getValue(currentNode);
+        return (evaluationFunction.getValue(currentNode) - evaluationFunction.getValue(startNode))/100f;
     }
 
     public RolloutPolicy getCopy() {
