@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
-import samplers.Sampler_Distribution;
 import samplers.Sampler_Greedy;
 import savers.DataSaver_DenseTFRecord;
 import tree.*;
@@ -77,7 +76,7 @@ public abstract class MAIN_Search_Template {
     /**
      * Maximum number of workers any stage can recruit.
      */
-    private final int maxWorkers;
+    final int maxWorkers;
 
     public MAIN_Search_Template(File configFile) {
         // Load the configuration file.
@@ -152,7 +151,7 @@ public abstract class MAIN_Search_Template {
     /**
      * Borrow a {@link TreeWorker} from the pool. Be sure to return it later!
      */
-    protected TreeWorker borrowWorker() {
+    TreeWorker borrowWorker() {
         TreeWorker worker = null;
         try {
             worker = workerPool.borrowObject();
@@ -169,7 +168,7 @@ public abstract class MAIN_Search_Template {
     /**
      * Give the worker back to the pool to be reused later.
      */
-    protected void returnWorker(TreeWorker finishedWorker) {
+    void returnWorker(TreeWorker finishedWorker) {
         workerPool.returnObject(finishedWorker);
         activeWorkers.remove(finishedWorker);
         if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
