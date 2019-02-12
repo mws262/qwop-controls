@@ -2,14 +2,14 @@
 saveLocation=./test_dir
 headless=false
 workersFractionOfCores=0.8
-UCBExplorationMultiplier=1
+UCBExplorationMultiplier=0.000001
 
 getToSteadyDepth=100
 fractionOfMaxWorkers=1
-bailAfterXGames=1000
+bailAfterXGames=2000
 
 # Number of training steps each time new data is fed into the neural network.
-netTrainingStepsPerIter = 100
+netTrainingStepsPerIter = 10
 
 
 
