@@ -126,6 +126,7 @@ public class TrainableNetwork {
 
         long[] outputShape = outputTensor.shape();
         float[][] output = new float[(int) outputShape[0]][(int) outputShape[1]];
+        outputTensor.copyTo(output);
         return output;
     }
 

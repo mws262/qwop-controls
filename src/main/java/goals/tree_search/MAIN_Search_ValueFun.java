@@ -1,16 +1,8 @@
 package goals.tree_search;
 
-import actions.Action;
-import actions.ActionGenerator_FixedSequence;
-import actions.ActionSet;
-import distributions.Distribution;
-import distributions.Distribution_Normal;
 import evaluators.EvaluationFunction_Constant;
-import evaluators.EvaluationFunction_DeltaDistance;
 import evaluators.EvaluationFunction_Distance;
-import evaluators.EvaluationFunction_Velocity;
 import samplers.Sampler_UCB;
-import samplers.rollout.RolloutPolicy;
 import samplers.rollout.RolloutPolicy_ValueFunction;
 import savers.DataSaver_StageSelected;
 import tflowtools.TrainableNetwork;
@@ -80,8 +72,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                     new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueNetwork);
 
             valueFunction.maxRolloutTimesteps = 200;
-            Sampler_UCB.explorationMultiplier = 0.000001f;
+//            Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Distance(), valueFunction);
             Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), valueFunction);
+
 
             TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, ucbSampler, saver);
             searchMax.terminateAfterXGames = bailAfterXGames;

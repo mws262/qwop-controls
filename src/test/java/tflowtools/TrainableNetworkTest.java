@@ -48,10 +48,14 @@ public class TrainableNetworkTest {
         float loss1 = testNetwork.trainingStep(inputs, outputs, 1); // Do a single step.
         Assert.assertTrue("Loss should be non-negative.", loss1 > 0f);
 
-        float loss2 = testNetwork.trainingStep(inputs, outputs, 1000); // Do many steps.
+        float loss2 = testNetwork.trainingStep(inputs, outputs, 5000); // Do many steps.
         Assert.assertTrue("Loss should be better after many more steps.", loss1 > loss2);
         Assert.assertTrue("Loss should be very close to zero after many training steps. Was " + Math.abs(loss2) + ".",
                 Math.abs(loss2) < 1e-4);
+
+        float[][] outEval = testNetwork.evaluateInput(inputs);
+
+        Assert.assertEquals("Network evaluation didn't come up with a matching result.", outEval[0][1], outputs[0][1], 1e-4);
     }
 
     @Test
