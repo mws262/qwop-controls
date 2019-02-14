@@ -39,6 +39,11 @@ public class Sampler_UCB implements ISampler {
     public static float explorationMultiplier = 1f;
 
     /**
+     * Constant term on UCB exploration factor. Higher means more exploration.
+     */
+    public static float explorationConstant = 1f;
+
+    /**
      * Are we done with the tree policy?
      */
     private boolean treePolicyDone = false;
@@ -67,7 +72,7 @@ public class Sampler_UCB implements ISampler {
         this.evaluationFunction = evaluationFunction;
         rolloutPolicy = new RolloutPolicy_RandomColdStart(evaluationFunction);// RolloutPolicy_RandomColdStart
         // (evaluationFunction);
-        c = 5f * explorationMultiplier * Random.nextFloat() * c + 0.0001f;
+        c =  explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
     }
 
     /**
@@ -77,7 +82,7 @@ public class Sampler_UCB implements ISampler {
     public Sampler_UCB(IEvaluationFunction evaluationFunction, RolloutPolicy rolloutPolicy) {
         this.evaluationFunction = evaluationFunction;
         this.rolloutPolicy = rolloutPolicy;
-        c = 5f * explorationMultiplier * Random.nextFloat() * c + 1f;
+        c = explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
     }
 
     /**
