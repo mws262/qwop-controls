@@ -93,7 +93,9 @@ public class TrainableNetwork {
                     "loss").run().get(0).expect(Float.class);
         }
         assert output != null;
-        return output.floatValue();
+//        float[] outputStuff = new float[inputs.length];
+//        output.copyTo(outputStuff);
+        return output.floatValue(); // Could be problematic with softmax which doesn't spit out a single value.
     }
 
     /**

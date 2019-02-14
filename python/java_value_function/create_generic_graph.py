@@ -125,7 +125,7 @@ output = sequential_layers(input, layer_sizes, "fully_connected")
 
 
 if args.activationsout == "softmax":
-    loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=output_target, logits=output, name='loss')
+    loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=output_target, logits=output, name='loss')
     output = tf.nn.softmax(output, name='softmax_activation')
 else:
     output = output_activations(output, name='output_activation')
