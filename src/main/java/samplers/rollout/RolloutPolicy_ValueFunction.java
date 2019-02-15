@@ -26,7 +26,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
     @Override
     public float rollout(Node startNode, GameThreadSafe game) {
         Node currentNode = startNode;
-        float[][] state = new float[1][72];
+        float[][] state = new float[1][73];
         float[][] values;
         int rolloutTimesteps = 0;
         while (!game.getFailureStatus() && rolloutTimesteps < maxRolloutTimesteps) {
@@ -45,13 +45,17 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
             Action chosenAction = null;
 //            int chosenIdx = 0; // TODO make sure that it isn't always choosing the same index at the beginning. Could
             // end up taking a gazillion tiny steps.
+            //System.out.println("new");
             for (int i = 0; i < actionChoices.size(); i++) {
-                float value = valueFunction.evaluateInput(state)[0][i];
+                state[0][72] = actionChoices.get(i).getTimestepsTotal();
+                float value = valueFunction.evaluateInput(state)[0][0];
+                //System.out.println(value);
                 if (value > maxVal) {
                     maxVal = value;
                     chosenAction = actionChoices.get(i);
                 }
             }
+            //System.out.println("");
 
             // For convenience and debugging, make an unattached node for the chosen action.
             currentNode = new Node(currentNode, chosenAction, false);
@@ -66,7 +70,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
         }
 
         // System.out.println("Rollout: " + currentNode.getState().body.getX() + ", " + rolloutTimesteps);
-        return (evaluationFunction.getValue(currentNode) - evaluationFunction.getValue(startNode));
+        return (evaluationFunction.getValue(currentNode) - evaluationFunction.getValue(startNode))/10f;
         //return evaluationFunction.getValue(currentNode);
 
     }
