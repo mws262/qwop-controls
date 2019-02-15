@@ -56,6 +56,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         ArrayList<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(73);
         layerSizes.add(128);
+        layerSizes.add(50);
         layerSizes.add(1);
 //        layerSizes.add(totalActionCount);
 //        List<String> extraNetworkArgs = new ArrayList<>();
