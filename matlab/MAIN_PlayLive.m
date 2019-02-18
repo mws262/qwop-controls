@@ -11,11 +11,11 @@ eval('javaaddpath ../jbox2d.jar');
 eval('import game.State game.StateVariable game.GameSingleThread');
 
 % Make a new game (implementation in Java).
-game = GameSingleThread;
+qwopGame = game.GameSingleThread;
 
 % Create graphics objects.
 close all;
-[fig, ax, bodyLinks, headTForm] = DrawNewRunner(game.getDebugVertices);
+[fig, ax, bodyLinks, headTForm] = DrawNewRunner(qwopGame.getDebugVertices);
 
 % Add keyboard listening for QWOP keys.
 q = false; % Keep track of which keys are currently down.
@@ -28,8 +28,8 @@ fig.KeyReleaseFcn = @keyRelease;
 
 % Loop game until 
 while ishandle(fig)
-    game.stepGame(q,w,o,p)
-    RedrawRunner(game.getDebugVertices, bodyLinks, headTForm, ax);
+    qwopGame.step(q,w,o,p)
+    RedrawRunner(qwopGame.getDebugVertices, bodyLinks, headTForm, ax);
     drawnow();
     pause(0.03);
 end
@@ -45,7 +45,7 @@ end
             case 'p'
                 p = true;
             case 'r' % Reset the game.
-                game.makeNewWorld;
+                qwopGame.makeNewWorld;
                 q = false;
                 w = false;
                 o = false;
