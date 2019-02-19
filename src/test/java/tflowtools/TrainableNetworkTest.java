@@ -24,6 +24,8 @@ public class TrainableNetworkTest {
         layerSizes.add(5);
         layerSizes.add(2);
 
+        // IF this fails, there's a good chance you don't have python tensorflow installed. Or, "python" calls the
+        // wrong version of python for your tensorflow install.
         testNetwork = TrainableNetwork.makeNewNetwork("unit_test_graph", layerSizes);
         testNetwork.graphDefinition.deleteOnExit(); // Will remove the unit_test_graph.pb file after running.
     }
@@ -51,7 +53,7 @@ public class TrainableNetworkTest {
         float loss2 = testNetwork.trainingStep(inputs, outputs, 5000); // Do many steps.
         Assert.assertTrue("Loss should be better after many more steps.", loss1 > loss2);
         Assert.assertTrue("Loss should be very close to zero after many training steps. Was " + Math.abs(loss2) + ".",
-                Math.abs(loss2) < 1e-4);
+                Math.abs(loss2) < 1e-3);
 
         float[][] outEval = testNetwork.evaluateInput(inputs);
 

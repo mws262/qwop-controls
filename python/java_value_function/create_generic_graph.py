@@ -140,5 +140,5 @@ train_op = optimizer.minimize(loss, name='train')
 init = tf.global_variables_initializer()
 saver_def = tf.train.Saver().as_saver_def()
 
-with open(savepath, 'w') as f:
+with open(savepath, 'wb') as f:
     f.write(tf.get_default_graph().as_graph_def().SerializeToString())
