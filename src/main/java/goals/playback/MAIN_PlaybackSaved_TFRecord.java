@@ -30,8 +30,9 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
 
     /**
      * Directory containing the TFRecord files of runs to replay.
+     * Can also be a single TFRecord file.
      */
-    private File saveLoc = new File("src/main/resources/saved_data/11_2_18");
+    private File saveLoc = new File("src/main/resources/saved_data/training_data/denseTF_2018-04-26_15-19-44.TFRecord");
 
     public static void main(String[] args) {
         MAIN_PlaybackSaved_TFRecord mc = new MAIN_PlaybackSaved_TFRecord();
@@ -55,7 +56,12 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
     }
 
     public void run() {
-        File[] allFiles = saveLoc.listFiles();
+        File[] allFiles;
+        if (saveLoc.isDirectory()) {
+            allFiles = saveLoc.listFiles();
+        } else {
+            allFiles = new File[]{saveLoc};
+        }
         Objects.requireNonNull(allFiles); // Null means that the directory was bad.
 
         // Look for TFRecord files.
@@ -95,6 +101,9 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                 List<Action> actions = TFRecordDataParsers.getActionsFromLoadedSequence(seq);
                 boolean[][] commands = TFRecordDataParsers.getCommandSequenceFromLoadedSequence(seq);
 
+                actions.remove(0);
+                actions.remove(0);
+
                 ActionQueue actionQueue = new ActionQueue();
                 actionQueue.addSequence(actions);
 
@@ -106,10 +115,13 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                     runnerPane.setMainState(stateVars[i]);
                     runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
                     runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
-                    boolean[] actionQueueCommand = actionQueue.pollCommand();
-                    gameForActionSim.step(actionQueueCommand);
-                    gameForCommandSim.step(commands[i]);
-
+                    if (actionQueue.isEmpty()) {
+                        System.out.println("Warning: actions ended before states did.");
+                    } else {
+                        boolean[] actionQueueCommand = actionQueue.pollCommand();
+                        gameForActionSim.step(actionQueueCommand);
+                        gameForCommandSim.step(commands[i]);
+                    }
 //                    if (!Arrays.equals(actionQueueCommand, commands[i])) {
 //                        throw new RuntimeException("Commands taken from Action and boolean sources of the TFRecord do" +
 //                                " not match. Issue happened at action index: " + actionQueue.getCurrentActionIdx() +
