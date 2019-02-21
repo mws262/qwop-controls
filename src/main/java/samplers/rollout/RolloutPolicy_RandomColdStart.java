@@ -33,7 +33,9 @@ public class RolloutPolicy_RandomColdStart extends RolloutPolicy{
 
 
         return (evaluationFunction.getValue(normalRolloutEndNode) +
-                game.getCurrentState().body.getX())/2f;
+                game.getCurrentState().body.getX() - startNode.getState().body.getX()) / 2f; // TODO Stop hardcoding
+        // this
+        // shit.
     }
 
     @Override

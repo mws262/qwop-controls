@@ -122,6 +122,7 @@ public class Sampler_UCB implements ISampler {
             if (!child.fullyExplored.get() && !child.isLocked()) {
                 float val =
 						(float) (child.getValue() / child.visitCount.doubleValue() + c * (float) Math.sqrt(2. * Math.log(startNode.visitCount.doubleValue()) / child.visitCount.doubleValue()));
+                assert !Float.isNaN(val);
                 if (val > bestScoreSoFar) {
                     bestNodeSoFar = child;
                     bestScoreSoFar = val;

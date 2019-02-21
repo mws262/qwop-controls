@@ -18,6 +18,8 @@ import actions.ActionSet;
 import actions.IActionGenerator;
 import com.jogamp.opengl.GL2;
 
+import com.jogamp.opengl.util.awt.TextRenderer;
+import com.jogamp.opengl.util.gl2.GLUT;
 import data.SavableSingleGame;
 import game.GameThreadSafe;
 import game.State;
@@ -157,8 +159,9 @@ public class Node {
      * by {@link Node#overrideNodeColor}.
      */
     public Color nodeColor = Color.GREEN;
-    public boolean nodeColorValue = true;
-    public static float maxVal = 1;
+    public boolean nodeColorValue = false;
+    public static float maxVal = -Float.MAX_VALUE;
+    public static float minVal = Float.MAX_VALUE;
 
     private static final float lineBrightness_default = 0.85f;
     private float lineBrightness = lineBrightness_default;
@@ -170,6 +173,7 @@ public class Node {
     private static final Color lockColor = new Color(194, 148, 184);
 
     public String nodeLabel = "";
+    public String nodeLabelAlt = "";
 
     /**
      * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
@@ -181,7 +185,7 @@ public class Node {
      * Specifies whether this node has been ignored for drawing purposes. This only gets manipulated if
      * {@link Node#limitDrawing} is true.
      */
-    private boolean notDrawnForSpeed = false;
+    public boolean notDrawnForSpeed = false;
     public static boolean includeZOffsetInDrawFiltering = false;
     private static final float nodeDrawFilterDistSq = 0.1f;
     // Disable node position calculations (for when running headless)
@@ -446,6 +450,11 @@ public class Node {
         if (val > maxVal) {
             maxVal = val;
         }
+        if (val < minVal) {
+            minVal = val;
+        }
+        float avgVal = getValue()/visitCount.floatValue();
+        nodeLabel = String.format("%.2f", avgVal);
     }
 
     /**
@@ -458,6 +467,11 @@ public class Node {
         if (val > maxVal) {
             maxVal = val;
         }
+        if (val < minVal) {
+            minVal = val;
+        }
+        float avgVal = getValue()/visitCount.floatValue();
+        nodeLabel = String.format("%.2f", avgVal);
     }
 
     /* ********************************************* */
@@ -904,10 +918,12 @@ public class Node {
      * Helper for node adding from file. Clears unchecked actions from non-leaf nodes.
      * Only does it for things below minDepth. Forces new building to happen only at the boundaries of this.
      */
-    private static void stripUncheckedActionsExceptOnLeaves(Node node, int minDepth) {
-        if (!node.children.isEmpty() && node.getTreeDepth() <= minDepth) node.uncheckedActions.clear();
-        for (Node child : node.children) {
-            stripUncheckedActionsExceptOnLeaves(child, minDepth);
+    public static void stripUncheckedActionsExceptOnLeaves(Node node, int minDepth) {
+        if (!node.children.isEmpty() && node.getTreeDepth() <= minDepth) {
+            node.uncheckedActions.clear();
+            for (Node child : node.children) {
+                stripUncheckedActionsExceptOnLeaves(child, minDepth);
+            }
         }
     }
 
@@ -917,7 +933,8 @@ public class Node {
     public static void makeNodesFromActionSequences(List<Action[]> actions, Node root, GameThreadSafe game) {
 
         ActionQueue actQueue = new ActionQueue();
-        root.setState(GameThreadSafe.getInitialState());
+        //root.setState(GameThreadSafe.getInitialState());
+        root.visitCount.getAndIncrement();
 
         for (Action[] acts : actions) {
             game.makeNewWorld();
@@ -925,6 +942,7 @@ public class Node {
             actQueue.clearAll();
 
             for (Action act : acts) {
+                act = act.getCopy();
                 act.reset();
 
                 // If there is already a node for this action, use it.
@@ -950,7 +968,10 @@ public class Node {
                     boolean P = nextCommand[3];
                     game.step(Q, W, O, P);
                 }
-                currNode.setState(game.getCurrentState());
+                if (!foundExisting){
+                    currNode.setState(game.getCurrentState());
+                    currNode.visitCount.getAndIncrement();
+                }
             }
         }
     }
@@ -1103,7 +1124,6 @@ public class Node {
      * Draw the node point if enabled
      */
     private void drawPoint(GL2 gl) {
-
         if (displayPoint) {
             if (overrideNodeColor == null) {
                 gl.glColor3fv(nodeColor.getColorComponents(null), 0);
@@ -1139,7 +1159,7 @@ public class Node {
     public void drawNodes_below(GL2 gl) {
         if (!notDrawnForSpeed) drawPoint(gl);
         for (Node child : children) {
-            child.drawPoint(gl);
+            //child.drawPoint(gl);
             child.drawNodes_below(gl); // Recurse down through the tree.
         }
     }
@@ -1215,11 +1235,29 @@ public class Node {
     }
 
     public static Color getColorFromScaledValue(float val, float max, float brightness) {
-        float colorOffset = 0.35f;
+        float colorOffset = 0f;
         float scaledDepth = val / max;
         float H = scaledDepth * 0.38f + colorOffset;
         float S = 0.8f;
         return Color.getHSBColor(H, S, brightness);
+    }
+
+    public void setChildrenColorFromRelativeValues() {
+        Node[] children = getChildren();
+        float minVal = Float.MAX_VALUE;
+        float maxVal = -Float.MAX_VALUE;
+        for (Node child : children) {
+            float avgVal = child.getValue()/child.visitCount.floatValue();
+            if (avgVal < minVal)
+                minVal = avgVal;
+            if (avgVal > maxVal)
+                maxVal = avgVal;
+        }
+
+        for (Node child : children) {
+            float avgVal = child.getValue()/child.visitCount.floatValue();
+            child.nodeColor = getColorFromScaledValue(avgVal - minVal, maxVal - minVal, 1f);
+        }
     }
 
     /**

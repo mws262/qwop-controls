@@ -9,7 +9,7 @@ fractionOfMaxWorkers=1
 bailAfterXGames=30000
 
 # Number of training steps each time new data is fed into the neural network.
-netTrainingStepsPerIter = 10
+netTrainingStepsPerIter = 1000
 
 
 
