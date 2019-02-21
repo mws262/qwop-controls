@@ -20,7 +20,7 @@ public class MAIN_VerifyTFRecords {
 
     public static void main(String[] args) {
 
-        File saveLoc = new File("src/main/resources/saved_data/11_2_18");
+        File saveLoc = new File("src/main/resources/saved_data/training_data");
 
         File[] allFiles = saveLoc.listFiles();
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
