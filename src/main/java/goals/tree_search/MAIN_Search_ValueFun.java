@@ -46,7 +46,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         // Make new tree root and assign to GUI.
         // Assign default available actions.
-        assignAllowableActions(-1);
+        assignAllowableActionsWider(-1);
         Node rootNode = new Node();
         Node.pointsToDraw.clear();
         ui.clearRootNodes();
@@ -93,10 +93,10 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        extraNetworkArgs.add("--activationsout");
 //        extraNetworkArgs.add("softmax");
 
-        TrainableNetwork valueNetwork = TrainableNetwork.makeNewNetwork(
-                "tmp", layerSizes);
-//        TrainableNetwork valueNetwork = new TrainableNetwork(new File("src/main/resources/tflow_models/tmp.pb"));
-//        valueNetwork.loadCheckpoint("chk1");
+//        TrainableNetwork valueNetwork = TrainableNetwork.makeNewNetwork(
+//                "tmp", layerSizes);
+        TrainableNetwork valueNetwork = new TrainableNetwork(new File("src/main/resources/tflow_models/tmp.pb"));
+        valueNetwork.loadCheckpoint("chk1");
 
         for (int k = 0; k < 1000; k++) {
 //            RolloutPolicy_ValueFunction rollout  =

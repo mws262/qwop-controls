@@ -405,7 +405,7 @@ public abstract class MAIN_Search_Template {
      * Will assign a broader set of options for "recovery" at the specified starting depth.
      * Pass -1 to disable this.
      */
-    protected void assignAllowableActions(int recoveryExceptionStart) {
+    public static void assignAllowableActions(int recoveryExceptionStart) {
         /* Space of allowed actions to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
@@ -499,7 +499,7 @@ public abstract class MAIN_Search_Template {
         Node.potentialActionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 
-    protected void assignAllowableActionsWider(int recoveryExceptionStart) {
+    public static void assignAllowableActionsWider(int recoveryExceptionStart) {
         /* Space of allowed actions to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
