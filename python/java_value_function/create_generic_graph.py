@@ -129,7 +129,8 @@ if args.activationsout == "softmax":
     output = tf.nn.softmax(output, name='softmax_activation')
 else:
     output = output_activations(output, name='output_activation')
-    loss = tf.reduce_mean(tf.square(output - output_target), name='loss')
+    loss = tf.identity(tf.losses.huber_loss(output_target, output), name='loss')
+    # loss = tf.reduce_mean(tf.square(output - output_target), name='loss')
 
 output = tf.identity(output, name='output')  # So output gets named correctly in graph definition.
 
@@ -142,3 +143,6 @@ saver_def = tf.train.Saver().as_saver_def()
 
 with open(savepath, 'wb') as f:
     f.write(tf.get_default_graph().as_graph_def().SerializeToString())
+
+sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+

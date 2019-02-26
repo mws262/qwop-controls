@@ -60,9 +60,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 new Action(45,true,false,false,true),
 
                 new Action(10,false,false,false,false),
-                new Action(27,false,true,true,false),
-                new Action(8,false,false,false,false),
-                new Action(20,true,false,false,true),
+//                new Action(27,false,true,true,false),
+//                new Action(8,false,false,false,false),
+               // new Action(20,true,false,false,true),
         });
 
         Node.makeNodesFromActionSequences(alist, rootNode, new GameThreadSafe());
@@ -86,12 +86,11 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         layerSizes.add(128);
         layerSizes.add(64);
         layerSizes.add(32);
-//        layerSizes.add();
         layerSizes.add(1);
-//        layerSizes.add(totalActionCount);
-//        List<String> extraNetworkArgs = new ArrayList<>();
-//        extraNetworkArgs.add("--activationsout");
-//        extraNetworkArgs.add("softmax");
+
+        List<String> extraNetworkArgs = new ArrayList<>();
+        extraNetworkArgs.add("--learnrate");
+        extraNetworkArgs.add("1e-4");
 
 //        TrainableNetwork valueNetwork = TrainableNetwork.makeNewNetwork(
 //                "tmp", layerSizes);
@@ -101,11 +100,11 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         for (int k = 0; k < 1000; k++) {
 //            RolloutPolicy_ValueFunction rollout  =
 //                    new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueNetwork);
-//            rollout.maxRolloutTimesteps = 500;
+//            rollout.maxRolloutTimesteps = 200;
 
-            RolloutPolicy_RandomColdStart rollout = new RolloutPolicy_RandomColdStart(new EvaluationFunction_DeltaDistance());
+            RolloutPolicy_RandomColdStart rollout =
+                    new RolloutPolicy_RandomColdStart(new EvaluationFunction_DeltaDistance());
 
-            // Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Distance(), valueFunction);
             Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout);
 
 
