@@ -6,6 +6,7 @@ import evaluators.IEvaluationFunction;
 import game.GameThreadSafe;
 import tflowtools.TrainableNetwork;
 import tree.Node;
+import value.IValueFunction;
 
 public class RolloutPolicy_ValueFunction extends RolloutPolicy {
 
@@ -14,10 +15,9 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
      */
     public int maxRolloutTimesteps = 100;
 
-    private TrainableNetwork valueFunction;
+    private IValueFunction valueFunction;
 
-    public RolloutPolicy_ValueFunction(IEvaluationFunction evaluationFunction, TrainableNetwork valueFunction) { // TODO
-        // make value functions more generic.
+    public RolloutPolicy_ValueFunction(IEvaluationFunction evaluationFunction, IValueFunction valueFunction) {
         super(evaluationFunction);
         this.valueFunction = valueFunction;
     }
@@ -30,32 +30,8 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
         float[][] values;
         int rolloutTimesteps = 0;
         while (!game.getFailureStatus() && rolloutTimesteps < maxRolloutTimesteps) {
-            // Get values of potential actions from this state (Q policy essentially).
-            float[] st= currentNode.getState().flattenState();
-            for (int i = 0; i < st.length; i++) {
-                state[0][i] = st[i];
-            }
 
-            // Choose an action based on values.
-            ActionSet actionChoices = Node.potentialActionGenerator.getPotentialChildActionSet(currentNode);
-            // TODO decide the best way to select based on values. Right now, just the max value action. Future --
-            //  make it reflect the best region of the action space. Should be more robust that way.
-
-            float maxVal = -Float.MAX_VALUE;
-            Action chosenAction = null;
-//            int chosenIdx = 0; // TODO make sure that it isn't always choosing the same index at the beginning. Could
-            // end up taking a gazillion tiny steps.
-            //System.out.println("new");
-            for (int i = 0; i < actionChoices.size(); i++) {
-                state[0][72] = actionChoices.get(i).getTimestepsTotal();
-                float value = valueFunction.evaluateInput(state)[0][0];
-                //System.out.println(value);
-                if (value > maxVal) {
-                    maxVal = value;
-                    chosenAction = actionChoices.get(i);
-                }
-            }
-            //System.out.println("");
+            Action chosenAction = valueFunction.getMaximizingAction(currentNode);
 
             // For convenience and debugging, make an unattached node for the chosen action.
             currentNode = new Node(currentNode, chosenAction, false);
@@ -70,9 +46,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
         }
 
         // System.out.println("Rollout: " + currentNode.getState().body.getX() + ", " + rolloutTimesteps);
-        return (evaluationFunction.getValue(currentNode) - evaluationFunction.getValue(startNode))/10f;
-        //return evaluationFunction.getValue(currentNode);
-
+        return evaluationFunction.getValue(currentNode) - evaluationFunction.getValue(startNode);
     }
 
     public RolloutPolicy getCopy() {
