@@ -91,7 +91,7 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
     public Stroke mainRunnerStroke = new BasicStroke(1);
 
     /** Should the game be marked as failed if the thighs touch the ground? (happens with knees touching the ground. **/
-    public boolean failOnThighContact = false;
+    public boolean failOnThighContact = true;
 
     /**
      * Make a new game on its own ClassLoader.

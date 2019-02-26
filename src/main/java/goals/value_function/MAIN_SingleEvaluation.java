@@ -101,6 +101,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {
+               // qwop.game.applyBodyImpulse(-3f, 0.001f);
                 qwop.game.step(actionQueue.pollCommand());
                 try {
                     Thread.sleep(40);
