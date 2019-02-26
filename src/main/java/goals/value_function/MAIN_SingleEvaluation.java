@@ -37,8 +37,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         // Fire game update every 40 ms.
         new Timer(40, qwop).start();
 
-        TrainableNetwork valueNetwork = new TrainableNetwork(new File("src/main/resources/tflow_models/tmp.pb"));
-        valueNetwork.loadCheckpoint("chk1");
+        TrainableNetwork valueNetwork = new TrainableNetwork(new File("src/main/resources/tflow_models/tmp3.pb"));
+        valueNetwork.loadCheckpoint("chk3");
 
 
         MAIN_Search_Template.assignAllowableActionsWider(-1);
