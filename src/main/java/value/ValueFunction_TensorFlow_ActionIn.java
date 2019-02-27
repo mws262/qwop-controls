@@ -10,6 +10,23 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * [state, action duration] ----> |NEURAL NET| ----> single scalar value
+ *
+ * This value function evaluates a Node like this:
+ * 1. Get the state from the parent Node.
+ * 2. Get the action leading to this node (i.e. its action).
+ * 3. Concatenate [state, action] and pass to TensorFlow network.
+ * 4. A single scalar value pops out.
+ *
+ * When using it as a controller, given a node:
+ * 1. Take the state at the current node.
+ * 2. Get all possible actions leaving this node.
+ * 3. Concatenate and pass to TensorFlow.
+ * 4. Pick the Action which maximizes the resulting value.
+ *
+ * @author matt
+ */
 public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
 
     private static final int STATE_SIZE = 72;
