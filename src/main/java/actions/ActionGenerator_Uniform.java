@@ -5,7 +5,9 @@ import distributions.Distribution_Equal;
 import tree.Node;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 /**
@@ -52,5 +54,14 @@ public class ActionGenerator_Uniform implements IActionGenerator {
             }
         }
         return as;
+    }
+
+    @Override
+    public Set<Action> getAllPossibleActions() {
+        Set<Action> allActions = new HashSet<>();
+        for (ActionSet as : allActionSets) {
+            allActions.addAll(as);
+        }
+        return allActions;
     }
 }

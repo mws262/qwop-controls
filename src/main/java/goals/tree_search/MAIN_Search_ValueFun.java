@@ -12,6 +12,7 @@ import tree.TreeStage_MaxDepth;
 import tree.TreeWorker;
 import tree.Utility;
 import value.ValueFunction_TensorFlow_ActionIn;
+import value.ValueFunction_TensorFlow_ActionInMulti;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -78,17 +79,23 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         // Make the value function.
         ArrayList<Integer> hiddenLayerSizes = new ArrayList<>();
         hiddenLayerSizes.add(128);
-        hiddenLayerSizes.add(64);
         hiddenLayerSizes.add(32);
 //        List<String> extraNetworkArgs = new ArrayList<>();
 //        extraNetworkArgs.add("--learnrate");
 //        extraNetworkArgs.add("1e-4");
-        ValueFunction_TensorFlow_ActionIn valueFunction = ValueFunction_TensorFlow_ActionIn.makeNew("tmp3",
-                hiddenLayerSizes);
+
+//        ValueFunction_TensorFlow_ActionIn valueFunction = ValueFunction_TensorFlow_ActionIn.makeNew("tmp3",
+//                hiddenLayerSizes);
+        ValueFunction_TensorFlow_ActionInMulti valueFunction = ValueFunction_TensorFlow_ActionInMulti.makeNew(
+                        Node.potentialActionGenerator.getAllPossibleActions(),
+                        "tmpMulti",
+                        hiddenLayerSizes,
+                        new ArrayList<>());
+
 //        valueFunction.loadCheckpoint("chk1");
 
-        valueFunction.trainingStepsPerBatch = netTrainingStepsPerIter;
-        valueFunction.trainingBatchSize = 100;
+//        valueFunction.trainingStepsPerBatch = netTrainingStepsPerIter;
+//        valueFunction.trainingBatchSize = 100;
 
         for (int k = 0; k < 1000; k++) {
 //            RolloutPolicy_ValueFunction rollout  =
@@ -131,8 +138,8 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             }
 
             // Save a checkpoint of the weights/biases.
-            valueFunction.saveCheckpoint("chk3");
-            System.out.println("Saved");
+//            valueFunction.saveCheckpoint("chk3");
+//            System.out.println("Saved");
         }
     }
 }

@@ -57,7 +57,8 @@ public class TrainableNetworkTest {
 
         float[][] outEval = testNetwork.evaluateInput(inputs);
 
-        Assert.assertEquals("Network evaluation didn't come up with a matching result.", outEval[0][1], outputs[0][1], 1e-4);
+        Assert.assertEquals("Network evaluation didn't come up with a matching result.", outEval[0][1], outputs[0][1]
+                , 1e-3);
     }
 
     @Test
