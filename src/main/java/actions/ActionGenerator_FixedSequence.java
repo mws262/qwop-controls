@@ -2,7 +2,7 @@ package actions;
 
 import tree.Node;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * Assigns potential action choices to {@link Node nodes}. This fixed sequence version has an {@link ActionSet} for
@@ -63,5 +63,17 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
         // Otherwise, pick based on cycle.
         return repeatedActions[actionDepth % cycleLength].getCopy();
+    }
+
+    @Override
+    public Set<Action> getAllPossibleActions() {
+        Set<Action> allActions = new HashSet<>();
+        for (ActionSet as : repeatedActions) {
+            allActions.addAll(as);
+        }
+        for (ActionSet as : actionExceptions.values()) {
+            allActions.addAll(as);
+        }
+        return allActions;
     }
 }
