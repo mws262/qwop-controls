@@ -5,11 +5,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+// IF this fails, there's a good chance you don't have python tensorflow installed. Or, "python" calls the
+// wrong version of python for your tensorflow install. The TensorFlow version in the pom.xml should match the
+// version installed to python with pip.
 public class TrainableNetworkTest {
 
     private List<Integer> layerSizes;
@@ -24,8 +26,6 @@ public class TrainableNetworkTest {
         layerSizes.add(5);
         layerSizes.add(2);
 
-        // IF this fails, there's a good chance you don't have python tensorflow installed. Or, "python" calls the
-        // wrong version of python for your tensorflow install.
         testNetwork = TrainableNetwork.makeNewNetwork("unit_test_graph", layerSizes);
         testNetwork.graphDefinition.deleteOnExit(); // Will remove the unit_test_graph.pb file after running.
     }
