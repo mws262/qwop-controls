@@ -8,6 +8,8 @@ import game.GameThreadSafe;
 import goals.tree_search.MAIN_Search_Template;
 import tflowtools.TrainableNetwork;
 import tree.Node;
+import value.ValueFunction_TensorFlow_ActionIn;
+import value.ValueFunction_TensorFlow_ActionInMulti;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,6 +18,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import static goals.tree_search.MAIN_Search_Template.assignAllowableActionsWider;
 
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
@@ -37,11 +41,14 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         // Fire game update every 40 ms.
         new Timer(40, qwop).start();
 
-        TrainableNetwork valueNetwork = new TrainableNetwork(new File("src/main/resources/tflow_models/tmp3.pb"));
-        valueNetwork.loadCheckpoint("chk3");
+//        ValueFunction_TensorFlow_ActionIn valueFunction = new ValueFunction_TensorFlow_ActionIn(new File("src/main/resources/tflow_models/tmp3.pb"));
+//        valueFunction.loadCheckpoint("chk3");
+        assignAllowableActionsWider(-1);
+        ValueFunction_TensorFlow_ActionInMulti valueFunction =
+                ValueFunction_TensorFlow_ActionInMulti.loadExisting(Node.potentialActionGenerator.getAllPossibleActions(), "tmpMulti", "src/main/resources/tflow_models/");
+        valueFunction.loadCheckpoints("chk");
 
-
-        MAIN_Search_Template.assignAllowableActionsWider(-1);
+        assignAllowableActionsWider(-1);
         Node rootNode = new Node();
 
         List<Action[]> alist = new ArrayList<>();
@@ -79,26 +86,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
         float[][] state = new float[1][73];
         while (!qwop.game.getFailureStatus()) {
-            float[] st= currNode.getState().flattenState();
-            for (int i = 0; i < st.length; i++) {
-                state[0][i] = st[i];
-            }
-            ActionSet actionChoices = currNode.uncheckedActions;
-            float maxVal = -Float.MAX_VALUE;
-            Action chosenAction = null;
-//            int chosenIdx = 0; // TODO make sure that it isn't always choosing the same index at the beginning. Could
-            // end up taking a gazillion tiny steps.
-            //System.out.println("new");
-            for (int i = 0; i < actionChoices.size(); i++) {
-                state[0][72] = actionChoices.get(i).getTimestepsTotal();
-                float value = valueNetwork.evaluateInput(state)[0][0];
-                System.out.println(value);
-                if (value > maxVal) {
-                    maxVal = value;
-                    chosenAction = actionChoices.get(i);
-                }
-            }
 
+            Action chosenAction = valueFunction.getMaximizingAction(currNode);
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {
                // qwop.game.applyBodyImpulse(-3f, 0.001f);
@@ -112,17 +101,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
             currNode = currNode.addChild(chosenAction);
             currNode.setState(qwop.game.getCurrentState());
         }
-
-
-
-
-
-
-
-
-
-
     }
+
     @Override
     public void paint(Graphics g) {
         super.paint(g);

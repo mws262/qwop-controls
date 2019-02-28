@@ -45,7 +45,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         // Make new tree root and assign to GUI.
         // Assign default available actions.
-        assignAllowableActionsWider(-1);
+        assignAllowableActions(-1);
         Node rootNode = new Node();
         Node.pointsToDraw.clear();
         ui.clearRootNodes();
@@ -137,9 +137,11 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 n.nodeLabelAlt = String.format("%.2f", valueFunction.evaluate(n));
             }
 
-            // Save a checkpoint of the weights/biases.
-//            valueFunction.saveCheckpoint("chk3");
-//            System.out.println("Saved");
+//             Save a checkpoint of the weights/biases.
+            if (k % 20 == 0) {
+                valueFunction.saveCheckpoints("chk");
+                System.out.println("Saved");
+            }
         }
     }
 }
