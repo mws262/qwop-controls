@@ -30,7 +30,7 @@ import static game.GameConstants.*;
  * @author matt
  */
 @SuppressWarnings("Duplicates")
-public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
+public class GameThreadSafe extends ClassLoader implements IGame {
     /**
      * Number of timesteps in this game.
      */
@@ -247,6 +247,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
             findClass("org.jbox2d.dynamics.joints.GearJoint");
             findClass("org.jbox2d.dynamics.joints.ConstantVolumeJointDef");
             findClass("org.jbox2d.dynamics.joints.ConstantVolumeJoint");
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -344,24 +346,6 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
             e.printStackTrace();
         }
         return boxShapeDef;
-    }
-
-    /**
-     * Convenience method to avoid dealing with reflection in the code constantly.
-     */
-    private Object makeCircleShapeDef(float radius, float restitution, float friction, float density, int groupIdx) {
-        Object circleShapeDef = null;
-        try {
-            circleShapeDef = _CircleDef.getDeclaredConstructor().newInstance();
-            circleShapeDef.getClass().getField("radius").setFloat(null, radius);
-            circleShapeDef.getClass().getField("friction").setFloat(null, friction);
-            circleShapeDef.getClass().getField("density").setFloat(null, density);
-            circleShapeDef.getClass().getField("restitution").setFloat(null, restitution);
-            circleShapeDef.getClass().getField("groupIndex").setInt(null, groupIdx);
-        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return circleShapeDef;
     }
 
     /**
@@ -636,6 +620,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
 
 
             world.getClass().getMethod("setContactListener", _ContactListener).invoke(world, contactListenerProxy);
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -832,6 +818,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                 isFailed = true;
             }
             timestepsSimulated++;
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -870,7 +858,9 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                     getCurrentBodyState(rLArmBody),
                     getCurrentBodyState(lLArmBody),
                     getFailureStatus());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            throw e;
+        }  catch (Exception e) {
             e.printStackTrace();
         }
         return st;
@@ -963,6 +953,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
             transforms[11] = getXForm(st.llarm);
             transforms[12] = getXForm(new StateVariable(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
             // Offset by 20 because its now a box.
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1075,6 +1067,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                 g.drawString("_", ((-(int) (scaling * currTorsoPos) - i * 70) % markingWidth) + markingWidth,
                         yOffset + (int) (scaling * 9.2f));
             }
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1147,6 +1141,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                     System.out.println("Shape type unknown.");
                 }
             }
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }

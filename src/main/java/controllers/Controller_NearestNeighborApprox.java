@@ -38,9 +38,7 @@ import tree.Utility;
  *
  * @author matt
  */
-public class Controller_NearestNeighborApprox implements IController, Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Controller_NearestNeighborApprox implements IController {
 
     /**
      *
@@ -71,7 +69,6 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
      *
      */
     private boolean enableVoting = false;
-    private int numTopMatchesToConsider = 100;
 
     /**
      *
@@ -160,9 +157,10 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
             Iterator<Float> iter = topMatches.keySet().iterator();
             float keySum = 0;
             float[] keysWeighted = new float[4];
-            while (iter.hasNext()) {
-                Float k = iter.next();
-                StateHolder v = topMatches.get(k);
+
+            for (Map.Entry<Float, StateHolder> entry : topMatches.entrySet()) {
+                Float k = entry.getKey();
+                StateHolder v = entry.getValue();
 
                 float multiplier = 1f / Float.max(k, Float.MIN_VALUE);
                 keySum += multiplier;
@@ -390,7 +388,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
     /**
      * @author matt
      */
-    public class StateHolder implements Serializable {
+    public static class StateHolder implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
@@ -421,7 +419,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
     /**
      * @author matt
      */
-    public class RunHolder implements Serializable {
+    public static class RunHolder implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
@@ -440,7 +438,7 @@ public class Controller_NearestNeighborApprox implements IController, Serializab
         }
     }
 
-    public class DecisionHolder implements Serializable {
+    public static class DecisionHolder implements Serializable {
 
         private static final long serialVersionUID = 8L;
 

@@ -492,6 +492,8 @@ public abstract class MAIN_Search_Template {
                     case 3:
                         actionExceptions.put(recoveryExceptionStart + i, actionSetQP);
                         break;
+                    default:
+                        throw new IllegalStateException("unknown sequence position.");
                 }
             }
         }
@@ -594,6 +596,8 @@ public abstract class MAIN_Search_Template {
                     case 3:
                         actionExceptions.put(recoveryExceptionStart + i, actionSetQP);
                         break;
+                    default:
+                        throw new RuntimeException("unknown sequence position.");
                 }
             }
         }

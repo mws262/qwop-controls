@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.tensorflow.Graph;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
@@ -48,6 +49,7 @@ public class Transform_Autoencoder implements ITransform {
      * @param filename Full path/filename of the TensorFlow model
      * @param outputSize Dimension of the output (i.e. how many numbers the state is reduced to.
      */
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "Null pointer is caught.")
     public Transform_Autoencoder(String filename, int outputSize) {
         this.outputSize = outputSize;
         byte[] graphDef = null;

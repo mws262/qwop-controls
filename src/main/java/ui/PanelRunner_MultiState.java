@@ -84,9 +84,11 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
                 offset[0], offset[1], Color.BLACK, boldStroke);
 
         // Draw secondary states, if any.
-        for (State st : secondaryStates.keySet()) {
+        for (Map.Entry<State, Color> entry : secondaryStates.entrySet()) {
+            State st = entry.getKey();
+            Color col = entry.getValue();
             game.drawExtraRunner(g2, game.getXForms(st), "", runnerScaling,
-                    offset[0], offset[1], secondaryStates.get(st), normalStroke);
+                    offset[0], offset[1], col, normalStroke);
         }
 
         //This draws the "road" markings to show that the ground is moving relative to the dude.

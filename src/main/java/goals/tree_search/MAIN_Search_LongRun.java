@@ -32,17 +32,17 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
 
     public void doGames() {
         // Load all parameters specific to this search.
-        Sampler_UCB.explorationMultiplier = Float.valueOf(properties.getProperty("UCBExplorationMultiplier", "1"));
-        boolean doStage1 = Boolean.valueOf(properties.getProperty("doStage1", "false"));
-        boolean doStage2 = Boolean.valueOf(properties.getProperty("doStage2", "false"));
+        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
+        boolean doStage1 = Boolean.parseBoolean(properties.getProperty("doStage1", "false"));
+        boolean doStage2 = Boolean.parseBoolean(properties.getProperty("doStage2", "false"));
 
         // Stage 1 - searching
-        int runsToGenerate = Integer.valueOf(properties.getProperty("runsToGenerate", "1"));
-        int getToSteadyDepth = Integer.valueOf(properties.getProperty("getToSteadyDepth", "18")); // Stage terminates
+        int runsToGenerate = Integer.parseInt(properties.getProperty("runsToGenerate", "1"));
+        int getToSteadyDepth = Integer.parseInt(properties.getProperty("getToSteadyDepth", "18")); // Stage terminates
         // after any part of the tree reaches this depth.
-        float maxWorkerFraction1 = Float.valueOf(properties.getProperty("fractionOfMaxWorkers1", "1")); // Fraction
+        float maxWorkerFraction1 = Float.parseFloat(properties.getProperty("fractionOfMaxWorkers1", "1")); // Fraction
         // of the maximum workers used for this stage.
-        int bailAfterXGames1 = Integer.valueOf(properties.getProperty("bailAfterXGames1", "1000000")); // Stop stage
+        int bailAfterXGames1 = Integer.parseInt(properties.getProperty("bailAfterXGames1", "1000000")); // Stop stage
         // 1 after this many games even if we don't reach the goal depth.
         String fileSuffix1 = properties.getProperty("fileSuffix1", "");
 
@@ -50,7 +50,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
 
         // Stage 2 saving
         int trimStartBy = 0;
-        int trimEndBy = Integer.valueOf(properties.getProperty("trimEndBy", "4"));
+        int trimEndBy = Integer.parseInt(properties.getProperty("trimEndBy", "4"));
 
         ///////////////////////////////////////////////////////////
 

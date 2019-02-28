@@ -11,7 +11,6 @@ import tree.Node;
 import tree.TreeStage_MaxDepth;
 import tree.TreeWorker;
 import tree.Utility;
-import value.ValueFunction_TensorFlow_ActionIn;
 import value.ValueFunction_TensorFlow_ActionInMulti;
 
 import java.io.File;
@@ -34,11 +33,11 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
     public void doGames() {
 
         // Load parameters from config file.
-        Sampler_UCB.explorationMultiplier = Float.valueOf(properties.getProperty("UCBExplorationMultiplier", "1"));
-        float maxWorkerFraction = Float.valueOf(properties.getProperty("fractionOfMaxWorkers", "1"));
-        int bailAfterXGames = Integer.valueOf(properties.getProperty("bailAfterXGames", "100000"));
-        int getToSteadyDepth = Integer.valueOf(properties.getProperty("getToSteadyDepth", "100"));
-        int netTrainingStepsPerIter = Integer.valueOf(properties.getProperty("netTrainingStepsPerIter", "20"));
+        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
+        float maxWorkerFraction = Float.parseFloat(properties.getProperty("fractionOfMaxWorkers", "1"));
+        int bailAfterXGames = Integer.parseInt(properties.getProperty("bailAfterXGames", "100000"));
+        int getToSteadyDepth = Integer.parseInt(properties.getProperty("getToSteadyDepth", "100"));
+        int netTrainingStepsPerIter = Integer.parseInt(properties.getProperty("netTrainingStepsPerIter", "20"));
 
 
         int numWorkersToUse = (int) Math.max(1, maxWorkerFraction * maxWorkers);

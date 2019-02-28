@@ -1,5 +1,7 @@
 package data;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.io.*;
 import java.util.*;
 
@@ -58,6 +60,8 @@ public class SavableFileIO<T> {
      * @param file Saved file to load from.
      * @param collection Collection (e.g. {@link java.util.List}, {@link java.util.Set}) to put the loaded objects in.
      */
+    @SuppressFBWarnings(value="IL_INFINITE_LOOP", justification = "Recommended approach. objIs.available() doesn't " +
+            "work.")
     public void loadObjectsToCollection(File file, Collection<T> collection) {
         int counter = 0;
         try (FileInputStream fin = new FileInputStream(file); ObjectInputStream objIs = new ObjectInputStream(fin)) {

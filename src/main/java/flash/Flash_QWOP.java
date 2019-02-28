@@ -74,6 +74,8 @@ public class Flash_QWOP extends JFrame {
                 case "flashTime":
                     currentTime = Float.valueOf((String) e.getParameters()[0]);
                     break;
+                default:
+                    throw new IllegalStateException("Unknown command registered.");
             }
         });
 

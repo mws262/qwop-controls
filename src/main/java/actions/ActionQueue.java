@@ -59,7 +59,7 @@ public class ActionQueue {
      *
      * @return Next full action that will run (i.e. timings and keys). Returns null if no future actions remain.
      */
-    public Action peekNextAction() {
+    public synchronized Action peekNextAction() {
         if (isEmpty()) throw new IndexOutOfBoundsException("No actions have been added to this queue. " +
                 "Cannot peek.");
         return actionQueue.peek();
@@ -70,7 +70,7 @@ public class ActionQueue {
      *
      * @return Next QWOP keypresses as a boolean array. True is pressed, false is not pressed.
      */
-    public boolean[] peekCommand() {
+    public synchronized boolean[] peekCommand() {
         if (currentAction == null) throw new IndexOutOfBoundsException("No current action in the queue for us to peek" +
                 " at.");
 

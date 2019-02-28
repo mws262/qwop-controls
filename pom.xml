@@ -115,6 +115,19 @@ To update the classpath settings for Eclipse:
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>2.8</version>
             </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>3.1.10</version>
+                <dependencies>
+                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                    <dependency>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs</artifactId>
+                        <version>3.1.11</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
     <repositories>
@@ -289,5 +302,11 @@ To update the classpath settings for Eclipse:
             <version>3.8.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <version>3.1.11</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>

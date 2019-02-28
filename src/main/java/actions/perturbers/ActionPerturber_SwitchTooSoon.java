@@ -45,10 +45,11 @@ public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
     public ActionQueue perturb(ActionQueue unperturbedQueue) {
         Action[] allActions = unperturbedQueue.getActionsInCurrentRun();
 
-        for (Integer actionIdx : perturbationIndexAndSize.keySet()) {
+        for (Map.Entry<Integer, Integer> entry : perturbationIndexAndSize.entrySet()) {
+            int actionIdx = entry.getKey();
             if (actionIdx < allActions.length) {
 
-                int perturbationSize = Integer.min(perturbationIndexAndSize.get(actionIdx),
+                int perturbationSize = Integer.min(entry.getValue(),
                         allActions[actionIdx - 1].getTimestepsTotal() - 1); // Perturbations must leave at least one
                 // command in the previous Action.
 

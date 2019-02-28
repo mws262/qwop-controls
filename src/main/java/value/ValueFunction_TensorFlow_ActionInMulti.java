@@ -90,14 +90,18 @@ public class ValueFunction_TensorFlow_ActionInMulti implements IValueFunction {
     @Override
     public void update(List<Node> nodes) {
         // Update the value function for each of the different keys.
-        for (KeyCombination keys : allValueFunctions.keySet()) {
+
+        for (Map.Entry<KeyCombination, ValueFunction_TensorFlow_ActionIn> entry : allValueFunctions.entrySet()) {
+            KeyCombination keys = entry.getKey();
+            ValueFunction_TensorFlow_ActionIn valFun = entry.getValue();
+
             List<Node> thisKeyNodes = new ArrayList<>();
             for (Node n : nodes) {
                 if (getKeyCombination(n.getAction().peek()) == keys) {
                     thisKeyNodes.add(n);
                 }
             }
-            allValueFunctions.get(keys).update(thisKeyNodes);
+            valFun.update(thisKeyNodes);
         }
     }
 
@@ -107,8 +111,8 @@ public class ValueFunction_TensorFlow_ActionInMulti implements IValueFunction {
      */
     public void loadCheckpoints(String checkpointPrefix) {
         assert !checkpointPrefix.isEmpty();
-        for (KeyCombination keys : allValueFunctions.keySet()) {
-            allValueFunctions.get(keys).loadCheckpoint(checkpointPrefix + keys.name());
+        for (Map.Entry<KeyCombination, ValueFunction_TensorFlow_ActionIn> entry : allValueFunctions.entrySet()) {
+            entry.getValue().loadCheckpoint(checkpointPrefix + entry.getKey().name());
         }
     }
 
@@ -118,8 +122,8 @@ public class ValueFunction_TensorFlow_ActionInMulti implements IValueFunction {
      */
     public void saveCheckpoints(String checkpointPrefix) {
         assert !checkpointPrefix.isEmpty();
-        for (KeyCombination keys : allValueFunctions.keySet()) {
-            allValueFunctions.get(keys).saveCheckpoint(checkpointPrefix + keys.name());
+        for (Map.Entry<KeyCombination, ValueFunction_TensorFlow_ActionIn> entry : allValueFunctions.entrySet()) {
+            entry.getValue().saveCheckpoint(checkpointPrefix + entry.getKey().name());
         }
     }
 

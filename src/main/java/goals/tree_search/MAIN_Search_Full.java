@@ -34,31 +34,31 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
     public void doGames() {
 
         // Load all parameters specific to this search.
-        Sampler_UCB.explorationMultiplier = Float.valueOf(properties.getProperty("UCBExplorationMultiplier", "1"));
-        boolean doStage1 = Boolean.valueOf(properties.getProperty("doStage1", "false"));
-        boolean doStage2 = Boolean.valueOf(properties.getProperty("doStage2", "false"));
-        boolean doStage3 = Boolean.valueOf(properties.getProperty("doStage3", "false"));
-        boolean doStage4 = Boolean.valueOf(properties.getProperty("doStage4", "false"));
+        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
+        boolean doStage1 = Boolean.parseBoolean(properties.getProperty("doStage1", "false"));
+        boolean doStage2 = Boolean.parseBoolean(properties.getProperty("doStage2", "false"));
+        boolean doStage3 = Boolean.parseBoolean(properties.getProperty("doStage3", "false"));
+        boolean doStage4 = Boolean.parseBoolean(properties.getProperty("doStage4", "false"));
 
-        boolean autoResume = Boolean.valueOf(properties.getProperty("autoResume", "true")); // If true, overrides the
+        boolean autoResume = Boolean.parseBoolean(properties.getProperty("autoResume", "true")); // If true, overrides the
         // recoveryResumePoint and looks at which files have been completed.
 
         // Stage 1
-        int getToSteadyDepth = Integer.valueOf(properties.getProperty("getToSteadyDepth", "18")); // Stage terminates
+        int getToSteadyDepth = Integer.parseInt(properties.getProperty("getToSteadyDepth", "18")); // Stage terminates
         // after any part of the tree reaches this depth.
-        float maxWorkerFraction1 = Float.valueOf(properties.getProperty("fractionOfMaxWorkers1", "1")); // Fraction
+        float maxWorkerFraction1 = Float.parseFloat(properties.getProperty("fractionOfMaxWorkers1", "1")); // Fraction
         // of the maximum workers used for this stage.
-        int bailAfterXGames1 = Integer.valueOf(properties.getProperty("bailAfterXGames1", "1000000")); // Stop stage
+        int bailAfterXGames1 = Integer.parseInt(properties.getProperty("bailAfterXGames1", "1000000")); // Stop stage
         // 1 after this many games even if we don't reach the goal depth.
         String fileSuffix1 = properties.getProperty("fileSuffix1", "");
 
         String filename1 = "steadyRunPrefix" + fileSuffix1;
 
         // Stage 2
-        int trimSteadyBy = Integer.valueOf(properties.getProperty("trimSteadyBy", "7"));
-        int deviationDepth = Integer.valueOf(properties.getProperty("deviationDepth", "2"));
-        float maxWorkerFraction2 = Float.valueOf(properties.getProperty("fractionOfMaxWorkers2", "1"));
-        int bailAfterXGames2 = Integer.valueOf(properties.getProperty("bailAfterXGames2", "1000000")); // Stop stage
+        int trimSteadyBy = Integer.parseInt(properties.getProperty("trimSteadyBy", "7"));
+        int deviationDepth = Integer.parseInt(properties.getProperty("deviationDepth", "2"));
+        float maxWorkerFraction2 = Float.parseFloat(properties.getProperty("fractionOfMaxWorkers2", "1"));
+        int bailAfterXGames2 = Integer.parseInt(properties.getProperty("bailAfterXGames2", "1000000")); // Stop stage
         // 1 after this many games even if we don't reach the goal depth.
         String fileSuffix2 = properties.getProperty("fileSuffix2", "");
 
@@ -66,18 +66,18 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 
         // Stage 3
         int stage3StartDepth = getToSteadyDepth - trimSteadyBy + deviationDepth;
-        int recoveryResumePoint = Integer.valueOf(properties.getProperty("resumePoint", "0")); // Return here if
+        int recoveryResumePoint = Integer.parseInt(properties.getProperty("resumePoint", "0")); // Return here if
         // we're restarting.
-        int getBackToSteadyDepth = Integer.valueOf(properties.getProperty("recoveryActions", "14")); // This many
+        int getBackToSteadyDepth = Integer.parseInt(properties.getProperty("recoveryActions", "14")); // This many
         // moves to recover.
-        float maxWorkerFraction3 = Float.valueOf(properties.getProperty("fractionOfMaxWorkers3", "1"));
-        int bailAfterXGames3 = Integer.valueOf(properties.getProperty("bailAfterXGames3", "100000")); // Stop stage 1
+        float maxWorkerFraction3 = Float.parseFloat(properties.getProperty("fractionOfMaxWorkers3", "1"));
+        int bailAfterXGames3 = Integer.parseInt(properties.getProperty("bailAfterXGames3", "100000")); // Stop stage 1
         // after this many games even if we don't reach the goal depth.
 
         String fileSuffix3 = properties.getProperty("fileSuffix3", "");
 
         // Stage 4
-        int trimEndBy = Integer.valueOf(properties.getProperty("trimEndBy", "4"));
+        int trimEndBy = Integer.parseInt(properties.getProperty("trimEndBy", "4"));
 
         ///////////////////////////////////////////////////////////
 
