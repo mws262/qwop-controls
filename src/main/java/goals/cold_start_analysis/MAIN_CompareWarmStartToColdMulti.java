@@ -54,7 +54,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
                         coldStartGameIter.remove();
                     } else {
                         runnerPanel.addSecondaryState(st, Node.getColorFromScaledValue(count,
-                                actionQueue.getActionsInCurrentRun().length / 5, 0.8f));
+                                actionQueue.getActionsInCurrentRun().length / (float) 5, 0.8f));
                         count++;
                     }
                 }

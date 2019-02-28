@@ -10,8 +10,8 @@ public class Client {
     /**
      * Server details.
      */
-    private final String server = "localhost";
-    private final int port = 50000; // 50000 - 50100 currently open on router at home.
+    private static final String server = "localhost";
+    private static final int port = 50000; // 50000 - 50100 currently open on router at home.
 
 
     private Socket socket;

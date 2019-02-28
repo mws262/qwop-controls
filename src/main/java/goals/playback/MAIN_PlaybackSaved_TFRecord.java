@@ -91,6 +91,9 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            Objects.requireNonNull(dataSeries, "TFRecord files were not successfully loaded.");
+
             System.out.println("Read " + dataSeries.size() + " runs from file " + tfrecordFile + ".");
             Collections.shuffle(dataSeries);
 

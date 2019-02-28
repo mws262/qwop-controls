@@ -2,20 +2,15 @@ package goals.value_function;
 
 import actions.Action;
 import actions.ActionQueue;
-import actions.ActionSet;
-import game.GameSingleThreadWithDraw;
+import game.GameSingleThread;
 import game.GameThreadSafe;
-import goals.tree_search.MAIN_Search_Template;
-import tflowtools.TrainableNetwork;
 import tree.Node;
-import value.ValueFunction_TensorFlow_ActionIn;
 import value.ValueFunction_TensorFlow_ActionInMulti;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +19,7 @@ import static goals.tree_search.MAIN_Search_Template.assignAllowableActionsWider
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
-    GameSingleThreadWithDraw game = new GameSingleThreadWithDraw();
+    GameSingleThread game = GameSingleThread.getInstance();
 
 
     public static void main(String[] args) {
@@ -84,7 +79,6 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
         Node currNode = leaf.get(0);
 
-        float[][] state = new float[1][73];
         while (!qwop.game.getFailureStatus()) {
 
             Action chosenAction = valueFunction.getMaximizingAction(currNode);

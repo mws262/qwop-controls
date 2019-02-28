@@ -42,15 +42,17 @@ public class ActionPerturber_MissingTimesteps implements IActionPerturber{
     public ActionQueue perturb(ActionQueue unperturbedQueue) {
         Action[] allActions = unperturbedQueue.getActionsInCurrentRun();
 
-        for (Integer actionIdx : perturbationIndexAndSize.keySet()) {
+        for (Map.Entry<Integer, Integer> entry : perturbationIndexAndSize.entrySet()) {
+            int actionIdx = entry.getKey();
             if (actionIdx < allActions.length) {
                 int durationReduction = Integer.min(allActions[actionIdx].getTimestepsTotal() - 1,
-                        perturbationIndexAndSize.get(actionIdx)); // Must leave at least 1 element.
+                        entry.getValue()); // Must leave at least 1 element.
                 Action replacementAction = new Action(allActions[actionIdx].getTimestepsTotal() - durationReduction,
                         allActions[actionIdx].peek());
                 allActions[actionIdx] = replacementAction;
             }
         }
+
         ActionQueue perturbedActionQueue = new ActionQueue();
         perturbedActionQueue.addSequence(allActions);
         return perturbedActionQueue;

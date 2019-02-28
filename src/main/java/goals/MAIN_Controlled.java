@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -22,7 +21,6 @@ import actions.Action;
 import actions.ActionQueue;
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
-import controllers.Controller_Tensorflow_ClassifyActionsPerTimestep;
 import controllers.IController;
 import data.SavableActionSequence;
 import data.SavableFileIO;
@@ -91,7 +89,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
                 System.out.println("Found save file: " + f.getName());
                 //if (count < 20) {
-                    exampleDataFiles.add(f);
+                exampleDataFiles.add(f);
                 //}
 
                 count++;
@@ -133,14 +131,14 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         setVisible(true);
         repaint();
 
-        // Save a progress log before shutting down.
-        if (doScreenCapture) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                screenCap.finalize();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }));
+//        // Save a progress log before shutting down.
+//        if (doScreenCapture) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//            try {
+//                screenCap.finalize();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }));
     }
 
     public void doControlled() {
@@ -186,7 +184,6 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             System.out.println(state.body.getX());
             Action nextAction = controller.policy(state);
             actionQueue.addAction(nextAction);
-            Random rand = new Random();
             while (!actionQueue.isEmpty()) {
 //                game.applyBodyImpulse(rand.nextFloat() - 0.5f, rand.nextFloat() - 0.5f);
 //                game.applyBodyTorque(-2f);
@@ -243,17 +240,15 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         public void paintComponent(Graphics g) {
             if (!game.isGameInitialized()) return;
             super.paintComponent(g);
-            if (game != null) {
-                /* Runner coordinates to pixels. */
-                float runnerScaling = 25f;
-                int yOffsetPixels = 450; // Drawing offsets within the viewing panel (i.e. non-physical).
-                int xOffsetPixels = 675;
-                controller.draw(g, game, runnerScaling, xOffsetPixels - (int) (runnerScaling * 2.5f), yOffsetPixels); // Optionally, the controller may want to draw some stuff for debugging.
-                game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
+            /* Runner coordinates to pixels. */
+            float runnerScaling = 25f;
+            int yOffsetPixels = 450; // Drawing offsets within the viewing panel (i.e. non-physical).
+            int xOffsetPixels = 675;
+            controller.draw(g, game, runnerScaling, xOffsetPixels - (int) (runnerScaling * 2.5f), yOffsetPixels); // Optionally, the controller may want to draw some stuff for debugging.
+            game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
 
-                //				keyDrawer(g, Q, W, O, P);
-                //				drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
-            }
+            //				keyDrawer(g, Q, W, O, P);
+            //				drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
         }
     }
 
@@ -267,6 +262,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             Action[] actsOut = new Action[actsConsolidated.size()];
             SavableActionSequence actionSequence = new SavableActionSequence(actsConsolidated.toArray(actsOut));
             List<SavableActionSequence> actionList = new ArrayList<>();
+            actionList.add(actionSequence);
             File saveFile = new File(savePath + "actions_" + Utility.getTimestamp() +
                     ".SavableActionSequence");
             actionSaver.storeObjects(actionList, saveFile, false);

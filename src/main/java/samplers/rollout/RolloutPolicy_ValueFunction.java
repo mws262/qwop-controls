@@ -1,10 +1,8 @@
 package samplers.rollout;
 
 import actions.Action;
-import actions.ActionSet;
 import evaluators.IEvaluationFunction;
 import game.GameThreadSafe;
-import tflowtools.TrainableNetwork;
 import tree.Node;
 import value.IValueFunction;
 
@@ -26,8 +24,6 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
     @Override
     public float rollout(Node startNode, GameThreadSafe game) {
         Node currentNode = startNode;
-        float[][] state = new float[1][73];
-        float[][] values;
         int rolloutTimesteps = 0;
         while (!game.getFailureStatus() && rolloutTimesteps < maxRolloutTimesteps) {
 

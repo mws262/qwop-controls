@@ -8,6 +8,7 @@ import java.util.List;
 
 import actions.Action;
 import com.google.common.primitives.Floats;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.tensorflow.*;
 
 import game.State;
@@ -36,6 +37,7 @@ public abstract class TensorflowLoader {
      * @param pbFile    Name of the graph save file (usually *.pb), including the file extension.
      * @param directory Directory name containing the graph save file.
      */
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "Null pointer exception is caught.")
     public TensorflowLoader(String pbFile, String directory) {
         System.out.println("Tensorflow version: " + TensorFlow.version());
         byte[] graphDef = null;
@@ -44,6 +46,7 @@ public abstract class TensorflowLoader {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         if (graphDef == null)
             throw new NullPointerException("TensorFlow graph was not successfully loaded.");
 

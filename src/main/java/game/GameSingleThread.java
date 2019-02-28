@@ -15,12 +15,12 @@ import org.jbox2d.dynamics.contacts.ContactResult;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
+import java.awt.*;
+
 import static game.GameConstants.*;
 
 /**
- * '
- * NOTE: PREFER {@link GameThreadSafe} OVER THIS IMPLEMENTATION.
- * <p>
+ * NOTE: There can only be one of these! Call getInstance() to retrieve it.
  * This creates the QWOP game using the Box2D library. This operates on the primary classloader. This means that
  * multiple instances of this class will interfere with others due to static information inside Box2D.
  * {@link GameThreadSafe} uses a separate classloader for each instance and can be done in multithreaded applications.
@@ -32,9 +32,15 @@ import static game.GameConstants.*;
 public class GameSingleThread implements IGame {
 
     /**
+     * This is the only instance of the single threaded game allowed. If multiple copies run, they interfere. Run
+     * {@link GameSingleThread#getInstance()}
+     */
+    private static GameSingleThread instance;
+
+    /**
      * Keep track of sim stats since beginning of execution.
      **/
-    private static long timestepsSimulated = 0;
+    private long timestepsSimulated = 0;
 
     /**
      * Box2D world to be populated for QWOP.
@@ -66,7 +72,7 @@ public class GameSingleThread implements IGame {
     /**
      * Filters collisions. Prevents body parts from hitting other body parts.
      **/
-    private final int BODY_GROUP = -1;
+    private static final int BODY_GROUP = -1;
 
     /**
      * Gravity vector. Positive since -y is up.
@@ -143,12 +149,10 @@ public class GameSingleThread implements IGame {
             rLArmMassData = new MassData(),
             lLArmMassData = new MassData();
 
-    private static boolean hasOneTimeInitializationHappened = false;
-
     /**
      * Initial runner state.
      **/
-    private static final State initState = new GameSingleThread().getCurrentState(); // Make sure this stays below all
+    private static State initState;
     // the other static assignments to avoid null pointers.
 
     /** Can turn off feet (just leg stumps) for trying stuff out. **/
@@ -158,16 +162,32 @@ public class GameSingleThread implements IGame {
     private CollisionListener collisionListener = new CollisionListener();
 
     /** Should the game be marked as failed if the thighs touch the ground? (happens with knees touching the ground. **/
-    public boolean failOnThighContact = false;
+    public static boolean failOnThighContact = false;
 
-    public GameSingleThread() {
-        if (!hasOneTimeInitializationHappened) {
-            oneTimeSetup();
-            hasOneTimeInitializationHappened = true;
-        }
-        makeNewWorld();
+    /**
+     * Normal stroke for line drawing.
+     **/
+    private static final Stroke normalStroke = new BasicStroke(0.5f);
+
+    // Make the single instance of this game!
+    static {
+        instance = new GameSingleThread();
     }
 
+    private GameSingleThread() {
+        oneTimeSetup();
+        makeNewWorld();
+        initState = getCurrentState(); // Make sure this stays below all
+    }
+
+    /**
+     * This is how you actually get the single-threaded game. This is the singleton pattern, i.e. only one instance
+     * of this class should ever exist.
+     * @return The single instance of this class.
+     */
+    public static GameSingleThread getInstance() {
+        return instance;
+    }
     /**
      * Call once to initialize a lot of shape definitions which only need to be created once.
      **/
@@ -858,11 +878,123 @@ public class GameSingleThread implements IGame {
     }
 
     @SuppressWarnings("WeakerAccess")
-    class VertHolder {
+    static class VertHolder {
         public float torsoX;
         public float groundHeight;
         public float[][] bodyVerts = new float[11][8];
         public float[] headLocAndRadius = new float[3];
+    }
+
+    /**
+     * Draw this game's runner. Must provide scaling from game units to pixels, as well as pixel offsets in x and y.
+     **/
+    public void draw(Graphics g, float scaling, int xOffset, int yOffset) {
+
+        Body newBody = getWorld().getBodyList();
+        while (newBody != null) {
+            int xOffsetPixels = -(int) (scaling * torsoBody.getPosition().x) + xOffset; // Basic offset, plus centering x on torso.
+            Shape newfixture = newBody.getShapeList();
+
+            while (newfixture != null) {
+
+                // Most links are polygon shapes
+                if (newfixture.getType() == ShapeType.POLYGON_SHAPE) {
+
+                    PolygonShape newShape = (PolygonShape) newfixture;
+                    Vec2[] shapeVerts = newShape.m_vertices;
+                    for (int k = 0; k < newShape.m_vertexCount; k++) {
+
+                        XForm xf = newBody.getXForm();
+                        Vec2 ptA = XForm.mul(xf, shapeVerts[k]);
+                        Vec2 ptB = XForm.mul(xf, shapeVerts[(k + 1) % (newShape.m_vertexCount)]);
+                        g.drawLine((int) (scaling * ptA.x) + xOffsetPixels,
+                                (int) (scaling * ptA.y) + yOffset,
+                                (int) (scaling * ptB.x) + xOffsetPixels,
+                                (int) (scaling * ptB.y) + yOffset);
+                    }
+                } else if (newfixture.getType() == ShapeType.CIRCLE_SHAPE) { // Basically just head
+                    CircleShape newShape = (CircleShape) newfixture;
+                    float radius = newShape.m_radius;
+                    g.drawOval((int) (scaling * (newBody.getPosition().x - radius) + xOffsetPixels),
+                            (int) (scaling * (newBody.getPosition().y - radius) + yOffset),
+                            (int) (scaling * radius * 2),
+                            (int) (scaling * radius * 2));
+
+                } else if (newfixture.getType() == ShapeType.EDGE_SHAPE) { // The track.
+
+                    EdgeShape newShape = (EdgeShape) newfixture;
+                    XForm trans = newBody.getXForm();
+
+                    Vec2 ptA = XForm.mul(trans, newShape.getVertex1());
+                    Vec2 ptB = XForm.mul(trans, newShape.getVertex2());
+                    Vec2 ptC = XForm.mul(trans, newShape.getVertex2());
+
+                    g.drawLine((int) (scaling * ptA.x) + xOffsetPixels,
+                            (int) (scaling * ptA.y) + yOffset,
+                            (int) (scaling * ptB.x) + xOffsetPixels,
+                            (int) (scaling * ptB.y) + yOffset);
+                    g.drawLine((int) (scaling * ptA.x) + xOffsetPixels,
+                            (int) (scaling * ptA.y) + yOffset,
+                            (int) (scaling * ptC.x) + xOffsetPixels,
+                            (int) (scaling * ptC.y) + yOffset);
+
+                } else {
+                    System.out.println("Not found: " + newfixture.m_type.name());
+                }
+                newfixture = newfixture.getNext();
+            }
+            newBody = newBody.getNext();
+        }
+
+        //This draws the "road" markings to show that the ground is moving relative to the dude.
+        int markingWidth = 5000;
+        for (int i = 0; i < markingWidth / 69; i++) {
+            g.drawString("_", ((-(int) (scaling * torsoBody.getPosition().x) - i * 70) % markingWidth) + markingWidth, yOffset + 92);
+        }
+    }
+
+    /**
+     * Draw the runner at a specified set of transforms..
+     **/
+    public static void drawExtraRunner(Graphics2D g, XForm[] transforms, String label, float scaling, int xOffset, int yOffset, Color drawColor, Stroke stroke) {
+        g.setColor(drawColor);
+        g.drawString(label, xOffset + (int) (transforms[1].position.x * scaling) - 20, yOffset - 75);
+        for (int i = 0; i < shapeList.length; i++) {
+            g.setColor(drawColor);
+            g.setStroke(stroke);
+            switch (shapeList[i].getType()) {
+                case CIRCLE_SHAPE:
+                    CircleShape circleShape = (CircleShape) shapeList[i];
+                    float radius = circleShape.getRadius();
+                    Vec2 circleCenter = XForm.mul(transforms[i], circleShape.getLocalPosition());
+                    g.drawOval((int) (scaling * (circleCenter.x - radius) + xOffset),
+                            (int) (scaling * (circleCenter.y - radius) + yOffset),
+                            (int) (scaling * radius * 2),
+                            (int) (scaling * radius * 2));
+                    break;
+                case POLYGON_SHAPE:
+                    //Get both the shape and its transform.
+                    PolygonShape polygonShape = (PolygonShape) shapeList[i];
+                    XForm transform = transforms[i];
+
+                    // Ground is black regardless.
+                    if (shapeList[i].m_filter.groupIndex == 1) {
+                        g.setColor(Color.BLACK);
+                        g.setStroke(normalStroke);
+                    }
+                    for (int j = 0; j < polygonShape.getVertexCount(); j++) { // Loop through polygon vertices and draw lines between them.
+                        Vec2 ptA = XForm.mul(transform, polygonShape.m_vertices[j]);
+                        Vec2 ptB = XForm.mul(transform, polygonShape.m_vertices[(j + 1) % (polygonShape.getVertexCount())]); //Makes sure that the last vertex is connected to the first one.
+                        g.drawLine((int) (scaling * ptA.x) + xOffset,
+                                (int) (scaling * ptA.y) + yOffset,
+                                (int) (scaling * ptB.x) + xOffset,
+                                (int) (scaling * ptB.y) + yOffset);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     /**
