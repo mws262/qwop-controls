@@ -15,14 +15,10 @@ import java.awt.*;
  */
 public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBase {
 
-    /**
-     * Decide at which action to introduce a cold-started runner.
-     */
-    private int coldStartAction = 12;
-
     public static void main(String[] args) {
         new MAIN_CompareWarmStartToColdSingle().run();
     }
+
     public void run() {
         // Ran MAIN_Search_LongRun to get these.
         ActionQueue actionQueue = getSampleActions();
@@ -32,6 +28,9 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
         // with a cloned state from gameFullRun, but a cold start on all the internal solvers.
 
         // Get to a certain part of the run where we want to introduce another cold start runner.
+
+        // Decide at which action to introduce a cold-started runner.
+        int coldStartAction = 12;
         while (actionQueue.getCurrentActionIdx() < coldStartAction) {
             gameFullRun.step(actionQueue.pollCommand());
         }
