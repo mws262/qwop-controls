@@ -8,6 +8,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 // IF this fails, there's a good chance you don't have python tensorflow installed. Or, "python" calls the
 // wrong version of python for your tensorflow install. The TensorFlow version in the pom.xml should match the
@@ -71,7 +72,7 @@ public class TrainableNetworkTest {
 
         // Should find two files: the <name>.data-.... and <name>.index.
         int foundFiles = 0;
-        for (File f : filesInCheckpointPath) {
+        for (File f : Objects.requireNonNull(filesInCheckpointPath)) {
             if (f.getName().contains("tmp_unit_test_ckpt")) {
                 f.deleteOnExit(); // Remove when done.
                 foundFiles++;
@@ -94,8 +95,8 @@ public class TrainableNetworkTest {
         float[][] outOld = testNetwork.evaluateInput(inputs);
         float[][] outNew = networkForLoading.evaluateInput(inputs);
 
-        Assert.assertTrue("Old network and reloaded network should evaluate the same.", Arrays.equals(outOld[0],
-                outNew[0]));
+        Assert.assertArrayEquals("Old network and reloaded network should evaluate the same.", outOld[0], outNew[0],
+                0.0f);
     }
 
     @Test
@@ -120,6 +121,33 @@ public class TrainableNetworkTest {
         Assert.assertEquals(2, multiOutput.length);
         Assert.assertEquals(2, multiOutput[0].length);
 
-        Assert.assertTrue("Same evaluation should be replicable.", Arrays.equals(singleOutput[0], multiOutput[1]));
+        Assert.assertArrayEquals("Same evaluation should be replicable.", singleOutput[0], multiOutput[1], 0.0f);
+    }
+
+    @Test
+    public void getNumberOfOperationOutputs() {
+        Assert.assertEquals(1, testNetwork.getNumberOfOperationOutputs("output"));
+        Assert.assertEquals(1, testNetwork.getNumberOfOperationOutputs("loss"));
+        // TODO if I ever use multi-output operations, add another test.
+    }
+
+    @Test
+    public void getShapeOfOperationOutput() {
+        int[] inputShape = testNetwork.getShapeOfOperationOutput("input", 0);
+        Assert.assertArrayEquals("Input shape should match expected.", new int[]{-1, 4}, inputShape);
+
+        int[] outputShape = testNetwork.getShapeOfOperationOutput("output", 0);
+        Assert.assertArrayEquals("Output shape should match expected.", new int[]{-1, 2}, outputShape);
+
+        int[] fullyConnected0Shape = testNetwork.getShapeOfOperationOutput("fully_connected0/weights/weight", 0);
+        Assert.assertArrayEquals("Intermediate weight layer shape should match expected.", new int[]{4, 10},
+                fullyConnected0Shape);
+
+    }
+
+    @Test
+    public void getLayerSizes() {
+        int[] layerSizes = testNetwork.getLayerSizes();
+        Assert.assertArrayEquals("Reported layer sizes do not match expected.", new int[]{4, 10, 5, 2}, layerSizes);
     }
 }
