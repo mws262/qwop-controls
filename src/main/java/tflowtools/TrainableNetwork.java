@@ -6,9 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -145,6 +143,76 @@ public class TrainableNetwork {
         while (iter.hasNext()) {
             System.out.println(iter.next().name());
         }
+    }
+
+    /**
+     * Get the number of outputs from a specified operation. This is NOT the same as the dimension of the output. In
+     * most cases, the number of outputs will be 1.
+     * @param operationName Name of the operation to check on.
+     * @return Number of outputs returned by that operation.
+     */
+    public int getNumberOfOperationOutputs(String operationName) {
+        Operation operation = graph.operation(operationName);
+
+        Objects.requireNonNull(operation, "Tried to retrieve the number of outputs for an operation which does not " +
+                "exist in the graph.");
+        return operation.numOutputs();
+    }
+
+    /**
+     * Get the dimensions of an output of an operation. Note that any -1 dimension is one of unknown size (e.g.
+     * number of samples being fed in).
+     * @param operationName Name of the operation to examine.
+     * @param outputIdx Index of the output of the operation to examine (usually 0). Not the same as shape!
+     * @return An array of sizes of the dimensions of the output.
+     */
+    public int[] getShapeOfOperationOutput(String operationName, int outputIdx) {
+        if (outputIdx + 1 > getNumberOfOperationOutputs(operationName)) {
+            throw new IndexOutOfBoundsException("Tried to retrieve the shape of an output index which exceeds the " +
+                    "number of outputs.");
+        }
+
+        Shape outputShape = graph.operation(operationName).output(outputIdx).shape();
+
+        int[] outputDimensions = new int[outputShape.numDimensions()];
+        for (int i = 0; i < outputShape.numDimensions(); i++) {
+            outputDimensions[i] = (int) outputShape.size(i);
+        }
+        return outputDimensions;
+    }
+
+    /**
+     * Get the sizes of the fully-connected layers in the net. These should include inputs and outputs.
+     * @return Array of the sizes of the inputs/outputs of the fully-connected layers of the net.
+     */
+    public int[] getLayerSizes() {
+        // Collect all the operation names.
+        Iterator<Operation> iter = graph.operations();
+        Set<String> operationNames = new HashSet<>();
+        while (iter.hasNext()) {
+            operationNames.add(iter.next().name());
+        }
+
+        // Count the number of fully-connected weight operations.
+        int count = 0;
+        while(operationNames.contains("fully_connected" + count + "/weights/weight")) {
+            count++;
+        }
+        if (count == 0) {
+            throw new IllegalStateException("No fully-connected layers found. Something has changed in the Python " +
+                    "script, likely.");
+        }
+
+        int[] layerSizes = new int[count + 1];
+        // Grab input dimensions on the first bunch.
+        for (int i = 0; i < count; i++) {
+            layerSizes[i] = (int) graph.operation("fully_connected" + i + "/weights/weight").output(0).shape().size(0);
+        }
+        // Grab the output layer on the last one.
+        layerSizes[count] =
+                (int) graph.operation("fully_connected" + (count - 1) + "/weights/weight").output(0).shape().size(1);
+
+        return layerSizes;
     }
 
     /**
