@@ -4,6 +4,7 @@ import actions.Action;
 import tree.Node;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 /**
@@ -198,7 +199,7 @@ public class ValueFunction_TensorFlow_ActionInMulti implements IValueFunction {
     public static ValueFunction_TensorFlow_ActionInMulti makeNew(Collection<Action> allPossibleActions,
                                                                  String fileNamePrefix,
                                                                  List<Integer> hiddenLayerSizes,
-                                                                 List<String> additionalArgs) {
+                                                                 List<String> additionalArgs) throws FileNotFoundException {
         ValueFunction_TensorFlow_ActionInMulti valFunMulti =
                 new ValueFunction_TensorFlow_ActionInMulti(allPossibleActions);
 

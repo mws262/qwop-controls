@@ -14,6 +14,7 @@ import tree.Utility;
 import value.ValueFunction_TensorFlow_ActionInMulti;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,11 +86,17 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
 //        ValueFunction_TensorFlow_ActionIn valueFunction = ValueFunction_TensorFlow_ActionIn.makeNew("tmp3",
 //                hiddenLayerSizes);
-        ValueFunction_TensorFlow_ActionInMulti valueFunction = ValueFunction_TensorFlow_ActionInMulti.makeNew(
-                        Node.potentialActionGenerator.getAllPossibleActions(),
-                        "tmpMulti",
-                        hiddenLayerSizes,
-                        new ArrayList<>());
+
+        ValueFunction_TensorFlow_ActionInMulti valueFunction = null;
+        try {
+            valueFunction = ValueFunction_TensorFlow_ActionInMulti.makeNew(
+                            Node.potentialActionGenerator.getAllPossibleActions(),
+                            "tmpMulti",
+                            hiddenLayerSizes,
+                            new ArrayList<>());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
 //        valueFunction.loadCheckpoint("chk1");
 

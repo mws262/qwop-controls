@@ -3,6 +3,7 @@ package tflowtools;
 import org.tensorflow.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -35,7 +36,7 @@ public class TrainableNetwork {
     /**
      * .pb file defining the structure (but not yet weights) of the network.
      */
-    public final File graphDefinition;
+    private final File graphDefinition;
 
     /**
      * Loaded Tensorflow graph definition.
@@ -216,6 +217,14 @@ public class TrainableNetwork {
     }
 
     /**
+     * Get the .pb file which defines the network. Does not include weights.
+     * @return The tensorflow network definition file.
+     */
+    public File getGraphDefinitionFile() {
+        return graphDefinition;
+    }
+
+    /**
      * Create a new fully-connected neural network structure. This calls a python script to make the net.
      *
      * @param graphName      Name of the graph file (without path or file extension).
@@ -226,7 +235,7 @@ public class TrainableNetwork {
      * @return A new TrainableNetwork based on the specifications.
      */
     public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes,
-                                                  List<String> additionalArgs) {
+                                                  List<String> additionalArgs) throws FileNotFoundException {
         // Add all command line arguments for the python script to a list.
         List<String> commandList = new ArrayList<>();
         commandList.add("python3");
@@ -253,12 +262,15 @@ public class TrainableNetwork {
 
         // Send the newly-created graph file to a new TrainableNetwork object.
         File graphFile = new File(graphPath + graphName + ".pb");
-        assert graphFile.exists();
+        if (!graphFile.exists()) {
+            throw new FileNotFoundException("Failed. Unable to locate the TensorFlow graph file which was supposedly " +
+                    "created.");
+        }
 
         return new TrainableNetwork(graphFile);
     }
 
-    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes) {
+    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes) throws FileNotFoundException {
         return makeNewNetwork(graphName, layerSizes, new ArrayList<>());
     }
 }

@@ -3,12 +3,17 @@ package value;
 import actions.Action;
 import actions.ActionSet;
 import com.google.common.collect.Iterables;
+import distributions.Distribution_Equal;
 import tflowtools.TrainableNetwork;
 import tree.Node;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * [state, action duration] ----> |NEURAL NET| ----> single scalar value
@@ -59,6 +64,11 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
     private int batchCount = 0;
 
     /**
+     * Should we spit out info after training iterations?
+     */
+    public boolean verbose = true;
+
+    /**
      * Create a value function from an existing neural network save file. If a new network is needed, call
      * {@link ValueFunction_TensorFlow_ActionIn#makeNew(String, List, List)}. If we want to also load a checkpoint
      * with network weights, call {@link ValueFunction_TensorFlow_ActionIn#loadCheckpoint}
@@ -72,31 +82,48 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
 
     @Override
     public Action getMaximizingAction(Node currentNode) {
-        ActionSet actionChoices = Node.potentialActionGenerator.getPotentialChildActionSet(currentNode);
+        ActionSet actionChoices;
+
+        // If no action generator is assigned, just use the actions of this node's children.
+        if (Node.potentialActionGenerator == null) {
+            Node[] children = currentNode.getChildren();
+            List<Action> childActions = Arrays.stream(children).map(Node::getAction).collect(Collectors.toList());
+            actionChoices = new ActionSet(new Distribution_Equal());
+            actionChoices.addAll(childActions);
+        } else {
+            actionChoices = Node.potentialActionGenerator.getPotentialChildActionSet(currentNode);
+        }
+
+        if (actionChoices.isEmpty() || actionChoices.contains(null)) {
+            throw new IllegalStateException("Node has no action generator and this node has no children with actions.");
+        }
+
 
         float[][] input = new float[1][STATE_SIZE + ACTION_SIZE];
         System.arraycopy(currentNode.getState().flattenState(), 0, input[0], 0, STATE_SIZE);
 
         // Find the action which maximizes the value from this state.
         float maxValue = -Float.MAX_VALUE;
-        int maxIndex = -1;
-
-        for (int i = 0; i < actionChoices.size(); i++) {
-            input[0][STATE_SIZE + ACTION_SIZE - 1] = actionChoices.get(i).getTimestepsTotal();
+        Action bestAction = null;
+        for (Action action : actionChoices) {
+            input[0][STATE_SIZE + ACTION_SIZE - 1] = action.getTimestepsTotal();
             float value = network.evaluateInput(input)[0][0];
             if (value > maxValue) {
                 maxValue = value;
-                maxIndex = i;
+                bestAction = action;
             }
         }
 
-        assert maxIndex >= 0;
-        return actionChoices.get(maxIndex);
+        Objects.requireNonNull(bestAction);
+        return bestAction;
     }
 
     @Override
     public float evaluate(Node currentNode) {
-        assert currentNode.getTreeDepth() > 0;
+
+        if (currentNode.getTreeDepth() <= 0) {
+            throw new IllegalArgumentException("Cannot evaluate a node at depth 0 or less.");
+        }
 
         float[][] input = new float[1][STATE_SIZE + ACTION_SIZE];
         System.arraycopy(currentNode.getParent().getState().flattenState(), 0, input[0], 0, STATE_SIZE);
@@ -122,6 +149,10 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
             for (int i = 0; i < batch.size(); i++) {
                 Node n = batch.get(i);
 
+                // Don't include root node since it doesn't have a parent.
+                if (n.getTreeDepth() == 0) {
+                    continue;
+                }
                 // Get state.
                 float[] state = n.getParent().getState().flattenState();
                 System.arraycopy(state, 0, trainingStateArray[i], 0, STATE_SIZE);
@@ -133,7 +164,8 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
                 assert !Float.isNaN(value[i][0]);
             }
             float loss = network.trainingStep(trainingStateArray, value, trainingStepsPerBatch);
-            System.out.println("Loss: " + loss + " Epoch: " + epochCount + ", Batch: " + (++batchCount));
+            if (verbose)
+                System.out.println("Loss: " + loss + " Epoch: " + epochCount + ", Batch: " + (++batchCount));
         });
 
         epochCount++;
@@ -158,6 +190,19 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
         assert !checkpointName.isEmpty();
         network.saveCheckpoint(checkpointName);
     }
+
+    public File getCheckpointPath() {
+        return new File(network.checkpointPath);
+    }
+
+    /**
+     * Get the file containing the tensorflow definition of the neural network.
+     * @return The .pb file holding the graph definition. Does not include weights.
+     */
+    public File getGraphDefinitionFile() {
+        return network.getGraphDefinitionFile();
+    }
+
     /**
      * Make a new ValueFunction backed by a new TensorFlow neural network.
      * @param fileName Name of the .pb file (without extension) which stores the model definition.
@@ -167,7 +212,7 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
      * @return A new ValueFunction.
      */
     public static ValueFunction_TensorFlow_ActionIn makeNew(String fileName, List<Integer> hiddenLayerSizes,
-                                                     List<String> additionalArgs) {
+                                                     List<String> additionalArgs) throws FileNotFoundException {
         // Supplement the hidden layer sizes with the input and output sizes.
         List<Integer> allLayerSizes = new ArrayList<>(hiddenLayerSizes);
         allLayerSizes.add(0, STATE_SIZE + ACTION_SIZE);
@@ -180,7 +225,7 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
         return valFun;
     }
 
-    public static ValueFunction_TensorFlow_ActionIn makeNew(String fileName, List<Integer> hiddenLayerSizes) {
+    public static ValueFunction_TensorFlow_ActionIn makeNew(String fileName, List<Integer> hiddenLayerSizes) throws FileNotFoundException {
         return makeNew(fileName, hiddenLayerSizes, new ArrayList<>()); // No additional network command line arguments.
     }
 }

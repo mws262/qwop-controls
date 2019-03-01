@@ -1,12 +1,12 @@
 package tflowtools;
 
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,20 +15,22 @@ import java.util.Objects;
 // version installed to python with pip.
 public class TrainableNetworkTest {
 
-    private List<Integer> layerSizes;
+    private static TrainableNetwork testNetwork;
 
-    private TrainableNetwork testNetwork;
-
-    @Before
-    public void setup() {
-        layerSizes = new ArrayList<>();
+    @BeforeClass
+    public static void setUp() {
+        List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(4);
         layerSizes.add(10);
         layerSizes.add(5);
         layerSizes.add(2);
 
-        testNetwork = TrainableNetwork.makeNewNetwork("unit_test_graph", layerSizes);
-        testNetwork.graphDefinition.deleteOnExit(); // Will remove the unit_test_graph.pb file after running.
+        try {
+            testNetwork = TrainableNetwork.makeNewNetwork("unit_test_graph", layerSizes);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        testNetwork.getGraphDefinitionFile().deleteOnExit(); // Will remove the unit_test_graph.pb file after running.
     }
 
     @Test
@@ -85,7 +87,7 @@ public class TrainableNetworkTest {
     public void loadCheckpoint() {
         testNetwork.saveCheckpoint("tmp_unit_test_load_ckpt");
 
-        TrainableNetwork networkForLoading = new TrainableNetwork(testNetwork.graphDefinition);
+        TrainableNetwork networkForLoading = new TrainableNetwork(testNetwork.getGraphDefinitionFile());
         networkForLoading.loadCheckpoint("tmp_unit_test_load_ckpt");
 
         float[][] inputs = new float[][] {
