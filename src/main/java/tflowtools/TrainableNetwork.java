@@ -50,6 +50,11 @@ public class TrainableNetwork {
     private final Session session;
 
     /**
+     * Send Python TensorFlow output to console? Tests don't like this, and it kind of clutters up stuff.
+     */
+    public static boolean tflowDebugOutput = false;
+
+    /**
      * Create a new wrapper for an existing Tensorflow graph.
      *
      * @param graphDefinition Graph definition file.
@@ -166,8 +171,10 @@ public class TrainableNetwork {
 
         // Make and run the command line process.
         ProcessBuilder pb = new ProcessBuilder(commandList.toArray(new String[commandList.size()]));
-        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT); // Makes sure that error messages and outputs go to console.
-        pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+        if (tflowDebugOutput) {
+            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT); // Makes sure that error messages and outputs go to console.
+            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+        }
 
         try {
             Process p = pb.start();

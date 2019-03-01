@@ -17,11 +17,6 @@ import java.util.List;
  */
 public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase {
 
-    /**
-     * Every how many actions we introduce a new cold-started runner to simulate and visualize.
-     */
-    private int coldStartRunnerIntroductionInterval = 1;
-
     public static void main(String[] args) {
         new MAIN_CompareWarmStartToColdMulti().run();
     }
@@ -71,6 +66,8 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
             coldStartGame.setState(gameFullRun.getCurrentState());
             coldStartGames.add(coldStartGame);
 
+            // Every how many actions we introduce a new cold-started runner to simulate and visualize.
+            int coldStartRunnerIntroductionInterval = 1;
             coldStartAction += coldStartRunnerIntroductionInterval;
         }
     }

@@ -8,8 +8,16 @@ import ui.PanelRunner_MultiState;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Some of the common setup used in the cold start tests.
+ *
+ * @author matt
+ */
 public abstract class CompareWarmStartToColdBase extends JFrame {
 
+    /**
+     * Panel for displaying potentially multiple runners.
+     */
     PanelRunner_MultiState runnerPanel;
 
     CompareWarmStartToColdBase() {
@@ -23,6 +31,10 @@ public abstract class CompareWarmStartToColdBase extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Get some sample actions for use in tests. This is a successful short run found by tree search.
+     * @return A successful queue of actions.
+     */
     public static ActionQueue getSampleActions() {
         // Ran MAIN_Search_LongRun to get these. 19 steps.
         ActionQueue actionQueue = new ActionQueue();
@@ -72,6 +84,7 @@ public abstract class CompareWarmStartToColdBase extends JFrame {
      * @param timesteps Number of timesteps to 'warm-start' the solvers.
      * @return A QWOP game which has been run for a specified number of timesteps with no control inputs.
      */
+    @SuppressWarnings("SameParameterValue")
     GameThreadSafe getFakedWarmStart(int timesteps) {
         GameThreadSafe game = new GameThreadSafe();
         for (int i = 0; i < timesteps; i++) {

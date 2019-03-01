@@ -18,7 +18,6 @@ import server.Client;
 public class Controller_AskServer extends Client implements IController {
 
     private final IController subController;
-    private DecisionHolder currentDecision;
 
     public Controller_AskServer(IController controller) {
         subController = controller;

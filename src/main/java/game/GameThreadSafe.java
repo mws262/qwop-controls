@@ -516,42 +516,42 @@ public class GameThreadSafe extends ClassLoader implements IGame {
             }
 
             /* Joint makeNewWorld */
-            Object rAnkleJDef = makeJointDef(rFootBody, rCalfBody, rAnklePosX, rAnklePosY, -0.5f, 0.5f, 2000f, 0f,
+            rAnkleJDef = makeJointDef(rFootBody, rCalfBody, rAnklePosX, rAnklePosY, -0.5f, 0.5f, 2000f, 0f,
                     true, false, false);
             rAnkleJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rAnkleJDef);
-            Object lAnkleJDef = makeJointDef(lFootBody, lCalfBody, lAnklePosX, lAnklePosY, -0.5f, 0.5f, 2000f, 0f,
+            lAnkleJDef = makeJointDef(lFootBody, lCalfBody, lAnklePosX, lAnklePosY, -0.5f, 0.5f, 2000f, 0f,
                     true, false, false);
             lAnkleJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lAnkleJDef);
 
-            Object rKneeJDef = makeJointDef(rCalfBody, rThighBody, rKneePosX, rKneePosY, -1.3f, 0.3f, 3000f, 0f, true
+            rKneeJDef = makeJointDef(rCalfBody, rThighBody, rKneePosX, rKneePosY, -1.3f, 0.3f, 3000f, 0f, true
                     , true, false);
             rKneeJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rKneeJDef);
-            Object lKneeJDef = makeJointDef(lCalfBody, lThighBody, lKneePosX, lKneePosY, -1.6f, 0.0f, 3000f, 0f, true
+            lKneeJDef = makeJointDef(lCalfBody, lThighBody, lKneePosX, lKneePosY, -1.6f, 0.0f, 3000f, 0f, true
                     , true, false);
             lKneeJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lKneeJDef);
 
-            Object rHipJDef = makeJointDef(rThighBody, torsoBody, rHipPosX, rHipPosY, -1.3f, 0.7f, 6000f, 0f, true,
+            rHipJDef = makeJointDef(rThighBody, torsoBody, rHipPosX, rHipPosY, -1.3f, 0.7f, 6000f, 0f, true,
                     true, false);
             rHipJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rHipJDef);
-            Object lHipJDef = makeJointDef(lThighBody, torsoBody, lHipPosX, lHipPosY, -1.5f, 0.5f, 6000f, 0f, true,
+            lHipJDef = makeJointDef(lThighBody, torsoBody, lHipPosX, lHipPosY, -1.5f, 0.5f, 6000f, 0f, true,
                     true, false);
             lHipJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lHipJDef);
 
-            Object neckJDef = makeJointDef(headBody, torsoBody, neckPosX, neckPosY, -0.5f, 0.0f, 1000f, 0f, true,
+            neckJDef = makeJointDef(headBody, torsoBody, neckPosX, neckPosY, -0.5f, 0.0f, 1000f, 0f, true,
                     true, false);
             neckJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, neckJDef);
 
-            Object rShoulderJDef = makeJointDef(rUArmBody, torsoBody, rShoulderPosX, rShoulderPosY, -0.5f, 1.5f,
+            rShoulderJDef = makeJointDef(rUArmBody, torsoBody, rShoulderPosX, rShoulderPosY, -0.5f, 1.5f,
                     1000f, 0f, true, true, false);
             rShoulderJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rShoulderJDef);
-            Object lShoulderJDef = makeJointDef(lUArmBody, torsoBody, lShoulderPosX, lShoulderPosY, -2f, 0.0f, 1000f,
+            lShoulderJDef = makeJointDef(lUArmBody, torsoBody, lShoulderPosX, lShoulderPosY, -2f, 0.0f, 1000f,
                     0f, true, true, false);
             lShoulderJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lShoulderJDef);
 
-            Object rElbowJDef = makeJointDef(rLArmBody, rUArmBody, rElbowPosX, rElbowPosY, -0.1f, 0.5f, 0f, 10f, true
+            rElbowJDef = makeJointDef(rLArmBody, rUArmBody, rElbowPosX, rElbowPosY, -0.1f, 0.5f, 0f, 10f, true
                     , true, false);
             rElbowJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rElbowJDef);
-            Object lElbowJDef = makeJointDef(lLArmBody, lUArmBody, lElbowPosX, lElbowPosY, -0.1f, 0.5f, 0f, 10f, true
+            lElbowJDef = makeJointDef(lLArmBody, lUArmBody, lElbowPosX, lElbowPosY, -0.1f, 0.5f, 0f, 10f, true
                     , true, false);
             lElbowJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lElbowJDef);
 
