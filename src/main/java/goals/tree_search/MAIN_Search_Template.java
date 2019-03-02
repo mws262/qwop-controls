@@ -419,7 +419,7 @@ public abstract class MAIN_Search_Template {
         ActionSet actionSet2 = ActionSet.makeActionSet(IntStream.range(20, 60).toArray(), new boolean[]{false, true, true,
                 false}, dist2);
 
-        /* Repeated action 3 -- W-O pressed */
+        /* Repeated action 3 -- No keys pressed. */
         Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
         ActionSet actionSet3 = ActionSet.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
                 false}, dist3);
