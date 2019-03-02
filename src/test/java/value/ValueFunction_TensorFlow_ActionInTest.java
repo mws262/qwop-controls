@@ -29,10 +29,10 @@ public class ValueFunction_TensorFlow_ActionInTest {
         rootNode.visitCount.getAndIncrement();
 
         // First layer actions.
-        Action a1_0 = new Action(5, false, true, true, false),
-                a1_1 = new Action(6, false, true, true, false),
-                a1_2 = new Action(7, false, true, true, false),
-                a1_3 = new Action(8, false, true, true, false);
+        Action a1_0 = new Action(5, false, false, false, false),
+                a1_1 = new Action(6, false, false, false, false),
+                a1_2 = new Action(7, false, false, false, false),
+                a1_3 = new Action(8, false, false, false, false);
         List<Action> actionsLayer1 = new ArrayList<>();
         actionsLayer1.add(a1_0);
         actionsLayer1.add(a1_1);
@@ -40,10 +40,10 @@ public class ValueFunction_TensorFlow_ActionInTest {
         actionsLayer1.add(a1_3);
 
         // Second layer actions.
-        Action a2_0 = new Action(5, false, false, false, false),
-                a2_1 = new Action(6, false, false, false, false),
-                a2_2 = new Action(7, false, false, false, false),
-                a2_3 = new Action(8, false, true, false, false);
+        Action a2_0 = new Action(5, false, true, true, false),
+                a2_1 = new Action(6, false, true, true, false),
+                a2_2 = new Action(7, false, true, true, false),
+                a2_3 = new Action(8, false, true, true, false);
         List<Action> actionsLayer2 = new ArrayList<>();
         actionsLayer2.add(a2_0);
         actionsLayer2.add(a2_1);
@@ -51,10 +51,10 @@ public class ValueFunction_TensorFlow_ActionInTest {
         actionsLayer2.add(a2_3);
 
         // Third layer actions.
-        Action a3_0 = new Action(5, true, false, false, true),
-                a3_1 = new Action(6, true, false, false, true),
-                a3_2 = new Action(7, true, false, false, true),
-                a3_3 = new Action(8, true, true, false, true);
+        Action a3_0 = new Action(5, false, false, false, false),
+                a3_1 = new Action(6, false, false, false, false),
+                a3_2 = new Action(7, false, false, false, false),
+                a3_3 = new Action(8, false, false, false, false);
         List<Action> actionsLayer3 = new ArrayList<>();
         actionsLayer3.add(a3_0);
         actionsLayer3.add(a3_1);

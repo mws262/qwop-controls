@@ -47,10 +47,18 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
      */
     public ActionGenerator_FixedSequence(ActionSet[] repeatedActions, Map<Integer, ActionSet> actionExceptions) {
 
+        if (repeatedActions.length == 0) {
+            throw new IllegalArgumentException("There must be at least 1 repeated action. The array was empty.");
+        }
+
         cycleLength = repeatedActions.length;
 
         this.repeatedActions = repeatedActions;
         this.actionExceptions = actionExceptions;
+    }
+
+    public ActionGenerator_FixedSequence(ActionSet[] repeatedActions) {
+        this(repeatedActions, null);
     }
 
     @Override

@@ -621,7 +621,7 @@ public class Node {
     }
 
     /**
-     * Count the number of descendants this node has.
+     * Count the number of descendants this node has. Does not include the node first called on.
      *
      * @return Number of descendants, i.e. number of nodes on the branch below this node.
      */
