@@ -2,6 +2,8 @@ package value;
 
 import actions.Action;
 import actions.ActionQueue;
+import actions.ActionSet;
+import distributions.Distribution_Equal;
 import game.GameSingleThread;
 import org.junit.*;
 import tree.Node;
@@ -9,9 +11,9 @@ import tree.Node;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class ValueFunction_TensorFlow_ActionInTest {
-
 
     private static GameSingleThread game = GameSingleThread.getInstance();
 
@@ -21,68 +23,8 @@ public class ValueFunction_TensorFlow_ActionInTest {
 
     @BeforeClass
     public static void setUp() {
-        // Manually make a dummy tree to run on.
-        rootNode = new Node();
-        rootNode.setValue(rootNode.getState().body.getY());
-        rootNode.visitCount.getAndIncrement();
 
-        // First layer actions.
-        Action a1_0 = new Action(5, false, false, false, false),
-                a1_1 = new Action(6, false, false, false, false),
-                a1_2 = new Action(7, false, false, false, false),
-                a1_3 = new Action(8, false, false, false, false);
-        List<Action> actionsLayer1 = new ArrayList<>();
-        actionsLayer1.add(a1_0);
-        actionsLayer1.add(a1_1);
-        actionsLayer1.add(a1_2);
-        actionsLayer1.add(a1_3);
-
-        // Second layer actions.
-        Action a2_0 = new Action(5, false, true, true, false),
-                a2_1 = new Action(6, false, true, true, false),
-                a2_2 = new Action(7, false, true, true, false),
-                a2_3 = new Action(8, false, true, true, false);
-        List<Action> actionsLayer2 = new ArrayList<>();
-        actionsLayer2.add(a2_0);
-        actionsLayer2.add(a2_1);
-        actionsLayer2.add(a2_2);
-        actionsLayer2.add(a2_3);
-
-        // Third layer actions.
-        Action a3_0 = new Action(5, false, false, false, false),
-                a3_1 = new Action(6, false, false, false, false),
-                a3_2 = new Action(7, false, false, false, false),
-                a3_3 = new Action(8, false, false, false, false);
-        List<Action> actionsLayer3 = new ArrayList<>();
-        actionsLayer3.add(a3_0);
-        actionsLayer3.add(a3_1);
-        actionsLayer3.add(a3_2);
-        actionsLayer3.add(a3_3);
-
-        for (Action action1 : actionsLayer1) {
-            for (Action action2 : actionsLayer2) {
-                for (Action action3 : actionsLayer3) {
-                    Node currentNode = rootNode;
-                    currentNode = doNext(currentNode, action1);
-                    currentNode = doNext(currentNode, action2);
-                    doNext(currentNode, action3);
-                    game.makeNewWorld();
-                }
-            }
-        }
-
-        // Do various verifications that we built the tree correctly.
-        List<Node> allNodes = new ArrayList<>();
-        rootNode.getNodesBelow(allNodes, false);
-        Assert.assertEquals(actionsLayer1.size() * actionsLayer2.size() * actionsLayer3.size()
-                        + actionsLayer1.size() * actionsLayer2.size()
-                        + actionsLayer1.size() + 1,
-                allNodes.size());
-
-        for (Node n : allNodes) {
-            Assert.assertNotEquals(0f, n.getValue());
-            Assert.assertNotEquals(0L, n.visitCount.longValue());
-        }
+        rootNode = makeDemoTree();
 
         // Test makeNew here because it must happen first.
         List<Integer> hiddenLayerSizes = new ArrayList<>();
@@ -194,8 +136,6 @@ public class ValueFunction_TensorFlow_ActionInTest {
 
         Assert.assertEquals("Second value function should behave the same after loading the checkpoint file.",
                 totalAbsErrorAfter, totalAbsErrorAfterRemade, 1e-15f);
-
-
     }
 
     /**
@@ -206,7 +146,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
      * @param action      Action to add below this node.
      * @return A new child node with state and value assigned.
      */
-    private static Node doNext(Node currentNode, Action action) {
+    static Node doNext(Node currentNode, Action action) {
         Node[] children = currentNode.getChildren();
 
         // Check if a node for the desired action already exists.
@@ -238,4 +178,50 @@ public class ValueFunction_TensorFlow_ActionInTest {
         }
         return nextNode;
     }
+
+    static Node makeDemoTree() {
+        // Manually make a dummy tree to run on.
+        Node rootNode = new Node();
+        rootNode.setValue(rootNode.getState().body.getY());
+        rootNode.visitCount.getAndIncrement();
+
+        // First layer actions.
+        ActionSet actionsLayer1 = ActionSet.makeActionSet(IntStream.range(1, 4).toArray(), new boolean[]{false, false,
+                false, false}, new Distribution_Equal());
+
+        // Second layer actions.
+        ActionSet actionsLayer2 = ActionSet.makeActionSet(IntStream.range(4, 8).toArray(), new boolean[]{false, true,
+                true, false}, new Distribution_Equal());
+
+        // Third layer actions.
+        ActionSet actionsLayer3 = ActionSet.makeActionSet(IntStream.range(8, 12).toArray(), new boolean[]{true, false,
+                false, true}, new Distribution_Equal());
+
+        for (Action action1 : actionsLayer1) {
+            for (Action action2 : actionsLayer2) {
+                for (Action action3 : actionsLayer3) {
+                    Node currentNode = rootNode;
+                    currentNode = doNext(currentNode, action1);
+                    currentNode = doNext(currentNode, action2);
+                    doNext(currentNode, action3);
+                    game.makeNewWorld();
+                }
+            }
+        }
+
+        // Do various verifications that we built the tree correctly.
+        List<Node> allNodes = new ArrayList<>();
+        rootNode.getNodesBelow(allNodes, false);
+        Assert.assertEquals(actionsLayer1.size() * actionsLayer2.size() * actionsLayer3.size()
+                        + actionsLayer1.size() * actionsLayer2.size()
+                        + actionsLayer1.size() + 1,
+                allNodes.size());
+
+        for (Node n : allNodes) {
+            Assert.assertNotEquals(0f, n.getValue());
+            Assert.assertNotEquals(0L, n.visitCount.longValue());
+        }
+        return rootNode;
+    }
+
 }
