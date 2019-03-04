@@ -31,6 +31,7 @@ public class GameSingleThreadTest{
             gameMulti.makeNewWorld();
             gameSingle.makeNewWorld();
         }
+        gameSingle.releaseGame();
     }
 
     @Test

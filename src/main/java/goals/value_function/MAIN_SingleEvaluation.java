@@ -95,6 +95,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
             currNode = currNode.addChild(chosenAction);
             currNode.setState(qwop.game.getCurrentState());
         }
+        qwop.game.releaseGame();
     }
 
     @Override
