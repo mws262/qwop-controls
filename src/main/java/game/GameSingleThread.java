@@ -16,11 +16,15 @@ import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
 import java.awt.*;
+import java.util.ConcurrentModificationException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static game.GameConstants.*;
 
 /**
- * NOTE: There can only be one of these! Call getInstance() to retrieve it.
+ * NOTE: There can only be one of these! Call getInstance() to retrieve it. Callers will acquire the lock for the
+ * game and must releaseGame after using for others to use.
  * This creates the QWOP game using the Box2D library. This operates on the primary classloader. This means that
  * multiple instances of this class will interfere with others due to static information inside Box2D.
  * {@link GameThreadSafe} uses a separate classloader for each instance and can be done in multithreaded applications.
@@ -36,6 +40,11 @@ public class GameSingleThread implements IGame {
      * {@link GameSingleThread#getInstance()}
      */
     private static GameSingleThread instance;
+
+    /**
+     * Lock allowing only one thread to access the game instance at a time.
+     */
+    private static ReentrantLock lock = new ReentrantLock();
 
     /**
      * Keep track of sim stats since beginning of execution.
@@ -176,17 +185,29 @@ public class GameSingleThread implements IGame {
 
     private GameSingleThread() {
         oneTimeSetup();
+        lock.lock();
         makeNewWorld();
+        lock.unlock();
         initState = getCurrentState(); // Make sure this stays below all
     }
 
     /**
      * This is how you actually get the single-threaded game. This is the singleton pattern, i.e. only one instance
-     * of this class should ever exist.
+     * of this class should ever exist. This will also lock the game, and any future thread trying to access this
+     * will wait until the original thread calls {@link GameSingleThread#releaseGame()}.
      * @return The single instance of this class.
      */
     public static GameSingleThread getInstance() {
+        lock.lock();
+        instance.makeNewWorld();
         return instance;
+    }
+
+    /**
+     * Release the lock that the current thread has on the game. Only the thread which owns the lock may do this.
+     */
+    public void releaseGame() {
+        lock.unlock();
     }
     /**
      * Call once to initialize a lot of shape definitions which only need to be created once.
@@ -346,6 +367,11 @@ public class GameSingleThread implements IGame {
     }
 
     public void makeNewWorld() {
+        if (!lock.isHeldByCurrentThread()) {
+            throw new ConcurrentModificationException("Cannot attempt to alter the single threaded game without first" +
+                    " obtaining its lock through getInstance. If having issues, make sure that all other threads have" +
+                    " called releaseGame to forfeit their locks.");
+        }
         isFailed = false;
         timestepsSimulated = 0;
 
@@ -603,6 +629,12 @@ public class GameSingleThread implements IGame {
      * Step the game forward 1 timestep with the specified keys pressed.
      **/
     public void step(boolean q, boolean w, boolean o, boolean p) {
+        if (!lock.isHeldByCurrentThread()) {
+            throw new ConcurrentModificationException("Cannot attempt to alter the single threaded game without first" +
+                    " obtaining its lock through getInstance. If having issues, make sure that all other threads have" +
+                    " called releaseGame to forfeit their locks.");
+        }
+
         /* Involuntary Couplings (no QWOP presses) */
 
         //Neck spring torque

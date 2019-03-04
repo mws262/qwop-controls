@@ -3,9 +3,7 @@ package value;
 import actions.Action;
 import actions.ActionQueue;
 import game.GameSingleThread;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import tree.Node;
 
 import java.io.File;
@@ -98,6 +96,11 @@ public class ValueFunction_TensorFlow_ActionInTest {
         Assert.assertTrue(valFun.getGraphDefinitionFile().exists());
         valFun.getGraphDefinitionFile().deleteOnExit();
         valFun.verbose = false;
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        game.releaseGame();
     }
 
     @Test
