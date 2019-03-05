@@ -1,9 +1,6 @@
 package data;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +11,14 @@ import java.util.*;
 public class SavableFileIOTest implements Serializable {
 
     private static final String tmpFileDir = "./src/test/resources/tmp/";
+
+    @BeforeClass
+    public static void setUp() {
+        File tmpDir = new File(tmpFileDir);
+        if (tmpDir.exists()) {
+            tmpDir.delete();
+        }
+    }
 
     @AfterClass
     public static void cleanup() {
