@@ -15,8 +15,6 @@ import java.util.stream.IntStream;
 
 public class ValueFunction_TensorFlow_ActionInTest {
 
-    private static GameSingleThread game = GameSingleThread.getInstance();
-
     private static ValueFunction_TensorFlow_ActionIn valFun;
 
     private static Node rootNode;
@@ -40,10 +38,10 @@ public class ValueFunction_TensorFlow_ActionInTest {
         valFun.verbose = false;
     }
 
-    @AfterClass
-    public static void tearDown() {
-        game.releaseGame();
-    }
+//    @AfterClass
+//    public static void tearDown() {
+//        game.releaseGame();
+//    }
 
     @Test
     public void getMaximizingAction() {
@@ -146,7 +144,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
      * @param action      Action to add below this node.
      * @return A new child node with state and value assigned.
      */
-    static Node doNext(Node currentNode, Action action) {
+    static Node doNext(Node currentNode, Action action, GameSingleThread game) {
         Node[] children = currentNode.getChildren();
 
         // Check if a node for the desired action already exists.
@@ -180,6 +178,8 @@ public class ValueFunction_TensorFlow_ActionInTest {
     }
 
     static Node makeDemoTree() {
+        GameSingleThread game = GameSingleThread.getInstance();
+
         // Manually make a dummy tree to run on.
         Node rootNode = new Node();
         rootNode.setValue(rootNode.getState().body.getY());
@@ -201,9 +201,9 @@ public class ValueFunction_TensorFlow_ActionInTest {
             for (Action action2 : actionsLayer2) {
                 for (Action action3 : actionsLayer3) {
                     Node currentNode = rootNode;
-                    currentNode = doNext(currentNode, action1);
-                    currentNode = doNext(currentNode, action2);
-                    doNext(currentNode, action3);
+                    currentNode = doNext(currentNode, action1, game);
+                    currentNode = doNext(currentNode, action2, game);
+                    doNext(currentNode, action3, game);
                     game.makeNewWorld();
                 }
             }
@@ -221,6 +221,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
             Assert.assertNotEquals(0f, n.getValue());
             Assert.assertNotEquals(0L, n.visitCount.longValue());
         }
+        game.releaseGame();
         return rootNode;
     }
 

@@ -1,6 +1,7 @@
 package data;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,7 +13,20 @@ import java.util.*;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class SavableFileIOTest implements Serializable {
 
-    private final String tmpFileDir = "./src/test/resources/tmp/";
+    private static final String tmpFileDir = "./src/test/resources/tmp/";
+
+    @AfterClass
+    public static void cleanup() {
+        File tmpDir = new File(tmpFileDir);
+        File[] files = tmpDir.listFiles();
+
+        for (File file : Objects.requireNonNull(files)) {
+            if (file != null && file.exists()) {
+                file.delete();
+            }
+        }
+        tmpDir.delete();
+    }
 
     @Test
     public void storeAndLoadObjects() {
@@ -240,19 +254,6 @@ public class SavableFileIOTest implements Serializable {
         Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file4.blueherring")));
         Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file5.blueHerring")));
         Assert.assertTrue(filesFiltered.contains(new File(tmpFileDir + "file2.BlueHerring")));
-    }
-
-    @After
-    public void cleanup() {
-        File tmpDir = new File(tmpFileDir);
-        File[] files = tmpDir.listFiles();
-
-        for (File file : Objects.requireNonNull(files)) {
-            if (file != null && file.exists()) {
-                file.deleteOnExit();
-            }
-        }
-        tmpDir.deleteOnExit();
     }
 
     private class TestClass implements Serializable {

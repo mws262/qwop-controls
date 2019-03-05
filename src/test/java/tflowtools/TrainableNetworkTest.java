@@ -66,26 +66,18 @@ public class TrainableNetworkTest {
 
     @Test
     public void saveCheckpoint() {
-        testNetwork.saveCheckpoint("tmp_unit_test_ckpt");
-        File checkpointPath = new File(testNetwork.checkpointPath);
-        Assert.assertTrue(checkpointPath.exists());
-        Assert.assertTrue(checkpointPath.isDirectory());
-        File[] filesInCheckpointPath = checkpointPath.listFiles();
-
-        // Should find two files: the <name>.data-.... and <name>.index.
-        int foundFiles = 0;
-        for (File f : Objects.requireNonNull(filesInCheckpointPath)) {
-            if (f.getName().contains("tmp_unit_test_ckpt")) {
-                f.deleteOnExit(); // Remove when done.
-                foundFiles++;
-            }
-        }
-        Assert.assertEquals(2, foundFiles);
+        String filePrefix = "tmp_unit_test_ckpt";
+        testNetwork.saveCheckpoint(filePrefix);
+        int numFiles = flagCheckpointForRemoval(filePrefix);
+        Assert.assertEquals(2, numFiles);
     }
 
     @Test
     public void loadCheckpoint() {
-        testNetwork.saveCheckpoint("tmp_unit_test_load_ckpt");
+        String filePrefix = "tmp_unit_test_load_ckpt";
+        testNetwork.saveCheckpoint(filePrefix);
+        int numFiles = flagCheckpointForRemoval(filePrefix);
+        Assert.assertEquals(2, numFiles);
 
         TrainableNetwork networkForLoading = new TrainableNetwork(testNetwork.getGraphDefinitionFile());
         networkForLoading.loadCheckpoint("tmp_unit_test_load_ckpt");
@@ -99,6 +91,29 @@ public class TrainableNetworkTest {
 
         Assert.assertArrayEquals("Old network and reloaded network should evaluate the same.", outOld[0], outNew[0],
                 0.0f);
+    }
+
+    /**
+     * Make sure that unit test checkpoint files don't stick around and create garbage.
+     * @param fileContains Match for the first part of the filename. TensorFlow appends lots of garbage to the end of
+     *                    it that we don't want to deal with.
+     * @return Number of matching files flagged for deletion
+     */
+    private int flagCheckpointForRemoval(String fileContains) {
+        File checkpointPath = new File(testNetwork.checkpointPath);
+        Assert.assertTrue(checkpointPath.exists());
+        Assert.assertTrue(checkpointPath.isDirectory());
+        File[] filesInCheckpointPath = checkpointPath.listFiles();
+
+        // Should find two files: the <name>.data-.... and <name>.index.
+        int foundFiles = 0;
+        for (File f : Objects.requireNonNull(filesInCheckpointPath)) {
+            if (f.getName().contains(fileContains)) {
+                f.deleteOnExit(); // Remove when done.
+                foundFiles++;
+            }
+        }
+        return foundFiles;
     }
 
     @Test
