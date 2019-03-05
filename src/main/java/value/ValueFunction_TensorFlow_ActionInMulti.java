@@ -129,6 +129,19 @@ public class ValueFunction_TensorFlow_ActionInMulti implements IValueFunction {
     }
 
     /**
+     * Get the TensorFlow .pb files which define the neural network graphs.
+     * @return An array or files, one for each of the value functions.
+     */
+    public File[] getGraphDefinitionFiles() {
+        File[] graphFiles = new File[allValueFunctions.size()];
+        int idx = 0;
+        for (ValueFunction_TensorFlow_ActionIn valFun : allValueFunctions.values()) {
+            graphFiles[idx++] = valFun.getGraphDefinitionFile();
+        }
+        return graphFiles;
+    }
+
+    /**
      * Get the enum KeyCombination from the array of booleans representing the keypresses.
      * @param keys 4-element array of booleans representing keys pressed.
      * @return The enum representation of that key combination.
