@@ -19,6 +19,18 @@ public class ValueFunction_TensorFlow_ActionInTest {
 
     private static Node rootNode;
 
+    // First layer actions.
+    static final ActionSet actionsLayer1 = ActionSet.makeActionSet(IntStream.range(1, 4).toArray(),
+            new boolean[]{false, false, false, false}, new Distribution_Equal());
+
+    // Second layer actions.
+    static final ActionSet actionsLayer2 = ActionSet.makeActionSet(IntStream.range(4, 8).toArray(),
+            new boolean[]{false, true, true, false}, new Distribution_Equal());
+
+    // Third layer actions.
+    static final ActionSet actionsLayer3 = ActionSet.makeActionSet(IntStream.range(8, 12).toArray(),
+            new boolean[]{true, false, false, true}, new Distribution_Equal());
+
     @BeforeClass
     public static void setUp() {
 
@@ -37,11 +49,6 @@ public class ValueFunction_TensorFlow_ActionInTest {
         valFun.getGraphDefinitionFile().deleteOnExit();
         valFun.verbose = false;
     }
-
-//    @AfterClass
-//    public static void tearDown() {
-//        game.releaseGame();
-//    }
 
     @Test
     public void getMaximizingAction() {
@@ -177,6 +184,15 @@ public class ValueFunction_TensorFlow_ActionInTest {
         return nextNode;
     }
 
+    /**
+     * Makes a small demo tree for testing. It has 4 layers below root, fully populated (game failure is unchecked).
+     * States are fully assigned. Values are set to body Y coordinate (arbitrary choice). Visit counts set to 1.
+     * First actions : No keys, 1,2,3
+     * Second actions : WO, 4,5,6,7
+     * Third actions : QP, 8,9,10,11
+     * Fourth actions : [repeats first]
+     * @return The root of the constructed test tree.
+     */
     static Node makeDemoTree() {
         GameSingleThread game = GameSingleThread.getInstance();
 
@@ -185,26 +201,17 @@ public class ValueFunction_TensorFlow_ActionInTest {
         rootNode.setValue(rootNode.getState().body.getY());
         rootNode.visitCount.getAndIncrement();
 
-        // First layer actions.
-        ActionSet actionsLayer1 = ActionSet.makeActionSet(IntStream.range(1, 4).toArray(), new boolean[]{false, false,
-                false, false}, new Distribution_Equal());
-
-        // Second layer actions.
-        ActionSet actionsLayer2 = ActionSet.makeActionSet(IntStream.range(4, 8).toArray(), new boolean[]{false, true,
-                true, false}, new Distribution_Equal());
-
-        // Third layer actions.
-        ActionSet actionsLayer3 = ActionSet.makeActionSet(IntStream.range(8, 12).toArray(), new boolean[]{true, false,
-                false, true}, new Distribution_Equal());
-
         for (Action action1 : actionsLayer1) {
             for (Action action2 : actionsLayer2) {
                 for (Action action3 : actionsLayer3) {
-                    Node currentNode = rootNode;
-                    currentNode = doNext(currentNode, action1, game);
-                    currentNode = doNext(currentNode, action2, game);
-                    doNext(currentNode, action3, game);
-                    game.makeNewWorld();
+                    for (Action action4 : actionsLayer1) {
+                        Node currentNode = rootNode;
+                        currentNode = doNext(currentNode, action1, game);
+                        currentNode = doNext(currentNode, action2, game);
+                        currentNode = doNext(currentNode, action3, game);
+                        doNext(currentNode, action4, game);
+                        game.makeNewWorld();
+                    }
                 }
             }
         }
@@ -212,7 +219,8 @@ public class ValueFunction_TensorFlow_ActionInTest {
         // Do various verifications that we built the tree correctly.
         List<Node> allNodes = new ArrayList<>();
         rootNode.getNodesBelow(allNodes, false);
-        Assert.assertEquals(actionsLayer1.size() * actionsLayer2.size() * actionsLayer3.size()
+        Assert.assertEquals( actionsLayer1.size() * actionsLayer2.size() * actionsLayer3.size() * actionsLayer1.size()
+                        + actionsLayer1.size() * actionsLayer2.size() * actionsLayer3.size()
                         + actionsLayer1.size() * actionsLayer2.size()
                         + actionsLayer1.size() + 1,
                 allNodes.size());
