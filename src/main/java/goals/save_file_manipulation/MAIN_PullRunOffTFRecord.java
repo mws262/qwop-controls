@@ -6,6 +6,7 @@ import org.tensorflow.example.SequenceExample;
 
 import java.io.*;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Take a (potentially) large TFRecord file of densely saved QWOP run data, and strip one run off, saving it to its
@@ -48,6 +49,8 @@ public class MAIN_PullRunOffTFRecord {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        Objects.requireNonNull(dataSeries, "TFRecord files were not successfully loaded.");
 
         if (dataSeries.isEmpty()) {
             throw new IndexOutOfBoundsException("Could not locate any runs in the TFRecord file specified.");

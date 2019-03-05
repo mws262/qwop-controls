@@ -129,7 +129,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
         // We do not have to use our own bitmap for the font.
         gl.glColor3f(color.getRed()/255f, color.getGreen()/255f, color.getBlue()/255f);
         gl.glRasterPos3d(x, y, z);
-        glut.glutBitmapString(GLUT.BITMAP_HELVETICA_18, toDraw);
+        glut.glutBitmapString(GLUT.BITMAP_HELVETICA_12, toDraw);
     }
 
     @Override

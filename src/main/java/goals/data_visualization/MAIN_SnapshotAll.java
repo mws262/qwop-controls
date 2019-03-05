@@ -19,7 +19,6 @@ import ui.PanelRunner_Snapshot;
  *
  * @author matt
  */
-
 public class MAIN_SnapshotAll extends JFrame {
 
     public GameThreadSafe game;
@@ -35,9 +34,15 @@ public class MAIN_SnapshotAll extends JFrame {
      */
     public static int windowHeight = 1000;
 
+    /**
+     * Display up to this tree depth.
+     */
     public static int playbackDepth = 5;
 
-    private File saveLoc = new File("src/main/resources/saved_data/11_2_18");
+    /**
+     * Location where the files to be played back are located. All SavableSingleGame files will be used.
+     */
+    private File saveLoc = new File("src/main/resources/saved_data/tmp_testing");
 
     public static void main(String[] args) {
         MAIN_SnapshotAll mc = new MAIN_SnapshotAll();
@@ -45,8 +50,10 @@ public class MAIN_SnapshotAll extends JFrame {
         mc.run();
     }
 
+    /**
+     * Set up the graphics for animating the runner.
+     */
     public void setup() {
-        /* Snapshot pane. */
         snapshotPane = new PanelRunner_Snapshot();
         snapshotPane.activateTab();
         snapshotPane.yOffsetPixels = 600;
@@ -64,9 +71,14 @@ public class MAIN_SnapshotAll extends JFrame {
 
         List<File> playbackFiles = new ArrayList<>();
         for (File f : Objects.requireNonNull(allFiles)) {
-            if (f.getName().contains("SavableSingleGame")) { // steadyRunPrefix.SavableSingleGame
+            if (f.getName().contains("SavableSingleGame")) {
                 playbackFiles.add(f);
             }
+        }
+
+        if (playbackFiles.isEmpty()) {
+            System.out.println("No files found in specified directory. Quitting.");
+            return;
         }
 
         Node rootNode = new Node();
@@ -77,23 +89,14 @@ public class MAIN_SnapshotAll extends JFrame {
         for (File f : playbackFiles) {
             fileIO.loadObjectsToCollection(f, games);
         }
+
         Node.makeNodesFromRunInfo(games, rootNode, -1);
         Node currNode = rootNode;
-        while (currNode.getTreeDepth() < playbackDepth) {
+        while (currNode.getTreeDepth() < playbackDepth && currNode.getChildCount() > 0) {
             currNode = currNode.getChildren()[0];
         }
         System.out.println(currNode.countDescendants());
         snapshotPane.update(currNode);
         repaint();
-
-        //noinspection InfiniteLoopStatement
-        while (true) {
-            repaint();
-            try {
-                Thread.sleep(20);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

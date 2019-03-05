@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
-import samplers.Sampler_Distribution;
 import samplers.Sampler_Greedy;
 import savers.DataSaver_DenseTFRecord;
 import tree.*;
@@ -77,7 +76,7 @@ public abstract class MAIN_Search_Template {
     /**
      * Maximum number of workers any stage can recruit.
      */
-    private final int maxWorkers;
+    final int maxWorkers;
 
     public MAIN_Search_Template(File configFile) {
         // Load the configuration file.
@@ -152,7 +151,7 @@ public abstract class MAIN_Search_Template {
     /**
      * Borrow a {@link TreeWorker} from the pool. Be sure to return it later!
      */
-    private TreeWorker borrowWorker() {
+    TreeWorker borrowWorker() {
         TreeWorker worker = null;
         try {
             worker = workerPool.borrowObject();
@@ -169,7 +168,7 @@ public abstract class MAIN_Search_Template {
     /**
      * Give the worker back to the pool to be reused later.
      */
-    private void returnWorker(TreeWorker finishedWorker) {
+    void returnWorker(TreeWorker finishedWorker) {
         workerPool.returnObject(finishedWorker);
         activeWorkers.remove(finishedWorker);
         if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
@@ -406,7 +405,7 @@ public abstract class MAIN_Search_Template {
      * Will assign a broader set of options for "recovery" at the specified starting depth.
      * Pass -1 to disable this.
      */
-    protected void assignAllowableActions(int recoveryExceptionStart) {
+    public static void assignAllowableActions(int recoveryExceptionStart) {
         /* Space of allowed actions to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
@@ -420,7 +419,7 @@ public abstract class MAIN_Search_Template {
         ActionSet actionSet2 = ActionSet.makeActionSet(IntStream.range(20, 60).toArray(), new boolean[]{false, true, true,
                 false}, dist2);
 
-        /* Repeated action 3 -- W-O pressed */
+        /* Repeated action 3 -- No keys pressed. */
         Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
         ActionSet actionSet3 = ActionSet.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
                 false}, dist3);
@@ -493,6 +492,8 @@ public abstract class MAIN_Search_Template {
                     case 3:
                         actionExceptions.put(recoveryExceptionStart + i, actionSetQP);
                         break;
+                    default:
+                        throw new IllegalStateException("unknown sequence position.");
                 }
             }
         }
@@ -500,7 +501,7 @@ public abstract class MAIN_Search_Template {
         Node.potentialActionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 
-    protected void assignAllowableActionsWider(int recoveryExceptionStart) {
+    public static void assignAllowableActionsWider(int recoveryExceptionStart) {
         /* Space of allowed actions to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
@@ -595,6 +596,8 @@ public abstract class MAIN_Search_Template {
                     case 3:
                         actionExceptions.put(recoveryExceptionStart + i, actionSetQP);
                         break;
+                    default:
+                        throw new RuntimeException("unknown sequence position.");
                 }
             }
         }

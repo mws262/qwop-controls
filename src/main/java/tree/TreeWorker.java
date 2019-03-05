@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 import actions.Action;
@@ -147,12 +148,15 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     public String workerName;
     private final int workerID;
-    private static int workerCount = 0;
+
+    /**
+     * Number of workers created. Also used for the worker ID number.
+     */
+    private static AtomicInteger workerCount = new AtomicInteger();
 
     public TreeWorker() {
-        workerID = workerCount;
+        workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
-        workerCount++;
 
         lastTsTimeMs = System.currentTimeMillis();
 
@@ -508,6 +512,21 @@ public class TreeWorker extends PanelRunner implements Runnable {
         return totalStepsSimulated.longValue();
     }
 
+    /**
+     * Get the total number of workers created so far.
+     * @return Total number of workers created so far this run.
+     */
+    public static int getTotalWorkerCount() {
+        return workerCount.get();
+    }
+
+    /**
+     * Get the total number of workers created so far and increment the counter.
+     * @return Total number of workers created (before incrementation).
+     */
+    private static int getWorkerCountAndIncrement() {
+        return workerCount.getAndIncrement();
+    }
     /**
      * Color the node scaled by depth in the tree. Skip the brightness argument for default value.
      */

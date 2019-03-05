@@ -284,7 +284,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      *
      * @author matt
      */
-    private class GameContainer {
+    private static class GameContainer {
 
         ArrayList<Action> actions = new ArrayList<>();
         ArrayList<State> states = new ArrayList<>();

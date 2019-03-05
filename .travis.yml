@@ -3,7 +3,8 @@ jdk:
   - oraclejdk11
 before_install:
   - sudo apt-get update
-  - sudo apt-get install python
-  - sudo pip install --upgrade pip
-  - sudo apt install python-dev python-pip
-  - pip install --user --upgrade tensorflow
+  - sudo apt-get install python3
+  - sudo apt install python3-dev python3-pip
+  - sudo python3 -m pip install --upgrade pip
+  - python3 -m pip install --user --upgrade tensorflow
+  - python3 -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([100, 100])))"

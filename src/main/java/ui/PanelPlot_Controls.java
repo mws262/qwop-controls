@@ -137,6 +137,9 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
                 if (firstPlotRow >= (transformer.getOutputStateSize() - plotsPerView) / plotsPerView) return;
                 firstPlotRow++;
                 break;
+            default:
+                // Nothing.
+                break;
         }
         changePlots();
     }

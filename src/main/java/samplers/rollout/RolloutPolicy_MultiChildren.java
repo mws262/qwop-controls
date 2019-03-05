@@ -68,4 +68,12 @@ public class RolloutPolicy_MultiChildren extends RolloutPolicy {
         return score/(float)(maxRollouts > startNode.uncheckedActions.size() ? startNode.uncheckedActions.size() :
                 maxRollouts);
     }
+
+    @Override
+    public RolloutPolicy getCopy() {
+        RolloutPolicy_MultiChildren copy = new RolloutPolicy_MultiChildren(evaluationFunction.getCopy());
+        copy.doColdStarts = doColdStarts;
+        copy.maxRollouts = maxRollouts;
+        return copy;
+    }
 }

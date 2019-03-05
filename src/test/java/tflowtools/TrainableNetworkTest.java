@@ -1,31 +1,36 @@
 package tflowtools;
 
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
-import java.nio.file.Path;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
+// IF this fails, there's a good chance you don't have python tensorflow installed. Or, "python" calls the
+// wrong version of python for your tensorflow install. The TensorFlow version in the pom.xml should match the
+// version installed to python with pip.
 public class TrainableNetworkTest {
 
-    private List<Integer> layerSizes;
+    private static TrainableNetwork testNetwork;
 
-    private TrainableNetwork testNetwork;
-
-    @Before
-    public void setup() {
-        layerSizes = new ArrayList<>();
+    @BeforeClass
+    public static void setUp() {
+        List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(4);
         layerSizes.add(10);
         layerSizes.add(5);
         layerSizes.add(2);
 
-        testNetwork = TrainableNetwork.makeNewNetwork("unit_test_graph", layerSizes);
-        testNetwork.graphDefinition.deleteOnExit(); // Will remove the unit_test_graph.pb file after running.
+        try {
+            testNetwork = TrainableNetwork.makeNewNetwork("unit_test_graph", layerSizes);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        testNetwork.getGraphDefinitionFile().deleteOnExit(); // Will remove the unit_test_graph.pb file after running.
     }
 
     @Test
@@ -48,36 +53,33 @@ public class TrainableNetworkTest {
         float loss1 = testNetwork.trainingStep(inputs, outputs, 1); // Do a single step.
         Assert.assertTrue("Loss should be non-negative.", loss1 > 0f);
 
-        float loss2 = testNetwork.trainingStep(inputs, outputs, 1000); // Do many steps.
+        float loss2 = testNetwork.trainingStep(inputs, outputs, 5000); // Do many steps.
         Assert.assertTrue("Loss should be better after many more steps.", loss1 > loss2);
         Assert.assertTrue("Loss should be very close to zero after many training steps. Was " + Math.abs(loss2) + ".",
-                Math.abs(loss2) < 1e-4);
+                Math.abs(loss2) < 1e-3);
+
+        float[][] outEval = testNetwork.evaluateInput(inputs);
+
+        Assert.assertEquals("Network evaluation didn't come up with a matching result.", outEval[0][1], outputs[0][1]
+                , 1e-3);
     }
 
     @Test
     public void saveCheckpoint() {
-        testNetwork.saveCheckpoint("tmp_unit_test_ckpt");
-        File checkpointPath = new File(testNetwork.checkpointPath);
-        Assert.assertTrue(checkpointPath.exists());
-        Assert.assertTrue(checkpointPath.isDirectory());
-        File[] filesInCheckpointPath = checkpointPath.listFiles();
-
-        // Should find two files: the <name>.data-.... and <name>.index.
-        int foundFiles = 0;
-        for (File f : filesInCheckpointPath) {
-            if (f.getName().contains("tmp_unit_test_ckpt")) {
-                f.deleteOnExit(); // Remove when done.
-                foundFiles++;
-            }
-        }
-        Assert.assertEquals(2, foundFiles);
+        String filePrefix = "tmp_unit_test_ckpt";
+        testNetwork.saveCheckpoint(filePrefix);
+        int numFiles = flagCheckpointForRemoval(filePrefix);
+        Assert.assertEquals(2, numFiles);
     }
 
     @Test
     public void loadCheckpoint() {
-        testNetwork.saveCheckpoint("tmp_unit_test_load_ckpt");
+        String filePrefix = "tmp_unit_test_load_ckpt";
+        testNetwork.saveCheckpoint(filePrefix);
+        int numFiles = flagCheckpointForRemoval(filePrefix);
+        Assert.assertEquals(2, numFiles);
 
-        TrainableNetwork networkForLoading = new TrainableNetwork(testNetwork.graphDefinition);
+        TrainableNetwork networkForLoading = new TrainableNetwork(testNetwork.getGraphDefinitionFile());
         networkForLoading.loadCheckpoint("tmp_unit_test_load_ckpt");
 
         float[][] inputs = new float[][] {
@@ -87,8 +89,31 @@ public class TrainableNetworkTest {
         float[][] outOld = testNetwork.evaluateInput(inputs);
         float[][] outNew = networkForLoading.evaluateInput(inputs);
 
-        Assert.assertTrue("Old network and reloaded network should evaluate the same.", Arrays.equals(outOld[0],
-                outNew[0]));
+        Assert.assertArrayEquals("Old network and reloaded network should evaluate the same.", outOld[0], outNew[0],
+                0.0f);
+    }
+
+    /**
+     * Make sure that unit test checkpoint files don't stick around and create garbage.
+     * @param fileContains Match for the first part of the filename. TensorFlow appends lots of garbage to the end of
+     *                    it that we don't want to deal with.
+     * @return Number of matching files flagged for deletion
+     */
+    private int flagCheckpointForRemoval(String fileContains) {
+        File checkpointPath = new File(testNetwork.checkpointPath);
+        Assert.assertTrue(checkpointPath.exists());
+        Assert.assertTrue(checkpointPath.isDirectory());
+        File[] filesInCheckpointPath = checkpointPath.listFiles();
+
+        // Should find two files: the <name>.data-.... and <name>.index.
+        int foundFiles = 0;
+        for (File f : Objects.requireNonNull(filesInCheckpointPath)) {
+            if (f.getName().contains(fileContains)) {
+                f.deleteOnExit(); // Remove when done.
+                foundFiles++;
+            }
+        }
+        return foundFiles;
     }
 
     @Test
@@ -113,6 +138,33 @@ public class TrainableNetworkTest {
         Assert.assertEquals(2, multiOutput.length);
         Assert.assertEquals(2, multiOutput[0].length);
 
-        Assert.assertTrue("Same evaluation should be replicable.", Arrays.equals(singleOutput[0], multiOutput[1]));
+        Assert.assertArrayEquals("Same evaluation should be replicable.", singleOutput[0], multiOutput[1], 0.0f);
+    }
+
+    @Test
+    public void getNumberOfOperationOutputs() {
+        Assert.assertEquals(1, testNetwork.getNumberOfOperationOutputs("output"));
+        Assert.assertEquals(1, testNetwork.getNumberOfOperationOutputs("loss"));
+        // TODO if I ever use multi-output operations, add another test.
+    }
+
+    @Test
+    public void getShapeOfOperationOutput() {
+        int[] inputShape = testNetwork.getShapeOfOperationOutput("input", 0);
+        Assert.assertArrayEquals("Input shape should match expected.", new int[]{-1, 4}, inputShape);
+
+        int[] outputShape = testNetwork.getShapeOfOperationOutput("output", 0);
+        Assert.assertArrayEquals("Output shape should match expected.", new int[]{-1, 2}, outputShape);
+
+        int[] fullyConnected0Shape = testNetwork.getShapeOfOperationOutput("fully_connected0/weights/weight", 0);
+        Assert.assertArrayEquals("Intermediate weight layer shape should match expected.", new int[]{4, 10},
+                fullyConnected0Shape);
+
+    }
+
+    @Test
+    public void getLayerSizes() {
+        int[] layerSizes = testNetwork.getLayerSizes();
+        Assert.assertArrayEquals("Reported layer sizes do not match expected.", new int[]{4, 10, 5, 2}, layerSizes);
     }
 }

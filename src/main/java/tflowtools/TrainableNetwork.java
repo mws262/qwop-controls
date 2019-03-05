@@ -3,12 +3,11 @@ package tflowtools;
 import org.tensorflow.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +36,7 @@ public class TrainableNetwork {
     /**
      * .pb file defining the structure (but not yet weights) of the network.
      */
-    public final File graphDefinition;
+    private final File graphDefinition;
 
     /**
      * Loaded Tensorflow graph definition.
@@ -48,6 +47,11 @@ public class TrainableNetwork {
      * Loaded Tensorflow session.
      */
     private final Session session;
+
+    /**
+     * Send Python TensorFlow output to console? Tests don't like this, and it kind of clutters up stuff.
+     */
+    public static boolean tflowDebugOutput = false;
 
     /**
      * Create a new wrapper for an existing Tensorflow graph.
@@ -93,7 +97,9 @@ public class TrainableNetwork {
                     "loss").run().get(0).expect(Float.class);
         }
         assert output != null;
-        return output.floatValue();
+//        float[] outputStuff = new float[inputs.length];
+//        output.copyTo(outputStuff);
+        return output.floatValue(); // Could be problematic with softmax which doesn't spit out a single value.
     }
 
     /**
@@ -126,6 +132,7 @@ public class TrainableNetwork {
 
         long[] outputShape = outputTensor.shape();
         float[][] output = new float[(int) outputShape[0]][(int) outputShape[1]];
+        outputTensor.copyTo(output);
         return output;
     }
 
@@ -140,6 +147,84 @@ public class TrainableNetwork {
     }
 
     /**
+     * Get the number of outputs from a specified operation. This is NOT the same as the dimension of the output. In
+     * most cases, the number of outputs will be 1.
+     * @param operationName Name of the operation to check on.
+     * @return Number of outputs returned by that operation.
+     */
+    public int getNumberOfOperationOutputs(String operationName) {
+        Operation operation = graph.operation(operationName);
+
+        Objects.requireNonNull(operation, "Tried to retrieve the number of outputs for an operation which does not " +
+                "exist in the graph.");
+        return operation.numOutputs();
+    }
+
+    /**
+     * Get the dimensions of an output of an operation. Note that any -1 dimension is one of unknown size (e.g.
+     * number of samples being fed in).
+     * @param operationName Name of the operation to examine.
+     * @param outputIdx Index of the output of the operation to examine (usually 0). Not the same as shape!
+     * @return An array of sizes of the dimensions of the output.
+     */
+    public int[] getShapeOfOperationOutput(String operationName, int outputIdx) {
+        if (outputIdx + 1 > getNumberOfOperationOutputs(operationName)) {
+            throw new IndexOutOfBoundsException("Tried to retrieve the shape of an output index which exceeds the " +
+                    "number of outputs.");
+        }
+
+        Shape outputShape = graph.operation(operationName).output(outputIdx).shape();
+
+        int[] outputDimensions = new int[outputShape.numDimensions()];
+        for (int i = 0; i < outputShape.numDimensions(); i++) {
+            outputDimensions[i] = (int) outputShape.size(i);
+        }
+        return outputDimensions;
+    }
+
+    /**
+     * Get the sizes of the fully-connected layers in the net. These should include inputs and outputs.
+     * @return Array of the sizes of the inputs/outputs of the fully-connected layers of the net.
+     */
+    public int[] getLayerSizes() {
+        // Collect all the operation names.
+        Iterator<Operation> iter = graph.operations();
+        Set<String> operationNames = new HashSet<>();
+        while (iter.hasNext()) {
+            operationNames.add(iter.next().name());
+        }
+
+        // Count the number of fully-connected weight operations.
+        int count = 0;
+        while(operationNames.contains("fully_connected" + count + "/weights/weight")) {
+            count++;
+        }
+        if (count == 0) {
+            throw new IllegalStateException("No fully-connected layers found. Something has changed in the Python " +
+                    "script, likely.");
+        }
+
+        int[] layerSizes = new int[count + 1];
+        // Grab input dimensions on the first bunch.
+        for (int i = 0; i < count; i++) {
+            layerSizes[i] = (int) graph.operation("fully_connected" + i + "/weights/weight").output(0).shape().size(0);
+        }
+        // Grab the output layer on the last one.
+        layerSizes[count] =
+                (int) graph.operation("fully_connected" + (count - 1) + "/weights/weight").output(0).shape().size(1);
+
+        return layerSizes;
+    }
+
+    /**
+     * Get the .pb file which defines the network. Does not include weights.
+     * @return The tensorflow network definition file.
+     */
+    public File getGraphDefinitionFile() {
+        return graphDefinition;
+    }
+
+    /**
      * Create a new fully-connected neural network structure. This calls a python script to make the net.
      *
      * @param graphName      Name of the graph file (without path or file extension).
@@ -150,10 +235,10 @@ public class TrainableNetwork {
      * @return A new TrainableNetwork based on the specifications.
      */
     public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes,
-                                                  List<String> additionalArgs) {
+                                                  List<String> additionalArgs) throws FileNotFoundException {
         // Add all command line arguments for the python script to a list.
         List<String> commandList = new ArrayList<>();
-        commandList.add("python");
+        commandList.add("python3");
         commandList.add(pythonGraphCreatorScript);
         commandList.add("--layers");
         commandList.addAll(layerSizes.stream().map(String::valueOf).collect(Collectors.toList()));
@@ -163,8 +248,10 @@ public class TrainableNetwork {
 
         // Make and run the command line process.
         ProcessBuilder pb = new ProcessBuilder(commandList.toArray(new String[commandList.size()]));
-        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT); // Makes sure that error messages and outputs go to console.
-        pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+        if (tflowDebugOutput) {
+            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT); // Makes sure that error messages and outputs go to console.
+            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+        }
 
         try {
             Process p = pb.start();
@@ -175,12 +262,15 @@ public class TrainableNetwork {
 
         // Send the newly-created graph file to a new TrainableNetwork object.
         File graphFile = new File(graphPath + graphName + ".pb");
-        assert graphFile.exists();
+        if (!graphFile.exists()) {
+            throw new FileNotFoundException("Failed. Unable to locate the TensorFlow graph file which was supposedly " +
+                    "created.");
+        }
 
         return new TrainableNetwork(graphFile);
     }
 
-    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes) {
+    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes) throws FileNotFoundException {
         return makeNewNetwork(graphName, layerSizes, new ArrayList<>());
     }
 }

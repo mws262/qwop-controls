@@ -8,12 +8,12 @@ import org.junit.Test;
 /**
  * Make sure that the single-threaded and multi-threadable versions of the game match perfectly.
  */
-public class GameSingleThreadWithDrawTest {
+public class GameSingleThreadTest{
 
     @Test
     public void stepGame() {
         GameThreadSafe gameMulti = new GameThreadSafe();
-        GameSingleThreadWithDraw gameSingle = new GameSingleThreadWithDraw();
+        GameSingleThread gameSingle = GameSingleThread.getInstance();
 
         for (int i = 0; i < 4; i++) {
             ActionQueue actionQueue = getSampleActions();
@@ -31,6 +31,7 @@ public class GameSingleThreadWithDrawTest {
             gameMulti.makeNewWorld();
             gameSingle.makeNewWorld();
         }
+        gameSingle.releaseGame();
     }
 
     @Test
