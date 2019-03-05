@@ -17,7 +17,6 @@ goals
 goals.tree_search
 controllers
 savers
-flash
 data
 value
 samplers
