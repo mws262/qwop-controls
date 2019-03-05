@@ -145,9 +145,9 @@ public class MAIN_PerturbationImpulse extends JFrame {
      *
      * @author matt
      */
-    class PanelRunner_MultiStateWithArrows extends PanelRunner_MultiState {
+    static class PanelRunner_MultiStateWithArrows extends PanelRunner_MultiState {
 
-        private final int ARR_SIZE = 4;
+        private static final int ARR_SIZE = 4;
 
         private List<Integer[]> arrowCoords = new Vector<>();
 

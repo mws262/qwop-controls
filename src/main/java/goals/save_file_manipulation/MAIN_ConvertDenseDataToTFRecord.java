@@ -116,7 +116,6 @@ public class MAIN_ConvertDenseDataToTFRecord {
     private static void convertToProtobuf(List<SavableDenseData> denseData, String fileName, String destinationPath) throws IOException {
         File file = new File(destinationPath + fileName);
 
-        //noinspection ResultOfMethodCallIgnored
         file.getParentFile().mkdirs();
         FileOutputStream stream = new FileOutputStream(file);
 

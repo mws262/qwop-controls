@@ -1,6 +1,6 @@
 package goals.interactive;
 
-import game.GameSingleThreadWithDraw;
+import game.GameSingleThread;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,7 +25,7 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
     /**
      * Game physics world to use.
      */
-    private GameSingleThreadWithDraw game = new GameSingleThreadWithDraw();
+    private GameSingleThread game = GameSingleThread.getInstance();
 
     @Override
     public void actionPerformed(ActionEvent e) { // Gets called every 40ms
@@ -58,6 +58,9 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
             case KeyEvent.VK_R: // Reset the runner on pressing r.
                 game.makeNewWorld();
                 break;
+            default:
+                // Nothing
+                break;
         }
     }
 
@@ -75,6 +78,9 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
                 break;
             case KeyEvent.VK_P:
                 p = false;
+                break;
+            default:
+                // Nothing.
                 break;
         }
     }

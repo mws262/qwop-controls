@@ -17,11 +17,6 @@ import java.util.List;
  */
 public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase {
 
-    /**
-     * Every how many actions we introduce a new cold-started runner to simulate and visualize.
-     */
-    private int coldStartRunnerIntroductionInterval = 1;
-
     public static void main(String[] args) {
         new MAIN_CompareWarmStartToColdMulti().run();
     }
@@ -54,7 +49,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
                         coldStartGameIter.remove();
                     } else {
                         runnerPanel.addSecondaryState(st, Node.getColorFromScaledValue(count,
-                                actionQueue.getActionsInCurrentRun().length / 5, 0.8f));
+                                actionQueue.getActionsInCurrentRun().length / (float) 5, 0.8f));
                         count++;
                     }
                 }
@@ -71,6 +66,8 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
             coldStartGame.setState(gameFullRun.getCurrentState());
             coldStartGames.add(coldStartGame);
 
+            // Every how many actions we introduce a new cold-started runner to simulate and visualize.
+            int coldStartRunnerIntroductionInterval = 1;
             coldStartAction += coldStartRunnerIntroductionInterval;
         }
     }

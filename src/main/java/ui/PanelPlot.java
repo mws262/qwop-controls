@@ -239,7 +239,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * {@link XYDataset} gets data for plotting transformed data from PCA here.
      */
-    public class PlotDataset extends AbstractXYDataset {
+    public static class PlotDataset extends AbstractXYDataset {
 
         private static final long serialVersionUID = 1L;
 
@@ -300,7 +300,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
             return renderer;
         }
 
-        private class DataSeries_FloatPrimitive implements DataSeries {
+        private static class DataSeries_FloatPrimitive implements DataSeries {
             float[] xData, yData;
             Color[] cData;
 
@@ -335,7 +335,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
             }
         }
 
-        private class DataSeries_FloatObj implements DataSeries { // It's surprisingly hard to convert between
+        private static class DataSeries_FloatObj implements DataSeries { // It's surprisingly hard to convert between
         	// primitive arrays and object arrays in a non-verbose way. Hence this.
             Float[] xData, yData;
             Color[] cData;

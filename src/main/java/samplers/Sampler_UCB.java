@@ -39,6 +39,11 @@ public class Sampler_UCB implements ISampler {
     public static float explorationMultiplier = 1f;
 
     /**
+     * Constant term on UCB exploration factor. Higher means more exploration.
+     */
+    public static float explorationConstant = 1f;
+
+    /**
      * Are we done with the tree policy?
      */
     private boolean treePolicyDone = false;
@@ -67,7 +72,17 @@ public class Sampler_UCB implements ISampler {
         this.evaluationFunction = evaluationFunction;
         rolloutPolicy = new RolloutPolicy_RandomColdStart(evaluationFunction);// RolloutPolicy_RandomColdStart
         // (evaluationFunction);
-        c = 5f * explorationMultiplier * Random.nextFloat() * c + 1f;
+        c =  explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
+    }
+
+    /**
+     * Must provide an evaluationFunction to get a numeric score for nodes after a rollout.
+     * Also specify a rollout policy to use.
+     */
+    public Sampler_UCB(IEvaluationFunction evaluationFunction, RolloutPolicy rolloutPolicy) {
+        this.evaluationFunction = evaluationFunction;
+        this.rolloutPolicy = rolloutPolicy;
+        c = explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
     }
 
     /**
@@ -107,6 +122,7 @@ public class Sampler_UCB implements ISampler {
             if (!child.fullyExplored.get() && !child.isLocked()) {
                 float val =
 						(float) (child.getValue() / child.visitCount.doubleValue() + c * (float) Math.sqrt(2. * Math.log(startNode.visitCount.doubleValue()) / child.visitCount.doubleValue()));
+                assert !Float.isNaN(val);
                 if (val > bestScoreSoFar) {
                     bestNodeSoFar = child;
                     bestScoreSoFar = val;
@@ -189,6 +205,6 @@ public class Sampler_UCB implements ISampler {
 
     @Override
     public Sampler_UCB getCopy() {
-        return new Sampler_UCB(evaluationFunction.getCopy());
+        return new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy());
     }
 }

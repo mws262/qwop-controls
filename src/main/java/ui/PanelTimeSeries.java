@@ -39,7 +39,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
     /**
      * How many plots per row?
      */
-    private final int plotsPerRow = 6;
+    private static final int plotsPerRow = 6;
 
     /**
      * Array of the numberOfPlots number of plots we make.

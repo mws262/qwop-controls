@@ -1,5 +1,5 @@
 function [fig, ax, bodyPatches, headTForm] = DrawNewRunner(vertexHolder)
-import game.State game.StateVariable game.GameSingleThreadWithDraw
+import game.State game.StateVariable game.GameSingleThread
 if nargin == 0
    game = GameSingleThread;
    vertexHolder = game.getDebugVertices;

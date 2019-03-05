@@ -1,10 +1,7 @@
 import numpy as np
-import densedata_pb2 as dataset
 import tensorflow as tf
-import time
-import timeit
 import os.path
-import math
+import matplotlib.pyplot as plt
 
 # Test and debug tfrecord files written from my java end.
 
@@ -42,20 +39,24 @@ def read_and_decode_single_example(filename):
     return pk,tt,act,body
 
 filename_list = []
-print os.listdir('../../')
+print(os.listdir('../../'))
 for file in os.listdir('../../'):
     if file.endswith('.NEWNEWNEW'):
         filename_list.append(file)
 
 filename_list.append(filename_list)
 
-print filename_list
+print(filename_list)
 print('%d files in queue.' % len(filename_list))
 
 options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.NONE)
 
 
-pk,tt,act,body = read_and_decode_single_example(['./recoveries16.TFRecord'])#'../../denseData_2017-11-06_08-57-41.NEWNEWNEW', '../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])
+pk,tt,act,body = read_and_decode_single_example(['../src/main/resources/training_data/denseTF_2018-04-26_15-19-44.TFRecord'])#'../../denseData_2017-11-06_08-57-41.NEWNEWNEW', '../../denseData_2017-11-06_08-57-41.NEWNEWNEW'])
+
+
+fig, axs = plt.subplots(2, 1)
+
 with tf.Session() as sess:
     # ... init our variables, ...
     sess.run(tf.global_variables_initializer())
@@ -64,10 +65,36 @@ with tf.Session() as sess:
     ttIn = sess.run([tt])
     actIn = sess.run([act])
     bodyIn = sess.run([body])
-    print pkIn
-    print ttIn
-    print actIn
-    print bodyIn
+    print(pkIn)
+    print(ttIn)
+    print(actIn)
+    print(bodyIn)
+
+
+    nothingList1 = []
+    woList1 = []
+    qpList1 = []
+
+    nothingList2 = []
+    woList2 = []
+    qpList2 = []
+    count = 0
+    for buttons in pkIn[0][:len(pkIn[0]) - 100]:
+        if buttons[0] == 0:
+            if buttons[1] == 0:
+                nothingList1.append(bodyIn[0][count, 1])
+                nothingList2.append(bodyIn[0][count, 2])
+            else:
+                woList1.append(bodyIn[0][count, 1])
+                woList2.append(bodyIn[0][count, 2])
+        else:
+            qpList1.append(bodyIn[0][count, 1])
+            qpList2.append(bodyIn[0][count, 2])
+
+        count += 1
+
+    axs[0].plot(nothingList1, nothingList2, '.')
+    plt.show()
     #
     # for i in range(10):
     #     ttIn = sess.run([tt])

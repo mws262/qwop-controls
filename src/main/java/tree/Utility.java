@@ -11,8 +11,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
 
@@ -83,7 +85,7 @@ public class Utility {
      * @throws IOException File cannot be opened or written to.
      */
     public static void stringToLogFile(String contents, String outPath) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outPath))) {
             writer.write(contents);
         }
     }
@@ -102,11 +104,13 @@ public class Utility {
 
         String divider = "**************************************************************";
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(inPath));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(inPath));
+             BufferedWriter writer = Files.newBufferedWriter(Paths.get(outPath))) {
 
             while (reader.ready()) {
                 String nextLine = reader.readLine();
+                Objects.requireNonNull(nextLine, "Line read returned null.");
+
                 if (nextLine.contains("!LOG_START")) {
                     collecting = true;
                     writer.write(divider + "\n");

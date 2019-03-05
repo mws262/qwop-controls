@@ -30,7 +30,7 @@ import static game.GameConstants.*;
  * @author matt
  */
 @SuppressWarnings("Duplicates")
-public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
+public class GameThreadSafe extends ClassLoader implements IGame {
     /**
      * Number of timesteps in this game.
      */
@@ -91,7 +91,7 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
     public Stroke mainRunnerStroke = new BasicStroke(1);
 
     /** Should the game be marked as failed if the thighs touch the ground? (happens with knees touching the ground. **/
-    public boolean failOnThighContact = false;
+    public boolean failOnThighContact = true;
 
     /**
      * Make a new game on its own ClassLoader.
@@ -247,6 +247,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
             findClass("org.jbox2d.dynamics.joints.GearJoint");
             findClass("org.jbox2d.dynamics.joints.ConstantVolumeJointDef");
             findClass("org.jbox2d.dynamics.joints.ConstantVolumeJoint");
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -344,24 +346,6 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
             e.printStackTrace();
         }
         return boxShapeDef;
-    }
-
-    /**
-     * Convenience method to avoid dealing with reflection in the code constantly.
-     */
-    private Object makeCircleShapeDef(float radius, float restitution, float friction, float density, int groupIdx) {
-        Object circleShapeDef = null;
-        try {
-            circleShapeDef = _CircleDef.getDeclaredConstructor().newInstance();
-            circleShapeDef.getClass().getField("radius").setFloat(null, radius);
-            circleShapeDef.getClass().getField("friction").setFloat(null, friction);
-            circleShapeDef.getClass().getField("density").setFloat(null, density);
-            circleShapeDef.getClass().getField("restitution").setFloat(null, restitution);
-            circleShapeDef.getClass().getField("groupIndex").setInt(null, groupIdx);
-        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return circleShapeDef;
     }
 
     /**
@@ -532,42 +516,42 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
             }
 
             /* Joint makeNewWorld */
-            Object rAnkleJDef = makeJointDef(rFootBody, rCalfBody, rAnklePosX, rAnklePosY, -0.5f, 0.5f, 2000f, 0f,
+            rAnkleJDef = makeJointDef(rFootBody, rCalfBody, rAnklePosX, rAnklePosY, -0.5f, 0.5f, 2000f, 0f,
                     true, false, false);
             rAnkleJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rAnkleJDef);
-            Object lAnkleJDef = makeJointDef(lFootBody, lCalfBody, lAnklePosX, lAnklePosY, -0.5f, 0.5f, 2000f, 0f,
+            lAnkleJDef = makeJointDef(lFootBody, lCalfBody, lAnklePosX, lAnklePosY, -0.5f, 0.5f, 2000f, 0f,
                     true, false, false);
             lAnkleJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lAnkleJDef);
 
-            Object rKneeJDef = makeJointDef(rCalfBody, rThighBody, rKneePosX, rKneePosY, -1.3f, 0.3f, 3000f, 0f, true
+            rKneeJDef = makeJointDef(rCalfBody, rThighBody, rKneePosX, rKneePosY, -1.3f, 0.3f, 3000f, 0f, true
                     , true, false);
             rKneeJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rKneeJDef);
-            Object lKneeJDef = makeJointDef(lCalfBody, lThighBody, lKneePosX, lKneePosY, -1.6f, 0.0f, 3000f, 0f, true
+            lKneeJDef = makeJointDef(lCalfBody, lThighBody, lKneePosX, lKneePosY, -1.6f, 0.0f, 3000f, 0f, true
                     , true, false);
             lKneeJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lKneeJDef);
 
-            Object rHipJDef = makeJointDef(rThighBody, torsoBody, rHipPosX, rHipPosY, -1.3f, 0.7f, 6000f, 0f, true,
+            rHipJDef = makeJointDef(rThighBody, torsoBody, rHipPosX, rHipPosY, -1.3f, 0.7f, 6000f, 0f, true,
                     true, false);
             rHipJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rHipJDef);
-            Object lHipJDef = makeJointDef(lThighBody, torsoBody, lHipPosX, lHipPosY, -1.5f, 0.5f, 6000f, 0f, true,
+            lHipJDef = makeJointDef(lThighBody, torsoBody, lHipPosX, lHipPosY, -1.5f, 0.5f, 6000f, 0f, true,
                     true, false);
             lHipJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lHipJDef);
 
-            Object neckJDef = makeJointDef(headBody, torsoBody, neckPosX, neckPosY, -0.5f, 0.0f, 1000f, 0f, true,
+            neckJDef = makeJointDef(headBody, torsoBody, neckPosX, neckPosY, -0.5f, 0.0f, 1000f, 0f, true,
                     true, false);
             neckJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, neckJDef);
 
-            Object rShoulderJDef = makeJointDef(rUArmBody, torsoBody, rShoulderPosX, rShoulderPosY, -0.5f, 1.5f,
+            rShoulderJDef = makeJointDef(rUArmBody, torsoBody, rShoulderPosX, rShoulderPosY, -0.5f, 1.5f,
                     1000f, 0f, true, true, false);
             rShoulderJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rShoulderJDef);
-            Object lShoulderJDef = makeJointDef(lUArmBody, torsoBody, lShoulderPosX, lShoulderPosY, -2f, 0.0f, 1000f,
+            lShoulderJDef = makeJointDef(lUArmBody, torsoBody, lShoulderPosX, lShoulderPosY, -2f, 0.0f, 1000f,
                     0f, true, true, false);
             lShoulderJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lShoulderJDef);
 
-            Object rElbowJDef = makeJointDef(rLArmBody, rUArmBody, rElbowPosX, rElbowPosY, -0.1f, 0.5f, 0f, 10f, true
+            rElbowJDef = makeJointDef(rLArmBody, rUArmBody, rElbowPosX, rElbowPosY, -0.1f, 0.5f, 0f, 10f, true
                     , true, false);
             rElbowJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rElbowJDef);
-            Object lElbowJDef = makeJointDef(lLArmBody, lUArmBody, lElbowPosX, lElbowPosY, -0.1f, 0.5f, 0f, 10f, true
+            lElbowJDef = makeJointDef(lLArmBody, lUArmBody, lElbowPosX, lElbowPosY, -0.1f, 0.5f, 0f, 10f, true
                     , true, false);
             lElbowJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lElbowJDef);
 
@@ -636,6 +620,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
 
 
             world.getClass().getMethod("setContactListener", _ContactListener).invoke(world, contactListenerProxy);
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -832,6 +818,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                 isFailed = true;
             }
             timestepsSimulated++;
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -870,7 +858,9 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                     getCurrentBodyState(rLArmBody),
                     getCurrentBodyState(lLArmBody),
                     getFailureStatus());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            throw e;
+        }  catch (Exception e) {
             e.printStackTrace();
         }
         return st;
@@ -963,6 +953,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
             transforms[11] = getXForm(st.llarm);
             transforms[12] = getXForm(new StateVariable(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
             // Offset by 20 because its now a box.
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1075,6 +1067,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                 g.drawString("_", ((-(int) (scaling * currTorsoPos) - i * 70) % markingWidth) + markingWidth,
                         yOffset + (int) (scaling * 9.2f));
             }
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1147,6 +1141,8 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                     System.out.println("Shape type unknown.");
                 }
             }
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -24,4 +24,9 @@ public class RolloutPolicy_SingleRandom extends RolloutPolicy {
 
         return evaluationFunction.getValue(normalRolloutEndNode);
     }
+
+    @Override
+    public RolloutPolicy getCopy() {
+       return new RolloutPolicy_SingleRandom(evaluationFunction.getCopy());
+    }
 }

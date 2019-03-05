@@ -4,6 +4,7 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
+import com.jogamp.opengl.util.gl2.GLUT;
 import tree.Node;
 import tree.TreeWorker;
 
@@ -35,6 +36,8 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      * labels in world space.
      */
     private final TextRenderer textRenderSmall = new TextRenderer(new Font("Calibri", Font.PLAIN, 18));
+
+    private GLUT glut = new GLUT();
 
     /**
      * Tree root nodes associated with this interface.
@@ -185,10 +188,14 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         ptSize = Math.min(ptSize, 10f);
 
         for (Node node : rootNodes) {
-            node.recurseOnTreeInclusive((n) -> {if (!n.nodeLabel.isEmpty()) { drawString(n.nodeLabel,
+            node.recurseOnTreeInclusive((n) -> {if (!n.notDrawnForSpeed && !n.nodeLabel.isEmpty()) {
+                    //n.setChildrenColorFromRelativeValues();
+                    drawString(!n.nodeLabelAlt.isEmpty() ? n.nodeLabel + ", " + n.nodeLabelAlt : n.nodeLabel,
                     n.nodeLocation[0],
                     n.nodeLocation[1],
-                    n.nodeLocation[2], Node.getColorFromTreeDepth(n.getTreeDepth() + 20)); }});
+                    n.nodeLocation[2],
+                            Node.getColorFromScaledValue(n.getValue()/n.visitCount.floatValue() - Node.minVal,
+                                    Node.maxVal - Node.minVal, 1f)); }});
 
             gl.glColor3f(1f, 0.1f, 0.1f);
             gl.glPointSize(ptSize);
@@ -317,6 +324,9 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                     case KeyEvent.VK_RIGHT:
                         cam.smoothRotateLat(-0.1f, 5);
                         break;
+                    default:
+                        // Nothing.
+                        break;
                 }
             } else if (e.isShiftDown()) {
                 switch (keyCode) {
@@ -328,6 +338,9 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                         break;
                     case KeyEvent.VK_ESCAPE:
                         System.exit(0);
+                        break;
+                    default:
+                        // Nothing.
                         break;
                 }
             } else {
@@ -354,6 +367,9 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 //						if (runnerPanel.isActive()) {
 //							runnerPanel.pauseToggle();
 //						}
+                        break;
+                    default:
+                        // Nothing.
                         break;
                 }
             }

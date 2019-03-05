@@ -53,9 +53,9 @@ public abstract class RolloutPolicy {
      * @param game Game used for simulation. Will be reset before setting the state.
      */
     void coldStartGameToNode(Node target, GameThreadSafe game) {
-        // Reset the game and action queue.
+        // Reset the game.
         game.makeNewWorld();
-        actionQueue.clearAll();
+//        actionQueue.clearAll();
         game.setState(target.getState());
     }
 
@@ -80,4 +80,6 @@ public abstract class RolloutPolicy {
         }
         return rolloutNode;
     }
+
+    public abstract RolloutPolicy getCopy();
 }
