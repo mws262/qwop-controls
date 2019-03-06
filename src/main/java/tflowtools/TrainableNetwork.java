@@ -105,10 +105,30 @@ public class TrainableNetwork {
     /**
      * Save training progress (i.e. weights and biases) to specific checkpoint file. Will still be saved to the
      * checkpoint directory. Do not include file extension.
+     * @return A list of the files in the save directory matching the given checkpoint name. Note that we aren't
+     * doing strict checking on the number of files. If you suspect that some other source is adding similarly-named
+     * files, check this.
      */
-    public void saveCheckpoint(String checkpointName) {
+    public List<File> saveCheckpoint(String checkpointName) {
+        assert !checkpointName.isEmpty();
+
         Tensor<String> checkpointTensor = Tensors.create(Paths.get(checkpointPath, checkpointName).toString());
         session.runner().feed("save/Const", checkpointTensor).addTarget("save/control_dependency").run();
+
+        File checkPointDirectory = new File(checkpointPath);
+        assert checkPointDirectory.isDirectory();
+        assert checkPointDirectory.exists();
+
+        File[] files = checkPointDirectory.listFiles();
+
+        // Also report the files created.
+        List<File> checkpointFiles = new ArrayList<>();
+        for (File file : Objects.requireNonNull(files)) {
+            if (file.getName().contains(checkpointName)) {
+                checkpointFiles.add(file);
+            }
+        }
+        return checkpointFiles;
     }
 
     /**

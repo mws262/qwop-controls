@@ -46,12 +46,12 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
     /**
      * Number of nodes to run through training in one shot.
      */
-    public int trainingBatchSize = 100;
+    private int trainingBatchSize = 100;
 
     /**
      * How many training steps to take per batch of the update data.
      */
-    public int trainingStepsPerBatch = 1;
+    private int trainingStepsPerBatch = 1;
 
     /**
      * Number of training epochs completed since the creation of this object.
@@ -86,6 +86,10 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
 
         // If no action generator is assigned, just use the actions of this node's children.
         if (Node.potentialActionGenerator == null) {
+            if (currentNode.getChildCount() == 0) {
+                throw new IllegalStateException("Tried to get a maximizing action using a node with no action " +
+                        "generator or existing children.");
+            }
             Node[] children = currentNode.getChildren();
             List<Action> childActions = Arrays.stream(children).map(Node::getAction).collect(Collectors.toList());
             actionChoices = new ActionSet(new Distribution_Equal());
@@ -185,10 +189,12 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
      * Save a checkpoint file for the neural networks (basically all weights and biases). Directory automatically
      * chosen.
      * @param checkpointName Name of the checkpoint file. Do not include file extension or directory.
+     * @return A list of checkpoint with that name.
      */
-    public void saveCheckpoint(String checkpointName) {
+    public List<File> saveCheckpoint(String checkpointName) {
         assert !checkpointName.isEmpty();
-        network.saveCheckpoint(checkpointName);
+        List<File> checkpointFiles = network.saveCheckpoint(checkpointName);
+        return checkpointFiles;
     }
 
     public File getCheckpointPath() {
@@ -201,6 +207,30 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
      */
     public File getGraphDefinitionFile() {
         return network.getGraphDefinitionFile();
+    }
+
+    /**
+     * Set the number of examples fed in per batch during training.
+     * @param batchSize Size of each batch. In number of examples.
+     */
+    public void setTrainingBatchSize(int batchSize) {
+        trainingBatchSize = batchSize;
+    }
+
+    /**
+     * Set the number of training iterations per batch.
+     * @param stepsPerBatch Number of training steps taken per batch fed in.
+     */
+    public void setTrainingStepsPerBatch(int stepsPerBatch) {
+        trainingStepsPerBatch = stepsPerBatch;
+    }
+
+    /**
+     * Decide whether loss reports will be printed out during training.
+     * @param verbose True -- verbose print out. False -- silent.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     /**

@@ -71,12 +71,19 @@ public class ValueFunction_TensorFlow_ActionInMulti implements IValueFunction {
 
     @Override
     public Action getMaximizingAction(Node currentNode) {
-        KeyCombination nodeActionKeys =
-                getKeyCombination(Node.potentialActionGenerator.getPotentialChildActionSet(currentNode).get(0).peek());
+        KeyCombination nodeActionKeys;
+        if (Node.potentialActionGenerator == null) {
+            if (currentNode.getChildCount() == 0) {
+                throw new IllegalStateException("Tried to get a maximizing action using a node with no action " +
+                        "generator or existing children.");
+            }
+            nodeActionKeys = getKeyCombination(currentNode.getChildByIndex(0).getAction().peek());
+        } else {
+            nodeActionKeys =
+                    getKeyCombination(Node.potentialActionGenerator.getPotentialChildActionSet(currentNode).get(0).peek());
+        }
+
         ValueFunction_TensorFlow_ActionIn valFun = allValueFunctions.get(nodeActionKeys);
-//        for (ValueFunction_TensorFlow_ActionIn valFunny : allValueFunctions.values()) {
-//            System.out.println(valFunny.getMaximizingAction(currentNode));
-//        }
         return valFun.getMaximizingAction(currentNode);
     }
 
@@ -120,12 +127,16 @@ public class ValueFunction_TensorFlow_ActionInMulti implements IValueFunction {
     /**
      * Save checkpoints of all the nets involved.
      * @param checkpointPrefix Prefix of the filename. The suffix will be the key combinations involved.
+     * @return A list of created checkpoint files.
      */
-    public void saveCheckpoints(String checkpointPrefix) {
+    public List<File> saveCheckpoints(String checkpointPrefix) {
         assert !checkpointPrefix.isEmpty();
+        List<File> checkpointFiles = new ArrayList<>();
         for (Map.Entry<KeyCombination, ValueFunction_TensorFlow_ActionIn> entry : allValueFunctions.entrySet()) {
-            entry.getValue().saveCheckpoint(checkpointPrefix + entry.getKey().name());
+            checkpointFiles.addAll(
+                    entry.getValue().saveCheckpoint(checkpointPrefix + entry.getKey().name()));
         }
+        return checkpointFiles;
     }
 
     /**
@@ -139,6 +150,36 @@ public class ValueFunction_TensorFlow_ActionInMulti implements IValueFunction {
             graphFiles[idx++] = valFun.getGraphDefinitionFile();
         }
         return graphFiles;
+    }
+
+    /**
+     * Set the number of examples fed in per batch during training. Applies to all models.
+     * @param batchSize Size of each batch. In number of examples.
+     */
+    public void setTrainingBatchSize(int batchSize) {
+        for (ValueFunction_TensorFlow_ActionIn valFun : allValueFunctions.values()) {
+            valFun.setTrainingBatchSize(batchSize);
+        }
+    }
+
+    /**
+     * Set the number of training iterations per batch. Applies to all models.
+     * @param stepsPerBatch Number of training steps taken per batch fed in.
+     */
+    public void setTrainingStepsPerBatch(int stepsPerBatch) {
+        for (ValueFunction_TensorFlow_ActionIn valFun : allValueFunctions.values()) {
+            valFun.setTrainingStepsPerBatch(stepsPerBatch);
+        }
+    }
+
+    /**
+     * Decide whether loss reports will be printed out during training.
+     * @param verbose True -- verbose print out. False -- silent.
+     */
+    public void setVerbose(boolean verbose) {
+        for (ValueFunction_TensorFlow_ActionIn valFun : allValueFunctions.values()) {
+            valFun.setVerbose(verbose);
+        }
     }
 
     /**
@@ -224,5 +265,11 @@ public class ValueFunction_TensorFlow_ActionInMulti implements IValueFunction {
             valFunMulti.allValueFunctions.put(keys, valFun);
         }
         return valFunMulti;
+    }
+
+    public static ValueFunction_TensorFlow_ActionInMulti makeNew(Collection<Action> allPossibleActions,
+                                                                 String fileNamePrefix,
+                                                                 List<Integer> hiddenLayerSizes) throws FileNotFoundException {
+        return makeNew(allPossibleActions, fileNamePrefix, hiddenLayerSizes, new ArrayList<>());
     }
 }
