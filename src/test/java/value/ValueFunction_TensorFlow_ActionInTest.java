@@ -67,10 +67,9 @@ public class ValueFunction_TensorFlow_ActionInTest {
         }
     }
 
-
     @Test
-    public void updateAndEvaluateAndSave() {
-        valFun.trainingStepsPerBatch = 1000; // Going to run this many training steps on the same bunch of nodes.
+    public void updateEvaluateSaveLoad() {
+        valFun.setTrainingStepsPerBatch(1000); // Going to run this many training steps on the same bunch of nodes.
         List<Node> allNodes = new ArrayList<>();
         rootNode.getNodesBelow(allNodes, true);
         allNodes.remove(rootNode); // Can't evaluate root under normal circumstances.
@@ -108,7 +107,6 @@ public class ValueFunction_TensorFlow_ActionInTest {
             }
         }
         Assert.assertEquals("Saving the checkpoint should result in 2 files.", 2, foundFiles);
-
 
         // Make sure loading the checkpoint works correctly.
         // Make another value function.
@@ -232,5 +230,4 @@ public class ValueFunction_TensorFlow_ActionInTest {
         game.releaseGame();
         return rootNode;
     }
-
 }
