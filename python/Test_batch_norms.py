@@ -22,7 +22,7 @@ update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 with tf.control_dependencies(update_ops):
     train_op = adam.minimize(out, name="optimizer")
 
-print a
+print(a)
 with tf.Session() as sess:
 
     sess.run(tf.global_variables_initializer())
@@ -30,4 +30,4 @@ with tf.Session() as sess:
     for i in range(100):
 
         normed_raw,_ = sess.run([normed,train_op], feed_dict={tf_in: a})
-        print normed_raw
+        print(normed_raw)

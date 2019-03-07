@@ -3,15 +3,19 @@ package goals.tree_search;
 import actions.Action;
 import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_DeltaDistance;
+import evaluators.EvaluationFunction_Distance;
 import game.GameThreadSafe;
 import samplers.Sampler_UCB;
 import samplers.rollout.RolloutPolicy_RandomColdStart;
+import samplers.rollout.RolloutPolicy_WorstCaseWindow;
 import savers.DataSaver_StageSelected;
 import tree.Node;
 import tree.TreeStage_MaxDepth;
 import tree.TreeWorker;
 import tree.Utility;
+import value.ValueFunction_TensorFlow_ActionIn;
 import value.ValueFunction_TensorFlow_ActionInMulti;
+import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -45,7 +49,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         // Make new tree root and assign to GUI.
         // Assign default available actions.
-        assignAllowableActions(-1);
+        assignAllowableActionsWider(-1);
         Node rootNode = new Node();
         Node.pointsToDraw.clear();
         ui.clearRootNodes();
@@ -84,32 +88,49 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        extraNetworkArgs.add("--learnrate");
 //        extraNetworkArgs.add("1e-4");
 
-//        ValueFunction_TensorFlow_ActionIn valueFunction = ValueFunction_TensorFlow_ActionIn.makeNew("tmp3",
-//                hiddenLayerSizes);
+//        ValueFunction_TensorFlow_ActionIn valueFunction = null;
+//        try {
+//            valueFunction = ValueFunction_TensorFlow_ActionIn.makeNew("tmp3",
+//                    hiddenLayerSizes);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//
+//        valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
+//        valueFunction.setTrainingBatchSize(100);
 
-        ValueFunction_TensorFlow_ActionInMulti valueFunction = null;
+        ValueFunction_TensorFlow_StateOnly valueFunction = null;
         try {
-            valueFunction = ValueFunction_TensorFlow_ActionInMulti.makeNew(
-                            Node.potentialActionGenerator.getAllPossibleActions(),
-                            "tmpMulti",
-                            hiddenLayerSizes,
-                            new ArrayList<>());
+            valueFunction = ValueFunction_TensorFlow_StateOnly.makeNew("tmp3",
+                    hiddenLayerSizes);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
+        valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
+        valueFunction.setTrainingBatchSize(100);
+
+//        ValueFunction_TensorFlow_ActionInMulti valueFunction = null;
+//        try {
+//            valueFunction = ValueFunction_TensorFlow_ActionInMulti.makeNew(
+//                            Node.potentialActionGenerator.getAllPossibleActions(),
+//                            "tmpMulti",
+//                            hiddenLayerSizes,
+//                            new ArrayList<>());
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+
 //        valueFunction.loadCheckpoint("chk1");
 
-//        valueFunction.trainingStepsPerBatch = netTrainingStepsPerIter;
-//        valueFunction.trainingBatchSize = 100;
 
         for (int k = 0; k < 1000; k++) {
 //            RolloutPolicy_ValueFunction rollout  =
 //                    new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueNetwork);
 //            rollout.maxRolloutTimesteps = 200;
 
-            RolloutPolicy_RandomColdStart rollout =
-                    new RolloutPolicy_RandomColdStart(new EvaluationFunction_DeltaDistance());
+            RolloutPolicy_WorstCaseWindow rollout =
+                    new RolloutPolicy_WorstCaseWindow(new EvaluationFunction_Distance());
 
             Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout);
 
@@ -144,10 +165,11 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             }
 
 //             Save a checkpoint of the weights/biases.
-            if (k % 20 == 0) {
-                valueFunction.saveCheckpoints("chk");
-                System.out.println("Saved");
-            }
+//            if (k % 20 == 0) {
+//                valueFunction.saveCheckpoint("chk");
+//                //valueFunction.saveCheckpoints("chk");
+//                System.out.println("Saved");
+//            }
         }
     }
 }

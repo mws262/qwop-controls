@@ -13,7 +13,7 @@ PARAMETERS & SETTINGS
 '''
 
 tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
-tfrecordPaths = ['../src/main/resources/saved_data/training_data/', '../src/main/resources/saved_data/11_2_18/']  # Location of datafiles on this machine. Beware of drive mounting locations.,
+tfrecordPaths = ['../src/main/resources/saved_data/training_data/']  # Location of datafiles on this machine. Beware of drive mounting locations.,
 
 export_dir = './models/'
 learn_rate = 1e-3
@@ -143,10 +143,17 @@ with tf.Session() as sess:
             print(state_stdev)
             pass
 
-        file = open("saved_normalization.info", 'w')
+        # file = open("saved_normalization.info", 'w')
+        #
+        # np.savez(file, mean=state_mean, max=state_max, min=state_min, range=state_range, std=state_stdev, quantity=state_count)
+        # file.close()
 
-        np.savez(file, mean=state_mean, max=state_max, min=state_min, range=state_range, std=state_stdev, quantity=state_count)
-        file.close()
+        np.savetxt("../src/main/resources/data_stats/state_mean.txt", state_mean)
+        np.savetxt("../src/main/resources/data_stats/state_max.txt", state_max)
+        np.savetxt("../src/main/resources/data_stats/state_min.txt", state_min)
+        np.savetxt("../src/main/resources/data_stats/state_range.txt", state_range)
+        np.savetxt("../src/main/resources/data_stats/state_stdev.txt", state_stdev)
+        # np.savetxt("state_count.txt", state_count)
 
     # Test
     file = open("saved_normalization.info", 'r')
@@ -156,14 +163,14 @@ with tf.Session() as sess:
         next_state = sess.run([next_element])[0][0]
 
         next_state = np.subtract(next_state, npzfile['min'])
-        next_state = np.divide(next_state, npzfile['range'], out=np.zeros_like(next_state), where=npzfile['range']!=0)
+        next_state = np.divide(next_state, npzfile['range'], out=np.zeros_like(next_state), where=npzfile['range'] != 0)
 
         print(np.amin(np.amin(next_state, axis=0)))
         print(np.argmin(np.amin(next_state, axis=0)))
         print(np.amax(np.amax(next_state, axis=0)))
         print(np.argmax(np.amax(next_state, axis=0)))
         #print(next_state)
-    file.close()
+    # file.close()
 
 
 
