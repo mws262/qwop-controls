@@ -233,10 +233,13 @@ public class Node {
         this.action = action;
 
         // Error check for duplicate actions.
-        for (Node parentChildren : parent.children) {
-            if (parentChildren.action == action) {
-                throw new IllegalArgumentException("Tried to add a duplicate action node at depth " + getTreeDepth() + ". Action " +
-                        "was: " + action.toString() + ".");
+        if (connectNodeToTree) { // If we want to connect this node to the existing tree, a node with the same action
+            // must not already exist.
+            for (Node parentChildren : parent.children) {
+                if (parentChildren.action == action) {
+                    throw new IllegalArgumentException("Tried to add a duplicate action node at depth " + getTreeDepth() + ". Action " +
+                            "was: " + action.toString() + ".");
+                }
             }
         }
         // Add some child actions to try if an action generator is assigned.

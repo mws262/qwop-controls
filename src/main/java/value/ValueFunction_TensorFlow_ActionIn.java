@@ -3,6 +3,7 @@ package value;
 import actions.Action;
 import actions.ActionSet;
 import com.google.common.collect.Iterables;
+import data.LoadStateStatistics;
 import distributions.Distribution_Equal;
 import tflowtools.TrainableNetwork;
 import tree.Node;
@@ -68,6 +69,15 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
      */
     public boolean verbose = true;
 
+    public LoadStateStatistics.StateStatistics stateStats;
+    {
+        try {
+            stateStats = LoadStateStatistics.loadStatsFromFile();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Create a value function from an existing neural network save file. If a new network is needed, call
      * {@link ValueFunction_TensorFlow_ActionIn#makeNew(String, List, List)}. If we want to also load a checkpoint
@@ -104,7 +114,7 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
 
 
         float[][] input = new float[1][STATE_SIZE + ACTION_SIZE];
-        System.arraycopy(currentNode.getState().flattenState(), 0, input[0], 0, STATE_SIZE);
+        System.arraycopy(stateStats.standardizeState(currentNode.getState()), 0, input[0], 0, STATE_SIZE);
 
         // Find the action which maximizes the value from this state.
         float maxValue = -Float.MAX_VALUE;
@@ -130,7 +140,7 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
         }
 
         float[][] input = new float[1][STATE_SIZE + ACTION_SIZE];
-        System.arraycopy(currentNode.getParent().getState().flattenState(), 0, input[0], 0, STATE_SIZE);
+        System.arraycopy(stateStats.standardizeState(currentNode.getParent().getState()), 0, input[0], 0, STATE_SIZE);
         input[0][STATE_SIZE + ACTION_SIZE - 1] = currentNode.getAction().getTimestepsTotal();
         float[][] result = network.evaluateInput(input);
 
@@ -158,7 +168,7 @@ public class ValueFunction_TensorFlow_ActionIn implements IValueFunction {
                     continue;
                 }
                 // Get state.
-                float[] state = n.getParent().getState().flattenState();
+                float[] state = stateStats.standardizeState(n.getParent().getState());
                 System.arraycopy(state, 0, trainingStateArray[i], 0, STATE_SIZE);
 
                 // Tack the action duration onto the end.
