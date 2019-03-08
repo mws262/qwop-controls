@@ -5,7 +5,11 @@ import actions.ActionQueue;
 import game.GameSingleThread;
 import game.GameThreadSafe;
 import tree.Node;
+import tree.Utility;
+import ui.ScreenCapture;
+import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_ActionIn;
+import value.ValueFunction_TensorFlow_StateOnly;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,9 +17,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static goals.tree_search.MAIN_Search_Template.assignAllowableActions;
 import static goals.tree_search.MAIN_Search_Template.assignAllowableActionsWider;
 
 @SuppressWarnings("ALL")
@@ -25,6 +31,16 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
 
     public static void main(String[] args) {
+        boolean doScreenCapture = true;
+        ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
+        //        // Save a progress log before shutting down.
+        if (doScreenCapture) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                screenCapture.finalize();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }));
 
         MAIN_SingleEvaluation qwop = new MAIN_SingleEvaluation();
 
@@ -38,19 +54,20 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         // Fire game update every 40 ms.
         new Timer(40, qwop).start();
 
-        ValueFunction_TensorFlow_ActionIn valueFunction = null;
+        ValueFunction_TensorFlow valueFunction = null;
         try {
-            valueFunction = new ValueFunction_TensorFlow_ActionIn(new File("src/main/resources/tflow_models/tmp3.pb"));
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
+                    "/state_only.pb"));
+//            valueFunction = new ValueFunction_TensorFlow_ActionIn(new File("src/main/resources/tflow_models/tmp3.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("chk3");
-        assignAllowableActionsWider(-1);
+        valueFunction.loadCheckpoint("chk");
 //        ValueFunction_TensorFlow_ActionInMulti valueFunction =
 //                ValueFunction_TensorFlow_ActionInMulti.loadExisting(Node.potentialActionGenerator.getAllPossibleActions(), "tmpMulti", "src/main/resources/tflow_models/");
 //        valueFunction.loadCheckpoints("chk");
 
-        assignAllowableActionsWider(-1);
+        assignAllowableActions(-1);
         Node rootNode = new Node();
 
         List<Action[]> alist = new ArrayList<>();
@@ -77,11 +94,18 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
         while (!actionQueue.isEmpty()) {
             qwop.game.step(actionQueue.pollCommand());
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (doScreenCapture) {
+                try {
+                    screenCapture.takeFrameFromContainer(frame);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+//            try {
+//                Thread.sleep(10);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
 
         Node currNode = leaf.get(0);
