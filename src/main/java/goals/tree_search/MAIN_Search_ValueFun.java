@@ -2,19 +2,15 @@ package goals.tree_search;
 
 import actions.Action;
 import evaluators.EvaluationFunction_Constant;
-import evaluators.EvaluationFunction_DeltaDistance;
 import evaluators.EvaluationFunction_Distance;
 import game.GameThreadSafe;
 import samplers.Sampler_UCB;
-import samplers.rollout.RolloutPolicy_RandomColdStart;
 import samplers.rollout.RolloutPolicy_WorstCaseWindow;
 import savers.DataSaver_StageSelected;
 import tree.Node;
 import tree.TreeStage_MaxDepth;
 import tree.TreeWorker;
 import tree.Utility;
-import value.ValueFunction_TensorFlow_ActionIn;
-import value.ValueFunction_TensorFlow_ActionInMulti;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
@@ -101,11 +97,13 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         ValueFunction_TensorFlow_StateOnly valueFunction = null;
         try {
-            valueFunction = ValueFunction_TensorFlow_StateOnly.makeNew("tmp3",
-                    hiddenLayerSizes);
+            valueFunction = new ValueFunction_TensorFlow_StateOnly("state_only",
+                    hiddenLayerSizes, new ArrayList<>());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+        assert valueFunction != null;
 
         valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
         valueFunction.setTrainingBatchSize(100);
@@ -165,11 +163,10 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             }
 
 //             Save a checkpoint of the weights/biases.
-//            if (k % 20 == 0) {
-//                valueFunction.saveCheckpoint("chk");
-//                //valueFunction.saveCheckpoints("chk");
-//                System.out.println("Saved");
-//            }
+            if (k % 2 == 0) {
+                valueFunction.saveCheckpoint("chk");
+                System.out.println("Saved");
+            }
         }
     }
 }

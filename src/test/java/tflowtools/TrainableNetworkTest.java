@@ -79,7 +79,12 @@ public class TrainableNetworkTest {
         int numFiles = flagCheckpointForRemoval(filePrefix);
         Assert.assertEquals(2, numFiles);
 
-        TrainableNetwork networkForLoading = new TrainableNetwork(testNetwork.getGraphDefinitionFile());
+        TrainableNetwork networkForLoading = null;
+        try {
+            networkForLoading = new TrainableNetwork(testNetwork.getGraphDefinitionFile());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         networkForLoading.loadCheckpoint("tmp_unit_test_load_ckpt");
 
         float[][] inputs = new float[][] {

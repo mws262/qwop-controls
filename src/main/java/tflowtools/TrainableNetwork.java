@@ -58,7 +58,11 @@ public class TrainableNetwork {
      *
      * @param graphDefinition Graph definition file.
      */
-    public TrainableNetwork(File graphDefinition) {
+    public TrainableNetwork(File graphDefinition) throws FileNotFoundException {
+
+        if (!graphDefinition.exists() || !graphDefinition.isFile())
+            throw new FileNotFoundException("Unable to locate the specified model file.");
+
         this.graphDefinition = graphDefinition;
 
         // Begin loading the structure of the model as defined by the graph file.
