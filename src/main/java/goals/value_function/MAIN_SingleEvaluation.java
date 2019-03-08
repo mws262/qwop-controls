@@ -117,11 +117,20 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
             while (!actionQueue.isEmpty()) {
                // qwop.game.applyBodyImpulse(-3f, 0.001f);
                 qwop.game.step(actionQueue.pollCommand());
-                try {
-                    Thread.sleep(40);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+
+                if (doScreenCapture) {
+                    try {
+                        screenCapture.takeFrameFromContainer(frame);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
+
+//                try {
+//                    Thread.sleep(40);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
             }
             currNode = currNode.addChild(chosenAction);
             currNode.setState(qwop.game.getCurrentState());
