@@ -5,12 +5,14 @@ import actions.ActionQueue;
 import game.GameSingleThread;
 import game.GameThreadSafe;
 import tree.Node;
-import value.ValueFunction_TensorFlow_ActionInMulti;
+import value.ValueFunction_TensorFlow_ActionIn;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,12 +38,17 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         // Fire game update every 40 ms.
         new Timer(40, qwop).start();
 
-//        ValueFunction_TensorFlow_ActionIn valueFunction = new ValueFunction_TensorFlow_ActionIn(new File("src/main/resources/tflow_models/tmp3.pb"));
-//        valueFunction.loadCheckpoint("chk3");
+        ValueFunction_TensorFlow_ActionIn valueFunction = null;
+        try {
+            valueFunction = new ValueFunction_TensorFlow_ActionIn(new File("src/main/resources/tflow_models/tmp3.pb"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        valueFunction.loadCheckpoint("chk3");
         assignAllowableActionsWider(-1);
-        ValueFunction_TensorFlow_ActionInMulti valueFunction =
-                ValueFunction_TensorFlow_ActionInMulti.loadExisting(Node.potentialActionGenerator.getAllPossibleActions(), "tmpMulti", "src/main/resources/tflow_models/");
-        valueFunction.loadCheckpoints("chk");
+//        ValueFunction_TensorFlow_ActionInMulti valueFunction =
+//                ValueFunction_TensorFlow_ActionInMulti.loadExisting(Node.potentialActionGenerator.getAllPossibleActions(), "tmpMulti", "src/main/resources/tflow_models/");
+//        valueFunction.loadCheckpoints("chk");
 
         assignAllowableActionsWider(-1);
         Node rootNode = new Node();
