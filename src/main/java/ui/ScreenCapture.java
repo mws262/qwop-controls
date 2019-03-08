@@ -1,9 +1,6 @@
 package ui;
 
-import java.awt.AWTException;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.Robot;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -54,13 +51,13 @@ public class ScreenCapture {
     /**
      * Take a frame from the specified {@link JPanel}. TODO: make sure that the dimensions generalize properly.
      *
-     * @param panel JPanel to take a snapshot from.
+     * @param container JPanel to take a snapshot from.
      * @throws IOException Unable to encode the captured image.
      */
-    public void takeFrameFromJPanel(JPanel panel) throws IOException {
+    public void takeFrameFromContainer(Container container) throws IOException {
         BufferedImage bi = new BufferedImage(1440, 720, 1); // This is evil hacks
         Graphics2D g = bi.createGraphics();
-        panel.print(g);
+        container.print(g);
         encoder.encodeImage(bi);
         g.dispose();
     }
