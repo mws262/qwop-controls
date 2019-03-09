@@ -55,7 +55,7 @@ public class ScreenCapture {
      * @throws IOException Unable to encode the captured image.
      */
     public void takeFrameFromContainer(Container container) throws IOException {
-        BufferedImage bi = new BufferedImage(1440, 720, 1); // This is evil hacks
+        BufferedImage bi = new BufferedImage(container.getWidth(), container.getHeight(), 1); // This is evil hacks
         Graphics2D g = bi.createGraphics();
         container.print(g);
         encoder.encodeImage(bi);
