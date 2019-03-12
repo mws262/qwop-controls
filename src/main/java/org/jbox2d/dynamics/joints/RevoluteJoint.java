@@ -32,6 +32,8 @@ import org.jbox2d.dynamics.TimeStep;
 import org.jbox2d.pooling.TLMat22;
 import org.jbox2d.pooling.TLVec2;
 
+import java.io.Serializable;
+
 
 //Updated to rev. 56->108 of b2RevoluteJoint.cpp/.h
 
@@ -48,7 +50,7 @@ import org.jbox2d.pooling.TLVec2;
 //J = [0 0 -1 0 0 1]
 //K = invI1 + invI2
 
-public class RevoluteJoint extends Joint {
+public class RevoluteJoint extends Joint implements Serializable {
 	public final Vec2 m_localAnchor1;	// relative
 	public final Vec2 m_localAnchor2;
 	public final Vec2 m_pivotForce;

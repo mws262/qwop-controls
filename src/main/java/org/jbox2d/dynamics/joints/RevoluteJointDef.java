@@ -26,6 +26,8 @@ package org.jbox2d.dynamics.joints;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 
+import java.io.Serializable;
+
 //Updated to rev. 56->108 of b2RevoluteJoint.cpp/.h
 
 /**
@@ -42,7 +44,7 @@ import org.jbox2d.dynamics.Body;
  *  <li>if you add/remove shapes from a body and recompute the mass,
  *     the joints will be broken.</li></ul>
  */
-public class RevoluteJointDef extends JointDef {
+public class RevoluteJointDef extends JointDef implements Serializable {
 	public RevoluteJointDef() {
 		type = JointType.REVOLUTE_JOINT;
 		localAnchor1 = new Vec2(0.0f, 0.0f);

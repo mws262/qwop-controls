@@ -23,11 +23,13 @@
 
 package org.jbox2d.common;
 
+import java.io.Serializable;
+
 /**
  * A 2-dimensional vector class.  Used heavily in JBox2d.
  * djm: added ToOut methods
  */
-public class Vec2 {
+public class Vec2 implements Serializable {
 	/** Should we count Vec2 creations? */
 	static public boolean watchCreations = true;
 	/**

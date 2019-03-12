@@ -36,6 +36,8 @@ import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.pooling.TLVec2;
 
+import java.io.Serializable;
+
 //Updated to rev 56->108->139 of b2Shape.cpp/.h
 
 /**
@@ -45,7 +47,7 @@ import org.jbox2d.pooling.TLVec2;
  * @see Body#createShape(ShapeDef)
  * @see CircleDef
  */
-public class CircleShape extends Shape {
+public class CircleShape extends Shape implements Serializable {
 
 	public float m_radius;
 	public final Vec2 m_localPosition;

@@ -25,6 +25,8 @@ package org.jbox2d.collision;
 
 import org.jbox2d.common.Vec2;
 
+import java.io.Serializable;
+
 //Updated to rev 56->108->139 of b2Collision.h
 
 /**
@@ -34,7 +36,7 @@ import org.jbox2d.common.Vec2;
  * The point is stored in local coordinates because CCD
  * requires sub-stepping in which the separation is stale.
  */
-public class ManifoldPoint {
+public class ManifoldPoint implements Serializable {
 	/** Local position of the contact point in body1 */
     public final Vec2 localPoint1;
     /** Local position of the contact point in body2 */

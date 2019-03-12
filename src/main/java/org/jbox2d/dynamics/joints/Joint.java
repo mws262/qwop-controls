@@ -27,13 +27,15 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.TimeStep;
 
+import java.io.Serializable;
+
 
 //Updated to rev 56->97->144 of b2Joint.cpp/.h
 
 /**
  * Base class for all Joints
  */
-public abstract class Joint {
+public abstract class Joint implements Serializable {
 
 	public JointType m_type;
 

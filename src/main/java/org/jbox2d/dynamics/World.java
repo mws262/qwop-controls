@@ -23,6 +23,7 @@
 
 package org.jbox2d.dynamics;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.BroadPhase;
@@ -75,7 +76,7 @@ import org.jbox2d.pooling.stacks.TimeStepStack;
  * to speed development of Box2d, but it is subject to change.
  * You're warned!
  */
-public class World {
+public class World implements Serializable {
 	boolean m_lock;
 
 	BroadPhase m_broadPhase;
@@ -1507,11 +1508,7 @@ public class World {
 		return shapes[0];
 	}
 	
-	private SortKeyFunc raycastSortKey = new SortKeyFunc() {
-		public float apply(Object shape) {
-			return raycastSortKeyFunc(shape);
-		}
-	};
+	private SortKeyFunc raycastSortKey = (SortKeyFunc & Serializable) this::raycastSortKeyFunc;
 	
 	private float raycastSortKeyFunc(Object data)
 	{

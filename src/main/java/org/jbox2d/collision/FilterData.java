@@ -25,8 +25,10 @@ package org.jbox2d.collision;
 
 // Updated to rev 139 of b2Shape.h
 
+import java.io.Serializable;
+
 /** This holds contact filtering data. */
-public class FilterData {
+public class FilterData implements Serializable {
 	/** The collision category bits. Normally you would just set one bit. */
 	public int categoryBits;
 

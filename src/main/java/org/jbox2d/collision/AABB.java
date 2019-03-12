@@ -25,10 +25,12 @@ package org.jbox2d.collision;
 
 import org.jbox2d.common.Vec2;
 
+import java.io.Serializable;
+
 //Updated to rev 139 of b2Collision.h
 
 /** An axis-aligned bounding box. */
-public class AABB {
+public class AABB implements Serializable {
 	/** Bottom left vertex of bounding box. */
 	public final Vec2 lowerBound;
 	/** Top right vertex of bounding box. */

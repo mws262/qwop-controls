@@ -16,6 +16,7 @@ import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,7 +34,7 @@ import static game.GameConstants.*;
  * @author matt
  */
 @SuppressWarnings("Duplicates")
-public class GameSingleThread implements IGame {
+public class GameSingleThread implements IGame, Serializable {
 
     /**
      * This is the only instance of the single threaded game allowed. If multiple copies run, they interfere. Run
@@ -1075,7 +1076,7 @@ public class GameSingleThread implements IGame {
     /**
      * Listens for collisions involving lower arms and head (implicitly with the ground)
      **/
-    private class CollisionListener implements ContactListener {
+    private class CollisionListener implements ContactListener, Serializable {
 
         /**
          * Keep track of whether the right foot is on the ground.

@@ -25,7 +25,9 @@ package org.jbox2d.collision;
 
 //Updated to rev 56->136 of b2PairManager.h
 
-public class Pair implements Comparable<Pair> {
+import java.io.Serializable;
+
+public class Pair implements Comparable<Pair>, Serializable {
 	private static final int PAIR_BUFFERED = 0x0001;
 
 	private static final int PAIR_REMOVED = 0x0002;

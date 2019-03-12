@@ -23,6 +23,7 @@
 
 package org.jbox2d.collision.shapes;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.jbox2d.collision.AABB;
@@ -46,7 +47,7 @@ import org.jbox2d.pooling.TLVec2;
 //Updated to rev 142 of b2Shape.cpp/.h / b2PolygonShape.cpp/.h
 
 /** A convex polygon shape.  Create using Body.createShape(ShapeDef), not the constructor here. */
-public class PolygonShape extends Shape implements SupportsGenericDistance{
+public class PolygonShape extends Shape implements SupportsGenericDistance, Serializable {
 	/** Dump lots of debug information. */
 	private static boolean m_debug = false;
 

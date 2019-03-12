@@ -23,6 +23,8 @@
 
 package org.jbox2d.common;
 
+import java.io.Serializable;
+
 /**
  * Primarily for internal use.
  * <BR><BR>
@@ -32,7 +34,7 @@ package org.jbox2d.common;
  * we must interpolate the center of mass position.
  * 
  */
-public class Sweep {
+public class Sweep implements Serializable {
 
 	/** Local center of mass position */
 	public final Vec2 localCenter; 

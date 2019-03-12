@@ -25,10 +25,12 @@ package org.jbox2d.collision;
 
 //Updated to rev 139 of b2BroadPhase.h
 
+import java.io.Serializable;
+
 /**
  * Used in BroadPhase
  */
-public class Bound {
+public class Bound implements Serializable {
 	public int value;
 
 	public int proxyId;

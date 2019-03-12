@@ -23,13 +23,15 @@
 
 package org.jbox2d.common;
 
+import java.io.Serializable;
+
 /**
  * A 2x2 matrix class.
  * djm: added ToOut methods
  * @author ewjordan
  *
  */
-public class Mat22 {
+public class Mat22 implements Serializable {
 	public Vec2 col1, col2;
 
 	/** Convert the matrix to printable format. */

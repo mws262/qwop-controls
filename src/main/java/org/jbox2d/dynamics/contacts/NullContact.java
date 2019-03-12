@@ -23,13 +23,14 @@
 
 package org.jbox2d.dynamics.contacts;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.jbox2d.collision.Manifold;
 import org.jbox2d.dynamics.ContactListener;
 
 // Updated to rev 89 of b2NullContact.h
-public class NullContact extends Contact {
+public class NullContact extends Contact implements Serializable {
 
     @Override
     public void evaluate(ContactListener cl) {

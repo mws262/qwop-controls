@@ -38,8 +38,11 @@ package org.jbox2d.collision;
 //
 //Also, it might be better performance-wise to pull features
 //to a top level class if inner classes have more overhead (check this).
+
+import java.io.Serializable;
+
 /** Contact ids to facilitate warm starting.*/
-public class ContactID {
+public class ContactID implements Serializable {
 	/** Inactive in Java port (used for quick compares in C++ as part of a union) */
 	public int key;
 
@@ -47,7 +50,7 @@ public class ContactID {
 	public Features features;
 
 	/** The features that intersect to form the contact point */
-	public class Features {
+	public class Features implements Serializable{
 		/** The edge that defines the outward contact normal. */
 		public int referenceEdge;
 		/** The edge most anti-parallel to the reference edge. */

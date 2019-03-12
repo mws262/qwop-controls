@@ -25,7 +25,9 @@ package org.jbox2d.dynamics.joints;
 
 import org.jbox2d.dynamics.Body;
 
-public class JointEdge {
+import java.io.Serializable;
+
+public class JointEdge implements Serializable {
 	public Body other;
 
 	public Joint joint;

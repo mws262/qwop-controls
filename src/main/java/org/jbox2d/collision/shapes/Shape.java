@@ -23,6 +23,7 @@
 
 package org.jbox2d.collision.shapes;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,7 +51,7 @@ import org.jbox2d.pooling.TLAABB;
  * <BR><BR><em>Warning</em>: you cannot reuse shapes on different bodies, they must
  * be re-created or copied.
  */
-public abstract class Shape {
+public abstract class Shape implements Serializable {
 	/** Unique id for shape for sorting (C++ version uses memory address) */
 	public int uid;
 	/**

@@ -23,6 +23,7 @@
 
 package org.jbox2d.dynamics;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.jbox2d.collision.Manifold;
@@ -40,7 +41,7 @@ import org.jbox2d.pooling.TLVec2;
 //Updated to rev 56->104->142 of b2ContactManager.cpp/.h
 
 /** Delegate of World - for internal use. */
-public class ContactManager implements PairCallback {
+public class ContactManager implements PairCallback, Serializable {
 	World m_world;
 
 	// This lets us provide broadphase proxy pair user data for
