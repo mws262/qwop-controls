@@ -67,7 +67,7 @@ public class GameSingleThread implements IGame {
     private static final AABB worldAABB = new AABB(new Vec2(aabbMinX, aabbMinY), new Vec2(aabbMaxX, aabbMaxY));
 
     /* Individual body objects */
-    Body rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody, lUArmBody,
+    public Body rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody, lUArmBody,
             rLArmBody, lLArmBody, headBody, trackBody;
 
     /* Joint Definitions */
@@ -428,7 +428,7 @@ public class GameSingleThread implements IGame {
         headBody = getWorld().createBody(headDef);
         headBody.createShape(headShape);
 
-
+        /**
         /*
          *  Joints
          */
@@ -752,7 +752,6 @@ public class GameSingleThread implements IGame {
 
         getWorld().step(timestep, physIterations);
 
-
         // Extra fail conditions besides contacts.
         float angle = torsoBody.getAngle();
         if (angle > torsoAngUpper || angle < torsoAngLower) { // Fail if torso angles get too far out of whack.
@@ -811,6 +810,50 @@ public class GameSingleThread implements IGame {
         float dth = body.getAngularVelocity();
         return new StateVariable(x, y, th, dx, dy, dth);
     }
+
+    public Body[] getAllBodies() {
+        return new Body[]{rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
+                lUArmBody, rLArmBody, lLArmBody, headBody, trackBody};
+    }
+
+    public RevoluteJoint[] getAllJoints() {
+        return new RevoluteJoint[]{rHipJ, lHipJ, rKneeJ, lKneeJ, rAnkleJ, lAnkleJ, rShoulderJ, lShoulderJ, rElbowJ,
+                lElbowJ, neckJ};
+    }
+
+    /**
+     * Set an individual body to a specified {@link StateVariable}. This sets both positions and velocities.
+     *
+     * @param body          Body to set the state of.
+     * @param stateVariable Full state to assign to that body.
+     */
+    private void setBodyToStateVariable(Body body, StateVariable stateVariable) {
+
+        body.setXForm(new Vec2(stateVariable.getX(), stateVariable.getY()), stateVariable.getTh());
+        body.setLinearVelocity(new Vec2(stateVariable.getDx(), stateVariable.getDy()));
+        body.setAngularVelocity(stateVariable.getDth());
+    }
+
+    public void setState(State state) {
+        setBodyToStateVariable(rFootBody, state.rfoot);
+        setBodyToStateVariable(lFootBody, state.lfoot);
+
+        setBodyToStateVariable(rThighBody, state.rthigh);
+        setBodyToStateVariable(lThighBody, state.lthigh);
+
+        setBodyToStateVariable(rCalfBody, state.rcalf);
+        setBodyToStateVariable(lCalfBody, state.lcalf);
+
+        setBodyToStateVariable(rUArmBody, state.ruarm);
+        setBodyToStateVariable(lUArmBody, state.luarm);
+
+        setBodyToStateVariable(rLArmBody, state.rlarm);
+        setBodyToStateVariable(lLArmBody, state.llarm);
+
+        setBodyToStateVariable(headBody, state.head);
+        setBodyToStateVariable(torsoBody, state.body);
+    }
+
 
     /**
      * Is this state in failure?

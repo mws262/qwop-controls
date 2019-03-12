@@ -31,7 +31,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
 
     public static void main(String[] args) {
-        boolean doScreenCapture = true;
+        boolean doScreenCapture = false;
         ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
         if (doScreenCapture) {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -66,11 +66,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         valueFunction.loadCheckpoint("chk");
 
         // Assign potential actions for the value function to choose among.
-        ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 1).toArray(), new boolean[]{false, false,
+        ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 5).toArray(), new boolean[]{false, false,
                 false, false}, new Distribution_Equal()); // None, None
-        ActionSet actionSetWO = ActionSet.makeActionSet(IntStream.range(15, 25).toArray(), new boolean[]{false, true,
+        ActionSet actionSetWO = ActionSet.makeActionSet(IntStream.range(15, 35).toArray(), new boolean[]{false, true,
                 true, false}, new Distribution_Equal()); // W, O
-        ActionSet actionSetQP = ActionSet.makeActionSet(IntStream.range(15, 25).toArray(), new boolean[]{true, false,
+        ActionSet actionSetQP = ActionSet.makeActionSet(IntStream.range(15, 35).toArray(), new boolean[]{true, false,
                 false, true}, new Distribution_Equal()); // Q, P
 
         ActionSet allActions = new ActionSet(new Distribution_Equal());

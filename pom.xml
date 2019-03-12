@@ -213,15 +213,6 @@ To update the classpath settings for Eclipse:
             <artifactId>tensorflow</artifactId>
             <version>1.13.1</version>
         </dependency>
-
-        <!-- 2D physics engine; old version similar to that in QWOP. From local .jar. -->
-        <dependency>
-            <groupId>org.jbox2d</groupId>
-            <artifactId>jbox2d</artifactId>
-            <version>0.0.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/jbox2d.jar</systemPath>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-pool2 -->
         <dependency>
             <groupId>org.apache.commons</groupId>

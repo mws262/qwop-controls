@@ -6,6 +6,7 @@ import actions.ActionSet;
 import distributions.Distribution_Equal;
 import game.GameThreadSafe;
 import tree.Node;
+import tree.Utility;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -61,6 +62,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         float bestActionValue = -Float.MAX_VALUE;
         Action bestAction = null;
 
+        Utility.tic();
         // Iterate over all potential actions to see which results in the highest predicted value.
         for (Action actionBeyond : potentialActions) {
             actionQueue.clearAll();
@@ -82,6 +84,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 bestActionValue = candidateActionValue;
             }
         }
+        Utility.toc();
         return Objects.requireNonNull(bestAction);
     }
 
