@@ -866,6 +866,10 @@ public class GameThreadSafe extends ClassLoader implements IGame {
         return st;
     }
 
+    public Object[] getAllJoints() {
+        return new Object[]{rHipJ, lHipJ, rKneeJ, lKneeJ, rAnkleJ, lAnkleJ, rShoulderJ, lShoulderJ, rElbowJ,
+                lElbowJ, neckJ};
+    }
     /**
      * Get a new StateVariable for a given body.
      */
