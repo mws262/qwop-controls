@@ -76,7 +76,6 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
         for (int i = 0; i < joints.length; i++) {
             jointWarmstarts[i] = joints[i].m_lastWarmStartingPivotForce.clone();
             jointPivotForces[i] = joints[i].m_pivotForce.clone();
-
             jointMotorForces[i] = joints[i].m_motorForce;
             jointLimitForces[i] = joints[i].m_limitForce;
             jointlimitPositionImpulse[i] = joints[i].m_limitPositionImpulse;
@@ -90,10 +89,10 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
 
 
         // Attempt to set contacts.
-//        gameAttemptWarmStart.makeNewWorld();
-        for (int i = 0; i < 10; i++) {
-            gameAttemptWarmStart.step(false, true, true, false);
-        }
+        gameAttemptWarmStart.makeNewWorld();
+//        for (int i = 0; i < 7; i++) {
+//            gameAttemptWarmStart.step(false, true, true, false);
+//        }
         gameAttemptWarmStart.setState(st);
 
 

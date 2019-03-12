@@ -26,12 +26,14 @@ package org.jbox2d.dynamics;
 import org.jbox2d.collision.FilterData;
 import org.jbox2d.collision.shapes.Shape;
 
+import java.io.Serializable;
+
 // Updated to rev 143 of b2WorldCallbacks.h/cpp
 
 /**
  * Default sample implementation of ContactFilter.
  */
-public class DefaultContactFilter implements ContactFilter {
+public class DefaultContactFilter implements ContactFilter, Serializable {
 
 	/**
 	 * Return true if contact calculations should be performed between these two shapes.

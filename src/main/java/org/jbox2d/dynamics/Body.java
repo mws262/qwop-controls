@@ -23,6 +23,7 @@
 
 package org.jbox2d.dynamics;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -58,7 +59,7 @@ import org.jbox2d.pooling.TLXForm;
  * getters/setters rather than through the m_* variables.  These are
  * internal variables, and their use is generally unsupported.
  */
-public class Body {
+public class Body implements Serializable {
 	private static volatile int nextID = 0;
 	private static Object idLock = new Object();
 	private int m_uniqueID;

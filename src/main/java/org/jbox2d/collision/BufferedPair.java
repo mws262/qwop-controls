@@ -25,10 +25,12 @@ package org.jbox2d.collision;
 
 //Updated to rev 139 of b2PairManager.h
 
+import java.io.Serializable;
+
 /**
  * Used in pair manager.
  */
-public class BufferedPair implements Comparable<BufferedPair> {
+public class BufferedPair implements Comparable<BufferedPair>, Serializable {
     int proxyId1;
 
     int proxyId2;

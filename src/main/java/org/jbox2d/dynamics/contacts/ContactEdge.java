@@ -25,6 +25,8 @@ package org.jbox2d.dynamics.contacts;
 
 import org.jbox2d.dynamics.Body;
 
+import java.io.Serializable;
+
 // Updated to rev 139 of b2Contact.h
 
 /**
@@ -34,7 +36,7 @@ import org.jbox2d.dynamics.Body;
  * maintained in each attached body. Each contact has two contact
  * nodes, one for each attached body.
  */
-public class ContactEdge {
+public class ContactEdge implements Serializable {
 	/** Provides quick access to the other body attached. */
     public Body other;
     /** The contact. */

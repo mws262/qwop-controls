@@ -26,10 +26,12 @@ package org.jbox2d.collision;
 import org.jbox2d.common.Mat22;
 import org.jbox2d.common.Vec2;
 
+import java.io.Serializable;
+
 //Updated to rev 56->139 of b2Collision.h
 
 /** An oriented bounding box. */
-public class OBB {
+public class OBB implements Serializable {
 	/** The rotation matrix. */
 	public final Mat22 R;
 	/** The local centroid. */

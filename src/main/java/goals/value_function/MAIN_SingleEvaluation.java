@@ -29,7 +29,6 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
     GameThreadSafe game = new GameThreadSafe();
 
-
     public static void main(String[] args) {
         boolean doScreenCapture = false;
         ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));

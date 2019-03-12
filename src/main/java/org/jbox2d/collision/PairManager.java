@@ -26,9 +26,11 @@ package org.jbox2d.collision;
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Settings;
 
+import java.io.Serializable;
+
 //Updated to rev 56->108->136 of b2PairManager.cpp/.h
 
-public class PairManager {
+public class PairManager implements Serializable {
 
 	public static final int NULL_PAIR = Integer.MAX_VALUE;
 

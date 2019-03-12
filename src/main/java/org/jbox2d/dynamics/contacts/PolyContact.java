@@ -23,6 +23,7 @@
 
 package org.jbox2d.dynamics.contacts;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +42,7 @@ import org.jbox2d.pooling.TLManifold;
 import org.jbox2d.pooling.TLVec2;
 
 //Updated to rev 142 of b2PolyContact.h/cpp
-public class PolyContact extends Contact implements ContactCreateFcn {
+public class PolyContact extends Contact implements ContactCreateFcn, Serializable {
 
 	public final Manifold m_manifold;
 	public final ArrayList<Manifold> manifoldList = new ArrayList<Manifold>();

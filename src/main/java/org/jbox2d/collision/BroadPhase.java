@@ -29,6 +29,8 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.pooling.TLBoundValues;
 import org.jbox2d.pooling.arrays.IntegerArray;
 
+import java.io.Serializable;
+
 
 /**
  * This broad phase uses the Sweep and Prune algorithm as described in:
@@ -49,7 +51,7 @@ import org.jbox2d.pooling.arrays.IntegerArray;
  * - no broadphase is perfect and neither is this one: it is not great for huge
  * worlds (use a multi-SAP instead), it is not great for large objects.
  */
-public class BroadPhase {
+public class BroadPhase implements Serializable {
 	public static final int INVALID = Integer.MAX_VALUE;
 
 	public static final int NULL_EDGE = Integer.MAX_VALUE;

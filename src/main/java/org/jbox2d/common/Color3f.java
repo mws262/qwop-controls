@@ -23,12 +23,14 @@
 
 package org.jbox2d.common;
 
+import java.io.Serializable;
+
 /**
  * Similar to javax.vecmath.Color3f holder
  * @author ewjordan
  *
  */
-public class Color3f {
+public class Color3f implements Serializable {
 	
 	public static final Color3f WHITE = new Color3f(255, 255, 255);
 	public static final Color3f BLACK = new Color3f(0, 0, 0);

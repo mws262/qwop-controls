@@ -26,10 +26,12 @@ package org.jbox2d.collision;
 import org.jbox2d.common.Settings;
 import org.jbox2d.common.Vec2;
 
+import java.io.Serializable;
+
 //Updated to rev 56->108->139 of b2Collision.h
 
 /** A manifold for two touching convex shapes. */
-public class Manifold {
+public class Manifold implements Serializable {
 	/** The points of contact. */
     public final ManifoldPoint[] points;
     /** The shared unit normal vector. */
