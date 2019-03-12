@@ -1,6 +1,7 @@
 package goals.cold_start_analysis;
 
 import actions.ActionQueue;
+import game.GameConstants;
 import game.GameThreadSafe;
 import game.State;
 
@@ -30,7 +31,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
         // Get to a certain part of the run where we want to introduce another cold start runner.
 
         // Decide at which action to introduce a cold-started runner.
-        int coldStartAction = 12;
+        int coldStartAction = 14;
         while (actionQueue.getCurrentActionIdx() < coldStartAction) {
             gameFullRun.step(actionQueue.pollCommand());
         }
@@ -51,7 +52,9 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
             boolean[] nextCommand = actionQueue.pollCommand();
 
             gameFullRun.step(nextCommand);
+            GameConstants.physIterations = 5;
             gameColdStart.step(nextCommand);
+            GameConstants.physIterations = 5;
 
             runnerPanel.clearSecondaryStates();
             runnerPanel.setMainState(gameFullRun.getCurrentState());

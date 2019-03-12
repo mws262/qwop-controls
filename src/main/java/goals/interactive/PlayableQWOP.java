@@ -25,10 +25,13 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
     /**
      * Game physics world to use.
      */
-    private GameSingleThread game = GameSingleThread.getInstance();
+    private GameSingleThread game;
 
     @Override
     public void actionPerformed(ActionEvent e) { // Gets called every 40ms
+        if (game == null) {
+            game = GameSingleThread.getInstance();
+        }
         game.step(q, w, o, p); // Step the game forward 1 timestep with the specified keys pressed.
         repaint(); // Redraw the runner and scene.
     }
@@ -36,7 +39,8 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        game.draw(g, 10, 300, 200); // Redraws the game. Scaling and offsets are handpicked to work for the size of
+        if (game != null)
+            game.draw(g, 10, 300, 200); // Redraws the game. Scaling and offsets are handpicked to work for the size of
         // the window.
     }
 
