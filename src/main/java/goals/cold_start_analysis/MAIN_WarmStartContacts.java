@@ -41,7 +41,7 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
         // Get to a certain part of the run where we want to introduce another cold start runner.
 
         // Decide at which action to introduce a cold-started runner.
-        int coldStartAction = 11;
+        int coldStartAction = 10;
         while (actionQueue.getCurrentActionIdx() < coldStartAction) {
             boolean[] nextCmd = actionQueue.pollCommand();
             gameFullRun.step(nextCmd);
@@ -54,14 +54,6 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
         State st = gameAttemptWarmStart.getCurrentState();
         ContactEdge rfootC= gameAttemptWarmStart.rFootBody.getContactList();
         ContactEdge lfootC= gameAttemptWarmStart.lFootBody.getContactList();
-
-
-
-
-
-
-
-
 
 
 
@@ -97,12 +89,11 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
 
 
 
-
-
-
-
         // Attempt to set contacts.
-        gameAttemptWarmStart.makeNewWorld();
+//        gameAttemptWarmStart.makeNewWorld();
+        for (int i = 0; i < 10; i++) {
+            gameAttemptWarmStart.step(false, true, true, false);
+        }
         gameAttemptWarmStart.setState(st);
 
 

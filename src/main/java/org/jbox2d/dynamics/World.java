@@ -80,7 +80,7 @@ public class World {
 
 	BroadPhase m_broadPhase;
 
-	ContactManager m_contactManager;
+	public ContactManager m_contactManager;
 
 	Body m_bodyList;
 

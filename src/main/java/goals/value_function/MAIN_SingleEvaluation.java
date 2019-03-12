@@ -27,7 +27,7 @@ import java.util.stream.IntStream;
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
-    GameSingleThread game = GameSingleThread.getInstance();
+    GameThreadSafe game = new GameThreadSafe();
 
 
     public static void main(String[] args) {
@@ -53,7 +53,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         frame.setVisible(true);
 
         // Fire game update every 40 ms.
-        new Timer(40, qwop).start();
+        Timer timer = new Timer(40, qwop);
+        timer.start();
 
         // Load a value function controller.
         ValueFunction_TensorFlow valueFunction = null;
@@ -66,11 +67,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         valueFunction.loadCheckpoint("chk");
 
         // Assign potential actions for the value function to choose among.
-        ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 5).toArray(), new boolean[]{false, false,
+        ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 30).toArray(), new boolean[]{false, false,
                 false, false}, new Distribution_Equal()); // None, None
-        ActionSet actionSetWO = ActionSet.makeActionSet(IntStream.range(15, 35).toArray(), new boolean[]{false, true,
+        ActionSet actionSetWO = ActionSet.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{false, true,
                 true, false}, new Distribution_Equal()); // W, O
-        ActionSet actionSetQP = ActionSet.makeActionSet(IntStream.range(15, 35).toArray(), new boolean[]{true, false,
+        ActionSet actionSetQP = ActionSet.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{true, false,
                 false, true}, new Distribution_Equal()); // Q, P
 
         ActionSet allActions = new ActionSet(new Distribution_Equal());
@@ -93,7 +94,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
                 new Action(10,false,false,false,false),
                 new Action(27,false,true,true,false),
-                new Action(8,false,false,false,false),
+                 new Action(8,false,false,false,false),
                 new Action(20,true,false,false,true),
         });
 
@@ -130,7 +131,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
             Action chosenAction = valueFunction.getMaximizingAction(currNode);
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {
-               // qwop.game.applyBodyImpulse(-3f, 0.001f);
+                long currTime = System.currentTimeMillis();
+                // qwop.game.applyBodyImpulse(-3f, 0.001f);
                 qwop.game.step(actionQueue.pollCommand());
 
                 if (doScreenCapture) {
@@ -141,7 +143,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
                     }
                 } else { // Screen capture is already so slow, we don't need a delay.
                     try {
-                        Thread.sleep(40);
+                        Thread.sleep(Math.max(1, 40 - (System.currentTimeMillis() - currTime)));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -150,7 +152,6 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
             currNode = currNode.addChild(chosenAction);
             currNode.setState(qwop.game.getCurrentState());
         }
-        qwop.game.releaseGame();
     }
 
     @Override
