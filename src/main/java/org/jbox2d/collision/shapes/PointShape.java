@@ -12,12 +12,14 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 import org.jbox2d.pooling.TLVec2;
 
+import java.io.Serializable;
+
 /**
  * Point shape.  Like a circle shape of zero radius, except
  * that it has a finite mass.
  *
  */
-public class PointShape extends Shape {
+public class PointShape extends Shape implements Serializable {
 	public final Vec2 m_localPosition;
 	public float m_mass;
 

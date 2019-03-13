@@ -4,13 +4,8 @@ import actions.ActionQueue;
 import game.GameSingleThread;
 import game.GameThreadSafe;
 import game.State;
-import org.jbox2d.collision.ManifoldPoint;
 import org.jbox2d.common.Mat22;
 import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.contacts.Contact;
-import org.jbox2d.dynamics.contacts.ContactEdge;
-import org.jbox2d.dynamics.contacts.PolyContact;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 
 import java.awt.*;
@@ -52,10 +47,8 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
 
         // Retrieve all contacts.
         State st = gameAttemptWarmStart.getCurrentState();
-        ContactEdge rfootC= gameAttemptWarmStart.rFootBody.getContactList();
-        ContactEdge lfootC= gameAttemptWarmStart.lFootBody.getContactList();
-
-
+//        ContactEdge rfootC= gameAttemptWarmStart.rFootBody.getContactList();
+//        ContactEdge lfootC= gameAttemptWarmStart.lFootBody.getContactList();
 
         // Save joint info.
         RevoluteJoint[] joints = gameAttemptWarmStart.getAllJoints();
@@ -71,8 +64,6 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
         float[] jointUpperAngle = new float[joints.length];
         Mat22[] jointPivotMass = new Mat22[joints.length];
 
-
-
         for (int i = 0; i < joints.length; i++) {
             jointWarmstarts[i] = joints[i].m_lastWarmStartingPivotForce.clone();
             jointPivotForces[i] = joints[i].m_pivotForce.clone();
@@ -86,16 +77,12 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
             jointPivotMass[i] = joints[i].m_pivotMass.clone();
         }
 
-
-
         // Attempt to set contacts.
         gameAttemptWarmStart.makeNewWorld();
 //        for (int i = 0; i < 7; i++) {
 //            gameAttemptWarmStart.step(false, true, true, false);
 //        }
         gameAttemptWarmStart.setState(st);
-
-
 
         joints = gameAttemptWarmStart.getAllJoints();
         for (int i = 0; i < joints.length; i++) {
@@ -112,27 +99,25 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
 
             joints[i].m_pivotMass.set(jointPivotMass[i]);
         }
-
-        if (lfootC != null) {
-           PolyContact clfoot =
-                   (PolyContact) gameAttemptWarmStart.getWorld().m_contactManager.pairAdded(gameAttemptWarmStart.trackBody.m_shapeList,
-                   gameAttemptWarmStart.lFootBody.m_shapeList);
-           ManifoldPoint manifoldPt1 = clfoot.m_manifold.points[0];
-           ManifoldPoint manifoldPt2 = clfoot.m_manifold.points[1];
-           manifoldPt1.set(lfootC.contact.getManifolds().get(0).points[0]);
-           manifoldPt2.set(lfootC.contact.getManifolds().get(0).points[1]);
-        }
-
-        if (rfootC != null) {
-            PolyContact crfoot =
-                    (PolyContact) gameAttemptWarmStart.getWorld().m_contactManager.pairAdded(gameAttemptWarmStart.trackBody.m_shapeList,
-                            gameAttemptWarmStart.rFootBody.m_shapeList);
-            ManifoldPoint manifoldPt1 = crfoot.m_manifold.points[0];
-            ManifoldPoint manifoldPt2 = crfoot.m_manifold.points[1];
-            manifoldPt1.set(rfootC.contact.getManifolds().get(0).points[0]);
-            manifoldPt2.set(rfootC.contact.getManifolds().get(0).points[1]);
-        }
-
+//        if (lfootC != null) {
+//           PolyContact clfoot =
+//                   (PolyContact) gameAttemptWarmStart.getWorld().m_contactManager.pairAdded(gameAttemptWarmStart.trackBody.m_shapeList,
+//                   gameAttemptWarmStart.lFootBody.m_shapeList);
+//           ManifoldPoint manifoldPt1 = clfoot.m_manifold.points[0];
+//           ManifoldPoint manifoldPt2 = clfoot.m_manifold.points[1];
+//           manifoldPt1.set(lfootC.contact.getManifolds().get(0).points[0]);
+//           manifoldPt2.set(lfootC.contact.getManifolds().get(0).points[1]);
+//        }
+//
+//        if (rfootC != null) {
+//            PolyContact crfoot =
+//                    (PolyContact) gameAttemptWarmStart.getWorld().m_contactManager.pairAdded(gameAttemptWarmStart.trackBody.m_shapeList,
+//                            gameAttemptWarmStart.rFootBody.m_shapeList);
+//            ManifoldPoint manifoldPt1 = crfoot.m_manifold.points[0];
+//            ManifoldPoint manifoldPt2 = crfoot.m_manifold.points[1];
+//            manifoldPt1.set(rfootC.contact.getManifolds().get(0).points[0]);
+//            manifoldPt2.set(rfootC.contact.getManifolds().get(0).points[1]);
+//        }
 
         runnerPanel.setMainState(gameFullRun.getCurrentState());
         runnerPanel.addSecondaryState(gameColdStart.getCurrentState(), Color.RED);

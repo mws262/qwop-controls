@@ -13,6 +13,8 @@ import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.pooling.TLVec2;
 
+import java.io.Serializable;
+
 /**
  * An edge shape.  Create using {@link Body#createShape(ShapeDef)} with an {@link EdgeChainDef},
  * not the constructor here.
@@ -20,7 +22,7 @@ import org.jbox2d.pooling.TLVec2;
  * @see EdgeChainDef
  * @author daniel
  */
-public class EdgeShape extends Shape implements SupportsGenericDistance {
+public class EdgeShape extends Shape implements SupportsGenericDistance, Serializable {
 	//private updatesweepradius
 	private final Vec2 m_v1;
 	private final Vec2 m_v2;

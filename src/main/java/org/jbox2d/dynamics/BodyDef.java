@@ -28,6 +28,8 @@ package org.jbox2d.dynamics;
 import org.jbox2d.collision.MassData;
 import org.jbox2d.common.Vec2;
 
+import java.io.Serializable;
+
 /**
  * Defines a body.  All data is public, and may be set directly.
  * When you have set the definition to your liking, you can create
@@ -36,7 +38,7 @@ import org.jbox2d.common.Vec2;
  * Don't forget to call Body::setMassFromShapes or Body::setMass(MassData)
  * after you create a dynamic body! 
  */
-public class BodyDef {
+public class BodyDef implements Serializable {
 	
 	/**
 	 * You can use this to initialized the mass properties of the body.

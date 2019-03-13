@@ -45,35 +45,34 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         game.makeNewWorld();
         runToNode(currentNode);
 
-        RevoluteJoint[] joints = game.getAllJoints();
-        Vec2[] jointWarmstarts = new Vec2[joints.length];
-
-        Vec2[] jointPivotForces = new Vec2[joints.length];
-        float[] jointMotorForces = new float[joints.length];
-        float[] jointLimitForces = new float[joints.length];
-        float[] jointlimitPositionImpulse = new float[joints.length];
-        float[] jointMotorSpeeds = new float[joints.length];
-        float[] jointMaxMotorTorque = new float[joints.length];
-        float[] jointLowerAngle = new float[joints.length];
-        float[] jointUpperAngle = new float[joints.length];
-        Mat22[] jointPivotMass = new Mat22[joints.length];
-
-
-
-        for (int i = 0; i < joints.length; i++) {
-            jointWarmstarts[i] = joints[i].m_lastWarmStartingPivotForce.clone();
-            jointPivotForces[i] = joints[i].m_pivotForce.clone();
-            jointMotorForces[i] = joints[i].m_motorForce;
-            jointLimitForces[i] = joints[i].m_limitForce;
-            jointlimitPositionImpulse[i] = joints[i].m_limitPositionImpulse;
-            jointMotorSpeeds[i] = joints[i].m_motorSpeed;
-            jointMaxMotorTorque[i] = joints[i].m_maxMotorTorque;
-            jointLowerAngle[i] = joints[i].m_lowerAngle;
-            jointUpperAngle[i] = joints[i].m_upperAngle;
-            jointPivotMass[i] = joints[i].m_pivotMass.clone();
-        }
-
-
+//        RevoluteJoint[] joints = game.getAllJoints();
+//        Vec2[] jointWarmstarts = new Vec2[joints.length];
+//
+//        Vec2[] jointPivotForces = new Vec2[joints.length];
+//        float[] jointMotorForces = new float[joints.length];
+//        float[] jointLimitForces = new float[joints.length];
+//        float[] jointlimitPositionImpulse = new float[joints.length];
+//        float[] jointMotorSpeeds = new float[joints.length];
+//        float[] jointMaxMotorTorque = new float[joints.length];
+//        float[] jointLowerAngle = new float[joints.length];
+//        float[] jointUpperAngle = new float[joints.length];
+//        Mat22[] jointPivotMass = new Mat22[joints.length];
+//
+//
+//
+//        for (int i = 0; i < joints.length; i++) {
+//            jointWarmstarts[i] = joints[i].m_lastWarmStartingPivotForce.clone();
+//            jointPivotForces[i] = joints[i].m_pivotForce.clone();
+//            jointMotorForces[i] = joints[i].m_motorForce;
+//            jointLimitForces[i] = joints[i].m_limitForce;
+//            jointlimitPositionImpulse[i] = joints[i].m_limitPositionImpulse;
+//            jointMotorSpeeds[i] = joints[i].m_motorSpeed;
+//            jointMaxMotorTorque[i] = joints[i].m_maxMotorTorque;
+//            jointLowerAngle[i] = joints[i].m_lowerAngle;
+//            jointUpperAngle[i] = joints[i].m_upperAngle;
+//            jointPivotMass[i] = joints[i].m_pivotMass.clone();
+//        }
+//
         //game.setState(currentNode.getState());
         float bestNullVal = -Float.MAX_VALUE;
         int bestNullTs = 0;
@@ -90,25 +89,25 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         }
 
         // Test WO actions.
-//        game.makeNewWorld();
-//        runToNode(currentNode);
+        game.makeNewWorld();
+        runToNode(currentNode);
         // Test null actions.
-        game.setState(currentNode.getState());
-        joints = game.getAllJoints();
-        for (int i = 0; i < joints.length; i++) {
-            joints[i].m_lastWarmStartingPivotForce.set(jointWarmstarts[i]);
-            joints[i].m_pivotForce.set(jointPivotForces[i]);
-
-            joints[i].m_motorForce = jointMotorForces[i];
-            joints[i].m_limitForce = jointLimitForces[i];
-            joints[i].m_limitPositionImpulse = jointlimitPositionImpulse[i];
-            joints[i].m_motorSpeed = jointMotorSpeeds[i];
-            joints[i].m_maxMotorTorque = jointMaxMotorTorque[i];
-            joints[i].m_lowerAngle = jointLowerAngle[i];
-            joints[i].m_upperAngle = jointUpperAngle[i];
-
-            joints[i].m_pivotMass.set(jointPivotMass[i]);
-        }
+//        game.setState(currentNode.getState());
+//        joints = game.getAllJoints();
+//        for (int i = 0; i < joints.length; i++) {
+//            joints[i].m_lastWarmStartingPivotForce.set(jointWarmstarts[i]);
+//            joints[i].m_pivotForce.set(jointPivotForces[i]);
+//
+//            joints[i].m_motorForce = jointMotorForces[i];
+//            joints[i].m_limitForce = jointLimitForces[i];
+//            joints[i].m_limitPositionImpulse = jointlimitPositionImpulse[i];
+//            joints[i].m_motorSpeed = jointMotorSpeeds[i];
+//            joints[i].m_maxMotorTorque = jointMaxMotorTorque[i];
+//            joints[i].m_lowerAngle = jointLowerAngle[i];
+//            joints[i].m_upperAngle = jointUpperAngle[i];
+//
+//            joints[i].m_pivotMass.set(jointPivotMass[i]);
+//        }
         float bestWOVal = -Float.MAX_VALUE;
         int bestWOTs = 0;
         for (int i = 1; i < 50; i++) {
@@ -124,25 +123,25 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         }
 
         // Test QP actions.
-//        game.makeNewWorld();
-//        runToNode(currentNode);
+        game.makeNewWorld();
+        runToNode(currentNode);
         // Test null actions.
-        game.setState(currentNode.getState());
-        joints = game.getAllJoints();
-        for (int i = 0; i < joints.length; i++) {
-            joints[i].m_lastWarmStartingPivotForce.set(jointWarmstarts[i]);
-            joints[i].m_pivotForce.set(jointPivotForces[i]);
-
-            joints[i].m_motorForce = jointMotorForces[i];
-            joints[i].m_limitForce = jointLimitForces[i];
-            joints[i].m_limitPositionImpulse = jointlimitPositionImpulse[i];
-            joints[i].m_motorSpeed = jointMotorSpeeds[i];
-            joints[i].m_maxMotorTorque = jointMaxMotorTorque[i];
-            joints[i].m_lowerAngle = jointLowerAngle[i];
-            joints[i].m_upperAngle = jointUpperAngle[i];
-
-            joints[i].m_pivotMass.set(jointPivotMass[i]);
-        }
+//        game.setState(currentNode.getState());
+//        joints = game.getAllJoints();
+//        for (int i = 0; i < joints.length; i++) {
+//            joints[i].m_lastWarmStartingPivotForce.set(jointWarmstarts[i]);
+//            joints[i].m_pivotForce.set(jointPivotForces[i]);
+//
+//            joints[i].m_motorForce = jointMotorForces[i];
+//            joints[i].m_limitForce = jointLimitForces[i];
+//            joints[i].m_limitPositionImpulse = jointlimitPositionImpulse[i];
+//            joints[i].m_motorSpeed = jointMotorSpeeds[i];
+//            joints[i].m_maxMotorTorque = jointMaxMotorTorque[i];
+//            joints[i].m_lowerAngle = jointLowerAngle[i];
+//            joints[i].m_upperAngle = jointUpperAngle[i];
+//
+//            joints[i].m_pivotMass.set(jointPivotMass[i]);
+//        }
         float bestQPVal = -Float.MAX_VALUE;
         int bestQPTs = 0;
         for (int i = 1; i < 50; i++) {
