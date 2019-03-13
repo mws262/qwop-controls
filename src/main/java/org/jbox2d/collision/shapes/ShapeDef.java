@@ -25,6 +25,8 @@ package org.jbox2d.collision.shapes;
 
 import org.jbox2d.collision.FilterData;
 
+import java.io.Serializable;
+
 // Updated to rev 139 of b2Shape.h
 
 /**
@@ -32,7 +34,7 @@ import org.jbox2d.collision.FilterData;
  * You should usually use CircleDef or
  * PolygonDef to define concrete shapes.
  */
-public class ShapeDef {
+public class ShapeDef implements Serializable {
 	/** Holds the shape type for down-casting. */
 	public ShapeType type;
 

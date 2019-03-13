@@ -23,6 +23,7 @@
 
 package org.jbox2d.dynamics.contacts;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +42,7 @@ import org.jbox2d.dynamics.World;
  * @author ewjordan
  *
  */
-public abstract class Contact {
+public abstract class Contact implements Serializable {
 
 	public static final int e_nonSolidFlag	= 0x0001;
 	public static final int e_slowFlag		= 0x0002;
@@ -124,7 +125,7 @@ public abstract class Contact {
 
 		m_friction = MathUtils.sqrt(m_shape1.m_friction * m_shape2.m_friction);
 		m_restitution = MathUtils.max(m_shape1.m_restitution, m_shape2.m_restitution);
-		//m_world = s1.m_body.m_world;
+		//world = s1.m_body.world;
 		m_prev = null;
 		m_next = null;
 		m_node1.contact = null;

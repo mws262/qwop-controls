@@ -91,10 +91,10 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
                 new Action(19,false,false,false,false),
                 new Action(45,true,false,false,true),
 
-                new Action(10,false,false,false,false),
-                new Action(27,false,true,true,false),
-                 new Action(8,false,false,false,false),
-                new Action(20,true,false,false,true),
+//                new Action(10,false,false,false,false),
+//                new Action(27,false,true,true,false),
+//                 new Action(8,false,false,false,false),
+//                new Action(20,true,false,false,true),
         });
 
         Node.makeNodesFromActionSequences(alist, rootNode, new GameThreadSafe());

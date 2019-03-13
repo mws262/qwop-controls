@@ -23,6 +23,7 @@
 
 package org.jbox2d.dynamics;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.jbox2d.collision.Manifold;
@@ -44,7 +45,7 @@ import org.jbox2d.pooling.stacks.ContactSolverStack;
 /**
  * Handles much of the heavy lifting of physics solving - for internal use.
  */
-public class Island {
+public class Island implements Serializable {
 	public Body[] m_bodies;
 
 	public Contact[] m_contacts;
