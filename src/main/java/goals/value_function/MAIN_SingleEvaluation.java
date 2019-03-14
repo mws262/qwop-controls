@@ -7,6 +7,7 @@ import actions.ActionSet;
 import distributions.Distribution_Equal;
 import game.GameSingleThread;
 import game.GameThreadSafe;
+import game.GameThreadSafeSavable;
 import tree.Node;
 import tree.Utility;
 import ui.ScreenCapture;
@@ -27,7 +28,7 @@ import java.util.stream.IntStream;
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
-    GameThreadSafe game = new GameThreadSafe();
+    GameThreadSafeSavable game = new GameThreadSafeSavable();
 
     public static void main(String[] args) {
         boolean doScreenCapture = false;
@@ -44,6 +45,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
         // Set up the visualizer.
         MAIN_SingleEvaluation qwop = new MAIN_SingleEvaluation();
+        qwop.game.failOnThighContact = false;
         JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
         frame.add(qwop);
         frame.setPreferredSize(new Dimension(600, 400));
@@ -91,8 +93,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
                 new Action(19,false,false,false,false),
                 new Action(45,true,false,false,true),
 
-//                new Action(10,false,false,false,false),
-//                new Action(27,false,true,true,false),
+                new Action(10,false,false,false,false),
+                new Action(27,false,true,true,false),
 //                 new Action(8,false,false,false,false),
 //                new Action(20,true,false,false,true),
         });
@@ -127,7 +129,15 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
         // Run the controller until failure.
         while (!qwop.game.getFailureStatus()) {
+
+            // Hacks for now during testing.
+            byte[] fullState = qwop.game.getFullState();
+
+            currNode.fullState = fullState;
             Action chosenAction = valueFunction.getMaximizingAction(currNode);
+
+
+
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {
                 long currTime = System.currentTimeMillis();

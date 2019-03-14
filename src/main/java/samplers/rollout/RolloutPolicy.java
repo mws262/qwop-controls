@@ -26,7 +26,7 @@ public abstract class RolloutPolicy {
      * Do a rollout from a given node. Assumes that the given game is in the state of startNode! Be careful!
      * @param startNode Starting Node to rollout from.
      * @param game Instance of the game to use. Must already be at the state of startNode.
-     * @return
+     * @return The reward associated with how good this rollout was.
      */
     public abstract float rollout(Node startNode, GameThreadSafe game);
 

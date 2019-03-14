@@ -14,6 +14,7 @@ import org.jbox2d.dynamics.contacts.ContactPoint;
 import org.jbox2d.dynamics.contacts.ContactResult;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
+import org.nustaq.serialization.FSTConfiguration;
 
 import java.awt.*;
 import java.io.*;
@@ -186,12 +187,15 @@ public class GameSingleThread implements IGame, Serializable {
      **/
     transient private static final Stroke normalStroke = new BasicStroke(0.5f);
 
+    transient FSTConfiguration fstConfiguration;
+
     // Make the single instance of this game!
     static {
         instance = new GameSingleThread();
     }
 
     private GameSingleThread() {
+        fstConfiguration = FSTConfiguration.createDefaultConfiguration();
         oneTimeSetup();
         lock.lock();
         makeNewWorld();
@@ -1173,29 +1177,32 @@ public class GameSingleThread implements IGame, Serializable {
     }
 
     public synchronized byte[] getFullState() {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        try (ObjectOutputStream objOps = new ObjectOutputStream(bout)) {
-            objOps.writeObject(this);
-            objOps.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bout.toByteArray();
+//        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+//        try (ObjectOutputStream objOps = new ObjectOutputStream(bout)) {
+//            objOps.writeObject(this);
+//            objOps.flush();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return bout.toByteArray();
+        return fstConfiguration.asByteArray(this);
     }
 
     public synchronized GameSingleThread restoreFullState(byte[] fullState) {
-        GameSingleThread gameRestored = null;
-        try (ByteArrayInputStream bin = new ByteArrayInputStream(fullState);
-             ObjectInputStream objIs = new ObjectInputStream(bin)) {
-            gameRestored = (GameSingleThread) objIs.readObject();
-        } catch (ClassNotFoundException | IOException e) {
-            e.printStackTrace();
-        }
+//        GameSingleThread gameRestored = null;
+//        try (ByteArrayInputStream bin = new ByteArrayInputStream(fullState);
+//             ObjectInputStream objIs = new ObjectInputStream(bin)) {
+//            gameRestored = (GameSingleThread) objIs.readObject();
+//        } catch (ClassNotFoundException | IOException e) {
+//            e.printStackTrace();
+//        }
 
+        GameSingleThread gameRestored = (GameSingleThread)fstConfiguration.asObject(fullState);
         // Replace all the relevant game fields which have been loaded.
         assert gameRestored != null;
         invalidated = true;
         GameSingleThread.instance = gameRestored;
+        gameRestored.fstConfiguration = fstConfiguration;
         GameSingleThread.lock = new ReentrantLock();
         lock.lock();
         return gameRestored;

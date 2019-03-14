@@ -38,6 +38,9 @@ import game.State;
 
 public class Node {
 
+    // TEMP TODO figure out how to do this the right way.
+    public byte[] fullState;
+
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
      */
