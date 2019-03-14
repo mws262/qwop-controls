@@ -118,7 +118,7 @@ public class Body implements Serializable {
 	 * the BodyDef used to create the body, so may
 	 * be set there instead.
 	 */
-	public Object m_userData;
+	transient public Object m_userData;
 
 	/**
 	 * Empty body, with no world

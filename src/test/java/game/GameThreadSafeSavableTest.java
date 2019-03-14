@@ -14,20 +14,20 @@ public class GameThreadSafeSavableTest {
 
         // Make sure that a single game can create a restored copy such that both are consistent with each other, but
         // don't affect each other's results.
-        GameThreadSafeSavable game = new GameThreadSafeSavable();
+        GameThreadSafe game = new GameThreadSafe();
 
         for (int i = 0; i < 10; i++) {
             game.step(false, true, true, false);
         }
         State stateAtSave = game.getCurrentState();
-        byte[] fullState = game.getFullState();
+        GameThreadSafeSavable gameSave = GameThreadSafeSavable.getFullState(game);
 
         for (int i = 0; i < 10; i++) {
             game.step(true, false, false, true);
         }
         State stateAfter10 = game.getCurrentState();
 
-        GameThreadSafe gameRestored = game.getRestoredCopy(fullState);
+        GameThreadSafe gameRestored = GameThreadSafeSavable.getRestoredCopy(gameSave);
         State stateAtRestore = gameRestored.getCurrentState();
         for (int i = 0; i < 10; i++) {
             gameRestored.step(true, false, false, true);
@@ -51,18 +51,18 @@ public class GameThreadSafeSavableTest {
 
         // Make sure that a bunch of things loading and saving at the same time are ok.
         Callable<State> sim = () -> {
-            GameThreadSafeSavable game = new GameThreadSafeSavable();
+            GameThreadSafe game = new GameThreadSafe();
 
             for (int i = 0; i < 10; i++) {
                 game.step(false, true, true, false);
             }
-            byte[] fullState = game.getFullState();
+            GameThreadSafeSavable gameSave = GameThreadSafeSavable.getFullState(game);
 
             for (int i = 0; i < 10; i++) {
                 game.step(true, false, false, false);
             }
 
-            GameThreadSafe gameLoaded = game.getRestoredCopy(fullState);
+            GameThreadSafe gameLoaded = GameThreadSafeSavable.getRestoredCopy(gameSave);
             for (int i = 0; i < 10; i++) {
                 gameLoaded.step(true, false, false, false);
             }
@@ -106,15 +106,15 @@ public class GameThreadSafeSavableTest {
     @Test
     public void branchingGameLoad() {
         // Also make sure that a bunch of things loading from the SAME thing are ok.
-        GameThreadSafeSavable game = new GameThreadSafeSavable();
+        GameThreadSafe game = new GameThreadSafe();
 
         for (int i = 0; i < 10; i++) {
             game.step(false, true, true, false);
         }
-        byte[] fullState = game.getFullState();
+        GameThreadSafeSavable gameSave = GameThreadSafeSavable.getFullState(game);
 
         Callable<State> sim = () -> {
-            GameThreadSafeSavable gameForLoading = game.getRestoredCopy(fullState);
+            GameThreadSafe gameForLoading = GameThreadSafeSavable.getRestoredCopy(gameSave);
             for (int i = 0; i < 10; i++) {
                 gameForLoading.step(false, true, false, true);
             }

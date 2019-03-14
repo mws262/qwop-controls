@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
-    GameThreadSafeSavable game = new GameThreadSafeSavable();
+    GameThreadSafe game = new GameThreadSafe();
 
     public static void main(String[] args) {
         boolean doScreenCapture = false;
@@ -129,37 +129,37 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
         // Run the controller until failure.
         while (!qwop.game.getFailureStatus()) {
-
-            // Hacks for now during testing.
-            byte[] fullState = qwop.game.getFullState();
-
-            currNode.fullState = fullState;
-            Action chosenAction = valueFunction.getMaximizingAction(currNode);
-
-
-
-            actionQueue.addAction(chosenAction);
-            while (!actionQueue.isEmpty()) {
-                long currTime = System.currentTimeMillis();
-                // qwop.game.applyBodyImpulse(-3f, 0.001f);
-                qwop.game.step(actionQueue.pollCommand());
-
-                if (doScreenCapture) {
-                    try {
-                        screenCapture.takeFrameFromContainer(frame);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else { // Screen capture is already so slow, we don't need a delay.
-                    try {
-                        Thread.sleep(Math.max(1, 40 - (System.currentTimeMillis() - currTime)));
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            currNode = currNode.addChild(chosenAction);
-            currNode.setState(qwop.game.getCurrentState());
+//
+//            // Hacks for now during testing.
+//            byte[] fullState = qwop.game.getFullState();
+//
+//            currNode.fullState = fullState;
+//            Action chosenAction = valueFunction.getMaximizingAction(currNode);
+//
+//
+//
+//            actionQueue.addAction(chosenAction);
+//            while (!actionQueue.isEmpty()) {
+//                long currTime = System.currentTimeMillis();
+//                // qwop.game.applyBodyImpulse(-3f, 0.001f);
+//                qwop.game.step(actionQueue.pollCommand());
+//
+//                if (doScreenCapture) {
+//                    try {
+//                        screenCapture.takeFrameFromContainer(frame);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                } else { // Screen capture is already so slow, we don't need a delay.
+//                    try {
+//                        Thread.sleep(Math.max(1, 40 - (System.currentTimeMillis() - currTime)));
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//            currNode = currNode.addChild(chosenAction);
+//            currNode.setState(qwop.game.getCurrentState());
         }
     }
 

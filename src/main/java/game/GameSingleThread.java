@@ -15,6 +15,7 @@ import org.jbox2d.dynamics.contacts.ContactResult;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 import org.nustaq.serialization.FSTConfiguration;
+import org.nustaq.serialization.annotations.Flat;
 
 import java.awt.*;
 import java.io.*;
@@ -68,7 +69,7 @@ public class GameSingleThread implements IGame, Serializable {
      * the user continues to access. This is mostly because I can't figure out loading such that all the fields here
      * are replaced correctly.
      */
-    private boolean invalidated = false;
+    transient private boolean invalidated = false;
 
     /**
      * Should enclose the entire area we want collision checked.
@@ -185,9 +186,12 @@ public class GameSingleThread implements IGame, Serializable {
     /**
      * Normal stroke for line drawing.
      **/
-    transient private static final Stroke normalStroke = new BasicStroke(0.5f);
+    private static final Stroke normalStroke = new BasicStroke(0.5f);
 
-    transient FSTConfiguration fstConfiguration;
+    /**
+     * For faster serialization.
+     */
+    private static FSTConfiguration fstConfiguration;
 
     // Make the single instance of this game!
     static {
@@ -195,7 +199,8 @@ public class GameSingleThread implements IGame, Serializable {
     }
 
     private GameSingleThread() {
-        fstConfiguration = FSTConfiguration.createDefaultConfiguration();
+        fstConfiguration = FSTConfiguration.createUnsafeBinaryConfiguration(); // A little faster than
+        // createDefaultConfiguration().
         oneTimeSetup();
         lock.lock();
         makeNewWorld();
