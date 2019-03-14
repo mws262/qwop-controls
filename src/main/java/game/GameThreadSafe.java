@@ -28,7 +28,9 @@ import static game.GameConstants.*;
  * @author matt
  */
 @SuppressWarnings("Duplicates")
-public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
+public class GameThreadSafe implements IGame, Serializable {
+     GameClassLoader classLoader = new GameClassLoader();
+
     /**
      * Number of timesteps in this game.
      */
@@ -59,8 +61,6 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
      */
     private List<Object> shapeList;
 
-    private Class<?> _World, _MassData, _BodyDef, _Vec2, _PolygonDef, _CircleDef, _AABB, _RevoluteJointDef, _Body,
-            _ContactListener, _ShapeType, _PolygonShape, _CircleShape, _EdgeShape, _XForm, _ShapeDef, _JointDef;
 
     // World definition:
     public Object world;
@@ -93,12 +93,32 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
 
     private final String name;
 
+
+//    private Class<?> _World, _MassData, _BodyDef, _Vec2, _PolygonDef, _CircleDef, _AABB, _RevoluteJointDef, _Body,
+//            _ContactListener, _ShapeType, _PolygonShape, _CircleShape, _EdgeShape, _XForm, _ShapeDef, _JointDef;
+
     /**
      * Make a new game on its own ClassLoader.
      */
     public GameThreadSafe() {
-        registerAsParallelCapable();
-        loadClasses(); // Load all the necessary classes on a new class loader (this).
+//        _World = classLoader._World;
+//        _MassData = classLoader._MassData;
+//        _BodyDef = classLoader._BodyDef;
+//        _Vec2 = classLoader._Vec2;
+//        _PolygonDef = classLoader._PolygonDef;
+//        _CircleDef = classLoader._CircleDef;
+//        _AABB = classLoader._AABB;
+//        _RevoluteJointDef = classLoader._RevoluteJointDef;
+//        _Body = classLoader._Body;
+//        _ContactListener = classLoader._ContactListener;
+//        _ShapeType = classLoader._ShapeType;
+//        _PolygonShape = classLoader._PolygonShape;
+//        _CircleShape = classLoader._CircleShape;
+//        _EdgeShape = classLoader._EdgeShape;
+//        _XForm = classLoader._XForm;
+//        _ShapeDef = classLoader._ShapeDef;
+//        _JointDef = classLoader._JointDef;
+//
         try {
             oneTimeSetup(); // Create all the shape and body definitions that never need changing.
             makeNewWorld();
@@ -108,558 +128,19 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
         name = "game" + UUID.randomUUID().toString();
     }
 
-    @Override
-    public String toString() {
-        return name;
-    }
-
-    @Override
-    public Class<?> findClass(String name) {
-
-        byte[] bt = loadClassData(name);
-//        if (bt == null) {
-//            return null;
-//        }
-        return defineClass(name, bt, 0, bt.length);
-    }
-
-    /**
-     * Loads individual classes.
-     *
-     * @param className Name of a class to load. Does not need .class at the end.
-     * @return Byte array containing that class's data.
-     */
-    private byte[] loadClassData(String className) {
-        // Read class
-        InputStream is = getClass().getClassLoader().getResourceAsStream(className.replace(".", "/") + ".class");
-        ByteArrayOutputStream byteSt = new ByteArrayOutputStream();
-
-        // Write into byte stream.
-        int len;
-        try {
-//            if (is == null) {
-//                return null;
-//            }
-            while ((len = is.read()) != -1) {
-                byteSt.write(len);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // Convert into byte array.
-        return byteSt.toByteArray();
-    }
-
-    /**
-     * Loads all the classes we need to create a new game.
-     * <p>
-     * Some of this importing could be refined further (e.g. ordering, maybe some redundant or unnecessary classes).
-     */
-    private void loadClasses() {
-
-        try {
-            // I think the order of these DOES matter since if a subclass needs to load its parent, the default
-            // classloader, rather than this one will be used.
-            // I.e. put the most basic stuff further up the list.
-            _Vec2 = findClass("org.jbox2d.common.Vec2");
-            findClass("org.jbox2d.common.Sweep");
-            findClass("org.jbox2d.common.Mat22");
-            findClass("org.jbox2d.common.MathUtils");
-            findClass("org.jbox2d.common.Settings");
-
-            _ShapeType = findClass("org.jbox2d.collision.shapes.ShapeType");
-            findClass("org.jbox2d.dynamics.contacts.Contact");
-            findClass("org.jbox2d.dynamics.contacts.ContactCreateFcn");
-            _ShapeDef = findClass("org.jbox2d.collision.shapes.ShapeDef");
-            _AABB = findClass("org.jbox2d.collision.AABB");
-            _World = findClass("org.jbox2d.dynamics.World");
-            findClass("org.jbox2d.dynamics.contacts.ContactPoint");
-            _ContactListener = findClass("org.jbox2d.dynamics.ContactListener");
-            findClass("org.jbox2d.collision.shapes.Shape");
-
-            findClass("org.jbox2d.dynamics.Island");
-            findClass("org.jbox2d.dynamics.joints.JointEdge");
-            findClass("org.jbox2d.dynamics.contacts.CircleContact");
-            findClass("org.jbox2d.dynamics.contacts.ContactEdge");
-            findClass("org.jbox2d.dynamics.ContactFilter");
-            findClass("org.jbox2d.dynamics.DefaultContactFilter");
-            findClass("org.jbox2d.dynamics.ContactManager");
-            findClass("org.jbox2d.dynamics.contacts.ContactSolver");
-            findClass("org.jbox2d.dynamics.contacts.NullContact");
-            findClass("org.jbox2d.dynamics.contacts.PolyAndCircleContact");
-            findClass("org.jbox2d.dynamics.contacts.PolyContact");
-            findClass("org.jbox2d.dynamics.contacts.PolyAndEdgeContact");
-            findClass("org.jbox2d.dynamics.contacts.EdgeAndCircleContact");
-            findClass("org.jbox2d.dynamics.contacts.PointAndCircleContact");
-            findClass("org.jbox2d.dynamics.contacts.PointAndPolyContact");
-            findClass("org.jbox2d.dynamics.contacts.ContactConstraintPoint");
-            findClass("org.jbox2d.dynamics.contacts.ContactConstraint");
-            findClass("org.jbox2d.dynamics.contacts.ContactResult");
-            findClass("org.jbox2d.dynamics.contacts.ContactRegister");
-
-            findClass("org.jbox2d.collision.BroadPhase");
-            findClass("org.jbox2d.collision.ContactID");
-            findClass("org.jbox2d.collision.ContactID$Features");
-            findClass("org.jbox2d.collision.PairManager");
-            findClass("org.jbox2d.collision.BufferedPair");
-            findClass("org.jbox2d.collision.Proxy");
-            findClass("org.jbox2d.collision.ManifoldPoint");
-            findClass("org.jbox2d.collision.Manifold");
-            findClass("org.jbox2d.collision.SupportsGenericDistance");
-            findClass("org.jbox2d.collision.OBB");
-            findClass("org.jbox2d.collision.TOI");
-            findClass("org.jbox2d.collision.Point");
-            findClass("org.jbox2d.collision.Distance");
-            findClass("org.jbox2d.collision.shapes.PointShape");
-            findClass("org.jbox2d.collision.shapes.CollideCircle");
-            findClass("org.jbox2d.collision.shapes.CollidePoly");
-            findClass("org.jbox2d.collision.shapes.MaxSeparation");
-            findClass("org.jbox2d.collision.shapes.CollidePoly$ClipVertex");
-
-            _Body = findClass("org.jbox2d.dynamics.Body");
-            _XForm = findClass("org.jbox2d.common.XForm");
-            _BodyDef = findClass("org.jbox2d.dynamics.BodyDef");
-            _MassData = findClass("org.jbox2d.collision.MassData");
-            _PolygonDef = findClass("org.jbox2d.collision.shapes.PolygonDef");
-            _CircleDef = findClass("org.jbox2d.collision.shapes.CircleDef");
-            _PolygonShape = findClass("org.jbox2d.collision.shapes.PolygonShape");
-            _CircleShape = findClass("org.jbox2d.collision.shapes.CircleShape");
-            _EdgeShape = findClass("org.jbox2d.collision.shapes.EdgeShape");
-            findClass("org.jbox2d.collision.shapes.EdgeChainDef");
-
-            findClass("org.jbox2d.pooling.TLVec2");
-            findClass("org.jbox2d.pooling.TLMat22");
-            findClass("org.jbox2d.pooling.TLManifold");
-            findClass("org.jbox2d.pooling.TLContactPoint");
-            findClass("org.jbox2d.pooling.TLXForm");
-            findClass("org.jbox2d.pooling.TLAABB");
-            findClass("org.jbox2d.pooling.SingletonPool");
-            findClass("org.jbox2d.pooling.TLBoundValues");
-            findClass("org.jbox2d.pooling.arrays.IntegerArray");
-            findClass("org.jbox2d.pooling.SingletonPool$Singletons");
-            findClass("org.jbox2d.pooling.SingletonPool$Pool");
-            findClass("org.jbox2d.pooling.stacks.IslandStack");
-            findClass("org.jbox2d.pooling.stacks.ContactSolverStack");
-
-            findClass("org.jbox2d.dynamics.joints.JointType");
-            _JointDef = findClass("org.jbox2d.dynamics.joints.JointDef");
-            findClass("org.jbox2d.dynamics.joints.Joint");
-            _RevoluteJointDef = findClass("org.jbox2d.dynamics.joints.RevoluteJointDef");
-            findClass("org.jbox2d.dynamics.joints.RevoluteJoint");
-            findClass("org.jbox2d.dynamics.joints.DistanceJointDef");
-            findClass("org.jbox2d.dynamics.joints.DistanceJoint");
-            findClass("org.jbox2d.dynamics.joints.MouseJointDef");
-            findClass("org.jbox2d.dynamics.joints.MouseJoint");
-            findClass("org.jbox2d.dynamics.joints.PrismaticJointDef");
-            findClass("org.jbox2d.dynamics.joints.PrismaticJoint");
-            findClass("org.jbox2d.dynamics.joints.PulleyJointDef");
-            findClass("org.jbox2d.dynamics.joints.PulleyJoint");
-            findClass("org.jbox2d.dynamics.joints.GearJointDef");
-            findClass("org.jbox2d.dynamics.joints.GearJoint");
-            findClass("org.jbox2d.dynamics.joints.ConstantVolumeJointDef");
-            findClass("org.jbox2d.dynamics.joints.ConstantVolumeJoint");
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Convenience method to avoid dealing with reflection in the code constantly.
-     */
-    private Object makeBodyDef(float positionX, float positionY, float angle, float mass, float inertia) {
-        Object bodyDef = null;
-        try {
-            bodyDef = _BodyDef.getDeclaredConstructor().newInstance();
-            Object massData = makeMassData(mass, inertia);
-            Object position = makeVec2(positionX, positionY);
-            bodyDef.getClass().getField("massData").set(bodyDef, massData);
-            bodyDef.getClass().getField("position").set(bodyDef, position);
-            bodyDef.getClass().getField("angle").setFloat(bodyDef, angle);
-        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return bodyDef;
-    }
-
-    private Object makeBody(Object world, Object bodyDef, Object shape) {
-        Object body = null;
-        try {
-            body = world.getClass().getMethod("createBody", _BodyDef).invoke(world, bodyDef);
-            body.getClass().getMethod("createShape", _ShapeDef).invoke(body, shape);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        return body;
-    }
-
-    /**
-     * Make a joint definition.
-     */
-    private Object makeJointDef(Object body1, Object body2, float jointPosX, float jointPosY, float lowerAngle,
-                                float upperAngle, float maxTorque, float motorSpeed, boolean enableLimit,
-                                boolean enableMotor, boolean collideConnected) {
-        Object jDef = null;
-        try {
-            jDef = _RevoluteJointDef.getDeclaredConstructor().newInstance();
-            Object posVec = makeVec2(jointPosX, jointPosY);
-
-            jDef.getClass().getMethod("initialize", _Body, _Body, _Vec2).invoke(jDef, body1, body2, posVec);
-            jDef.getClass().getField("lowerAngle").setFloat(jDef, lowerAngle);
-            jDef.getClass().getField("upperAngle").setFloat(jDef, upperAngle);
-            jDef.getClass().getField("maxMotorTorque").setFloat(jDef, maxTorque);
-            jDef.getClass().getField("motorSpeed").setFloat(jDef, motorSpeed);
-
-            jDef.getClass().getField("enableLimit").setBoolean(jDef, enableLimit);
-            jDef.getClass().getField("enableMotor").setBoolean(jDef, enableMotor);
-            jDef.getClass().getField("collideConnected").setBoolean(jDef, collideConnected);
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-        return jDef;
-    }
-
-    /**
-     * Convenience method to avoid dealing with reflection in the code constantly.
-     */
-    private Object makeBoxShapeDef(float boxX, float boxY, float restitution, float friction, float density,
-                                   int groupIdx) {
-        Object boxShapeDef = null;
-        try {
-            boxShapeDef = _PolygonDef.getDeclaredConstructor().newInstance();
-            boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(boxShapeDef, boxX, boxY);
-            boxShapeDef.getClass().getField("friction").setFloat(boxShapeDef, friction);
-            boxShapeDef.getClass().getField("density").setFloat(boxShapeDef, density);
-            boxShapeDef.getClass().getField("restitution").setFloat(boxShapeDef, restitution);
-            Object shapeFilter = boxShapeDef.getClass().getField("filter").get(boxShapeDef);
-            shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-
-        return boxShapeDef;
-    }
-
-    /**
-     * Convenience method to avoid dealing with reflection in the code constantly.
-     */
-    private Object makeBoxShapeDef(float boxX, float boxY, float friction, float density, int groupIdx) {
-        Object boxShapeDef = null;
-        try {
-            boxShapeDef = _PolygonDef.getDeclaredConstructor().newInstance();
-            boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(boxShapeDef, boxX, boxY);
-            boxShapeDef.getClass().getField("friction").setFloat(boxShapeDef, friction);
-            boxShapeDef.getClass().getField("density").setFloat(boxShapeDef, density);
-            Object shapeFilter = boxShapeDef.getClass().getField("filter").get(boxShapeDef);
-            shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-        return boxShapeDef;
-    }
-
-    /**
-     * Convenience method to avoid dealing with reflection in the code constantly.
-     */
-    private Object makeCircleShapeDef(float radius, float friction, float density, int groupIdx) {
-        Object circleShapeDef = null;
-        try {
-            circleShapeDef = _CircleDef.getDeclaredConstructor().newInstance();
-            circleShapeDef.getClass().getField("radius").setFloat(circleShapeDef, radius);
-            circleShapeDef.getClass().getField("friction").setFloat(circleShapeDef, friction);
-            circleShapeDef.getClass().getField("density").setFloat(circleShapeDef, density);
-            Object shapeFilter = circleShapeDef.getClass().getField("filter").get(circleShapeDef);
-            shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
-        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return circleShapeDef;
-    }
-
-    /**
-     * Convenience method to avoid dealing with reflection in the code constantly.
-     */
-    private Object makeMassData(float mass, float inertia) {
-        Object md = null;
-        try {
-            md = _MassData.getDeclaredConstructor().newInstance();
-            md.getClass().getField("mass").setFloat(md, mass);
-            md.getClass().getField("I").setFloat(md, inertia);
-        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return md;
-    }
-
-    /**
-     * Convenience method to avoid dealing with reflection in the code constantly.
-     */
-    private Object makeVec2(float x, float y) {
-        Object vec = null;
-        try {
-            vec = _Vec2.getConstructor(float.class, float.class).newInstance(x, y);
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return vec;
-    }
-
-    /**
-     * Call once to initialize a lot of shape definitions which only need to be created once.
-     */
-    private void oneTimeSetup() {
-        /*
-         * Make the bodies and collision shapes
-         */
-        /* TRACK */
-        trackDef = makeBodyDef(trackPosX, trackPosY, 0, 0, 0);
-        trackShape = makeBoxShapeDef(trackXDim, trackYDim, trackRest, trackFric, 0, 1);
-
-        /* FEET */
-        //Create the fixture shapes, IE collision shapes
-
-        int BODY_GROUP = -1; // Filters collisions. Prevents body parts from hitting other body parts.
-
-        rFootDef = makeBodyDef(rFootPosX, rFootPosY, rFootAng, rFootMass, rFootInertia);
-        rFootShape = makeBoxShapeDef(rFootL / 2f, rFootH / 2f, rFootFric, rFootDensity, BODY_GROUP);
-        lFootDef = makeBodyDef(lFootPosX, lFootPosY, lFootAng, lFootMass, lFootInertia);
-        lFootShape = makeBoxShapeDef(lFootL / 2f, lFootH / 2f, lFootFric, lFootDensity, BODY_GROUP);
-
-        /* CALVES */
-        rCalfDef = makeBodyDef(rCalfPosX, rCalfPosY, rCalfAng + rCalfAngAdj, rCalfMass, rCalfInertia);
-        rCalfShape = makeBoxShapeDef(rCalfW / 2f, rCalfL / 2f, rCalfFric, rCalfDensity, BODY_GROUP);
-        lCalfDef = makeBodyDef(lCalfPosX, lCalfPosY, lCalfAng + lCalfAngAdj, lCalfMass, lCalfInertia);
-        lCalfShape = makeBoxShapeDef(lCalfW / 2f, lCalfL / 2f, lCalfFric, lCalfDensity, BODY_GROUP);
-
-        /* THIGHS */
-        rThighDef = makeBodyDef(rThighPosX, rThighPosY, rThighAng + rThighAngAdj, rThighMass, rThighInertia);
-        rThighShape = makeBoxShapeDef(rThighW / 2f, rThighL / 2f, rThighFric, rThighDensity, BODY_GROUP);
-        lThighDef = makeBodyDef(lThighPosX, lThighPosY, lThighAng + lThighAngAdj, lThighMass, lThighInertia);
-        lThighShape = makeBoxShapeDef(lThighW / 2f, lThighL / 2f, lThighFric, lThighDensity, BODY_GROUP);
-
-        /* TORSO */
-        torsoDef = makeBodyDef(torsoPosX, torsoPosY, torsoAng + torsoAngAdj, torsoMass, torsoInertia);
-        torsoShape = makeBoxShapeDef(torsoW / 2f, torsoL / 2f, torsoFric, torsoDensity, BODY_GROUP);
-
-        /* HEAD */
-        headDef = makeBodyDef(headPosX, headPosY, headAng + headAngAdj, headMass, headInertia);
-        headShape = makeCircleShapeDef(headR, headFric, headDensity, BODY_GROUP);
-
-        /* UPPER ARMS */
-        rUArmDef = makeBodyDef(rUArmPosX, rUArmPosY, rUArmAng + rUArmAngAdj, rUArmMass, rUArmInertia);
-        rUArmShape = makeBoxShapeDef(rUArmW / 2f, rUArmL / 2f, rUArmFric, rUArmDensity, BODY_GROUP);
-        lUArmDef = makeBodyDef(lUArmPosX, lUArmPosY, lUArmAng + lUArmAngAdj, lUArmMass, lUArmInertia);
-        lUArmShape = makeBoxShapeDef(lUArmW / 2f, lUArmL / 2f, lUArmFric, lUArmDensity, BODY_GROUP);
-
-        /* LOWER ARMS */
-        rLArmDef = makeBodyDef(rLArmPosX, rLArmPosY, rLArmAng + rLArmAngAdj, rLArmMass, rLArmInertia);
-        rLArmShape = makeBoxShapeDef(rLArmW / 2f, rLArmL / 2f, rLArmFric, rLArmDensity, BODY_GROUP);
-        lLArmDef = makeBodyDef(lLArmPosX, lLArmPosY, lLArmAng + lLArmAngAdj, lLArmMass, lLArmInertia);
-        lLArmShape = makeBoxShapeDef(lLArmW / 2f, lLArmL / 2f, lLArmFric, lLArmDensity, BODY_GROUP);
-    }
-
-    /**
-     * Make (or remake) the world with all the body parts at their initial locations.
-     */
-    public void makeNewWorld() {
-        try {
-            isFailed = false;
-            rFootDown = false;
-            lFootDown = false;
-            timestepsSimulated = 0;
-
-            /* World setup */
-            Constructor<?> aabbCons = _AABB.getConstructor(_Vec2, _Vec2);
-            Object vecAABBLower = makeVec2(aabbMinX, aabbMinY);
-            Object vecAABBUpper = makeVec2(aabbMaxX, aabbMaxY);
-            Object aabbWorld = aabbCons.newInstance(vecAABBLower, vecAABBUpper);
-            Object vecGrav = makeVec2(0f, gravityMagnitude);
-
-            Constructor<?> worldCons = _World.getConstructor(_AABB, _Vec2, boolean.class);
-            world = worldCons.newInstance(aabbWorld, vecGrav, true);
-
-            // World settings:
-            world.getClass().getMethod("setWarmStarting", boolean.class).invoke(world, true);
-            world.getClass().getMethod("setPositionCorrection", boolean.class).invoke(world, true);
-            world.getClass().getMethod("setContinuousPhysics", boolean.class).invoke(world, true);
-
-            /* Body setup */
-            Object trackBody = world.getClass().getMethod("createBody", _BodyDef).invoke(world, trackDef);
-            trackBody.getClass().getMethod("createShape", _ShapeDef).invoke(trackBody, trackShape);
-
-            // NOTE: The order of creating bodies actually changes the answers slightly!! This is really dumb, but will
-            // affect us if we are trying to match the single and multithreaded version.
-
-            rFootBody = makeBody(world, rFootDef, rFootShape);
-            lFootBody = makeBody(world, lFootDef, lFootShape);
-
-            rCalfBody = makeBody(world, rCalfDef, rCalfShape);
-            lCalfBody = makeBody(world, lCalfDef, lCalfShape);
-
-            rThighBody = makeBody(world, rThighDef, rThighShape);
-            lThighBody = makeBody(world, lThighDef, lThighShape);
-
-            rUArmBody = makeBody(world, rUArmDef, rUArmShape);
-            lUArmBody = makeBody(world, lUArmDef, lUArmShape);
-
-            rLArmBody = makeBody(world, rLArmDef, rLArmShape);
-            lLArmBody = makeBody(world, lLArmDef, lLArmShape);
-
-            torsoBody = makeBody(world, torsoDef, torsoShape);
-            headBody = makeBody(world, headDef, headShape);
-
-            if (shapeList == null) { // Grab shapes one time for the sake of plotting later.
-                shapeList = new ArrayList<>();
-                shapeList.add(torsoBody.getClass().getMethod("getShapeList").invoke(torsoBody));
-                shapeList.add(headBody.getClass().getMethod("getShapeList").invoke(headBody));
-                shapeList.add(rFootBody.getClass().getMethod("getShapeList").invoke(rFootBody));
-                shapeList.add(lFootBody.getClass().getMethod("getShapeList").invoke(lFootBody));
-                shapeList.add(rCalfBody.getClass().getMethod("getShapeList").invoke(rCalfBody));
-                shapeList.add(lCalfBody.getClass().getMethod("getShapeList").invoke(lCalfBody));
-                shapeList.add(rThighBody.getClass().getMethod("getShapeList").invoke(rThighBody));
-                shapeList.add(lThighBody.getClass().getMethod("getShapeList").invoke(lThighBody));
-                shapeList.add(rUArmBody.getClass().getMethod("getShapeList").invoke(rUArmBody));
-                shapeList.add(lUArmBody.getClass().getMethod("getShapeList").invoke(lUArmBody));
-                shapeList.add(rLArmBody.getClass().getMethod("getShapeList").invoke(rLArmBody));
-                shapeList.add(lLArmBody.getClass().getMethod("getShapeList").invoke(lLArmBody));
-                shapeList.add(trackBody.getClass().getMethod("getShapeList").invoke(trackBody));
-            }
-
-            /* Joint makeNewWorld */
-            rAnkleJDef = makeJointDef(rFootBody, rCalfBody, rAnklePosX, rAnklePosY, -0.5f, 0.5f, 2000f, 0f,
-                    true, false, false);
-            rAnkleJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rAnkleJDef);
-            lAnkleJDef = makeJointDef(lFootBody, lCalfBody, lAnklePosX, lAnklePosY, -0.5f, 0.5f, 2000f, 0f,
-                    true, false, false);
-            lAnkleJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lAnkleJDef);
-
-            rKneeJDef = makeJointDef(rCalfBody, rThighBody, rKneePosX, rKneePosY, -1.3f, 0.3f, 3000f, 0f, true
-                    , true, false);
-            rKneeJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rKneeJDef);
-            lKneeJDef = makeJointDef(lCalfBody, lThighBody, lKneePosX, lKneePosY, -1.6f, 0.0f, 3000f, 0f, true
-                    , true, false);
-            lKneeJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lKneeJDef);
-
-            rHipJDef = makeJointDef(rThighBody, torsoBody, rHipPosX, rHipPosY, -1.3f, 0.7f, 6000f, 0f, true,
-                    true, false);
-            rHipJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rHipJDef);
-            lHipJDef = makeJointDef(lThighBody, torsoBody, lHipPosX, lHipPosY, -1.5f, 0.5f, 6000f, 0f, true,
-                    true, false);
-            lHipJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lHipJDef);
-
-            neckJDef = makeJointDef(headBody, torsoBody, neckPosX, neckPosY, -0.5f, 0.0f, 1000f, 0f, true,
-                    true, false);
-            neckJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, neckJDef);
-
-            rShoulderJDef = makeJointDef(rUArmBody, torsoBody, rShoulderPosX, rShoulderPosY, -0.5f, 1.5f,
-                    1000f, 0f, true, true, false);
-            rShoulderJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rShoulderJDef);
-            lShoulderJDef = makeJointDef(lUArmBody, torsoBody, lShoulderPosX, lShoulderPosY, -2f, 0.0f, 1000f,
-                    0f, true, true, false);
-            lShoulderJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lShoulderJDef);
-
-            rElbowJDef = makeJointDef(rLArmBody, rUArmBody, rElbowPosX, rElbowPosY, -0.1f, 0.5f, 0f, 10f, true
-                    , true, false);
-            rElbowJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, rElbowJDef);
-            lElbowJDef = makeJointDef(lLArmBody, lUArmBody, lElbowPosX, lElbowPosY, -0.1f, 0.5f, 0f, 10f, true
-                    , true, false);
-            lElbowJ = world.getClass().getMethod("createJoint", _JointDef).invoke(world, lElbowJDef);
-
-
-            // This proxy nonsense solves the problem that I need a class to implement _ContactListener, the version I
-            // loaded with this custom class loader.
-            // The dynamic proxy lets this implement a class that is defined at runtime.
-            // Contact listener
-            Object contactListenerProxy = Proxy.newProxyInstance(_ContactListener.getClassLoader(),
-                    new Class[]{_ContactListener, Serializable.class},
-                    new ContactListener());
-
-
-            world.getClass().getMethod("setContactListener", _ContactListener).invoke(world, contactListenerProxy);
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        initialized = true;
-    }
-
-
-    class ContactListener implements InvocationHandler, Serializable {
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
-            String method_name = method.getName();
-            Object fixtureAShape;
-            Object fixtureBShape;
-            Object fixtureABody;
-            Object fixtureBBody;
-
-            switch (method_name) {
-                case "add":
-                    fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
-                    fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
-                    fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
-                    fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
-                    //Failure when head, arms, or torso hits the ground.
-                    if (fixtureABody.equals(headBody) ||
-                            fixtureBBody.equals(headBody) ||
-                            fixtureABody.equals(lLArmBody) ||
-                            fixtureBBody.equals(lLArmBody) ||
-                            fixtureABody.equals(rLArmBody) ||
-                            fixtureBBody.equals(rLArmBody) ||
-                            fixtureABody.equals(torsoBody) ||
-                            fixtureBBody.equals(torsoBody)) {
-                        isFailed = true;
-                    } else if (failOnThighContact &&
-                            (fixtureABody.equals(lThighBody) ||
-                                    fixtureBBody.equals(lThighBody) ||
-                                    fixtureABody.equals(rThighBody) ||
-                                    fixtureBBody.equals(rThighBody))) {
-
-                        isFailed = true;
-                    } else if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) { // Track
-                        // when each foot hits the ground.
-                        rFootDown = true;
-                    } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
-                        lFootDown = true;
-                    }
-                    break;
-                case "persist":
-                    break;
-                case "remove":
-                    // Track when each foot leaves the ground.
-                    fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
-                    fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
-                    fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
-                    fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
-                    if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) {
-                        rFootDown = false;
-                    } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
-                        lFootDown = false;
-                    }
-                    break;
-                case "result":
-                    break;
-            }
-            return null;
-        }
-    }
     /**
      * Apply a disturbance impulse to the body COM.
      */
     public void applyBodyImpulse(float xComp, float yComp) {
         try {
             Object worldCenter = torsoBody.getClass().getMethod("getWorldCenter").invoke(torsoBody);
-            torsoBody.getClass().getMethod("applyImpulse", _Vec2, _Vec2).invoke(torsoBody, makeVec2(xComp, yComp),
+            torsoBody.getClass().getMethod("applyImpulse", classLoader._Vec2, classLoader._Vec2).invoke(torsoBody, makeVec2(xComp
+                    , yComp),
                     worldCenter);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }
     }
-
     /**
      * Apply a disturbance torque to the body.
      */
@@ -888,6 +369,7 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
         return new Object[]{rHipJ, lHipJ, rKneeJ, lKneeJ, rAnkleJ, lAnkleJ, rShoulderJ, lShoulderJ, rElbowJ,
                 lElbowJ, neckJ};
     }
+
     /**
      * Get a new StateVariable for a given body.
      */
@@ -909,7 +391,6 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
         }
         return currentState;
     }
-
     /**
      * Set the visible state of the runner (positions, velocities). Does not change the internal solver states, and
      * can be a dangerous command to use. Determinism is out the window here.
@@ -944,9 +425,9 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
      */
     private void setBodyToStateVariable(Object body, StateVariable stateVariable) {
         try {
-            body.getClass().getMethod("setXForm", _Vec2, float.class).invoke(body, makeVec2(stateVariable.getX(),
+            body.getClass().getMethod("setXForm", classLoader._Vec2, float.class).invoke(body, makeVec2(stateVariable.getX(),
                     stateVariable.getY()), stateVariable.getTh());
-            body.getClass().getMethod("setLinearVelocity", _Vec2).invoke(body, makeVec2(stateVariable.getDx(),
+            body.getClass().getMethod("setLinearVelocity", classLoader._Vec2).invoke(body, makeVec2(stateVariable.getDx(),
                     stateVariable.getDy()));
             body.getClass().getMethod("setAngularVelocity", float.class).invoke(body, stateVariable.getDth());
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -990,7 +471,7 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
     public Object getXForm(StateVariable sv) {
         Object xf = null;
         try {
-            xf = _XForm.getConstructor().newInstance();
+            xf = classLoader._XForm.getConstructor().newInstance();
             Object pos = xf.getClass().getField("position").get(xf); // Position
             pos.getClass().getField("x").setFloat(pos, sv.getX());
             pos.getClass().getField("y").setFloat(pos, sv.getY());
@@ -1021,28 +502,28 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                 while (newFixture != null) {
                     // Most links are polygon shapes
                     Object fixtureType = newFixture.getClass().getMethod("getType").invoke(newFixture);
-                    if (fixtureType == _ShapeType.getField("POLYGON_SHAPE").get(null)) {
+                    if (fixtureType == classLoader._ShapeType.getField("POLYGON_SHAPE").get(null)) {
                         g.setColor(mainRunnerColor);
                         ((Graphics2D) g).setStroke(mainRunnerStroke);
-                        Object newShape = _PolygonShape.cast(newFixture); // PolygonShape
+                        Object newShape = classLoader._PolygonShape.cast(newFixture); // PolygonShape
                         Object[] shapeVerts = (Object[]) newShape.getClass().getField("m_vertices").get(newShape); //
                         // Vec2[]
 
                         for (int k = 0; k < newShape.getClass().getField("m_vertexCount").getInt(newShape); k++) {
                             Object xf = newBody.getClass().getMethod("getXForm").invoke(newBody); // XForm
 
-                            Object ptA = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, xf, shapeVerts[k]); // Vec2
-                            Object ptB = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, xf,
+                            Object ptA = classLoader._XForm.getMethod("mul", classLoader._XForm, classLoader._Vec2).invoke(null, xf, shapeVerts[k]); // Vec2
+                            Object ptB = classLoader._XForm.getMethod("mul", classLoader._XForm, classLoader._Vec2).invoke(null, xf,
                                     shapeVerts[(k + 1) % newShape.getClass().getField("m_vertexCount").getInt(newShape)]); // Vec2
                             g.drawLine((int) (scaling * (ptA.getClass().getField("x").getFloat(ptA) - currTorsoPos)) + xOffsetPixels,
                                     (int) (scaling * ptA.getClass().getField("y").getFloat(ptA)) + yOffset,
                                     (int) (scaling * (ptB.getClass().getField("x").getFloat(ptB) - currTorsoPos)) + xOffsetPixels,
                                     (int) (scaling * ptB.getClass().getField("y").getFloat(ptB)) + yOffset);
                         }
-                    } else if (fixtureType == _ShapeType.getField("CIRCLE_SHAPE").get(null)) { // Basically just head
+                    } else if (fixtureType == classLoader._ShapeType.getField("CIRCLE_SHAPE").get(null)) { // Basically just head
                         g.setColor(mainRunnerColor);
                         ((Graphics2D) g).setStroke(mainRunnerStroke);
-                        Object newShape = _CircleShape.cast(newFixture); // CircleShape
+                        Object newShape = classLoader._CircleShape.cast(newFixture); // CircleShape
                         float radius = newShape.getClass().getField("m_radius").getFloat(newShape);
                         Object pos = newBody.getClass().getMethod("getPosition").invoke(newBody);
 
@@ -1051,10 +532,10 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                                 (int) (scaling * radius * 2),
                                 (int) (scaling * radius * 2));
 
-                    } else if (fixtureType == _ShapeType.getField("EDGE_SHAPE").get(null)) { // The track.
+                    } else if (fixtureType == classLoader._ShapeType.getField("EDGE_SHAPE").get(null)) { // The track.
                         g.setColor(mainRunnerColor);
                         ((Graphics2D) g).setStroke(normalStroke);
-                        Object newShape = newFixture.getClass().cast(_EdgeShape); // EdgeShape
+                        Object newShape = newFixture.getClass().cast(classLoader._EdgeShape); // EdgeShape
                         Object trans = newBody.getClass().getMethod("getXForm").invoke(newBody); // XForm
 
                         Object vertex1 = newShape.getClass().getMethod("getVertex1").invoke(newShape); // Vec2
@@ -1062,9 +543,9 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                         Object vertex3 = newShape.getClass().getMethod("getVertex3").invoke(newShape);
 
 
-                        Object ptA = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vertex1); // Vec2
-                        Object ptB = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vertex2);
-                        Object ptC = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, trans, vertex3);
+                        Object ptA = classLoader._XForm.getMethod("mul", classLoader._XForm, classLoader._Vec2).invoke(null, trans, vertex1); // Vec2
+                        Object ptB = classLoader._XForm.getMethod("mul", classLoader._XForm, classLoader._Vec2).invoke(null, trans, vertex2);
+                        Object ptC = classLoader._XForm.getMethod("mul", classLoader._XForm, classLoader._Vec2).invoke(null, trans, vertex3);
 
                         g.drawLine((int) (scaling * ptA.getClass().getField("x").getFloat(ptA)) + xOffsetPixels,
                                 (int) (scaling * ptA.getClass().getField("y").getFloat(ptA)) + yOffset,
@@ -1123,7 +604,7 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                 Object shape = shapeList.get(i);
                 Object fixtureType = shape.getClass().getMethod("getType").invoke(shape);
 
-                if (fixtureType == _ShapeType.getField("POLYGON_SHAPE").get(null)) {
+                if (fixtureType == classLoader._ShapeType.getField("POLYGON_SHAPE").get(null)) {
                     // Ground is black regardless.
                     Object filter = shape.getClass().getField("m_filter").get(shape);
                     if (filter.getClass().getField("groupIndex").getInt(filter) == 1) {
@@ -1131,26 +612,26 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
                         g.setStroke(normalStroke);
                     }
 
-                    Object polygonShape = _PolygonShape.cast(shape);
+                    Object polygonShape = classLoader._PolygonShape.cast(shape);
                     Object[] polyVerts = (Object[]) polygonShape.getClass().getField("m_vertices").get(polygonShape);
                     int vertexCount = (int) polygonShape.getClass().getMethod("getVertexCount").invoke(polygonShape);
                     for (int j = 0; j < vertexCount; j++) { // Loop through polygon vertices and draw lines between
                         // them.
                         Object ptA =
-                                _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, transforms[i], polyVerts[j]); //
+                                classLoader._XForm.getMethod("mul", classLoader._XForm, classLoader._Vec2).invoke(null, transforms[i], polyVerts[j]); //
                         // Vec2
-                        Object ptB = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, transforms[i],
+                        Object ptB = classLoader._XForm.getMethod("mul", classLoader._XForm, classLoader._Vec2).invoke(null, transforms[i],
                                 polyVerts[(j + 1) % vertexCount]); // Vec2
                         g.drawLine((int) (scaling * ptA.getClass().getField("x").getFloat(ptA)) + xOffset,
                                 (int) (scaling * ptA.getClass().getField("y").getFloat(ptA)) + yOffset,
                                 (int) (scaling * ptB.getClass().getField("x").getFloat(ptB)) + xOffset,
                                 (int) (scaling * ptB.getClass().getField("y").getFloat(ptB)) + yOffset);
                     }
-                } else if (fixtureType == _ShapeType.getField("CIRCLE_SHAPE").get(null)) { // Basically just head
+                } else if (fixtureType == classLoader._ShapeType.getField("CIRCLE_SHAPE").get(null)) { // Basically just head
 
-                    Object circleShape = _CircleShape.cast(shape);
+                    Object circleShape = classLoader._CircleShape.cast(shape);
                     float radius = (float) circleShape.getClass().getMethod("getRadius").invoke(circleShape);
-                    Object circleCenter = _XForm.getMethod("mul", _XForm, _Vec2).invoke(null, transforms[i],
+                    Object circleCenter = classLoader._XForm.getMethod("mul", classLoader._XForm, classLoader._Vec2).invoke(null, transforms[i],
                             circleShape.getClass().getMethod("getLocalPosition").invoke(circleShape)); // Vec2
                     g.drawOval((int) (scaling * (circleCenter.getClass().getField("x").getFloat(circleCenter) - radius) + xOffset),
                             (int) (scaling * (circleCenter.getClass().getField("y").getFloat(circleCenter) - radius) + yOffset),
@@ -1256,6 +737,388 @@ public class GameThreadSafe extends ClassLoader implements IGame, Serializable {
         }
         for (Method m : obj.getClass().getMethods()) {
             System.out.println(m.getName());
+        }
+    }
+
+    /**
+     * Convenience method to avoid dealing with reflection in the code constantly.
+     */
+    private Object makeBodyDef(float positionX, float positionY, float angle, float mass, float inertia) {
+        Object bodyDef = null;
+        try {
+            bodyDef = classLoader._BodyDef.getDeclaredConstructor().newInstance();
+            Object massData = makeMassData(mass, inertia);
+            Object position = makeVec2(positionX, positionY);
+            bodyDef.getClass().getField("massData").set(bodyDef, massData);
+            bodyDef.getClass().getField("position").set(bodyDef, position);
+            bodyDef.getClass().getField("angle").setFloat(bodyDef, angle);
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return bodyDef;
+    }
+
+    private Object makeBody(Object world, Object bodyDef, Object shape) {
+        Object body = null;
+        try {
+            body = world.getClass().getMethod("createBody", classLoader._BodyDef).invoke(world, bodyDef);
+            body.getClass().getMethod("createShape", classLoader._ShapeDef).invoke(body, shape);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        return body;
+    }
+
+    /**
+     * Make a joint definition.
+     */
+    private Object makeJointDef(Object body1, Object body2, float jointPosX, float jointPosY, float lowerAngle,
+                                float upperAngle, float maxTorque, float motorSpeed, boolean enableLimit,
+                                boolean enableMotor, boolean collideConnected) {
+        Object jDef = null;
+        try {
+            jDef = classLoader._RevoluteJointDef.getDeclaredConstructor().newInstance();
+            Object posVec = makeVec2(jointPosX, jointPosY);
+
+            jDef.getClass().getMethod("initialize", classLoader._Body, classLoader._Body, classLoader._Vec2).invoke(jDef, body1, body2, posVec);
+            jDef.getClass().getField("lowerAngle").setFloat(jDef, lowerAngle);
+            jDef.getClass().getField("upperAngle").setFloat(jDef, upperAngle);
+            jDef.getClass().getField("maxMotorTorque").setFloat(jDef, maxTorque);
+            jDef.getClass().getField("motorSpeed").setFloat(jDef, motorSpeed);
+
+            jDef.getClass().getField("enableLimit").setBoolean(jDef, enableLimit);
+            jDef.getClass().getField("enableMotor").setBoolean(jDef, enableMotor);
+            jDef.getClass().getField("collideConnected").setBoolean(jDef, collideConnected);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        return jDef;
+    }
+
+    /**
+     * Convenience method to avoid dealing with reflection in the code constantly.
+     */
+    private Object makeBoxShapeDef(float boxX, float boxY, float restitution, float friction, float density,
+                                   int groupIdx) {
+        Object boxShapeDef = null;
+        try {
+            boxShapeDef = classLoader._PolygonDef.getDeclaredConstructor().newInstance();
+            boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(boxShapeDef, boxX, boxY);
+            boxShapeDef.getClass().getField("friction").setFloat(boxShapeDef, friction);
+            boxShapeDef.getClass().getField("density").setFloat(boxShapeDef, density);
+            boxShapeDef.getClass().getField("restitution").setFloat(boxShapeDef, restitution);
+            Object shapeFilter = boxShapeDef.getClass().getField("filter").get(boxShapeDef);
+            shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+        return boxShapeDef;
+    }
+
+    /**
+     * Convenience method to avoid dealing with reflection in the code constantly.
+     */
+    private Object makeBoxShapeDef(float boxX, float boxY, float friction, float density, int groupIdx) {
+        Object boxShapeDef = null;
+        try {
+            boxShapeDef = classLoader._PolygonDef.getDeclaredConstructor().newInstance();
+            boxShapeDef.getClass().getMethod("setAsBox", float.class, float.class).invoke(boxShapeDef, boxX, boxY);
+            boxShapeDef.getClass().getField("friction").setFloat(boxShapeDef, friction);
+            boxShapeDef.getClass().getField("density").setFloat(boxShapeDef, density);
+            Object shapeFilter = boxShapeDef.getClass().getField("filter").get(boxShapeDef);
+            shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        return boxShapeDef;
+    }
+
+    /**
+     * Convenience method to avoid dealing with reflection in the code constantly.
+     */
+    private Object makeCircleShapeDef(float radius, float friction, float density, int groupIdx) {
+        Object circleShapeDef = null;
+        try {
+            circleShapeDef = classLoader._CircleDef.getDeclaredConstructor().newInstance();
+            circleShapeDef.getClass().getField("radius").setFloat(circleShapeDef, radius);
+            circleShapeDef.getClass().getField("friction").setFloat(circleShapeDef, friction);
+            circleShapeDef.getClass().getField("density").setFloat(circleShapeDef, density);
+            Object shapeFilter = circleShapeDef.getClass().getField("filter").get(circleShapeDef);
+            shapeFilter.getClass().getField("groupIndex").setInt(shapeFilter, groupIdx);
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return circleShapeDef;
+    }
+
+    /**
+     * Convenience method to avoid dealing with reflection in the code constantly.
+     */
+    private Object makeMassData(float mass, float inertia) {
+        Object md = null;
+        try {
+            md = classLoader._MassData.getDeclaredConstructor().newInstance();
+            md.getClass().getField("mass").setFloat(md, mass);
+            md.getClass().getField("I").setFloat(md, inertia);
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return md;
+    }
+
+    /**
+     * Convenience method to avoid dealing with reflection in the code constantly.
+     */
+    private Object makeVec2(float x, float y) {
+        Object vec = null;
+        try {
+            vec = classLoader._Vec2.getConstructor(float.class, float.class).newInstance(x, y);
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return vec;
+    }
+
+    /**
+     * Call once to initialize a lot of shape definitions which only need to be created once.
+     */
+    private void oneTimeSetup() {
+        /*
+         * Make the bodies and collision shapes
+         */
+        /* TRACK */
+        trackDef = makeBodyDef(trackPosX, trackPosY, 0, 0, 0);
+        trackShape = makeBoxShapeDef(trackXDim, trackYDim, trackRest, trackFric, 0, 1);
+
+        /* FEET */
+        //Create the fixture shapes, IE collision shapes
+
+        int BODY_GROUP = -1; // Filters collisions. Prevents body parts from hitting other body parts.
+
+        rFootDef = makeBodyDef(rFootPosX, rFootPosY, rFootAng, rFootMass, rFootInertia);
+        rFootShape = makeBoxShapeDef(rFootL / 2f, rFootH / 2f, rFootFric, rFootDensity, BODY_GROUP);
+        lFootDef = makeBodyDef(lFootPosX, lFootPosY, lFootAng, lFootMass, lFootInertia);
+        lFootShape = makeBoxShapeDef(lFootL / 2f, lFootH / 2f, lFootFric, lFootDensity, BODY_GROUP);
+
+        /* CALVES */
+        rCalfDef = makeBodyDef(rCalfPosX, rCalfPosY, rCalfAng + rCalfAngAdj, rCalfMass, rCalfInertia);
+        rCalfShape = makeBoxShapeDef(rCalfW / 2f, rCalfL / 2f, rCalfFric, rCalfDensity, BODY_GROUP);
+        lCalfDef = makeBodyDef(lCalfPosX, lCalfPosY, lCalfAng + lCalfAngAdj, lCalfMass, lCalfInertia);
+        lCalfShape = makeBoxShapeDef(lCalfW / 2f, lCalfL / 2f, lCalfFric, lCalfDensity, BODY_GROUP);
+
+        /* THIGHS */
+        rThighDef = makeBodyDef(rThighPosX, rThighPosY, rThighAng + rThighAngAdj, rThighMass, rThighInertia);
+        rThighShape = makeBoxShapeDef(rThighW / 2f, rThighL / 2f, rThighFric, rThighDensity, BODY_GROUP);
+        lThighDef = makeBodyDef(lThighPosX, lThighPosY, lThighAng + lThighAngAdj, lThighMass, lThighInertia);
+        lThighShape = makeBoxShapeDef(lThighW / 2f, lThighL / 2f, lThighFric, lThighDensity, BODY_GROUP);
+
+        /* TORSO */
+        torsoDef = makeBodyDef(torsoPosX, torsoPosY, torsoAng + torsoAngAdj, torsoMass, torsoInertia);
+        torsoShape = makeBoxShapeDef(torsoW / 2f, torsoL / 2f, torsoFric, torsoDensity, BODY_GROUP);
+
+        /* HEAD */
+        headDef = makeBodyDef(headPosX, headPosY, headAng + headAngAdj, headMass, headInertia);
+        headShape = makeCircleShapeDef(headR, headFric, headDensity, BODY_GROUP);
+
+        /* UPPER ARMS */
+        rUArmDef = makeBodyDef(rUArmPosX, rUArmPosY, rUArmAng + rUArmAngAdj, rUArmMass, rUArmInertia);
+        rUArmShape = makeBoxShapeDef(rUArmW / 2f, rUArmL / 2f, rUArmFric, rUArmDensity, BODY_GROUP);
+        lUArmDef = makeBodyDef(lUArmPosX, lUArmPosY, lUArmAng + lUArmAngAdj, lUArmMass, lUArmInertia);
+        lUArmShape = makeBoxShapeDef(lUArmW / 2f, lUArmL / 2f, lUArmFric, lUArmDensity, BODY_GROUP);
+
+        /* LOWER ARMS */
+        rLArmDef = makeBodyDef(rLArmPosX, rLArmPosY, rLArmAng + rLArmAngAdj, rLArmMass, rLArmInertia);
+        rLArmShape = makeBoxShapeDef(rLArmW / 2f, rLArmL / 2f, rLArmFric, rLArmDensity, BODY_GROUP);
+        lLArmDef = makeBodyDef(lLArmPosX, lLArmPosY, lLArmAng + lLArmAngAdj, lLArmMass, lLArmInertia);
+        lLArmShape = makeBoxShapeDef(lLArmW / 2f, lLArmL / 2f, lLArmFric, lLArmDensity, BODY_GROUP);
+    }
+
+    /**
+     * Make (or remake) the world with all the body parts at their initial locations.
+     */
+    public void makeNewWorld() {
+        try {
+            isFailed = false;
+            rFootDown = false;
+            lFootDown = false;
+            timestepsSimulated = 0;
+
+            /* World setup */
+            Constructor<?> aabbCons = classLoader._AABB.getConstructor(classLoader._Vec2, classLoader._Vec2);
+            Object vecAABBLower = makeVec2(aabbMinX, aabbMinY);
+            Object vecAABBUpper = makeVec2(aabbMaxX, aabbMaxY);
+            Object aabbWorld = aabbCons.newInstance(vecAABBLower, vecAABBUpper);
+            Object vecGrav = makeVec2(0f, gravityMagnitude);
+
+            Constructor<?> worldCons = classLoader._World.getConstructor(classLoader._AABB, classLoader._Vec2, boolean.class);
+            world = worldCons.newInstance(aabbWorld, vecGrav, true);
+
+            // World settings:
+            world.getClass().getMethod("setWarmStarting", boolean.class).invoke(world, true);
+            world.getClass().getMethod("setPositionCorrection", boolean.class).invoke(world, true);
+            world.getClass().getMethod("setContinuousPhysics", boolean.class).invoke(world, true);
+
+            /* Body setup */
+            Object trackBody = world.getClass().getMethod("createBody", classLoader._BodyDef).invoke(world, trackDef);
+            trackBody.getClass().getMethod("createShape", classLoader._ShapeDef).invoke(trackBody, trackShape);
+
+            // NOTE: The order of creating bodies actually changes the answers slightly!! This is really dumb, but will
+            // affect us if we are trying to match the single and multithreaded version.
+
+            rFootBody = makeBody(world, rFootDef, rFootShape);
+            lFootBody = makeBody(world, lFootDef, lFootShape);
+
+            rCalfBody = makeBody(world, rCalfDef, rCalfShape);
+            lCalfBody = makeBody(world, lCalfDef, lCalfShape);
+
+            rThighBody = makeBody(world, rThighDef, rThighShape);
+            lThighBody = makeBody(world, lThighDef, lThighShape);
+
+            rUArmBody = makeBody(world, rUArmDef, rUArmShape);
+            lUArmBody = makeBody(world, lUArmDef, lUArmShape);
+
+            rLArmBody = makeBody(world, rLArmDef, rLArmShape);
+            lLArmBody = makeBody(world, lLArmDef, lLArmShape);
+
+            torsoBody = makeBody(world, torsoDef, torsoShape);
+            headBody = makeBody(world, headDef, headShape);
+
+            if (shapeList == null) { // Grab shapes one time for the sake of plotting later.
+                shapeList = new ArrayList<>();
+                shapeList.add(torsoBody.getClass().getMethod("getShapeList").invoke(torsoBody));
+                shapeList.add(headBody.getClass().getMethod("getShapeList").invoke(headBody));
+                shapeList.add(rFootBody.getClass().getMethod("getShapeList").invoke(rFootBody));
+                shapeList.add(lFootBody.getClass().getMethod("getShapeList").invoke(lFootBody));
+                shapeList.add(rCalfBody.getClass().getMethod("getShapeList").invoke(rCalfBody));
+                shapeList.add(lCalfBody.getClass().getMethod("getShapeList").invoke(lCalfBody));
+                shapeList.add(rThighBody.getClass().getMethod("getShapeList").invoke(rThighBody));
+                shapeList.add(lThighBody.getClass().getMethod("getShapeList").invoke(lThighBody));
+                shapeList.add(rUArmBody.getClass().getMethod("getShapeList").invoke(rUArmBody));
+                shapeList.add(lUArmBody.getClass().getMethod("getShapeList").invoke(lUArmBody));
+                shapeList.add(rLArmBody.getClass().getMethod("getShapeList").invoke(rLArmBody));
+                shapeList.add(lLArmBody.getClass().getMethod("getShapeList").invoke(lLArmBody));
+                shapeList.add(trackBody.getClass().getMethod("getShapeList").invoke(trackBody));
+            }
+
+            /* Joint makeNewWorld */
+            rAnkleJDef = makeJointDef(rFootBody, rCalfBody, rAnklePosX, rAnklePosY, -0.5f, 0.5f, 2000f, 0f,
+                    true, false, false);
+            rAnkleJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, rAnkleJDef);
+            lAnkleJDef = makeJointDef(lFootBody, lCalfBody, lAnklePosX, lAnklePosY, -0.5f, 0.5f, 2000f, 0f,
+                    true, false, false);
+            lAnkleJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, lAnkleJDef);
+
+            rKneeJDef = makeJointDef(rCalfBody, rThighBody, rKneePosX, rKneePosY, -1.3f, 0.3f, 3000f, 0f, true
+                    , true, false);
+            rKneeJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, rKneeJDef);
+            lKneeJDef = makeJointDef(lCalfBody, lThighBody, lKneePosX, lKneePosY, -1.6f, 0.0f, 3000f, 0f, true
+                    , true, false);
+            lKneeJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, lKneeJDef);
+
+            rHipJDef = makeJointDef(rThighBody, torsoBody, rHipPosX, rHipPosY, -1.3f, 0.7f, 6000f, 0f, true,
+                    true, false);
+            rHipJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, rHipJDef);
+            lHipJDef = makeJointDef(lThighBody, torsoBody, lHipPosX, lHipPosY, -1.5f, 0.5f, 6000f, 0f, true,
+                    true, false);
+            lHipJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, lHipJDef);
+
+            neckJDef = makeJointDef(headBody, torsoBody, neckPosX, neckPosY, -0.5f, 0.0f, 1000f, 0f, true,
+                    true, false);
+            neckJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, neckJDef);
+
+            rShoulderJDef = makeJointDef(rUArmBody, torsoBody, rShoulderPosX, rShoulderPosY, -0.5f, 1.5f,
+                    1000f, 0f, true, true, false);
+            rShoulderJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, rShoulderJDef);
+            lShoulderJDef = makeJointDef(lUArmBody, torsoBody, lShoulderPosX, lShoulderPosY, -2f, 0.0f, 1000f,
+                    0f, true, true, false);
+            lShoulderJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, lShoulderJDef);
+
+            rElbowJDef = makeJointDef(rLArmBody, rUArmBody, rElbowPosX, rElbowPosY, -0.1f, 0.5f, 0f, 10f, true
+                    , true, false);
+            rElbowJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, rElbowJDef);
+            lElbowJDef = makeJointDef(lLArmBody, lUArmBody, lElbowPosX, lElbowPosY, -0.1f, 0.5f, 0f, 10f, true
+                    , true, false);
+            lElbowJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, lElbowJDef);
+
+
+            // This proxy nonsense solves the problem that I need a class to implement _ContactListener, the version I
+            // loaded with this custom class loader.
+            // The dynamic proxy lets this implement a class that is defined at runtime.
+            // Contact listener
+            Object contactListenerProxy = Proxy.newProxyInstance(classLoader._ContactListener.getClassLoader(),
+                    new Class[]{classLoader._ContactListener, Serializable.class},
+                    new ContactListener());
+
+            world.getClass().getMethod("setContactListener", classLoader._ContactListener).invoke(world, contactListenerProxy);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        initialized = true;
+    }
+
+    class ContactListener implements InvocationHandler, Serializable {
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+            String method_name = method.getName();
+            Object fixtureAShape;
+            Object fixtureBShape;
+            Object fixtureABody;
+            Object fixtureBBody;
+
+            switch (method_name) {
+                case "add":
+                    fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
+                    fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
+                    fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
+                    fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
+                    //Failure when head, arms, or torso hits the ground.
+                    if (fixtureABody.equals(headBody) ||
+                            fixtureBBody.equals(headBody) ||
+                            fixtureABody.equals(lLArmBody) ||
+                            fixtureBBody.equals(lLArmBody) ||
+                            fixtureABody.equals(rLArmBody) ||
+                            fixtureBBody.equals(rLArmBody) ||
+                            fixtureABody.equals(torsoBody) ||
+                            fixtureBBody.equals(torsoBody)) {
+                        isFailed = true;
+                    } else if (failOnThighContact &&
+                            (fixtureABody.equals(lThighBody) ||
+                                    fixtureBBody.equals(lThighBody) ||
+                                    fixtureABody.equals(rThighBody) ||
+                                    fixtureBBody.equals(rThighBody))) {
+
+                        isFailed = true;
+                    } else if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) { // Track
+                        // when each foot hits the ground.
+                        rFootDown = true;
+                    } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
+                        lFootDown = true;
+                    }
+                    break;
+                case "persist":
+                    break;
+                case "remove":
+                    // Track when each foot leaves the ground.
+                    fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
+                    fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
+                    fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
+                    fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
+                    if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) {
+                        rFootDown = false;
+                    } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
+                        lFootDown = false;
+                    }
+                    break;
+                case "result":
+                    break;
+            }
+            return null;
         }
     }
 }

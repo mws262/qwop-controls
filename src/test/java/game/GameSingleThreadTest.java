@@ -55,7 +55,6 @@ public class GameSingleThreadTest{
         }
         State stateEndNoLoad = gameSingle.getCurrentState();
 
-
         // Redo with save/load in the middle.
         gameSingle.makeNewWorld();
         actions = getSampleActions();

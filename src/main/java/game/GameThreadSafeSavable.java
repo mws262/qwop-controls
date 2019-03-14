@@ -1,29 +1,59 @@
 package game;
 
+import data.FSTProxySerializer;
+import org.nustaq.serialization.FSTConfiguration;
+
 import java.io.*;
 import java.lang.reflect.Proxy;
 
-public class GameThreadSafeSavable extends GameThreadSafe implements Serializable {
+public class GameThreadSafeSavable implements Serializable {
 
-    public synchronized byte[] getFullState() {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        try (ObjectOutputStream objOps = new ObjectOutputStream(bout)) {
-            objOps.writeObject(this);
-            objOps.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bout.toByteArray();
+    private static FSTConfiguration conf;
+    static {
+        conf = FSTConfiguration.createDefaultConfiguration();
+        conf.registerSerializer(Proxy.class, new FSTProxySerializer(),true);
+        conf.setLastResortResolver(p -> p.startsWith("com.sun.proxy.$Proxy") ? Proxy.class: null);
+
     }
 
-    public synchronized GameThreadSafeSavable getRestoredCopy(byte[] fullState) {
-        GameThreadSafeSavable gameRestored = null;
-        try (ByteArrayInputStream bin = new ByteArrayInputStream(fullState);
-             GameInputStream objIs = new GameInputStream(bin, this)) {
-            gameRestored = (GameThreadSafeSavable) objIs.readObject();
-        } catch (ClassNotFoundException | IOException e) {
-            e.printStackTrace();
-        }
+    public final GameClassLoader classLoader;
+    public final byte[] fullState;
+
+    private GameThreadSafeSavable(GameClassLoader classLoader, byte[] fullState) {
+        this.classLoader = classLoader;
+        this.fullState = fullState;
+    }
+
+    public static synchronized GameThreadSafeSavable getFullState(GameThreadSafe game) {
+//        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+//        try (ObjectOutputStream objOps = new ObjectOutputStream(bout)) {
+//            objOps.writeObject(this);
+//            objOps.flush();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return bout.toByteArray();
+////        conf.setClassLoader(this);
+        conf.setClassLoader(game.classLoader);
+        conf.setForceSerializable(true);
+        return new GameThreadSafeSavable(game.classLoader, conf.asByteArray(game));
+    }
+
+    public static synchronized GameThreadSafe getRestoredCopy(GameThreadSafeSavable gameSave) {
+//        GameClassLoader classLoader = new GameClassLoader();
+//        GameThreadSafeSavable gameRestored = null;
+//        try (ByteArrayInputStream bin = new ByteArrayInputStream(fullState);
+//             GameInputStream objIs = new GameInputStream(bin, classLoader)) {
+//            gameRestored = (GameThreadSafeSavable) objIs.readObject();
+//        } catch (ClassNotFoundException | IOException e) {
+//            e.printStackTrace();
+//        }
+//        gameRestored.classLoader = classLoader;
+//        GameClassLoader gameClassLoader = new GameClassLoader();
+        conf.setClassLoader(gameSave.classLoader);
+        conf.setForceSerializable(true);
+        GameThreadSafe gameRestored = (GameThreadSafe) conf.asObject(gameSave.fullState);
+        gameRestored.classLoader = gameSave.classLoader;
         return gameRestored;
     }
 
