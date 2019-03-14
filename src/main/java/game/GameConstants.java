@@ -1,6 +1,6 @@
 package game;
 
-class GameConstants {
+public class GameConstants {
 
     /**
      * Physics engine stepping parameters.
@@ -10,7 +10,7 @@ class GameConstants {
     /**
      * Number of Box2D solver iterations.
      */
-    static final int physIterations = 5;
+    public static int physIterations = 5;
 
     /**
      * AABB bounds.

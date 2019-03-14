@@ -14,6 +14,7 @@ public class GameSingleThreadTest{
     public void stepGame() {
         GameThreadSafe gameMulti = new GameThreadSafe();
         GameSingleThread gameSingle = GameSingleThread.getInstance();
+        gameSingle.makeNewWorld();
 
         for (int i = 0; i < 4; i++) {
             ActionQueue actionQueue = getSampleActions();
@@ -40,6 +41,55 @@ public class GameSingleThreadTest{
         float[] initStateSingle = GameSingleThread.getInitialState().flattenState();
 
         Assert.assertArrayEquals(initStateMulti, initStateSingle, 1e-12f);
+    }
+
+    @Test
+    public void restoreFullState() {
+        GameSingleThread gameSingle = GameSingleThread.getInstance();
+        gameSingle.makeNewWorld();
+
+        // Run through the full queue with no saving/loading
+        ActionQueue actions = getSampleActions();
+        while (!actions.isEmpty()) {
+            gameSingle.step(actions.pollCommand());
+        }
+        State stateEndNoLoad = gameSingle.getCurrentState();
+
+
+        // Redo with save/load in the middle.
+        gameSingle.makeNewWorld();
+        actions = getSampleActions();
+        for (int i = 0; i < 30; i++) {
+            gameSingle.step(actions.pollCommand());
+        }
+
+        State stateBeforeLoad = gameSingle.getCurrentState();
+
+        // Save
+        byte[] fullState = gameSingle.getFullState();
+
+        // Step forward arbitrarily.
+        for (int i = 0; i < 10; i++) {
+            gameSingle.step(true, false, false, true);
+        }
+
+        // Load
+        gameSingle = gameSingle.restoreFullState(fullState);
+        State stateAfterLoad = gameSingle.getCurrentState();
+
+        // Make sure states at save and after load are equal.
+        Assert.assertArrayEquals(stateBeforeLoad.flattenState(), stateAfterLoad.flattenState(), 1e-15f);
+
+        // Finish the queue on the loaded game.
+        while (!actions.isEmpty()) {
+            gameSingle.step(actions.pollCommand());
+        }
+
+        State stateEndAfterLoad = gameSingle.getCurrentState();
+
+        Assert.assertArrayEquals(stateEndNoLoad.flattenState(), stateEndAfterLoad.flattenState(), 1e-15f);
+
+        gameSingle.releaseGame();
     }
 
     private static ActionQueue getSampleActions() {

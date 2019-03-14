@@ -4,6 +4,7 @@ import actions.Action;
 import actions.ActionQueue;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -13,12 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author matt
  */
-public class GameThreaded implements Runnable{
-
-    /**
-     * Whether the game is waiting for actions to be added (becomes true when run() is called).
-     */
-    private final AtomicBoolean running = new AtomicBoolean(false);
+public class GameThreaded implements Runnable, Callable<Object> {
 
     /**
      * Thread safe instance of the game which should belong to this only.
@@ -32,27 +28,9 @@ public class GameThreaded implements Runnable{
 
     @Override
     public void run() {
-        running.set(true);
-        while (running.get()) {
-            if (!actionQueue.isEmpty()) {
-                game.step(actionQueue.pollCommand());
-            }
+        while (!actionQueue.isEmpty()) {
+            game.step(actionQueue.pollCommand());
         }
-    }
-
-    /**
-     * Return whether the action queue is empty and the game is waiting.
-     * @return Whether the game just waiting for more actions to be queued.
-     */
-    public synchronized boolean isWaiting() {
-        return actionQueue.isEmpty();
-    }
-
-    /**
-     * Cause this game to cease waiting for new inputs.
-     */
-    public synchronized void terminate() {
-        running.set(false);
     }
 
     /**
@@ -93,5 +71,11 @@ public class GameThreaded implements Runnable{
      */
     public synchronized void addAllActions(Action[] actions) {
         actionQueue.addSequence(actions);
+    }
+
+    @Override
+    public Object call() throws Exception {
+        run();
+        return null;
     }
 }
