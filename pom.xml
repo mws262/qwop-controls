@@ -98,6 +98,7 @@ To update the classpath settings for Eclipse:
                 <configuration>
                     <parallel>classes</parallel>
                     <threadCount>4</threadCount>
+                    <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
             <plugin>

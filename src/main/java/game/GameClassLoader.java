@@ -7,7 +7,8 @@ import java.io.Serializable;
 
 public class GameClassLoader extends ClassLoader implements Serializable {
     protected Class<?> _World, _MassData, _BodyDef, _Vec2, _PolygonDef, _CircleDef, _AABB, _RevoluteJointDef, _Body,
-            _ContactListener, _ShapeType, _PolygonShape, _CircleShape, _EdgeShape, _XForm, _ShapeDef, _JointDef;
+            _ContactListener, _ShapeType, _PolygonShape, _CircleShape, _EdgeShape, _XForm, _ShapeDef, _JointDef,
+            _GameThreadSafeContactListener;
 
     public GameClassLoader() {
         registerAsParallelCapable();
@@ -153,6 +154,8 @@ public class GameClassLoader extends ClassLoader implements Serializable {
             findClass("org.jbox2d.dynamics.joints.GearJoint");
             findClass("org.jbox2d.dynamics.joints.ConstantVolumeJointDef");
             findClass("org.jbox2d.dynamics.joints.ConstantVolumeJoint");
+
+            _GameThreadSafeContactListener = findClass("game.GameThreadSafeContactListener");
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
