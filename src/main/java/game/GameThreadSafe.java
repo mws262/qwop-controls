@@ -5,13 +5,11 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static game.GameConstants.*;
@@ -29,7 +27,7 @@ import static game.GameConstants.*;
  */
 @SuppressWarnings("Duplicates")
 public class GameThreadSafe implements IGame, Serializable {
-     GameClassLoader classLoader = new GameClassLoader();
+    GameClassLoader classLoader = new GameClassLoader();
 
     /**
      * Number of timesteps in this game.
@@ -61,7 +59,6 @@ public class GameThreadSafe implements IGame, Serializable {
      */
     private List<Object> shapeList;
 
-
     // World definition:
     public Object world;
 
@@ -92,6 +89,8 @@ public class GameThreadSafe implements IGame, Serializable {
     public boolean failOnThighContact = true;
 
     private final String name;
+
+    private Object contactListener;
 
 
 //    private Class<?> _World, _MassData, _BodyDef, _Vec2, _PolygonDef, _CircleDef, _AABB, _RevoluteJointDef, _Body,
@@ -311,10 +310,38 @@ public class GameThreadSafe implements IGame, Serializable {
             // Step the world forward one timestep:
             world.getClass().getMethod("step", float.class, int.class).invoke(world, timestep, physIterations);
 
+
+            // Check to see if the contact listener has heard anything new since the last timestep.
+            boolean contactChanges =
+                    (boolean) contactListener.getClass().getMethod("hasAnythingChanged").invoke(contactListener);
+
+            // If changes have occurred, see if any are failure-worthy.
+            if (contactChanges) {
+                if (checkForBodyContact(headBody)
+                        || checkForBodyContact(rLArmBody)
+                        || checkForBodyContact(lLArmBody)
+                        || checkForBodyContact(torsoBody)
+                        || checkForBodyContact(rUArmBody)
+                        || checkForBodyContact(lUArmBody)) {
+                    isFailed = true;
+                } else if (failOnThighContact // Additional condition if we want thigh contact to cause failure.
+                        && (checkForBodyContact(rThighBody) || checkForBodyContact(lThighBody))) {
+                    isFailed = true;
+                }
+                if (checkForBodyContact(rFootBody)) {
+                    rFootDown = true;
+                }
+                if (checkForBodyContact(lFootBody)) {
+                    lFootDown = true;
+                }
+            }
+
             // Extra fail conditions besides contacts.
-            float angle = (float) torsoBody.getClass().getMethod("getAngle").invoke(torsoBody);
-            if (angle > torsoAngUpper || angle < torsoAngLower) { // Fail if torso angles get too far out of whack.
-                isFailed = true;
+            if (!isFailed) { // Only bother checking if other failures haven't happened.
+                float angle = (float) torsoBody.getClass().getMethod("getAngle").invoke(torsoBody);
+                if (angle > torsoAngUpper || angle < torsoAngLower) { // Fail if torso angles get too far out of whack.
+                    isFailed = true;
+                }
             }
             timestepsSimulated++;
         } catch (RuntimeException e) {
@@ -325,8 +352,16 @@ public class GameThreadSafe implements IGame, Serializable {
     }
 
     /**
+     * Determine whether a specific body is currently in a contacting state with the ground.
+     * @param body Body to check.
+     * @return True if this body is in contact with the ground, false if not.
+     */
+    private boolean checkForBodyContact(Object body) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        return (boolean) contactListener.getClass().getMethod("isContacting", classLoader._Body).invoke(contactListener, body);
+    }
+
+    /**
      * Step the game forward 1 timestep with the specified keys pressed.
-     *
      * @param keys 4 element array for whether the Q,W,O,P keys are pressed (true -> pressed).
      */
     public void step(boolean[] keys) {
@@ -1042,15 +1077,9 @@ public class GameThreadSafe implements IGame, Serializable {
             lElbowJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, lElbowJDef);
 
 
-            // This proxy nonsense solves the problem that I need a class to implement _ContactListener, the version I
-            // loaded with this custom class loader.
-            // The dynamic proxy lets this implement a class that is defined at runtime.
-            // Contact listener
-            Object contactListenerProxy = Proxy.newProxyInstance(classLoader._ContactListener.getClassLoader(),
-                    new Class[]{classLoader._ContactListener, Serializable.class},
-                    new ContactListener());
+            contactListener = classLoader._GameThreadSafeContactListener.getConstructor().newInstance();
 
-            world.getClass().getMethod("setContactListener", classLoader._ContactListener).invoke(world, contactListenerProxy);
+            world.getClass().getMethod("setContactListener", classLoader._ContactListener).invoke(world, contactListener);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -1058,67 +1087,5 @@ public class GameThreadSafe implements IGame, Serializable {
         }
 
         initialized = true;
-    }
-
-    class ContactListener implements InvocationHandler, Serializable {
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
-            String method_name = method.getName();
-            Object fixtureAShape;
-            Object fixtureBShape;
-            Object fixtureABody;
-            Object fixtureBBody;
-
-            switch (method_name) {
-                case "add":
-                    fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
-                    fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
-                    fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
-                    fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
-                    //Failure when head, arms, or torso hits the ground.
-                    if (fixtureABody.equals(headBody) ||
-                            fixtureBBody.equals(headBody) ||
-                            fixtureABody.equals(lLArmBody) ||
-                            fixtureBBody.equals(lLArmBody) ||
-                            fixtureABody.equals(rLArmBody) ||
-                            fixtureBBody.equals(rLArmBody) ||
-                            fixtureABody.equals(torsoBody) ||
-                            fixtureBBody.equals(torsoBody)) {
-                        isFailed = true;
-                    } else if (failOnThighContact &&
-                            (fixtureABody.equals(lThighBody) ||
-                                    fixtureBBody.equals(lThighBody) ||
-                                    fixtureABody.equals(rThighBody) ||
-                                    fixtureBBody.equals(rThighBody))) {
-
-                        isFailed = true;
-                    } else if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) { // Track
-                        // when each foot hits the ground.
-                        rFootDown = true;
-                    } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
-                        lFootDown = true;
-                    }
-                    break;
-                case "persist":
-                    break;
-                case "remove":
-                    // Track when each foot leaves the ground.
-                    fixtureAShape = args[0].getClass().getField("shape1").get(args[0]);
-                    fixtureABody = fixtureAShape.getClass().getField("m_body").get(fixtureAShape);
-                    fixtureBShape = args[0].getClass().getField("shape2").get(args[0]);
-                    fixtureBBody = fixtureBShape.getClass().getField("m_body").get(fixtureBShape);
-                    if (fixtureABody.equals(rFootBody) || fixtureBBody.equals(rFootBody)) {
-                        rFootDown = false;
-                    } else if (fixtureABody.equals(lFootBody) || fixtureBBody.equals(lFootBody)) {
-                        lFootDown = false;
-                    }
-                    break;
-                case "result":
-                    break;
-            }
-            return null;
-        }
     }
 }
