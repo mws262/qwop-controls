@@ -31,17 +31,17 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
     GameThreadSafe game = new GameThreadSafe();
 
     public static void main(String[] args) {
-        boolean doScreenCapture = false;
-        ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
-        if (doScreenCapture) {
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try {
-                    screenCapture.finalize();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }));
-        }
+//        boolean doScreenCapture = false;
+//        ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
+//        if (doScreenCapture) {
+//            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//                try {
+//                    screenCapture.finalize();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }));
+//        }
 
         // Set up the visualizer.
         MAIN_SingleEvaluation qwop = new MAIN_SingleEvaluation();
@@ -111,13 +111,13 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         // Run the "prefix" section.
         while (!actionQueue.isEmpty()) {
             qwop.game.step(actionQueue.pollCommand());
-            if (doScreenCapture) {
-                try {
-                    screenCapture.takeFrameFromContainer(frame);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+//            if (doScreenCapture) {
+//                try {
+//                    screenCapture.takeFrameFromContainer(frame);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 //            try {
 //                Thread.sleep(10);
 //            } catch (InterruptedException e) {
@@ -129,21 +129,21 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
         // Run the controller until failure.
         while (!qwop.game.getFailureStatus()) {
-//
-//            // Hacks for now during testing.
-//            byte[] fullState = qwop.game.getFullState();
-//
-//            currNode.fullState = fullState;
-//            Action chosenAction = valueFunction.getMaximizingAction(currNode);
-//
-//
-//
-//            actionQueue.addAction(chosenAction);
-//            while (!actionQueue.isEmpty()) {
-//                long currTime = System.currentTimeMillis();
-//                // qwop.game.applyBodyImpulse(-3f, 0.001f);
-//                qwop.game.step(actionQueue.pollCommand());
-//
+
+            // Hacks for now during testing.
+            GameThreadSafeSavable fullState = GameThreadSafeSavable.getFullState(qwop.game);
+
+            currNode.fullState = fullState;
+            Action chosenAction = valueFunction.getMaximizingAction(currNode);
+
+
+
+            actionQueue.addAction(chosenAction);
+            while (!actionQueue.isEmpty()) {
+                long currTime = System.currentTimeMillis();
+                // qwop.game.applyBodyImpulse(-3f, 0.001f);
+                qwop.game.step(actionQueue.pollCommand());
+
 //                if (doScreenCapture) {
 //                    try {
 //                        screenCapture.takeFrameFromContainer(frame);
@@ -151,15 +151,15 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 //                        e.printStackTrace();
 //                    }
 //                } else { // Screen capture is already so slow, we don't need a delay.
-//                    try {
-//                        Thread.sleep(Math.max(1, 40 - (System.currentTimeMillis() - currTime)));
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
+                    try {
+                        Thread.sleep(Math.max(1, 40 - (System.currentTimeMillis() - currTime)));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
 //                }
-//            }
-//            currNode = currNode.addChild(chosenAction);
-//            currNode.setState(qwop.game.getCurrentState());
+            }
+            currNode = currNode.addChild(chosenAction);
+            currNode.setState(qwop.game.getCurrentState());
         }
     }
 

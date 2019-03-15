@@ -155,7 +155,7 @@ public class GameClassLoader extends ClassLoader implements Serializable {
             findClass("org.jbox2d.dynamics.joints.ConstantVolumeJointDef");
             findClass("org.jbox2d.dynamics.joints.ConstantVolumeJoint");
 
-            _GameThreadSafeContactListener = findClass("game.GameThreadSafeContactListener");
+            //_GameThreadSafeContactListener = findClass("game.GameThreadSafeContactListener");
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
