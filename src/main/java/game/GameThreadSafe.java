@@ -90,7 +90,7 @@ public class GameThreadSafe implements IGame, Serializable {
 
     private final String name;
 
-    private Object contactListener;
+    //private Object contactListener;
 
 
 //    private Class<?> _World, _MassData, _BodyDef, _Vec2, _PolygonDef, _CircleDef, _AABB, _RevoluteJointDef, _Body,
@@ -311,30 +311,30 @@ public class GameThreadSafe implements IGame, Serializable {
             world.getClass().getMethod("step", float.class, int.class).invoke(world, timestep, physIterations);
 
 
-            // Check to see if the contact listener has heard anything new since the last timestep.
-            boolean contactChanges =
-                    (boolean) contactListener.getClass().getMethod("hasAnythingChanged").invoke(contactListener);
-
-            // If changes have occurred, see if any are failure-worthy.
-            if (contactChanges) {
-                if (checkForBodyContact(headBody)
-                        || checkForBodyContact(rLArmBody)
-                        || checkForBodyContact(lLArmBody)
-                        || checkForBodyContact(torsoBody)
-                        || checkForBodyContact(rUArmBody)
-                        || checkForBodyContact(lUArmBody)) {
-                    isFailed = true;
-                } else if (failOnThighContact // Additional condition if we want thigh contact to cause failure.
-                        && (checkForBodyContact(rThighBody) || checkForBodyContact(lThighBody))) {
-                    isFailed = true;
-                }
-                if (checkForBodyContact(rFootBody)) {
-                    rFootDown = true;
-                }
-                if (checkForBodyContact(lFootBody)) {
-                    lFootDown = true;
-                }
-            }
+//            // Check to see if the contact listener has heard anything new since the last timestep.
+//            boolean contactChanges =
+//                    (boolean) contactListener.getClass().getMethod("hasAnythingChanged").invoke(contactListener);
+//
+//            // If changes have occurred, see if any are failure-worthy.
+//            if (contactChanges) {
+//                if (checkForBodyContact(headBody)
+//                        || checkForBodyContact(rLArmBody)
+//                        || checkForBodyContact(lLArmBody)
+//                        || checkForBodyContact(torsoBody)
+//                        || checkForBodyContact(rUArmBody)
+//                        || checkForBodyContact(lUArmBody)) {
+//                    isFailed = true;
+//                } else if (failOnThighContact // Additional condition if we want thigh contact to cause failure.
+//                        && (checkForBodyContact(rThighBody) || checkForBodyContact(lThighBody))) {
+//                    isFailed = true;
+//                }
+//                if (checkForBodyContact(rFootBody)) {
+//                    rFootDown = true;
+//                }
+//                if (checkForBodyContact(lFootBody)) {
+//                    lFootDown = true;
+//                }
+//            }
 
             // Extra fail conditions besides contacts.
             if (!isFailed) { // Only bother checking if other failures haven't happened.
@@ -356,9 +356,9 @@ public class GameThreadSafe implements IGame, Serializable {
      * @param body Body to check.
      * @return True if this body is in contact with the ground, false if not.
      */
-    private boolean checkForBodyContact(Object body) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        return (boolean) contactListener.getClass().getMethod("isContacting", classLoader._Body).invoke(contactListener, body);
-    }
+//    private boolean checkForBodyContact(Object body) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+//        return (boolean) contactListener.getClass().getMethod("isContacting", classLoader._Body).invoke(contactListener, body);
+//    }
 
     /**
      * Step the game forward 1 timestep with the specified keys pressed.
@@ -1077,9 +1077,9 @@ public class GameThreadSafe implements IGame, Serializable {
             lElbowJ = world.getClass().getMethod("createJoint", classLoader._JointDef).invoke(world, lElbowJDef);
 
 
-            contactListener = classLoader._GameThreadSafeContactListener.getConstructor().newInstance();
+           // contactListener = classLoader._GameThreadSafeContactListener.getConstructor().newInstance();
 
-            world.getClass().getMethod("setContactListener", classLoader._ContactListener).invoke(world, contactListener);
+//            world.getClass().getMethod("setContactListener", classLoader._ContactListener).invoke(world, contactListener);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

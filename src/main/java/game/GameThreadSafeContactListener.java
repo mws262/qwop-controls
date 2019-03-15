@@ -23,7 +23,6 @@ public class GameThreadSafeContactListener implements ContactListener, Serializa
         contactingBodies.add(point.shape1.getBody());
         contactingBodies.add(point.shape2.getBody());
         changeSinceLastCheck = true;
-
     }
 
     @Override

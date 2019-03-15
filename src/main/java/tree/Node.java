@@ -22,6 +22,7 @@ import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
 import data.SavableSingleGame;
 import game.GameThreadSafe;
+import game.GameThreadSafeSavable;
 import game.State;
 
 /**
@@ -39,7 +40,7 @@ import game.State;
 public class Node {
 
     // TEMP TODO figure out how to do this the right way.
-    public byte[] fullState;
+    public GameThreadSafeSavable fullState;
 
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
