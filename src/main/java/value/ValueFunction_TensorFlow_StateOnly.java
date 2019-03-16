@@ -2,6 +2,7 @@ package value;
 
 import actions.Action;
 import actions.ActionQueue;
+import game.GameSingleThread;
 import game.GameThreadSafe;
 import game.GameThreadSafeSavable;
 import game.State;
@@ -10,9 +11,7 @@ import tree.Node;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.*;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
@@ -22,6 +21,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     private GameThreadSafe game = new GameThreadSafe();
     private final ActionQueue actionQueue = new ActionQueue();
+
+    public static GameSingleThread gameSingle;
 
     public ValueFunction_TensorFlow_StateOnly(File file) throws FileNotFoundException {
         super(file);
@@ -35,16 +36,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     @Override
     public Action getMaximizingAction(Node currentNode) {
 
-        GameThreadSafe gg = GameThreadSafeSavable.getRestoredCopy(currentNode.fullState);
+        byte[] fullState = gameSingle.getFullState();
 
-
-        Callable<EvaluationResult> noKey = () -> {
-            // Test null actions.
-            GameThreadSafe gameLocal = GameThreadSafeSavable.getRestoredCopy(currentNode.fullState);
             EvaluationResult bestNull = new EvaluationResult();
-            for (int i = 1; i < 50; i++) {
-                gameLocal.step(false, false, false, false);
-                State st = gameLocal.getCurrentState();
+            for (int i = 1; i < 30; i++) {
+                gameSingle.step(false, false, false, false);
+                State st = gameSingle.getCurrentState();
                 Node nextNode = new Node(currentNode, new Action(i, false, false, false, false), false);
                 nextNode.setState(st);
                 float val = evaluate(nextNode);
@@ -53,16 +50,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                     bestNull.timestep = i;
                 }
             }
-            return bestNull;
-        };
 
-        Callable<EvaluationResult> wo = () -> {
-            // Test WO actions.
-            GameThreadSafe gameLocal = GameThreadSafeSavable.getRestoredCopy(currentNode.fullState);
+            gameSingle = gameSingle.restoreFullState(fullState);
             EvaluationResult bestWO = new EvaluationResult();
             for (int i = 1; i < 50; i++) {
-                gameLocal.step(false, true, true, false);
-                State st = gameLocal.getCurrentState();
+                gameSingle.step(false, true, true, false);
+                State st = gameSingle.getCurrentState();
                 Node nextNode = new Node(currentNode, new Action(i, false, true, true, false), false);
                 nextNode.setState(st);
                 float val = evaluate(nextNode);
@@ -71,17 +64,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                     bestWO.timestep = i;
                 }
             }
-            return bestWO;
-        };
 
-        // Test QP actions.
-        Callable<EvaluationResult> qp = () -> {
-            GameThreadSafe gameLocal = GameThreadSafeSavable.getRestoredCopy(currentNode.fullState);
-
-            EvaluationResult bestQP = new EvaluationResult();
+        gameSingle = gameSingle.restoreFullState(fullState);
+        EvaluationResult bestQP = new EvaluationResult();
             for (int i = 1; i < 50; i++) {
-                gameLocal.step(true, false, false, true);
-                State st = gameLocal.getCurrentState();
+                gameSingle.step(true, false, false, true);
+                State st = gameSingle.getCurrentState();
                 Node nextNode = new Node(currentNode, new Action(i, true, false, false, true), false);
                 nextNode.setState(st);
                 float val = evaluate(nextNode);
@@ -90,50 +78,17 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                     bestQP.timestep = i;
                 }
             }
-            return bestQP;
-        };
-
-        ExecutorService ex = Executors.newFixedThreadPool(3);
-        List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
-        evaluations.add(noKey);
-        evaluations.add(wo);
-        evaluations.add(qp);
-
-        List<Future<EvaluationResult>> allResults = null;
-        try {
-            allResults = ex.invokeAll(evaluations);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        ex.shutdown();
-        try {
-            ex.awaitTermination(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        EvaluationResult nullResult = null;
-        EvaluationResult woResult = null;
-        EvaluationResult qpResult = null;
-        try {
-            nullResult = allResults.get(0).get();
-            woResult = allResults.get(1).get();
-            qpResult = allResults.get(2).get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-
 
         Action bestAction;
-        if (nullResult.value >= qpResult.value  && nullResult.value >= woResult.value) {
-            bestAction = new Action(nullResult.timestep, false, false, false, false);
-        } else if (qpResult.value > nullResult.value && qpResult.value > woResult.value) {
-            bestAction = new Action(qpResult.timestep, true, false, false, true);
+        if (bestNull.value >= bestQP.value  && bestNull.value >= bestWO.value) {
+            bestAction = new Action(bestNull.timestep, false, false, false, false);
+        } else if (bestQP.value > bestNull.value && bestQP.value > bestWO.value) {
+            bestAction = new Action(bestQP.timestep, true, false, false, true);
         } else {
-            bestAction = new Action(woResult.timestep, false, true, true, false);
+            bestAction = new Action(bestWO.timestep, false, true, true, false);
         }
 
+        gameSingle = gameSingle.restoreFullState(fullState);
 
         return bestAction;
     }

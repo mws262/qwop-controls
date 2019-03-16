@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
-    GameThreadSafe game = new GameThreadSafe();
+    GameSingleThread game = GameSingleThread.getInstance();
 
     public static void main(String[] args) {
 //        boolean doScreenCapture = false;
@@ -131,12 +131,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         while (!qwop.game.getFailureStatus()) {
 
             // Hacks for now during testing.
-            GameThreadSafeSavable fullState = GameThreadSafeSavable.getFullState(qwop.game);
-
-            currNode.fullState = fullState;
+            ValueFunction_TensorFlow_StateOnly.gameSingle = qwop.game;
+            Utility.tic();
             Action chosenAction = valueFunction.getMaximizingAction(currNode);
-
-
+            Utility.toc();
+            qwop.game = ValueFunction_TensorFlow_StateOnly.gameSingle;
 
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {
@@ -152,7 +151,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 //                    }
 //                } else { // Screen capture is already so slow, we don't need a delay.
                     try {
-                        Thread.sleep(Math.max(1, 40 - (System.currentTimeMillis() - currTime)));
+                        Thread.sleep(Math.max(1, 10 - (System.currentTimeMillis() - currTime)));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
