@@ -29,6 +29,6 @@ public interface BoundaryListener {
 	 * This is called for each body that leaves the world boundary.
 	 * <BR><BR><em>Warning</em>: you can't modify the world inside this callback.
 	 */
-	public  void violation(Body body);
+	void violation(Body body);
 }
 

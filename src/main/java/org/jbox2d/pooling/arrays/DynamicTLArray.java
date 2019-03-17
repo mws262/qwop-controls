@@ -6,7 +6,7 @@ public abstract class DynamicTLArray<I> {
 	
 	private static class TLHashMap<K, V> extends ThreadLocal<HashMap<K, V>>{
 		protected HashMap<K, V> initialValue(){
-			return new HashMap<K, V>();
+			return new HashMap<>();
 		}
 	}
 	
@@ -24,10 +24,6 @@ public abstract class DynamicTLArray<I> {
 		assert(map.get(argLength).length == argLength) : "Array not built of correct length";
 		return map.get(argLength);
 	}
-	
-	public void recycle( I[] argArray){
-		
-	}
-	
+
 	protected abstract I[] getInitializedArray(int argLength);
 }

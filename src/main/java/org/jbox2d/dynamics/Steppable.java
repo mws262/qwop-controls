@@ -8,5 +8,5 @@ package org.jbox2d.dynamics;
  * differently, instead letting the engine handle the calling.
  */
 public interface Steppable {
-	public void step(float dt, int iterations);
+	void step(float dt, int iterations);
 }

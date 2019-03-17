@@ -142,19 +142,6 @@ public class GameClassLoader extends ClassLoader implements Serializable {
             findClass("org.jbox2d.dynamics.joints.Joint");
             _RevoluteJointDef = findClass("org.jbox2d.dynamics.joints.RevoluteJointDef");
             findClass("org.jbox2d.dynamics.joints.RevoluteJoint");
-            findClass("org.jbox2d.dynamics.joints.DistanceJointDef");
-            findClass("org.jbox2d.dynamics.joints.DistanceJoint");
-            findClass("org.jbox2d.dynamics.joints.MouseJointDef");
-            findClass("org.jbox2d.dynamics.joints.MouseJoint");
-            findClass("org.jbox2d.dynamics.joints.PrismaticJointDef");
-            findClass("org.jbox2d.dynamics.joints.PrismaticJoint");
-            findClass("org.jbox2d.dynamics.joints.PulleyJointDef");
-            findClass("org.jbox2d.dynamics.joints.PulleyJoint");
-            findClass("org.jbox2d.dynamics.joints.GearJointDef");
-            findClass("org.jbox2d.dynamics.joints.GearJoint");
-            findClass("org.jbox2d.dynamics.joints.ConstantVolumeJointDef");
-            findClass("org.jbox2d.dynamics.joints.ConstantVolumeJoint");
-
             //_GameThreadSafeContactListener = findClass("game.GameThreadSafeContactListener");
         } catch (RuntimeException e) {
             throw e;

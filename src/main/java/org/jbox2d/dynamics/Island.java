@@ -46,29 +46,27 @@ import org.jbox2d.pooling.stacks.ContactSolverStack;
  * Handles much of the heavy lifting of physics solving - for internal use.
  */
 public class Island implements Serializable {
-	public Body[] m_bodies;
+	Body[] m_bodies;
 
-	public Contact[] m_contacts;
+	Contact[] m_contacts;
 
-	public Joint[] m_joints;
+	Joint[] m_joints;
 
-	public int m_bodyCount;
+	int m_bodyCount;
 
-	public int m_jointCount;
+	int m_jointCount;
 
-	public int m_contactCount;
+	int m_contactCount;
 
-	public int m_bodyCapacity;
+	private int m_bodyCapacity;
 
-	public int m_contactCapacity;
+	int m_contactCapacity;
 
-	public int m_jointCapacity;
+	int m_jointCapacity;
 
-	public static int m_positionIterationCount = 0;
+	int m_positionIterationCount = 0;
 
-	public float m_positionError;
-
-	public ContactListener m_listener;
+	private ContactListener m_listener;
 
 	//begin .h methods
 	public void clear() {
@@ -91,15 +89,11 @@ public class Island implements Serializable {
 		assert (m_jointCount < m_jointCapacity);
 		m_joints[m_jointCount++] = joint;
 	}
-	//end .h methods
 
-	//begin .cpp methods
 	/**
 	 * TODO djm: make this so it isn't created every time step
 	 */
-	public Island(){
-		
-	}
+	public Island() {}
 	
 	public final void init(final int bodyCapacity,
 	              final int contactCapacity,
@@ -237,7 +231,6 @@ public class Island implements Serializable {
 					break;
 				}
 			}
-
 		}
 
 		report(contactSolver.m_constraints);
@@ -253,12 +246,6 @@ public class Island implements Serializable {
 				if (b.m_invMass == 0.0f) {
 					continue;
 				}
-
-				/*if ((b.m_flags & Body.e_allowSleepFlag) == 0) {
-					b.m_sleepTime = 0.0f;
-					minSleepTime = 0.0f;
-					djm: we don't need this, as the next if statement takes care of it.  thanks Edge!
-				}*/
 
 				if ((b.m_flags & Body.e_allowSleepFlag) == 0 ||
 						b.m_angularVelocity * b.m_angularVelocity > angTolSqr ||
@@ -281,14 +268,13 @@ public class Island implements Serializable {
 				}
 			}
 		}
-		
 		contactSolvers.recycle(contactSolver);
 	}
 	
 	
 
 	// djm pooling, from above
-	public void solveTOI(final TimeStep subStep) {
+	void solveTOI(final TimeStep subStep) {
 		final ContactSolver contactSolver = contactSolvers.get();
 		contactSolver.init(subStep, m_contacts, m_contactCount);
 
@@ -297,7 +283,6 @@ public class Island implements Serializable {
 		// For joints, initialize with the last full step warm starting values
 		if (Settings.maxTOIJointsPerIsland > 0) {
 			subStep.warmStarting = true;
-			//for (int i=0; i<m_jointCount; ++i) {
 			for (int i = m_jointCount-1; i >= 0; --i) {
 				m_joints[i].initVelocityConstraints(subStep);
 			}
@@ -349,10 +334,8 @@ public class Island implements Serializable {
 			final boolean contactsOkay = contactSolver.solvePositionConstraints(k_toiBaumgarte);
 
 			boolean jointsOkay = true;
-			//for (int j = 0; j < m_jointCount; ++j) {
 			for (int j = m_jointCount-1; j >= 0; --j) {
 				final boolean jointOkay = m_joints[j].solvePositionConstraints();
-				//System.out.println("iter "+i + ": "+j + " " + jointOkay);
 				jointsOkay = jointsOkay && jointOkay;
 			}
 
@@ -360,9 +343,7 @@ public class Island implements Serializable {
 				break;
 			}
 		}
-
 		report(contactSolver.m_constraints);
-		
 		contactSolvers.recycle(contactSolver);
 	}
 
@@ -402,7 +383,6 @@ public class Island implements Serializable {
 					cr.normalImpulse = ccp.normalImpulse;
 					cr.tangentImpulse = ccp.tangentImpulse;
 					cr.id.set(point.id);
-
 					m_listener.result(cr);
 				}
 			}

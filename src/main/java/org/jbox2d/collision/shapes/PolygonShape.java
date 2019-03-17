@@ -49,7 +49,7 @@ import org.jbox2d.pooling.TLVec2;
 /** A convex polygon shape.  Create using Body.createShape(ShapeDef), not the constructor here. */
 public class PolygonShape extends Shape implements SupportsGenericDistance, Serializable {
 	/** Dump lots of debug information. */
-	private static boolean m_debug = false;
+	private static final boolean m_debug = false;
 
 	/** Local position of the shape centroid in parent body frame. */
 	public final Vec2 m_centroid;
@@ -251,7 +251,6 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 				return false;
 			}
 		}
-
 		return true;
 	}
 

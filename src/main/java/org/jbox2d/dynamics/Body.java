@@ -39,7 +39,6 @@ import org.jbox2d.common.Sweep;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.contacts.ContactEdge;
-import org.jbox2d.dynamics.controllers.ControllerEdge;
 import org.jbox2d.dynamics.joints.JointEdge;
 import org.jbox2d.pooling.TLVec2;
 import org.jbox2d.pooling.TLXForm;
@@ -60,10 +59,6 @@ import org.jbox2d.pooling.TLXForm;
  * internal variables, and their use is generally unsupported.
  */
 public class Body implements Serializable {
-	private static volatile int nextID = 0;
-	private static Object idLock = new Object();
-	private int m_uniqueID;
-
 	//m_flags
 	public static final int e_frozenFlag = 0x0002;
 	public static final int e_islandFlag = 0x0004;
@@ -76,10 +71,7 @@ public class Body implements Serializable {
 	//m_type
 	public static final int e_staticType = 0;
 	public static final int e_dynamicType = 1;
-	public static final int e_maxTypes = 2;
 	public int m_type;
-	
-	public ControllerEdge m_controllerList;
 
 	/** The body origin transform */
 	public final XForm m_xf;
@@ -138,11 +130,6 @@ public class Body implements Serializable {
 	 */
 	public Body(final BodyDef bd, final World world) {
 		assert(world.m_lock == false);
-		
-		synchronized(idLock) {
-			m_uniqueID = nextID++;
-		}
-
 		m_flags = 0;
 
 		if (bd.isBullet) {
@@ -216,8 +203,6 @@ public class Body implements Serializable {
 
 		m_shapeList = null;
 		m_shapeCount = 0;
-
-//		System.out.println("Body hash code: " + this.hashCode());
 	}
 
 	// djm this isn't a hot method, allocation is just fine

@@ -1,17 +1,17 @@
 /*
  * JBox2D - A Java Port of Erin Catto's Box2D
- * 
+ *
  * JBox2D homepage: http://jbox2d.sourceforge.net/
  * Box2D homepage: http://www.box2d.org
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  * claim that you wrote the original software. If you use this software
  * in a product, an acknowledgment in the product documentation would be
@@ -45,7 +45,6 @@ public class EdgeAndCircleContact extends Contact implements ContactCreateFcn {
 	public final ArrayList<Manifold> manifoldList = new ArrayList<Manifold>();
 
 	public EdgeAndCircleContact() {
-		// TODO Auto-generated constructor stub
 		super();
 		m_manifold = new Manifold();
 		manifoldList.add(m_manifold);
@@ -64,16 +63,14 @@ public class EdgeAndCircleContact extends Contact implements ContactCreateFcn {
 	@Override
 	public Contact clone() {
 		assert false: "Not yet implemented.";
-	return this;
+		return this;
 	}
 
 	public static void Destroy(final Contact contact) {
 		((EdgeAndCircleContact) contact).destructor();
 	}
 
-	public void destructor() {
-
-	}
+	public void destructor() {}
 
 	private static final TLManifold tlm0 = new TLManifold();
 	private static final TLVec2 tlV1 = new TLVec2();
@@ -83,13 +80,13 @@ public class EdgeAndCircleContact extends Contact implements ContactCreateFcn {
 		final Body b1 = m_shape1.getBody();
 		final Body b2 = m_shape2.getBody();
 
-		
+
 		final Manifold m0 = tlm0.get();
 		final Vec2 v1 = tlV1.get();
 		final ContactPoint cp = tlCp.get();
-		
+
 		m0.set(m_manifold);
-		
+
 		SingletonPool.getCollideCircle().collideEdgeAndCircle(m_manifold, (EdgeShape)m_shape1, b1.getMemberXForm(), (CircleShape)m_shape2, b2.getMemberXForm());
 
 		cp.shape1 = m_shape1;

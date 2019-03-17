@@ -78,7 +78,7 @@ public class ContactID implements Serializable {
 			flip = f.flip;
 		}
 
-		public boolean isEqual(final Features f){
+		boolean isEqual(final Features f){
 			return (referenceEdge==f.referenceEdge &&
 					incidentEdge==f.incidentEdge &&
 					incidentVertex==f.incidentVertex &&

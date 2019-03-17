@@ -28,7 +28,7 @@ import org.jbox2d.collision.shapes.ShapeType;
 public class ContactRegister {
     public ShapeType s1, s2;
 
-    public ContactCreateFcn createFcn;
+    ContactCreateFcn createFcn;
 
     public boolean primary;
 }

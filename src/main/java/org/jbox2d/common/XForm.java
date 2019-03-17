@@ -39,7 +39,7 @@ public class XForm implements Serializable {
 	// The identity transform 
 	public static XForm identity;
 
-	static{
+	static {
 		XForm.identity = new XForm();
 		XForm.identity.setIdentity();
 	}
@@ -75,28 +75,27 @@ public class XForm implements Serializable {
 		R.setIdentity();
 	}
 
-	public final static Vec2 mul(final XForm T, final Vec2 v){
+	public static Vec2 mul(final XForm T, final Vec2 v){
 		return new Vec2(T.position.x + T.R.col1.x * v.x + T.R.col2.x * v.y,
 		                T.position.y + T.R.col1.y * v.x + T.R.col2.y * v.y);
 	}
 
 	/* djm added */
-	public final static void mulToOut(final XForm T, final Vec2 v, final Vec2 out){
+	public static void mulToOut(final XForm T, final Vec2 v, final Vec2 out){
 		final float tempy = T.position.y + T.R.col1.y * v.x + T.R.col2.y * v.y;
 		out.x = T.position.x + T.R.col1.x * v.x + T.R.col2.x * v.y;
 		out.y = tempy;
 	}
 
-	public final static Vec2 mulTrans(final XForm T, final Vec2 v){
+	public static Vec2 mulTrans(final XForm T, final Vec2 v){
 		final float v1x = v.x-T.position.x;
 		final float v1y = v.y-T.position.y;
 		final Vec2 b = T.R.col1;
 		final Vec2 b1 = T.R.col2;
 		return new Vec2((v1x * b.x + v1y * b.y), (v1x * b1.x + v1y * b1.y));
-		//return T.R.mulT(v.sub(T.position));
 	}
 
-	public final static void mulTransToOut(final XForm T, final Vec2 v, final Vec2 out){
+	public static void mulTransToOut(final XForm T, final Vec2 v, final Vec2 out){
 		final float v1x = v.x-T.position.x;
 		final float v1y = v.y-T.position.y;
 		final Vec2 b = T.R.col1;

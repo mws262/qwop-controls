@@ -49,9 +49,9 @@ public abstract class Contact implements Serializable {
 	public static final int e_islandFlag	= 0x0004;
 	public static final int e_toiFlag		= 0x0008;
 
-	static ArrayList<ContactRegister> s_registers;
+	private static ArrayList<ContactRegister> s_registers;
 
-	static boolean s_initialized;
+	private static boolean s_initialized;
 
 	/** The parent world. */
 	public World m_world;
@@ -97,7 +97,7 @@ public abstract class Contact implements Serializable {
 		return m_manifoldCount;
 	}
 
-	public boolean isSolid() {
+	boolean isSolid() {
 		return (m_flags & e_nonSolidFlag) == 0;
 	}
 
@@ -179,8 +179,8 @@ public abstract class Contact implements Serializable {
 	@Override
 	public abstract Contact clone();
 
-	public static final void initializeRegisters() {
-		s_registers = new ArrayList<ContactRegister>();
+	private static void initializeRegisters() {
+		s_registers = new ArrayList<>();
 		Contact.addType(new CircleContact(), ShapeType.CIRCLE_SHAPE,
 		                ShapeType.CIRCLE_SHAPE);
 		Contact.addType(new PolyAndCircleContact(), ShapeType.POLYGON_SHAPE,
@@ -197,8 +197,8 @@ public abstract class Contact implements Serializable {
 		                ShapeType.POINT_SHAPE);
 	}
 
-	public static final void addType(final ContactCreateFcn createFcn, final ShapeType type1,
-	                                 final ShapeType type2) {
+	private static void addType(final ContactCreateFcn createFcn, final ShapeType type1,
+								final ShapeType type2) {
 		final ContactRegister cr = new ContactRegister();
 		cr.s1 = type1;
 		cr.s2 = type2;
@@ -220,8 +220,8 @@ public abstract class Contact implements Serializable {
 	 * This function is called "create" in C++ version.
 	 * Doing this in Java causes problems, so leave it as is.
 	 */
-	public static final Contact createContact(final Shape shape1, final Shape shape2) {
-		if (s_initialized == false) {
+	public static Contact createContact(final Shape shape1, final Shape shape2) {
+		if (!s_initialized) {
 			Contact.initializeRegisters();
 			s_initialized = true;
 		}
@@ -229,10 +229,6 @@ public abstract class Contact implements Serializable {
 		final ShapeType type1 = shape1.m_type;
 		final ShapeType type2 = shape2.m_type;
 
-		// assert ShapeType.UNKNOWN_SHAPE< type1 && type1 <
-		// ShapeType.SHAPE_TYPE_COUNT;
-		// assert ShapeType.UNKNOWN_SHAPE < type2 && type2 <
-		// ShapeType.SHAPE_TYPE_COUNT;
 		final ContactRegister register = Contact.getContactRegister(type1, type2);
 		if (register != null) {
 			if (register.primary) {
@@ -250,20 +246,18 @@ public abstract class Contact implements Serializable {
 		}
 	}
 
-	private static final ContactRegister getContactRegister(final ShapeType type1,
-	                                                        final ShapeType type2) {
-		for (int i=0; i<s_registers.size(); ++i) {//ContactRegister cr : s_registers) {
-			final ContactRegister cr = s_registers.get(i);
+	private static ContactRegister getContactRegister(final ShapeType type1,
+													  final ShapeType type2) {
+		for (final ContactRegister cr : s_registers) {
 			if (cr.s1 == type1 && cr.s2 == type2) {
 				return cr;
 			}
 		}
-
 		return null;
 	}
 
-	public static final void destroy(final Contact contact) {
-		assert (s_initialized == true);
+	public static void destroy(final Contact contact) {
+		assert (s_initialized);
 
 		if (contact.getManifoldCount() > 0) {
 			contact.getShape1().getBody().wakeUp();

@@ -35,12 +35,6 @@ public class Proxy implements Serializable {
 
     int timeStamp;
 
-    int categoryBits;
-
-    int maskBits;
-
-    int groupIndex;
-
     Object userData;
 
     public Proxy() {

@@ -133,15 +133,12 @@ public class RevoluteJoint extends Joint implements Serializable {
 		K3.col1.x =  invI2 * r2.y * r2.y;	K3.col2.x = -invI2 * r2.x * r2.y;
 		K3.col1.y = -invI2 * r2.x * r2.y;	K3.col2.y =  invI2 * r2.x * r2.x;
 
-		//Mat22 K = K1.addLocal(K2).addLocal(K3);
 		K1.addLocal(K2).addLocal(K3);
-
-		//m_pivotMass = K1.invert();
 		K1.invertToOut(m_pivotMass);
 
 		m_motorMass = 1.0f / (invI1 + invI2);
 
-		if (m_enableMotor == false) {
+		if (!m_enableMotor) {
 			m_motorForce = 0.0f;
 		}
 
@@ -185,9 +182,6 @@ public class RevoluteJoint extends Joint implements Serializable {
 	}
 
 	public final Vec2 m_lastWarmStartingPivotForce = new Vec2(0.0f,0.0f);
-	//private float m_lastWarmStartingMotorForce = 0.0f; djm not used
-	//private float m_lastWarmStartingLimitForce = 0.0f;
-	//private boolean m_warmStartingOld = true;
 
 	// djm pooled, some from above
 	private static final TLVec2 tltemp = new TLVec2();
@@ -204,8 +198,6 @@ public class RevoluteJoint extends Joint implements Serializable {
 		final Vec2 r1 = tlr1.get();
 		final Vec2 r2 = tlr2.get();
 
-		//Vec2 r1 = Mat22.mul(b1.m_xf.R, m_localAnchor1.sub(b1.getMemberLocalCenter()));
-		//Vec2 r2 = Mat22.mul(b2.m_xf.R, m_localAnchor2.sub(b2.getMemberLocalCenter()));
 		r1.set(b1.getMemberLocalCenter());
 		r2.set(b2.getMemberLocalCenter());
 		r1.subLocal(m_localAnchor1).negateLocal();
@@ -214,8 +206,6 @@ public class RevoluteJoint extends Joint implements Serializable {
 		Mat22.mulToOut(b2.m_xf.R, r2, r2);
 
 		// Solve point-to-point constraint
-		//Vec2 pivotCdot = b2.m_linearVelocity.add( Vec2.cross(b2.m_angularVelocity, r2).subLocal(b1.m_linearVelocity).subLocal(Vec2.cross(b1.m_angularVelocity, r1)));
-		//Vec2 pivotForce = Mat22.mul(m_pivotMass, pivotCdot).mulLocal(-step.inv_dt);
 		Vec2.crossToOut(b1.m_angularVelocity, r1, temp);
 		Vec2.crossToOut(b2.m_angularVelocity, r2, pivotCdot);
 		pivotCdot.subLocal(b1.m_linearVelocity).subLocal(temp).addLocal(b2.m_linearVelocity);
@@ -223,9 +213,6 @@ public class RevoluteJoint extends Joint implements Serializable {
 		Mat22.mulToOut(m_pivotMass, pivotCdot, pivotForce);
 		pivotForce.mulLocal(-step.inv_dt);
 
-		//if (!step.warmStarting) m_pivotForce.set(pivotForce);
-		//else m_pivotForce.addLocal(pivotForce);
-		//if (step.warmStarting && (!m_warmStartingOld)) m_pivotForce = m_lastWarmStartingPivotForce;
 		if (step.warmStarting) {
 			m_pivotForce.addLocal(pivotForce);
 			m_lastWarmStartingPivotForce.set(m_pivotForce);
@@ -233,7 +220,6 @@ public class RevoluteJoint extends Joint implements Serializable {
 			m_pivotForce.set(m_lastWarmStartingPivotForce);
 		}
 
-		//Vec2 P = pivotForce.mul(step.dt);
 		final Vec2 P = pivotForce.mulLocal(step.dt);
 
 		b1.m_linearVelocity.x -= b1.m_invMass * P.x;
