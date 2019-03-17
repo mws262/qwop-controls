@@ -40,8 +40,6 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.contacts.ContactEdge;
 import org.jbox2d.dynamics.joints.JointEdge;
-import org.jbox2d.pooling.TLVec2;
-import org.jbox2d.pooling.TLXForm;
 
 // Updated to rev. 54->118->142 of b2Body.cpp/.h
 // Rewritten completely for rev. 118 (too many changes, needed reorganization for maintainability)
@@ -129,7 +127,7 @@ public class Body implements Serializable {
 	 * @param world World to create body in
 	 */
 	public Body(final BodyDef bd, final World world) {
-		assert(world.m_lock == false);
+		assert(!world.m_lock);
 		m_flags = 0;
 
 		if (bd.isBullet) {
@@ -228,11 +226,7 @@ public class Body implements Serializable {
 	 */
 	// djm not a hot method, allocations are fine
 	public Shape createShape(final ShapeDef def){
-		assert(m_world.m_lock == false);
-
-		if (m_world.m_lock == true){
-			return null;
-		}
+		assert(!m_world.m_lock);
 
 		// TODO: Decide on a better place to initialize edgeShapes. (b2Shape::Create() can't
 		//       return more than one shape to add to parent body... maybe it should add
@@ -281,7 +275,6 @@ public class Body implements Serializable {
 			return s0;
 		}
 
-
 		final Shape s = Shape.create(def);
 
 		s.m_next = m_shapeList;
@@ -307,11 +300,7 @@ public class Body implements Serializable {
 	 * @param s the shape to be removed.
 	 */
 	public void destroyShape(final Shape s){
-		assert(m_world.m_lock == false);
-		if (m_world.m_lock == true) {
-			return;
-		}
-
+		assert(!m_world.m_lock);
 		assert(s.getBody() == this);
 		s.destroyProxy(m_world.m_broadPhase);
 
@@ -337,21 +326,6 @@ public class Body implements Serializable {
 			prevNode = node;
 			node = node.m_next;
 		}
-		/*
-		Shape** node = &m_shapeList;
-		boolean found = false;
-		while (*node != NULL)
-		{
-			if (*node == s)
-			{
-		 *node = s->m_next;
-				found = true;
-				break;
-			}
-
-			node = &(*node)->m_next;
-		}
-		 */
 
 		// You tried to remove a shape that is not attached to this body.
 		assert(found);
@@ -370,10 +344,7 @@ public class Body implements Serializable {
 	 * @param massData the mass properties.
 	 */
 	public void setMass(final MassData massData){
-		assert(m_world.m_lock == false);
-		if (m_world.m_lock == true) {
-			return;
-		}
+		assert(!m_world.m_lock);
 
 		m_invMass = 0.0f;
 		m_I = 0.0f;
@@ -419,17 +390,13 @@ public class Body implements Serializable {
 		}
 	}
 
-	private static final TLVec2 tlCenter = new TLVec2();
 	/**
 	 * Compute the mass properties from the attached shapes. You typically call this
 	 * after adding all the shapes. If you add or remove shapes later, you may want
 	 * to call this again. Note that this changes the center of mass position.
 	 */
 	public void setMassFromShapes(){
-		assert(m_world.m_lock == false);
-		if (m_world.m_lock == true) {
-			return;
-		}
+		assert(!m_world.m_lock);
 
 		// Compute mass data from shapes.  Each shape has its own density.
 		m_mass = 0.0f;
@@ -438,7 +405,7 @@ public class Body implements Serializable {
 		m_invI = 0.0f;
 
 		// djm might as well allocate, not really a hot path
-		final Vec2 center = tlCenter.get();
+		final Vec2 center = new Vec2(); //tlCenter.get();
 		center.setZero();
 		for (Shape s = m_shapeList; s != null; s = s.m_next) {
 			final MassData massData = new MassData();
@@ -903,15 +870,6 @@ public class Body implements Serializable {
 		return m_jointList;
 	}
 
-	/*
-	 * Get the linked list of all contacts attached to this body.
-	 * @return first ContactEdge in linked list
-	 */
-	/* Removed from C++ version
-	public ContactEdge getContactList(){
-		return m_contactList;
-	}*/
-
 	/** Get the next body in the world's body list. */
 	public Body getNext(){
 		return m_next;
@@ -923,19 +881,9 @@ public class Body implements Serializable {
 	}
 
 	/* INTERNALS BELOW */
-
-	/** For internal use only. */
-	public void computeMass(){
-		//seems to be missing from C++ version...
-	}
-
-
-	// djm pooled
-	private static final TLXForm tlXf1 = new TLXForm();
 	/** For internal use only. */
 	public boolean synchronizeShapes(){
-		// INLINED
-		final XForm xf1 = tlXf1.get();
+		final XForm xf1 = new XForm(); //tlXf1.get();
 		xf1.R.set(m_sweep.a0);
 		Mat22 R = xf1.R;
 		Vec2 v = m_sweep.localCenter;
@@ -945,23 +893,21 @@ public class Body implements Serializable {
 		boolean inRange = true;
 		for (Shape s = m_shapeList; s != null; s = s.m_next) {
 			inRange = s.synchronize(m_world.m_broadPhase, xf1, m_xf);
-			if (inRange == false) {
+			if (!inRange) {
 				break;
 			}
 		}
 
-		if (inRange == false) {
+		if (!inRange) {
 			m_flags |= e_frozenFlag;
 			m_linearVelocity.setZero();
 			m_angularVelocity = 0.0f;
 			for (Shape s = m_shapeList; s != null; s = s.m_next) {
 				s.destroyProxy(m_world.m_broadPhase);
 			}
-
 			// Failure
 			return false;
 		}
-
 		// Success
 		return true;
 	}
@@ -969,11 +915,9 @@ public class Body implements Serializable {
 	/** For internal use only. */
 	public void synchronizeTransform(){
 		m_xf.R.set(m_sweep.a);
-		//m_xf.position.set(m_sweep.c.sub(Mat22.mul(m_xf.R,m_sweep.localCenter)));
 		final Vec2 v1 = m_sweep.localCenter;
 		m_xf.position.x = m_sweep.c.x - (m_xf.R.col1.x * v1.x + m_xf.R.col2.x * v1.y);
 		m_xf.position.y = m_sweep.c.y - (m_xf.R.col1.y * v1.x + m_xf.R.col2.y * v1.y);
-		//System.out.println(m_xf);
 	}
 
 	/**
@@ -985,7 +929,7 @@ public class Body implements Serializable {
 		for (JointEdge jn = m_jointList; jn != null; jn = jn.next) {
 			if (jn.other == other) {
 				//System.out.println("connected");
-				return (jn.joint.m_collideConnected == false);
+				return (!jn.joint.m_collideConnected);
 			}
 		}
 		return false;
@@ -1012,13 +956,6 @@ public class Body implements Serializable {
 		final float vx = -m_angularVelocity * ay;
 		final float vy = m_angularVelocity * ax;
 		return new Vec2(m_linearVelocity.x + vx, m_linearVelocity.y + vy);
-
-		/*Vec2 out = new Vec2(worldPoint);
-		out.subLocal( m_sweep.c);
-		Vec2.crossToOut(m_angularVelocity, out, out);
-		out.add(m_linearVelocity);
-		return out;*/
-		//return m_linearVelocity.add(Vec2.cross(m_angularVelocity, worldPoint.sub(m_sweep.c)));
 	}
 
 	/**
@@ -1026,18 +963,12 @@ public class Body implements Serializable {
 	 * @param worldPoint a point in world coordinates.
 	 * @param out where to put the world velocity of a point.
 	 */
-	// djm optimized
 	public void getLinearVelocityFromWorldPointToOut(final Vec2 worldPoint, final Vec2 out) {
 		final float ax = worldPoint.x - m_sweep.c.x;
 		final float ay = worldPoint.y - m_sweep.c.y;
 		final float vx = -m_angularVelocity * ay;
 		final float vy = m_angularVelocity * ax;
 		out.set(m_linearVelocity.x + vx, m_linearVelocity.y + vy);
-		/*
-		out.set( worldPoint);
-		out.subLocal( m_sweep.c);
-		Vec2.crossToOut( m_angularVelocity, out, out);
-		out.add( m_linearVelocity);*/
 	}
 
 	/**
@@ -1045,7 +976,6 @@ public class Body implements Serializable {
 	 * @param localPoint a point in local coordinates.
 	 * @return the world velocity of a point.
 	 */
-	// djm optimized
 	public Vec2 getLinearVelocityFromLocalPoint(final Vec2 localPoint) {
 		final Vec2 out = new Vec2();
 		getWorldLocationToOut(localPoint, out);
@@ -1056,9 +986,6 @@ public class Body implements Serializable {
 		out.x = m_linearVelocity.x + vx;
 		out.y = m_linearVelocity.y + vy;
 		return out;
-		//Vec2 worldLocation = getWorldLocationToOut(localPoint);
-		//getLinearVelocityFromWorldPointToOut(worldLocation, worldLocation);
-		//return worldLocation;
 	}
 
 	/**
@@ -1066,10 +993,7 @@ public class Body implements Serializable {
 	 * @param localPoint a point in local coordinates.
 	 * @param out where to put the world velocity of a point.
 	 */
-	// djm optimized
 	public void getLinearVelocityFromLocalPointToOut(final Vec2 localPoint, final Vec2 out) {
-		//getWorldLocationToOut(localPoint, out);
-		//getLinearVelocityFromWorldPointToOut(out, out);
 		getWorldLocationToOut(localPoint, out);
 		final float ax = out.x - m_sweep.c.x;
 		final float ay = out.y - m_sweep.c.y;
@@ -1134,7 +1058,6 @@ public class Body implements Serializable {
 	 * @return all bodies connected directly to this body by a joint
 	 */
 	public Set<Body> getConnectedBodies() {
-		// TODO djm: pool this
 		Set<Body> mySet = new HashSet<Body>();
 		JointEdge edge = getJointList();
 		while (edge != null) {
@@ -1151,8 +1074,7 @@ public class Body implements Serializable {
 	 * @return all bodies connected directly to this body by a joint
 	 */
 	public Set<Body> getConnectedDynamicBodies() {
-		// TODO djm: pool this
-		Set<Body> mySet = new HashSet<Body>();
+		Set<Body> mySet = new HashSet<>();
 		JointEdge edge = getJointList();
 		while (edge != null) {
 			if (edge.other.isDynamic()) mySet.add(edge.other);
@@ -1169,8 +1091,7 @@ public class Body implements Serializable {
 	 * @return Set<Body> of all bodies accessible from this one by walking the joint tree
 	 */
 	public Set<Body> getConnectedBodyIsland() {
-		// TODO djm: pool this
-		Set<Body> result = new HashSet<Body>();
+		Set<Body> result = new HashSet<>();
 		result.add(this);
 		return getConnectedBodyIsland_impl(this, result);
 	}
@@ -1193,7 +1114,6 @@ public class Body implements Serializable {
 	 * @return Set<Body> of all bodies accessible from this one by walking the joint tree
 	 */
 	public Set<Body> getConnectedDynamicBodyIsland() {
-		// TODO djm: pool this
 		Set<Body> result = new HashSet<Body>();
 		if (!this.isDynamic()) return result;
 		result.add(this);
@@ -1201,7 +1121,6 @@ public class Body implements Serializable {
 	}
 	
 	private Set<Body> getConnectedDynamicBodyIsland_impl(final Body parent, final Set<Body> parentResult) {
-		// TODO djm: pool this
 		Set<Body> connected = getConnectedBodies();
 		for (Body b:connected) {
 			if (b == parent || !b.isDynamic() || parentResult.contains(b)) continue; //avoid infinite recursion
@@ -1219,7 +1138,6 @@ public class Body implements Serializable {
 	 * @return Set<Body> of all bodies accessible from this one by walking the contact tree
 	 */
 	public Set<Body> getTouchingBodyIsland() {
-		// TODO djm: pool this
 		Set<Body> result = new HashSet<Body>();
 		result.add(this);
 		return getTouchingBodyIsland_impl(this, result);
@@ -1242,15 +1160,13 @@ public class Body implements Serializable {
 	 * @return Set<Body> of all bodies accessible from this one by walking the contact tree
 	 */
 	public Set<Body> getTouchingDynamicBodyIsland() {
-		// TODO djm: pool this
-		Set<Body> result = new HashSet<Body>();
+		Set<Body> result = new HashSet<>();
 		result.add(this);
 		return getTouchingDynamicBodyIsland_impl(this, result);
 	}
 	
 	/* Recursive implementation. */
 	private Set<Body> getTouchingDynamicBodyIsland_impl(final Body parent, final Set<Body> parentResult) {
-		// TODO djm: pool this
 		Set<Body> touching = getBodiesInContact();
 		for (Body b:touching) {
 			if (b == parent || !b.isDynamic() || parentResult.contains(b)) continue; //avoid infinite recursion
@@ -1272,22 +1188,10 @@ public class Body implements Serializable {
 		return false;
 	}
 
-	//defaults seem fine
-//	@Override
-//	public boolean equals(Object obj) {
-//	    return (obj == this);
-//	}
-//
-//	@Override
-//	public int hashCode() { 
-//		return m_uniqueID;
-//	}
-	
 	public void setLinearDamping(float damping) {
 		m_linearDamping = damping;
 	}
 	public float getLinearDamping() { return m_linearDamping; }
-	
 	public void setAngularDamping(float damping) {
 		m_angularDamping = damping;
 	}

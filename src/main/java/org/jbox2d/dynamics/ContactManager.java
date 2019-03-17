@@ -34,9 +34,6 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.contacts.ContactPoint;
 import org.jbox2d.dynamics.contacts.NullContact;
-import org.jbox2d.pooling.TLContactPoint;
-import org.jbox2d.pooling.TLVec2;
-
 
 //Updated to rev 56->104->142 of b2ContactManager.cpp/.h
 
@@ -71,7 +68,7 @@ public class ContactManager implements PairCallback, Serializable {
 			return m_nullContact;
 		}
 
-		if (m_world.m_contactFilter != null && m_world.m_contactFilter.shouldCollide(shape1, shape2) == false){
+		if (m_world.m_contactFilter != null && !m_world.m_contactFilter.shouldCollide(shape1, shape2)){
 			return m_nullContact;
 		}
 
@@ -97,7 +94,6 @@ public class ContactManager implements PairCallback, Serializable {
 		m_world.m_contactList = c;
 
 		// Connect to island graph.
-
 		// Connect to body 1
 		c.m_node1.contact = c;
 		c.m_node1.other = body2;
@@ -142,14 +138,10 @@ public class ContactManager implements PairCallback, Serializable {
 		destroy(c);
 	}
 
-	// djm pooled
-	private static final TLVec2 tlV1 = new TLVec2();
-	private static final TLContactPoint tlCp = new TLContactPoint();
-	
 	public void destroy(final Contact c) {
 		
-		final Vec2 v1 = tlV1.get();
-		final ContactPoint cp = tlCp.get();
+		final Vec2 v1 = new Vec2();
+		final ContactPoint cp = new ContactPoint();
 		
 		final Shape shape1 = c.getShape1();
 		final Shape shape2 = c.getShape2();
@@ -165,8 +157,7 @@ public class ContactManager implements PairCallback, Serializable {
 			cp.shape2 = c.getShape2();
 			cp.friction = c.m_friction;
 			cp.restitution = c.m_restitution;
-			for (int i = 0; i < manifoldCount; ++i)
-			{
+			for (int i = 0; i < manifoldCount; ++i) {
 				final Manifold manifold = manifolds.get(i);
 				cp.normal.set(manifold.normal);
 				for (int j = 0; j < manifold.pointCount; ++j) {
@@ -225,11 +216,9 @@ public class ContactManager implements PairCallback, Serializable {
 		if (c.m_node2 == body2.m_contactList) {
 			body2.m_contactList = c.m_node2.next;
 		}
-
 		// Call the factory.
 		Contact.destroy(c);
 		--m_world.m_contactCount;
-		
 	}
 
 	void collide() {

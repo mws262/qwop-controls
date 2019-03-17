@@ -221,9 +221,9 @@ public final class Distance {
 	 * @return the distance
 	 */
 	// pooled from above
-	private final float DistanceGeneric(final Vec2 x1, final Vec2 x2,
-										final SupportsGenericDistance shape1, final XForm xf1,
-										final SupportsGenericDistance shape2, final XForm xf2) {
+	private float DistanceGeneric(final Vec2 x1, final Vec2 x2,
+								  final SupportsGenericDistance shape1, final XForm xf1,
+								  final SupportsGenericDistance shape2, final XForm xf2) {
 		int pointCount = 0;
 
 		shape1.getFirstVertexToOut(xf1, x1);

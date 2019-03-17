@@ -2,16 +2,12 @@ package org.jbox2d.collision.shapes;
 
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
-import org.jbox2d.collision.Segment;
-import org.jbox2d.collision.SegmentCollide;
 import org.jbox2d.collision.SupportsGenericDistance;
 import org.jbox2d.common.MathUtils;
-import org.jbox2d.common.RaycastResult;
 import org.jbox2d.common.Settings;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
-import org.jbox2d.pooling.TLVec2;
 
 import java.io.Serializable;
 
@@ -93,65 +89,9 @@ public class EdgeShape extends Shape implements SupportsGenericDistance, Seriali
 	 */
 	@Override
 	public boolean testPoint(final XForm transform, final Vec2 p) {
-		// djm this could use some optimization.
 		return false;
 	}
 
-	private static final TLVec2 tlR = new TLVec2();
-	private static final TLVec2 tlV1 = new TLVec2();
-	private static final TLVec2 tlD= new TLVec2();
-	private static final TLVec2 tlN = new TLVec2();
-	private static final TLVec2 tlB = new TLVec2();
-
-	/**
-	 * @see Shape#testSegment(XForm, RaycastResult, Segment, float)
-	 */
-	@Override
-	public SegmentCollide testSegment(final XForm xf, final RaycastResult out, final Segment segment, final float maxLambda){
-		final Vec2 r = tlR.get();
-		final Vec2 v1 = tlV1.get();
-		final Vec2 d = tlD.get();
-		final Vec2 n = tlN.get();
-		final Vec2 b = tlB.get();
-		
-		
-		r.set(segment.p2).subLocal(segment.p1);
-		XForm.mulToOut( xf, m_v1, v1);
-		XForm.mulToOut( xf, m_v2, d);
-		d.subLocal(v1);
-		Vec2.crossToOut(d, 1.0f, n);
-
-		final float k_slop = 100.0f * Settings.EPSILON;
-		final float denom = -Vec2.dot(r, n);
-
-		// Cull back facing collision and ignore parallel segments.
-		if (denom > k_slop)
-		{
-			// Does the segment intersect the infinite line associated with this segment?
-			b.set(segment.p1).subLocal(v1);
-			float a = Vec2.dot(b, n);
-
-			if (0.0f <= a && a <= maxLambda * denom)
-			{
-				final float mu2 = -r.x * b.y + r.y * b.x;
-
-				// Does the segment intersect this segment?
-				if (-k_slop * denom <= mu2 && mu2 <= denom * (1.0f + k_slop))
-				{
-					a /= denom;
-					n.normalize();
-					out.lambda = a;
-					out.normal.set(n);
-					return SegmentCollide.HIT_COLLIDE;
-				}
-			}
-		}
-		
-		return SegmentCollide.MISS_COLLIDE;
-	}
-
-	// djm pooling
-	private static final TLVec2 tlV2 = new TLVec2();
 	/**
 	 * @see Shape#computeAABB(AABB, XForm)
 	 */
@@ -159,18 +99,12 @@ public class EdgeShape extends Shape implements SupportsGenericDistance, Seriali
 	public void computeAABB(final AABB aabb, final XForm transform) {
 		// djm we avoid one creation. crafty huh?
 		XForm.mulToOut(transform, m_v1, aabb.lowerBound);
-		final Vec2 v2 = tlV2.get();
+		final Vec2 v2 = new Vec2();
 		XForm.mulToOut(transform, m_v2, v2);
 
 		Vec2.maxToOut(aabb.lowerBound, v2, aabb.upperBound);
 		Vec2.minToOut(aabb.lowerBound, v2, aabb.lowerBound);
 	}
-
-	// djm pooling
-	private static final TLVec2 tlSwept1 = new TLVec2();
-	private static final TLVec2 tlSwept2 = new TLVec2();
-	private static final TLVec2 tlSwept3 = new TLVec2();
-	private static final TLVec2 tlSwept4 = new TLVec2();
 
 	/**
 	 * @see Shape#computeSweptAABB(AABB, XForm, XForm)
@@ -178,10 +112,10 @@ public class EdgeShape extends Shape implements SupportsGenericDistance, Seriali
 	@Override
 	public void computeSweptAABB(final AABB aabb, final XForm transform1, final XForm transform2) {
 		// djm this method is pretty hot (called every time step)
-		 final Vec2 sweptV1 = tlSwept1.get();
-		 final Vec2 sweptV2 = tlSwept2.get();
-		 final Vec2 sweptV3 = tlSwept3.get();
-		 final Vec2 sweptV4 = tlSwept4.get();
+		 final Vec2 sweptV1 = new Vec2();
+		 final Vec2 sweptV2 = new Vec2();
+		 final Vec2 sweptV3 = new Vec2();
+		 final Vec2 sweptV4 = new Vec2();
 		
 		XForm.mulToOut(transform1, m_v1, sweptV1);
 		XForm.mulToOut(transform1, m_v2, sweptV2);
@@ -210,15 +144,12 @@ public class EdgeShape extends Shape implements SupportsGenericDistance, Seriali
 		massData.I = 0;
 	}
 
-	// djm pooling
-	private static final TLVec2 tlSupportV1 = new TLVec2();
-	private static final TLVec2 tlSupportV2 = new TLVec2();
 	/**
 	 * @see SupportsGenericDistance#support(Vec2, XForm, Vec2)
 	 */
 	public void support(final Vec2 dest, final XForm xf, final Vec2 d) {
-		 final Vec2 supportV1 = tlSupportV1.get();
-		 final Vec2 supportV2 = tlSupportV2.get();
+		 final Vec2 supportV1 = new Vec2();
+		 final Vec2 supportV2 = new Vec2();
 		
 		XForm.mulToOut(xf, m_coreV1, supportV1);
 		XForm.mulToOut(xf, m_coreV2, supportV2);
@@ -306,61 +237,5 @@ public class EdgeShape extends Shape implements SupportsGenericDistance, Seriali
 
 	boolean corner2IsConvex() {
 		return m_cornerConvex2;
-	}
-	
-	// djm pooled, and from above
-	private static final TLVec2 tlV0 = new TLVec2();
-	private static final TLVec2 tlTemp = new TLVec2();
-	private static final TLVec2 tlE1 = new TLVec2();
-	private static final TLVec2 tlE2 = new TLVec2();
-	
-	public float computeSubmergedArea(final Vec2 normal,float offset,XForm xf,Vec2 c) {
-		final Vec2 v0 = tlV0.get();
-		final Vec2 v1 = tlV1.get();
-		final Vec2 v2 = tlV2.get();
-		final Vec2 temp = tlTemp.get();
-		
-		
-		//Note that v0 is independent of any details of the specific edge
-		//We are relying on v0 being consistent between multiple edges of the same body
-		v0.set(normal).mul(offset);
-		//b2Vec2 v0 = xf.position + (offset - b2Dot(normal, xf.position)) * normal;
-
-		XForm.mulToOut(xf, m_v1, v1);
-		XForm.mulToOut(xf, m_v2, v2);
-
-		float d1 = Vec2.dot(normal, v1) - offset;
-		float d2 = Vec2.dot(normal, v2) - offset;
-
-		if (d1 > 0.0f){
-			if (d2 > 0.0f){
-				return 0.0f;
-			}
-			else{
-				temp.set(v2).mulLocal(d1 / (d1 - d2));
-				v1.mulLocal(-d2 / (d1 - d2)).addLocal(temp);
-			}
-		}
-		else{
-			if (d2 > 0.0f){
-				temp.set(v1).mulLocal( -d2 / (d1 - d2));
-				v2.mulLocal(d1 / (d1 - d2)).addLocal( temp);
-			}
-		}
-
-		final Vec2 e1 = tlE1.get();
-		final Vec2 e2 = tlE2.get();
-		
-		// v0,v1,v2 represents a fully submerged triangle
-		float k_inv3 = 1.0f / 3.0f;
-
-		// Area weighted centroid
-		c.x = k_inv3 * (v0.x + v1.x + v2.x);
-		c.y = k_inv3 * (v0.y + v1.y + v2.y);
-
-		e1.set(v1).subLocal(v0);
-		e2.set(v2).subLocal(v0);
-		
-		return 0.5f * Vec2.cross(e1, e2);
 	}
 }

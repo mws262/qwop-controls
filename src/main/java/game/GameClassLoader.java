@@ -122,21 +122,6 @@ public class GameClassLoader extends ClassLoader implements Serializable {
             _CircleShape = findClass("org.jbox2d.collision.shapes.CircleShape");
             _EdgeShape = findClass("org.jbox2d.collision.shapes.EdgeShape");
             findClass("org.jbox2d.collision.shapes.EdgeChainDef");
-
-            findClass("org.jbox2d.pooling.TLVec2");
-            findClass("org.jbox2d.pooling.TLMat22");
-            findClass("org.jbox2d.pooling.TLManifold");
-            findClass("org.jbox2d.pooling.TLContactPoint");
-            findClass("org.jbox2d.pooling.TLXForm");
-            findClass("org.jbox2d.pooling.TLAABB");
-            findClass("org.jbox2d.pooling.SingletonPool");
-            findClass("org.jbox2d.pooling.TLBoundValues");
-            findClass("org.jbox2d.pooling.arrays.IntegerArray");
-            findClass("org.jbox2d.pooling.SingletonPool$Singletons");
-            findClass("org.jbox2d.pooling.SingletonPool$Pool");
-            findClass("org.jbox2d.pooling.stacks.IslandStack");
-            findClass("org.jbox2d.pooling.stacks.ContactSolverStack");
-
             findClass("org.jbox2d.dynamics.joints.JointType");
             _JointDef = findClass("org.jbox2d.dynamics.joints.JointDef");
             findClass("org.jbox2d.dynamics.joints.Joint");

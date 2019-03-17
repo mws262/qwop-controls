@@ -47,9 +47,9 @@ public class Sweep implements Serializable {
 	
 	public String toString() {
 		String s = "Sweep:\nlocalCenter: "+localCenter+"\n";
-		s += "c0: "+c0+", c: "+c+"\n";
-		s += "a0: "+a0+", a: "+a+"\n";
-		s += "t0: "+t0+"\n";
+		s += "c0: " + c0 + ", c: " + c + "\n";
+		s += "a0: " + a0 + ", a: " + a + "\n";
+		s += "t0: " + t0 + "\n";
 		return s;
 	}
 

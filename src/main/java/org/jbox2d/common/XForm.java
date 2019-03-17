@@ -88,16 +88,16 @@ public class XForm implements Serializable {
 	}
 
 	public static Vec2 mulTrans(final XForm T, final Vec2 v){
-		final float v1x = v.x-T.position.x;
-		final float v1y = v.y-T.position.y;
+		final float v1x = v.x - T.position.x;
+		final float v1y = v.y - T.position.y;
 		final Vec2 b = T.R.col1;
 		final Vec2 b1 = T.R.col2;
 		return new Vec2((v1x * b.x + v1y * b.y), (v1x * b1.x + v1y * b1.y));
 	}
 
 	public static void mulTransToOut(final XForm T, final Vec2 v, final Vec2 out){
-		final float v1x = v.x-T.position.x;
-		final float v1y = v.y-T.position.y;
+		final float v1x = v.x - T.position.x;
+		final float v1y = v.y - T.position.y;
 		final Vec2 b = T.R.col1;
 		final Vec2 b1 = T.R.col2;
 		final float tempy = v1x * b1.x + v1y * b1.y;

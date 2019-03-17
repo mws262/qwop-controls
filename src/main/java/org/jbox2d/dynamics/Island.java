@@ -38,7 +38,6 @@ import org.jbox2d.dynamics.contacts.ContactConstraintPoint;
 import org.jbox2d.dynamics.contacts.ContactResult;
 import org.jbox2d.dynamics.contacts.ContactSolver;
 import org.jbox2d.dynamics.joints.Joint;
-import org.jbox2d.pooling.stacks.ContactSolverStack;
 
 //Updated to rev. 46->103->142 of b2Island.cpp/.h
 
@@ -47,28 +46,19 @@ import org.jbox2d.pooling.stacks.ContactSolverStack;
  */
 public class Island implements Serializable {
 	Body[] m_bodies;
-
 	Contact[] m_contacts;
-
 	Joint[] m_joints;
 
 	int m_bodyCount;
-
 	int m_jointCount;
-
 	int m_contactCount;
-
 	private int m_bodyCapacity;
-
 	int m_contactCapacity;
-
 	int m_jointCapacity;
-
 	int m_positionIterationCount = 0;
 
 	private ContactListener m_listener;
 
-	//begin .h methods
 	public void clear() {
 		m_bodyCount = 0;
 		m_contactCount = 0;
@@ -90,36 +80,24 @@ public class Island implements Serializable {
 		m_joints[m_jointCount++] = joint;
 	}
 
-	/**
-	 * TODO djm: make this so it isn't created every time step
-	 */
 	public Island() {}
 	
-	public final void init(final int bodyCapacity,
-	              final int contactCapacity,
-	              final int jointCapacity,
-	              final ContactListener listener) {
-
+	public final void init(final int bodyCapacity, final int contactCapacity,
+						   final int jointCapacity, final ContactListener listener) {
 		m_bodyCapacity = bodyCapacity;
 		m_contactCapacity = contactCapacity;
 		m_jointCapacity	 = jointCapacity;
 		m_bodyCount = 0;
 		m_contactCount = 0;
 		m_jointCount = 0;
-
 		m_listener = listener;
-
 		m_bodies = new Body[bodyCapacity];
 		m_contacts = new Contact[contactCapacity];
 		m_joints = new Joint[jointCapacity];
-
 		m_positionIterationCount = 0;
 	}
 
-	// djm pooling
-	private static final ContactSolverStack contactSolvers = new ContactSolverStack();
-	
-	public void solve(final TimeStep step, final Vec2 gravity, final boolean correctPositions, final boolean allowSleep) {
+	void solve(final TimeStep step, final Vec2 gravity, final boolean correctPositions, final boolean allowSleep) {
 		// Integrate velocities and apply damping.
 		for (int i = 0; i < m_bodyCount; ++i) {
 			final Body b = m_bodies[i];
@@ -162,8 +140,8 @@ public class Island implements Serializable {
 			}
 		}
 
-		final ContactSolver contactSolver = contactSolvers.get();
-		contactSolver.init(step, m_contacts, m_contactCount);
+		final ContactSolver contactSolver = new ContactSolver();
+		contactSolver.init(m_contacts, m_contactCount);
 
 		// Initialize velocity constraints.
 		contactSolver.initVelocityConstraints(step);
@@ -216,7 +194,6 @@ public class Island implements Serializable {
 				m_joints[i].initPositionConstraints();
 			}
 
-
 			// Iterate over constraints.
 			for (m_positionIterationCount = 0; m_positionIterationCount < step.maxIterations; ++m_positionIterationCount) {
 				final boolean contactsOkay = contactSolver.solvePositionConstraints(Settings.contactBaumgarte);
@@ -268,15 +245,11 @@ public class Island implements Serializable {
 				}
 			}
 		}
-		contactSolvers.recycle(contactSolver);
 	}
-	
-	
 
-	// djm pooling, from above
 	void solveTOI(final TimeStep subStep) {
-		final ContactSolver contactSolver = contactSolvers.get();
-		contactSolver.init(subStep, m_contacts, m_contactCount);
+		final ContactSolver contactSolver = new ContactSolver();
+		contactSolver.init(m_contacts, m_contactCount);
 
 		// No warm starting needed for TOI contact events.
 
@@ -294,7 +267,6 @@ public class Island implements Serializable {
 		// Solve velocity constraints.
 		for (int i = 0; i < subStep.maxIterations; ++i) {
 			contactSolver.solveVelocityConstraints();
-			//for (int j = 0; j < m_jointCount; ++j) {
 			for (int j = m_jointCount-1; j >= 0; --j) {
 				m_joints[j].solveVelocityConstraints(subStep);
 			}
@@ -344,11 +316,9 @@ public class Island implements Serializable {
 			}
 		}
 		report(contactSolver.m_constraints);
-		contactSolvers.recycle(contactSolver);
 	}
 
 	public void report(final List<ContactConstraint> constraints) {
-		//TODO: optimize this, it's crummy
 		final ContactConstraint[] cc = new ContactConstraint[constraints.size()];
 		for (int i=0; i<cc.length; ++i) {
 			cc[i] = constraints.get(i);

@@ -38,23 +38,14 @@ import java.io.Serializable;
 public abstract class Joint implements Serializable {
 
 	public JointType m_type;
-
 	public Joint m_prev;
-
 	public Joint m_next;
-
 	public JointEdge m_node1;
-
 	public JointEdge m_node2;
-
 	public Body m_body1;
-
 	public Body m_body2;
-
 	public boolean m_islandFlag;
-
 	public boolean m_collideConnected;
-
 	public Object m_userData;
 
 	public Joint(final JointDef description) {
@@ -80,8 +71,7 @@ public abstract class Joint implements Serializable {
 		j.destructor();
 	}
 
-	public void destructor() {
-	}
+	public void destructor() {}
 
 	public static Joint create(final JointDef description) {
 		// Matt: Removed other joint types since they're unnecessary for QWOP.
@@ -143,5 +133,4 @@ public abstract class Joint implements Serializable {
 
 	/** This returns true if the position errors are within tolerance. */
 	public abstract boolean solvePositionConstraints();
-
 }

@@ -25,16 +25,8 @@ package org.jbox2d.collision.shapes;
 
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
-import org.jbox2d.collision.Segment;
-import org.jbox2d.collision.SegmentCollide;
-import org.jbox2d.common.Mat22;
-import org.jbox2d.common.MathUtils;
-import org.jbox2d.common.RaycastResult;
-import org.jbox2d.common.Settings;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.common.XForm;
+import org.jbox2d.common.*;
 import org.jbox2d.dynamics.Body;
-import org.jbox2d.pooling.TLVec2;
 
 import java.io.Serializable;
 
@@ -74,17 +66,13 @@ public class CircleShape extends Shape implements Serializable {
 	 */
 	@Override
 	public void updateSweepRadius(final Vec2 center) {
-		// Update the sweep radius (maximum radius) as measured from
-		// a local center point.
-		// Vec2 d = m_localPosition.sub(center);
+		// Update the sweep radius (maximum radius) as measured from a local center point.
 		final float dx = m_localPosition.x - center.x;
 		final float dy = m_localPosition.y - center.y;
 		m_sweepRadius = MathUtils.sqrt(dx * dx + dy * dy) + m_radius
 				- Settings.toiSlop;
 	}
 
-	// djm pooling
-	private static final TLVec2 tlCenter = new TLVec2();
 	/**
 	 * checks to see if the point is in this shape.
 	 *
@@ -92,81 +80,26 @@ public class CircleShape extends Shape implements Serializable {
 	 */
 	@Override
 	public boolean testPoint(final XForm transform, final Vec2 p) {
-		final Vec2 center = tlCenter.get();
+		final Vec2 center = new Vec2();
 		Mat22.mulToOut(transform.R, m_localPosition, center);
 		center.addLocal(transform.position);
 
 		final Vec2 d = center.subLocal(p).negateLocal();
-		boolean ret = Vec2.dot(d, d) <= m_radius * m_radius;
-		return ret;
+		return Vec2.dot(d, d) <= m_radius * m_radius;
 	}
 
-
-	// djm pooling
-	private static final TLVec2 tlS = new TLVec2();
-	private static final TLVec2 tlPosition = new TLVec2();
-	private static final TLVec2 tlR = new TLVec2();
 	// Collision Detection in Interactive 3D Environments by Gino van den Bergen
 	// From Section 3.1.2
 	// x = s + a * r
 	// norm(x) = radius
-	/**
-	 * @see Shape#testSegment(XForm, RaycastResult, Segment, float)
-	 */
-	@Override
-	public SegmentCollide testSegment(final XForm xf, final RaycastResult out,
-									  final Segment segment, final float maxLambda) {
-		Vec2 position = tlPosition.get();
-		Vec2 s = tlS.get();
 
-		Mat22.mulToOut(xf.R, m_localPosition, position);
-		position.addLocal(xf.position);
-		s.set(segment.p1);
-		s.subLocal(position);
-		final float b = Vec2.dot(s, s) - m_radius * m_radius;
-
-		// Does the segment start inside the circle?
-		if (b < 0.0f) {
-			return SegmentCollide.STARTS_INSIDE_COLLIDE;
-		}
-
-		Vec2 r = tlR.get();
-		// Solve quadratic equation.
-		r.set(segment.p2).subLocal(segment.p1);
-		final float c = Vec2.dot(s, r);
-		final float rr = Vec2.dot(r, r);
-		final float sigma = c * c - rr * b;
-
-		// Check for negative discriminant and short segment.
-		if (sigma < 0.0f || rr < Settings.EPSILON) {
-			return SegmentCollide.MISS_COLLIDE;
-		}
-
-		// Find the point of intersection of the line with the circle.
-		float a = -(c + MathUtils.sqrt(sigma));
-
-		// Is the intersection point on the segment?
-		if (0.0f <= a && a <= maxLambda * rr) {
-			a /= rr;
-			out.lambda = a;
-			out.normal.set(r).mulLocal(a).addLocal(s);
-			out.normal.normalize();
-
-			return SegmentCollide.HIT_COLLIDE;
-		}
-
-		return SegmentCollide.MISS_COLLIDE; // thanks FrancescoITA
-	}
-
-	// djm pooling
-	private static final TLVec2 tlP = new TLVec2();
 	/**
 	 * @see Shape#computeAABB(AABB, XForm)
 	 */
 	@Override
 	public void computeAABB(final AABB aabb, final XForm transform) {
 
-		final Vec2 p = tlP.get();
+		final Vec2 p = new Vec2();
 		Mat22.mulToOut(transform.R, m_localPosition, p);
 		p.addLocal(transform.position);
 
@@ -232,39 +165,5 @@ public class CircleShape extends Shape implements Serializable {
 	 */
 	public Vec2 getMemberLocalPosition() {
 		return m_localPosition;
-	}
-
-	// djm pooling from above
-	/**
-	 * @see Shape#computeSubmergedArea(Vec2, float, XForm, Vec2)
-	 */
-	public float computeSubmergedArea(final Vec2 normal, float offset,
-									  XForm xf, Vec2 c) {
-		// pooling
-		final Vec2 p = tlP.get();
-
-		XForm.mulToOut(xf, m_localPosition, p);
-		float l = -(Vec2.dot(normal, p) - offset);
-
-		if (l < -m_radius + Settings.EPSILON) {
-			// Completely dry
-			return 0;
-		}
-		if (l > m_radius) {
-			// Completely wet
-			c.set(p);
-			return Settings.pi * m_radius * m_radius;
-		}
-
-		// Magic
-		float r2 = m_radius * m_radius;
-		float l2 = l * l;
-		float area = (float) (r2 * (Math.asin(l / m_radius) + Settings.pi / 2.0f) + l * MathUtils.sqrt(r2 - l2));
-		float com = (-2.0f / 3.0f * MathUtils.pow(r2 - l2, 1.5f) / area);
-
-		c.x = p.x + normal.x * com;
-		c.y = p.y + normal.y * com;
-
-		return area;
 	}
 }

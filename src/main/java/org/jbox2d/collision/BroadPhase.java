@@ -26,8 +26,6 @@ package org.jbox2d.collision;
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Settings;
 import org.jbox2d.common.Vec2;
-import org.jbox2d.pooling.TLBoundValues;
-import org.jbox2d.pooling.arrays.IntegerArray;
 
 import java.io.Serializable;
 
@@ -151,11 +149,6 @@ public class BroadPhase implements Serializable {
 		return true;
 	}
 
-	// djm pooling
-	private final static IntegerArray tlLowerValues = new IntegerArray();
-	private final static IntegerArray tlUpperValues = new IntegerArray();
-	private final static IntegerArray tlIndexes = new IntegerArray();
-
 	// Create and destroy proxies. These call Flush first.
 	/** internal */
 	public int createProxy( final AABB aabb, final Object userData) {
@@ -171,10 +164,9 @@ public class BroadPhase implements Serializable {
 
 		final int boundCount = 2 * m_proxyCount;
 
-		// pooling
-		final Integer[] lowerValues = tlLowerValues.get(2);
-		final Integer[] upperValues = tlUpperValues.get(2);
-		final Integer[] indexes = tlIndexes.get(2);
+		final int[] lowerValues = new int[2],
+				upperValues = new int[2],
+				indexes = new int[2];
 
 		computeBounds( lowerValues, upperValues, aabb);
 
@@ -251,9 +243,6 @@ public class BroadPhase implements Serializable {
 		return proxyId;
 	}
 
-	// djm pooling
-	private static final IntegerArray tlIgnored = new IntegerArray();
-
 	public void destroyProxy( final int proxyId) {
 		assert (0 < m_proxyCount && m_proxyCount <= Settings.maxProxies);
 		final Proxy proxy = m_proxyPool[proxyId];
@@ -261,7 +250,7 @@ public class BroadPhase implements Serializable {
 
 		final int boundCount = 2 * m_proxyCount;
 
-		final Integer[] ignored = tlIgnored.get(2);
+		final int[] ignored = new int[2];
 
 		for ( int axis = 0; axis < 2; ++axis) {
 			final Bound[] bounds = m_bounds[axis];
@@ -334,16 +323,12 @@ public class BroadPhase implements Serializable {
 		}
 	}
 
-	// djm pooling
-	private static final TLBoundValues tlNewValues = new TLBoundValues();
-	private static final TLBoundValues tlOldValues = new TLBoundValues();
-
 	// Call MoveProxy as many times as you like, then when you are done
 	// call Flush to finalized the proxy pairs (for your time step).
 	/** internal */
 	public void moveProxy( final int proxyId, final AABB aabb) {
-		BoundValues newValues = tlNewValues.get();
-		BoundValues oldValues = tlOldValues.get();
+		BoundValues newValues = new BoundValues();
+		BoundValues oldValues = new BoundValues();
 
 		if (Settings.maxProxies <= proxyId) { return; }
 
@@ -533,11 +518,11 @@ public class BroadPhase implements Serializable {
 	 */
 	public Object[] query( final AABB aabb, final int maxCount) {
 		// djm pooling from above
-		final Integer[] lowerValues = tlUpperValues.get(2);
-		final Integer[] upperValues = tlLowerValues.get(2);
+		final int[] lowerValues = new int[2];
+		final int[] upperValues = new int[2];
 		computeBounds( lowerValues, upperValues, aabb);
 
-		final Integer[] indexes = tlIndexes.get(2); // lowerIndex, upperIndex;
+		final int[] indexes = new int[2]; // lowerIndex, upperIndex;
 
 		query( indexes, lowerValues[0], upperValues[0], m_bounds[0], 2 * m_proxyCount, 0);
 		query( indexes, lowerValues[1], upperValues[1], m_bounds[1], 2 * m_proxyCount, 1);
@@ -592,7 +577,7 @@ public class BroadPhase implements Serializable {
 
 	}
 
-	private void computeBounds( final Integer[] lowerValues, final Integer[] upperValues, final AABB aabb) {
+	private void computeBounds( final int[] lowerValues, final int[] upperValues, final AABB aabb) {
 		assert (aabb.upperBound.x >= aabb.lowerBound.x);
 		assert (aabb.upperBound.y >= aabb.lowerBound.y);
 
@@ -623,7 +608,7 @@ public class BroadPhase implements Serializable {
 		upperValues[1] = (int) (m_quantizationFactor.y * (maxVertexY - m_worldAABB.lowerBound.y)) | 1;
 	}
 
-	private void query( final Integer[] indexes, final int lowerValue, final int upperValue, final Bound[] bounds,
+	private void query( final int[] indexes, final int lowerValue, final int upperValue, final Bound[] bounds,
 						final int boundCount, final int axis) {
 
 		final int lowerQuery = BroadPhase.binarySearch( bounds, boundCount, lowerValue);

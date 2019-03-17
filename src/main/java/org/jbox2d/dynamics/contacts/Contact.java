@@ -54,7 +54,7 @@ public abstract class Contact implements Serializable {
 	private static boolean s_initialized;
 
 	/** The parent world. */
-	public World m_world;
+	World m_world;
 
 	/* World pool and list pointers. */
 	public Contact m_prev;

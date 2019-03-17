@@ -29,9 +29,6 @@ import org.jbox2d.common.Settings;
 import org.jbox2d.common.Sweep;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
-import org.jbox2d.pooling.SingletonPool;
-import org.jbox2d.pooling.TLVec2;
-import org.jbox2d.pooling.TLXForm;
 
 //updated to rev 142 of b2TimeOfImpact.cpp
 
@@ -41,11 +38,6 @@ public class TOI {
 	// impact (TOI) of two shapes.
 	// Refs: Bullet, Young Kim
 
-	// djm pooling
-	private static final TLXForm tlxf1 = new TLXForm();
-	private static final TLXForm tlxf2 = new TLXForm();
-	private static final TLVec2 tlP1 = new TLVec2();
-	private static final TLVec2 tlP2 = new TLVec2();
 	/**
 	 * Compute the time when two shapes begin to touch or touch at a closer distance.
 	 * <BR><BR><em>Warning</em>: the sweeps must have the same time interval.
@@ -54,10 +46,10 @@ public class TOI {
 	 */
 	public static float timeOfImpact(final Shape shape1, final Sweep sweep1, final Shape shape2, final Sweep sweep2) {
 
-		final XForm xf1 = tlxf1.get();
-		final XForm xf2 = tlxf2.get();
-		final Vec2 p1 = tlP1.get();
-		final Vec2 p2 = tlP2.get();
+		final XForm xf1 = new XForm();
+		final XForm xf2 = new XForm();
+		final Vec2 p1 = new Vec2();
+		final Vec2 p2 = new Vec2();
 		final float r1 = shape1.getSweepRadius();
 		final float r2 = shape2.getSweepRadius();
 
@@ -83,7 +75,7 @@ public class TOI {
 			sweep2.getXForm(xf2, t);
 
 			// Get the distance between shapes.
-			distance = SingletonPool.getDistance().distance(p1, p2, shape1, xf1, shape2, xf2);
+			distance = new Distance().distance(p1, p2, shape1, xf1, shape2, xf2);
 
 			if (iter == 0) {
 				// Compute a reasonable target distance to give some breathing room
