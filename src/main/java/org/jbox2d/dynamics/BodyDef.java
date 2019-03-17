@@ -39,7 +39,6 @@ import java.io.Serializable;
  * after you create a dynamic body! 
  */
 public class BodyDef implements Serializable {
-	
 	/**
 	 * You can use this to initialized the mass properties of the body.
 	 * If you prefer, you can set the mass properties after the shapes
@@ -121,5 +120,4 @@ public class BodyDef implements Serializable {
         fixedRotation = false;
         isBullet = false;
     }
-
 }

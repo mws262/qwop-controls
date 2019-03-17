@@ -65,8 +65,7 @@ public class Manifold implements Serializable {
     		points[i] = new ManifoldPoint(other.points[i]);
     	}
     }
-    
-    // djm for object reusability
+
     /**
      * copies this manifold from the given one
      * @param cp manifold to copy from

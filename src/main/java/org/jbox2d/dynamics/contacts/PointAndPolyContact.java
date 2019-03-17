@@ -28,24 +28,17 @@ import java.util.List;
 
 import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.ManifoldPoint;
-import org.jbox2d.collision.shapes.PointShape;
-import org.jbox2d.collision.shapes.PolygonShape;
-import org.jbox2d.collision.shapes.Shape;
-import org.jbox2d.collision.shapes.ShapeType;
+import org.jbox2d.collision.shapes.*;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.ContactListener;
-import org.jbox2d.pooling.SingletonPool;
-import org.jbox2d.pooling.TLContactPoint;
-import org.jbox2d.pooling.TLManifold;
-import org.jbox2d.pooling.TLVec2;
-import org.jbox2d.pooling.arrays.BooleanArray;
 
 //Updated to rev 144 of b2PolyAndCircleContact.h/cpp
 class PointAndPolyContact extends Contact implements ContactCreateFcn {
 
 	public final Manifold m_manifold;
-	public final ArrayList<Manifold> manifoldList = new ArrayList<Manifold>();
+	public final ArrayList<Manifold> manifoldList = new ArrayList<>();
+    private final CollidePoly collidePoly = new CollidePoly();
 
 	public PointAndPolyContact(final Shape s1, final Shape s2) {
 		super(s1, s2);
@@ -101,39 +94,28 @@ class PointAndPolyContact extends Contact implements ContactCreateFcn {
 
 	@Override
 	public List<Manifold> getManifolds() {
-		final List<Manifold> ret = new ArrayList<Manifold>(1);
+		final List<Manifold> ret = new ArrayList<>(1);
 		if (m_manifold != null) {
 			ret.add(m_manifold);
 		}
 		return ret;
 	}
 
-	public Manifold getFirstManifold(){
-		return m_manifold;
-	}
-
-	// djm pooling
-	private static final TLManifold tlm0 = new TLManifold();
-	private static final TLVec2 tlV1 = new TLVec2();
-	private static final TLContactPoint tlCp = new TLContactPoint();
-	private static final BooleanArray tlPersisted = new BooleanArray();
 	@Override
 	public void evaluate(final ContactListener listener) {
 		final Body b1 = m_shape1.getBody();
 		final Body b2 = m_shape2.getBody();
 
 		
-		final Manifold m0 = tlm0.get();
-		final Vec2 v1 = tlV1.get();
-		final ContactPoint cp = tlCp.get();
+		final Manifold m0 = new Manifold();
+		final Vec2 v1 = new Vec2();
+		final ContactPoint cp = new ContactPoint();
 		m0.set(m_manifold);
 
-		SingletonPool.getCollidePoly().collidePolygonAndPoint(m_manifold, (PolygonShape)m_shape1, b1.getMemberXForm(), (PointShape)m_shape2, b2.getMemberXForm());
-		//CollideCircle.collidePolygonAndCircle(m_manifold, (PolygonShape)m_shape1, b1.getXForm(), (CircleShape)m_shape2, b2.getXForm());
+        collidePoly.collidePolygonAndPoint(m_manifold, (PolygonShape) m_shape1,
+				b1.getMemberXForm(), (PointShape) m_shape2, b2.getMemberXForm());
 
-		final Boolean[] persisted = tlPersisted.get(2);
-		persisted[0] = false;
-		persisted[1] = false;
+		final boolean[] persisted = new boolean[]{false, false};
 
 		cp.shape1 = m_shape1;
 		cp.shape2 = m_shape2;
@@ -144,8 +126,7 @@ class PointAndPolyContact extends Contact implements ContactCreateFcn {
 		if (m_manifold.pointCount > 0) {
 			// Match old contact ids to new contact ids and copy the
 			// stored impulses to warm start the solver.
-			for (int i = 0; i < m_manifold.pointCount; ++i)
-			{
+			for (int i = 0; i < m_manifold.pointCount; ++i) {
 				final ManifoldPoint mp = m_manifold.points[i];
 				mp.normalImpulse = 0.0f;
 				mp.tangentImpulse = 0.0f;
@@ -153,7 +134,7 @@ class PointAndPolyContact extends Contact implements ContactCreateFcn {
 				cp.id.set(mp.id);
 
 				for (int j = 0; j < m0.pointCount; ++j) {
-					if (persisted[j] == true) {
+					if (persisted[j]) {
 						continue;
 					}
 
@@ -170,16 +151,12 @@ class PointAndPolyContact extends Contact implements ContactCreateFcn {
 						// Report persistent point.
 						if (listener != null) {
 							b1.getWorldLocationToOut(mp.localPoint1, cp.position);
-							//Vec2 v1 = b1.getLinearVelocityFromLocalPoint(mp.localPoint1);
 							b1.getLinearVelocityFromLocalPointToOut(mp.localPoint1, v1);
-							//Vec2 v2 = b2.getLinearVelocityFromLocalPoint(mp.localPoint2);
 							b2.getLinearVelocityFromLocalPointToOut(mp.localPoint2, cp.velocity);
-							//cp.velocity = v2.sub(v1);
 							cp.velocity.subLocal(v1);
 
 							cp.normal.set(m_manifold.normal);
 							cp.separation = mp.separation;
-							//cp.id = new ContactID(id);
 							listener.persist(cp);
 						}
 						break;
@@ -187,18 +164,14 @@ class PointAndPolyContact extends Contact implements ContactCreateFcn {
 				}
 
 				// Report added point.
-				if (found == false && listener != null) {
+				if (!found && listener != null) {
 					b1.getWorldLocationToOut(mp.localPoint1, cp.position);
-					//Vec2 v1 = b1.getLinearVelocityFromLocalPoint(mp.localPoint1);
 					b1.getLinearVelocityFromLocalPointToOut(mp.localPoint1, v1);
-					//Vec2 v2 = b2.getLinearVelocityFromLocalPoint(mp.localPoint2);
 					b2.getLinearVelocityFromLocalPointToOut(mp.localPoint2, cp.velocity);
-					//cp.velocity = v2.sub(v1);
 					cp.velocity.subLocal(v1);
 
 					cp.normal.set(m_manifold.normal);
 					cp.separation = mp.separation;
-					//cp.id = new ContactID(id);
 					listener.add(cp);
 				}
 			}
@@ -220,11 +193,8 @@ class PointAndPolyContact extends Contact implements ContactCreateFcn {
 
 			final ManifoldPoint mp0 = m0.points[i];
 			b1.getWorldLocationToOut(mp0.localPoint1, cp.position);
-			//Vec2 v1 = b1.getLinearVelocityFromLocalPoint(mp.localPoint1);
 			b1.getLinearVelocityFromLocalPointToOut(mp0.localPoint1, v1);
-			//Vec2 v2 = b2.getLinearVelocityFromLocalPoint(mp.localPoint2);
 			b2.getLinearVelocityFromLocalPointToOut(mp0.localPoint2, cp.velocity);
-			//cp.velocity = v2.sub(v1);
 			cp.velocity.subLocal(v1);
 
 			cp.normal.set(m_manifold.normal);

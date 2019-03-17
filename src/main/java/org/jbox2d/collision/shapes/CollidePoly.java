@@ -1,17 +1,17 @@
 /*
  * JBox2D - A Java Port of Erin Catto's Box2D
- * 
+ *
  * JBox2D homepage: http://jbox2d.sourceforge.net/
  * Box2D homepage: http://www.box2d.org
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  * claim that you wrote the original software. If you use this software
  * in a product, an acknowledgment in the product documentation would be
@@ -32,22 +32,21 @@ import org.jbox2d.common.Settings;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 
+import java.io.Serializable;
+
 //Updated to rev 55->108->139 of b2cpp
 
 /** Polygon overlap solver - for internal use. */
-public class CollidePoly {
-	
-	static class ClipVertex {
-		public final Vec2 v;
-		public final ContactID id;
+public class CollidePoly implements Serializable {
 
-		ClipVertex() {
-			v = new Vec2();
-			id = new ContactID();
-		}
+	static class ClipVertex {
+		public final Vec2 v = new Vec2();
+		public final ContactID id = new ContactID();
+
+		ClipVertex() {}
 	}
 
-	private int clipSegmentToLine(final ClipVertex vOut[], final ClipVertex vIn[],
+	private int clipSegmentToLine(final ClipVertex[] vOut, final ClipVertex[] vIn,
 								  final Vec2 normal, final float offset) {
 		// Start with no output points
 		int numOut = 0;
@@ -87,11 +86,9 @@ public class CollidePoly {
 		return numOut;
 	}
 
-	// djm pooled
 	private final Vec2 normal1World = new Vec2();
-	private float edgeSeparation(final PolygonShape poly1, final XForm xf1,
-									   final int edge1,
-									   final PolygonShape poly2, final XForm xf2) {
+	private float edgeSeparation(final PolygonShape poly1, final XForm xf1, final int edge1,
+								 final PolygonShape poly2, final XForm xf2) {
 
 		final int count1 = poly1.getVertexCount();
 		final Vec2[] vertices1 = poly1.getVertices();
@@ -140,7 +137,7 @@ public class CollidePoly {
 	 * @return
 	 */
 	public final MaxSeparation findMaxSeparation(final PolygonShape poly1, final XForm xf1,
-	                                                    final PolygonShape poly2, final XForm xf2) {
+												 final PolygonShape poly2, final XForm xf2) {
 		final MaxSeparation separation = new MaxSeparation();
 
 		final int count1 = poly1.getVertexCount();
@@ -150,12 +147,10 @@ public class CollidePoly {
 		final Vec2 v1 = poly2.getCentroid();
 
 		// Vector pointing from the centroid of poly1 to the centroid of poly2.
-		//Vec2 d = XForm.mul(xf2, poly2.m_centroid).subLocal(XForm.mul(xf1, poly1.m_centroid));
-		//Vec2 dLocal1 = Mat22.mulT(xf1.R, d);
 		final float dx = xf2.position.x + xf2.R.col1.x * v1.x + xf2.R.col2.x * v1.y
-		- (xf1.position.x + xf1.R.col1.x * v.x + xf1.R.col2.x * v.y);
+				- (xf1.position.x + xf1.R.col1.x * v.x + xf1.R.col2.x * v.y);
 		final float dy = xf2.position.y + xf2.R.col1.y * v1.x + xf2.R.col2.y * v1.y
-		- (xf1.position.y + xf1.R.col1.y * v.x + xf1.R.col2.y * v.y);
+				- (xf1.position.y + xf1.R.col1.y * v.x + xf1.R.col2.y * v.y);
 		final Vec2 b = xf1.R.col1;
 		final Vec2 b1 = xf1.R.col2;
 		dLocal1.x = (dx * b.x + dy * b.y);
@@ -244,7 +239,7 @@ public class CollidePoly {
 	private Vec2 mulTemp = new Vec2();
 	private Vec2 normal1 = new Vec2();
 	// djm optimized
-	private void findIncidentEdge(final ClipVertex c[],
+	private void findIncidentEdge(final ClipVertex[] c,
 								  final PolygonShape poly1, final XForm xf1, final int edge1,
 								  final PolygonShape poly2, final XForm xf2) {
 
@@ -296,10 +291,9 @@ public class CollidePoly {
 	// Find incident edge
 	// Clip
 	// The normal points from 1 to 2
-	// djm optimized
 	public final void collidePolygons(final Manifold manif,
-	                                         final PolygonShape polyA, final XForm xfA,
-	                                         final PolygonShape polyB, final XForm xfB) {
+									  final PolygonShape polyA, final XForm xfA,
+									  final PolygonShape polyB, final XForm xfB) {
 
 		manif.pointCount = 0; // Fixed a problem with contacts
 		final MaxSeparation sepA = findMaxSeparation(polyA, xfA, polyB, xfB);
@@ -351,7 +345,7 @@ public class CollidePoly {
 		final float v1y = v12.y-v11.y;
 
 		sideNormal.set(xf1.R.col1.x * v1x + xf1.R.col2.x * v1y,
-		               xf1.R.col1.y * v1x + xf1.R.col2.y * v1y);
+				xf1.R.col1.y * v1x + xf1.R.col2.y * v1y);
 		sideNormal.normalize();
 		frontNormal.set(sideNormal.y, -sideNormal.x);
 
@@ -378,7 +372,7 @@ public class CollidePoly {
 
 		// Clip to negative box side 1
 		np = clipSegmentToLine(clipPoints2, clipPoints1, sideNormal,
-		                                   sideOffset2);
+				sideOffset2);
 
 		if (np < 2) {
 			return;
@@ -393,13 +387,12 @@ public class CollidePoly {
 		int pointCount = 0;
 		for (int i = 0; i < Settings.maxManifoldPoints; ++i) {
 			final float separation = Vec2.dot(frontNormal, clipPoints2[i].v)
-			- frontOffset;
+					- frontOffset;
 
 			if (separation <= 0.0f) {
 				final ManifoldPoint cp = manif.points[pointCount];
 				cp.separation = separation;
-				//cp.localPoint1 = XForm.mulT(xfA, clipPoints2[i].v);
-				//cp.localPoint2 = XForm.mulT(xfB, clipPoints2[i].v);
+
 				final Vec2 vec = clipPoints2[i].v;
 				float u1x = vec.x-xfA.position.x;
 				float u1y = vec.y-xfA.position.y;
@@ -437,8 +430,8 @@ public class CollidePoly {
 	 * @param xf2
 	 */
 	public final void collidePolygonAndPoint(final Manifold manifold,
-	                                                final PolygonShape polygon, final XForm xf1,
-	                                                final PointShape point, final XForm xf2) {
+											 final PolygonShape polygon, final XForm xf1,
+											 final PointShape point, final XForm xf2) {
 
 		manifold.pointCount = 0;
 
@@ -461,7 +454,6 @@ public class CollidePoly {
 				// Early out.
 				return;
 			}
-
 			if (s > separation) {
 				normalIndex = i;
 				separation = s;
@@ -552,10 +544,10 @@ public class CollidePoly {
 	 * @param xf2
 	 */
 	public final void collidePolyAndEdge(final Manifold manifold,
-	                                            final PolygonShape polygon,
-	                                            final XForm xf1,
-	                                            final EdgeShape edge,
-	                                            final XForm xf2) {
+										 final PolygonShape polygon,
+										 final XForm xf1,
+										 final EdgeShape edge,
+										 final XForm xf2) {
 		manifold.pointCount = 0;
 		XForm.mulToOut(xf2, edge.getVertex1(), PEv1);
 		XForm.mulToOut(xf2, edge.getVertex2(), PEv2);

@@ -35,13 +35,8 @@ import org.jbox2d.dynamics.contacts.ContactEdge;
 import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.JointDef;
 import org.jbox2d.dynamics.joints.JointEdge;
-import org.jbox2d.pooling.TLTimeStep;
-import org.jbox2d.pooling.stacks.IslandStack;
-import org.jbox2d.pooling.stacks.TimeStepStack;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-
 
 //Updated to rev 56->118->142->150 of b2World.cpp/.h
 
@@ -88,14 +83,10 @@ public class World implements Serializable {
 	/** Should we enable continuous collision detection? */
 	private boolean m_continuousPhysics;
 
-	private DestructionListener m_destructionListener;
-	private BoundaryListener m_boundaryListener;
 	ContactFilter m_contactFilter;
 	ContactListener m_contactListener;
 
     private float m_inv_dt0;
-
-	private final ArrayList<Steppable> postStepList;
 
 	/** Get the number of bodies. */
 	public int getBodyCount() {
@@ -159,8 +150,6 @@ public class World implements Serializable {
 		m_positionCorrection = true;
 		m_warmStarting = true;
 		m_continuousPhysics = true;
-		m_destructionListener = null;
-		m_boundaryListener = null;
 		m_contactFilter = ContactFilter.DEFAULT_FILTER;
 		m_contactListener = null;
 
@@ -186,7 +175,6 @@ public class World implements Serializable {
 
 		final BodyDef bd = new BodyDef();
 		m_groundBody = createBody(bd);
-		postStepList = new ArrayList<>();
 	}
 
 	/** Register a contact event listener */
@@ -239,10 +227,6 @@ public class World implements Serializable {
 		while (jn != null) {
 			final JointEdge jn0 = jn;
 			jn = jn.next;
-
-			if (m_destructionListener != null){
-				m_destructionListener.sayGoodbye(jn0.joint);
-			}
 			destroyJoint(jn0.joint);
 		}
 
@@ -252,9 +236,6 @@ public class World implements Serializable {
 		while (s != null) {
 			final Shape s0 = s;
 			s = s.m_next;
-			if (m_destructionListener != null) {
-				m_destructionListener.sayGoodbye(s0);
-			}
 			s0.destroyProxy(m_broadPhase);
 			Shape.destroy(s0);
 		}
@@ -399,8 +380,6 @@ public class World implements Serializable {
 		}
 	}
 
-	// djm pooling
-	private static final TLTimeStep tlStep = new TLTimeStep();
 	/**
 	 * Take a time step. This performs collision detection, integration,
 	 * and constraint solution.
@@ -410,7 +389,7 @@ public class World implements Serializable {
 	public void step(final float dt, final int iterations) {
 		m_lock = true;
 
-		final TimeStep step = tlStep.get();
+		final TimeStep step = new TimeStep();
 		step.dt = dt;
 		step.maxIterations	= iterations;
 		if (dt > 0.0f) {
@@ -439,15 +418,6 @@ public class World implements Serializable {
 
 		m_inv_dt0 = step.inv_dt;
 		m_lock = false;
-		
-		postStep(dt,iterations);
-	}
-
-	/** Goes through the registered postStep functions and calls them. */
-	private void postStep(final float dt, final int iterations) {
-		for (final Steppable s:postStepList) {
-			s.step(dt,iterations);
-		}
 	}
 
 	/**
@@ -471,16 +441,13 @@ public class World implements Serializable {
 
 	// Java note: sorry, guys, we have to keep this stuff public until
 	// the C++ version does otherwise so that we can maintain the engine...
-
-	// djm pooling
-	private static final IslandStack islands = new IslandStack();
 	
 	/** For internal use */
 	public void solve(final TimeStep step) {
         int m_positionIterationCount = 0;
 
 		// Size the island for the worst case.
-		final Island island = islands.get();
+		final Island island = new Island();
 		island.init(m_bodyCount, m_contactCount, m_jointCount, m_contactListener);
 
 		// Clear all the island flags.
@@ -598,23 +565,13 @@ public class World implements Serializable {
 			// the world AABB then shapes and contacts may be destroyed,
 			// including contacts that are
 			final boolean inRange = b.synchronizeShapes();
-
-			// Did the body's shapes leave the world?
-			if (inRange == false && m_boundaryListener != null) {
-				m_boundaryListener.violation(b);
-			}
 		}
 
 		// Commit shape proxy movements to the broad-phase so that new contacts are created.
 		// Also, some contacts can be destroyed.
 		m_broadPhase.commit();
-		
-		islands.recycle(island);
 	}
 
-	// djm pooling
-	private static final TimeStepStack steps = new TimeStepStack();
-	
 	/** For internal use: find TOI contacts and solve them. */
 	private void solveTOI(final TimeStep step) {
 		// Reserve an island and a stack for TOI island solution.
@@ -622,7 +579,7 @@ public class World implements Serializable {
 		// it static?
 		
 		// Size the island for the worst case.
-		final Island island = islands.get();
+		final Island island = new Island();
 		island.init(m_bodyCount, Settings.maxTOIContactsPerIsland, Settings.maxTOIJointsPerIsland, m_contactListener);
 
 		//Simple one pass queue
@@ -834,7 +791,7 @@ public class World implements Serializable {
 
 			}
 
-			final TimeStep subStep = steps.get();
+			final TimeStep subStep = new TimeStep();
 			subStep.warmStarting = false;
 			subStep.dt = (1.0f - minTOI) * step.dt;
 			assert(subStep.dt > Settings.EPSILON);
@@ -842,8 +799,7 @@ public class World implements Serializable {
 			subStep.maxIterations = step.maxIterations;
 
 			island.solveTOI(subStep);
-			steps.recycle(subStep);
-			
+
 			// Post solve cleanup.
 			for (int i = 0; i < island.m_bodyCount; ++i) {
 				// Allow bodies to participate in future TOI islands.
@@ -862,11 +818,6 @@ public class World implements Serializable {
 				// the world AABB then shapes and contacts may be destroyed,
 				// including contacts that are
 				final boolean inRange = b.synchronizeShapes();
-
-				// Did the body's shapes leave the world?
-				if (!inRange && m_boundaryListener != null) {
-					m_boundaryListener.violation(b);
-				}
 
 				// Invalidate all contact TOIs associated with this body. Some of these
 				// may not be in the island because they were not touching.
@@ -890,7 +841,6 @@ public class World implements Serializable {
 			// Also, some contacts can be destroyed.
 			m_broadPhase.commit();
 		}
-		islands.recycle(island);
 	}
 
 	/** Enable/disable warm starting. For testing. */
