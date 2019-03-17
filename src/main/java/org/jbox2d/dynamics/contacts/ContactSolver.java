@@ -45,14 +45,11 @@ public class ContactSolver {
 	 */
 	//*
 	public ContactConstraint[] m_constraints;
-	/*/
-	public List<ContactConstraint> m_constraints;
-	//*/
 
 	public int m_constraintCount;
 
 	public ContactSolver(){
-		
+
 	}
 	
 	public final void init(final TimeStep step, final Contact[] contacts, final int contactCount) {

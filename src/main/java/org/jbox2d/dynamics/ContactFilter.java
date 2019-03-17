@@ -37,14 +37,12 @@ public interface ContactFilter {
 	 * Default contact filter, using groupIndex, maskBits and categoryBits as detailed
 	 * in Box2d manual.
 	 */
-	public static final ContactFilter DEFAULT_FILTER = new DefaultContactFilter();
+	ContactFilter DEFAULT_FILTER = new DefaultContactFilter();
 
 	/**
 	 * Return true if contact calculations should be performed between these two shapes.
 	 * <BR><BR><em>Warning</em>: for performance reasons this is only called when the AABBs begin to overlap.
 	 */
-	public boolean shouldCollide(Shape shape1, Shape shape2);
-	
-	/** Return true if the given shape should be considered for ray intersection */
-	public boolean rayCollide(Object userData, Shape shape);
+	boolean shouldCollide(Shape shape1, Shape shape2);
+
 }

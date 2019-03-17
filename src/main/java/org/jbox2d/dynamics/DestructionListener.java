@@ -40,12 +40,12 @@ public interface DestructionListener {
 	 * Called when any joint is about to be destroyed due
 	 * to the destruction of one of its attached bodies.
 	 */
-	public void sayGoodbye(Joint joint);
+	void sayGoodbye(Joint joint);
 
 	/**
 	 * Called when any shape is about to be destroyed due
 	 * to the destruction of its parent body.
 	 */
-	public void sayGoodbye(Shape shape);
+	void sayGoodbye(Shape shape);
 	
 }

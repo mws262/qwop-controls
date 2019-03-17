@@ -64,26 +64,26 @@ public class BodyDef implements Serializable {
 	 * can be larger than 1.0f but the damping effect becomes sensitive to the
 	 * time step when the damping parameter is large.
 	 */
-	public float linearDamping;
+	float linearDamping;
 
 	/**
 	 * Angular damping is use to reduce the angular velocity. The damping parameter
 	 * can be larger than 1.0f but the damping effect becomes sensitive to the
 	 * time step when the damping parameter is large.
 	 */
-	public float angularDamping;
+	float angularDamping;
 	
 	/**
 	 * Set this flag to false if this body should never fall asleep.  Note that
 	 * this increases CPU usage.
 	 */
-    public boolean allowSleep;
+	boolean allowSleep;
 
     /** Is this body initially sleeping? */
-    public boolean isSleeping;
+	boolean isSleeping;
     
     /** Should this body be prevented from rotating?  Useful for characters. */
-    public boolean fixedRotation;
+	boolean fixedRotation;
 
 	/**
 	 * Is this a fast moving body that should be prevented from tunneling through
@@ -91,7 +91,7 @@ public class BodyDef implements Serializable {
 	 * static bodies.
 	 * <BR><BR><em>Warning</em>: You should use this flag sparingly since it increases processing time.
 	 */
-	public boolean isBullet;
+	boolean isBullet;
 
 	/**
 	 * Default body definition.  Defines a body with the following characteristics:
@@ -108,7 +108,7 @@ public class BodyDef implements Serializable {
 	 */
 	public BodyDef() {
 		massData = new MassData();
-        massData.center.setZero();// = new Vec2(0.0f, 0.0f);
+        massData.center.setZero();
         massData.mass = 0.0f;
         massData.I = 0.0f;
         userData = null;

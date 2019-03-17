@@ -68,7 +68,7 @@ public class PolygonDef extends ShapeDef {
 
 	public PolygonDef() {
 		type = ShapeType.POLYGON_SHAPE;
-		vertices = new ArrayList<Vec2>();
+		vertices = new ArrayList<>();
 	}
 
 	/** Add a vertex to the polygon. */
@@ -117,8 +117,8 @@ public class PolygonDef extends ShapeDef {
 		xf.position.set(center);
 		xf.R.set(angle);
 		// djm optimized. I'm leaving the XForm creation, it doesn't matter here
-		for (int i = 0; i < vertices.size(); ++i) {
-			XForm.mulToOut(xf, vertices.get(i), vertices.get(i));
+		for (Vec2 vertex : vertices) {
+			XForm.mulToOut(xf, vertex, vertex);
 		}
 	}
 

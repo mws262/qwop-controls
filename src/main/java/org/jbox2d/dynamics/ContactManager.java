@@ -46,13 +46,10 @@ public class ContactManager implements PairCallback, Serializable {
 
 	// This lets us provide broadphase proxy pair user data for
 	// contacts that shouldn't exist.
-	NullContact m_nullContact;
+	private NullContact m_nullContact;
 
-	boolean m_destroyImmediate;
-
-	public ContactManager() {
+	ContactManager() {
 		m_nullContact = new NullContact();
-		m_destroyImmediate = false;
 	}
 
 	public Object pairAdded(final Object proxyUserData1, final Object proxyUserData2) {
@@ -131,9 +128,6 @@ public class ContactManager implements PairCallback, Serializable {
 	// to overlap. We retire the b2Contact.
 	public void pairRemoved(final Object proxyUserData1, final Object proxyUserData2,
 	                        final Object pairUserData) {
-		//B2_NOT_USED(proxyUserData1);
-		//B2_NOT_USED(proxyUserData2);
-
 		if (pairUserData == null) {
 			return;
 		}
@@ -238,7 +232,7 @@ public class ContactManager implements PairCallback, Serializable {
 		
 	}
 
-	public void collide() {
+	void collide() {
 		// Update awake contacts.
 		for (Contact c = m_world.m_contactList; c != null; c = c.getNext()) {
 			final Body body1 = c.getShape1().getBody();
@@ -246,7 +240,6 @@ public class ContactManager implements PairCallback, Serializable {
 			if (body1.isSleeping() && body2.isSleeping()) {
 				continue;
 			}
-
 			c.update(m_world.m_contactListener);
 		}
 	}

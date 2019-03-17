@@ -56,13 +56,12 @@ public class AABB implements Serializable {
 	 * Creates an AABB object using the given bounding
 	 * vertices.
 	 * @param lowerVertex the bottom left vertex of the bounding box
-	 * @param maxVertex the top right vertex of the bounding box
+	 * @param upperVertex the top right vertex of the bounding box
 	 */
 	public AABB(final Vec2 lowerVertex, final Vec2 upperVertex) {
 		this.lowerBound = lowerVertex.clone(); // clone to be safe
 		this.upperBound = upperVertex.clone();
 	}
-
 
 	/**
 	 * Sets this object from the given object
@@ -84,26 +83,8 @@ public class AABB implements Serializable {
 		return lowerBound.isValid() && upperBound.isValid();
 	}
 
-	/** Check if AABBs overlap. djm optimized */
-	public final boolean testOverlap(final AABB box) {
-		final float d1x = box.lowerBound.x - upperBound.x;
-		final float d1y = box.lowerBound.y - upperBound.y;
-		final float d2x = lowerBound.x - box.upperBound.x;
-		final float d2y = lowerBound.y - box.upperBound.y;
-
-		// Vec2 d1 = box.lowerBound.sub(upperBound);
-		//Vec2 d2 = lowerBound.sub(box.upperBound);
-
-		if (d1x > 0.0f || d1y > 0.0f || d2x > 0.0f || d2y > 0.0f) {
-			return false;
-		}
-
-		return true;
-	}
-
 	@Override
 	public final String toString() {
-		final String s = ""+lowerBound+" -> "+upperBound;
-		return s;
+		return "" + lowerBound + " -> " + upperBound;
 	}
 }

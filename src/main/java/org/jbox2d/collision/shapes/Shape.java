@@ -42,7 +42,6 @@ import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.contacts.ContactEdge;
 import org.jbox2d.pooling.TLAABB;
 
-
 //Updated through rev. 56->139 of b2Shape.cpp/.h
 
 /**
@@ -119,11 +118,6 @@ public abstract class Shape implements Serializable {
 		m_restitution = restitution;
 	}
 
-	/** Set the collision filtering data. */
-	public void setFilterData(final FilterData filter){
-		m_filter.set(filter);
-	}
-
 	/** Get the collision filtering data. */
 	public FilterData getFilterData() {
 		return m_filter;
@@ -193,7 +187,6 @@ public abstract class Shape implements Serializable {
 	 */
 	public abstract boolean testPoint(XForm xf, Vec2 p);
 
-
 	/**
 	 *  Perform a ray cast against this shape.
 	 *  @param xf the shape world transform.
@@ -251,10 +244,6 @@ public abstract class Shape implements Serializable {
 		// Compute an AABB that covers the swept shape (may miss some rotation effect).
 		AABB aabb = tlAabb.get();
 		computeSweptAABB(aabb, transform1, transform2);
-		//if (this.getType() == ShapeType.CIRCLE_SHAPE){
-		//	System.out.println("Sweeping: "+transform1+" " +transform2);
-		//	System.out.println("Resulting AABB: "+aabb);
-		//}
 		if (broadPhase.inRange(aabb)) {
 			broadPhase.moveProxy(m_proxyId, aabb);
 			return true;
@@ -270,8 +259,7 @@ public abstract class Shape implements Serializable {
 		}
 
 		broadPhase.destroyProxy(m_proxyId);
-		// djm don't pool this, it could be used to
-		// create a proxy
+		// djm don't pool this, it could be used to create a proxy
 		final AABB aabb = new AABB();
 		computeAABB(aabb, transform);
 
@@ -334,11 +322,7 @@ public abstract class Shape implements Serializable {
 		// You are creating a shape outside the world box.
 		assert(inRange);
 
-		if (inRange){
-			m_proxyId = broadPhase.createProxy(aabb, this);
-		} else {
-			m_proxyId = PairManager.NULL_PROXY;
-		}
+		m_proxyId = broadPhase.createProxy(aabb, this);
 	}
 
 	/** Internal */
@@ -347,17 +331,6 @@ public abstract class Shape implements Serializable {
 			broadPhase.destroyProxy(m_proxyId);
 			m_proxyId = PairManager.NULL_PROXY;
 		}
-	}
-
-	/**
-	 * Compute the volume and centroid of this fixture intersected with a half plane
-	 * @param normal the surface normal
-	 * @param offset the surface offset along normal
-	 * @param c returns the centroid
-	 * @return the total volume less than offset along normal
-	 */
-	public float computeSubmergedArea(Vec2 normal, float offset, Vec2 c) {
-		return this.computeSubmergedArea(normal, offset, m_body.getXForm(), c);
 	}
 
 	/**
@@ -383,7 +356,7 @@ public abstract class Shape implements Serializable {
 	 */
 	public Set<Shape> getShapesInContact() {
 		ContactEdge curr = this.m_body.getContactList();
-		Set<Shape> touching = new HashSet<Shape>();
+		Set<Shape> touching = new HashSet<>();
 		while (curr != null) {
 			if (curr.contact.m_shape1 == this) {
 				touching.add(curr.contact.m_shape2);

@@ -16,7 +16,7 @@ public class EdgeChainDef extends ShapeDef {
 	public EdgeChainDef() {
 		type = ShapeType.EDGE_SHAPE;
 		isALoop = true;
-		vertices = new ArrayList<Vec2>();
+		vertices = new ArrayList<>();
 	}
 
 	/**

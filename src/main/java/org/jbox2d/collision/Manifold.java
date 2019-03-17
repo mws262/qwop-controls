@@ -72,9 +72,6 @@ public class Manifold implements Serializable {
      * @param cp manifold to copy from
      */
     public Manifold set(Manifold cp){
-    	// will this work?
-    	//System.arraycopy(cp.points, 0, points, 0, cp.pointCount);
-    	// just do this for now
     	for(int i=0; i<cp.pointCount; i++){
     		points[i].set(cp.points[i]);
     	}

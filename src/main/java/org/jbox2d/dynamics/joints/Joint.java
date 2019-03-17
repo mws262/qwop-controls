@@ -57,8 +57,6 @@ public abstract class Joint implements Serializable {
 
 	public Object m_userData;
 
-	public float m_inv_dt;
-
 	public Joint(final JointDef description) {
 		m_type = description.type;
 		m_prev = null;
@@ -80,41 +78,18 @@ public abstract class Joint implements Serializable {
 	// it contains distance joints that also need to be destroyed.
 	public static void destroy(final Joint j) {
 		j.destructor();
-		return;
 	}
 
 	public void destructor() {
 	}
 
 	public static Joint create(final JointDef description) {
-		Joint joint = null;
-
-		if (description.type == JointType.DISTANCE_JOINT) {
-			joint = new DistanceJoint((DistanceJointDef) description);
+		// Matt: Removed other joint types since they're unnecessary for QWOP.
+		if (description.type == JointType.REVOLUTE_JOINT) {
+			return new RevoluteJoint((RevoluteJointDef) description);
+		} else {
+			return null;
 		}
-		else if (description.type == JointType.MOUSE_JOINT) {
-			joint = new MouseJoint((MouseJointDef) description);
-		}
-		else if (description.type == JointType.PRISMATIC_JOINT) {
-			joint = new PrismaticJoint((PrismaticJointDef) description);
-		}
-		else if (description.type == JointType.REVOLUTE_JOINT) {
-			joint = new RevoluteJoint((RevoluteJointDef) description);
-		}
-		else if (description.type == JointType.PULLEY_JOINT) {
-			joint = new PulleyJoint((PulleyJointDef) description);
-		}
-		else if (description.type == JointType.GEAR_JOINT) {
-			joint = new GearJoint((GearJointDef) description);
-		}
-		else if (description.type == JointType.CONSTANT_VOLUME_JOINT) {
-			joint = new ConstantVolumeJoint((ConstantVolumeJointDef) description);
-		}
-		else {
-			assert false;
-		}
-
-		return joint;
 	}
 
 	/** Get the type of the concrete joint. */
@@ -164,9 +139,7 @@ public abstract class Joint implements Serializable {
 
 	public abstract void solveVelocityConstraints(TimeStep step);
 
-	public void initPositionConstraints() {
-		return;
-	}
+	public void initPositionConstraints() {}
 
 	/** This returns true if the position errors are within tolerance. */
 	public abstract boolean solvePositionConstraints();

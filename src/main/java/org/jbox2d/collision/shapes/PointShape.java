@@ -39,7 +39,6 @@ public class PointShape extends Shape implements Serializable {
 	 */
 	@Override
 	public void computeAABB(final AABB aabb, final XForm transform) {
-		//Vec2 p = transform.position.add(Mat22.mul(transform.R, m_localPosition));
 		final Vec2 p = tlP.get();
 		Mat22.mulToOut(transform.R, m_localPosition, p);
 		p.add(transform.position);
@@ -67,8 +66,6 @@ public class PointShape extends Shape implements Serializable {
 	public void computeSweptAABB(final AABB aabb, final XForm transform1, final XForm transform2) {
 		final Vec2 sweptP1 = tlSwept1.get();
 		final Vec2 sweptP2 = tlSwept2.get();
-		//Vec2 p1 = transform1.position.add(Mat22.mul(transform1.R, m_localPosition));
-		//Vec2 p2 = transform2.position.add(Mat22.mul(transform2.R, m_localPosition));
 		Mat22.mulToOut( transform2.R, m_localPosition, sweptP1);
 		Mat22.mulToOut( transform2.R, m_localPosition, sweptP2);
 
@@ -153,7 +150,6 @@ public class PointShape extends Shape implements Serializable {
 	// djm optimized
 	@Override
 	public void updateSweepRadius(final Vec2 center) {
-		//Vec2 d = m_localPosition.sub(center);
 		final float dx = m_localPosition.x - center.x;
 		final float dy = m_localPosition.y - center.y;
 		m_sweepRadius = MathUtils.sqrt(dx*dx + dy*dy) - Settings.toiSlop;
@@ -178,5 +174,4 @@ public class PointShape extends Shape implements Serializable {
 	public float getMass() {
 		return m_mass;
 	}
-
 }

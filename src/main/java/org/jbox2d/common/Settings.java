@@ -44,8 +44,7 @@ public class Settings {
      * smaller the precision, the larger the table.  If
      * a small table is used (eg, precision is .006 or greater),
      * make sure you set the table to lerp it's results.  Accuracy chart
-     * is in the MathUtils source.  Or, run the tests
-     * yourself in {@link org.jbox2d.testbed.mathtests.SinCosTest}.</br>
+     * is in the MathUtils source.
      * </br>
      * Good lerp precision values:
      * <ul><li>.0092</li>
@@ -72,29 +71,12 @@ public class Settings {
      * Use if the table's precision is large (eg .006 or greater).
      * Although it is more expensive, it greatly increases
      * accuracy.  Look in the MathUtils source for some test results
-     * on the accuracy and speed of lerp vs non lerp.  Or, run the tests
-     * yourself in {@link org.jbox2d.testbed.mathtests.SinCosTest}.
+     * on the accuracy and speed of lerp vs non lerp.
      */
     public static final boolean SINCOS_LUT_LERP = false;
-    
-    
-
-    // Define your unit system here. The default system is
-    // meters-kilograms-seconds. For the tuning to work well,
-    // your dynamic objects should be bigger than a pebble and smaller
-    // than a house.
-    //
-    // Use of these settings has been deprecated - they do not even
-    // exist anymore in the C++ version of the engine, and future support
-    // is unlikely.
-    public static final float lengthUnitsPerMeter = 1.0f;
-    public static final float massUnitsPerKilogram = 1.0f;
-    public static final float timeUnitsPerSecond = 1.0f;
 
     // Collision
-    
     public static final int maxManifoldPoints = 2;
-    public static final int maxShapesPerBody = 64;
     public static final int maxPolygonVertices = 8;
 
     /** Must be a power of two. */
@@ -103,12 +85,11 @@ public class Settings {
     public static final int maxPairs = 8 * maxProxies;
     
     // Dynamics
-
     /**
      * A small length used as a collision and constraint tolerance. Usually it is
      * chosen to be numerically significant, but visually insignificant.
      */
-    public static final float linearSlop = 0.005f * lengthUnitsPerMeter; // 0.5 cm
+    public static final float linearSlop = 0.005f; // 0.5 cm
 
     /**
      * A small angle used as a collision and constraint tolerance. Usually it is
@@ -120,14 +101,13 @@ public class Settings {
 	 * A velocity threshold for elastic collisions. Any collision with a relative linear
      * velocity below this threshold will be treated as inelastic.
      */
-    public static final float velocityThreshold = 1.0f * lengthUnitsPerMeter
-            / timeUnitsPerSecond; // 1 m/s
+    public static final float velocityThreshold = 1.0f; // 1 m/s
 
     /**
      * The maximum linear position correction used when solving constraints. This helps to
      * prevent overshoot.
      */
-    public static final float maxLinearCorrection = 0.2f * lengthUnitsPerMeter; // 20 cm
+    public static final float maxLinearCorrection = 0.2f; // 20 cm
 
     /**
      * The maximum angular position correction used when solving constraints. This helps to
@@ -143,14 +123,13 @@ public class Settings {
     public static final float contactBaumgarte = 0.2f;
 
     /** The time that a body must be still before it will go to sleep. */
-    public static final float timeToSleep = 0.5f * timeUnitsPerSecond; // half a second
+    public static final float timeToSleep = 0.5f; // half a second
 
     /** A body cannot sleep if its linear velocity is above this tolerance. */
-    public static final float linearSleepTolerance = 0.01f
-            * lengthUnitsPerMeter / timeUnitsPerSecond; // 1 cm/s
+    public static final float linearSleepTolerance = 0.01f; // 1 cm/s
 
     /** A body cannot sleep if its angular velocity is above this tolerance. */
-    public static final float angularSleepTolerance = 2.0f / 180.0f / timeUnitsPerSecond;
+    public static final float angularSleepTolerance = 2.0f / 180.0f;
     
     /**
      * Continuous collision detection (CCD) works with core, shrunken shapes. This is the
@@ -174,10 +153,10 @@ public class Settings {
     public static final float maxAngularVelocitySquared = maxAngularVelocity * maxAngularVelocity;
 
     /** Maximum number of contacts to be handled to solve a TOI island. */
-    public static int maxTOIContactsPerIsland = 32;
+    public static final int maxTOIContactsPerIsland = 32;
     
     /** Maximum number of joints to be handled to solve a TOI island. */
-    public static int maxTOIJointsPerIsland = 0;//16;
+    public static final int maxTOIJointsPerIsland = 0;//16;
 
 
 }

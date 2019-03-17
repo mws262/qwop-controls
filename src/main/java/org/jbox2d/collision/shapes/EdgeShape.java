@@ -23,7 +23,6 @@ import java.io.Serializable;
  * @author daniel
  */
 public class EdgeShape extends Shape implements SupportsGenericDistance, Serializable {
-	//private updatesweepradius
 	private final Vec2 m_v1;
 	private final Vec2 m_v2;
 	private final Vec2 m_coreV1;
@@ -158,11 +157,6 @@ public class EdgeShape extends Shape implements SupportsGenericDistance, Seriali
 	 */
 	@Override
 	public void computeAABB(final AABB aabb, final XForm transform) {
-		/*Vec2 v1 = XForm.mul(transform, m_v1);
-		Vec2 v2 = XForm.mul(transform, m_v2);
-		aabb.lowerBound = Vec2.min(v1, v2);
-		aabb.upperBound = Vec2.max(v1, v2);*/
-
 		// djm we avoid one creation. crafty huh?
 		XForm.mulToOut(transform, m_v1, aabb.lowerBound);
 		final Vec2 v2 = tlV2.get();
@@ -193,9 +187,6 @@ public class EdgeShape extends Shape implements SupportsGenericDistance, Seriali
 		XForm.mulToOut(transform1, m_v2, sweptV2);
 		XForm.mulToOut(transform2, m_v1, sweptV3);
 		XForm.mulToOut(transform2, m_v2, sweptV4);
-
-		//aabb.lowerBound = Vec2.min(Vec2.min(Vec2.min(v1, v2), v3), v4);
-		//aabb.upperBound = Vec2.max(Vec2.max(Vec2.max(v1, v2), v3), v4);
 
 		// djm ok here's the non object-creation-crazy way
 		Vec2.minToOut( sweptV1, sweptV2, aabb.lowerBound);
@@ -309,11 +300,11 @@ public class EdgeShape extends Shape implements SupportsGenericDistance, Seriali
 		XForm.mulToOut(xf, m_coreV1, out);
 	}
 
-	public boolean corner1IsConvex() {
+	boolean corner1IsConvex() {
 		return m_cornerConvex1;
 	}
 
-	public boolean corner2IsConvex() {
+	boolean corner2IsConvex() {
 		return m_cornerConvex2;
 	}
 	
@@ -354,9 +345,6 @@ public class EdgeShape extends Shape implements SupportsGenericDistance, Seriali
 			if (d2 > 0.0f){
 				temp.set(v1).mulLocal( -d2 / (d1 - d2));
 				v2.mulLocal(d1 / (d1 - d2)).addLocal( temp);
-			}
-			else{
-				//Nothing
 			}
 		}
 

@@ -32,7 +32,6 @@ import java.io.Serializable;
  */
 public class BufferedPair implements Comparable<BufferedPair>, Serializable {
     int proxyId1;
-
     int proxyId2;
 
     private boolean equals(BufferedPair other) {
@@ -46,7 +45,6 @@ public class BufferedPair implements Comparable<BufferedPair>, Serializable {
         if (proxyId1 == other.proxyId1) {
             return proxyId2 < other.proxyId2;
         }
-
         return false;
     }
 

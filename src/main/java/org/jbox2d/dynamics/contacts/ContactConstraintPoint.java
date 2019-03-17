@@ -39,19 +39,19 @@ public class ContactConstraintPoint {
 
     public float tangentImpulse;
 
-    public float positionImpulse;
+    float positionImpulse;
 
-    public float normalMass;
+    float normalMass;
 
-    public float tangentMass;
+    float tangentMass;
     
-    public float equalizedMass;
+    float equalizedMass;
 
     public float separation;
 
-    public float velocityBias;
+    float velocityBias;
 
-    public ContactConstraintPoint() {
+    ContactConstraintPoint() {
         localAnchor1 = new Vec2();
         localAnchor2 = new Vec2();
         r1 = new Vec2();
