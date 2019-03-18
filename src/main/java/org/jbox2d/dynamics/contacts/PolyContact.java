@@ -109,15 +109,16 @@ public class PolyContact extends Contact implements ContactCreateFcn, Serializab
 		}
 	}
 
+	// Locally reused stuff.
+    private final Manifold m0 = new Manifold();
+	private final Vec2 v1 = new Vec2();
+	private final ContactPoint cp = new ContactPoint();
+
 	@Override
 	public void evaluate(final ContactListener listener) {
 		final Body b1 = m_shape1.getBody();
 		final Body b2 = m_shape2.getBody();
 
-		
-		final Manifold m0 = new Manifold();
-		final Vec2 v1 = new Vec2();
-		final ContactPoint cp = new ContactPoint();
 		m0.set(m_manifold);
 
 		collidePoly.collidePolygons(m_manifold, (PolygonShape) m_shape1,b1.getMemberXForm(),(PolygonShape) m_shape2,

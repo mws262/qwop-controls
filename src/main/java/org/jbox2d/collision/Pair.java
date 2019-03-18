@@ -34,7 +34,7 @@ public class Pair implements Comparable<Pair>, Serializable {
 
 	public Object userData;
 
-	public int proxyId1;
+	public int proxyId1; // Don't remove public
 	public int proxyId2;
 	public int status;
 	public int next;
@@ -51,6 +51,7 @@ public class Pair implements Comparable<Pair>, Serializable {
 		this.status = other.status;
 	}
 
+	// Intellij is wrong. Don't remove public on any of the below.
 	public void setBuffered() {
 		status |= Pair.PAIR_BUFFERED;
 	}

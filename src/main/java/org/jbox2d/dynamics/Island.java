@@ -57,12 +57,13 @@ public class Island implements Serializable {
 	int m_jointCapacity;
 	int m_positionIterationCount = 0;
 
-	private ContactListener m_listener;
+	public ContactListener m_listener;
 
 	public void clear() {
 		m_bodyCount = 0;
 		m_contactCount = 0;
 		m_jointCount = 0;
+		m_positionIterationCount = 0; // MWS - was only in init before.
 	}
 
 	void add(final Body body) {

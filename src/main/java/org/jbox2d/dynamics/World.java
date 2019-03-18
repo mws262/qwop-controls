@@ -140,6 +140,20 @@ public class World implements Serializable {
 		return m_jointList;
 	}
 
+	// Allocating island once.
+	final Island island = new Island();
+	final Island toiIsland = new Island();
+	int highestContacts = 5; // TODO cause these to be remade if the highest number of joints/bodies/contacts changes.
+	int highestJoints = 11; // bodies and joints should be correct for qwop.
+	int highestBodies = 14;
+	final Body[] stack = new Body[highestBodies];
+	final Body[] queue = new Body[highestBodies];
+
+	final TimeStep subStep = new TimeStep();
+	final TimeStep step = new TimeStep();
+
+
+
 	/**
 	 * Construct a world object.
 	 * @param worldAABB a bounding box that completely encompasses all your shapes.
@@ -175,11 +189,17 @@ public class World implements Serializable {
 
 		final BodyDef bd = new BodyDef();
 		m_groundBody = createBody(bd);
+
+		island.init(highestBodies, highestContacts, highestJoints, null);
+		toiIsland.init(highestBodies, Settings.maxTOIContactsPerIsland, Settings.maxTOIJointsPerIsland,
+				null);
 	}
 
 	/** Register a contact event listener */
 	public void setContactListener(final ContactListener listener) {
 		m_contactListener = listener;
+		island.m_listener = listener; // To avoid creating new objects - MWS
+		toiIsland.m_listener = listener;
 	}
 
 
@@ -389,7 +409,6 @@ public class World implements Serializable {
 	public void step(final float dt, final int iterations) {
 		m_lock = true;
 
-		final TimeStep step = new TimeStep();
 		step.dt = dt;
 		step.maxIterations	= iterations;
 		if (dt > 0.0f) {
@@ -441,14 +460,17 @@ public class World implements Serializable {
 
 	// Java note: sorry, guys, we have to keep this stuff public until
 	// the C++ version does otherwise so that we can maintain the engine...
-	
+
+
 	/** For internal use */
 	public void solve(final TimeStep step) {
         int m_positionIterationCount = 0;
 
 		// Size the island for the worst case.
-		final Island island = new Island();
-		island.init(m_bodyCount, m_contactCount, m_jointCount, m_contactListener);
+//		final Island island = new Island();
+//		island.init(m_bodyCount, m_contactCount, m_jointCount, m_contactListener);
+
+		island.clear();
 
 		// Clear all the island flags.
 		for (Body b = m_bodyList; b != null; b = b.m_next) {
@@ -463,7 +485,6 @@ public class World implements Serializable {
 
 		// Build and simulate all awake islands.
 		final int stackSize = m_bodyCount;
-		final Body[] stack = new Body[stackSize];
 		for (Body seed = m_bodyList; seed != null; seed = seed.m_next) {
 			if ( (seed.m_flags & (Body.e_islandFlag | Body.e_sleepFlag | Body.e_frozenFlag)) > 0){
 				continue;
@@ -475,7 +496,7 @@ public class World implements Serializable {
 
 			// Reset island and stack.
 			island.clear();
-			int stackCount = 0;
+			int stackCount = 0; // Stack creation has been moved outside to avoid huge memory issues - MWS
 			stack[stackCount++] = seed;
 			seed.m_flags |= Body.e_islandFlag;
 
@@ -574,14 +595,15 @@ public class World implements Serializable {
 
 	/** For internal use: find TOI contacts and solve them. */
 	private void solveTOI(final TimeStep step) {
-		// Reserve an island and a stack for TOI island solution.
-		// djm do we always have to make a new island? or can we make
+		// Reserve an toiIsland and a stack for TOI toiIsland solution.
+		// djm do we always have to make a new toiIsland? or can we make
 		// it static?
 		
-		// Size the island for the worst case.
-		final Island island = new Island();
-		island.init(m_bodyCount, Settings.maxTOIContactsPerIsland, Settings.maxTOIJointsPerIsland, m_contactListener);
+		// Size the toiIsland for the worst case.
+//		final toiIsland toiIsland = new toiIsland();
+//		toiIsland.init(m_bodyCount, Settings.maxTOIContactsPertoiIsland, Settings.maxTOIJointsPertoiIsland, m_contactListener);
 
+		toiIsland.clear();
 		//Simple one pass queue
 		//Relies on the fact that we're only making one pass
 		//through and each body can only be pushed/popped once.
@@ -590,8 +612,7 @@ public class World implements Serializable {
 		//To pop:
 		//	poppedElement = queue[queueStart++];
 		//  --queueSize;
-		final int queueCapacity = m_bodyCount;
-		final Body[] queue = new Body[queueCapacity];
+		final int queueCapacity = m_bodyCount; // Queue creation moved outside for memory issues - MWS
 
 		for (Body b = m_bodyList; b != null; b = b.m_next) {
 			b.m_flags &= ~Body.e_islandFlag;
@@ -689,14 +710,14 @@ public class World implements Serializable {
 				continue;
 			}
 
-			// Build the TOI island. We need a dynamic seed.
+			// Build the TOI toiIsland. We need a dynamic seed.
 			Body seed = b1;
 			if (seed.isStatic()) {
 				seed = b2;
 			}
 
-			// Reset island and queue.
-			island.clear();
+			// Reset toiIsland and queue.
+			toiIsland.clear();
 			//int stackCount = 0;
 			int queueStart = 0; //starting index for queue
 			int queueSize = 0;  //elements in queue
@@ -705,29 +726,29 @@ public class World implements Serializable {
 
 			// Perform a breadth first search (BFS) on the contact/joint graph.
 			while (queueSize > 0) {
-				// Grab the head body off the queue and add it to the island.
+				// Grab the head body off the queue and add it to the toiIsland.
 				final Body b = queue[queueStart++];
 				--queueSize;
 
-				island.add(b);
+				toiIsland.add(b);
 
 				// Make sure the body is awake.
 				b.m_flags &= ~Body.e_sleepFlag;
 
-				// To keep islands as small as possible, we don't
-				// propagate islands across static bodies.
+				// To keep toiIslands as small as possible, we don't
+				// propagate toiIslands across static bodies.
 				if (b.isStatic()) {
 					continue;
 				}
 
 				// Search all contacts connected to this body.
 				for (ContactEdge cn = b.m_contactList; cn != null; cn = cn.next) {
-					// Does the TOI island still have space for contacts?
-					if (island.m_contactCount == island.m_contactCapacity) {
+					// Does the TOI toiIsland still have space for contacts?
+					if (toiIsland.m_contactCount == toiIsland.m_contactCapacity) {
 						continue;
 					}
 
-					// Has this contact already been added to an island? Skip slow or non-solid contacts.
+					// Has this contact already been added to an toiIsland? Skip slow or non-solid contacts.
 					if ( (cn.contact.m_flags & (Contact.e_islandFlag | Contact.e_slowFlag | Contact.e_nonSolidFlag)) != 0) {
 						continue;
 					}
@@ -737,12 +758,12 @@ public class World implements Serializable {
 						continue;
 					}
 
-					island.add(cn.contact);
+					toiIsland.add(cn.contact);
 					cn.contact.m_flags |= Contact.e_islandFlag;
 					// Update other body.
 					final Body other = cn.other;
 
-					// Was the other body already added to this island?
+					// Was the other body already added to this toiIsland?
 					if ((other.m_flags & Body.e_islandFlag) != 0) {
 						continue;
 					}
@@ -762,7 +783,7 @@ public class World implements Serializable {
 
 				// Search all joints connect to this body.
 				for ( JointEdge jn = b.m_jointList; jn != null; jn = jn.next) {
-					if (island.m_jointCount == island.m_jointCapacity) {
+					if (toiIsland.m_jointCount == toiIsland.m_jointCapacity) {
 						continue;
 					}
 
@@ -770,7 +791,7 @@ public class World implements Serializable {
 						continue;
 					}
 
-					island.add(jn.joint);
+					toiIsland.add(jn.joint);
 
 					jn.joint.m_islandFlag = true;
 
@@ -791,19 +812,19 @@ public class World implements Serializable {
 
 			}
 
-			final TimeStep subStep = new TimeStep();
+
 			subStep.warmStarting = false;
 			subStep.dt = (1.0f - minTOI) * step.dt;
 			assert(subStep.dt > Settings.EPSILON);
 			subStep.inv_dt = 1.0f / subStep.dt;
 			subStep.maxIterations = step.maxIterations;
 
-			island.solveTOI(subStep);
+			toiIsland.solveTOI(subStep);
 
 			// Post solve cleanup.
-			for (int i = 0; i < island.m_bodyCount; ++i) {
-				// Allow bodies to participate in future TOI islands.
-				final Body b = island.m_bodies[i];
+			for (int i = 0; i < toiIsland.m_bodyCount; ++i) {
+				// Allow bodies to participate in future TOI toiIslands.
+				final Body b = toiIsland.m_bodies[i];
 				b.m_flags &= ~Body.e_islandFlag;
 
 				if ( (b.m_flags & (Body.e_sleepFlag | Body.e_frozenFlag)) != 0) {
@@ -820,20 +841,20 @@ public class World implements Serializable {
 				final boolean inRange = b.synchronizeShapes();
 
 				// Invalidate all contact TOIs associated with this body. Some of these
-				// may not be in the island because they were not touching.
+				// may not be in the toiIsland because they were not touching.
 				for (ContactEdge cn = b.m_contactList; cn != null; cn = cn.next) {
 					cn.contact.m_flags &= ~Contact.e_toiFlag;
 				}
 			}
 
-			for (int i = 0; i < island.m_contactCount; ++i) {
-				// Allow contacts to participate in future TOI islands.
-				final Contact c = island.m_contacts[i];
+			for (int i = 0; i < toiIsland.m_contactCount; ++i) {
+				// Allow contacts to participate in future TOI toiIslands.
+				final Contact c = toiIsland.m_contacts[i];
 				c.m_flags &= ~(Contact.e_toiFlag | Contact.e_islandFlag);
 			}
 
-			for (int i=0; i < island.m_jointCount; ++i) {
-				final Joint j = island.m_joints[i];
+			for (int i=0; i < toiIsland.m_jointCount; ++i) {
+				final Joint j = toiIsland.m_joints[i];
 				j.m_islandFlag = false;
 			}
 

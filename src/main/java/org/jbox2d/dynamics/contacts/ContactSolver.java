@@ -265,7 +265,6 @@ public class ContactSolver {
 			}
 			// Solver tangent constraints
 			for (int j=0; j<c.pointCount; ++j) {
-				//ContactConstraintPoint ccp : c.points) {
 				final ContactConstraintPoint ccp = c.points[j];
 
 				// Relative velocity at contact

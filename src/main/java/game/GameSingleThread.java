@@ -80,6 +80,8 @@ public class GameSingleThread implements IGame, Serializable {
     private Body rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody, lUArmBody,
             rLArmBody, lLArmBody, headBody, trackBody;
 
+    private Body[] allBodies;
+
     /* Joint Definitions */
     private RevoluteJointDef rHipJDef, lHipJDef, rKneeJDef, lKneeJDef, rAnkleJDef, lAnkleJDef, rShoulderJDef,
             lShoulderJDef, rElbowJDef, lElbowJDef, neckJDef;
@@ -451,6 +453,8 @@ public class GameSingleThread implements IGame, Serializable {
         headBody = getWorld().createBody(headDef);
         headBody.createShape(headShape);
 
+        allBodies = new Body[]{rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
+                lUArmBody, rLArmBody, lLArmBody, rFootBody, lFootBody, headBody};
         /*
          *  Joints
          */
@@ -837,8 +841,7 @@ public class GameSingleThread implements IGame, Serializable {
     }
 
     public Body[] getAllBodies() {
-        return new Body[]{rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
-                lUArmBody, rLArmBody, lLArmBody, headBody, trackBody};
+        return allBodies;
     }
 
     public RevoluteJoint[] getAllJoints() {
@@ -952,24 +955,16 @@ public class GameSingleThread implements IGame, Serializable {
         vertHolder.groundHeight = XForm.mul(trackBody.getXForm(), trackShape.vertices.get(0)).y; // Never changes.
         vertHolder.torsoX = torsoBody.getPosition().x;
 
-        Body[] bodies;
-        if (!noFeet) {
-            bodies = new Body[]{rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
-                    lUArmBody, rLArmBody, lLArmBody};
-        } else {
-            bodies = new Body[]{rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
-                    lUArmBody, rLArmBody, lLArmBody};
-        }
-
-
-        for (int i = 0; i < bodies.length; i++) {
-            XForm xf = bodies[i].getXForm();
-            PolygonShape shape = (PolygonShape) bodies[i].getShapeList();
-            Vec2[] shapeVerts = shape.m_vertices;
-            for (int j = 0; j < shapeVerts.length; j++) {
-                Vec2 vert = XForm.mul(xf, shapeVerts[j]);
-                vertHolder.bodyVerts[i][2 * j] = vert.x;
-                vertHolder.bodyVerts[i][2 * j + 1] = vert.y;
+        for (int i = 0; i < allBodies.length; i++) {
+            if (allBodies[i] != null && allBodies[i] != headBody) {
+                XForm xf = allBodies[i].getXForm();
+                PolygonShape shape = (PolygonShape) allBodies[i].getShapeList();
+                Vec2[] shapeVerts = shape.m_vertices;
+                for (int j = 0; j < shapeVerts.length; j++) {
+                    Vec2 vert = XForm.mul(xf, shapeVerts[j]);
+                    vertHolder.bodyVerts[i][2 * j] = vert.x;
+                    vertHolder.bodyVerts[i][2 * j + 1] = vert.y;
+                }
             }
         }
 

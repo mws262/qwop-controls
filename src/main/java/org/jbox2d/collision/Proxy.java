@@ -27,9 +27,9 @@ import java.io.Serializable;
 
 //Updated to rev 139 of b2Broadphase.h
 public class Proxy implements Serializable {
-    public final int lowerBounds[];
+    public final int[] lowerBounds;
 
-    public final int upperBounds[];
+    public final int[] upperBounds;
 
     int overlapCount;
 
