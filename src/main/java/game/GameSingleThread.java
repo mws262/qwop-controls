@@ -201,7 +201,7 @@ public class GameSingleThread implements IGame, Serializable {
     }
 
     private GameSingleThread() {
-        fstConfiguration = FSTConfiguration.createUnsafeBinaryConfiguration(); // A little faster than
+        fstConfiguration = FSTConfiguration.createDefaultConfiguration(); // A little faster than
         // createDefaultConfiguration().
         oneTimeSetup();
         lock.lock();

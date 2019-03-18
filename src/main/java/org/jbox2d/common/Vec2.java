@@ -23,13 +23,13 @@
 
 package org.jbox2d.common;
 
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * A 2-dimensional vector class.  Used heavily in JBox2d.
  * djm: added ToOut methods
  */
-public class Vec2 implements Serializable {
+public class Vec2 implements Externalizable {
 	public float x, y;
 
 	public Vec2() {
@@ -267,5 +267,17 @@ public class Vec2 implements Serializable {
 		if (Float.floatToIntBits(x) != Float.floatToIntBits(other.x))
 			return false;
 		return Float.floatToIntBits(y) == Float.floatToIntBits(other.y);
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeFloat(x);
+		out.writeFloat(y);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		x = in.readFloat();
+		y = in.readFloat();
 	}
 }

@@ -36,7 +36,7 @@ import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.JointDef;
 import org.jbox2d.dynamics.joints.JointEdge;
 
-import java.io.Serializable;
+import java.io.*;
 
 //Updated to rev 56->118->142->150 of b2World.cpp/.h
 
@@ -50,7 +50,7 @@ import java.io.Serializable;
  * to speed development of Box2d, but it is subject to change.
  * You're warned!
  */
-public class World implements Serializable {
+public class World implements Externalizable {
 	boolean m_lock;
 
 	BroadPhase m_broadPhase;
@@ -65,9 +65,7 @@ public class World implements Serializable {
 	private Joint m_jointList;
 
     private int m_bodyCount;
-
 	int m_contactCount;
-
 	private int m_jointCount;
 
 	private Vec2 m_gravity;
@@ -86,7 +84,22 @@ public class World implements Serializable {
 	ContactFilter m_contactFilter;
 	ContactListener m_contactListener;
 
+	private TOI timeOfImpact = new TOI();
     private float m_inv_dt0;
+
+	// Allocating island once.
+	private Island island = new Island();
+	private Island toiIsland = new Island();
+	private static final int highestContacts = 5; // TODO cause these to be remade if the highest number of
+	// joints/bodies/contacts
+	private static final int highestJoints = 11; // bodies and joints should be correct for qwop.
+	private static final int highestBodies = 14;
+
+	private Body[] stack = new Body[highestBodies];
+	private Body[] queue = new Body[highestBodies];
+
+	private TimeStep subStep = new TimeStep();
+	private TimeStep step = new TimeStep();
 
 	/** Get the number of bodies. */
 	public int getBodyCount() {
@@ -140,19 +153,8 @@ public class World implements Serializable {
 		return m_jointList;
 	}
 
-	// Allocating island once.
-	final Island island = new Island();
-	final Island toiIsland = new Island();
-	int highestContacts = 5; // TODO cause these to be remade if the highest number of joints/bodies/contacts changes.
-	int highestJoints = 11; // bodies and joints should be correct for qwop.
-	int highestBodies = 14;
-	final Body[] stack = new Body[highestBodies];
-	final Body[] queue = new Body[highestBodies];
-
-	final TimeStep subStep = new TimeStep();
-	final TimeStep step = new TimeStep();
-
-
+	// For deserializing only.
+	public World() {}
 
 	/**
 	 * Construct a world object.
@@ -168,7 +170,6 @@ public class World implements Serializable {
 		m_contactListener = null;
 
 		m_inv_dt0 = 0.0f;
-
 		m_bodyList = null;
 		m_contactList = null;
 		m_jointList = null;
@@ -178,9 +179,7 @@ public class World implements Serializable {
 		m_jointCount = 0;
 
 		m_lock = false;
-
 		m_allowSleep = doSleep;
-
 		m_gravity = gravity;
 
 		m_contactManager = new ContactManager();
@@ -191,8 +190,7 @@ public class World implements Serializable {
 		m_groundBody = createBody(bd);
 
 		island.init(highestBodies, highestContacts, highestJoints, null);
-		toiIsland.init(highestBodies, Settings.maxTOIContactsPerIsland, Settings.maxTOIJointsPerIsland,
-				null);
+		toiIsland.init(highestBodies, Settings.maxTOIContactsPerIsland, Settings.maxTOIJointsPerIsland, null);
 	}
 
 	/** Register a contact event listener */
@@ -201,7 +199,6 @@ public class World implements Serializable {
 		island.m_listener = listener; // To avoid creating new objects - MWS
 		toiIsland.m_listener = listener;
 	}
-
 
 	/**
 	 *  Register a contact filter to provide specific control over collision.
@@ -668,7 +665,7 @@ public class World implements Serializable {
 					assert(t0 < 1.0f);
 
 					// Compute the time of impact.
-					toi = TOI.timeOfImpact(c.m_shape1, b1.m_sweep, c.m_shape2, b2.m_sweep);
+					toi = timeOfImpact.timeOfImpact(c.m_shape1, b1.m_sweep, c.m_shape2, b2.m_sweep);
 					//System.out.println(toi);
 					assert(0.0f <= toi && toi <= 1.0f);
 
@@ -706,7 +703,6 @@ public class World implements Serializable {
 
 			if (minContact.getManifoldCount() == 0) {
 				// This shouldn't happen. Numerical error?
-				//b2Assert(false);
 				continue;
 			}
 
@@ -778,7 +774,6 @@ public class World implements Serializable {
 					assert(queueSize < queueCapacity);
 					queue[queueStart+queueSize++] = other;
 					other.m_flags |= Body.e_islandFlag;
-
 				}
 
 				// Search all joints connect to this body.
@@ -809,9 +804,7 @@ public class World implements Serializable {
 					queue[queueStart+queueSize++] = other;
 					other.m_flags |= Body.e_islandFlag;
 				}
-
 			}
-
 
 			subStep.warmStarting = false;
 			subStep.dt = (1.0f - minTOI) * step.dt;
@@ -830,11 +823,9 @@ public class World implements Serializable {
 				if ( (b.m_flags & (Body.e_sleepFlag | Body.e_frozenFlag)) != 0) {
 					continue;
 				}
-
 				if (b.isStatic()) {
 					continue;
 				}
-
 				// Update shapes (for broad-phase). If the shapes go out of
 				// the world AABB then shapes and contacts may be destroyed,
 				// including contacts that are
@@ -846,18 +837,15 @@ public class World implements Serializable {
 					cn.contact.m_flags &= ~Contact.e_toiFlag;
 				}
 			}
-
 			for (int i = 0; i < toiIsland.m_contactCount; ++i) {
 				// Allow contacts to participate in future TOI toiIslands.
 				final Contact c = toiIsland.m_contacts[i];
 				c.m_flags &= ~(Contact.e_toiFlag | Contact.e_islandFlag);
 			}
-
 			for (int i=0; i < toiIsland.m_jointCount; ++i) {
 				final Joint j = toiIsland.m_joints[i];
 				j.m_islandFlag = false;
 			}
-
 			// Commit shape proxy movements to the broad-phase so that new contacts are created.
 			// Also, some contacts can be destroyed.
 			m_broadPhase.commit();
@@ -876,5 +864,69 @@ public class World implements Serializable {
 	/** Perform validation of internal data structures. */
 	public void validate() {
 		m_broadPhase.validate();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+
+		out.writeBoolean(m_lock);
+		out.writeObject(m_broadPhase); // BroadPhase
+		out.writeObject(m_contactManager); // ContactManager
+		out.writeObject(m_bodyList); // Body
+		out.writeObject(m_contactList); // Contact
+		out.writeObject(m_jointList); // Joint
+
+		out.writeInt(m_bodyCount);
+		out.writeInt(m_contactCount);
+		out.writeInt(m_jointCount);
+
+		out.writeObject(m_gravity); // Vec2
+		out.writeBoolean(m_allowSleep);
+		out.writeObject(m_groundBody); // Body
+
+		out.writeBoolean(m_positionCorrection);
+		out.writeBoolean(m_warmStarting);
+		out.writeBoolean(m_continuousPhysics);
+
+		out.writeObject(m_contactFilter);
+		out.writeObject(m_contactListener);
+
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+
+		m_lock = in.readBoolean();
+		m_broadPhase = (BroadPhase) in.readObject();
+		m_contactManager = (ContactManager) in.readObject();
+		m_bodyList = (Body) in.readObject();
+		m_contactList = (Contact) in.readObject();
+		m_jointList = (Joint) in.readObject();
+
+		m_bodyCount = in.readInt();
+		m_contactCount = in.readInt();
+		m_jointCount = in.readInt();
+
+		m_gravity = (Vec2) in.readObject();
+		m_allowSleep = in.readBoolean();
+		m_groundBody = (Body) in.readObject();
+
+		m_positionCorrection = in.readBoolean();
+		m_warmStarting = in.readBoolean();
+		m_continuousPhysics = in.readBoolean();
+
+		m_contactFilter = (ContactFilter) in.readObject();
+		m_contactListener = (ContactListener) in.readObject();
+
+		timeOfImpact = new TOI();
+
+		island = new Island();
+		toiIsland = new Island();
+		island.init(highestBodies, highestContacts, highestJoints, null);
+		toiIsland.init(highestBodies, Settings.maxTOIContactsPerIsland, Settings.maxTOIJointsPerIsland, null);
+		stack = new Body[highestBodies];
+		queue = new Body[highestBodies];
+		subStep = new TimeStep();
+		step = new TimeStep();
 	}
 }

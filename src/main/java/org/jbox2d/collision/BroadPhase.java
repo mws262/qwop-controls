@@ -60,6 +60,7 @@ public class BroadPhase implements Serializable {
 	private Bound[][] m_bounds;
 
 	private int[] m_queryResults;
+
 	private int m_queryResultCount;
 
 	private AABB m_worldAABB;

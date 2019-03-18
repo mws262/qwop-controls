@@ -23,7 +23,7 @@
 
 package org.jbox2d.dynamics;
 
-import java.io.Serializable;
+import java.io.*;
 import java.util.List;
 
 import org.jbox2d.collision.Manifold;
@@ -38,16 +38,18 @@ import org.jbox2d.dynamics.contacts.NullContact;
 //Updated to rev 56->104->142 of b2ContactManager.cpp/.h
 
 /** Delegate of World - for internal use. */
-public class ContactManager implements PairCallback, Serializable {
+public class ContactManager implements PairCallback, Externalizable {
 	World m_world;
+
+	// For intermediate calculations.
+	transient private Vec2 v1 = new Vec2();
+	transient private ContactPoint cp = new ContactPoint();
 
 	// This lets us provide broadphase proxy pair user data for
 	// contacts that shouldn't exist.
-	private NullContact m_nullContact;
+	private static final NullContact m_nullContact = new NullContact();
 
-	ContactManager() {
-		m_nullContact = new NullContact();
-	}
+	public ContactManager() {}
 
 	public Object pairAdded(final Object proxyUserData1, final Object proxyUserData2) {
 		Shape shape1 = (Shape) proxyUserData1;
@@ -129,7 +131,7 @@ public class ContactManager implements PairCallback, Serializable {
 		}
 
 		final Contact c = (Contact)pairUserData;
-		if (c == m_nullContact) {
+		if (c.getClass() == NullContact.class) {
 			return;
 		}
 
@@ -139,10 +141,6 @@ public class ContactManager implements PairCallback, Serializable {
 	}
 
 	public void destroy(final Contact c) {
-		
-		final Vec2 v1 = new Vec2();
-		final ContactPoint cp = new ContactPoint();
-		
 		final Shape shape1 = c.getShape1();
 		final Shape shape2 = c.getShape2();
 
@@ -231,5 +229,17 @@ public class ContactManager implements PairCallback, Serializable {
 			}
 			c.update(m_world.m_contactListener);
 		}
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(m_world);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		m_world = (World) in.readObject();
+		v1 = new Vec2();
+		cp = new ContactPoint();
 	}
 }
