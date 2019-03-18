@@ -214,7 +214,6 @@ public class PairManager implements Serializable {
     void removeBufferedPair(final int id1, final int id2) {
 		assert(id1 != PairManager.NULL_PROXY && id2 != PairManager.NULL_PROXY);
 		assert(m_pairBufferCount < Settings.maxPairs);
-
 		final Pair pair = find(id1, id2);
 
 		if (pair == null) {
@@ -364,7 +363,7 @@ public class PairManager implements Serializable {
 		return find(proxyId1, proxyId2, hash);
 	}
 
-	private final int hash(final int proxyId1, final int proxyId2) {
+	private int hash(final int proxyId1, final int proxyId2) {
 		// djm: this operation here is pretty self explanitory, so i don't think I need to describe what's happening,
 		// or what the result is
 		int key = (proxyId2 << 16) | proxyId1;

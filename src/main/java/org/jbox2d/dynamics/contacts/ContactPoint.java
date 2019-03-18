@@ -27,8 +27,10 @@ import org.jbox2d.collision.ContactID;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vec2;
 
+import java.io.Serializable;
+
 // Updated to rev 139 of b2Contact.h
-public class ContactPoint {
+public class ContactPoint implements Serializable {
 	/** The first shape */
 	public Shape shape1;
 	/** The second shape */

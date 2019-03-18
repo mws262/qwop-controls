@@ -65,14 +65,15 @@ public class PolyAndEdgeContact extends Contact implements ContactCreateFcn {
 	return this;
 	}
 
+	// Locally reused stuff.
+	transient private final Manifold m0 = new Manifold();
+	transient private final Vec2 v1 = new Vec2();
+	transient private final ContactPoint cp = new ContactPoint();
 	@Override
 	public void evaluate(final ContactListener listener) {
 		final Body b1 = m_shape1.getBody();
 		final Body b2 = m_shape2.getBody();
-		
-		final Manifold m0 = new Manifold();
-		final Vec2 v1 = new Vec2();
-		final ContactPoint cp = new ContactPoint();
+
 		m0.set(m_manifold);
 
 		collidePoly.collidePolyAndEdge(m_manifold, (PolygonShape) m_shape1, b1.getMemberXForm(),

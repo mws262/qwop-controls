@@ -25,10 +25,12 @@ package org.jbox2d.dynamics;
 
 //Updated to rev. 56 of b2World.cpp/.h
 
+import java.io.Serializable;
+
 /**
  * A holder for time step information.
  */
-public class TimeStep {
+public class TimeStep implements Serializable {
     public float dt; // time step
 
     public float inv_dt; // inverse time step (0 if dt == 0).
