@@ -28,7 +28,10 @@ import org.jbox2d.collision.MassData;
 import org.jbox2d.common.*;
 import org.jbox2d.dynamics.Body;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 //Updated to rev 56->108->139 of b2Shape.cpp/.h
 
@@ -39,10 +42,14 @@ import java.io.Serializable;
  * @see Body#createShape(ShapeDef)
  * @see CircleDef
  */
-public class CircleShape extends Shape implements Serializable {
+public class CircleShape extends Shape implements Externalizable {
 
 	public float m_radius;
-	public final Vec2 m_localPosition;
+	public Vec2 m_localPosition;
+
+
+	// For deserialization only.
+	public CircleShape() {}
 
 	/**
 	 * this is used internally, instead use {@link Body#createShape(ShapeDef)}
@@ -115,14 +122,10 @@ public class CircleShape extends Shape implements Serializable {
 	@Override
 	public void computeSweptAABB(final AABB aabb, final XForm transform1,
 								 final XForm transform2) {
-		final float p1x = transform1.position.x + transform1.R.col1.x
-				* m_localPosition.x + transform1.R.col2.x * m_localPosition.y;
-		final float p1y = transform1.position.y + transform1.R.col1.y
-				* m_localPosition.x + transform1.R.col2.y * m_localPosition.y;
-		final float p2x = transform2.position.x + transform2.R.col1.x
-				* m_localPosition.x + transform2.R.col2.x * m_localPosition.y;
-		final float p2y = transform2.position.y + transform2.R.col1.y
-				* m_localPosition.x + transform2.R.col2.y * m_localPosition.y;
+		final float p1x = transform1.position.x + transform1.R.col1.x * m_localPosition.x + transform1.R.col2.x * m_localPosition.y;
+		final float p1y = transform1.position.y + transform1.R.col1.y * m_localPosition.x + transform1.R.col2.y * m_localPosition.y;
+		final float p2x = transform2.position.x + transform2.R.col1.x * m_localPosition.x + transform2.R.col2.x * m_localPosition.y;
+		final float p2y = transform2.position.y + transform2.R.col1.y * m_localPosition.x + transform2.R.col2.y * m_localPosition.y;
 		final float lowerx = p1x < p2x ? p1x : p2x;
 		final float lowery = p1y < p2y ? p1y : p2y;
 		final float upperx = p1x > p2x ? p1x : p2x;
@@ -165,5 +168,19 @@ public class CircleShape extends Shape implements Serializable {
 	 */
 	public Vec2 getMemberLocalPosition() {
 		return m_localPosition;
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeFloat(m_radius);
+		out.writeObject(m_localPosition); // Vec2
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		super.readExternal(in);
+		m_radius = in.readFloat();
+		m_localPosition = (Vec2) in.readObject();
 	}
 }

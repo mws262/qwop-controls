@@ -23,7 +23,7 @@
 
 package org.jbox2d.collision.shapes;
 
-import java.io.Serializable;
+import java.io.*;
 import java.util.List;
 
 import org.jbox2d.collision.AABB;
@@ -39,31 +39,42 @@ import org.jbox2d.common.XForm;
 //Updated to rev 142 of b2Shape.cpp/.h / b2PolygonShape.cpp/.h
 
 /** A convex polygon shape.  Create using Body.createShape(ShapeDef), not the constructor here. */
-public class PolygonShape extends Shape implements SupportsGenericDistance, Serializable {
+public class PolygonShape extends Shape implements SupportsGenericDistance, Externalizable {
 	/** Dump lots of debug information. */
 	private static final boolean m_debug = false;
 
 	/** Local position of the shape centroid in parent body frame. */
-	public final Vec2 m_centroid;
+	public Vec2 m_centroid;
 
 	/** The oriented bounding box of the shape. */
-	public final OBB m_obb;
-
+	public OBB m_obb;
 	/**
 	 * The vertices of the shape.  Note: use getVertexCount(), not m_vertices.length, to get number of active vertices.
 	 */
-	public final Vec2[] m_vertices;
+	public Vec2[] m_vertices;
 	/**
 	 * The normals of the shape.  Note: use getVertexCount(), not m_normals.length, to get number of active normals.
 	 */
-	public final Vec2[] m_normals;
+	public Vec2[] m_normals;
 	/**
 	 * The normals of the shape.  Note: use getVertexCount(), not m_coreVertices.length, to get number of active vertices.
 	 */
-	public final Vec2[] m_coreVertices;
+	public Vec2[] m_coreVertices;
 
 	/** Number of active vertices in the shape. */
 	public int m_vertexCount;
+
+	// Intermediate variables
+	transient private Mat22 tempMat1 = new Mat22();
+	transient private AABB tempAABB1 = new AABB();
+	transient private AABB tempAABB2 = new AABB();
+	transient private Vec2 temp1 = new Vec2();
+	transient private Vec2 temp2 = new Vec2();
+	transient private Vec2 temp3 = new Vec2();
+	transient private Vec2 temp4 = new Vec2();
+
+	// Exists for deserializing only.
+	public PolygonShape() {}
 
 	public PolygonShape(final ShapeDef def) {
 		super(def);
@@ -154,7 +165,7 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 			// Your shape has a radius/extent less than b2_toiSlop.
 			if ((d.x < 0.0f || d.y < 0.0f)) {
 				System.out.println("Error, polygon extents less than b2_toiSlop, dumping details: ");
-				System.out.println("d.x: "+d.x+"d.y: "+d.y);
+				System.out.println("temp1.x: "+d.x+"temp1.y: "+d.y);
 				System.out.println("n1: "+n1+"; n2: "+n2);
 				System.out.println("v: "+v);
 			}
@@ -188,31 +199,29 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 	 */
 	@Override
 	public void updateSweepRadius(final Vec2 center) {
-		// Update the sweep radius (maximum radius) as measured from a local center point.
-		final Vec2 d = new Vec2();
+		// Update the sweep radius (maximum radius) as measured from a local temp4 point.
 		m_sweepRadius = 0.0f;
 		for (int i = 0; i < m_vertexCount; ++i) {
-			d.set(m_coreVertices[i]);
-			d.subLocal(center);
-			m_sweepRadius = MathUtils.max(m_sweepRadius, d.length());
+			temp1.set(m_coreVertices[i]);
+			temp1.subLocal(center);
+			m_sweepRadius = MathUtils.max(m_sweepRadius, temp1.length());
 		}
 	}
+
 	/**
 	 * @see Shape#testPoint(XForm, Vec2)
 	 */
 	@Override
 	public boolean testPoint(final XForm xf, final Vec2 p) {
-		final Vec2 temp = new Vec2();
-		final Vec2 pLocal = new Vec2();
-		
-		temp.set(p);
-		temp.subLocal(xf.position);
-		Mat22.mulTransToOut(xf.R, temp, pLocal);
+
+		temp1.set(p);
+		temp1.subLocal(xf.position);
+		Mat22.mulTransToOut(xf.R, temp1, temp2);
 
 		for (int i = 0; i < m_vertexCount; ++i) {
-			temp.set(pLocal);
-			temp.subLocal( m_vertices[i]);
-			final float dot = Vec2.dot(m_normals[i], temp);
+			temp1.set(temp2);
+			temp1.subLocal( m_vertices[i]);
+			final float dot = Vec2.dot(m_normals[i], temp1);
 
 			if (dot > 0.0f) {
 				return false;
@@ -221,47 +230,43 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 		return true;
 	}
 
-    /**
+	/**
 	 * Get the support point in the given world direction.
 	 * Use the supplied transform.
 	 * @see SupportsGenericDistance#support(Vec2, XForm, Vec2)
 	 */
 	public void support(final Vec2 dest, final XForm xf, final Vec2 d) {
-		final Vec2 supportDLocal = new Vec2();
-		Mat22.mulTransToOut(xf.R, d, supportDLocal);
+		Mat22.mulTransToOut(xf.R, d, temp1);
 
 		int bestIndex = 0;
-		float bestValue = Vec2.dot(m_coreVertices[0], supportDLocal);
+		float bestValue = Vec2.dot(m_coreVertices[0], temp1);
 		for (int i = 1; i < m_vertexCount; ++i) {
-			final float value = Vec2.dot(m_coreVertices[i], supportDLocal);
+			final float value = Vec2.dot(m_coreVertices[i], temp1);
 			if (value > bestValue) {
 				bestIndex = i;
 				bestValue = value;
 			}
 		}
-
 		XForm.mulToOut(xf, m_coreVertices[bestIndex], dest);
 	}
 
 	public static Vec2 computeCentroid(final List<Vec2> vs) {
+
+		// TEMPS
+		final Vec2 e1 = new Vec2();
+		final Vec2 e2 = new Vec2();
+		final Vec2 p1 = new Vec2();
+
 		final int count = vs.size();
 		assert(count >= 3);
 
 		final Vec2 c = new Vec2();
 		float area = 0.0f;
 
-		// pRef is the reference point for forming triangles.
-		// It's location doesn't change the result (except for rounding error).
-		final Vec2 pRef = new Vec2();
-
 		final float inv3 = 1.0f / 3.0f;
-		final Vec2 e1 = new Vec2();
-		final Vec2 e2 = new Vec2();
-		final Vec2 p1 = new Vec2();
 		
 		for (int i = 0; i < count; ++i) {
 			// Triangle vertices.
-			p1.set(pRef);
 			final Vec2 p2 = vs.get(i);
 			final Vec2 p3 = i + 1 < count ? vs.get(i+1) : vs.get(0);
 
@@ -276,7 +281,6 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 			// Area weighted centroid
 			c.x += triangleArea * inv3 * (p1.x + p2.x + p3.x);
 			c.y += triangleArea * inv3 * (p1.y + p2.y + p3.y);
-
 		}
 
 		// Centroid
@@ -284,12 +288,12 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 		c.mulLocal(1.0f / area);
 		return c;
 	}
-	
+
+
+
 	// http://www.geometrictools.com/Documentation/MinimumAreaRectangle.pdf
 	public static void computeOBB(final OBB obb, final Vec2[] vs){
-		final int count = vs.length;
-		assert(count <= Settings.maxPolygonVertices);
-		
+		// TEMPS
 		final Vec2 ux = new Vec2(),
 				uy = new Vec2(),
 				lower = new Vec2(),
@@ -297,8 +301,13 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 				d = new Vec2(),
 				r = new Vec2(),
 				center = new Vec2();
-		
+
 		final Vec2[] pRay = new Vec2[Settings.maxPolygonVertices + 1];
+
+		final int count = vs.length;
+		assert(count <= Settings.maxPolygonVertices);
+		
+
 		System.arraycopy(vs, 0, pRay, 0, count);
 		pRay[count] = pRay[0];
 
@@ -348,18 +357,15 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 	 */
 	@Override
 	public void computeAABB(final AABB aabb, final XForm xf) {
-		final Mat22 caabbR = new Mat22();
-		final Vec2 caabbH = new Vec2();
-
-		Mat22.mulToOut(xf.R, m_obb.R, caabbR);
-		caabbR.absLocal();
-		Mat22.mulToOut(caabbR, m_obb.extents, caabbH);
+		Mat22.mulToOut(xf.R, m_obb.R, tempMat1);
+		tempMat1.absLocal();
+		Mat22.mulToOut(tempMat1, m_obb.extents, temp1);
 		// we treat the lower bound like the position
 		Mat22.mulToOut(xf.R, m_obb.center, aabb.lowerBound);
 		aabb.lowerBound.addLocal(xf.position);
 		aabb.upperBound.set(aabb.lowerBound);
-		aabb.lowerBound.subLocal(caabbH);
-		aabb.upperBound.addLocal(caabbH);
+		aabb.lowerBound.subLocal(temp1);
+		aabb.upperBound.addLocal(temp1);
 	}
 
 	/**
@@ -367,14 +373,12 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 	 */
 	@Override
 	public void computeSweptAABB(final AABB aabb, final XForm transform1, final XForm transform2) {
-		
-		final AABB sweptAABB1 = new AABB();
-		final AABB sweptAABB2 = new AABB();
-		
-		computeAABB(sweptAABB1, transform1);
-		computeAABB(sweptAABB2, transform2);
-		Vec2.minToOut(sweptAABB1.lowerBound, sweptAABB2.lowerBound, aabb.lowerBound);
-		Vec2.maxToOut(sweptAABB1.upperBound, sweptAABB2.upperBound, aabb.upperBound);
+		tempAABB1.lowerBound.set(0, 0);
+		tempAABB2.lowerBound.set(0, 0);
+		computeAABB(tempAABB1, transform1);
+		computeAABB(tempAABB2, transform2);
+		Vec2.minToOut(tempAABB1.lowerBound, tempAABB2.lowerBound, aabb.lowerBound);
+		Vec2.maxToOut(tempAABB1.upperBound, tempAABB2.upperBound, aabb.upperBound);
 	}
 
 	@Override
@@ -404,7 +408,7 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 		//
 		// We integrate u from [0,1-v] and then v from [0,1].
 		// We also need to use the Jacobian of the transformation:
-		// D = cross(e1, e2)
+		// D = cross(temp1, temp2)
 		//
 		// Simplification: triangle centroid = (1/3) * (p1 + p2 + p3)
 		//
@@ -412,43 +416,35 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 
 		assert(m_vertexCount >= 3);
 
-		final Vec2 center = new Vec2();
 		float area = 0.0f;
 		float I = 0.0f;
 
-		// pRef is the reference point for forming triangles.
-		// It's location doesn't change the result (except for rounding error).
-		final Vec2 pRef = new Vec2();
-
 		final float k_inv3 = 1.0f / 3.0f;
-
-		final Vec2 e1 = new Vec2();
-		final Vec2 e2 = new Vec2();
 
 		for (int i = 0; i < m_vertexCount; ++i) {
 			// Triangle vertices.
-			final Vec2 p1 = pRef;
+			final Vec2 p1 = temp3;
 			final Vec2 p2 = m_vertices[i];
 			final Vec2 p3 = i + 1 < m_vertexCount ? m_vertices[i+1] : m_vertices[0];
 
-			e1.set(p2);
-			e1.subLocal(p1);
+			temp1.set(p2);
+			temp1.subLocal(p1);
 
-			e2.set(p3);
-			e2.subLocal(p1);
+			temp2.set(p3);
+			temp2.subLocal(p1);
 
-			final float D = Vec2.cross(e1, e2);
+			final float D = Vec2.cross(temp1, temp2);
 
 			final float triangleArea = 0.5f * D;
 			area += triangleArea;
 
 			// Area weighted centroid
-			center.x += triangleArea * k_inv3 * (p1.x + p2.x + p3.x);
-			center.y += triangleArea * k_inv3 * (p1.y + p2.y + p3.y);
+			temp4.x += triangleArea * k_inv3 * (p1.x + p2.x + p3.x);
+			temp4.y += triangleArea * k_inv3 * (p1.y + p2.y + p3.y);
 
 			final float px = p1.x, py = p1.y;
-			final float ex1 = e1.x, ey1 = e1.y;
-			final float ex2 = e2.x, ey2 = e2.y;
+			final float ex1 = temp1.x, ey1 = temp1.y;
+			final float ex2 = temp2.x, ey2 = temp2.y;
 
 			final float intx2 = k_inv3 * (0.25f * (ex1*ex1 + ex2*ex1 + ex2*ex2) + (px*ex1 + px*ex2)) + 0.5f*px*px;
 			final float inty2 = k_inv3 * (0.25f * (ey1*ey1 + ey2*ey1 + ey2*ey2) + (py*ey1 + py*ey2)) + 0.5f*py*py;
@@ -461,11 +457,11 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 
 		// Center of mass
 		assert(area > Settings.EPSILON);
-		center.mulLocal(1.0f / area);
-		massData.center.set(center);
+		temp4.mulLocal(1.0f / area);
+		massData.center.set(temp4);
 
 		// Inertia tensor relative to the local origin.
-		massData.I = I*density;
+		massData.I = I * density;
 	}
 
 	/** Get the first vertex and apply the supplied transform. */
@@ -510,5 +506,37 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Seri
 	/** Get the centroid and apply the supplied transform. */
 	public Vec2 centroid(final XForm xf) {
 		return XForm.mul(xf, m_centroid);
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+
+		out.writeObject(m_centroid); // Vec2
+		out.writeObject(m_obb); // OBB
+		out.writeObject(m_vertices); // Vec2[]
+		out.writeObject(m_normals); // Vec2[]
+		out.writeObject(m_coreVertices); // Vec2[]
+		out.writeInt(m_vertexCount); // int
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		super.readExternal(in);
+
+		m_centroid = (Vec2) in.readObject();
+		m_obb = (OBB) in.readObject();
+		m_vertices = (Vec2[]) in.readObject();
+		m_normals = (Vec2[]) in.readObject();
+		m_coreVertices = (Vec2[]) in.readObject();
+		m_vertexCount = in.readInt();
+
+		tempMat1 = new Mat22();
+		tempAABB1 = new AABB();
+		tempAABB2 = new AABB();
+		temp1 = new Vec2();
+		temp2 = new Vec2();
+		temp3 = new Vec2();
+		temp4 = new Vec2();
 	}
 }

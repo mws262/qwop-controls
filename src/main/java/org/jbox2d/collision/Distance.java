@@ -59,14 +59,17 @@ public final class Distance {
 	public int g_GJK_Iterations = 0;
 
 	// These are used to avoid allocations on hot paths:
-	private final Vec2[] p1s = new Vec2[3];
-	private final Vec2[] p2s = new Vec2[3];
-	private final Vec2[] points = new Vec2[3];
-	private final Vec2 v = new Vec2();
-	private final Vec2 vNeg = new Vec2();
-	private final Vec2 w = new Vec2();
-	private final Vec2 w1 = new Vec2();
-	private final Vec2 w2 = new Vec2();
+	transient private Vec2[]
+			p1s = new Vec2[3],
+			p2s = new Vec2[3],
+			points = new Vec2[3];
+
+	transient private Vec2
+			temp1 = new Vec2(),
+			temp2 = new Vec2(),
+			temp3 = new Vec2(),
+			temp4 = new Vec2(),
+			temp5 = new Vec2();
 
 	public Distance() {
 		for (int i = 0; i < 3; ++i) {
@@ -79,20 +82,15 @@ public final class Distance {
 	// GJK using Voronoi regions (Christer Ericson) and region selection optimizations (Casey Muratori).
 	// The origin is either in the region of points[1] or in the edge region.
 	// The origin is not in region of points[0] because that is the old point.
-
-	// djm pooled
-	private final Vec2 p2r = new Vec2();
-	private final Vec2 p2d = new Vec2();
-
 	private int ProcessTwo(final Vec2 x1, final Vec2 x2, final Vec2[] p1s, final Vec2[] p2s,
 						   final Vec2[] points) {
 		// If in point[1] region
-		p2r.x = -points[1].x;
-		p2r.y = -points[1].y;
-		p2d.x = points[0].x - points[1].x;
-		p2d.y = points[0].y - points[1].y;
-		final float length = p2d.normalize();
-		float lambda = Vec2.dot(p2r, p2d);
+		temp1.x = -points[1].x;
+		temp1.y = -points[1].y;
+		temp2.x = points[0].x - points[1].x;
+		temp2.y = points[0].y - points[1].y;
+		final float length = temp2.normalize();
+		float lambda = Vec2.dot(temp1, temp2);
 		if (lambda <= 0.0f || length < Settings.EPSILON) {
 			// The simplex is reduced to a point.
 			x1.set(p1s[1]);
@@ -232,18 +230,18 @@ public final class Distance {
 		float vSqr = 0.0f;
 		final int maxIterations = 20;
 		for (int iter = 0; iter < maxIterations; ++iter) {
-			v.set(x2.x - x1.x, x2.y - x1.y);
-			shape1.support(w1, xf1, v);
-			vNeg.set(-v.x, -v.y);
-			shape2.support(w2, xf2, vNeg);
+			temp1.set(x2.x - x1.x, x2.y - x1.y);
+			shape1.support(temp4, xf1, temp1);
+			temp2.set(-temp1.x, -temp1.y);
+			shape2.support(temp5, xf2, temp2);
 
-			vSqr = Vec2.dot(v, v);
-			w.set(w2.x - w1.x, w2.y - w1.y);
-			final float vw = Vec2.dot(v, w);
-			if (vSqr - vw <= 0.01f * vSqr || InPoints(w, points, pointCount)) { // or w in points
+			vSqr = Vec2.dot(temp1, temp1);
+			temp3.set(temp5.x - temp4.x, temp5.y - temp4.y);
+			final float vw = Vec2.dot(temp1, temp3);
+			if (vSqr - vw <= 0.01f * vSqr || InPoints(temp3, points, pointCount)) { // or temp3 in points
 				if (pointCount == 0) {
-					x1.set(w1);
-					x2.set(w2);
+					x1.set(temp4);
+					x2.set(temp5);
 				}
 				g_GJK_Iterations = iter;
 				return MathUtils.sqrt(vSqr);
@@ -251,25 +249,25 @@ public final class Distance {
 
 			switch (pointCount) {
 				case 0:
-					p1s[0].set(w1);
-					p2s[0].set(w2);
-					points[0].set(w);
+					p1s[0].set(temp4);
+					p2s[0].set(temp5);
+					points[0].set(temp3);
 					x1.set(p1s[0]);
 					x2.set(p2s[0]);
 					++pointCount;
 					break;
 
 				case 1:
-					p1s[1].set(w1);
-					p2s[1].set(w2);
-					points[1].set(w);
+					p1s[1].set(temp4);
+					p2s[1].set(temp5);
+					points[1].set(temp3);
 					pointCount = ProcessTwo(x1, x2, p1s, p2s, points);
 					break;
 
 				case 2:
-					p1s[2].set(w1);
-					p2s[2].set(w2);
-					points[2].set(w);
+					p1s[2].set(temp4);
+					p2s[2].set(temp5);
+					points[2].set(temp3);
 					pointCount = ProcessThree(x1, x2, p1s, p2s, points);
 					break;
 			}
@@ -299,12 +297,6 @@ public final class Distance {
 		g_GJK_Iterations = maxIterations;
 		return MathUtils.sqrt(vSqr);
 	}
-
-	// djm pooled
-	private final Vec2 distCCp1 = new Vec2();
-	private final Vec2 distCCp2 = new Vec2();
-	private final Vec2 distCCd = new Vec2();
-
 	/**
 	 * distance between two circle shapes
 	 * 
@@ -319,39 +311,32 @@ public final class Distance {
 	public final float DistanceCC(final Vec2 x1, final Vec2 x2, final CircleShape circle1,
 			final XForm xf1, final CircleShape circle2, final XForm xf2) {
 
-		XForm.mulToOut(xf1, circle1.getMemberLocalPosition(), distCCp1);
-		XForm.mulToOut(xf2, circle2.getMemberLocalPosition(), distCCp2);
+		XForm.mulToOut(xf1, circle1.getMemberLocalPosition(), temp1);
+		XForm.mulToOut(xf2, circle2.getMemberLocalPosition(), temp2);
 
-		distCCd.x = distCCp2.x - distCCp1.x;
-		distCCd.y = distCCp2.y - distCCp1.y;
-		final float dSqr = Vec2.dot(distCCd, distCCd);
+		temp3.x = temp2.x - temp1.x;
+		temp3.y = temp2.y - temp1.y;
+		final float dSqr = Vec2.dot(temp3, temp3);
 		final float r1 = circle1.getRadius() - Settings.toiSlop;
 		final float r2 = circle2.getRadius() - Settings.toiSlop;
 		final float r = r1 + r2;
 		if (dSqr > r * r) {
-			final float dLen = distCCd.normalize();
+			final float dLen = temp3.normalize();
 			final float distance = dLen - r;
-			x1.set(distCCp1.x + r1 * distCCd.x, distCCp1.y + r1 * distCCd.y);
-			x2.set(distCCp2.x - r2 * distCCd.x, distCCp2.y - r2 * distCCd.y);
+			x1.set(temp1.x + r1 * temp3.x, temp1.y + r1 * temp3.y);
+			x2.set(temp2.x - r2 * temp3.x, temp2.y - r2 * temp3.y);
 			return distance;
 		}
 		else if (dSqr > Settings.EPSILON * Settings.EPSILON) {
-			distCCd.normalize();
-			x1.set(distCCp1.x + r1 * distCCd.x, distCCp1.y + r1 * distCCd.y);
+			temp3.normalize();
+			x1.set(temp1.x + r1 * temp3.x, temp1.y + r1 * temp3.y);
 			x2.set(x1);
 			return 0.0f;
 		}
-		x1.set(distCCp1);
+		x1.set(temp1);
 		x2.set(x1);
 		return 0.0f;
 	}
-
-	// djm pooled
-	private final Vec2 cWorld = new Vec2(); // just like sea world but with less water and more chlorine
-	private final Vec2 ECcLocal = new Vec2();
-	private final Vec2 ECvWorld = new Vec2();
-	private final Vec2 ECd = new Vec2();
-	private final Vec2 ECtemp = new Vec2();
 
 	/**
 	 * Distance bewteen an edge and a circle
@@ -370,29 +355,29 @@ public final class Distance {
 		float dSqr;
 		float dLen;
 		final float r = circle.getRadius() - Settings.toiSlop;
-		XForm.mulToOut(xf2, circle.getMemberLocalPosition(), cWorld);
-		XForm.mulTransToOut(xf1, cWorld, ECcLocal);
-		final float dirDist = Vec2.dot(ECcLocal.sub(edge.getCoreVertex1()), edge
+		XForm.mulToOut(xf2, circle.getMemberLocalPosition(), temp1);
+		XForm.mulTransToOut(xf1, temp1, temp2);
+		final float dirDist = Vec2.dot(temp2.sub(edge.getCoreVertex1()), edge
 				.getDirectionVector());
 
 		if (dirDist <= 0.0f) {
-			XForm.mulToOut(xf1, edge.getCoreVertex1(), ECvWorld);
+			XForm.mulToOut(xf1, edge.getCoreVertex1(), temp3);
 		}
 		else if (dirDist >= edge.getLength()) {
-			XForm.mulToOut(xf1, edge.getCoreVertex2(), ECvWorld);
+			XForm.mulToOut(xf1, edge.getCoreVertex2(), temp3);
 		}
 		else {
 			x1.set(edge.getDirectionVector());
 			x1.mulLocal(dirDist).addLocal(edge.getCoreVertex1());
 			XForm.mulToOut(xf1, x1, x1);
-			ECtemp.set(ECcLocal);
-			ECtemp.subLocal(edge.getCoreVertex1());
-			dLen = Vec2.dot(ECtemp, edge.getNormalVector());
+			temp5.set(temp2);
+			temp5.subLocal(edge.getCoreVertex1());
+			dLen = Vec2.dot(temp5, edge.getNormalVector());
 
 			if (dLen < 0.0f) {
 				if (dLen < -r) {
 					x2.set(edge.getNormalVector());
-					x2.mulLocal(r).addLocal(ECcLocal);
+					x2.mulLocal(r).addLocal(temp2);
 					XForm.mulToOut(xf1, x2, x2);
 					return -dLen - r;
 				}
@@ -404,7 +389,7 @@ public final class Distance {
 			else {
 				if (dLen > r) {
 					x2.set(edge.getNormalVector());
-					x2.mulLocal(r).subLocal(ECcLocal).negateLocal();
+					x2.mulLocal(r).subLocal(temp2).negateLocal();
 					XForm.mulToOut(xf1, x2, x2);
 					return dLen - r;
 				}
@@ -415,18 +400,18 @@ public final class Distance {
 			}
 		}
 
-		x1.set(ECvWorld);
-		ECd.set(cWorld);
-		ECd.subLocal(ECvWorld);
-		dSqr = Vec2.dot(ECd, ECd);
+		x1.set(temp3);
+		temp4.set(temp1);
+		temp4.subLocal(temp3);
+		dSqr = Vec2.dot(temp4, temp4);
 		if (dSqr > r * r) {
-			dLen = ECd.normalize();
-			x2.set(ECd);
-			x2.mulLocal(r).subLocal(cWorld).negateLocal();
+			dLen = temp4.normalize();
+			x2.set(temp4);
+			x2.mulLocal(r).subLocal(temp1).negateLocal();
 			return dLen - r;
 		}
 		else {
-			x2.set(ECvWorld);
+			x2.set(temp3);
 			return 0.0f;
 		}
 	}
@@ -451,9 +436,9 @@ public final class Distance {
 	 *            xform of circle
 	 * @return the distance
 	 */
-	private final float DistancePC(final Vec2 x1, final Vec2 x2, final PolygonShape polygon,
-								   final XForm xf1, final CircleShape circle, final XForm xf2) {
-		// v is just used as a dummy Vec2 since it gets overwritten in a moment
+	private float DistancePC(final Vec2 x1, final Vec2 x2, final PolygonShape polygon,
+							 final XForm xf1, final CircleShape circle, final XForm xf2) {
+		// temp1 is just used as a dummy Vec2 since it gets overwritten in a moment
 		point.p.set(xf2.position.x + xf2.R.col1.x * circle.m_localPosition.x + xf2.R.col2.x
 					* circle.m_localPosition.y, xf2.position.y + xf2.R.col1.y
 												* circle.m_localPosition.x + xf2.R.col2.y
@@ -498,7 +483,7 @@ public final class Distance {
 	// djm pooled from above
 	public final float DistancePolygonPoint(final Vec2 x1, final Vec2 x2,
 			final PolygonShape polygon, final XForm xf1, final PointShape pt, final XForm xf2) {
-		// v is just used as a dummy Vec2 since it gets overwritten in a moment
+		// temp1 is just used as a dummy Vec2 since it gets overwritten in a moment
 		point.p.set(xf2.position.x + xf2.R.col1.x * pt.m_localPosition.x + xf2.R.col2.x
 					* pt.m_localPosition.y, xf2.position.y + xf2.R.col1.y * pt.m_localPosition.x
 											+ xf2.R.col2.y * pt.m_localPosition.y);
@@ -529,11 +514,6 @@ public final class Distance {
 		return distance;
 	}
 
-	// djm pooled
-	private final Vec2 CPp1 = new Vec2();
-	private final Vec2 CPp2 = new Vec2();
-	private final Vec2 CPd = new Vec2();
-
 	/**
 	 * Distance between a circle and a point
 	 * 
@@ -548,30 +528,30 @@ public final class Distance {
 	public final float DistanceCirclePoint(final Vec2 x1, final Vec2 x2, final CircleShape circle1,
 			final XForm xf1, final PointShape pt2, final XForm xf2) {
 
-		XForm.mulToOut(xf1, circle1.getMemberLocalPosition(), CPp1);
-		XForm.mulToOut(xf2, pt2.getMemberLocalPosition(), CPp2);
+		XForm.mulToOut(xf1, circle1.getMemberLocalPosition(), temp1);
+		XForm.mulToOut(xf2, pt2.getMemberLocalPosition(), temp2);
 
-		CPd.x = CPp2.x - CPp1.x;
-		CPd.y = CPp2.y - CPp1.y;
-		final float dSqr = Vec2.dot(CPd, CPd);
+		temp3.x = temp2.x - temp1.x;
+		temp3.y = temp2.y - temp1.y;
+		final float dSqr = Vec2.dot(temp3, temp3);
 		final float r1 = circle1.getRadius() - Settings.toiSlop;
 		final float r2 = -Settings.toiSlop; // this is necessary, otherwise the toi steps aren't taken correctly...
 		final float r = r1 + r2;
 		if (dSqr > r * r) {
-			final float dLen = CPd.normalize();
+			final float dLen = temp3.normalize();
 			final float distance = dLen - r;
-			x1.set(CPp1.x + r1 * CPd.x, CPp1.y + r1 * CPd.y);
-			x2.set(CPp2.x - r2 * CPd.x, CPp2.y - r2 * CPd.y);
+			x1.set(temp1.x + r1 * temp3.x, temp1.y + r1 * temp3.y);
+			x2.set(temp2.x - r2 * temp3.x, temp2.y - r2 * temp3.y);
 			return distance;
 		}
 		else if (dSqr > Settings.EPSILON * Settings.EPSILON) {
-			CPd.normalize();
-			x1.set(CPp1.x + r1 * CPd.x, CPp1.y + r1 * CPd.y);
+			temp3.normalize();
+			x1.set(temp1.x + r1 * temp3.x, temp1.y + r1 * temp3.y);
 			x2.set(x1);
 			return 0.0f;
 		}
 
-		x1.set(CPp1);
+		x1.set(temp1);
 		x2.set(x1);
 		return 0.0f;
 	}
@@ -643,11 +623,7 @@ public final class Distance {
 
 // This is used for polygon-vs-circle distance.
 class Point implements SupportsGenericDistance {
-	public Vec2 p;
-
-	Point() {
-		p = new Vec2();
-	}
+	public Vec2 p = new Vec2();
 
 	public void support(final Vec2 dest, final XForm xf, final Vec2 v) {
 		dest.set(p);

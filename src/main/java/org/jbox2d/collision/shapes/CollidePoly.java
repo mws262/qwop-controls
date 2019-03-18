@@ -32,12 +32,12 @@ import org.jbox2d.common.Settings;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 
-import java.io.Serializable;
+import java.io.*;
 
 //Updated to rev 55->108->139 of b2cpp
 
 /** Polygon overlap solver - for internal use. */
-public class CollidePoly implements Serializable {
+public class CollidePoly implements Externalizable {
 
 	static class ClipVertex {
 		public final Vec2 v = new Vec2();
@@ -45,6 +45,22 @@ public class CollidePoly implements Serializable {
 
 		ClipVertex() {}
 	}
+
+	// Intermediate variables.
+	transient private Vec2
+			temp1 = new Vec2(),
+			temp2 = new Vec2(),
+			temp3 = new Vec2(),
+			temp4 = new Vec2(),
+			temp5 = new Vec2(),
+			temp6 = new Vec2(),
+			temp7 = new Vec2(),
+			temp8 = new Vec2(),
+			temp9 = new Vec2(),
+			temp10 = new Vec2();
+
+	transient private XForm tempXForm1 = new XForm();
+	transient private XForm tempXForm2 = new XForm();
 
 	private int clipSegmentToLine(final ClipVertex[] vOut, final ClipVertex[] vIn,
 								  final Vec2 normal, final float offset) {
@@ -86,7 +102,6 @@ public class CollidePoly implements Serializable {
 		return numOut;
 	}
 
-	private final Vec2 normal1World = new Vec2();
 	private float edgeSeparation(final PolygonShape poly1, final XForm xf1, final int edge1,
 								 final PolygonShape poly2, final XForm xf2) {
 
@@ -100,9 +115,9 @@ public class CollidePoly implements Serializable {
 		assert(0 <= edge1 && edge1 < count1);
 
 		// Convert normal from poly1's frame into poly2's frame.
-		Mat22.mulToOut(xf1.R, normals1[edge1], normal1World);
-		final float normal1x = Vec2.dot(normal1World, xf2.R.col1);
-		final float normal1y = Vec2.dot(normal1World, xf2.R.col2);
+		Mat22.mulToOut(xf1.R, normals1[edge1], temp1);
+		final float normal1x = Vec2.dot(temp1, xf2.R.col1);
+		final float normal1y = Vec2.dot(temp1, xf2.R.col2);
 
 		// Find support vertex on poly2 for -normal.
 		int index = 0;
@@ -122,11 +137,9 @@ public class CollidePoly implements Serializable {
 		final float v2x = xf2.position.x + xf2.R.col1.x * v3.x + xf2.R.col2.x * v3.y;
 		final float v2y = xf2.position.y + xf2.R.col1.y * v3.x + xf2.R.col2.y * v3.y;
 
-		return (v2x-v1x) * normal1World.x + (v2y-v1y) * normal1World.y;
+		return (v2x-v1x) * temp1.x + (v2y-v1y) * temp1.y;
 	}
 
-	// djm pooled
-	private Vec2 dLocal1 = new Vec2();
 	/**
 	 * Find the max separation between poly1 and poly2 using face normals
 	 * from poly1.
@@ -153,14 +166,14 @@ public class CollidePoly implements Serializable {
 				- (xf1.position.y + xf1.R.col1.y * v.x + xf1.R.col2.y * v.y);
 		final Vec2 b = xf1.R.col1;
 		final Vec2 b1 = xf1.R.col2;
-		dLocal1.x = (dx * b.x + dy * b.y);
-		dLocal1.y = (dx * b1.x + dy * b1.y);
+		temp1.x = (dx * b.x + dy * b.y);
+		temp1.y = (dx * b1.x + dy * b1.y);
 
 		// Find edge normal on poly1 that has the largest projection onto d.
 		int edge = 0;
 		float maxDot = -Float.MAX_VALUE;
 		for (int i = 0; i < count1; ++i) {
-			final float dot = Vec2.dot(normals1[i], dLocal1);
+			final float dot = Vec2.dot(normals1[i], temp1);
 			if (dot > maxDot) {
 				maxDot = dot;
 				edge = i;
@@ -235,10 +248,6 @@ public class CollidePoly implements Serializable {
 		return separation;
 	}
 
-	// djm pooled
-	private Vec2 mulTemp = new Vec2();
-	private Vec2 normal1 = new Vec2();
-	// djm optimized
 	private void findIncidentEdge(final ClipVertex[] c,
 								  final PolygonShape poly1, final XForm xf1, final int edge1,
 								  final PolygonShape poly2, final XForm xf2) {
@@ -253,14 +262,14 @@ public class CollidePoly implements Serializable {
 		assert(0 <= edge1 && edge1 < count1);
 
 		// Get the normal of the reference edge in poly2's frame.
-		Mat22.mulToOut( xf1.R, normals1[edge1], mulTemp);
-		Mat22.mulTransToOut(xf2.R, mulTemp, normal1);
+		Mat22.mulToOut( xf1.R, normals1[edge1], temp1);
+		Mat22.mulTransToOut(xf2.R, temp1, temp2);
 
 		// Find the incident edge on poly2.
 		int index = 0;
 		float minDot = Float.MAX_VALUE;
 		for (int i = 0; i < count2; ++i) {
-			final float dot = Vec2.dot(normal1, normals2[i]);
+			final float dot = Vec2.dot(temp2, normals2[i]);
 			if (dot < minDot) {
 				minDot = dot;
 				index = i;
@@ -308,8 +317,8 @@ public class CollidePoly implements Serializable {
 
 		PolygonShape poly1; // reference poly
 		PolygonShape poly2; // incident poly
-		final XForm xf1 = p_xf1;
-		final XForm xf2 = p_xf2;
+		final XForm xf1 = tempXForm1;
+		final XForm xf2 = tempXForm2;
 		int edge1; // reference edge
 		byte flip;
 		final float k_relativeTol = 0.98f;
@@ -344,19 +353,19 @@ public class CollidePoly implements Serializable {
 		final float v1x = v12.x-v11.x;
 		final float v1y = v12.y-v11.y;
 
-		sideNormal.set(xf1.R.col1.x * v1x + xf1.R.col2.x * v1y,
+		temp9.set(xf1.R.col1.x * v1x + xf1.R.col2.x * v1y,
 				xf1.R.col1.y * v1x + xf1.R.col2.y * v1y);
-		sideNormal.normalize();
-		frontNormal.set(sideNormal.y, -sideNormal.x);
+		temp9.normalize();
+		temp10.set(temp9.y, -temp9.x);
 
 		final float v11x = xf1.position.x + xf1.R.col1.x * v11.x + xf1.R.col2.x * v11.y;
 		final float v11y = xf1.position.y + xf1.R.col1.y * v11.x + xf1.R.col2.y * v11.y;
 		final float v12x = xf1.position.x + xf1.R.col1.x * v12.x + xf1.R.col2.x * v12.y;
 		final float v12y = xf1.position.y + xf1.R.col1.y * v12.x + xf1.R.col2.y * v12.y;
 
-		final float frontOffset = frontNormal.x * v11x + frontNormal.y * v11y;
-		final float sideOffset1 = -(sideNormal.x * v11x + sideNormal.y * v11y);
-		final float sideOffset2 = sideNormal.x * v12x + sideNormal.y * v12y;
+		final float frontOffset = temp10.x * v11x + temp10.y * v11y;
+		final float sideOffset1 = -(temp9.x * v11x + temp9.y * v11y);
+		final float sideOffset2 = temp9.x * v12x + temp9.y * v12y;
 
 		// Clip incident edge against extruded edge1 side edges.
 		final ClipVertex[] clipPoints1 = new ClipVertex[2];
@@ -364,14 +373,14 @@ public class CollidePoly implements Serializable {
 		int np;
 
 		// Clip to box side 1
-		np = clipSegmentToLine(clipPoints1, incidentEdge, sideNormal.negate(), sideOffset1);
+		np = clipSegmentToLine(clipPoints1, incidentEdge, temp9.negate(), sideOffset1);
 
 		if (np < 2) {
 			return;
 		}
 
 		// Clip to negative box side 1
-		np = clipSegmentToLine(clipPoints2, clipPoints1, sideNormal,
+		np = clipSegmentToLine(clipPoints2, clipPoints1, temp9,
 				sideOffset2);
 
 		if (np < 2) {
@@ -379,14 +388,14 @@ public class CollidePoly implements Serializable {
 		}
 
 		// Now clipPoints2 contains the clipped points.
-		manif.normal.set(frontNormal);
+		manif.normal.set(temp10);
 		if(flip != 0){
 			manif.normal.negateLocal();
 		}
 
 		int pointCount = 0;
 		for (int i = 0; i < Settings.maxManifoldPoints; ++i) {
-			final float separation = Vec2.dot(frontNormal, clipPoints2[i].v)
+			final float separation = Vec2.dot(temp10, clipPoints2[i].v)
 					- frontOffset;
 
 			if (separation <= 0.0f) {
@@ -413,14 +422,6 @@ public class CollidePoly implements Serializable {
 		manif.pointCount = pointCount;
 	}
 
-	// djm pooled
-	private final Vec2 colPPc = new Vec2();
-	private final Vec2 colPPcLocal = new Vec2();
-	private final Vec2 colPPsub = new Vec2();
-	private final Vec2 colPPe = new Vec2();
-	private final Vec2 colPPp = new Vec2();
-	private final Vec2 colPPd = new Vec2();
-
 	/**
 	 * puts collision information into the manifold about the collision between a polygon and a point
 	 * @param manifold
@@ -436,8 +437,8 @@ public class CollidePoly implements Serializable {
 		manifold.pointCount = 0;
 
 		// Compute circle position in the frame of the polygon.
-		XForm.mulToOut(xf2, point.getMemberLocalPosition(), colPPc);
-		XForm.mulTransToOut(xf1, colPPc, colPPcLocal);
+		XForm.mulToOut(xf2, point.getMemberLocalPosition(), temp1);
+		XForm.mulTransToOut(xf1, temp1, temp2);
 
 		// Find edge with maximum separation.
 		int normalIndex = 0;
@@ -447,9 +448,9 @@ public class CollidePoly implements Serializable {
 		final Vec2[] vertices = polygon.getVertices();
 		final Vec2[] normals = polygon.getNormals();
 		for (int i = 0; i < vertexCount; ++i) {
-			colPPsub.set( colPPcLocal);
-			colPPsub.subLocal( vertices[i]);
-			final float s = Vec2.dot(normals[i], colPPsub);
+			temp3.set(temp2);
+			temp3.subLocal( vertices[i]);
+			final float s = Vec2.dot(normals[i], temp3);
 			if (s > 0) {
 				// Early out.
 				return;
@@ -467,7 +468,7 @@ public class CollidePoly implements Serializable {
 			manifold.points[0].id.features.incidentVertex = Collision.NULL_FEATURE;
 			manifold.points[0].id.features.referenceEdge = 0;
 			manifold.points[0].id.features.flip = 0;
-			final Vec2 position = colPPc;
+			final Vec2 position = temp1;
 			XForm.mulTransToOut(xf1, position, manifold.points[0].localPoint1);
 			XForm.mulTransToOut(xf2, position, manifold.points[0].localPoint2);
 			manifold.points[0].separation = separation;
@@ -477,47 +478,47 @@ public class CollidePoly implements Serializable {
 		// Project the circle center onto the edge segment.
 		final int vertIndex1 = normalIndex;
 		final int vertIndex2 = vertIndex1 + 1 < vertexCount ? vertIndex1 + 1 : 0;
-		colPPe.set( vertices[vertIndex2]);
-		colPPe.subLocal(vertices[vertIndex1]);
-		final float length = colPPe.normalize();
+		temp4.set( vertices[vertIndex2]);
+		temp4.subLocal(vertices[vertIndex1]);
+		final float length = temp4.normalize();
 		assert(length > Settings.EPSILON);
 
 		// Project the center onto the edge.
-		colPPsub.set(colPPcLocal);
-		colPPsub.subLocal( vertices[vertIndex1]);
-		final float u = Vec2.dot(colPPsub, colPPe);
+		temp3.set(temp2);
+		temp3.subLocal( vertices[vertIndex1]);
+		final float u = Vec2.dot(temp3, temp4);
 
-		colPPp.setZero();
+		temp5.setZero();
 		if (u <= 0.0f) {
-			colPPp.set(vertices[vertIndex1]);
+			temp5.set(vertices[vertIndex1]);
 			manifold.points[0].id.features.incidentEdge = Collision.NULL_FEATURE;
 			manifold.points[0].id.features.incidentVertex = vertIndex1;
 		}
 		else if (u >= length) {
-			colPPp.set(vertices[vertIndex2]);
+			temp5.set(vertices[vertIndex2]);
 			manifold.points[0].id.features.incidentEdge = Collision.NULL_FEATURE;
 			manifold.points[0].id.features.incidentVertex = vertIndex2;
 		}
 		else {
-			colPPp.set(vertices[vertIndex1]);
-			colPPp.x += u * colPPe.x;
-			colPPp.y += u * colPPe.y;
+			temp5.set(vertices[vertIndex1]);
+			temp5.x += u * temp4.x;
+			temp5.y += u * temp4.y;
 			manifold.points[0].id.features.incidentEdge = normalIndex;
 			manifold.points[0].id.features.incidentVertex = Collision.NULL_FEATURE;
 		}
 
-		colPPd.set(colPPcLocal);
-		colPPd.subLocal( colPPp);
+		temp6.set(temp2);
+		temp6.subLocal(temp5);
 
-		final float dist = colPPd.normalize();
+		final float dist = temp6.normalize();
 		if (dist > 0) {
 			return;
 		}
 
 		manifold.pointCount = 1;
 
-		Mat22.mulToOut(xf1.R, colPPd, manifold.normal);
-		final Vec2 position = colPPc;
+		Mat22.mulToOut(xf1.R, temp6, manifold.normal);
+		final Vec2 position = temp1;
 		XForm.mulTransToOut(xf1, position, manifold.points[0].localPoint1);
 		XForm.mulTransToOut(xf2, position, manifold.points[0].localPoint2);
 		manifold.points[0].separation = dist;
@@ -525,15 +526,6 @@ public class CollidePoly implements Serializable {
 		manifold.points[0].id.features.flip = 0;
 	}
 
-	// djm pooled
-	private final Vec2 PEv1 = new Vec2();
-	private final Vec2 PEv2 = new Vec2();
-	private final Vec2 PEn = new Vec2();
-	private final Vec2 PEv1Local = new Vec2();
-	private final Vec2 PEv2Local = new Vec2();
-	private final Vec2 PEnLocal = new Vec2();
-	private final Vec2 temp = new Vec2();
-	private final Vec2 temp2 = new Vec2();
 	/**
 	 * puts collision information into the manifold about a collision between
 	 * a polygon and an edge
@@ -549,12 +541,12 @@ public class CollidePoly implements Serializable {
 										 final EdgeShape edge,
 										 final XForm xf2) {
 		manifold.pointCount = 0;
-		XForm.mulToOut(xf2, edge.getVertex1(), PEv1);
-		XForm.mulToOut(xf2, edge.getVertex2(), PEv2);
-		Mat22.mulToOut(xf2.R, edge.getNormalVector(), PEn);
-		XForm.mulTransToOut(xf1, PEv1, PEv1Local);
-		XForm.mulTransToOut(xf1, PEv2, PEv2Local);
-		Mat22.mulTransToOut(xf1.R, PEn, PEnLocal);
+		XForm.mulToOut(xf2, edge.getVertex1(), temp1);
+		XForm.mulToOut(xf2, edge.getVertex2(), temp2);
+		Mat22.mulToOut(xf2.R, edge.getNormalVector(), temp3);
+		XForm.mulTransToOut(xf1, temp1, temp4);
+		XForm.mulTransToOut(xf1, temp2, temp5);
+		Mat22.mulTransToOut(xf1.R, temp3, temp6);
 
 		float separation1;
 		int separationIndex1 = -1; // which normal on the poly found the shallowest depth?
@@ -589,17 +581,17 @@ public class CollidePoly implements Serializable {
 		// for each poly normal, get the edge's depth into the poly.
 		// for each poly vertex, get the vertex's depth into the edge.
 		// use these calculations to define the remaining variables declared above.
-		temp.set( vertices[vertexCount-1]);
-		temp.subLocal( PEv1Local);
-		prevSepN = Vec2.dot(temp, PEnLocal);
+		temp7.set( vertices[vertexCount-1]);
+		temp7.subLocal(temp4);
+		prevSepN = Vec2.dot(temp7, temp6);
 
 		for (int i = 0; i < vertexCount; i++) {
-			temp.set(PEv1Local);
-			temp.subLocal( vertices[i]);
-			separation1 = Vec2.dot(temp, normals[i]);
-			temp.set(PEv2Local);
-			temp.subLocal( vertices[i]);
-			separation2 = Vec2.dot(temp, normals[i]);
+			temp7.set(temp4);
+			temp7.subLocal( vertices[i]);
+			separation1 = Vec2.dot(temp7, normals[i]);
+			temp7.set(temp5);
+			temp7.subLocal( vertices[i]);
+			separation2 = Vec2.dot(temp7, normals[i]);
 			if (separation2 < separation1) {
 				if (separation2 > separationMax) {
 					separationMax = separation2;
@@ -622,10 +614,10 @@ public class CollidePoly implements Serializable {
 				separationIndex2 = i;
 			}
 
-			temp.set( vertices[i]);
-			temp.subLocal( PEv1Local);
+			temp7.set( vertices[i]);
+			temp7.subLocal(temp4);
 
-			nextSepN = Vec2.dot(temp, PEnLocal);
+			nextSepN = Vec2.dot(temp7, temp6);
 			if (nextSepN >= 0.0f && prevSepN < 0.0f) {
 				exitStartIndex = (i == 0) ? vertexCount-1 : i-1;
 				exitSepN = prevSepN;
@@ -657,15 +649,15 @@ public class CollidePoly implements Serializable {
 				// if -normal angle is closer to adjacent edge than this edge,
 				// let the adjacent edge handle it and return with no contact:
 				if (separationV1) {
-					Mat22.mulToOut( xf2.R, edge.getCorner1Vector(), temp);
-					Mat22.mulTransToOut(xf1.R, temp, temp);
-					if (Vec2.dot(normals[separationIndex1], temp) >= 0.0f) {
+					Mat22.mulToOut( xf2.R, edge.getCorner1Vector(), temp7);
+					Mat22.mulTransToOut(xf1.R, temp7, temp7);
+					if (Vec2.dot(normals[separationIndex1], temp7) >= 0.0f) {
 						return;
 					}
 				} else {
-					Mat22.mulToOut( xf2.R, edge.getCorner2Vector(), temp);
-					Mat22.mulTransToOut(xf1.R, temp, temp);
-					if (Vec2.dot(normals[separationIndex2], temp) <= 0.0f) {
+					Mat22.mulToOut( xf2.R, edge.getCorner2Vector(), temp7);
+					Mat22.mulTransToOut(xf1.R, temp7, temp7);
+					if (Vec2.dot(normals[separationIndex2], temp7) <= 0.0f) {
 						return;
 					}
 				}
@@ -678,10 +670,10 @@ public class CollidePoly implements Serializable {
 				manifold.points[0].id.features.referenceEdge = 0;
 				manifold.points[0].id.features.flip = 0;
 				if (separationV1) {
-					manifold.points[0].localPoint1.set( PEv1Local);
+					manifold.points[0].localPoint1.set(temp4);
 					manifold.points[0].localPoint2.set( edge.getVertex1());
 				} else {
-					manifold.points[0].localPoint1.set(PEv2Local);
+					manifold.points[0].localPoint1.set(temp5);
 					manifold.points[0].localPoint2.set(edge.getVertex2());
 				}
 				return;
@@ -689,10 +681,10 @@ public class CollidePoly implements Serializable {
 		}
 
 		// We're going to use the edge's normal now.
-		temp.set( PEn);
-		temp.mulLocal( -1f);
+		temp7.set(temp3);
+		temp7.mulLocal( -1f);
 
-		manifold.normal.set( temp);// = n.mul(-1.0f);
+		manifold.normal.set(temp7);// = n.mul(-1.0f);
 
 		// Check whether we only need one contact point.
 		if (enterEndIndex == exitStartIndex) {
@@ -710,26 +702,26 @@ public class CollidePoly implements Serializable {
 		manifold.pointCount = 2;
 
 		// dirLocal should be the edge's direction vector, but in the frame of the polygon.
-		Vec2.crossToOut(PEnLocal, -1.0f, temp); // TODO: figure out why this optimization didn't work
-		temp2.set( vertices[enterEndIndex]);
-		temp2.subLocal( PEv1Local);
+		Vec2.crossToOut(temp6, -1.0f, temp7); // TODO: figure out why this optimization didn't work
+		temp8.set( vertices[enterEndIndex]);
+		temp8.subLocal(temp4);
 
-		final float dirProj1 = Vec2.dot(temp, temp2);
+		final float dirProj1 = Vec2.dot(temp7, temp8);
 		float dirProj2;
 
 		// The contact resolution is more robust if the two manifold points are
 		// adjacent to each other on the polygon. So pick the first two poly
 		// vertices that are under the edge:
-		temp2.set( vertices[exitStartIndex]);
-		temp2.subLocal( PEv1Local);
+		temp8.set( vertices[exitStartIndex]);
+		temp8.subLocal(temp4);
 
 		exitEndIndex = (enterEndIndex == vertexCount - 1) ? 0 : enterEndIndex + 1;
 		if (exitEndIndex != exitStartIndex) {
 			exitStartIndex = exitEndIndex;
-			exitSepN = Vec2.dot(PEnLocal, temp2);
+			exitSepN = Vec2.dot(temp6, temp8);
 		}
-		// temp is dirLocal still
-		dirProj2 = Vec2.dot(temp, temp2);
+		// temp7 is dirLocal still
+		dirProj2 = Vec2.dot(temp7, temp8);
 
 		manifold.points[0].id.features.incidentEdge = enterEndIndex;
 		manifold.points[0].id.features.incidentVertex = Collision.NULL_FEATURE;
@@ -737,7 +729,7 @@ public class CollidePoly implements Serializable {
 		manifold.points[0].id.features.flip = 0;
 
 		if (dirProj1 > edge.getLength()) {
-			manifold.points[0].localPoint1.set(PEv2Local);
+			manifold.points[0].localPoint1.set(temp5);
 			manifold.points[0].localPoint2.set(edge.getVertex2());
 			final float ratio = (edge.getLength() - dirProj2) / (dirProj1 - dirProj2);
 			if (ratio > 100.0f * Settings.EPSILON && ratio < 1.0f) {
@@ -757,7 +749,7 @@ public class CollidePoly implements Serializable {
 		manifold.points[1].id.features.flip = 0;
 
 		if (dirProj2 < 0.0f) {
-			manifold.points[1].localPoint1.set(PEv1Local);
+			manifold.points[1].localPoint1.set(temp4);
 			manifold.points[1].localPoint2.set(edge.getVertex1());
 			final float ratio = (-dirProj1) / (dirProj2 - dirProj1);
 			if (ratio > 100.0f * Settings.EPSILON && ratio < 1.0f) {
@@ -772,12 +764,27 @@ public class CollidePoly implements Serializable {
 		}
 	}
 
-	// "Pool" objects
-	private final Vec2 sideNormal = new Vec2();
-	private final Vec2 frontNormal = new Vec2();
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
 
-	private final XForm p_xf1 = new XForm();
-	private final XForm p_xf2 = new XForm();
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		temp1 = new Vec2();
+		temp2 = new Vec2();
+		temp3 = new Vec2();
+		temp4 = new Vec2();
+		temp5 = new Vec2();
+		temp6 = new Vec2();
+		temp7 = new Vec2();
+		temp8 = new Vec2();
+		temp9 = new Vec2();
+		temp10 = new Vec2();
+
+		tempXForm1 = new XForm();
+		tempXForm2 = new XForm();
+	}
 }
 
 /** Holder class used internally in CollidePoly */

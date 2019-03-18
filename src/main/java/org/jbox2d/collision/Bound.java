@@ -32,9 +32,7 @@ import java.io.Serializable;
  */
 public class Bound implements Serializable {
 	public int value;
-
 	public int proxyId;
-
 	public int stabbingCount;
 
 	public Bound() {
@@ -58,7 +56,6 @@ public class Bound implements Serializable {
 	public final boolean isLower() {
 		return (value & 1) == 0;
 	}
-
 	public final boolean isUpper() {
 		return (value & 1) == 1;
 	}
