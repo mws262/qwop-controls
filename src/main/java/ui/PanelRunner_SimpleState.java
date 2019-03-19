@@ -5,6 +5,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import game.GameThreadSafe;
+import game.GameUnified;
+import game.IGame;
 import game.State;
 import tree.Node;
 
@@ -18,7 +20,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     /**
      * Access to the game for the sake of the drawing methods.
      */
-    private GameThreadSafe game = new GameThreadSafe();
+    private IGame game = new GameUnified();
 
     /**
      * Current state being displayed.
@@ -50,7 +52,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
         if (!active || currentState == null) return;
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-        game.drawExtraRunner(g2, game.getXForms(currentState), "", runnerScaling,
+        GameUnified.drawExtraRunner(g2, currentState, "", runnerScaling,
 				500 - (int) (currentState.body.getX() * runnerScaling), yOffsetPixels + 100, Color.BLACK, normalStroke);
     }
 

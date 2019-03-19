@@ -7,6 +7,8 @@ import java.util.List;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameThreadSafe;
+import game.GameUnified;
+import game.IGame;
 import game.State;
 import actions.Action;
 import tree.Node;
@@ -61,7 +63,7 @@ public class DataSaver_Sparse implements IDataSaver {
     public void reportGameInitialization(State initialState) {}
 
     @Override
-    public void reportTimestep(Action action, GameThreadSafe game) {}
+    public void reportTimestep(Action action, IGame game) {}
 
     @Override
     public void reportGameEnding(Node endNode) {

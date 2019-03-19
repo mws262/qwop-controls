@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 
 import game.GameThreadSafe;
+import game.GameUnified;
+import game.IGame;
 import game.State;
 import actions.Action;
 import tree.Node;
@@ -23,7 +25,7 @@ public interface IDataSaver {
      * @param action Current action being run.
      * @param game Instance of the game used for simulation.
      */
-    void reportTimestep(Action action, GameThreadSafe game);
+    void reportTimestep(Action action, IGame game);
 
     /**
      * Get the final game state for this run.

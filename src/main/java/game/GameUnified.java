@@ -28,11 +28,6 @@ import static game.GameConstants.*;
 public class GameUnified implements IGame, Serializable {
 
     /**
-     * Whether the static fields have been assigned yet.
-     */
-    private static boolean hasOneTimeInitializationOccurred = false;
-
-    /**
      * Keep track of sim stats since beginning of execution.
      **/
     private long timestepsSimulated = 0;
@@ -172,19 +167,12 @@ public class GameUnified implements IGame, Serializable {
      */
     private static FSTConfiguration fstConfiguration = FSTConfiguration.createDefaultConfiguration();
 
-    public GameUnified() {
-        // Initialization of many shape and body definition fields can be shared.
-        if (!hasOneTimeInitializationOccurred) {
-            oneTimeSetup();
-            hasOneTimeInitializationOccurred = true;
-        }
-        makeNewWorld();
-    }
+    public GameUnified() { makeNewWorld(); }
 
     /**
      * Call once to initialize a lot of shape definitions which only need to be created once.
      **/
-    private void oneTimeSetup() {
+    static {
         /*
          * Make the bodies and collision shapes
          */
@@ -997,7 +985,10 @@ public class GameUnified implements IGame, Serializable {
     /**
      * Draw the runner at a specified set of transforms..
      **/
-    public static void drawExtraRunner(Graphics2D g, XForm[] transforms, String label, float scaling, int xOffset, int yOffset, Color drawColor, Stroke stroke) {
+    public static void drawExtraRunner(Graphics2D g, State state, String label, float scaling, int xOffset,
+                                       int yOffset, Color drawColor, Stroke stroke) {
+
+        XForm[] transforms = getXForms(state);
         g.setColor(drawColor);
         g.drawString(label, xOffset + (int) (transforms[1].position.x * scaling) - 20, yOffset - 75);
         for (int i = 0; i < shapeList.length; i++) {
@@ -1036,6 +1027,41 @@ public class GameUnified implements IGame, Serializable {
                     break;
             }
         }
+    }
+
+    /**
+     * Get the transform associated with this State. Note that these transforms can ONLY be used with this instance
+     * of GameThreadSafe.
+     */
+    public static XForm[] getXForms(State st) {
+        XForm[] transforms = new XForm[13];
+            transforms[0] = getXForm(st.body);
+            transforms[1] = getXForm(st.head);
+            transforms[2] = getXForm(st.rfoot);
+            transforms[3] = getXForm(st.lfoot);
+            transforms[4] = getXForm(st.rcalf);
+            transforms[5] = getXForm(st.lcalf);
+            transforms[6] = getXForm(st.rthigh);
+            transforms[7] = getXForm(st.lthigh);
+            transforms[8] = getXForm(st.ruarm);
+            transforms[9] = getXForm(st.luarm);
+            transforms[10] = getXForm(st.rlarm);
+            transforms[11] = getXForm(st.llarm);
+            transforms[12] = getXForm(new StateVariable(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
+            // Offset by 20 because its now a box.
+        return transforms;
+    }
+
+    /**
+     * Get the transform associated with this body's state variables. Note that these transforms can ONLY be used
+     * with this instance of GameThreadSafe.
+     */
+    public static XForm getXForm(StateVariable sv) {
+        XForm xf = new XForm();
+        xf.position.x = sv.getX();
+        xf.position.y = sv.getY();
+        xf.R.set(sv.getTh());
+        return xf;
     }
 
     /**

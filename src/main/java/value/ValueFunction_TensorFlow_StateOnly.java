@@ -2,27 +2,24 @@ package value;
 
 import actions.Action;
 import actions.ActionQueue;
-import game.GameSingleThread;
-import game.GameThreadSafe;
-import game.GameThreadSafeSavable;
+import game.GameUnified;
+import game.IGame;
 import game.State;
 import tree.Node;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
 
     private static final int STATE_SIZE = 72;
     private static final int VALUE_SIZE = 1;
 
-    private GameThreadSafe game = new GameThreadSafe();
+    private IGame game = new GameUnified();
     private final ActionQueue actionQueue = new ActionQueue();
 
-    public static GameSingleThread gameSingle;
+    public static GameUnified gameSingle;
 
     public ValueFunction_TensorFlow_StateOnly(File file) throws FileNotFoundException {
         super(file);
@@ -80,9 +77,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             }
 
         Action bestAction;
-        if (bestNull.value >= bestQP.value  && bestNull.value >= bestWO.value) {
+        if ((bestNull.value >= bestQP.value) && (bestNull.value >= bestWO.value)) {
             bestAction = new Action(bestNull.timestep, false, false, false, false);
-        } else if (bestQP.value > bestNull.value && bestQP.value > bestWO.value) {
+        } else if ((bestQP.value > bestNull.value) && (bestQP.value > bestWO.value)) {
             bestAction = new Action(bestQP.timestep, true, false, false, true);
         } else {
             bestAction = new Action(bestWO.timestep, false, true, true, false);
@@ -91,13 +88,6 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         gameSingle = gameSingle.restoreFullState(fullState);
 
         return bestAction;
-    }
-
-    private void runToNode(Node n) {
-        actionQueue.addSequence(n.getSequence());
-        while (!actionQueue.isEmpty()) {
-            game.step(actionQueue.pollCommand());
-        }
     }
 
     @Override

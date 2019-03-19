@@ -3,8 +3,9 @@ package goals.perturbation_analysis;
 import actions.ActionQueue;
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameThreadSafe;
 import actions.Action;
+import game.GameUnified;
+import game.IGame;
 import game.State;
 import tree.Node;
 import ui.PanelRunner_MultiState;
@@ -74,12 +75,12 @@ public class MAIN_PerturbationImpulse extends JFrame {
         Action[] baseActions = gameList.get(0).actions;
 
         // Simulate the base actions.
-        GameThreadSafe game = new GameThreadSafe();
+        IGame game = new GameUnified();
 
         // These are the runners which will be perturbed.
-        List<GameThreadSafe> perturbedGames = new ArrayList<>();
+        List<IGame> perturbedGames = new ArrayList<>();
         for (int i = 0; i < numPerturbedRunners; i++) {
-            perturbedGames.add(new GameThreadSafe());
+            perturbedGames.add(new GameUnified());
         }
         ActionQueue actionQueue = new ActionQueue();
         actionQueue.addSequence(baseActions);
@@ -90,13 +91,13 @@ public class MAIN_PerturbationImpulse extends JFrame {
             boolean[] command = actionQueue.pollCommand();
             game.step(command);
 
-            for (GameThreadSafe perturbedGame : perturbedGames) {
+            for (IGame perturbedGame : perturbedGames) {
                 perturbedGame.step(command);
             }
         }
 
         // Apply impulse disturbances.
-        Map<GameThreadSafe, float[]> gameToDisturbanceDir = new HashMap<>();
+        Map<IGame, float[]> gameToDisturbanceDir = new HashMap<>();
 
         for (int i = 0; i < numPerturbedRunners; i++) {
             float[] disturbance = new float[]{(float) Math.cos((double) i / (double) numPerturbedRunners * 2. *
@@ -116,7 +117,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
 
             // Step perturbed runners.
             for (int i = 0; i < perturbedGames.size(); i++) {
-                GameThreadSafe thisGame = perturbedGames.get(i);
+                IGame thisGame = perturbedGames.get(i);
                 thisGame.step(command);
                 if (count % drawInterval == 0)
                     panelRunner.addSecondaryState(perturbedGames.get(i).getCurrentState(), Node.getColorFromScaledValue(i
@@ -202,6 +203,5 @@ public class MAIN_PerturbationImpulse extends JFrame {
             g.fillPolygon(new int[]{len, len - ARR_SIZE, len - ARR_SIZE, len},
                     new int[]{0, -ARR_SIZE, ARR_SIZE, 0}, 4);
         }
-
     }
 }

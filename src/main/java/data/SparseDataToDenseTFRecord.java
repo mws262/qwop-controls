@@ -8,6 +8,7 @@ import java.util.List;
 import game.GameThreadSafe;
 import actions.Action;
 import actions.ActionQueue;
+import game.GameUnified;
 import savers.DataSaver_DenseTFRecord;
 
 /**
@@ -28,7 +29,7 @@ public class SparseDataToDenseTFRecord {
     /**
      * Interface to the game and Box2D physics for simulation actions.
      */
-    private final GameThreadSafe game = new GameThreadSafe();
+    private final GameUnified game = new GameUnified();
 
     /**
      * Saver that this converted will use. Uses a dense saver (every timestep saved) most likely.

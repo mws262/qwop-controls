@@ -22,7 +22,6 @@ import ui.PanelRunner_Animated;
 
 public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
-    public GameThreadSafe game;
     private PanelRunner_Animated runnerPane;
 
     /**
