@@ -11,10 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import filters.NodeFilter_Downsample;
-import game.GameThreadSafe;
 import filters.INodeFilter;
 import game.GameUnified;
-import game.IGame;
 import game.State;
 import tree.Node;
 

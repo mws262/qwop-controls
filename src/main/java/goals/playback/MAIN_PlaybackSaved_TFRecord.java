@@ -9,7 +9,6 @@ import javax.swing.JFrame;
 import actions.Action;
 import actions.ActionQueue;
 import data.TFRecordDataParsers;
-import game.GameThreadSafe;
 import game.GameUnified;
 import game.IGame;
 import org.tensorflow.example.SequenceExample;

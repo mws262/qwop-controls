@@ -1,7 +1,6 @@
 package goals.cold_start_analysis;
 
 import actions.ActionQueue;
-import game.GameThreadSafe;
 import game.GameUnified;
 import game.IGame;
 import game.State;

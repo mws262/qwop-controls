@@ -3,8 +3,6 @@ package savers;
 import java.util.ArrayList;
 import java.util.List;
 
-import game.GameThreadSafe;
-import game.GameUnified;
 import game.IGame;
 import game.State;
 import actions.Action;

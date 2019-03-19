@@ -4,8 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import game.GameThreadSafe;
-import game.GameUnified;
 import game.IGame;
 import game.State;
 import actions.Action;

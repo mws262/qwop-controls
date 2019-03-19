@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_NearestNeighborApprox.RunHolder;
-import game.GameThreadSafe;
 import game.GameUnified;
 import game.IGame;
 import tree.Node;

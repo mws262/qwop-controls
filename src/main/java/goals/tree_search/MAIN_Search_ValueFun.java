@@ -3,7 +3,7 @@ package goals.tree_search;
 import actions.Action;
 import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_Distance;
-import game.GameThreadSafe;
+import game.GameUnified;
 import samplers.Sampler_UCB;
 import samplers.rollout.RolloutPolicy_WorstCaseWindow;
 import savers.DataSaver_StageSelected;
@@ -64,7 +64,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 new Action(20,true,false,false,true),
         });
 
-        Node.makeNodesFromActionSequences(alist, rootNode, new GameThreadSafe());
+        Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
         Node.stripUncheckedActionsExceptOnLeaves(rootNode, 7);
 
         List<Node> leaf = new ArrayList<>();

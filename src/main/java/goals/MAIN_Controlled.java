@@ -25,7 +25,6 @@ import controllers.IController;
 import data.SavableActionSequence;
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameThreadSafe;
 import game.GameUnified;
 import game.State;
 import tree.Node;

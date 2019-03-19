@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import game.GameThreadSafe;
 import game.GameUnified;
 import game.IGame;
 import game.State;

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import filters.NodeFilter_Downsample;
+import game.GameUnified;
 import game.State;
 import transformations.ITransform;
 import tree.Node;
@@ -94,13 +95,14 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (drawTransformedRunners && super.isActive() && game.isGameInitialized() && transformsInitialized) {
+        if (drawTransformedRunners && super.isActive() && transformsInitialized) {
             State currState = game.getCurrentState();
             if (currState != null) inStates.add(currState);
             for (int i = 0; i < encoders.size(); i++) {
                 List<State> predictedStateList = encoders.get(i).compressAndDecompress(inStates);
                 State predictedState = predictedStateList.get(0);
-                game.drawExtraRunner((Graphics2D) g, game.getXForms(predictedState), encoders.get(i).getName(), super.runnerScaling, super.xOffsetPixels + i * 100 + 150, super.yOffsetPixels, Node.getColorFromTreeDepth(i), normalStroke);
+                GameUnified.drawExtraRunner((Graphics2D) g, predictedState, encoders.get(i).getName(), super.runnerScaling,
+                        super.xOffsetPixels + i * 100 + 150, super.yOffsetPixels, Node.getColorFromTreeDepth(i), normalStroke);
             }
             inStates.clear();
         }

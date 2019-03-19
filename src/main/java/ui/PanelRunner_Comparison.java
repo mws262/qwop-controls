@@ -11,7 +11,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import evaluators.EvaluationFunction_SqDistFromOther;
-import game.GameThreadSafe;
+import game.GameUnified;
+import game.State;
 import tree.Node;
 
 public class PanelRunner_Comparison extends PanelRunner {
@@ -22,17 +23,12 @@ public class PanelRunner_Comparison extends PanelRunner {
     public int maxNumStatesToShow = 50;
 
     /**
-     * Its unique copy of the game. Only used for plotting, but important to keep separate.
-     */
-    private final GameThreadSafe game = new GameThreadSafe();
-
-    /**
      * Node used for base comparison.
      */
     private Node selectedNode;
 
     private List<Node> focusNodes = new ArrayList<>();
-    private List<Object[]> transforms = new ArrayList<>();
+    private List<State> states = new ArrayList<>();
     private List<Stroke> strokes = new ArrayList<>();
     private List<Color> colors = new ArrayList<>();
 
@@ -42,7 +38,7 @@ public class PanelRunner_Comparison extends PanelRunner {
     public void update(Node node) {
         node.getRoot().clearNodeOverrideColor();
 
-        transforms.clear();
+        states.clear();
         focusNodes.clear();
         strokes.clear();
         colors.clear();
@@ -51,10 +47,10 @@ public class PanelRunner_Comparison extends PanelRunner {
         selectedNode = node;
         selectedNode.overrideNodeColor = Color.PINK; // Restore its red color
         selectedNode.displayPoint = true;
-        Object[] nodeTransform = game.getXForms(selectedNode.getState());
+        State nodeState = selectedNode.getState();
 
         // Make the sequence centered around the selected node state.
-        transforms.add(nodeTransform);
+        states.add(nodeState);
         strokes.add(boldStroke);
         colors.add(Color.PINK);
         focusNodes.add(node);
@@ -74,7 +70,7 @@ public class PanelRunner_Comparison extends PanelRunner {
             if (orderedNodes.hasNext()) {
                 Node closeNode = orderedNodes.next();
                 focusNodes.add(closeNode);
-                transforms.add(game.getXForms(closeNode.getState()));
+                states.add(closeNode.getState());
                 strokes.add(normalStroke);
                 Color matchColor = Node.getColorFromTreeDepth(i * 5);
                 colors.add(matchColor);
@@ -93,8 +89,8 @@ public class PanelRunner_Comparison extends PanelRunner {
         Graphics2D g2 = (Graphics2D) g;
 
         if (selectedNode != null && selectedNode.getState() != null) {
-            for (int i = 0; i < transforms.size(); i++) {
-                game.drawExtraRunner(g2, transforms.get(i), "", runnerScaling,
+            for (int i = 0; i < states.size(); i++) {
+                GameUnified.drawExtraRunner(g2, states.get(i), "", runnerScaling,
                         xOffsetPixels + (int) (-runnerScaling * focusNodes.get(i).getState().body.getX()), yOffsetPixels,
                         colors.get(i), strokes.get(i));
             }
@@ -107,7 +103,7 @@ public class PanelRunner_Comparison extends PanelRunner {
             selectedNode.getRoot().clearNodeOverrideColor();
         }
         active = false;
-        transforms.clear();
+        states.clear();
         focusNodes.clear();
         strokes.clear();
         colors.clear();

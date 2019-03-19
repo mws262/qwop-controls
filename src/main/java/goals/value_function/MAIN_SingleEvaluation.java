@@ -5,12 +5,9 @@ import actions.ActionGenerator_FixedActions;
 import actions.ActionQueue;
 import actions.ActionSet;
 import distributions.Distribution_Equal;
-import game.GameSingleThread;
-import game.GameThreadSafe;
-import game.GameThreadSafeSavable;
+import game.GameUnified;
 import tree.Node;
 import tree.Utility;
-import ui.ScreenCapture;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -20,7 +17,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -28,7 +24,7 @@ import java.util.stream.IntStream;
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
-    GameSingleThread game = GameSingleThread.getInstance();
+    GameUnified game = new GameUnified();
 
     public static void main(String[] args) {
 //        boolean doScreenCapture = false;
@@ -99,7 +95,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 //                new Action(20,true,false,false,true),
         });
 
-        Node.makeNodesFromActionSequences(alist, rootNode, new GameThreadSafe());
+        Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
         Node.stripUncheckedActionsExceptOnLeaves(rootNode, 7);
 
         List<Node> leaf = new ArrayList<>();

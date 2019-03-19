@@ -2,7 +2,7 @@ package samplers.rollout;
 
 import actions.Action;
 import evaluators.IEvaluationFunction;
-import game.GameThreadSafe;
+import game.IGame;
 import tree.Node;
 import value.IValueFunction;
 
@@ -22,7 +22,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public float rollout(Node startNode, GameThreadSafe game) {
+    public float rollout(Node startNode, IGame game) {
         Node currentNode = startNode;
         int rolloutTimesteps = 0;
         while (!game.getFailureStatus() && rolloutTimesteps < maxRolloutTimesteps) {
