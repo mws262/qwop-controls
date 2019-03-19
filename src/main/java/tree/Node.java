@@ -18,12 +18,9 @@ import actions.ActionSet;
 import actions.IActionGenerator;
 import com.jogamp.opengl.GL2;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
-import com.jogamp.opengl.util.gl2.GLUT;
 import data.SavableSingleGame;
-import game.GameThreadSafe;
-import game.GameThreadSafeSavable;
 import game.GameUnified;
+import game.IGame;
 import game.State;
 
 /**
@@ -39,10 +36,6 @@ import game.State;
  */
 
 public class Node {
-
-    // TEMP TODO figure out how to do this the right way.
-    public GameThreadSafeSavable fullState;
-
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
      */
@@ -938,7 +931,7 @@ public class Node {
     /**
      * Add nodes based on saved action sequences. Has to re-simulate each to get the states.
      */
-    public static void makeNodesFromActionSequences(List<Action[]> actions, Node root, GameThreadSafe game) {
+    public static void makeNodesFromActionSequences(List<Action[]> actions, Node root, IGame game) {
 
         ActionQueue actQueue = new ActionQueue();
         //root.setState(GameThreadSafe.getInitialState());

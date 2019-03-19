@@ -100,14 +100,13 @@ public class GamePredictor extends TensorflowLoader {
         oneHotAction[0][0][1] = keys[0] && keys[3] ? 1f : 0f;
         oneHotAction[0][0][2] = !keys[1] && !keys[2] && !keys[3] && !keys[0] ? 1f : 0f;
 
-        Tensor<Float> actionTensor = Tensor.create(oneHotAction, Float.class);
-        return actionTensor;
+        return Tensor.create(oneHotAction, Float.class);
     }
 
     public static void main(String[] args) {
         GamePredictor gp = new GamePredictor("frozen_model.pb", "src/main/resources/tflow_models");
 
-        State initState = GameThreadSafe.getInitialState();
+        State initState = GameUnified.getInitialState();
         Action singleAction = new Action(1000, false, true, true, false);
 
         ActionQueue actionQueue = new ActionQueue();

@@ -1,6 +1,6 @@
 package samplers;
 
-import game.GameThreadSafe;
+import game.IGame;
 import tree.Node;
 
 /**
@@ -45,7 +45,7 @@ public interface ISampler {
     /**
      * Continued expansion which is NOT added to the tree as nodes. Only used for scoring as in UCB.
      **/
-    void rolloutPolicy(Node startNode, GameThreadSafe game);
+    void rolloutPolicy(Node startNode, IGame game);
 
     /**
      * Are we ready to switch from rollout policy to tree policy?

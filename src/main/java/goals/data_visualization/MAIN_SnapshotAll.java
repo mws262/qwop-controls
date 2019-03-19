@@ -10,7 +10,7 @@ import javax.swing.JFrame;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameThreadSafe;
+import game.GameUnified;
 import tree.Node;
 import ui.PanelRunner_Snapshot;
 
@@ -21,7 +21,6 @@ import ui.PanelRunner_Snapshot;
  */
 public class MAIN_SnapshotAll extends JFrame {
 
-    public GameThreadSafe game;
     private PanelRunner_Snapshot snapshotPane;
 
     /**

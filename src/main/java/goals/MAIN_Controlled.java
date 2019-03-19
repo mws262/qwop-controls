@@ -26,6 +26,7 @@ import data.SavableActionSequence;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameThreadSafe;
+import game.GameUnified;
 import game.State;
 import tree.Node;
 import tree.Utility;
@@ -39,7 +40,7 @@ import ui.ScreenCapture;
 
 public class MAIN_Controlled extends JFrame implements Runnable, ActionListener {
 
-    private GameThreadSafe game = new GameThreadSafe();
+    private GameUnified game = new GameUnified();
 
     /**
      * Controller to use. Defaults to Controller_Null and should usually be reassigned.
@@ -103,7 +104,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         if (doScreenCapture)
             screenCap = new ScreenCapture(new File(Utility.generateFileName("vid",
                     "mp4")));
-        game.mainRunnerStroke = new BasicStroke(5);
+        //game.mainRunnerStroke = new BasicStroke(5);
         mainViewPanel = new Panel();
         this.setLayout(new BorderLayout());
         add(mainViewPanel, BorderLayout.CENTER);
@@ -118,7 +119,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         saveButton.setPreferredSize(new Dimension(1000, 50));
         add(saveButton, BorderLayout.PAGE_END);
 
-        game.mainRunnerColor = Color.ORANGE;
+        //game.mainRunnerColor = Color.ORANGE;
         mainViewPanel.setBackground(backgroundColor);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // Window height
@@ -238,7 +239,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
     private class Panel extends JPanel {
         @Override
         public void paintComponent(Graphics g) {
-            if (!game.isGameInitialized()) return;
+            //if (!game.isGameInitialized()) return;
             super.paintComponent(g);
             /* Runner coordinates to pixels. */
             float runnerScaling = 25f;
