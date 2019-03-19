@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import actions.Action;
 import data.SavableActionSequence;
 import data.SparseDataToDenseTFRecord;
-import game.GameThreadSafe;
 import game.GameUnified;
 import game.IGame;
 import org.apache.commons.lang3.ArrayUtils;

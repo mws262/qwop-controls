@@ -2,7 +2,6 @@ package goals.phase_variable_testing;
 
 import actions.Action;
 import actions.ActionQueue;
-import game.GameThreadSafe;
 import game.GameUnified;
 import game.IGame;
 import game.State;

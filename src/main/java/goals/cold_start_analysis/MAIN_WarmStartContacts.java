@@ -28,7 +28,7 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
         IGame gameFullRun = new GameUnified(); // This game will run all the commands, start to finish.
         IGame gameColdStart = new GameUnified(); // This will start at some point in the middle of the sequence,
 
-        GameSingleThread gameAttemptWarmStart = GameSingleThread.getInstance();
+        IGame gameAttemptWarmStart = new GameUnified();
         // with a cloned state from gameFullRun, but a cold start on all the internal solvers.
 
         // Get to a certain part of the run where we want to introduce another cold start runner.
@@ -49,54 +49,54 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
 //        ContactEdge lfootC= gameAttemptWarmStart.lFootBody.getContactList();
 
         // Save joint info.
-        RevoluteJoint[] joints = gameAttemptWarmStart.getAllJoints();
-        Vec2[] jointWarmstarts = new Vec2[joints.length];
-
-        Vec2[] jointPivotForces = new Vec2[joints.length];
-        float[] jointMotorForces = new float[joints.length];
-        float[] jointLimitForces = new float[joints.length];
-        float[] jointlimitPositionImpulse = new float[joints.length];
-        float[] jointMotorSpeeds = new float[joints.length];
-        float[] jointMaxMotorTorque = new float[joints.length];
-        float[] jointLowerAngle = new float[joints.length];
-        float[] jointUpperAngle = new float[joints.length];
-        Mat22[] jointPivotMass = new Mat22[joints.length];
-
-        for (int i = 0; i < joints.length; i++) {
-            jointWarmstarts[i] = joints[i].m_lastWarmStartingPivotForce.clone();
-            jointPivotForces[i] = joints[i].m_pivotForce.clone();
-            jointMotorForces[i] = joints[i].m_motorForce;
-            jointLimitForces[i] = joints[i].m_limitForce;
-            jointlimitPositionImpulse[i] = joints[i].m_limitPositionImpulse;
-            jointMotorSpeeds[i] = joints[i].m_motorSpeed;
-            jointMaxMotorTorque[i] = joints[i].m_maxMotorTorque;
-            jointLowerAngle[i] = joints[i].m_lowerAngle;
-            jointUpperAngle[i] = joints[i].m_upperAngle;
-            jointPivotMass[i] = joints[i].m_pivotMass.clone();
-        }
-
-        // Attempt to set contacts.
-        gameAttemptWarmStart.makeNewWorld();
-//        for (int i = 0; i < 7; i++) {
-//            gameAttemptWarmStart.step(false, true, true, false);
+//        RevoluteJoint[] joints = gameAttemptWarmStart.getAllJoints();
+//        Vec2[] jointWarmstarts = new Vec2[joints.length];
+//
+//        Vec2[] jointPivotForces = new Vec2[joints.length];
+//        float[] jointMotorForces = new float[joints.length];
+//        float[] jointLimitForces = new float[joints.length];
+//        float[] jointlimitPositionImpulse = new float[joints.length];
+//        float[] jointMotorSpeeds = new float[joints.length];
+//        float[] jointMaxMotorTorque = new float[joints.length];
+//        float[] jointLowerAngle = new float[joints.length];
+//        float[] jointUpperAngle = new float[joints.length];
+//        Mat22[] jointPivotMass = new Mat22[joints.length];
+//
+//        for (int i = 0; i < joints.length; i++) {
+//            jointWarmstarts[i] = joints[i].m_lastWarmStartingPivotForce.clone();
+//            jointPivotForces[i] = joints[i].m_pivotForce.clone();
+//            jointMotorForces[i] = joints[i].m_motorForce;
+//            jointLimitForces[i] = joints[i].m_limitForce;
+//            jointlimitPositionImpulse[i] = joints[i].m_limitPositionImpulse;
+//            jointMotorSpeeds[i] = joints[i].m_motorSpeed;
+//            jointMaxMotorTorque[i] = joints[i].m_maxMotorTorque;
+//            jointLowerAngle[i] = joints[i].m_lowerAngle;
+//            jointUpperAngle[i] = joints[i].m_upperAngle;
+//            jointPivotMass[i] = joints[i].m_pivotMass.clone();
 //        }
-        gameAttemptWarmStart.setState(st);
-
-        joints = gameAttemptWarmStart.getAllJoints();
-        for (int i = 0; i < joints.length; i++) {
-            joints[i].m_lastWarmStartingPivotForce.set(jointWarmstarts[i]);
-            joints[i].m_pivotForce.set(jointPivotForces[i]);
-
-            joints[i].m_motorForce = jointMotorForces[i];
-            joints[i].m_limitForce = jointLimitForces[i];
-            joints[i].m_limitPositionImpulse = jointlimitPositionImpulse[i];
-            joints[i].m_motorSpeed = jointMotorSpeeds[i];
-            joints[i].m_maxMotorTorque = jointMaxMotorTorque[i];
-            joints[i].m_lowerAngle = jointLowerAngle[i];
-            joints[i].m_upperAngle = jointUpperAngle[i];
-
-            joints[i].m_pivotMass.set(jointPivotMass[i]);
-        }
+//
+//        // Attempt to set contacts.
+//        gameAttemptWarmStart.makeNewWorld();
+////        for (int i = 0; i < 7; i++) {
+////            gameAttemptWarmStart.step(false, true, true, false);
+////        }
+//        gameAttemptWarmStart.setState(st);
+//
+//        joints = gameAttemptWarmStart.getAllJoints();
+//        for (int i = 0; i < joints.length; i++) {
+//            joints[i].m_lastWarmStartingPivotForce.set(jointWarmstarts[i]);
+//            joints[i].m_pivotForce.set(jointPivotForces[i]);
+//
+//            joints[i].m_motorForce = jointMotorForces[i];
+//            joints[i].m_limitForce = jointLimitForces[i];
+//            joints[i].m_limitPositionImpulse = jointlimitPositionImpulse[i];
+//            joints[i].m_motorSpeed = jointMotorSpeeds[i];
+//            joints[i].m_maxMotorTorque = jointMaxMotorTorque[i];
+//            joints[i].m_lowerAngle = jointLowerAngle[i];
+//            joints[i].m_upperAngle = jointUpperAngle[i];
+//
+//            joints[i].m_pivotMass.set(jointPivotMass[i]);
+//        }
 //        if (lfootC != null) {
 //           PolyContact clfoot =
 //                   (PolyContact) gameAttemptWarmStart.getWorld().m_contactManager.pairAdded(gameAttemptWarmStart.trackBody.m_shapeList,

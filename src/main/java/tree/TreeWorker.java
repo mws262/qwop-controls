@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.LongAdder;
 
 import actions.Action;
 import actions.ActionQueue;
-import game.GameThreadSafe;
 import game.GameUnified;
 import game.IGame;
 import game.State;

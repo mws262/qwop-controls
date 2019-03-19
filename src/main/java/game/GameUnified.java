@@ -146,7 +146,7 @@ public class GameUnified implements IGame, Serializable {
     /**
      * Initial runner state.
      **/
-    private static final State initState = new GameUnified().getCurrentState();
+    private static final State initState;
 
     /** Can turn off feet (just leg stumps) for trying stuff out. **/
     private static boolean noFeet = false;
@@ -323,6 +323,8 @@ public class GameUnified implements IGame, Serializable {
         lLArmMassData.mass = lLArmMass;
         rLArmDef.massData = rLArmMassData;
         lLArmDef.massData = lLArmMassData;
+
+        initState = new GameUnified().getCurrentState();
     }
 
     public void makeNewWorld() {

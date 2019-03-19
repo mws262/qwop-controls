@@ -6,8 +6,6 @@ import java.util.List;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameThreadSafe;
-import game.GameUnified;
 import game.IGame;
 import game.State;
 import actions.Action;

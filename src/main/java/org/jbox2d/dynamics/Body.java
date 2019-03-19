@@ -40,7 +40,6 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.contacts.ContactEdge;
 import org.jbox2d.dynamics.joints.JointEdge;
-import sun.misc.Unsafe;
 
 // Updated to rev. 54->118->142 of b2Body.cpp/.h
 // Rewritten completely for rev. 118 (too many changes, needed reorganization for maintainability)

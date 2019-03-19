@@ -1,6 +1,6 @@
 package samplers;
 
-import game.GameThreadSafe;
+import game.IGame;
 import org.jblas.util.Random;
 
 import actions.Action;
@@ -188,7 +188,7 @@ public class Sampler_UCB implements ISampler {
     //        "frozen_model.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
 
     @Override
-    public void rolloutPolicy(Node startNode, GameThreadSafe game) {
+    public void rolloutPolicy(Node startNode, IGame game) {
         if (startNode.isFailed())
             throw new IllegalStateException("Rollout policy received a starting node which corresponds to an already failed " +
                     "state.");

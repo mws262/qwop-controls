@@ -91,8 +91,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
         }else {
             oneHotAction[0][0][2] = 1f;
         }
-        Tensor<Float> actionTensor = Tensor.create(oneHotAction, Float.class);
-        return actionTensor;
+        return Tensor.create(oneHotAction, Float.class);
     }
 
     public static void main(String[] args) {

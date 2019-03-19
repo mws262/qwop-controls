@@ -42,7 +42,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
         hiddenLayerSizes.add(64);
         try {
             valFun = new ValueFunction_TensorFlow_ActionIn("valfun_network_unit_test_tmp", hiddenLayerSizes,
-                    new ArrayList<String>());
+                    new ArrayList<>());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -117,7 +117,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
         hiddenLayerSizes.add(64);
         try {
             valFunRemade = new ValueFunction_TensorFlow_ActionIn("valfun_network_unit_test_tmp2",
-                    hiddenLayerSizes, new ArrayList<String>());
+                    hiddenLayerSizes, new ArrayList<>());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

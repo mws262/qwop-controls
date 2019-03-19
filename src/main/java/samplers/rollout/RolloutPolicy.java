@@ -3,7 +3,7 @@ package samplers.rollout;
 import actions.Action;
 import actions.ActionQueue;
 import evaluators.IEvaluationFunction;
-import game.GameThreadSafe;
+import game.IGame;
 import tree.Node;
 
 /**
@@ -28,14 +28,14 @@ public abstract class RolloutPolicy {
      * @param game Instance of the game to use. Must already be at the state of startNode.
      * @return The reward associated with how good this rollout was.
      */
-    public abstract float rollout(Node startNode, GameThreadSafe game);
+    public abstract float rollout(Node startNode, IGame game);
 
     /**
      * Run the simulation to get back to a specified node.
      * @param targetNode Node we want to simulate to.
      * @param game Game used for simulation. Will be reset before simulating.
      */
-    void simGameToNode(Node targetNode, GameThreadSafe game) {
+    void simGameToNode(Node targetNode, IGame game) {
         // Reset the game and action queue.
         game.makeNewWorld();
         actionQueue.clearAll();
@@ -52,7 +52,7 @@ public abstract class RolloutPolicy {
      * @param target Node to set the game's state to.
      * @param game Game used for simulation. Will be reset before setting the state.
      */
-    void coldStartGameToNode(Node target, GameThreadSafe game) {
+    void coldStartGameToNode(Node target, IGame game) {
         // Reset the game.
         game.makeNewWorld();
 //        actionQueue.clearAll();
@@ -65,7 +65,7 @@ public abstract class RolloutPolicy {
      * @param game Game simulation to use. Note that it is not reset ahead of time.
      * @return The Node we arrive at at failure.
      */
-    Node randomRollout(Node startNode, GameThreadSafe game) {
+    Node randomRollout(Node startNode, IGame game) {
         Node rolloutNode = startNode;
         while (!rolloutNode.isFailed()) {
             Action childAction = rolloutNode.uncheckedActions.getRandom();

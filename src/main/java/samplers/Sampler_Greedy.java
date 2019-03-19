@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import actions.Action;
 import evaluators.IEvaluationFunction;
-import game.GameThreadSafe;
+import game.IGame;
 import tree.Node;
 import tree.Utility;
 
@@ -208,7 +208,7 @@ public class Sampler_Greedy implements ISampler {
     }
 
     @Override
-    public void rolloutPolicy(Node startNode, GameThreadSafe game) {
+    public void rolloutPolicy(Node startNode, IGame game) {
         // No rollout policy.
     }
 

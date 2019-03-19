@@ -2,7 +2,6 @@ package controllers;
 
 import java.awt.Graphics;
 
-import game.GameThreadSafe;
 import game.GameUnified;
 import game.State;
 import actions.Action;
