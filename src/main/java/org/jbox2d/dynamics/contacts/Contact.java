@@ -24,7 +24,6 @@
 package org.jbox2d.dynamics.contacts;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jbox2d.collision.Manifold;
@@ -49,10 +48,6 @@ public abstract class Contact implements Serializable {
 	public static final int e_islandFlag	= 0x0004;
 	public static final int e_toiFlag		= 0x0008;
 
-	private static ArrayList<ContactRegister> s_registers;
-
-	private static boolean s_initialized;
-
 	/** The parent world. */
 	World m_world;
 
@@ -73,7 +68,6 @@ public abstract class Contact implements Serializable {
 	/** Combined restitution */
 	public float m_restitution;
 
-	// public boolean m_islandFlag;
 	public int m_flags;
 	public int m_manifoldCount;
 
@@ -90,18 +84,12 @@ public abstract class Contact implements Serializable {
 	 * manifold holds up to two contact points with a shared contact normal.
 	 */
 	public int getManifoldCount() {
-		/*
-		 * List<Manifold> m = GetManifolds(); if (m == null) return 0; else
-		 * return GetManifolds().size();
-		 */
 		return m_manifoldCount;
 	}
 
 	boolean isSolid() {
 		return (m_flags & e_nonSolidFlag) == 0;
 	}
-
-
 
 	public Contact() {
 		m_node1 = new ContactEdge();
@@ -110,7 +98,6 @@ public abstract class Contact implements Serializable {
 
 	public Contact(final Shape s1, final Shape s2) {
 		this();
-
 		m_flags = 0;
 
 		if (s1.isSensor() || s2.isSensor()) {
@@ -119,20 +106,15 @@ public abstract class Contact implements Serializable {
 
 		m_shape1 = s1;
 		m_shape2 = s2;
-
 		m_manifoldCount = 0;
-		//getManifolds().clear(); //unnecessary, I think// djm now causes error
-
 		m_friction = MathUtils.sqrt(m_shape1.m_friction * m_shape2.m_friction);
 		m_restitution = MathUtils.max(m_shape1.m_restitution, m_shape2.m_restitution);
-		//world = s1.m_body.world;
 		m_prev = null;
 		m_next = null;
 		m_node1.contact = null;
 		m_node1.prev = null;
 		m_node1.next = null;
 		m_node1.other = null;
-
 		m_node2.contact = null;
 		m_node2.prev = null;
 		m_node2.next = null;
@@ -179,86 +161,45 @@ public abstract class Contact implements Serializable {
 	@Override
 	public abstract Contact clone();
 
-	private static void initializeRegisters() {
-		s_registers = new ArrayList<>();
-		Contact.addType(new CircleContact(), ShapeType.CIRCLE_SHAPE,
-		                ShapeType.CIRCLE_SHAPE);
-		Contact.addType(new PolyAndCircleContact(), ShapeType.POLYGON_SHAPE,
-		                ShapeType.CIRCLE_SHAPE);
-		Contact.addType(new PolyContact(), ShapeType.POLYGON_SHAPE,
-		                ShapeType.POLYGON_SHAPE);
-		Contact.addType(new PolyAndEdgeContact(), ShapeType.POLYGON_SHAPE,
-		                ShapeType.EDGE_SHAPE);
-		Contact.addType(new EdgeAndCircleContact(), ShapeType.EDGE_SHAPE,
-		                ShapeType.CIRCLE_SHAPE);
-		Contact.addType(new PointAndCircleContact(), ShapeType.POINT_SHAPE,
-		                ShapeType.CIRCLE_SHAPE);
-		Contact.addType(new PointAndPolyContact(), ShapeType.POLYGON_SHAPE,
-		                ShapeType.POINT_SHAPE);
-	}
-
-	private static void addType(final ContactCreateFcn createFcn, final ShapeType type1,
-								final ShapeType type2) {
-		final ContactRegister cr = new ContactRegister();
-		cr.s1 = type1;
-		cr.s2 = type2;
-		cr.createFcn = createFcn;
-		cr.primary = true;
-		s_registers.add(cr);
-
-		if (type1 != type2) {
-			final ContactRegister cr2 = new ContactRegister();
-			cr2.s2 = type1;
-			cr2.s1 = type2;
-			cr2.createFcn = createFcn;
-			cr2.primary = false;
-			s_registers.add(cr2);
-		}
-	}
-
 	/* Java note:
 	 * This function is called "create" in C++ version.
 	 * Doing this in Java causes problems, so leave it as is.
 	 */
 	public static Contact createContact(final Shape shape1, final Shape shape2) {
-		if (!s_initialized) {
-			Contact.initializeRegisters();
-			s_initialized = true;
-		}
-
 		final ShapeType type1 = shape1.m_type;
 		final ShapeType type2 = shape2.m_type;
 
-		final ContactRegister register = Contact.getContactRegister(type1, type2);
-		if (register != null) {
-			if (register.primary) {
-				return register.createFcn.create(shape1, shape2);
-			} else {
-				final Contact c = register.createFcn.create(shape2, shape1);
-				for (int i = 0; i < c.getManifoldCount(); ++i) {
-					final Manifold m = c.getManifolds().get(i);
-					m.normal.negateLocal();
-				}
-				return c;
+		// MWS -- just enumerating the combinations here. It's more straightforward than all the static stuff
+		// introduced to make it generalizable. Also eliminated contacts for point bodies.
+		Contact c = null;
+		if (type1 == ShapeType.POLYGON_SHAPE) {
+			if (type2 == ShapeType.POLYGON_SHAPE) {
+				c = PolyContact.create(shape1, shape2);
+			} else if (type2 == ShapeType.CIRCLE_SHAPE) { // For QWOP these first two cases are the only ones which
+				c = PolyAndCircleContact.create(shape1, shape2);
+			} else if (type2 == ShapeType.EDGE_SHAPE) {
+				c = PolyAndEdgeContact.create(shape1, shape2);
 			}
-		} else {
-			return null;
-		}
-	}
-
-	private static ContactRegister getContactRegister(final ShapeType type1,
-													  final ShapeType type2) {
-		for (final ContactRegister cr : s_registers) {
-			if (cr.s1 == type1 && cr.s2 == type2) {
-				return cr;
+		} else if (type1 == ShapeType.CIRCLE_SHAPE) {
+			if (type2 == ShapeType.POLYGON_SHAPE) {
+				c = PolyAndCircleContact.create(shape1, shape2);
+			} else if (type2 == ShapeType.CIRCLE_SHAPE) { // For QWOP these first two cases are the only ones which
+				c = CircleContact.create(shape1, shape2);
+			} else if (type2 == ShapeType.EDGE_SHAPE) {
+				c = EdgeAndCircleContact.create(shape1, shape2);
 			}
+		} else if (type1 == ShapeType.EDGE_SHAPE) {
+			if (type2 == ShapeType.POLYGON_SHAPE) {
+				c = PolyAndEdgeContact.create(shape1, shape2);
+			} else if (type2 == ShapeType.CIRCLE_SHAPE) { // For QWOP these first two cases are the only ones which
+				c = EdgeAndCircleContact.create(shape1, shape2);
+			}
+			// No edge/edge contact.
 		}
-		return null;
+		return c;
 	}
 
 	public static void destroy(final Contact contact) {
-		assert (s_initialized);
-
 		if (contact.getManifoldCount() > 0) {
 			contact.getShape1().getBody().wakeUp();
 			contact.getShape2().getBody().wakeUp();

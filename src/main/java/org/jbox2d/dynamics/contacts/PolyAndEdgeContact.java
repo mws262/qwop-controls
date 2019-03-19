@@ -34,13 +34,19 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.ContactListener;
 
-public class PolyAndEdgeContact extends Contact implements ContactCreateFcn {
+public class PolyAndEdgeContact extends Contact {
 	private final Manifold m_manifold;
 	private final ArrayList<Manifold> manifoldList = new ArrayList<>();
 	private final CollidePoly collidePoly = new CollidePoly();
 
-	public Contact create(final Shape s1, final Shape s2) {
-		return new PolyAndEdgeContact(s1,s2);
+	public static Contact create(final Shape s1, final Shape s2) {
+		// Fix order if incorrect.
+		if (s1.m_type == ShapeType.POLYGON_SHAPE
+				&& s2.m_type == ShapeType.EDGE_SHAPE) {
+			return new PolyAndEdgeContact(s1, s2);
+		}else {
+			return new PolyAndEdgeContact(s2, s1);
+		}
 	}
 
 	PolyAndEdgeContact() {

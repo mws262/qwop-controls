@@ -84,22 +84,22 @@ public class World implements Externalizable {
 	ContactFilter m_contactFilter;
 	ContactListener m_contactListener;
 
-	private TOI timeOfImpact = new TOI();
-    private float m_inv_dt0;
+	private float m_inv_dt0;
 
+	transient private TOI timeOfImpact = new TOI();
 	// Allocating island once.
-	private Island island = new Island();
-	private Island toiIsland = new Island();
-	private static final int highestContacts = 5; // TODO cause these to be remade if the highest number of
+	transient private Island island = new Island();
+	transient private Island toiIsland = new Island();
+	transient private static final int highestContacts = 5; // TODO cause these to be remade if the highest number of
 	// joints/bodies/contacts
-	private static final int highestJoints = 11; // bodies and joints should be correct for qwop.
-	private static final int highestBodies = 14;
+	transient private static final int highestJoints = 11; // bodies and joints should be correct for qwop.
+	transient private static final int highestBodies = 14;
 
-	private Body[] stack = new Body[highestBodies];
-	private Body[] queue = new Body[highestBodies];
+	transient private Body[] stack = new Body[highestBodies];
+	transient private Body[] queue = new Body[highestBodies];
 
-	private TimeStep subStep = new TimeStep();
-	private TimeStep step = new TimeStep();
+	transient private TimeStep subStep = new TimeStep();
+	transient private TimeStep step = new TimeStep();
 
 	/** Get the number of bodies. */
 	public int getBodyCount() {
@@ -518,7 +518,6 @@ public class World implements Externalizable {
 					if ( (cn.contact.m_flags & (Contact.e_islandFlag | Contact.e_nonSolidFlag)) > 0) {
 						continue;
 					}
-
 					// Is this contact touching?
 					if (cn.contact.getManifoldCount() == 0) {
 						continue;
@@ -891,6 +890,7 @@ public class World implements Externalizable {
 		out.writeObject(m_contactFilter);
 		out.writeObject(m_contactListener);
 
+		out.writeFloat(m_inv_dt0);
 	}
 
 	@Override
@@ -917,6 +917,8 @@ public class World implements Externalizable {
 
 		m_contactFilter = (ContactFilter) in.readObject();
 		m_contactListener = (ContactListener) in.readObject();
+
+		m_inv_dt0 = in.readFloat();
 
 		timeOfImpact = new TOI();
 

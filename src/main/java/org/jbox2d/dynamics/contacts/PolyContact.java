@@ -39,7 +39,7 @@ import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.ContactListener;
 
 //Updated to rev 142 of b2PolyContact.h/cpp
-public class PolyContact extends Contact implements ContactCreateFcn, Serializable {
+public class PolyContact extends Contact implements Serializable {
 
 	private final Manifold m_manifold;
 	private final ArrayList<Manifold> manifoldList = new ArrayList<>();
@@ -98,7 +98,7 @@ public class PolyContact extends Contact implements ContactCreateFcn, Serializab
 		return manifoldList;
 	}
 
-	public Contact create(final Shape shape1, final Shape shape2) {
+	public static Contact create(final Shape shape1, final Shape shape2) {
 		return new PolyContact(shape1, shape2);
 	}
 

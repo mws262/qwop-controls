@@ -35,7 +35,7 @@ import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.ContactListener;
 
 //Updated to rev 144 of b2PolyAndCircleContact.h/cpp
-class PolyAndCircleContact extends Contact implements ContactCreateFcn {
+class PolyAndCircleContact extends Contact {
 
 	private final Manifold m_manifold;
 	private final ArrayList<Manifold> manifoldList = new ArrayList<>();
@@ -81,8 +81,13 @@ class PolyAndCircleContact extends Contact implements ContactCreateFcn {
 		return newC;
 	}
 
-	public Contact create(final Shape shape1, final Shape shape2) {
-		return new PolyAndCircleContact(shape1, shape2);
+	public static Contact create(final Shape shape1, final Shape shape2) {
+		if (shape1.m_type == ShapeType.POLYGON_SHAPE
+				&& shape2.m_type == ShapeType.CIRCLE_SHAPE) {
+			return new PolyAndCircleContact(shape1, shape2);
+		}else {
+			return new PolyAndCircleContact(shape2, shape1);
+		}
 	}
 
 	@Override
