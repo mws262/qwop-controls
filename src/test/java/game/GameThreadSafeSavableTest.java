@@ -78,7 +78,6 @@ public class GameThreadSafeSavableTest {
         List<Callable<State>> sims = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             sims.add(sim);
-
         }
 
         List<Future<State>> results = null;
