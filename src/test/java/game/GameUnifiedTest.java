@@ -35,9 +35,8 @@ public class GameUnifiedTest {
         }
         Assert.assertTrue(stateDiff > 1e-10);
 
-        for (int i = 0; i < 100; i++) {
-            game.step(true, false, false, true);
-        }
+        game.holdKeysForTimesteps(100, true, false, false, true);
+
         Assert.assertTrue(game.getFailureStatus());
 
         game.makeNewWorld();
@@ -90,9 +89,8 @@ public class GameUnifiedTest {
         GameUnified game1 = new GameUnified();
         GameUnified game2 = new GameUnified();
 
-        for (int i = 0; i < 10; i++) {
-            game1.step(true, false, true, false);
-        }
+        game1.holdKeysForTimesteps(10, true, false, true, false);
+
         State gameState1 = game1.getCurrentState();
         game2.setState(gameState1);
         float[] gameState2f = game2.getCurrentState().flattenState();
@@ -107,9 +105,7 @@ public class GameUnifiedTest {
     public void getFailureStatus() {
         GameUnified game = new GameUnified();
         Assert.assertFalse(game.getFailureStatus());
-        for (int i = 0; i < 100; i++) {
-            game.step(true, false, false, true);
-        }
+        game.holdKeysForTimesteps(100, true, false, false, true);
         Assert.assertTrue(game.getFailureStatus());
     }
 
@@ -145,6 +141,21 @@ public class GameUnifiedTest {
     }
 
     @Test
+    public void holdKeysForTimesteps() {
+        int numTs = 7;
+        GameUnified game1 = new GameUnified();
+        GameUnified game2 = new GameUnified();
+
+        game1.holdKeysForTimesteps(numTs, false, true, false, false);
+        for (int i = 0; i < numTs; i++) {
+            game2.step(false, true, false, false);
+        }
+
+        Assert.assertArrayEquals(game2.getCurrentState().flattenState(), game1.getCurrentState().flattenState(),
+                1e-15f);
+    }
+
+    @Test
     public void getTimestepsSimulatedThisGame() {
         GameUnified game1 = new GameUnified();
         GameUnified game2 = new GameUnified();
@@ -158,9 +169,8 @@ public class GameUnifiedTest {
         game2.step(true, false, false, false);
         Assert.assertEquals(1, game2.getTimestepsSimulatedThisGame());
 
-        for (int i = 0; i < 5; i++) {
-            game2.step(true, true, true, true);
-        }
+        game2.holdKeysForTimesteps(5, true, true, true, true);
+
         Assert.assertEquals(6, game2.getTimestepsSimulatedThisGame());
         Assert.assertEquals(1, game1.getTimestepsSimulatedThisGame());
 
@@ -209,7 +219,7 @@ public class GameUnifiedTest {
     }
 
     @Test
-    public void restoreFullState() {
+    public void getToSameEndAfterReload() {
         GameUnified gameSingle = new GameUnified();
 
         // Run through the full queue with no saving/loading
@@ -232,9 +242,7 @@ public class GameUnifiedTest {
         byte[] fullState = gameSingle.getFullState();
 
         // Step forward arbitrarily.
-        for (int i = 0; i < 10; i++) {
-            gameSingle.step(true, false, false, true);
-        }
+        gameSingle.holdKeysForTimesteps(10, true, false, false, true);
 
         // Load
         gameSingle = gameSingle.restoreFullState(fullState);
@@ -252,29 +260,26 @@ public class GameUnifiedTest {
 
         Assert.assertArrayEquals(stateEndNoLoad.flattenState(), stateEndAfterLoad.flattenState(), 1e-15f);
 
+    }
 
-        // This is an old test from the multi-thread version:
-
+    @Test
+    public void forkingGameAndContinuingToTheSameEnd() {
         // Make sure that a single game can create a restored copy such that both are consistent with each other, but
         // don't affect each other's results.
         GameUnified game = new GameUnified();
 
-        for (int i = 0; i < 10; i++) {
-            game.step(false, true, true, false);
-        }
+        game.holdKeysForTimesteps(10, false, true, true, false);
+
         State stateAtSave = game.getCurrentState();
         byte[] gameSave = game.getFullState();
 
-        for (int i = 0; i < 10; i++) {
-            game.step(true, false, false, true);
-        }
+        game.holdKeysForTimesteps(10, true, false, false, true);
         State stateAfter10 = game.getCurrentState();
 
         GameUnified gameRestored = game.restoreFullState(gameSave);
         State stateAtRestore = gameRestored.getCurrentState();
-        for (int i = 0; i < 10; i++) {
-            gameRestored.step(true, false, false, true);
-        }
+        gameRestored.holdKeysForTimesteps(10, true, false, false, true);
+
         State stateReloadAfter10 = gameRestored.getCurrentState();
 
         Assert.assertArrayEquals(stateAtSave.flattenState(), stateAtRestore.flattenState(), 1e-15f);
@@ -293,17 +298,13 @@ public class GameUnifiedTest {
     public void branchingGameLoad() {
         // Also make sure that a bunch of things loading from the SAME thing are ok.
         GameUnified game = new GameUnified();
+        game.holdKeysForTimesteps(10, false, true, true, false);
 
-        for (int i = 0; i < 10; i++) {
-            game.step(false, true, true, false);
-        }
         byte[] gameSave = game.getFullState();
 
         Callable<State> sim = () -> {
             GameUnified gameForLoading = game.restoreFullState(gameSave);
-            for (int i = 0; i < 10; i++) {
-                gameForLoading.step(false, true, false, true);
-            }
+            gameForLoading.holdKeysForTimesteps(10, false, true, false, true);
             return gameForLoading.getCurrentState();
         };
 
@@ -341,20 +342,16 @@ public class GameUnifiedTest {
         // Make sure that a bunch of things loading and saving at the same time are ok.
         Callable<State> sim = () -> {
             GameUnified game = new GameUnified();
+            game.holdKeysForTimesteps(10, false, true, true, false);
 
-            for (int i = 0; i < 10; i++) {
-                game.step(false, true, true, false);
-            }
             byte[] gameSave = game.getFullState();
 
-            for (int i = 0; i < 10; i++) {
-                game.step(true, false, false, false);
-            }
+            game.holdKeysForTimesteps(10, true, false, false, false);
 
             GameUnified gameLoaded = game.restoreFullState(gameSave);
-            for (int i = 0; i < 10; i++) {
-                gameLoaded.step(true, false, false, false);
-            }
+
+            gameLoaded.holdKeysForTimesteps(10, true, false, false, false);
+
             State s = game.getCurrentState();
             float[] s1 = s.flattenState();
             float[] s2 = gameLoaded.getCurrentState().flattenState();
@@ -367,7 +364,6 @@ public class GameUnifiedTest {
         List<Callable<State>> sims = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             sims.add(sim);
-
         }
 
         List<Future<State>> results = null;
