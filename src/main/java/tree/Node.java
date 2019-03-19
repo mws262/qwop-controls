@@ -23,6 +23,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import data.SavableSingleGame;
 import game.GameThreadSafe;
 import game.GameThreadSafeSavable;
+import game.GameUnified;
 import game.State;
 
 /**
@@ -292,7 +293,7 @@ public class Node {
         displayPoint = true;
 
         // Root node gets the QWOP initial condition.
-        setState(GameThreadSafe.getInitialState());
+        setState(GameUnified.getInitialState());
 
         // Add some child actions to try if an action generator is assigned.
         autoAddUncheckedActions();

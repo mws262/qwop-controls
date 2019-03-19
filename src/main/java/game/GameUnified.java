@@ -722,6 +722,21 @@ public class GameUnified implements IGame, Serializable {
     }
 
     /**
+     * Simple convenience method for calling {@link GameUnified#step(boolean, boolean, boolean, boolean)} but for
+     * multiple timesteps.
+     * @param timesteps Number of timesteps to simulate ahead while holding these keys.
+     * @param q Whether q key is down.
+     * @param w Whether w key is down.
+     * @param o Whether o key is down.
+     * @param p Whether p key is down.
+     */
+    public void holdKeysForTimesteps(int timesteps, boolean q, boolean w, boolean o, boolean p) {
+        for (int i = 0; i < timesteps; i++) {
+            step(q,w,o,p);
+        }
+    }
+
+    /**
      * Get the actual Box2D world.
      **/
     public World getWorld() {
