@@ -33,8 +33,7 @@ import org.jbox2d.dynamics.ContactListener;
 public class NullContact extends Contact implements Serializable {
 
     @Override
-    public void evaluate(ContactListener cl) {
-    }
+    public void evaluate(ContactListener cl) {}
 
     public NullContact() {
         super();

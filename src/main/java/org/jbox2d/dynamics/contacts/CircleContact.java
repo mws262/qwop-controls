@@ -38,13 +38,13 @@ import org.jbox2d.dynamics.ContactListener;
 
 // Updated to rev 142 of b2CircleContact.h/cpp
 
-public class CircleContact extends Contact implements ContactCreateFcn {
+public class CircleContact extends Contact {
 
 	private final Manifold m_manifold;
 	private final ArrayList<Manifold> manifoldList = new ArrayList<>();
 	private final CollideCircle collideCircle = new CollideCircle();
 
-	public Contact create(final Shape shape1, final Shape shape2) {
+	public static Contact create(final Shape shape1, final Shape shape2) {
 		return new CircleContact(shape1, shape2);
 	}
 

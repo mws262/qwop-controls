@@ -146,8 +146,7 @@ public class ContactManager implements PairCallback, Externalizable {
 
 		// Inform the user that this contact is ending.
 		final int manifoldCount = c.getManifoldCount();
-		if (manifoldCount > 0 && (m_world.m_contactListener != null))
-		{
+		if (manifoldCount > 0 && (m_world.m_contactListener != null)) {
 			final Body b1 = shape1.getBody();
 			final Body b2 = shape2.getBody();
 			final List<Manifold> manifolds = c.getManifolds();

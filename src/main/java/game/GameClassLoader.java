@@ -86,12 +86,9 @@ public class GameClassLoader extends ClassLoader implements Serializable {
             findClass("org.jbox2d.dynamics.contacts.PolyContact");
             findClass("org.jbox2d.dynamics.contacts.PolyAndEdgeContact");
             findClass("org.jbox2d.dynamics.contacts.EdgeAndCircleContact");
-            findClass("org.jbox2d.dynamics.contacts.PointAndCircleContact");
-            findClass("org.jbox2d.dynamics.contacts.PointAndPolyContact");
             findClass("org.jbox2d.dynamics.contacts.ContactConstraintPoint");
             findClass("org.jbox2d.dynamics.contacts.ContactConstraint");
             findClass("org.jbox2d.dynamics.contacts.ContactResult");
-            findClass("org.jbox2d.dynamics.contacts.ContactRegister");
 
             findClass("org.jbox2d.collision.BroadPhase");
             findClass("org.jbox2d.collision.ContactID");
