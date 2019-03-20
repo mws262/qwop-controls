@@ -5,7 +5,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.Queue;
 
-import game.GameThreadSafe;
+import game.GameUnified;
+import game.IGame;
 import game.State;
 import tree.Node;
 
@@ -19,7 +20,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     /**
      * This panel's copy of the game it uses to run games for visualization.
      */
-    protected GameThreadSafe game;
+    protected IGame game;
 
     /**
      * States to animate through.
@@ -32,7 +33,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     private State currState;
 
     public PanelRunner_AnimatedFromStates() {
-        game = new GameThreadSafe();
+        game = new GameUnified();
         game.makeNewWorld();
     }
 
@@ -46,11 +47,11 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
      */
     @Override
     public void paintComponent(Graphics g) {
-        if (!active && game.isGameInitialized()) return;
+        if (!active) return;
         super.paintComponent(g);
         if (game != null && currState != null) {
 
-            game.drawExtraRunner((Graphics2D) g, currState, "", runnerScaling,
+            GameUnified.drawExtraRunner((Graphics2D) g, currState, "", runnerScaling,
                     (int) (xOffsetPixels - currState.body.getX() * runnerScaling), yOffsetPixels, Color.BLACK,
                     normalStroke);
 

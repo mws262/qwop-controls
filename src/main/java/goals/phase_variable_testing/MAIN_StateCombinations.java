@@ -2,7 +2,7 @@ package goals.phase_variable_testing;
 
 import actions.Action;
 import actions.ActionQueue;
-import game.GameThreadSafe;
+import game.GameUnified;
 import game.State;
 import tree.Node;
 import ui.PanelPlot_Simple;
@@ -38,12 +38,12 @@ public class MAIN_StateCombinations extends JFrame {
         pack();
         setVisible(true);
 
-        GameThreadSafe game = new GameThreadSafe();
+        GameUnified game = new GameUnified();
 
         ActionQueue actionQueue = getSampleActions();
 
         List<State> stateList = new ArrayList<>();
-        stateList.add(GameThreadSafe.getInitialState());
+        stateList.add(GameUnified.getInitialState());
         while (!actionQueue.isEmpty()) {
             game.step(actionQueue.pollCommand());
             State st = game.getCurrentState();

@@ -27,36 +27,20 @@ import org.jbox2d.common.Vec2;
 
 //Updated to rev 89->139 of b2ContactSolver.h/.cpp
 public class ContactConstraintPoint {
-    public final Vec2 localAnchor1;
-
-    public final Vec2 localAnchor2;
-    
-    public final Vec2 r1;
-    
-    public final Vec2 r2;
-
+    final Vec2 localAnchor1 = new Vec2();
+    final Vec2 localAnchor2 = new Vec2();
+    final Vec2 r1 = new Vec2();
+    final Vec2 r2 = new Vec2();
     public float normalImpulse;
-
     public float tangentImpulse;
-
-    public float positionImpulse;
-
-    public float normalMass;
-
-    public float tangentMass;
-    
-    public float equalizedMass;
-
+    float positionImpulse;
+    float normalMass;
+    float tangentMass;
+    float equalizedMass;
     public float separation;
+    float velocityBias;
 
-    public float velocityBias;
-
-    public ContactConstraintPoint() {
-        localAnchor1 = new Vec2();
-        localAnchor2 = new Vec2();
-        r1 = new Vec2();
-        r2 = new Vec2();
-    }
+    ContactConstraintPoint() {}
     
     public void set(final ContactConstraintPoint cp){
     	localAnchor1.set(cp.localAnchor1);

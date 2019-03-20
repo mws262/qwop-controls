@@ -2,8 +2,8 @@ package game;
 
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
-import org.jbox2d.collision.shapes.*;
 import org.jbox2d.collision.shapes.Shape;
+import org.jbox2d.collision.shapes.*;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
@@ -14,37 +14,18 @@ import org.jbox2d.dynamics.contacts.ContactPoint;
 import org.jbox2d.dynamics.contacts.ContactResult;
 import org.jbox2d.dynamics.joints.RevoluteJoint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
+import org.nustaq.serialization.FSTConfiguration;
 
 import java.awt.*;
-import java.io.*;
-import java.util.ConcurrentModificationException;
-import java.util.concurrent.locks.ReentrantLock;
+import java.io.Serializable;
 
 import static game.GameConstants.*;
 
 /**
- * NOTE: There can only be one of these! Call getInstance() to retrieve it. Callers will acquire the lock for the
- * game and must releaseGame after using for others to use.
- * This creates the QWOP game using the Box2D library. This operates on the primary classloader. This means that
- * multiple instances of this class will interfere with others due to static information inside Box2D.
- * {@link GameThreadSafe} uses a separate classloader for each instance and can be done in multithreaded applications.
- * However, dealing with all the reflection in GameThreadSafe is really annoying. Hence, this class is more readable.
- *
  * @author matt
  */
 @SuppressWarnings("Duplicates")
-public class GameSingleThread implements IGame, Serializable {
-
-    /**
-     * This is the only instance of the single threaded game allowed. If multiple copies run, they interfere. Run
-     * {@link GameSingleThread#getInstance()}
-     */
-    private static GameSingleThread instance;
-
-    /**
-     * Lock allowing only one thread to access the game instance at a time.
-     */
-    private static ReentrantLock lock = new ReentrantLock();
+public class GameUnified implements IGame, Serializable {
 
     /**
      * Keep track of sim stats since beginning of execution.
@@ -62,14 +43,6 @@ public class GameSingleThread implements IGame, Serializable {
     private boolean isFailed = false;
 
     /**
-     * TODO: This is a hack.
-     * After loading, the reference to this GameSingleThread may be invalid, and this should throw an exception if
-     * the user continues to access. This is mostly because I can't figure out loading such that all the fields here
-     * are replaced correctly.
-     */
-    private boolean invalidated = false;
-
-    /**
      * Should enclose the entire area we want collision checked.
      **/
     private static final AABB worldAABB = new AABB(new Vec2(aabbMinX, aabbMinY), new Vec2(aabbMaxX, aabbMaxY));
@@ -77,6 +50,8 @@ public class GameSingleThread implements IGame, Serializable {
     /* Individual body objects */
     private Body rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody, lUArmBody,
             rLArmBody, lLArmBody, headBody, trackBody;
+
+    private Body[] allBodies;
 
     /* Joint Definitions */
     private RevoluteJointDef rHipJDef, lHipJDef, rKneeJDef, lKneeJDef, rAnkleJDef, lAnkleJDef, rShoulderJDef,
@@ -96,18 +71,17 @@ public class GameSingleThread implements IGame, Serializable {
      **/
     private static final Vec2 gravity = new Vec2(0, gravityMagnitude);
 
-    private static final Vec2 rFootPos = new Vec2(rFootPosX, rFootPosY), lFootPos = new Vec2(lFootPosX, lFootPosY),
+    private static final Vec2
+            rFootPos = new Vec2(rFootPosX, rFootPosY), lFootPos = new Vec2(lFootPosX, lFootPosY),
             rCalfPos = new Vec2(rCalfPosX, rCalfPosY), lCalfPos = new Vec2(lCalfPosX, lCalfPosY),
             rThighPos = new Vec2(rThighPosX, rThighPosY), lThighPos = new Vec2(lThighPosX, lThighPosY),
-            torsoPos = new Vec2(torsoPosX, torsoPosY),
-            headPos = new Vec2(headPosX, headPosY),
-            rUArmPos = new Vec2(rUArmPosX, rUArmPosY),
-            lUArmPos = new Vec2(lUArmPosX, lUArmPosY),
-            rLArmPos = new Vec2(rLArmPosX, rLArmPosY),
-            lLArmPos = new Vec2(lLArmPosX, lLArmPosY);
+            torsoPos = new Vec2(torsoPosX, torsoPosY), headPos = new Vec2(headPosX, headPosY),
+            rUArmPos = new Vec2(rUArmPosX, rUArmPosY), lUArmPos = new Vec2(lUArmPosX, lUArmPosY),
+            rLArmPos = new Vec2(rLArmPosX, rLArmPosY), lLArmPos = new Vec2(lLArmPosX, lLArmPosY);
 
     /* Joints Positions*/
-    private static final Vec2 rAnklePos = new Vec2(rAnklePosX, rAnklePosY),
+    private static final Vec2
+            rAnklePos = new Vec2(rAnklePosX, rAnklePosY),
             lAnklePos = new Vec2(lAnklePosX, lAnklePosY),
             rKneePos = new Vec2(rKneePosX, rKneePosY),
             lKneePos = new Vec2(lKneePosX, lKneePosY),
@@ -124,7 +98,8 @@ public class GameSingleThread implements IGame, Serializable {
      **/
     private static Shape[] shapeList = new Shape[13];
 
-    private static final BodyDef trackDef = new BodyDef(),
+    private static final BodyDef
+            trackDef = new BodyDef(),
             rFootDef = new BodyDef(),
             lFootDef = new BodyDef(),
             rCalfDef = new BodyDef(),
@@ -138,7 +113,8 @@ public class GameSingleThread implements IGame, Serializable {
             rLArmDef = new BodyDef(),
             lLArmDef = new BodyDef();
 
-    private static final PolygonDef trackShape = new PolygonDef(),
+    private static final PolygonDef
+            trackShape = new PolygonDef(),
             rFootShape = new PolygonDef(),
             lFootShape = new PolygonDef(),
             rCalfShape = new PolygonDef(),
@@ -153,7 +129,8 @@ public class GameSingleThread implements IGame, Serializable {
 
     private static final CircleDef headShape = new CircleDef();
 
-    private static final MassData rFootMassData = new MassData(),
+    private static final MassData
+            rFootMassData = new MassData(),
             lFootMassData = new MassData(),
             rCalfMassData = new MassData(),
             lCalfMassData = new MassData(),
@@ -169,8 +146,7 @@ public class GameSingleThread implements IGame, Serializable {
     /**
      * Initial runner state.
      **/
-    private static State initState;
-    // the other static assignments to avoid null pointers.
+    private static final State initState;
 
     /** Can turn off feet (just leg stumps) for trying stuff out. **/
     private static boolean noFeet = false;
@@ -179,52 +155,27 @@ public class GameSingleThread implements IGame, Serializable {
     private CollisionListener collisionListener = new CollisionListener();
 
     /** Should the game be marked as failed if the thighs touch the ground? (happens with knees touching the ground. **/
-    public static boolean failOnThighContact = false;
+    public static boolean failOnThighContact = true;
 
     /**
      * Normal stroke for line drawing.
      **/
-    transient private static final Stroke normalStroke = new BasicStroke(0.5f);
-
-    // Make the single instance of this game!
-    static {
-        instance = new GameSingleThread();
-    }
-
-    private GameSingleThread() {
-        oneTimeSetup();
-        lock.lock();
-        makeNewWorld();
-        lock.unlock();
-        initState = getCurrentState(); // Make sure this stays below all
-    }
+    private static final Stroke normalStroke = new BasicStroke(0.5f);
 
     /**
-     * This is how you actually get the single-threaded game. This is the singleton pattern, i.e. only one instance
-     * of this class should ever exist. This will also lock the game, and any future thread trying to access this
-     * will wait until the original thread calls {@link GameSingleThread#releaseGame()}.
-     * @return The single instance of this class.
+     * For faster serialization.
      */
-    public static synchronized GameSingleThread getInstance() {
-        lock.lock();
-//        instance.makeNewWorld();
-        return instance;
-    }
+    private static FSTConfiguration fstConfiguration = FSTConfiguration.createDefaultConfiguration();
 
-    /**
-     * Release the lock that the current thread has on the game. Only the thread which owns the lock may do this.
-     */
-    public void releaseGame() {
-        lock.unlock();
-    }
+    public GameUnified() { makeNewWorld(); }
+
     /**
      * Call once to initialize a lot of shape definitions which only need to be created once.
      **/
-    private void oneTimeSetup() {
+    static {
         /*
          * Make the bodies and collision shapes
          */
-
         /* TRACK */
         trackDef.position = new Vec2(trackPosX, trackPosY);
         trackShape.setAsBox(trackXDim, trackYDim);
@@ -372,19 +323,11 @@ public class GameSingleThread implements IGame, Serializable {
         lLArmMassData.mass = lLArmMass;
         rLArmDef.massData = rLArmMassData;
         lLArmDef.massData = lLArmMassData;
+
+        initState = new GameUnified().getCurrentState();
     }
 
     public void makeNewWorld() {
-        if (!lock.isHeldByCurrentThread()) {
-            throw new ConcurrentModificationException("Cannot attempt to alter the single threaded game without first" +
-                    " obtaining its lock through getInstance. If having issues, make sure that all other threads have" +
-                    " called releaseGame to forfeit their locks.");
-        }
-
-        if (invalidated) {
-            throw new RuntimeException("Attempted to access an old copy of the game after a newer one was loaded from" +
-                    " serialized game. Dispose of this copy.");
-        }
 
         isFailed = false;
         timestepsSimulated = 0;
@@ -442,6 +385,8 @@ public class GameSingleThread implements IGame, Serializable {
         headBody = getWorld().createBody(headDef);
         headBody.createShape(headShape);
 
+        allBodies = new Body[]{rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
+                lUArmBody, rLArmBody, lLArmBody, rFootBody, lFootBody, headBody};
         /*
          *  Joints
          */
@@ -642,25 +587,15 @@ public class GameSingleThread implements IGame, Serializable {
      * Step the game forward 1 timestep with the specified keys pressed.
      **/
     public void step(boolean q, boolean w, boolean o, boolean p) {
-        if (!lock.isHeldByCurrentThread()) {
-            throw new ConcurrentModificationException("Cannot attempt to alter the single threaded game without first" +
-                    " obtaining its lock through getInstance. If having issues, make sure that all other threads have" +
-                    " called releaseGame to forfeit their locks.");
-        }
-        if (invalidated) {
-            throw new RuntimeException("Attempted to access an old copy of the game after a newer one was loaded from" +
-                    " serialized game. Dispose of this copy.");
-        }
-
         /* Involuntary Couplings (no QWOP presses) */
-
         //Neck spring torque
-        float NeckTorque = -neckStiff * neckJ.getJointAngle() + 0 * neckDamp * neckJ.getJointSpeed();
+        float NeckTorque = -neckStiff * neckJ.getJointAngle(); //  + 0 * neckDamp * neckJ.getJointSpeed(); // These
+        // *0 terms were in the real game, but I'm commenting out here.
         NeckTorque = NeckTorque + 0 * 400f * (neckJ.getJointAngle() + 0.2f); //This bizarre term is probably a roundabout way of adjust equilibrium position.
 
         //Elbow spring torque
-        float RElbowTorque = -rElbowStiff * rElbowJ.getJointAngle() + 0 * rElbowDamp * rElbowJ.getJointSpeed();
-        float LElbowTorque = -lElbowStiff * lElbowJ.getJointAngle() + 0 * lElbowDamp * lElbowJ.getJointSpeed();
+        float RElbowTorque = -rElbowStiff * rElbowJ.getJointAngle(); // + 0 * rElbowDamp * rElbowJ.getJointSpeed();
+        float LElbowTorque = -lElbowStiff * lElbowJ.getJointAngle(); // + 0 * lElbowDamp * lElbowJ.getJointSpeed();
 
         //For now, using motors with high speed settings and torque limits to simulate springs. I don't know a better way for now.
 
@@ -704,16 +639,16 @@ public class GameSingleThread implements IGame, Serializable {
         //Ankle/Hip Coupling -+ 0*Requires either Q or W pressed.
         if (q || w && !noFeet) {
             //Get world ankle positions (using foot and torso anchors -+ 0
-            Vec2 RAnkleCur = rAnkleJ.getAnchor1();
-            Vec2 LAnkleCur = lAnkleJ.getAnchor1();
+            float RAnkleCur = rAnkleJ.getAnchor1XCoord();
+            float LAnkleCur = lAnkleJ.getAnchor1XCoord();
 
-            Vec2 RHipCur = rHipJ.getAnchor1();
+            float RHipCur = rHipJ.getAnchor1XCoord();
 
 
             // if right ankle joint is behind the right hip jiont
             // Set ankle motor speed to 1;
             // else speed 2
-            if (RAnkleCur.x < RHipCur.x) {
+            if (RAnkleCur < RHipCur) {
                 rAnkleJ.m_motorSpeed = (rAnkleSpeed2);
             } else {
                 rAnkleJ.m_motorSpeed = (rAnkleSpeed1);
@@ -723,7 +658,7 @@ public class GameSingleThread implements IGame, Serializable {
             // if left ankle joint is behind RIGHT hip joint (weird it's the right one here too)
             // Set its motor speed to 1;
             // else speed 2;
-            if (LAnkleCur.x < RHipCur.x) {
+            if (LAnkleCur < RHipCur) {
                 lAnkleJ.m_motorSpeed = (lAnkleSpeed2);
             } else {
                 lAnkleJ.m_motorSpeed = (lAnkleSpeed1);
@@ -778,6 +713,21 @@ public class GameSingleThread implements IGame, Serializable {
     }
 
     /**
+     * Simple convenience method for calling {@link GameUnified#step(boolean, boolean, boolean, boolean)} but for
+     * multiple timesteps.
+     * @param timesteps Number of timesteps to simulate ahead while holding these keys.
+     * @param q Whether q key is down.
+     * @param w Whether w key is down.
+     * @param o Whether o key is down.
+     * @param p Whether p key is down.
+     */
+    public void holdKeysForTimesteps(int timesteps, boolean q, boolean w, boolean o, boolean p) {
+        for (int i = 0; i < timesteps; i++) {
+            step(q,w,o,p);
+        }
+    }
+
+    /**
      * Get the actual Box2D world.
      **/
     public World getWorld() {
@@ -828,13 +778,7 @@ public class GameSingleThread implements IGame, Serializable {
     }
 
     public Body[] getAllBodies() {
-        return new Body[]{rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
-                lUArmBody, rLArmBody, lLArmBody, headBody, trackBody};
-    }
-
-    public RevoluteJoint[] getAllJoints() {
-        return new RevoluteJoint[]{rHipJ, lHipJ, rKneeJ, lKneeJ, rAnkleJ, lAnkleJ, rShoulderJ, lShoulderJ, rElbowJ,
-                lElbowJ, neckJ};
+        return allBodies;
     }
 
     /**
@@ -850,10 +794,6 @@ public class GameSingleThread implements IGame, Serializable {
     }
 
     public void setState(State state) {
-        if (invalidated) {
-            throw new RuntimeException("Attempted to access an old copy of the game after a newer one was loaded from" +
-                    " serialized game. Dispose of this copy.");
-        }
         setBodyToStateVariable(rFootBody, state.rfoot);
         setBodyToStateVariable(lFootBody, state.lfoot);
 
@@ -873,7 +813,6 @@ public class GameSingleThread implements IGame, Serializable {
         setBodyToStateVariable(torsoBody, state.body);
     }
 
-
     /**
      * Is this state in failure?
      **/
@@ -884,8 +823,16 @@ public class GameSingleThread implements IGame, Serializable {
     /**
      * Get the number of timesteps simulated since the beginning of execution.
      **/
-    public long getTimestepsSimulated() {
+    public long getTimestepsSimulatedThisGame() {
         return timestepsSimulated;
+    }
+
+    public boolean isRightFootDown() {
+        return collisionListener.isRightFootGrounded();
+    }
+
+    public boolean isLeftFootDown() {
+        return collisionListener.isLeftFootGrounded();
     }
 
     /**
@@ -939,28 +886,19 @@ public class GameSingleThread implements IGame, Serializable {
     public VertHolder getDebugVertices() {
 
         VertHolder vertHolder = new VertHolder();
-
         vertHolder.groundHeight = XForm.mul(trackBody.getXForm(), trackShape.vertices.get(0)).y; // Never changes.
         vertHolder.torsoX = torsoBody.getPosition().x;
 
-        Body[] bodies;
-        if (!noFeet) {
-            bodies = new Body[]{rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
-                    lUArmBody, rLArmBody, lLArmBody};
-        } else {
-            bodies = new Body[]{rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
-                    lUArmBody, rLArmBody, lLArmBody};
-        }
-
-
-        for (int i = 0; i < bodies.length; i++) {
-            XForm xf = bodies[i].getXForm();
-            PolygonShape shape = (PolygonShape) bodies[i].getShapeList();
-            Vec2[] shapeVerts = shape.m_vertices;
-            for (int j = 0; j < shapeVerts.length; j++) {
-                Vec2 vert = XForm.mul(xf, shapeVerts[j]);
-                vertHolder.bodyVerts[i][2 * j] = vert.x;
-                vertHolder.bodyVerts[i][2 * j + 1] = vert.y;
+        for (int i = 0; i < allBodies.length; i++) {
+            if (allBodies[i] != null && allBodies[i] != headBody) {
+                XForm xf = allBodies[i].getXForm();
+                PolygonShape shape = (PolygonShape) allBodies[i].getShapeList();
+                Vec2[] shapeVerts = shape.m_vertices;
+                for (int j = 0; j < shapeVerts.length; j++) {
+                    Vec2 vert = XForm.mul(xf, shapeVerts[j]);
+                    vertHolder.bodyVerts[i][2 * j] = vert.x;
+                    vertHolder.bodyVerts[i][2 * j + 1] = vert.y;
+                }
             }
         }
 
@@ -1050,7 +988,10 @@ public class GameSingleThread implements IGame, Serializable {
     /**
      * Draw the runner at a specified set of transforms..
      **/
-    public static void drawExtraRunner(Graphics2D g, XForm[] transforms, String label, float scaling, int xOffset, int yOffset, Color drawColor, Stroke stroke) {
+    public static void drawExtraRunner(Graphics2D g, State state, String label, float scaling, int xOffset,
+                                       int yOffset, Color drawColor, Stroke stroke) {
+
+        XForm[] transforms = getXForms(state);
         g.setColor(drawColor);
         g.drawString(label, xOffset + (int) (transforms[1].position.x * scaling) - 20, yOffset - 75);
         for (int i = 0; i < shapeList.length; i++) {
@@ -1089,6 +1030,41 @@ public class GameSingleThread implements IGame, Serializable {
                     break;
             }
         }
+    }
+
+    /**
+     * Get the transform associated with this State. Note that these transforms can ONLY be used with this instance
+     * of GameThreadSafe.
+     */
+    public static XForm[] getXForms(State st) {
+        XForm[] transforms = new XForm[13];
+            transforms[0] = getXForm(st.body);
+            transforms[1] = getXForm(st.head);
+            transforms[2] = getXForm(st.rfoot);
+            transforms[3] = getXForm(st.lfoot);
+            transforms[4] = getXForm(st.rcalf);
+            transforms[5] = getXForm(st.lcalf);
+            transforms[6] = getXForm(st.rthigh);
+            transforms[7] = getXForm(st.lthigh);
+            transforms[8] = getXForm(st.ruarm);
+            transforms[9] = getXForm(st.luarm);
+            transforms[10] = getXForm(st.rlarm);
+            transforms[11] = getXForm(st.llarm);
+            transforms[12] = getXForm(new StateVariable(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
+            // Offset by 20 because its now a box.
+        return transforms;
+    }
+
+    /**
+     * Get the transform associated with this body's state variables. Note that these transforms can ONLY be used
+     * with this instance of GameThreadSafe.
+     */
+    public static XForm getXForm(StateVariable sv) {
+        XForm xf = new XForm();
+        xf.position.x = sv.getX();
+        xf.position.y = sv.getY();
+        xf.R.set(sv.getTh());
+        return xf;
     }
 
     /**
@@ -1173,75 +1149,13 @@ public class GameSingleThread implements IGame, Serializable {
     }
 
     public synchronized byte[] getFullState() {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        try (ObjectOutputStream objOps = new ObjectOutputStream(bout)) {
-            objOps.writeObject(this);
-            objOps.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bout.toByteArray();
+        return fstConfiguration.asByteArray(this);
     }
 
-    public synchronized GameSingleThread restoreFullState(byte[] fullState) {
-        GameSingleThread gameRestored = null;
-        try (ByteArrayInputStream bin = new ByteArrayInputStream(fullState);
-             ObjectInputStream objIs = new ObjectInputStream(bin)) {
-            gameRestored = (GameSingleThread) objIs.readObject();
-        } catch (ClassNotFoundException | IOException e) {
-            e.printStackTrace();
-        }
-
+    public synchronized GameUnified restoreFullState(byte[] fullState) {
+        GameUnified gameRestored = (GameUnified) fstConfiguration.asObject(fullState);
         // Replace all the relevant game fields which have been loaded.
         assert gameRestored != null;
-        invalidated = true;
-        GameSingleThread.instance = gameRestored;
-        GameSingleThread.lock = new ReentrantLock();
-        lock.lock();
         return gameRestored;
-        // So far have not successfully set fields like below such that tests pass.
-//        this.world = gameRestored.world;
-//        this.rFootBody = gameRestored.rFootBody;
-//        this.lFootBody = gameRestored.lFootBody;
-//        this.rCalfBody = gameRestored.rCalfBody;
-//        this.lCalfBody = gameRestored.lCalfBody;
-//        this.rThighBody = gameRestored.rThighBody;
-//        this.lThighBody = gameRestored.lThighBody;
-//        this.torsoBody = gameRestored.torsoBody;
-//        this.rUArmBody = gameRestored.rUArmBody;
-//        this.lUArmBody = gameRestored.lUArmBody;
-//        this.rLArmBody = gameRestored.rLArmBody;
-//        this.lLArmBody = gameRestored.lLArmBody;
-//        this.headBody = gameRestored.headBody;
-//        this.trackBody = gameRestored.trackBody;
-//
-//        this.rHipJDef = gameRestored.rHipJDef;
-//        this.lHipJDef = gameRestored.lHipJDef;
-//        this.rKneeJDef = gameRestored.rKneeJDef;
-//        this.lKneeJDef = gameRestored.lKneeJDef;
-//        this.rAnkleJDef = gameRestored.rAnkleJDef;
-//        this.lAnkleJDef = gameRestored.lAnkleJDef;
-//        this.rShoulderJDef = gameRestored.rShoulderJDef;
-//        this.lShoulderJDef = gameRestored.lShoulderJDef;
-//        this.rElbowJDef = gameRestored.rElbowJDef;
-//        this.lElbowJDef = gameRestored.lElbowJDef;
-//
-//        this.rHipJ = gameRestored.rHipJ;
-//        this.lHipJ = gameRestored.lHipJ;
-//        this.rKneeJ = gameRestored.rKneeJ;
-//        this.lKneeJ = gameRestored.lKneeJ;
-//        this.rAnkleJ = gameRestored.rAnkleJ;
-//        this.lAnkleJ = gameRestored.lAnkleJ;
-//        this.rShoulderJ = gameRestored.rShoulderJ;
-//        this.lShoulderJ = gameRestored.lShoulderJ;
-//        this.rElbowJ = gameRestored.rElbowJ;
-//        this.lElbowJ = gameRestored.lElbowJ;
-//
-//        this.isFailed = gameRestored.isFailed;
-//        this.collisionListener = gameRestored.collisionListener;
-//        this.timestepsSimulated = gameRestored.timestepsSimulated;
-//        this.initState = gameRestored.initState;
-//        this.noFeet = gameRestored.noFeet;
-//
     }
 }

@@ -1,5 +1,7 @@
 package game;
 
+import java.awt.*;
+
 /**
  * All versions of the game should do these things. Primarily so that the single thread and multithreaded versions
  * can be swapped easily, but other implementations could be added with different game rules also.
@@ -40,4 +42,11 @@ public interface IGame {
      */
     boolean getFailureStatus();
 
+    long getTimestepsSimulatedThisGame();
+
+    void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels);
+
+    void setState(State st);
+
+    void applyBodyImpulse(float v, float v1);
 }

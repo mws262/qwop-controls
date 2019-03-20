@@ -81,7 +81,7 @@ public class State implements Serializable {
 
     /**
      * Make new state from a list of StateVariables. This is now the default way that the GameThreadSafe does it. To make
-     * a new State from an existing game, the best bet is to call {@link GameThreadSafe#getCurrentState()}.
+     * a new State from an existing game, the best bet is to call {@link IGame#getCurrentState()}.
      *
      * @param bodyS    State of the torso.
      * @param headS    State of the head.

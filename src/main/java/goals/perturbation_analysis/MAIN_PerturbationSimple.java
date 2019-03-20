@@ -3,7 +3,8 @@ package goals.perturbation_analysis;
 import actions.Action;
 import actions.ActionQueue;
 import actions.perturbers.ActionPerturber_SwitchTooSoon;
-import game.GameThreadSafe;
+import game.GameUnified;
+import game.IGame;
 import ui.PanelRunner_MultiState;
 
 import javax.swing.*;
@@ -33,8 +34,8 @@ public class MAIN_PerturbationSimple extends JFrame {
         ActionPerturber_SwitchTooSoon perturber = new ActionPerturber_SwitchTooSoon(perturbationLocations);
         ActionQueue actionQueuePerturbed = perturber.perturb(actionQueue);
 
-        GameThreadSafe gameUnperturbed = new GameThreadSafe();
-        GameThreadSafe gamePerturbed = new GameThreadSafe();
+        IGame gameUnperturbed = new GameUnified();
+        IGame gamePerturbed = new GameUnified();
 
         boolean reachedFirstPerturbation = false;
         while (!actionQueue.isEmpty()) {

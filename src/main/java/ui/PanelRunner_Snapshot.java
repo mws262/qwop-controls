@@ -11,8 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import filters.NodeFilter_Downsample;
-import game.GameThreadSafe;
 import filters.INodeFilter;
+import game.GameUnified;
+import game.State;
 import tree.Node;
 
 /**
@@ -44,7 +45,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     private Node highlightedFutureExternal;
 
     private List<Node> focusLeaves = new ArrayList<>();
-    private List<Object[]> transforms = new ArrayList<>();
+    private List<State> states = new ArrayList<>();
     private List<Stroke> strokes = new ArrayList<>();
     private List<Color> colors = new ArrayList<>();
 
@@ -74,8 +75,6 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
      */
     private boolean mouseIsIn = false;
 
-    private final GameThreadSafe game = new GameThreadSafe();
-
     public PanelRunner_Snapshot() {
         super();
         addMouseListener(this);
@@ -87,16 +86,15 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
      */
     @Override
     public void update(Node node) {
-        transforms.clear();
+        states.clear();
         focusLeaves.clear();
         strokes.clear();
         colors.clear();
 
         /* Focused node first */
         snapshotNode = node;
-        Object[] nodeTransform = game.getXForms(snapshotNode.getState());
         specificXOffset = (int) (runnerScaling * snapshotNode.getState().body.getX());
-        transforms.add(nodeTransform);
+        states.add(snapshotNode.getState());
         strokes.add(boldStroke);
         colors.add(Color.BLACK);
         focusLeaves.add(node);
@@ -106,8 +104,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         for (int i = 0; i < numHistoryStatesDisplay; i++) {
             if (historyNode.getTreeDepth() > 0) {
                 historyNode = historyNode.getParent();
-                nodeTransform = game.getXForms(historyNode.getState());
-                transforms.add(nodeTransform);
+                states.add(historyNode.getState());
                 strokes.add(normalStroke);
                 colors.add(ghostGray);
                 focusLeaves.add(historyNode);
@@ -127,7 +124,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             for (Node descendant : descendants) {
                 if (!descendant.isStateUnassigned()) {
                     focusLeaves.add(descendant);
-                    transforms.add(game.getXForms(descendant.getState()));
+                    states.add(descendant.getState());
                     strokes.add(normalStroke);
                     colors.add(runnerColor);
                 }
@@ -192,11 +189,11 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             }
 
             // Draw all non-highlighted runners.
-            for (int i = transforms.size() - 1; i >= 0; i--) {
+            for (int i = states.size() - 1; i >= 0; i--) {
                 if (!mouseIsIn || bestIdx != i) {
                     Color nextRunnerColor =
                             (highlightedFutureMousedOver != null && focusLeaves.get(i).getTreeDepth() > snapshotNode.getTreeDepth()) ? colors.get(i).brighter() : colors.get(i); // Make the nodes after the selected one lighter if one is highlighted.
-                    game.drawExtraRunner(g2, transforms.get(i), "", runnerScaling, xOffsetPixels - specificXOffset,
+                    GameUnified.drawExtraRunner(g2, states.get(i), "", runnerScaling, xOffsetPixels - specificXOffset,
                             yOffsetPixels, nextRunnerColor, strokes.get(i));
                 }
             }
@@ -250,7 +247,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         int idx = focusLeaves.indexOf(newFuture);
         if (idx > -1) { // Focus leaves no longer contains the no focus requested.
             try {
-                game.drawExtraRunner(g2, transforms.get(idx), "", runnerScaling, xOffsetPixels - specificXOffset,
+                GameUnified.drawExtraRunner(g2, states.get(idx), "", runnerScaling, xOffsetPixels - specificXOffset,
                         yOffsetPixels, colors.get(idx).darker(), boldStroke);
 
                 Node currentNode = newFuture;
@@ -264,7 +261,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                     if (currentNode.getTreeDepth() % 2 == 0) {
                         everyOtherEvenColor = everyOtherEvenColor.darker();
                     }
-                    game.drawExtraRunner(g2, game.getXForms(currentNode.getState()),
+                    GameUnified.drawExtraRunner(g2, currentNode.getState(),
                             Integer.toString(currentNode.getAction().getTimestepsRemaining()),
                             runnerScaling, xOffsetPixels - specificXOffset, yOffsetPixels, everyOtherEvenColor, boldStroke);
                     currentNode = currentNode.getParent();
@@ -330,7 +327,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
     @Override
     public void deactivateTab() {
-        transforms.clear();
+        states.clear();
         focusLeaves.clear();
         strokes.clear();
         colors.clear();

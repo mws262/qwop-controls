@@ -30,13 +30,9 @@ import org.jbox2d.dynamics.Body;
  */
 public abstract class JointDef {
 	public JointType type;
-
 	public Body body1;
-
 	public Body body2;
-
 	public Object userData;
-
 	public boolean collideConnected;
 
 	public JointDef() {

@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ActionTest {
@@ -38,7 +37,7 @@ public class ActionTest {
         // Test action 1
         int ts = 0;
         while (action1Copy.hasNext()) {
-            Assert.assertTrue(Arrays.equals(action1Copy.poll(), keys1));
+            Assert.assertArrayEquals(action1Copy.poll(), keys1);
             ts++;
         }
         Assert.assertEquals(ts, actTimesteps1);
@@ -46,7 +45,7 @@ public class ActionTest {
         // Test action 2
         ts = 0;
         while (action2Copy.hasNext()) {
-            Assert.assertTrue(Arrays.equals(action2Copy.poll(), keys2));
+            Assert.assertArrayEquals(action2Copy.poll(), keys2);
             ts++;
         }
         Assert.assertEquals(ts, actTimesteps2);
@@ -54,7 +53,7 @@ public class ActionTest {
         // Test action 3
         ts = 0;
         while (action3Copy.hasNext()) {
-            Assert.assertTrue(Arrays.equals(action3Copy.poll(), keys3));
+            Assert.assertArrayEquals(action3Copy.poll(), keys3);
             ts++;
         }
         Assert.assertEquals(ts, actTimesteps3);
@@ -93,9 +92,9 @@ public class ActionTest {
     public void peek() {
 
         // Should be able to peek the base version of an action (it's effectively a const method).
-        Assert.assertTrue(Arrays.equals(validAction1.peek(), keys1));
-        Assert.assertTrue(Arrays.equals(validAction2.peek(), keys2));
-        Assert.assertTrue(Arrays.equals(validAction3.peek(), keys3));
+        Assert.assertArrayEquals(validAction1.peek(), keys1);
+        Assert.assertArrayEquals(validAction2.peek(), keys2);
+        Assert.assertArrayEquals(validAction3.peek(), keys3);
 
         // Must copy to get a pollable version of the action.
         Action action1Copy = validAction1.getCopy();
@@ -187,8 +186,8 @@ public class ActionTest {
     @Test
     public void equals() {
 
-        Assert.assertFalse(validAction1.equals(String.valueOf(5)));
-        Assert.assertFalse(validAction1.equals(validAction2));
+        Assert.assertNotEquals(validAction1, String.valueOf(5));
+        Assert.assertNotEquals(validAction1, validAction2);
 
         Assert.assertEquals(validAction1, validAction1);
         Assert.assertEquals(validAction2, validAction2);
@@ -249,11 +248,11 @@ public class ActionTest {
 
         Assert.assertEquals(5, consolidatedActions.get(0).getTimestepsTotal());
         Assert.assertEquals(5, consolidatedActions.get(0).getTimestepsRemaining());
-        Assert.assertTrue(Arrays.equals(consolidatedActions.get(0).peek(), new boolean[]{false, false, false, false}));
+        Assert.assertArrayEquals(consolidatedActions.get(0).peek(), new boolean[]{false, false, false, false});
 
         Assert.assertEquals(9, consolidatedActions.get(1).getTimestepsTotal());
         Assert.assertEquals(9, consolidatedActions.get(1).getTimestepsRemaining());
-        Assert.assertTrue(Arrays.equals(consolidatedActions.get(1).peek(), new boolean[]{true, false, false, false}));
+        Assert.assertArrayEquals(consolidatedActions.get(1).peek(), new boolean[]{true, false, false, false});
 
         // Make a list with a single, nonzero element.
         List<Action> singleActionList = new ArrayList<>();
@@ -261,7 +260,7 @@ public class ActionTest {
 
         List<Action> consolidatedSingleAction = Action.consolidateActions(singleActionList);
         Assert.assertEquals(10, consolidatedSingleAction.get(0).getTimestepsRemaining());
-        Assert.assertTrue(Arrays.equals(consolidatedSingleAction.get(0).peek(), new boolean[]{true, true, true, true}));
+        Assert.assertArrayEquals(consolidatedSingleAction.get(0).peek(), new boolean[]{true, true, true, true});
     }
 
     @Test

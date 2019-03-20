@@ -1,6 +1,7 @@
 package ui;
 
-import game.GameThreadSafe;
+import game.GameUnified;
+import game.IGame;
 import game.State;
 import tree.Node;
 
@@ -16,7 +17,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     /**
      * Access to the game for the sake of the drawing methods.
      */
-    private GameThreadSafe game = new GameThreadSafe();
+    private IGame game = new GameUnified();
 
     /**
      * Main state to draw. It will provide the x-reference position.
@@ -80,14 +81,14 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
         offset[1] = 100 + yOffsetPixels;
 
         // Draw the main state.
-        game.drawExtraRunner(g2, game.getXForms(mainState), "", runnerScaling,
+        GameUnified.drawExtraRunner(g2, mainState, "", runnerScaling,
                 offset[0], offset[1], Color.BLACK, boldStroke);
 
         // Draw secondary states, if any.
         for (Map.Entry<State, Color> entry : secondaryStates.entrySet()) {
             State st = entry.getKey();
             Color col = entry.getValue();
-            game.drawExtraRunner(g2, game.getXForms(st), "", runnerScaling,
+            GameUnified.drawExtraRunner(g2, st, "", runnerScaling,
                     offset[0], offset[1], col, normalStroke);
         }
 

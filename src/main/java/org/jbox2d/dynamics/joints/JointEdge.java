@@ -29,10 +29,7 @@ import java.io.Serializable;
 
 public class JointEdge implements Serializable {
 	public Body other;
-
 	public Joint joint;
-
 	public JointEdge prev;
-
 	public JointEdge next;
 }

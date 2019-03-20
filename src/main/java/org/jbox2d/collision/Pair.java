@@ -29,24 +29,17 @@ import java.io.Serializable;
 
 public class Pair implements Comparable<Pair>, Serializable {
 	private static final int PAIR_BUFFERED = 0x0001;
-
 	private static final int PAIR_REMOVED = 0x0002;
-
 	private static final int PAIR_FINAL = 0x0004;
 
 	public Object userData;
 
-	public int proxyId1;
-
+	public int proxyId1; // Don't remove public
 	public int proxyId2;
-
 	public int status;
-
 	public int next;
 
-	public Pair() {
-
-	}
+	public Pair() {}
 
 	/**
 	 * Copy constructor
@@ -58,6 +51,7 @@ public class Pair implements Comparable<Pair>, Serializable {
 		this.status = other.status;
 	}
 
+	// Intellij is wrong. Don't remove public on any of the below.
 	public void setBuffered() {
 		status |= Pair.PAIR_BUFFERED;
 	}
@@ -91,7 +85,6 @@ public class Pair implements Comparable<Pair>, Serializable {
 	}
 
 	public int compareTo(final Pair p) {
-		// XXX check
 		return proxyId1 - p.proxyId1;
 	}
 }

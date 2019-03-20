@@ -5,11 +5,9 @@ import actions.ActionGenerator_FixedActions;
 import actions.ActionQueue;
 import actions.ActionSet;
 import distributions.Distribution_Equal;
-import game.GameSingleThread;
-import game.GameThreadSafe;
+import game.GameUnified;
 import tree.Node;
 import tree.Utility;
-import ui.ScreenCapture;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -19,7 +17,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -27,23 +24,24 @@ import java.util.stream.IntStream;
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
-    GameThreadSafe game = new GameThreadSafe();
+    GameUnified game = new GameUnified();
 
     public static void main(String[] args) {
-        boolean doScreenCapture = false;
-        ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
-        if (doScreenCapture) {
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try {
-                    screenCapture.finalize();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }));
-        }
+//        boolean doScreenCapture = false;
+//        ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
+//        if (doScreenCapture) {
+//            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//                try {
+//                    screenCapture.finalize();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }));
+//        }
 
         // Set up the visualizer.
         MAIN_SingleEvaluation qwop = new MAIN_SingleEvaluation();
+        qwop.game.failOnThighContact = false;
         JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
         frame.add(qwop);
         frame.setPreferredSize(new Dimension(600, 400));
@@ -91,13 +89,13 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
                 new Action(19,false,false,false,false),
                 new Action(45,true,false,false,true),
 
-//                new Action(10,false,false,false,false),
-//                new Action(27,false,true,true,false),
+                new Action(10,false,false,false,false),
+                new Action(27,false,true,true,false),
 //                 new Action(8,false,false,false,false),
 //                new Action(20,true,false,false,true),
         });
 
-        Node.makeNodesFromActionSequences(alist, rootNode, new GameThreadSafe());
+        Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
         Node.stripUncheckedActionsExceptOnLeaves(rootNode, 7);
 
         List<Node> leaf = new ArrayList<>();
@@ -109,13 +107,13 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         // Run the "prefix" section.
         while (!actionQueue.isEmpty()) {
             qwop.game.step(actionQueue.pollCommand());
-            if (doScreenCapture) {
-                try {
-                    screenCapture.takeFrameFromContainer(frame);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+//            if (doScreenCapture) {
+//                try {
+//                    screenCapture.takeFrameFromContainer(frame);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 //            try {
 //                Thread.sleep(10);
 //            } catch (InterruptedException e) {
@@ -127,26 +125,33 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
         // Run the controller until failure.
         while (!qwop.game.getFailureStatus()) {
+
+            // Hacks for now during testing.
+            ValueFunction_TensorFlow_StateOnly.gameSingle = qwop.game;
+            Utility.tic();
             Action chosenAction = valueFunction.getMaximizingAction(currNode);
+            Utility.toc();
+            qwop.game = ValueFunction_TensorFlow_StateOnly.gameSingle;
+
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {
                 long currTime = System.currentTimeMillis();
                 // qwop.game.applyBodyImpulse(-3f, 0.001f);
                 qwop.game.step(actionQueue.pollCommand());
 
-                if (doScreenCapture) {
+//                if (doScreenCapture) {
+//                    try {
+//                        screenCapture.takeFrameFromContainer(frame);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                } else { // Screen capture is already so slow, we don't need a delay.
                     try {
-                        screenCapture.takeFrameFromContainer(frame);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else { // Screen capture is already so slow, we don't need a delay.
-                    try {
-                        Thread.sleep(Math.max(1, 40 - (System.currentTimeMillis() - currTime)));
+                        Thread.sleep(Math.max(1, 10 - (System.currentTimeMillis() - currTime)));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                }
+//                }
             }
             currNode = currNode.addChild(chosenAction);
             currNode.setState(qwop.game.getCurrentState());

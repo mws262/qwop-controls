@@ -1,6 +1,6 @@
 package goals.interactive;
 
-import game.GameSingleThread;
+import game.GameUnified;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,12 +25,12 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
     /**
      * Game physics world to use.
      */
-    private GameSingleThread game;
+    private GameUnified game;
 
     @Override
     public void actionPerformed(ActionEvent e) { // Gets called every 40ms
         if (game == null) {
-            game = GameSingleThread.getInstance();
+            game = new GameUnified();
         }
         game.step(q, w, o, p); // Step the game forward 1 timestep with the specified keys pressed.
         repaint(); // Redraw the runner and scene.

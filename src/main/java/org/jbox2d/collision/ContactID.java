@@ -78,19 +78,12 @@ public class ContactID implements Serializable {
 			flip = f.flip;
 		}
 
-		public boolean isEqual(final Features f){
+		boolean isEqual(final Features f){
 			return (referenceEdge==f.referenceEdge &&
 					incidentEdge==f.incidentEdge &&
 					incidentVertex==f.incidentVertex &&
 					flip==f.flip);
 		}
-
-		@Override
-		public String toString() {
-			final String s = "Features: (" + this.flip + " ," + this.incidentEdge + " ," + this.incidentVertex + " ," + this.referenceEdge + ")";
-			return s;
-		}
-
 	}
 
 	public boolean isEqual(final ContactID cid) {

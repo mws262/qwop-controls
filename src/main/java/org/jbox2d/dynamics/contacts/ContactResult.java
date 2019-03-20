@@ -13,19 +13,13 @@ public class ContactResult {
 	/** The second shape */
 	public Shape shape2;
 	/** Position in world coordinates */
-	public final Vec2 position;
+	public final Vec2 position = new Vec2();
 	/** Points from shape1 to shape2 */
-	public final Vec2 normal;
+	public final Vec2 normal = new Vec2();
 	/** The normal impulse applied to body2 */
 	public float normalImpulse;
 	/** The tangent impulse applied to body2 */
 	public float tangentImpulse;
 	/** The contact id identifies the features in contact */
-	public final ContactID id;
-	
-	public ContactResult() {
-		position = new Vec2();
-		normal = new Vec2();
-		id = new ContactID();
-	}
+	public final ContactID id = new ContactID();;
 }

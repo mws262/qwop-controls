@@ -3,7 +3,7 @@ package savers;
 import java.util.ArrayList;
 import java.util.List;
 
-import game.GameThreadSafe;
+import game.IGame;
 import game.State;
 import actions.Action;
 import tree.Node;
@@ -51,7 +51,7 @@ public abstract class DataSaver_Dense implements IDataSaver {
     }
 
     @Override
-    public void reportTimestep(Action action, GameThreadSafe game) {
+    public void reportTimestep(Action action, IGame game) {
         stateBuffer.add(game.getCurrentState());
         actionBuffer.add(action);
     }

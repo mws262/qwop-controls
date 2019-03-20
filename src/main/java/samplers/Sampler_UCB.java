@@ -1,12 +1,13 @@
 package samplers;
 
-import game.GameThreadSafe;
+import game.IGame;
 import org.jblas.util.Random;
 
 import actions.Action;
 import evaluators.IEvaluationFunction;
 import samplers.rollout.RolloutPolicy;
 import samplers.rollout.RolloutPolicy_RandomColdStart;
+import samplers.rollout.RolloutPolicy_SingleRandom;
 import tree.Node;
 import tree.Utility;
 
@@ -70,7 +71,7 @@ public class Sampler_UCB implements ISampler {
      */
     public Sampler_UCB(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
-        rolloutPolicy = new RolloutPolicy_RandomColdStart(evaluationFunction);// RolloutPolicy_RandomColdStart
+        rolloutPolicy = new RolloutPolicy_SingleRandom(evaluationFunction);// RolloutPolicy_RandomColdStart
         // (evaluationFunction);
         c =  explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
     }
@@ -188,7 +189,7 @@ public class Sampler_UCB implements ISampler {
     //        "frozen_model.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
 
     @Override
-    public void rolloutPolicy(Node startNode, GameThreadSafe game) {
+    public void rolloutPolicy(Node startNode, IGame game) {
         if (startNode.isFailed())
             throw new IllegalStateException("Rollout policy received a starting node which corresponds to an already failed " +
                     "state.");
