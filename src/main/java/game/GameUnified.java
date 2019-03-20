@@ -1152,7 +1152,7 @@ public class GameUnified implements IGame, Serializable {
         return fstConfiguration.asByteArray(this);
     }
 
-    public synchronized GameUnified restoreFullState(byte[] fullState) {
+    public static GameUnified restoreFullState(byte[] fullState) {
         GameUnified gameRestored = (GameUnified) fstConfiguration.asObject(fullState);
         // Replace all the relevant game fields which have been loaded.
         assert gameRestored != null;
