@@ -5,12 +5,15 @@ import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_Distance;
 import game.GameUnified;
 import samplers.Sampler_UCB;
+import samplers.rollout.RolloutPolicy;
+import samplers.rollout.RolloutPolicy_ValueFunction;
 import samplers.rollout.RolloutPolicy_WorstCaseWindow;
 import savers.DataSaver_StageSelected;
 import tree.Node;
 import tree.TreeStage_MaxDepth;
 import tree.TreeWorker;
 import tree.Utility;
+import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
@@ -95,18 +98,18 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
 //        valueFunction.setTrainingBatchSize(100);
 
-        ValueFunction_TensorFlow_StateOnly valueFunction = null;
-        try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly("state_only",
-                    hiddenLayerSizes, new ArrayList<>());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        assert valueFunction != null;
-
-        valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
-        valueFunction.setTrainingBatchSize(100);
+//        ValueFunction_TensorFlow_StateOnly valueFunction = null;
+//        try {
+//            valueFunction = new ValueFunction_TensorFlow_StateOnly("state_only_w_roll",
+//                    hiddenLayerSizes, new ArrayList<>());
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//
+//        assert valueFunction != null;
+//
+//        valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
+//        valueFunction.setTrainingBatchSize(100);
 
 //        ValueFunction_TensorFlow_ActionInMulti valueFunction = null;
 //        try {
@@ -120,15 +123,26 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        }
 
 //        valueFunction.loadCheckpoint("chk1");
+        // Load a value function controller.
+        ValueFunction_TensorFlow valueFunction = null;
+        try {
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
+                    "/state_only.pb"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        valueFunction.loadCheckpoint("chk");
 
+        valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
+        valueFunction.setTrainingBatchSize(100);
 
         for (int k = 0; k < 1000; k++) {
 //            RolloutPolicy_ValueFunction rollout  =
 //                    new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueNetwork);
 //            rollout.maxRolloutTimesteps = 200;
 
-            RolloutPolicy_WorstCaseWindow rollout =
-                    new RolloutPolicy_WorstCaseWindow(new EvaluationFunction_Distance());
+            RolloutPolicy rollout =
+                    new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueFunction);
 
             Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout);
 
@@ -164,7 +178,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
 //             Save a checkpoint of the weights/biases.
             if (k % 2 == 0) {
-                valueFunction.saveCheckpoint("chk");
+                valueFunction.saveCheckpoint("chk2");
                 System.out.println("Saved");
             }
         }

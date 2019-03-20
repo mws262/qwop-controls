@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
@@ -18,26 +19,37 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     private static final int STATE_SIZE = 72;
     private static final int VALUE_SIZE = 1;
 
-    private IGame game;
-
-    public static GameUnified gameSingle;
+    boolean multithread = true;
+    ExecutorService ex;
 
     public ValueFunction_TensorFlow_StateOnly(File file) throws FileNotFoundException {
         super(file);
+        if (multithread) {
+            ex = Executors.newFixedThreadPool(3);
+        }
     }
 
     public ValueFunction_TensorFlow_StateOnly(String fileName, List<Integer> hiddenLayerSizes,
                                               List<String> additionalArgs) throws FileNotFoundException {
         super(fileName, STATE_SIZE, VALUE_SIZE, hiddenLayerSizes, additionalArgs);
+        if (multithread) {
+            ex = Executors.newFixedThreadPool(6);
+        }
     }
 
-    boolean multithread = true;
+    @Override
+    public Action getMaximizingAction(Node currentNode) {
+        throw new RuntimeException("This value function currently relies on a game full state for save/loading.");
+        // TODO make this just run through the whole sequence every time.
+    }
 
     @SuppressWarnings("Duplicates")
     @Override
-    public Action getMaximizingAction(Node currentNode) {
+    public Action getMaximizingAction(Node currentNode, IGame realGame) {
 
-        byte[] fullState = gameSingle.getFullState();
+        byte[] fullState = realGame.getFullState();
+
+        Objects.requireNonNull(fullState);
 
         if (multithread) { // Multithread seems to weigh in at about 15ms per evaluation of controller. Single is
             // maybe 25ms
@@ -45,7 +57,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 // Test null actions.
                 GameUnified gameLocal = GameUnified.restoreFullState(fullState);
                 EvaluationResult bestNull = new EvaluationResult();
-                for (int i = 1; i < 50; i++) {
+                for (int i = 1; i < 30; i++) {
                     gameLocal.step(false, false, false, false);
                     State st = gameLocal.getCurrentState();
                     Node nextNode = new Node(currentNode, new Action(i, false, false, false, false), false);
@@ -96,7 +108,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 return bestQP;
             };
 
-            ExecutorService ex = Executors.newFixedThreadPool(3);
+//            ExecutorService ex = Executors.newFixedThreadPool(3);
             List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
             evaluations.add(noKey);
             evaluations.add(wo);
@@ -109,12 +121,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 e.printStackTrace();
             }
 
-            ex.shutdown();
-            try {
-                ex.awaitTermination(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            ex.shutdown();
+//            try {
+//                ex.awaitTermination(10, TimeUnit.SECONDS);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
 
             EvaluationResult nullResult = null;
             EvaluationResult woResult = null;
@@ -123,7 +135,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 nullResult = allResults.get(0).get();
                 woResult = allResults.get(1).get();
                 qpResult = allResults.get(2).get();
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ArrayIndexOutOfBoundsException | ExecutionException e) {
                 e.printStackTrace();
             }
 
@@ -141,7 +153,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             return bestAction;
         } else {
 
-            game = GameUnified.restoreFullState(fullState);
+            IGame game = GameUnified.restoreFullState(fullState);
             EvaluationResult bestNull = new EvaluationResult();
             for (int i = 1; i < 30; i++) {
                 game.step(false, false, false, false);

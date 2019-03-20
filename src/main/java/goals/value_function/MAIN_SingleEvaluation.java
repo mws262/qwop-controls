@@ -126,12 +126,9 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         // Run the controller until failure.
         while (!qwop.game.getFailureStatus()) {
 
-            // Hacks for now during testing.
-            ValueFunction_TensorFlow_StateOnly.gameSingle = qwop.game;
             Utility.tic();
-            Action chosenAction = valueFunction.getMaximizingAction(currNode);
+            Action chosenAction = valueFunction.getMaximizingAction(currNode, qwop.game);
             Utility.toc();
-            qwop.game = ValueFunction_TensorFlow_StateOnly.gameSingle;
 
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {

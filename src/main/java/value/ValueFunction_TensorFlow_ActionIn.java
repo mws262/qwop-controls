@@ -3,6 +3,7 @@ package value;
 import actions.Action;
 import actions.ActionSet;
 import distributions.Distribution_Equal;
+import game.IGame;
 import tree.Node;
 
 import java.io.File;
@@ -102,6 +103,11 @@ public class ValueFunction_TensorFlow_ActionIn extends ValueFunction_TensorFlow 
 
         Objects.requireNonNull(bestAction);
         return bestAction;
+    }
+
+    @Override
+    public Action getMaximizingAction(Node currentNode, IGame game) {
+        return getMaximizingAction(currentNode);
     }
 
 }
