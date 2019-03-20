@@ -719,6 +719,10 @@ public class Body implements Externalizable {
 		return XForm.mul(m_xf, localPoint);
 	}
 
+	public float getWorldXPosition(final Vec2 localPoint) {
+		return m_xf.position.x + m_xf.R.col1.x * localPoint.x + m_xf.R.col2.x * localPoint.y;
+	}
+
 	/**
 	 * Get the world coordinates of a point given the local coordinates.
 	 * @param localPoint a point on the body measured relative the the body's origin.

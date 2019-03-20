@@ -155,7 +155,7 @@ public class GameUnified implements IGame, Serializable {
     private CollisionListener collisionListener = new CollisionListener();
 
     /** Should the game be marked as failed if the thighs touch the ground? (happens with knees touching the ground. **/
-    public static boolean failOnThighContact = false;
+    public static boolean failOnThighContact = true;
 
     /**
      * Normal stroke for line drawing.
@@ -589,12 +589,13 @@ public class GameUnified implements IGame, Serializable {
     public void step(boolean q, boolean w, boolean o, boolean p) {
         /* Involuntary Couplings (no QWOP presses) */
         //Neck spring torque
-        float NeckTorque = -neckStiff * neckJ.getJointAngle() + 0 * neckDamp * neckJ.getJointSpeed();
+        float NeckTorque = -neckStiff * neckJ.getJointAngle(); //  + 0 * neckDamp * neckJ.getJointSpeed(); // These
+        // *0 terms were in the real game, but I'm commenting out here.
         NeckTorque = NeckTorque + 0 * 400f * (neckJ.getJointAngle() + 0.2f); //This bizarre term is probably a roundabout way of adjust equilibrium position.
 
         //Elbow spring torque
-        float RElbowTorque = -rElbowStiff * rElbowJ.getJointAngle() + 0 * rElbowDamp * rElbowJ.getJointSpeed();
-        float LElbowTorque = -lElbowStiff * lElbowJ.getJointAngle() + 0 * lElbowDamp * lElbowJ.getJointSpeed();
+        float RElbowTorque = -rElbowStiff * rElbowJ.getJointAngle(); // + 0 * rElbowDamp * rElbowJ.getJointSpeed();
+        float LElbowTorque = -lElbowStiff * lElbowJ.getJointAngle(); // + 0 * lElbowDamp * lElbowJ.getJointSpeed();
 
         //For now, using motors with high speed settings and torque limits to simulate springs. I don't know a better way for now.
 
@@ -638,16 +639,16 @@ public class GameUnified implements IGame, Serializable {
         //Ankle/Hip Coupling -+ 0*Requires either Q or W pressed.
         if (q || w && !noFeet) {
             //Get world ankle positions (using foot and torso anchors -+ 0
-            Vec2 RAnkleCur = rAnkleJ.getAnchor1();
-            Vec2 LAnkleCur = lAnkleJ.getAnchor1();
+            float RAnkleCur = rAnkleJ.getAnchor1XCoord();
+            float LAnkleCur = lAnkleJ.getAnchor1XCoord();
 
-            Vec2 RHipCur = rHipJ.getAnchor1();
+            float RHipCur = rHipJ.getAnchor1XCoord();
 
 
             // if right ankle joint is behind the right hip jiont
             // Set ankle motor speed to 1;
             // else speed 2
-            if (RAnkleCur.x < RHipCur.x) {
+            if (RAnkleCur < RHipCur) {
                 rAnkleJ.m_motorSpeed = (rAnkleSpeed2);
             } else {
                 rAnkleJ.m_motorSpeed = (rAnkleSpeed1);
@@ -657,7 +658,7 @@ public class GameUnified implements IGame, Serializable {
             // if left ankle joint is behind RIGHT hip joint (weird it's the right one here too)
             // Set its motor speed to 1;
             // else speed 2;
-            if (LAnkleCur.x < RHipCur.x) {
+            if (LAnkleCur < RHipCur) {
                 lAnkleJ.m_motorSpeed = (lAnkleSpeed2);
             } else {
                 lAnkleJ.m_motorSpeed = (lAnkleSpeed1);

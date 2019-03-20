@@ -77,12 +77,12 @@ public class Settings {
 
     // Collision
     public static final int maxManifoldPoints = 2;
-    public static final int maxPolygonVertices = 8;
+    public static final int maxPolygonVertices = 4; // Changed from 8 - MWS
 
     /** Must be a power of two. */
-    public static final int maxProxies = 2048;
+    public static final int maxProxies = 16; // Changed from 2048 - MWS
     /** Must be a power of two. */
-    public static final int maxPairs = 8 * maxProxies;
+    public static final int maxPairs = 2 * maxProxies; // Changed from 8x - MWS
     
     // Dynamics
     /**
@@ -153,7 +153,7 @@ public class Settings {
     public static final float maxAngularVelocitySquared = maxAngularVelocity * maxAngularVelocity;
 
     /** Maximum number of contacts to be handled to solve a TOI island. */
-    public static final int maxTOIContactsPerIsland = 32;
+    public static final int maxTOIContactsPerIsland = 4; // Down from 32 - MWS
     
     /** Maximum number of joints to be handled to solve a TOI island. */
     public static final int maxTOIJointsPerIsland = 0;//16;

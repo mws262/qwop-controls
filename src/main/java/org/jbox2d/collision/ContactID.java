@@ -84,13 +84,6 @@ public class ContactID implements Serializable {
 					incidentVertex==f.incidentVertex &&
 					flip==f.flip);
 		}
-
-		@Override
-		public String toString() {
-			final String s = "Features: (" + this.flip + " ," + this.incidentEdge + " ," + this.incidentVertex + " ," + this.referenceEdge + ")";
-			return s;
-		}
-
 	}
 
 	public boolean isEqual(final ContactID cid) {

@@ -27,7 +27,7 @@ import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Settings;
 import org.jbox2d.common.Vec2;
 
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * This broad phase uses the Sweep and Prune algorithm as described in:
@@ -48,7 +48,7 @@ import java.io.Serializable;
  * - no broadphase is perfect and neither is this one: it is not great for huge
  * worlds (use a multi-SAP instead), it is not great for large objects.
  */
-public class BroadPhase implements Serializable {
+public class BroadPhase implements Externalizable {
 	static final int INVALID = Integer.MAX_VALUE;
 
 	private PairManager m_pairManager;
@@ -72,6 +72,13 @@ public class BroadPhase implements Serializable {
 	private int m_timeStamp;
 
 	static final boolean s_validate = false;
+
+	// Temp during computations
+	volatile private BoundValues
+			newValues = new BoundValues(),
+			oldValues = new BoundValues();
+
+	public BroadPhase() {}
 
 	public BroadPhase( final AABB worldAABB, final PairCallback callback) {
 		m_proxyPool = new Proxy[Settings.maxProxies];
@@ -328,8 +335,6 @@ public class BroadPhase implements Serializable {
 	// call Flush to finalized the proxy pairs (for your time step).
 	/** internal */
 	public void moveProxy( final int proxyId, final AABB aabb) {
-		BoundValues newValues = new BoundValues();
-		BoundValues oldValues = new BoundValues();
 
 		if (Settings.maxProxies <= proxyId) { return; }
 
@@ -503,7 +508,7 @@ public class BroadPhase implements Serializable {
 			}
 		}
 
-		if ( BroadPhase.s_validate) {
+		if (BroadPhase.s_validate) {
 			validate();
 		}
 	}
@@ -511,7 +516,6 @@ public class BroadPhase implements Serializable {
 	public void commit() {
 		m_pairManager.commit();
 	}
-
 
 	/**
 	 * Query an AABB for overlapping proxies, returns the user data and the
@@ -698,5 +702,40 @@ public class BroadPhase implements Serializable {
 		final float dx = MathUtils.max( ax, bx);
 		final float dy = MathUtils.max( ay, by);
 		return (MathUtils.max( dx, dy) < 0.0f);
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(m_pairManager);
+		out.writeObject(m_proxyPool);
+		out.writeInt(m_freeProxy);
+
+		out.writeObject(m_bounds);
+		out.writeObject(m_queryResults);
+		out.writeInt(m_queryResultCount);
+
+		out.writeObject(m_worldAABB);
+		out.writeObject(m_quantizationFactor);
+		out.writeInt(m_proxyCount);
+		out.writeInt(m_timeStamp);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		m_pairManager = (PairManager) in.readObject();
+		m_proxyPool = (Proxy[]) in.readObject();
+		m_freeProxy = in.readInt();
+
+		m_bounds = (Bound[][]) in.readObject();
+		m_queryResults = (int[]) in.readObject();
+		m_queryResultCount = in.readInt();
+
+		m_worldAABB = (AABB) in.readObject();
+		m_quantizationFactor = (Vec2) in.readObject();
+		m_proxyCount = in.readInt();
+		m_timeStamp = in.readInt();
+
+		newValues = new BoundValues();
+		oldValues = new BoundValues();
 	}
 }

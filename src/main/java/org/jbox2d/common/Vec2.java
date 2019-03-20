@@ -166,11 +166,6 @@ public class Vec2 implements Externalizable {
 		return new Vec2(x, y);
 	}
 
-	@Override
-	public final String toString() {
-		return "(" + x + "," + y + ")";
-	}
-
 	/*
 	 * Static
 	 */

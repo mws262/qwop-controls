@@ -104,12 +104,4 @@ public class XForm implements Serializable {
 		out.x = v1x * b.x + v1y * b.y;
 		out.y = tempy;
 	}
-
-	@Override
-	public final String toString() {
-		String s = "XForm:\n";
-		s += "Position: "+position + "\n";
-		s += "R: \n"+R+"\n";
-		return s;
-	}
 }

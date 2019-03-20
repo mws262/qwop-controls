@@ -49,10 +49,9 @@ public class PairManager implements Serializable {
 	public PairManager() {
 		m_pairs = new Pair[Settings.maxPairs];
 		m_hashTable = new int[PairManager.TABLE_CAPACITY];
-		//m_next = new int[Settings.maxPairs];
 		m_pairBuffer = new BufferedPair[Settings.maxPairs];
 
-		assert MathUtils.isPowerOfTwo(PairManager.TABLE_CAPACITY);
+		//assert MathUtils.isPowerOfTwo(PairManager.TABLE_CAPACITY);
 		assert PairManager.TABLE_CAPACITY >= Settings.maxPairs;
 
 		for (int i = 0; i < PairManager.TABLE_CAPACITY; ++i) {

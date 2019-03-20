@@ -75,13 +75,4 @@ public class Bound implements Serializable {
 		other.proxyId = proxyId;
 		other.stabbingCount = stabbingCount;
 	}
-
-	@Override
-	public String toString() {
-		String ret = "Bound variable:\n";
-		ret += "value: " + value + "\n";
-		ret += "proxyId: " + proxyId + "\n";
-		ret += "stabbing count: " + stabbingCount + "\n";
-		return ret;
-	}
 }
