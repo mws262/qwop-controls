@@ -1,7 +1,7 @@
 # Directory for saved runs
 saveLocation=./test_dir
 headless=false
-workersFractionOfCores=0.8
+workersFractionOfCores=0.5
 UCBExplorationMultiplier=2
 
 getToSteadyDepth=100

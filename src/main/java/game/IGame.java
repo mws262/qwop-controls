@@ -49,4 +49,6 @@ public interface IGame {
     void setState(State st);
 
     void applyBodyImpulse(float v, float v1);
+
+    byte[] getFullState();
 }

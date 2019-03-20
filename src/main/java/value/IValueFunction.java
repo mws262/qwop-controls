@@ -1,6 +1,7 @@
 package value;
 
 import actions.Action;
+import game.IGame;
 import tree.Node;
 
 import java.util.List;
@@ -13,6 +14,13 @@ public interface IValueFunction {
      * @return
      */
     Action getMaximizingAction(Node currentNode);
+
+    /**
+     * Find the child Action which is predicted to maximize value.
+     * @param currentNode
+     * @return
+     */
+    Action getMaximizingAction(Node currentNode, IGame game);
 
     /**
      * Calculate the value of having gotten to the provided Node.

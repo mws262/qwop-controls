@@ -27,7 +27,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
         int rolloutTimesteps = 0;
         while (!game.getFailureStatus() && rolloutTimesteps < maxRolloutTimesteps) {
 
-            Action chosenAction = valueFunction.getMaximizingAction(currentNode);
+            Action chosenAction = valueFunction.getMaximizingAction(currentNode, game);
 
             // For convenience and debugging, make an unattached node for the chosen action.
             currentNode = new Node(currentNode, chosenAction, false);
