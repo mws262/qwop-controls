@@ -147,7 +147,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 //                    }
 //                } else { // Screen capture is already so slow, we don't need a delay.
                     try {
-                        Thread.sleep(Math.max(1, 10 - (System.currentTimeMillis() - currTime)));
+                        Thread.sleep(Math.max(1, 40 - (System.currentTimeMillis() - currTime)));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
