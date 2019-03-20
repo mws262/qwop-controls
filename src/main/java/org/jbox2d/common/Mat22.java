@@ -34,15 +34,6 @@ import java.io.Serializable;
 public class Mat22 implements Serializable {
 	public Vec2 col1, col2;
 
-	/** Convert the matrix to printable format. */
-	@Override
-	public String toString() {
-		String s = "";
-		s += "["+col1.x+","+col2.x+"]\n";
-		s += "["+col1.y+","+col2.y+"]";
-		return s;
-	}
-
 	/** Construct zero matrix.  Note: this is NOT an identity matrix!
 	 * djm fixed double allocation problem*/
 	public Mat22() {

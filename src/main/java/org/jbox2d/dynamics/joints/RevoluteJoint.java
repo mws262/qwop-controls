@@ -356,6 +356,9 @@ public class RevoluteJoint extends Joint implements Serializable {
 	public Vec2 getAnchor1() {
 		return m_body1.getWorldLocation(m_localAnchor1);
 	}
+	public float getAnchor1XCoord() {
+		return m_body1.getWorldXPosition(m_localAnchor1);
+	}
 
 	@Override
 	public Vec2 getAnchor2() {

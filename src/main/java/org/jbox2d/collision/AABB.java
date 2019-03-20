@@ -82,9 +82,4 @@ public class AABB implements Serializable {
 		}
 		return lowerBound.isValid() && upperBound.isValid();
 	}
-
-	@Override
-	public final String toString() {
-		return "" + lowerBound + " -> " + upperBound;
-	}
 }
