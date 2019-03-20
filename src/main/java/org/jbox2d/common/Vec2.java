@@ -23,25 +23,13 @@
 
 package org.jbox2d.common;
 
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * A 2-dimensional vector class.  Used heavily in JBox2d.
  * djm: added ToOut methods
  */
-public class Vec2 implements Serializable {
-	/** Should we count Vec2 creations? */
-	static public boolean watchCreations = true;
-	/**
-	 * Running count of Vec2 creations.  Must be zeroed out
-	 * manually (perhaps at start of time step).  Incremented
-	 * in Vec2 constructor if watchCreations flag is true.
-	 * <BR><BR>
-	 * Mainly used for optimization purposes, since temporary
-	 * Vec2 creation is often a bottleneck.
-	 */
-	static public int creationCount = 0;
-
+public class Vec2 implements Externalizable {
 	public float x, y;
 
 	public Vec2() {
@@ -49,12 +37,8 @@ public class Vec2 implements Serializable {
 	}
 
 	public Vec2(float x, float y) {
-		if (Vec2.watchCreations) {
-			++Vec2.creationCount;
-		}
 		this.x = x;
 		this.y = y;
-		// testbed.PTest.debugCount++;
 	}
 
 	public Vec2( Vec2 toCopy) {
@@ -84,8 +68,6 @@ public class Vec2 implements Serializable {
 	public final Vec2 add(Vec2 v) {
 		return new Vec2(x + v.x, y + v.y);
 	}
-	
-	
 
 	/** Return the difference of this vector and another; does not alter either one. */
 	public final Vec2 sub(Vec2 v) {
@@ -184,76 +166,71 @@ public class Vec2 implements Serializable {
 		return new Vec2(x, y);
 	}
 
-	@Override
-	public final String toString() {
-		return "(" + x + "," + y + ")";
-	}
-
 	/*
 	 * Static
 	 */
 
-	public final static Vec2 abs(Vec2 a) {
+	public static Vec2 abs(Vec2 a) {
 		return new Vec2(MathUtils.abs(a.x), MathUtils.abs(a.y));
 	}
 
 	/* djm created */
-	public final static void absToOut(Vec2 a, Vec2 out){
+	protected final static void absToOut(Vec2 a, Vec2 out){
 		out.x = MathUtils.abs( a.x);
 		out.y = MathUtils.abs( a.y);
 	}
 
-	public final static float dot(Vec2 a, Vec2 b) {
+	public static float dot(Vec2 a, Vec2 b) {
 		return a.x * b.x + a.y * b.y;
 	}
 
-	public final static float cross(Vec2 a, Vec2 b) {
+	public static float cross(Vec2 a, Vec2 b) {
 		return a.x * b.y - a.y * b.x;
 	}
 
-	public final static Vec2 cross(Vec2 a, float s) {
+	public static Vec2 cross(Vec2 a, float s) {
 		return new Vec2(s * a.y, -s * a.x);
 	}
 
 	/* djm created */
-	public final static void crossToOut(Vec2 a, float s, Vec2 out){
+	public static void crossToOut(Vec2 a, float s, Vec2 out){
 		float tempy = -s * a.x;
 		out.x = s * a.y;
 		out.y = tempy;
 	}
 
-	public final static Vec2 cross(float s, Vec2 a) {
+	public static Vec2 cross(float s, Vec2 a) {
 		return new Vec2(-s * a.y, s * a.x);
 	}
 
 	/* djm created */
-	public final static void crossToOut(float s, Vec2 a, Vec2 out){
+	public static void crossToOut(float s, Vec2 a, Vec2 out){
 		float tempY = s * a.x;
 		out.x = -s * a.y;
 		out.y = tempY;
 	}
 	
-	public final static void negateToOut(Vec2 a, Vec2 out){
+	public static void negateToOut(Vec2 a, Vec2 out){
 		out.x = -a.x;
 		out.y = -a.y;
 	}
 
-	public final static Vec2 min(Vec2 a, Vec2 b) {
+	public static Vec2 min(Vec2 a, Vec2 b) {
 		return new Vec2(a.x < b.x ? a.x : b.x, a.y < b.y ? a.y : b.y);
 	}
 
-	public final static Vec2 max(Vec2 a, Vec2 b) {
+	public static Vec2 max(Vec2 a, Vec2 b) {
 		return new Vec2(a.x > b.x ? a.x : b.x, a.y > b.y ? a.y : b.y);
 	}
 
 	/* djm created */
-	public final static void minToOut(Vec2 a, Vec2 b, Vec2 out) {
+	public static void minToOut(Vec2 a, Vec2 b, Vec2 out) {
 		out.x = a.x < b.x ? a.x : b.x;
 		out.y = a.y < b.y ? a.y : b.y;
 	}
 
 	/* djm created */
-	public final static void maxToOut(Vec2 a, Vec2 b, Vec2 out) {
+	public static void maxToOut(Vec2 a, Vec2 b, Vec2 out) {
 		out.x = a.x > b.x ? a.x : b.x;
 		out.y = a.y > b.y ? a.y : b.y;
 	}
@@ -284,8 +261,18 @@ public class Vec2 implements Serializable {
 		Vec2 other = (Vec2) obj;
 		if (Float.floatToIntBits(x) != Float.floatToIntBits(other.x))
 			return false;
-		if (Float.floatToIntBits(y) != Float.floatToIntBits(other.y))
-			return false;
-		return true;
+		return Float.floatToIntBits(y) == Float.floatToIntBits(other.y);
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeFloat(x);
+		out.writeFloat(y);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		x = in.readFloat();
+		y = in.readFloat();
 	}
 }

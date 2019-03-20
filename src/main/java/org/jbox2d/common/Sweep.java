@@ -44,14 +44,6 @@ public class Sweep implements Serializable {
 	public float a0, a; 
 	/** Time interval = [t0,1], where t0 is in [0,1] */
 	public float t0;
-	
-	public String toString() {
-		String s = "Sweep:\nlocalCenter: "+localCenter+"\n";
-		s += "c0: "+c0+", c: "+c+"\n";
-		s += "a0: "+a0+", a: "+a+"\n";
-		s += "t0: "+t0+"\n";
-		return s;
-	}
 
 	public Sweep() {
 		localCenter = new Vec2();
@@ -76,9 +68,6 @@ public class Sweep implements Serializable {
 	 */
 	public void getXForm(XForm xf, float t) {
 		assert(xf != null);
-		//if (xf == null)
-		//	xf = new XForm();
-		// center = p + R * localCenter
 		if (1.0f - t0 > Settings.EPSILON) {
 			float alpha = (t - t0) / (1.0f - t0);
 			xf.position.x = (1.0f - alpha) * c0.x + alpha * c.x;
@@ -91,7 +80,6 @@ public class Sweep implements Serializable {
 		}
 
 		// Shift to origin
-		//xf.position.subLocal(Mat22.mul(xf.R, localCenter));
 		xf.position.x -= xf.R.col1.x * localCenter.x + xf.R.col2.x * localCenter.y;
 		xf.position.y -= xf.R.col1.y * localCenter.x + xf.R.col2.y * localCenter.y;
 	}
@@ -109,5 +97,4 @@ public class Sweep implements Serializable {
 			t0 = t;
 		}
 	}
-
 }

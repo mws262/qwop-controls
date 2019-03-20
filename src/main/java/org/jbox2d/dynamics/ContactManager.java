@@ -23,7 +23,7 @@
 
 package org.jbox2d.dynamics;
 
-import java.io.Serializable;
+import java.io.*;
 import java.util.List;
 
 import org.jbox2d.collision.Manifold;
@@ -34,26 +34,22 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.contacts.ContactPoint;
 import org.jbox2d.dynamics.contacts.NullContact;
-import org.jbox2d.pooling.TLContactPoint;
-import org.jbox2d.pooling.TLVec2;
-
 
 //Updated to rev 56->104->142 of b2ContactManager.cpp/.h
 
 /** Delegate of World - for internal use. */
-public class ContactManager implements PairCallback, Serializable {
+public class ContactManager implements PairCallback, Externalizable {
 	World m_world;
+
+	// For intermediate calculations.
+	transient private Vec2 v1 = new Vec2();
+	transient private ContactPoint cp = new ContactPoint();
 
 	// This lets us provide broadphase proxy pair user data for
 	// contacts that shouldn't exist.
-	NullContact m_nullContact;
+	private static final NullContact m_nullContact = new NullContact();
 
-	boolean m_destroyImmediate;
-
-	public ContactManager() {
-		m_nullContact = new NullContact();
-		m_destroyImmediate = false;
-	}
+	public ContactManager() {}
 
 	public Object pairAdded(final Object proxyUserData1, final Object proxyUserData2) {
 		Shape shape1 = (Shape) proxyUserData1;
@@ -74,7 +70,7 @@ public class ContactManager implements PairCallback, Serializable {
 			return m_nullContact;
 		}
 
-		if (m_world.m_contactFilter != null && m_world.m_contactFilter.shouldCollide(shape1, shape2) == false){
+		if (m_world.m_contactFilter != null && !m_world.m_contactFilter.shouldCollide(shape1, shape2)){
 			return m_nullContact;
 		}
 
@@ -100,7 +96,6 @@ public class ContactManager implements PairCallback, Serializable {
 		m_world.m_contactList = c;
 
 		// Connect to island graph.
-
 		// Connect to body 1
 		c.m_node1.contact = c;
 		c.m_node1.other = body2;
@@ -131,15 +126,12 @@ public class ContactManager implements PairCallback, Serializable {
 	// to overlap. We retire the b2Contact.
 	public void pairRemoved(final Object proxyUserData1, final Object proxyUserData2,
 	                        final Object pairUserData) {
-		//B2_NOT_USED(proxyUserData1);
-		//B2_NOT_USED(proxyUserData2);
-
 		if (pairUserData == null) {
 			return;
 		}
 
 		final Contact c = (Contact)pairUserData;
-		if (c == m_nullContact) {
+		if (c.getClass() == NullContact.class) {
 			return;
 		}
 
@@ -148,22 +140,13 @@ public class ContactManager implements PairCallback, Serializable {
 		destroy(c);
 	}
 
-	// djm pooled
-	private static final TLVec2 tlV1 = new TLVec2();
-	private static final TLContactPoint tlCp = new TLContactPoint();
-	
 	public void destroy(final Contact c) {
-		
-		final Vec2 v1 = tlV1.get();
-		final ContactPoint cp = tlCp.get();
-		
 		final Shape shape1 = c.getShape1();
 		final Shape shape2 = c.getShape2();
 
 		// Inform the user that this contact is ending.
 		final int manifoldCount = c.getManifoldCount();
-		if (manifoldCount > 0 && (m_world.m_contactListener != null))
-		{
+		if (manifoldCount > 0 && (m_world.m_contactListener != null)) {
 			final Body b1 = shape1.getBody();
 			final Body b2 = shape2.getBody();
 			final List<Manifold> manifolds = c.getManifolds();
@@ -171,8 +154,7 @@ public class ContactManager implements PairCallback, Serializable {
 			cp.shape2 = c.getShape2();
 			cp.friction = c.m_friction;
 			cp.restitution = c.m_restitution;
-			for (int i = 0; i < manifoldCount; ++i)
-			{
+			for (int i = 0; i < manifoldCount; ++i) {
 				final Manifold manifold = manifolds.get(i);
 				cp.normal.set(manifold.normal);
 				for (int j = 0; j < manifold.pointCount; ++j) {
@@ -231,14 +213,12 @@ public class ContactManager implements PairCallback, Serializable {
 		if (c.m_node2 == body2.m_contactList) {
 			body2.m_contactList = c.m_node2.next;
 		}
-
 		// Call the factory.
 		Contact.destroy(c);
 		--m_world.m_contactCount;
-		
 	}
 
-	public void collide() {
+	void collide() {
 		// Update awake contacts.
 		for (Contact c = m_world.m_contactList; c != null; c = c.getNext()) {
 			final Body body1 = c.getShape1().getBody();
@@ -246,8 +226,19 @@ public class ContactManager implements PairCallback, Serializable {
 			if (body1.isSleeping() && body2.isSleeping()) {
 				continue;
 			}
-
 			c.update(m_world.m_contactListener);
 		}
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(m_world);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		m_world = (World) in.readObject();
+		v1 = new Vec2();
+		cp = new ContactPoint();
 	}
 }

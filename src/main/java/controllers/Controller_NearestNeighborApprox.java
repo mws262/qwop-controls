@@ -18,15 +18,12 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import data.TFRecordDataParsers;
-import game.StateWeights;
+import game.*;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
 import data.EvictingTreeMap;
 import data.LIFOFixedSize;
-import game.GameThreadSafe;
-import game.State;
-import game.StateVariable;
 import actions.Action;
 import tree.Node;
 import ui.PanelRunner;
@@ -463,7 +460,7 @@ public class Controller_NearestNeighborApprox implements IController {
     }
 
     @Override
-    public void draw(Graphics g, GameThreadSafe game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
+    public void draw(Graphics g, GameUnified game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
         if (!previousStatesLIFO.isEmpty()) {
             g.setColor(Color.WHITE);
             g.drawString(String.valueOf(previousStatesLIFO.peek().body.getX()), 50, 50);
@@ -475,7 +472,6 @@ public class Controller_NearestNeighborApprox implements IController {
             int startIdx = drawTraj.states.indexOf(drawState);
             float bodyX = currentTrajectoryStateMatch.state.body.getX();
             game.drawExtraRunner((Graphics2D) g, drawState.state, "", runnerScaling, xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels, Color.CYAN, PanelRunner.normalStroke);
-
 
             int viewingHorizon = 80;
             for (int i = 0; i < drawTraj.states.size(); i++) {

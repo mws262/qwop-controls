@@ -4,7 +4,7 @@ import actions.Action;
 import actions.ActionQueue;
 import actions.ActionSet;
 import distributions.Distribution_Equal;
-import game.GameSingleThread;
+import game.GameUnified;
 import org.junit.*;
 import tree.Node;
 
@@ -20,15 +20,15 @@ public class ValueFunction_TensorFlow_ActionInTest {
     private static Node rootNode;
 
     // First layer actions.
-    static final ActionSet actionsLayer1 = ActionSet.makeActionSet(IntStream.range(1, 4).toArray(),
+    private static final ActionSet actionsLayer1 = ActionSet.makeActionSet(IntStream.range(1, 4).toArray(),
             new boolean[]{false, false, false, false}, new Distribution_Equal());
 
     // Second layer actions.
-    static final ActionSet actionsLayer2 = ActionSet.makeActionSet(IntStream.range(4, 8).toArray(),
+    private static final ActionSet actionsLayer2 = ActionSet.makeActionSet(IntStream.range(4, 8).toArray(),
             new boolean[]{false, true, true, false}, new Distribution_Equal());
 
     // Third layer actions.
-    static final ActionSet actionsLayer3 = ActionSet.makeActionSet(IntStream.range(8, 12).toArray(),
+    private static final ActionSet actionsLayer3 = ActionSet.makeActionSet(IntStream.range(8, 12).toArray(),
             new boolean[]{true, false, false, true}, new Distribution_Equal());
 
     @BeforeClass
@@ -42,7 +42,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
         hiddenLayerSizes.add(64);
         try {
             valFun = new ValueFunction_TensorFlow_ActionIn("valfun_network_unit_test_tmp", hiddenLayerSizes,
-                    new ArrayList<String>());
+                    new ArrayList<>());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -117,7 +117,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
         hiddenLayerSizes.add(64);
         try {
             valFunRemade = new ValueFunction_TensorFlow_ActionIn("valfun_network_unit_test_tmp2",
-                    hiddenLayerSizes, new ArrayList<String>());
+                    hiddenLayerSizes, new ArrayList<>());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -151,7 +151,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
      * @param action      Action to add below this node.
      * @return A new child node with state and value assigned.
      */
-    static Node doNext(Node currentNode, Action action, GameSingleThread game) {
+    static Node doNext(Node currentNode, Action action, GameUnified game) {
         Node[] children = currentNode.getChildren();
 
         // Check if a node for the desired action already exists.
@@ -194,7 +194,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
      * @return The root of the constructed test tree.
      */
     static Node makeDemoTree() {
-        GameSingleThread game = GameSingleThread.getInstance();
+        GameUnified game = new GameUnified();
 
         // Manually make a dummy tree to run on.
         Node rootNode = new Node();
@@ -229,7 +229,6 @@ public class ValueFunction_TensorFlow_ActionInTest {
             Assert.assertNotEquals(0f, n.getValue());
             Assert.assertNotEquals(0L, n.visitCount.longValue());
         }
-        game.releaseGame();
         return rootNode;
     }
 }

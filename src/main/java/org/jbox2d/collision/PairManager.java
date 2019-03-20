@@ -32,37 +32,26 @@ import java.io.Serializable;
 
 public class PairManager implements Serializable {
 
-	public static final int NULL_PAIR = Integer.MAX_VALUE;
-
+	private static final int NULL_PAIR = Integer.MAX_VALUE;
 	public static final int NULL_PROXY = Integer.MAX_VALUE;
+	private static final int TABLE_CAPACITY = Settings.maxPairs;
+	private static final int TABLE_MASK = PairManager.TABLE_CAPACITY - 1;
 
-	public static final int TABLE_CAPACITY = Settings.maxPairs;
-	public static final int TABLE_MASK = PairManager.TABLE_CAPACITY - 1;
-
-	public final Pair m_pairs[];
-
-	public int m_pairCount;
-
-	public int m_hashTable[];
-
-	//int m_next[];
-
-	public BroadPhase m_broadPhase;
-
-	public PairCallback m_callback;
-
-	public int m_freePair;
-
-	public final BufferedPair[] m_pairBuffer;
-	public int m_pairBufferCount;
+    private final Pair[] m_pairs;
+	private int m_pairCount;
+    private int[] m_hashTable;
+	private BroadPhase m_broadPhase;
+	private PairCallback m_callback;
+	private int m_freePair;
+	private final BufferedPair[] m_pairBuffer;
+	private int m_pairBufferCount;
 
 	public PairManager() {
 		m_pairs = new Pair[Settings.maxPairs];
 		m_hashTable = new int[PairManager.TABLE_CAPACITY];
-		//m_next = new int[Settings.maxPairs];
 		m_pairBuffer = new BufferedPair[Settings.maxPairs];
 
-		assert MathUtils.isPowerOfTwo(PairManager.TABLE_CAPACITY) == true;
+		//assert MathUtils.isPowerOfTwo(PairManager.TABLE_CAPACITY);
 		assert PairManager.TABLE_CAPACITY >= Settings.maxPairs;
 
 		for (int i = 0; i < PairManager.TABLE_CAPACITY; ++i) {
@@ -70,14 +59,12 @@ public class PairManager implements Serializable {
 		}
 		m_freePair = 0;
 		for (int i = 0; i < Settings.maxPairs; ++i) {
-			//m_next[i] = NULL_PAIR;
 			m_pairs[i] = new Pair();
 			m_pairs[i].proxyId1 = PairManager.NULL_PROXY;
 			m_pairs[i].proxyId2 = PairManager.NULL_PROXY;
 			m_pairs[i].userData = null;
 			m_pairs[i].status = 0;
 			m_pairs[i].next = i+1;
-
 			m_pairBuffer[i] = new BufferedPair();
 		}
 		m_pairs[Settings.maxPairs-1].next = PairManager.NULL_PAIR;
@@ -93,7 +80,6 @@ public class PairManager implements Serializable {
 	// Add a pair and return the new pair. If the pair already exists,
 	// no new pair is created and the old one is returned.
 	public Pair addPair(int proxyId1, int proxyId2) {
-		// System.out.printf("PairManager.Add(%d, %d)\n", proxyId1, proxyId2);
 		if (proxyId1 > proxyId2) {
 			// integer primitive swap
 			proxyId1 += proxyId2;
@@ -122,7 +108,6 @@ public class PairManager implements Serializable {
 		pair.next = m_hashTable[hash];
 
 		m_hashTable[hash] = pairIndex;
-
 		++m_pairCount;
 
 		return pair;
@@ -140,22 +125,18 @@ public class PairManager implements Serializable {
 		}
 
 		final int hash = hash(proxyId1, proxyId2) & PairManager.TABLE_MASK;
-		//int* node = &m_hashTable[hash];
 		int derefnode = m_hashTable[hash];
 		boolean isHash = true;
 		int pderefnode = 0;
 		while (derefnode != PairManager.NULL_PAIR) {
 			if (equals(m_pairs[derefnode], proxyId1, proxyId2)) {
-				//int index = *node;
-				final int index = derefnode;
-				//*node = m_pairs[*node].next;
 				if (isHash) {
 					m_hashTable[hash] = m_pairs[m_hashTable[hash]].next;
 				} else {
 					m_pairs[pderefnode].next = m_pairs[derefnode].next;
 				}
 
-				final Pair pair = m_pairs[index];
+				final Pair pair = m_pairs[derefnode];
 				final Object userData = pair.userData;
 
 				// Scrub
@@ -165,12 +146,11 @@ public class PairManager implements Serializable {
 				pair.userData = null;
 				pair.status = 0;
 
-				m_freePair = index;
+				m_freePair = derefnode;
 				--m_pairCount;
 
 				return userData;
 			} else {
-				//node = &m_pairs[*node].next;
 				pderefnode = derefnode;
 				derefnode = m_pairs[derefnode].next;
 				isHash = false;
@@ -198,16 +178,16 @@ public class PairManager implements Serializable {
      * We may add a pair that is already in the pair manager and pair buffer.
      * If the added pair is not a new pair, then it must be in the pair buffer (because RemovePair was called).
 	 */
-	public void addBufferedPair(final int id1, final int id2) {
+    void addBufferedPair(final int id1, final int id2) {
 		assert(id1 != PairManager.NULL_PROXY && id2 != PairManager.NULL_PROXY);
 		assert(m_pairBufferCount < Settings.maxPairs);
 
 		final Pair pair = addPair(id1, id2);
 
 		// If this pair is not in the pair buffer ...
-		if (pair.isBuffered() == false) {
+		if (!pair.isBuffered()) {
 			// This must be a newly added pair.
-			assert(pair.isFinal() == false);
+			assert(!pair.isFinal());
 
 			// Add it to the pair buffer.
 			pair.setBuffered();
@@ -220,7 +200,6 @@ public class PairManager implements Serializable {
 
 		// Confirm this pair for the subsequent call to Commit.
 		pair.clearRemoved();
-
 		if (BroadPhase.s_validate){
 			validateBuffer();
 		}
@@ -231,10 +210,9 @@ public class PairManager implements Serializable {
 	 * @param id1
 	 * @param id2
 	 */
-	public void removeBufferedPair(final int id1, final int id2) {
+    void removeBufferedPair(final int id1, final int id2) {
 		assert(id1 != PairManager.NULL_PROXY && id2 != PairManager.NULL_PROXY);
 		assert(m_pairBufferCount < Settings.maxPairs);
-
 		final Pair pair = find(id1, id2);
 
 		if (pair == null) {
@@ -243,9 +221,9 @@ public class PairManager implements Serializable {
 		}
 
 		// If this pair is not in the pair buffer ...
-		if (pair.isBuffered() == false) {
+		if (!pair.isBuffered()) {
 			// This must be an old pair.
-			assert(pair.isFinal() == true);
+			assert(pair.isFinal());
 
 			pair.setBuffered();
 			m_pairBuffer[m_pairBufferCount].proxyId1 = pair.proxyId1;
@@ -265,10 +243,8 @@ public class PairManager implements Serializable {
 	/**
 	 * commits the proxies
 	 */
-	public void commit() {
-		//System.out.println("Entering commit");
+    void commit() {
 		int removeCount = 0;
-
 		final Proxy[] proxies = m_broadPhase.m_proxyPool;
 
 		for (int i = 0; i < m_pairBufferCount; ++i) {
@@ -288,49 +264,29 @@ public class PairManager implements Serializable {
 				// It is possible a pair was added then removed before a commit. Therefore,
 				// we should be careful not to tell the user the pair was removed when the
 				// the user didn't receive a matching add.
-				if (pair.isFinal() == true) {
+				if (pair.isFinal()) {
 					m_callback.pairRemoved(proxy1.userData, proxy2.userData, pair.userData);
 				}
 
 				// Store the ids so we can actually remove the pair below.
 				m_pairBuffer[removeCount].proxyId1 = pair.proxyId1;
 				m_pairBuffer[removeCount].proxyId2 = pair.proxyId2;
-				//System.out.println("Buffering "+pair.proxyId1 + ", "+pair.proxyId2 + " for removal");
 				++removeCount;
 			} else {
-				assert(m_broadPhase.testOverlap(proxy1, proxy2) == true);
+				assert(m_broadPhase.testOverlap(proxy1, proxy2));
 
-				if (pair.isFinal() == false) {
+				if (!pair.isFinal()) {
 					pair.userData = m_callback.pairAdded(proxy1.userData, proxy2.userData);
 					pair.setFinal();
 				}
-
-				//                if ( ((Shape)proxy1.userData).getBody().isStatic() &&
-						//                     ((Shape)proxy2.userData).getBody().isStatic() ) {
-				//                	if (pair.isFinal() == true) {
-				//                        m_callback.pairRemoved(proxy1.userData, proxy2.userData, pair.userData);
-				//                    }
-				//
-				//                    // Store the ids so we can actually remove the pair below.
-				//                    m_pairBuffer[removeCount].proxyId1 = pair.proxyId1;
-				//                    m_pairBuffer[removeCount].proxyId2 = pair.proxyId2;
-				//                    //System.out.println("Buffering "+pair.proxyId1 + ", "+pair.proxyId2 + " for removal");
-				//                    ++removeCount;
-				//                }
 			}
 		}
 
 		for (int i = 0; i < removeCount; ++i) {
-
 			removePair(m_pairBuffer[i].proxyId1, m_pairBuffer[i].proxyId2);
-			//            System.out.println("Remaining pairs: ");
-			//            for (int j=0; j<m_pairCount; ++j) {
-			//                System.out.println("  "+m_pairs[j].proxyId1 + ", " + m_pairs[j].proxyId2);
-			//            }
 		}
 
 		m_pairBufferCount = 0;
-
 		if (BroadPhase.s_validate) {
 			validateTable();
 		}
@@ -339,48 +295,19 @@ public class PairManager implements Serializable {
 	/**
 	 * Unimplemented - for debugging purposes only in C++ version
 	 */
-	public void validateBuffer() {
-		//#ifdef _DEBUG
-		//        assert(m_pairBufferCount <= m_pairCount);
-		//
-		//        std::sort(m_pairBuffer, m_pairBuffer + m_pairBufferCount);
-		//
-		//        for (int32 i = 0; i < m_pairBufferCount; ++i)
-		//        {
-		//            if (i > 0)
-		//            {
-		//                b2Assert(Equals(m_pairBuffer[i], m_pairBuffer[i-1]) == false);
-		//            }
-		//
-		//            b2Pair* pair = Find(m_pairBuffer[i].proxyId1, m_pairBuffer[i].proxyId2);
-		//            b2Assert(pair->IsBuffered());
-		//
-		//            b2Assert(pair->proxyId1 != pair->proxyId2);
-		//            b2Assert(pair->proxyId1 < b2_maxProxies);
-		//            b2Assert(pair->proxyId2 < b2_maxProxies);
-		//
-		//            b2Proxy* proxy1 = m_broadPhase->m_proxyPool + pair->proxyId1;
-		//            b2Proxy* proxy2 = m_broadPhase->m_proxyPool + pair->proxyId2;
-		//
-		//            b2Assert(proxy1->IsValid() == true);
-		//            b2Assert(proxy2->IsValid() == true);
-		//        }
-		//#endif
-	}
+    private void validateBuffer() {}
 
 	/**
 	 * For debugging
 	 */
-	public void validateTable() {
-		//    #ifdef _DEBUG
+    private void validateTable() {
 		for (int i = 0; i < PairManager.TABLE_CAPACITY; ++i) {
 			int index = m_hashTable[i];
 			while (index != PairManager.NULL_PAIR) {
 				final Pair pair = m_pairs[index];
-				assert(pair.isBuffered() == false);
-				assert(pair.isFinal() == true);
-				assert(pair.isRemoved() == false);
-
+				assert(!pair.isBuffered());
+				assert(pair.isFinal());
+				assert(!pair.isRemoved());
 				assert(pair.proxyId1 != pair.proxyId2);
 				assert(pair.proxyId1 < Settings.maxProxies);
 				assert(pair.proxyId2 < Settings.maxProxies);
@@ -388,15 +315,13 @@ public class PairManager implements Serializable {
 				final Proxy proxy1 = m_broadPhase.m_proxyPool[pair.proxyId1];
 				final Proxy proxy2 = m_broadPhase.m_proxyPool[pair.proxyId2];
 
-				assert(proxy1.isValid() == true);
-				assert(proxy2.isValid() == true);
-
-				assert(m_broadPhase.testOverlap(proxy1, proxy2) == true);
+				assert(proxy1.isValid());
+				assert(proxy2.isValid());
+				assert(m_broadPhase.testOverlap(proxy1, proxy2));
 
 				index = pair.next;
 			}
 		}
-		//    #endif
 	}
 
 	/**
@@ -407,17 +332,13 @@ public class PairManager implements Serializable {
 	 * @return
 	 */
 	public Pair find(final int proxyId1, final int proxyId2, final int hash) {
-
 		int index = m_hashTable[hash];
-
 		while (index != PairManager.NULL_PAIR
-				&& equals(m_pairs[index], proxyId1, proxyId2) == false) {
+				&& !equals(m_pairs[index], proxyId1, proxyId2)) {
 			index = m_pairs[index].next;
 		}
 
-		//System.out.println("Found at index "+index);
 		if (index == PairManager.NULL_PAIR) {
-			//System.out.println("Which is null...");
 			return null;
 		}
 
@@ -437,69 +358,12 @@ public class PairManager implements Serializable {
 			proxyId1 = proxyId2;
 			proxyId2 = tmp;
 		}
-
 		final int hash = hash(proxyId1, proxyId2) & PairManager.TABLE_MASK;
-
 		return find(proxyId1, proxyId2, hash);
 	}
 
-	//    public int findIndex(int proxyId1, int proxyId2) {
-	//        // System.out.printf("PairManager.FindIndex(%d, %d)\n", proxyId1,
-	//        // proxyId2);
-	//        if (proxyId1 > proxyId2) {
-	//            // integer primitive swap
-	//            proxyId1 += proxyId2;
-	//            proxyId2 = proxyId1 - proxyId2;
-	//            proxyId1 -= proxyId2;
-	//        }
-	//
-	//        int hash = hash(proxyId1, proxyId2) & TABLE_MASK;
-	//
-	//        int index = m_hashTable[hash];
-	//        while (index != NULL_PAIR
-	//                && equals(m_pairs[index], proxyId1, proxyId2) == false) {
-	//            index = m_next[index];
-	//        }
-	//
-	//        if (index == NULL_PAIR) {
-	//            return -1;
-	//        }
-	//
-	//        assert index < m_pairCount;
-	//
-	//        return index;
-	//    }
-	//
-	//    public int getCount() {
-	//        return m_pairCount;
-	//    }
-	//
-	//    public Pair[] getPairs() {
-	//        return m_pairs;
-	//    }
-	//
-	//
-	//
-	//    private int findIndex(int proxyId1, int proxyId2, int hash) {
-	//        int index = m_hashTable[hash];
-	//
-	//        while (index != NULL_PAIR
-	//                && equals(m_pairs[index], proxyId1, proxyId2) == false) {
-	//            index = m_next[index];
-	//        }
-	//
-	//        if (index == NULL_PAIR) {
-	//            return -1;
-	//        }
-	//
-	//        assert index < m_pairCount;
-	//
-	//        return index;
-	//    }
-
-	private final int hash(final int proxyId1, final int proxyId2) {
-		// djm: this operation here is pretty self explanitory,
-		// so i don't think I need to describe what's happening,
+	private int hash(final int proxyId1, final int proxyId2) {
+		// djm: this operation here is pretty self explanitory, so i don't think I need to describe what's happening,
 		// or what the result is
 		int key = (proxyId2 << 16) | proxyId1;
 		key = ~key + (key << 15);
@@ -530,24 +394,5 @@ public class PairManager implements Serializable {
 	 */
 	public final boolean equals(final BufferedPair pair1, final BufferedPair pair2) {
 		return pair1.proxyId1 == pair2.proxyId1 && pair1.proxyId2 == pair2.proxyId2;
-	}
-
-	/**
-	 *  For sorting.  Returns if the first pair's proxyid's are less than the
-	 *  second pair, starting with proxyId1
-	 * @param pair1
-	 * @param pair2
-	 * @return
-	 */
-	public final boolean minor (final BufferedPair pair1, final BufferedPair pair2){
-		if (pair1.proxyId1 < pair2.proxyId1) {
-			return true;
-		}
-
-		if (pair1.proxyId1 == pair2.proxyId1) {
-			return pair1.proxyId2 < pair2.proxyId2;
-		}
-
-		return false;
 	}
 }

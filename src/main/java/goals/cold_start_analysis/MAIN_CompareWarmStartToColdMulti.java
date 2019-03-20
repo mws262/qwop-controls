@@ -1,7 +1,8 @@
 package goals.cold_start_analysis;
 
 import actions.ActionQueue;
-import game.GameThreadSafe;
+import game.GameUnified;
+import game.IGame;
 import game.State;
 import tree.Node;
 
@@ -24,8 +25,8 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
     public void run() {
         ActionQueue actionQueue = getSampleActions();
 
-        GameThreadSafe gameFullRun = new GameThreadSafe(); // This game will run all the commands, start to finish.
-        List<GameThreadSafe> coldStartGames = new ArrayList<>();
+        IGame gameFullRun = new GameUnified(); // This game will run all the commands, start to finish.
+        List<GameUnified> coldStartGames = new ArrayList<>();
 
         int coldStartAction = 2; // Starts the first cold start runner at this command index.
 
@@ -40,9 +41,9 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
 
                 // Simulate the additional cold-started runners.
                 int count = 0;
-                Iterator<GameThreadSafe> coldStartGameIter = coldStartGames.iterator();
+                Iterator<GameUnified> coldStartGameIter = coldStartGames.iterator();
                 while (coldStartGameIter.hasNext()) {
-                    GameThreadSafe gm = coldStartGameIter.next();
+                    GameUnified gm = coldStartGameIter.next();
                     gm.step(nextCommand);
                     State st = gm.getCurrentState();
                     if (st.isFailed()) {
@@ -62,7 +63,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
             }
 
             // Add a new cold started runner at the full game's current state.
-            GameThreadSafe coldStartGame = getFakedWarmStart(0);
+            GameUnified coldStartGame = getFakedWarmStart(0);
             coldStartGame.setState(gameFullRun.getCurrentState());
             coldStartGames.add(coldStartGame);
 

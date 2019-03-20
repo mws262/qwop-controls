@@ -9,7 +9,8 @@ import java.util.concurrent.atomic.LongAdder;
 
 import actions.Action;
 import actions.ActionQueue;
-import game.GameThreadSafe;
+import game.GameUnified;
+import game.IGame;
 import game.State;
 import samplers.ISampler;
 import samplers.Sampler_Random;
@@ -63,7 +64,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * The current game instance that this FSM is using. This will now not change.
      */
-    private final GameThreadSafe game = new GameThreadSafe();
+    private final IGame game = new GameUnified();
 
     /**
      * Strategy for sampling new nodes. Defaults to random sampling.
@@ -104,7 +105,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Initial runner state.
      */
-    private State initState = GameThreadSafe.getInitialState();
+    private State initState = GameUnified.getInitialState();
 
     /**
      * Current status of this FSM
@@ -219,7 +220,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                 case INITIALIZE:
                     actionQueue.clearAll();
                     newGame(); // Create a new game world.
-                    saver.reportGameInitialization(GameThreadSafe.getInitialState());
+                    saver.reportGameInitialization(GameUnified.getInitialState());
                     currentGameNode = rootNode;
                     changeStatus(Status.TREE_POLICY_CHOOSING);
 

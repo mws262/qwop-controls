@@ -2,7 +2,7 @@ package goals.cold_start_analysis;
 
 import actions.Action;
 import actions.ActionQueue;
-import game.GameThreadSafe;
+import game.GameUnified;
 import ui.PanelRunner_MultiState;
 
 import javax.swing.*;
@@ -85,8 +85,8 @@ public abstract class CompareWarmStartToColdBase extends JFrame {
      * @return A QWOP game which has been run for a specified number of timesteps with no control inputs.
      */
     @SuppressWarnings("SameParameterValue")
-    GameThreadSafe getFakedWarmStart(int timesteps) {
-        GameThreadSafe game = new GameThreadSafe();
+    GameUnified getFakedWarmStart(int timesteps) {
+        GameUnified game = new GameUnified();
         for (int i = 0; i < timesteps; i++) {
             game.step(false, false, false, false);
         }

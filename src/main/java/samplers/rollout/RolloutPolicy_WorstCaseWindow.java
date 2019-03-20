@@ -2,7 +2,7 @@ package samplers.rollout;
 
 import actions.Action;
 import evaluators.IEvaluationFunction;
-import game.GameThreadSafe;
+import game.IGame;
 import tree.Node;
 
 public class RolloutPolicy_WorstCaseWindow extends RolloutPolicy {
@@ -12,7 +12,7 @@ public class RolloutPolicy_WorstCaseWindow extends RolloutPolicy {
     }
 
     @Override
-    public float rollout(Node startNode, GameThreadSafe game) {
+    public float rollout(Node startNode, IGame game) {
 
         // Need to do a rollout for the actual node we landed on.
         Node endNodeMiddle = randomRollout(startNode, game);

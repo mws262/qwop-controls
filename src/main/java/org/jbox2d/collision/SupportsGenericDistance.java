@@ -37,7 +37,6 @@ import org.jbox2d.common.XForm;
  * specialized penetration calculations when CCD is not in effect, however.
  */
 public interface SupportsGenericDistance {
-	public void support(Vec2 dest, XForm xf, Vec2 v);
-	public void getFirstVertexToOut(XForm xf, Vec2 out);
-
+	void support(Vec2 dest, XForm xf, Vec2 v);
+	void getFirstVertexToOut(XForm xf, Vec2 out);
 }

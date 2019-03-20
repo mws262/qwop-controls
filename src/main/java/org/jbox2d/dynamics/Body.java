@@ -23,7 +23,7 @@
 
 package org.jbox2d.dynamics;
 
-import java.io.Serializable;
+import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,10 +39,7 @@ import org.jbox2d.common.Sweep;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.contacts.ContactEdge;
-import org.jbox2d.dynamics.controllers.ControllerEdge;
 import org.jbox2d.dynamics.joints.JointEdge;
-import org.jbox2d.pooling.TLVec2;
-import org.jbox2d.pooling.TLXForm;
 
 // Updated to rev. 54->118->142 of b2Body.cpp/.h
 // Rewritten completely for rev. 118 (too many changes, needed reorganization for maintainability)
@@ -59,11 +56,7 @@ import org.jbox2d.pooling.TLXForm;
  * getters/setters rather than through the m_* variables.  These are
  * internal variables, and their use is generally unsupported.
  */
-public class Body implements Serializable {
-	private static volatile int nextID = 0;
-	private static Object idLock = new Object();
-	private int m_uniqueID;
-
+public class Body implements Externalizable {
 	//m_flags
 	public static final int e_frozenFlag = 0x0002;
 	public static final int e_islandFlag = 0x0004;
@@ -71,26 +64,25 @@ public class Body implements Serializable {
 	public static final int e_allowSleepFlag = 0x0010;
 	public static final int e_bulletFlag = 0x0020;
 	public static final int e_fixedRotationFlag = 0x0040;
+
 	public int m_flags;
 
 	//m_type
 	public static final int e_staticType = 0;
 	public static final int e_dynamicType = 1;
-	public static final int e_maxTypes = 2;
+
 	public int m_type;
-	
-	public ControllerEdge m_controllerList;
 
 	/** The body origin transform */
-	public final XForm m_xf;
+	public XForm m_xf;
 
 	/** The swept motion for CCD */
 	public Sweep m_sweep;
 
-	public final Vec2 m_linearVelocity;
+	public Vec2 m_linearVelocity;
 	public float m_angularVelocity;
 
-	public final Vec2 m_force;
+	public Vec2 m_force;
 	public float m_torque;
 
 	public World m_world;
@@ -103,8 +95,10 @@ public class Body implements Serializable {
 	public JointEdge m_jointList;
 	public ContactEdge m_contactList;
 
-	public float m_mass, m_invMass;
-	public float m_I, m_invI;
+	public float m_mass;
+	transient public float m_invMass;
+	public float m_I;
+	transient public float m_invI;
 
 	public float m_linearDamping;
 	public float m_angularDamping;
@@ -118,8 +112,10 @@ public class Body implements Serializable {
 	 * the BodyDef used to create the body, so may
 	 * be set there instead.
 	 */
-	public Object m_userData;
+	transient public Object m_userData;
 
+	// For intermediate calculations
+	transient private XForm xf1 = new XForm();
 	/**
 	 * Empty body, with no world
 	 */
@@ -137,12 +133,7 @@ public class Body implements Serializable {
 	 * @param world World to create body in
 	 */
 	public Body(final BodyDef bd, final World world) {
-		assert(world.m_lock == false);
-		
-		synchronized(idLock) {
-			m_uniqueID = nextID++;
-		}
-
+		//assert(!world.m_lock);
 		m_flags = 0;
 
 		if (bd.isBullet) {
@@ -216,8 +207,6 @@ public class Body implements Serializable {
 
 		m_shapeList = null;
 		m_shapeCount = 0;
-
-//		System.out.println("Body hash code: " + this.hashCode());
 	}
 
 	// djm this isn't a hot method, allocation is just fine
@@ -243,24 +232,19 @@ public class Body implements Serializable {
 	 */
 	// djm not a hot method, allocations are fine
 	public Shape createShape(final ShapeDef def){
-		assert(m_world.m_lock == false);
-
-		if (m_world.m_lock == true){
-			return null;
-		}
+		assert(!m_world.m_lock);
 
 		// TODO: Decide on a better place to initialize edgeShapes. (b2Shape::Create() can't
 		//       return more than one shape to add to parent body... maybe it should add
 		//       shapes directly to the body instead of returning them?)
 		if (def.type == ShapeType.EDGE_SHAPE) {
-			final EdgeChainDef edgeDef = (EdgeChainDef)def;
-			Vec2 v1;// = new Vec2();
-			Vec2 v2;// = new Vec2();
+			final EdgeChainDef edgeDef = (EdgeChainDef) def;
+			Vec2 v1;
+			Vec2 v2;
 			int i = 0;
 
 			if (edgeDef.isLoop()) {
 				v1 = edgeDef.getVertices().get(edgeDef.getVertexCount()-1);
-				i = 0;
 			} else {
 				v1 = edgeDef.getVertices().get(0);
 				i = 1;
@@ -296,7 +280,6 @@ public class Body implements Serializable {
 			return s0;
 		}
 
-
 		final Shape s = Shape.create(def);
 
 		s.m_next = m_shapeList;
@@ -322,11 +305,7 @@ public class Body implements Serializable {
 	 * @param s the shape to be removed.
 	 */
 	public void destroyShape(final Shape s){
-		assert(m_world.m_lock == false);
-		if (m_world.m_lock == true) {
-			return;
-		}
-
+		assert(!m_world.m_lock);
 		assert(s.getBody() == this);
 		s.destroyProxy(m_world.m_broadPhase);
 
@@ -352,21 +331,6 @@ public class Body implements Serializable {
 			prevNode = node;
 			node = node.m_next;
 		}
-		/*
-		Shape** node = &m_shapeList;
-		boolean found = false;
-		while (*node != NULL)
-		{
-			if (*node == s)
-			{
-		 *node = s->m_next;
-				found = true;
-				break;
-			}
-
-			node = &(*node)->m_next;
-		}
-		 */
 
 		// You tried to remove a shape that is not attached to this body.
 		assert(found);
@@ -385,10 +349,7 @@ public class Body implements Serializable {
 	 * @param massData the mass properties.
 	 */
 	public void setMass(final MassData massData){
-		assert(m_world.m_lock == false);
-		if (m_world.m_lock == true) {
-			return;
-		}
+		assert(!m_world.m_lock);
 
 		m_invMass = 0.0f;
 		m_I = 0.0f;
@@ -434,17 +395,13 @@ public class Body implements Serializable {
 		}
 	}
 
-	private static final TLVec2 tlCenter = new TLVec2();
 	/**
 	 * Compute the mass properties from the attached shapes. You typically call this
 	 * after adding all the shapes. If you add or remove shapes later, you may want
 	 * to call this again. Note that this changes the center of mass position.
 	 */
 	public void setMassFromShapes(){
-		assert(m_world.m_lock == false);
-		if (m_world.m_lock == true) {
-			return;
-		}
+		assert(!m_world.m_lock);
 
 		// Compute mass data from shapes.  Each shape has its own density.
 		m_mass = 0.0f;
@@ -453,7 +410,7 @@ public class Body implements Serializable {
 		m_invI = 0.0f;
 
 		// djm might as well allocate, not really a hot path
-		final Vec2 center = tlCenter.get();
+		final Vec2 center = new Vec2(); //tlCenter.get();
 		center.setZero();
 		for (Shape s = m_shapeList; s != null; s = s.m_next) {
 			final MassData massData = new MassData();
@@ -516,10 +473,8 @@ public class Body implements Serializable {
 	 * body is automatically frozen.
 	 */
 	public boolean setXForm(final Vec2 position, final float angle){
-		assert(m_world.m_lock == false);
-		if (m_world.m_lock == true) {
-			return true;
-		}
+		assert(!m_world.m_lock);
+
 		if (isFrozen()) {
 			return false;
 		}
@@ -536,13 +491,13 @@ public class Body implements Serializable {
 		for (Shape s = m_shapeList; s != null; s = s.m_next) {
 			final boolean inRange = s.synchronize(m_world.m_broadPhase, m_xf, m_xf);
 
-			if (inRange == false) {
+			if (!inRange) {
 				freeze = true;
 				break;
 			}
 		}
 
-		if (freeze == true) {
+		if (freeze) {
 			m_flags |= e_frozenFlag;
 			m_linearVelocity.setZero();
 			m_angularVelocity = 0.0f;
@@ -764,6 +719,10 @@ public class Body implements Serializable {
 		return XForm.mul(m_xf, localPoint);
 	}
 
+	public float getWorldXPosition(final Vec2 localPoint) {
+		return m_xf.position.x + m_xf.R.col1.x * localPoint.x + m_xf.R.col2.x * localPoint.y;
+	}
+
 	/**
 	 * Get the world coordinates of a point given the local coordinates.
 	 * @param localPoint a point on the body measured relative the the body's origin.
@@ -918,15 +877,6 @@ public class Body implements Serializable {
 		return m_jointList;
 	}
 
-	/*
-	 * Get the linked list of all contacts attached to this body.
-	 * @return first ContactEdge in linked list
-	 */
-	/* Removed from C++ version
-	public ContactEdge getContactList(){
-		return m_contactList;
-	}*/
-
 	/** Get the next body in the world's body list. */
 	public Body getNext(){
 		return m_next;
@@ -938,19 +888,8 @@ public class Body implements Serializable {
 	}
 
 	/* INTERNALS BELOW */
-
-	/** For internal use only. */
-	public void computeMass(){
-		//seems to be missing from C++ version...
-	}
-
-
-	// djm pooled
-	private static final TLXForm tlXf1 = new TLXForm();
 	/** For internal use only. */
 	public boolean synchronizeShapes(){
-		// INLINED
-		final XForm xf1 = tlXf1.get();
 		xf1.R.set(m_sweep.a0);
 		Mat22 R = xf1.R;
 		Vec2 v = m_sweep.localCenter;
@@ -960,23 +899,21 @@ public class Body implements Serializable {
 		boolean inRange = true;
 		for (Shape s = m_shapeList; s != null; s = s.m_next) {
 			inRange = s.synchronize(m_world.m_broadPhase, xf1, m_xf);
-			if (inRange == false) {
+			if (!inRange) {
 				break;
 			}
 		}
 
-		if (inRange == false) {
+		if (!inRange) {
 			m_flags |= e_frozenFlag;
 			m_linearVelocity.setZero();
 			m_angularVelocity = 0.0f;
 			for (Shape s = m_shapeList; s != null; s = s.m_next) {
 				s.destroyProxy(m_world.m_broadPhase);
 			}
-
 			// Failure
 			return false;
 		}
-
 		// Success
 		return true;
 	}
@@ -984,11 +921,9 @@ public class Body implements Serializable {
 	/** For internal use only. */
 	public void synchronizeTransform(){
 		m_xf.R.set(m_sweep.a);
-		//m_xf.position.set(m_sweep.c.sub(Mat22.mul(m_xf.R,m_sweep.localCenter)));
 		final Vec2 v1 = m_sweep.localCenter;
 		m_xf.position.x = m_sweep.c.x - (m_xf.R.col1.x * v1.x + m_xf.R.col2.x * v1.y);
 		m_xf.position.y = m_sweep.c.y - (m_xf.R.col1.y * v1.x + m_xf.R.col2.y * v1.y);
-		//System.out.println(m_xf);
 	}
 
 	/**
@@ -1000,7 +935,7 @@ public class Body implements Serializable {
 		for (JointEdge jn = m_jointList; jn != null; jn = jn.next) {
 			if (jn.other == other) {
 				//System.out.println("connected");
-				return (jn.joint.m_collideConnected == false);
+				return (!jn.joint.m_collideConnected);
 			}
 		}
 		return false;
@@ -1027,13 +962,6 @@ public class Body implements Serializable {
 		final float vx = -m_angularVelocity * ay;
 		final float vy = m_angularVelocity * ax;
 		return new Vec2(m_linearVelocity.x + vx, m_linearVelocity.y + vy);
-
-		/*Vec2 out = new Vec2(worldPoint);
-		out.subLocal( m_sweep.c);
-		Vec2.crossToOut(m_angularVelocity, out, out);
-		out.add(m_linearVelocity);
-		return out;*/
-		//return m_linearVelocity.add(Vec2.cross(m_angularVelocity, worldPoint.sub(m_sweep.c)));
 	}
 
 	/**
@@ -1041,18 +969,12 @@ public class Body implements Serializable {
 	 * @param worldPoint a point in world coordinates.
 	 * @param out where to put the world velocity of a point.
 	 */
-	// djm optimized
 	public void getLinearVelocityFromWorldPointToOut(final Vec2 worldPoint, final Vec2 out) {
 		final float ax = worldPoint.x - m_sweep.c.x;
 		final float ay = worldPoint.y - m_sweep.c.y;
 		final float vx = -m_angularVelocity * ay;
 		final float vy = m_angularVelocity * ax;
 		out.set(m_linearVelocity.x + vx, m_linearVelocity.y + vy);
-		/*
-		out.set( worldPoint);
-		out.subLocal( m_sweep.c);
-		Vec2.crossToOut( m_angularVelocity, out, out);
-		out.add( m_linearVelocity);*/
 	}
 
 	/**
@@ -1060,7 +982,6 @@ public class Body implements Serializable {
 	 * @param localPoint a point in local coordinates.
 	 * @return the world velocity of a point.
 	 */
-	// djm optimized
 	public Vec2 getLinearVelocityFromLocalPoint(final Vec2 localPoint) {
 		final Vec2 out = new Vec2();
 		getWorldLocationToOut(localPoint, out);
@@ -1071,9 +992,6 @@ public class Body implements Serializable {
 		out.x = m_linearVelocity.x + vx;
 		out.y = m_linearVelocity.y + vy;
 		return out;
-		//Vec2 worldLocation = getWorldLocationToOut(localPoint);
-		//getLinearVelocityFromWorldPointToOut(worldLocation, worldLocation);
-		//return worldLocation;
 	}
 
 	/**
@@ -1081,10 +999,7 @@ public class Body implements Serializable {
 	 * @param localPoint a point in local coordinates.
 	 * @param out where to put the world velocity of a point.
 	 */
-	// djm optimized
 	public void getLinearVelocityFromLocalPointToOut(final Vec2 localPoint, final Vec2 out) {
-		//getWorldLocationToOut(localPoint, out);
-		//getLinearVelocityFromWorldPointToOut(out, out);
 		getWorldLocationToOut(localPoint, out);
 		final float ax = out.x - m_sweep.c.x;
 		final float ay = out.y - m_sweep.c.y;
@@ -1149,7 +1064,6 @@ public class Body implements Serializable {
 	 * @return all bodies connected directly to this body by a joint
 	 */
 	public Set<Body> getConnectedBodies() {
-		// TODO djm: pool this
 		Set<Body> mySet = new HashSet<Body>();
 		JointEdge edge = getJointList();
 		while (edge != null) {
@@ -1166,8 +1080,7 @@ public class Body implements Serializable {
 	 * @return all bodies connected directly to this body by a joint
 	 */
 	public Set<Body> getConnectedDynamicBodies() {
-		// TODO djm: pool this
-		Set<Body> mySet = new HashSet<Body>();
+		Set<Body> mySet = new HashSet<>();
 		JointEdge edge = getJointList();
 		while (edge != null) {
 			if (edge.other.isDynamic()) mySet.add(edge.other);
@@ -1184,8 +1097,7 @@ public class Body implements Serializable {
 	 * @return Set<Body> of all bodies accessible from this one by walking the joint tree
 	 */
 	public Set<Body> getConnectedBodyIsland() {
-		// TODO djm: pool this
-		Set<Body> result = new HashSet<Body>();
+		Set<Body> result = new HashSet<>();
 		result.add(this);
 		return getConnectedBodyIsland_impl(this, result);
 	}
@@ -1208,7 +1120,6 @@ public class Body implements Serializable {
 	 * @return Set<Body> of all bodies accessible from this one by walking the joint tree
 	 */
 	public Set<Body> getConnectedDynamicBodyIsland() {
-		// TODO djm: pool this
 		Set<Body> result = new HashSet<Body>();
 		if (!this.isDynamic()) return result;
 		result.add(this);
@@ -1216,7 +1127,6 @@ public class Body implements Serializable {
 	}
 	
 	private Set<Body> getConnectedDynamicBodyIsland_impl(final Body parent, final Set<Body> parentResult) {
-		// TODO djm: pool this
 		Set<Body> connected = getConnectedBodies();
 		for (Body b:connected) {
 			if (b == parent || !b.isDynamic() || parentResult.contains(b)) continue; //avoid infinite recursion
@@ -1234,7 +1144,6 @@ public class Body implements Serializable {
 	 * @return Set<Body> of all bodies accessible from this one by walking the contact tree
 	 */
 	public Set<Body> getTouchingBodyIsland() {
-		// TODO djm: pool this
 		Set<Body> result = new HashSet<Body>();
 		result.add(this);
 		return getTouchingBodyIsland_impl(this, result);
@@ -1257,15 +1166,13 @@ public class Body implements Serializable {
 	 * @return Set<Body> of all bodies accessible from this one by walking the contact tree
 	 */
 	public Set<Body> getTouchingDynamicBodyIsland() {
-		// TODO djm: pool this
-		Set<Body> result = new HashSet<Body>();
+		Set<Body> result = new HashSet<>();
 		result.add(this);
 		return getTouchingDynamicBodyIsland_impl(this, result);
 	}
 	
 	/* Recursive implementation. */
 	private Set<Body> getTouchingDynamicBodyIsland_impl(final Body parent, final Set<Body> parentResult) {
-		// TODO djm: pool this
 		Set<Body> touching = getBodiesInContact();
 		for (Body b:touching) {
 			if (b == parent || !b.isDynamic() || parentResult.contains(b)) continue; //avoid infinite recursion
@@ -1287,25 +1194,82 @@ public class Body implements Serializable {
 		return false;
 	}
 
-	//defaults seem fine
-//	@Override
-//	public boolean equals(Object obj) {
-//	    return (obj == this);
-//	}
-//
-//	@Override
-//	public int hashCode() { 
-//		return m_uniqueID;
-//	}
-	
 	public void setLinearDamping(float damping) {
 		m_linearDamping = damping;
 	}
 	public float getLinearDamping() { return m_linearDamping; }
-	
 	public void setAngularDamping(float damping) {
 		m_angularDamping = damping;
 	}
 	public float getAngularDamping() { return m_angularDamping; }
-}
 
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeInt(m_flags);
+		out.writeInt(m_type);
+
+		out.writeObject(m_xf); // XForm
+		out.writeObject(m_sweep); // Sweep
+
+		out.writeObject(m_linearVelocity); // Vec2
+		out.writeFloat(m_angularVelocity);
+
+		out.writeObject(m_force); // Vec2
+		out.writeFloat(m_torque);
+
+		out.writeObject(m_world); // World
+		out.writeObject(m_prev); // Body
+		out.writeObject(m_next); // Body
+
+		out.writeObject(m_shapeList); // Shape
+		out.writeInt(m_shapeCount);
+
+		out.writeObject(m_jointList); // JointEdge
+		out.writeObject(m_contactList); // ContactEdge
+
+		out.writeFloat(m_mass);
+		// m_invMass -- recalculate
+		out.writeFloat(m_I);
+		// m_invI -- recalculate
+
+		out.writeFloat(m_linearDamping);
+		out.writeFloat(m_angularDamping);
+		out.writeFloat(m_sleepTime);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		m_flags = in.readInt();
+		m_type = in.readInt();
+
+		m_xf = (XForm) in.readObject();
+		m_sweep = (Sweep) in.readObject();
+
+		m_linearVelocity = (Vec2) in.readObject();
+		m_angularVelocity = in.readFloat();
+
+		m_force = (Vec2) in.readObject();
+		m_torque = in.readFloat();
+
+		m_world = (World) in.readObject();
+		m_prev = (Body) in.readObject();
+		m_next = (Body) in.readObject();
+
+		m_shapeList = (Shape) in.readObject();
+		m_shapeCount = in.readInt();
+
+		m_jointList = (JointEdge) in.readObject();
+		m_contactList = (ContactEdge) in.readObject();
+
+		m_mass = in.readFloat();
+		m_invMass = (m_mass > 0.0f) ? 1.0f / m_mass : 0.0f;
+		m_I = in.readFloat();
+		m_invI = (m_I > 0.0f) ? 1.0f / m_I : 0.0f;
+
+		m_linearDamping = in.readFloat();
+		m_angularDamping = in.readFloat();
+		m_sleepTime = in.readFloat();
+
+		xf1 = new XForm();
+	}
+}

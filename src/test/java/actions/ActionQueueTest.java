@@ -1,11 +1,9 @@
 package actions;
 
-import game.GameThreadSafe;
+import game.GameUnified;
 import game.State;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.Arrays;
 
 public class ActionQueueTest {
 
@@ -83,22 +81,22 @@ public class ActionQueueTest {
         ActionQueue actQueue = makeTestQueue();
 
         for (int i = 0; i < 5; i++) {
-            Assert.assertTrue(Arrays.equals(new boolean[]{false, false, false, false}, actQueue.peekCommand()));
+            Assert.assertArrayEquals(new boolean[]{false, false, false, false}, actQueue.peekCommand());
             actQueue.pollCommand();
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertTrue(Arrays.equals(new boolean[]{true, false, false, false}, actQueue.peekCommand()));
+            Assert.assertArrayEquals(new boolean[]{true, false, false, false}, actQueue.peekCommand());
             actQueue.pollCommand();
         }
 
         for (int i = 0; i < 7; i++) {
-            Assert.assertTrue(Arrays.equals(new boolean[]{false, true, false, false}, actQueue.peekCommand()));
+            Assert.assertArrayEquals(new boolean[]{false, true, false, false}, actQueue.peekCommand());
             actQueue.pollCommand();
         }
 
         for (int i = 0; i < 8; i++) {
-            Assert.assertTrue(Arrays.equals(new boolean[]{false, false, true, false}, actQueue.peekCommand()));
+            Assert.assertArrayEquals(new boolean[]{false, false, true, false}, actQueue.peekCommand());
             actQueue.pollCommand();
         }
 
@@ -122,7 +120,7 @@ public class ActionQueueTest {
         Assert.assertEquals(1, actQueue.getActionsInCurrentRun().length);
         Assert.assertEquals(5, actQueue.peekThisAction().getTimestepsRemaining());
 
-        Assert.assertTrue(Arrays.equals(actQueue.pollCommand(), a1.peek()));
+        Assert.assertArrayEquals(actQueue.pollCommand(), a1.peek());
 
         // Second action
         actQueue.addAction(a2);
@@ -130,7 +128,7 @@ public class ActionQueueTest {
         Assert.assertEquals(4, actQueue.peekThisAction().getTimestepsRemaining());
         Assert.assertEquals(6, actQueue.getActionsInCurrentRun()[1].getTimestepsRemaining());
 
-        Assert.assertTrue(Arrays.equals(actQueue.pollCommand(), a1.peek()));
+        Assert.assertArrayEquals(actQueue.pollCommand(), a1.peek());
 
         // Third action
         actQueue.addAction(a3);
@@ -139,9 +137,9 @@ public class ActionQueueTest {
         Assert.assertEquals(7, actQueue.getActionsInCurrentRun()[2].getTimestepsRemaining());
 
         // Poll away the rest in this action.
-        Assert.assertTrue(Arrays.equals(actQueue.pollCommand(), a1.peek()));
-        Assert.assertTrue(Arrays.equals(actQueue.pollCommand(), a1.peek()));
-        Assert.assertTrue(Arrays.equals(actQueue.pollCommand(), a1.peek()));
+        Assert.assertArrayEquals(actQueue.pollCommand(), a1.peek());
+        Assert.assertArrayEquals(actQueue.pollCommand(), a1.peek());
+        Assert.assertArrayEquals(actQueue.pollCommand(), a1.peek());
 
         // Third action
         actQueue.addAction(a4);
@@ -149,7 +147,7 @@ public class ActionQueueTest {
         Assert.assertEquals(0, actQueue.peekThisAction().getTimestepsRemaining());
         Assert.assertEquals(8, actQueue.getActionsInCurrentRun()[3].getTimestepsRemaining());
 
-        Assert.assertTrue(Arrays.equals(actQueue.pollCommand(), a2.peek()));
+        Assert.assertArrayEquals(actQueue.pollCommand(), a2.peek());
     }
 
     @Test
@@ -168,22 +166,22 @@ public class ActionQueueTest {
         // Make sure that as we poll the added sequence we get out what we put in.
         for (int i = 0; i < a1.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, a1.peek()));
+            Assert.assertArrayEquals(command, a1.peek());
         }
 
         for (int i = 0; i < a2.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, a2.peek()));
+            Assert.assertArrayEquals(command, a2.peek());
         }
 
         for (int i = 0; i < a3.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, a3.peek()));
+            Assert.assertArrayEquals(command, a3.peek());
         }
 
         for (int i = 0; i < a4.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, a4.peek()));
+            Assert.assertArrayEquals(command, a4.peek());
         }
         Assert.assertTrue(actQueue.isEmpty());
     }
@@ -209,22 +207,22 @@ public class ActionQueueTest {
         // Make sure that as we poll the added sequence we get out what we put in.
         for (int i = 0; i < a1.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, new boolean[]{false, false, false, false}));
+            Assert.assertArrayEquals(command, new boolean[]{false, false, false, false});
         }
 
         for (int i = 0; i < a2.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, new boolean[]{true, false, false, false}));
+            Assert.assertArrayEquals(command, new boolean[]{true, false, false, false});
         }
 
         for (int i = 0; i < a3.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, new boolean[]{false, true, false, false}));
+            Assert.assertArrayEquals(command, new boolean[]{false, true, false, false});
         }
 
         for (int i = 0; i < a4.getTimestepsTotal(); i++) {
             boolean[] command = actQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(command, new boolean[]{false, false, true, false}));
+            Assert.assertArrayEquals(command, new boolean[]{false, false, true, false});
         }
         Assert.assertTrue(actQueue.isEmpty());
     }
@@ -276,7 +274,7 @@ public class ActionQueueTest {
         Action[] acts = new Action[]{a1, a2, a3, a4};
         actQueue.addSequence(acts);
         Action[] retrievedActions = actQueue.getActionsInCurrentRun();
-        Assert.assertTrue(Arrays.equals(acts, retrievedActions));
+        Assert.assertArrayEquals(acts, retrievedActions);
     }
 
     @Test
@@ -311,7 +309,7 @@ public class ActionQueueTest {
         // and false false true false.
 
         // Try simulating a game using an ActionQueue
-        GameThreadSafe game = new GameThreadSafe();
+        GameUnified game = new GameUnified();
 
         game.step(false, false, true, false);
         float[] s1 = game.getCurrentState().flattenState();
@@ -387,7 +385,7 @@ public class ActionQueueTest {
         while (!baseTestQueue.isEmpty()) {
             boolean[] baseCommand = baseTestQueue.pollCommand();
             boolean[] testCommand = copyTestQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(baseCommand, testCommand));
+            Assert.assertArrayEquals(baseCommand, testCommand);
         }
         Assert.assertTrue(copyTestQueue.isEmpty());
         baseTestQueue.addAction(new Action(34, false, false, false, false));
@@ -416,7 +414,7 @@ public class ActionQueueTest {
         while (!baseTestQueue.isEmpty()) {
             boolean[] baseCommand = baseTestQueue.pollCommand();
             boolean[] testCommand = copyTestQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(baseCommand, testCommand));
+            Assert.assertArrayEquals(baseCommand, testCommand);
         }
         Assert.assertTrue(copyTestQueue.isEmpty());
         baseTestQueue.addAction(new Action(34, false, false, false, false));
@@ -432,7 +430,7 @@ public class ActionQueueTest {
         while (!baseTestQueue.isEmpty()) {
             boolean[] baseCommand = baseTestQueue.pollCommand();
             boolean[] testCommand = copyTestQueue.pollCommand();
-            Assert.assertTrue(Arrays.equals(baseCommand, testCommand));
+            Assert.assertArrayEquals(baseCommand, testCommand);
         }
         Assert.assertTrue(copyTestQueue.isEmpty());
         baseTestQueue.addAction(new Action(34, false, false, false, false));

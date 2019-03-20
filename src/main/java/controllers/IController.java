@@ -2,7 +2,7 @@ package controllers;
 
 import java.awt.Graphics;
 
-import game.GameThreadSafe;
+import game.GameUnified;
 import game.State;
 import actions.Action;
 
@@ -30,5 +30,5 @@ public interface IController {
      * @param xOffsetPixels Horizontal pixel offset from scaled world coordinates.
      * @param runnerScaling Scaling from world coordinates to window pixel coordinates.
      **/
-    default void draw(Graphics g, GameThreadSafe game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {}
+    default void draw(Graphics g, GameUnified game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {}
 }

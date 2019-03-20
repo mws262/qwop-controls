@@ -23,25 +23,17 @@
 
 package org.jbox2d.collision.shapes;
 
-import java.io.Serializable;
+import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jbox2d.collision.AABB;
-import org.jbox2d.collision.BroadPhase;
-import org.jbox2d.collision.FilterData;
-import org.jbox2d.collision.MassData;
-import org.jbox2d.collision.PairManager;
-import org.jbox2d.collision.Segment;
-import org.jbox2d.collision.SegmentCollide;
-import org.jbox2d.common.RaycastResult;
+import org.jbox2d.collision.*;
+import org.jbox2d.common.Mat22;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.contacts.ContactEdge;
-import org.jbox2d.pooling.TLAABB;
-
 
 //Updated through rev. 56->139 of b2Shape.cpp/.h
 
@@ -51,14 +43,7 @@ import org.jbox2d.pooling.TLAABB;
  * <BR><BR><em>Warning</em>: you cannot reuse shapes on different bodies, they must
  * be re-created or copied.
  */
-public abstract class Shape implements Serializable {
-	/** Unique id for shape for sorting (C++ version uses memory address) */
-	public int uid;
-	/**
-	 * Used to generate uids - not initialized on applet reload,
-	 * but that's okay since these just have to be unique.
-	 */
-	static private int uidcount = 0;
+public abstract class Shape implements Externalizable {
 
 	public ShapeType m_type;
 	public Shape m_next;
@@ -66,23 +51,22 @@ public abstract class Shape implements Serializable {
 
 	/** Sweep radius relative to the parent body's center of mass. */
 	public float m_sweepRadius;
-
 	public float m_density;
 	public float m_friction;
 	public float m_restitution;
-
 
 	public int m_proxyId;
 
 	public FilterData m_filter;
 
 	public boolean m_isSensor;
-	public Object m_userData;
+
+	transient public Object m_userData;
+
+	// Exists for deserializing only. Don't use otherwise.
+	public Shape() {}
 
 	public Shape(final ShapeDef def) {
-
-		uid = uidcount++; //Java version only (C++ version sorts by memory location)
-
 		m_userData = def.userData;
 		m_friction = def.friction;
 		m_restitution = def.restitution;
@@ -117,11 +101,6 @@ public abstract class Shape implements Serializable {
 	/** Set the coefficient of restitution. */
 	public void setRestitution(final float restitution) {
 		m_restitution = restitution;
-	}
-
-	/** Set the collision filtering data. */
-	public void setFilterData(final FilterData filter){
-		m_filter.set(filter);
 	}
 
 	/** Get the collision filtering data. */
@@ -192,24 +171,23 @@ public abstract class Shape implements Serializable {
 	 * @return true if the point is within the shape
 	 */
 	public abstract boolean testPoint(XForm xf, Vec2 p);
-
-
-	/**
-	 *  Perform a ray cast against this shape.
-	 *  @param xf the shape world transform.
-	 *  @param out is where the results are placed: <ul><li>lambda returns the hit fraction, based on
-	 *  the distance between the two points. You can use this to compute the contact point
-	 *  p = (1 - lambda) * segment.p1 + lambda * segment.p2.</li>
-	 *  <li>normal returns the normal at the contact point. If there is no intersection, the normal
-	 *  is not set.</li></ul>
-	 *  @param segment defines the begin and end point of the ray cast.
-	 *  @param maxLambda a number typically in the range [0,1].
-	 *  @return true if there was an intersection.
-	 */
-	public abstract SegmentCollide testSegment(XForm xf,
-	                                    RaycastResult out,
-	                                    Segment segment,
-	                                    float maxLambda);
+//
+//	/**
+//	 *  Perform a ray cast against this shape.
+//	 *  @param xf the shape world transform.
+//	 *  @param out is where the results are placed: <ul><li>lambda returns the hit fraction, based on
+//	 *  the distance between the two points. You can use this to compute the contact point
+//	 *  p = (1 - lambda) * segment.p1 + lambda * segment.p2.</li>
+//	 *  <li>normal returns the normal at the contact point. If there is no intersection, the normal
+//	 *  is not set.</li></ul>
+//	 *  @param segment defines the begin and end point of the ray cast.
+//	 *  @param maxLambda a number typically in the range [0,1].
+//	 *  @return true if there was an intersection.
+//	 */
+//	public abstract SegmentCollide testSegment(XForm xf,
+//	                                    RaycastResult out,
+//	                                    Segment segment,
+//	                                    float maxLambda);
 
 	/**
 	 * Given a transform, compute the associated axis aligned bounding box for this shape.
@@ -240,8 +218,6 @@ public abstract class Shape implements Serializable {
 	/** Internal */
 	public abstract void updateSweepRadius(Vec2 center);
 
-	// djm pooling
-	private static final TLAABB tlAabb = new TLAABB();
 	/** Internal */
 	public boolean synchronize(final BroadPhase broadPhase, final XForm transform1, final XForm transform2) {
 		if (m_proxyId == PairManager.NULL_PROXY) {
@@ -249,12 +225,8 @@ public abstract class Shape implements Serializable {
 		}
 
 		// Compute an AABB that covers the swept shape (may miss some rotation effect).
-		AABB aabb = tlAabb.get();
+		AABB aabb = new AABB();
 		computeSweptAABB(aabb, transform1, transform2);
-		//if (this.getType() == ShapeType.CIRCLE_SHAPE){
-		//	System.out.println("Sweeping: "+transform1+" " +transform2);
-		//	System.out.println("Resulting AABB: "+aabb);
-		//}
 		if (broadPhase.inRange(aabb)) {
 			broadPhase.moveProxy(m_proxyId, aabb);
 			return true;
@@ -270,8 +242,7 @@ public abstract class Shape implements Serializable {
 		}
 
 		broadPhase.destroyProxy(m_proxyId);
-		// djm don't pool this, it could be used to
-		// create a proxy
+		// djm don't pool this, it could be used to create a proxy
 		final AABB aabb = new AABB();
 		computeAABB(aabb, transform);
 
@@ -334,11 +305,7 @@ public abstract class Shape implements Serializable {
 		// You are creating a shape outside the world box.
 		assert(inRange);
 
-		if (inRange){
-			m_proxyId = broadPhase.createProxy(aabb, this);
-		} else {
-			m_proxyId = PairManager.NULL_PROXY;
-		}
+		m_proxyId = broadPhase.createProxy(aabb, this);
 	}
 
 	/** Internal */
@@ -347,28 +314,6 @@ public abstract class Shape implements Serializable {
 			broadPhase.destroyProxy(m_proxyId);
 			m_proxyId = PairManager.NULL_PROXY;
 		}
-	}
-
-	/**
-	 * Compute the volume and centroid of this fixture intersected with a half plane
-	 * @param normal the surface normal
-	 * @param offset the surface offset along normal
-	 * @param c returns the centroid
-	 * @return the total volume less than offset along normal
-	 */
-	public float computeSubmergedArea(Vec2 normal, float offset, Vec2 c) {
-		return this.computeSubmergedArea(normal, offset, m_body.getXForm(), c);
-	}
-
-	/**
-	 * @param normal
-	 * @param offset
-	 * @param form
-	 * @param c
-	 * @return
-	 */
-	public float computeSubmergedArea(Vec2 normal, float offset, XForm form, Vec2 c) {
-		return 0;
 	}
 
 	/**
@@ -383,7 +328,7 @@ public abstract class Shape implements Serializable {
 	 */
 	public Set<Shape> getShapesInContact() {
 		ContactEdge curr = this.m_body.getContactList();
-		Set<Shape> touching = new HashSet<Shape>();
+		Set<Shape> touching = new HashSet<>();
 		while (curr != null) {
 			if (curr.contact.m_shape1 == this) {
 				touching.add(curr.contact.m_shape2);
@@ -412,5 +357,37 @@ public abstract class Shape implements Serializable {
 			curr = curr.next;
 		}
 		return contacts;
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(m_type); // ShapeType
+		out.writeObject(m_next); // Shape
+		out.writeObject(m_body); // Body
+
+		out.writeFloat(m_sweepRadius);
+		out.writeFloat(m_density);
+		out.writeFloat(m_friction);
+		out.writeFloat(m_restitution);
+
+		out.writeInt(m_proxyId);
+		out.writeObject(m_filter); // FilterData
+		out.writeBoolean(m_isSensor);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		m_type = (ShapeType) in.readObject();
+		m_next = (Shape) in.readObject();
+		m_body = (Body) in.readObject();
+
+		m_sweepRadius = in.readFloat();
+		m_density = in.readFloat();
+		m_friction = in.readFloat();
+		m_restitution = in.readFloat();
+
+		m_proxyId = in.readInt();
+		m_filter = (FilterData) in.readObject();
+		m_isSensor = in.readBoolean();
 	}
 }

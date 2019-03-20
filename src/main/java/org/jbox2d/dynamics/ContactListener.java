@@ -42,26 +42,24 @@ import org.jbox2d.dynamics.contacts.ContactResult;
  * Buffer any such events and apply them at the end of the time step.
  */
 public interface ContactListener {
-	
-
 		/**
 		 * Called when a contact point is added. This includes the geometry
 		 * and the forces.
 		 */
-		public void add(ContactPoint point);
+		void add(ContactPoint point);
 
 		/**
 		 * Called when a contact point persists. This includes the geometry
 		 * and the forces.
 		 */
-		public void persist(ContactPoint point);
+		void persist(ContactPoint point);
 
 		/**
 		 * Called when a contact point is removed. This includes the last
 		 * computed geometry and forces.
 		 */
-		public void remove(ContactPoint point);
+		void remove(ContactPoint point);
 		
-		public void result(ContactResult point);
+		void result(ContactResult point);
 
 }

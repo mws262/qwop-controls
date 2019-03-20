@@ -10,7 +10,6 @@ import javax.swing.JFrame;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameThreadSafe;
 import tree.Node;
 import ui.PanelRunner_Animated;
 
@@ -22,7 +21,6 @@ import ui.PanelRunner_Animated;
 
 public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
-    public GameThreadSafe game;
     private PanelRunner_Animated runnerPane;
 
     /**

@@ -16,7 +16,8 @@ import javax.swing.JPanel;
 
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_NearestNeighborApprox.RunHolder;
-import game.GameThreadSafe;
+import game.GameUnified;
+import game.IGame;
 import tree.Node;
 import ui.PanelRunner;
 
@@ -30,7 +31,7 @@ import ui.PanelRunner;
 
 public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
-    private GameThreadSafe game = new GameThreadSafe();
+    private IGame game = new GameUnified();
 
     private Controller_NearestNeighborApprox justForLoading;
 
@@ -66,12 +67,12 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
         justForLoading = new Controller_NearestNeighborApprox(exampleDataFiles);
 
-        game.mainRunnerStroke = new BasicStroke(5);
+        //game.mainRunnerStroke = new BasicStroke(5);
         // .darkBackground[1],GLPanelGeneric.darkBackground[2]);
         Panel mainViewPanel = new Panel();
         this.setLayout(new BorderLayout());
         add(mainViewPanel, BorderLayout.CENTER);
-        game.mainRunnerColor = Color.ORANGE;
+        //game.mainRunnerColor = Color.ORANGE;
         mainViewPanel.setBackground(backgroundColor);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -133,7 +134,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
                         count++;
 
                         //if (count % 2 != 0) continue;
-                        game.drawExtraRunner((Graphics2D) g, rh.states.get(i).state, "",
+                        GameUnified.drawExtraRunner((Graphics2D) g, rh.states.get(i).state, "",
                                 runnerScaling, xOffsetPixels - (int) (runnerScaling * specificXOffset), yOffsetPixels,
                                 Node.getColorFromScaledValue(2 * i, rh.states.size(),
                                         0.8f), PanelRunner.normalStroke);
@@ -143,7 +144,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
                 for (RunHolder rh2 : toDraw) {
                     int killThis = rh2.actionDurations.get(0) + rh2.actionDurations.get(1);
                     float specificXOffset = rh2.states.get(killThis).state.body.getX();
-                    game.drawExtraRunner((Graphics2D) g, rh2.states.get(killThis).state, "",
+                    GameUnified.drawExtraRunner((Graphics2D) g, rh2.states.get(killThis).state, "",
                             runnerScaling, xOffsetPixels - (int) (runnerScaling * specificXOffset), yOffsetPixels,
                             Color.BLACK, PanelRunner.boldStroke);
                 }
@@ -154,7 +155,6 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
     private class Panel extends JPanel {
         @Override
         public void paintComponent(Graphics g) {
-            if (!game.isGameInitialized()) return;
             super.paintComponent(g);
             draw(g);
         }
