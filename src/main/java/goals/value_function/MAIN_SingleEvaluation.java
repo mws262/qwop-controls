@@ -61,7 +61,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("chk");
+        valueFunction.loadCheckpoint("chk2");
 
         // Assign potential actions for the value function to choose among.
         ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 30).toArray(), new boolean[]{false, false,

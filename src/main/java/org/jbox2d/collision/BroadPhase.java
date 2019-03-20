@@ -74,9 +74,9 @@ public class BroadPhase implements Externalizable {
 	static final boolean s_validate = false;
 
 	// Temp during computations
-	volatile private BoundValues
-			newValues = new BoundValues(),
-			oldValues = new BoundValues();
+//	volatile private BoundValues
+//			newValues = new BoundValues(),
+//			oldValues = new BoundValues();
 
 	public BroadPhase() {}
 
@@ -343,6 +343,12 @@ public class BroadPhase implements Externalizable {
 		final int boundCount = 2 * m_proxyCount;
 
 		final Proxy proxy = m_proxyPool[proxyId];
+
+		// MATT: TODO: figure out why treating these as transient fields didn't work well. Indexoutofbounds max int
+		//  happened.
+		BoundValues
+				newValues = new BoundValues(),
+				oldValues = new BoundValues();
 
 		// Get new bound values
 		computeBounds( newValues.lowerValues, newValues.upperValues, aabb);
@@ -734,8 +740,8 @@ public class BroadPhase implements Externalizable {
 		m_quantizationFactor = (Vec2) in.readObject();
 		m_proxyCount = in.readInt();
 		m_timeStamp = in.readInt();
-
-		newValues = new BoundValues();
-		oldValues = new BoundValues();
+//
+//		newValues = new BoundValues();
+//		oldValues = new BoundValues();
 	}
 }
