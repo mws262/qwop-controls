@@ -35,7 +35,7 @@ import game.State;
  * @author matt
  */
 
-public class Node {
+public class Node implements INode {
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
      */

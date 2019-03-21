@@ -9,6 +9,7 @@ import game.GameUnified;
 import tree.Node;
 import tree.Utility;
 import ui.PanelRunner;
+import ui.ScreenCapture;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -17,6 +18,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -32,17 +34,17 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     boolean p = false;
 
     public static void main(String[] args) {
-//        boolean doScreenCapture = false;
-//        ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
-//        if (doScreenCapture) {
-//            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-//                try {
-//                    screenCapture.finalize();
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }));
-//        }
+        boolean doScreenCapture = true;
+        ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
+        if (doScreenCapture) {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    screenCapture.finalize();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }));
+        }
 
         // Set up the visualizer.
         MAIN_SingleEvaluation qwop = new MAIN_SingleEvaluation();
@@ -114,18 +116,18 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         // Run the "prefix" section.
         while (!actionQueue.isEmpty()) {
             qwop.game.step(actionQueue.pollCommand());
-//            if (doScreenCapture) {
-//                try {
-//                    screenCapture.takeFrameFromContainer(frame);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            try {
-//                Thread.sleep(10);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+            if (doScreenCapture) {
+                try {
+                    screenCapture.takeFrameFromContainer(frame);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         Node currNode = leaf.get(0);
@@ -158,19 +160,19 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
                 qwop.game.step(actionQueue.pollCommand());
 
-//                if (doScreenCapture) {
-//                    try {
-//                        screenCapture.takeFrameFromContainer(frame);
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                } else { // Screen capture is already so slow, we don't need a delay.
+                if (doScreenCapture) {
+                    try {
+                        screenCapture.takeFrameFromContainer(frame);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else { // Screen capture is already so slow, we don't need a delay.
                     try {
                         Thread.sleep(Math.max(1, 35 - (System.currentTimeMillis() - currTime)));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-//                }
+                }
             }
             currNode = currNode.addChild(chosenAction);
             currNode.setState(qwop.game.getCurrentState());

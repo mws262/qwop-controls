@@ -3,6 +3,7 @@ package value;
 import com.google.common.collect.Iterables;
 import data.LoadStateStatistics;
 import tflowtools.TrainableNetwork;
+import tree.INode;
 import tree.Node;
 
 import java.io.File;
@@ -163,7 +164,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
                 Node n = batch.get(i);
 
                 // Don't include root node since it doesn't have a parent.
-                if (n.getTreeDepth() == 0) {
+                if (n.getParent() == null) {
                     continue;
                 }
                 // Get state.
@@ -185,13 +186,13 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     }
 
     @Override
-    public float evaluate(Node node) {
+    public float evaluate(INode node) {
         float[][] input = new float[1][inputSize];
         input[0] = assembleInputFromNode(node);
         float[][] result = network.evaluateInput(input);
         return result[0][0];
     }
 
-    abstract float[] assembleInputFromNode(Node node);
+    abstract float[] assembleInputFromNode(INode node);
     abstract float[] assembleOutputFromNode(Node node);
 }

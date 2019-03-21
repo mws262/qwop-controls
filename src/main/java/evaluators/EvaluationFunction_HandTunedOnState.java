@@ -1,6 +1,8 @@
 package evaluators;
 
-import tree.Node;
+import tree.INode;
+
+import java.util.Objects;
 
 /**
  * Implementation of a node evaluation function which is a hand-tuned combination of state information, having to do
@@ -12,10 +14,9 @@ import tree.Node;
 public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction {
 
     @Override
-    public float getValue(Node nodeToEvaluate) {
-        if (nodeToEvaluate.isStateUnassigned())
-            throw new NullPointerException("Trying to evaluate a node based on state information which has not yet " +
-                    "been assigned in that node.");
+    public float getValue(INode nodeToEvaluate) {
+        Objects.requireNonNull(nodeToEvaluate.getState());
+
         float value = 0.f;
         value += getAngleValue(nodeToEvaluate);
         value += getDistanceValue(nodeToEvaluate);
@@ -25,10 +26,9 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
     }
 
     @Override
-    public String getValueString(Node nodeToEvaluate) {
-        if (nodeToEvaluate.isStateUnassigned())
-            throw new NullPointerException("Trying to evaluate a node based on state information which has not yet " +
-                    "been assigned in that node.");
+    public String getValueString(INode nodeToEvaluate) {
+        Objects.requireNonNull(nodeToEvaluate.getState());
+
         String value = "";
         value += "Angle value: ";
         value += getAngleValue(nodeToEvaluate);
@@ -45,7 +45,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with state angles.
      */
-    private float getAngleValue(Node nodeToEvaluate) {
+    private float getAngleValue(INode nodeToEvaluate) {
         return nodeToEvaluate.getState().body.getTh();
     }
 
@@ -55,7 +55,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with horizontal positions.
      */
-    private float getDistanceValue(Node nodeToEvaluate) {
+    private float getDistanceValue(INode nodeToEvaluate) {
         return nodeToEvaluate.getState().body.getX();
     }
 
@@ -65,7 +65,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with state velocities.
      */
-    private float getVelocityValue(Node nodeToEvaluate) {
+    private float getVelocityValue(INode nodeToEvaluate) {
         return nodeToEvaluate.getState().body.getDx();
     }
 

@@ -4,7 +4,9 @@ import actions.Action;
 import game.GameUnified;
 import game.IGame;
 import game.State;
+import tree.INode;
 import tree.Node;
+import tree.NodePlaceholder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,7 +44,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
 
-    private Callable<EvaluationResult> getCallable(byte[] gameStartingState, Node startingNode,
+    private Callable<EvaluationResult> getCallable(byte[] gameStartingState, INode startingNode,
                                                    EvaluationResult.Keys keys, int minDuration, int maxDuration) {
         boolean[] buttons = EvaluationResult.labelsToButtons.get(keys);
 
@@ -52,8 +54,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             for (int i = minDuration; i < maxDuration; i++) {
                 gameLocal.step(buttons);
                 State st = gameLocal.getCurrentState();
-                Node nextNode = new Node(startingNode, new Action(i, buttons), false);
-                nextNode.setState(st);
+                INode nextNode = new NodePlaceholder(startingNode, new Action(i, buttons), st);
                 float val = evaluate(nextNode);
                 if (val > bestResult.value) {
                     bestResult.value = val;
@@ -96,17 +97,15 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 getCallable(fullState, currentNode, EvaluationResult.Keys.p, 1, 10));
 
         if (multithread) { // Multi-thread
-            List<Future<EvaluationResult>> allResults = null;
-
+            List<Future<EvaluationResult>> allResults;
             try {
                 allResults = ex.invokeAll(evaluations);
                 for (Future<EvaluationResult> future : allResults) {
-                    evalResults.add(future.get());
+                    evalResults.add(future.get()); // Each blocks until the thread is done.
                 }
             }catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
-
         } else { // Single thread
             try {
                 for (Callable<EvaluationResult> eval : evaluations) {
@@ -116,12 +115,11 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 e.printStackTrace();
             }
         }
-
         return getBestActionFromEvaluationResults(evalResults);
     }
 
     @Override
-    float[] assembleInputFromNode(Node node) {
+    float[] assembleInputFromNode(INode node) {
         return stateStats.standardizeState(node.getState());
     }
 
@@ -130,11 +128,20 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         return new float[]{node.getValue() / node.visitCount.floatValue()};
     }
 
+    /**
+     * Result from evaluating the value over some futures.
+     */
     private static class EvaluationResult implements Comparable<EvaluationResult> {
+        /**
+         * Potential key combinations.
+         */
         enum Keys {
             q, w, o, p, qp, wo, none
         }
 
+        /**
+         * Association between the key labels to the q, w, o, p boolean buttons pressed.
+         */
         final static Map<Keys, boolean[]> labelsToButtons = new HashMap<>();
         static {
             labelsToButtons.put(Keys.q, new boolean[]{true, false, false, false});
@@ -146,8 +153,19 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             labelsToButtons.put(Keys.none, new boolean[]{false, false, false, false});
         }
 
+        /**
+         * Value after the specified action.
+         */
         float value = -Float.MAX_VALUE;
+
+        /**
+         * Duration in timesteps of the Action producing this result.
+         */
         int timestep = -1;
+
+        /**
+         * Keys pressed for the Action producing this result.
+         */
         Keys keys;
 
         @Override

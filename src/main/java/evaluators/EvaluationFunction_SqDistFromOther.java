@@ -1,9 +1,9 @@
 package evaluators;
 
-import java.util.List;
+import java.util.Objects;
 
 import game.StateVariable;
-import tree.Node;
+import tree.INode;
 
 /**
  * Evaluation of node value based on squared difference in the node's game state from another specified node's state.
@@ -17,7 +17,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
     /**
      * All nodes will be compared to this one by square distance in state space.
      */
-    private final Node nodeToCompareAllOthersTo;
+    private final INode nodeToCompareAllOthersTo;
 
     /**
      * State list associated with the target node. Stored to avoid fetching multiple times.
@@ -29,18 +29,14 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
      *
      * @param nodeToCompareAllOthersTo Node whose state all others will be compared to.
      */
-    public EvaluationFunction_SqDistFromOther(Node nodeToCompareAllOthersTo) {
+    public EvaluationFunction_SqDistFromOther(INode nodeToCompareAllOthersTo) {
         this.nodeToCompareAllOthersTo = nodeToCompareAllOthersTo;
         baseStateVars = nodeToCompareAllOthersTo.getState().getStates();
     }
 
     @Override
-    public float getValue(Node nodeToEvaluate) {
-        if (nodeToEvaluate.isStateUnassigned())
-            throw new NullPointerException("Trying to evaluate a node based on state information which has not yet " +
-                    "been assigned in that node.");
-
-        StateVariable[] otherStateVarList = nodeToEvaluate.getState().getStates();
+    public float getValue(INode nodeToEvaluate) {
+        StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getStates();
 
         float sqError = 0;
 
@@ -63,12 +59,8 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
     }
 
     @Override
-    public String getValueString(Node nodeToEvaluate) {
-        if (nodeToEvaluate.isStateUnassigned())
-            throw new NullPointerException("Trying to evaluate a node based on state information which has not yet " +
-                    "been assigned in that node.");
-
-        StateVariable[] otherStateVarList = nodeToEvaluate.getState().getStates();
+    public String getValueString(INode nodeToEvaluate) {
+        StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getStates();
         StringBuilder valueString = new StringBuilder();
 
         for (int i = 0; i < baseStateVars.length; i++) {
