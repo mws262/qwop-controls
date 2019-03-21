@@ -14,8 +14,7 @@ import value.ValueFunction_TensorFlow_StateOnly;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("ALL")
-public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
+public class MAIN_SingleEvaluation extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
 
     GameUnified game = new GameUnified();
 
@@ -54,6 +53,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+        qwop.addMouseListener(qwop);
+        qwop.addMouseMotionListener(qwop);
 
         // Fire game update every 40 ms.
         Timer timer = new Timer(40, qwop);
@@ -91,14 +92,14 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
                 new Action(1,false,false,false,false),
-                new Action(34,false,true,true,false),
-                new Action(19,false,false,false,false),
-                new Action(45,true,false,false,true),
-
-                new Action(10,false,false,false,false),
-                new Action(27,false,true,true,false),
-                 new Action(8,false,false,false,false),
-                new Action(20,true,false,false,true),
+//                new Action(34,false,true,true,false),
+//                new Action(19,false,false,false,false),
+//                new Action(45,true,false,false,true),
+//
+//                new Action(10,false,false,false,false),
+//                new Action(27,false,true,true,false),
+//                 new Action(8,false,false,false,false),
+//                new Action(20,true,false,false,true),
         });
 
         Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
@@ -130,7 +131,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         Node currNode = leaf.get(0);
 
         // Run the controller until failure.
-        while (!qwop.game.getFailureStatus()) {
+        while (true) { //!qwop.game.getFailureStatus()) {
 
             Utility.tic();
             Action chosenAction = valueFunction.getMaximizingAction(currNode, qwop.game);
@@ -144,7 +145,17 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {
                 long currTime = System.currentTimeMillis();
-                // qwop.game.applyBodyImpulse(-3f, 0.001f);
+
+                if (qwop.mouseActive) {
+                    qwop.arrowShape = PanelRunner.createArrowShape(qwop.mousePoint, new Point(300,180), 80);
+                    float impulseX = 300f - qwop.mousePoint.x;
+                    float impulseY = 200f - qwop.mousePoint.y;
+                    float impulseGain = 0.008f;
+                    qwop.game.applyBodyImpulse(impulseGain * impulseX, impulseGain * impulseY);
+                } else {
+                    qwop.arrowShape = null;
+                }
+
                 qwop.game.step(actionQueue.pollCommand());
 
 //                if (doScreenCapture) {
@@ -155,7 +166,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 //                    }
 //                } else { // Screen capture is already so slow, we don't need a delay.
                     try {
-                        Thread.sleep(Math.max(1, 40 - (System.currentTimeMillis() - currTime)));
+                        Thread.sleep(Math.max(1, 35 - (System.currentTimeMillis() - currTime)));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -166,17 +177,52 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         }
     }
 
+    Point mousePoint;
+    boolean mouseActive = false;
+    Shape arrowShape;
+    Color arrowColor = new Color(0,0,0,127);
     @Override
     public void paint(Graphics g) {
         super.paint(g);
         game.draw(g, 10, 300, 200); // Redraws the game. Scaling and offsets are handpicked to work for the size of
         // the window.
         PanelRunner.keyDrawer(g, q, w, o, p, -50, 20, 240, 40);
-
+        if (arrowShape != null) {
+            ((Graphics2D) g).setColor(arrowColor);
+            ((Graphics2D) g).fill(arrowShape);
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         repaint();
     }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {}
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        mouseActive = true;
+        mousePoint = e.getPoint();
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        mouseActive = false;
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+
+    @Override
+    public void mouseExited(MouseEvent e) {}
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        mousePoint = e.getPoint();
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {}
 }

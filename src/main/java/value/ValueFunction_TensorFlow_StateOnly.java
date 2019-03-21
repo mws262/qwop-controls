@@ -95,9 +95,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add( // P
                 getCallable(fullState, currentNode, EvaluationResult.Keys.p, 1, 10));
 
-        if (multithread) { // Multithread seems to weigh in at about 15ms per evaluation of controller. Single is
-            // maybe 25ms
-
+        if (multithread) { // Multi-thread
             List<Future<EvaluationResult>> allResults = null;
 
             try {
@@ -109,7 +107,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 e.printStackTrace();
             }
 
-        } else {
+        } else { // Single thread
             try {
                 for (Callable<EvaluationResult> eval : evaluations) {
                     evalResults.add(eval.call());
