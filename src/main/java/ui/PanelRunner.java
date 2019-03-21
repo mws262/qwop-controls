@@ -1,12 +1,7 @@
 package ui;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Stroke;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
 
 import javax.swing.JPanel;
 
@@ -196,5 +191,62 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
     @Override
     public boolean isActive() {
         return active;
+    }
+
+    // Thanks: https://stackoverflow.com/questions/2027613/how-to-draw-a-directed-arrow-line-in-java
+    public static Shape createArrowShape(Point fromPt, Point toPt, float thickness) {
+        Polygon arrowPolygon = new Polygon();
+
+        // Values are somewhat arbitrary since scaling happens later. Just want them large enough so integer rounding
+        // doesn't get problematic.
+        arrowPolygon.addPoint(-600, (int) (thickness /2f));
+        arrowPolygon.addPoint((int) (450 - thickness), (int) (thickness /2f));
+        arrowPolygon.addPoint((int) (450 - thickness), (int) (3 * thickness /2f));
+        arrowPolygon.addPoint(600,0);
+        arrowPolygon.addPoint((int) (450 - thickness),(int) (-3 * thickness /2f));
+        arrowPolygon.addPoint((int) (450 - thickness), (int) (-thickness /2f));
+        arrowPolygon.addPoint(-600, (int) (-thickness /2f));
+
+        Point midPoint = midpoint(fromPt, toPt);
+
+        double rotate = Math.atan2(toPt.y - fromPt.y, toPt.x - fromPt.x);
+
+        AffineTransform transform = new AffineTransform();
+        transform.translate(midPoint.x, midPoint.y);
+        double ptDistance = fromPt.distance(toPt);
+        double scale = ptDistance / 1200.0; // 12 because it's the length of the arrow polygon.
+        transform.scale(scale, scale);
+        transform.rotate(rotate);
+
+        return transform.createTransformedShape(arrowPolygon);
+    }
+
+
+    public static Shape createArrowShape(float angle, float length, Point toPt, float thickness) {
+        Polygon arrowPolygon = new Polygon();
+
+        // Values are somewhat arbitrary since scaling happens later. Just want them large enough so integer rounding
+        // doesn't get problematic.
+        arrowPolygon.addPoint(-1200, (int) (thickness /2f));
+        arrowPolygon.addPoint((int) (-150 - thickness), (int) (thickness /2f));
+        arrowPolygon.addPoint((int) (-150 - thickness), (int) (3 * thickness /2f));
+        arrowPolygon.addPoint(0,0);
+        arrowPolygon.addPoint((int) (-150 - thickness),(int) (-3 * thickness /2f));
+        arrowPolygon.addPoint((int) (-150 - thickness), (int) (-thickness /2f));
+        arrowPolygon.addPoint(-1200, (int) (-thickness /2f));
+
+//        Point midPoint = new Point((int) (toPt.x  + Math.cos(length)), (int) (toPt.y + Math.sin(length)));
+
+        AffineTransform transform = new AffineTransform();
+        transform.translate(toPt.x, toPt.y);
+        double scale = length / 1200.0; // 12 because it's the length of the arrow polygon.
+        transform.scale(scale, scale);
+        transform.rotate(angle);
+
+        return transform.createTransformedShape(arrowPolygon);
+    }
+    private static Point midpoint(Point p1, Point p2) {
+        return new Point((int)((p1.x + p2.x)/2.0),
+                (int)((p1.y + p2.y)/2.0));
     }
 }
