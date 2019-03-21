@@ -2,6 +2,7 @@ package value;
 
 import actions.Action;
 import game.IGame;
+import tree.INode;
 import tree.Node;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public interface IValueFunction {
      * @param currentNode
      * @return
      */
-    float evaluate(Node currentNode);
+    float evaluate(INode currentNode);
 
     /**
      * Provide a list of nodes from which information will be taken to update the value function.

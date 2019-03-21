@@ -4,6 +4,7 @@ import actions.Action;
 import actions.ActionSet;
 import distributions.Distribution_Equal;
 import game.IGame;
+import tree.INode;
 import tree.Node;
 
 import java.io.File;
@@ -39,7 +40,7 @@ public class ValueFunction_TensorFlow_ActionIn extends ValueFunction_TensorFlow 
     /**
      * Create a value function from an existing neural network save file. If we want to also load a checkpoint
      * with network weights, call {@link ValueFunction_TensorFlow_ActionIn#loadCheckpoint}
-     * @param file
+     * @param file Existing .pb file defining a TensorFlow graph.
      */
     public ValueFunction_TensorFlow_ActionIn(File file) throws FileNotFoundException {
         super(file);
@@ -51,7 +52,7 @@ public class ValueFunction_TensorFlow_ActionIn extends ValueFunction_TensorFlow 
     }
 
     @Override
-    float[] assembleInputFromNode(Node node) { // Uses parent state with this node's action.
+    float[] assembleInputFromNode(INode node) { // Uses parent state with this node's action.
         float[] input = new float[STATE_SIZE + ACTION_SIZE];
         System.arraycopy(stateStats.standardizeState(node.getParent().getState()), 0, input, 0, STATE_SIZE);
         input[STATE_SIZE + ACTION_SIZE - 1] = node.getAction().getTimestepsTotal();

@@ -2,7 +2,7 @@ package evaluators;
 
 import java.util.Random;
 
-import tree.Node;
+import tree.INode;
 
 /**
  * This evaluation function returns a random value regardless of the given node.
@@ -18,12 +18,12 @@ public class EvaluationFunction_Random implements IEvaluationFunction {
     private static final Random rand = new Random();
 
     @Override
-    public float getValue(Node nodeToEvaluate) {
+    public float getValue(INode nodeToEvaluate) {
         return rand.nextFloat();
     }
 
     @Override
-    public String getValueString(Node nodeToEvaluate) {
+    public String getValueString(INode nodeToEvaluate) {
         return "Random score is not particularly meaningful.";
     }
 

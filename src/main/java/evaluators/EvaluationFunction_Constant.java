@@ -1,6 +1,6 @@
 package evaluators;
 
-import tree.Node;
+import tree.INode;
 
 /**
  * Scores nodes by returning a constant value no matter what node is input. Mainly useful for testing.
@@ -25,12 +25,12 @@ public class EvaluationFunction_Constant implements IEvaluationFunction {
     }
 
     @Override
-    public float getValue(Node nodeToEvaluate) {
+    public float getValue(INode nodeToEvaluate) {
         return constantValue;
     }
 
     @Override
-    public String getValueString(Node nodeToEvaluate) {
+    public String getValueString(INode nodeToEvaluate) {
         return String.valueOf(constantValue);
     }
 

@@ -387,6 +387,26 @@ public class GameUnified implements IGame, Serializable {
 
         allBodies = new Body[]{rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
                 lUArmBody, rLArmBody, lLArmBody, rFootBody, lFootBody, headBody};
+
+
+//        BodyDef blockBodyDef = new BodyDef();
+//        PolygonDef blockShapeDef = new PolygonDef();
+//        MassData blockMassData = new MassData();
+//        blockShapeDef.setAsBox(2, 10);
+//
+//        blockShapeDef.friction = 1;
+//        blockShapeDef.density = 1;
+//        blockShapeDef.filter.groupIndex = 1; // Same as track.
+//
+//        blockBodyDef.position = (torsoPos).add(new Vec2(18,-2));
+//        blockBodyDef.angle = 0;
+//
+//        blockMassData.I = 40;
+//        blockMassData.mass = 10;
+//        blockBodyDef.massData = blockMassData;
+//        Body blockBody = getWorld().createBody(blockBodyDef);
+//        blockBody.createShape(blockShapeDef);
+
         /*
          *  Joints
          */

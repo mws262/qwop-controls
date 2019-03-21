@@ -1,6 +1,8 @@
 package evaluators;
 
-import tree.Node;
+import tree.INode;
+
+import java.util.Objects;
 
 /**
  * Evaluation of a node based strictly on torso horizontal position.
@@ -10,15 +12,12 @@ import tree.Node;
 public class EvaluationFunction_Distance implements IEvaluationFunction {
 
     @Override
-    public float getValue(Node nodeToEvaluate) {
-        if (nodeToEvaluate.isStateUnassigned())
-            throw new NullPointerException("Trying to evaluate a node based on state information which has not yet " +
-                    "been assigned in that node.");
-        return nodeToEvaluate.getState().body.getX();
+    public float getValue(INode nodeToEvaluate) {
+        return Objects.requireNonNull(nodeToEvaluate.getState()).body.getX();
     }
 
     @Override
-    public String getValueString(Node nodeToEvaluate) {
+    public String getValueString(INode nodeToEvaluate) {
         return String.valueOf(getValue(nodeToEvaluate));
     }
 
