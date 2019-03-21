@@ -693,7 +693,6 @@ public class GameUnified implements IGame, Serializable {
             lHipJ.m_upperAngle = pLHipLimHi;
 
         } else {
-
             // Set knee speeds to 0
             //Joint limits not changed!!
             rKneeJ.m_motorSpeed = (0f);

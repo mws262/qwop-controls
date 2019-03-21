@@ -1,17 +1,17 @@
 /*
  * JBox2D - A Java Port of Erin Catto's Box2D
- * 
+ *
  * JBox2D homepage: http://jbox2d.sourceforge.net/
  * Box2D homepage: http://www.box2d.org
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  * claim that you wrote the original software. If you use this software
  * in a product, an acknowledgment in the product documentation would be
@@ -31,13 +31,18 @@ import org.jbox2d.common.Settings;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.common.XForm;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 //Updated to rev 139 of b2CollideCircle.cpp
 
 /**
  * Circle/circle and circle/polygon overlap solver -
  * for internal use only.
  */
-public class CollideCircle {
+public class CollideCircle implements Externalizable {
 
 	transient private Vec2
 			temp1 = new Vec2(),
@@ -53,10 +58,9 @@ public class CollideCircle {
 	 * @param circle2
 	 * @param xf2
 	 */
-	// djm optimized
 	public final void collideCircles(final Manifold manifold,
-	                                        final CircleShape circle1, final XForm xf1,
-	                                        final CircleShape circle2, final XForm xf2) {
+									 final CircleShape circle1, final XForm xf1,
+									 final CircleShape circle2, final XForm xf2) {
 		manifold.pointCount = 0;
 
 		XForm.mulToOut(xf1, circle1.getMemberLocalPosition(), temp1);
@@ -113,8 +117,8 @@ public class CollideCircle {
 	 */
 	// djm optimized
 	public final void collidePointAndCircle(final Manifold manifold,
-	                                               final PointShape point1, final XForm xf1,
-	                                               final CircleShape circle2, final XForm xf2) {
+											final PointShape point1, final XForm xf1,
+											final CircleShape circle2, final XForm xf2) {
 		manifold.pointCount = 0;
 
 		XForm.mulToOut(xf1, point1.getMemberLocalPosition(), temp1);
@@ -167,8 +171,8 @@ public class CollideCircle {
 	 * @param xf2
 	 */
 	public final void collidePolygonAndCircle(final Manifold manifold,
-	                                                 final PolygonShape polygon, final XForm xf1,
-	                                                 final CircleShape circle, final XForm xf2) {
+											  final PolygonShape polygon, final XForm xf1,
+											  final CircleShape circle, final XForm xf2) {
 		manifold.pointCount = 0;
 
 		// Compute circle position in the frame of the polygon.
@@ -301,8 +305,8 @@ public class CollideCircle {
 	 * @param xf2
 	 */
 	public final void collideEdgeAndCircle(final Manifold manifold,
-	                                              final EdgeShape edge, final XForm xf1,
-	                                              final CircleShape circle, final XForm xf2) {
+										   final EdgeShape edge, final XForm xf1,
+										   final CircleShape circle, final XForm xf2) {
 		manifold.pointCount = 0;
 
 		XForm.mulToOut(xf2, circle.getMemberLocalPosition(), temp2);
@@ -377,5 +381,16 @@ public class CollideCircle {
 		//c.subLocal(manifold.normal.mul(radius));
 		XForm.mulTransToOut(xf1, temp2, manifold.points[0].localPoint1);
 		XForm.mulTransToOut(xf2, temp2, manifold.points[0].localPoint2);
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) {}
+
+	@Override
+	public void readExternal(ObjectInput in) {
+		temp1 = new Vec2();
+		temp2 = new Vec2();
+		temp3 = new Vec2();
+		temp4 = new Vec2();
 	}
 }

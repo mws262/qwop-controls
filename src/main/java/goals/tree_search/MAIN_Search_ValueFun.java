@@ -7,6 +7,7 @@ import game.GameUnified;
 import samplers.Sampler_UCB;
 import samplers.rollout.RolloutPolicy;
 import samplers.rollout.RolloutPolicy_ValueFunction;
+import samplers.rollout.RolloutPolicy_WorstCaseWindow;
 import savers.DataSaver_StageSelected;
 import tree.Node;
 import tree.TreeStage_MaxDepth;
@@ -56,14 +57,14 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
                 new Action(1,false,false,false,false),
-                new Action(34,false,true,true,false),
-                new Action(19,false,false,false,false),
-                new Action(45,true,false,false,true),
-
-                new Action(10,false,false,false,false),
-                new Action(27,false,true,true,false),
-                new Action(8,false,false,false,false),
-                new Action(20,true,false,false,true),
+//                new Action(34,false,true,true,false),
+//                new Action(19,false,false,false,false),
+//                new Action(45,true,false,false,true),
+//
+//                new Action(10,false,false,false,false),
+//                new Action(27,false,true,true,false),
+//                new Action(8,false,false,false,false),
+//                new Action(20,true,false,false,true),
         });
 
         Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
@@ -130,18 +131,17 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("chk");
+        valueFunction.loadCheckpoint("chk4");
 
         valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
         valueFunction.setTrainingBatchSize(100);
 
-        for (int k = 0; k < 1000; k++) {
-//            RolloutPolicy_ValueFunction rollout  =
-//                    new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueNetwork);
-//            rollout.maxRolloutTimesteps = 200;
+        for (int k = 0; k < 10000; k++) {
+            RolloutPolicy rollout  =
+                    new RolloutPolicy_WorstCaseWindow(new EvaluationFunction_Distance());
 
-            RolloutPolicy rollout =
-                    new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueFunction);
+//            RolloutPolicy rollout =
+//                    new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueFunction);
 
             Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout);
 
@@ -176,10 +176,10 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             }
 
 //             Save a checkpoint of the weights/biases.
-            if (k % 2 == 0) {
-                valueFunction.saveCheckpoint("chk2");
+//            if (k % 2 == 0) {
+                valueFunction.saveCheckpoint("chk5");
                 System.out.println("Saved");
-            }
+//            }
         }
     }
 }

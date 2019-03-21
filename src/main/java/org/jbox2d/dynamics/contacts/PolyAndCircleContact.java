@@ -23,6 +23,10 @@
 
 package org.jbox2d.dynamics.contacts;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,24 +41,28 @@ import org.jbox2d.dynamics.ContactListener;
 //Updated to rev 144 of b2PolyAndCircleContact.h/cpp
 class PolyAndCircleContact extends Contact {
 
-	private final Manifold m_manifold;
-	private final ArrayList<Manifold> manifoldList = new ArrayList<>();
-	private final CollideCircle collideCircle = new CollideCircle();
+	private Manifold m_manifold = new Manifold();
+	private ArrayList<Manifold> manifoldList = new ArrayList<>();
+	private CollideCircle collideCircle = new CollideCircle();
+
+	// Locally reused stuff.
+//	transient private Manifold m0 = new Manifold();
+//	transient private Vec2 v1 = new Vec2();
+//	transient private ContactPoint cp = new ContactPoint();
+	private Manifold m0 = new Manifold();
+	private Vec2 v1 = new Vec2();
+	private ContactPoint cp = new ContactPoint();
 
 	private PolyAndCircleContact(final Shape s1, final Shape s2) {
 		super(s1, s2);
 		assert (m_shape1.getType() == ShapeType.POLYGON_SHAPE);
 		assert (m_shape2.getType() == ShapeType.CIRCLE_SHAPE);
-		m_manifold = new Manifold();
 		manifoldList.add(m_manifold);
 		m_manifoldCount = 0;
 	}
 
-	PolyAndCircleContact() {
-		super();
-		m_manifold = new Manifold();
-		m_manifoldCount = 0;
-	}
+	// For deserializing.
+	public PolyAndCircleContact() {}
 
 	@Override
 	public Contact clone() {
@@ -94,11 +102,6 @@ class PolyAndCircleContact extends Contact {
 	public List<Manifold> getManifolds() {
 		return manifoldList;
 	}
-
-	// Locally reused stuff.
-	transient private final Manifold m0 = new Manifold();
-	transient private final Vec2 v1 = new Vec2();
-	transient private final ContactPoint cp = new ContactPoint();
 
 	@Override
 	public void evaluate(final ContactListener listener) {
@@ -199,4 +202,22 @@ class PolyAndCircleContact extends Contact {
 			listener.remove(cp);
 		}
 	}
+//
+//	@Override
+//	public void writeExternal(ObjectOutput out) throws IOException {
+//		out.writeObject(m_manifold); // Manifold
+//		out.writeObject(manifoldList); // ArrayList<Manifold>
+//		out.writeObject(collideCircle); // CollideCircle
+//	}
+//
+//	@Override
+//	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+//		m_manifold = (Manifold) in.readObject();
+//		manifoldList = (ArrayList<Manifold>) in.readObject();
+//		collideCircle = (CollideCircle) in.readObject();
+//
+//		m0 = new Manifold();
+//		v1 = new Vec2();
+//		cp = new ContactPoint();
+//	}
 }
