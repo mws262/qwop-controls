@@ -1,12 +1,12 @@
 # Directory for saved runs
 saveLocation=./test_dir
-headless=false
+headless=true
 workersFractionOfCores=0.8
 UCBExplorationMultiplier=2
 
 getToSteadyDepth=100
 fractionOfMaxWorkers=1
-bailAfterXGames=2000
+bailAfterXGames=20000
 
 # Number of training steps each time new data is fed into the neural network.
 netTrainingStepsPerIter = 1

@@ -1,7 +1,6 @@
 package value;
 
 import actions.Action;
-import actions.ActionQueue;
 import game.GameUnified;
 import game.IGame;
 import game.State;
@@ -9,9 +8,7 @@ import tree.Node;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
@@ -20,12 +17,13 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     private static final int VALUE_SIZE = 1;
 
     boolean multithread = true;
-    ExecutorService ex;
+    private ExecutorService ex;
+    private int numThreads = 7;
 
     public ValueFunction_TensorFlow_StateOnly(File file) throws FileNotFoundException {
         super(file);
         if (multithread) {
-            ex = Executors.newFixedThreadPool(3);
+            ex = Executors.newFixedThreadPool(numThreads);
         }
     }
 
@@ -33,7 +31,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                                               List<String> additionalArgs) throws FileNotFoundException {
         super(fileName, STATE_SIZE, VALUE_SIZE, hiddenLayerSizes, additionalArgs);
         if (multithread) {
-            ex = Executors.newFixedThreadPool(6);
+            ex = Executors.newFixedThreadPool(numThreads);
         }
     }
 
@@ -41,6 +39,35 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     public Action getMaximizingAction(Node currentNode) {
         throw new RuntimeException("This value function currently relies on a game full state for save/loading.");
         // TODO make this just run through the whole sequence every time.
+    }
+
+
+    private Callable<EvaluationResult> getCallable(byte[] gameStartingState, Node startingNode,
+                                                   EvaluationResult.Keys keys, int minDuration, int maxDuration) {
+        boolean[] buttons = EvaluationResult.labelsToButtons.get(keys);
+
+        return () -> {
+            GameUnified gameLocal = GameUnified.restoreFullState(gameStartingState);
+            EvaluationResult bestResult = new EvaluationResult();
+            for (int i = minDuration; i < maxDuration; i++) {
+                gameLocal.step(buttons);
+                State st = gameLocal.getCurrentState();
+                Node nextNode = new Node(startingNode, new Action(i, buttons), false);
+                nextNode.setState(st);
+                float val = evaluate(nextNode);
+                if (val > bestResult.value) {
+                    bestResult.value = val;
+                    bestResult.timestep = i;
+                    bestResult.keys = keys;
+                }
+            }
+            return bestResult;
+        };
+    }
+
+    private Action getBestActionFromEvaluationResults(List<EvaluationResult> results) {
+        EvaluationResult evalResult = results.stream().max(EvaluationResult::compareTo).get();
+        return new Action(evalResult.timestep, EvaluationResult.labelsToButtons.get(evalResult.keys));
     }
 
     @SuppressWarnings("Duplicates")
@@ -51,161 +78,48 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
         Objects.requireNonNull(fullState);
 
+        List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
+        List<EvaluationResult> evalResults = new ArrayList<>();
+        evaluations.add( // No Keys
+                getCallable(fullState, currentNode, EvaluationResult.Keys.none, 1, 30));
+        evaluations.add( // QP
+                getCallable(fullState, currentNode, EvaluationResult.Keys.qp, 1, 50));
+        evaluations.add( // WO
+                getCallable(fullState, currentNode, EvaluationResult.Keys.wo, 1, 50));
+        evaluations.add( // Q
+                getCallable(fullState, currentNode, EvaluationResult.Keys.q, 1, 10));
+        evaluations.add( // W
+                getCallable(fullState, currentNode, EvaluationResult.Keys.w, 1, 10));
+        evaluations.add( // O
+                getCallable(fullState, currentNode, EvaluationResult.Keys.o, 1, 10));
+        evaluations.add( // P
+                getCallable(fullState, currentNode, EvaluationResult.Keys.p, 1, 10));
+
         if (multithread) { // Multithread seems to weigh in at about 15ms per evaluation of controller. Single is
             // maybe 25ms
-            Callable<EvaluationResult> noKey = () -> {
-                // Test null actions.
-                GameUnified gameLocal = GameUnified.restoreFullState(fullState);
-                EvaluationResult bestNull = new EvaluationResult();
-                for (int i = 1; i < 30; i++) {
-                    gameLocal.step(false, false, false, false);
-                    State st = gameLocal.getCurrentState();
-                    Node nextNode = new Node(currentNode, new Action(i, false, false, false, false), false);
-                    nextNode.setState(st);
-                    float val = evaluate(nextNode);
-                    if (val > bestNull.value) {
-                        bestNull.value = val;
-                        bestNull.timestep = i;
-                    }
-                }
-                return bestNull;
-            };
-
-            Callable<EvaluationResult> wo = () -> {
-                // Test WO actions.
-                GameUnified gameLocal = GameUnified.restoreFullState(fullState);
-                EvaluationResult bestWO = new EvaluationResult();
-                for (int i = 1; i < 50; i++) {
-                    gameLocal.step(false, true, true, false);
-                    State st = gameLocal.getCurrentState();
-                    Node nextNode = new Node(currentNode, new Action(i, false, true, true, false), false);
-                    nextNode.setState(st);
-                    float val = evaluate(nextNode);
-                    if (val > bestWO.value) {
-                        bestWO.value = val;
-                        bestWO.timestep = i;
-                    }
-                }
-                return bestWO;
-            };
-
-            // Test QP actions.
-            Callable<EvaluationResult> qp = () -> {
-                GameUnified gameLocal = GameUnified.restoreFullState(fullState);
-
-                EvaluationResult bestQP = new EvaluationResult();
-                for (int i = 1; i < 50; i++) {
-                    gameLocal.step(true, false, false, true);
-                    State st = gameLocal.getCurrentState();
-                    Node nextNode = new Node(currentNode, new Action(i, true, false, false, true), false);
-                    nextNode.setState(st);
-                    float val = evaluate(nextNode);
-                    if (val > bestQP.value) {
-                        bestQP.value = val;
-                        bestQP.timestep = i;
-                    }
-                }
-                return bestQP;
-            };
-
-//            ExecutorService ex = Executors.newFixedThreadPool(3);
-            List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
-            evaluations.add(noKey);
-            evaluations.add(wo);
-            evaluations.add(qp);
 
             List<Future<EvaluationResult>> allResults = null;
+
             try {
                 allResults = ex.invokeAll(evaluations);
-            } catch (InterruptedException e) {
+                for (Future<EvaluationResult> future : allResults) {
+                    evalResults.add(future.get());
+                }
+            }catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
 
-//            ex.shutdown();
-//            try {
-//                ex.awaitTermination(10, TimeUnit.SECONDS);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-
-            EvaluationResult nullResult = null;
-            EvaluationResult woResult = null;
-            EvaluationResult qpResult = null;
-            try {
-                nullResult = allResults.get(0).get();
-                woResult = allResults.get(1).get();
-                qpResult = allResults.get(2).get();
-            } catch (InterruptedException | ArrayIndexOutOfBoundsException | ExecutionException e) {
-                e.printStackTrace();
-            }
-
-
-            Action bestAction;
-            if (nullResult.value >= qpResult.value && nullResult.value >= woResult.value) {
-                bestAction = new Action(nullResult.timestep, false, false, false, false);
-            } else if (qpResult.value > nullResult.value && qpResult.value > woResult.value) {
-                bestAction = new Action(qpResult.timestep, true, false, false, true);
-            } else {
-                bestAction = new Action(woResult.timestep, false, true, true, false);
-            }
-
-
-            return bestAction;
         } else {
-
-            IGame game = GameUnified.restoreFullState(fullState);
-            EvaluationResult bestNull = new EvaluationResult();
-            for (int i = 1; i < 30; i++) {
-                game.step(false, false, false, false);
-                State st = game.getCurrentState();
-                Node nextNode = new Node(currentNode, new Action(i, false, false, false, false), false);
-                nextNode.setState(st);
-                float val = evaluate(nextNode);
-                if (val > bestNull.value) {
-                    bestNull.value = val;
-                    bestNull.timestep = i;
+            try {
+                for (Callable<EvaluationResult> eval : evaluations) {
+                    evalResults.add(eval.call());
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            game = GameUnified.restoreFullState(fullState);
-            EvaluationResult bestWO = new EvaluationResult();
-            for (int i = 1; i < 50; i++) {
-                game.step(false, true, true, false);
-                State st = game.getCurrentState();
-                Node nextNode = new Node(currentNode, new Action(i, false, true, true, false), false);
-                nextNode.setState(st);
-                float val = evaluate(nextNode);
-                if (val > bestWO.value) {
-                    bestWO.value = val;
-                    bestWO.timestep = i;
-                }
-            }
-
-            game = GameUnified.restoreFullState(fullState);
-            EvaluationResult bestQP = new EvaluationResult();
-            for (int i = 1; i < 50; i++) {
-                game.step(true, false, false, true);
-                State st = game.getCurrentState();
-                Node nextNode = new Node(currentNode, new Action(i, true, false, false, true), false);
-                nextNode.setState(st);
-                float val = evaluate(nextNode);
-                if (val > bestQP.value) {
-                    bestQP.value = val;
-                    bestQP.timestep = i;
-                }
-            }
-
-            Action bestAction;
-            if ((bestNull.value >= bestQP.value) && (bestNull.value >= bestWO.value)) {
-                bestAction = new Action(bestNull.timestep, false, false, false, false);
-            } else if ((bestQP.value > bestNull.value) && (bestQP.value > bestWO.value)) {
-                bestAction = new Action(bestQP.timestep, true, false, false, true);
-            } else {
-                bestAction = new Action(bestWO.timestep, false, true, true, false);
-            }
-
-            return bestAction;
         }
+
+        return getBestActionFromEvaluationResults(evalResults);
     }
 
     @Override
@@ -215,11 +129,32 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     @Override
     float[] assembleOutputFromNode(Node node) {
-        return new float[]{node.getValue()/node.visitCount.floatValue()};
+        return new float[]{node.getValue() / node.visitCount.floatValue()};
     }
 
-    private static class EvaluationResult {
+    private static class EvaluationResult implements Comparable<EvaluationResult> {
+        enum Keys {
+            q, w, o, p, qp, wo, none
+        }
+
+        final static Map<Keys, boolean[]> labelsToButtons = new HashMap<>();
+        static {
+            labelsToButtons.put(Keys.q, new boolean[]{true, false, false, false});
+            labelsToButtons.put(Keys.w, new boolean[]{false, true, false, false});
+            labelsToButtons.put(Keys.o, new boolean[]{false, false, true, false});
+            labelsToButtons.put(Keys.p, new boolean[]{false, false, false, true});
+            labelsToButtons.put(Keys.qp, new boolean[]{true, false, false, true});
+            labelsToButtons.put(Keys.wo, new boolean[]{false, true, true, false});
+            labelsToButtons.put(Keys.none, new boolean[]{false, false, false, false});
+        }
+
         float value = -Float.MAX_VALUE;
         int timestep = -1;
+        Keys keys;
+
+        @Override
+        public int compareTo(EvaluationResult o) {
+            return Float.compare(this.value, o.value);
+        }
     }
 }

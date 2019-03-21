@@ -59,14 +59,18 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
      */
     public float runnerScaling = 10f;
 
+    private final int startX = -45;
     private final int startY = yOffsetPixels - 85;
 
+    protected void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
+        keyDrawer(g, q, w, o, p, startX, startY, 30, 40);
+    }
 
     /**
      * Draw the pressed keys in the panel during running.
      */
-    protected void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
-
+    public static void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p, int xOffset, int yOffset,
+                             int offsetBetweenPairs, int size) {
         int qOffset = (q ? 10 : 0);
         int wOffset = (w ? 10 : 0);
         int oOffset = (o ? 10 : 0);
@@ -77,28 +81,25 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
         Graphics2D g2 = (Graphics2D) g;
 
         g2.setColor(Color.DARK_GRAY);
-        int size = 40;
-        int startX = -45;
-        g2.drawRoundRect(startX + 80 - qOffset / 2, startY - qOffset / 2, size + qOffset, size + qOffset,
+        g2.drawRoundRect(xOffset + 80 - qOffset / 2, yOffset - qOffset / 2, size + qOffset, size + qOffset,
                 (size + qOffset) / 10, (size + qOffset) / 10);
-        g2.drawRoundRect(startX + 160 - wOffset / 2, startY - wOffset / 2, size + wOffset, size + wOffset,
+        g2.drawRoundRect(xOffset + 160 - wOffset / 2, yOffset - wOffset / 2, size + wOffset, size + wOffset,
                 (size + wOffset) / 10, (size + wOffset) / 10);
 
         /* Parameters for placing the "keys" graphically. */
-        int offsetBetweenPairs = 30;
-        g2.drawRoundRect(startX + 240 - oOffset / 2 + offsetBetweenPairs, startY - oOffset / 2, size + oOffset,
+        g2.drawRoundRect(xOffset + 240 - oOffset / 2 + offsetBetweenPairs, yOffset - oOffset / 2, size + oOffset,
                 size + oOffset, (size + oOffset) / 10, (size + oOffset) / 10);
-        g2.drawRoundRect(startX + 320 - pOffset / 2 + offsetBetweenPairs, startY - pOffset / 2, size + pOffset,
+        g2.drawRoundRect(xOffset + 320 - pOffset / 2 + offsetBetweenPairs, yOffset - pOffset / 2, size + pOffset,
                 size + pOffset, (size + pOffset) / 10, (size + pOffset) / 10);
 
         g2.setColor(Color.LIGHT_GRAY);
-        g2.fillRoundRect(startX + 80 - qOffset / 2, startY - qOffset / 2, size + qOffset, size + qOffset,
+        g2.fillRoundRect(xOffset + 80 - qOffset / 2, yOffset - qOffset / 2, size + qOffset, size + qOffset,
                 (size + qOffset) / 10, (size + qOffset) / 10);
-        g2.fillRoundRect(startX + 160 - wOffset / 2, startY - wOffset / 2, size + wOffset, size + wOffset,
+        g2.fillRoundRect(xOffset + 160 - wOffset / 2, yOffset - wOffset / 2, size + wOffset, size + wOffset,
                 (size + wOffset) / 10, (size + wOffset) / 10);
-        g2.fillRoundRect(startX + 240 - oOffset / 2 + offsetBetweenPairs, startY - oOffset / 2, size + oOffset,
+        g2.fillRoundRect(xOffset + 240 - oOffset / 2 + offsetBetweenPairs, yOffset - oOffset / 2, size + oOffset,
                 size + oOffset, (size + oOffset) / 10, (size + oOffset) / 10);
-        g2.fillRoundRect(startX + 320 - pOffset / 2 + offsetBetweenPairs, startY - pOffset / 2, size + pOffset,
+        g2.fillRoundRect(xOffset + 320 - pOffset / 2 + offsetBetweenPairs, yOffset - pOffset / 2, size + pOffset,
                 size + pOffset, (size + pOffset) / 10, (size + pOffset) / 10);
 
         g2.setColor(Color.BLACK);
@@ -107,24 +108,24 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
         activeFont = q ? bigFont : medFont;
         g2.setFont(activeFont);
         fm = g2.getFontMetrics();
-        g2.drawString("Q", startX + 80 + size / 2 - fm.stringWidth("Q") / 2, startY + size / 2 + fm.getHeight() / 3);
+        g2.drawString("Q", xOffset + 80 + size / 2 - fm.stringWidth("Q") / 2, yOffset + size / 2 + fm.getHeight() / 3);
 
         activeFont = w ? bigFont : medFont;
         g2.setFont(activeFont);
         fm = g2.getFontMetrics();
-        g2.drawString("W", startX + 160 + size / 2 - fm.stringWidth("W") / 2, startY + size / 2 + fm.getHeight() / 3);
+        g2.drawString("W", xOffset + 160 + size / 2 - fm.stringWidth("W") / 2, yOffset + size / 2 + fm.getHeight() / 3);
 
         activeFont = o ? bigFont : medFont;
         g2.setFont(activeFont);
         fm = g2.getFontMetrics();
-        g2.drawString("O", startX + 240 + size / 2 - fm.stringWidth("O") / 2 + offsetBetweenPairs,
-                startY + size / 2 + fm.getHeight() / 3);
+        g2.drawString("O", xOffset + 240 + size / 2 - fm.stringWidth("O") / 2 + offsetBetweenPairs,
+                yOffset + size / 2 + fm.getHeight() / 3);
 
         activeFont = p ? bigFont : medFont;
         g2.setFont(activeFont);
         fm = g2.getFontMetrics();
-        g2.drawString("P", startX + 320 + size / 2 - fm.stringWidth("P") / 2 + offsetBetweenPairs,
-                startY + size / 2 + fm.getHeight() / 3);
+        g2.drawString("P", xOffset + 320 + size / 2 - fm.stringWidth("P") / 2 + offsetBetweenPairs,
+                yOffset + size / 2 + fm.getHeight() / 3);
     }
 
     /**
@@ -134,7 +135,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
         drawActionString(g, sequence, -1);
     }
 
-    protected void drawActionString(Graphics g, Action[] sequence, int highlightIdx) {
+    protected static void drawActionString(Graphics g, Action[] sequence, int highlightIdx) {
 
         if (sequence.length == 0) return; // Happens when clicking root node.
 

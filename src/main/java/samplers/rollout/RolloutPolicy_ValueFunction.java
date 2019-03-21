@@ -11,7 +11,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
     /**
      * Rollout is terminated on game failure (falling) or a maximum number of timesteps simulated.
      */
-    public int maxRolloutTimesteps = 100;
+    public int maxRolloutTimesteps = 200;
 
     private IValueFunction valueFunction;
 
@@ -42,7 +42,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
         }
 
         // System.out.println("Rollout: " + currentNode.getState().body.getX() + ", " + rolloutTimesteps);
-        return evaluationFunction.getValue(currentNode) - evaluationFunction.getValue(startNode);
+        return (evaluationFunction.getValue(currentNode) - evaluationFunction.getValue(startNode)) / ((float) maxRolloutTimesteps / 40f);
     }
 
     public RolloutPolicy getCopy() {

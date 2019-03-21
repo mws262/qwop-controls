@@ -8,6 +8,7 @@ import distributions.Distribution_Equal;
 import game.GameUnified;
 import tree.Node;
 import tree.Utility;
+import ui.PanelRunner;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -25,6 +26,11 @@ import java.util.stream.IntStream;
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
     GameUnified game = new GameUnified();
+
+    boolean q = false;
+    boolean w = false;
+    boolean o = false;
+    boolean p = false;
 
     public static void main(String[] args) {
 //        boolean doScreenCapture = false;
@@ -61,7 +67,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("chk2");
+        valueFunction.loadCheckpoint("chk5");
 
         // Assign potential actions for the value function to choose among.
         ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 30).toArray(), new boolean[]{false, false,
@@ -91,8 +97,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
 
                 new Action(10,false,false,false,false),
                 new Action(27,false,true,true,false),
-//                 new Action(8,false,false,false,false),
-//                new Action(20,true,false,false,true),
+                 new Action(8,false,false,false,false),
+                new Action(20,true,false,false,true),
         });
 
         Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
@@ -130,6 +136,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
             Action chosenAction = valueFunction.getMaximizingAction(currNode, qwop.game);
             Utility.toc();
 
+            boolean[] keys =  chosenAction.peek();
+            qwop.q = keys[0];
+            qwop.w = keys[1];
+            qwop.o = keys[2];
+            qwop.p = keys[3];
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {
                 long currTime = System.currentTimeMillis();
@@ -160,6 +171,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener {
         super.paint(g);
         game.draw(g, 10, 300, 200); // Redraws the game. Scaling and offsets are handpicked to work for the size of
         // the window.
+        PanelRunner.keyDrawer(g, q, w, o, p, -50, 20, 240, 40);
+
     }
 
     @Override

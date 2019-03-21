@@ -1,6 +1,7 @@
 package goals.interactive;
 
 import game.GameUnified;
+import ui.PanelRunner;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,6 +43,8 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
         if (game != null)
             game.draw(g, 10, 300, 200); // Redraws the game. Scaling and offsets are handpicked to work for the size of
         // the window.
+
+        PanelRunner.keyDrawer(g, q, w, o, p, -50, 20, 240, 40);
     }
 
     @Override

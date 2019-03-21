@@ -155,6 +155,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
      */
     private static AtomicInteger workerCount = new AtomicInteger();
 
+    /**
+     * For blocking until a pause command has kicked in.
+     */
+    private final Object pauseLock = new Object();
+
     public TreeWorker() {
         workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
@@ -211,6 +216,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         // were at before terminating the worker.
                         break;
                     } else if (paused) { // Temporary stop. Call pauseWorker().
+                        synchronized (pauseLock) {
+                            pauseLock.notify();
+                        }
                         continue;
                     } else {
                         changeStatus(Status.INITIALIZE); // While running. Go immediately to making a new game.
@@ -449,10 +457,18 @@ public class TreeWorker extends PanelRunner implements Runnable {
     }
 
     /**
-     * Pause what the worker is doing. Good for changing objectives and samplers, etc.
+     * Pause what the worker is doing. Good for changing objectives and samplers, etc. This blocks until the worker
+     * is done with the current evaluation and is back to IDLE.
      */
     public void pauseWorker() {
         paused = true;
+        synchronized (pauseLock) {
+            try {
+                pauseLock.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

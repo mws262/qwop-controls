@@ -98,6 +98,9 @@ public class PairManager implements Serializable {
 		assert(m_freePair != PairManager.NULL_PAIR);
 
 		final int pairIndex = m_freePair;
+		if (pairIndex == 2147483647) {
+			System.out.println("WTF");
+		}
 		pair = m_pairs[pairIndex];
 		m_freePair = pair.next;
 
