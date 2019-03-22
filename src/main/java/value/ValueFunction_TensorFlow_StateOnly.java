@@ -96,6 +96,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add( // P
                 getCallable(fullState, currentNode, EvaluationResult.Keys.p, 1, 10));
 
+        // Off keys -- dunno if these are ever helpful.
+        evaluations.add( // QO
+                getCallable(fullState, currentNode, EvaluationResult.Keys.qo, 1, 10));
+        evaluations.add( // WP
+                getCallable(fullState, currentNode, EvaluationResult.Keys.wp, 1, 10));
+
         if (multithread) { // Multi-thread
             List<Future<EvaluationResult>> allResults;
             try {
@@ -136,7 +142,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          * Potential key combinations.
          */
         enum Keys {
-            q, w, o, p, qp, wo, none
+            q, w, o, p, qp, wo, qo, wp, none
         }
 
         /**
@@ -150,6 +156,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             labelsToButtons.put(Keys.p, new boolean[]{false, false, false, true});
             labelsToButtons.put(Keys.qp, new boolean[]{true, false, false, true});
             labelsToButtons.put(Keys.wo, new boolean[]{false, true, true, false});
+            labelsToButtons.put(Keys.qo, new boolean[]{true, false, true, false});
+            labelsToButtons.put(Keys.wp, new boolean[]{false, true, false, true});
             labelsToButtons.put(Keys.none, new boolean[]{false, false, false, false});
         }
 

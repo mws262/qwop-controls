@@ -1,5 +1,6 @@
 package goals.interactive;
 
+import game.GameLearned;
 import game.GameUnified;
 import ui.PanelRunner;
 
@@ -26,13 +27,15 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
     /**
      * Game physics world to use.
      */
-    private GameUnified game;
-
+    private GameUnified game = new GameUnified();
+//    private GameLearned game = new GameLearned();
+//    PlayableQWOP() {
+//        game.giveAllStates(GameUnified.getInitialState(), GameUnified.getInitialState(),
+//                GameUnified.getInitialState(), GameLearned.Keys.none, GameLearned.Keys.none);
+//    }
     @Override
     public void actionPerformed(ActionEvent e) { // Gets called every 40ms
-        if (game == null) {
-            game = new GameUnified();
-        }
+
         game.step(q, w, o, p); // Step the game forward 1 timestep with the specified keys pressed.
         repaint(); // Redraw the runner and scene.
     }
