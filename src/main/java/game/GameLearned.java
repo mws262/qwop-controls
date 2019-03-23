@@ -5,6 +5,7 @@ import tflowtools.TrainableNetwork;
 import ui.PanelRunner;
 
 import java.awt.*;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
@@ -19,22 +20,6 @@ public class GameLearned implements IGame {
     public enum Keys {
         q, w, o, p, qp, wo, qo, wp, none
     }
-
-    /**
-     * Association between the key labels to the q, w, o, p boolean buttons pressed.
-     */
-//    private final static Map<boolean[], GameLearned.Keys> buttonsToLabels = new HashMap<>();
-//    static {
-//        buttonsToLabels.put(new boolean[]{true, false, false, false}, Keys.q);
-//        buttonsToLabels.put(new boolean[]{false, true, false, false}, Keys.w);
-//        buttonsToLabels.put(new boolean[]{false, false, true, false}, Keys.o);
-//        buttonsToLabels.put(new boolean[]{false, false, false, true}, Keys.p);
-//        buttonsToLabels.put(new boolean[]{true, false, false, true}, Keys.qp);
-//        buttonsToLabels.put(new boolean[]{false, true, true, false}, Keys.wo);
-//        buttonsToLabels.put(new boolean[]{true, false, true, false}, Keys.qo);
-//        buttonsToLabels.put(new boolean[]{false, true, false, true}, Keys.wp);
-//        buttonsToLabels.put(new boolean[]{false, false, false, false}, Keys.none);
-//    }
 
     private final static Map<GameLearned.Keys, float[]> labelsToOneHot = new HashMap<>();
     static {
@@ -67,29 +52,117 @@ public class GameLearned implements IGame {
     private float[] poseCurrent = new float[positionStateSize];
 
 
-    public LoadStateStatistics.StateStatistics stateStats;
-
-    State currentPredictedState;
-
-    private float currentTorsoX;
-
-    public GameLearned() {
+    private static LoadStateStatistics.StateStatistics stateStats;
+    static {
         try {
             stateStats = LoadStateStatistics.loadStatsFromFile();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
 
-        List<Integer> layerSizes = new ArrayList<>();
-        layerSizes.add(inputSize);
-        layerSizes.add(144);
-        layerSizes.add(64);
-        layerSizes.add(outputSize);
-        try {
-            net = TrainableNetwork.makeNewNetwork("simulator_graph", layerSizes);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+    State currentPredictedState;
+
+    private float currentTorsoX;
+
+    public GameLearned(String fileName, List<Integer> hiddenLayerSizes,
+                             List<String> additionalArgs) throws FileNotFoundException {
+
+        // Supplement the hidden layer sizes with the input and output sizes.
+        List<Integer> allLayerSizes = new ArrayList<>(hiddenLayerSizes);
+        allLayerSizes.add(0, inputSize);
+        allLayerSizes.add(outputSize);
+
+        net = TrainableNetwork.makeNewNetwork(fileName, allLayerSizes, additionalArgs);
+    }
+
+    /**
+     * Constructor which uses existing model.
+     * @param existingFile A .pb file referring to an existing model.
+     * @throws FileNotFoundException Occurs when the specified model file is not found.
+     */
+    public GameLearned(File existingFile) throws FileNotFoundException {
+        net = new TrainableNetwork(existingFile);
+    }
+
+    /**
+     * Load a checkpoint file for the neural network. This should be in the checkpoints directory, and should not
+     * include any file extensions.
+     * @param checkpointName Name of the checkpoint to load.
+     */
+    public void loadCheckpoint(String checkpointName) {
+        assert !checkpointName.isEmpty();
+        net.loadCheckpoint(checkpointName);
+    }
+
+    /**
+     * Save a checkpoint file for the neural networks (basically all weights and biases). Directory automatically
+     * chosen.
+     * @param checkpointName Name of the checkpoint file. Do not include file extension or directory.
+     * @return A list of checkpoint with that name.
+     */
+    public List<File> saveCheckpoint(String checkpointName) {
+        assert !checkpointName.isEmpty();
+        return net.saveCheckpoint(checkpointName);
+    }
+
+    public void assembleWholeRunForTraining(List<State> states, List<boolean[]> commands) {
+        float[][] fullInput = new float[states.size() - 3][inputSize];
+        float[][] fullOutput = new float[states.size() - 3][outputSize];
+
+        for (int i = 2; i < states.size() - 1; i++) {
+
+            // Assemble input.
+            State stateTwoAgo = states.get(i - 2);
+            State stateOneAgo = states.get(i - 1);
+            State stateCurrent = states.get(i);
+
+            boolean[] commandTwoAgo = commands.get(i - 2);
+            boolean[] commandOneAgo = commands.get(i - 1);
+            boolean[] commandCurrent = commands.get(i);
+
+            float torsoX = stateCurrent.body.getX();
+
+            int idx = 0;
+            for (StateVariable state : stateCurrent.getStates()) {
+                poseCurrent[idx++] = state.getX() - torsoX;
+                poseCurrent[idx++] = state.getY();
+                poseCurrent[idx++] = state.getTh();
+            }
+
+            idx = 0;
+            for (StateVariable state : stateOneAgo.getStates()) {
+                poseOneAgo[idx++] = state.getX() - torsoX; // Still torso x from current, so will not be zero for one ago.
+                poseOneAgo[idx++] = state.getY();
+                poseOneAgo[idx++] = state.getTh();
+            }
+
+            idx = 0;
+            for (StateVariable state : stateTwoAgo.getStates()) {
+                poseTwoAgo[idx++] = state.getX() - torsoX; // Still torso x from current, so will not be zero for two ago.
+                poseTwoAgo[idx++] = state.getY();
+                poseTwoAgo[idx++] = state.getTh();
+            }
+
+            this.commandTwoAgo = matchBooleansToKeys(commandTwoAgo);
+            this.commandOneAgo = matchBooleansToKeys(commandOneAgo);
+            this.commandCurrent = matchBooleansToKeys(commandCurrent);
+
+            fullInput[i - 2] = assembleInput(poseCurrent, poseOneAgo, poseTwoAgo, this.commandCurrent,
+                    this.commandOneAgo,
+                    this.commandTwoAgo);
+
+            // Assemble output for training.
+            State nextState = states.get(i + 1);
+            idx = 0;
+            for (StateVariable state : nextState.getStates()) {
+                fullOutput[i - 2][idx++] = state.getX() - torsoX; // Still torso x from current, hopefully this result
+                // will be positive.
+                fullOutput[i - 2][idx++] = state.getY();
+                fullOutput[i - 2][idx++] = state.getTh();
+            }
         }
+        net.trainingStep(fullInput, fullOutput, 2);
     }
 
     // Does not assume that previous timesteps are assigned. This basically wipes the "memory" of the game.
@@ -147,14 +220,13 @@ public class GameLearned implements IGame {
         commandTwoAgo = commandOneAgo;
         commandOneAgo = commandCurrent;
         commandCurrent = null; // Awaiting new command.
-
     }
-
 
     // TODO: seriously refactor once things are working.
     // Normalizes the 3 poses, this one, one ago, and two ago, then finds first and second differences. Flattens
     // these to a single array with the past three actions tacked onto the end in one-hot representation.
-    private float[] assembleInput() {
+    private static float[] assembleInput(float[] poseCurrent, float[] poseOneAgo, float[] poseTwoAgo,
+                                         Keys commandCurrent, Keys commandOneAgo, Keys commandTwoAgo) {
         float[] normalizedTwoAgo = new float[positionStateSize];
         float[] normalizedOneAgo = new float[positionStateSize];
         float[] normalizedCurrent = new float[positionStateSize];
@@ -219,7 +291,8 @@ public class GameLearned implements IGame {
 
     @Override
     public void makeNewWorld() {
-
+        giveAllStates(GameUnified.getInitialState(), GameUnified.getInitialState(),
+                GameUnified.getInitialState(), GameLearned.Keys.none, GameLearned.Keys.none);
     }
 
     @Override
@@ -231,7 +304,8 @@ public class GameLearned implements IGame {
     public void step(boolean[] commands) {
         commandCurrent = matchBooleansToKeys(commands); //buttonsToLabels.get(commands);
 
-        float[] assembledInput = assembleInput();
+        float[] assembledInput = assembleInput(poseCurrent, poseOneAgo, poseTwoAgo, commandCurrent, commandOneAgo,
+                commandTwoAgo);
         float[][] singleInput = new float[1][inputSize]; // Could potentially feed more than one evaluation at a
         // time, but we don't want to here, so one dimension is singleton.
         singleInput[0] = assembledInput;
@@ -258,27 +332,21 @@ public class GameLearned implements IGame {
 
     @Override
     public void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
-
-        GameUnified realGame = new GameUnified();
-        realGame.drawExtraRunner((Graphics2D) g, getCurrentState(), "", runnerScaling, xOffsetPixels, yOffsetPixels, Color.RED, PanelRunner.normalStroke);
+        GameUnified.drawExtraRunner((Graphics2D) g, getCurrentState(), "", runnerScaling, xOffsetPixels, yOffsetPixels, Color.RED, PanelRunner.normalStroke);
     }
 
     @Override
-    public void setState(State st) {
-
-    }
+    public void setState(State st) {}
 
     @Override
-    public void applyBodyImpulse(float v, float v1) {
-
-    }
+    public void applyBodyImpulse(float v, float v1) {}
 
     @Override
     public byte[] getFullState() {
         return new byte[0];
     }
 
-    private Keys matchBooleansToKeys(boolean[] commands) {
+    private static Keys matchBooleansToKeys(boolean[] commands) {
         if (commands[0]) {
             if (commands[2]) {
                 return Keys.qo;
