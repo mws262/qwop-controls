@@ -20,8 +20,12 @@ public class DataSaver_SendToTraining extends DataSaver_Dense {
     }
     @Override
     public void reportGameEnding(Node endNode) {
-        List<boolean[]> actionBooleans = actionBuffer.stream().map(Action::peek).collect(Collectors.toList());
-        gameLearned.assembleWholeRunForTraining(stateBuffer, actionBooleans);
+        if (stateBuffer.size() > 3) {
+            List<boolean[]> actionBooleans = actionBuffer.stream().map(Action::peek).collect(Collectors.toList());
+            gameLearned.assembleWholeRunForTraining(stateBuffer, actionBooleans);
+            gameLearned.saveCheckpoint("simchk");
+        }
+
         stateBuffer.clear();
         actionBuffer.clear();
     }

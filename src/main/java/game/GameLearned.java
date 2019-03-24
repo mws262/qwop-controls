@@ -1,5 +1,7 @@
 package game;
 
+import actions.Action;
+import actions.Action.Keys;
 import data.LoadStateStatistics;
 import tflowtools.TrainableNetwork;
 import ui.PanelRunner;
@@ -7,32 +9,11 @@ import ui.PanelRunner;
 import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 
 @SuppressWarnings("Duplicates")
 public class GameLearned implements IGame {
-    /**
-     * Potential key combinations.
-     */
-    public enum Keys {
-        q, w, o, p, qp, wo, qo, wp, none
-    }
-
-    private final static Map<GameLearned.Keys, float[]> labelsToOneHot = new HashMap<>();
-    static {
-        labelsToOneHot.put(GameLearned.Keys.q, new float[] {1, 0, 0, 0, 0, 0, 0, 0, 0});
-        labelsToOneHot.put(GameLearned.Keys.w, new float[] {0, 1, 0, 0, 0, 0, 0, 0, 0});
-        labelsToOneHot.put(GameLearned.Keys.o, new float[] {0, 0, 1, 0, 0, 0, 0, 0, 0});
-        labelsToOneHot.put(GameLearned.Keys.p, new float[] {0, 0, 0, 1, 0, 0, 0, 0, 0});
-        labelsToOneHot.put(GameLearned.Keys.qp, new float[] {0, 0, 0, 0, 1, 0, 0, 0, 0});
-        labelsToOneHot.put(GameLearned.Keys.wo, new float[] {0, 0, 0, 0, 0, 1, 0, 0, 0});
-        labelsToOneHot.put(GameLearned.Keys.qo, new float[] {0, 0, 0, 0, 0, 0, 1, 0, 0});
-        labelsToOneHot.put(GameLearned.Keys.wp, new float[] {0, 0, 0, 0, 0, 0, 0, 1, 0});
-        labelsToOneHot.put(GameLearned.Keys.none, new float[] {0, 0, 0, 0, 0, 0, 0, 0, 1});
-    }
 
 
     private static final int numActions = Keys.values().length;
@@ -66,7 +47,7 @@ public class GameLearned implements IGame {
     private float currentTorsoX;
 
     public GameLearned(String fileName, List<Integer> hiddenLayerSizes,
-                             List<String> additionalArgs) throws FileNotFoundException {
+                       List<String> additionalArgs) throws FileNotFoundException {
 
         // Supplement the hidden layer sizes with the input and output sizes.
         List<Integer> allLayerSizes = new ArrayList<>(hiddenLayerSizes);
@@ -144,9 +125,9 @@ public class GameLearned implements IGame {
                 poseTwoAgo[idx++] = state.getTh();
             }
 
-            this.commandTwoAgo = matchBooleansToKeys(commandTwoAgo);
-            this.commandOneAgo = matchBooleansToKeys(commandOneAgo);
-            this.commandCurrent = matchBooleansToKeys(commandCurrent);
+            this.commandTwoAgo = Action.booleansToKeys(commandTwoAgo);
+            this.commandOneAgo = Action.booleansToKeys(commandOneAgo);
+            this.commandCurrent = Action.booleansToKeys(commandCurrent);
 
             fullInput[i - 2] = assembleInput(poseCurrent, poseOneAgo, poseTwoAgo, this.commandCurrent,
                     this.commandOneAgo,
@@ -160,9 +141,13 @@ public class GameLearned implements IGame {
                 // will be positive.
                 fullOutput[i - 2][idx++] = state.getY();
                 fullOutput[i - 2][idx++] = state.getTh();
+                fullOutput[i - 2][idx++] = state.getDx();
+                fullOutput[i - 2][idx++] = state.getDy();
+                fullOutput[i - 2][idx++] = state.getDth();
             }
         }
-        net.trainingStep(fullInput, fullOutput, 2);
+        float loss = net.trainingStep(fullInput, fullOutput, 2);
+        System.out.println("Loss: " + loss);
     }
 
     // Does not assume that previous timesteps are assigned. This basically wipes the "memory" of the game.
@@ -196,7 +181,9 @@ public class GameLearned implements IGame {
 
     // Assumes that previous two timesteps are set already.
     public void updateStates(State newCurrentState) {
-        float torsoXDiff = currentTorsoX - newCurrentState.body.getX();
+//        float normBodyX = newCurrentState.body.getX() - stateStats.mean;
+        float torsoXDiff = currentTorsoX - newCurrentState.body.getX(); // This isn't right. One is normalized and
+        // one is not.
         currentTorsoX = newCurrentState.body.getX();
 
         for (int i = 0; i < poseOneAgo.length; i += 3) { // Every third is an x coordinate.
@@ -278,12 +265,13 @@ public class GameLearned implements IGame {
         // Second difference pose (acceleration-ish)
         System.arraycopy(secondDifference,0, currentNetInput, positionStateSize * 2, positionStateSize);
         // 9-element, one hot representation of the current command being pressed.
-        System.arraycopy(labelsToOneHot.get(commandCurrent), 0, currentNetInput, positionStateSize * 3, numActions);
+        System.arraycopy(Action.keysToOneHot(commandCurrent), 0, currentNetInput, positionStateSize * 3,
+                numActions);
         // One hot for previous command.
-        System.arraycopy(labelsToOneHot.get(commandOneAgo), 0, currentNetInput, positionStateSize * 3 + numActions,
+        System.arraycopy(Action.keysToOneHot(commandOneAgo), 0, currentNetInput, positionStateSize * 3 + numActions,
                 numActions);
         // One hot for command two timesteps ago.
-        System.arraycopy(labelsToOneHot.get(commandTwoAgo), 0, currentNetInput, positionStateSize * 3 + numActions * 2,
+        System.arraycopy(Action.keysToOneHot(commandTwoAgo), 0, currentNetInput, positionStateSize * 3 + numActions * 2,
                 numActions);
 
         return currentNetInput;
@@ -292,17 +280,17 @@ public class GameLearned implements IGame {
     @Override
     public void makeNewWorld() {
         giveAllStates(GameUnified.getInitialState(), GameUnified.getInitialState(),
-                GameUnified.getInitialState(), GameLearned.Keys.none, GameLearned.Keys.none);
+                GameUnified.getInitialState(), Action.Keys.none, Action.Keys.none);
     }
 
     @Override
     public void step(boolean q, boolean w, boolean o, boolean p) {
-            step(new boolean[] {q, w, o, p});
+        step(new boolean[] {q, w, o, p});
     }
 
     @Override
     public void step(boolean[] commands) {
-        commandCurrent = matchBooleansToKeys(commands); //buttonsToLabels.get(commands);
+        commandCurrent = Action.booleansToKeys(commands);
 
         float[] assembledInput = assembleInput(poseCurrent, poseOneAgo, poseTwoAgo, commandCurrent, commandOneAgo,
                 commandTwoAgo);
@@ -332,7 +320,8 @@ public class GameLearned implements IGame {
 
     @Override
     public void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
-        GameUnified.drawExtraRunner((Graphics2D) g, getCurrentState(), "", runnerScaling, xOffsetPixels, yOffsetPixels, Color.RED, PanelRunner.normalStroke);
+        if (getCurrentState() != null)
+            GameUnified.drawExtraRunner((Graphics2D) g, getCurrentState(), "", runnerScaling, xOffsetPixels, yOffsetPixels, Color.RED, PanelRunner.normalStroke);
     }
 
     @Override
@@ -346,29 +335,4 @@ public class GameLearned implements IGame {
         return new byte[0];
     }
 
-    private static Keys matchBooleansToKeys(boolean[] commands) {
-        if (commands[0]) {
-            if (commands[2]) {
-                return Keys.qo;
-            }else if (commands[3]) {
-                return Keys.qp;
-            }else {
-                return Keys.q;
-            }
-        } else if (commands[1]) {
-            if (commands[2]) {
-                return Keys.wo;
-            }else if (commands[3]) {
-                return Keys.wp;
-            } else {
-                return Keys.w;
-            }
-        } else if (commands[2]) {
-            return Keys.o;
-        } else if (commands[3]) {
-            return Keys.p;
-        } else {
-            return Keys.none;
-        }
-    }
 }

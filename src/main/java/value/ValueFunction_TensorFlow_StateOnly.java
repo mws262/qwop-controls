@@ -45,8 +45,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
 
     private Callable<EvaluationResult> getCallable(byte[] gameStartingState, INode startingNode,
-                                                   EvaluationResult.Keys keys, int minDuration, int maxDuration) {
-        boolean[] buttons = EvaluationResult.labelsToButtons.get(keys);
+                                                   Action.Keys keys, int minDuration, int maxDuration) {
+        boolean[] buttons = Action.keysToBooleans(keys);
 
         return () -> {
             GameUnified gameLocal = GameUnified.restoreFullState(gameStartingState);
@@ -68,7 +68,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     private Action getBestActionFromEvaluationResults(List<EvaluationResult> results) {
         EvaluationResult evalResult = results.stream().max(EvaluationResult::compareTo).get();
-        return new Action(evalResult.timestep, EvaluationResult.labelsToButtons.get(evalResult.keys));
+        return new Action(evalResult.timestep, Action.keysToBooleans(evalResult.keys));
     }
 
     @SuppressWarnings("Duplicates")
@@ -82,25 +82,25 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
         List<EvaluationResult> evalResults = new ArrayList<>();
         evaluations.add( // No Keys
-                getCallable(fullState, currentNode, EvaluationResult.Keys.none, 1, 30));
+                getCallable(fullState, currentNode, Action.Keys.none, 1, 30));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, EvaluationResult.Keys.qp, 1, 50));
+                getCallable(fullState, currentNode, Action.Keys.qp, 1, 50));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, EvaluationResult.Keys.wo, 1, 50));
+                getCallable(fullState, currentNode, Action.Keys.wo, 1, 50));
         evaluations.add( // Q
-                getCallable(fullState, currentNode, EvaluationResult.Keys.q, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.q, 1, 10));
         evaluations.add( // W
-                getCallable(fullState, currentNode, EvaluationResult.Keys.w, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.w, 1, 10));
         evaluations.add( // O
-                getCallable(fullState, currentNode, EvaluationResult.Keys.o, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.o, 1, 10));
         evaluations.add( // P
-                getCallable(fullState, currentNode, EvaluationResult.Keys.p, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.p, 1, 10));
 
         // Off keys -- dunno if these are ever helpful.
         evaluations.add( // QO
-                getCallable(fullState, currentNode, EvaluationResult.Keys.qo, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.qo, 1, 10));
         evaluations.add( // WP
-                getCallable(fullState, currentNode, EvaluationResult.Keys.wp, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.wp, 1, 10));
 
         if (multithread) { // Multi-thread
             List<Future<EvaluationResult>> allResults;
@@ -138,28 +138,6 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * Result from evaluating the value over some futures.
      */
     private static class EvaluationResult implements Comparable<EvaluationResult> {
-        /**
-         * Potential key combinations.
-         */
-        enum Keys {
-            q, w, o, p, qp, wo, qo, wp, none
-        }
-
-        /**
-         * Association between the key labels to the q, w, o, p boolean buttons pressed.
-         */
-        final static Map<Keys, boolean[]> labelsToButtons = new HashMap<>();
-        static {
-            labelsToButtons.put(Keys.q, new boolean[]{true, false, false, false});
-            labelsToButtons.put(Keys.w, new boolean[]{false, true, false, false});
-            labelsToButtons.put(Keys.o, new boolean[]{false, false, true, false});
-            labelsToButtons.put(Keys.p, new boolean[]{false, false, false, true});
-            labelsToButtons.put(Keys.qp, new boolean[]{true, false, false, true});
-            labelsToButtons.put(Keys.wo, new boolean[]{false, true, true, false});
-            labelsToButtons.put(Keys.qo, new boolean[]{true, false, true, false});
-            labelsToButtons.put(Keys.wp, new boolean[]{false, true, false, true});
-            labelsToButtons.put(Keys.none, new boolean[]{false, false, false, false});
-        }
 
         /**
          * Value after the specified action.
@@ -174,7 +152,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Keys pressed for the Action producing this result.
          */
-        Keys keys;
+        Action.Keys keys;
 
         @Override
         public int compareTo(EvaluationResult o) {

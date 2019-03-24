@@ -3,6 +3,7 @@ package goals.interactive;
 import game.GameLearned;
 import game.GameUnified;
 import game.State;
+import actions.Action;
 import ui.PanelRunner;
 
 import javax.swing.*;
@@ -11,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.ArrayList;
@@ -42,13 +44,18 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
         List<Integer> layers = new ArrayList<>();
         layers.add(128);
         layers.add(64);
+        List<String> opts = new ArrayList<>();
+        opts.add("--learnrate");
+        opts.add("0.0001");
         try {
-            gameToTrain = new GameLearned("simulator_graph", layers, new ArrayList<>());
+//            gameToTrain = new GameLearned("simulator_graph", layers, new ArrayList<>());
+            gameToTrain = new GameLearned(new File("src/main/resources/tflow_models/simulator_graph.pb"));
+            gameToTrain.loadCheckpoint("simchk");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         gameToTrain.giveAllStates(GameUnified.getInitialState(), GameUnified.getInitialState(),
-                GameUnified.getInitialState(), GameLearned.Keys.none, GameLearned.Keys.none);
+                GameUnified.getInitialState(), Action.Keys.none, Action.Keys.none);
     }
     @Override
     public void actionPerformed(ActionEvent e) { // Gets called every 40ms
@@ -65,11 +72,12 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        if (game != null)
+        if (game != null && gameToTrain != null) {
             game.draw(g, 10, 300, 200); // Redraws the game. Scaling and offsets are handpicked to work for the size of
             // the window.
             gameToTrain.draw(g, 10, 300, 200); // Redraws the game. Scaling and offsets are handpicked to work for the size of
             // the window.
+        }
 
         PanelRunner.keyDrawer(g, q, w, o, p, -50, 20, 240, 40);
     }
@@ -96,7 +104,7 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
                 game.makeNewWorld();
                 statesInRun.add(GameUnified.getInitialState());
                 gameToTrain.giveAllStates(GameUnified.getInitialState(), GameUnified.getInitialState(),
-                        GameUnified.getInitialState(), GameLearned.Keys.none, GameLearned.Keys.none);
+                        GameUnified.getInitialState(), Action.Keys.none, Action.Keys.none);
                 break;
             default:
                 // Nothing
