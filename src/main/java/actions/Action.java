@@ -1,9 +1,10 @@
 package actions;
 
+import game.GameLearned;
+import value.ValueFunction_TensorFlow_StateOnly;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Contains the keypresses and durations for a single action. Works like an uneditable {@link java.util.Queue}. Call
@@ -21,6 +22,23 @@ import java.util.List;
 public class Action implements Serializable {
 
     private static final long serialVersionUID = 2L;
+
+    /**
+     * Potential key combinations.
+     */
+    public enum Keys {
+        q, w, o, p, qp, wo, qo, wp, none
+    }
+
+    /**
+     * A one-hot, 9-element array for each of the 9 valid key combinations. Kept float for neural network training.
+     */
+    private final static Map<Keys, float[]> labelsToOneHot = new HashMap<>();
+
+    /**
+     * Association between the key labels to the q, w, o, p boolean buttons pressed.
+     */
+    private final static Map<Keys, boolean[]> labelsToButtons = new HashMap<>();
 
     /**
      * Total number of Box2d timesteps that this key combination should be held.
@@ -42,6 +60,28 @@ public class Action implements Serializable {
      * issues without major modifications.
      **/
     private boolean isExecutableCopy = false;
+
+    static {
+        labelsToOneHot.put(Keys.q, new float[] {1, 0, 0, 0, 0, 0, 0, 0, 0});
+        labelsToOneHot.put(Keys.w, new float[] {0, 1, 0, 0, 0, 0, 0, 0, 0});
+        labelsToOneHot.put(Keys.o, new float[] {0, 0, 1, 0, 0, 0, 0, 0, 0});
+        labelsToOneHot.put(Keys.p, new float[] {0, 0, 0, 1, 0, 0, 0, 0, 0});
+        labelsToOneHot.put(Keys.qp, new float[] {0, 0, 0, 0, 1, 0, 0, 0, 0});
+        labelsToOneHot.put(Keys.wo, new float[] {0, 0, 0, 0, 0, 1, 0, 0, 0});
+        labelsToOneHot.put(Keys.qo, new float[] {0, 0, 0, 0, 0, 0, 1, 0, 0});
+        labelsToOneHot.put(Keys.wp, new float[] {0, 0, 0, 0, 0, 0, 0, 1, 0});
+        labelsToOneHot.put(Keys.none, new float[] {0, 0, 0, 0, 0, 0, 0, 0, 1});
+
+        labelsToButtons.put(Keys.q, new boolean[]{true, false, false, false});
+        labelsToButtons.put(Keys.w, new boolean[]{false, true, false, false});
+        labelsToButtons.put(Keys.o, new boolean[]{false, false, true, false});
+        labelsToButtons.put(Keys.p, new boolean[]{false, false, false, true});
+        labelsToButtons.put(Keys.qp, new boolean[]{true, false, false, true});
+        labelsToButtons.put(Keys.wo, new boolean[]{false, true, true, false});
+        labelsToButtons.put(Keys.qo, new boolean[]{true, false, true, false});
+        labelsToButtons.put(Keys.wp, new boolean[]{false, true, false, true});
+        labelsToButtons.put(Keys.none, new boolean[]{false, false, false, false});
+    }
 
     /**
      * Create an action containing the time to hold and the key combination.
@@ -72,6 +112,16 @@ public class Action implements Serializable {
      */
     public Action(int totalTimestepsToHold, boolean Q, boolean W, boolean O, boolean P) {
         this(totalTimestepsToHold, new boolean[]{Q, W, O, P}); // Chain to the other constructor.
+    }
+
+    /**
+     * Create an action containing the time to hold and the key combination.
+     *
+     * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
+     * @param keysPressed Keys pressed during this action.
+     */
+    public Action(int totalTimestepsToHold, Keys keysPressed) {
+        this(totalTimestepsToHold, Action.keysToBooleans(keysPressed));
     }
 
     /**
@@ -265,5 +315,66 @@ public class Action implements Serializable {
         } else {
             return consolidateActions(outActions);
         }
+    }
+
+    /**
+     * Get a one-hot, 9-element representation of a valid key combination for use in neural networks.
+     * @param keys One of the 9 valid key combinations.
+     * @return One-hot, 9-element representation of a key combination.
+     */
+    public static float[] keysToOneHot(Keys keys) {
+        return labelsToOneHot.get(keys);
+    }
+
+    /**
+     * Get the boolean representation of the keys pressed from the enum label of the keys.
+     * @param keys Keys representing the command.
+     * @return 4-element boolean array for keys pressed (QWOP order).
+     */
+    public static boolean[] keysToBooleans(Keys keys) {
+        return labelsToButtons.get(keys);
+    }
+
+    /**
+     * Given boolean key representation, get the enum representation for that key combination.
+     * @param q Is Q pressed?
+     * @param w Is W pressed?
+     * @param o Is O pressed?
+     * @param p Is P pressed?
+     * @return The enum Keys representation of that command.
+     */
+    public static Keys booleansToKeys(boolean q, boolean w, boolean o, boolean p) {
+        if (q) {
+            if (o) {
+                return Keys.qo;
+            }else if (p) {
+                return Keys.qp;
+            }else {
+                return Keys.q;
+            } // QW is not valid and will just do Q anyway
+        } else if (w) {
+            if (o) {
+                return Keys.wo;
+            }else if (p) {
+                return Keys.wp;
+            } else {
+                return Keys.w;
+            }
+        } else if (o) {
+            return Keys.o;
+        } else if (p) {
+            return Keys.p;
+        } else {
+            return Keys.none;
+        }
+    }
+
+    /**
+     * See {@link Action#booleansToKeys(boolean, boolean, boolean, boolean)}.
+     * @param command 4-element boolean representation of keys pressed.
+     * @return The enum key representation of that command.
+     */
+    public static Keys booleansToKeys(boolean[] command) {
+        return booleansToKeys(command[0], command[1], command[2], command[3]);
     }
 }

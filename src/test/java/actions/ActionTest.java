@@ -292,4 +292,48 @@ public class ActionTest {
         exception.expect(IllegalArgumentException.class);
         new Action(-1, false, false, false, false);
     }
+
+    @Test
+    public void keysToOneHot() {
+        // I don't care which keys correspond to which one-hot element as long as they are unique.
+        float[] sum = new float[9];
+        for (Action.Keys keys : Action.Keys.values()) {
+            float[] oneHot = Action.keysToOneHot(keys);
+            float individualSum = 0;
+            for (int i = 0; i < sum.length; i++) {
+                sum[i] += oneHot[i];
+                individualSum += oneHot[i];
+            }
+            Assert.assertEquals(1f, individualSum, 1e-15f); // Should only be a single one in the array.
+        }
+
+        Assert.assertArrayEquals(new float[] {1, 1, 1, 1, 1, 1, 1, 1, 1}, sum, 1e-15f); // The array should have only
+        // one of each element.
+    }
+
+    @Test
+    public void keysToBooleans() {
+        Assert.assertArrayEquals(new boolean[]{true, false, false, false}, Action.keysToBooleans(Action.Keys.q));
+        Assert.assertArrayEquals(new boolean[]{false, true, false, false}, Action.keysToBooleans(Action.Keys.w));
+        Assert.assertArrayEquals(new boolean[]{false, false, true, false}, Action.keysToBooleans(Action.Keys.o));
+        Assert.assertArrayEquals(new boolean[]{false, false, false, true}, Action.keysToBooleans(Action.Keys.p));
+        Assert.assertArrayEquals(new boolean[]{true, false, true, false}, Action.keysToBooleans(Action.Keys.qo));
+        Assert.assertArrayEquals(new boolean[]{true, false, false, true}, Action.keysToBooleans(Action.Keys.qp));
+        Assert.assertArrayEquals(new boolean[]{false, true, true, false}, Action.keysToBooleans(Action.Keys.wo));
+        Assert.assertArrayEquals(new boolean[]{false, true, false, true}, Action.keysToBooleans(Action.Keys.wp));
+        Assert.assertArrayEquals(new boolean[]{false, false, false, false}, Action.keysToBooleans(Action.Keys.none));
+    }
+
+    @Test
+    public void booleansToKeys() {
+        Assert.assertEquals(Action.Keys.q, Action.booleansToKeys(new boolean[]{true, false, false, false}));
+        Assert.assertEquals(Action.Keys.w, Action.booleansToKeys(new boolean[]{false, true, false, false}));
+        Assert.assertEquals(Action.Keys.o, Action.booleansToKeys(new boolean[]{false, false, true, false}));
+        Assert.assertEquals(Action.Keys.p, Action.booleansToKeys(new boolean[]{false, false, false, true}));
+        Assert.assertEquals(Action.Keys.qo, Action.booleansToKeys(new boolean[]{true, false, true, false}));
+        Assert.assertEquals(Action.Keys.qp, Action.booleansToKeys(new boolean[]{true, false, false, true}));
+        Assert.assertEquals(Action.Keys.wo, Action.booleansToKeys(new boolean[]{false, true, true, false}));
+        Assert.assertEquals(Action.Keys.wp, Action.booleansToKeys(new boolean[]{false, true, false, true}));
+        Assert.assertEquals(Action.Keys.none, Action.booleansToKeys(new boolean[]{false, false, false, false}));
+    }
 }
