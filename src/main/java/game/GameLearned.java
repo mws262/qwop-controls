@@ -42,7 +42,7 @@ public class GameLearned implements IGame {
         }
     }
 
-    State currentPredictedState;
+    private State currentPredictedState;
 
     private float currentTorsoX;
 
@@ -106,21 +106,21 @@ public class GameLearned implements IGame {
 
             int idx = 0;
             for (StateVariable state : stateCurrent.getStates()) {
-                poseCurrent[idx++] = state.getX() - torsoX;
+                poseCurrent[idx++] = state.getX();
                 poseCurrent[idx++] = state.getY();
                 poseCurrent[idx++] = state.getTh();
             }
 
             idx = 0;
             for (StateVariable state : stateOneAgo.getStates()) {
-                poseOneAgo[idx++] = state.getX() - torsoX; // Still torso x from current, so will not be zero for one ago.
+                poseOneAgo[idx++] = state.getX(); // Still torso x from current, so will not be zero for one ago.
                 poseOneAgo[idx++] = state.getY();
                 poseOneAgo[idx++] = state.getTh();
             }
 
             idx = 0;
             for (StateVariable state : stateTwoAgo.getStates()) {
-                poseTwoAgo[idx++] = state.getX() - torsoX; // Still torso x from current, so will not be zero for two ago.
+                poseTwoAgo[idx++] = state.getX(); // Still torso x from current, so will not be zero for two ago.
                 poseTwoAgo[idx++] = state.getY();
                 poseTwoAgo[idx++] = state.getTh();
             }
@@ -131,22 +131,28 @@ public class GameLearned implements IGame {
 
             fullInput[i - 2] = assembleInput(poseCurrent, poseOneAgo, poseTwoAgo, this.commandCurrent,
                     this.commandOneAgo,
-                    this.commandTwoAgo);
+                    this.commandTwoAgo, torsoX);
 
             // Assemble output for training.
             State nextState = states.get(i + 1);
             idx = 0;
             for (StateVariable state : nextState.getStates()) {
-                fullOutput[i - 2][idx++] = state.getX() - torsoX; // Still torso x from current, hopefully this result
-                // will be positive.
-                fullOutput[i - 2][idx++] = state.getY();
-                fullOutput[i - 2][idx++] = state.getTh();
-                fullOutput[i - 2][idx++] = state.getDx();
-                fullOutput[i - 2][idx++] = state.getDy();
-                fullOutput[i - 2][idx++] = state.getDth();
+                fullOutput[i - 2][idx] = state.getX() - torsoX; // Still torso x from current,
+                // hopefully this result will be positive.
+                idx++;
+                fullOutput[i - 2][idx] = (state.getY() - stateStats.mean[idx]) / stateStats.stdev[idx];
+                idx++;
+                fullOutput[i - 2][idx] = (state.getTh() - stateStats.mean[idx]) / stateStats.stdev[idx];
+                idx++;
+                fullOutput[i - 2][idx] = (state.getDx() - stateStats.mean[idx]) / stateStats.stdev[idx];
+                idx++;
+                fullOutput[i - 2][idx] = (state.getDy() - stateStats.mean[idx]) / stateStats.stdev[idx];
+                idx++;
+                fullOutput[i - 2][idx] = (state.getDth() - stateStats.mean[idx]) / stateStats.stdev[idx];
+                idx++;
             }
         }
-        float loss = net.trainingStep(fullInput, fullOutput, 2);
+        float loss = net.trainingStep(fullInput, fullOutput, 1000);
         System.out.println("Loss: " + loss);
     }
 
@@ -156,21 +162,21 @@ public class GameLearned implements IGame {
 
         int idx = 0;
         for (StateVariable state : current.getStates()) {
-            poseCurrent[idx++] = state.getX() - currentTorsoX;
+            poseCurrent[idx++] = state.getX();
             poseCurrent[idx++] = state.getY();
             poseCurrent[idx++] = state.getTh();
         }
 
         idx = 0;
         for (StateVariable state : oneAgo.getStates()) {
-            poseOneAgo[idx++] = state.getX() - currentTorsoX; // Still torso x from current, so will not be zero for one ago.
+            poseOneAgo[idx++] = state.getX(); // Still torso x from current, so will not be zero for one ago.
             poseOneAgo[idx++] = state.getY();
             poseOneAgo[idx++] = state.getTh();
         }
 
         idx = 0;
         for (StateVariable state : twoAgo.getStates()) {
-            poseTwoAgo[idx++] = state.getX() - currentTorsoX; // Still torso x from current, so will not be zero for two ago.
+            poseTwoAgo[idx++] = state.getX(); // Still torso x from current, so will not be zero for two ago.
             poseTwoAgo[idx++] = state.getY();
             poseTwoAgo[idx++] = state.getTh();
         }
@@ -182,25 +188,23 @@ public class GameLearned implements IGame {
     // Assumes that previous two timesteps are set already.
     public void updateStates(State newCurrentState) {
 //        float normBodyX = newCurrentState.body.getX() - stateStats.mean;
-        float torsoXDiff = currentTorsoX - newCurrentState.body.getX(); // This isn't right. One is normalized and
-        // one is not.
         currentTorsoX = newCurrentState.body.getX();
 
         for (int i = 0; i < poseOneAgo.length; i += 3) { // Every third is an x coordinate.
-            poseTwoAgo[i] = poseOneAgo[i] + torsoXDiff;
+            poseTwoAgo[i] = poseOneAgo[i];
             poseTwoAgo[i + 1] = poseOneAgo[i + 1];
             poseTwoAgo[i + 2] = poseOneAgo[i + 2];
         }
 
         for (int i = 0; i < poseCurrent.length; i += 3) { // Every third is an x coordinate.
-            poseOneAgo[i] = poseCurrent[i] + torsoXDiff;
+            poseOneAgo[i] = poseCurrent[i];
             poseOneAgo[i + 1] = poseCurrent[i + 1];
             poseOneAgo[i + 2] = poseCurrent[i + 2];
         }
 
         int idx = 0;
         for (StateVariable state : newCurrentState.getStates()) {
-            poseCurrent[idx++] = state.getX() - currentTorsoX;
+            poseCurrent[idx++] = state.getX();
             poseCurrent[idx++] = state.getY();
             poseCurrent[idx++] = state.getTh();
         }
@@ -213,7 +217,8 @@ public class GameLearned implements IGame {
     // Normalizes the 3 poses, this one, one ago, and two ago, then finds first and second differences. Flattens
     // these to a single array with the past three actions tacked onto the end in one-hot representation.
     private static float[] assembleInput(float[] poseCurrent, float[] poseOneAgo, float[] poseTwoAgo,
-                                         Keys commandCurrent, Keys commandOneAgo, Keys commandTwoAgo) {
+                                         Keys commandCurrent, Keys commandOneAgo, Keys commandTwoAgo,
+                                         float torsoXOffset) {
         float[] normalizedTwoAgo = new float[positionStateSize];
         float[] normalizedOneAgo = new float[positionStateSize];
         float[] normalizedCurrent = new float[positionStateSize];
@@ -221,24 +226,22 @@ public class GameLearned implements IGame {
         // Normalize the poses.
         for (int statIdx = 0, poseIdx = 0; statIdx < outputSize; statIdx += 6, poseIdx += 3) {
             // Normalize poses from two ago
-            normalizedTwoAgo[poseIdx] = stateStats.stdev[statIdx] == 0 ?
-                    0 : (poseTwoAgo[poseIdx] - stateStats.mean[statIdx]) / stateStats.stdev[statIdx];
+            normalizedTwoAgo[poseIdx] = (poseTwoAgo[poseIdx] - torsoXOffset); // Skipping stdev for x for
+            // now
             normalizedTwoAgo[poseIdx + 1] =
                     (poseTwoAgo[poseIdx + 1] - stateStats.mean[statIdx + 1]) / stateStats.stdev[statIdx + 1];
             normalizedTwoAgo[poseIdx + 2] =
                     (poseTwoAgo[poseIdx + 2] - stateStats.mean[statIdx + 2]) / stateStats.stdev[statIdx + 2];
 
             // From one timestep past.
-            normalizedOneAgo[poseIdx] = stateStats.stdev[statIdx] == 0 ?
-                    0 : (poseOneAgo[poseIdx] - stateStats.mean[statIdx]) / stateStats.stdev[statIdx];
+            normalizedOneAgo[poseIdx] = (poseOneAgo[poseIdx] - torsoXOffset);
             normalizedOneAgo[poseIdx + 1] =
                     (poseOneAgo[poseIdx + 1] - stateStats.mean[statIdx + 1]) / stateStats.stdev[statIdx + 1];
             normalizedOneAgo[poseIdx + 2] =
                     (poseOneAgo[poseIdx + 2] - stateStats.mean[statIdx + 2]) / stateStats.stdev[statIdx + 2];
 
             // From current timestep.
-            normalizedCurrent[poseIdx] = stateStats.stdev[statIdx] == 0 ?
-                    0 : (poseCurrent[poseIdx] - stateStats.mean[statIdx]) / stateStats.stdev[statIdx];
+            normalizedCurrent[poseIdx] = (poseCurrent[poseIdx] - torsoXOffset);
             normalizedCurrent[poseIdx + 1] =
                     (poseCurrent[poseIdx + 1] - stateStats.mean[statIdx + 1]) / stateStats.stdev[statIdx + 1];
             normalizedCurrent[poseIdx + 2] =
@@ -293,14 +296,24 @@ public class GameLearned implements IGame {
         commandCurrent = Action.booleansToKeys(commands);
 
         float[] assembledInput = assembleInput(poseCurrent, poseOneAgo, poseTwoAgo, commandCurrent, commandOneAgo,
-                commandTwoAgo);
+                commandTwoAgo, currentTorsoX);
         float[][] singleInput = new float[1][inputSize]; // Could potentially feed more than one evaluation at a
         // time, but we don't want to here, so one dimension is singleton.
         singleInput[0] = assembledInput;
 
         float[][] netOutput = net.evaluateInput(singleInput);
+
+        for (int i = 0; i < outputSize; i++) {
+
+            if (i % 6 == 0) {
+                netOutput[0][i] = netOutput[0][i] + currentTorsoX;
+            } else {
+                netOutput[0][i] = netOutput[0][i] * stateStats.stdev[i] + stateStats.mean[i];
+            }
+        }
+
         currentPredictedState = new State(netOutput[0], false);
-        updateStates(currentPredictedState);
+        //updateStates(currentPredictedState);
     }
 
     @Override

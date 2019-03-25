@@ -12,7 +12,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.ArrayList;
@@ -42,15 +41,15 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
 
     PlayAndTrain() {
         List<Integer> layers = new ArrayList<>();
-        layers.add(128);
-        layers.add(64);
+        layers.add(32);
+//        layers.add(64);
         List<String> opts = new ArrayList<>();
         opts.add("--learnrate");
-        opts.add("0.0001");
+        opts.add("0.00001");
         try {
-//            gameToTrain = new GameLearned("simulator_graph", layers, new ArrayList<>());
-            gameToTrain = new GameLearned(new File("src/main/resources/tflow_models/simulator_graph.pb"));
-            gameToTrain.loadCheckpoint("simchk");
+            gameToTrain = new GameLearned("simulator_graph", layers, new ArrayList<>());
+//            gameToTrain = new GameLearned(new File("src/main/resources/tflow_models/simulator_graph.pb"));
+            //gameToTrain.loadCheckpoint("simchk");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -62,6 +61,7 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
         boolean[] commands = new boolean[] {q, w, o, p};
         game.step(commands); // Step the game forward 1 timestep with the specified keys pressed.
         gameToTrain.step(commands);
+        gameToTrain.updateStates(gameToTrain.getCurrentState());
 
         statesInRun.add(game.getCurrentState());
         commandsInRun.add(commands);
