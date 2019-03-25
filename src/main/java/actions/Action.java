@@ -1,8 +1,5 @@
 package actions;
 
-import game.GameLearned;
-import value.ValueFunction_TensorFlow_StateOnly;
-
 import java.io.Serializable;
 import java.util.*;
 
