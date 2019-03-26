@@ -18,6 +18,8 @@ parser.add_argument('-a', '--activations', type=str, help='<Optional> Nonlinear 
                     required=False, default="leaky_relu", choices=['relu', 'leaky_relu', 'sigmoid', 'tanh', 'identity'])
 parser.add_argument('-ao', '--activationsout', type=str, help='<Optional> Output layer activation.',
                     required=False, default="identity", choices=['relu', 'leaky_relu', 'sigmoid', 'tanh', 'identity', 'softmax'])
+parser.add_argument('-o', '--loss', type=str, help='<Optional> Output loss type.',
+                    required=False, default="huber", choices=['huber', 'meansq'])
 
 args = parser.parse_args()
 
@@ -129,8 +131,10 @@ if args.activationsout == "softmax":
     output = tf.nn.softmax(output, name='softmax_activation')
 else:
     output = output_activations(output, name='output_activation')
-    loss = tf.identity(tf.losses.huber_loss(output_target, output), name='loss')
-    # loss = tf.reduce_mean(tf.square(output - output_target), name='loss')
+    if args.loss == "huber":
+        loss = tf.identity(tf.losses.huber_loss(output_target, output), name='loss')
+    elif args.loss == "meansq":
+        loss = tf.identity(tf.losses.mean_squared_error(output_target, output), name='loss')
 
 output = tf.identity(output, name='output')  # So output gets named correctly in graph definition.
 

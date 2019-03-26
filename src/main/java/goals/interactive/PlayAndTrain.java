@@ -54,8 +54,6 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        gameToTrain.giveAllStates(GameUnified.getInitialState(), GameUnified.getInitialState(),
-                GameUnified.getInitialState(), Action.Keys.none, Action.Keys.none);
     }
     @Override
     public void actionPerformed(ActionEvent e) { // Gets called every 40ms
@@ -104,8 +102,7 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
                 commandsInRun.clear();
                 game.makeNewWorld();
                 statesInRun.add(GameUnified.getInitialState());
-                gameToTrain.giveAllStates(GameUnified.getInitialState(), GameUnified.getInitialState(),
-                        GameUnified.getInitialState(), Action.Keys.none, Action.Keys.none);
+                gameToTrain.makeNewWorld();
                 break;
             default:
                 // Nothing

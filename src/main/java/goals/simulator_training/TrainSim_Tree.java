@@ -34,11 +34,13 @@ public class TrainSim_Tree {
 //        layerSizes.add(72);
         List<String> opts = new ArrayList<>();
         opts.add("--learnrate");
-        opts.add("0.000001");
+        opts.add("0.001");
+        opts.add("--loss");
+        opts.add("meansq");
         try {
-//            gameLearned = new GameLearned("simulator_graph", layerSizes, opts);
-            gameLearned = new GameLearned(new File("src/main/resources/tflow_models/simulator_graph.pb"));
-            gameLearned.loadCheckpoint("simchk");
+            gameLearned = new GameLearned("simulator_graph", layerSizes, opts);
+//            gameLearned = new GameLearned(new File("src/main/resources/tflow_models/simulator_graph.pb"));
+//            gameLearned.loadCheckpoint("simchk");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
