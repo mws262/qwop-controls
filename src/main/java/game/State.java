@@ -50,6 +50,7 @@ public class State implements Serializable {
      * @param isFailed  Whether this state represents a fallen runner.
      */
     public State(float[] stateVars, boolean isFailed) { // Order matches order in TensorflowAutoencoder.java
+        assert stateVars.length == 72;
         body = new StateVariable(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
         head = new StateVariable(stateVars[6], stateVars[7], stateVars[8], stateVars[9], stateVars[10], stateVars[11]);
         rthigh = new StateVariable(stateVars[12], stateVars[13], stateVars[14], stateVars[15], stateVars[16],
@@ -73,8 +74,8 @@ public class State implements Serializable {
         llarm = new StateVariable(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70],
                 stateVars[71]);
 
-        stateVariables = new StateVariable[]{body, rthigh, lthigh, rcalf, lcalf,
-                rfoot, lfoot, ruarm, luarm, rlarm, llarm, head};
+        stateVariables = new StateVariable[]{body, head, rthigh, lthigh, rcalf, lcalf,
+                rfoot, lfoot, ruarm, luarm, rlarm, llarm};
 
         failedState = isFailed;
     }
@@ -115,8 +116,8 @@ public class State implements Serializable {
         llarm = llarmS;
         failedState = isFailed;
 
-        stateVariables = new StateVariable[]{body, rthigh, lthigh, rcalf, lcalf,
-                rfoot, lfoot, ruarm, luarm, rlarm, llarm, head};
+        stateVariables = new StateVariable[]{body, head, rthigh, lthigh, rcalf, lcalf,
+                rfoot, lfoot, ruarm, luarm, rlarm, llarm};
     }
 
     /**

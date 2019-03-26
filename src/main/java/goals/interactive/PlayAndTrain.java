@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.ArrayList;
@@ -47,9 +48,9 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
         opts.add("--learnrate");
         opts.add("0.00001");
         try {
-            gameToTrain = new GameLearned("simulator_graph", layers, new ArrayList<>());
-//            gameToTrain = new GameLearned(new File("src/main/resources/tflow_models/simulator_graph.pb"));
-            //gameToTrain.loadCheckpoint("simchk");
+//            gameToTrain = new GameLearned("simulator_graph", layers, opts);
+            gameToTrain = new GameLearned(new File("src/main/resources/tflow_models/simulator_graph.pb"));
+            gameToTrain.loadCheckpoint("simchk");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -98,7 +99,7 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
                 p = true;
                 break;
             case KeyEvent.VK_R: // Reset the runner on pressing r.
-                gameToTrain.assembleWholeRunForTraining(statesInRun, commandsInRun);
+                //gameToTrain.assembleWholeRunForTraining(statesInRun, commandsInRun);
                 statesInRun.clear();
                 commandsInRun.clear();
                 game.makeNewWorld();
