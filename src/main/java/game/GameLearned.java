@@ -3,6 +3,7 @@ package game;
 import actions.Action;
 import actions.Action.Keys;
 import data.LoadStateStatistics;
+import game.body_snapshots.BodyState;
 import tflowtools.TrainableNetwork;
 import ui.PanelRunner;
 
@@ -105,21 +106,21 @@ public class GameLearned implements IGame {
             float torsoX = stateCurrent.body.getX();
 
             int idx = 0;
-            for (StateVariable state : stateCurrent.getStates()) {
+            for (BodyState state : stateCurrent.getStates()) {
                 poseCurrent[idx++] = state.getX();
                 poseCurrent[idx++] = state.getY();
                 poseCurrent[idx++] = state.getTh();
             }
 
             idx = 0;
-            for (StateVariable state : stateOneAgo.getStates()) {
+            for (BodyState state : stateOneAgo.getStates()) {
                 poseOneAgo[idx++] = state.getX(); // Still torso x from current, so will not be zero for one ago.
                 poseOneAgo[idx++] = state.getY();
                 poseOneAgo[idx++] = state.getTh();
             }
 
             idx = 0;
-            for (StateVariable state : stateTwoAgo.getStates()) {
+            for (BodyState state : stateTwoAgo.getStates()) {
                 poseTwoAgo[idx++] = state.getX(); // Still torso x from current, so will not be zero for two ago.
                 poseTwoAgo[idx++] = state.getY();
                 poseTwoAgo[idx++] = state.getTh();
@@ -136,7 +137,7 @@ public class GameLearned implements IGame {
             // Assemble output for training.
             State nextState = states.get(i + 1);
             idx = 0;
-            for (StateVariable state : nextState.getStates()) {
+            for (BodyState state : nextState.getStates()) {
                 fullOutput[i - 2][idx] = state.getX() - torsoX; // Still torso x from current,
                 // hopefully this result will be positive.
                 idx++;
@@ -161,21 +162,21 @@ public class GameLearned implements IGame {
         currentTorsoX = current.body.getX();
 
         int idx = 0;
-        for (StateVariable state : current.getStates()) {
+        for (BodyState state : current.getStates()) {
             poseCurrent[idx++] = state.getX();
             poseCurrent[idx++] = state.getY();
             poseCurrent[idx++] = state.getTh();
         }
 
         idx = 0;
-        for (StateVariable state : oneAgo.getStates()) {
+        for (BodyState state : oneAgo.getStates()) {
             poseOneAgo[idx++] = state.getX(); // Still torso x from current, so will not be zero for one ago.
             poseOneAgo[idx++] = state.getY();
             poseOneAgo[idx++] = state.getTh();
         }
 
         idx = 0;
-        for (StateVariable state : twoAgo.getStates()) {
+        for (BodyState state : twoAgo.getStates()) {
             poseTwoAgo[idx++] = state.getX(); // Still torso x from current, so will not be zero for two ago.
             poseTwoAgo[idx++] = state.getY();
             poseTwoAgo[idx++] = state.getTh();
@@ -203,7 +204,7 @@ public class GameLearned implements IGame {
         }
 
         int idx = 0;
-        for (StateVariable state : newCurrentState.getStates()) {
+        for (BodyState state : newCurrentState.getStates()) {
             poseCurrent[idx++] = state.getX();
             poseCurrent[idx++] = state.getY();
             poseCurrent[idx++] = state.getTh();

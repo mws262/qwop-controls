@@ -19,6 +19,7 @@ import java.util.TreeMap;
 
 import data.TFRecordDataParsers;
 import game.*;
+import game.body_snapshots.BodyState;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
@@ -346,14 +347,14 @@ public class Controller_NearestNeighborApprox implements IController {
 
                     // Unpack each x y th... value in a given timestep. Turn them into StateVariables.
                     Map<String, FeatureList> featureListMap = singleSequence.getFeatureLists().getFeatureListMap();
-                    StateVariable[] sVarBuffer = new StateVariable[State.ObjectName.values().length];
+                    BodyState[] sVarBuffer = new BodyState[State.ObjectName.values().length];
 
                     int idx = 0;
                     for (State.ObjectName bodyPart : State.ObjectName.values()) {
                         List<Float> sValList =
                                 featureListMap.get(bodyPart.toString()).getFeature(i).getFloatList().getValueList();
 
-                        sVarBuffer[idx] = new StateVariable(sValList);
+                        sVarBuffer[idx] = new BodyState(sValList);
                         idx++;
                     }
 

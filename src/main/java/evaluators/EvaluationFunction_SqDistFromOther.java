@@ -2,7 +2,7 @@ package evaluators;
 
 import java.util.Objects;
 
-import game.StateVariable;
+import game.body_snapshots.BodyState;
 import tree.INode;
 
 /**
@@ -22,7 +22,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
     /**
      * State list associated with the target node. Stored to avoid fetching multiple times.
      */
-    private final StateVariable[] baseStateVars;
+    private final BodyState[] baseStateVars;
 
     /**
      * Create an evaluator function with a target node/state. Once created, the target may not be changed.
@@ -36,7 +36,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
 
     @Override
     public float getValue(INode nodeToEvaluate) {
-        StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getStates();
+        BodyState[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getStates();
 
         float sqError = 0;
 
@@ -60,7 +60,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
 
     @Override
     public String getValueString(INode nodeToEvaluate) {
-        StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getStates();
+        BodyState[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getStates();
         StringBuilder valueString = new StringBuilder();
 
         for (int i = 0; i < baseStateVars.length; i++) {

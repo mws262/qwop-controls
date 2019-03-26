@@ -2,8 +2,8 @@ package data;
 
 import actions.Action;
 import com.google.protobuf.ByteString;
+import game.body_snapshots.BodyState;
 import game.State;
-import game.StateVariable;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
@@ -55,13 +55,13 @@ public class TFRecordDataParsers {
         for (int i = 0; i < totalTimestepsInRun; i++) {
             // Unpack each x y th... value in a given timestep. Turn them into StateVariables.
             Map<String, FeatureList> featureListMap = sequenceFromTFRecord.getFeatureLists().getFeatureListMap();
-            StateVariable[] sVarBuffer = new StateVariable[State.ObjectName.values().length];
+            BodyState[] sVarBuffer = new BodyState[State.ObjectName.values().length];
             int idx = 0;
             for (State.ObjectName bodyPart : State.ObjectName.values()) {
                 List<Float> sValList =
                         featureListMap.get(bodyPart.toString()).getFeature(i).getFloatList().getValueList();
 
-                sVarBuffer[idx] = new StateVariable(sValList);
+                sVarBuffer[idx] = new BodyState(sValList);
                 idx++;
             }
 

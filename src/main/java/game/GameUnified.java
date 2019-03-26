@@ -1,5 +1,6 @@
 package game;
 
+import game.body_snapshots.BodyState;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
 import org.jbox2d.collision.shapes.Shape;
@@ -771,8 +772,8 @@ public class GameUnified implements IGame, Serializable {
                 getCurrentBodyState(lThighBody),
                 getCurrentBodyState(rCalfBody),
                 getCurrentBodyState(lCalfBody),
-                noFeet ? new StateVariable(0, 0, 0, 0, 0, 0) : getCurrentBodyState(rFootBody),
-                noFeet ? new StateVariable(0, 0, 0, 0, 0, 0) : getCurrentBodyState(lFootBody),
+                noFeet ? new BodyState(0, 0, 0, 0, 0, 0) : getCurrentBodyState(rFootBody),
+                noFeet ? new BodyState(0, 0, 0, 0, 0, 0) : getCurrentBodyState(lFootBody),
                 getCurrentBodyState(rUArmBody),
                 getCurrentBodyState(lUArmBody),
                 getCurrentBodyState(rLArmBody),
@@ -781,9 +782,9 @@ public class GameUnified implements IGame, Serializable {
     }
 
     /**
-     * Get a new StateVariable for a given body.
+     * Get a new BodyState for a given body.
      */
-    private StateVariable getCurrentBodyState(Body body) {
+    private BodyState getCurrentBodyState(Body body) {
         Vec2 pos = body.getPosition();
         float x = pos.x;
         float y = pos.y;
@@ -793,7 +794,7 @@ public class GameUnified implements IGame, Serializable {
         float dx = vel.x;
         float dy = vel.y;
         float dth = body.getAngularVelocity();
-        return new StateVariable(x, y, th, dx, dy, dth);
+        return new BodyState(x, y, th, dx, dy, dth);
     }
 
     public Body[] getAllBodies() {
@@ -801,15 +802,15 @@ public class GameUnified implements IGame, Serializable {
     }
 
     /**
-     * Set an individual body to a specified {@link StateVariable}. This sets both positions and velocities.
+     * Set an individual body to a specified {@link BodyState}. This sets both positions and velocities.
      *
      * @param body          Body to set the state of.
-     * @param stateVariable Full state to assign to that body.
+     * @param bodyState Full state to assign to that body.
      */
-    private void setBodyToStateVariable(Body body, StateVariable stateVariable) {
-        body.setXForm(new Vec2(stateVariable.getX(), stateVariable.getY()), stateVariable.getTh());
-        body.setLinearVelocity(new Vec2(stateVariable.getDx(), stateVariable.getDy()));
-        body.setAngularVelocity(stateVariable.getDth());
+    private void setBodyToStateVariable(Body body, BodyState bodyState) {
+        body.setXForm(new Vec2(bodyState.getX(), bodyState.getY()), bodyState.getTh());
+        body.setLinearVelocity(new Vec2(bodyState.getDx(), bodyState.getDy()));
+        body.setAngularVelocity(bodyState.getDth());
     }
 
     public void setState(State state) {
@@ -1069,7 +1070,7 @@ public class GameUnified implements IGame, Serializable {
             transforms[9] = getXForm(st.luarm);
             transforms[10] = getXForm(st.rlarm);
             transforms[11] = getXForm(st.llarm);
-            transforms[12] = getXForm(new StateVariable(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
+            transforms[12] = getXForm(new BodyState(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
             // Offset by 20 because its now a box.
         return transforms;
     }
@@ -1078,7 +1079,7 @@ public class GameUnified implements IGame, Serializable {
      * Get the transform associated with this body's state variables. Note that these transforms can ONLY be used
      * with this instance of GameThreadSafe.
      */
-    public static XForm getXForm(StateVariable sv) {
+    public static XForm getXForm(BodyState sv) {
         XForm xf = new XForm();
         xf.position.x = sv.getX();
         xf.position.y = sv.getY();

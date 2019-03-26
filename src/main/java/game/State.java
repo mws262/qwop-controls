@@ -1,6 +1,10 @@
 package game;
 
+import game.body_snapshots.BodyState;
+
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Container class for holding the configurations and velocities of the entire runner at a single instance in time.
@@ -20,12 +24,12 @@ public class State implements Serializable {
     /**
      * Objects which hold the x, y, theta, dx, dy, dtheta values for all body parts.
      */
-    public final StateVariable body, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm, head;
+    public final BodyState body, head, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm;
 
     /**
-     * Array holding a StateVariable for each body part.
+     * Array holding a BodyState for each body part.
      */
-    private final StateVariable[] stateVariables;
+    private final BodyState[] bodyStates;
 
     /**
      * Name of each body part.
@@ -41,6 +45,8 @@ public class State implements Serializable {
         X, Y, TH, DX, DY, DTH
     }
 
+    Map<ObjectName, BodyState> bodyNameToState = new HashMap<>();
+
     /**
      * Make new state from list of ordered numbers. Most useful for interacting with neural network stuff. Number
      * order is essential.
@@ -50,31 +56,31 @@ public class State implements Serializable {
      * @param isFailed  Whether this state represents a fallen runner.
      */
     public State(float[] stateVars, boolean isFailed) { // Order matches order in TensorflowAutoencoder.java
-        body = new StateVariable(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
-        head = new StateVariable(stateVars[6], stateVars[7], stateVars[8], stateVars[9], stateVars[10], stateVars[11]);
-        rthigh = new StateVariable(stateVars[12], stateVars[13], stateVars[14], stateVars[15], stateVars[16],
+        body = new BodyState(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
+        head = new BodyState(stateVars[6], stateVars[7], stateVars[8], stateVars[9], stateVars[10], stateVars[11]);
+        rthigh = new BodyState(stateVars[12], stateVars[13], stateVars[14], stateVars[15], stateVars[16],
                 stateVars[17]);
-        lthigh = new StateVariable(stateVars[18], stateVars[19], stateVars[20], stateVars[21], stateVars[22],
+        lthigh = new BodyState(stateVars[18], stateVars[19], stateVars[20], stateVars[21], stateVars[22],
                 stateVars[23]);
-        rcalf = new StateVariable(stateVars[24], stateVars[25], stateVars[26], stateVars[27], stateVars[28],
+        rcalf = new BodyState(stateVars[24], stateVars[25], stateVars[26], stateVars[27], stateVars[28],
                 stateVars[29]);
-        lcalf = new StateVariable(stateVars[30], stateVars[31], stateVars[32], stateVars[33], stateVars[34],
+        lcalf = new BodyState(stateVars[30], stateVars[31], stateVars[32], stateVars[33], stateVars[34],
                 stateVars[35]);
-        rfoot = new StateVariable(stateVars[36], stateVars[37], stateVars[38], stateVars[39], stateVars[40],
+        rfoot = new BodyState(stateVars[36], stateVars[37], stateVars[38], stateVars[39], stateVars[40],
                 stateVars[41]);
-        lfoot = new StateVariable(stateVars[42], stateVars[43], stateVars[44], stateVars[45], stateVars[46],
+        lfoot = new BodyState(stateVars[42], stateVars[43], stateVars[44], stateVars[45], stateVars[46],
                 stateVars[47]);
-        ruarm = new StateVariable(stateVars[48], stateVars[49], stateVars[50], stateVars[51], stateVars[52],
+        ruarm = new BodyState(stateVars[48], stateVars[49], stateVars[50], stateVars[51], stateVars[52],
                 stateVars[53]);
-        luarm = new StateVariable(stateVars[54], stateVars[55], stateVars[56], stateVars[57], stateVars[58],
+        luarm = new BodyState(stateVars[54], stateVars[55], stateVars[56], stateVars[57], stateVars[58],
                 stateVars[59]);
-        rlarm = new StateVariable(stateVars[60], stateVars[61], stateVars[62], stateVars[63], stateVars[64],
+        rlarm = new BodyState(stateVars[60], stateVars[61], stateVars[62], stateVars[63], stateVars[64],
                 stateVars[65]);
-        llarm = new StateVariable(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70],
+        llarm = new BodyState(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70],
                 stateVars[71]);
 
-        stateVariables = new StateVariable[]{body, rthigh, lthigh, rcalf, lcalf,
-                rfoot, lfoot, ruarm, luarm, rlarm, llarm, head};
+        bodyStates = new BodyState[]{body, head, rthigh, lthigh, rcalf, lcalf,
+                rfoot, lfoot, ruarm, luarm, rlarm, llarm};
 
         failedState = isFailed;
     }
@@ -97,9 +103,9 @@ public class State implements Serializable {
      * @param llarmS   State of the left lower arm.
      * @param isFailed Whether this state represents a fallen runner.
      */
-    public State(StateVariable bodyS, StateVariable headS, StateVariable rthighS, StateVariable lthighS,
-                 StateVariable rcalfS, StateVariable lcalfS, StateVariable rfootS, StateVariable lfootS,
-                 StateVariable ruarmS, StateVariable luarmS, StateVariable rlarmS, StateVariable llarmS,
+    public State(BodyState bodyS, BodyState headS, BodyState rthighS, BodyState lthighS,
+                 BodyState rcalfS, BodyState lcalfS, BodyState rfootS, BodyState lfootS,
+                 BodyState ruarmS, BodyState luarmS, BodyState rlarmS, BodyState llarmS,
                  boolean isFailed) {
         body = bodyS;
         head = headS;
@@ -115,17 +121,17 @@ public class State implements Serializable {
         llarm = llarmS;
         failedState = isFailed;
 
-        stateVariables = new StateVariable[]{body, rthigh, lthigh, rcalf, lcalf,
-                rfoot, lfoot, ruarm, luarm, rlarm, llarm, head};
+        bodyStates = new BodyState[]{body, head, rthigh, lthigh, rcalf, lcalf,
+                rfoot, lfoot, ruarm, luarm, rlarm, llarm};
     }
 
     /**
      * Get the whole array of state variables.
      *
-     * @return Array containing a {@link StateVariable StateVariable} for each runner link.
+     * @return Array containing a {@link BodyState BodyState} for each runner link.
      */
-    public StateVariable[] getStates() {
-        return stateVariables;
+    public BodyState[] getStates() {
+        return bodyStates;
     }
 
     /**
@@ -136,7 +142,7 @@ public class State implements Serializable {
      * @return Value of the requested state.
      */
     public float getStateVarFromName(ObjectName obj, StateName state) {
-        StateVariable st;
+        BodyState st;
         switch (obj) {
             case BODY:
                 st = body;
