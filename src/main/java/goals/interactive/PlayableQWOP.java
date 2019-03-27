@@ -36,6 +36,7 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
     @Override
     public void actionPerformed(ActionEvent e) { // Gets called every 40ms
 
+        //game.fullStatePDController(GameUnified.getInitialState());
         game.step(q, w, o, p); // Step the game forward 1 timestep with the specified keys pressed.
         repaint(); // Redraw the runner and scene.
     }
@@ -101,7 +102,9 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
     public static void main(String[] args) {
         // JPanel that runs and displays the game.
         PlayableQWOP qwop = new PlayableQWOP();
-
+//        qwop.game.useWarmStarting = false;
+//        qwop.game.iterations = 45;
+//        qwop.game.makeNewWorld();
         JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
         frame.add(qwop);
         frame.addKeyListener(qwop); // Listen for user input.

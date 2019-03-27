@@ -1,9 +1,6 @@
 package goals.interactive;
 
-import game.GameLearned;
-import game.GameLearnedSingle;
-import game.GameUnified;
-import game.State;
+import game.*;
 import actions.Action;
 import ui.PanelRunner;
 
@@ -18,7 +15,7 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.ArrayList;
 
-/**wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+/**
  * This is a playable QWOP game. Press Q, W, O, P keys to move. R resets the runner to its original state.
  * This is meant to be a standalone example of using the interface to the game.
  *
@@ -35,7 +32,7 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
      * Game physics world to use.
      */
     private GameUnified game = new GameUnified();
-    private GameLearnedSingle gameToTrain;
+    private GameColdStartCorrected gameToTrain;
 
     List<State> statesInRun = new ArrayList<>();
     List<boolean[]> commandsInRun = new ArrayList<>();
@@ -44,13 +41,15 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
     PlayAndTrain() {
         List<Integer> layers = new ArrayList<>();
         layers.add(32);
-//        layers.add(64);
+        layers.add(64);
         List<String> opts = new ArrayList<>();
         opts.add("--learnrate");
-        opts.add("0.00001");
+        opts.add("0.001");
+        opts.add("--loss");
+        opts.add("meansq");
         try {
-//            gameToTrain = new GameLearned("simulator_graph", layers, opts);
-            gameToTrain = new GameLearnedSingle(new File("src/main/resources/tflow_models/simulator_graph.pb"));
+//            gameToTrain = new GameColdStartCorrected("simulator_graph", layers, opts);
+            gameToTrain = new GameColdStartCorrected(new File("src/main/resources/tflow_models/simulator_graph.pb"));
             gameToTrain.loadCheckpoint("simchk");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -99,6 +98,7 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
                 break;
             case KeyEvent.VK_R: // Reset the runner on pressing r.
                 //gameToTrain.assembleWholeRunForTraining(statesInRun, commandsInRun);
+                //gameToTrain.doTrainingOnRun(statesInRun, commandsInRun);
                 statesInRun.clear();
                 commandsInRun.clear();
                 game.makeNewWorld();

@@ -77,20 +77,34 @@ public class LoadStateStatistics {
          * @param stateData Array of flattened state data.
          * @return Standardized array of flattened state data.
          */
-        public float[] standardizeState(float[] stateData) {
+        public float[] standardizeState(float[] stateData, float xOffset) {
+
             for (int i = 0; i < stateData.length; i++) {
+                if (i%6 == 0) {
+                    stateData[i] += xOffset;
+                }
                 if (stdev[i] > 0) {
                     stateData[i] = (stateData[i] - mean[i]) / stdev[i];
                 } else {
-                    stateData[i] = 0;
+                    stateData[i] = (stateData[i] - mean[i]);
                 }
             }
             return stateData;
         }
 
+        public float[] standardizeState(State state, float xOffset) {
+            return standardizeState(state.flattenState(), xOffset);
+        }
+
+        public float[] standardizeState(float[] stateData) {
+            return standardizeState(stateData, -stateData[0]); // If no offset given, subtract out the torso x.
+        }
+
         public float[] standardizeState(State state) {
             return standardizeState(state.flattenState());
         }
+
+
 
         /**
          * Take state data, subtract the minimum of each variable and divide by its range. This results in [0,1]

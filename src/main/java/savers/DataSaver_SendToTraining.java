@@ -1,6 +1,7 @@
 package savers;
 
 import actions.Action;
+import game.GameColdStartCorrected;
 import game.GameLearned;
 import game.GameLearnedSingle;
 import tree.Node;
@@ -14,16 +15,16 @@ import java.util.stream.Collectors;
  */
 public class DataSaver_SendToTraining extends DataSaver_Dense {
 
-    GameLearnedSingle gameLearned;
+    GameColdStartCorrected gameLearned;
 
-    public DataSaver_SendToTraining(GameLearnedSingle gameLearned) {
+    public DataSaver_SendToTraining(GameColdStartCorrected gameLearned) {
         this.gameLearned = gameLearned;
     }
     @Override
     public void reportGameEnding(Node endNode) {
         if (stateBuffer.size() > 3) {
             List<boolean[]> actionBooleans = actionBuffer.stream().map(Action::peek).collect(Collectors.toList());
-            gameLearned.assembleWholeRunForTraining(stateBuffer, actionBooleans);
+            gameLearned.doTrainingOnRun(stateBuffer, actionBooleans);
             gameLearned.saveCheckpoint("simchk");
         }
 

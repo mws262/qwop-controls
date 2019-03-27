@@ -66,6 +66,36 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         };
     }
 
+    private Callable<EvaluationResult> getCallable(State gameStartingState, INode startingNode,
+                                                   Action.Keys keys, int minDuration, int maxDuration) {
+        boolean[] buttons = Action.keysToBooleans(keys);
+
+        return () -> {
+            GameUnified gameLocal = new GameUnified();
+            gameLocal.iterations = 10;
+//            gameLocal.useWarmStarting = false;
+            gameLocal.makeNewWorld();
+
+            gameLocal.setState(gameStartingState);
+            EvaluationResult bestResult = new EvaluationResult();
+            for (int i = minDuration; i < maxDuration; i++) {
+                if (i > 40) {
+                    gameLocal.iterations = 5;
+                }
+                gameLocal.step(buttons);
+                State st = gameLocal.getCurrentState();
+                INode nextNode = new NodePlaceholder(startingNode, new Action(i, buttons), st);
+                float val = evaluate(nextNode);
+                if (val > bestResult.value) {
+                    bestResult.value = val;
+                    bestResult.timestep = i;
+                    bestResult.keys = keys;
+                }
+            }
+            return bestResult;
+        };
+    }
+
     private Action getBestActionFromEvaluationResults(List<EvaluationResult> results) {
         EvaluationResult evalResult = results.stream().max(EvaluationResult::compareTo).get();
         return new Action(evalResult.timestep, Action.keysToBooleans(evalResult.keys));
@@ -74,9 +104,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     @SuppressWarnings("Duplicates")
     @Override
     public Action getMaximizingAction(Node currentNode, IGame realGame) {
-
-        byte[] fullState = realGame.getFullState();
-
+//        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
+        State fullState = currentNode.getState();
         Objects.requireNonNull(fullState);
 
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
