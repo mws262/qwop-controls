@@ -1,6 +1,7 @@
 package goals.interactive;
 
 import game.GameLearned;
+import game.GameLearnedSingle;
 import game.GameUnified;
 import game.State;
 import actions.Action;
@@ -17,7 +18,7 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.ArrayList;
 
-/**
+/**wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
  * This is a playable QWOP game. Press Q, W, O, P keys to move. R resets the runner to its original state.
  * This is meant to be a standalone example of using the interface to the game.
  *
@@ -34,7 +35,7 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
      * Game physics world to use.
      */
     private GameUnified game = new GameUnified();
-    private GameLearned gameToTrain;
+    private GameLearnedSingle gameToTrain;
 
     List<State> statesInRun = new ArrayList<>();
     List<boolean[]> commandsInRun = new ArrayList<>();
@@ -49,7 +50,7 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
         opts.add("0.00001");
         try {
 //            gameToTrain = new GameLearned("simulator_graph", layers, opts);
-            gameToTrain = new GameLearned(new File("src/main/resources/tflow_models/simulator_graph.pb"));
+            gameToTrain = new GameLearnedSingle(new File("src/main/resources/tflow_models/simulator_graph.pb"));
             gameToTrain.loadCheckpoint("simchk");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -60,7 +61,7 @@ public class PlayAndTrain extends JPanel implements KeyListener, ActionListener 
         boolean[] commands = new boolean[] {q, w, o, p};
         game.step(commands); // Step the game forward 1 timestep with the specified keys pressed.
         gameToTrain.step(commands);
-        gameToTrain.updateStates(gameToTrain.getCurrentState());
+//        gameToTrain.updateStates(gameToTrain.getCurrentState());
 
         statesInRun.add(game.getCurrentState());
         commandsInRun.add(commands);

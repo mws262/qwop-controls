@@ -151,6 +151,11 @@ public class GameUnified implements IGame, Serializable {
     /** Can turn off feet (just leg stumps) for trying stuff out. **/
     private static boolean noFeet = false;
 
+    /**
+     * Is Box2D warmstarting used?
+     */
+    public boolean useWarmStarting = true;
+
     /** Listens for collisions between any body part and the ground. **/
     private CollisionListener collisionListener = new CollisionListener();
 
@@ -334,7 +339,7 @@ public class GameUnified implements IGame, Serializable {
 
         /* World Settings */
         world = new World(worldAABB, gravity, true);
-        world.setWarmStarting(true);
+        world.setWarmStarting(useWarmStarting);
         world.setPositionCorrection(true);
         world.setContinuousPhysics(true);
 

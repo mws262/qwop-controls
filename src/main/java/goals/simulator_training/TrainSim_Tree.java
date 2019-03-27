@@ -3,6 +3,7 @@ package goals.simulator_training;
 import evaluators.EvaluationFunction_Distance;
 import evaluators.IEvaluationFunction;
 import game.GameLearned;
+import game.GameLearnedSingle;
 import goals.tree_search.MAIN_Search_Template;
 import samplers.ISampler;
 import samplers.Sampler_Random;
@@ -21,7 +22,7 @@ import java.util.List;
 public class TrainSim_Tree {
 
     DataSaver_SendToTraining dataSaver;
-    GameLearned gameLearned;
+    GameLearnedSingle gameLearned;
 
     TrainSim_Tree() {
         MAIN_Search_Template.assignAllowableActions(-1); // TODO this is gross. Potential actions should be assigned
@@ -38,8 +39,8 @@ public class TrainSim_Tree {
         opts.add("--loss");
         opts.add("meansq");
         try {
-            gameLearned = new GameLearned("simulator_graph", layerSizes, opts);
-//            gameLearned = new GameLearned(new File("src/main/resources/tflow_models/simulator_graph.pb"));
+            gameLearned = new GameLearnedSingle("simulator_graph", layerSizes, opts);
+//            gameLearned = new GameLearnedSingle(new File("src/main/resources/tflow_models/simulator_graph.pb"));
 //            gameLearned.loadCheckpoint("simchk");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -48,7 +49,7 @@ public class TrainSim_Tree {
         dataSaver = new DataSaver_SendToTraining(gameLearned);
 
         IEvaluationFunction evaluator = new EvaluationFunction_Distance();
-        ISampler sampler = new Sampler_Random(); //new Sampler_UCB(evaluator);
+        ISampler sampler = new Sampler_UCB(evaluator);
         TreeStage treeStage = new TreeStage_SearchForever(sampler, dataSaver);
 
         Node rootNode = new Node();

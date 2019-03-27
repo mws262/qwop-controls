@@ -2,6 +2,7 @@ package savers;
 
 import actions.Action;
 import game.GameLearned;
+import game.GameLearnedSingle;
 import tree.Node;
 
 import java.util.List;
@@ -13,9 +14,9 @@ import java.util.stream.Collectors;
  */
 public class DataSaver_SendToTraining extends DataSaver_Dense {
 
-    GameLearned gameLearned;
+    GameLearnedSingle gameLearned;
 
-    public DataSaver_SendToTraining(GameLearned gameLearned) {
+    public DataSaver_SendToTraining(GameLearnedSingle gameLearned) {
         this.gameLearned = gameLearned;
     }
     @Override
