@@ -60,7 +60,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
         while (true) {
             repaint();
             try {
-                Thread.sleep(30);
+                Thread.sleep(15);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
