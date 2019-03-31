@@ -13,10 +13,34 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
+/**
+ * Server for communicating with the hacked Flash QWOP game. This server can send out commands to press any
+ * combination of Q, W, O, and P keys as well as a command to reset the game. The server will receive 72-dim state
+ * info from the game at every timestep (x, y, theta & velocities for 12 links). {@link QWOPStateListener} may add
+ * themselves to receive immediate updates as new state information comes in.
+ *
+ * The protocol for startup:
+ * 1. In a terminal, cd to the directory containing crossdomain.xml.
+ * 2. Launch the policy server and the http server: sudo sh local_server_launch.sh
+ * 3. Run the Java code which will be interacting with the game.
+ * 4. Launch the Flash game in one of these ways:
+ *    a) Launch as new Chrome window: sh load_site.sh
+ *    b) Navigate to localhost:8000/index.html
+ *    c) Refresh the game if it's already open.
+ *
+ * @author matt
+ */
 public class FlashQWOPServer {
 
+    /**
+     * Writer which streams to the socket output. The Flash game should be listening to whatever this sends
+     */
     private PrintWriter dataOutput;
+
+    /**
+     * Receives state info from the Flash QWOP game on its own thread.
+     */
+    private DataReceiver dataInput;
 
     /**
      * Open a socket for communicating back and forth with the real QWOP game.
@@ -24,16 +48,27 @@ public class FlashQWOPServer {
      */
     public FlashQWOPServer(int port) {
         try {
-            ServerSocket s = new ServerSocket(port);
+            ServerSocket s = new ServerSocket(port); // TODO figure out how to make it start over if the client
+            // disconnects.
             System.out.println("Server started. Waiting for connections...");
             Socket incoming = s.accept();
             dataOutput = new PrintWriter(incoming.getOutputStream());
 
-            Thread listenerThread = new Thread(new DataReceiver(incoming.getInputStream()));
+            // Start the receiver thread.
+            dataInput = new DataReceiver(incoming.getInputStream());
+            Thread listenerThread = new Thread(dataInput);
             listenerThread.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Open a socket for communicating back and forth with the real QWOP game. This will use the default port for
+     * communication (2900).
+     */
+    public FlashQWOPServer() {
+        this(2900);
     }
 
     /**
@@ -93,28 +128,79 @@ public class FlashQWOPServer {
         }
     }
 
-    public static class DataReceiver implements Runnable {
+    /**
+     * Get the most-recently-received State from the Flash game. This is useful for one-off scenarios, but regular
+     * consumers should add themselves as {@link QWOPStateListener} for immediate updates.
+     * @return
+     */
+    public State getCurrentState() {
+        return dataInput.getCurrentState();
+    }
 
-        private InputStream inStream;
+    /**
+     * Get the most recent timestep number received from real QWOP. The first will be zero, and will be before
+     * any physics stepping has occurred.
+     * @return Most recent timestep received from the game.
+     */
+    public int getCurrentTimestep() {
+        return dataInput.getCurrentTimestep();
+    }
+
+    /**
+     * Any listeners will receive the updated state when it comes in from the real QWOP game.
+     * @param listener A listener for the real QWOP state.
+     */
+    public void addStateListener(QWOPStateListener listener) {
+        dataInput.addStateListener(listener);
+    }
+
+    /**
+     * State data input receiver for the Flash QWOP game. This should run on a separate thread to keep the state
+     * updated in real time.
+     */
+    private static class DataReceiver implements Runnable {
+
+        /**
+         * Reader which gets the input stream from the socket.
+         */
         private BufferedReader reader;
-        private PanelRunner_SimpleState panelRunner;
 
+        /**
+         * Most recent time-step state received.
+         */
         private AtomicInteger currentTimestep = new AtomicInteger();
 
+        /**
+         * Most recent state received.
+         */
+        private volatile State currentState;
+
+        /**
+         * List of listeners who will receive state updates as they come in.
+         */
         private List<QWOPStateListener> listenerList = new ArrayList<>();
 
-        public DataReceiver(InputStream inStream) {
-            panelRunner = new PanelRunner_SimpleState();
-            JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
-            frame.add(panelRunner);
-            frame.setPreferredSize(new Dimension(600, 400));
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.pack();
-            frame.setVisible(true);
-            Thread panelThread = new Thread(panelRunner);
-            panelThread.start();
-            panelRunner.activateTab();
-            this.inStream = inStream;
+        /**
+         * DataReceiver can draw the states coming in for debugging purposes. In general use, some listener should
+         * handle this.
+         */
+        public boolean debugDraw = false;
+        private PanelRunner_SimpleState panelRunner;
+
+        @SuppressWarnings({"Duplicates", "ConstantConditions"})
+        DataReceiver(InputStream inStream) {
+            if (debugDraw) {
+                panelRunner = new PanelRunner_SimpleState();
+                JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
+                frame.add(panelRunner);
+                frame.setPreferredSize(new Dimension(600, 400));
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.pack();
+                frame.setVisible(true);
+                Thread panelThread = new Thread(panelRunner);
+                panelThread.start();
+                panelRunner.activateTab();
+            }
             reader = new BufferedReader(new InputStreamReader(inStream));
         }
 
@@ -128,8 +214,19 @@ public class FlashQWOPServer {
                         if (msg.contains("{")) {
                             //System.out.println(msg);
                             JSONObject stateFromFlash = new JSONObject(msg);
-                            convertJSONToState(stateFromFlash);
-                        } // TODO handle other messages.
+                            State st = convertJSONToState(stateFromFlash);
+                            currentState = st;
+                            if (debugDraw) {
+                                panelRunner.updateState(st);
+                            }
+                            // Send the update to any listeners.
+                            for (QWOPStateListener listener : listenerList) {
+                                listener.stateReceived(st);
+                            }
+                        }
+//                        else {
+//                            System.out.println(msg); // TODO handle other messages.
+//                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -207,14 +304,8 @@ public class FlashQWOPServer {
                     bodyMap.getFloat("th") + GameConstants.lLArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
-            State st = new State(torso, head, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm,
+            return new State(torso, head, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm,
                     false);
-            panelRunner.updateState(st);
-            // Send the update to any listeners.
-            for (QWOPStateListener listener : listenerList) {
-                listener.stateReceived(st);
-            }
-            return st;
         }
 
         /**
@@ -224,6 +315,15 @@ public class FlashQWOPServer {
          */
         public int getCurrentTimestep() {
             return currentTimestep.get();
+        }
+
+        /**
+         * Get the most-recently received State. This is good for one-off situations, but the listener approach
+         * should be preferred for immediate updates.
+         * @return The most recent State received from the Flash game.
+         */
+        public State getCurrentState() {
+            return currentState;
         }
 
         /**
