@@ -18,6 +18,7 @@ import org.nustaq.serialization.FSTConfiguration;
 
 import java.awt.*;
 import java.io.Serializable;
+import java.util.function.Function;
 
 import static game.GameConstants.*;
 
@@ -150,6 +151,18 @@ public class GameUnified implements IGame, Serializable {
 
     /** Can turn off feet (just leg stumps) for trying stuff out. **/
     private static boolean noFeet = false;
+
+    /**
+     * Is Box2D warmstarting used?
+     */
+    public boolean useWarmStarting = true;
+
+    public boolean usePositionCorrection = true;
+
+    /**
+     * Number of constraint-solving steps.
+     */
+    public int iterations = physIterations;
 
     /** Listens for collisions between any body part and the ground. **/
     private CollisionListener collisionListener = new CollisionListener();
@@ -334,8 +347,8 @@ public class GameUnified implements IGame, Serializable {
 
         /* World Settings */
         world = new World(worldAABB, gravity, true);
-        world.setWarmStarting(true);
-        world.setPositionCorrection(true);
+        world.setWarmStarting(useWarmStarting);
+        world.setPositionCorrection(usePositionCorrection);
         world.setContinuousPhysics(true);
 
         // NOTE: The order of creating bodies actually changes the answers slightly!! This is really dumb, but will
@@ -392,7 +405,7 @@ public class GameUnified implements IGame, Serializable {
 //        BodyDef blockBodyDef = new BodyDef();
 //        PolygonDef blockShapeDef = new PolygonDef();
 //        MassData blockMassData = new MassData();
-//        blockShapeDef.setAsBox(2, 10);
+//        blockShapeDef.setAsBox(3, 3);
 //
 //        blockShapeDef.friction = 1;
 //        blockShapeDef.density = 1;
@@ -720,7 +733,7 @@ public class GameUnified implements IGame, Serializable {
         }
 
 
-        getWorld().step(timestep, physIterations);
+        getWorld().step(timestep, iterations);
 
         // Extra fail conditions besides contacts.
         float angle = torsoBody.getAngle();
@@ -885,6 +898,7 @@ public class GameUnified implements IGame, Serializable {
     public void applyBodyImpulse(float xComp, float yComp) {
         Vec2 torsoCenter = torsoBody.getWorldCenter();
         torsoBody.applyImpulse(new Vec2(xComp, yComp), torsoCenter);
+
     }
 
     /**
@@ -892,6 +906,63 @@ public class GameUnified implements IGame, Serializable {
      */
     public void applyBodyTorque(float cwTorque) {
         torsoBody.applyTorque(cwTorque);
+    }
+
+
+    public void fullStatePDController(State targetState) {
+        State currentState = getCurrentState();
+        pdForce(targetState.body, currentState.body, torsoBody);
+        pdTorque(targetState.body, currentState.body, torsoBody);
+
+        pdForce(targetState.head, currentState.head, torsoBody);
+        pdTorque(targetState.head, currentState.head, torsoBody);
+
+        pdForce(targetState.rthigh, currentState.rthigh, torsoBody);
+        pdTorque(targetState.rthigh, currentState.rthigh, torsoBody);
+
+        pdForce(targetState.lthigh, currentState.lthigh, torsoBody);
+        pdTorque(targetState.lthigh, currentState.lthigh, torsoBody);
+
+        pdForce(targetState.rcalf, currentState.rcalf, torsoBody);
+        pdTorque(targetState.rcalf, currentState.rcalf, torsoBody);
+
+        pdForce(targetState.lcalf, currentState.lcalf, torsoBody);
+        pdTorque(targetState.lcalf, currentState.lcalf, torsoBody);
+
+        pdForce(targetState.rfoot, currentState.rfoot, torsoBody);
+        pdTorque(targetState.rfoot, currentState.rfoot, torsoBody);
+
+        pdForce(targetState.lfoot, currentState.lfoot, torsoBody);
+        pdTorque(targetState.lfoot, currentState.lfoot, torsoBody);
+
+        pdForce(targetState.ruarm, currentState.ruarm, torsoBody);
+        pdTorque(targetState.ruarm, currentState.ruarm, torsoBody);
+
+        pdForce(targetState.luarm, currentState.luarm, torsoBody);
+        pdTorque(targetState.luarm, currentState.luarm, torsoBody);
+
+        pdForce(targetState.rlarm, currentState.rlarm, torsoBody);
+        pdTorque(targetState.rlarm, currentState.rlarm, torsoBody);
+
+        pdForce(targetState.llarm, currentState.llarm, torsoBody);
+        pdTorque(targetState.llarm, currentState.llarm, torsoBody);
+    }
+
+    private void pdForce(StateVariable targetSV, StateVariable currentSV, Body b) {
+        float kp = 10;
+        float kd = kp/10;
+
+        b.applyForce(new Vec2(kp * (targetSV.getX() - currentSV.getX()) + kd * (targetSV.getDx() - currentSV.getDx()),
+                        kp * (targetSV.getY() - currentSV.getY()) + kd * (targetSV.getDy() - currentSV.getDy())),
+                b.getWorldCenter());
+    }
+
+    private void pdTorque(StateVariable targetSV, StateVariable currentSV, Body b) {
+        float kp = 10f;
+        float kd = kp/10f;
+        b.applyTorque(kp * (targetSV.getTh() - currentSV.getTh()) +
+                kd * (targetSV.getDth() - currentSV.getDth()));
+
     }
 
     /**
@@ -1057,20 +1128,20 @@ public class GameUnified implements IGame, Serializable {
      */
     public static XForm[] getXForms(State st) {
         XForm[] transforms = new XForm[13];
-            transforms[0] = getXForm(st.body);
-            transforms[1] = getXForm(st.head);
-            transforms[2] = getXForm(st.rfoot);
-            transforms[3] = getXForm(st.lfoot);
-            transforms[4] = getXForm(st.rcalf);
-            transforms[5] = getXForm(st.lcalf);
-            transforms[6] = getXForm(st.rthigh);
-            transforms[7] = getXForm(st.lthigh);
-            transforms[8] = getXForm(st.ruarm);
-            transforms[9] = getXForm(st.luarm);
-            transforms[10] = getXForm(st.rlarm);
-            transforms[11] = getXForm(st.llarm);
-            transforms[12] = getXForm(new StateVariable(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
-            // Offset by 20 because its now a box.
+        transforms[0] = getXForm(st.body);
+        transforms[1] = getXForm(st.head);
+        transforms[2] = getXForm(st.rfoot);
+        transforms[3] = getXForm(st.lfoot);
+        transforms[4] = getXForm(st.rcalf);
+        transforms[5] = getXForm(st.lcalf);
+        transforms[6] = getXForm(st.rthigh);
+        transforms[7] = getXForm(st.lthigh);
+        transforms[8] = getXForm(st.ruarm);
+        transforms[9] = getXForm(st.luarm);
+        transforms[10] = getXForm(st.rlarm);
+        transforms[11] = getXForm(st.llarm);
+        transforms[12] = getXForm(new StateVariable(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
+        // Offset by 20 because its now a box.
         return transforms;
     }
 
@@ -1120,9 +1191,9 @@ public class GameUnified implements IGame, Serializable {
             } else if (failOnThighContact && // Only fail on thigh contact if this is turned on. Cannot kneel without
                     // failure with this on.
                     (fixtureA.m_body.equals(lThighBody) ||
-                    fixtureB.m_body.equals(lThighBody) ||
-                    fixtureA.m_body.equals(rThighBody) ||
-                    fixtureB.m_body.equals(rThighBody))) {
+                            fixtureB.m_body.equals(lThighBody) ||
+                            fixtureA.m_body.equals(rThighBody) ||
+                            fixtureB.m_body.equals(rThighBody))) {
                 isFailed = true;
             } else if (!noFeet && fixtureA.m_body.equals(rFootBody) || fixtureB.m_body.equals(rFootBody)) {//Track when
                 // each foot hits the ground.

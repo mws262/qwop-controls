@@ -803,9 +803,9 @@ public class Node implements INode {
      * @throws IllegalStateException Trying to assign a state to this node when one is already assigned.
      */
     public synchronized void setState(State newState) {
-        if (state != null)
-            throw new IllegalStateException("Trying to assign a node's state after a state has been previously " +
-                    "assigned. Examine behavior carefully before allowing this.");
+//        if (state != null)
+//            throw new IllegalStateException("Trying to assign a node's state after a state has been previously " +
+//                    "assigned. Examine behavior carefully before allowing this.");
         state = newState;
 
         try {
