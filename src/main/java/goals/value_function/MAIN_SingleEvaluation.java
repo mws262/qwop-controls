@@ -34,7 +34,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     boolean p = false;
 
     public static void main(String[] args) {
-        boolean doScreenCapture = true;
+        boolean doScreenCapture = false;
         ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
         if (doScreenCapture) {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

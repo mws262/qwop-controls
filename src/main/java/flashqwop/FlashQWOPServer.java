@@ -11,6 +11,7 @@ import java.io.*;
 import java.net.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -41,6 +42,8 @@ public class FlashQWOPServer {
      * Receives state info from the Flash QWOP game on its own thread.
      */
     private DataReceiver dataInput;
+
+//    private boolean[] mostRecentCommand = ew
 
     /**
      * Open a socket for communicating back and forth with the real QWOP game.
@@ -170,6 +173,7 @@ public class FlashQWOPServer {
          */
         private AtomicInteger currentTimestep = new AtomicInteger();
 
+        private AtomicBoolean fallen = new AtomicBoolean(false);
         /**
          * Most recent state received.
          */
@@ -221,7 +225,7 @@ public class FlashQWOPServer {
                             }
                             // Send the update to any listeners.
                             for (QWOPStateListener listener : listenerList) {
-                                listener.stateReceived(st);
+                                listener.stateReceived(getCurrentTimestep(), st);
                             }
                         }
 //                        else {
@@ -243,6 +247,8 @@ public class FlashQWOPServer {
         private State convertJSONToState(JSONObject stateFromFlash) {
 
             currentTimestep.set(stateFromFlash.getInt("timestep"));
+            boolean isFallen = stateFromFlash.getBoolean("fallen");
+            fallen.set(isFallen);
 
             JSONObject bodyMap = ((JSONObject)stateFromFlash.get("torso"));
             StateVariable torso = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
@@ -305,7 +311,7 @@ public class FlashQWOPServer {
                     bodyMap.getFloat("dth"));
 
             return new State(torso, head, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm,
-                    false);
+                    isFallen);
         }
 
         /**
@@ -315,6 +321,14 @@ public class FlashQWOPServer {
          */
         public int getCurrentTimestep() {
             return currentTimestep.get();
+        }
+
+        /**
+         * Get whether the most-recently obtained state is failed, according to the Flash game.
+         * @return
+         */
+        public boolean getFailureStatus() {
+            return fallen.get();
         }
 
         /**

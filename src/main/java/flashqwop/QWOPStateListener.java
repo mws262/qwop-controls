@@ -7,5 +7,5 @@ import game.State;
  * states, they should implement this.
  */
 public interface QWOPStateListener {
-    void stateReceived(State state);
+    void stateReceived(int timestep, State state);
 }

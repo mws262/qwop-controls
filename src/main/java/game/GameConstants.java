@@ -10,7 +10,8 @@ public class GameConstants {
     /**
      * Number of Box2D solver iterations.
      */
-    public static int physIterations = 5;
+    public static int physIterations = 5; // I think the real value should be 10. Leaving for now for the sake of the
+    // unit tests.
 
     /**
      * AABB bounds.
