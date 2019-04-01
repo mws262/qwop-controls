@@ -117,17 +117,17 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
         return () -> {
             GameUnified gameLocal = new GameUnified();
-            gameLocal.iterations = 10;
+            gameLocal.iterations = 50;
 //            gameLocal.useWarmStarting = false;
             gameLocal.makeNewWorld();
 
             gameLocal.setState(gameStartingState);
             EvaluationResult bestResult = new EvaluationResult();
             for (int i = minDuration; i < maxDuration; i++) {
-                gameLocal.applyBodyImpulse(0.12f, 0.005f);
-//                if (i > 3) {
-//                    gameLocal.iterations = 10;
-//                }
+//                gameLocal.applyBodyImpulse(0.12f, 0.005f);
+                if (i > 5) {
+                    gameLocal.iterations = 5;
+                }
                 gameLocal.step(buttons);
                 State st = gameLocal.getCurrentState();
                 INode nextNode = new NodePlaceholder(startingNode, new Action(i, buttons), st);
