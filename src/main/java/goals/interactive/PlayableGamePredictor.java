@@ -1,6 +1,8 @@
-package game;
+package goals.interactive;
 
 import data.TensorflowLoader;
+import game.GameUnified;
+import game.State;
 import org.tensorflow.Tensor;
 import ui.PanelRunner_SimpleState;
 

@@ -4,6 +4,7 @@ import actions.Action;
 import actions.ActionQueue;
 import flashqwop.FlashQWOPServer;
 import flashqwop.QWOPStateListener;
+import game.GameUnified;
 import game.State;
 import tree.Node;
 import value.ValueFunction_TensorFlow;
@@ -11,6 +12,7 @@ import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 
 @SuppressWarnings("Duplicates")
 public class MAIN_FlashEvaluation implements QWOPStateListener {
@@ -21,8 +23,8 @@ public class MAIN_FlashEvaluation implements QWOPStateListener {
     private boolean awaitingRestart = true;
 
     Action[] prefix = new Action[]{
-      new Action(7, none),
-      new Action(49, wo)
+            new Action(7, none),
+            new Action(49, wo)
     };
 
     private ValueFunction_TensorFlow valueFunction = null;
@@ -35,6 +37,16 @@ public class MAIN_FlashEvaluation implements QWOPStateListener {
         loadController();
         server = new FlashQWOPServer();
         server.addStateListener(this);
+
+        getControl(GameUnified.getInitialState()); // TODO make this better. The first controller evaluation ever
+        // takes 8 times longer than the rest. I don't know why. In the meantime, just do the first evaluation in a
+        // non-time-critical section of the code. In the long term, the controller should be an anytime approach
+        // anyway.
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         restart();
     }
 
@@ -58,24 +70,51 @@ public class MAIN_FlashEvaluation implements QWOPStateListener {
         server.sendResetSignal();
         awaitingRestart = true;
     }
+
+    int count = 1;
+    boolean[] prevCommand = null;
+    int timestepsTracked = 0;
     @Override
-    public void stateReceived(int timestep, State state) {
+    public synchronized void stateReceived(int timestep, State state) {
         if (timestep == 0) { // new run has started.
+            System.out.println("zero timestep");
             awaitingRestart = false;
             actionQueue.clearAll();
             actionQueue.addSequence(prefix);
+            prevCommand = null;
+            timestepsTracked = 0;
+        } else if (awaitingRestart) {
+            return;
         } else if (state.isFailed()) {
             restart();
             return;
-        } else if (awaitingRestart) {
-            return;
         }
+        long t1 = System.currentTimeMillis();
+
+        assert timestep == timestepsTracked; // Have we lost any timesteps?
 
         if (actionQueue.isEmpty()) {
-            actionQueue.addAction(getControl(state));
+            Action a = getControl(state);
+            System.out.println(a.toString());
+            actionQueue.addAction(a);
         }
-        server.sendCommand(actionQueue.pollCommand());
 
+        boolean[] command = actionQueue.pollCommand();
+//        System.out.println(timestep + ", " + state.body.getTh() + ", " + state.body.getDth());
+        server.sendCommand(command);
+
+
+//        // Only send command when it's different from the previous.
+//        boolean[] nextCommand = actionQueue.pollCommand();
+//        if (!Arrays.equals(prevCommand, nextCommand)) {
+//            server.sendCommand(nextCommand);
+//        }
+//        prevCommand = nextCommand;
+        long controlEvalTime = System.currentTimeMillis() - t1;
+        if (controlEvalTime > 30) {
+            System.out.println("Warning: the control loop time was " + controlEvalTime + "ms. This might be too high.");
+        }
+        timestepsTracked++;
     }
 
     public static void main(String[] args) {
