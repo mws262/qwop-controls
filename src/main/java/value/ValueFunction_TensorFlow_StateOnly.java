@@ -20,7 +20,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     boolean multithread = true;
     private ExecutorService ex;
-    private int numThreads = 7;
+    private int numThreads = 9;
+    List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
 
     public ValueFunction_TensorFlow_StateOnly(File file) throws FileNotFoundException {
         super(file);
@@ -47,9 +48,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add( // No Keys
                 getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 1, 30));
+                getCallable(fullState, currentNode, Action.Keys.qp, 1, 20));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 1, 30));
+                getCallable(fullState, currentNode, Action.Keys.wo, 1, 20));
         evaluations.add( // Q
                 getCallable(fullState, currentNode, Action.Keys.q, 1, 5));
         evaluations.add( // W
@@ -123,8 +124,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             gameLocal.setState(gameStartingState);
             EvaluationResult bestResult = new EvaluationResult();
             for (int i = minDuration; i < maxDuration; i++) {
-//                if (i > 15) {
-//                    gameLocal.iterations = 5;
+                gameLocal.applyBodyImpulse(0.12f, 0.005f);
+//                if (i > 3) {
+//                    gameLocal.iterations = 10;
 //                }
                 gameLocal.step(buttons);
                 State st = gameLocal.getCurrentState();
@@ -155,25 +157,25 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
         List<EvaluationResult> evalResults = new ArrayList<>();
         evaluations.add( // No Keys
-                getCallable(fullState, currentNode, Action.Keys.none, 1, 30));
+                getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 1, 50));
+                getCallable(fullState, currentNode, Action.Keys.qp, 1, 30));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 1, 50));
+                getCallable(fullState, currentNode, Action.Keys.wo, 1, 30));
         evaluations.add( // Q
-                getCallable(fullState, currentNode, Action.Keys.q, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.q, 1, 5));
         evaluations.add( // W
-                getCallable(fullState, currentNode, Action.Keys.w, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.w, 1, 5));
         evaluations.add( // O
-                getCallable(fullState, currentNode, Action.Keys.o, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.o, 1, 5));
         evaluations.add( // P
-                getCallable(fullState, currentNode, Action.Keys.p, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.p, 1, 5));
 
         // Off keys -- dunno if these are ever helpful.
         evaluations.add( // QO
-                getCallable(fullState, currentNode, Action.Keys.qo, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.qo, 1, 5));
         evaluations.add( // WP
-                getCallable(fullState, currentNode, Action.Keys.wp, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.wp, 1, 5));
 
         if (multithread) { // Multi-thread
             List<Future<EvaluationResult>> allResults;
