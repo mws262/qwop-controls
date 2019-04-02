@@ -103,6 +103,12 @@ public class FlashQWOPServer {
         dataOutput.flush();
     }
 
+    public void sendInfoRequest() {
+        String commandString = "getinfo";
+        dataOutput.print(commandString);
+        dataOutput.flush();
+    }
+
     /**
      * Send a signal to real QWOP to reset the game immediately.
      */
@@ -215,17 +221,22 @@ public class FlashQWOPServer {
                     if (reader.ready()) {
                         String msg = reader.readLine().replace("\u0000", ""); // JSON parser hates the null character
                         // in front.
+                        //System.out.println(msg);
+
                         if (msg.contains("{")) {
-                            //System.out.println(msg);
                             JSONObject stateFromFlash = new JSONObject(msg);
-                            State st = convertJSONToState(stateFromFlash);
-                            currentState = st;
-                            if (debugDraw) {
-                                panelRunner.updateState(st);
-                            }
-                            // Send the update to any listeners.
-                            for (QWOPStateListener listener : listenerList) {
-                                listener.stateReceived(getCurrentTimestep(), st);
+                            if (stateFromFlash.keySet().contains("timestep")) {
+                                State st = convertJSONToState(stateFromFlash);
+                                currentState = st;
+                                if (debugDraw) {
+                                    panelRunner.updateState(st);
+                                }
+                                // Send the update to any listeners.
+                                for (QWOPStateListener listener : listenerList) {
+                                    listener.stateReceived(getCurrentTimestep(), st);
+                                }
+                            } else {
+                                System.out.println(stateFromFlash.toString(2));
                             }
                         }
 //                        else {

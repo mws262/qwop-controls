@@ -205,6 +205,8 @@ public class GameUnified implements IGame, Serializable {
         lFootShape.friction = (lFootFric);
         rFootShape.density = rFootDensity;
         lFootShape.density = lFootDensity;
+        rFootShape.restitution = 0f;
+        lFootShape.restitution = 0f;
         rFootShape.filter.groupIndex = BODY_GROUP;
         lFootShape.filter.groupIndex = BODY_GROUP;
 
@@ -228,6 +230,8 @@ public class GameUnified implements IGame, Serializable {
         lCalfShape.friction = lCalfFric;
         rCalfShape.density = rCalfDensity;
         lCalfShape.density = lCalfDensity;
+        rCalfShape.restitution = 0f;
+        lCalfShape.restitution = 0f;
         rCalfShape.filter.groupIndex = BODY_GROUP;
         lCalfShape.filter.groupIndex = BODY_GROUP;
 
@@ -251,6 +255,8 @@ public class GameUnified implements IGame, Serializable {
         lThighShape.friction = lThighFric;
         rThighShape.density = rThighDensity;
         lThighShape.density = lThighDensity;
+        rThighShape.restitution = 0f;
+        lThighShape.restitution = 0f;
         rThighShape.filter.groupIndex = BODY_GROUP;
         lThighShape.filter.groupIndex = BODY_GROUP;
 
@@ -270,6 +276,7 @@ public class GameUnified implements IGame, Serializable {
         torsoShape.setAsBox(torsoW / 2f, torsoL / 2f);
         torsoShape.friction = torsoFric;
         torsoShape.density = torsoDensity;
+        torsoShape.restitution = 0f;
         torsoShape.filter.groupIndex = BODY_GROUP;
 
         torsoDef.position.set(torsoPos);
@@ -300,6 +307,8 @@ public class GameUnified implements IGame, Serializable {
         lUArmShape.friction = lUArmFric;
         rUArmShape.density = rUArmDensity;
         lUArmShape.density = lUArmDensity;
+        rUArmShape.restitution = 0f;
+        lUArmShape.restitution = 0f;
         rUArmShape.filter.groupIndex = BODY_GROUP;
         lUArmShape.filter.groupIndex = BODY_GROUP;
 
@@ -322,6 +331,8 @@ public class GameUnified implements IGame, Serializable {
         lLArmShape.friction = lLArmFric;
         rLArmShape.density = rLArmDensity;
         lLArmShape.density = lLArmDensity;
+        rLArmShape.restitution = 0f;
+        lLArmShape.restitution = 0f;
         rLArmShape.filter.groupIndex = BODY_GROUP;
         lLArmShape.filter.groupIndex = BODY_GROUP;
 

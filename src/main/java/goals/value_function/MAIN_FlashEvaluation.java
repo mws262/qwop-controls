@@ -23,7 +23,9 @@ public class MAIN_FlashEvaluation extends FlashGame {
             new Action(49, Action.Keys.wo),
             new Action(20, Action.Keys.qp),
             new Action(1, Action.Keys.p),
-            new Action(17, Action.Keys.qp),
+            new Action(18, Action.Keys.qp),
+            new Action(3, Action.Keys.wo),
+
     };
 
     private ValueFunction_TensorFlow valueFunction = null;
@@ -36,6 +38,12 @@ public class MAIN_FlashEvaluation extends FlashGame {
         // takes 8 times longer than the rest. I don't know why. In the meantime, just do the first evaluation in a
         // non-time-critical section of the code. In the long term, the controller should be an anytime approach
         // anyway.
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        printGameInfo();
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {

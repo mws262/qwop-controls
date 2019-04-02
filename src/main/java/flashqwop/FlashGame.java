@@ -19,7 +19,7 @@ import java.util.Arrays;
  */
 public abstract class FlashGame implements QWOPStateListener {
 
-    private FlashQWOPServer server;
+    FlashQWOPServer server;
     private ActionQueue actionQueue = new ActionQueue();
 
     /**
@@ -72,6 +72,10 @@ public abstract class FlashGame implements QWOPStateListener {
     public void restart() {
         server.sendResetSignal();
         awaitingRestart = true;
+    }
+
+    public void printGameInfo() {
+        server.sendInfoRequest();
     }
 
     @Override
