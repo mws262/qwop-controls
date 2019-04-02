@@ -65,9 +65,11 @@ public class CompareFlashToJava extends FlashGame {
 
         if (timestep == 0) {
             gameJava.makeNewWorld();
-            gameJava.iterations = 50;
+            gameJava.iterations = 5;
             tp += 10;
         }else if (timestep == tp) {
+            gameJava.makeNewWorld();
+
             gameJava.setState(state);
 
 

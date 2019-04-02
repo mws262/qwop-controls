@@ -46,11 +46,11 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
         List<EvaluationResult> evalResults = new ArrayList<>();
         evaluations.add( // No Keys
-                getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.none, 1, 15));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 1, 20));
+                getCallable(fullState, currentNode, Action.Keys.qp, 1, 25));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 1, 20));
+                getCallable(fullState, currentNode, Action.Keys.wo, 1, 25));
         evaluations.add( // Q
                 getCallable(fullState, currentNode, Action.Keys.q, 1, 5));
         evaluations.add( // W
@@ -117,15 +117,15 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
         return () -> {
             GameUnified gameLocal = new GameUnified();
-            gameLocal.iterations = 50;
+            gameLocal.iterations = 20;
 //            gameLocal.useWarmStarting = false;
             gameLocal.makeNewWorld();
 
             gameLocal.setState(gameStartingState);
             EvaluationResult bestResult = new EvaluationResult();
             for (int i = minDuration; i < maxDuration; i++) {
-//                gameLocal.applyBodyImpulse(0.12f, 0.005f);
-                if (i > 5) {
+//                gameLocal.applyBodyImpulse(0f, 0.0015f);
+                if (i > 1) {
                     gameLocal.iterations = 5;
                 }
                 gameLocal.step(buttons);
