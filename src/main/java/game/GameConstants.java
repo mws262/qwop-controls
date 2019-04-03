@@ -36,13 +36,15 @@ public class GameConstants {
     public static final float rFootAng = 0.7498f,
             rFootMass = 11.63015625f, //11.630f,
             rFootInertia = 9.01672687841797f, //9.017f,
-            rFootL = 2.68750f, rFootH = 1.44249f,
+            rFootL = 2.6875f, // 2.68750f,
+            rFootH = 1.4425f, // 1.44249f,
             rFootFric = 1.5f,
             rFootDensity = 3f,
             lFootAng = 0.1429f,
             lFootMass = 10.894537499999998f, //10.895f,
             lFootInertia = 8.242426898535154f, //8.242f,
-            lFootL = 2.695f, lFootH = 1.34750f,
+            lFootL = 2.695f, // 2.695f,
+            lFootH = 1.3475f, // 1.34750f,
             lFootFric = 1.5f,
             lFootDensity = 3f;
 
@@ -57,8 +59,12 @@ public class GameConstants {
             rCalfInertia = 16.644328315954585f, //16.644f,
             lCalfInertia = 16.89308957772786f; //16.893f;
     // Length and width for the calves are just for collisions with the ground, so not very important.
-    public static final float rCalfL = 4.21f, lCalfL = 4.43f, rCalfW = 0.4f, lCalfW = 0.4f, rCalfFric = 0.2f,
-            lCalfFric = 0.2f, rCalfDensity = 1f, lCalfDensity = 1f;
+    public static final float
+            rCalfL = 4.975f, // 4.21f, NOTE Y
+            lCalfL = 4.9925f, // 4.43f, NOTE WAS X
+            rCalfW = 1.48875f, // 0.4f, NOTE Y
+            lCalfW = 1.495f, //0.4f, // NOTE THIS WAS Y
+            rCalfFric = 0.2f, lCalfFric = 0.2f, rCalfDensity = 1f, lCalfDensity = 1f;
 
     /**
      * Thigh parameters.
@@ -70,8 +76,12 @@ public class GameConstants {
             rThighInertia = 28.06726599798177f, // 28.067f,
             lThighInertia = 24.54640530426432f; // 24.546f;
     // Length and width for the calves are just for collisions with the ground, so not very important.
-    public static final float rThighL = 4.19f, lThighL = 3.56f, rThighW = 0.6f, lThighW = 0.6f, rThighFric = 0.2f,
-            lThighFric = 0.2f, rThighDensity = 1f, lThighDensity = 1f;
+    public static final float
+            rThighL = 5.29f, // 4.19f, NOTE X
+            lThighL = 5.0375f, // 3.56f, NOTE X
+            rThighW = 1.9925f,  // 0.6f, NOTE Y
+            lThighW = 1.9925f, // 0.6f, NOTE Y
+            rThighFric = 0.2f, lThighFric = 0.2f, rThighDensity = 1f, lThighDensity = 1f;
 
     /**
      * Torso parameters.
@@ -80,7 +90,11 @@ public class GameConstants {
             1.651902129f,
             torsoMass = 18.6675f, // 18.668f,
             torsoInertia = 79.37576562499999f; // 79.376f;
-    public static final float torsoL = 5f, torsoW = 1.5f, torsoFric = 0.2f, torsoDensity = 1f;
+    public static final float
+            torsoL = 6.55f, // 5f, y
+            torsoW = 2.85f, //  1.5f, x
+            torsoFric = 0.2f,
+            torsoDensity = 1f;
 
     /**
      * Head parameters.
@@ -102,7 +116,11 @@ public class GameConstants {
             rUArmInertia = 8.478990534381511f, // 8.479f,
             lUArmInertia = 5.850264596875f; // 5.85f;
     // Dimensions for collision shapes
-    public static final float rUArmL = 2.58f, lUArmL = 2.68f, rUArmW = 0.2f, lUArmW = 0.15f,
+    public static final float
+            rUArmL = 3.8975f, // 2.58f, x
+            lUArmL = 3.7f, // 2.68f, x
+            rUArmW = 1.4975f, // 0.2f, y
+            lUArmW = 1.245f, // 0.15f, y
             rUArmFric = 0.2f, lUArmFric = 0.2f, rUArmDensity = 1f, lUArmDensity = 1f;
 
     /**
@@ -115,7 +133,11 @@ public class GameConstants {
             rLArmInertia = 10.768260765983074f, // 10.768f,
             lLArmInertia = 4.301042384375001f; // 4.301f;
     // For collision shapes
-    public static final float rLArmL = 3.56f, lLArmL = 2.54f, rLArmW = 0.15f, lLArmW = 0.12f,
+    public static final float
+            rLArmL = 4.445f,  // 3.56f, x
+            lLArmL = 3.495f, // 2.54f,
+            rLArmW = 1.3475f, // 0.15f, y
+            lLArmW = 1.1f, // 0.12f, y
             rLArmFric = 0.2f, lLArmFric = 0.2f, rLArmDensity = 1f, lLArmDensity = 1f;
 
     /**
