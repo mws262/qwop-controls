@@ -56,7 +56,7 @@ public class CompareFlashToJava extends FlashGame {
     public Action getControlAction(State state) {
         return null;
     }
-    int tp = 30;
+    int tp = 0;
     @Override
     public void reportGameStatus(State state, boolean[] command, int timestep) {
         if (!initialized) {

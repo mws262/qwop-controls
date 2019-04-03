@@ -1,7 +1,37 @@
 package game;
 
 public class GameConstants {
-
+/*
+Best I can tell, the order everything is added to the world is this.
+Note that all bodies are done first, and then joints afterwards.
+    cluarm
+    clfarm (lower arm)
+    clcalf
+    clfoot
+    clthigh
+    cbody
+    cruarm
+    crcalf
+    crthigh
+    crfarm (lower arm)
+    chead
+    crfoot
+    __id0_ (I think this is the concrete block, but I don't know for sure)
+    track1
+    track
+    track2
+    __id1_ (joint right upper to right lower arm)
+    lcjoint
+    lankle
+    rankle
+    rcjoint
+    rtjoint
+    ltjoint
+    __id2_ (joint left  upper to left lower arm)
+    lajoint (shoulder)
+    rajoint
+    __id3_ (neck)
+*/
     /**
      * Physics engine stepping parameters.
      */
@@ -16,7 +46,10 @@ public class GameConstants {
     /**
      * AABB bounds.
      */
-    public static final float aabbMinX = -100f, aabbMinY = -30f, aabbMaxX = 5000f, aabbMaxY = 80f;
+//    public static final float aabbMinX = -100f, aabbMinY = -30f, aabbMaxX = 5000f, aabbMaxY = 80f;
+    // Changed to match Flash game.
+    public static final float aabbMinX = -1000f, aabbMinY = -40f, aabbMaxX = 4200f, aabbMaxY = 30f;
+
 
     /**
      * Gravity in downward direction.
@@ -27,20 +60,25 @@ public class GameConstants {
      * Track parameters.
      */
     public static final float trackPosX = -30f, trackPosY = 8.90813f + 3.67f, trackFric = 1f, trackRest = 0.2f,
-    trackXDim = 1000f, trackYDim = 3.67f;
+            trackXDim = 1000f, trackYDim = 3.67f;
 
     /**
      * Foot parameters.
      */
-    public static final float rFootPosX = -0.96750f, rFootPosY = 7.77200f, lFootPosX = 3.763f, lFootPosY = 8.101f;
-    public static final float rFootAng = 0.7498f,
+    public static final float
+            rFootPosX = -0.9675f, // -0.96750f,
+            rFootPosY = 7.772499999999999f, // 7.77200f,
+            lFootPosX = 3.7625f, // 3.763f,
+            lFootPosY = 8.10125f, // 8.101f,
+            rFootAng = 0.7498215270272978f, // 0.7498f,
+            lFootAng = 0.1428945714492916f; // 0.1429f;
+    public static final float
             rFootMass = 11.63015625f, //11.630f,
             rFootInertia = 9.01672687841797f, //9.017f,
             rFootL = 2.6875f, // 2.68750f,
             rFootH = 1.4425f, // 1.44249f,
             rFootFric = 1.5f,
             rFootDensity = 3f,
-            lFootAng = 0.1429f,
             lFootMass = 10.894537499999998f, //10.895f,
             lFootInertia = 8.242426898535154f, //8.242f,
             lFootL = 2.695f, // 2.695f,
@@ -51,9 +89,16 @@ public class GameConstants {
     /**
      * Shank parameters.
      */
-    public static final float rCalfPosX = 0.0850f, rCalfPosY = 5.381f, lCalfPosX = 2.986f, lCalfPosY = 5.523f;
-    public static final float rCalfAng = -0.821f, lCalfAng = -1.582f, rCalfAngAdj = 1.606188724f, lCalfAngAdj =
-            1.607108307f,
+    public static final float
+            rCalfPosX = 0.08499999999999999f, // 0.0850f,
+            rCalfPosY = 5.38125f, // 5.381f,
+            lCalfPosX = 2.98625f, // 2.986f,
+            lCalfPosY = 5.5225f; // 5.523f;
+    public static final float
+            rCalfAng = -0.820983055566978f, // -0.821f,
+            lCalfAng = -1.581538187051731f, // -1.582f,
+            rCalfAngAdj = 1.606188724f,
+            lCalfAngAdj = 1.607108307f,
             rCalfMass = 7.40653125f, // 7.407f,
             lCalfMass = 7.463787499999999f, // 7.464f,
             rCalfInertia = 16.644328315954585f, //16.644f,
@@ -69,8 +114,15 @@ public class GameConstants {
     /**
      * Thigh parameters.
      */
-    public static final float rThighPosX = 1.659f, rThighPosY = 1.999f, lThighPosX = 2.52f, lThighPosY = 1.615f,
-            rThighAng = 1.468f, lThighAng = -1.977f, rThighAngAdj = -1.544382589f, lThighAngAdj = 1.619256373f,
+    public static final float
+            rThighPosX = 1.65875f, // 1.659f,
+            rThighPosY = 1.99875f, // 1.999f,
+            lThighPosX = 2.52f, // 2.52f,
+            lThighPosY = 1.6149999999999998f, // 1.615f,
+            rThighAng = 1.4683575691488897f, // 1.468f,
+            lThighAng = -1.976849563463714f, // -1.977f,
+            rThighAngAdj = -1.544382589f,
+            lThighAngAdj = 1.619256373f,
             rThighMass = 10.540325000000001f, // 10.54f,
             lThighMass = 10.037218750000001f, // 10.037f,
             rThighInertia = 28.06726599798177f, // 28.067f,
@@ -86,8 +138,11 @@ public class GameConstants {
     /**
      * Torso parameters.
      */
-    public static final float torsoPosX = 2.525f, torsoPosY = -1.926f, torsoAng = -1.251f, torsoAngAdj =
-            1.651902129f,
+    public static final float
+            torsoPosX = 2.525f, // 2.525f,
+            torsoPosY = -1.92625f, // -1.926f,
+            torsoAng = -1.2509879641316413f, // -1.251f,
+            torsoAngAdj = 1.651902129f,
             torsoMass = 18.6675f, // 18.668f,
             torsoInertia = 79.37576562499999f; // 79.376f;
     public static final float
@@ -99,18 +154,34 @@ public class GameConstants {
     /**
      * Head parameters.
      */
-    public static final float headPosX = 3.896f, headPosY = -5.679f,
-            headAng = 0.058f, headAngAdj = 0.201921414f,
+    public static final float
+            headPosX = 3.8962499999999998f, // 3.896f,
+            headPosY = -5.67875f, // -5.679f,
+            headAng = 0.05799459379421954f, //0.058f,
+            headAngAdj = 0.201921414f,
             headMass = 5.673525f, // 5.674f,
             headInertia = 5.4830127584375f; // 5.483f;
     // Radius is just for collision shape
-    public static final float headR = 1.1f, headFric = 0.2f, headDensity = 1f;
+    public static final float headR = 1.1f;
+    public static final float // Only realized (or cared) as of 4/3/19 that the head shape is also poly, not circle.
+            // This should not affect the dynamics unless the head hits the ground, but knowing QWOP, it might
+            // somehow affect the solver dynamics.
+            headL = 2.645f, // y
+            headW = 2.145f; // x
+    public static final float headFric = 0.2f, headDensity = 1f;
 
     /**
      * Upper arm parameters.
      */
-    public static final float rUArmPosX = 1.165f, rUArmPosY = -3.616f, lUArmPosX = 4.475f, lUArmPosY = -2.911f,
-            rUArmAng = -0.466f, lUArmAng = 0.843f, rUArmAngAdj = 1.571196588f, lUArmAngAdj = -1.690706418f,
+    public static final float
+            rUArmPosX = 1.165f, // 1.165f,
+            rUArmPosY = -3.61625f, // -3.616f,
+            lUArmPosX = 4.475f, // 4.475f,
+            lUArmPosY = -2.91125f, // -2.911f,
+            rUArmAng = -0.4656111060229135f, // -0.466f,
+            lUArmAng = 0.8433813055989805f, // 0.843f,
+            rUArmAngAdj = 1.571196588f,
+            lUArmAngAdj = -1.690706418f,
             rUArmMass = 5.83650625f, // 5.837f,
             lUArmMass = 4.6065f, // 4.6065f,
             rUArmInertia = 8.478990534381511f, // 8.479f,
@@ -126,8 +197,15 @@ public class GameConstants {
     /**
      * Lower arm parameters.
      */
-    public static final float rLArmPosX = 0.3662f, rLArmPosY = -1.248f, lLArmPosX = 5.899f, lLArmPosY = -3.06f,
-            rLArmAng = -1.762f, lLArmAng = -1.251f, rLArmAngAdj = 1.521319096f, lLArmAngAdj = 1.447045854f,
+    public static final float
+            rLArmPosX = 0.36625f, // 0.3662f,
+            rLArmPosY = -1.2475f, // -1.248f,
+            lLArmPosX = 5.89875f, // 5.899f,
+            lLArmPosY = -3.06f, // -3.06f,
+            rLArmAng = -1.7624310072503824f, // -1.762f,
+            lLArmAng = -1.2509879641316413f, // -1.251f,
+            rLArmAngAdj = 1.521319096f,
+            lLArmAngAdj = 1.447045854f,
             rLArmMass = 5.9896375f, // 5.99f,
             lLArmMass = 3.8445000000000005f, // 3.8445f,
             rLArmInertia = 10.768260765983074f, // 10.768f,
@@ -164,12 +242,34 @@ public class GameConstants {
     /**
      * Initial conditions.
      */
-    public static final float rAnklePosX = -0.96750f, rAnklePosY = 7.77200f, lAnklePosX = 3.763f, lAnklePosY = 8.101f,
-            rKneePosX = 1.58f, rKneePosY = 4.11375f, lKneePosX = 3.26250f, lKneePosY = 3.51625f,
-            rHipPosX = 1.260f, rHipPosY = -0.06750f, lHipPosX = 2.01625f, lHipPosY = 0.18125f,
-            rShoulderPosX = 2.24375f, rShoulderPosY = -4.14250f, lShoulderPosX = 3.63875f, lShoulderPosY = -3.58875f,
-            rElbowPosX = -0.06f, rElbowPosY = -2.985f, lElbowPosX = 5.65125f, lElbowPosY = -1.8125f,
-            neckPosX = 3.60400f, neckPosY = -4.581f;
+    public static final float
+            rAnklePosX = -0.96750f,
+            rAnklePosY = 7.77200f,
+            lAnklePosX = 3.763f,
+            lAnklePosY = 8.101f,
+
+            rKneePosX = 1.58f,
+            rKneePosY = 4.11375f,
+            lKneePosX = 3.26250f,
+            lKneePosY = 3.51625f,
+
+            rHipPosX = -2.0668841907153905f, // 1.260f,
+            rHipPosY = -0.3954495760154329f, // -0.06750f,
+            lHipPosX = 0.19684922833513893f, // 2.01625f,
+            lHipPosY = -1.5056794791069776f, // 0.18125f,
+
+            rShoulderPosX = 2.24375f,
+            rShoulderPosY = -4.14250f,
+            lShoulderPosX = 3.63875f,
+            lShoulderPosY = -3.58875f,
+
+            rElbowPosX = -0.06f,
+            rElbowPosY = -2.985f,
+            lElbowPosX = 5.65125f,
+            lElbowPosY = -1.8125f,
+
+            neckPosX = 3.60400f,
+            neckPosY = -4.581f;
 
     /**
      * Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls.

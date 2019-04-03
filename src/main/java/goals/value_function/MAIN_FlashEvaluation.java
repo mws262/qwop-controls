@@ -43,7 +43,8 @@ public class MAIN_FlashEvaluation extends FlashGame {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        printGameInfo();
+//        printGameInfo();
+
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {

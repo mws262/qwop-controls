@@ -126,9 +126,10 @@ public class GameUnified implements IGame, Serializable {
             rUArmShape = new PolygonDef(),
             lUArmShape = new PolygonDef(),
             rLArmShape = new PolygonDef(),
-            lLArmShape = new PolygonDef();
+            lLArmShape = new PolygonDef(),
+            headShape = new PolygonDef();
 
-    private static final CircleDef headShape = new CircleDef();
+//    private static final CircleDef headShape = new CircleDef();
 
     private static final MassData
             rFootMassData = new MassData(),
@@ -287,7 +288,8 @@ public class GameUnified implements IGame, Serializable {
         torsoDef.massData = torsoMassData;
 
         /* HEAD */
-        headShape.radius = (headR);
+//        headShape.radius = (headR);
+        headShape.setAsBox(headW, headL);
         headShape.friction = headFric;
         headShape.density = headDensity;
         headShape.restitution = 0f;
@@ -365,53 +367,64 @@ public class GameUnified implements IGame, Serializable {
         // NOTE: The order of creating bodies actually changes the answers slightly!! This is really dumb, but will
         // affect us if we are trying to match the single and multithreaded version.
 
-        /* TRACK */
-        trackBody = world.createBody(trackDef);
-        trackBody.createShape(trackShape);
+        /* L UPPER ARM */
+        lUArmBody = getWorld().createBody(lUArmDef);
+        lUArmBody.createShape(lUArmShape);
 
-        /* FEET */
+        /* L LOWER ARM */
+        lLArmBody = getWorld().createBody(lLArmDef);
+        lLArmBody.createShape(lLArmShape);
+
+        /* L CALF */
+        lCalfBody = getWorld().createBody(lCalfDef);
+        lCalfBody.createShape(lCalfShape);
+
+        /* LFOOT */
         if (!noFeet) {
-            rFootBody = getWorld().createBody(rFootDef);
             lFootBody = getWorld().createBody(lFootDef);
-            rFootBody.createShape(rFootShape);
             lFootBody.createShape(lFootShape);
         }
 
-        /* CALVES */
-        rCalfBody = getWorld().createBody(rCalfDef);
-        lCalfBody = getWorld().createBody(lCalfDef);
-        rCalfBody.createShape(rCalfShape);
-        lCalfBody.createShape(lCalfShape);
-
-        /* THIGHS */
-        rThighBody = getWorld().createBody(rThighDef);
+        /* L THIGH */
         lThighBody = getWorld().createBody(lThighDef);
-        rThighBody.createShape(rThighShape);
         lThighBody.createShape(lThighShape);
-
-        /* UPPER ARMS */
-        rUArmBody = getWorld().createBody(rUArmDef);
-        lUArmBody = getWorld().createBody(lUArmDef);
-        rUArmBody.createShape(rUArmShape);
-        lUArmBody.createShape(lUArmShape);
-
-        /* LOWER ARMS */
-        rLArmBody = getWorld().createBody(rLArmDef);
-        lLArmBody = getWorld().createBody(lLArmDef);
-        rLArmBody.createShape(rLArmShape);
-        lLArmBody.createShape(lLArmShape);
 
         /* TORSO */
         torsoBody = getWorld().createBody(torsoDef);
         torsoBody.createShape(torsoShape);
 
+        /* R UPPER ARM */
+        rUArmBody = getWorld().createBody(rUArmDef);
+        rUArmBody.createShape(rUArmShape);
+
+        /* R CALF */
+        rCalfBody = getWorld().createBody(rCalfDef);
+        rCalfBody.createShape(rCalfShape);
+
+        /* R THIGH */
+        rThighBody = getWorld().createBody(rThighDef);
+        rThighBody.createShape(rThighShape);
+
+        /* R LOWER ARM */
+        rLArmBody = getWorld().createBody(rLArmDef);
+        rLArmBody.createShape(rLArmShape);
+
         /* HEAD */
         headBody = getWorld().createBody(headDef);
         headBody.createShape(headShape);
 
+        /* RFOOT */
+        if (!noFeet) {
+            rFootBody = getWorld().createBody(rFootDef);
+            rFootBody.createShape(rFootShape);
+        }
+
+        /* TRACK */
+        trackBody = world.createBody(trackDef);
+        trackBody.createShape(trackShape);
+
         allBodies = new Body[]{rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody,
                 lUArmBody, rLArmBody, lLArmBody, rFootBody, lFootBody, headBody};
-
 
 //        BodyDef blockBodyDef = new BodyDef();
 //        PolygonDef blockShapeDef = new PolygonDef();
@@ -435,48 +448,17 @@ public class GameUnified implements IGame, Serializable {
          *  Joints
          */
 
-        if (!noFeet) {
-            //Right Ankle:
-
-            rAnkleJDef = new RevoluteJointDef();
-            rAnkleJDef.initialize(rFootBody, rCalfBody, rAnklePos); //Body1, body2, anchor in world coords
-            rAnkleJDef.enableLimit = true;
-            rAnkleJDef.upperAngle = 0.5f;
-            rAnkleJDef.lowerAngle = -0.5f;
-            rAnkleJDef.enableMotor = false;
-            rAnkleJDef.maxMotorTorque = 2000f;
-            rAnkleJDef.motorSpeed = 0f; // Speed1,2: -2,2
-            rAnkleJDef.collideConnected = false;
-
-            rAnkleJ = (RevoluteJoint) getWorld().createJoint(rAnkleJDef);
-
-            //Left Ankle:
-            lAnkleJDef = new RevoluteJointDef();
-            lAnkleJDef.initialize(lFootBody, lCalfBody, lAnklePos);
-            lAnkleJDef.enableLimit = true;
-            lAnkleJDef.upperAngle = 0.5f;
-            lAnkleJDef.lowerAngle = -0.5f;
-            lAnkleJDef.enableMotor = false;
-            lAnkleJDef.maxMotorTorque = 2000f;
-            lAnkleJDef.motorSpeed = 0f;// Speed1,2: 2,-2
-            lAnkleJDef.collideConnected = false;
-
-            lAnkleJ = (RevoluteJoint) getWorld().createJoint(lAnkleJDef);
-        }
-
-        /* Knee joints */
-        //Right Knee:
-        rKneeJDef = new RevoluteJointDef();
-        rKneeJDef.initialize(rCalfBody, rThighBody, rKneePos);
-        rKneeJDef.enableLimit = true;
-        rKneeJDef.upperAngle = 0.3f;
-        rKneeJDef.lowerAngle = -1.3f;
-        rKneeJDef.enableMotor = true;//?
-        rKneeJDef.maxMotorTorque = 3000f;
-        rKneeJDef.motorSpeed = 0f; //Speeds 1,2: -2.5,2.5
-        rKneeJDef.collideConnected = false;
-
-        rKneeJ = (RevoluteJoint) getWorld().createJoint(rKneeJDef);
+        //Right elbow
+        rElbowJDef = new RevoluteJointDef();
+        rElbowJDef.initialize(rLArmBody, rUArmBody, rElbowPos);
+        rElbowJDef.enableLimit = true;
+        rElbowJDef.upperAngle = 0.5f;
+        rElbowJDef.lowerAngle = -0.1f;
+        rElbowJDef.enableMotor = true;
+        rElbowJDef.maxMotorTorque = 0f;
+        rElbowJDef.motorSpeed = 10f; //TODO: investigate further
+        rElbowJDef.collideConnected = false;
+        rElbowJ = (RevoluteJoint) getWorld().createJoint(rElbowJDef);
 
         //Left Knee:
         lKneeJDef = new RevoluteJointDef();
@@ -491,8 +473,51 @@ public class GameUnified implements IGame, Serializable {
 
         lKneeJ = (RevoluteJoint) getWorld().createJoint(lKneeJDef);
 
-        /* Hip Joints */
+        if (!noFeet) {
 
+            //Left Ankle:
+            lAnkleJDef = new RevoluteJointDef();
+            lAnkleJDef.initialize(lFootBody, lCalfBody, lAnklePos);
+            lAnkleJDef.enableLimit = true;
+            lAnkleJDef.upperAngle = 0.5f;
+            lAnkleJDef.lowerAngle = -0.5f;
+            lAnkleJDef.enableMotor = false;
+            lAnkleJDef.maxMotorTorque = 2000f;
+            lAnkleJDef.motorSpeed = 0f;// Speed1,2: 2,-2
+            lAnkleJDef.collideConnected = false;
+
+            lAnkleJ = (RevoluteJoint) getWorld().createJoint(lAnkleJDef);
+
+            //Right Ankle:
+            rAnkleJDef = new RevoluteJointDef();
+            rAnkleJDef.initialize(rFootBody, rCalfBody, rAnklePos); //Body1, body2, anchor in world coords
+            rAnkleJDef.enableLimit = true;
+            rAnkleJDef.upperAngle = 0.5f;
+            rAnkleJDef.lowerAngle = -0.5f;
+            rAnkleJDef.enableMotor = false;
+            rAnkleJDef.maxMotorTorque = 2000f;
+            rAnkleJDef.motorSpeed = 0f; // Speed1,2: -2,2
+            rAnkleJDef.collideConnected = false;
+
+            rAnkleJ = (RevoluteJoint) getWorld().createJoint(rAnkleJDef);
+        }
+
+        //Right Knee:
+        rKneeJDef = new RevoluteJointDef();
+        rKneeJDef.initialize(rCalfBody, rThighBody, rKneePos);
+        rKneeJDef.enableLimit = true;
+        rKneeJDef.upperAngle = 0.3f;
+        rKneeJDef.lowerAngle = -1.3f;
+        rKneeJDef.enableMotor = true;//?
+        rKneeJDef.maxMotorTorque = 3000f;
+        rKneeJDef.motorSpeed = 0f; //Speeds 1,2: -2.5,2.5
+        rKneeJDef.collideConnected = false;
+
+        rKneeJ = (RevoluteJoint) getWorld().createJoint(rKneeJDef);
+
+
+
+        /* Hip Joints */
         //Right Hip:
         rHipJDef = new RevoluteJointDef();
         rHipJDef.initialize(rThighBody, torsoBody, rHipPos);
@@ -517,31 +542,19 @@ public class GameUnified implements IGame, Serializable {
         lHipJDef.collideConnected = false;
         lHipJ = (RevoluteJoint) getWorld().createJoint(lHipJDef);
 
-        //Neck Joint
-        neckJDef = new RevoluteJointDef();
-        neckJDef.initialize(headBody, torsoBody, neckPos);
-        neckJDef.enableLimit = true;
-        neckJDef.upperAngle = 0f;
-        neckJDef.lowerAngle = -0.5f;
-        neckJDef.enableMotor = true;
-        neckJDef.maxMotorTorque = 1000f; //Arbitrarily large to allow for torque control.
-        neckJDef.motorSpeed = 0f;
-        neckJDef.collideConnected = false;
-        neckJ = (RevoluteJoint) getWorld().createJoint(neckJDef);
+        //Left elbow
+        lElbowJDef = new RevoluteJointDef();
+        lElbowJDef.initialize(lLArmBody, lUArmBody, lElbowPos);
+        lElbowJDef.enableLimit = true;
+        lElbowJDef.upperAngle = 0.5f;
+        lElbowJDef.lowerAngle = -0.1f;
+        lElbowJDef.enableMotor = true;
+        lElbowJDef.maxMotorTorque = 0f;
+        lElbowJDef.motorSpeed = 10f; //TODO: investigate further
+        lElbowJDef.collideConnected = false;
+        lElbowJ = (RevoluteJoint) getWorld().createJoint(lElbowJDef);
 
         /* Arm Joints */
-        //Right shoulder
-        rShoulderJDef = new RevoluteJointDef();
-        rShoulderJDef.initialize(rUArmBody, torsoBody, rShoulderPos);
-        rShoulderJDef.enableLimit = true;
-        rShoulderJDef.upperAngle = 1.5f;
-        rShoulderJDef.lowerAngle = -0.5f;
-        rShoulderJDef.enableMotor = true;
-        rShoulderJDef.maxMotorTorque = 1000f;
-        rShoulderJDef.motorSpeed = 0f; // Speed 1,2: 2,-2
-        rShoulderJDef.collideConnected = false;
-        rShoulderJ = (RevoluteJoint) getWorld().createJoint(rShoulderJDef);
-
         //Left shoulder
         lShoulderJDef = new RevoluteJointDef();
         lShoulderJDef.initialize(lUArmBody, torsoBody, lShoulderPos);
@@ -554,29 +567,29 @@ public class GameUnified implements IGame, Serializable {
         lShoulderJDef.collideConnected = false;
         lShoulderJ = (RevoluteJoint) getWorld().createJoint(lShoulderJDef);
 
-        //Right elbow
-        rElbowJDef = new RevoluteJointDef();
-        rElbowJDef.initialize(rLArmBody, rUArmBody, rElbowPos);
-        rElbowJDef.enableLimit = true;
-        rElbowJDef.upperAngle = 0.5f;
-        rElbowJDef.lowerAngle = -0.1f;
-        rElbowJDef.enableMotor = true;
-        rElbowJDef.maxMotorTorque = 0f;
-        rElbowJDef.motorSpeed = 10f; //TODO: investigate further
-        rElbowJDef.collideConnected = false;
-        rElbowJ = (RevoluteJoint) getWorld().createJoint(rElbowJDef);
+        //Right shoulder
+        rShoulderJDef = new RevoluteJointDef();
+        rShoulderJDef.initialize(rUArmBody, torsoBody, rShoulderPos);
+        rShoulderJDef.enableLimit = true;
+        rShoulderJDef.upperAngle = 1.5f;
+        rShoulderJDef.lowerAngle = -0.5f;
+        rShoulderJDef.enableMotor = true;
+        rShoulderJDef.maxMotorTorque = 1000f;
+        rShoulderJDef.motorSpeed = 0f; // Speed 1,2: 2,-2
+        rShoulderJDef.collideConnected = false;
+        rShoulderJ = (RevoluteJoint) getWorld().createJoint(rShoulderJDef);
 
-        //Left elbow
-        lElbowJDef = new RevoluteJointDef();
-        lElbowJDef.initialize(lLArmBody, lUArmBody, lElbowPos);
-        lElbowJDef.enableLimit = true;
-        lElbowJDef.upperAngle = 0.5f;
-        lElbowJDef.lowerAngle = -0.1f;
-        lElbowJDef.enableMotor = true;
-        lElbowJDef.maxMotorTorque = 0f;
-        lElbowJDef.motorSpeed = 10f; //TODO: investigate further
-        lElbowJDef.collideConnected = false;
-        lElbowJ = (RevoluteJoint) getWorld().createJoint(lElbowJDef);
+        //Neck Joint
+        neckJDef = new RevoluteJointDef();
+        neckJDef.initialize(headBody, torsoBody, neckPos);
+        neckJDef.enableLimit = true;
+        neckJDef.upperAngle = 0f;
+        neckJDef.lowerAngle = -0.5f;
+        neckJDef.enableMotor = true;
+        neckJDef.maxMotorTorque = 1000f; //Arbitrarily large to allow for torque control.
+        neckJDef.motorSpeed = 0f;
+        neckJDef.collideConnected = false;
+        neckJ = (RevoluteJoint) getWorld().createJoint(neckJDef);
 
         //My current understanding is that the shapes never change. Only the transforms. Hence, this is now static and we only capture the states once.
         if (shapeList[0] == null) {
