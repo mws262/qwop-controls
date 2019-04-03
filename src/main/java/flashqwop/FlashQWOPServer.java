@@ -221,7 +221,7 @@ public class FlashQWOPServer {
                     if (reader.ready()) {
                         String msg = reader.readLine().replace("\u0000", ""); // JSON parser hates the null character
                         // in front.
-                        //System.out.println(msg);
+                        System.out.println(msg);
 
                         if (msg.contains("{")) {
                             JSONObject stateFromFlash = new JSONObject(msg);
