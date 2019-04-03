@@ -643,9 +643,9 @@ public class GameUnified implements IGame, Serializable {
 
         //For now, using motors with high speed settings and torque limits to simulate springs. I don't know a better way for now.
 
-        neckJ.m_motorSpeed = (1000f * Math.signum(NeckTorque)); //If torque is negative, make motor speed negative.
-        rElbowJ.m_motorSpeed = (1000f * Math.signum(RElbowTorque));
-        lElbowJ.m_motorSpeed = (1000f * Math.signum(LElbowTorque));
+        neckJ.m_motorSpeed = (1000000f * Math.signum(NeckTorque)); //If torque is negative, make motor speed negative.
+        rElbowJ.m_motorSpeed = (1000000f * Math.signum(RElbowTorque));
+        lElbowJ.m_motorSpeed = (1000000f * Math.signum(LElbowTorque));
 
         neckJ.m_maxMotorTorque = (Math.abs(NeckTorque));
         rElbowJ.m_maxMotorTorque = (Math.abs(RElbowTorque));
