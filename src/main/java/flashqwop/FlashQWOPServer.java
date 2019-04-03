@@ -221,7 +221,7 @@ public class FlashQWOPServer {
                     if (reader.ready()) {
                         String msg = reader.readLine().replace("\u0000", ""); // JSON parser hates the null character
                         // in front.
-                        System.out.println(msg);
+                        //System.out.println(msg);
 
                         if (msg.contains("{")) {
                             JSONObject stateFromFlash = new JSONObject(msg);
@@ -235,13 +235,17 @@ public class FlashQWOPServer {
                                 for (QWOPStateListener listener : listenerList) {
                                     listener.stateReceived(getCurrentTimestep(), st);
                                 }
+                                // System.out.println(stateFromFlash.toString(2));
+
                             } else {
                                 System.out.println(stateFromFlash.toString(2));
                             }
                         }
-//                        else {
-//                            System.out.println(msg); // TODO handle other messages.
-//                        }
+                        else {
+                            if (getCurrentTimestep() == 0) {
+                                System.out.println(msg); // TODO handle other messages.
+                            }
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

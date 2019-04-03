@@ -48,9 +48,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add( // No Keys
                 getCallable(fullState, currentNode, Action.Keys.none, 1, 15));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 1, 25));
+                getCallable(fullState, currentNode, Action.Keys.qp, 1, 35));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 1, 25));
+                getCallable(fullState, currentNode, Action.Keys.wo, 1, 35));
         evaluations.add( // Q
                 getCallable(fullState, currentNode, Action.Keys.q, 1, 5));
         evaluations.add( // W
@@ -117,7 +117,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
         return () -> {
             GameUnified gameLocal = new GameUnified();
-            gameLocal.iterations = 20;
+            gameLocal.iterations = 10;
 //            gameLocal.useWarmStarting = false;
             gameLocal.makeNewWorld();
 
@@ -125,7 +125,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             EvaluationResult bestResult = new EvaluationResult();
             for (int i = minDuration; i < maxDuration; i++) {
 //                gameLocal.applyBodyImpulse(0f, 0.0015f);
-                if (i > 1) {
+                if (i > 15) {
                     gameLocal.iterations = 5;
                 }
                 gameLocal.step(buttons);
