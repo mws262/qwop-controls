@@ -56,6 +56,7 @@ public class CompareFlashToJava extends FlashGame {
     public Action getControlAction(State state) {
         return null;
     }
+
     int tp = 0;
     @Override
     public void reportGameStatus(State state, boolean[] command, int timestep) {
@@ -66,14 +67,12 @@ public class CompareFlashToJava extends FlashGame {
         if (timestep == 0) {
             gameJava.makeNewWorld();
             gameJava.iterations = 5;
-            tp += 10;
-        }else if (timestep == tp) {
-            gameJava.makeNewWorld();
+//            gameJava.step(false, false, false, false);
 
-            gameJava.setState(state);
-
-
-//            gameJava.applyBodyImpulse(-150, 0f);
+//            tp += 10;
+//        }else if (timestep == tp) {
+//            gameJava.makeNewWorld();
+//            gameJava.setState(state);
         } else {
             if (timestep < tp + 5 && timestep > tp)
                     gameJava.iterations = 5;

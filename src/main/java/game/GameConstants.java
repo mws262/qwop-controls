@@ -243,33 +243,33 @@ Note that all bodies are done first, and then joints afterwards.
      * Initial conditions.
      */
     public static final float
-            rAnklePosX = -0.96750f,
-            rAnklePosY = 7.77200f,
-            lAnklePosX = 3.763f,
-            lAnklePosY = 8.101f,
+            rAnklePosX = -1.395f, // -0.96750f,
+            rAnklePosY = 7.090000000000001f, // 7.77200f,
+            lAnklePosX = 3.15125f, // 3.763f,
+            lAnklePosY = 7.946250000000001f, // 8.101f,
 
-            rKneePosX = 1.58f,
-            rKneePosY = 4.11375f,
-            lKneePosX = 3.26250f,
-            lKneePosY = 3.51625f,
+            rKneePosX = 1.5800000000000005f, // 1.58f,
+            rKneePosY = 4.1137500000000005f, // 4.11375f,
+            lKneePosX = 3.2625f, // 3.26250f,
+            lKneePosY = 3.5162500000000003f, // 3.51625f,
 
-            rHipPosX = -2.0668841907153905f, // 1.260f,
-            rHipPosY = -0.3954495760154329f, // -0.06750f,
-            lHipPosX = 0.19684922833513893f, // 2.01625f,
-            lHipPosY = -1.5056794791069776f, // 0.18125f,
+            rHipPosX = 1.26f, // 1.260f,
+            rHipPosY = -0.06750000000000012f, // -0.06750f,
+            lHipPosX = 2.0162500000000003f, // 2.01625f,
+            lHipPosY = 0.1825000000000001f, // 0.18125f,
 
-            rShoulderPosX = 2.24375f,
-            rShoulderPosY = -4.14250f,
-            lShoulderPosX = 3.63875f,
-            lShoulderPosY = -3.58875f,
+            rShoulderPosX = 2.24375f, // 2.24375f,
+            rShoulderPosY = -4.1425f, // -4.14250f,
+            lShoulderPosX = 3.6387500000000004f, // 3.63875f,
+            lShoulderPosY = -3.58875f, // -3.58875f,
 
-            rElbowPosX = -0.06f,
-            rElbowPosY = -2.985f,
-            lElbowPosX = 5.65125f,
-            lElbowPosY = -1.8125f,
+            rElbowPosX = -0.06f, // -0.06f,
+            rElbowPosY = -2.9850000000000003f, // -2.985f,
+            lElbowPosX = 5.65125f, // 5.65125f,
+            lElbowPosY = -1.8125f, // -1.8125f,
 
-            neckPosX = 3.60400f,
-            neckPosY = -4.581f;
+            neckPosX = 3.6037500000000002f, // 3.60400f,
+            neckPosY = -4.58125f; // -4.581f;
 
     /**
      * Angle failure limits. Fail if torso angle is too big or small to rule out stupid hopping that eventually falls.

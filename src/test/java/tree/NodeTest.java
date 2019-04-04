@@ -617,8 +617,8 @@ public class NodeTest {
         node3_3_4.setState(unfailedState);
         Assert.assertEquals(unfailedState, node3_3_4.getState());
 
-        exception.expect(IllegalStateException.class);
-        rootNode.setState(unfailedState);
+//        exception.expect(IllegalStateException.class);
+//        rootNode.setState(unfailedState); // Changed this to be allowed behavior
     }
 
     @Test

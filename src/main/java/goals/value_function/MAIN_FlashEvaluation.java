@@ -24,7 +24,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
             new Action(20, Action.Keys.qp),
             new Action(1, Action.Keys.p),
             new Action(18, Action.Keys.qp),
-            new Action(3, Action.Keys.wo),
+//            new Action(3, Action.Keys.wo),
 
     };
 
@@ -44,12 +44,6 @@ public class MAIN_FlashEvaluation extends FlashGame {
             e.printStackTrace();
         }
 //        printGameInfo();
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         restart();
     }
 
