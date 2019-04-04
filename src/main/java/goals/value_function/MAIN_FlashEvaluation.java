@@ -20,10 +20,10 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     Action[] prefix = new Action[]{
             new Action(7, Action.Keys.none),
-            new Action(49, Action.Keys.wo),
-            new Action(20, Action.Keys.qp),
-            new Action(1, Action.Keys.p),
-            new Action(18, Action.Keys.qp),
+//            new Action(49, Action.Keys.wo),
+//            new Action(20, Action.Keys.qp),
+//            new Action(1, Action.Keys.p),
+//            new Action(19, Action.Keys.qp),
 //            new Action(3, Action.Keys.wo),
 
     };
@@ -71,7 +71,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("chk5");
+        valueFunction.loadCheckpoint("chk_after273");//chk_after1");
     }
 
     public static void main(String[] args) {

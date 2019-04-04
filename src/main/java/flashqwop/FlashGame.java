@@ -38,7 +38,7 @@ public abstract class FlashGame implements QWOPStateListener {
     public FlashGame() {
         server = new FlashQWOPServer();
         server.addStateListener(this);
-        restart();
+        //restart();
     }
 
     /**
@@ -93,7 +93,7 @@ public abstract class FlashGame implements QWOPStateListener {
             return;
         } else if (state.isFailed()) { // If the runner falls, auto-restart. TODO may want to not do this automatically.
             reportGameStatus(state, prevCommand, timestep);
-            restart();
+           // restart();
             return;
         }
         reportGameStatus(state, prevCommand, timestep);

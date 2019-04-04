@@ -46,11 +46,11 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
         List<EvaluationResult> evalResults = new ArrayList<>();
         evaluations.add( // No Keys
-                getCallable(fullState, currentNode, Action.Keys.none, 1, 15));
+                getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 1, 30));
+                getCallable(fullState, currentNode, Action.Keys.qp, 1, 35));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 1, 30));
+                getCallable(fullState, currentNode, Action.Keys.wo, 1, 35));
         evaluations.add( // Q
                 getCallable(fullState, currentNode, Action.Keys.q, 1, 5));
         evaluations.add( // W
@@ -111,31 +111,54 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         };
     }
 
+    @SuppressWarnings("Duplicates")
     private Callable<EvaluationResult> getCallable(State gameStartingState, INode startingNode,
                                                    Action.Keys keys, int minDuration, int maxDuration) {
         boolean[] buttons = Action.keysToBooleans(keys);
 
         return () -> {
             GameUnified gameLocal = new GameUnified();
-            gameLocal.iterations = 10;
+            gameLocal.iterations = 25;
 //            gameLocal.useWarmStarting = false;
             gameLocal.makeNewWorld();
 
             gameLocal.setState(gameStartingState);
             EvaluationResult bestResult = new EvaluationResult();
+            //System.out.println("end " + keys.toString());
+            float val1 = 0;
+            float val2 = 0;
+            float val3 = 0;
             for (int i = minDuration; i < maxDuration; i++) {
-                gameLocal.applyBodyImpulse(-0.1f, 0.000f);
-                if (i > 5) {
+//                gameLocal.applyBodyImpulse(-0.0005f, 0.0012f);
+                if (i > 2) {
                     gameLocal.iterations = 5;
                 }
                 gameLocal.step(buttons);
                 State st = gameLocal.getCurrentState();
                 INode nextNode = new NodePlaceholder(startingNode, new Action(i, buttons), st);
-                float val = evaluate(nextNode);
-                if (val > bestResult.value) {
-                    bestResult.value = val;
-                    bestResult.timestep = i;
-                    bestResult.keys = keys;
+                val1 = val2;
+                val2 = val3;
+                val3 = evaluate(nextNode);
+                if (i == minDuration) {
+                   // val1 = val3;
+                    val2 = val3 * 3f/4f;
+                }
+                if (i > minDuration) {
+//                System.out.println(val);
+//                    float sum = val1;
+//                    if (val2 < sum) {
+//                        sum = val2;
+//                    }
+//                    if (val3 < sum) {
+//                        sum = val3;
+//                    }
+                    float sum = val1 + val2 + val3;
+
+                    if (sum > bestResult.value) {
+                        bestResult.value = sum;
+                        bestResult.timestep = i - 1;
+                        bestResult.keys = keys;
+                    }
                 }
             }
             return bestResult;
@@ -157,7 +180,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
         List<EvaluationResult> evalResults = new ArrayList<>();
         evaluations.add( // No Keys
-                getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.none, 1, 15));
         evaluations.add( // QP
                 getCallable(fullState, currentNode, Action.Keys.qp, 1, 30));
         evaluations.add( // WO
