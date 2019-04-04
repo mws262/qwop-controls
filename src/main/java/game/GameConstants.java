@@ -60,7 +60,7 @@ Note that all bodies are done first, and then joints afterwards.
      * Track parameters.
      */
     public static final float trackPosX = -30f, trackPosY = 8.90813f + 3.67f, trackFric = 1f, trackRest = 0.2f,
-            trackXDim = 1000f, trackYDim = 3.67f;
+            trackXDim = 1050, trackYDim = 3.67f;
 
     /**
      * Foot parameters.

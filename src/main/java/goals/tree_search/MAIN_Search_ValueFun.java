@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
@@ -43,8 +45,13 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         int getToSteadyDepth = Integer.parseInt(properties.getProperty("getToSteadyDepth", "100"));
         int netTrainingStepsPerIter = Integer.parseInt(properties.getProperty("netTrainingStepsPerIter", "20"));
 
-
         int numWorkersToUse = (int) Math.max(1, maxWorkerFraction * maxWorkers);
+
+        ExecutorService labelUpdater = null;
+        if (!headless) {
+            labelUpdater = Executors.newSingleThreadExecutor();
+        }
+
 
         // Make new tree root and assign to GUI.
         // Assign default available actions.
@@ -56,15 +63,15 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
-                new Action(1,false,false,false,false),
-//                new Action(34,false,true,true,false),
-//                new Action(19,false,false,false,false),
-//                new Action(45,true,false,false,true),
-//
-//                new Action(10,false,false,false,false),
-//                new Action(27,false,true,true,false),
-//                new Action(8,false,false,false,false),
-//                new Action(20,true,false,false,true),
+                new Action(7,false,false,false,false),
+                new Action(11,false,true,true,false),
+                new Action(10,false,false,false,false),
+                new Action(21,true,false,false,true),
+
+                new Action(27,false,false,false,false),
+                new Action(21,false,true,true,false),
+                new Action(30,false,false,false,false),
+                new Action(21,true,false,false,true),
         });
 
         Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
@@ -83,28 +90,17 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         ArrayList<Integer> hiddenLayerSizes = new ArrayList<>();
         hiddenLayerSizes.add(128);
         hiddenLayerSizes.add(32);
-//        List<String> extraNetworkArgs = new ArrayList<>();
-//        extraNetworkArgs.add("--learnrate");
-//        extraNetworkArgs.add("1e-4");
+        List<String> extraNetworkArgs = new ArrayList<>();
+        extraNetworkArgs.add("--learnrate");
+        extraNetworkArgs.add("1e-4");
 
-//        ValueFunction_TensorFlow_ActionIn valueFunction = null;
-//        try {
-//            valueFunction = ValueFunction_TensorFlow_ActionIn.makeNew("tmp3",
-//                    hiddenLayerSizes);
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//
-//        valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
-//        valueFunction.setTrainingBatchSize(100);
-
-//        ValueFunction_TensorFlow_StateOnly valueFunction = null;
-//        try {
-//            valueFunction = new ValueFunction_TensorFlow_StateOnly("state_only_w_roll",
-//                    hiddenLayerSizes, new ArrayList<>());
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
+        ValueFunction_TensorFlow_StateOnly valueFunction = null;
+        try {
+            valueFunction = new ValueFunction_TensorFlow_StateOnly("state_only_aftergamerevisions",
+                    hiddenLayerSizes, extraNetworkArgs);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 //
 //        assert valueFunction != null;
 //
@@ -124,14 +120,18 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
 //        valueFunction.loadCheckpoint("chk1");
         // Load a value function controller.
-        ValueFunction_TensorFlow valueFunction = null;
-        try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/state_only.pb"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        valueFunction.loadCheckpoint("chk4");
+
+
+
+
+//        ValueFunction_TensorFlow valueFunction = null;
+//        try {
+//            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
+//                    "/state_only.pb"));
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+        valueFunction.loadCheckpoint("chk_after168");
 
         valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
         valueFunction.setTrainingBatchSize(100);
@@ -171,13 +171,18 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             valueFunction.update(nodesBelow);
             Utility.toc();
 
-            for (Node n : nodesBelow) {
-                n.nodeLabelAlt = String.format("%.2f", valueFunction.evaluate(n));
+            if (!headless) {
+                ValueFunction_TensorFlow_StateOnly finalValueFunction = valueFunction;
+                Runnable updateLabels = () -> {
+                    for (Node n : nodesBelow) {
+                        n.nodeLabelAlt = String.format("%.2f", finalValueFunction.evaluate(n));
+                    }
+                };
+                labelUpdater.execute(updateLabels);
             }
-
 //             Save a checkpoint of the weights/biases.
 //            if (k % 2 == 0) {
-                valueFunction.saveCheckpoint("chk5");
+                valueFunction.saveCheckpoint("chk_after" + (k + 169));
                 System.out.println("Saved");
 //            }
         }
