@@ -85,7 +85,7 @@ public abstract class FlashGame implements QWOPStateListener {
             System.out.println("zero timestep");
             awaitingRestart = false;
             actionQueue.clearAll();
-            actionQueue.addSequence(getActionSequenceFromBeginning());
+            actionQueue.addSequence(getActionSequenceFromBeginning()); // TODO Should not be here
             prevCommand = null;
             timestepsTracked = 0;
         } else if (awaitingRestart) { // If a restart has been commanded, but has not finished occurring on the Flash

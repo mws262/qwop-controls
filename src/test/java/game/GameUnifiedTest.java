@@ -35,7 +35,7 @@ public class GameUnifiedTest {
         }
         Assert.assertTrue(stateDiff > 1e-10);
 
-        game.holdKeysForTimesteps(100, true, false, false, true);
+        game.holdKeysForTimesteps(100, false, false, true, false);
 
         Assert.assertTrue(game.getFailureStatus());
 
@@ -105,7 +105,7 @@ public class GameUnifiedTest {
     public void getFailureStatus() {
         GameUnified game = new GameUnified();
         Assert.assertFalse(game.getFailureStatus());
-        game.holdKeysForTimesteps(100, true, false, false, true);
+        game.holdKeysForTimesteps(100, false, false, true, false);
         Assert.assertTrue(game.getFailureStatus());
     }
 
@@ -180,43 +180,46 @@ public class GameUnifiedTest {
     public void adjustRealQWOPStateToSimState() { //TODO need to fix the actual method first.
     }
 
-    /**
-     * This test uses some saved data, with states at every timestep to make sure that the simulation can still
-     * reproduce it when fed the same commands. This alerts us if any changes have altered the behavior of GameThreadSafe
-     * without our knowledge.
-     */
-    @Test
-    public void testForAccidentalChanges() {
-        File exampleRunFile = new File("src/test/resources/saved_data_examples/example_run.TFRecord");
-        List<SequenceExample> dataSeries = null;
-        try {
-            dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(exampleRunFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    // Revisions to the game have occurred and the save is no longer a valid test. Once the game changes have
+    // solidified, I should TODO add another
 
-        Assert.assertEquals(1, Objects.requireNonNull(dataSeries).size()); // This example data should contain one run.
-        State[] loadedStates = TFRecordDataParsers.getStatesFromLoadedSequence(dataSeries.get(0));
-        List<Action> loadedActions = TFRecordDataParsers.getActionsFromLoadedSequence(dataSeries.get(0));
-
-        GameUnified game = new GameUnified();
-        ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addSequence(loadedActions);
-
-        int count = 0;
-        while (!actionQueue.isEmpty()) {
-            float[] stSim = game.getCurrentState().flattenState();
-            float[] stLoad = loadedStates[count].flattenState();
-
-            for (int i = 0; i < stSim.length; i++) {
-                Assert.assertEquals(stLoad[i], stSim[i], 1e-10);
-            }
-
-            boolean[] command = actionQueue.pollCommand();
-            game.step(command);
-            count++;
-        }
-    }
+//    /**
+//     * This test uses some saved data, with states at every timestep to make sure that the simulation can still
+//     * reproduce it when fed the same commands. This alerts us if any changes have altered the behavior of GameThreadSafe
+//     * without our knowledge.
+//     */
+//    @Test
+//    public void testForAccidentalChanges() {
+//        File exampleRunFile = new File("src/test/resources/saved_data_examples/example_run.TFRecord");
+//        List<SequenceExample> dataSeries = null;
+//        try {
+//            dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(exampleRunFile);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        Assert.assertEquals(1, Objects.requireNonNull(dataSeries).size()); // This example data should contain one run.
+//        State[] loadedStates = TFRecordDataParsers.getStatesFromLoadedSequence(dataSeries.get(0));
+//        List<Action> loadedActions = TFRecordDataParsers.getActionsFromLoadedSequence(dataSeries.get(0));
+//
+//        GameUnified game = new GameUnified();
+//        ActionQueue actionQueue = new ActionQueue();
+//        actionQueue.addSequence(loadedActions);
+//
+//        int count = 0;
+//        while (!actionQueue.isEmpty()) {
+//            float[] stSim = game.getCurrentState().flattenState();
+//            float[] stLoad = loadedStates[count].flattenState();
+//
+//            for (int i = 0; i < stSim.length; i++) {
+//                Assert.assertEquals(stLoad[i], stSim[i], 1e-10);
+//            }
+//
+//            boolean[] command = actionQueue.pollCommand();
+//            game.step(command);
+//            count++;
+//        }
+//    }
 
     @Test
     public void getToSameEndAfterReload() {
