@@ -3,6 +3,7 @@ package flashqwop;
 import actions.Action;
 import actions.ActionQueue;
 import game.State;
+import game.StateVariable;
 
 import java.util.Arrays;
 
@@ -21,6 +22,11 @@ public abstract class FlashGame implements QWOPStateListener {
 
     FlashQWOPServer server;
     private ActionQueue actionQueue = new ActionQueue();
+
+    /**
+     * Using velocity estimation or use the "cheating" exact result.
+     */
+    public boolean velocityEstimation = false;
 
     /**
      * Keeps track of the most-recently sent command, so that commands only need to be sent on transitions.
@@ -78,6 +84,7 @@ public abstract class FlashGame implements QWOPStateListener {
         server.sendInfoRequest();
     }
 
+    private State previousState;
     @Override
     public synchronized void stateReceived(int timestep, State state) {
         // New run has started. Add the sequence of actions from the beginning.
@@ -88,6 +95,7 @@ public abstract class FlashGame implements QWOPStateListener {
             actionQueue.addSequence(getActionSequenceFromBeginning()); // TODO Should not be here
             prevCommand = null;
             timestepsTracked = 0;
+            previousState = state;
         } else if (awaitingRestart) { // If a restart has been commanded, but has not finished occurring on the Flash
             // side, then just wait.
             return;
@@ -103,7 +111,14 @@ public abstract class FlashGame implements QWOPStateListener {
 
         // Get a new Action if one is required.
         if (actionQueue.isEmpty()) {
-            Action a = getControlAction(state);
+            // TESTING FINITE DIFFERENCE STUFF TEMP
+            State st;
+            if (velocityEstimation) {
+                st = doFiniteDifferenceVelocityTransformation(previousState, state);
+            } else {
+                st = state;
+            }
+            Action a = getControlAction(st);
             if (a == null) {
                 return;
             }
@@ -117,7 +132,7 @@ public abstract class FlashGame implements QWOPStateListener {
             server.sendCommand(nextCommand);
         }
         prevCommand = nextCommand;
-
+        previousState = state;
         // Check to make sure the controller didn't take way too long. This is not the most robust way to do this,
         // but it's better to at least know that this is occurring.
         long controlEvalTime = System.currentTimeMillis() - timeBeforeController;
@@ -125,5 +140,25 @@ public abstract class FlashGame implements QWOPStateListener {
             System.out.println("Warning: the control loop time was " + controlEvalTime + "ms. This might be too high.");
         }
         timestepsTracked++;
+    }
+
+
+    /**
+     * Pretend that states don't include velocity and estimate the velocity using finite differences.
+     */
+    private static State doFiniteDifferenceVelocityTransformation(State statePrev, State stateCurrent) {
+        StateVariable[] svCurrent = stateCurrent.getStates();
+        StateVariable[] svPrev = statePrev.getStates();
+
+        StateVariable[] svOut = new StateVariable[svCurrent.length];
+        for (int i = 0; i < svCurrent.length; i++) {
+            svOut[i] = new StateVariable(svCurrent[i].getX(), svCurrent[i].getY(), svCurrent[i].getTh(),
+                    (svCurrent[i].getX() - svPrev[i].getX())/0.04f,
+                    (svCurrent[i].getY() - svPrev[i].getY())/0.04f,
+                    (svCurrent[i].getTh() - svPrev[i].getTh())/0.04f);
+
+        }
+        return new State(svOut[0], svOut[1], svOut[2], svOut[3], svOut[4], svOut[5], svOut[6], svOut[7], svOut[8],
+                svOut[9], svOut[10], svOut[11], false);
     }
 }
