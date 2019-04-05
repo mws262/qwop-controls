@@ -7,6 +7,7 @@ import flashqwop.FlashQWOPServer;
 import flashqwop.QWOPStateListener;
 import game.GameUnified;
 import game.State;
+import game.StateVariable;
 import tree.Node;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -77,4 +78,5 @@ public class MAIN_FlashEvaluation extends FlashGame {
     public static void main(String[] args) {
         MAIN_FlashEvaluation controller = new MAIN_FlashEvaluation();
     }
+
 }

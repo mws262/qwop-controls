@@ -73,8 +73,8 @@ public class State implements Serializable {
         llarm = new StateVariable(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70],
                 stateVars[71]);
 
-        stateVariables = new StateVariable[]{body, rthigh, lthigh, rcalf, lcalf,
-                rfoot, lfoot, ruarm, luarm, rlarm, llarm, head};
+        stateVariables = new StateVariable[]{body, head, rthigh, lthigh, rcalf, lcalf,
+                rfoot, lfoot, ruarm, luarm, rlarm, llarm};
 
         failedState = isFailed;
     }
@@ -115,8 +115,8 @@ public class State implements Serializable {
         llarm = llarmS;
         failedState = isFailed;
 
-        stateVariables = new StateVariable[]{body, rthigh, lthigh, rcalf, lcalf,
-                rfoot, lfoot, ruarm, luarm, rlarm, llarm, head};
+        stateVariables = new StateVariable[]{body, head, rthigh, lthigh, rcalf, lcalf,
+                rfoot, lfoot, ruarm, luarm, rlarm, llarm};
     }
 
     /**

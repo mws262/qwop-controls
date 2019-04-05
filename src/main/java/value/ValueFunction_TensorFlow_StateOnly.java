@@ -4,6 +4,7 @@ import actions.Action;
 import game.GameUnified;
 import game.IGame;
 import game.State;
+import game.StateVariable;
 import tree.INode;
 import tree.Node;
 import tree.NodePlaceholder;
@@ -141,7 +142,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 val3 = evaluate(nextNode);
                 if (i == minDuration) {
                    // val1 = val3;
-                    val2 = val3 * 3f/4f;
+                    val2 = val3 * 4f/4f;
                 }
                 if (i > minDuration) {
 //                System.out.println(val);
