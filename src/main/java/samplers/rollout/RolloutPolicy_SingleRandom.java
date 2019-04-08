@@ -22,7 +22,7 @@ public class RolloutPolicy_SingleRandom extends RolloutPolicy {
         actionQueue.clearAll();
         Node normalRolloutEndNode = randomRollout(startNode, game);
 
-        return evaluationFunction.getValue(normalRolloutEndNode);
+        return evaluationFunction.getValue(normalRolloutEndNode) - evaluationFunction.getValue(startNode);
     }
 
     @Override

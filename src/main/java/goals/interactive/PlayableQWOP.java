@@ -34,6 +34,11 @@ public class PlayableQWOP extends JPanel implements KeyListener, ActionListener 
             game = new GameUnified();
         }
         game.step(q, w, o, p); // Step the game forward 1 timestep with the specified keys pressed.
+        float[] st = game.getCurrentState().flattenState();
+        for (float f : st){
+            System.out.print(f + ", ");
+        }
+        System.out.println();
         repaint(); // Redraw the runner and scene.
     }
 

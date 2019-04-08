@@ -119,7 +119,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
         return () -> {
             GameUnified gameLocal = new GameUnified();
-            gameLocal.iterations = 25;
+            gameLocal.iterations = 5;
 //            gameLocal.useWarmStarting = false;
             gameLocal.makeNewWorld();
 
@@ -153,7 +153,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 //                    if (val3 < sum) {
 //                        sum = val3;
 //                    }
-                    float sum = val1 + val2 + val3;
+                    float sum = (val1 + val2 + val3)/3f;
 
                     if (sum > bestResult.value) {
                         bestResult.value = sum;
@@ -183,9 +183,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add( // No Keys
                 getCallable(fullState, currentNode, Action.Keys.none, 1, 15));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 1, 30));
+                getCallable(fullState, currentNode, Action.Keys.qp, 1, 35));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 1, 30));
+                getCallable(fullState, currentNode, Action.Keys.wo, 1, 35));
         evaluations.add( // Q
                 getCallable(fullState, currentNode, Action.Keys.q, 1, 5));
         evaluations.add( // W
