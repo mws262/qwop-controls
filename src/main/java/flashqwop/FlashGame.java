@@ -4,7 +4,9 @@ import actions.Action;
 import actions.ActionQueue;
 import game.State;
 import game.StateVariable;
+import hardware.ArduinoSerial;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -35,6 +37,7 @@ public abstract class FlashGame implements QWOPStateListener {
 
     private boolean awaitingRestart = true;
 
+    ArduinoSerial serial;
     /**
      * Keeps track of the number of timesteps received since the beginning of a game to make sure that we haven't
      * lost timestep data in limbo.
@@ -45,6 +48,11 @@ public abstract class FlashGame implements QWOPStateListener {
         server = new FlashQWOPServer();
         server.addStateListener(this);
         //restart();
+        try {
+            serial = new ArduinoSerial();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -129,7 +137,14 @@ public abstract class FlashGame implements QWOPStateListener {
         // Only send command when it's different from the previous.
         boolean[] nextCommand = actionQueue.pollCommand();
         if (!Arrays.equals(prevCommand, nextCommand)) {
-            server.sendCommand(nextCommand);
+
+            try {
+                serial.doCommand(nextCommand[0], nextCommand[1], nextCommand[2], nextCommand[3]);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+//            server.sendCommand(nextCommand);
         }
         prevCommand = nextCommand;
         previousState = state;
