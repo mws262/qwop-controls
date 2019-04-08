@@ -66,11 +66,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         ValueFunction_TensorFlow valueFunction = null;
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/state_only.pb"));
+                    "/state_only_aftergamerevisions.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("chk_after145"); // chk5");
+        valueFunction.loadCheckpoint("chk_small52"); // chk_after565"); // chk5");
 
         // Assign potential actions for the value function to choose among.
         ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 30).toArray(), new boolean[]{false, false,
@@ -93,7 +93,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         // Assign a "prefix" of actions, since I'm not sure if the controller will generalize to this part of running.
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
-                new Action(1,false,false,false,false),
+                new Action(7,false,false,false,false),
 //                new Action(34,false,true,true,false),
 //                new Action(19,false,false,false,false),
 //                new Action(45,true,false,false,true),

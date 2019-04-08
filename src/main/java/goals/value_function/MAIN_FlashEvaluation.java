@@ -68,11 +68,11 @@ public class MAIN_FlashEvaluation extends FlashGame {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/state_only.pb"));
+                    "/state_only_aftergamerevisions.pb")); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("chk_after273");//chk_after1");
+        valueFunction.loadCheckpoint("chk_small52"); // _after439");//273");//chk_after1");
     }
 
     public static void main(String[] args) {
