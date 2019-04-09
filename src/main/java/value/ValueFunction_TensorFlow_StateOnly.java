@@ -129,7 +129,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             float val2 = 0;
             float val3 = 0;
             for (int i = minDuration; i < maxDuration; i++) {
-//                gameLocal.applyBodyImpulse(-0.0005f, 0.0012f);
+//                gameLocal.applyBodyImpulse(0.00f, 0.0001f);
                 if (i > 2) {
                     gameLocal.iterations = 5;
                 }

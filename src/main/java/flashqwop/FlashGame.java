@@ -106,10 +106,22 @@ public abstract class FlashGame implements QWOPStateListener {
             previousState = state;
         } else if (awaitingRestart) { // If a restart has been commanded, but has not finished occurring on the Flash
             // side, then just wait.
+
             return;
         } else if (state.isFailed()) { // If the runner falls, auto-restart. TODO may want to not do this automatically.
             reportGameStatus(state, prevCommand, timestep);
-           // restart();
+            try {
+                serial.doCommand(false, false, false, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            restart();
             return;
         }
         reportGameStatus(state, prevCommand, timestep);
