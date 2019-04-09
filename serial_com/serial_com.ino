@@ -86,9 +86,9 @@ void loop() {
 
   if (QWOP[0] != previousQWOP[0]){
     if (QWOP[0] == 1){
-        analogWrite(QPin, 255);
+        digitalWrite(QPin, HIGH);
     }else if(QWOP[0] == 0){
-        analogWrite(QPin, 0);
+        digitalWrite(QPin, LOW);
     }
     previousQWOP[0] = QWOP[0];
     lastTransition[0] = 0;

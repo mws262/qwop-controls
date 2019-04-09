@@ -21,8 +21,8 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     Action[] prefix = new Action[]{
             new Action(7, Action.Keys.none),
-            new Action(49, Action.Keys.wo),
-            new Action(20, Action.Keys.qp),
+//            new Action(49, Action.Keys.wo),
+//            new Action(20, Action.Keys.qp),
 //            new Action(1, Action.Keys.p),
 //            new Action(19, Action.Keys.qp),
 //            new Action(3, Action.Keys.wo),
