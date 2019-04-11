@@ -66,11 +66,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         ValueFunction_TensorFlow valueFunction = null;
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/state_only_aftergamerevisions.pb"));
+                    "/small_net.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("chk_small39"); // chk_after565"); // chk5");
+        valueFunction.loadCheckpoint("small289"); // chk_after565"); // chk5");
 
         // Assign potential actions for the value function to choose among.
         ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 30).toArray(), new boolean[]{false, false,

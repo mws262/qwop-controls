@@ -21,7 +21,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     Action[] prefix = new Action[]{
             new Action(7, Action.Keys.none),
-//            new Action(49, Action.Keys.wo),
+            new Action(49, Action.Keys.wo),
 //            new Action(20, Action.Keys.qp),
 //            new Action(1, Action.Keys.p),
 //            new Action(19, Action.Keys.qp),
@@ -68,11 +68,11 @@ public class MAIN_FlashEvaluation extends FlashGame {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/state_only_before_bootstrap.pb")); // state_only.pb"));
+                    "/small_net.pb")); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("chk_after273");//chk_after1");
+        valueFunction.loadCheckpoint("small289"); // _after439");//273");//chk_after1");
     }
 
     public static void main(String[] args) {
