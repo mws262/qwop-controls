@@ -131,7 +131,6 @@ public abstract class FlashGame implements QWOPStateListener {
             restart();
             return;
         }
-
         reportGameStatus(state, prevCommand, timestep);
 
         assert timestep == timestepsTracked; // Have we lost any timesteps?

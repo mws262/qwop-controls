@@ -116,7 +116,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
 //        }
-        int chkIdx = 256;
+        int chkIdx = 289;
         valueFunction.loadCheckpoint("small" + chkIdx);
         valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
         valueFunction.setTrainingBatchSize(1000);

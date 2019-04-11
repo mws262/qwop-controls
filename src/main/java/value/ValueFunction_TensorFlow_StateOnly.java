@@ -49,9 +49,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add( // No Keys
                 getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 2, 45));
+                getCallable(fullState, currentNode, Action.Keys.qp, 2, 50));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 2, 45));
+                getCallable(fullState, currentNode, Action.Keys.wo, 2, 50));
         evaluations.add( // Q
                 getCallable(fullState, currentNode, Action.Keys.q, 2, 5));
         evaluations.add( // 2
@@ -118,7 +118,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
         return () -> {
             GameUnified gameLocal = new GameUnified();
-            gameLocal.iterations = 25;
+            gameLocal.iterations = 15;
 //            gameLocal.useWarmStarting = false;
             gameLocal.makeNewWorld();
 
@@ -145,18 +145,18 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 }
                 if (i > 1 && i > minDuration) {
 //                System.out.println(val);
-                    float sum = val1;
-                    if (val2 < sum) {
-                        sum = val2;
-                    }
-                    if (val3 < sum) {
-                        sum = val3;
-                    }
-//                    float sum = (val1 + val2 + val3)/3f;
+//                    float sum = val1;
+//                    if (val2 < sum) {
+//                        sum = val2;
+//                    }
+//                    if (val3 < sum) {
+//                        sum = val3;
+//                    }
+                    float sum = (val1 + val2 + val3)/3f;
 //                    float sum = val2;
                     if (sum > bestResult.value) {
                         bestResult.value = sum;
-                        bestResult.timestep = i - 1;
+                        bestResult.timestep = i - 1; //1; // TODO TEMP 2 for hardware. 1 is correct otherwise.
                         bestResult.keys = keys;
                     }
                 }
