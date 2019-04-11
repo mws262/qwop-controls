@@ -38,6 +38,8 @@ public abstract class FlashGame implements QWOPStateListener {
     private boolean awaitingRestart = true;
 
     ArduinoSerial serial;
+
+    boolean hardwareCommandsOut = false;
     /**
      * Keeps track of the number of timesteps received since the beginning of a game to make sure that we haven't
      * lost timestep data in limbo.
@@ -47,12 +49,15 @@ public abstract class FlashGame implements QWOPStateListener {
     public FlashGame() {
         server = new FlashQWOPServer();
         server.addStateListener(this);
-        //restart();
-        try {
-            serial = new ArduinoSerial();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        if (hardwareCommandsOut) {
+            try {
+                serial = new ArduinoSerial();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        //restart();
     }
 
     /**
@@ -106,24 +111,27 @@ public abstract class FlashGame implements QWOPStateListener {
             previousState = state;
         } else if (awaitingRestart) { // If a restart has been commanded, but has not finished occurring on the Flash
             // side, then just wait.
-
             return;
         } else if (state.isFailed()) { // If the runner falls, auto-restart. TODO may want to not do this automatically.
             reportGameStatus(state, prevCommand, timestep);
-            try {
-                serial.doCommand(false, false, false, false);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (hardwareCommandsOut) {
+                try {
+                    serial.doCommand(false, false, false, false);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             restart();
             return;
         }
+
         reportGameStatus(state, prevCommand, timestep);
 
         assert timestep == timestepsTracked; // Have we lost any timesteps?
@@ -150,13 +158,15 @@ public abstract class FlashGame implements QWOPStateListener {
         boolean[] nextCommand = actionQueue.pollCommand();
         if (!Arrays.equals(prevCommand, nextCommand)) {
 
-            try {
-                serial.doCommand(nextCommand[0], nextCommand[1], nextCommand[2], nextCommand[3]);
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (hardwareCommandsOut) {
+                try {
+                    serial.doCommand(nextCommand[0], nextCommand[1], nextCommand[2], nextCommand[3]);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                server.sendCommand(nextCommand);
             }
-
-//            server.sendCommand(nextCommand);
         }
         prevCommand = nextCommand;
         previousState = state;
