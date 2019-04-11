@@ -63,22 +63,30 @@ public abstract class RolloutPolicy {
      * Do a random rollout from a node, returning the terminal node arrived at.
      * @param startNode Node to expand from.
      * @param game Game simulation to use. Note that it is not reset ahead of time.
+     * @param maxTimesteps Maximum timesteps to simulate in the rollout before returning. If parameter is not given,
+     *                     then there is no limit.
      * @return The Node we arrive at at failure.
      */
-    Node randomRollout(Node startNode, IGame game) {
+    Node randomRollout(Node startNode, IGame game, int maxTimesteps) {
+        int timestepCounter = 0;
         Node rolloutNode = startNode;
-        while (!rolloutNode.isFailed()) {
+        while (!rolloutNode.isFailed() && timestepCounter < maxTimesteps) {
             Action childAction = rolloutNode.uncheckedActions.getRandom();
             rolloutNode = new Node(rolloutNode, childAction, false);
             actionQueue.addAction(childAction);
 
-            while (!actionQueue.isEmpty() && !game.getFailureStatus()) {
+            while (!actionQueue.isEmpty() && !game.getFailureStatus() && timestepCounter < maxTimesteps) {
                 game.step(actionQueue.pollCommand());
+                timestepCounter++;
             }
 
             rolloutNode.setState(game.getCurrentState());
         }
         return rolloutNode;
+    }
+
+    Node randomRollout(Node startNode, IGame game) {
+        return randomRollout(startNode, game, Integer.MAX_VALUE);
     }
 
     public abstract RolloutPolicy getCopy();

@@ -49,12 +49,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add( // No Keys
                 getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 2, 35));
+                getCallable(fullState, currentNode, Action.Keys.qp, 2, 45));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 2, 35));
+                getCallable(fullState, currentNode, Action.Keys.wo, 2, 45));
         evaluations.add( // Q
                 getCallable(fullState, currentNode, Action.Keys.q, 2, 5));
-        evaluations.add( // W
+        evaluations.add( // 2
                 getCallable(fullState, currentNode, Action.Keys.w, 2, 5));
         evaluations.add( // O
                 getCallable(fullState, currentNode, Action.Keys.o, 2, 5));
@@ -128,8 +128,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             float val1 = 0;
             float val2 = 0;
             float val3 = 0;
-            for (int i = minDuration; i < maxDuration; i++) {
-//                gameLocal.applyBodyImpulse(0.00f, 0.0001f);
+            for (int i = 1; i <= maxDuration; i++) {
+//                gameLocal.applyBodyImpulse(-0.0005f, 0.0012f);
                 if (i > 2) {
                     gameLocal.iterations = 5;
                 }
@@ -139,21 +139,21 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);
-                if (i == minDuration) {
+                if (i == 1) {
                    // val1 = val3;
                     val2 = val3 * 4f/4f;
                 }
-                if (i > minDuration) {
+                if (i > 1 && i > minDuration) {
 //                System.out.println(val);
-//                    float sum = val1;
-//                    if (val2 < sum) {
-//                        sum = val2;
-//                    }
-//                    if (val3 < sum) {
-//                        sum = val3;
-//                    }
-                    float sum = (val1 + val2 + val3)/3f;
-
+                    float sum = val1;
+                    if (val2 < sum) {
+                        sum = val2;
+                    }
+                    if (val3 < sum) {
+                        sum = val3;
+                    }
+//                    float sum = (val1 + val2 + val3)/3f;
+//                    float sum = val2;
                     if (sum > bestResult.value) {
                         bestResult.value = sum;
                         bestResult.timestep = i - 1;
@@ -173,8 +173,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     @SuppressWarnings("Duplicates")
     @Override
     public Action getMaximizingAction(Node currentNode, IGame realGame) {
-//        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
-        State fullState = currentNode.getState();
+        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
+//        State fullState = currentNode.getState();
         Objects.requireNonNull(fullState);
 
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();

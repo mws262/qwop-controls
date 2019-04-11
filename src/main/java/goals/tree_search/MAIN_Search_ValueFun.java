@@ -5,10 +5,7 @@ import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_Distance;
 import game.GameUnified;
 import samplers.Sampler_UCB;
-import samplers.rollout.RolloutPolicy;
-import samplers.rollout.RolloutPolicy_SingleRandom;
-import samplers.rollout.RolloutPolicy_ValueFunction;
-import samplers.rollout.RolloutPolicy_WorstCaseWindow;
+import samplers.rollout.*;
 import savers.DataSaver_StageSelected;
 import tree.Node;
 import tree.TreeStage_MaxDepth;
@@ -65,12 +62,17 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
                 new Action(7,false,false,false,false),
-                new Action(11,false,true,true,false),
-                new Action(10,false,false,false,false),
-                new Action(21,true,false,false,true),
+                new Action(49, Action.Keys.wo),
+                new Action(2, Action.Keys.none),
+                new Action(25, Action.Keys.qp),
 
-                new Action(27,false,false,false,false),
-                new Action(21,false,true,true,false),
+                new Action(34, Action.Keys.none),
+//                new Action(11,false,true,true,false),
+//                new Action(10,false,false,false,false),
+//                new Action(21,true,false,false,true),
+//
+//                new Action(27,false,false,false,false),
+//                new Action(21,false,true,true,false),
 //                new Action(30,false,false,false,false),
 //                new Action(21,true,false,false,true),
         });
@@ -90,15 +92,15 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         // Make the value function.
         ArrayList<Integer> hiddenLayerSizes = new ArrayList<>();
         hiddenLayerSizes.add(128);
-        hiddenLayerSizes.add(32);
-        hiddenLayerSizes.add(8);
+        hiddenLayerSizes.add(64);
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");
         extraNetworkArgs.add("1e-3");
 
         ValueFunction_TensorFlow_StateOnly valueFunction = null;
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly("state_only_aftergamerevisions",
+
+            valueFunction = new ValueFunction_TensorFlow_StateOnly("small_net",
                     hiddenLayerSizes, extraNetworkArgs);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -114,10 +116,10 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
 //        }
-        int chkIdx = 0;
-//        valueFunction.loadCheckpoint("chk_after" + chkIdx);
+        int chkIdx = 256;
+        valueFunction.loadCheckpoint("small" + chkIdx);
         valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
-        valueFunction.setTrainingBatchSize(100);
+        valueFunction.setTrainingBatchSize(1000);
         boolean valueFunctionRollout = false;
 
         for (int k = 0; k < 10000; k++) {
@@ -127,8 +129,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 rollout =
                         new RolloutPolicy_WorstCaseWindow(new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueFunction));
             } else {
-                rollout =
-                        new RolloutPolicy_WorstCaseWindow(new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance()));
+                //new RolloutPolicy_WorstCaseWindow(
+                rollout = new RolloutPolicy_RandomDecayingHorizon();
+                        //new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
             }
 
             Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout);
@@ -170,7 +173,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             }
 //             Save a checkpoint of the weights/biases.
 //            if (k % 2 == 0) {
-                valueFunction.saveCheckpoint("chk_small" + (k + chkIdx + 1));
+                valueFunction.saveCheckpoint("small" + (k + chkIdx + 1));
                 System.out.println("Saved");
 //            }
         }
