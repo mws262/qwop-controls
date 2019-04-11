@@ -13,6 +13,8 @@ import tree.Node;
 public class RolloutPolicy_SingleRandom extends RolloutPolicy {
 
 
+    int maxTimesteps = 100;
+
    public RolloutPolicy_SingleRandom(IEvaluationFunction evaluationFunction) {
         super(evaluationFunction);
     }
@@ -20,9 +22,13 @@ public class RolloutPolicy_SingleRandom extends RolloutPolicy {
     @Override
     public float rollout(Node startNode, IGame game) {
         actionQueue.clearAll();
-        Node normalRolloutEndNode = randomRollout(startNode, game);
+        Node normalRolloutEndNode = randomRollout(startNode, game, maxTimesteps);
 
-        return evaluationFunction.getValue(normalRolloutEndNode) - evaluationFunction.getValue(startNode);
+        float multiplier = 1f;
+        if (normalRolloutEndNode.getState().isFailed()) {
+            multiplier = 0.75f;
+        }
+        return multiplier * (evaluationFunction.getValue(normalRolloutEndNode) - evaluationFunction.getValue(startNode));
     }
 
     @Override

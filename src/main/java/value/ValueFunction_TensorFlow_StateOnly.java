@@ -49,23 +49,23 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add( // No Keys
                 getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 1, 35));
+                getCallable(fullState, currentNode, Action.Keys.qp, 2, 45));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 1, 35));
+                getCallable(fullState, currentNode, Action.Keys.wo, 2, 45));
         evaluations.add( // Q
-                getCallable(fullState, currentNode, Action.Keys.q, 1, 5));
-        evaluations.add( // W
-                getCallable(fullState, currentNode, Action.Keys.w, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.q, 2, 5));
+        evaluations.add( // 2
+                getCallable(fullState, currentNode, Action.Keys.w, 2, 5));
         evaluations.add( // O
-                getCallable(fullState, currentNode, Action.Keys.o, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.o, 2, 5));
         evaluations.add( // P
-                getCallable(fullState, currentNode, Action.Keys.p, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.p, 2, 5));
 
         // Off keys -- dunno if these are ever helpful.
         evaluations.add( // QO
-                getCallable(fullState, currentNode, Action.Keys.qo, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.qo, 2, 5));
         evaluations.add( // WP
-                getCallable(fullState, currentNode, Action.Keys.wp, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.wp, 2, 5));
 
         if (multithread) { // Multi-thread
             List<Future<EvaluationResult>> allResults;
@@ -129,7 +129,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             float val1 = 0;
             float val2 = 0;
             float val3 = 0;
-            for (int i = minDuration; i < maxDuration; i++) {
+
+            for (int i = 1; i <= maxDuration; i++) {
 //                gameLocal.applyBodyImpulse(-0.0005f, 0.0012f);
                 if (i > 2) {
                     gameLocal.iterations = 5;
@@ -140,21 +141,21 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);
-                if (i == minDuration) {
+                if (i == 1) {
                    // val1 = val3;
                     val2 = val3 * 4f/4f;
                 }
-                if (i > minDuration) {
+                if (i > 1 && i > minDuration) {
 //                System.out.println(val);
-//                    float sum = val1;
-//                    if (val2 < sum) {
-//                        sum = val2;
-//                    }
-//                    if (val3 < sum) {
-//                        sum = val3;
-//                    }
-                    float sum = (val1 + val2 + val3)/3f;
-
+                    float sum = val1;
+                    if (val2 < sum) {
+                        sum = val2;
+                    }
+                    if (val3 < sum) {
+                        sum = val3;
+                    }
+//                    float sum = (val1 + val2 + val3)/3f;
+//                    float sum = val2;
                     if (sum > bestResult.value) {
                         bestResult.value = sum;
                         bestResult.timestep = i - 1;
@@ -174,8 +175,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     @SuppressWarnings("Duplicates")
     @Override
     public Action getMaximizingAction(Node currentNode, IGame realGame) {
-//        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
-        State fullState = currentNode.getState();
+        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
+//        State fullState = currentNode.getState();
         Objects.requireNonNull(fullState);
 
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
