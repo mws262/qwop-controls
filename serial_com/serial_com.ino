@@ -8,8 +8,8 @@ int PPin = 11;
 int QWOP[] = {0,0,0,0};
 int previousQWOP[] = {0,0,0,0};
 int lastTransition[] = {0,0,0,0};
-int cycleThreshold = 800;
-int holdingStrength = 140;
+int cycleThreshold = 5000;
+int holdingStrength = 150;
 
 volatile int input = 0;
 
