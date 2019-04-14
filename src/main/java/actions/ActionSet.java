@@ -1,6 +1,7 @@
 package actions;
 
 import distributions.Distribution;
+import distributions.Distribution_Equal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,6 +111,18 @@ public class ActionSet extends ArrayList<Action> {
         ActionSet set = new ActionSet(dist);
         for (Integer duration : durations) {
             set.add(new Action(duration, keys));
+        }
+        return set;
+    }
+
+    public static ActionSet makeExhaustiveActionSet(int minDuration, int maxDuration) {
+        assert minDuration < 0;
+
+        ActionSet set = new ActionSet(new Distribution_Equal());
+        for (Action.Keys key : Action.Keys.values()) {
+            for (int i = minDuration; i < maxDuration; i++) {
+                set.add(new Action(i, key));
+            }
         }
         return set;
     }

@@ -38,6 +38,8 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
      */
     public final static Stroke boldStroke = new BasicStroke(2);
 
+    public Stroke customStroke;
+
     /**
      * Faded out gray for drawing past states and such.
      */
