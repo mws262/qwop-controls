@@ -23,6 +23,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     private ExecutorService ex;
     private int numThreads = 9;
     List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
+    public EvaluationResult currentResult;
 
     public ValueFunction_TensorFlow_StateOnly(File file) throws FileNotFoundException {
         super(file);
@@ -85,7 +86,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 e.printStackTrace();
             }
         }
-        return getBestActionFromEvaluationResults(evalResults);
+        EvaluationResult evalResult = evalResults.stream().max(EvaluationResult::compareTo).get();
+        currentResult = evalResult;
+        return new Action(evalResult.timestep, evalResult.keys);
     }
 
 
@@ -158,6 +161,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                         bestResult.value = sum;
                         bestResult.timestep = i - 1; //1; // TODO TEMP 2 for hardware. 1 is correct otherwise.
                         bestResult.keys = keys;
+                        bestResult.state = st;
                     }
                 }
             }
@@ -167,7 +171,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     private Action getBestActionFromEvaluationResults(List<EvaluationResult> results) {
         EvaluationResult evalResult = results.stream().max(EvaluationResult::compareTo).get();
-        return new Action(evalResult.timestep, Action.keysToBooleans(evalResult.keys));
+        return new Action(evalResult.timestep, evalResult.keys);
     }
 
     @SuppressWarnings("Duplicates")
@@ -182,9 +186,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add( // No Keys
                 getCallable(fullState, currentNode, Action.Keys.none, 1, 15));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 1, 35));
+                getCallable(fullState, currentNode, Action.Keys.qp, 1, 55));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 1, 35));
+                getCallable(fullState, currentNode, Action.Keys.wo, 1, 55));
         evaluations.add( // Q
                 getCallable(fullState, currentNode, Action.Keys.q, 1, 5));
         evaluations.add( // W
@@ -235,22 +239,24 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     /**
      * Result from evaluating the value over some futures.
      */
-    private static class EvaluationResult implements Comparable<EvaluationResult> {
+    public static class EvaluationResult implements Comparable<EvaluationResult> {
 
         /**
          * Value after the specified action.
          */
-        float value = -Float.MAX_VALUE;
+        public float value = -Float.MAX_VALUE;
 
         /**
          * Duration in timesteps of the Action producing this result.
          */
-        int timestep = -1;
+        public int timestep = -1;
 
         /**
          * Keys pressed for the Action producing this result.
          */
-        Action.Keys keys;
+        public Action.Keys keys;
+
+        public State state;
 
         @Override
         public int compareTo(EvaluationResult o) {

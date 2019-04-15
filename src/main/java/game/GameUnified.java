@@ -18,6 +18,7 @@ import org.nustaq.serialization.FSTConfiguration;
 
 import java.awt.*;
 import java.io.Serializable;
+import java.util.Random;
 import java.util.function.Function;
 
 import static game.GameConstants.*;
@@ -181,7 +182,10 @@ public class GameUnified implements IGame, Serializable {
      */
     private static FSTConfiguration fstConfiguration = FSTConfiguration.createDefaultConfiguration();
 
-    public GameUnified() { makeNewWorld(); }
+    Random rand = new Random(); // tmp
+    public GameUnified() { makeNewWorld();
+    rand.setSeed(55555);
+    }
 
     /**
      * Call once to initialize a lot of shape definitions which only need to be created once.
@@ -430,17 +434,17 @@ public class GameUnified implements IGame, Serializable {
 //        BodyDef blockBodyDef = new BodyDef();
 //        PolygonDef blockShapeDef = new PolygonDef();
 //        MassData blockMassData = new MassData();
-//        blockShapeDef.setAsBox(3, 3);
+//        blockShapeDef.setAsBox(5, 5);
 //
 //        blockShapeDef.friction = 1;
 //        blockShapeDef.density = 1;
 //        blockShapeDef.filter.groupIndex = 1; // Same as track.
 //
-//        blockBodyDef.position = (torsoPos).add(new Vec2(18,-2));
+//        blockBodyDef.position = (torsoPos).add(new Vec2(20,-2));
 //        blockBodyDef.angle = 0;
 //
-//        blockMassData.I = 40;
-//        blockMassData.mass = 10;
+//        blockMassData.I = 75;
+//        blockMassData.mass = 25;
 //        blockBodyDef.massData = blockMassData;
 //        Body blockBody = getWorld().createBody(blockBodyDef);
 //        blockBody.createShape(blockShapeDef);
@@ -641,10 +645,38 @@ public class GameUnified implements IGame, Serializable {
         step(command[0], command[1], command[2], command[3]);
     }
 
+
+
     /**
      * Step the game forward 1 timestep with the specified keys pressed.
      **/
     public void step(boolean q, boolean w, boolean o, boolean p) {
+
+
+        if (getTimestepsSimulatedThisGame() % 10 == 0) {
+            BodyDef blockBodyDef = new BodyDef();
+            PolygonDef blockShapeDef = new PolygonDef();
+            MassData blockMassData = new MassData();
+            float x = rand.nextFloat() * 2 + 0.2f;
+            float y = rand.nextFloat() * 0.5f + 0.2f;
+            blockShapeDef.setAsBox(x, y);
+
+            blockShapeDef.friction = 1;
+            blockShapeDef.density = 1;
+            blockShapeDef.filter.groupIndex = 1; // Same as track.
+
+            blockBodyDef.position = (torsoBody.getPosition()).add(new Vec2(30,4));
+            blockBodyDef.angle = 2 * 3.14f * rand.nextFloat();
+
+            blockMassData.I = x * y * 4;
+            blockMassData.mass = x * y;
+            blockBodyDef.massData = blockMassData;
+            Body blockBody = getWorld().createBody(blockBodyDef);
+            blockBody.createShape(blockShapeDef);
+        }
+
+
+
         /* Involuntary Couplings (no QWOP presses) */
         //Neck spring torque
         float NeckTorque = -neckStiff * neckJ.getJointAngle(); //  + 0 * neckDamp * neckJ.getJointSpeed(); // These
@@ -1042,8 +1074,16 @@ public class GameUnified implements IGame, Serializable {
             int xOffsetPixels = -(int) (scaling * torsoBody.getPosition().x) + xOffset; // Basic offset, plus centering x on torso.
             Shape newfixture = newBody.getShapeList();
 
-            while (newfixture != null) {
 
+            g.setColor(Color.RED);
+            for (Body body : getAllBodies()) {
+                if (newBody == body || newBody == trackBody) {
+                    g.setColor(Color.BLACK);
+                    break;
+                }
+            }
+
+            while (newfixture != null) {
                 // Most links are polygon shapes
                 if (newfixture.getType() == ShapeType.POLYGON_SHAPE) {
 
@@ -1096,7 +1136,9 @@ public class GameUnified implements IGame, Serializable {
         //This draws the "road" markings to show that the ground is moving relative to the dude.
         int markingWidth = 5000;
         for (int i = 0; i < markingWidth / 69; i++) {
-            g.drawString("_", ((-(int) (scaling * torsoBody.getPosition().x) - i * 70) % markingWidth) + markingWidth, yOffset + 92);
+            g.setColor(Color.BLACK);
+            g.drawString("_", ((-(int) (scaling * torsoBody.getPosition().x) - i * 70) % markingWidth) + markingWidth
+                    , (int) (yOffset + 9.2 * scaling));
         }
     }
 

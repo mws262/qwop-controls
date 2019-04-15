@@ -60,11 +60,11 @@ public class CompareFlashToJava extends FlashGame {
         frame.setOpacity(0.5f);
         frame.setLocation(2279,299);
         panelRunner.runnerScaling = 19.15f * 2f;
-        panelRunner.mainRunnerColor = Color.BLACK;
+        panelRunner.mainRunnerColor = Color.YELLOW;
         panelRunner.xOffsetPixels = panelRunner.xOffsetPixels + 45;
         panelRunner.yOffsetPixels = panelRunner.yOffsetPixels + 222;
 
-        panelRunner.customStroke = new BasicStroke(3f);
+        panelRunner.customStroke = new BasicStroke(.2f);
         panelRunner.customStrokeExtra = new BasicStroke(3f);
 //        frame.getContentPane().setBackground(new Color(1,1,1,.2f));
        //panelRunner.setBackground(new Color(1,1,1,.0f));
@@ -86,7 +86,7 @@ public class CompareFlashToJava extends FlashGame {
     @Override
     public Action[] getActionSequenceFromBeginning() {
         Action[] prefix = new Action[]{
-                new Action(7, Action.Keys.none),
+                new Action(5, Action.Keys.none),
 //                new Action(49, Action.Keys.wo),
 //                new Action(20, Action.Keys.qp),
 //                new Action(1, Action.Keys.p),
@@ -111,8 +111,8 @@ public class CompareFlashToJava extends FlashGame {
     public Action getControlAction(State state) {
 
         placeholderNode.setState(state);
-//        return valueFunction.getMaximizingAction(placeholderNode);
-        return bunchOfActions.getRandom();
+        return valueFunction.getMaximizingAction(placeholderNode);
+//        return bunchOfActions.getRandom();
     }
 
     int tp = 0;
@@ -147,7 +147,13 @@ public class CompareFlashToJava extends FlashGame {
 //
 //            }
 
-            panelRunner.setMainState(state); // gameJava.getCurrentState());
+            panelRunner.clearSecondaryStates();
+            panelRunner.addSecondaryState(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state,
+                    Node.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
+
+
+            panelRunner.setMainState(state); // gameJava.getCurrentState
+            // ());
             panelRunner.repaint();
         }
     }

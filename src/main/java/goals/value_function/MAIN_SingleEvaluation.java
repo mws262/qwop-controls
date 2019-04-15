@@ -33,8 +33,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     boolean o = false;
     boolean p = false;
 
+    static float centerX = 600;
+    static float centerY = 400;
+
     public static void main(String[] args) {
-        boolean doScreenCapture = false;
+        boolean doScreenCapture = true;
         ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
         if (doScreenCapture) {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -51,7 +54,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         qwop.game.failOnThighContact = false;
         JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
         frame.add(qwop);
-        frame.setPreferredSize(new Dimension(600, 400));
+        frame.setPreferredSize(new Dimension(1300, 800));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
@@ -59,7 +62,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         qwop.addMouseMotionListener(qwop);
 
         // Fire game update every 40 ms.
-        Timer timer = new Timer(40, qwop);
+        Timer timer = new Timer(15, qwop);
         timer.start();
 
         // Load a value function controller.
@@ -149,9 +152,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                 long currTime = System.currentTimeMillis();
 
                 if (qwop.mouseActive) {
-                    qwop.arrowShape = PanelRunner.createArrowShape(qwop.mousePoint, new Point(300,180), 80);
-                    float impulseX = 300f - qwop.mousePoint.x;
-                    float impulseY = 200f - qwop.mousePoint.y;
+                    qwop.arrowShape = PanelRunner.createArrowShape(qwop.mousePoint, new Point((int)centerX,
+                                    (int)centerY),
+                            80);
+                    float impulseX = centerX - qwop.mousePoint.x;
+                    float impulseY = centerY - qwop.mousePoint.y;
                     float impulseGain = 0.008f;
                     qwop.game.applyBodyImpulse(impulseGain * impulseX, impulseGain * impulseY);
                 } else {
@@ -186,9 +191,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        game.draw(g, 10, 300, 200); // Redraws the game. Scaling and offsets are handpicked to work for the size of
+        game.draw(g, 20, (int) centerX, (int) centerY); // Redraws the game. Scaling and offsets are handpicked to work
+        // for the
+        // size of
         // the window.
-        PanelRunner.keyDrawer(g, q, w, o, p, -50, 20, 240, 40);
+        PanelRunner.keyDrawer(g, q, w, o, p, -50, 40, 480, 80);
         if (arrowShape != null) {
             ((Graphics2D) g).setColor(arrowColor);
             ((Graphics2D) g).fill(arrowShape);
