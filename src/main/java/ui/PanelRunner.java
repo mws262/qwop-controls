@@ -73,30 +73,32 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
         int oOffset = (o ? 10 : 0);
         int pOffset = (p ? 10 : 0);
 
+        Font bigFont = PanelRunner.bigFont.deriveFont(PanelRunner.bigFont.getSize() * (size/40f));
+        Font medFont = PanelRunner.medFont.deriveFont(PanelRunner.medFont.getSize() * (size/40f));
         Font activeFont;
         FontMetrics fm;
         Graphics2D g2 = (Graphics2D) g;
 
         g2.setColor(Color.DARK_GRAY);
-        g2.drawRoundRect(xOffset + 80 - qOffset / 2, yOffset - qOffset / 2, size + qOffset, size + qOffset,
+        g2.drawRoundRect(xOffset + size * 2 - qOffset / 2, yOffset - qOffset / 2, size + qOffset, size + qOffset,
                 (size + qOffset) / 10, (size + qOffset) / 10);
-        g2.drawRoundRect(xOffset + 160 - wOffset / 2, yOffset - wOffset / 2, size + wOffset, size + wOffset,
+        g2.drawRoundRect(xOffset + size * 4 - wOffset / 2, yOffset - wOffset / 2, size + wOffset, size + wOffset,
                 (size + wOffset) / 10, (size + wOffset) / 10);
 
         /* Parameters for placing the "keys" graphically. */
-        g2.drawRoundRect(xOffset + 240 - oOffset / 2 + offsetBetweenPairs, yOffset - oOffset / 2, size + oOffset,
+        g2.drawRoundRect(xOffset + size * 6 - oOffset / 2 + offsetBetweenPairs, yOffset - oOffset / 2, size + oOffset,
                 size + oOffset, (size + oOffset) / 10, (size + oOffset) / 10);
-        g2.drawRoundRect(xOffset + 320 - pOffset / 2 + offsetBetweenPairs, yOffset - pOffset / 2, size + pOffset,
+        g2.drawRoundRect(xOffset + size * 8 - pOffset / 2 + offsetBetweenPairs, yOffset - pOffset / 2, size + pOffset,
                 size + pOffset, (size + pOffset) / 10, (size + pOffset) / 10);
 
         g2.setColor(Color.LIGHT_GRAY);
-        g2.fillRoundRect(xOffset + 80 - qOffset / 2, yOffset - qOffset / 2, size + qOffset, size + qOffset,
+        g2.fillRoundRect(xOffset + size * 2 - qOffset / 2, yOffset - qOffset / 2, size + qOffset, size + qOffset,
                 (size + qOffset) / 10, (size + qOffset) / 10);
-        g2.fillRoundRect(xOffset + 160 - wOffset / 2, yOffset - wOffset / 2, size + wOffset, size + wOffset,
+        g2.fillRoundRect(xOffset + size * 4 - wOffset / 2, yOffset - wOffset / 2, size + wOffset, size + wOffset,
                 (size + wOffset) / 10, (size + wOffset) / 10);
-        g2.fillRoundRect(xOffset + 240 - oOffset / 2 + offsetBetweenPairs, yOffset - oOffset / 2, size + oOffset,
+        g2.fillRoundRect(xOffset + size * 6 - oOffset / 2 + offsetBetweenPairs, yOffset - oOffset / 2, size + oOffset,
                 size + oOffset, (size + oOffset) / 10, (size + oOffset) / 10);
-        g2.fillRoundRect(xOffset + 320 - pOffset / 2 + offsetBetweenPairs, yOffset - pOffset / 2, size + pOffset,
+        g2.fillRoundRect(xOffset + size * 8 - pOffset / 2 + offsetBetweenPairs, yOffset - pOffset / 2, size + pOffset,
                 size + pOffset, (size + pOffset) / 10, (size + pOffset) / 10);
 
         g2.setColor(Color.BLACK);
@@ -105,23 +107,25 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
         activeFont = q ? bigFont : medFont;
         g2.setFont(activeFont);
         fm = g2.getFontMetrics();
-        g2.drawString("Q", xOffset + 80 + size / 2 - fm.stringWidth("Q") / 2, yOffset + size / 2 + fm.getHeight() / 3);
+        g2.drawString("Q", xOffset + size * 2 + size / 2 - fm.stringWidth("Q") / 2,
+                yOffset + size / 2 + fm.getHeight() / 3);
 
         activeFont = w ? bigFont : medFont;
         g2.setFont(activeFont);
         fm = g2.getFontMetrics();
-        g2.drawString("W", xOffset + 160 + size / 2 - fm.stringWidth("W") / 2, yOffset + size / 2 + fm.getHeight() / 3);
+        g2.drawString("W", xOffset + size * 4 + size / 2 - fm.stringWidth("W") / 2,
+                yOffset + size / 2 + fm.getHeight() / 3);
 
         activeFont = o ? bigFont : medFont;
         g2.setFont(activeFont);
         fm = g2.getFontMetrics();
-        g2.drawString("O", xOffset + 240 + size / 2 - fm.stringWidth("O") / 2 + offsetBetweenPairs,
+        g2.drawString("O", xOffset + size * 6 + size / 2 - fm.stringWidth("O") / 2 + offsetBetweenPairs,
                 yOffset + size / 2 + fm.getHeight() / 3);
 
         activeFont = p ? bigFont : medFont;
         g2.setFont(activeFont);
         fm = g2.getFontMetrics();
-        g2.drawString("P", xOffset + 320 + size / 2 - fm.stringWidth("P") / 2 + offsetBetweenPairs,
+        g2.drawString("P", xOffset + size * 8 + size / 2 - fm.stringWidth("P") / 2 + offsetBetweenPairs,
                 yOffset + size / 2 + fm.getHeight() / 3);
     }
 

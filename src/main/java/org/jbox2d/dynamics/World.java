@@ -90,10 +90,11 @@ public class World implements Externalizable {
 	// Allocating island once.
 	transient private Island island = new Island();
 	transient private Island toiIsland = new Island();
-	transient private static final int highestContacts = 12; // TODO cause these to be remade if the highest number of
+	transient private static final int highestContacts = 12 + 100; // TODO cause these to be remade if the highest
+	// number of
 	// joints/bodies/contacts
 	transient private static final int highestJoints = 11; // bodies and joints should be correct for qwop.
-	transient private static final int highestBodies = 14;
+	transient private static final int highestBodies = 14 + 100;
 
 	transient private Body[] stack = new Body[highestBodies];
 	transient private Body[] queue = new Body[highestBodies];
