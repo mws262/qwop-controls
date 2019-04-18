@@ -13,19 +13,27 @@ int holdingStrength = 150;
 
 volatile int input = 0;
 
+// Now changed for Due with native usb support.
 void setup() {
   pinMode(QPin,OUTPUT);
   pinMode(WPin,OUTPUT);
   pinMode(OPin,OUTPUT);
   pinMode(PPin,OUTPUT);
   // Default PWM is 490hz which is loud and annoying. Make this much bigger.
-  TCCR2B=(TCCR2B&248)|1; // Pins 9 and 10
-  TCCR1B=(TCCR1B&248)|1; // Pin 11
-  TCCR4B=(TCCR4B&248)|1; // Pin 8
-  Serial.begin(115200); 
+//  TCCR2B=(TCCR2B&248)|1; // Pins 9 and 10
+//  TCCR1B=(TCCR1B&248)|1; // Pin 11
+//  TCCR4B=(TCCR4B&248)|1; // Pin 8
+  //Serial.begin(115200); 
+  SerialUSB.begin(1); // Value doesn't matter
+  while(!SerialUSB);
 }
 
 void loop() {
+while (!SerialUSB.available());
+while (SerialUSB.available()) {
+  input = SerialUSB.read(); 
+}
+
   switch(input) {
     case 48: // 0
       QWOP[0] = 0; // None
@@ -165,10 +173,4 @@ void loop() {
   }
 }
 
-void serialEvent() {
-  while (Serial.available()) {
-    // get the new byte:
-    input = Serial.read(); 
-  }
-}
 
