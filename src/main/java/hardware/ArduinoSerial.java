@@ -20,7 +20,8 @@ public class ArduinoSerial {
         SerialPort[] serialPorts = SerialPort.getCommPorts();
         for (SerialPort sp : serialPorts) {
             System.out.println("Found: " + sp.getSystemPortName() + ", " + sp.getDescriptivePortName() + ", " + sp.getPortDescription());
-            if (sp.getPortDescription().contains("USB-Based Serial Port")) {
+            if (sp.getPortDescription().contains("USB-Based Serial Port") || sp.getPortDescription().contains(
+                    "Arduino")) {
                 if (arduinoPort == null) {
                     arduinoPort = sp;
                 } else {
@@ -31,7 +32,7 @@ public class ArduinoSerial {
         Objects.requireNonNull(arduinoPort);
 
         arduinoPort.openPort();
-        arduinoPort.setBaudRate(115200);
+        arduinoPort.setBaudRate(5000000);
         out = arduinoPort.getOutputStream();
         doCommand(false, false, false, false);
         try {
