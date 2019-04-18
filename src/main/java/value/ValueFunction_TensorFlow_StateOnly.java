@@ -50,22 +50,22 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add( // No Keys
                 getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 1, 45));
+                getCallable(fullState, currentNode, Action.Keys.qp, 2, 45));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 1, 45));
+                getCallable(fullState, currentNode, Action.Keys.wo, 2, 45));
         evaluations.add( // Q
-                getCallable(fullState, currentNode, Action.Keys.q, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.q, 2, 5));
         evaluations.add( // 2
-                getCallable(fullState, currentNode, Action.Keys.w, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.w, 2, 5));
         evaluations.add( // O
-                getCallable(fullState, currentNode, Action.Keys.o, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.o, 2, 5));
         evaluations.add( // P
-                getCallable(fullState, currentNode, Action.Keys.p, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.p, 2, 5));
         // Off keys -- dunno if these are ever helpful.
         evaluations.add( // QO
-                getCallable(fullState, currentNode, Action.Keys.qo, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.qo, 2, 5));
         evaluations.add( // WP
-                getCallable(fullState, currentNode, Action.Keys.wp, 1, 5));
+                getCallable(fullState, currentNode, Action.Keys.wp, 2, 5));
 
         if (multithread) { // Multi-thread
             List<Future<EvaluationResult>> allResults;
