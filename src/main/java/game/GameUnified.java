@@ -651,29 +651,29 @@ public class GameUnified implements IGame, Serializable {
      * Step the game forward 1 timestep with the specified keys pressed.
      **/
     public void step(boolean q, boolean w, boolean o, boolean p) {
-
-
-        if (getTimestepsSimulatedThisGame() % 10 == 0) {
-            BodyDef blockBodyDef = new BodyDef();
-            PolygonDef blockShapeDef = new PolygonDef();
-            MassData blockMassData = new MassData();
-            float x = rand.nextFloat() * 2 + 0.2f;
-            float y = rand.nextFloat() * 0.5f + 0.2f;
-            blockShapeDef.setAsBox(x, y);
-
-            blockShapeDef.friction = 1;
-            blockShapeDef.density = 1;
-            blockShapeDef.filter.groupIndex = 1; // Same as track.
-
-            blockBodyDef.position = (torsoBody.getPosition()).add(new Vec2(30,4));
-            blockBodyDef.angle = 2 * 3.14f * rand.nextFloat();
-
-            blockMassData.I = x * y * 4;
-            blockMassData.mass = x * y;
-            blockBodyDef.massData = blockMassData;
-            Body blockBody = getWorld().createBody(blockBodyDef);
-            blockBody.createShape(blockShapeDef);
-        }
+//
+//
+//        if (getTimestepsSimulatedThisGame() % 10 == 0) {
+//            BodyDef blockBodyDef = new BodyDef();
+//            PolygonDef blockShapeDef = new PolygonDef();
+//            MassData blockMassData = new MassData();
+//            float x = rand.nextFloat() * 2 + 0.2f;
+//            float y = rand.nextFloat() * 0.5f + 0.2f;
+//            blockShapeDef.setAsBox(x, y);
+//
+//            blockShapeDef.friction = 1;
+//            blockShapeDef.density = 1;
+//            blockShapeDef.filter.groupIndex = 1; // Same as track.
+//
+//            blockBodyDef.position = (torsoBody.getPosition()).add(new Vec2(30,4));
+//            blockBodyDef.angle = 2 * 3.14f * rand.nextFloat();
+//
+//            blockMassData.I = x * y * 4;
+//            blockMassData.mass = x * y;
+//            blockBodyDef.massData = blockMassData;
+//            Body blockBody = getWorld().createBody(blockBodyDef);
+//            blockBody.createShape(blockShapeDef);
+//        }
 
 
 
