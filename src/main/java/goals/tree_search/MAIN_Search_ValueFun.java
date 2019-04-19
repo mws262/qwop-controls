@@ -17,6 +17,7 @@ import value.ValueFunction_TensorFlow_StateOnly;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -95,19 +96,15 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         hiddenLayerSizes.add(64);
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");
-        extraNetworkArgs.add("1e-3");
+        extraNetworkArgs.add("1e-2");
 
         ValueFunction_TensorFlow_StateOnly valueFunction = null;
         try {
-
             valueFunction = new ValueFunction_TensorFlow_StateOnly("small_net",
                     hiddenLayerSizes, extraNetworkArgs);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-
-
 
 //        ValueFunction_TensorFlow valueFunction = null;
 //        try {
@@ -116,18 +113,18 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
 //        }
-        int chkIdx = 289;
+        int chkIdx = 464;
         valueFunction.loadCheckpoint("small" + chkIdx);
         valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
-        valueFunction.setTrainingBatchSize(1000);
-        boolean valueFunctionRollout = false;
+        valueFunction.setTrainingBatchSize(100);
+        boolean valueFunctionRollout = true;
 
         for (int k = 0; k < 10000; k++) {
             RolloutPolicy rollout;
 
             if (valueFunctionRollout) {
-                rollout =
-                        new RolloutPolicy_WorstCaseWindow(new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueFunction));
+                rollout = new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
+//                        new RolloutPolicy_WorstCaseWindow(new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueFunction));
             } else {
                 //new RolloutPolicy_WorstCaseWindow(
                 rollout = new RolloutPolicy_RandomDecayingHorizon();
@@ -157,6 +154,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             List<Node> nodesBelow = new ArrayList<>();
             rootNode.getNodesBelow(nodesBelow, true);
             nodesBelow.remove(rootNode);
+            Collections.shuffle(nodesBelow);
 
             Utility.tic();
             valueFunction.update(nodesBelow);

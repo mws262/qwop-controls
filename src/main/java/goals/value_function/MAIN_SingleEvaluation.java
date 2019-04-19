@@ -37,7 +37,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     static float centerY = 400;
 
     public static void main(String[] args) {
-        boolean doScreenCapture = true;
+        boolean doScreenCapture = false;
         ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
         if (doScreenCapture) {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -73,7 +73,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("small289"); // chk_after565"); // chk5");
+        valueFunction.loadCheckpoint("small529"); // chk_after565"); // chk5");
 
         // Assign potential actions for the value function to choose among.
         ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 30).toArray(), new boolean[]{false, false,
