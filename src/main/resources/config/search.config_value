@@ -5,7 +5,7 @@ workersFractionOfCores=0.7
 UCBExplorationMultiplier=1
 getToSteadyDepth=100
 fractionOfMaxWorkers=1
-bailAfterXGames=100
+bailAfterXGames=20000
 
 # Number of training steps each time new data is fed into the neural network.
 netTrainingStepsPerIter = 1
