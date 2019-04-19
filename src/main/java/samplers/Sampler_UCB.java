@@ -86,6 +86,7 @@ public class Sampler_UCB implements ISampler {
         c = explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
     }
 
+
     /**
      * Propagate the score and visit count back up the tree.
      */
@@ -96,7 +97,46 @@ public class Sampler_UCB implements ISampler {
         while (failureNode.getTreeDepth() > 0) { // TODO test 0
             failureNode = failureNode.getParent();
             failureNode.visitCount.incrementAndGet();
-            failureNode.addToValue(score);
+
+//            float top1 = -Float.MAX_VALUE;
+//            float top2 = -Float.MAX_VALUE;
+//            float top3 = -Float.MAX_VALUE;
+//            if (failureNode.getChildCount() > 3) {
+//                for (Node child : failureNode.getChildren()) {
+//                    float avgVal = child.getValue()/child.visitCount.floatValue();
+//                    if (avgVal > top1) {
+//                        top3 = top2;
+//                        top2 = top1;
+//                        top1 = avgVal;
+//                    } else if (avgVal > top2) {
+//                        top3 = top2;
+//                        top2 = avgVal;
+//                    } else if (avgVal > top3) {
+//                        top3 = avgVal;
+//                    }
+//                }
+//                failureNode.setValue((top1 + top2 + top3) / 3f * failureNode.visitCount.floatValue());
+//            } else {
+//                failureNode.addToValue(score);
+//            }
+
+            if (failureNode.getChildCount() > 1) {
+                float mean = 0f;
+                for (Node child : failureNode.getChildren()) {
+                    mean += child.getValue() / child.visitCount.floatValue();
+                }
+                mean = mean / (float) failureNode.getChildCount();
+                float stdev = 0f;
+                for (Node child : failureNode.getChildren()) {
+                    stdev += (child.getValue() / child.visitCount.floatValue() - mean) * (child.getValue() / child.visitCount.floatValue() - mean);
+                }
+                stdev = (float) Math.sqrt(stdev / (float) failureNode.getChildCount());
+                failureNode.setValue((mean + stdev) * failureNode.visitCount.floatValue());
+            } else {
+                failureNode.addToValue(score);
+            }
+
+
         }
     }
 

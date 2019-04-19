@@ -507,25 +507,25 @@ public abstract class MAIN_Search_Template {
 
         /* Repeated action 1 -- no keys pressed. */
         Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionSet actionSet1 = ActionSet.makeActionSet(IntStream.range(2, 20).toArray(), new boolean[]{false, false,
+        ActionSet actionSet1 = ActionSet.makeActionSet(IntStream.range(2, 25).toArray(), new boolean[]{false, false,
                 false,
                 false}, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> dist2 = new Distribution_Normal(25, 3f);
-        ActionSet actionSet2 = ActionSet.makeActionSet(IntStream.range(10, 40).toArray(), new boolean[]{false, true,
+        ActionSet actionSet2 = ActionSet.makeActionSet(IntStream.range(5, 50).toArray(), new boolean[]{false, true,
                 true,
                 false}, dist2);
 
         /* Repeated action 3 -- W-O pressed */
         Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionSet actionSet3 = ActionSet.makeActionSet(IntStream.range(2, 20).toArray(), new boolean[]{false, false,
+        ActionSet actionSet3 = ActionSet.makeActionSet(IntStream.range(2, 25).toArray(), new boolean[]{false, false,
                 false,
                 false}, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> dist4 = new Distribution_Normal(25, 3f);
-        ActionSet actionSet4 = ActionSet.makeActionSet(IntStream.range(10, 40).toArray(), new boolean[]{true, false,
+        ActionSet actionSet4 = ActionSet.makeActionSet(IntStream.range(5, 50).toArray(), new boolean[]{true, false,
                 false,
                 true}, dist4);
 
