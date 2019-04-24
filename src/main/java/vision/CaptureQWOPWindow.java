@@ -2,10 +2,13 @@ package vision;
 
 import tree.Utility;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.io.File;
+import java.io.IOException;
 
 public class CaptureQWOPWindow extends JPanel implements Runnable {
 
@@ -119,7 +122,6 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
         for (int i = 0; i < pixels.length; i++) {
 
             if (!previouslyOnTopRow && pixels[i] == topRowColorSingleInt) {
-                System.out.println(pixels[i]);
                 previouslyOnTopRow = true;
                 topRowStartPixel = i;
             } else if (previouslyOnTopRow && pixels[i] != topRowColorSingleInt) {
@@ -154,14 +156,16 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
     }
 
     private BufferedImage getGameCapture() {
-        Utility.tic();
         BufferedImage img = robot.createScreenCapture(screenCapRegion);
-        Utility.toc();
         if (img.getRGB(0,0) != topRowColorSingleInt) {
             locateQWOP();
             getGameCapture();
         }
         return img;
+    }
+
+    public void saveImageToPNG(File file) throws IOException {
+        ImageIO.write(getGameCapture(), "png", file);
     }
 
     @Override
@@ -175,8 +179,12 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
 
     public static void main(String[] args) throws AWTException {
 
-        CaptureQWOPWindow locator = new CaptureQWOPWindow(1);
-
+        CaptureQWOPWindow locator = new CaptureQWOPWindow(0);
+        try {
+            locator.saveImageToPNG(new File("test.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         Thread drawerThread = new Thread(locator);
         drawerThread.start();

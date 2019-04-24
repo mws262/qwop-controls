@@ -123,7 +123,7 @@ public abstract class FlashGame implements QWOPStateListener {
                 }
 
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(0);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
