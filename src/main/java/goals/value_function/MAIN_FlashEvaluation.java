@@ -11,13 +11,19 @@ import game.StateVariable;
 import tree.Node;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
+import vision.CaptureQWOPWindow;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 
 @SuppressWarnings("Duplicates")
 public class MAIN_FlashEvaluation extends FlashGame {
+
+    private boolean imageCapture = true;
+    private CaptureQWOPWindow capture;
+    private File captureDir = new File("vision_capture");
 
     Action[] prefix = new Action[]{
             new Action(7, Action.Keys.none),
@@ -33,6 +39,13 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private Node placeholderNode = new Node(); // TODO only really needs the state. This is just acting as a container.
 
     public MAIN_FlashEvaluation() {
+        if (imageCapture) {
+            capture = new CaptureQWOPWindow(0); // Whichever screen has toolbar is 0.
+            if (!captureDir.exists() || !captureDir.isDirectory()) {
+                captureDir.mkdirs();
+            }
+        }
+
         loadController();
 
         getControlAction(GameUnified.getInitialState()); // TODO make this better. The first controller evaluation ever
@@ -59,9 +72,22 @@ public class MAIN_FlashEvaluation extends FlashGame {
         return valueFunction.getMaximizingAction(placeholderNode);
     }
 
+    int runCounter = 0;
+    File runFile;
     @Override
     public void reportGameStatus(State state, boolean[] command, int timestep) {
 
+        if (imageCapture && !state.isFailed()) {
+            if (timestep == 0) {
+                runFile = new File(captureDir.getPath() + "/run" + runCounter++);
+                runFile.mkdirs();
+            }
+            try {
+                capture.saveImageToPNG(new File(runFile.getPath() + "/ts" + timestep + ".pmg"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void loadController() {
