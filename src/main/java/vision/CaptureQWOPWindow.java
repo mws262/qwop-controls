@@ -135,9 +135,13 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
         gameUpperCornerY = topRowStartPixel / monitorBounds.width;
         gameStageScaling = Math.max((topRowEndPixel - topRowStartPixel) / (double) defaultGameWidth, 0.1);
 
-        System.out.println("Found game width of: " + (topRowEndPixel - topRowStartPixel));
-        System.out.println("Top-right game coordinate: (" + gameUpperCornerX + ", " + gameUpperCornerY + ")");
-        System.out.println("Game scaling is: " + gameStageScaling);
+        if ((topRowEndPixel - topRowStartPixel) == 0) {
+            System.out.println("Game window not found. Check monitor number or move nearby browser instances.");
+        } else {
+            System.out.println("Found game width of: " + (topRowEndPixel - topRowStartPixel));
+            System.out.println("Top-right game coordinate: (" + gameUpperCornerX + ", " + gameUpperCornerY + ")");
+            System.out.println("Game scaling is: " + gameStageScaling);
+        }
 
         screenCapRegion = new Rectangle(gameUpperCornerX, gameUpperCornerY,
                 (int) (gameStageScaling * defaultGameWidth), (int) (gameStageScaling * defaultGameHeight));
@@ -156,16 +160,23 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
     }
 
     private BufferedImage getGameCapture() {
-        BufferedImage img = robot.createScreenCapture(screenCapRegion);
-        if (img.getRGB(0,0) != topRowColorSingleInt) {
-            locateQWOP();
-            getGameCapture();
+        if (screenCapRegion.getX() > 0 && screenCapRegion.getY() > 0) {
+            BufferedImage img = robot.createScreenCapture(screenCapRegion);
+            if (img.getRGB(0, 0) != topRowColorSingleInt) {
+                locateQWOP();
+                getGameCapture();
+            }
+            return img;
+        } else {
+            return null;
         }
-        return img;
     }
 
     public void saveImageToPNG(File file) throws IOException {
-        ImageIO.write(getGameCapture(), "png", file);
+        BufferedImage img = getGameCapture();
+        if (img != null) {
+            ImageIO.write(img, "png", file);
+        }
     }
 
     @Override

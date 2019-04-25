@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 
 @SuppressWarnings("Duplicates")
 public class MAIN_FlashEvaluation extends FlashGame {
@@ -74,26 +76,47 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     int runCounter = 0;
     File runFile;
-    boolean hasFirstResetHappened = false;
+    boolean resetPending = true;
+
+    Queue<File> capturesThisRun = new LinkedList<>();
+    Queue<State> statesThisRun = new LinkedList<>();
+
     @Override
     public void reportGameStatus(State state, boolean[] command, int timestep) {
 
-        timestep--;
+        if (!imageCapture) return;
 
-        if (imageCapture && !state.isFailed() && timestep >= 0) {
-            System.out.println(timestep);
+        // Failure detected for the first time.
+        if (!resetPending && state.isFailed()) {
+            // TODO SAVE.
 
-            if (timestep == 0) {
-                runFile = new File(captureDir.getPath() + "/run" + runCounter++);
-                runFile.mkdirs();
-                hasFirstResetHappened = true;
-            }
-            if (hasFirstResetHappened) {
-                try {
-                    capture.saveImageToPNG(new File(runFile.getPath() + "/ts" + timestep + ".png"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            resetPending = true;
+            return;
+        }
+
+        // Reset has just occurred.
+        if (timestep == 0) {
+            // Clear caches from the last game and make a new directory.
+            capturesThisRun.clear();
+            statesThisRun.clear();
+            runFile = new File(captureDir.getPath() + "/run" + runCounter++);
+            runFile.mkdirs();
+            resetPending = false;
+        } else if (resetPending) {
+            return;
+        }
+
+        // Hold state info.
+
+
+        // Take picture.
+        if (timestep > 0) {
+            try {
+                File nextCapture = new File(runFile.getPath() + "/ts" + (timestep - 1) + ".png");
+                capture.saveImageToPNG(nextCapture);
+                capturesThisRun.add(nextCapture);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
