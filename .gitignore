@@ -25,6 +25,7 @@ gc.log
 *.DS_Store
 *.config~
 *.fseventsd
+/vision_capture/
 
 # Allow snippits of binary data to go to git for unit testing.
 !/src/test/resources/saved_data_examples/*.tfrecord

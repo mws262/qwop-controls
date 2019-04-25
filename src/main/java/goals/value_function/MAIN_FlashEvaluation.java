@@ -40,7 +40,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     public MAIN_FlashEvaluation() {
         if (imageCapture) {
-            capture = new CaptureQWOPWindow(0); // Whichever screen has toolbar is 0.
+            capture = new CaptureQWOPWindow(1); // Whichever screen has toolbar is 0.
             if (!captureDir.exists() || !captureDir.isDirectory()) {
                 captureDir.mkdirs();
             }
@@ -74,18 +74,26 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     int runCounter = 0;
     File runFile;
+    boolean hasFirstResetHappened = false;
     @Override
     public void reportGameStatus(State state, boolean[] command, int timestep) {
 
-        if (imageCapture && !state.isFailed()) {
+        timestep--;
+
+        if (imageCapture && !state.isFailed() && timestep >= 0) {
+            System.out.println(timestep);
+
             if (timestep == 0) {
                 runFile = new File(captureDir.getPath() + "/run" + runCounter++);
                 runFile.mkdirs();
+                hasFirstResetHappened = true;
             }
-            try {
-                capture.saveImageToPNG(new File(runFile.getPath() + "/ts" + timestep + ".pmg"));
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (hasFirstResetHappened) {
+                try {
+                    capture.saveImageToPNG(new File(runFile.getPath() + "/ts" + timestep + ".png"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
