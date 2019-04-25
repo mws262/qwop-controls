@@ -1,13 +1,10 @@
 package goals.value_function;
 
 import actions.Action;
-import actions.ActionQueue;
 import flashqwop.FlashGame;
-import flashqwop.FlashQWOPServer;
-import flashqwop.QWOPStateListener;
 import game.GameUnified;
 import game.State;
-import game.StateVariable;
+import org.jblas.util.Random;
 import tree.Node;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -16,7 +13,7 @@ import vision.CaptureQWOPWindow;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -24,6 +21,8 @@ import java.util.Queue;
 public class MAIN_FlashEvaluation extends FlashGame {
 
     private boolean imageCapture = true;
+    private boolean addActionNoise = true;
+    private float noiseProbability = 0.1f;
     private CaptureQWOPWindow capture;
     private File captureDir = new File("vision_capture");
 
@@ -42,7 +41,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     public MAIN_FlashEvaluation() {
         if (imageCapture) {
-            capture = new CaptureQWOPWindow(1); // Whichever screen has toolbar is 0.
+            capture = new CaptureQWOPWindow(0); // Whichever screen has toolbar is 0.
             if (!captureDir.exists() || !captureDir.isDirectory()) {
                 captureDir.mkdirs();
             }
@@ -71,7 +70,15 @@ public class MAIN_FlashEvaluation extends FlashGame {
     @Override
     public Action getControlAction(State state) {
         placeholderNode.setState(state);
-        return valueFunction.getMaximizingAction(placeholderNode);
+        Action action = valueFunction.getMaximizingAction(placeholderNode);
+        if (addActionNoise && Random.nextFloat() < noiseProbability) {
+            if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
+                action = new Action(action.getTimestepsTotal() + 1, action.peek());
+            } else {
+                action = new Action(action.getTimestepsTotal() - 1, action.peek());
+            }
+        }
+        return action;
     }
 
     int runCounter = 0;
@@ -88,7 +95,20 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
         // Failure detected for the first time.
         if (!resetPending && state.isFailed()) {
-            // TODO SAVE.
+            String saveString = "";
+            while (!capturesThisRun.isEmpty()) {
+                File f = capturesThisRun.poll();
+                saveString += f.getName() + '\t';
+                State s = statesThisRun.poll();
+                saveString += formatState(s) + "\r\n";
+            }
+            assert !statesThisRun.isEmpty();
+
+            try {
+                Files.write(new File(runFile.getPath() + "/poses.dat").toPath(), saveString.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             resetPending = true;
             return;
@@ -107,7 +127,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
         }
 
         // Hold state info.
-
+        statesThisRun.add(state);
 
         // Take picture.
         if (timestep > 0) {
@@ -134,6 +154,38 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     public static void main(String[] args) {
         MAIN_FlashEvaluation controller = new MAIN_FlashEvaluation();
+    }
+
+    private String formatState(State s) {
+
+        float bodyX = s.body.getX();
+
+        String ss = s.body.getX() + "\t" + s.body.getY() + "\t" + s.body.getTh() + "\t";
+        ss += (s.head.getX() - bodyX) + "\t" + s.head.getY() + "\t" + s.head.getTh() + "\t";
+        ss += (s.rthigh.getX() - bodyX) + "\t" + s.rthigh.getY() + "\t" + s.rthigh.getTh() + "\t";
+        ss += (s.lthigh.getX() - bodyX) + "\t" + s.lthigh.getY() + "\t" + s.lthigh.getTh() + "\t";
+        ss += (s.rcalf.getX() - bodyX) + "\t" + s.rcalf.getY() + "\t" + s.rcalf.getTh() + "\t";
+        ss += (s.lcalf.getX() - bodyX) + "\t" + s.lcalf.getY() + "\t" + s.lcalf.getTh() + "\t";
+        ss += (s.rfoot.getX() - bodyX) + "\t" + s.rfoot.getY() + "\t" + s.rfoot.getTh() + "\t";
+        ss += (s.lfoot.getX() - bodyX) + "\t" + s.lfoot.getY() + "\t" + s.lfoot.getTh() + "\t";
+        ss += (s.ruarm.getX() - bodyX) + "\t" + s.ruarm.getY() + "\t" + s.ruarm.getTh() + "\t";
+        ss += (s.luarm.getX() - bodyX) + "\t" + s.luarm.getY() + "\t" + s.luarm.getTh() + "\t";
+        ss += (s.rlarm.getX() - bodyX) + "\t" + s.rlarm.getY() + "\t" + s.rlarm.getTh() + "\t";
+        ss += (s.llarm.getX() - bodyX) + "\t" + s.llarm.getY() + "\t" + s.llarm.getTh() + "\t";
+
+        ss += s.body.getDx() + "\t" + s.body.getDy() + "\t" + s.body.getDth() + "\t";
+        ss += s.head.getDx() + "\t" + s.head.getDy() + "\t" + s.head.getDth() + "\t";
+        ss += s.rthigh.getDx() + "\t" + s.rthigh.getDy() + "\t" + s.rthigh.getDth() + "\t";
+        ss += s.lthigh.getDx()  + "\t" + s.lthigh.getDy() + "\t" + s.lthigh.getDth() + "\t";
+        ss += s.rcalf.getDx() + "\t" + s.rcalf.getDy() + "\t" + s.rcalf.getDth() + "\t";
+        ss += s.lcalf.getDx() + "\t" + s.lcalf.getDy() + "\t" + s.lcalf.getDth() + "\t";
+        ss += s.rfoot.getDx() + "\t" + s.rfoot.getDy() + "\t" + s.rfoot.getDth() + "\t";
+        ss += s.lfoot.getDx() + "\t" + s.lfoot.getDy() + "\t" + s.lfoot.getDth() + "\t";
+        ss += s.ruarm.getDx() + "\t" + s.ruarm.getDy() + "\t" + s.ruarm.getDth() + "\t";
+        ss += s.luarm.getDx() + "\t" + s.luarm.getDy() + "\t" + s.luarm.getDth() + "\t";
+        ss += s.rlarm.getDx()+ "\t" + s.rlarm.getDy() + "\t" + s.rlarm.getDth() + "\t";
+        ss += s.llarm.getDx() + "\t" + s.llarm.getDy() + "\t" + s.llarm.getDth() + "\t";
+        return ss;
     }
 
 }

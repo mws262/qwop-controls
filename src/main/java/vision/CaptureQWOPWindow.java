@@ -72,6 +72,7 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
 
     private Rectangle screenCapRegion;
 
+    private static boolean debugFrame = false;
     public CaptureQWOPWindow(int monitorIdx) {
         this.monitorIdx = monitorIdx;
 
@@ -92,13 +93,15 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
         // Find the dimensions and coordinates to just capture the QWOP window.
         locateQWOP();
 
-        frame = new JFrame();
-        frame.setPreferredSize(new Dimension((int) (gameStageScaling * defaultGameWidth),
-                (int) (gameStageScaling * defaultGameHeight) + 35)); // Have to offset the height of the window top bar.
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-        frame.add(this);
-        frame.pack();
+        if (debugFrame) {
+            frame = new JFrame();
+            frame.setPreferredSize(new Dimension((int) (gameStageScaling * defaultGameWidth),
+                    (int) (gameStageScaling * defaultGameHeight) + 35)); // Have to offset the height of the window top bar.
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            frame.setVisible(true);
+            frame.add(this);
+            frame.pack();
+        }
     }
 
     @Override
@@ -176,6 +179,8 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
         BufferedImage img = getGameCapture();
         if (img != null) {
             ImageIO.write(img, "png", file);
+        } else {
+            System.out.println("Warning: screenshot image acquired was not valid and was not saved.");
         }
     }
 
@@ -189,7 +194,7 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
 
 
     public static void main(String[] args) throws AWTException {
-
+        CaptureQWOPWindow.debugFrame = true;
         CaptureQWOPWindow locator = new CaptureQWOPWindow(0);
         try {
             locator.saveImageToPNG(new File("test.png"));
