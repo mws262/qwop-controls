@@ -96,7 +96,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         hiddenLayerSizes.add(64);
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");
-        extraNetworkArgs.add("1e-2");
+        extraNetworkArgs.add("1e-3");
 
         ValueFunction_TensorFlow_StateOnly valueFunction = null;
         try {
@@ -113,11 +113,11 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
 //        }
-        int chkIdx = 464;
+        int chkIdx = 314;
         valueFunction.loadCheckpoint("small" + chkIdx);
         valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
-        valueFunction.setTrainingBatchSize(100);
-        boolean valueFunctionRollout = true;
+        valueFunction.setTrainingBatchSize(1000);
+        boolean valueFunctionRollout = false;
 
         for (int k = 0; k < 10000; k++) {
             RolloutPolicy rollout;

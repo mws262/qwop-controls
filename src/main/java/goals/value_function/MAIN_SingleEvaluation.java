@@ -73,7 +73,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("small529"); // chk_after565"); // chk5");
+        valueFunction.loadCheckpoint("small339"); // chk_after565"); // chk5");
 
         // Assign potential actions for the value function to choose among.
         ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 30).toArray(), new boolean[]{false, false,
@@ -97,8 +97,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
                 new Action(7,false,false,false,false),
-//                new Action(34,false,true,true,false),
-//                new Action(19,false,false,false,false),
+                new Action(34,false,true,true,false),
+                new Action(19,false,false,false,false),
 //                new Action(45,true,false,false,true),
 //
 //                new Action(10,false,false,false,false),

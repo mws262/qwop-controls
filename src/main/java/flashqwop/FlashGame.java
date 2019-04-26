@@ -123,10 +123,15 @@ public abstract class FlashGame implements QWOPStateListener {
                 }
 
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(0);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+            }
+            try {
+                Thread.sleep(4000); // Give it time for the "thud" animation to dissipate for taking screen captures.
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
             restart();
             return;
@@ -149,7 +154,7 @@ public abstract class FlashGame implements QWOPStateListener {
             if (a == null) {
                 return;
             }
-            System.out.println(a.toString());
+            System.out.println(a.toString() + ". Eval time: " + (System.currentTimeMillis() - timeBeforeController) + " ms.");
             actionQueue.addAction(a);
         }
 
