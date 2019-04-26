@@ -25,11 +25,12 @@ gc.log
 *.DS_Store
 *.config~
 *.fseventsd
+/vision_capture/*
+!/vision_capture/README.md
 
 # Allow snippits of binary data to go to git for unit testing.
 !/src/test/resources/saved_data_examples/*.tfrecord
 !/src/test/resources/saved_data_examples/*.TFRecord
-
 
 # Created by https://www.gitignore.io/api/intellij
 
