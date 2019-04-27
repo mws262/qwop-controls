@@ -20,9 +20,9 @@ import java.util.Queue;
 @SuppressWarnings("Duplicates")
 public class MAIN_FlashEvaluation extends FlashGame {
 
-    private boolean imageCapture = true;
-    private boolean addActionNoise = true;
-    private float noiseProbability = 0.1f;
+    private boolean imageCapture = false;
+    private boolean addActionNoise = false;
+    private float noiseProbability = 0.3f;
     private CaptureQWOPWindow capture;
     private File captureDir = new File("vision_capture");
 
@@ -149,7 +149,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("small289"); // _after439");//273");//chk_after1");
+        valueFunction.loadCheckpoint("small329"); // "small289"); // _after439");//273");//chk_after1");
     }
 
     public static void main(String[] args) {

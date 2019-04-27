@@ -65,9 +65,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 new Action(7,false,false,false,false),
                 new Action(49, Action.Keys.wo),
                 new Action(2, Action.Keys.none),
-                new Action(25, Action.Keys.qp),
+                //new Action(25, Action.Keys.qp),
 
-                new Action(34, Action.Keys.none),
+//                new Action(34, Action.Keys.none),
 //                new Action(11,false,true,true,false),
 //                new Action(10,false,false,false,false),
 //                new Action(21,true,false,false,true),
@@ -106,6 +106,24 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             e.printStackTrace();
         }
 
+
+        ArrayList<Integer> hiddenLayerSizesB = new ArrayList<>();
+        hiddenLayerSizes.add(128);
+        hiddenLayerSizes.add(64);
+        hiddenLayerSizes.add(32);
+        hiddenLayerSizes.add(16);
+        List<String> extraNetworkArgsB = new ArrayList<>();
+        extraNetworkArgs.add("--learnrate");
+        extraNetworkArgs.add("1e-4");
+
+        ValueFunction_TensorFlow_StateOnly valueFunctionB = null;
+        try {
+            valueFunctionB = new ValueFunction_TensorFlow_StateOnly("big_net",
+                    hiddenLayerSizes, extraNetworkArgs);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
 //        ValueFunction_TensorFlow valueFunction = null;
 //        try {
 //            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
@@ -113,17 +131,20 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
 //        }
-        int chkIdx = 314;
-        valueFunction.loadCheckpoint("small" + chkIdx);
-        valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
-        valueFunction.setTrainingBatchSize(1000);
-        boolean valueFunctionRollout = false;
+        int chkIdx = 342;
+        valueFunctionB.loadCheckpoint("big" + chkIdx);
+        valueFunctionB.setTrainingStepsPerBatch(netTrainingStepsPerIter);
+        valueFunctionB.setTrainingBatchSize(1000);
+        boolean valueFunctionRollout = true;
 
         for (int k = 0; k < 10000; k++) {
             RolloutPolicy rollout;
 
             if (valueFunctionRollout) {
-                rollout = new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
+                rollout = new RolloutPolicy_RandomHorizonWithValue(valueFunctionB);
+                ((RolloutPolicy_RandomHorizonWithValue) rollout).valueFunctionWeight = 0.8f;
+                // Rollout using value function controller.
+                //rollout = new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
 //                        new RolloutPolicy_WorstCaseWindow(new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueFunction));
             } else {
                 //new RolloutPolicy_WorstCaseWindow(
@@ -157,7 +178,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             Collections.shuffle(nodesBelow);
 
             Utility.tic();
-            valueFunction.update(nodesBelow);
+            valueFunctionB.update(nodesBelow);
             Utility.toc();
 
             if (!headless) {
@@ -171,7 +192,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             }
 //             Save a checkpoint of the weights/biases.
 //            if (k % 2 == 0) {
-                valueFunction.saveCheckpoint("small" + (k + chkIdx + 1));
+                valueFunctionB.saveCheckpoint("big" + (k + chkIdx + 1));
                 System.out.println("Saved");
 //            }
         }
