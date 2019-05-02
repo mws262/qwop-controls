@@ -161,7 +161,6 @@ public abstract class FlashGame implements QWOPStateListener {
         // Only send command when it's different from the previous.
         boolean[] nextCommand = actionQueue.pollCommand();
         if (!Arrays.equals(prevCommand, nextCommand)) {
-
             if (hardwareCommandsOut) {
                 try {
                     serial.doCommand(nextCommand[0], nextCommand[1], nextCommand[2], nextCommand[3]);
@@ -177,6 +176,10 @@ public abstract class FlashGame implements QWOPStateListener {
         // Check to make sure the controller didn't take way too long. This is not the most robust way to do this,
         // but it's better to at least know that this is occurring.
         long controlEvalTime = System.currentTimeMillis() - timeBeforeController;
+//        if (controlEvalTime < 17 && actionQueue.peekThisAction().getTimestepsRemaining() == 14) {
+//            System.out.println("artificially triggered gc");
+//            System.gc();
+//        }
         if (controlEvalTime > 30) {
             System.out.println("Warning: the control loop time was " + controlEvalTime + "ms. This might be too high.");
         }

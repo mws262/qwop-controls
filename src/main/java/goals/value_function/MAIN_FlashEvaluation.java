@@ -17,6 +17,8 @@ import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.Queue;
 
+// -XX:+UseShenandoahGC -XX:-UseBiasedLocking -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:ShenandoahMinFreeThreshold=10 -XX:+PrintGCDetails
+
 @SuppressWarnings("Duplicates")
 public class MAIN_FlashEvaluation extends FlashGame {
 
@@ -150,6 +152,10 @@ public class MAIN_FlashEvaluation extends FlashGame {
             e.printStackTrace();
         }
         valueFunction.loadCheckpoint("small566"); // "small289"); // _after439");//273");//chk_after1");
+//        Node sampleNode = new Node();
+//        for (int i = 0; i < 100; i++) {
+//            valueFunction.evaluate(sampleNode);
+//        }
     }
 
     public static void main(String[] args) {

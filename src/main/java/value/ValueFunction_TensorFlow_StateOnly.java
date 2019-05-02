@@ -40,7 +40,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         }
     }
 
-    int minDur = 2;
+    int minDur = 3;
     @Override
     public Action getMaximizingAction(Node currentNode) {
         State fullState = currentNode.getState();
@@ -49,7 +49,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
         List<EvaluationResult> evalResults = new ArrayList<>();
         evaluations.add( // No Keys
-                getCallable(fullState, currentNode, Action.Keys.none, 1, 15));
+                getCallable(fullState, currentNode, Action.Keys.none, 3, 15));
         evaluations.add( // QP
                 getCallable(fullState, currentNode, Action.Keys.qp, minDur, 45));
         evaluations.add( // WO
