@@ -40,6 +40,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         }
     }
 
+    int minDur = 2;
     @Override
     public Action getMaximizingAction(Node currentNode) {
         State fullState = currentNode.getState();
@@ -48,24 +49,24 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
         List<EvaluationResult> evalResults = new ArrayList<>();
         evaluations.add( // No Keys
-                getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
+                getCallable(fullState, currentNode, Action.Keys.none, 1, 15));
         evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 2, 45));
+                getCallable(fullState, currentNode, Action.Keys.qp, minDur, 45));
         evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 2, 45));
+                getCallable(fullState, currentNode, Action.Keys.wo, minDur, 45));
         evaluations.add( // Q
-                getCallable(fullState, currentNode, Action.Keys.q, 2, 5));
+                getCallable(fullState, currentNode, Action.Keys.q, minDur, 8));
         evaluations.add( // 2
-                getCallable(fullState, currentNode, Action.Keys.w, 2, 5));
+                getCallable(fullState, currentNode, Action.Keys.w, minDur, 8));
         evaluations.add( // O
-                getCallable(fullState, currentNode, Action.Keys.o, 2, 5));
+                getCallable(fullState, currentNode, Action.Keys.o, minDur, 8));
         evaluations.add( // P
-                getCallable(fullState, currentNode, Action.Keys.p, 2, 5));
+                getCallable(fullState, currentNode, Action.Keys.p, minDur, 8));
         // Off keys -- dunno if these are ever helpful.
         evaluations.add( // QO
-                getCallable(fullState, currentNode, Action.Keys.qo, 2, 5));
+                getCallable(fullState, currentNode, Action.Keys.qo, minDur, 8));
         evaluations.add( // WP
-                getCallable(fullState, currentNode, Action.Keys.wp, 2, 5));
+                getCallable(fullState, currentNode, Action.Keys.wp, minDur, 8));
 
         if (multithread) { // Multi-thread
             List<Future<EvaluationResult>> allResults;
@@ -141,7 +142,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 INode nextNode = new NodePlaceholder(startingNode, new Action(i, buttons), st);
                 val1 = val2;
                 val2 = val3;
-                val3 = evaluate(nextNode);
+                val3 = evaluate(nextNode);// + (st.body.getX() - gameStartingState.body.getX())/(float)i * 1f;
                 if (i == 1) {
                    // val1 = val3;
                     val2 = val3 * 4f/4f;
@@ -177,8 +178,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     @SuppressWarnings("Duplicates")
     @Override
     public Action getMaximizingAction(Node currentNode, IGame realGame) {
-//        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
-        State fullState = currentNode.getState();
+        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
+//        State fullState = currentNode.getState();
         Objects.requireNonNull(fullState);
 
         List<Callable<EvaluationResult>> evaluations = new ArrayList<>();

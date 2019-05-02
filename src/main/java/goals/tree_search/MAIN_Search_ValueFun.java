@@ -1,16 +1,17 @@
 package goals.tree_search;
 
 import actions.Action;
+import actions.ActionGenerator_FixedSequence;
+import actions.ActionSet;
+import distributions.Distribution;
+import distributions.Distribution_Normal;
 import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_Distance;
 import game.GameUnified;
 import samplers.Sampler_UCB;
 import samplers.rollout.*;
 import savers.DataSaver_StageSelected;
-import tree.Node;
-import tree.TreeStage_MaxDepth;
-import tree.TreeWorker;
-import tree.Utility;
+import tree.*;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 
 public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
@@ -55,6 +57,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         // Make new tree root and assign to GUI.
         // Assign default available actions.
         assignAllowableActionsWider(-1);
+        assignAllowableRolloutActions();
+
+
         Node rootNode = new Node();
         Node.pointsToDraw.clear();
         ui.clearRootNodes();
@@ -65,9 +70,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 new Action(7,false,false,false,false),
                 new Action(49, Action.Keys.wo),
                 new Action(2, Action.Keys.none),
-                //new Action(25, Action.Keys.qp),
+                new Action(25, Action.Keys.qp),
 
-//                new Action(34, Action.Keys.none),
+               new Action(34, Action.Keys.none),
 //                new Action(11,false,true,true,false),
 //                new Action(10,false,false,false,false),
 //                new Action(21,true,false,false,true),
@@ -90,59 +95,42 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         saver.overrideFilename = "tmp";
         saver.setSavePath("src/main/resources/saved_data/");
 
+
+
+
         // Make the value function.
         ArrayList<Integer> hiddenLayerSizes = new ArrayList<>();
         hiddenLayerSizes.add(128);
         hiddenLayerSizes.add(64);
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");
-        extraNetworkArgs.add("1e-3");
+        extraNetworkArgs.add("1e-5");
 
-        ValueFunction_TensorFlow_StateOnly valueFunction = null;
+        ValueFunction_TensorFlow_StateOnly valueFunctionConst = null;
+        ValueFunction_TensorFlow_StateOnly valueFunctionTarget = null;
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly("small_net",
+            valueFunctionConst = new ValueFunction_TensorFlow_StateOnly("small_net",
+                    hiddenLayerSizes, extraNetworkArgs);
+            valueFunctionTarget = new ValueFunction_TensorFlow_StateOnly("small_net",
                     hiddenLayerSizes, extraNetworkArgs);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
+        int chkIdx = 505;
+        valueFunctionConst.loadCheckpoint("small" + chkIdx);
+        valueFunctionTarget.loadCheckpoint("small" + chkIdx);
 
-        ArrayList<Integer> hiddenLayerSizesB = new ArrayList<>();
-        hiddenLayerSizes.add(128);
-        hiddenLayerSizes.add(64);
-        hiddenLayerSizes.add(32);
-        hiddenLayerSizes.add(16);
-        List<String> extraNetworkArgsB = new ArrayList<>();
-        extraNetworkArgs.add("--learnrate");
-        extraNetworkArgs.add("1e-4");
-
-        ValueFunction_TensorFlow_StateOnly valueFunctionB = null;
-        try {
-            valueFunctionB = new ValueFunction_TensorFlow_StateOnly("big_net",
-                    hiddenLayerSizes, extraNetworkArgs);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-//        ValueFunction_TensorFlow valueFunction = null;
-//        try {
-//            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-//                    "/state_only.pb"));
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-        int chkIdx = 342;
-        valueFunctionB.loadCheckpoint("big" + chkIdx);
-        valueFunctionB.setTrainingStepsPerBatch(netTrainingStepsPerIter);
-        valueFunctionB.setTrainingBatchSize(1000);
+        valueFunctionTarget.setTrainingStepsPerBatch(netTrainingStepsPerIter);
+        valueFunctionTarget.setTrainingBatchSize(1000);
         boolean valueFunctionRollout = true;
 
         for (int k = 0; k < 10000; k++) {
             RolloutPolicy rollout;
 
             if (valueFunctionRollout) {
-                rollout = new RolloutPolicy_RandomHorizonWithValue(valueFunctionB);
-                ((RolloutPolicy_RandomHorizonWithValue) rollout).valueFunctionWeight = 0.8f;
+                rollout = new RolloutPolicy_RandomHorizonWithValue(valueFunctionConst);
+                ((RolloutPolicy_RandomHorizonWithValue) rollout).valueFunctionWeight = 0.9f;
                 // Rollout using value function controller.
                 //rollout = new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
 //                        new RolloutPolicy_WorstCaseWindow(new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueFunction));
@@ -178,11 +166,11 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             Collections.shuffle(nodesBelow);
 
             Utility.tic();
-            valueFunctionB.update(nodesBelow);
+            valueFunctionTarget.update(nodesBelow);
             Utility.toc();
 
             if (!headless) {
-                ValueFunction_TensorFlow_StateOnly finalValueFunction = valueFunction;
+                ValueFunction_TensorFlow_StateOnly finalValueFunction = valueFunctionTarget;
                 Runnable updateLabels = () -> {
                     for (Node n : nodesBelow) {
                         n.nodeLabelAlt = String.format("%.2f", finalValueFunction.evaluate(n));
@@ -192,7 +180,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             }
 //             Save a checkpoint of the weights/biases.
 //            if (k % 2 == 0) {
-                valueFunctionB.saveCheckpoint("big" + (k + chkIdx + 1));
+            valueFunctionTarget.saveCheckpoint("small" + (k + chkIdx + 1));
                 System.out.println("Saved");
 //            }
         }

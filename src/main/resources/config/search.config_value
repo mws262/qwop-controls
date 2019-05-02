@@ -2,7 +2,7 @@
 saveLocation=./test_dir
 headless=false
 workersFractionOfCores=0.7
-UCBExplorationMultiplier=1
+UCBExplorationMultiplier=0.5
 getToSteadyDepth=100
 fractionOfMaxWorkers=1
 bailAfterXGames=20000

@@ -170,7 +170,7 @@ public class GameUnified implements IGame, Serializable {
     private CollisionListener collisionListener = new CollisionListener();
 
     /** Should the game be marked as failed if the thighs touch the ground? (happens with knees touching the ground. **/
-    public static boolean failOnThighContact = true;
+    public static boolean failOnThighContact = false;
 
     /**
      * Normal stroke for line drawing.

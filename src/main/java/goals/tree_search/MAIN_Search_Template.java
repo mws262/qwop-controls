@@ -11,7 +11,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
+import evaluators.EvaluationFunction_Constant;
 import samplers.Sampler_Greedy;
+import samplers.rollout.RolloutPolicy;
+import samplers.rollout.RolloutPolicy_RandomDecayingHorizon;
 import savers.DataSaver_DenseTFRecord;
 import tree.*;
 import actions.Action;
@@ -199,7 +202,8 @@ public abstract class MAIN_Search_Template {
         saver.overrideFilename = saveName;
         saver.setSavePath(saveLoc.getPath() + "/");
 
-        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Distance());
+        RolloutPolicy rollout = new RolloutPolicy_RandomDecayingHorizon();
+        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout);
         TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, ucbSampler, saver); // Depth to get to
 		// sorta steady state. was
         searchMax.terminateAfterXGames = maxGames; // Will terminate after this many games played regardless of
@@ -410,46 +414,54 @@ public abstract class MAIN_Search_Template {
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
         /* Repeated action 1 -- no keys pressed. */
-        Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionSet actionSet1 = ActionSet.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
+        Distribution<Action> dist1 = new Distribution_Normal(12f, 3f);
+        ActionSet actionSet1 = ActionSet.makeActionSet(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
+                false,
                 false}, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> dist2 = new Distribution_Normal(39f, 3f);
-        ActionSet actionSet2 = ActionSet.makeActionSet(IntStream.range(20, 60).toArray(), new boolean[]{false, true, true,
+        Distribution<Action> dist2 = new Distribution_Normal(25f, 5f);
+        ActionSet actionSet2 = ActionSet.makeActionSet(IntStream.range(5, 55).toArray(), new boolean[]{false, true,
+                true,
                 false}, dist2);
 
         /* Repeated action 3 -- No keys pressed. */
-        Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionSet actionSet3 = ActionSet.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
+        Distribution<Action> dist3 = new Distribution_Normal(12f, 3f);
+        ActionSet actionSet3 = ActionSet.makeActionSet(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
+                false,
                 false}, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> dist4 = new Distribution_Normal(39f, 3f);
-        ActionSet actionSet4 = ActionSet.makeActionSet(IntStream.range(20, 60).toArray(), new boolean[]{true, false, false,
+        Distribution<Action> dist4 = new Distribution_Normal(25f, 5f);
+        ActionSet actionSet4 = ActionSet.makeActionSet(IntStream.range(5, 55).toArray(), new boolean[]{true, false,
+                false,
                 true}, dist4);
 
         ActionSet[] repeatedActions = new ActionSet[]{actionSet1, actionSet2, actionSet3, actionSet4};
 
         /////// Action Exceptions for starting up. ////////
         /* Repeated action exceptions 1 -- no keys pressed. */
-        Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
-        ActionSet actionSetE1 = ActionSet.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
+        Distribution<Action> distE1 = new Distribution_Normal(7f, 1f);
+        ActionSet actionSetE1 = ActionSet.makeActionSet(IntStream.range(1, 15).toArray(), new boolean[]{false, false,
+                false,
                 false}, distE1);
 
         /*  Repeated action exceptions 2 -- W-O pressed */
-        Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionSet actionSetE2 = ActionSet.makeActionSet(IntStream.range(20, 50).toArray(), new boolean[]{false, true, true,
+        Distribution<Action> distE2 = new Distribution_Normal(49f, 2f);
+        ActionSet actionSetE2 = ActionSet.makeActionSet(IntStream.range(20, 55).toArray(), new boolean[]{false, true,
+                true,
                 false}, distE2);
 
         /*  Repeated action exceptions 3 -- no keys pressed. */
-        Distribution<Action> distE3 = new Distribution_Normal(24f, 2f);
-        ActionSet actionSetE3 = ActionSet.makeActionSet(IntStream.range(10, 45).toArray(), new boolean[]{false, false, false,
+        Distribution<Action> distE3 = new Distribution_Normal(2f, 2f);
+        ActionSet actionSetE3 = ActionSet.makeActionSet(IntStream.range(1, 15).toArray(), new boolean[]{false, false,
+                false,
                 false}, distE3);
 
         /*  Repeated action exceptions 4 -- Q-P pressed */
-        Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
-        ActionSet actionSetE4 = ActionSet.makeActionSet(IntStream.range(25, 65).toArray(), new boolean[]{true, false, false,
+        Distribution<Action> distE4 = new Distribution_Normal(25f, 2f);
+        ActionSet actionSetE4 = ActionSet.makeActionSet(IntStream.range(10, 45).toArray(), new boolean[]{true, false,
+                false,
                 true}, distE4);
 
         /////// Action Exceptions for recovery. ////////
@@ -603,5 +615,34 @@ public abstract class MAIN_Search_Template {
         }
         // Define the specific way that these allowed actions are assigned as potential options for nodes.
         Node.potentialActionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
+    }
+
+    public static void assignAllowableRolloutActions() {
+        /* Repeated action 1 -- no keys pressed. */
+        Distribution<Action> dist1 = new Distribution_Normal(12f, 2f);
+        ActionSet actionSet1 = ActionSet.makeActionSet(IntStream.range(10, 20).toArray(), new boolean[]{false, false,
+                false,
+                false}, dist1);
+
+        /*  Repeated action 2 -- W-O pressed */
+        Distribution<Action> dist2 = new Distribution_Normal(22f, 3f);
+        ActionSet actionSet2 = ActionSet.makeActionSet(IntStream.range(15, 30).toArray(), new boolean[]{false, true,
+                true,
+                false}, dist2);
+
+        /* Repeated action 3 -- No keys pressed. */
+        Distribution<Action> dist3 = new Distribution_Normal(12f, 2f);
+        ActionSet actionSet3 = ActionSet.makeActionSet(IntStream.range(10, 20).toArray(), new boolean[]{false, false,
+                false,
+                false}, dist3);
+
+        /*  Repeated action 4 -- Q-P pressed */
+        Distribution<Action> dist4 = new Distribution_Normal(22f, 3f);
+        ActionSet actionSet4 = ActionSet.makeActionSet(IntStream.range(15, 30).toArray(), new boolean[]{true, false,
+                false,
+                true}, dist4);
+        NodeRollout.rolloutActionGenerator = new ActionGenerator_FixedSequence(new ActionSet[]{actionSet1, actionSet2
+                , actionSet3, actionSet4});
+
     }
 }

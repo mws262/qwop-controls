@@ -149,7 +149,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("small329"); // "small289"); // _after439");//273");//chk_after1");
+        valueFunction.loadCheckpoint("small566"); // "small289"); // _after439");//273");//chk_after1");
     }
 
     public static void main(String[] args) {

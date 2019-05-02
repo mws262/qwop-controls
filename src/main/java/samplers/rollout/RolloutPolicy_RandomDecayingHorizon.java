@@ -1,9 +1,9 @@
 package samplers.rollout;
 
 import actions.Action;
-import evaluators.IEvaluationFunction;
 import game.IGame;
 import tree.Node;
+import tree.NodeRollout;
 
 public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
 
@@ -13,7 +13,7 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
     // til later, smaller values make the drop occur earlier.
     private static final float kernelSteepness = 5; // Steepness of the drop. Higher values == more steep.
 
-    public int maxTimestepsToSim = 200;
+    public int maxTimestepsToSim = 150;
 
     public RolloutPolicy_RandomDecayingHorizon() {
         super(null);
@@ -30,7 +30,7 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
         // use the evaluation function.
         while (!rolloutNode.isFailed() && timestepCounter < maxTimestepsToSim) {
             Action childAction = rolloutNode.uncheckedActions.getRandom();
-            rolloutNode = new Node(rolloutNode, childAction, false);
+            rolloutNode = new NodeRollout(rolloutNode, childAction);
             actionQueue.addAction(childAction);
 
             while (!actionQueue.isEmpty() && !game.getFailureStatus() && timestepCounter < maxTimestepsToSim) {
@@ -47,7 +47,7 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
             rolloutNode.setState(game.getCurrentState());
         }
 
-        return accumulatedValue;
+        return accumulatedValue / (float) maxTimestepsToSim * 200f;
     }
 
     @Override

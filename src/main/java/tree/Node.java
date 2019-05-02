@@ -310,7 +310,7 @@ public class Node implements INode {
     /**
      * If we've assigned a potentialActionGenerator, this can auto-add potential child actions. Ignores duplicates.
      */
-    private synchronized void autoAddUncheckedActions() {
+    synchronized void autoAddUncheckedActions() {
         // If we've set rules to auto-select potential children, do so.
         if (potentialActionGenerator != null) {
             ActionSet potentialActions = potentialActionGenerator.getPotentialChildActionSet(this);
@@ -810,6 +810,10 @@ public class Node implements INode {
 
         try {
             isFailed.set(state.isFailed());
+            if (isFailed()) {
+                displayPoint = true;
+                overrideNodeColor = Color.RED;
+            }
         } catch (NullPointerException e) {
             System.out.println("WARNING: node state had no failure state assigned. This is bad unless we're just " +
                     "playing old runs back.");
