@@ -5,6 +5,7 @@ import game.StateVariable;
 import org.json.JSONObject;
 import tree.Utility;
 import ui.PanelRunner_SimpleState;
+import actions.Action;
 
 import javax.swing.*;
 import java.awt.*;
@@ -44,7 +45,18 @@ public class FlashQWOPServer {
      */
     private DataReceiver dataInput;
 
-//    private boolean[] mostRecentCommand = ew
+    /**
+     * Cods for each action to send to the Flash game over the socket.
+     */
+    private static final String none = "0000\0";
+    private static final String q = "1000\0";
+    private static final String w = "0100\0";
+    private static final String o = "0010\0";
+    private static final String p = "0001\0";
+    private static final String qo = "1010\0";
+    private static final String qp = "1001\0";
+    private static final String wo = "0110\0";
+    private static final String wp = "0101\0";
 
     /**
      * Open a socket for communicating back and forth with the real QWOP game.
@@ -94,12 +106,40 @@ public class FlashQWOPServer {
      * @param p Whether the p key is pressed.
      */
     public void sendCommand(boolean q, boolean w, boolean o, boolean p) {
-        String commandString =
-                (q ? "1" : "0") +
-                        (w ? "1" : "0") +
-                        (o ? "1" : "0") +
-                        (p ? "1" : "0") +
-                        "0\0";
+        // Trying to avoid building new strings all the time.
+        Action.Keys keys = Action.booleansToKeys(q, w, o, p);
+        String commandString;
+        switch (keys) {
+            case q:
+                commandString = FlashQWOPServer.q;
+                break;
+            case w:
+                commandString = FlashQWOPServer.w;
+                break;
+            case o:
+                commandString = FlashQWOPServer.o;
+                break;
+            case p:
+                commandString = FlashQWOPServer.p;
+                break;
+            case qp:
+                commandString = FlashQWOPServer.qp;
+                break;
+            case wo:
+                commandString = FlashQWOPServer.wo;
+                break;
+            case qo:
+                commandString = FlashQWOPServer.qo;
+                break;
+            case wp:
+                commandString = FlashQWOPServer.wp;
+                break;
+            case none:
+                commandString = FlashQWOPServer.none;
+                break;
+            default:
+                commandString = "\0";
+        }
         dataOutput.print(commandString);
         dataOutput.flush();
     }
