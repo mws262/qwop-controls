@@ -214,12 +214,10 @@ public class FlashQWOPServer {
      * updated in real time.
      */
     private static class DataReceiver implements Runnable {
-
-        private Gson gson = new Gson();
         /**
          * Reader which gets the input stream from the socket.
          */
-        private JsonReader reader;
+        private BufferedReader reader;
 
         /**
          * Most recent state received.
@@ -252,41 +250,19 @@ public class FlashQWOPServer {
                 panelThread.start();
                 panelRunner.activateTab();
             }
-
-            reader = new JsonReader(new InputStreamReader(inStream));
-            reader.setLenient(true); // Parser doesn't like the JSON coming from flash for some reason, this is the
-            // fix in the meantime.
+            reader = new BufferedReader(new InputStreamReader(inStream));
         }
 
         @Override
         public void run() {
             while (true) {
                 try {
-                    if (reader.hasNext()) {
+                    if (reader.ready()) {
+                        String stateString = reader.readLine();
+                        reader.lines().
+                        String[] st = stateString.split(",");
+                        System.out.println(stateString);
 
-                        if (reader.peek().toString().equals("BEGIN_OBJECT")) {
-                            try {
-                                State st = gson.fromJson(reader, State.class);
-                                st.triggerFlashToJavaAngleAdjustment();
-                                currentState = st;
-                                if (currentState.getTimestep() == 0) {
-                                    System.out.println("restart");
-                                }
-                            } catch (com.google.gson.JsonSyntaxException e) {
-                                e.printStackTrace();
-                            }
-
-
-                            for (QWOPStateListener listener : listenerList) {
-                                listener.stateReceived(getCurrentTimestep(), currentState);
-                            }
-                            if (debugDraw) {
-                                panelRunner.updateState(currentState);
-                            }
-
-                        } else {
-                            reader.skipValue();
-                        }
                     }
                 } catch(IOException e){
                     e.printStackTrace();
