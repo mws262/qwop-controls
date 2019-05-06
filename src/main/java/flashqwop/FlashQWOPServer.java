@@ -262,30 +262,32 @@ public class FlashQWOPServer {
         public void run() {
             while (true) {
                 try {
-                    while (reader.hasNext()) {
-                        // Null character gets sent and we don't want it. Should begin with an object, not a string.
-                        while(reader.peek().toString().equals("STRING")) {
-                            String msg = reader.nextString();
-                            if (!msg.equals("\u0000")) {
-                                System.out.println(msg.replace('\u0000', ' '));
+                    if (reader.hasNext()) {
+
+                        if (reader.peek().toString().equals("BEGIN_OBJECT")) {
+                            try {
+                                currentState = gson.fromJson(reader, State.class);
+
+                                if (currentState.getTimestep() == 0) {
+                                    System.out.println("restart");
+                                }
+                            } catch (com.google.gson.JsonSyntaxException e) {
+                                e.printStackTrace();
                             }
-                        }
-                        try {
-                            currentState = gson.fromJson(reader, State.class);
-                            if (currentState.getTimestep() == 0) {
-                                System.out.println("restart");
+
+
+                            for (QWOPStateListener listener : listenerList) {
+                                listener.stateReceived(getCurrentTimestep(), currentState);
                             }
-                        } catch (com.google.gson.JsonSyntaxException e) {
-                            e.printStackTrace();
-                        }
-                        for (QWOPStateListener listener : listenerList) {
-                            listener.stateReceived(getCurrentTimestep(), currentState);
-                        }
-                        if (debugDraw) {
-                            panelRunner.updateState(currentState);
+                            if (debugDraw) {
+                                panelRunner.updateState(currentState);
+                            }
+
+                        } else {
+                            reader.skipValue();
                         }
                     }
-                } catch (IOException e) {
+                } catch(IOException e){
                     e.printStackTrace();
                 }
             }
