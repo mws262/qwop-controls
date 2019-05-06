@@ -2,13 +2,9 @@ package game;
 
 import actions.Action;
 import actions.ActionQueue;
-import data.TFRecordDataParsers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.tensorflow.example.SequenceExample;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -53,17 +49,17 @@ public class GameUnifiedTest {
         // Hard to test against "ground truth." Mostly going to make sure it's error free and that there aren't any
         // huge logical problems.
         GameUnified game = new GameUnified();
-        float bodyTh = game.getCurrentState().body.getTh();
+        float bodyTh = game.getCurrentState().torso.getTh();
         Assert.assertEquals(0, game.getTimestepsSimulatedThisGame());
 
         game.step(true, true, false, false);
-        float bodyThNext = game.getCurrentState().body.getTh();
+        float bodyThNext = game.getCurrentState().torso.getTh();
         Assert.assertNotEquals(bodyTh, bodyThNext, 0.0); // States should change after step().
         bodyTh = bodyThNext;
         Assert.assertEquals(1, game.getTimestepsSimulatedThisGame()); // Counter should have advanced.
 
         game.step(true, false, true, false);
-        bodyThNext = game.getCurrentState().body.getTh();
+        bodyThNext = game.getCurrentState().torso.getTh();
         Assert.assertNotEquals(bodyTh, bodyThNext, 0.0);
         Assert.assertEquals(2, game.getTimestepsSimulatedThisGame());
     }
@@ -79,7 +75,7 @@ public class GameUnifiedTest {
         State gameState1 = game1.getCurrentState();
         State gameState2 = game2.getCurrentState();
 
-        Assert.assertEquals(gameState1.body.getX(), gameState2.body.getX(), 1e-12);
+        Assert.assertEquals(gameState1.torso.getX(), gameState2.torso.getX(), 1e-12);
         Assert.assertEquals(gameState1.rthigh.getTh(), gameState2.rthigh.getTh(), 1e-12);
         Assert.assertEquals(gameState1.luarm.getY(), gameState2.luarm.getY(), 1e-12);
     }

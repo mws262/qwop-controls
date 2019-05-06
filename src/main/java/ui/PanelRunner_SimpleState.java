@@ -52,7 +52,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         GameUnified.drawExtraRunner(g2, currentState, "", runnerScaling,
-				500 - (int) (currentState.body.getX() * runnerScaling), yOffsetPixels + 100, Color.BLACK, normalStroke);
+				500 - (int) (currentState.torso.getX() * runnerScaling), yOffsetPixels + 100, Color.BLACK, normalStroke);
     }
 
     @Override

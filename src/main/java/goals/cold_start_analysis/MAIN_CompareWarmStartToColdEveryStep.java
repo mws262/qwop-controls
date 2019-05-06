@@ -34,12 +34,12 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
             ActionQueue coldStartActionQueue = actionQueue.getCopyOfQueueAtExecutionPoint();
 
             // Simulate ahead on the cold started version until failure for each timestep of the original version.
-            float initX = st.body.getX();
+            float initX = st.torso.getX();
             while (!coldStartActionQueue.isEmpty()) {
                 nextCommand = coldStartActionQueue.pollCommand();
                 coldStartGame.step(nextCommand);
                 if (coldStartGame.getFailureStatus()) {
-                    System.out.println((coldStartGame.getCurrentState().body.getX() - initX)/17.);
+                    System.out.println((coldStartGame.getCurrentState().torso.getX() - initX)/17.);
                     break;
                 }
             }

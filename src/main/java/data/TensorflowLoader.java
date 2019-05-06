@@ -110,7 +110,7 @@ public abstract class TensorflowLoader {
 
     /**
      * Make a State object into a 72-element array the way TensorFlow wants it. This method also subtracts the torso
-     * x-component out of all body parts.
+     * x-component out of all torso parts.
      *
      * @param state Input state to flatten into an array.
      * @return A 1x72 element array containing all the concatenated state variable values, with the torso x-component

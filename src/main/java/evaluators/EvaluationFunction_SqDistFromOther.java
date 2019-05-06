@@ -42,7 +42,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
 
         for (int i = 0; i < baseStateVars.length; i++) {
             float diff =
-                    (baseStateVars[i].getX() - baseStateVars[0].getX()) - (otherStateVarList[i].getX() - otherStateVarList[0].getX()); // Subtract out the absolute x of body.
+                    (baseStateVars[i].getX() - baseStateVars[0].getX()) - (otherStateVarList[i].getX() - otherStateVarList[0].getX()); // Subtract out the absolute x of torso.
             sqError += diff * diff;
             diff = baseStateVars[i].getY() - otherStateVarList[i].getY();
             sqError += diff * diff;

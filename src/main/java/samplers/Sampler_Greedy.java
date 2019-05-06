@@ -177,7 +177,7 @@ public class Sampler_Greedy implements ISampler {
                 // Pick the best leaf
                 ArrayList<Node> leaves = new ArrayList<>();
                 currentRoot.getLeaves(leaves);
-                //float rootX = currentRoot.state.body.x;
+                //float rootX = currentRoot.state.torso.x;
                 Node bestNode = currentRoot;
                 float bestScore = -Float.MAX_VALUE;
                 for (Node leaf : leaves) {

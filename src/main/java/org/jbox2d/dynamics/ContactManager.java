@@ -96,7 +96,7 @@ public class ContactManager implements PairCallback, Externalizable {
 		m_world.m_contactList = c;
 
 		// Connect to island graph.
-		// Connect to body 1
+		// Connect to torso 1
 		c.m_node1.contact = c;
 		c.m_node1.other = body2;
 
@@ -107,7 +107,7 @@ public class ContactManager implements PairCallback, Externalizable {
 		}
 		body1.m_contactList = c.m_node1;
 
-		// Connect to body 2
+		// Connect to torso 2
 		c.m_node2.contact = c;
 		c.m_node2.other = body1;
 
@@ -135,7 +135,7 @@ public class ContactManager implements PairCallback, Externalizable {
 			return;
 		}
 
-		// An attached body is being destroyed, we must destroy this contact
+		// An attached torso is being destroyed, we must destroy this contact
 		// immediately to avoid orphaned shape pointers.
 		destroy(c);
 	}
@@ -188,7 +188,7 @@ public class ContactManager implements PairCallback, Externalizable {
 		final Body body1 = shape1.getBody();
 		final Body body2 = shape2.getBody();
 
-		// Remove from body 1
+		// Remove from torso 1
 		if (c.m_node1.prev != null) {
 			c.m_node1.prev.next = c.m_node1.next;
 		}
@@ -201,7 +201,7 @@ public class ContactManager implements PairCallback, Externalizable {
 			body1.m_contactList = c.m_node1.next;
 		}
 
-		// Remove from body 2
+		// Remove from torso 2
 		if (c.m_node2.prev != null) {
 			c.m_node2.prev.next = c.m_node2.next;
 		}

@@ -31,19 +31,19 @@ import java.io.Serializable;
 
 /**
  * A contact edge is used to connect bodies and contacts together
- * in a contact graph where each body is a node and each contact
+ * in a contact graph where each torso is a node and each contact
  * is an edge. A contact edge belongs to a doubly linked list
- * maintained in each attached body. Each contact has two contact
- * nodes, one for each attached body.
+ * maintained in each attached torso. Each contact has two contact
+ * nodes, one for each attached torso.
  */
 public class ContactEdge implements Serializable {
-	/** Provides quick access to the other body attached. */
+	/** Provides quick access to the other torso attached. */
     public Body other;
     /** The contact. */
     public Contact contact;
-    /** The previous contact edge in the body's contact list. */
+    /** The previous contact edge in the torso's contact list. */
     public ContactEdge prev;
-    /** The next contact edge in the body's contact list. */
+    /** The next contact edge in the torso's contact list. */
     public ContactEdge next;
     
     public void set(final ContactEdge argToCopy){

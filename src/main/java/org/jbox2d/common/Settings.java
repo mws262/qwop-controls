@@ -122,13 +122,13 @@ public class Settings {
      */
     public static final float contactBaumgarte = 0.2f;
 
-    /** The time that a body must be still before it will go to sleep. */
+    /** The time that a torso must be still before it will go to sleep. */
     public static final float timeToSleep = 0.5f; // half a second
 
-    /** A body cannot sleep if its linear velocity is above this tolerance. */
+    /** A torso cannot sleep if its linear velocity is above this tolerance. */
     public static final float linearSleepTolerance = 0.01f; // 1 cm/s
 
-    /** A body cannot sleep if its angular velocity is above this tolerance. */
+    /** A torso cannot sleep if its angular velocity is above this tolerance. */
     public static final float angularSleepTolerance = 2.0f / 180.0f;
     
     /**
@@ -139,14 +139,14 @@ public class Settings {
     public static final float toiSlop = 8.0f * linearSlop;
     
     /**
-     * The maximum linear velocity of a body. This limit is very large and is used
+     * The maximum linear velocity of a torso. This limit is very large and is used
      * to prevent numerical problems. You shouldn't need to adjust this.
      */
     public static final float maxLinearVelocity = 200.0f;
     public static final float maxLinearVelocitySquared = maxLinearVelocity * maxLinearVelocity;
 
     /**
-     * The maximum angular velocity of a body. This limit is very large and is used
+     * The maximum angular velocity of a torso. This limit is very large and is used
      * to prevent numerical problems. You shouldn't need to adjust this.
      */
     public static final float maxAngularVelocity = 250.0f;

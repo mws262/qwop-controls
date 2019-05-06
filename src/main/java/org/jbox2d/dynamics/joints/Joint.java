@@ -87,12 +87,12 @@ public abstract class Joint implements Serializable {
 		return m_type;
 	}
 
-	/** Get the first body attached to this joint. */
+	/** Get the first torso attached to this joint. */
 	public Body getBody1() {
 		return m_body1;
 	}
 
-	/** Get the second body attached to this joint. */
+	/** Get the second torso attached to this joint. */
 	public Body getBody2() {
 		return m_body2;
 	}

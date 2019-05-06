@@ -13,22 +13,22 @@ public class State implements Serializable {
     private static final long serialVersionUID = 2L;
 
     /**
+     * If relevant, the timestep at which this state was taken.
+     */
+    private int timestep;
+
+    /**
      * Does this state represent a fallen configuration?
      */
-    private boolean failedState;
+    private boolean fallen;
 
     /**
-     * Objects which hold the x, y, theta, dx, dy, dtheta values for all body parts.
+     * Objects which hold the x, y, theta, dx, dy, dtheta values for all torso parts.
      */
-    public final StateVariable body, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm, head;
+    public final StateVariable torso, head, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm;
 
     /**
-     * Array holding a StateVariable for each body part.
-     */
-    private final StateVariable[] stateVariables;
-
-    /**
-     * Name of each body part.
+     * Name of each torso part.
      */
     public enum ObjectName {
         BODY, HEAD, RTHIGH, LTHIGH, RCALF, LCALF, RFOOT, LFOOT, RUARM, LUARM, RLARM, LLARM
@@ -50,7 +50,7 @@ public class State implements Serializable {
      * @param isFailed  Whether this state represents a fallen runner.
      */
     public State(float[] stateVars, boolean isFailed) { // Order matches order in TensorflowAutoencoder.java
-        body = new StateVariable(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
+        torso = new StateVariable(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
         head = new StateVariable(stateVars[6], stateVars[7], stateVars[8], stateVars[9], stateVars[10], stateVars[11]);
         rthigh = new StateVariable(stateVars[12], stateVars[13], stateVars[14], stateVars[15], stateVars[16],
                 stateVars[17]);
@@ -72,11 +72,7 @@ public class State implements Serializable {
                 stateVars[65]);
         llarm = new StateVariable(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70],
                 stateVars[71]);
-
-        stateVariables = new StateVariable[]{body, head, rthigh, lthigh, rcalf, lcalf,
-                rfoot, lfoot, ruarm, luarm, rlarm, llarm};
-
-        failedState = isFailed;
+        fallen = isFailed;
     }
 
     /**
@@ -101,7 +97,7 @@ public class State implements Serializable {
                  StateVariable rcalfS, StateVariable lcalfS, StateVariable rfootS, StateVariable lfootS,
                  StateVariable ruarmS, StateVariable luarmS, StateVariable rlarmS, StateVariable llarmS,
                  boolean isFailed) {
-        body = bodyS;
+        torso = bodyS;
         head = headS;
         rthigh = rthighS;
         lthigh = lthighS;
@@ -113,10 +109,7 @@ public class State implements Serializable {
         luarm = luarmS;
         rlarm = rlarmS;
         llarm = llarmS;
-        failedState = isFailed;
-
-        stateVariables = new StateVariable[]{body, head, rthigh, lthigh, rcalf, lcalf,
-                rfoot, lfoot, ruarm, luarm, rlarm, llarm};
+        fallen = isFailed;
     }
 
     /**
@@ -125,13 +118,14 @@ public class State implements Serializable {
      * @return Array containing a {@link StateVariable StateVariable} for each runner link.
      */
     public StateVariable[] getStates() {
-        return stateVariables;
+        return new StateVariable[]{torso, head, rthigh, lthigh, rcalf, lcalf,
+                rfoot, lfoot, ruarm, luarm, rlarm, llarm};
     }
 
     /**
      * Get a specific state value by specifying the link and desired configuration/velocity.
      *
-     * @param obj   Runner body who we want to fetch a state value from.
+     * @param obj   Runner torso who we want to fetch a state value from.
      * @param state Configuration/velocity we want to fetch for the specified runner link.
      * @return Value of the requested state.
      */
@@ -139,7 +133,7 @@ public class State implements Serializable {
         StateVariable st;
         switch (obj) {
             case BODY:
-                st = body;
+                st = torso;
                 break;
             case HEAD:
                 st = head;
@@ -204,19 +198,19 @@ public class State implements Serializable {
     }
 
     /**
-     * Turn the state into an array of floats with body x subtracted from all x coordinates.
+     * Turn the state into an array of floats with torso x subtracted from all x coordinates.
      **/
     public float[] flattenState() {
         float[] flatState = new float[72];
-        float bodyX = body.getX();
+        float bodyX = torso.getX();
 
         // Body
         flatState[0] = 0;
-        flatState[1] = body.getY();
-        flatState[2] = body.getTh();
-        flatState[3] = body.getDx();
-        flatState[4] = body.getDy();
-        flatState[5] = body.getDth();
+        flatState[1] = torso.getY();
+        flatState[2] = torso.getTh();
+        flatState[3] = torso.getDx();
+        flatState[4] = torso.getDy();
+        flatState[5] = torso.getDth();
 
         // head
         flatState[6] = head.getX() - bodyX;
@@ -314,7 +308,15 @@ public class State implements Serializable {
      * @return Runner "fallen" status. True means failed. False means not failed.
      */
     public synchronized boolean isFailed() {
-        return failedState;
+        return fallen;
+    }
+
+    /**
+     * Get the timestep that this state was taken at, if applicable.
+     * @return Physics timestep of QWOP at which
+     */
+    public int getTimestep() {
+        return timestep;
     }
 }
 

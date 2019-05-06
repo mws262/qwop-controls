@@ -422,7 +422,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     }
 
     /**
-     * Has the game gotten into a failed state (Either too much torso lean or body parts hitting the ground).
+     * Has the game gotten into a failed state (Either too much torso lean or torso parts hitting the ground).
      */
     public boolean isGameFailed() {
         return game.getFailureStatus();

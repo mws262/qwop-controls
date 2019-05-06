@@ -28,7 +28,7 @@ import org.jbox2d.common.Vec2;
 /**
  * A circle shape definition.  Set the radius and localPosition
  * ( (0,0) by default ), and then call Body.createShape(ShapeDef)
- * to add the shape to a body.
+ * to add the shape to a torso.
  */
 public class CircleDef extends ShapeDef {
 

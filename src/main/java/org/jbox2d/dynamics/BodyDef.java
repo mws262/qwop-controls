@@ -31,31 +31,31 @@ import org.jbox2d.common.Vec2;
 import java.io.Serializable;
 
 /**
- * Defines a body.  All data is public, and may be set directly.
+ * Defines a torso.  All data is public, and may be set directly.
  * When you have set the definition to your liking, you can create
- * the body using World::createDynamicBody(BodyDef) or World::createStaticBody(BodyDef).
+ * the torso using World::createDynamicBody(BodyDef) or World::createStaticBody(BodyDef).
  * <BR><BR>
  * Don't forget to call Body::setMassFromShapes or Body::setMass(MassData)
- * after you create a dynamic body! 
+ * after you create a dynamic torso!
  */
 public class BodyDef implements Serializable {
 	/**
-	 * You can use this to initialized the mass properties of the body.
+	 * You can use this to initialized the mass properties of the torso.
 	 * If you prefer, you can set the mass properties after the shapes
 	 * have been added using Body::setMassFromShapes.
 	 */
 	public MassData massData;
 	
-	/** Use this to store application specific body data */
+	/** Use this to store application specific torso data */
     public Object userData;
 
     /**
-     * The world position of the body.  Avoid creating bodies at the origin
+     * The world position of the torso.  Avoid creating bodies at the origin
      * since this can lead to many overlapping shapes.
      */
     public Vec2 position;
     
-    /** The world angle of the body in radians. */
+    /** The world angle of the torso in radians. */
     public float angle;
 
 	/**
@@ -73,19 +73,19 @@ public class BodyDef implements Serializable {
 	float angularDamping;
 	
 	/**
-	 * Set this flag to false if this body should never fall asleep.  Note that
+	 * Set this flag to false if this torso should never fall asleep.  Note that
 	 * this increases CPU usage.
 	 */
 	boolean allowSleep;
 
-    /** Is this body initially sleeping? */
+    /** Is this torso initially sleeping? */
 	boolean isSleeping;
     
-    /** Should this body be prevented from rotating?  Useful for characters. */
+    /** Should this torso be prevented from rotating?  Useful for characters. */
 	boolean fixedRotation;
 
 	/**
-	 * Is this a fast moving body that should be prevented from tunneling through
+	 * Is this a fast moving torso that should be prevented from tunneling through
 	 * other moving bodies? Note that all bodies are prevented from tunneling through
 	 * static bodies.
 	 * <BR><BR><em>Warning</em>: You should use this flag sparingly since it increases processing time.
@@ -93,7 +93,7 @@ public class BodyDef implements Serializable {
 	boolean isBullet;
 
 	/**
-	 * Default body definition.  Defines a body with the following characteristics:
+	 * Default torso definition.  Defines a torso with the following characteristics:
 	 * <UL>
 	 * <LI>Zero mass/inertia (you can set this later on the Body with setMassFromShapes)
 	 * <LI>null userData

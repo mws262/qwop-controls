@@ -46,7 +46,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @return A scalar value associated with state angles.
      */
     private float getAngleValue(INode nodeToEvaluate) {
-        return nodeToEvaluate.getState().body.getTh();
+        return nodeToEvaluate.getState().torso.getTh();
     }
 
     /**
@@ -56,7 +56,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @return A scalar value associated with horizontal positions.
      */
     private float getDistanceValue(INode nodeToEvaluate) {
-        return nodeToEvaluate.getState().body.getX();
+        return nodeToEvaluate.getState().torso.getX();
     }
 
     /**
@@ -66,7 +66,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @return A scalar value associated with state velocities.
      */
     private float getVelocityValue(INode nodeToEvaluate) {
-        return nodeToEvaluate.getState().body.getDx();
+        return nodeToEvaluate.getState().torso.getDx();
     }
 
     @Override

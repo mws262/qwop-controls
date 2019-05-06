@@ -45,10 +45,10 @@ import org.jbox2d.dynamics.joints.JointEdge;
 // Rewritten completely for rev. 118 (too many changes, needed reorganization for maintainability)
 
 /**
- * A 2-dimensional rigid body.  Do not create Body objects directly;
+ * A 2-dimensional rigid torso.  Do not create Body objects directly;
  * instead, pass a BodyDef to either World::createStaticBody or
  * World::createDynamicBody and then call Body::createShape(ShapeDef)
- * to add geometry.  For a dynamic body, don't forget to call
+ * to add geometry.  For a dynamic torso, don't forget to call
  * Body::setMassFromShapes or (for experts) Body::setMass(MassData) -
  * if you forget to set the mass, the simulation will have problems.
  * <BR><BR>
@@ -73,7 +73,7 @@ public class Body implements Externalizable {
 
 	public int m_type;
 
-	/** The body origin transform */
+	/** The torso origin transform */
 	public XForm m_xf;
 
 	/** The swept motion for CCD */
@@ -106,10 +106,10 @@ public class Body implements Externalizable {
 	public float m_sleepTime;
 
 	/**
-	 * A holder to attach external data to a body.
+	 * A holder to attach external data to a torso.
 	 * Useful to keep track of what game entity
-	 * each body represents. This is copied from
-	 * the BodyDef used to create the body, so may
+	 * each torso represents. This is copied from
+	 * the BodyDef used to create the torso, so may
 	 * be set there instead.
 	 */
 	transient public Object m_userData;
@@ -117,7 +117,7 @@ public class Body implements Externalizable {
 	// For intermediate calculations
 	transient private XForm xf1 = new XForm();
 	/**
-	 * Empty body, with no world
+	 * Empty torso, with no world
 	 */
 	public Body() {
 		this( new BodyDef(), null);
@@ -130,7 +130,7 @@ public class Body implements Externalizable {
 	 * to World.createDynamicBody or World.createStaticBody.
 	 * 
 	 * @param bd Body definition
-	 * @param world World to create body in
+	 * @param world World to create torso in
 	 */
 	public Body(final BodyDef bd, final World world) {
 		//assert(!world.m_lock);
@@ -226,7 +226,7 @@ public class Body implements Externalizable {
 	}
 
 	/**
-	 *  Creates a shape and attach it to this body.
+	 *  Creates a shape and attach it to this torso.
 	 * <BR><em>Warning</em>: This function is locked during callbacks.
 	 * @param def the shape definition.
 	 */
@@ -235,8 +235,8 @@ public class Body implements Externalizable {
 		assert(!m_world.m_lock);
 
 		// TODO: Decide on a better place to initialize edgeShapes. (b2Shape::Create() can't
-		//       return more than one shape to add to parent body... maybe it should add
-		//       shapes directly to the body instead of returning them?)
+		//       return more than one shape to add to parent torso... maybe it should add
+		//       shapes directly to the torso instead of returning them?)
 		if (def.type == ShapeType.EDGE_SHAPE) {
 			final EdgeChainDef edgeDef = (EdgeChainDef) def;
 			Vec2 v1;
@@ -300,7 +300,7 @@ public class Body implements Externalizable {
 	/**
 	 * Destroy a shape. This removes the shape from the broad-phase and
 	 * therefore destroys any contacts associated with this shape. All shapes
-	 * attached to a body are implicitly destroyed when the body is destroyed.
+	 * attached to a torso are implicitly destroyed when the torso is destroyed.
 	 * <BR><em>Warning</em>: This function is locked during callbacks.
 	 * @param s the shape to be removed.
 	 */
@@ -332,7 +332,7 @@ public class Body implements Externalizable {
 			node = node.m_next;
 		}
 
-		// You tried to remove a shape that is not attached to this body.
+		// You tried to remove a shape that is not attached to this torso.
 		assert(found);
 
 		s.m_body = null;
@@ -386,7 +386,7 @@ public class Body implements Externalizable {
 			m_type = e_dynamicType;
 		}
 
-		// If the body type changed, we need to refilter the broad-phase proxies.
+		// If the torso type changed, we need to refilter the broad-phase proxies.
 		if (oldType != m_type) {
 			for (Shape s = m_shapeList; s != null; s = s.m_next)
 			{
@@ -455,7 +455,7 @@ public class Body implements Externalizable {
 			m_type = e_dynamicType;
 		}
 
-		// If the body type changed, we need to refilter the broad-phase proxies.
+		// If the torso type changed, we need to refilter the broad-phase proxies.
 		if (oldType != m_type) {
 			for (Shape s = m_shapeList; s != null; s = s.m_next) {
 				s.refilterProxy(m_world.m_broadPhase, m_xf);
@@ -464,13 +464,13 @@ public class Body implements Externalizable {
 	}
 
 	/**
-	 * Set the position of the body's origin and rotation (radians).
+	 * Set the position of the torso's origin and rotation (radians).
 	 * This breaks any contacts and wakes the other bodies.
-	 * @param position the new world position of the body's origin (not necessarily
+	 * @param position the new world position of the torso's origin (not necessarily
 	 * the center of mass).
-	 * @param angle the new world rotation angle of the body in radians.
+	 * @param angle the new world rotation angle of the torso in radians.
 	 * @return false if the movement put a shape outside the world. In this case the
-	 * body is automatically frozen.
+	 * torso is automatically frozen.
 	 */
 	public boolean setXForm(final Vec2 position, final float angle){
 		assert(!m_world.m_lock);
@@ -516,8 +516,8 @@ public class Body implements Externalizable {
 	}
 
 	/**
-	 * Get a copy of the body transform for the body's origin.
-	 * @return the world transform of the body's origin.
+	 * Get a copy of the torso transform for the torso's origin.
+	 * @return the world transform of the torso's origin.
 	 */
 	public XForm getXForm(){
 		final XForm xf = new XForm();
@@ -528,11 +528,11 @@ public class Body implements Externalizable {
 	/**
 	 * More for internal use.  It isn't copied,
 	 * so don't modify it.  instead try to use {@link #setXForm(Vec2, float)}.
-	 * Otherwise, this also gives you direct access to the body's XForm, if you
+	 * Otherwise, this also gives you direct access to the torso's XForm, if you
 	 * really need to change something (careful!).
 	 * @see #getXForm()
 	 * @see #setXForm(Vec2, float)
-	 * @return an uncopied version of this body's XForm
+	 * @return an uncopied version of this torso's XForm
 	 */
 	public XForm getMemberXForm(){
 		return m_xf;
@@ -545,12 +545,12 @@ public class Body implements Externalizable {
 	 * some physical significance).
 	 * <p>
 	 * Just in case you do want to use this,
-	 * Get a copy of the world body origin position.  This
+	 * Get a copy of the world torso origin position.  This
 	 * is not necessarily the same as the center of mass.
 	 * In fact, it's not anything in particular.  Just a
 	 * point.
 	 * <p>
-	 * @return a copy of the world position of the body's origin.
+	 * @return a copy of the world position of the torso's origin.
 	 */
 	public Vec2 getPosition(){
 		return m_xf.position.clone();
@@ -558,12 +558,12 @@ public class Body implements Externalizable {
 
 	/**
 	 * This is more for internal use.  It isn't copied, so don't
-	 * modify it.  This is the position of the body's XForm
+	 * modify it.  This is the position of the torso's XForm
 	 * ({@link #getXForm()}), and if you want to change that I would
 	 * suggest using {@link #setXForm(Vec2, float)}.  Modifying this
 	 * will not do what you want.
 	 * @see #getPosition()
-	 * @return the body's world position of the body's origin.
+	 * @return the torso's world position of the torso's origin.
 	 */
 	public Vec2 getMemberPosition(){
 		return m_xf.position;
@@ -649,7 +649,7 @@ public class Body implements Externalizable {
 	/**
 	 * Apply a force at a world point. If the force is not
 	 * applied at the center of mass, it will generate a torque and
-	 * affect the angular velocity. This wakes up the body.
+	 * affect the angular velocity. This wakes up the torso.
 	 * @param force the world force vector, usually in Newtons (N).
 	 * @param point the world position of the point of application.
 	 */
@@ -666,7 +666,7 @@ public class Body implements Externalizable {
 	/**
 	 * Apply a torque. This affects the angular velocity
 	 * without affecting the linear velocity of the center of mass.
-	 * This wakes up the body.
+	 * This wakes up the torso.
 	 * @param torque about the z-axis (out of the screen), usually in N-m.
 	 */
 	public void applyTorque(final float torque){
@@ -679,7 +679,7 @@ public class Body implements Externalizable {
 	/**
 	 * Apply an impulse at a point. This immediately modifies the velocity.
 	 * It also modifies the angular velocity if the point of application
-	 * is not at the center of mass. This wakes up the body.
+	 * is not at the center of mass. This wakes up the torso.
 	 * @param impulse the world impulse vector, usually in N-seconds or kg-m/s.
 	 * @param point the world position of the point of application.
 	 */
@@ -695,7 +695,7 @@ public class Body implements Externalizable {
 	}
 
 	/**
-	 * Get the total mass of the body.
+	 * Get the total mass of the torso.
 	 * @return the mass, usually in kilograms (kg).
 	 */
 	public float getMass(){
@@ -703,7 +703,7 @@ public class Body implements Externalizable {
 	}
 
 	/**
-	 * Get the central rotational inertia of the body.
+	 * Get the central rotational inertia of the torso.
 	 * @return the rotational inertia, usually in kg-m^2.
 	 */
 	public float getInertia(){
@@ -712,7 +712,7 @@ public class Body implements Externalizable {
 
 	/**
 	 * Get the world coordinates of a point given the local coordinates.
-	 * @param localPoint a point on the body measured relative the the body's origin.
+	 * @param localPoint a point on the torso measured relative the the torso's origin.
 	 * @return the same point expressed in world coordinates.
 	 */
 	public Vec2 getWorldLocation(final Vec2 localPoint){
@@ -725,7 +725,7 @@ public class Body implements Externalizable {
 
 	/**
 	 * Get the world coordinates of a point given the local coordinates.
-	 * @param localPoint a point on the body measured relative the the body's origin.
+	 * @param localPoint a point on the torso measured relative the the torso's origin.
 	 * @param out where to put the same point expressed in world coordinates.
 	 */
 	public void getWorldLocationToOut(final Vec2 localPoint, final Vec2 out){
@@ -734,7 +734,7 @@ public class Body implements Externalizable {
 
 	/**
 	 * Get the world coordinates of a point given the local coordinates.
-	 * @param localPoint a point on the body measured relative the the body's origin.
+	 * @param localPoint a point on the torso measured relative the the torso's origin.
 	 * @return the same point expressed in world coordinates.
 	 * @deprecated Use getWorldLocation instead (clearer naming convention)
 	 */
@@ -745,7 +745,7 @@ public class Body implements Externalizable {
 
 	/**
 	 * Get the world coordinates of a vector given the local coordinates.
-	 * @param localVector a vector fixed in the body.
+	 * @param localVector a vector fixed in the torso.
 	 * @return the same vector expressed in world coordinates.
 	 * @deprecated Use getWorldDirection instead (clearer naming convention)
 	 */
@@ -756,7 +756,7 @@ public class Body implements Externalizable {
 
 	/**
 	 * Get the world coordinates of a direction given the local direction.
-	 * @param localDirection a vector fixed in the body.
+	 * @param localDirection a vector fixed in the torso.
 	 * @return the same vector expressed in world coordinates.
 	 */
 	public Vec2 getWorldDirection(final Vec2 localDirection) {
@@ -765,7 +765,7 @@ public class Body implements Externalizable {
 
 	/**
 	 * Get the world coordinates of a direction given the local direction.
-	 * @param localDirection a vector fixed in the body.
+	 * @param localDirection a vector fixed in the torso.
 	 * @param out where to put the same vector expressed in world coordinates.
 	 */
 	public void getWorldDirectionToOut(final Vec2 localDirection, final Vec2 out){
@@ -773,18 +773,18 @@ public class Body implements Externalizable {
 	}
 
 	/**
-	 * Gets a local point relative to the body's origin given a world point.
+	 * Gets a local point relative to the torso's origin given a world point.
 	 * @param worldPoint a point in world coordinates.
-	 * @return the corresponding local point relative to the body's origin.
+	 * @return the corresponding local point relative to the torso's origin.
 	 */
 	public Vec2 getLocalPoint(final Vec2 worldPoint){
 		return XForm.mulTrans(m_xf, worldPoint);
 	}
 
 	/**
-	 * Gets a local point relative to the body's origin given a world point.
+	 * Gets a local point relative to the torso's origin given a world point.
 	 * @param worldPoint a point in world coordinates.
-	 * @param out where to put the the corresponding local point relative to the body's origin.
+	 * @param out where to put the the corresponding local point relative to the torso's origin.
 	 */
 	public void getLocalPointToOut(final Vec2 worldPoint, final Vec2 out){
 		XForm.mulTransToOut(m_xf, worldPoint, out);
@@ -808,13 +808,13 @@ public class Body implements Externalizable {
 		Mat22.mulTransToOut( m_xf.R, worldVector, out); // bug fix, thanks Keraj
 	}
 
-	/** Is this body treated like a bullet for continuous collision detection? */
+	/** Is this torso treated like a bullet for continuous collision detection? */
 	public boolean isBullet(){
 		return (m_flags & e_bulletFlag) == e_bulletFlag;
 	}
 
 	/**
-	 * Should this body be treated like a bullet for continuous collision detection?
+	 * Should this torso be treated like a bullet for continuous collision detection?
 	 * Use sparingly, as continuous collision detection can be expensive.
 	 */
 	public void setBullet(final boolean flag){
@@ -825,27 +825,27 @@ public class Body implements Externalizable {
 		}
 	}
 
-	/** Is this body static (immovable)? */
+	/** Is this torso static (immovable)? */
 	public boolean isStatic(){
 		return m_type == e_staticType;
 	}
 
-	/** Is this body dynamic (movable)? */
+	/** Is this torso dynamic (movable)? */
 	public boolean isDynamic(){
 		return m_type == e_dynamicType;
 	}
 
-	/** Is this body frozen? */
+	/** Is this torso frozen? */
 	public boolean isFrozen(){
 		return (m_flags & e_frozenFlag) == e_frozenFlag;
 	}
 
-	/** Is this body sleeping (not simulating). */
+	/** Is this torso sleeping (not simulating). */
 	public boolean isSleeping(){
 		return (m_flags & e_sleepFlag) == e_sleepFlag;
 	}
 
-	/** Set to false to prevent this body from sleeping due to inactivity. */
+	/** Set to false to prevent this torso from sleeping due to inactivity. */
 	public void allowSleeping(final boolean flag){
 		if (flag) {
 			m_flags |= e_allowSleepFlag;
@@ -855,14 +855,14 @@ public class Body implements Externalizable {
 		}
 	}
 
-	/** Wake up this body so it will begin simulating. */
+	/** Wake up this torso so it will begin simulating. */
 	public void wakeUp(){
 		m_flags &= ~e_sleepFlag;
 		m_sleepTime = 0.0f;
 	}
 
 	/**
-	 * Get the linked list of all shapes attached to this body.
+	 * Get the linked list of all shapes attached to this torso.
 	 * @return first Shape in linked list
 	 */
 	public Shape getShapeList(){
@@ -870,19 +870,19 @@ public class Body implements Externalizable {
 	}
 
 	/**
-	 * Get the linked list of all joints attached to this body.
+	 * Get the linked list of all joints attached to this torso.
 	 * @return first JointEdge in linked list
 	 */
 	public JointEdge getJointList(){
 		return m_jointList;
 	}
 
-	/** Get the next body in the world's body list. */
+	/** Get the next torso in the world's torso list. */
 	public Body getNext(){
 		return m_next;
 	}
 
-	/** Get the user data Object reference that was provided in the body definition. */
+	/** Get the user data Object reference that was provided in the torso definition. */
 	public Object getUserData(){
 		return m_userData;
 	}
@@ -951,7 +951,7 @@ public class Body implements Externalizable {
 	}
 
 	/**
-	 * Get the world linear velocity of a world point attached to this body.
+	 * Get the world linear velocity of a world point attached to this torso.
 	 * @param worldPoint a point in world coordinates.
 	 * @return the world velocity of a point.
 	 */
@@ -965,7 +965,7 @@ public class Body implements Externalizable {
 	}
 
 	/**
-	 * Get the world linear velocity of a world point attached to this body.
+	 * Get the world linear velocity of a world point attached to this torso.
 	 * @param worldPoint a point in world coordinates.
 	 * @param out where to put the world velocity of a point.
 	 */
@@ -1010,7 +1010,7 @@ public class Body implements Externalizable {
 	}
 
 	/**
-	 * Put this body to sleep so it will stop simulating.
+	 * Put this torso to sleep so it will stop simulating.
 	 * This also sets the velocity to zero.
 	 */
 	public void putToSleep() {
@@ -1041,7 +1041,7 @@ public class Body implements Externalizable {
 	}
 	
 	/**
-	 * Get the set of bodies in contact with this body.
+	 * Get the set of bodies in contact with this torso.
 	 * 
 	 * @return all bodies touching this one
 	 */
@@ -1061,7 +1061,7 @@ public class Body implements Externalizable {
 	 * Get the set of bodies connected to this one by a joint.
 	 * Note: this does not return the entire island of connected bodies,
 	 * only those directly connected to this one.
-	 * @return all bodies connected directly to this body by a joint
+	 * @return all bodies connected directly to this torso by a joint
 	 */
 	public Set<Body> getConnectedBodies() {
 		Set<Body> mySet = new HashSet<Body>();
@@ -1077,7 +1077,7 @@ public class Body implements Externalizable {
 	 * Get the set of dynamic bodies connected to this one by a joint.
 	 * Note: this does not return the entire island of connected bodies,
 	 * only those directly connected to this one.
-	 * @return all bodies connected directly to this body by a joint
+	 * @return all bodies connected directly to this torso by a joint
 	 */
 	public Set<Body> getConnectedDynamicBodies() {
 		Set<Body> mySet = new HashSet<>();
@@ -1090,10 +1090,10 @@ public class Body implements Externalizable {
 	}
 	
 	/**
-	 * Get the island of connected bodies, including the current body.
+	 * Get the island of connected bodies, including the current torso.
 	 * <em>Warning</em>: will continue walking the joint tree past static bodies,
 	 * which may lead to unwanted results esp. if bodies are connected to the ground
-	 * body.
+	 * torso.
 	 * @return Set<Body> of all bodies accessible from this one by walking the joint tree
 	 */
 	public Set<Body> getConnectedBodyIsland() {
@@ -1114,8 +1114,8 @@ public class Body implements Externalizable {
 	}
 	
 	/**
-	 * Get the island of joint-connected dynamic bodies, including the current body.
-	 * Stops walking tree if it encounters a static body.
+	 * Get the island of joint-connected dynamic bodies, including the current torso.
+	 * Stops walking tree if it encounters a static torso.
 	 * @see Body#getConnectedBodyIsland()
 	 * @return Set<Body> of all bodies accessible from this one by walking the joint tree
 	 */
@@ -1137,10 +1137,10 @@ public class Body implements Externalizable {
 	}
 	
 	/**
-	 * Get the island of bodies in contact, including the current body.
+	 * Get the island of bodies in contact, including the current torso.
 	 * <em>Warning</em>: will continue walking the contact tree past static bodies,
 	 * which may lead to unwanted results esp. if bodies are touching the ground
-	 * body.
+	 * torso.
 	 * @return Set<Body> of all bodies accessible from this one by walking the contact tree
 	 */
 	public Set<Body> getTouchingBodyIsland() {
@@ -1161,8 +1161,8 @@ public class Body implements Externalizable {
 	}
 	
 	/**
-	 * Get the island of dynamic bodies in contact, including the current body.
-	 * Stops walking tree if it encounters a static body.
+	 * Get the island of dynamic bodies in contact, including the current torso.
+	 * Stops walking tree if it encounters a static torso.
 	 * @return Set<Body> of all bodies accessible from this one by walking the contact tree
 	 */
 	public Set<Body> getTouchingDynamicBodyIsland() {
@@ -1183,7 +1183,7 @@ public class Body implements Externalizable {
 	}
 	
 	/**
-	 * @return true if this Body is currently in contact with the passed body
+	 * @return true if this Body is currently in contact with the passed torso
 	 */
 	public boolean isTouching(Body other) {
 		ContactEdge edge = getContactList();

@@ -7,7 +7,7 @@ import game.State;
 
 /**
  * Transform that simply turns a state into an array of numbers and back. No state reduction occurs. This is
- * primarily useful as a placeholder or a testing tool. Note that the x component of the body is subtracted out in
+ * primarily useful as a placeholder or a testing tool. Note that the x component of the torso is subtracted out in
  * transform.
  *
  * @author Matt

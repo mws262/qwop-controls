@@ -178,7 +178,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
 
         if (!alreadyExists) {
             nextNode.setState(game.getCurrentState());
-            nextNode.setValue(nextNode.getState().body.getY());
+            nextNode.setValue(nextNode.getState().torso.getY());
             nextNode.visitCount.getAndIncrement();
         }
         return nextNode;
@@ -186,7 +186,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
 
     /**
      * Makes a small demo tree for testing. It has 4 layers below root, fully populated (game failure is unchecked).
-     * States are fully assigned. Values are set to body Y coordinate (arbitrary choice). Visit counts set to 1.
+     * States are fully assigned. Values are set to torso Y coordinate (arbitrary choice). Visit counts set to 1.
      * First actions : No keys, 1,2,3
      * Second actions : WO, 4,5,6,7
      * Third actions : QP, 8,9,10,11
@@ -198,7 +198,7 @@ public class ValueFunction_TensorFlow_ActionInTest {
 
         // Manually make a dummy tree to run on.
         Node rootNode = new Node();
-        rootNode.setValue(rootNode.getState().body.getY());
+        rootNode.setValue(rootNode.getState().torso.getY());
         rootNode.visitCount.getAndIncrement();
 
         for (Action action1 : actionsLayer1) {

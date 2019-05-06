@@ -164,9 +164,9 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     private String formatState(State s) {
 
-        float bodyX = s.body.getX();
+        float bodyX = s.torso.getX();
 
-        String ss = s.body.getX() + "\t" + s.body.getY() + "\t" + s.body.getTh() + "\t";
+        String ss = s.torso.getX() + "\t" + s.torso.getY() + "\t" + s.torso.getTh() + "\t";
         ss += (s.head.getX() - bodyX) + "\t" + s.head.getY() + "\t" + s.head.getTh() + "\t";
         ss += (s.rthigh.getX() - bodyX) + "\t" + s.rthigh.getY() + "\t" + s.rthigh.getTh() + "\t";
         ss += (s.lthigh.getX() - bodyX) + "\t" + s.lthigh.getY() + "\t" + s.lthigh.getTh() + "\t";
@@ -179,7 +179,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
         ss += (s.rlarm.getX() - bodyX) + "\t" + s.rlarm.getY() + "\t" + s.rlarm.getTh() + "\t";
         ss += (s.llarm.getX() - bodyX) + "\t" + s.llarm.getY() + "\t" + s.llarm.getTh() + "\t";
 
-        ss += s.body.getDx() + "\t" + s.body.getDy() + "\t" + s.body.getDth() + "\t";
+        ss += s.torso.getDx() + "\t" + s.torso.getDy() + "\t" + s.torso.getDth() + "\t";
         ss += s.head.getDx() + "\t" + s.head.getDy() + "\t" + s.head.getDth() + "\t";
         ss += s.rthigh.getDx() + "\t" + s.rthigh.getDy() + "\t" + s.rthigh.getDth() + "\t";
         ss += s.lthigh.getDx()  + "\t" + s.lthigh.getDy() + "\t" + s.lthigh.getDth() + "\t";

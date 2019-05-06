@@ -1,6 +1,5 @@
 package goals;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -181,7 +180,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         while (true) {
             long initTime = System.currentTimeMillis();
             State state = game.getCurrentState();
-            System.out.println(state.body.getX());
+            System.out.println(state.torso.getX());
             Action nextAction = controller.policy(state);
             actionQueue.addAction(nextAction);
             while (!actionQueue.isEmpty()) {

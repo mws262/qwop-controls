@@ -55,7 +55,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     public int numHistoryStatesDisplay = 25;
 
     /**
-     * How close do we have to be (squared) from the body of a single runner for it to be eligible for selection.
+     * How close do we have to be (squared) from the torso of a single runner for it to be eligible for selection.
      */
     private float figureSelectThreshSq = 150;
 
@@ -66,7 +66,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     private int mouseY = 0;
 
     /**
-     * X offset in frame pixel coordinates determined by the focused body's x coordinate.
+     * X offset in frame pixel coordinates determined by the focused torso's x coordinate.
      */
     private int specificXOffset = 0;
 
@@ -93,7 +93,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
         /* Focused node first */
         snapshotNode = node;
-        specificXOffset = (int) (runnerScaling * snapshotNode.getState().body.getX());
+        specificXOffset = (int) (runnerScaling * snapshotNode.getState().torso.getX());
         states.add(snapshotNode.getState());
         strokes.add(boldStroke);
         colors.add(Color.BLACK);
@@ -149,10 +149,10 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             if (mouseIsIn && mouseX > getWidth() / 2) { // If we are mousing over this panel, see if we're hovering
                 // close enough over any particular dude state.
 
-                // Check body first
+                // Check torso first
                 for (int i = 0; i < focusLeaves.size(); i++) {
-                    float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().body.getX(),
-                            focusLeaves.get(i).getState().body.getY());
+                    float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().torso.getX(),
+                            focusLeaves.get(i).getState().torso.getY());
                     if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                         bestSoFar = distSq;
                         bestIdx = i;

@@ -53,15 +53,15 @@ public class FlashQWOPServer {
     /**
      * Cods for each action to send to the Flash game over the socket.
      */
-    private static final String none = "0000\0";
-    private static final String q = "1000\0";
-    private static final String w = "0100\0";
-    private static final String o = "0010\0";
-    private static final String p = "0001\0";
-    private static final String qo = "1010\0";
-    private static final String qp = "1001\0";
-    private static final String wo = "0110\0";
-    private static final String wp = "0101\0";
+    private static final String none = "00000\0";
+    private static final String q = "10000\0";
+    private static final String w = "01000\0";
+    private static final String o = "00100\0";
+    private static final String p = "00010\0";
+    private static final String qo = "10100\0";
+    private static final String qp = "10010\0";
+    private static final String wo = "01100\0";
+    private static final String wp = "01010\0";
 
     /**
      * Open a socket for communicating back and forth with the real QWOP game.
@@ -215,18 +215,12 @@ public class FlashQWOPServer {
      */
     private static class DataReceiver implements Runnable {
 
-        private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        private Gson gson = new Gson();
         /**
          * Reader which gets the input stream from the socket.
          */
         private JsonReader reader;
 
-        /**
-         * Most recent time-step state received.
-         */
-        private AtomicInteger currentTimestep = new AtomicInteger();
-
-        private AtomicBoolean fallen = new AtomicBoolean(false);
         /**
          * Most recent state received.
          */
@@ -260,48 +254,36 @@ public class FlashQWOPServer {
             }
 
             reader = new JsonReader(new InputStreamReader(inStream));
-            reader.setLenient(true);
-            System.out.println(gson.toJson(GameUnified.getInitialState()));
-            gson.toString();
+            reader.setLenient(true); // Parser doesn't like the JSON coming from flash for some reason, this is the
+            // fix in the meantime.
         }
 
         @Override
         public void run() {
             while (true) {
                 try {
-                    if (reader.hasNext()) {
-
-
-                        JsonElement message = gson.fromJson(reader, JsonElement.class);
-
-//                        message.getAsJsonObject().
-//                        String msg = reader.readLine().replace("\u0000", ""); // JSON parser hates the null character
-//                        // in front.
-//                        //System.out.println(msg);
-//
-//                        if (msg.contains("{")) {
-//                            JSONObject stateFromFlash = new JSONObject(msg);
-//                            if (stateFromFlash.keySet().contains("timestep")) {
-//                                State st = convertJSONToState(stateFromFlash);
-//                                currentState = st;
-//                                if (debugDraw) {
-//                                    panelRunner.updateState(st);
-//                                }
-//                                // Send the update to any listeners.
-//                                for (QWOPStateListener listener : listenerList) {
-//                                    listener.stateReceived(getCurrentTimestep(), st);
-//                                }
-//                                // System.out.println(stateFromFlash.toString(2));
-//
-//                            } else {
-//                                System.out.println(stateFromFlash.toString(2));
-//                            }
-//                        }
-//                        else {
-//                            if (getCurrentTimestep() == 0) {
-//                                System.out.println(msg); // TODO handle other messages.
-//                            }
-//                        }
+                    while (reader.hasNext()) {
+                        // Null character gets sent and we don't want it. Should begin with an object, not a string.
+                        while(reader.peek().toString().equals("STRING")) {
+                            String msg = reader.nextString();
+                            if (!msg.equals("\u0000")) {
+                                System.out.println(msg.replace('\u0000', ' '));
+                            }
+                        }
+                        try {
+                            currentState = gson.fromJson(reader, State.class);
+                            if (currentState.getTimestep() == 0) {
+                                System.out.println("restart");
+                            }
+                        } catch (com.google.gson.JsonSyntaxException e) {
+                            e.printStackTrace();
+                        }
+                        for (QWOPStateListener listener : listenerList) {
+                            listener.stateReceived(getCurrentTimestep(), currentState);
+                        }
+                        if (debugDraw) {
+                            panelRunner.updateState(currentState);
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -309,94 +291,13 @@ public class FlashQWOPServer {
             }
         }
 
-        class JsonQWOPMessage {
-
-
-
-        }
-        /**
-         * JSON formatted data will come in from the real QWOP game. This will extract it, add in the angle offsets,
-         * and return a state
-         * @param stateFromFlash The JSON structure coming in over the XMLSocket.
-         * @return A State compatible with all others throughout this project.
-         */
-//        private State convertJSONToState(JSONObject stateFromFlash) {
-//
-//            currentTimestep.set(stateFromFlash.getInt("timestep"));
-//            boolean isFallen = stateFromFlash.getBoolean("fallen");
-//            fallen.set(isFallen);
-//
-//            JSONObject bodyMap = ((JSONObject)stateFromFlash.get("torso"));
-//            StateVariable torso = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th") + GameConstants.torsoAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("head"));
-//            StateVariable head = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th") + GameConstants.headAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("rthigh"));
-//            StateVariable rthigh = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th") + GameConstants.rThighAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("lthigh"));
-//            StateVariable lthigh = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th") + GameConstants.lThighAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("rcalf"));
-//            StateVariable rcalf = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th") + GameConstants.rCalfAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("lcalf"));
-//            StateVariable lcalf = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th") + GameConstants.lCalfAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("rfoot"));
-//            StateVariable rfoot = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th"), bodyMap.getFloat("dx"), bodyMap.getFloat("dy"), // No angle adjustment?
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("lfoot"));
-//            StateVariable lfoot = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th"), bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("ruarm"));
-//            StateVariable ruarm = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th") + GameConstants.rUArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("luarm"));
-//            StateVariable luarm = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th") + GameConstants.lUArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("rlarm"));
-//            StateVariable rlarm = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th") + GameConstants.rLArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            bodyMap = ((JSONObject)stateFromFlash.get("llarm"));
-//            StateVariable llarm = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-//                    bodyMap.getFloat("th") + GameConstants.lLArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
-//                    bodyMap.getFloat("dth"));
-//
-//            return new State(torso, head, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm,
-//                    isFallen);
-//        }
-
         /**
          * Get the most recent timestep number received from real QWOP. The first will be zero, and will be before
          * any physics stepping has occurred.
          * @return Most recent timestep received from the game.
          */
         public int getCurrentTimestep() {
-            return currentTimestep.get();
+            return currentState.getTimestep();
         }
 
         /**
@@ -404,7 +305,7 @@ public class FlashQWOPServer {
          * @return
          */
         public boolean getFailureStatus() {
-            return fallen.get();
+            return currentState.isFailed();
         }
 
         /**

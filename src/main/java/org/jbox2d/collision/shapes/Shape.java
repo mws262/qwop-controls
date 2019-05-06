@@ -49,7 +49,7 @@ public abstract class Shape implements Externalizable {
 	public Shape m_next;
 	public Body m_body;
 
-	/** Sweep radius relative to the parent body's center of mass. */
+	/** Sweep radius relative to the parent torso's center of mass. */
 	public float m_sweepRadius;
 	public float m_density;
 	public float m_friction;
@@ -141,15 +141,15 @@ public abstract class Shape implements Externalizable {
 	}
 
 	/**
-	 * Get the parent body of this shape. This is NULL if the shape is not attached.
-	 * @return the parent body.
+	 * Get the parent torso of this shape. This is NULL if the shape is not attached.
+	 * @return the parent torso.
 	 */
 	public Body getBody() {
 		return m_body;
 	}
 
 	/**
-	 * Get the next shape in the parent body's shape list.
+	 * Get the next shape in the parent torso's shape list.
 	 * @return the next shape.
 	 */
 	public Shape getNext() {

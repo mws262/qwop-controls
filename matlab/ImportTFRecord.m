@@ -63,8 +63,8 @@ end
 %     %     if isempty(loadedStates(i))
 %     %         continue;
 %     %     end
-%     bodyY(count) = loadedStates(i).body.getY();
-%     bodyTh(count) = loadedStates(i).body.getTh();
+%     bodyY(count) = loadedStates(i).torso.getY();
+%     bodyTh(count) = loadedStates(i).torso.getTh();
 %     count = count + 1;
 % end
 %

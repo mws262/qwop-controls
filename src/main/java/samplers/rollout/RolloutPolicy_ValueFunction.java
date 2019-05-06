@@ -41,7 +41,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
             currentNode.setState(game.getCurrentState());
         }
 
-        // System.out.println("Rollout: " + currentNode.getState().body.getX() + ", " + rolloutTimesteps);
+        // System.out.println("Rollout: " + currentNode.getState().torso.getX() + ", " + rolloutTimesteps);
         return (evaluationFunction.getValue(currentNode) - evaluationFunction.getValue(startNode)) / ((float) maxRolloutTimesteps / 40f);
     }
 

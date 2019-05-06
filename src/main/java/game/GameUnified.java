@@ -19,7 +19,6 @@ import org.nustaq.serialization.FSTConfiguration;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.Random;
-import java.util.function.Function;
 
 import static game.GameConstants.*;
 
@@ -49,7 +48,7 @@ public class GameUnified implements IGame, Serializable {
      **/
     private static final AABB worldAABB = new AABB(new Vec2(aabbMinX, aabbMinY), new Vec2(aabbMaxX, aabbMaxY));
 
-    /* Individual body objects */
+    /* Individual torso objects */
     private Body rFootBody, lFootBody, rCalfBody, lCalfBody, rThighBody, lThighBody, torsoBody, rUArmBody, lUArmBody,
             rLArmBody, lLArmBody, headBody, trackBody;
 
@@ -64,7 +63,7 @@ public class GameUnified implements IGame, Serializable {
             neckJ;
 
     /**
-     * Filters collisions. Prevents body parts from hitting other body parts.
+     * Filters collisions. Prevents torso parts from hitting other torso parts.
      **/
     private static final int BODY_GROUP = -1;
 
@@ -166,7 +165,7 @@ public class GameUnified implements IGame, Serializable {
      */
     public int iterations = physIterations;
 
-    /** Listens for collisions between any body part and the ground. **/
+    /** Listens for collisions between any torso part and the ground. **/
     private CollisionListener collisionListener = new CollisionListener();
 
     /** Should the game be marked as failed if the thighs touch the ground? (happens with knees touching the ground. **/
@@ -613,7 +612,7 @@ public class GameUnified implements IGame, Serializable {
             shapeList[12] = trackBody.getShapeList();
         }
 
-        // Listen for ground-body contacts.
+        // Listen for ground-torso contacts.
         world.setContactListener(collisionListener);
     }
 
@@ -851,7 +850,7 @@ public class GameUnified implements IGame, Serializable {
     }
 
     /**
-     * Get a new StateVariable for a given body.
+     * Get a new StateVariable for a given torso.
      */
     private StateVariable getCurrentBodyState(Body body) {
         Vec2 pos = body.getPosition();
@@ -871,10 +870,10 @@ public class GameUnified implements IGame, Serializable {
     }
 
     /**
-     * Set an individual body to a specified {@link StateVariable}. This sets both positions and velocities.
+     * Set an individual torso to a specified {@link StateVariable}. This sets both positions and velocities.
      *
      * @param body          Body to set the state of.
-     * @param stateVariable Full state to assign to that body.
+     * @param stateVariable Full state to assign to that torso.
      */
     private void setBodyToStateVariable(Body body, StateVariable stateVariable) {
         body.setXForm(new Vec2(stateVariable.getX(), stateVariable.getY()), stateVariable.getTh());
@@ -899,7 +898,7 @@ public class GameUnified implements IGame, Serializable {
         setBodyToStateVariable(lLArmBody, state.llarm);
 
         setBodyToStateVariable(headBody, state.head);
-        setBodyToStateVariable(torsoBody, state.body);
+        setBodyToStateVariable(torsoBody, state.torso);
     }
 
     /**
@@ -950,7 +949,7 @@ public class GameUnified implements IGame, Serializable {
     }
 
     /**
-     * Apply a disturbance impulse to the body COM.
+     * Apply a disturbance impulse to the torso COM.
      */
     public void applyBodyImpulse(float xComp, float yComp) {
         Vec2 torsoCenter = torsoBody.getWorldCenter();
@@ -959,7 +958,7 @@ public class GameUnified implements IGame, Serializable {
     }
 
     /**
-     * Apply a disturbance torque to the body.
+     * Apply a disturbance torque to the torso.
      */
     public void applyBodyTorque(float cwTorque) {
         torsoBody.applyTorque(cwTorque);
@@ -968,8 +967,8 @@ public class GameUnified implements IGame, Serializable {
 
     public void fullStatePDController(State targetState) {
         State currentState = getCurrentState();
-        pdForce(targetState.body, currentState.body, torsoBody);
-        pdTorque(targetState.body, currentState.body, torsoBody);
+        pdForce(targetState.torso, currentState.torso, torsoBody);
+        pdTorque(targetState.torso, currentState.torso, torsoBody);
 
         pdForce(targetState.head, currentState.head, torsoBody);
         pdTorque(targetState.head, currentState.head, torsoBody);
@@ -1195,7 +1194,7 @@ public class GameUnified implements IGame, Serializable {
      */
     public static XForm[] getXForms(State st) {
         XForm[] transforms = new XForm[13];
-        transforms[0] = getXForm(st.body);
+        transforms[0] = getXForm(st.torso);
         transforms[1] = getXForm(st.head);
         transforms[2] = getXForm(st.rfoot);
         transforms[3] = getXForm(st.lfoot);
@@ -1213,7 +1212,7 @@ public class GameUnified implements IGame, Serializable {
     }
 
     /**
-     * Get the transform associated with this body's state variables. Note that these transforms can ONLY be used
+     * Get the transform associated with this torso's state variables. Note that these transforms can ONLY be used
      * with this instance of GameThreadSafe.
      */
     public static XForm getXForm(StateVariable sv) {

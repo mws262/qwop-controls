@@ -91,7 +91,7 @@ public class PanelRunner_Comparison extends PanelRunner {
         if (selectedNode != null && selectedNode.getState() != null) {
             for (int i = 0; i < states.size(); i++) {
                 GameUnified.drawExtraRunner(g2, states.get(i), "", runnerScaling,
-                        xOffsetPixels + (int) (-runnerScaling * focusNodes.get(i).getState().body.getX()), yOffsetPixels,
+                        xOffsetPixels + (int) (-runnerScaling * focusNodes.get(i).getState().torso.getX()), yOffsetPixels,
                         colors.get(i), strokes.get(i));
             }
         }

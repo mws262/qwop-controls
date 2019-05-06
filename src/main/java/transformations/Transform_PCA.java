@@ -117,10 +117,10 @@ public class Transform_PCA implements ITransform {
         // Iterate through all nodes
         for (int i = 0; i < states.size(); i++) {
             int colCounter = 0;
-            // Through all body parts...
+            // Through all torso parts...
             float bodyX = states.get(i).getStateVarFromName(State.ObjectName.BODY, State.StateName.X);
             for (State.ObjectName obj : State.ObjectName.values()) {
-                // For each state of each body part.
+                // For each state of each torso part.
                 for (State.StateName st : State.StateName.values()) {
                     if (State.StateName.X == st) {
                         dat.put(i, colCounter, states.get(i).getStateVarFromName(obj, st) - bodyX);

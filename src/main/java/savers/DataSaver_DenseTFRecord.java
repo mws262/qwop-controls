@@ -99,8 +99,8 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     // NOTE: The following methods were borrowed and altered from my MAIN_ConvertDenseDataToTFRecord class.
 
     /**
-     * Make a single feature representing the 6 state variables for a single body part at a single timestep. Append
-     * to existing FeatureList for that body part.
+     * Make a single feature representing the 6 state variables for a single torso part at a single timestep. Append
+     * to existing FeatureList for that torso part.
      * @param state
      * @param bodyPart Body part that the data is being given for. Comes from {@link State.ObjectName}.
      * @param listToAppendTo
@@ -155,7 +155,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 			// single run.
 
             // Pack up states
-            for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body
+            for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the torso
             	// parts and add to the overall list of feature lists.
                 makeStateFeatureList(dat.states, bodyPart, featLists);
             }

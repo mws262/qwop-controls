@@ -86,8 +86,8 @@ public class MAIN_ConvertDenseDataToTFRecord {
     }
 
     /**
-     * Make a single feature representing the 6 state variables for a single body part at a single timestep. Append to
-     * existing FeatureList for that body part.
+     * Make a single feature representing the 6 state variables for a single torso part at a single timestep. Append to
+     * existing FeatureList for that torso part.
      **/
     private static void makeFeature(State.ObjectName bodyPart, State state, FeatureList.Builder listToAppendTo) {
         Feature.Builder feat = Feature.newBuilder();
@@ -134,7 +134,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
             // single run.
 
             // Pack up states
-            for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body
+            for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the torso
                 // parts and add to the overall list of feature lists.
                 makeStateFeatureList(dat, bodyPart, featLists);
             }

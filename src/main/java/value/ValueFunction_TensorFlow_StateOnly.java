@@ -142,7 +142,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 INode nextNode = new NodePlaceholder(startingNode, new Action(i, buttons), st);
                 val1 = val2;
                 val2 = val3;
-                val3 = evaluate(nextNode);// + (st.body.getX() - gameStartingState.body.getX())/(float)i * 1f;
+                val3 = evaluate(nextNode);// + (st.torso.getX() - gameStartingState.torso.getX())/(float)i * 1f;
                 if (i == 1) {
                    // val1 = val3;
                     val2 = val3 * 4f/4f;

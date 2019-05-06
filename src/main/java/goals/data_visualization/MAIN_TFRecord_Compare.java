@@ -1,6 +1,5 @@
 package goals.data_visualization;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -128,7 +127,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
                 int xOffsetPixels = 250;
                 if (rh != null) {
                     int killThis = rh.actionDurations.get(0) + rh.actionDurations.get(1);
-                    float specificXOffset = rh.states.get(killThis).state.body.getX();
+                    float specificXOffset = rh.states.get(killThis).state.torso.getX();
                     int count = 0;
                     for (int i = 5 + killThis; i < rh.states.size(); i += rh.actionDurations.get(count)) {
                         count++;
@@ -143,7 +142,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
                 }
                 for (RunHolder rh2 : toDraw) {
                     int killThis = rh2.actionDurations.get(0) + rh2.actionDurations.get(1);
-                    float specificXOffset = rh2.states.get(killThis).state.body.getX();
+                    float specificXOffset = rh2.states.get(killThis).state.torso.getX();
                     GameUnified.drawExtraRunner((Graphics2D) g, rh2.states.get(killThis).state, "",
                             runnerScaling, xOffsetPixels - (int) (runnerScaling * specificXOffset), yOffsetPixels,
                             Color.BLACK, PanelRunner.boldStroke);

@@ -315,17 +315,17 @@ public final class DenseDataProtos {
       public interface StateOrBuilder
           extends com.google.protobuf.MessageOrBuilder {
 
-        // required .data.DataSet.DenseData.State.StateVariable body = 1;
+        // required .data.DataSet.DenseData.State.StateVariable torso = 1;
         /**
-         * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+         * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
          */
         boolean hasBody();
         /**
-         * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+         * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
          */
         data.DenseDataProtos.DataSet.DenseData.State.StateVariable getBody();
         /**
-         * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+         * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
          */
         data.DenseDataProtos.DataSet.DenseData.State.StateVariableOrBuilder getBodyOrBuilder();
 
@@ -1636,25 +1636,25 @@ public final class DenseDataProtos {
         }
 
         private int bitField0_;
-        // required .data.DataSet.DenseData.State.StateVariable body = 1;
+        // required .data.DataSet.DenseData.State.StateVariable torso = 1;
         public static final int BODY_FIELD_NUMBER = 1;
         private data.DenseDataProtos.DataSet.DenseData.State.StateVariable body_;
         /**
-         * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+         * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
          */
         @Override
 		public boolean hasBody() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
         }
         /**
-         * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+         * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
          */
         @Override
 		public data.DenseDataProtos.DataSet.DenseData.State.StateVariable getBody() {
           return body_;
         }
         /**
-         * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+         * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
          */
         @Override
 		public data.DenseDataProtos.DataSet.DenseData.State.StateVariableOrBuilder getBodyOrBuilder() {
@@ -2669,19 +2669,19 @@ public final class DenseDataProtos {
           }
           private int bitField0_;
 
-          // required .data.DataSet.DenseData.State.StateVariable body = 1;
+          // required .data.DataSet.DenseData.State.StateVariable torso = 1;
           private data.DenseDataProtos.DataSet.DenseData.State.StateVariable body_ = data.DenseDataProtos.DataSet.DenseData.State.StateVariable.getDefaultInstance();
           private com.google.protobuf.SingleFieldBuilder<
               data.DenseDataProtos.DataSet.DenseData.State.StateVariable, data.DenseDataProtos.DataSet.DenseData.State.StateVariable.Builder, data.DenseDataProtos.DataSet.DenseData.State.StateVariableOrBuilder> bodyBuilder_;
           /**
-           * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+           * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
            */
           @Override
 		public boolean hasBody() {
             return ((bitField0_ & 0x00000001) == 0x00000001);
           }
           /**
-           * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+           * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
            */
           @Override
 		public data.DenseDataProtos.DataSet.DenseData.State.StateVariable getBody() {
@@ -2692,7 +2692,7 @@ public final class DenseDataProtos {
             }
           }
           /**
-           * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+           * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
            */
           public Builder setBody(data.DenseDataProtos.DataSet.DenseData.State.StateVariable value) {
             if (bodyBuilder_ == null) {
@@ -2708,7 +2708,7 @@ public final class DenseDataProtos {
             return this;
           }
           /**
-           * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+           * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
            */
           public Builder setBody(
               data.DenseDataProtos.DataSet.DenseData.State.StateVariable.Builder builderForValue) {
@@ -2722,7 +2722,7 @@ public final class DenseDataProtos {
             return this;
           }
           /**
-           * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+           * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
            */
           public Builder mergeBody(data.DenseDataProtos.DataSet.DenseData.State.StateVariable value) {
             if (bodyBuilder_ == null) {
@@ -2741,7 +2741,7 @@ public final class DenseDataProtos {
             return this;
           }
           /**
-           * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+           * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
            */
           public Builder clearBody() {
             if (bodyBuilder_ == null) {
@@ -2754,7 +2754,7 @@ public final class DenseDataProtos {
             return this;
           }
           /**
-           * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+           * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
            */
           public data.DenseDataProtos.DataSet.DenseData.State.StateVariable.Builder getBodyBuilder() {
             bitField0_ |= 0x00000001;
@@ -2762,7 +2762,7 @@ public final class DenseDataProtos {
             return getBodyFieldBuilder().getBuilder();
           }
           /**
-           * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+           * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
            */
           @Override
 		public data.DenseDataProtos.DataSet.DenseData.State.StateVariableOrBuilder getBodyOrBuilder() {
@@ -2773,7 +2773,7 @@ public final class DenseDataProtos {
             }
           }
           /**
-           * <code>required .data.DataSet.DenseData.State.StateVariable body = 1;</code>
+           * <code>required .data.DataSet.DenseData.State.StateVariable torso = 1;</code>
            */
           private com.google.protobuf.SingleFieldBuilder<
               data.DenseDataProtos.DataSet.DenseData.State.StateVariable, data.DenseDataProtos.DataSet.DenseData.State.StateVariable.Builder, data.DenseDataProtos.DataSet.DenseData.State.StateVariableOrBuilder> 

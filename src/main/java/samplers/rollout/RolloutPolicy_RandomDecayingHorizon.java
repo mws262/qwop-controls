@@ -26,7 +26,7 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
         Node rolloutNode = startNode;
         float accumulatedValue = 0f;
 
-        float previousValue = game.getCurrentState().body.getX(); // TODO Stop hardcoding this as body x and instead
+        float previousValue = game.getCurrentState().torso.getX(); // TODO Stop hardcoding this as torso x and instead
         // use the evaluation function.
         while (!rolloutNode.isFailed() && timestepCounter < maxTimestepsToSim) {
             Action childAction = rolloutNode.uncheckedActions.getRandom();
@@ -35,7 +35,7 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
 
             while (!actionQueue.isEmpty() && !game.getFailureStatus() && timestepCounter < maxTimestepsToSim) {
                 game.step(actionQueue.pollCommand());
-                float currentValue = game.getCurrentState().body.getX();
+                float currentValue = game.getCurrentState().torso.getX();
                 float multiplier = getKernelMultiplier(timestepCounter / (float) maxTimestepsToSim);
 
                 accumulatedValue += multiplier * (currentValue - previousValue);

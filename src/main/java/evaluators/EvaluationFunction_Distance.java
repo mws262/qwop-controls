@@ -13,7 +13,7 @@ public class EvaluationFunction_Distance implements IEvaluationFunction {
 
     @Override
     public float getValue(INode nodeToEvaluate) {
-        return Objects.requireNonNull(nodeToEvaluate.getState()).body.getX();
+        return Objects.requireNonNull(nodeToEvaluate.getState()).torso.getX();
     }
 
     @Override

@@ -37,11 +37,11 @@ import java.io.Serializable;
  *  can violate the constraint slightly. You also need to
  *  specify the initial relative angle for joint limits. This
  *  helps when saving and loading a game.
- *  The local anchor points are measured from the body's origin
+ *  The local anchor points are measured from the torso's origin
  *  rather than the center of mass because:<br/>
  *  <ul>
  *  <li>you might not know where the center of mass will be.</li>
- *  <li>if you add/remove shapes from a body and recompute the mass,
+ *  <li>if you add/remove shapes from a torso and recompute the mass,
  *     the joints will be broken.</li></ul>
  */
 public class RevoluteJointDef extends JointDef implements Serializable {

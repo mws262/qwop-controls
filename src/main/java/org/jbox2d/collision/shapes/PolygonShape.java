@@ -43,7 +43,7 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Exte
 	/** Dump lots of debug information. */
 	private static final boolean m_debug = false;
 
-	/** Local position of the shape centroid in parent body frame. */
+	/** Local position of the shape centroid in parent torso frame. */
 	public Vec2 m_centroid;
 
 	/** The oriented bounding box of the shape. */
@@ -91,7 +91,7 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Exte
 
 		m_obb = new OBB();
 
-		// Get the vertices transformed into the body frame.
+		// Get the vertices transformed into the torso frame.
 		assert(3 <= m_vertexCount && m_vertexCount <= Settings.maxPolygonVertices);
 
 		// Copy vertices.
@@ -469,12 +469,12 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Exte
 		XForm.mulToOut(xf, m_coreVertices[0], out);
 	}
 
-	/** Get the oriented bounding box relative to the parent body. */
+	/** Get the oriented bounding box relative to the parent torso. */
 	public OBB getOBB() {
 		return m_obb.clone();
 	}
 
-	/** Get the local centroid relative to the parent body. */
+	/** Get the local centroid relative to the parent torso. */
 	public Vec2 getCentroid() {
 		return m_centroid.clone();
 	}

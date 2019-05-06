@@ -81,7 +81,7 @@ public class Controller_NearestNeighborApprox implements IController {
     private int penalizeSlowHorizon = 50;
 
     /**
-     * How many nearby (in terms of body theta) states are compared when determining the "closest" one.
+     * How many nearby (in terms of torso theta) states are compared when determining the "closest" one.
      */
     private int upperSetLimit = 20000;
 
@@ -93,7 +93,7 @@ public class Controller_NearestNeighborApprox implements IController {
     private int numStatesLoaded = 0;
 
     /**
-     * All states loaded, regardless of run, in sorted order, by body theta.
+     * All states loaded, regardless of run, in sorted order, by torso theta.
      */
     public NavigableMap<Float, StateHolder> allStates = new TreeMap<>();
 
@@ -132,7 +132,7 @@ public class Controller_NearestNeighborApprox implements IController {
 
     @Override
     public Action policy(State state) {
-        // Get nearest states (determined ONLY by body theta).
+        // Get nearest states (determined ONLY by torso theta).
         float sortBy = state.getStateVarFromName(sortByPart, sortBySt);
 
         NavigableMap<Float, StateHolder> lowerSet = allStates.headMap(sortBy, true);
@@ -244,11 +244,11 @@ public class Controller_NearestNeighborApprox implements IController {
 
             float slowError =
                     -penalizeSlowMult * (sh.parentRun.states.get(Integer.min(stateLocInSequence + penalizeSlowHorizon
-                            , sh.parentRun.states.size() - 1)).state.body.getX() - sh.parentRun.states.get(stateLocInSequence).state.body.getX()) / penalizeSlowHorizon;
+                            , sh.parentRun.states.size() - 1)).state.torso.getX() - sh.parentRun.states.get(stateLocInSequence).state.torso.getX()) / penalizeSlowHorizon;
 //			float accumulatedVel = 0;
 //			for (int i = stateLocInSequence; i < Integer.min(sh.parentRun.states.size(), stateLocInSequence +
 // penalizeSlowHorizon); i++) {
-//				accumulatedVel += sh.parentRun.states.get(i).state.body.dx;
+//				accumulatedVel += sh.parentRun.states.get(i).state.torso.dx;
 //			}
 //			float slowError = penalizeSlowMult/Float.max(0.001f, accumulatedVel);
             cost += slowError;
@@ -463,14 +463,14 @@ public class Controller_NearestNeighborApprox implements IController {
     public void draw(Graphics g, GameUnified game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
         if (!previousStatesLIFO.isEmpty()) {
             g.setColor(Color.WHITE);
-            g.drawString(String.valueOf(previousStatesLIFO.peek().body.getX()), 50, 50);
+            g.drawString(String.valueOf(previousStatesLIFO.peek().torso.getX()), 50, 50);
         }
 
         if (currentTrajectory != null && currentTrajectoryStateMatch != null) {
             RunHolder drawTraj = currentTrajectory;
             StateHolder drawState = currentTrajectoryStateMatch;
             int startIdx = drawTraj.states.indexOf(drawState);
-            float bodyX = currentTrajectoryStateMatch.state.body.getX();
+            float bodyX = currentTrajectoryStateMatch.state.torso.getX();
             game.drawExtraRunner((Graphics2D) g, drawState.state, "", runnerScaling, xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels, Color.CYAN, PanelRunner.normalStroke);
 
             int viewingHorizon = 80;

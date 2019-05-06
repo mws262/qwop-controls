@@ -28,8 +28,8 @@ import java.io.Serializable;
 /**
  * Primarily for internal use.
  * <BR><BR>
- * Describes the motion of a body/shape for TOI computation.
- * Shapes are defined with respect to the body origin, which may
+ * Describes the motion of a torso/shape for TOI computation.
+ * Shapes are defined with respect to the torso origin, which may
  * not coincide with the center of mass. However, to support dynamics
  * we must interpolate the center of mass position.
  * 

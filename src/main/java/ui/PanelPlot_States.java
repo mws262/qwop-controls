@@ -72,9 +72,9 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
 
     public PanelPlot_States(int numPlots) {
         super(numPlots);
-        // Make string arrays of the body part and state variable names.
+        // Make string arrays of the torso part and state variable names.
         int count = 0;
-        // String names of the body parts.
+        // String names of the torso parts.
         String[] objNames = new String[State.ObjectName.values().length];
         for (State.ObjectName obj : State.ObjectName.values()) {
             objNames[count] = obj.name();

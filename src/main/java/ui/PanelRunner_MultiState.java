@@ -49,7 +49,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     }
 
     /**
-     * Set the main state to be drawn. It's body x-coordinate will be used as an offset for all other secondary
+     * Set the main state to be drawn. It's torso x-coordinate will be used as an offset for all other secondary
      * states drawn.
      * @param state Main runner state to be drawn.
      */
@@ -77,7 +77,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
         Graphics2D g2 = (Graphics2D) g;
 
         // x offset comes from the main state and is applied to all states drawn.
-        int xOffset = (int) (mainState.body.getX() * runnerScaling);
+        int xOffset = (int) (mainState.torso.getX() * runnerScaling);
 
         offset[0] = xOffsetPixels - xOffset;
         offset[1] = 100 + yOffsetPixels;
@@ -96,7 +96,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
 
         //This draws the "road" markings to show that the ground is moving relative to the dude.
         for (int i = 0; i < 2000 / 69; i++) {
-            g.drawString("_", ((-(int) (runnerScaling * mainState.body.getX()) - i * 70) % 2000) + 2000,
+            g.drawString("_", ((-(int) (runnerScaling * mainState.torso.getX()) - i * 70) % 2000) + 2000,
                     yOffsetPixels + 195);
         }
     }

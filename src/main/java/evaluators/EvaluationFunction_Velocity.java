@@ -13,7 +13,7 @@ public class EvaluationFunction_Velocity implements IEvaluationFunction {
 
     @Override
     public float getValue(INode nodeToEvaluate) {
-        return Objects.requireNonNull(nodeToEvaluate.getState()).body.getDx();
+        return Objects.requireNonNull(nodeToEvaluate.getState()).torso.getDx();
     }
 
     @Override

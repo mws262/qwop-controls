@@ -52,7 +52,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
         if (game != null && currState != null) {
 
             GameUnified.drawExtraRunner((Graphics2D) g, currState, "", runnerScaling,
-                    (int) (xOffsetPixels - currState.body.getX() * runnerScaling), yOffsetPixels, Color.BLACK,
+                    (int) (xOffsetPixels - currState.torso.getX() * runnerScaling), yOffsetPixels, Color.BLACK,
                     normalStroke);
 
             // No actions being displayed, so just draw the keys.
@@ -60,7 +60,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
 
             //This draws the "road" markings to show that the ground is moving relative to the dude.
             for (int i = 0; i < 2000 / 69; i++) {
-                g.drawString("_", ((-(int) (runnerScaling * currState.body.getX()) - i * 70) % 2000) + 2000,
+                g.drawString("_", ((-(int) (runnerScaling * currState.torso.getX()) - i * 70) % 2000) + 2000,
                         yOffsetPixels + 92);
             }
             //drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());

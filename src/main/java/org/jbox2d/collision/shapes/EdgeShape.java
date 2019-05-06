@@ -176,12 +176,12 @@ public class EdgeShape extends Shape implements SupportsGenericDistance, Seriali
 		return m_length;
 	}
 
-	/** Local position of vertex in parent body */
+	/** Local position of vertex in parent torso */
 	public Vec2 getVertex1() {
 		return m_v1;
 	}
 
-	/** Local position of vertex in parent body */
+	/** Local position of vertex in parent torso */
 	public Vec2 getVertex2() {
 		return m_v2;
 	}

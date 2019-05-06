@@ -129,7 +129,7 @@ public class World implements Externalizable {
 		return m_gravity.clone();
 	}
 
-	/** The world provides a single static ground body with no collision shapes.
+	/** The world provides a single static ground torso with no collision shapes.
 	 *	You can use this to simplify the creation of joints and static shapes.
 	 */
 	public Body getGroundBody() {
@@ -137,9 +137,9 @@ public class World implements Externalizable {
 	}
 
 	/**
-	 * Get the world body list. With the returned body, use Body.getNext() to get
-	 * the next body in the world list. A NULL body indicates the end of the list.
-	 * @return the head of the world body list.
+	 * Get the world torso list. With the returned torso, use Body.getNext() to get
+	 * the next torso in the world list. A NULL torso indicates the end of the list.
+	 * @return the head of the world torso list.
 	 */
 	public Body getBodyList() {
 		return m_bodyList;
@@ -210,7 +210,7 @@ public class World implements Externalizable {
 	}
 
 	/**
-	 * Create a body given a definition. No reference to the definition
+	 * Create a torso given a definition. No reference to the definition
 	 * is retained.  Body will be static unless mass is nonzero.
 	 * <BR><em>Warning</em>: This function is locked during callbacks.
 	 */
@@ -231,7 +231,7 @@ public class World implements Externalizable {
 	}
 
 	/**
-	 * Destroy a rigid body given a definition. No reference to the definition
+	 * Destroy a rigid torso given a definition. No reference to the definition
 	 * is retained. This function is locked during callbacks.
 	 * <BR><em>Warning</em>: This automatically deletes all associated shapes and joints.
 	 * <BR><em>Warning</em>: This function is locked during callbacks.
@@ -258,7 +258,7 @@ public class World implements Externalizable {
 			Shape.destroy(s0);
 		}
 
-		// Remove world body list.
+		// Remove world torso list.
 		if (b.m_prev != null) {
 			b.m_prev.m_next = b.m_next;
 		}
@@ -311,7 +311,7 @@ public class World implements Externalizable {
 
 		// If the joint prevents collisions, then reset collision filtering
 		if (!def.collideConnected) {
-			// Reset the proxies on the body with the minimum number of shapes.
+			// Reset the proxies on the torso with the minimum number of shapes.
 			final Body b = def.body1.m_shapeCount < def.body2.m_shapeCount ? def.body1
 			                                                               : def.body2;
 			for (Shape s = b.m_shapeList; s != null; s = s.m_next) {
@@ -351,7 +351,7 @@ public class World implements Externalizable {
 		body1.wakeUp();
 		body2.wakeUp();
 
-		// Remove from body 1
+		// Remove from torso 1
 		if (j.m_node1.prev != null) {
 			j.m_node1.prev.next = j.m_node1.next;
 		}
@@ -367,7 +367,7 @@ public class World implements Externalizable {
 		j.m_node1.prev = null;
 		j.m_node1.next = null;
 
-		// Remove from body 2
+		// Remove from torso 2
 		if (j.m_node2.prev != null) {
 			j.m_node2.prev.next = j.m_node2.next;
 		}
@@ -390,7 +390,7 @@ public class World implements Externalizable {
 
 		// If the joint prevents collisions, then reset collision filtering.
 		if (!collideConnected) {
-			// Reset the proxies on the body with the minimum number of shapes.
+			// Reset the proxies on the torso with the minimum number of shapes.
 			final Body b = body1.m_shapeCount < body2.m_shapeCount ? body1 : body2;
 			for (Shape s = b.m_shapeList; s != null; s = s.m_next) {
 				s.refilterProxy(m_broadPhase, b.getMemberXForm());
@@ -500,11 +500,11 @@ public class World implements Externalizable {
 
 			// Perform a depth first search (DFS) on the constraint graph.
 			while (stackCount > 0) {
-				// Grab the next body off the stack and add it to the island.
+				// Grab the next torso off the stack and add it to the island.
 				final Body b = stack[--stackCount];
 				island.add(b);
 
-				// Make sure the body is awake.
+				// Make sure the torso is awake.
 				b.m_flags &= ~Body.e_sleepFlag;
 
 				// To keep islands as small as possible, we don't
@@ -513,7 +513,7 @@ public class World implements Externalizable {
 					continue;
 				}
 
-				// Search all contacts connected to this body.
+				// Search all contacts connected to this torso.
 				for ( ContactEdge cn = b.m_contactList; cn != null; cn = cn.next) {
 					// Has this contact already been added to an island?
 					if ( (cn.contact.m_flags & (Contact.e_islandFlag | Contact.e_nonSolidFlag)) > 0) {
@@ -527,7 +527,7 @@ public class World implements Externalizable {
 					island.add(cn.contact);
 					cn.contact.m_flags |= Contact.e_islandFlag;
 
-					// Was the other body already added to this island?
+					// Was the other torso already added to this island?
 					final Body other = cn.other;
 					if ((other.m_flags & Body.e_islandFlag) > 0) {
 						continue;
@@ -538,7 +538,7 @@ public class World implements Externalizable {
 					other.m_flags |= Body.e_islandFlag;
 				}
 
-				// Search all joints connect to this body.
+				// Search all joints connect to this torso.
 				for ( JointEdge jn = b.m_jointList; jn != null; jn = jn.next) {
 					if (jn.joint.m_islandFlag) {
 						continue;
@@ -603,7 +603,7 @@ public class World implements Externalizable {
 		toiIsland.clear();
 		//Simple one pass queue
 		//Relies on the fact that we're only making one pass
-		//through and each body can only be pushed/popped once.
+		//through and each torso can only be pushed/popped once.
 		//To push:
 		//  queue[queueStart+queueSize++] = newElement
 		//To pop:
@@ -722,13 +722,13 @@ public class World implements Externalizable {
 
 			// Perform a breadth first search (BFS) on the contact/joint graph.
 			while (queueSize > 0) {
-				// Grab the head body off the queue and add it to the toiIsland.
+				// Grab the head torso off the queue and add it to the toiIsland.
 				final Body b = queue[queueStart++];
 				--queueSize;
 
 				toiIsland.add(b);
 
-				// Make sure the body is awake.
+				// Make sure the torso is awake.
 				b.m_flags &= ~Body.e_sleepFlag;
 
 				// To keep toiIslands as small as possible, we don't
@@ -737,7 +737,7 @@ public class World implements Externalizable {
 					continue;
 				}
 
-				// Search all contacts connected to this body.
+				// Search all contacts connected to this torso.
 				for (ContactEdge cn = b.m_contactList; cn != null; cn = cn.next) {
 					// Does the TOI toiIsland still have space for contacts?
 					if (toiIsland.m_contactCount == toiIsland.m_contactCapacity) {
@@ -756,10 +756,10 @@ public class World implements Externalizable {
 
 					toiIsland.add(cn.contact);
 					cn.contact.m_flags |= Contact.e_islandFlag;
-					// Update other body.
+					// Update other torso.
 					final Body other = cn.other;
 
-					// Was the other body already added to this toiIsland?
+					// Was the other torso already added to this toiIsland?
 					if ((other.m_flags & Body.e_islandFlag) != 0) {
 						continue;
 					}
@@ -776,7 +776,7 @@ public class World implements Externalizable {
 					other.m_flags |= Body.e_islandFlag;
 				}
 
-				// Search all joints connect to this body.
+				// Search all joints connect to this torso.
 				for ( JointEdge jn = b.m_jointList; jn != null; jn = jn.next) {
 					if (toiIsland.m_jointCount == toiIsland.m_jointCapacity) {
 						continue;
@@ -831,7 +831,7 @@ public class World implements Externalizable {
 				// including contacts that are
 				final boolean inRange = b.synchronizeShapes();
 
-				// Invalidate all contact TOIs associated with this body. Some of these
+				// Invalidate all contact TOIs associated with this torso. Some of these
 				// may not be in the toiIsland because they were not touching.
 				for (ContactEdge cn = b.m_contactList; cn != null; cn = cn.next) {
 					cn.contact.m_flags &= ~Contact.e_toiFlag;
