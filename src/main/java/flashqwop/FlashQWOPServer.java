@@ -266,8 +266,9 @@ public class FlashQWOPServer {
 
                         if (reader.peek().toString().equals("BEGIN_OBJECT")) {
                             try {
-                                currentState = gson.fromJson(reader, State.class);
-
+                                State st = gson.fromJson(reader, State.class);
+                                st.triggerFlashToJavaAngleAdjustment();
+                                currentState = st;
                                 if (currentState.getTimestep() == 0) {
                                     System.out.println("restart");
                                 }

@@ -318,5 +318,22 @@ public class State implements Serializable {
     public int getTimestep() {
         return timestep;
     }
+
+    /**
+     * Used for adjusting angles measured according to the Flash QWOP standard to the GameUnified standard. Only call
+     * this if you know what you're doing.
+     */
+    public void triggerFlashToJavaAngleAdjustment() {
+        torso.doAngleAdjustment(GameConstants.torsoAngAdj);
+        head.doAngleAdjustment(GameConstants.headAngAdj);
+        rthigh.doAngleAdjustment(GameConstants.rThighAngAdj);
+        lthigh.doAngleAdjustment(GameConstants.lThighAngAdj);
+        rcalf.doAngleAdjustment(GameConstants.rCalfAngAdj);
+        lcalf.doAngleAdjustment(GameConstants.lCalfAngAdj);
+        ruarm.doAngleAdjustment(GameConstants.rUArmAngAdj);
+        luarm.doAngleAdjustment(GameConstants.lUArmAngAdj);
+        rlarm.doAngleAdjustment(GameConstants.rLArmAngAdj);
+        llarm.doAngleAdjustment(GameConstants.lLArmAngAdj);
+    }
 }
 

@@ -27,7 +27,7 @@ public class StateVariable implements Serializable {
     /**
      * Counterclockwise angle of the torso.
      */
-    private final float th;
+    private float th;
 
     /**
      * Horizontal velocity of the torso.
@@ -132,5 +132,13 @@ public class StateVariable implements Serializable {
      */
     public float getDth() {
         return dth;
+    }
+
+    /**
+     * The QWOP flash game uses different reference angles than I do. It's now allowed to adjust the angle.
+     * @param angleAdjustment Radians to be added to the current angle.
+     */
+    void doAngleAdjustment(float angleAdjustment) {
+        th += angleAdjustment;
     }
 }
