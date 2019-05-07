@@ -11,7 +11,7 @@ import actions.Action;
 import data.SavableActionSequence;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import org.apache.commons.lang3.ArrayUtils;
 
 import data.SavableFileIO;
@@ -65,7 +65,7 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
         Arrays.sort(Objects.requireNonNull(actionFiles));
         ArrayUtils.reverse(actionFiles);
 
-        IGame game = new GameUnified();
+        IGameInternal game = new GameUnified();
 
         for (File f : actionFiles) {
             if (f.getName().contains("SavableActionSequence") && f.getName().contains("6_08")) {

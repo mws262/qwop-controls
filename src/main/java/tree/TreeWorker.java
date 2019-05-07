@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.LongAdder;
 import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import samplers.ISampler;
 import samplers.Sampler_Random;
@@ -64,7 +64,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * The current game instance that this FSM is using. This will now not change.
      */
-    private final IGame game = new GameUnified();
+    private final IGameInternal game = new GameUnified();
 
     /**
      * Strategy for sampling new nodes. Defaults to random sampling.
@@ -354,7 +354,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case EVALUATE_GAME:
                     saver.reportGameEnding(currentGameNode);
-                    long gameTs = game.getTimestepsSimulatedThisGame();
+                    long gameTs = game.getTimestepsThisGame();
                     addToTotalTimesteps(gameTs);
 
                     workerGamesPlayed.increment();

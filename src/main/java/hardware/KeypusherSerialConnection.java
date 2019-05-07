@@ -1,20 +1,21 @@
 package hardware;
 
 import com.fazecast.jSerialComm.SerialPort;
+import game.IGameCommandTarget;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Objects;
 
-public class ArduinoSerial {
+/**
+ * Handles the serial communication to the microcontroller that manages the key-pusher. Usually this will be the
+ * Arduino Due.
+ *
+ * @author matt
+ */
+public class KeypusherSerialConnection implements IGameCommandTarget {
 
-    volatile boolean q = false;
-    volatile boolean w = false;
-    volatile boolean o = false;
-    volatile boolean p = false;
-
-    OutputStream out;
-    public ArduinoSerial() throws IOException {
+    private OutputStream out;
+    public KeypusherSerialConnection() {
         // Get the correct serial port.
         SerialPort arduinoPort = null;
         SerialPort[] serialPorts = SerialPort.getCommPorts();
@@ -29,12 +30,14 @@ public class ArduinoSerial {
                 }
             }
         }
-        Objects.requireNonNull(arduinoPort);
+        if (arduinoPort == null) {
+            throw new NullPointerException("Unable to find or open the serial port to the hardware key-pusher.");
+        }
 
         arduinoPort.openPort();
         arduinoPort.setBaudRate(5000000);
         out = arduinoPort.getOutputStream();
-        doCommand(false, false, false, false);
+        command(false, false, false, false);
         try {
             Thread.sleep(10);
         } catch (InterruptedException e) {
@@ -42,7 +45,14 @@ public class ArduinoSerial {
         }
     }
 
-    public void doCommand(boolean q, boolean w, boolean o, boolean p) throws IOException {
+    @Override
+    public void command(boolean[] command) {
+        command(command[0], command[1], command[2], command[3]);
+    }
+
+    @Override
+    public void command(boolean q, boolean w, boolean o, boolean p){
+        // These numbers are due to the mapping of 0-8 digits to ASCII codes or something like that.
         int keyCodeOut = 48;
         if (q) {
             if (o) {
@@ -66,57 +76,11 @@ public class ArduinoSerial {
         } else if (p) {
             keyCodeOut = 52;
         }
-        out.write(keyCodeOut);
-        out.flush();
+        try {
+            out.write(keyCodeOut);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-//
-//    private class Listener implements KeyListener {
-//
-//
-//        @Override
-//        public void keyTyped(KeyEvent e) {
-//
-//        }
-//
-//        @Override
-//        public void keyPressed(KeyEvent e) {
-//            switch (e.getKeyCode()) {
-//                case KeyEvent.VK_Q:
-//                    q = true;
-//                    System.out.println("q");
-//                    break;
-//                case KeyEvent.VK_W:
-//                    w = true;
-//                    break;
-//                case KeyEvent.VK_O:
-//                    o = true;
-//                    break;
-//                case KeyEvent.VK_P:
-//                    p = true;
-//                    break;
-//            }
-//        }
-//
-//        @Override
-//        public void keyReleased(KeyEvent e) {
-//            switch (e.getKeyCode()) {
-//                case KeyEvent.VK_Q:
-//                    q = false;
-//                    break;
-//                case KeyEvent.VK_W:
-//                    w = false;
-//                    break;
-//                case KeyEvent.VK_O:
-//                    o = false;
-//                    break;
-//                case KeyEvent.VK_P:
-//                    p = false;
-//                    break;
-//            }
-//        }
-//    }
-//
-//    public static void main(String[] args) throws InterruptedException, IOException {
-//        new MAIN_ArduinoSerialTest();
-//    }
 }

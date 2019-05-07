@@ -1,6 +1,5 @@
 package goals.data_visualization;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -17,7 +16,7 @@ import javax.swing.JPanel;
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_NearestNeighborApprox.RunHolder;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import tree.Node;
 import ui.PanelRunner;
 
@@ -31,7 +30,7 @@ import ui.PanelRunner;
 
 public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
-    private IGame game = new GameUnified();
+    private IGameInternal game = new GameUnified();
 
     private Controller_NearestNeighborApprox justForLoading;
 

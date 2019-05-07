@@ -5,7 +5,7 @@ import java.awt.Graphics;
 import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import tree.Node;
 
 public class PanelRunner_Animated extends PanelRunner implements Runnable {
@@ -18,7 +18,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     /**
      * This panel's copy of the game it uses to run games for visualization.
      */
-    protected IGame game;
+    protected IGameInternal game;
 
     /**
      * Stores the QWOP actions we're going to execute.

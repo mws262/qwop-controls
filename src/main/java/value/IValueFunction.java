@@ -1,7 +1,7 @@
 package value;
 
 import actions.Action;
-import game.IGame;
+import game.IGameInternal;
 import tree.INode;
 import tree.Node;
 
@@ -21,7 +21,7 @@ public interface IValueFunction {
      * @param currentNode
      * @return
      */
-    Action getMaximizingAction(Node currentNode, IGame game);
+    Action getMaximizingAction(Node currentNode, IGameInternal game);
 
     /**
      * Calculate the value of having gotten to the provided Node.

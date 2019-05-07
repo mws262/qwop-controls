@@ -3,7 +3,7 @@ package value;
 import actions.Action;
 import actions.ActionSet;
 import distributions.Distribution_Equal;
-import game.IGame;
+import game.IGameInternal;
 import tree.INode;
 import tree.Node;
 
@@ -107,7 +107,7 @@ public class ValueFunction_TensorFlow_ActionIn extends ValueFunction_TensorFlow 
     }
 
     @Override
-    public Action getMaximizingAction(Node currentNode, IGame game) {
+    public Action getMaximizingAction(Node currentNode, IGameInternal game) {
         return getMaximizingAction(currentNode);
     }
 

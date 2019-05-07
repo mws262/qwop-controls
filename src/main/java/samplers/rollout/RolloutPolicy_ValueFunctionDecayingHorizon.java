@@ -1,7 +1,7 @@
 package samplers.rollout;
 
 import actions.Action;
-import game.IGame;
+import game.IGameInternal;
 import tree.Node;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -23,7 +23,7 @@ public class RolloutPolicy_ValueFunctionDecayingHorizon extends RolloutPolicy {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public float rollout(Node startNode, IGame game) {
+    public float rollout(Node startNode, IGameInternal game) {
         int timestepCounter = 0;
         Node rolloutNode = startNode;
         float accumulatedValue = 0f;

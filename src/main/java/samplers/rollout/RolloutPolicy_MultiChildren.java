@@ -1,7 +1,7 @@
 package samplers.rollout;
 
 import evaluators.IEvaluationFunction;
-import game.IGame;
+import game.IGameInternal;
 import tree.Node;
 
 /**
@@ -27,7 +27,7 @@ public class RolloutPolicy_MultiChildren extends RolloutPolicy {
     }
 
     @Override
-    public float rollout(Node startNode, IGame game) {
+    public float rollout(Node startNode, IGameInternal game) {
         // See how we should advance through untried actions. If the number of unchecked actions is less than the
         // number of rollouts allowed, we run all of them. Otherwise, we try to evenly-space them.
         float advancement = 1f;
