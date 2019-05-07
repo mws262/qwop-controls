@@ -1,9 +1,6 @@
 package flashqwop;
-import game.GameConstants;
-import game.State;
-import game.StateVariable;
+import game.*;
 import org.json.JSONObject;
-import tree.Utility;
 import ui.PanelRunner_SimpleState;
 
 import javax.swing.*;
@@ -18,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Server for communicating with the hacked Flash QWOP game. This server can send out commands to press any
  * combination of Q, W, O, and P keys as well as a command to reset the game. The server will receive 72-dim state
- * info from the game at every timestep (x, y, theta & velocities for 12 links). {@link QWOPStateListener} may add
+ * info from the game at every timestep (x, y, theta & velocities for 12 links). {@link IFlashStateListener} may add
  * themselves to receive immediate updates as new state information comes in.
  *
  * The protocol for startup:
@@ -32,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author matt
  */
-public class FlashQWOPServer {
+public class FlashQWOPServer implements IGameExternal {
 
     /**
      * Writer which streams to the socket output. The Flash game should be listening to whatever this sends
@@ -43,8 +40,6 @@ public class FlashQWOPServer {
      * Receives state info from the Flash QWOP game on its own thread.
      */
     private DataReceiver dataInput;
-
-//    private boolean[] mostRecentCommand = ew
 
     /**
      * Open a socket for communicating back and forth with the real QWOP game.
@@ -80,9 +75,10 @@ public class FlashQWOPServer {
      * counting needs to be done elsewhere.
      * @param command 4 element Q, W, O, P command, with trues corresponding to pressed keys.
      */
-    public void sendCommand(boolean[] command) {
+    @Override
+    public void command(boolean[] command) {
         assert command.length == 4;
-        sendCommand(command[0], command[1], command[2], command[3]);
+        command(command[0], command[1], command[2], command[3]);
     }
 
     /**
@@ -93,7 +89,8 @@ public class FlashQWOPServer {
      * @param o Whether the o key is pressed.
      * @param p Whether the p key is pressed.
      */
-    public void sendCommand(boolean q, boolean w, boolean o, boolean p) {
+    @Override
+    public void command(boolean q, boolean w, boolean o, boolean p) {
         String commandString =
                 (q ? "1" : "0") +
                         (w ? "1" : "0") +
@@ -118,19 +115,24 @@ public class FlashQWOPServer {
         dataOutput.println(commandString);
         dataOutput.flush();
     }
+
+    /**
+     * Just for minor testing/playing around to make sure the connections work properly.
+     * @param args
+     */
     public static void main(String[] args) {
         try {
             FlashQWOPServer server = new FlashQWOPServer(2900);
 
             // Waits for the EXIT command
             while (true) {
-                server.sendCommand(new boolean[]{true, false, false, true});
+                server.command(new boolean[]{true, false, false, true});
                 Thread.sleep(1000);
-                server.sendCommand(new boolean[]{false, true, true, false});
+                server.command(new boolean[]{false, true, true, false});
                 Thread.sleep(1000);
                 server.sendResetSignal();
                 Thread.sleep(1000);
-                server.sendCommand(new boolean[]{false, false, false, false});
+                server.command(new boolean[]{false, false, false, false});
                 Thread.sleep(1000);
             }
         } catch (Exception e) {
@@ -140,19 +142,20 @@ public class FlashQWOPServer {
 
     /**
      * Get the most-recently-received State from the Flash game. This is useful for one-off scenarios, but regular
-     * consumers should add themselves as {@link QWOPStateListener} for immediate updates.
+     * consumers should add themselves as {@link IFlashStateListener} for immediate updates.
      * @return
      */
     public State getCurrentState() {
         return dataInput.getCurrentState();
     }
 
-    /**
-     * Get the most recent timestep number received from real QWOP. The first will be zero, and will be before
-     * any physics stepping has occurred.
-     * @return Most recent timestep received from the game.
-     */
-    public int getCurrentTimestep() {
+    @Override
+    public boolean getFailureStatus() {
+        return dataInput.getFailureStatus();
+    }
+
+    @Override
+    public long getTimestepsThisGame() {
         return dataInput.getCurrentTimestep();
     }
 
@@ -160,7 +163,7 @@ public class FlashQWOPServer {
      * Any listeners will receive the updated state when it comes in from the real QWOP game.
      * @param listener A listener for the real QWOP state.
      */
-    public void addStateListener(QWOPStateListener listener) {
+    public void addStateListener(IFlashStateListener listener) {
         dataInput.addStateListener(listener);
     }
 
@@ -189,7 +192,7 @@ public class FlashQWOPServer {
         /**
          * List of listeners who will receive state updates as they come in.
          */
-        private List<QWOPStateListener> listenerList = new ArrayList<>();
+        private List<IFlashStateListener> listenerList = new ArrayList<>();
 
         /**
          * DataReceiver can draw the states coming in for debugging purposes. In general use, some listener should
@@ -233,7 +236,7 @@ public class FlashQWOPServer {
                                     panelRunner.updateState(st);
                                 }
                                 // Send the update to any listeners.
-                                for (QWOPStateListener listener : listenerList) {
+                                for (IFlashStateListener listener : listenerList) {
                                     listener.stateReceived(getCurrentTimestep(), st);
                                 }
                                 // System.out.println(stateFromFlash.toString(2));
@@ -360,7 +363,7 @@ public class FlashQWOPServer {
          * Any listeners will receive the updated state when it comes in from the real QWOP game.
          * @param listener A listener for the real QWOP state.
          */
-        public void addStateListener(QWOPStateListener listener) {
+        public void addStateListener(IFlashStateListener listener) {
             listenerList.add(listener);
         }
     }

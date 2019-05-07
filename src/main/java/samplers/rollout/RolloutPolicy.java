@@ -3,7 +3,7 @@ package samplers.rollout;
 import actions.Action;
 import actions.ActionQueue;
 import evaluators.IEvaluationFunction;
-import game.IGame;
+import game.IGameInternal;
 import tree.Node;
 
 /**
@@ -28,14 +28,14 @@ public abstract class RolloutPolicy {
      * @param game Instance of the game to use. Must already be at the state of startNode.
      * @return The reward associated with how good this rollout was.
      */
-    public abstract float rollout(Node startNode, IGame game);
+    public abstract float rollout(Node startNode, IGameInternal game);
 
     /**
      * Run the simulation to get back to a specified node.
      * @param targetNode Node we want to simulate to.
      * @param game Game used for simulation. Will be reset before simulating.
      */
-    void simGameToNode(Node targetNode, IGame game) {
+    void simGameToNode(Node targetNode, IGameInternal game) {
         // Reset the game and action queue.
         game.makeNewWorld();
         actionQueue.clearAll();
@@ -52,7 +52,7 @@ public abstract class RolloutPolicy {
      * @param target Node to set the game's state to.
      * @param game Game used for simulation. Will be reset before setting the state.
      */
-    void coldStartGameToNode(Node target, IGame game) {
+    void coldStartGameToNode(Node target, IGameInternal game) {
         // Reset the game.
         game.makeNewWorld();
 //        actionQueue.clearAll();
@@ -67,7 +67,7 @@ public abstract class RolloutPolicy {
      *                     then there is no limit.
      * @return The Node we arrive at at failure.
      */
-    Node randomRollout(Node startNode, IGame game, int maxTimesteps) {
+    Node randomRollout(Node startNode, IGameInternal game, int maxTimesteps) {
         int timestepCounter = 0;
         Node rolloutNode = startNode;
         while (!rolloutNode.isFailed() && timestepCounter < maxTimesteps) {
@@ -85,7 +85,7 @@ public abstract class RolloutPolicy {
         return rolloutNode;
     }
 
-    Node randomRollout(Node startNode, IGame game) {
+    Node randomRollout(Node startNode, IGameInternal game) {
         return randomRollout(startNode, game, Integer.MAX_VALUE);
     }
 

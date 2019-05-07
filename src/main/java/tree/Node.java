@@ -20,7 +20,7 @@ import com.jogamp.opengl.GL2;
 
 import data.SavableSingleGame;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 
 /**
@@ -931,7 +931,7 @@ public class Node implements INode {
     /**
      * Add nodes based on saved action sequences. Has to re-simulate each to get the states.
      */
-    public static void makeNodesFromActionSequences(List<Action[]> actions, Node root, IGame game) {
+    public static void makeNodesFromActionSequences(List<Action[]> actions, Node root, IGameInternal game) {
 
         ActionQueue actQueue = new ActionQueue();
         //root.setState(GameThreadSafe.getInitialState());

@@ -4,7 +4,7 @@ import actions.Action;
 import actions.ActionQueue;
 import actions.perturbers.ActionPerturber_SwitchTooSoon;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import ui.PanelRunner_MultiState;
 
 import javax.swing.*;
@@ -34,8 +34,8 @@ public class MAIN_PerturbationSimple extends JFrame {
         ActionPerturber_SwitchTooSoon perturber = new ActionPerturber_SwitchTooSoon(perturbationLocations);
         ActionQueue actionQueuePerturbed = perturber.perturb(actionQueue);
 
-        IGame gameUnperturbed = new GameUnified();
-        IGame gamePerturbed = new GameUnified();
+        IGameInternal gameUnperturbed = new GameUnified();
+        IGameInternal gamePerturbed = new GameUnified();
 
         boolean reachedFirstPerturbation = false;
         while (!actionQueue.isEmpty()) {

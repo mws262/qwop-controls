@@ -1,7 +1,7 @@
 package ui;
 
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import tree.Node;
 
@@ -17,7 +17,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     /**
      * Access to the game for the sake of the drawing methods.
      */
-    private IGame game = new GameUnified();
+    private IGameInternal game = new GameUnified();
 
     /**
      * Main state to draw. It will provide the x-reference position.

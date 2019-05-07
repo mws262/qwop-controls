@@ -6,7 +6,7 @@ import java.awt.Graphics2D;
 import java.util.Queue;
 
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import tree.Node;
 
@@ -20,7 +20,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     /**
      * This panel's copy of the game it uses to run games for visualization.
      */
-    protected IGame game;
+    protected IGameInternal game;
 
     /**
      * States to animate through.

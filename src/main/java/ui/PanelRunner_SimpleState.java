@@ -5,7 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import tree.Node;
 
@@ -19,7 +19,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     /**
      * Access to the game for the sake of the drawing methods.
      */
-    private IGame game = new GameUnified();
+    private IGameInternal game = new GameUnified();
 
     /**
      * Current state being displayed.

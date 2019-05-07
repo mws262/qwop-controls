@@ -5,7 +5,7 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import actions.Action;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import tree.Node;
 import ui.PanelRunner_MultiState;
@@ -75,10 +75,10 @@ public class MAIN_PerturbationImpulse extends JFrame {
         Action[] baseActions = gameList.get(0).actions;
 
         // Simulate the base actions.
-        IGame game = new GameUnified();
+        IGameInternal game = new GameUnified();
 
         // These are the runners which will be perturbed.
-        List<IGame> perturbedGames = new ArrayList<>();
+        List<GameUnified> perturbedGames = new ArrayList<>();
         for (int i = 0; i < numPerturbedRunners; i++) {
             perturbedGames.add(new GameUnified());
         }
@@ -91,13 +91,13 @@ public class MAIN_PerturbationImpulse extends JFrame {
             boolean[] command = actionQueue.pollCommand();
             game.step(command);
 
-            for (IGame perturbedGame : perturbedGames) {
+            for (IGameInternal perturbedGame : perturbedGames) {
                 perturbedGame.step(command);
             }
         }
 
         // Apply impulse disturbances.
-        Map<IGame, float[]> gameToDisturbanceDir = new HashMap<>();
+        Map<IGameInternal, float[]> gameToDisturbanceDir = new HashMap<>();
 
         for (int i = 0; i < numPerturbedRunners; i++) {
             float[] disturbance = new float[]{(float) Math.cos((double) i / (double) numPerturbedRunners * 2. *
@@ -117,7 +117,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
 
             // Step perturbed runners.
             for (int i = 0; i < perturbedGames.size(); i++) {
-                IGame thisGame = perturbedGames.get(i);
+                IGameInternal thisGame = perturbedGames.get(i);
                 thisGame.step(command);
                 if (count % drawInterval == 0)
                     panelRunner.addSecondaryState(perturbedGames.get(i).getCurrentState(), Node.getColorFromScaledValue(i

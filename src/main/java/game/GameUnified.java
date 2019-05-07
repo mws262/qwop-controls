@@ -19,7 +19,6 @@ import org.nustaq.serialization.FSTConfiguration;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.Random;
-import java.util.function.Function;
 
 import static game.GameConstants.*;
 
@@ -27,7 +26,7 @@ import static game.GameConstants.*;
  * @author matt
  */
 @SuppressWarnings("Duplicates")
-public class GameUnified implements IGame, Serializable {
+public class GameUnified implements IGameInternal, Serializable {
 
     /**
      * Keep track of sim stats since beginning of execution.
@@ -182,9 +181,10 @@ public class GameUnified implements IGame, Serializable {
      */
     private static FSTConfiguration fstConfiguration = FSTConfiguration.createDefaultConfiguration();
 
-    Random rand = new Random(); // tmp
-    public GameUnified() { makeNewWorld();
-    rand.setSeed(55555);
+    //private Random rand = new Random();
+    public GameUnified() {
+        makeNewWorld();
+        //rand.setSeed(55555);
     }
 
     /**
@@ -653,7 +653,7 @@ public class GameUnified implements IGame, Serializable {
     public void step(boolean q, boolean w, boolean o, boolean p) {
 //
 //
-//        if (getTimestepsSimulatedThisGame() % 10 == 0) {
+//        if (getTimestepsThisGame() % 10 == 0) {
 //            BodyDef blockBodyDef = new BodyDef();
 //            PolygonDef blockShapeDef = new PolygonDef();
 //            MassData blockMassData = new MassData();
@@ -870,6 +870,10 @@ public class GameUnified implements IGame, Serializable {
         return allBodies;
     }
 
+
+    // Avoid new allocations for what amounts to a temporary variable.
+    private final Vec2 setPos = new Vec2();
+    private final Vec2 setLinVel = new Vec2();
     /**
      * Set an individual body to a specified {@link StateVariable}. This sets both positions and velocities.
      *
@@ -877,12 +881,17 @@ public class GameUnified implements IGame, Serializable {
      * @param stateVariable Full state to assign to that body.
      */
     private void setBodyToStateVariable(Body body, StateVariable stateVariable) {
-        body.setXForm(new Vec2(stateVariable.getX(), stateVariable.getY()), stateVariable.getTh());
-        body.setLinearVelocity(new Vec2(stateVariable.getDx(), stateVariable.getDy()));
+        setPos.x = stateVariable.getX();
+        setPos.y = stateVariable.getY();
+        setLinVel.x = stateVariable.getDx();
+        setLinVel.y = stateVariable.getDy();
+        body.setXForm(setPos, stateVariable.getTh());
+        body.setLinearVelocity(setLinVel);
         body.setAngularVelocity(stateVariable.getDth());
     }
 
     public void setState(State state) {
+        isFailed = false;
         setBodyToStateVariable(rFootBody, state.rfoot);
         setBodyToStateVariable(lFootBody, state.lfoot);
 
@@ -912,7 +921,8 @@ public class GameUnified implements IGame, Serializable {
     /**
      * Get the number of timesteps simulated since the beginning of execution.
      **/
-    public long getTimestepsSimulatedThisGame() {
+    @Override
+    public long getTimestepsThisGame() {
         return timestepsSimulated;
     }
 
@@ -1054,6 +1064,16 @@ public class GameUnified implements IGame, Serializable {
         vertHolder.headLocAndRadius[2] = headR;
 
         return vertHolder;
+    }
+
+    @Override
+    public void command(boolean q, boolean w, boolean o, boolean p) {
+        step(q, w, o, p);
+    }
+
+    @Override
+    public void command(boolean[] commands) {
+        step(commands);
     }
 
     @SuppressWarnings("WeakerAccess")

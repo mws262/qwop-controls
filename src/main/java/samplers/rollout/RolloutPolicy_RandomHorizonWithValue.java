@@ -1,6 +1,6 @@
 package samplers.rollout;
 
-import game.IGame;
+import game.IGameInternal;
 import tree.Node;
 import value.IValueFunction;
 
@@ -14,7 +14,7 @@ public class RolloutPolicy_RandomHorizonWithValue extends RolloutPolicy_RandomDe
     }
 
     @Override
-    public float rollout(Node startNode, IGame game) {
+    public float rollout(Node startNode, IGameInternal game) {
         float rolloutScore = super.rollout(startNode, game);
         return (1 - valueFunctionWeight) * rolloutScore + valueFunctionWeight * valueFunction.evaluate(startNode);
     }

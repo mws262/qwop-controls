@@ -1,7 +1,7 @@
 package samplers;
 
 import actions.Action;
-import game.IGame;
+import game.IGameInternal;
 import tree.Node;
 import tree.Utility;
 
@@ -85,7 +85,7 @@ public class Sampler_Random implements ISampler {
     }
 
     @Override
-    public void rolloutPolicy(Node startNode, IGame game) {
+    public void rolloutPolicy(Node startNode, IGameInternal game) {
     }
 
     @Override

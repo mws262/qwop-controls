@@ -1,6 +1,6 @@
 package vision;
 
-import flashqwop.QWOPStateListener;
+import flashqwop.IFlashStateListener;
 import game.State;
 
 import java.io.File;
@@ -17,7 +17,7 @@ import java.util.Queue;
  *
  * @author matt
  */
-public class VisionDataSaver implements QWOPStateListener {
+public class VisionDataSaver implements IFlashStateListener {
 
     private Queue<File> capturesThisRun = new LinkedList<>();
     private Queue<State> statesThisRun = new LinkedList<>();

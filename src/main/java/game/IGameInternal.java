@@ -6,15 +6,12 @@ import java.awt.*;
  * All versions of the game should do these things. Primarily so that the single thread and multithreaded versions
  * can be swapped easily, but other implementations could be added with different game rules also.
  *
- * This extends {@link IGameCommandTarget}. A command target is required to receive keypress commands, but does not
- * need to implement the game itself. An implementation of {@link IGame} must do both.
- *
- * This also extends {@link IGameStateSource}. A state source must provide game states but is not required to take
- * inputs. A full {@link IGame} interface must implement both.
+ * An {@link IGameInternal} must be able to receive commands and provide states, but additionally, it must be able to
+ * be explicitly stepped forward in time, and its state must be externally changeable.
  *
  * @author matt
  */
-public interface IGame extends IGameCommandTarget, IGameStateSource{
+public interface IGameInternal extends IGameExternal{
 
     /** Reset the runner to its starting state. **/
     void makeNewWorld();

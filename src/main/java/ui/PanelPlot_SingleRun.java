@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.stream.IntStream;
 
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import org.jfree.chart.plot.XYPlot;
 
 import game.State;
@@ -33,7 +33,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     /**
      * Copy of the game used to obtain all the states along a single run by re-simulating it.
      */
-    private IGame game;
+    private IGameInternal game;
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
