@@ -186,14 +186,13 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        boolean running=true;
-        while(running){
+        while(true) {
             repaint();
         }
     }
 
 
-    public static void main(String[] args) throws AWTException {
+    public static void main(String[] args) {
         CaptureQWOPWindow.debugFrame = true;
         CaptureQWOPWindow locator = new CaptureQWOPWindow(0);
         try {
