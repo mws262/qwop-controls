@@ -6,9 +6,15 @@ import java.awt.*;
  * All versions of the game should do these things. Primarily so that the single thread and multithreaded versions
  * can be swapped easily, but other implementations could be added with different game rules also.
  *
+ * This extends {@link IGameCommandTarget}. A command target is required to receive keypress commands, but does not
+ * need to implement the game itself. An implementation of {@link IGame} must do both.
+ *
+ * This also extends {@link IGameStateSource}. A state source must provide game states but is not required to take
+ * inputs. A full {@link IGame} interface must implement both.
+ *
  * @author matt
  */
-public interface IGame {
+public interface IGame extends IGameCommandTarget, IGameStateSource{
 
     /** Reset the runner to its starting state. **/
     void makeNewWorld();
@@ -28,27 +34,7 @@ public interface IGame {
      */
     void step(boolean[] commands);
 
-    /**
-     * Get the runner's state.
-     *
-     * @return {@link State} of the runner at the current timestep.
-     */
-    State getCurrentState();
-
-
-    /**
-     * Get whether the game is considered to be in a failed state.
-     * @return Whether the game is failed (true is failed).
-     */
-    boolean getFailureStatus();
-
-    long getTimestepsSimulatedThisGame();
-
     void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels);
 
     void setState(State st);
-
-    void applyBodyImpulse(float v, float v1);
-
-    byte[] getFullState();
 }
