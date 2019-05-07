@@ -22,7 +22,7 @@ import java.util.Arrays;
  */
 public abstract class FlashGame implements QWOPStateListener {
 
-    FlashQWOPServer server;
+    private FlashQWOPServer server;
     private ActionQueue actionQueue = new ActionQueue();
 
     /**
@@ -201,5 +201,13 @@ public abstract class FlashGame implements QWOPStateListener {
         }
         return new State(svOut[0], svOut[1], svOut[2], svOut[3], svOut[4], svOut[5], svOut[6], svOut[7], svOut[8],
                 svOut[9], svOut[10], svOut[11], false);
+    }
+
+    /**
+     * Get the underlying interface which communicates with the Flash version of QWOP.
+     * @return
+     */
+    public FlashQWOPServer getServer() {
+        return server;
     }
 }
