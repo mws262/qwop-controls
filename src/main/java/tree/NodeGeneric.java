@@ -7,19 +7,19 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public class NodeGeneric<N extends NodeData<S,A>, S,A> {
+public class NodeGeneric<N extends NodeData> {
 
     private final N data;
 
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
      */
-    private final NodeGeneric<N,S,A> parent;
+    private final NodeGeneric<N> parent;
 
     /**
      * Child nodes. Not fixed size any more.
      */
-    private final List<NodeGeneric<N,S,A>> children = new CopyOnWriteArrayList<>();
+    private final List<NodeGeneric<N>> children = new CopyOnWriteArrayList<>();
 
     private final int treeDepth;
 
@@ -37,12 +37,19 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
         this.data = data;
         treeDepth = 0;
         parent = null;
+        data.initialize(this);
     }
 
-    public NodeGeneric(N data, NodeGeneric<N,S,A> parent) {
+    public NodeGeneric(N data, NodeGeneric<N> parent) {
         this.data = data;
         this.parent = parent;
         treeDepth = parent.treeDepth + 1;
+        data.initialize(this);
+    }
+
+    void addChild(NodeGeneric<N> child) {
+        assert !children.contains(child);
+        children.add(child);
     }
 
     public N getData() {
@@ -54,7 +61,7 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      *
      * @return Parent node of this node.
      */
-    public NodeGeneric<N,S,A> getParent() {
+    public NodeGeneric<N> getParent() {
         return parent;
     }
 
@@ -64,7 +71,7 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      * @return A copy of the list of children of this node. Removing the nodes from this array will not remove them
      * from this node's actual children, but the nodes in the array are the originals.
      */
-    public List<NodeGeneric<N,S,A>> getChildren() {
+    public List<NodeGeneric<N>> getChildren() {
         return children;
     }
 
@@ -73,7 +80,7 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      * Usually want to do something else.
      * @param node Child node to remove.
      */
-    public void removeFromChildren(NodeGeneric<N,S,A> node) {
+    public void removeFromChildren(NodeGeneric<N> node) {
         children.remove(node);
     }
 
@@ -119,7 +126,7 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      * @param childIndex Index of the child node to retrieve.
      * @return A child of this node, with the index as specified.
      */
-    public NodeGeneric<N,S,A> getChildByIndex(int childIndex) {
+    public NodeGeneric<N> getChildByIndex(int childIndex) {
         return children.get(childIndex);
     }
 
@@ -129,7 +136,7 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      * @return A random child node of this node.
      * @throws IndexOutOfBoundsException Has no children.
      */
-    public NodeGeneric<N,S,A> getRandomChild() {
+    public NodeGeneric<N> getRandomChild() {
         if (children.isEmpty())
             throw new IndexOutOfBoundsException("Tried to get a random child from a node with no children.");
         return children.get(Utility.randInt(0, children.size() - 1));
@@ -143,15 +150,14 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      *                                  be cleared.
      * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public Collection<NodeGeneric<N,S,A>> getNodesBelow(Collection<NodeGeneric<N,S,A>> nodeList) {
+    public Collection<NodeGeneric<N>> getNodesBelow(Collection<NodeGeneric<N>> nodeList) {
         nodeList.add(this);
 
-        for (NodeGeneric<N,S,A> child : children) {
+        for (NodeGeneric<N> child : children) {
             child.getNodesBelow(nodeList);
         }
         return nodeList;
     }
-
 
     /**
      * Get a list of all tree endpoints (leaves) below this node, i.e. on this branch. If called from a leaf, the
@@ -161,12 +167,12 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      *               cleared by this method.
      * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public Collection<NodeGeneric<N,S,A>> getLeaves(Collection<NodeGeneric<N,S,A>> leaves) {
+    public Collection<NodeGeneric<N>> getLeaves(Collection<NodeGeneric<N>> leaves) {
 
         if (children.isEmpty()) { // If leaf, add itself.
             leaves.add(this);
         } else { // Otherwise keep traversing down.
-            for (NodeGeneric<N,S,A> child : children) {
+            for (NodeGeneric<N> child : children) {
                 child.getLeaves(leaves);
             }
         }
@@ -186,8 +192,8 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      *
      * @return The tree root node.
      */
-    public NodeGeneric<N,S,A> getRoot() {
-        NodeGeneric<N,S,A> currentNode = this;
+    public NodeGeneric<N> getRoot() {
+        NodeGeneric<N> currentNode = this;
         while (currentNode.treeDepth > 0) {
             currentNode = currentNode.parent;
         }
@@ -201,7 +207,7 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      */
     public int countDescendants() {
         int count = 0;
-        for (NodeGeneric<N,S,A> current : children) {
+        for (NodeGeneric<N> current : children) {
             count++;
             count += current.countDescendants(); // Recurse down through the tree.
         }
@@ -215,12 +221,12 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      * @param possibleAncestorNode Node to check whether is an ancestor of this node.
      * @return Whether the provided node is an ancestor of this node (true/false).
      */
-    public boolean isOtherNodeAncestor(NodeGeneric<N,S,A> possibleAncestorNode) {
+    public boolean isOtherNodeAncestor(NodeGeneric<N> possibleAncestorNode) {
         if (possibleAncestorNode.treeDepth >= treeDepth) { // Don't need to check if this is as far down the
             // tree.
             return false;
         }
-        NodeGeneric<N,S,A> currNode = parent;
+        NodeGeneric<N> currNode = parent;
         while (currNode.treeDepth != possibleAncestorNode.treeDepth) { // Find the node at the same depth as the one
             // we're checking.
             currNode = currNode.parent;
@@ -229,44 +235,12 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
     }
 
 
-    public synchronized List<A> getSequence(List<A> list) {
-        list.clear();
-        recurseUpTreeInclusiveNoRoot(n->list.add(n.getAction()));
-        Collections.reverse(list);
-        return list;
-    }
-
-    /**
-     * Get the action object (most likely keypress + duration) that leads to this node from its parent.
-     *
-     * @return This node's action.
-     * @throws NullPointerException When called on a root node (tree depth of 0).
-     */
-    public A getAction() {
-        if (treeDepth == 0) // Root has no action
-            throw new NullPointerException("Root node does not have an action associated with it.");
-        return data.getAction();
-    }
-
-    /**
-     * Get the game state associated with this node. Represents the state achieved from the parent node's state after
-     * performing the action in this node.
-     *
-     * @return Game state at this node.
-     * @throws NullPointerException If state is unassigned.
-     */
-    public S getState() {
-        if (data.getState() == null)
-            throw new NullPointerException("Node state unassigned. Call isStateUnassigned first to check.");
-        return data.getState();
-    }
-
     /**
      * Try to de-reference everything on this branch so garbage collection throws out all the state values and other
      * info stored for this branch to keep memory in check.
      */
     public void destroyNodesBelow() {
-        for (NodeGeneric<N,S,A> child : children) {
+        for (NodeGeneric<N> child : children) {
             child.data.dispose();
             child.destroyNodesBelow();
         }
@@ -277,33 +251,32 @@ public class NodeGeneric<N extends NodeData<S,A>, S,A> {
      * Can pass a lambda to recurse down the tree. Will include the node called.
      * @param operation Lambda to run on all the nodes in the branch below and including the node called upon.
      */
-    public void recurseDownTreeInclusive(Consumer<NodeGeneric<N,S,A>> operation) {
+    public void recurseDownTreeInclusive(Consumer<NodeGeneric<N>> operation) {
         operation.accept(this);
-        for (NodeGeneric<N,S,A> child : children) {
+        for (NodeGeneric<N> child : children) {
             child.recurseDownTreeInclusive(operation);
         }
     }
 
-    public void recurseDownTreeExclusive(Consumer<NodeGeneric<N,S,A>> operation) {
-        for (NodeGeneric<N,S,A> child : children) {
+    public void recurseDownTreeExclusive(Consumer<NodeGeneric<N>> operation) {
+        for (NodeGeneric<N> child : children) {
             operation.accept(child);
             child.recurseDownTreeInclusive(operation);
         }
     }
 
-    public void recurseUpTreeInclusive(Consumer<NodeGeneric<N,S,A>> operation) {
+    public void recurseUpTreeInclusive(Consumer<NodeGeneric<N>> operation) {
         operation.accept(this);
         if (treeDepth > 0) {
             parent.recurseUpTreeInclusive(operation);
         }
     }
-    public void recurseUpTreeInclusiveNoRoot(Consumer<NodeGeneric<N,S,A>> operation) {
+    public void recurseUpTreeInclusiveNoRoot(Consumer<NodeGeneric<N>> operation) {
         operation.accept(this);
         if (treeDepth > 1) {
             parent.recurseUpTreeInclusive(operation);
         }
     }
-
 
     /*
      * LOCKING AND UNLOCKING NODES:
