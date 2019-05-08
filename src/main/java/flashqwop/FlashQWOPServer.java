@@ -180,7 +180,11 @@ public class FlashQWOPServer {
          */
         private AtomicInteger currentTimestep = new AtomicInteger();
 
+        /**
+         * Keep track of whether the game thinks it's failed.
+         */
         private AtomicBoolean fallen = new AtomicBoolean(false);
+
         /**
          * Most recent state received.
          */
@@ -222,7 +226,6 @@ public class FlashQWOPServer {
                     if (reader.ready()) {
                         String msg = reader.readLine().replace("\u0000", ""); // JSON parser hates the null character
                         // in front.
-                        //System.out.println(msg);
 
                         if (msg.contains("{")) {
                             JSONObject stateFromFlash = new JSONObject(msg);

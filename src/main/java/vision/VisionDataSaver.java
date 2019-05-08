@@ -180,7 +180,7 @@ public class VisionDataSaver implements QWOPStateListener {
                 + s.lfoot.getDx() + "\t" + s.lfoot.getDy() + "\t" + s.lfoot.getDth() + "\t"
                 + s.ruarm.getDx() + "\t" + s.ruarm.getDy() + "\t" + s.ruarm.getDth() + "\t"
                 + s.luarm.getDx() + "\t" + s.luarm.getDy() + "\t" + s.luarm.getDth() + "\t"
-                + s.rlarm.getDx()+ "\t" + s.rlarm.getDy() + "\t" + s.rlarm.getDth() + "\t"
+                + s.rlarm.getDx() + "\t" + s.rlarm.getDy() + "\t" + s.rlarm.getDth() + "\t"
                 + s.llarm.getDx() + "\t" + s.llarm.getDy() + "\t" + s.llarm.getDth() + "\t";
     }
 }
