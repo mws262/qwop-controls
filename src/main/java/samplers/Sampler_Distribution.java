@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import actions.Action;
 import game.IGame;
 import tree.Node;
+import tree.NodeQWOPExplorable;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * Purely sample according to the assigned distributions, no other heuristics.
@@ -20,15 +22,15 @@ public class Sampler_Distribution implements ISampler {
     }
 
     @Override
-    public Node treePolicy(Node startNode) {
+    public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
         /* Normal random sampling now, but using distribution to decide when to switch to expand policy. */
-        if (startNode.fullyExplored.get())
+        if (startNode.isFullyExplored())
             throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. " +
 					"Whoever called this is at fault.");
-        Node currentNode = startNode;
+        NodeQWOPExplorableBase<?> currentNode = startNode;
 
         while (true) {
-            if (currentNode.fullyExplored.get())
+            if (currentNode.isFullyExplored())
                 throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its " +
 						"fault.");
             if (currentNode.isLocked()) currentNode = currentNode.getRoot();
@@ -46,7 +48,7 @@ public class Sampler_Distribution implements ISampler {
 
             if (notFullyExploredChildren.isEmpty()) {
                 // Nothing possible
-                if (currentNode.uncheckedActions.isEmpty())
+                if (currentNode.getUntriedActionCount() == 0)
                     throw new RuntimeException("Sampler has nowhere to go from here and should have been marked fully" +
 							" explored before.");
 
@@ -61,8 +63,9 @@ public class Sampler_Distribution implements ISampler {
             }
 
             // Only old things to select between.
-            if (currentNode.uncheckedActions.isEmpty()) {
+            if (currentNode.getUntriedActionCount() == 0) {
                 Action chosen = currentNode.uncheckedActions.samplingDist.randOnDistribution(notFullyExploredActions);
+
                 for (int i = 0; i < notFullyExploredChildren.size(); i++) {
                     if (notFullyExploredActions.get(i).equals(chosen)) {
                         currentNode = notFullyExploredChildren.get(i);
@@ -90,40 +93,39 @@ public class Sampler_Distribution implements ISampler {
     }
 
     @Override
-    public Node expansionPolicy(Node startNode) {
+    public Action expansionPolicy(Node startNode) {
         if (startNode.uncheckedActions.size() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
-        Action childAction = startNode.uncheckedActions.sampleDistribution();
-        return startNode.addChild(childAction);
+        return startNode.uncheckedActions.sampleDistribution();
     }
 
     @Override
-    public void rolloutPolicy(Node startNode, IGame game) {}
+    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGame game) {}
 
     @Override
-    public boolean treePolicyGuard(Node currentNode) {
+    public boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return treePolicyDone; // True means ready to move on to the next.
     }
 
     @Override
-    public boolean expansionPolicyGuard(Node currentNode) {
+    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public boolean rolloutPolicyGuard(Node currentNode) {
+    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return true; // No rollout policy
     }
 
     @Override
-    public void treePolicyActionDone(Node currentNode) {
+    public void treePolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public void expansionPolicyActionDone(Node currentNode) {
+    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
         treePolicyDone = false;
         expansionPolicyDone = currentNode.getState().isFailed();
     }

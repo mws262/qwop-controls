@@ -14,14 +14,15 @@ public class TreeStage_SearchForever extends TreeStage {
     }
 
     @Override
-    public List<Node> getResults() {
-        List<Node> resultList = new ArrayList<>();
+    public List<NodeQWOPBase<?>> getResults() {
+        List<NodeQWOPBase<?>> resultList = new ArrayList<>();
         resultList.add(getRootNode()); // No particularly interesting results.
         return resultList;
     }
 
     @Override
     public boolean checkTerminationConditions() {
-        return getRootNode().fullyExplored.get(); // Only termination condition is a completely explored tree. Unlikely when the selection pool is good.
+        return getRootNode().isFullyExplored(); // Only termination condition is a completely explored tree. Unlikely when the
+        // selection pool is good.
     }
 }

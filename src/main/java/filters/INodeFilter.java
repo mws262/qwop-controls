@@ -1,6 +1,7 @@
 package filters;
 
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface INodeFilter {
      * @param node Node to apply filtering rules to.
      * @return Whether this node should be kept. True means keep. False means filter out.
      */
-    default boolean filter(Node node){ return true; }
+    default boolean filter(NodeQWOPExplorableBase<?> node){ return true; }
 
     /**
      * Decide which of these should be kept. Alters the list in place. Default is to call single node filter for all
@@ -25,7 +26,7 @@ public interface INodeFilter {
      *
      * @param nodes A list of nodes to filter. This list will be modified in place.
      */
-    default void filter(List<Node> nodes) {
+    default void filter(List<NodeQWOPExplorableBase<?>> nodes) {
         nodes.removeIf(n -> !filter(n));
     }
 }

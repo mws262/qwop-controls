@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import org.tensorflow.example.BytesList;
@@ -21,7 +20,7 @@ import com.google.protobuf.ByteString;
 import data.TFRecordWriter;
 import game.State;
 import actions.Action;
-import tree.Node;
+import tree.NodeQWOPBase;
 
 public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
@@ -64,7 +63,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      * @param endNode Not required. Null may be given.
      */
     @Override
-    public void reportGameEnding(Node endNode) {
+    public void reportGameEnding(NodeQWOPBase<?> endNode) {
         saveCounter++;
         gameData.add(new GameContainer(actionBuffer, stateBuffer));
 

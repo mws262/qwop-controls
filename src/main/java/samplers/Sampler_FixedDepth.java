@@ -4,8 +4,7 @@ import java.util.*;
 
 import actions.Action;
 import game.IGame;
-import tree.Node;
-import tree.Utility;
+import tree.NodeQWOPExplorableBase;
 
 public class Sampler_FixedDepth implements ISampler {
 
@@ -32,7 +31,7 @@ public class Sampler_FixedDepth implements ISampler {
      * Since we're only going to a certain depth, the whole "fullyExplored" thing doesn't really work
      * to tell us when to terminate. Here we track nodes we're done with.
      */
-    private Set<Node> finishedNodes = new HashSet<>(); // Note: each worker populates its own list. This is kind of
+    private Set<NodeQWOPExplorableBase<?>> finishedNodes = new HashSet<>(); // Note: each worker populates its own list. This is kind of
     // dumb, but I don't expect to use this sampler enough for it to be a big deal.
 
     public Sampler_FixedDepth(int horizonDepth) {
@@ -40,20 +39,20 @@ public class Sampler_FixedDepth implements ISampler {
     }
 
     @Override
-    public Node treePolicy(Node startNode) {
-        if (startNode.fullyExplored.get()) {
+    public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
+        if (startNode.isFullyExplored()) {
             throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. " +
                     "Whoever called this is at fault.");
         }
 
         startDepth = startNode.getTreeDepth();
         effectiveHorizonDepth = startDepth + horizonDepth;
-        Node currentNode = startNode;
+        NodeQWOPExplorableBase<?> currentNode = startNode;
 
         while (!finishedNodes.contains(startNode)) {
 
-            if (currentNode.fullyExplored.get() || finishedNodes.contains(currentNode)) {
-                if (currentNode.fullyExplored.get()) finishedNodes.add(currentNode);
+            if (currentNode.isFullyExplored() || finishedNodes.contains(currentNode)) {
+                if (currentNode.isFullyExplored()) finishedNodes.add(currentNode);
                 currentNode = startNode; // Just start over for now. I don't think it's a big enough problem to
                 // stress over.
                 continue;
@@ -68,18 +67,19 @@ public class Sampler_FixedDepth implements ISampler {
             }
 
             // Grab the first thing we can with an untried action.
-            if (!currentNode.uncheckedActions.isEmpty() && currentNode.reserveExpansionRights()) {
+            if (currentNode.getUntriedActionCount() != 0 && currentNode.reserveExpansionRights()) {
                 return currentNode;
             }
 
             // Otherwise, move down.
             boolean foundChild = false;
             // If the order of iteration is not randomized, once there are enough workers, they can manage to deadlock.
-            Node[] children = currentNode.getChildren();
-            Utility.shuffleArray(children);
+            // TODO put randomness back in.
+//            List<NodeQWOPExplorableBase<?>> children = currentNode.getChildren().get(0);
+//            Utility.shuffleArray(children);
 
-            for (Node child : children) {
-                if (!child.fullyExplored.get() && !finishedNodes.contains(child) && !child.isLocked()) {
+            for (NodeQWOPExplorableBase<?> child : currentNode.getChildren()) {
+                if (!child.isFullyExplored() && !finishedNodes.contains(child) && !child.isLocked()) {
                     currentNode = child;
                     foundChild = true;
                     break;
@@ -94,30 +94,28 @@ public class Sampler_FixedDepth implements ISampler {
     }
 
     @Override
-    public void treePolicyActionDone(Node currentNode) {
+    public void treePolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public boolean treePolicyGuard(Node currentNode) {
+    public boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return treePolicyDone; // True means ready to move on to the next.
     }
 
     @Override
-    public Node expansionPolicy(Node startNode) {
-        if (startNode.uncheckedActions.size() == 0)
+    public Action expansionPolicy(NodeQWOPExplorableBase<?> startNode) {
+        if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
-        Action childAction = startNode.uncheckedActions.getRandom();
-
-        return startNode.addChild(childAction);
+        return startNode.uncheckedActions.getRandom();
     }
 
     @Override
-    public void expansionPolicyActionDone(Node currentNode) {
+    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
         treePolicyDone = false;
-        if (currentNode.getTreeDepth() == effectiveHorizonDepth || currentNode.isFailed()) {
+        if (currentNode.getTreeDepth() == effectiveHorizonDepth || currentNode.getState().isFailed()) {
             expansionPolicyDone = true;
 
             finishedNodes.add(currentNode);
@@ -130,9 +128,9 @@ public class Sampler_FixedDepth implements ISampler {
     /**
      * Propagate the finished status back up the tree towards the start node.
      */
-    private void propagateFinishedNodes(Node currentNode) {
-        if (currentNode.uncheckedActions.isEmpty()) {
-            for (Node child : currentNode.getChildren()) {
+    private void propagateFinishedNodes(NodeQWOPExplorableBase<?> currentNode) {
+        if (currentNode.getUntriedActionCount() == 0) {
+            for (NodeQWOPExplorableBase<?> child : currentNode.getChildren()) {
                 if (child.getTreeDepth() == effectiveHorizonDepth) {
                     finishedNodes.add(child);
                 }
@@ -147,15 +145,15 @@ public class Sampler_FixedDepth implements ISampler {
     }
 
     @Override
-    public boolean expansionPolicyGuard(Node currentNode) {
+    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public void rolloutPolicy(Node startNode, IGame gameThreadSafe) {}
+    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGame gameThreadSafe) {}
 
     @Override
-    public boolean rolloutPolicyGuard(Node currentNode) {
+    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return true; // No rollout policy
     }
 

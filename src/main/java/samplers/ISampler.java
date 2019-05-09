@@ -1,7 +1,8 @@
 package samplers;
 
+import actions.Action;
 import game.IGame;
-import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * Defines a strategy for sampling nodes.
@@ -13,44 +14,44 @@ public interface ISampler {
     /**
      * Decide a path through the existing tree to a place where a new node will be added.
      **/
-    Node treePolicy(Node startNode);
+    NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode);
 
     /**
      * Lets the sampler know that the previously requested game moves have occurred and the tree FSM is ready to do
      * more stuff.
      **/
-    void treePolicyActionDone(Node currentNode);
+    void treePolicyActionDone(NodeQWOPExplorableBase<?> currentNode);
 
     /**
      * Are we ready to switch from tree policy to expansion policy?
      **/
-    boolean treePolicyGuard(Node currentNode);
+    boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode);
 
     /**
      * Strategy for adding a single node at a depth of 1 greater than the given startNode.
      **/
-    Node expansionPolicy(Node startNode);
+    Action expansionPolicy(NodeQWOPExplorableBase<?> startNode);
 
     /**
      * Lets the sampler know that the previously requested game moves have occurred and the tree FSM is ready to do
      * more stuff.
      **/
-    void expansionPolicyActionDone(Node currentNode);
+    void expansionPolicyActionDone(NodeQWOPExplorableBase<?> currentNode);
 
     /**
      * Are we ready to switch from expansion policy to rollout policy?
      **/
-    boolean expansionPolicyGuard(Node currentNode);
+    boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode);
 
     /**
      * Continued expansion which is NOT added to the tree as nodes. Only used for scoring as in UCB.
      **/
-    void rolloutPolicy(Node startNode, IGame game);
+    void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGame game);
 
     /**
      * Are we ready to switch from rollout policy to tree policy?
      **/
-    boolean rolloutPolicyGuard(Node currentNode);
+    boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode);
 
     /**
      * Copy this sampler and its settings. Each worker needs an individual copy.

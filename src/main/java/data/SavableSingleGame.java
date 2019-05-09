@@ -5,6 +5,7 @@ import java.io.Serializable;
 import game.State;
 import actions.Action;
 import tree.Node;
+import tree.NodeQWOPBase;
 
 /**
  * Structure to hold actions and states in individual QWOP runs for saving to file. This holds data sparsely, meaning
@@ -27,10 +28,10 @@ public class SavableSingleGame implements Serializable {
      *
      * @param terminalNode End node of the run to be saved. All states and actions up to this point will be saved.
      */
-    public SavableSingleGame(Node terminalNode) {
+    public SavableSingleGame(NodeQWOPBase<?> terminalNode) {
         states = new State[terminalNode.getTreeDepth()];
         actions = new Action[terminalNode.getTreeDepth()];
-        Node currentNode = terminalNode;
+        NodeQWOPBase<?> currentNode = terminalNode;
 
         while (currentNode.getTreeDepth() > 0) {
 

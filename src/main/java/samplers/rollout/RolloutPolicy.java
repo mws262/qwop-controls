@@ -5,6 +5,8 @@ import actions.ActionQueue;
 import evaluators.IEvaluationFunction;
 import game.IGame;
 import tree.Node;
+import tree.NodeQWOPBase;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * Sometimes, rollouts need to be a composite of many actions, some which may involve multiple simulations. This
@@ -28,14 +30,14 @@ public abstract class RolloutPolicy {
      * @param game Instance of the game to use. Must already be at the state of startNode.
      * @return The reward associated with how good this rollout was.
      */
-    public abstract float rollout(Node startNode, IGame game);
+    public abstract float rollout(NodeQWOPExplorableBase<?> startNode, IGame game);
 
     /**
      * Run the simulation to get back to a specified node.
      * @param targetNode Node we want to simulate to.
      * @param game Game used for simulation. Will be reset before simulating.
      */
-    void simGameToNode(Node targetNode, IGame game) {
+    void simGameToNode(NodeQWOPBase<?> targetNode, IGame game) {
         // Reset the game and action queue.
         game.makeNewWorld();
         actionQueue.clearAll();
@@ -52,7 +54,7 @@ public abstract class RolloutPolicy {
      * @param target Node to set the game's state to.
      * @param game Game used for simulation. Will be reset before setting the state.
      */
-    void coldStartGameToNode(Node target, IGame game) {
+    void coldStartGameToNode(NodeQWOPBase<?> target, IGame game) {
         // Reset the game.
         game.makeNewWorld();
 //        actionQueue.clearAll();
@@ -67,10 +69,10 @@ public abstract class RolloutPolicy {
      *                     then there is no limit.
      * @return The Node we arrive at at failure.
      */
-    Node randomRollout(Node startNode, IGame game, int maxTimesteps) {
+    NodeQWOPBase<?> randomRollout(NodeQWOPExplorableBase<?> startNode, IGame game, int maxTimesteps) {
         int timestepCounter = 0;
-        Node rolloutNode = startNode;
-        while (!rolloutNode.isFailed() && timestepCounter < maxTimesteps) {
+        NodeQWOPExplorableBase<?> rolloutNode = startNode;
+        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps) {
             Action childAction = rolloutNode.uncheckedActions.getRandom();
             rolloutNode = new Node(rolloutNode, childAction, false);
             actionQueue.addAction(childAction);
@@ -85,7 +87,7 @@ public abstract class RolloutPolicy {
         return rolloutNode;
     }
 
-    Node randomRollout(Node startNode, IGame game) {
+    NodeQWOPBase<?> randomRollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
         return randomRollout(startNode, game, Integer.MAX_VALUE);
     }
 

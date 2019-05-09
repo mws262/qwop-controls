@@ -9,6 +9,7 @@ import samplers.rollout.RolloutPolicy;
 import samplers.rollout.RolloutPolicy_RandomColdStart;
 import samplers.rollout.RolloutPolicy_SingleRandom;
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
 import tree.Utility;
 
 /**
@@ -90,7 +91,7 @@ public class Sampler_UCB implements ISampler {
     /**
      * Propagate the score and visit count back up the tree.
      */
-    private void propagateScore(Node failureNode, float score) {
+    private void propagateScore(NodeQWOPExplorableBase<?> failureNode, float score) {
         // Do evaluation and propagation of scores.
         failureNode.visitCount.incrementAndGet();
         failureNode.addToValue(score);
@@ -122,12 +123,12 @@ public class Sampler_UCB implements ISampler {
 
             if (failureNode.getChildCount() > 1) {
                 float mean = 0f;
-                for (Node child : failureNode.getChildren()) {
+                for (NodeQWOPExplorableBase<?> child : failureNode.getChildren()) {
                     mean += child.getValue() / child.visitCount.floatValue();
                 }
                 mean = mean / (float) failureNode.getChildCount();
                 float stdev = 0f;
-                for (Node child : failureNode.getChildren()) {
+                for (NodeQWOPExplorableBase<?> child : failureNode.getChildren()) {
                     stdev += (child.getValue() / child.visitCount.floatValue() - mean) * (child.getValue() / child.visitCount.floatValue() - mean);
                 }
                 stdev = (float) Math.sqrt(stdev / (float) failureNode.getChildCount());
@@ -148,19 +149,19 @@ public class Sampler_UCB implements ISampler {
     }
 
     @Override
-    public Node treePolicy(Node startNode) {
-        if (!startNode.uncheckedActions.isEmpty() && startNode.reserveExpansionRights()) { // We immediately expand
+    public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
+        if (startNode.getUntriedActionCount() != 0 && startNode.reserveExpansionRights()) { // We immediately expand
         	// if there's an untried action.
             return startNode;
         }
 
         double bestScoreSoFar = -Double.MAX_VALUE;
-        Node bestNodeSoFar = null;
+        NodeQWOPExplorableBase<?> bestNodeSoFar = null;
 
         // Otherwise, we go through the existing tree picking the "best."
-        for (Node child : startNode.getChildren()) {
+        for (NodeQWOPExplorableBase<?> child : startNode.getChildren()) {
 
-            if (!child.fullyExplored.get() && !child.isLocked()) {
+            if (!child.isFullyExplored() && !child.isLocked()) {
                 float val =
 						(float) (child.getValue() / child.visitCount.doubleValue() + c * (float) Math.sqrt(2. * Math.log(startNode.visitCount.doubleValue()) / child.visitCount.doubleValue()));
                 assert !Float.isNaN(val);
@@ -190,29 +191,28 @@ public class Sampler_UCB implements ISampler {
     }
 
     @Override
-    public void treePolicyActionDone(Node currentNode) {
+    public void treePolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public boolean treePolicyGuard(Node currentNode) {
+    public boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return treePolicyDone; // True means ready to move on to the next.
     }
 
     @Override
-    public Node expansionPolicy(Node startNode) {
-        if (startNode.uncheckedActions.size() == 0)
+    public Action expansionPolicy(NodeQWOPExplorableBase<?> startNode) {
+        if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
-        Action childAction = startNode.uncheckedActions.get(Utility.randInt(0, startNode.uncheckedActions.size() - 1));
-        return startNode.addChild(childAction);
+        return startNode.getUntriedActionByIndex(Utility.randInt(0, startNode.getUntriedActionCount() - 1));
     }
 
     @Override
-    public void expansionPolicyActionDone(Node currentNode) {
+    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
         treePolicyDone = false;
         expansionPolicyDone = true; // We move on after adding only one node.
-        if (currentNode.isFailed()) { // If expansion is to failed node, no need to do rollout.
+        if (currentNode.getState().isFailed()) { // If expansion is to failed node, no need to do rollout.
             rolloutPolicyDone = true;
             propagateScore(currentNode, evaluationFunction.getValue(currentNode));
         } else {
@@ -221,7 +221,7 @@ public class Sampler_UCB implements ISampler {
     }
 
     @Override
-    public boolean expansionPolicyGuard(Node currentNode) {
+    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return expansionPolicyDone;
     }
 
@@ -229,8 +229,8 @@ public class Sampler_UCB implements ISampler {
     //        "frozen_model.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
 
     @Override
-    public void rolloutPolicy(Node startNode, IGame game) {
-        if (startNode.isFailed())
+    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGame game) {
+        if (startNode.getState().isFailed())
             throw new IllegalStateException("Rollout policy received a starting node which corresponds to an already failed " +
                     "state.");
         float score = rolloutPolicy.rollout(startNode, game);
@@ -240,7 +240,7 @@ public class Sampler_UCB implements ISampler {
     }
 
     @Override
-    public boolean rolloutPolicyGuard(Node currentNode) {
+    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return rolloutPolicyDone;
     }
 

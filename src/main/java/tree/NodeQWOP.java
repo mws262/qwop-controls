@@ -3,33 +3,26 @@ package tree;
 import actions.Action;
 import game.State;
 
-public abstract class NodeQWOP<N extends NodeQWOP<N>> extends NodeGeneric<N> {
-
-    private final Action action;
-
-    private final State state;
+/**
+ * The usable form of {@link NodeQWOPBase}.
+ */
+public final class NodeQWOP extends NodeQWOPBase<NodeQWOP> {
 
     public NodeQWOP(State rootState) {
-        super();
-        action = null;
-        state = rootState;
+        super(rootState);
     }
 
-    public NodeQWOP(N parent, Action action, State state) {
-        super(parent);
-        this.action = action;
-        this.state = state;
-        // Check to make sure this node isn't already there in the parent's nodes.
-        for (N parentChildren : parent.getChildren()) {
-            if (parentChildren.getAction() == action) {
-                throw new IllegalArgumentException("Tried to add a duplicate action node at depth " + getTreeDepth() + ". Action " +
-                        "was: " + action.toString() + ".");
-            }
-        }
-        getParent().addChild(getThis()); // I think this, by definition MUST be of type N.
+    public NodeQWOP(NodeQWOP parent, Action action, State state) {
+        super(parent, action, state);
     }
 
-    public State getState() { return state; }
+    @Override
+    public NodeQWOP addChild(Action action, State state) {
+        return new NodeQWOP(this, action, state);
+    }
 
-    public Action getAction() { return action; }
+    @Override
+    protected NodeQWOP getThis() {
+        return this;
+    }
 }

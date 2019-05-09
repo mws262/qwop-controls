@@ -4,10 +4,8 @@ import actions.Action;
 import game.GameUnified;
 import game.IGame;
 import game.State;
-import game.StateVariable;
-import tree.INode;
-import tree.Node;
-import tree.NodePlaceholder;
+import tree.NodeQWOP;
+import tree.NodeQWOPBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,7 +39,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action getMaximizingAction(Node currentNode) {
+    public Action getMaximizingAction(NodeQWOPBase<?> currentNode) {
         State fullState = currentNode.getState();
         Objects.requireNonNull(fullState);
 
@@ -92,7 +90,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
 
-    private Callable<EvaluationResult> getCallable(byte[] gameStartingState, INode startingNode,
+    private Callable<EvaluationResult> getCallable(byte[] gameStartingState, NodeQWOPBase<?> startingNode,
                                                    Action.Keys keys, int minDuration, int maxDuration) {
         boolean[] buttons = Action.keysToBooleans(keys);
 
@@ -102,7 +100,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             for (int i = minDuration; i < maxDuration; i++) {
                 gameLocal.step(buttons);
                 State st = gameLocal.getCurrentState();
-                INode nextNode = new NodePlaceholder(startingNode, new Action(i, buttons), st);
+                NodeQWOPBase<?> nextNode = startingNode.addChild(new Action(i, buttons), st);
                 float val = evaluate(nextNode);
                 if (val > bestResult.value) {
                     bestResult.value = val;
@@ -115,7 +113,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @SuppressWarnings("Duplicates")
-    private Callable<EvaluationResult> getCallable(State gameStartingState, INode startingNode,
+    private Callable<EvaluationResult> getCallable(State gameStartingState, NodeQWOPBase<?> startingNode,
                                                    Action.Keys keys, int minDuration, int maxDuration) {
         boolean[] buttons = Action.keysToBooleans(keys);
 
@@ -138,7 +136,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 }
                 gameLocal.step(buttons);
                 State st = gameLocal.getCurrentState();
-                INode nextNode = new NodePlaceholder(startingNode, new Action(i, buttons), st);
+                NodeQWOPBase<?> nextNode = startingNode.addChild(new Action(i, buttons), st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);
@@ -176,7 +174,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     @SuppressWarnings("Duplicates")
     @Override
-    public Action getMaximizingAction(Node currentNode, IGame realGame) {
+    public Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGame realGame) {
 //        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
         State fullState = currentNode.getState();
         Objects.requireNonNull(fullState);
@@ -227,12 +225,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    float[] assembleInputFromNode(INode node) {
+    float[] assembleInputFromNode(NodeQWOPBase<?> node) {
         return stateStats.standardizeState(node.getState());
     }
 
     @Override
-    float[] assembleOutputFromNode(Node node) {
+    float[] assembleOutputFromNode(NodeQWOPBase<?> node) {
         return new float[]{node.getValue() / node.visitCount.floatValue()};
     }
 

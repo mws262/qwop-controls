@@ -14,7 +14,7 @@ import samplers.ISampler;
  * @author matt
  */
 public class TreeStage_MaxDepth extends TreeStage {
-    private List<Node> leafList = new LinkedList<>();
+    private List<NodeQWOPExplorableBase<?>> leafList = new LinkedList<>();
 
     /**
      * Max relative depth (i.e. specified relative to the given root node).
@@ -44,43 +44,33 @@ public class TreeStage_MaxDepth extends TreeStage {
     }
 
     @Override
-    public void initialize(List<TreeWorker> treeWorkers, Node stageRoot) {
+    public void initialize(List<TreeWorker> treeWorkers, NodeQWOPExplorableBase<?> stageRoot) {
         maxEffectiveDepth = maxDepth + stageRoot.getTreeDepth();
         gamesPlayedAtStageStart = TreeWorker.getTotalGamesPlayed();
         super.initialize(treeWorkers, stageRoot);
     }
 
     @Override
-    public List<Node> getResults() {
-        List<Node> resultList = new ArrayList<>();
+    public List<NodeQWOPBase<?>> getResults() {
+        List<NodeQWOPBase<?>> resultList = new ArrayList<>();
         leafList.clear();
         getRootNode().getLeaves(leafList);
 
-        if (getRootNode().fullyExplored.get() || (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames)
+        if (getRootNode().isFullyExplored() || (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames)
             return resultList; // No results. No possible way to recover.
 
         assert leafList.size() > 1;
 
-        for (Node n : leafList) {
+        for (NodeQWOPBase<?> n : leafList) {
             if (n.getTreeDepth() == maxEffectiveDepth) {
                 resultList.add(n);
-                try {
-                    waitForStateAssignment(n);
-                } catch (TimeoutException e) {
-                    e.printStackTrace();
-                }
                 return resultList;
             } else if (n.getTreeDepth() > maxEffectiveDepth) {
-                Node atDepth = n;
+                NodeQWOPBase<?> atDepth = n;
                 while (atDepth.getTreeDepth() > maxEffectiveDepth) {
                     atDepth = atDepth.getParent();
                 }
                 resultList.add(n);
-                try {
-                    waitForStateAssignment(n);
-                } catch (TimeoutException e) {
-                    e.printStackTrace();
-                }
                 return resultList;
             }
         }
@@ -89,9 +79,9 @@ public class TreeStage_MaxDepth extends TreeStage {
 
     @Override
     public boolean checkTerminationConditions() {
-        Node rootNode = getRootNode();
+        NodeQWOPExplorableBase<?> rootNode = getRootNode();
         // Also terminate if it's been too long and we haven't found anything.
-        return rootNode.fullyExplored.get() || rootNode.maxBranchDepth.get() >= maxEffectiveDepth ||
+        return rootNode.isFullyExplored() || rootNode.maxBranchDepth.get() >= maxEffectiveDepth ||
                 (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames;
     }
 }

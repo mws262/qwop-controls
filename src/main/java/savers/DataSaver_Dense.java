@@ -6,7 +6,7 @@ import java.util.List;
 import game.IGame;
 import game.State;
 import actions.Action;
-import tree.Node;
+import tree.NodeQWOPBase;
 
 /**
  * Saving to file with full state and action data at every timestep.
@@ -57,7 +57,7 @@ public abstract class DataSaver_Dense implements IDataSaver {
     }
 
     @Override
-    public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
+    public void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
     }
 
     @Override

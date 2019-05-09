@@ -17,7 +17,7 @@ import samplers.ISampler;
  */
 public class TreeStage_MinDepth extends TreeStage {
 
-    private List<Node> leafList = new LinkedList<>();
+    private List<NodeQWOPExplorableBase<?>> leafList = new LinkedList<>();
 
     /**
      * Minimum relative depth (relative to given root) that we want to achieve.
@@ -36,29 +36,24 @@ public class TreeStage_MinDepth extends TreeStage {
     }
 
     @Override
-    public void initialize(List<TreeWorker> workers, Node stageRoot) {
+    public void initialize(List<TreeWorker> workers, NodeQWOPExplorableBase<?> stageRoot) {
         minEffectiveDepth = minDepth + stageRoot.getTreeDepth();
         super.initialize(workers, stageRoot);
     }
 
     @Override
-    public List<Node> getResults() {
+    public List<NodeQWOPBase<?>> getResults() {
         leafList.clear();
         getRootNode().getLeaves(leafList);
         System.out.println(leafList.size());
 
-        List<Node> resultList = new ArrayList<>();
+        List<NodeQWOPBase<?>> resultList = new ArrayList<>();
 
-        for (Node n : leafList) {
-            try {
-                waitForStateAssignment(n);
-            } catch (TimeoutException e) {
-                e.printStackTrace();
-            }
+        for (NodeQWOPBase<?> n : leafList) {
             if (n.getTreeDepth() == minEffectiveDepth) {
                 resultList.add(n);
             } else if (n.getTreeDepth() > minEffectiveDepth) {
-                Node atDepth = n;
+                NodeQWOPBase<?> atDepth = n;
                 while (atDepth.getTreeDepth() > minEffectiveDepth) {
                     atDepth = atDepth.getParent();
                 }
@@ -70,8 +65,8 @@ public class TreeStage_MinDepth extends TreeStage {
 
     @Override
     public boolean checkTerminationConditions() {
-        Node rootNode = getRootNode();
-        if (rootNode.fullyExplored.get()) return true;
+        NodeQWOPExplorableBase<?> rootNode = getRootNode();
+        if (rootNode.isFullyExplored()) return true;
         if (!areWorkersRunning()) return true;
 
         leafList.clear();
@@ -80,12 +75,12 @@ public class TreeStage_MinDepth extends TreeStage {
         // If no leaves, then we haven't gotten far enough for sure.
         if (leafList.isEmpty()) return false;
 
-        for (Node n : leafList) {
+        for (NodeQWOPExplorableBase<?> n : leafList) {
             // We find a leaf which is not deep enough and not failed.
-            if (n.getTreeDepth() < minEffectiveDepth && !n.isFailed()) {
+            if (n.getTreeDepth() < minEffectiveDepth && !n.getState().isFailed()) {
                 return false;
             } else {
-                Node currNode = n;
+                NodeQWOPExplorableBase<?> currNode = n;
                 // Get back from the leaf to the horizon we wish to achieve.
                 while (currNode.getTreeDepth() > minEffectiveDepth) {
                     currNode = currNode.getParent();
@@ -94,7 +89,7 @@ public class TreeStage_MinDepth extends TreeStage {
                 // Make sure everything under that horizon has been tried.
                 while (currNode.getTreeDepth() > rootNode.getTreeDepth()) {
                     currNode = currNode.getParent();
-                    if (currNode.uncheckedActions.size() > 0) {
+                    if (currNode.getUntriedActionCount() > 0) {
                         return false;
                     }
                 }

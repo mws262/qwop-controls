@@ -3,6 +3,8 @@ package tree;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
@@ -79,23 +81,23 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Root of tree that this FSM is operating on.
      */
-    private Node rootNode;
+    private NodeQWOPExplorableBase<?> rootNode;
 
     /**
      * Node that the game is currently operating at.
      */
-    private Node currentGameNode;
+    private NodeQWOPExplorableBase<?> currentGameNode;
 
     /**
      * Node the game is attempting to run to.
      */
-    private Node targetNodeToTest;
+    private NodeQWOPExplorableBase<?> targetNodeToTest;
 
     /**
      * Node the game is initially expanding from.
      */
-    private Node expansionNode;
-    private Node lastNodeAdded;
+    private NodeQWOPExplorableBase<?> expansionNode;
+    private NodeQWOPExplorableBase<?> lastNodeAdded;
 
     /**
      * Queued commands, IE QWOP key presses
@@ -178,7 +180,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      *
      * @param rootNode Root node that this worker expands from.
      */
-    public void setRoot(Node rootNode) {
+    public void setRoot(NodeQWOPExplorableBase<?> rootNode) {
         this.rootNode = rootNode;
     }
 
@@ -247,8 +249,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         // tree to a place that we plan to add a new node.
 
                         if (debugDraw) {
-                            expansionNode.setBackwardsBranchColor(getColorFromWorkerID(workerID));
-                            expansionNode.setBackwardsBranchZOffset(0.1f);
+                            // TODO fix
+//                            expansionNode.setBackwardsBranchColor(getColorFromWorkerID(workerID));
+//                            expansionNode.setBackwardsBranchZOffset(0.1f);
                         }
 
                         if (expansionNode == null) { // May happen with some samplers when the stage finishes.
@@ -262,7 +265,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
                             targetNodeToTest = expansionNode;
                             if (targetNodeToTest.getTreeDepth() != 0) { // No action sequence to add if target node
                                 // is root (we're already there!).
-                                actionQueue.addSequence(targetNodeToTest.getSequence());
+                                List<Action> actionSequence = new ArrayList<>(); // TODO allocate once.
+                                actionQueue.addSequence(targetNodeToTest.getSequence(actionSequence));
                             }
                             changeStatus(Status.TREE_POLICY_EXECUTING);
                         }
@@ -278,7 +282,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     // When all actions in queue are done, figure out what to do next.
                     if (actionQueue.isEmpty()) {
                         currentGameNode = targetNodeToTest;
-                        if (currentGameNode.uncheckedActions.size() == 0) { // This case should only happen if
+                        if (currentGameNode.getUntriedActionCount() == 0) { // This case should only happen if
                             // another worker just happens to beat it here.
                             //System.out.println("Wow! Another worker must have finished this node off before this
                             // worker got here. We're going to keep running tree policy down the tree. If there aren't
@@ -296,9 +300,12 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (sampler.expansionPolicyGuard(currentGameNode)) { // Some samplers keep adding nodes until
                         // failure, others add a fewer number and move to rollout before failure.
                         changeStatus(Status.ROLLOUT_POLICY);
-                        if (debugDraw && lastNodeAdded != null) lastNodeAdded.clearNodeOverrideColor();
+                        // TODO
+                        // if (debugDraw && lastNodeAdded != null) lastNodeAdded.clearNodeOverrideColor();
                         lastNodeAdded = currentGameNode;
-                        if (debugDraw) lastNodeAdded.setBranchColor(getColorFromWorkerID(workerID));
+
+                        // TODO
+                        //  if (debugDraw) lastNodeAdded.setBranchColor(getColorFromWorkerID(workerID));
                         sampler.expansionPolicyActionDone(currentGameNode);
                     } else {
                         targetNodeToTest = sampler.expansionPolicy(currentGameNode);
@@ -323,15 +330,16 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         // TODO possibly update the action to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
                         currentGameNode = targetNodeToTest;
-                        if (!currentGameNode.isStateUnassigned())
-                            throw new RuntimeException("The expansion policy should only encounter new nodes. None of" +
-                                    " them should have their state assigned before now.");
-                        currentGameNode.setState(getGameState());
+                        // TODO
+//                        if (!currentGameNode.isStateUnassigned())
+//                            throw new RuntimeException("The expansion policy should only encounter new nodes. None of" +
+//                                    " them should have their state assigned before now.");
+//                        currentGameNode.setState(getGameState());
                         sampler.expansionPolicyActionDone(currentGameNode);
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 
                         try {
-                            if (currentGameNode.isFailed()) { // If we've added a terminal node, we need to see how
+                            if (currentGameNode.getState().isFailed()) { // If we've added a terminal node, we need to see how
                                 // this affects the exploration status of the rest of the tree.
                                 targetNodeToTest.propagateFullyExploredStatus_lite(); //TODO see about making this
                                 // private.
@@ -362,12 +370,13 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
                     expansionNode.releaseExpansionRights();
 
-                    if (debugDraw) {
-                        expansionNode.clearBackwardsBranchColor();
-                        expansionNode.clearBackwardsBranchZOffset();
-                    }
+                    // TODO
+//                    if (debugDraw) {
+//                        expansionNode.clearBackwardsBranchColor();
+//                        expansionNode.clearBackwardsBranchZOffset();
+//                    }
 
-                    if (rootNode.fullyExplored.get()) {
+                    if (rootNode.isFullyExplored()) {
                         pauseWorker();
                         changeStatus(Status.IDLE);
                         System.out.println("Tree is fully explored, but just pausing for next stage.");

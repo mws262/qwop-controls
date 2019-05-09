@@ -9,7 +9,7 @@ import data.SavableSingleGame;
 import game.IGame;
 import game.State;
 import actions.Action;
-import tree.Node;
+import tree.NodeQWOPBase;
 
 /**
  * Save save any runs specified by the TreeStage at the end of it.
@@ -58,11 +58,11 @@ public class DataSaver_StageSelected implements IDataSaver {
     public void reportTimestep(Action action, IGame game) {}
 
     @Override
-    public void reportGameEnding(Node endNode) {}
+    public void reportGameEnding(NodeQWOPBase<?> endNode) {}
 
     @Override
-    public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
-        for (Node tar : targetNodes) {
+    public void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
+        for (NodeQWOPBase<?> tar : targetNodes) {
             saveBuffer.add(new SavableSingleGame(tar));
         }
 

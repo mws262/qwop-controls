@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import data.SavableDenseData;
 import data.SavableFileIO;
 import tree.Node;
+import tree.NodeQWOPBase;
 
 /**
  * Saves data at every timestep. Old saver which serializes java classes. Useful for manipulating data in java, not
@@ -44,7 +45,7 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
     private ArrayList<SavableDenseData> saveBuffer = new ArrayList<>();
 
     @Override
-    public void reportGameEnding(Node endNode) {
+    public void reportGameEnding(NodeQWOPBase<?> endNode) {
         // Collect all the states and actions into a data object.
         saveBuffer.add(new SavableDenseData(stateBuffer, actionBuffer));
         saveCounter++;
