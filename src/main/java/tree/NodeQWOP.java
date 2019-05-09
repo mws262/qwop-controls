@@ -3,7 +3,7 @@ package tree;
 import actions.Action;
 import game.State;
 
-public class NodeQWOP<N extends NodeQWOP<N>> extends NodeGeneric<N> {
+public abstract class NodeQWOP<N extends NodeQWOP<N>> extends NodeGeneric<N> {
 
     private final Action action;
 
@@ -26,8 +26,7 @@ public class NodeQWOP<N extends NodeQWOP<N>> extends NodeGeneric<N> {
                         "was: " + action.toString() + ".");
             }
         }
-        //noinspection unchecked
-        parent.addChild((N) this); // I think this, by definition MUST be of type N.
+        getParent().addChild(getThis()); // I think this, by definition MUST be of type N.
     }
 
     public State getState() { return state; }
