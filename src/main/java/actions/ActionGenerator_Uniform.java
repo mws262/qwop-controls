@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
  */
 public class ActionGenerator_Uniform implements IActionGenerator {
 
-    private List<ActionSet> allActionSets;
+    private List<ActionList> allActionLists;
 
     public ActionGenerator_Uniform() {
         // All durations.
@@ -32,25 +32,25 @@ public class ActionGenerator_Uniform implements IActionGenerator {
                 {false, false, true, false},
                 {false, false, false, true}};
         Distribution<Action> distribution = new Distribution_Equal();
-        allActionSets = new ArrayList<>();
-        allActionSets.add(ActionSet.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[0], distribution));//ffff*
-        allActionSets.add(ActionSet.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[1], distribution));//tfff
-        allActionSets.add(ActionSet.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[2], distribution));//tftf
-        allActionSets.add(ActionSet.makeActionSet(IntStream.range(10, 45).toArray(), keyRange[3], distribution));//tfft*
-        allActionSets.add(ActionSet.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[4], distribution));//ftff
-        allActionSets.add(ActionSet.makeActionSet(IntStream.range(10, 45).toArray(), keyRange[5], distribution));//fttf*
-        allActionSets.add(ActionSet.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[6], distribution));//ftft
-        allActionSets.add(ActionSet.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[7], distribution));//fftf
-        allActionSets.add(ActionSet.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[8], distribution));//ffft
+        allActionLists = new ArrayList<>();
+        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[0], distribution));//ffff*
+        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[1], distribution));//tfff
+        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[2], distribution));//tftf
+        allActionLists.add(ActionList.makeActionSet(IntStream.range(10, 45).toArray(), keyRange[3], distribution));//tfft*
+        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[4], distribution));//ftff
+        allActionLists.add(ActionList.makeActionSet(IntStream.range(10, 45).toArray(), keyRange[5], distribution));//fttf*
+        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[6], distribution));//ftft
+        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[7], distribution));//fftf
+        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[8], distribution));//ffft
     }
 
     @Override
-    public ActionSet getPotentialChildActionSet(Node parentNode) {
-        ActionSet as = new ActionSet(new Distribution_Equal());
-        for (ActionSet allActionSet : allActionSets) {
-            if (parentNode.getTreeDepth() == 0 || !allActionSet.contains(parentNode.getAction())) { // Get all
+    public ActionList getPotentialChildActionSet(Node parentNode) {
+        ActionList as = new ActionList(new Distribution_Equal());
+        for (ActionList allActionList : allActionLists) {
+            if (parentNode.getTreeDepth() == 0 || !allActionList.contains(parentNode.getAction())) { // Get all
                 // except the set that the parent had.
-                as.addAll(allActionSet);
+                as.addAll(allActionList);
             }
         }
         return as;
@@ -59,7 +59,7 @@ public class ActionGenerator_Uniform implements IActionGenerator {
     @Override
     public Set<Action> getAllPossibleActions() {
         Set<Action> allActions = new HashSet<>();
-        for (ActionSet as : allActionSets) {
+        for (ActionList as : allActionLists) {
             allActions.addAll(as);
         }
         return allActions;

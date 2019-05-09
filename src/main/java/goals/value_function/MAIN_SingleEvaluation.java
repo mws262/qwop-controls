@@ -2,8 +2,8 @@ package goals.value_function;
 
 import actions.Action;
 import actions.ActionGenerator_FixedActions;
+import actions.ActionList;
 import actions.ActionQueue;
-import actions.ActionSet;
 import distributions.Distribution_Equal;
 import game.GameUnified;
 import tree.Node;
@@ -76,17 +76,17 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         valueFunction.loadCheckpoint("small329"); // "small309"); // chk_after565"); // chk5");
 
         // Assign potential actions for the value function to choose among.
-        ActionSet actionSetNone = ActionSet.makeActionSet(IntStream.range(1, 30).toArray(), new boolean[]{false, false,
+        ActionList actionListNone = ActionList.makeActionSet(IntStream.range(1, 30).toArray(), new boolean[]{false, false,
                 false, false}, new Distribution_Equal()); // None, None
-        ActionSet actionSetWO = ActionSet.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{false, true,
+        ActionList actionListWO = ActionList.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{false, true,
                 true, false}, new Distribution_Equal()); // W, O
-        ActionSet actionSetQP = ActionSet.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{true, false,
+        ActionList actionListQP = ActionList.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{true, false,
                 false, true}, new Distribution_Equal()); // Q, P
 
-        ActionSet allActions = new ActionSet(new Distribution_Equal());
-        allActions.addAll(actionSetNone);
-        allActions.addAll(actionSetWO);
-        allActions.addAll(actionSetQP);
+        ActionList allActions = new ActionList(new Distribution_Equal());
+        allActions.addAll(actionListNone);
+        allActions.addAll(actionListWO);
+        allActions.addAll(actionListQP);
 
         ActionGenerator_FixedActions actionGenerator = new ActionGenerator_FixedActions(allActions);
         Node.potentialActionGenerator = actionGenerator;

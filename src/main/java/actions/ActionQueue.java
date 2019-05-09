@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @see Queue
  * @see Action
- * @see ActionSet
+ * @see ActionList
  */
 public class ActionQueue {
 

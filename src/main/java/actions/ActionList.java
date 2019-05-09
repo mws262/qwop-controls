@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An ActionSet acts like an {@link java.util.ArrayList} for {@link Action actions}, except it allows for sampling
+ * An ActionList acts like an {@link java.util.ArrayList} for {@link Action actions}, except it allows for sampling
  * from the list on a {@link Distribution}.
  *
  * @author Matt
@@ -16,27 +16,27 @@ import java.util.List;
  * @see IActionGenerator
  * @see Distribution
  */
-public class ActionSet extends ArrayList<Action> {
+public class ActionList extends ArrayList<Action> {
 
     private static final long serialVersionUID = 1L;
 
     public Distribution<Action> samplingDist;
 
     /**
-     * Create a new ActionSet which can sample according to the rules of a {@link Distribution}. It may otherwise be
+     * Create a new ActionList which can sample according to the rules of a {@link Distribution}. It may otherwise be
      * treated as an {@link ArrayList}.
      *
      * @param samplingDist Distribution that samples of the action set will be pulled when calling
-     * {@link ActionSet#sampleDistribution}.
+     * {@link ActionList#sampleDistribution}.
      */
-    public ActionSet(Distribution<Action> samplingDist) {
+    public ActionList(Distribution<Action> samplingDist) {
         this.samplingDist = samplingDist;
     }
 
     /**
-     * Get an element from this ActionSet at random.
+     * Get an element from this ActionList at random.
      *
-     * @return A random element of this ActionSet.
+     * @return A random element of this ActionList.
      * @see Distribution#randSample(List)
      */
     public Action getRandom() {
@@ -46,45 +46,45 @@ public class ActionSet extends ArrayList<Action> {
     /**
      * Get a random sample from the defined distribution.
      *
-     * @return An action sampled from this ActionSet according to its defined {@link Distribution}.
+     * @return An action sampled from this ActionList according to its defined {@link Distribution}.
      **/
     public Action sampleDistribution() {
         return samplingDist.randOnDistribution(this);
     }
 
     /**
-     * Duplicate this ActionSet, producing a copy with the same {@link Action} elements and same sampling
+     * Duplicate this ActionList, producing a copy with the same {@link Action} elements and same sampling
      * {@link Distribution}.
      *
-     * @return A getCopy of this ActionSet.
+     * @return A getCopy of this ActionList.
      */
-    public ActionSet getCopy() {
-        ActionSet duplicate = new ActionSet(samplingDist);
+    public ActionList getCopy() {
+        ActionList duplicate = new ActionList(samplingDist);
         duplicate.addAll(this);
         return duplicate;
     }
 
     /**
-     * Get an ActionSet defined by as many durations as desired, 4 keys for each, and a sampling distribution. This
-     * is equivalent to just making {@link Action actions} and adding them with {@link ActionSet#add(Object)}.
+     * Get an ActionList defined by as many durations as desired, 4 keys for each, and a sampling distribution. This
+     * is equivalent to just making {@link Action actions} and adding them with {@link ActionList#add(Object)}.
      *
-     * @param durations Timestep durations of the actions which will be in the returned ActionSet.
+     * @param durations Timestep durations of the actions which will be in the returned ActionList.
      * @param keys 2D array of QWOP keypress statuses. First dimension corresponds to the action, while the second
      *             dimension corresponds to a QwOP key.
-     * @param dist Sampling distribution for the new ActionSet.
-     * @return A new ActionSet.
+     * @param dist Sampling distribution for the new ActionList.
+     * @return A new ActionList.
      */
     @Deprecated
-    public static ActionSet makeActionSet(Integer[] durations, boolean[][] keys, Distribution<Action> dist) {
-        ActionSet set = new ActionSet(dist);
+    public static ActionList makeActionSet(Integer[] durations, boolean[][] keys, Distribution<Action> dist) {
+        ActionList set = new ActionList(dist);
         for (int i = 0; i < durations.length; i++) {
             set.add(new Action(durations[i], keys[i]));
         }
         return set;
     }
 
-    public static ActionSet makeActionSet(int[] durations, boolean[][] keys, Distribution<Action> dist) {
-        ActionSet set = new ActionSet(dist);
+    public static ActionList makeActionSet(int[] durations, boolean[][] keys, Distribution<Action> dist) {
+        ActionList set = new ActionList(dist);
         for (int i = 0; i < durations.length; i++) {
             set.add(new Action(durations[i], keys[i]));
         }
@@ -100,25 +100,25 @@ public class ActionSet extends ArrayList<Action> {
      * @return
      */
     @Deprecated
-    public static ActionSet makeActionSet(Integer[] durations, boolean[] keys, Distribution<Action> dist) {
-        ActionSet set = new ActionSet(dist);
+    public static ActionList makeActionSet(Integer[] durations, boolean[] keys, Distribution<Action> dist) {
+        ActionList set = new ActionList(dist);
         for (Integer duration : durations) {
             set.add(new Action(duration, keys));
         }
         return set;
     }
-    public static ActionSet makeActionSet(int[] durations, boolean[] keys, Distribution<Action> dist) {
-        ActionSet set = new ActionSet(dist);
+    public static ActionList makeActionSet(int[] durations, boolean[] keys, Distribution<Action> dist) {
+        ActionList set = new ActionList(dist);
         for (Integer duration : durations) {
             set.add(new Action(duration, keys));
         }
         return set;
     }
 
-    public static ActionSet makeExhaustiveActionSet(int minDuration, int maxDuration) {
+    public static ActionList makeExhaustiveActionSet(int minDuration, int maxDuration) {
         assert minDuration < 0;
 
-        ActionSet set = new ActionSet(new Distribution_Equal());
+        ActionList set = new ActionList(new Distribution_Equal());
         for (Action.Keys key : Action.Keys.values()) {
             for (int i = minDuration; i < maxDuration; i++) {
                 set.add(new Action(i, key));
