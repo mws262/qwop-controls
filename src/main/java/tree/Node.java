@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 
 import actions.Action;
 import actions.ActionQueue;
-import actions.ActionSet;
+import actions.ActionList;
 import actions.IActionGenerator;
 import com.jogamp.opengl.GL2;
 
@@ -36,6 +36,15 @@ import game.State;
  */
 
 public class Node implements INode {
+    /**
+     * Node which leads up to this node. Parentage should not be changed externally.
+     */
+    private Node parent;
+
+    /**
+     * Child nodes. Not fixed size any more.
+     */
+    private final List<Node> children = new CopyOnWriteArrayList<>();
 
     /**
      * Action which takes the game from the parent node's state to this node's state.
@@ -93,13 +102,19 @@ public class Node implements INode {
     /**
      * Untried child actions.
      */
-    public ActionSet uncheckedActions;
+    public ActionList uncheckedActions;
 
     /**
      * Are there any untried things below this node? This is not necessarily a TERMINAL node, it is simply a node
      * past which there are no potential child actions to try.
      */
     public final AtomicBoolean fullyExplored = new AtomicBoolean(false);
+
+    /**
+     * If one TreeWorker is expanding from this leaf node (if it is one), then no other worker should try to
+     * simultaneously expand from here too.
+     */
+    private final AtomicBoolean locked = new AtomicBoolean(false);
 
     /**
      * Depth of this node in the tree. Root node is 0; its children are 1, etc.
@@ -295,10 +310,10 @@ public class Node implements INode {
     /**
      * If we've assigned a potentialActionGenerator, this can auto-add potential child actions. Ignores duplicates.
      */
-    private synchronized void autoAddUncheckedActions() {
+    synchronized void autoAddUncheckedActions() {
         // If we've set rules to auto-select potential children, do so.
         if (potentialActionGenerator != null) {
-            ActionSet potentialActions = potentialActionGenerator.getPotentialChildActionSet(this);
+            ActionList potentialActions = potentialActionGenerator.getPotentialChildActionSet(this);
 
             // If no unchecked actions have been previously added (must have assigned a sampling distribution to do so),
             // then just use the new one outright.
@@ -312,6 +327,108 @@ public class Node implements INode {
                 }
             }
         }
+    }
+
+    /*
+     * LOCKING AND UNLOCKING NODES:
+     *
+     * Due to multithreading, it is a major headache if several threads are sampling from the same node at the same
+     * time. Hence, we lock nodes to prevent sampling by other threads while another one is working in that part of
+     * the tree. In general, we try to be overzealous in locking. For broad trees, there is minimal blocking slowdown
+     * . For narrow trees, however, we may get only minimal gains from multithreading.
+     *
+     * Cases:
+     * 1. Select node to expand. It has only 1 untried option. We lock the node, and expand.
+     * 2. Select node to expand. It has multiple options. We still lock the node for now. This could be changed.
+     * 3. Select node to expand. It is now locked according to 1 and 2. This node's parent only has fully explored
+     * children and locked children. For all practical purposes, this node is also out of play. Lock it too and
+     * recurse up the tree until we reach a node with at least one unlocked and not fully explored child.
+     * When unlocking, we should propagate fully-explored statuses back up the tree first, and then remove locks as
+     * far up the tree as possible.
+     */
+
+    /**
+     * Set a flag to indicate that the invoking TreeWorker has temporary exclusive rights to expand from this node.
+     *
+     * @return Whether the lock was successfully obtained. True means that the caller obtained the lock. False means
+     * that someone else got to it first.
+     */
+    public synchronized boolean reserveExpansionRights() {
+
+        if (locked.get()) { // Already owned by another worker.
+            return false;
+
+        } else {
+            // Trying to see if we can remove this check. A smart sampler shouldn't get itself tied up this way anyway.
+//            if (uncheckedActions.isEmpty()) // No child actions remain to sample. FIXME: This shouldn't actually
+//                // occur. Replace with an exception.
+//                return false;
+            locked.set(true);
+
+            if (debugDrawNodeLocking) { // For highlighting nodes which are locked in the UI, if desired.
+                displayPoint = true;
+                overrideNodeColor = lockColor;
+            }
+
+            // May need to add locks to nodes further up the tree towards root. For example, if calling
+            // reserveExpansionRights locks the final available node of this node's parent, then the parent should be
+            // locked off too. This effect can chain all the way up the tree towards the root.
+            if (getTreeDepth() > 0) parent.propagateLock();
+
+            return true;
+        }
+    }
+
+    /**
+     * Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node.
+     */
+    public synchronized void releaseExpansionRights() {
+        locked.set(false); // Release the lock.
+        if (debugDrawNodeLocking) { // Stop drawing red dots for locked nodes, if this is on.
+            displayPoint = false;
+            overrideNodeColor = null;
+        }
+        // Unlocking this node may cause nodes further up the tree to become available.
+        if ((getTreeDepth() > 0) && (parent != null)) parent.propagateUnlock();
+    }
+
+    /**
+     * Locking one node may cause some parent nodes to become unavailable also. propagateLock will check as far up
+     * the tree towards the root node as necessary.
+     */
+    private synchronized void propagateLock() {
+        // Lock this node unless we find evidence that we don't need to.
+        for (Node child : children) {
+            if (!child.isLocked() && !child.fullyExplored.get()) {
+                return; // In this case, we don't need to continue locking things further up the tree.
+            }
+        }
+        reserveExpansionRights();
+    }
+
+    /**
+     * Releasing one node's lock may make others further up the tree towards the root node become available.
+     */
+    private synchronized void propagateUnlock() {
+        if (!isLocked()) return; // We've worked our way up to a node which is already not locked. No need to
+        // propagate further.
+
+        // A single free child means we can unlock this node.
+        for (Node child : children) {
+            if (!child.isLocked()) {  // Does not need to stay locked.
+                releaseExpansionRights();
+                return;
+            }
+        }
+    }
+
+    /**
+     * Determine whether any sampler has exclusive rights to sample from this node.
+     *
+     * @return Whether any worker has exclusive rights to expand from this node (true/false).
+     */
+    public boolean isLocked() {
+        return locked.get();
     }
 
     /**
@@ -362,9 +479,181 @@ public class Node implements INode {
     /* ****** GETTING CERTAIN SETS OF NODES ******** */
     /* ********************************************* */
 
+    /**
+     * Get the parent node of this node. If called from root, will return null.
+     *
+     * @return Parent node of this node.
+     */
+    public Node getParent() {
+        return parent;
+    }
+
+    /**
+     * Get the children of this node.
+     *
+     * @return A copy of the list of children of this node. Removing the nodes from this array will not remove them
+     * from this node's actual children, but the nodes in the array are the originals.
+     */
+    public Node[] getChildren() {
+        return children.toArray(new Node[0]);
+    }
 
 
+    /**
+     * Remove a node from this node's list of children if the node is present. Do NOT use this method lightly.
+     * Usually want to do something else.
+     * @param node Child node to remove.
+     */
+    public void removeFromChildren(Node node) {
+        children.remove(node);
+    }
+    /**
+     * Get the index of this node in it's parent list of nodes. Hence, parent.children.get(index) == this.
+     *
+     * @return This node's index in its parent's list of nodes.
+     * @throws IndexOutOfBoundsException When called on a root node (depth 0).
+     */
+    public int getIndexAccordingToParent() {
+        if (treeDepth == 0)
+            throw new IndexOutOfBoundsException("The root node has no parent, and thus this method call doesn't make " +
+                    "sense.");
+        return parent.children.indexOf(this);
+    }
 
+    /**
+     * Get the number of siblings, i.e. other nodes in this node's parent's list of children. Does not include this
+     * node itself.
+     *
+     * @return Number of sibling nodes of this one.
+     */
+    public int getSiblingCount() {
+        if (treeDepth == 0) return 0; // Root node has no siblings.
+        int siblings = parent.children.size() - 1;
+        assert siblings >= 0;
+        return siblings;
+    }
+
+    /**
+     * Get the total number of children of this node. Only includes actually created children, not potential children
+     * . Only includes direct children, not all descendants.
+     *
+     * @return Total created children of this node.
+     */
+    public int getChildCount() {
+        return children.size();
+    }
+
+    /**
+     * Get a created child node of this node by its index (order of creation).
+     *
+     * @param childIndex Index of the child node to retrieve.
+     * @return A child of this node, with the index as specified.
+     */
+    public Node getChildByIndex(int childIndex) {
+        return children.get(childIndex);
+    }
+
+    /**
+     * Get a random already-created child of this node. Can be useful for sampling.
+     *
+     * @return A random child node of this node.
+     * @throws IndexOutOfBoundsException Has no children.
+     */
+    public Node getRandomChild() {
+        if (children.isEmpty())
+            throw new IndexOutOfBoundsException("Tried to get a random child from a node with no children.");
+        return children.get(Utility.randInt(0, children.size() - 1));
+    }
+
+    /**
+     * Add all the nodes below and including this one to a list. Does not include nodes whose state have not yet been
+     * assigned.
+     *
+     * @param nodeList                  A list to add all of this branches' nodes to. This list must be caller-provided, and will not
+     *                                  be cleared.
+     * @param includeOnlyNodesWithState If true, this will only get nodes which have a state assigned to them.
+     * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
+     */
+    public List<Node> getNodesBelow(List<Node> nodeList, boolean includeOnlyNodesWithState) {
+        if (!includeOnlyNodesWithState) { // Include regardless.
+            nodeList.add(this);
+        } else if (!isStateUnassigned()) { // Include only if state is assigned.
+            nodeList.add(this);
+        }
+        for (Node child : children) {
+            child.getNodesBelow(nodeList, includeOnlyNodesWithState);
+        }
+        return nodeList;
+    }
+
+
+    /**
+     * Get a list of all tree endpoints (leaves) below this node, i.e. on this branch. If called from a leaf, the
+     * list will only contain that leaf itself.
+     *
+     * @param leaves A list of leaves below this node. The list must be provided by the caller, and will not be
+     *               cleared by this method.
+     * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
+     */
+    public List<Node> getLeaves(List<Node> leaves) {
+
+        if (children.isEmpty()) { // If leaf, add itself.
+            leaves.add(this);
+        } else { // Otherwise keep traversing down.
+            for (Node child : children) {
+                child.getLeaves(leaves);
+            }
+        }
+        return leaves;
+    }
+
+    /**
+     * Returns the tree root no matter which node in the tree this is called from. This method defines the tree root
+     * to be the node with a depth of 0.
+     *
+     * @return The tree root node.
+     */
+    public Node getRoot() {
+        Node currentNode = this;
+        while (currentNode.getTreeDepth() > 0) {
+            currentNode = currentNode.parent;
+        }
+        return currentNode;
+    }
+
+    /**
+     * Count the number of descendants this node has. Does not include the node first called on.
+     *
+     * @return Number of descendants, i.e. number of nodes on the branch below this node.
+     */
+    public int countDescendants() {
+        int count = 0;
+        for (Node current : children) {
+            count++;
+            count += current.countDescendants(); // Recurse down through the tree.
+        }
+        return count;
+    }
+
+    /**
+     * Check whether a node is an ancestor of this node. This means that there is a direct path from this node to the
+     * given node that only requires decreasing tree depth.
+     *
+     * @param possibleAncestorNode Node to check whether is an ancestor of this node.
+     * @return Whether the provided node is an ancestor of this node (true/false).
+     */
+    public boolean isOtherNodeAncestor(Node possibleAncestorNode) {
+        if (possibleAncestorNode.getTreeDepth() >= this.getTreeDepth()) { // Don't need to check if this is as far down the tree.
+            return false;
+        }
+        Node currNode = parent;
+        while (currNode.getTreeDepth() != possibleAncestorNode.getTreeDepth()) { // Find the node at the same depth as the one
+            // we're
+            // checking.
+            currNode = currNode.parent;
+        }
+        return currNode.equals(possibleAncestorNode);
+    }
 
     /**
      * Change whether this node or any above it have become fully explored. Generally called from a leaf node which
@@ -432,6 +721,23 @@ public class Node implements INode {
         propagateFullyExploredStatus_lite();
     }
 
+    /**
+     * Try to de-reference everything on this branch so garbage collection throws out all the state values and other
+     * info stored for this branch to keep memory in check.
+     */
+    public void destroyNodesBelow() {
+        Node[] childrenCopy = children.toArray(new Node[0]);
+        children.clear();
+
+        for (Node child : childrenCopy) {
+            pointsToDraw.remove(child);
+            child.state = null;
+            child.parent = null;
+            child.nodeLocation = null;
+            child.destroyNodesBelow();
+        }
+        children.clear();
+    }
 
     /**
      * Get the number of nodes in this or any tree.
@@ -504,10 +810,27 @@ public class Node implements INode {
 
         try {
             isFailed.set(state.isFailed());
+            if (isFailed()) {
+                displayPoint = true;
+                overrideNodeColor = Color.RED;
+            }
         } catch (NullPointerException e) {
             System.out.println("WARNING: node state had no failure state assigned. This is bad unless we're just " +
                     "playing old runs back.");
         }
+    }
+
+    /**
+     * Get the game state associated with this node. Represents the state achieved from the parent node's state after
+     * performing the action in this node.
+     *
+     * @return Game state at this node.
+     * @throws NullPointerException If state is unassigned.
+     */
+    public State getState() {
+        if (state == null)
+            throw new NullPointerException("Node state unassigned. Call isStateUnassigned first to check.");
+        return state;
     }
 
     /**
@@ -519,6 +842,38 @@ public class Node implements INode {
         return state == null;
     }
 
+    /**
+     * Get the action object (most likely keypress + duration) that leads to this node from its parent.
+     *
+     * @return This node's action.
+     * @throws NullPointerException When called on a root node (tree depth of 0).
+     */
+    public Action getAction() {
+        if (treeDepth == 0) // Root has no action
+            throw new NullPointerException("Root node does not have an action associated with it.");
+        return action;
+    }
+
+    /**
+     * Get the sequence of actions up to, and including this node.
+     *
+     * @return An array of actions which, when executed from the initial state will lead to the state at this node.
+     * @throws IndexOutOfBoundsException If called on the root node.
+     */
+    public synchronized Action[] getSequence() {
+        Action[] sequence = new Action[getTreeDepth()];
+        if (getTreeDepth() == 0)
+            throw new IndexOutOfBoundsException("Cannot get a sequence at the root node, since it has no actions " +
+                    "leading up to it.");
+
+        Node current = this;
+        sequence[getTreeDepth() - 1] = current.getAction();
+        for (int i = getTreeDepth() - 2; i >= 0; i--) {
+            current = current.parent;
+            sequence[i] = current.getAction();
+        }
+        return sequence;
+    }
 
     /* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Adds to an existing given
     root.
@@ -1035,5 +1390,34 @@ public class Node implements INode {
      */
     public void clearBranchZOffset() {
         setBranchZOffset(0f);
+    }
+
+    /**
+     * How deep is this node down the tree? 0 is root.
+     */
+    public int getTreeDepth() {
+        return treeDepth;
+    }
+
+    /**
+     * Can pass a lambda to recurse down the tree. Will include the node called.
+     * @param operation Lambda to run on all the nodes in the branch below and including the node called upon.
+     */
+    public void recurseOnTreeInclusive(Consumer<Node> operation) {
+        operation.accept(this);
+        for (Node child : children) {
+            child.recurseOnTreeInclusive(operation);
+        }
+    }
+
+    /**
+     * Can pass a lambda to recurse down the tree. Will NOT include the node called.
+     * @param operation Lambda to run on all the nodes in the branch below and excluding the node called upon.
+     */
+    public void recurseOnTreeExclusive(Consumer<Node> operation) {
+        for (Node child : children) {
+            operation.accept(child);
+            child.recurseOnTreeExclusive(operation);
+        }
     }
 }

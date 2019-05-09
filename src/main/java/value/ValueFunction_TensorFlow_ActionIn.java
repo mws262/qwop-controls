@@ -1,7 +1,7 @@
 package value;
 
 import actions.Action;
-import actions.ActionSet;
+import actions.ActionList;
 import distributions.Distribution_Equal;
 import game.IGame;
 import tree.INode;
@@ -66,7 +66,7 @@ public class ValueFunction_TensorFlow_ActionIn extends ValueFunction_TensorFlow 
 
     @Override
     public Action getMaximizingAction(Node currentNode) {
-        ActionSet actionChoices;
+        ActionList actionChoices;
 
         // If no action generator is assigned, just use the actions of this node's children.
         if (Node.potentialActionGenerator == null) {
@@ -76,7 +76,7 @@ public class ValueFunction_TensorFlow_ActionIn extends ValueFunction_TensorFlow 
             }
             Node[] children = currentNode.getChildren();
             List<Action> childActions = Arrays.stream(children).map(Node::getAction).collect(Collectors.toList());
-            actionChoices = new ActionSet(new Distribution_Equal());
+            actionChoices = new ActionList(new Distribution_Equal());
             actionChoices.addAll(childActions);
         } else {
             actionChoices = Node.potentialActionGenerator.getPotentialChildActionSet(currentNode);

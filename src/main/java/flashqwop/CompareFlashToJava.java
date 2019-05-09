@@ -1,16 +1,11 @@
 package flashqwop;
 
 import actions.Action;
-import actions.ActionGenerator_FixedActions;
-import actions.ActionSet;
+import actions.ActionList;
 import game.GameUnified;
 import game.State;
-import goals.cold_start_analysis.CompareWarmStartToColdBase;
 import tree.Node;
-import tree.Utility;
-import ui.PanelRunner;
 import ui.PanelRunner_MultiState;
-import ui.PanelRunner_SimpleState;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -25,7 +20,7 @@ public class CompareFlashToJava extends FlashGame {
     GameUnified gameJava = new GameUnified();
     PanelRunner_MultiState panelRunner;
     private boolean initialized = false;
-    private ActionSet bunchOfActions = ActionSet.makeExhaustiveActionSet(14, 35);
+    private ActionList bunchOfActions = ActionList.makeExhaustiveActionSet(14, 35);
 
     private ValueFunction_TensorFlow valueFunction = null;
     private Node placeholderNode = new Node(); // TODO only really needs the state. This is just acting as a container.

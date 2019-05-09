@@ -1,25 +1,22 @@
 package tree;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public class NodeGeneric<N extends NodeData> {
-
-    private final N data;
+public class NodeGeneric<N extends NodeGeneric<N>> {
 
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
      */
-    private final NodeGeneric<N> parent;
+    private final N parent;
 
     /**
      * Child nodes. Not fixed size any more.
      */
-    private final List<NodeGeneric<N>> children = new CopyOnWriteArrayList<>();
+    private final List<N> children = new CopyOnWriteArrayList<>();
 
     private final int treeDepth;
 
@@ -31,29 +28,20 @@ public class NodeGeneric<N extends NodeData> {
 
     /**
      * For making a root node.
-     * @param data
      */
-    public NodeGeneric(N data) {
-        this.data = data;
+    public NodeGeneric() {
         treeDepth = 0;
         parent = null;
-        data.initialize(this);
     }
 
-    public NodeGeneric(N data, NodeGeneric<N> parent) {
-        this.data = data;
+    public NodeGeneric(N parent) {
         this.parent = parent;
-        treeDepth = parent.treeDepth + 1;
-        data.initialize(this);
+        treeDepth = parent.getTreeDepth() + 1;
     }
 
-    void addChild(NodeGeneric<N> child) {
+    void addChild(N child) {
         assert !children.contains(child);
         children.add(child);
-    }
-
-    public N getData() {
-        return data;
     }
 
     /**
@@ -61,7 +49,7 @@ public class NodeGeneric<N extends NodeData> {
      *
      * @return Parent node of this node.
      */
-    public NodeGeneric<N> getParent() {
+    public N getParent() {
         return parent;
     }
 
@@ -71,7 +59,7 @@ public class NodeGeneric<N extends NodeData> {
      * @return A copy of the list of children of this node. Removing the nodes from this array will not remove them
      * from this node's actual children, but the nodes in the array are the originals.
      */
-    public List<NodeGeneric<N>> getChildren() {
+    public List<N> getChildren() {
         return children;
     }
 
@@ -94,7 +82,7 @@ public class NodeGeneric<N extends NodeData> {
         if (treeDepth == 0)
             throw new IndexOutOfBoundsException("The root node has no parent, and thus this method call doesn't make " +
                     "sense.");
-        return parent.children.indexOf(this);
+        return parent.getChildren().indexOf(this);
     }
 
     /**
@@ -105,7 +93,7 @@ public class NodeGeneric<N extends NodeData> {
      */
     public int getSiblingCount() {
         if (treeDepth == 0) return 0; // Root node has no siblings.
-        int siblings = parent.children.size() - 1;
+        int siblings = parent.getChildren().size() - 1;
         assert siblings >= 0;
         return siblings;
     }
@@ -167,10 +155,10 @@ public class NodeGeneric<N extends NodeData> {
      *               cleared by this method.
      * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public Collection<NodeGeneric<N>> getLeaves(Collection<NodeGeneric<N>> leaves) {
+    public Collection<N> getLeaves(Collection<N> leaves) {
 
         if (children.isEmpty()) { // If leaf, add itself.
-            leaves.add(this);
+            leaves.add((N) this);
         } else { // Otherwise keep traversing down.
             for (NodeGeneric<N> child : children) {
                 child.getLeaves(leaves);
@@ -241,7 +229,6 @@ public class NodeGeneric<N extends NodeData> {
      */
     public void destroyNodesBelow() {
         for (NodeGeneric<N> child : children) {
-            child.data.dispose();
             child.destroyNodesBelow();
         }
         children.clear();
@@ -296,71 +283,71 @@ public class NodeGeneric<N extends NodeData> {
      * far up the tree as possible.
      */
 
-    /**
-     * Set a flag to indicate that the invoking TreeWorker has temporary exclusive rights to expand from this node.
-     *
-     * @return Whether the lock was successfully obtained. True means that the caller obtained the lock. False means
-     * that someone else got to it first.
-     */
-    public synchronized boolean reserveExpansionRights() {
-        if (locked.get()) { // Already owned by another worker.
-            return false;
-        } else {
-            locked.set(true);
-            // May need to add locks to nodes further up the tree towards root. For example, if calling
-            // reserveExpansionRights locks the final available node of this node's parent, then the parent should be
-            // locked off too. This effect can chain all the way up the tree towards the root.
-            if (getTreeDepth() > 0) parent.propagateLock();
-            return true;
-        }
-    }
-
-    /**
-     * Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node.
-     */
-    public synchronized void releaseExpansionRights() {
-        locked.set(false); // Release the lock.
-        // Unlocking this node may cause nodes further up the tree to become available.
-        if ((treeDepth > 0) && (parent != null)) parent.propagateUnlock();
-    }
-
-    /**
-     * Locking one node may cause some parent nodes to become unavailable also. propagateLock will check as far up
-     * the tree towards the root node as necessary.
-     */
-    private synchronized void propagateLock() {
-        // Lock this node unless we find evidence that we don't need to.
-        for (NodeGeneric<N,S,A> child : children) {
-            if (!child.isLocked() && !child.fullyExplored.get()) {
-                return; // In this case, we don't need to continue locking things further up the tree.
-            }
-        }
-        reserveExpansionRights();
-    }
-
-    /**
-     * Releasing one node's lock may make others further up the tree towards the root node become available.
-     */
-    private synchronized void propagateUnlock() {
-        if (!isLocked()) return; // We've worked our way up to a node which is already not locked. No need to
-        // propagate further.
-
-        // A single free child means we can unlock this node.
-        for (NodeGeneric<N,S,A> child : children) {
-            if (!child.isLocked()) {  // Does not need to stay locked.
-                releaseExpansionRights();
-                return;
-            }
-        }
-    }
-
-    /**
-     * Determine whether any sampler has exclusive rights to sample from this node.
-     *
-     * @return Whether any worker has exclusive rights to expand from this node (true/false).
-     */
-    public boolean isLocked() {
-        return locked.get();
-    }
+//    /**
+//     * Set a flag to indicate that the invoking TreeWorker has temporary exclusive rights to expand from this node.
+//     *
+//     * @return Whether the lock was successfully obtained. True means that the caller obtained the lock. False means
+//     * that someone else got to it first.
+//     */
+//    public synchronized boolean reserveExpansionRights() {
+//        if (locked.get()) { // Already owned by another worker.
+//            return false;
+//        } else {
+//            locked.set(true);
+//            // May need to add locks to nodes further up the tree towards root. For example, if calling
+//            // reserveExpansionRights locks the final available node of this node's parent, then the parent should be
+//            // locked off too. This effect can chain all the way up the tree towards the root.
+//            if (getTreeDepth() > 0) parent.propagateLock();
+//            return true;
+//        }
+//    }
+//
+//    /**
+//     * Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node.
+//     */
+//    public synchronized void releaseExpansionRights() {
+//        locked.set(false); // Release the lock.
+//        // Unlocking this node may cause nodes further up the tree to become available.
+//        if ((treeDepth > 0) && (parent != null)) parent.propagateUnlock();
+//    }
+//
+//    /**
+//     * Locking one node may cause some parent nodes to become unavailable also. propagateLock will check as far up
+//     * the tree towards the root node as necessary.
+//     */
+//    private synchronized void propagateLock() {
+//        // Lock this node unless we find evidence that we don't need to.
+//        for (NodeGeneric<N> child : children) {
+//            if (!child.isLocked() ){//&& !child.fullyExplored.get()) { // TODO
+//                return; // In this case, we don't need to continue locking things further up the tree.
+//            }
+//        }
+//        reserveExpansionRights();
+//    }
+//
+//    /**
+//     * Releasing one node's lock may make others further up the tree towards the root node become available.
+//     */
+//    private synchronized void propagateUnlock() {
+//        if (!isLocked()) return; // We've worked our way up to a node which is already not locked. No need to
+//        // propagate further.
+//
+//        // A single free child means we can unlock this node.
+//        for (NodeGeneric<N> child : children) {
+//            if (!child.isLocked()) {  // Does not need to stay locked.
+//                releaseExpansionRights();
+//                return;
+//            }
+//        }
+//    }
+//
+//    /**
+//     * Determine whether any sampler has exclusive rights to sample from this node.
+//     *
+//     * @return Whether any worker has exclusive rights to expand from this node (true/false).
+//     */
+//    public boolean isLocked() {
+//        return locked.get();
+//    }
 
 }

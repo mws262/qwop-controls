@@ -14,7 +14,7 @@ import java.util.*;
  *
  * @author Matt
  * @see java.util.Queue
- * @see ActionSet
+ * @see ActionList
  */
 public class Action implements Serializable {
 
