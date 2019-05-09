@@ -6,7 +6,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public class NodeGeneric<N extends NodeGeneric<N>> {
+// This mess is called f-bounded polymorphism. Whew.
+public abstract class NodeGeneric<N extends NodeGeneric<N>> {
 
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
@@ -68,7 +69,7 @@ public class NodeGeneric<N extends NodeGeneric<N>> {
      * Usually want to do something else.
      * @param node Child node to remove.
      */
-    public void removeFromChildren(NodeGeneric<N> node) {
+    public void removeFromChildren(N node) {
         children.remove(node);
     }
 
@@ -82,7 +83,7 @@ public class NodeGeneric<N extends NodeGeneric<N>> {
         if (treeDepth == 0)
             throw new IndexOutOfBoundsException("The root node has no parent, and thus this method call doesn't make " +
                     "sense.");
-        return parent.getChildren().indexOf(this);
+        return parent.getChildren().indexOf(getThis());
     }
 
     /**
@@ -238,33 +239,34 @@ public class NodeGeneric<N extends NodeGeneric<N>> {
      * Can pass a lambda to recurse down the tree. Will include the node called.
      * @param operation Lambda to run on all the nodes in the branch below and including the node called upon.
      */
-    public void recurseDownTreeInclusive(Consumer<NodeGeneric<N>> operation) {
-        operation.accept(this);
-        for (NodeGeneric<N> child : children) {
+    public void recurseDownTreeInclusive(Consumer<N> operation) {
+        operation.accept(getThis());
+        for (N child : children) {
             child.recurseDownTreeInclusive(operation);
         }
     }
 
-    public void recurseDownTreeExclusive(Consumer<NodeGeneric<N>> operation) {
-        for (NodeGeneric<N> child : children) {
+    public void recurseDownTreeExclusive(Consumer<N> operation) {
+        for (N child : children) {
             operation.accept(child);
             child.recurseDownTreeInclusive(operation);
         }
     }
 
-    public void recurseUpTreeInclusive(Consumer<NodeGeneric<N>> operation) {
-        operation.accept(this);
+    public void recurseUpTreeInclusive(Consumer<N> operation) {
+        operation.accept(getThis());
         if (treeDepth > 0) {
             parent.recurseUpTreeInclusive(operation);
         }
     }
-    public void recurseUpTreeInclusiveNoRoot(Consumer<NodeGeneric<N>> operation) {
-        operation.accept(this);
+    public void recurseUpTreeInclusiveNoRoot(Consumer<N> operation) {
+        operation.accept(getThis());
         if (treeDepth > 1) {
             parent.recurseUpTreeInclusive(operation);
         }
     }
 
+    protected abstract N getThis();
     /*
      * LOCKING AND UNLOCKING NODES:
      *
