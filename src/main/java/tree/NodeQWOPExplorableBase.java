@@ -1,11 +1,14 @@
 package tree;
 
 import actions.Action;
+import actions.ActionGenerator_Null;
 import actions.ActionList;
 import actions.IActionGenerator;
+import distributions.Distribution;
 import game.State;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -36,13 +39,18 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
     public NodeQWOPExplorableBase(State rootState, IActionGenerator actionGenerator) {
         super(rootState);
         this.actionGenerator = actionGenerator;
-        //untriedActions = actionGenerator.getPotentialChildActionSet(this);
+        untriedActions = actionGenerator.getPotentialChildActionSet(this);
+    }
+
+    public NodeQWOPExplorableBase(State rootState) {
+        super(rootState);
+        this.actionGenerator = new ActionGenerator_Null();
     }
 
     public NodeQWOPExplorableBase(N parent, Action action, State state, IActionGenerator actionGenerator) {
         super(parent, action, state);
         this.actionGenerator = actionGenerator;
-        //untriedActions = actionGenerator.getPotentialChildActionSet(this);
+        untriedActions = actionGenerator.getPotentialChildActionSet(parent);
     }
 
     public boolean isFullyExplored() {
@@ -63,6 +71,21 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
 
     public Action getUntriedActionByIndex(int idx) {
         return untriedActions.get(idx);
+    }
+
+    public Action getUntriedActionRandom() {
+        return untriedActions.getRandom();
+    }
+
+    public Action getUntriedActionOnDistribution() {
+        return untriedActions.sampleDistribution();
+    }
+
+    public List<Action> getUntriedActionListCopy() {
+        return new ArrayList<>(untriedActions);
+    }
+    public Distribution<Action> getActionDistribution() {
+        return untriedActions.samplingDist;
     }
 
     /**

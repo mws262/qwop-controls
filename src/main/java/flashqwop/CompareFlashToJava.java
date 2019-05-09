@@ -5,6 +5,8 @@ import actions.ActionList;
 import game.GameUnified;
 import game.State;
 import tree.Node;
+import tree.NodeQWOP;
+import tree.NodeQWOPGraphicsBase;
 import ui.PanelRunner_MultiState;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -23,7 +25,6 @@ public class CompareFlashToJava extends FlashGame {
     private ActionList bunchOfActions = ActionList.makeExhaustiveActionSet(14, 35);
 
     private ValueFunction_TensorFlow valueFunction = null;
-    private Node placeholderNode = new Node(); // TODO only really needs the state. This is just acting as a container.
 
     public CompareFlashToJava() {
 
@@ -104,10 +105,7 @@ public class CompareFlashToJava extends FlashGame {
 
     @Override
     public Action getControlAction(State state) {
-
-        placeholderNode.setState(state);
-        return valueFunction.getMaximizingAction(placeholderNode);
-//        return bunchOfActions.getRandom();
+        return valueFunction.getMaximizingAction(new NodeQWOP(state));
     }
 
     int tp = 0;
@@ -144,7 +142,7 @@ public class CompareFlashToJava extends FlashGame {
 
             panelRunner.clearSecondaryStates();
             panelRunner.addSecondaryState(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state,
-                    Node.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
+                    NodeQWOPGraphicsBase.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
 
 
             panelRunner.setMainState(state); // gameJava.getCurrentState

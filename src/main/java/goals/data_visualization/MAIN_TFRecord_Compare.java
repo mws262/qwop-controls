@@ -19,6 +19,7 @@ import controllers.Controller_NearestNeighborApprox.RunHolder;
 import game.GameUnified;
 import game.IGame;
 import tree.Node;
+import tree.NodeQWOPGraphicsBase;
 import ui.PanelRunner;
 
 
@@ -136,7 +137,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
                         //if (count % 2 != 0) continue;
                         GameUnified.drawExtraRunner((Graphics2D) g, rh.states.get(i).state, "",
                                 runnerScaling, xOffsetPixels - (int) (runnerScaling * specificXOffset), yOffsetPixels,
-                                Node.getColorFromScaledValue(2 * i, rh.states.size(),
+                                NodeQWOPGraphicsBase.getColorFromScaledValue(2 * i, rh.states.size(),
                                         0.8f), PanelRunner.normalStroke);
                         if (count >= rh.actionDurations.size() - 1) break;
                     }

@@ -1,16 +1,14 @@
 package goals.tree_search;
 
 import actions.Action;
+import actions.IActionGenerator;
 import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_Distance;
 import game.GameUnified;
 import samplers.Sampler_UCB;
 import samplers.rollout.*;
 import savers.DataSaver_StageSelected;
-import tree.Node;
-import tree.TreeStage_MaxDepth;
-import tree.TreeWorker;
-import tree.Utility;
+import tree.*;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -54,9 +52,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         // Make new tree root and assign to GUI.
         // Assign default available actions.
-        assignAllowableActionsWider(-1);
-        Node rootNode = new Node();
-        Node.pointsToDraw.clear();
+        IActionGenerator actionGenerator = assignAllowableActionsWider(-1);
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
+        NodeQWOPGraphics.pointsToDraw.clear();
         ui.clearRootNodes();
         ui.addRootNode(rootNode);
 
@@ -81,7 +79,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
         Node.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
 
-        List<Node> leaf = new ArrayList<>();
+        List<NodeQWOPGraphics> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
         assert leaf.size() == 1;
         leaf.get(0).resetSweepAngle();
@@ -172,8 +170,8 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             }
 
             // Update the value function.
-            List<Node> nodesBelow = new ArrayList<>();
-            rootNode.getNodesBelow(nodesBelow, true);
+            List<NodeQWOPGraphics> nodesBelow = new ArrayList<>();
+            rootNode.getNodesBelow(nodesBelow);
             nodesBelow.remove(rootNode);
             Collections.shuffle(nodesBelow);
 
@@ -184,7 +182,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             if (!headless) {
                 ValueFunction_TensorFlow_StateOnly finalValueFunction = valueFunction;
                 Runnable updateLabels = () -> {
-                    for (Node n : nodesBelow) {
+                    for (NodeQWOPGraphics n : nodesBelow) {
                         n.nodeLabelAlt = String.format("%.2f", finalValueFunction.evaluate(n));
                     }
                 };

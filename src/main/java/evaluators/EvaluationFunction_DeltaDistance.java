@@ -1,6 +1,6 @@
 package evaluators;
 
-import tree.INode;
+import tree.NodeQWOPBase;
 
 import java.util.Objects;
 
@@ -12,7 +12,7 @@ import java.util.Objects;
 public class EvaluationFunction_DeltaDistance implements IEvaluationFunction {
 
     @Override
-    public float getValue(INode nodeToEvaluate) {
+    public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
 
         if (nodeToEvaluate.getParent() != null)
             return Objects.requireNonNull(nodeToEvaluate.getState()).body.getX() - nodeToEvaluate.getParent().getState().body.getX();
@@ -21,7 +21,7 @@ public class EvaluationFunction_DeltaDistance implements IEvaluationFunction {
     }
 
     @Override
-    public String getValueString(INode nodeToEvaluate) {
+    public String getValueString(NodeQWOPBase<?> nodeToEvaluate) {
         return String.valueOf(getValue(nodeToEvaluate));
     }
 

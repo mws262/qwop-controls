@@ -10,7 +10,10 @@ import javax.swing.JFrame;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
+import game.GameUnified;
 import tree.Node;
+import tree.NodeQWOPGraphics;
+import tree.NodeQWOPGraphicsBase;
 import ui.PanelRunner_Animated;
 
 /**
@@ -80,11 +83,11 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
         SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
         for (File f : playbackFiles) {
-            Node rootNode = new Node();
+            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
 
             List<SavableSingleGame> loadedGames = new ArrayList<>();
             fileIO.loadObjectsToCollection(f, loadedGames);
-            Node.makeNodesFromRunInfo(loadedGames, rootNode, -1);
+            NodeQWOPGraphicsBase.makeNodesFromRunInfo(loadedGames, rootNode, -1);
             leafNodes.clear();
             rootNode.getLeaves(leafNodes);
             Node endNode = leafNodes.get(0);

@@ -1,11 +1,11 @@
 package actions;
 
-import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 import java.util.*;
 
 /**
- * Assigns potential action choices to {@link Node nodes}. This fixed sequence version has an {@link ActionList} for
+ * Assigns potential action choices to nodes. This fixed sequence version has an {@link ActionList} for
  * each subsequent {@link Action} choice, and cycles through these choices. This is a more general version of the fixed
  * nil/nil - WO - nil/nil - QP sequence I've used for quite awhile. Also, action "exceptions" can be specified to
  * override the normal ActionList in the cycle. This can be useful for defining a different set of actions for the
@@ -62,7 +62,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
     }
 
     @Override
-    public ActionList getPotentialChildActionSet(Node parentNode) {
+    public ActionList getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode) {
         int actionDepth = parentNode.getTreeDepth();
 
         // Check if this is an exception case.

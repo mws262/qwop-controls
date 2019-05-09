@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Objects;
 
 import data.SparseDataToDenseTFRecord;
+import game.GameUnified;
 import samplers.Sampler_UCB;
 import tree.Node;
+import tree.NodeQWOPGraphics;
 import tree.Utility;
 
 /**
@@ -62,8 +64,8 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
         if (doStage1) {
             int count = 0;
             while (count < runsToGenerate) {
-                Node rootNode = new Node();
-                Node.pointsToDraw.clear();
+                NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+                NodeQWOPGraphics.pointsToDraw.clear();
                 ui.clearRootNodes();
                 ui.addRootNode(rootNode);
 

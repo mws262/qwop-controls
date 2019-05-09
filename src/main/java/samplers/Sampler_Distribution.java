@@ -4,8 +4,6 @@ import java.util.ArrayList;
 
 import actions.Action;
 import game.IGame;
-import tree.Node;
-import tree.NodeQWOPExplorable;
 import tree.NodeQWOPExplorableBase;
 
 /**
@@ -36,15 +34,14 @@ public class Sampler_Distribution implements ISampler {
             if (currentNode.isLocked()) currentNode = currentNode.getRoot();
 
             // Count the number of available children to go to next.
-            ArrayList<Node> notFullyExploredChildren = new ArrayList<>();
+            ArrayList<NodeQWOPExplorableBase<?>> notFullyExploredChildren = new ArrayList<>();
             ArrayList<Action> notFullyExploredActions = new ArrayList<>();
-            for (Node child : currentNode.getChildren()) {
-                if (!child.fullyExplored.get()) {
+            for (NodeQWOPExplorableBase<?> child : currentNode.getChildren()) {
+                if (!child.isFullyExplored()) {
                     notFullyExploredChildren.add(child);
                     notFullyExploredActions.add(child.getAction());
                 }
             }
-
 
             if (notFullyExploredChildren.isEmpty()) {
                 // Nothing possible
@@ -64,7 +61,7 @@ public class Sampler_Distribution implements ISampler {
 
             // Only old things to select between.
             if (currentNode.getUntriedActionCount() == 0) {
-                Action chosen = currentNode.uncheckedActions.samplingDist.randOnDistribution(notFullyExploredActions);
+                Action chosen = currentNode.getActionDistribution().randOnDistribution(notFullyExploredActions);
 
                 for (int i = 0; i < notFullyExploredChildren.size(); i++) {
                     if (notFullyExploredActions.get(i).equals(chosen)) {
@@ -76,12 +73,12 @@ public class Sampler_Distribution implements ISampler {
             }
 
             // Both old and new things to try.
-            boolean doNew = currentNode.uncheckedActions.samplingDist.chooseASet(currentNode.uncheckedActions,
+            boolean doNew = currentNode.getActionDistribution().chooseASet(currentNode.getUntriedActionListCopy(),
 					notFullyExploredActions);
             if (doNew && currentNode.reserveExpansionRights()) { // Turn it over to the expansion policy.
                 return currentNode;
             } else {
-                Action chosen = currentNode.uncheckedActions.samplingDist.randOnDistribution(notFullyExploredActions);
+                Action chosen = currentNode.getActionDistribution().randOnDistribution(notFullyExploredActions);
                 for (int i = 0; i < notFullyExploredChildren.size(); i++) {
                     if (notFullyExploredActions.get(i).equals(chosen)) {
                         currentNode = notFullyExploredChildren.get(i);
@@ -93,11 +90,11 @@ public class Sampler_Distribution implements ISampler {
     }
 
     @Override
-    public Action expansionPolicy(Node startNode) {
-        if (startNode.uncheckedActions.size() == 0)
+    public Action expansionPolicy(NodeQWOPExplorableBase<?> startNode) {
+        if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
-        return startNode.uncheckedActions.sampleDistribution();
+        return startNode.getUntriedActionOnDistribution();
     }
 
     @Override

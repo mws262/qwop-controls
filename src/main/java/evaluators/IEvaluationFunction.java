@@ -1,6 +1,6 @@
 package evaluators;
 
-import tree.INode;
+import tree.NodeQWOPBase;
 
 /**
  * Generic evaluation of a node based on any factors. Going with "higher-is-better" interpretation of value.
@@ -16,7 +16,7 @@ public interface IEvaluationFunction {
      * @param nodeToEvaluate Node to determine the value of.
      * @return Scalar value of the node, with higher being "better".
      */
-    float getValue(INode nodeToEvaluate);
+    float getValue(NodeQWOPBase<?> nodeToEvaluate);
 
     /**
      * Get a formatted string of the evaluated value of a node. Typically this will divide the value up into whatever
@@ -25,7 +25,7 @@ public interface IEvaluationFunction {
      * @param nodeToEvaluate Node to determine the value of.
      * @return A formatted string of calculated value components.
      */
-    String getValueString(INode nodeToEvaluate);
+    String getValueString(NodeQWOPBase<?> nodeToEvaluate);
 
     /**
      * Create a copy of this IEvaluationFunction.

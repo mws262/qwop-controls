@@ -2,7 +2,7 @@ package actions;
 
 import distributions.Distribution;
 import distributions.Distribution_Equal;
-import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -45,7 +45,7 @@ public class ActionGenerator_Uniform implements IActionGenerator {
     }
 
     @Override
-    public ActionList getPotentialChildActionSet(Node parentNode) {
+    public ActionList getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode) {
         ActionList as = new ActionList(new Distribution_Equal());
         for (ActionList allActionList : allActionLists) {
             if (parentNode.getTreeDepth() == 0 || !allActionList.contains(parentNode.getAction())) { // Get all

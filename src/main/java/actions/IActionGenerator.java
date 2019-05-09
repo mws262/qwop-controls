@@ -1,6 +1,7 @@
 package actions;
 
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 import java.util.Set;
 
@@ -17,7 +18,7 @@ public interface IActionGenerator {
      * @param parentNode Node for which we want to pick potential child actions.
      * @return A set of actions to try as potential children.
      */
-    ActionList getPotentialChildActionSet(Node parentNode);
+    ActionList getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode);
 
     /**
      * Get a set of all possible actions which this generator could return.

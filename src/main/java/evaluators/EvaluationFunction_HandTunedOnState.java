@@ -1,6 +1,7 @@
 package evaluators;
 
 import tree.INode;
+import tree.NodeQWOPBase;
 
 import java.util.Objects;
 
@@ -14,7 +15,7 @@ import java.util.Objects;
 public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction {
 
     @Override
-    public float getValue(INode nodeToEvaluate) {
+    public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
         Objects.requireNonNull(nodeToEvaluate.getState());
 
         float value = 0.f;
@@ -26,7 +27,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
     }
 
     @Override
-    public String getValueString(INode nodeToEvaluate) {
+    public String getValueString(NodeQWOPBase<?> nodeToEvaluate) {
         Objects.requireNonNull(nodeToEvaluate.getState());
 
         String value = "";
@@ -45,7 +46,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with state angles.
      */
-    private float getAngleValue(INode nodeToEvaluate) {
+    private float getAngleValue(NodeQWOPBase<?> nodeToEvaluate) {
         return nodeToEvaluate.getState().body.getTh();
     }
 
@@ -55,7 +56,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with horizontal positions.
      */
-    private float getDistanceValue(INode nodeToEvaluate) {
+    private float getDistanceValue(NodeQWOPBase<?> nodeToEvaluate) {
         return nodeToEvaluate.getState().body.getX();
     }
 
@@ -65,7 +66,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with state velocities.
      */
-    private float getVelocityValue(INode nodeToEvaluate) {
+    private float getVelocityValue(NodeQWOPBase<?> nodeToEvaluate) {
         return nodeToEvaluate.getState().body.getDx();
     }
 

@@ -109,7 +109,7 @@ public class Sampler_FixedDepth implements ISampler {
         if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
-        return startNode.uncheckedActions.getRandom();
+        return startNode.getUntriedActionRandom();
     }
 
     @Override

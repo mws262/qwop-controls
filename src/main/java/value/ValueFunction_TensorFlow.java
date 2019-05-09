@@ -147,7 +147,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     }
 
     @Override
-    public void update(List<NodeQWOPBase<?>> nodes) {
+    public void update(List<? extends NodeQWOPBase<?>> nodes) {
         assert trainingBatchSize > 0;
 
         batchCount = 0;

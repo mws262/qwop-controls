@@ -8,6 +8,7 @@ import game.GameUnified;
 import game.IGame;
 import game.State;
 import tree.Node;
+import tree.NodeQWOPGraphicsBase;
 import ui.PanelRunner_MultiState;
 
 import javax.swing.*;
@@ -120,7 +121,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
                 IGame thisGame = perturbedGames.get(i);
                 thisGame.step(command);
                 if (count % drawInterval == 0)
-                    panelRunner.addSecondaryState(perturbedGames.get(i).getCurrentState(), Node.getColorFromScaledValue(i
+                    panelRunner.addSecondaryState(perturbedGames.get(i).getCurrentState(), NodeQWOPGraphicsBase.getColorFromScaledValue(i
                             , numPerturbedRunners, 0.8f));
 
                 // Remove and draw if failure.

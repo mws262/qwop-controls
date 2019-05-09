@@ -1,6 +1,10 @@
 package goals.tree_search;
 
+import game.GameUnified;
 import tree.Node;
+import tree.NodeQWOPExplorable;
+import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphics;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,15 +26,14 @@ public class MAIN_Search_Robust extends MAIN_Search_Template {
     private void doGames() {
         assignAllowableActions(10);
 
-        Node rootNode = new Node();
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
         ui.addRootNode(rootNode);
-        Node.includeZOffsetInDrawFiltering = true;
 
         doBasicMinDepthStage(rootNode, "testDev0.tmp", 1, 1, 10000);
-        List<Node> leaves = new ArrayList<>();
+        List<NodeQWOPGraphics> leaves = new ArrayList<>();
         rootNode.getLeaves(leaves);
 
-        for (Node node : leaves) {
+        for (NodeQWOPGraphics node : leaves) {
             node.resetSweepAngle();
             node.setBranchZOffset(0.1f);
             float score = evaluateNode(node);
@@ -42,25 +45,25 @@ public class MAIN_Search_Robust extends MAIN_Search_Template {
         }
     }
 
-    private float evaluateNode(Node node) {
+    private float evaluateNode(NodeQWOPExplorable node) {
 
         // Step 1: Expand all children to depth 1.
         doBasicMinDepthStage(node, "testDev1.tmp", 1, 1, 10000);
 
         // Step 2: Expand all children. If distance travelled after > threshold and # games played < threshold,
         // "recoverable" child node, otherwise "unrecoverable".
-        List<Node> leavesToExpand = new ArrayList<>();
+        List<NodeQWOPExplorable> leavesToExpand = new ArrayList<>();
         node.getLeaves(leavesToExpand);
 
         int successfulExpansionDepth = 0;
-        for (Node currentLeaf : leavesToExpand) {
-            if (!currentLeaf.isFailed()) {
+        for (NodeQWOPExplorable currentLeaf : leavesToExpand) {
+            if (!currentLeaf.getState().isFailed()) {
                 currentLeaf.setBranchZOffset(0.2f);
                 doBasicMaxDepthStage(currentLeaf, "testDev2.tmp", 100, 1f, 15000);
                 currentLeaf.setLineBrightness_below(0.2f);
                 currentLeaf.setBranchZOffset(0.0f);
 
-                successfulExpansionDepth += currentLeaf.maxBranchDepth.get() - currentLeaf.getTreeDepth();
+                successfulExpansionDepth += currentLeaf.getMaxBranchDepth() - currentLeaf.getTreeDepth();
             }
         }
 

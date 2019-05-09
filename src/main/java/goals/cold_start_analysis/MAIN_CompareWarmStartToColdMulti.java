@@ -5,6 +5,7 @@ import game.GameUnified;
 import game.IGame;
 import game.State;
 import tree.Node;
+import tree.NodeQWOPGraphicsBase;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -49,7 +50,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
                     if (st.isFailed()) {
                         coldStartGameIter.remove();
                     } else {
-                        runnerPanel.addSecondaryState(st, Node.getColorFromScaledValue(count,
+                        runnerPanel.addSecondaryState(st, NodeQWOPGraphicsBase.getColorFromScaledValue(count,
                                 actionQueue.getActionsInCurrentRun().length / (float) 5, 0.8f));
                         count++;
                     }

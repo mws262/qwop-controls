@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.stream.IntStream;
 
 import actions.ActionList;
+import actions.IActionGenerator;
 import samplers.Sampler_Greedy;
 import savers.DataSaver_DenseTFRecord;
 import tree.*;
@@ -184,7 +185,8 @@ public abstract class MAIN_Search_Template {
      * @param fractionOfWorkers 0 to 1, proportion of workers to allot to this stage.
      * @param maxGames Maximum number of games to play before giving up.
      */
-    protected void doBasicMaxDepthStage(Node rootNode, String saveName, int desiredDepth, float fractionOfWorkers,
+    protected void doBasicMaxDepthStage(NodeQWOPExplorableBase<?> rootNode, String saveName, int desiredDepth,
+                                        float fractionOfWorkers,
                                         int maxGames) {
         if (fractionOfWorkers > 1)
             throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
@@ -235,7 +237,7 @@ public abstract class MAIN_Search_Template {
      * @param fractionOfWorkers 0 to 1, proportion of workers to allot to this stage.
      * @param maxGames Maximum number of games to play before giving up.
      */
-    protected void doBasicMinDepthStage(Node rootNode, String saveName, int minDepth, float fractionOfWorkers,
+    protected void doBasicMinDepthStage(NodeQWOPExplorableBase<?> rootNode, String saveName, int minDepth, float fractionOfWorkers,
 										int maxGames) {
         if (fractionOfWorkers > 1)
             throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
@@ -284,7 +286,8 @@ public abstract class MAIN_Search_Template {
      * @param fractionOfWorkers Portion of max workers used by this stage.
      * @param numGames Number of games to play.
      */
-    protected void doFixedGamesToFailureStage(Node rootNode, String saveName, float fractionOfWorkers, int numGames) {
+    protected void doFixedGamesToFailureStage(NodeQWOPExplorableBase<?> rootNode, String saveName,
+                                              float fractionOfWorkers, int numGames) {
         if (fractionOfWorkers > 1)
             throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
 
@@ -315,7 +318,7 @@ public abstract class MAIN_Search_Template {
         // place.
         appendSummaryLog(logPrefix + "Finished after " + elapsedSeconds + " seconds.");
         appendSummaryLog(logPrefix + "Results -- " + (search.getResults().isEmpty() ? "<goal not met>" :
-                search.getResults().get(0).maxBranchDepth.get() + " depth achieved."));
+                search.getResults().get(0).getMaxBranchDepth() + " depth achieved."));
         // Return the checked out workers.
         for (TreeWorker w : tws1) {
             returnWorker(w);
@@ -405,7 +408,7 @@ public abstract class MAIN_Search_Template {
      * Will assign a broader set of options for "recovery" at the specified starting depth.
      * Pass -1 to disable this.
      */
-    public static void assignAllowableActions(int recoveryExceptionStart) {
+    public static IActionGenerator assignAllowableActions(int recoveryExceptionStart) {
         /* Space of allowed actions to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
@@ -498,10 +501,10 @@ public abstract class MAIN_Search_Template {
             }
         }
         // Define the specific way that these allowed actions are assigned as potential options for nodes.
-        Node.potentialActionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
+        return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 
-    public static void assignAllowableActionsWider(int recoveryExceptionStart) {
+    public static IActionGenerator assignAllowableActionsWider(int recoveryExceptionStart) {
         /* Space of allowed actions to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
@@ -602,6 +605,6 @@ public abstract class MAIN_Search_Template {
             }
         }
         // Define the specific way that these allowed actions are assigned as potential options for nodes.
-        Node.potentialActionGenerator = new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
+        return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 }

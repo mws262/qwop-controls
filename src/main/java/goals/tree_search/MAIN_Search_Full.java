@@ -8,8 +8,10 @@ import java.util.Objects;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import data.SparseDataToDenseTFRecord;
+import game.GameUnified;
 import samplers.Sampler_UCB;
 import tree.Node;
+import tree.NodeQWOPGraphics;
 
 /**
  * Does the full search in 4 stages.
@@ -97,8 +99,8 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
         }
 
         if (doStage1) {
-            Node rootNode = new Node();
-            Node.pointsToDraw.clear();
+            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+            NodeQWOPGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(rootNode);
 
@@ -122,9 +124,9 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
         }
         if (doStage2) {
             appendSummaryLog("Starting stage 2.");
-            Node rootNode = new Node();
+            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
 
-            Node.pointsToDraw.clear();
+            NodeQWOPGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(rootNode);
 
@@ -134,7 +136,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                     ".SavableSingleGame");
             fileIO.loadObjectsToCollection(saveFile, glist);
             Node.makeNodesFromRunInfo(glist, rootNode, getToSteadyDepth - trimSteadyBy - 1);
-            Node currNode = rootNode;
+            NodeQWOPGraphics currNode = rootNode;
             while (currNode.getTreeDepth() < getToSteadyDepth - trimSteadyBy) {
                 currNode = currNode.getChildByIndex(0);
             }
@@ -171,8 +173,8 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
             }
 
             // Saver makeNewWorld.
-            Node rootNode = new Node();
-            Node.pointsToDraw.clear();
+            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+            NodeQWOPGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(rootNode);
 
@@ -183,14 +185,14 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
             fileIO.loadObjectsToCollection(saveFile, glist);
             Node.makeNodesFromRunInfo(glist, rootNode, stage3StartDepth);
 
-            List<Node> leafList = new ArrayList<>();
+            List<NodeQWOPGraphics> leafList = new ArrayList<>();
             rootNode.getLeaves(leafList);
 
             int count = 0;
             int startAt = recoveryResumePoint;
             Node previousLeaf = null;
 
-            for (Node leaf : leafList) {
+            for (NodeQWOPGraphics leaf : leafList) {
                 if (count >= startAt) {
                     doBasicMaxDepthStage(leaf, "recoveries" + count + fileSuffix3, getBackToSteadyDepth, maxWorkerFraction3, bailAfterXGames3);
                 }
