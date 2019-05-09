@@ -3,8 +3,6 @@ package transformations;
 import java.util.List;
 
 import game.State;
-import tree.Node;
-
 /**
  * ITransforms convert {@link State states} to an array of numbers, and potentially back again. This can be useful when
  * doing model reduction.
@@ -16,7 +14,7 @@ public interface ITransform {
     /**
      * Update any necessary transform calculations. Not used by all types of transforms.
      *
-     * @param nodesToUpdateFrom The transform is updated using the data in this list of {@link Node nodes}.
+     * @param nodesToUpdateFrom The transform is updated using the data in this list.
      */
     void updateTransform(List<State> nodesToUpdateFrom);
 

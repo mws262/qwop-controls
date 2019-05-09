@@ -7,6 +7,8 @@ import actions.Action;
 import evaluators.IEvaluationFunction;
 import game.IGame;
 import tree.Node;
+import tree.NodeQWOPExplorable;
+import tree.NodeQWOPExplorableBase;
 import tree.Utility;
 
 public class Sampler_Greedy implements ISampler {
@@ -54,7 +56,7 @@ public class Sampler_Greedy implements ISampler {
     /**
      * Current node from which all sampling is done further down the tree among its descendants.
      */
-    private Node currentRoot;
+    private NodeQWOPExplorableBase<?> currentRoot;
 
     /**
      * Number of samples being taken from this node before going deeper into the tree.
@@ -93,15 +95,8 @@ public class Sampler_Greedy implements ISampler {
     /**
      * We've changed the node we're sampling from. Reset the appropriate stuff.
      */
-    private void chooseNewRoot(Node newRoot) {
-        if (currentRoot != null) {
-            currentRoot.nodeColor = null;
-            currentRoot.displayPoint = false;
-        }
+    private void chooseNewRoot(NodeQWOPExplorableBase<?> newRoot) {
         currentRoot = newRoot;
-        currentRoot.nodeColor = Color.RED;
-        currentRoot.displayPoint = true;
-
         totalSamplesToTakeAtThisNode = numSamplesAtDepth(currentRoot.getTreeDepth());
         samplesSoFarAtThisNode = 0;
     }
@@ -114,7 +109,7 @@ public class Sampler_Greedy implements ISampler {
     }
 
     @Override
-    public Node treePolicy(Node startNode) {
+    public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
         // Decide what to do with the given start node.
         if (currentRoot == null) {
             chooseNewRoot(startNode);
@@ -128,10 +123,10 @@ public class Sampler_Greedy implements ISampler {
         }
 
         // Current node fully exhausted, we need to back the root up.
-        if (currentRoot.fullyExplored.get()) {
+        if (currentRoot.isFullyExplored()) {
             int count = 0;
-            Node movingNode = currentRoot;
-            while (movingNode.getTreeDepth() > 0 && (movingNode.fullyExplored.get() || count < backwardsJump)) {
+            NodeQWOPExplorableBase<?> movingNode = currentRoot;
+            while (movingNode.getTreeDepth() > 0 && (movingNode.isFullyExplored() || count < backwardsJump)) {
                 movingNode = movingNode.getParent();
                 count++;
             }
@@ -143,28 +138,26 @@ public class Sampler_Greedy implements ISampler {
     }
 
     @Override
-    public void treePolicyActionDone(Node currentNode) {
+    public void treePolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public boolean treePolicyGuard(Node currentNode) {
+    public boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return treePolicyDone;
     }
 
     @Override
-    public Node expansionPolicy(Node startNode) {
-        if (startNode.uncheckedActions.size() == 0)
+    public Action expansionPolicy(NodeQWOPExplorableBase<?> startNode) {
+        if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
-        Action childAction = startNode.uncheckedActions.get(Utility.randInt(0, startNode.uncheckedActions.size() - 1));
-
-        return startNode.addChild(childAction);
+        return startNode.getUntriedActionByIndex(Utility.randInt(0, startNode.getUntriedActionCount() - 1));
     }
 
     @Override
-    public void expansionPolicyActionDone(Node currentNode) {
+    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
         treePolicyDone = false;
         if (currentNode.getState().isFailed()) {
             expansionPolicyDone = true;
@@ -175,14 +168,12 @@ public class Sampler_Greedy implements ISampler {
             //Sampled enough. Go deeper.
             if (samplesSoFarAtThisNode >= totalSamplesToTakeAtThisNode) {
                 // Pick the best leaf
-                ArrayList<Node> leaves = new ArrayList<>();
+                ArrayList<NodeQWOPExplorableBase<?>> leaves = new ArrayList<>();
                 currentRoot.getLeaves(leaves);
                 //float rootX = currentRoot.state.body.x;
-                Node bestNode = currentRoot;
+                NodeQWOPExplorableBase<?> bestNode = currentRoot;
                 float bestScore = -Float.MAX_VALUE;
-                for (Node leaf : leaves) {
-                    if (leaf.isStateUnassigned())
-                        continue;
+                for (NodeQWOPExplorableBase<?> leaf : leaves) {
                     float score = evaluationFunction.getValue(leaf);
                     if (score > bestScore) {
                         bestScore = score;
@@ -203,17 +194,17 @@ public class Sampler_Greedy implements ISampler {
     }
 
     @Override
-    public boolean expansionPolicyGuard(Node currentNode) {
+    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public void rolloutPolicy(Node startNode, IGame game) {
+    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGame game) {
         // No rollout policy.
     }
 
     @Override
-    public boolean rolloutPolicyGuard(Node currentNode) {
+    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         // Rollout policy not in use in the random sampler.
         return true;
     }

@@ -19,7 +19,6 @@ import org.nustaq.serialization.FSTConfiguration;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.Random;
-import java.util.function.Function;
 
 import static game.GameConstants.*;
 

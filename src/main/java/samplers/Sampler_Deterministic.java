@@ -3,6 +3,8 @@ package samplers;
 import actions.Action;
 import game.IGame;
 import tree.Node;
+import tree.NodeQWOPBase;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * Super-simple depth-first search with NO random selection. Tries to pick the first node it finds with an untried
@@ -18,36 +20,33 @@ public class Sampler_Deterministic implements ISampler {
     private boolean expansionPolicyDone = false;
 
     @Override
-    public Node treePolicy(Node startNode) {
-        if (startNode.fullyExplored.get())
+    public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
+        if (startNode.isFullyExplored())
             throw new RuntimeException("Trying to do tree policy on a given node at depth " + startNode.getTreeDepth() +
 					" which is already fully-explored. Whoever called this is at fault.");
-        Node currentNode = startNode;
+        NodeQWOPExplorableBase<?> currentNode = startNode;
 
         while (true) {
             // TEMPORARY DELAY
-            if (currentNode.fullyExplored.get())
+            if (currentNode.isFullyExplored())
                 throw new RuntimeException("Tree policy got itself to a node which is fully-explored. This is its " +
 						"fault.");
             if (currentNode.isLocked()) {
-                currentNode = startNode;
-                if (currentNode.getTreeDepth() > startNode.getTreeDepth()) {
-                    currentNode = currentNode.getParent();
-                }
+                currentNode = startNode.getParent();
                 continue;
                 //throw new RuntimeException("Deterministic sampler stuck on locked node at depth: " + currentNode
 				// .treeDepth);
             }
             // If the given node has unchecked options (e.g. root hasn't tried all possible immediate children),
 			// expand directly.
-            if (!currentNode.uncheckedActions.isEmpty() && currentNode.reserveExpansionRights()) return currentNode;
+            if (currentNode.getUntriedActionCount() != 0 && currentNode.reserveExpansionRights()) return currentNode;
 
             // Get the first child with some untried actions after it, or at least a not-fully-explored one.
             boolean foundViableChild = false;
-            for (Node child : currentNode.getChildren()) {
-                if (!child.uncheckedActions.isEmpty() && child.reserveExpansionRights()) {
+            for (NodeQWOPExplorableBase<?> child : currentNode.getChildren()) {
+                if (child.getUntriedActionCount() != 0 && child.reserveExpansionRights()) {
                     return child;
-                } else if (!child.fullyExplored.get()) {
+                } else if (!child.isFullyExplored()) {
                     currentNode = child;
                     foundViableChild = true;
                     break;
@@ -61,42 +60,40 @@ public class Sampler_Deterministic implements ISampler {
     }
 
     @Override
-    public void treePolicyActionDone(Node currentNode) {
+    public void treePolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public boolean treePolicyGuard(Node currentNode) {
+    public boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return treePolicyDone; // True means ready to move on to the next.
     }
 
     @Override
-    public Node expansionPolicy(Node startNode) {
-        if (startNode.uncheckedActions.size() == 0)
+    public Action expansionPolicy(NodeQWOPExplorableBase<?> startNode) {
+        if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
-        Action childAction = startNode.uncheckedActions.get(0); // Get the first available untried actions.
-
-        return startNode.addChild(childAction);
+        return startNode.getUntriedActionByIndex(0); // Get the first available untried actions.
     }
 
     @Override
-    public void expansionPolicyActionDone(Node currentNode) {
+    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
         treePolicyDone = false;
         expansionPolicyDone = currentNode.getState().isFailed();
     }
 
     @Override
-    public boolean expansionPolicyGuard(Node currentNode) {
+    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public void rolloutPolicy(Node startNode, IGame game) {}
+    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGame game) {}
 
     @Override
-    public boolean rolloutPolicyGuard(Node currentNode) {
+    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         // Rollout policy not in use in the random sampler.
         return true; // No rollout policy
     }

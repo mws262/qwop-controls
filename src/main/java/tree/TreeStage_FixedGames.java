@@ -30,21 +30,21 @@ public class TreeStage_FixedGames extends TreeStage {
     }
 
     @Override
-    public void initialize(List<TreeWorker> workers, Node stageRoot) {
+    public void initialize(List<TreeWorker> workers, NodeQWOPExplorableBase<?> stageRoot) {
         initialGamesPlayed = TreeWorker.getTotalGamesPlayed();
         super.initialize(workers, stageRoot);
     }
 
     @Override
-    public List<Node> getResults() {
-        List<Node> resultList = new ArrayList<>();
+    public List<NodeQWOPBase<?>> getResults() {
+        List<NodeQWOPBase<?>> resultList = new ArrayList<>();
         resultList.add(getRootNode()); // No particularly interesting results.
         return resultList;
     }
 
     @Override
     public boolean checkTerminationConditions() {
-        if (getRootNode().fullyExplored.get()) return true;
+        if (getRootNode().isFullyExplored()) return true;
         return (TreeWorker.getTotalGamesPlayed() - initialGamesPlayed + numWorkers) >= numGamesToPlay; // Won't always manage to stop exactly at the right number, but close enough.
     }
 }

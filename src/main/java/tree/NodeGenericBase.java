@@ -3,11 +3,21 @@ package tree;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-// This mess is called f-bounded polymorphism. Whew.
-public abstract class NodeGeneric<N extends NodeGeneric<N>> {
+/**
+ * Generic tree implementation non-specific to QWOP.
+ * This uses F-bounded polymorphism, i.e. the recursive-looking generic types. This oddity lets all inheriting
+ * classes use these methods and get back their own type. For example, to use this:
+ *
+ * class Foo extends NodeGenericBase<Foo>...
+ * Then, fooInstance.getParent() will return something of type Foo specifically, and not of the more general type
+ * NodeGenericBase.
+ *
+ * @author matt
+ * @param <N>
+ */
+abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
 
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
@@ -19,23 +29,20 @@ public abstract class NodeGeneric<N extends NodeGeneric<N>> {
      */
     private final List<N> children = new CopyOnWriteArrayList<>();
 
-    private final int treeDepth;
-
     /**
-     * If one TreeWorker is expanding from this leaf node (if it is one), then no other worker should try to
-     * simultaneously expand from here too.
+     * Depth of this node in the tree. Root node is 0; its children are 1, etc.
      */
-    private final AtomicBoolean locked = new AtomicBoolean(false);
+    private final int treeDepth;
 
     /**
      * For making a root node.
      */
-    public NodeGeneric() {
+    public NodeGenericBase() {
         treeDepth = 0;
         parent = null;
     }
 
-    public NodeGeneric(N parent) {
+    public NodeGenericBase(N parent) {
         this.parent = parent;
         treeDepth = parent.getTreeDepth() + 1;
     }
@@ -115,7 +122,7 @@ public abstract class NodeGeneric<N extends NodeGeneric<N>> {
      * @param childIndex Index of the child node to retrieve.
      * @return A child of this node, with the index as specified.
      */
-    public NodeGeneric<N> getChildByIndex(int childIndex) {
+    public N getChildByIndex(int childIndex) {
         return children.get(childIndex);
     }
 
@@ -125,7 +132,7 @@ public abstract class NodeGeneric<N extends NodeGeneric<N>> {
      * @return A random child node of this node.
      * @throws IndexOutOfBoundsException Has no children.
      */
-    public NodeGeneric<N> getRandomChild() {
+    public N getRandomChild() {
         if (children.isEmpty())
             throw new IndexOutOfBoundsException("Tried to get a random child from a node with no children.");
         return children.get(Utility.randInt(0, children.size() - 1));
@@ -139,12 +146,8 @@ public abstract class NodeGeneric<N extends NodeGeneric<N>> {
      *                                  be cleared.
      * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public Collection<NodeGeneric<N>> getNodesBelow(Collection<NodeGeneric<N>> nodeList) {
-        nodeList.add(this);
-
-        for (NodeGeneric<N> child : children) {
-            child.getNodesBelow(nodeList);
-        }
+    public Collection<N> getNodesBelow(Collection<N> nodeList) {
+        recurseDownTreeInclusive(nodeList::add);
         return nodeList;
     }
 
@@ -159,9 +162,9 @@ public abstract class NodeGeneric<N extends NodeGeneric<N>> {
     public Collection<N> getLeaves(Collection<N> leaves) {
 
         if (children.isEmpty()) { // If leaf, add itself.
-            leaves.add((N) this);
+            leaves.add(getThis());
         } else { // Otherwise keep traversing down.
-            for (NodeGeneric<N> child : children) {
+            for (NodeGenericBase<N> child : children) {
                 child.getLeaves(leaves);
             }
         }
@@ -181,10 +184,10 @@ public abstract class NodeGeneric<N extends NodeGeneric<N>> {
      *
      * @return The tree root node.
      */
-    public NodeGeneric<N> getRoot() {
-        NodeGeneric<N> currentNode = this;
-        while (currentNode.treeDepth > 0) {
-            currentNode = currentNode.parent;
+    public N getRoot() {
+        N currentNode = getThis();
+        while (currentNode.getTreeDepth() > 0) {
+            currentNode = currentNode.getParent();
         }
         return currentNode;
     }
@@ -196,7 +199,7 @@ public abstract class NodeGeneric<N extends NodeGeneric<N>> {
      */
     public int countDescendants() {
         int count = 0;
-        for (NodeGeneric<N> current : children) {
+        for (N current : children) {
             count++;
             count += current.countDescendants(); // Recurse down through the tree.
         }
@@ -210,15 +213,15 @@ public abstract class NodeGeneric<N extends NodeGeneric<N>> {
      * @param possibleAncestorNode Node to check whether is an ancestor of this node.
      * @return Whether the provided node is an ancestor of this node (true/false).
      */
-    public boolean isOtherNodeAncestor(NodeGeneric<N> possibleAncestorNode) {
-        if (possibleAncestorNode.treeDepth >= treeDepth) { // Don't need to check if this is as far down the
+    public boolean isOtherNodeAncestor(N possibleAncestorNode) {
+        if (possibleAncestorNode.getTreeDepth() >= treeDepth) { // Don't need to check if this is as far down the
             // tree.
             return false;
         }
-        NodeGeneric<N> currNode = parent;
-        while (currNode.treeDepth != possibleAncestorNode.treeDepth) { // Find the node at the same depth as the one
+        N currNode = parent;
+        while (currNode.getTreeDepth() != possibleAncestorNode.getTreeDepth()) { // Find the node at the same depth as the one
             // we're checking.
-            currNode = currNode.parent;
+            currNode = currNode.getParent();
         }
         return currNode.equals(possibleAncestorNode);
     }
@@ -229,7 +232,7 @@ public abstract class NodeGeneric<N extends NodeGeneric<N>> {
      * info stored for this branch to keep memory in check.
      */
     public void destroyNodesBelow() {
-        for (NodeGeneric<N> child : children) {
+        for (N child : children) {
             child.destroyNodesBelow();
         }
         children.clear();
@@ -267,89 +270,4 @@ public abstract class NodeGeneric<N extends NodeGeneric<N>> {
     }
 
     protected abstract N getThis();
-    /*
-     * LOCKING AND UNLOCKING NODES:
-     *
-     * Due to multithreading, it is a major headache if several threads are sampling from the same node at the same
-     * time. Hence, we lock nodes to prevent sampling by other threads while another one is working in that part of
-     * the tree. In general, we try to be overzealous in locking. For broad trees, there is minimal blocking slowdown
-     * . For narrow trees, however, we may get only minimal gains from multithreading.
-     *
-     * Cases:
-     * 1. Select node to expand. It has only 1 untried option. We lock the node, and expand.
-     * 2. Select node to expand. It has multiple options. We still lock the node for now. This could be changed.
-     * 3. Select node to expand. It is now locked according to 1 and 2. This node's parent only has fully explored
-     * children and locked children. For all practical purposes, this node is also out of play. Lock it too and
-     * recurse up the tree until we reach a node with at least one unlocked and not fully explored child.
-     * When unlocking, we should propagate fully-explored statuses back up the tree first, and then remove locks as
-     * far up the tree as possible.
-     */
-
-//    /**
-//     * Set a flag to indicate that the invoking TreeWorker has temporary exclusive rights to expand from this node.
-//     *
-//     * @return Whether the lock was successfully obtained. True means that the caller obtained the lock. False means
-//     * that someone else got to it first.
-//     */
-//    public synchronized boolean reserveExpansionRights() {
-//        if (locked.get()) { // Already owned by another worker.
-//            return false;
-//        } else {
-//            locked.set(true);
-//            // May need to add locks to nodes further up the tree towards root. For example, if calling
-//            // reserveExpansionRights locks the final available node of this node's parent, then the parent should be
-//            // locked off too. This effect can chain all the way up the tree towards the root.
-//            if (getTreeDepth() > 0) parent.propagateLock();
-//            return true;
-//        }
-//    }
-//
-//    /**
-//     * Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node.
-//     */
-//    public synchronized void releaseExpansionRights() {
-//        locked.set(false); // Release the lock.
-//        // Unlocking this node may cause nodes further up the tree to become available.
-//        if ((treeDepth > 0) && (parent != null)) parent.propagateUnlock();
-//    }
-//
-//    /**
-//     * Locking one node may cause some parent nodes to become unavailable also. propagateLock will check as far up
-//     * the tree towards the root node as necessary.
-//     */
-//    private synchronized void propagateLock() {
-//        // Lock this node unless we find evidence that we don't need to.
-//        for (NodeGeneric<N> child : children) {
-//            if (!child.isLocked() ){//&& !child.fullyExplored.get()) { // TODO
-//                return; // In this case, we don't need to continue locking things further up the tree.
-//            }
-//        }
-//        reserveExpansionRights();
-//    }
-//
-//    /**
-//     * Releasing one node's lock may make others further up the tree towards the root node become available.
-//     */
-//    private synchronized void propagateUnlock() {
-//        if (!isLocked()) return; // We've worked our way up to a node which is already not locked. No need to
-//        // propagate further.
-//
-//        // A single free child means we can unlock this node.
-//        for (NodeGeneric<N> child : children) {
-//            if (!child.isLocked()) {  // Does not need to stay locked.
-//                releaseExpansionRights();
-//                return;
-//            }
-//        }
-//    }
-//
-//    /**
-//     * Determine whether any sampler has exclusive rights to sample from this node.
-//     *
-//     * @return Whether any worker has exclusive rights to expand from this node (true/false).
-//     */
-//    public boolean isLocked() {
-//        return locked.get();
-//    }
-
 }

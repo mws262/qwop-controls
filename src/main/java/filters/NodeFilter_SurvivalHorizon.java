@@ -1,6 +1,6 @@
 package filters;
 
-import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * Filters nodes based on survival past them to a specified horizon. For example, with a specified horizon of 5, only
@@ -29,7 +29,7 @@ public class NodeFilter_SurvivalHorizon implements INodeFilter {
     }
 
     @Override
-    public boolean filter(Node node) {
+    public boolean filter(NodeQWOPExplorableBase<?> node) {
         return node.maxBranchDepth.get() - node.getTreeDepth() >= requiredSurvivalHorizon;
     }
 

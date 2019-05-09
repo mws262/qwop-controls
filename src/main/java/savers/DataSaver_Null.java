@@ -6,6 +6,7 @@ import game.IGame;
 import game.State;
 import actions.Action;
 import tree.Node;
+import tree.NodeQWOPBase;
 
 /**
  * Data saver placeholder for when we don't wish to actually save anything.
@@ -23,7 +24,7 @@ public class DataSaver_Null implements IDataSaver {
     }
 
     @Override
-    public void reportGameEnding(Node endNode) {
+    public void reportGameEnding(NodeQWOPBase<?> endNode) {
     }
 
     @Override
@@ -35,7 +36,7 @@ public class DataSaver_Null implements IDataSaver {
     }
 
     @Override
-    public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
+    public void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
     }
 
     @Override

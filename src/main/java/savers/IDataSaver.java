@@ -8,6 +8,7 @@ import game.IGame;
 import game.State;
 import actions.Action;
 import tree.Node;
+import tree.NodeQWOPBase;
 
 public interface IDataSaver {
 
@@ -28,13 +29,13 @@ public interface IDataSaver {
     /**
      * Get the final game state for this run.
      */
-    void reportGameEnding(Node endNode);
+    void reportGameEnding(NodeQWOPBase<?> endNode);
 
     /**
      * Called when the end of a TreeStage is reached. TargetNodes meaning is different depending on the saver
      * implementation.
      */
-    void reportStageEnding(Node rootNode, List<Node> targetNodes);
+    void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes);
 
     /**
      * Store and dump any buffered data, often when a stage has ended but nothing specific needs to be reported.

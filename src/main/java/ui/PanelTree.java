@@ -6,6 +6,8 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
 import tree.Node;
+import tree.NodeQWOPGraphics;
+import tree.NodeQWOPGraphicsBase;
 import tree.TreeWorker;
 
 import javax.swing.*;
@@ -42,12 +44,12 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     /**
      * Tree root nodes associated with this interface.
      */
-    private ArrayList<Node> rootNodes = new ArrayList<>();
+    private ArrayList<NodeQWOPGraphicsBase<?>> rootNodes = new ArrayList<>();
 
     /**
      * Currently selected {@link Node} on the tree.
      */
-    private Node selectedNode;
+    private NodeQWOPGraphicsBase<?> selectedNode;
 
     /**
      * Games played per second
@@ -149,7 +151,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      *
      * @param node Selected node that will be broadcast to listeners.
      */
-    private void selectNode(Node node) {
+    private void selectNode(NodeQWOPGraphicsBase<?> node) {
         selectedNode = node;
         for (NodeSelectionListener listener : nodeSelectionListeners) {
             listener.nodeSelected(node);
@@ -162,7 +164,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      * @param node A root node whose tree we want to draw. Does not literally need to be a zero-depth tree root, just
      *             some node with children we want to draw.
      */
-    public void addRootNode(Node node) {
+    public void addRootNode(NodeQWOPGraphicsBase<?> node) {
         rootNodes.add(node);
     }
 
@@ -183,31 +185,36 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     public void display(GLAutoDrawable drawable) {
         super.display(drawable);
 
-        float ptSize = 50f / cam.getZoomFactor(); //Let the points be smaller/bigger depending on zoom, but make
-        // sure to cap out the size!
-        ptSize = Math.min(ptSize, 10f);
+        final float ptSize = Math.min(50f / cam.getZoomFactor(), 10f); //Let the points be smaller/bigger depending on
+        // zoom, but make sure to cap out the size!
 
-        for (Node node : rootNodes) {
-            node.recurseOnTreeInclusive((n) -> {if (!n.notDrawnForSpeed && !n.nodeLabel.isEmpty()) {
-                    //n.setChildrenColorFromRelativeValues();
-                    drawString(!n.nodeLabelAlt.isEmpty() ? n.nodeLabel + ", " + n.nodeLabelAlt : n.nodeLabel,
-                    n.nodeLocation[0],
-                    n.nodeLocation[1],
-                    n.nodeLocation[2],
-                            Node.getColorFromScaledValue(n.getValue()/n.visitCount.floatValue() - Node.minVal,
-                                    Node.maxVal - Node.minVal, 1f)); }});
+        for (NodeQWOPGraphicsBase<?> node : rootNodes) {
+            node.recurseDownTreeInclusive( n -> {
+                        if (!n.notDrawnForSpeed) {
+                            // TODO put labels back in.
 
-            gl.glColor3f(1f, 0.1f, 0.1f);
-            gl.glPointSize(ptSize);
+//                    && !n.nodeLabel.isEmpty()) {
+//                    //n.setChildrenColorFromRelativeValues();
+//                    drawString(!n.nodeLabelAlt.isEmpty() ? n.nodeLabel + ", " + n.nodeLabelAlt : n.nodeLabel,
+//                    n.nodeLocation[0],
+//                    n.nodeLocation[1],
+//                    n.nodeLocation[2],
+//                            Node.getColorFromScaledValue(n.getValue()/n.visitCount.floatValue() - Node.minVal,
+//                                    Node.maxVal - Node.minVal, 1f)); }});
 
-            gl.glBegin(GL.GL_POINTS);
-            node.drawNodes_below(gl); // Recurses through the whole tree.
-            gl.glEnd();
+                            gl.glColor3f(1f, 0.1f, 0.1f);
+                            gl.glPointSize(ptSize);
 
-            gl.glColor3f(1f, 1f, 1f);
-            gl.glBegin(GL.GL_LINES);
-            node.drawLines_below(gl); // Recurses through the whole tree.
-            gl.glEnd();
+                            gl.glBegin(GL.GL_POINTS);
+                            node.drawPoint(gl); // Recurses through the whole tree.
+                            gl.glEnd();
+
+                            gl.glColor3f(1f, 1f, 1f);
+                            gl.glBegin(GL.GL_LINES);
+                            node.drawLine(gl); // Recurses through the whole tree.
+                            gl.glEnd();
+                        }
+                    });
         }
 
         // Draw games played and games/sec in upper left.
@@ -286,9 +293,9 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         if (e.isControlDown()) {
 
             // Get all nodes below all roots.
-            List<Node> nodesBelow = new ArrayList<>();
-            for (Node node : rootNodes) {
-                node.getNodesBelow(nodesBelow, true);
+            List<NodeQWOPGraphicsBase<?>> nodesBelow = new ArrayList<>();
+            for (NodeQWOPGraphicsBase<?> node : rootNodes) { // TODO get rid of multiple roots.
+                 node.recurseDownTreeInclusive(nodesBelow::add);
             }
             selectNode(cam.nodeFromClick_set(e.getX(), e.getY(), nodesBelow));
         }
@@ -360,7 +367,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                     case KeyEvent.VK_P: //Pause everything except for graphics updates
                         treePause = !treePause;
                         if (treePause) {
-                            rootNodes.get(0).calcNodePosBelow();
+                            //rootNodes.get(0).calcNodePosBelow(); // TODO
                         }
                         break;
                     case KeyEvent.VK_SPACE:
@@ -435,14 +442,14 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                 //This set of logicals eliminates the edge cases, then takes the proposed action as default
                 if (thisIndex == 0 && direction == -1) { //We're at the lowest index of this node and must head
                     // to a new parent node.
-                    ArrayList<Node> blacklist = new ArrayList<>(); //Keep a blacklist of nodes that already
+                    ArrayList<NodeQWOPGraphicsBase<?>> blacklist = new ArrayList<>(); //Keep a blacklist of nodes that already
                     // proved to be duds.
                     blacklist.add(selectedNode);
                     nextOver(selectedNode.getParent(), blacklist, 1, direction,
                             selectedNode.getIndexAccordingToParent(), 0);
                 } else if (thisIndex == selectedNode.getSiblingCount() && direction == 1) { //We're at
                     // the highest index of this node and must head to a new parent node.
-                    ArrayList<Node> blacklist = new ArrayList<>();
+                    ArrayList<NodeQWOPGraphicsBase<?>> blacklist = new ArrayList<>();
                     blacklist.add(selectedNode);
                     nextOver(selectedNode.getParent(), blacklist, 1, direction,
                             selectedNode.getIndexAccordingToParent(), 0);
@@ -467,7 +474,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      * Take a node back a layer. Don't return to node past. Try to go back out by the deficit depth amount in the
      * +1 or -1 direction left/right -- TODO this is an old mess.
      */
-    private boolean nextOver(Node current, ArrayList<Node> blacklist, int deficitDepth, int direction,
+    private boolean nextOver(NodeQWOPGraphicsBase<?> current, ArrayList<NodeQWOPGraphicsBase<?>> blacklist, int deficitDepth, int direction,
                              int prevIndexAbove, int numTimesTried) { // numTimesTried added to prevent some really
         // deep node for causing some really huge search through the whole tree. If we don't succeed in a handful
         // of iterations, just fail quietly.

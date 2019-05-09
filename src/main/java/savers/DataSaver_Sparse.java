@@ -9,7 +9,7 @@ import data.SavableSingleGame;
 import game.IGame;
 import game.State;
 import actions.Action;
-import tree.Node;
+import tree.NodeQWOPBase;
 
 /**
  * Saver for sparse game information. Basically this includes actions
@@ -64,7 +64,7 @@ public class DataSaver_Sparse implements IDataSaver {
     public void reportTimestep(Action action, IGame game) {}
 
     @Override
-    public void reportGameEnding(Node endNode) {
+    public void reportGameEnding(NodeQWOPBase<?> endNode) {
         saveBuffer.add(new SavableSingleGame(endNode));
         gamesSinceFile++;
 
@@ -88,7 +88,7 @@ public class DataSaver_Sparse implements IDataSaver {
     }
 
     @Override
-    public void reportStageEnding(Node rootNode, List<Node> targetNodes) {
+    public void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
         // If the save buffer still has stuff in it, save!
         if (!saveBuffer.isEmpty()) {
             File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension));

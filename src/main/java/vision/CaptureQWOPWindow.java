@@ -1,7 +1,5 @@
 package vision;
 
-import tree.Utility;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;

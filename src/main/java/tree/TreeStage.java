@@ -15,7 +15,7 @@ import savers.IDataSaver;
 public abstract class TreeStage implements Runnable {
 
     /** **/
-    private Node stageRoot;
+    private NodeQWOPExplorableBase<?> stageRoot;
 
     /**
      * Currently only supporting one sampler per stage. Must define which sampler to use in the inheritors of this
@@ -50,7 +50,7 @@ public abstract class TreeStage implements Runnable {
 
     private final Object lock = new Object();
 
-    public void initialize(List<TreeWorker> treeWorkers, Node stageRoot) {
+    public void initialize(List<TreeWorker> treeWorkers, NodeQWOPExplorableBase<?> stageRoot) {
         numWorkers = treeWorkers.size();
         if (numWorkers < 1)
             throw new RuntimeException("Tried to assign a tree stage an invalid number of workers: " + numWorkers);
@@ -108,7 +108,7 @@ public abstract class TreeStage implements Runnable {
     /**
      * Query the stage for its final results.
      */
-    public abstract List<Node> getResults();
+    public abstract List<NodeQWOPBase<?>> getResults();
 
     /**
      * Check through the tree for termination conditions.
@@ -155,33 +155,11 @@ public abstract class TreeStage implements Runnable {
      * Get the root node that this stage is operating from. It cannot change from an external caller's perspective,
      * so no set method.
      */
-    public Node getRootNode() {
+    public NodeQWOPExplorableBase<?> getRootNode() {
         return stageRoot;
     }
 
     public int getNumberOfWorkers() {
         return numWorkers;
-    }
-
-    /**
-     * Sometimes a stage end is triggered before a necessary state is assigned to a node. This method can waste time
-     * for us until the state is assigned!
-     * @param n Node to wait for its state to be assigned.
-     */
-    void waitForStateAssignment(Node n) throws TimeoutException {
-        int max = 1000; // Maximum waiting intervals before timing out.
-        int count = 0;
-        while (n.isStateUnassigned()) {
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            count++;
-            if (count > max) {
-                throw new TimeoutException("Waited for a state to be assigned to a node for too long. Something " +
-                        "bigger is up.");
-            }
-        }
     }
 }

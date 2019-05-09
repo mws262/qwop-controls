@@ -3,8 +3,7 @@ package value;
 import com.google.common.collect.Iterables;
 import data.LoadStateStatistics;
 import tflowtools.TrainableNetwork;
-import tree.INode;
-import tree.Node;
+import tree.NodeQWOPBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -148,7 +147,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     }
 
     @Override
-    public void update(List<Node> nodes) {
+    public void update(List<NodeQWOPBase<?>> nodes) {
         assert trainingBatchSize > 0;
 
         batchCount = 0;
@@ -161,7 +160,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
 
             // Iterate through the nodes in the batch.
             for (int i = 0; i < batch.size(); i++) {
-                Node n = batch.get(i);
+                NodeQWOPBase<?> n = batch.get(i);
 
                 // Don't include root node since it doesn't have a parent.
                 if (n.getParent() == null) {
@@ -186,13 +185,13 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     }
 
     @Override
-    public float evaluate(INode node) {
+    public float evaluate(NodeQWOPBase<?> node) {
         float[][] input = new float[1][inputSize];
         input[0] = assembleInputFromNode(node);
         float[][] result = network.evaluateInput(input);
         return result[0][0];
     }
 
-    abstract float[] assembleInputFromNode(INode node);
-    abstract float[] assembleOutputFromNode(Node node);
+    abstract float[] assembleInputFromNode(NodeQWOPBase<?> node);
+    abstract float[] assembleOutputFromNode(NodeQWOPBase<?> node);
 }

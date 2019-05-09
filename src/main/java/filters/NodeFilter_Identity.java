@@ -1,8 +1,8 @@
 package filters;
 
-import java.util.List;
+import tree.NodeQWOPExplorableBase;
 
-import tree.Node;
+import java.util.List;
 
 /**
  * Filter which accepts all nodes and rejects none. Useful as a placeholder or as a debugging tool.
@@ -13,5 +13,5 @@ import tree.Node;
 public class NodeFilter_Identity implements INodeFilter {
 
     @Override
-    public void filter(List<Node> nodes) {}
+    public void filter(List<NodeQWOPExplorableBase<?>> nodes) {}
 }

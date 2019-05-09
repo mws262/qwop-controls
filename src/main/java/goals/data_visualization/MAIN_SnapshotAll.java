@@ -10,7 +10,6 @@ import javax.swing.JFrame;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameUnified;
 import tree.Node;
 import ui.PanelRunner_Snapshot;
 

@@ -1,6 +1,7 @@
 package ui;
 
 import tree.Node;
+import tree.NodeQWOPGraphicsBase;
 
 import java.util.EventListener;
 
@@ -15,5 +16,5 @@ public interface NodeSelectionListener extends EventListener {
      * Callback for a node which has been selected (usually by a click on the tree).
      * @param node Selected node.
      */
-    void nodeSelected(Node node);
+    void nodeSelected(NodeQWOPGraphicsBase node);
 }
