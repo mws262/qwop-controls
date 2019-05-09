@@ -54,7 +54,7 @@ public class TreeStage_MaxDepth extends TreeStage {
     public List<NodeQWOPBase<?>> getResults() {
         List<NodeQWOPBase<?>> resultList = new ArrayList<>();
         leafList.clear();
-        getRootNode().getLeaves(leafList);
+        getRootNode().applyToLeaves(leafList::add);
 
         if (getRootNode().isFullyExplored() || (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames)
             return resultList; // No results. No possible way to recover.
@@ -81,7 +81,7 @@ public class TreeStage_MaxDepth extends TreeStage {
     public boolean checkTerminationConditions() {
         NodeQWOPExplorableBase<?> rootNode = getRootNode();
         // Also terminate if it's been too long and we haven't found anything.
-        return rootNode.isFullyExplored() || rootNode.maxBranchDepth.get() >= maxEffectiveDepth ||
+        return rootNode.isFullyExplored() || rootNode.getMaxBranchDepth() >= maxEffectiveDepth ||
                 (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames;
     }
 }

@@ -1,6 +1,6 @@
 package actions;
 
-import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +19,7 @@ public class ActionGenerator_FixedActions implements IActionGenerator {
     }
 
     @Override
-    public ActionList getPotentialChildActionSet(Node parentNode) {
+    public ActionList getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode) {
         return fixedActionList.getCopy();
     }
 

@@ -16,8 +16,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import data.SavableFileIO;
 import samplers.Sampler_UCB;
-import tree.Node;
-import tree.Utility;
+import tree.*;
 
 /**
  * Does the full search in 4 stages.
@@ -80,23 +79,23 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
 				// end of the action list.
 
                 // Recreate the tree section.
-                Node root = new Node();
+                NodeQWOPGraphics root = new NodeQWOPGraphics(GameUnified.getInitialState());
                 Node.makeNodesFromActionSequences(acts, root, game);
 
                 // Put it on the UI.
-                Node.pointsToDraw.clear();
+                NodeQWOPGraphics.pointsToDraw.clear();
                 ui.clearRootNodes();
                 ui.addRootNode(root);
 
-                List<Node> leafList = new ArrayList<>();
+                List<NodeQWOPGraphics> leafList = new ArrayList<>();
                 root.getLeaves(leafList);
 
                 // Expand the deviated spots and find recoveries.
                 appendSummaryLog("Starting leaf expansion.");
-                Node previousLeaf = null;
+                NodeQWOPGraphics previousLeaf = null;
 
                 // Should only be 1 element in leafList now. Keeping the loop for the future however.
-                for (Node leaf : leafList) {
+                for (NodeQWOPGraphics leaf : leafList) {
                     String name = filename1 + Utility.getTimestamp();
                     doBasicMaxDepthStage(leaf, name, getBackToSteadyDepth, maxWorkerFraction1, bailAfterXGames1);
 

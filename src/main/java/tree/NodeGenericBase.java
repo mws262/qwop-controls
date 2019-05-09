@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Generic tree implementation non-specific to QWOP.
@@ -34,17 +35,26 @@ abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
      */
     private final int treeDepth;
 
+    int maxBranchDepth;
+
     /**
      * For making a root node.
      */
     public NodeGenericBase() {
         treeDepth = 0;
         parent = null;
+        maxBranchDepth = 0;
     }
 
     public NodeGenericBase(N parent) {
         this.parent = parent;
         treeDepth = parent.getTreeDepth() + 1;
+        maxBranchDepth = treeDepth;
+        N currentNode = getParent();
+        while (currentNode.maxBranchDepth < maxBranchDepth) {
+            currentNode.maxBranchDepth = maxBranchDepth;
+            currentNode = currentNode.getParent();
+        }
     }
 
     void addChild(N child) {
@@ -146,7 +156,7 @@ abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
      *                                  be cleared.
      * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public Collection<N> getNodesBelow(Collection<N> nodeList) {
+    public Collection<? extends N> getNodesBelow(Collection<N> nodeList) {
         recurseDownTreeInclusive(nodeList::add);
         return nodeList;
     }
@@ -176,6 +186,10 @@ abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
      */
     public int getTreeDepth() {
         return treeDepth;
+    }
+
+    public int getMaxBranchDepth() {
+        return maxBranchDepth;
     }
 
     /**
@@ -267,6 +281,14 @@ abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
         if (treeDepth > 1) {
             parent.recurseUpTreeInclusive(operation);
         }
+    }
+
+    public void applyToLeaves(Consumer<N> operation) {
+        getRoot().recurseDownTreeInclusive(n -> {
+            if (n.getChildCount() == 0) {
+                operation.accept(n);
+            }
+        });
     }
 
     protected abstract N getThis();

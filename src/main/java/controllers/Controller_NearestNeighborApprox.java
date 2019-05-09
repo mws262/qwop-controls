@@ -26,6 +26,8 @@ import data.EvictingTreeMap;
 import data.LIFOFixedSize;
 import actions.Action;
 import tree.Node;
+import tree.NodeQWOPGraphics;
+import tree.NodeQWOPGraphicsBase;
 import ui.PanelRunner;
 import tree.Utility;
 
@@ -471,14 +473,21 @@ public class Controller_NearestNeighborApprox implements IController {
             StateHolder drawState = currentTrajectoryStateMatch;
             int startIdx = drawTraj.states.indexOf(drawState);
             float bodyX = currentTrajectoryStateMatch.state.body.getX();
-            game.drawExtraRunner((Graphics2D) g, drawState.state, "", runnerScaling, xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels, Color.CYAN, PanelRunner.normalStroke);
+            GameUnified.drawExtraRunner((Graphics2D) g, drawState.state, "", runnerScaling, xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels, Color.CYAN, PanelRunner.normalStroke);
 
             int viewingHorizon = 80;
             for (int i = 0; i < drawTraj.states.size(); i++) {
                 if ((i > startIdx && i < startIdx + viewingHorizon)) { //|| i % 10 == 0) {
-                    game.drawExtraRunner((Graphics2D) g, drawTraj.states.get(i).state, "", runnerScaling, xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels, Node.getColorFromScaledValue(i - startIdx + viewingHorizon, 2 * viewingHorizon, (viewingHorizon - Math.abs(i - startIdx)) / (float) viewingHorizon), PanelRunner.normalStroke);
+                    GameUnified.drawExtraRunner((Graphics2D) g, drawTraj.states.get(i).state, "", runnerScaling,
+                            xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels,
+                            NodeQWOPGraphicsBase.getColorFromScaledValue(i - startIdx + viewingHorizon, 2 * viewingHorizon,
+                                    (viewingHorizon - Math.abs(i - startIdx)) / (float) viewingHorizon), PanelRunner.normalStroke);
                 } else if (i < startIdx && i > startIdx - viewingHorizon) {
-                    game.drawExtraRunner((Graphics2D) g, drawTraj.states.get(i).state, "", runnerScaling, xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels, Node.getColorFromScaledValue(i - startIdx + viewingHorizon, 2 * viewingHorizon, (viewingHorizon - Math.abs(i - startIdx)) / (float) viewingHorizon), PanelRunner.normalStroke);
+                    GameUnified.drawExtraRunner((Graphics2D) g, drawTraj.states.get(i).state, "", runnerScaling,
+                            xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels,
+                            NodeQWOPGraphicsBase.getColorFromScaledValue(i - startIdx + viewingHorizon,
+                                    2 * viewingHorizon,
+                                    (viewingHorizon - Math.abs(i - startIdx)) / (float) viewingHorizon), PanelRunner.normalStroke);
                 }
             }
         }

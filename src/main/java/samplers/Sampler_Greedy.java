@@ -1,13 +1,10 @@
 package samplers;
 
-import java.awt.Color;
 import java.util.ArrayList;
 
 import actions.Action;
 import evaluators.IEvaluationFunction;
 import game.IGame;
-import tree.Node;
-import tree.NodeQWOPExplorable;
 import tree.NodeQWOPExplorableBase;
 import tree.Utility;
 
@@ -113,10 +110,13 @@ public class Sampler_Greedy implements ISampler {
         // Decide what to do with the given start node.
         if (currentRoot == null) {
             chooseNewRoot(startNode);
-        } else if (startNode.isOtherNodeAncestor(currentRoot)) { // If currentRoot is the ancestor of startNode,
+            // TODO find a way to avoid an unchecked cast
+        } else if (((NodeQWOPExplorableBase) startNode).isOtherNodeAncestor(currentRoot)) { // If currentRoot is the
+            // ancestor of startNode,
         	// switch to startNode.
             chooseNewRoot(startNode);
-        } else if (!startNode.equals(currentRoot) && !currentRoot.isOtherNodeAncestor(startNode)) { // If current
+            // TODO find a way to avoid an unchecked cast
+        } else if (!startNode.equals(currentRoot) && !((NodeQWOPExplorableBase)currentRoot).isOtherNodeAncestor(startNode)) { // If current
         	// root is not the ancestor, and start node is NOT the ancestor, they are parallel in some way, and
 			// startnode wins.
             chooseNewRoot(startNode);
@@ -169,7 +169,12 @@ public class Sampler_Greedy implements ISampler {
             if (samplesSoFarAtThisNode >= totalSamplesToTakeAtThisNode) {
                 // Pick the best leaf
                 ArrayList<NodeQWOPExplorableBase<?>> leaves = new ArrayList<>();
-                currentRoot.getLeaves(leaves);
+
+                currentRoot.recurseDownTreeInclusive(n -> {
+                    if (n.getChildCount() == 0) {
+                        leaves.add(n);
+                    }
+                });
                 //float rootX = currentRoot.state.body.x;
                 NodeQWOPExplorableBase<?> bestNode = currentRoot;
                 float bestScore = -Float.MAX_VALUE;

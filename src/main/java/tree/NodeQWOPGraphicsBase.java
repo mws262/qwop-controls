@@ -48,6 +48,10 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         super(rootState, actionGenerator);
     }
 
+    public NodeQWOPGraphicsBase(State rootState) {
+        super(rootState);
+    }
+
     public NodeQWOPGraphicsBase(N parent, Action action, State state, IActionGenerator actionGenerator) {
         super(parent, action, state, actionGenerator);
     }

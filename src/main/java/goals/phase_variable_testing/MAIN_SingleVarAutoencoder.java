@@ -7,6 +7,7 @@ import game.IGame;
 import game.State;
 import transformations.Transform_Autoencoder;
 import tree.Node;
+import tree.NodeQWOPGraphicsBase;
 import ui.PanelPlot_Simple;
 
 import javax.swing.*;
@@ -79,7 +80,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
 
         List<Color> colorList = new ArrayList<>();
         for (int i = 0; i < xDataList.size(); i++) {
-            colorList.add(Node.getColorFromTreeDepth(i));
+            colorList.add(NodeQWOPGraphicsBase.getColorFromTreeDepth(i));
         }
 
         plotPanel.setPlotData(xDataList, yDataList, colorList, "timestep idx", "autoencoder output");

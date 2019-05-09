@@ -1,6 +1,7 @@
 package evaluators;
 
 import tree.INode;
+import tree.NodeQWOPBase;
 
 import java.util.Objects;
 
@@ -12,12 +13,12 @@ import java.util.Objects;
 public class EvaluationFunction_Velocity implements IEvaluationFunction {
 
     @Override
-    public float getValue(INode nodeToEvaluate) {
+    public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
         return Objects.requireNonNull(nodeToEvaluate.getState()).body.getDx();
     }
 
     @Override
-    public String getValueString(INode nodeToEvaluate) {
+    public String getValueString(NodeQWOPBase<?> nodeToEvaluate) {
         return String.valueOf(getValue(nodeToEvaluate));
     }
 

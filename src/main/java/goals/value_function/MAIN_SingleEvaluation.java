@@ -7,6 +7,7 @@ import actions.ActionQueue;
 import distributions.Distribution_Equal;
 import game.GameUnified;
 import tree.Node;
+import tree.NodeQWOPGraphics;
 import tree.Utility;
 import ui.PanelRunner;
 import ui.ScreenCapture;
@@ -89,9 +90,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         allActions.addAll(actionListQP);
 
         ActionGenerator_FixedActions actionGenerator = new ActionGenerator_FixedActions(allActions);
-        Node.potentialActionGenerator = actionGenerator;
-//        assignAllowableActions(-1);
-        Node rootNode = new Node();
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
 
         // Assign a "prefix" of actions, since I'm not sure if the controller will generalize to this part of running.
         List<Action[]> alist = new ArrayList<>();

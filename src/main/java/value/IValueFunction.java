@@ -33,5 +33,5 @@ public interface IValueFunction {
      * Provide a list of nodes from which information will be taken to update the value function.
      * @param nodes
      */
-    void update(List<NodeQWOPBase<?>> nodes);
+    void update(List<? extends NodeQWOPBase<?>> nodes);
 }

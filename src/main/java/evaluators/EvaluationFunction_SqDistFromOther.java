@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import game.StateVariable;
 import tree.INode;
+import tree.NodeQWOPBase;
 
 /**
  * Evaluation of node value based on squared difference in the node's game state from another specified node's state.
@@ -17,7 +18,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
     /**
      * All nodes will be compared to this one by square distance in state space.
      */
-    private final INode nodeToCompareAllOthersTo;
+    private final NodeQWOPBase<?> nodeToCompareAllOthersTo;
 
     /**
      * State list associated with the target node. Stored to avoid fetching multiple times.
@@ -29,13 +30,13 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
      *
      * @param nodeToCompareAllOthersTo Node whose state all others will be compared to.
      */
-    public EvaluationFunction_SqDistFromOther(INode nodeToCompareAllOthersTo) {
+    public EvaluationFunction_SqDistFromOther(NodeQWOPBase<?> nodeToCompareAllOthersTo) {
         this.nodeToCompareAllOthersTo = nodeToCompareAllOthersTo;
         baseStateVars = nodeToCompareAllOthersTo.getState().getStates();
     }
 
     @Override
-    public float getValue(INode nodeToEvaluate) {
+    public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
         StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getStates();
 
         float sqError = 0;
@@ -59,7 +60,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
     }
 
     @Override
-    public String getValueString(INode nodeToEvaluate) {
+    public String getValueString(NodeQWOPBase<?> nodeToEvaluate) {
         StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getStates();
         StringBuilder valueString = new StringBuilder();
 

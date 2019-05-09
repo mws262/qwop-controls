@@ -93,6 +93,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      */
     private NodeQWOPExplorableBase<?> targetNodeToTest;
 
+    private Action targetActionToTest;
     /**
      * Node the game is initially expanding from.
      */
@@ -308,15 +309,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         //  if (debugDraw) lastNodeAdded.setBranchColor(getColorFromWorkerID(workerID));
                         sampler.expansionPolicyActionDone(currentGameNode);
                     } else {
-                        targetNodeToTest = sampler.expansionPolicy(currentGameNode);
-                        if (currentGameNode.getTreeDepth() + 1 != targetNodeToTest.getTreeDepth()) {
-                            throw new RuntimeException("Expansion policy tried to sample a node more than 1 depth " +
-                                    "below it in the tree. This is bad since tree policy should be used"
-                                    + "to traverse the existing tree and expansion policy should only be used for " +
-                                    "adding new nodes and extending the tree.");
-                        }
+                        targetActionToTest = sampler.expansionPolicy(currentGameNode);
                         actionQueue.clearAll();
-                        actionQueue.addAction(targetNodeToTest.getAction());
+                        actionQueue.addAction(targetActionToTest);
                         changeStatus(Status.EXPANSION_POLICY_EXECUTING);
                     }
 
@@ -329,7 +324,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (actionQueue.isEmpty() || game.getFailureStatus()) {
                         // TODO possibly update the action to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
-                        currentGameNode = targetNodeToTest;
+                        currentGameNode = new NodeQWOPExplorableBase<?>(targetNodeToTest); // TODODODODOD
                         // TODO
 //                        if (!currentGameNode.isStateUnassigned())
 //                            throw new RuntimeException("The expansion policy should only encounter new nodes. None of" +
