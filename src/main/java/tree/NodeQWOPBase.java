@@ -1,6 +1,8 @@
 package tree;
 
 import actions.Action;
+import actions.ActionQueue;
+import game.IGame;
 import game.State;
 
 import java.util.List;
@@ -56,4 +58,41 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
     }
 
     public abstract N addChild(Action action, State state);
+
+    /**
+     * Add nodes based on saved action sequences. Has to re-simulate each to get the states.
+     */
+    public static <N extends NodeQWOPBase<N>> void makeNodesFromActionSequences(List<Action[]> actions, N root, IGame game) {
+
+        ActionQueue actQueue = new ActionQueue();
+        for (Action[] acts : actions) {
+            game.makeNewWorld();
+            N currNode = root;
+            actQueue.clearAll();
+
+            for (Action act : acts) {
+                act = act.getCopy();
+                act.reset();
+
+                // Simulate
+                actQueue.addAction(act);
+                while (!actQueue.isEmpty()) {
+                    game.step(actQueue.pollCommand());
+                }
+
+                // If there is already a node for this action, use it.
+                boolean foundExisting = false;
+                for (N child : currNode.getChildren()) {
+                    if (child.getAction().equals(act)) {
+                        currNode = child;
+                        foundExisting = true;
+                        break;
+                    }
+                }
+
+                // Otherwise, make a new one.
+                if (!foundExisting) currNode = currNode.addChild(act, game.getCurrentState());
+            }
+        }
+    }
 }

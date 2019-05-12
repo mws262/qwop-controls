@@ -324,7 +324,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (actionQueue.isEmpty() || game.getFailureStatus()) {
                         // TODO possibly update the action to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
-                        currentGameNode = new NodeQWOPExplorableBase<?>(targetNodeToTest); // TODODODODOD
+                        currentGameNode = new NodeQWOPExplorableBase<?>(targetNodeToTest, targetActionToTest,
+                                game.getCurrentState()); // TODODODODOD
                         // TODO
 //                        if (!currentGameNode.isStateUnassigned())
 //                            throw new RuntimeException("The expansion policy should only encounter new nodes. None of" +
@@ -579,8 +580,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     } // Not really applicable.
 
     @Override
-    public void update(Node node) {
-    }
+    public void update(NodeQWOPGraphicsBase<?> node) {}
 }
 
 
