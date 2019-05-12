@@ -12,12 +12,11 @@ import java.util.stream.Collectors;
 import org.jfree.chart.plot.XYPlot;
 
 import filters.NodeFilter_Downsample;
-import filters.NodeFilter_MissingInfo;
 import game.State;
 import filters.INodeFilter;
 import transformations.ITransform;
-import tree.Node;
 import transformations.Transform_Autoencoder;
+import tree.NodeQWOPGraphicsBase;
 
 public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 
@@ -36,8 +35,6 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
      * Downsampler to reduce the number of nodes we're trying to process and display
      */
     private INodeFilter plotDownsampler = new NodeFilter_Downsample(5000);
-
-    private INodeFilter filterMissingInfo = new NodeFilter_MissingInfo();
 
     private List<float[]> transformedStates;
 
@@ -59,7 +56,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     /**
      * Nodes to be processed and plotted.
      */
-    private List<Node> nodes = new ArrayList<>();
+    private List<NodeQWOPGraphicsBase<?>> nodes = new ArrayList<>();
 
     public PanelPlot_Controls(int numberOfPlots) {
         super(numberOfPlots);
@@ -70,18 +67,17 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void update(Node plotNode) {
+    public void update(NodeQWOPGraphicsBase<?> plotNode) {
         nodes.clear();
-        plotNode.getNodesBelow(nodes, true);
+        plotNode.recurseDownTreeInclusive(nodes::add);
 
-        filterMissingInfo.filter(nodes);
         // Apply any added filters (may be none).
         for (INodeFilter filter : nodeFilters) {
             filter.filter(nodes);
         }
         plotDownsampler.filter(nodes); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.
 
-        List<State> statesBelow = nodes.stream().map(Node::getState).collect(Collectors.toList()); // Convert from node
+        List<State> statesBelow = nodes.stream().map(NodeQWOPGraphicsBase::getState).collect(Collectors.toList()); // Convert from node
 		// list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
         changePlots();
@@ -101,7 +97,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
             int currCol = count + firstPlotRow * plotsPerView;
             Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
             Float[] yData = nodes.stream().map(n -> (float) n.getAction().getTimestepsTotal()).toArray(Float[]::new);
-            Color[] cData = nodes.stream().map(n -> Node.getColorFromTreeDepth(n.getTreeDepth())).toArray(Color[]::new);
+            Color[] cData = nodes.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth())).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Command duration");
             pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +

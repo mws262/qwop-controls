@@ -14,7 +14,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
 import org.apache.commons.lang.ArrayUtils;
-import tree.Node;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -30,6 +29,7 @@ import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 
+import tree.NodeQWOPGraphicsBase;
 import ui.IUserInterface.TabbedPaneActivator;
 
 public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, ChartMouseListener {
@@ -62,10 +62,10 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * Plotting colors for dots.
      */
-    private final Color actionColor1 = Node.getColorFromTreeDepth(0);
-    private final Color actionColor2 = Node.getColorFromTreeDepth(10);
-    private final Color actionColor3 = Node.getColorFromTreeDepth(20);
-    private final Color actionColor4 = Node.getColorFromTreeDepth(30);
+    private final Color actionColor1 = NodeQWOPGraphicsBase.getColorFromTreeDepth(0);
+    private final Color actionColor2 = NodeQWOPGraphicsBase.getColorFromTreeDepth(10);
+    private final Color actionColor3 = NodeQWOPGraphicsBase.getColorFromTreeDepth(20);
+    private final Color actionColor4 = NodeQWOPGraphicsBase.getColorFromTreeDepth(30);
 
     public PanelPlot(int numberOfPlots) {
         this.numberOfPlots = numberOfPlots;
@@ -102,7 +102,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * Check if the bounds need expanding, tell JFreeChart to update, and set the bounds correctly
      */
-    public abstract void update(Node plotNode);
+    public abstract void update(NodeQWOPGraphicsBase<?> plotNode);
 
     /**
      * Tells what plot is clicked by the user.
