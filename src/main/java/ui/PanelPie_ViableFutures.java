@@ -1,17 +1,15 @@
 package ui;
 
 import org.jfree.data.general.DefaultPieDataset;
-import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.TabbedPaneActivator {
 
     private boolean active = false;
 
-    private Node currentNode;
+    private NodeQWOPExplorableBase<?> currentNode;
 
-
-    public PanelPie_ViableFutures() {
-    }
+    public PanelPie_ViableFutures() { }
 
     @Override
     public void activateTab() {
@@ -29,7 +27,7 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
     }
 
     @Override
-    public void update(Node node) {
+    public void update(NodeQWOPExplorableBase<?> node) {
         currentNode = node;
 
         int failCount = 0;
@@ -37,10 +35,10 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
         int cat2 = 0;
         int cat3 = 0;
         int cat4 = 0;
-        for (Node child : currentNode.getChildren()) {
-            int diffBranchDepth = child.maxBranchDepth.get() - child.getTreeDepth();
+        for (NodeQWOPExplorableBase<?> child : currentNode.getChildren()) {
+            int diffBranchDepth = child.getMaxBranchDepth() - child.getTreeDepth();
 
-            if (child.isFailed()) {
+            if (child.getState().isFailed()) {
                 failCount++;
             } else if (diffBranchDepth < 1) {
                 cat1++;
@@ -55,7 +53,7 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
 
         DefaultPieDataset data = getDataset();
         data.clear();
-        data.insertValue(0, "Untried", currentNode.uncheckedActions.size());
+        data.insertValue(0, "Untried", currentNode.getUntriedActionCount());
         data.insertValue(1, "Failed", failCount);
         data.insertValue(2, "0 depth", cat1);
         data.insertValue(3, "<3 depth", cat2);

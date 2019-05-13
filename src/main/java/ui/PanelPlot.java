@@ -29,6 +29,7 @@ import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 
+import tree.NodeQWOPExplorableBase;
 import tree.NodeQWOPGraphicsBase;
 import ui.IUserInterface.TabbedPaneActivator;
 
@@ -102,7 +103,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * Check if the bounds need expanding, tell JFreeChart to update, and set the bounds correctly
      */
-    public abstract void update(NodeQWOPGraphicsBase<?> plotNode);
+    public abstract void update(NodeQWOPExplorableBase<?> plotNode);
 
     /**
      * Tells what plot is clicked by the user.

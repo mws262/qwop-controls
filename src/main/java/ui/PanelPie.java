@@ -23,7 +23,6 @@ public class PanelPie extends ChartPanel {
     public PanelPie(String title) {
         super(null);
 
-
         // Create chart
         JFreeChart chart = ChartFactory.createPieChart(
                 title,

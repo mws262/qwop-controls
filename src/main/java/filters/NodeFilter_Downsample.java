@@ -61,7 +61,7 @@ public class NodeFilter_Downsample implements INodeFilter {
     }
 
     @Override
-    public void filter(List<NodeQWOPExplorableBase<?>> nodes) {
+    public <N extends NodeQWOPExplorableBase<?>> void filter(List<N> nodes) {
         int numNodes = nodes.size();
         if (numNodes > maxNodesToKeep) { // If we already have <= the max number of nodes, no need to downsample.
             switch (downsamplingStrategy) {

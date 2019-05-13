@@ -4,9 +4,11 @@ import actions.Action;
 import actions.ActionQueue;
 import evaluators.IEvaluationFunction;
 import game.IGame;
-import tree.Node;
 import tree.NodeQWOPBase;
 import tree.NodeQWOPExplorableBase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Sometimes, rollouts need to be a composite of many actions, some which may involve multiple simulations. This
@@ -19,6 +21,8 @@ public abstract class RolloutPolicy {
     IEvaluationFunction evaluationFunction;
 
     ActionQueue actionQueue = new ActionQueue();
+
+    private final List<Action> actionSequence = new ArrayList<>(); // Reused local list.
 
     RolloutPolicy(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
@@ -41,7 +45,8 @@ public abstract class RolloutPolicy {
         // Reset the game and action queue.
         game.makeNewWorld();
         actionQueue.clearAll();
-        actionQueue.addSequence(targetNode.getSequence());
+        targetNode.getSequence(actionSequence);
+        actionQueue.addSequence(actionSequence);
 
         while (!actionQueue.isEmpty()) {
             game.step(actionQueue.pollCommand());
@@ -73,8 +78,7 @@ public abstract class RolloutPolicy {
         int timestepCounter = 0;
         NodeQWOPExplorableBase<?> rolloutNode = startNode;
         while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps) {
-            Action childAction = rolloutNode.uncheckedActions.getRandom();
-            rolloutNode = new Node(rolloutNode, childAction, false);
+            Action childAction = rolloutNode.getUntriedActionRandom();
             actionQueue.addAction(childAction);
 
             while (!actionQueue.isEmpty() && !game.getFailureStatus() && timestepCounter < maxTimesteps) {
@@ -82,7 +86,7 @@ public abstract class RolloutPolicy {
                 timestepCounter++;
             }
 
-            rolloutNode.setState(game.getCurrentState());
+            rolloutNode = rolloutNode.addChild(childAction, game.getCurrentState());
         }
         return rolloutNode;
     }

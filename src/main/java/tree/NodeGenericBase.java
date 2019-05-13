@@ -46,7 +46,7 @@ abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
         maxBranchDepth = 0;
     }
 
-    public NodeGenericBase(N parent) {
+    NodeGenericBase(N parent) {
         this.parent = parent;
         treeDepth = parent.getTreeDepth() + 1;
         maxBranchDepth = treeDepth;
@@ -57,7 +57,12 @@ abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
         }
     }
 
-    void addChild(N child) {
+    void addDoublyLinkedChild(N child) {
+        assert !children.contains(child);
+        children.add(child);
+    }
+
+    void addBackwardsLinkedChild(N child) {
         assert !children.contains(child);
         children.add(child);
     }

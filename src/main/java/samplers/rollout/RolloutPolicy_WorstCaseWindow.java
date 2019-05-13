@@ -4,6 +4,7 @@ import actions.Action;
 import evaluators.IEvaluationFunction;
 import game.IGame;
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * This is a meta-rollout policy. It does multiple other rollouts and aggregates the results.
@@ -20,7 +21,7 @@ public class RolloutPolicy_WorstCaseWindow extends RolloutPolicy {
     }
 
     @Override
-    public float rollout(Node startNode, IGame game) {
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
 
         // Need to do a rollout for the actual node we landed on.
         Action middleAction = startNode.getAction();
