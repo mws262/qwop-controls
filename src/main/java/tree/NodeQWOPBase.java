@@ -25,7 +25,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
         state = rootState;
     }
 
-    public NodeQWOPBase(N parent, Action action, State state) {
+    NodeQWOPBase(N parent, Action action, State state) {
         super(parent);
         this.action = action;
         this.state = state;
@@ -38,6 +38,10 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
         }
         getParent().addChild(getThis());
     }
+
+    public abstract N addDoublyLinkedChild(Action action, State state);
+
+    public abstract N addBackwardsLinkedChild(Action action, State state);
 
     public State getState() { return state; }
 
@@ -56,8 +60,6 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
         }
         return actionList;
     }
-
-    public abstract N addChild(Action action, State state);
 
     /**
      * Add nodes based on saved action sequences. Has to re-simulate each to get the states.

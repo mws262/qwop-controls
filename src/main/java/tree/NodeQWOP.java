@@ -22,6 +22,11 @@ public final class NodeQWOP extends NodeQWOPBase<NodeQWOP> {
     }
 
     @Override
+    public NodeQWOP addUnconnectedChild(Action action, State state) {
+        return null;
+    }
+
+    @Override
     protected NodeQWOP getThis() {
         return this;
     }

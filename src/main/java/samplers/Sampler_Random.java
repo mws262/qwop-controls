@@ -2,7 +2,6 @@ package samplers;
 
 import actions.Action;
 import game.IGame;
-import tree.Node;
 import tree.NodeQWOPExplorableBase;
 import tree.Utility;
 
@@ -81,7 +80,7 @@ public class Sampler_Random implements ISampler {
     public Action expansionPolicy(NodeQWOPExplorableBase<?> startNode) {
         if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
-        return startNode.uncheckedActions.getRandom();
+        return startNode.getUntriedActionRandom();
     }
 
     @Override

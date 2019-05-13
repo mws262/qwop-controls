@@ -16,6 +16,8 @@ import game.State;
 import filters.INodeFilter;
 import transformations.ITransform;
 import tree.Node;
+import tree.NodeQWOPExplorable;
+import tree.NodeQWOPExplorableBase;
 
 public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
@@ -43,7 +45,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     /**
      * Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation.
      */
-    private List<Node> nodesToTransform = new ArrayList<>();
+    private List<NodeQWOPExplorableBase<?>> nodesToTransform = new ArrayList<>();
     private List<float[]> transformedStates;
 
     /**
@@ -62,18 +64,19 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public synchronized void update(Node plotNode) {
+    public synchronized void update(NodeQWOPExplorableBase<?> plotNode) {
         // Do transform update if necessary:
         nodesToTransform.clear();
-        plotNode.getRoot().getNodesBelow(nodesToTransform, true);
+        plotNode.getRoot().recurseDownTreeInclusive(nodesToTransform::add);
         transformDownsampler.filter(nodesToTransform);
-        List<State> statesBelow = nodesToTransform.stream().map(Node::getState).collect(Collectors.toList());
+        List<State> statesBelow =
+                nodesToTransform.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
         // Convert from node list to state list.
         transformer.updateTransform(statesBelow); // Update transform with all states.
 
         // Pick which to actually plot.
         nodesToTransform.clear();
-        plotNode.getNodesBelow(nodesToTransform, true);
+        plotNode.recurseDownTreeInclusive(nodesToTransform::add);
 
         // Apply any added filters (may be none).
         for (INodeFilter filter : nodeFilters) {
@@ -82,7 +85,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
         plotDownsampler.filter(nodesToTransform); // Reduce number of nodes to transform if necessary. Plotting is a
         // bottleneck.
 
-        statesBelow = nodesToTransform.stream().map(Node::getState).collect(Collectors.toList()); // Convert from node
+        statesBelow = nodesToTransform.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList()); // Convert from node
         // list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
 

@@ -44,7 +44,11 @@ public class TreeStage_MinDepth extends TreeStage {
     @Override
     public List<NodeQWOPBase<?>> getResults() {
         leafList.clear();
-        getRootNode().getLeaves(leafList);
+        getRootNode().recurseDownTreeInclusive(n -> {
+            if (n.getChildCount() == 0) {
+                leafList.add(n);
+            }
+        });
         System.out.println(leafList.size());
 
         List<NodeQWOPBase<?>> resultList = new ArrayList<>();
@@ -70,7 +74,11 @@ public class TreeStage_MinDepth extends TreeStage {
         if (!areWorkersRunning()) return true;
 
         leafList.clear();
-        rootNode.getLeaves(leafList);
+        getRootNode().recurseDownTreeInclusive(n -> {
+            if (n.getChildCount() == 0) {
+                leafList.add(n);
+            }
+        });
 
         // If no leaves, then we haven't gotten far enough for sure.
         if (leafList.isEmpty()) return false;

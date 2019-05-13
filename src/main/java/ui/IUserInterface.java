@@ -1,5 +1,7 @@
 package ui;
 
+import tree.NodeQWOPExplorable;
+import tree.NodeQWOPExplorableBase;
 import tree.NodeQWOPGraphicsBase;
 
 public interface IUserInterface extends Runnable {
@@ -15,7 +17,7 @@ public interface IUserInterface extends Runnable {
      */
     void kill();
 
-    void addRootNode(NodeQWOPGraphicsBase<?> node);
+    void addRootNode(NodeQWOPExplorableBase<?> node);
 
     void clearRootNodes();
 
@@ -26,6 +28,6 @@ public interface IUserInterface extends Runnable {
 
         boolean isActive();
 
-        void update(NodeQWOPGraphicsBase<?> node);
+        void update(NodeQWOPExplorableBase<?> node);
     }
 }

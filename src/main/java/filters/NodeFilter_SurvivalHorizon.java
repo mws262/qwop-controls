@@ -29,8 +29,8 @@ public class NodeFilter_SurvivalHorizon implements INodeFilter {
     }
 
     @Override
-    public boolean filter(NodeQWOPExplorableBase<?> node) {
-        return node.maxBranchDepth.get() - node.getTreeDepth() >= requiredSurvivalHorizon;
+    public boolean filter(NodeQWOPExplorableBase node) {
+        return node.getMaxBranchDepth() - node.getTreeDepth() >= requiredSurvivalHorizon;
     }
 
 }
