@@ -2,7 +2,7 @@ package samplers.rollout;
 
 import actions.Action;
 import game.IGame;
-import tree.Node;
+import tree.NodeQWOPExplorableBase;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 public class RolloutPolicy_ValueFunctionDecayingHorizon extends RolloutPolicy {
@@ -23,16 +23,15 @@ public class RolloutPolicy_ValueFunctionDecayingHorizon extends RolloutPolicy {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public float rollout(Node startNode, IGame game) {
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
         int timestepCounter = 0;
-        Node rolloutNode = startNode;
+        NodeQWOPExplorableBase<?> rolloutNode = startNode;
         float accumulatedValue = 0f;
 
         float previousValue = game.getCurrentState().body.getX(); // TODO Stop hardcoding this as body x and instead
         // use the evaluation function.
-        while (!rolloutNode.isFailed() && timestepCounter < maxTimestepsToSim) {
+        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimestepsToSim) {
             Action childAction = valFun.getMaximizingAction(rolloutNode); //rolloutNode.uncheckedActions.getRandom();
-            rolloutNode = new Node(rolloutNode, childAction, false);
             actionQueue.addAction(childAction);
 
             while (!actionQueue.isEmpty() && !game.getFailureStatus() && timestepCounter < maxTimestepsToSim) {
@@ -45,10 +44,8 @@ public class RolloutPolicy_ValueFunctionDecayingHorizon extends RolloutPolicy {
 
                 timestepCounter++;
             }
-
-            rolloutNode.setState(game.getCurrentState());
+            rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState());
         }
-
         return accumulatedValue;
     }
 

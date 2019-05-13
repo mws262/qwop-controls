@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
 import tree.TreeWorker;
 
 import javax.swing.*;
@@ -27,7 +28,7 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
     }
 
     @Override
-    public void update(Node plotNode) { }
+    public void update(NodeQWOPExplorableBase<?> plotNode) { }
 
     @Override
     public void run() {

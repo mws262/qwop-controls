@@ -12,18 +12,20 @@ public final class NodeQWOP extends NodeQWOPBase<NodeQWOP> {
         super(rootState);
     }
 
-    public NodeQWOP(NodeQWOP parent, Action action, State state) {
+    private NodeQWOP(NodeQWOP parent, Action action, State state) {
         super(parent, action, state);
     }
 
     @Override
-    public NodeQWOP addChild(Action action, State state) {
-        return new NodeQWOP(this, action, state);
+    public NodeQWOP addDoublyLinkedChild(Action action, State state) {
+        NodeQWOP child = new NodeQWOP(this, action, state);
+        addToChildList(child);
+        return child;
     }
 
     @Override
-    public NodeQWOP addUnconnectedChild(Action action, State state) {
-        return null;
+    public NodeQWOP addBackwardsLinkedChild(Action action, State state) {
+        return new NodeQWOP(this, action, state);
     }
 
     @Override

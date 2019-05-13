@@ -6,11 +6,15 @@ import game.State;
 
 public class NodeQWOPExplorable extends NodeQWOPExplorableBase<NodeQWOPExplorable> {
 
+    public NodeQWOPExplorable(State rootState) {
+        super(rootState);
+    }
+
     public NodeQWOPExplorable(State rootState, IActionGenerator actionGenerator) {
         super(rootState, actionGenerator);
     }
 
-    public NodeQWOPExplorable(NodeQWOPExplorable parent, Action action, State state, IActionGenerator actionGenerator) {
+    private NodeQWOPExplorable(NodeQWOPExplorable parent, Action action, State state, IActionGenerator actionGenerator) {
         super(parent, action, state, actionGenerator);
     }
 
@@ -20,7 +24,27 @@ public class NodeQWOPExplorable extends NodeQWOPExplorableBase<NodeQWOPExplorabl
     }
 
     @Override
-    public NodeQWOPExplorable addChild(Action action, State state) {
+    public NodeQWOPExplorable addDoublyLinkedChild(Action action, State state) {
+        return addDoublyLinkedChild(action, state, actionGenerator);
+    }
+
+    @Override
+    public NodeQWOPExplorable addBackwardsLinkedChild(Action action, State state) {
+        return addBackwardsLinkedChild(action, state, actionGenerator);
+    }
+
+    @Override
+    public NodeQWOPExplorable addDoublyLinkedChild(Action action, State state, IActionGenerator actionGenerator) {
+        NodeQWOPExplorable child = new NodeQWOPExplorable(this, action, state, actionGenerator);
+        addToChildList(child);
+        if (child.getState().isFailed()) {
+            child.propagateFullyExploredStatus_lite();
+        }
+        return child;
+    }
+
+    @Override
+    public NodeQWOPExplorable addBackwardsLinkedChild(Action action, State state, IActionGenerator actionGenerator) {
         return new NodeQWOPExplorable(this, action, state, actionGenerator);
     }
 }

@@ -3,7 +3,8 @@ package ui;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.statistics.HistogramDataset;
-import tree.Node;
+import tree.NodeGenericBase;
+import tree.NodeQWOPExplorableBase;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,7 +14,7 @@ public class PanelHistogram_LeafDepth extends PanelHistogram implements IUserInt
 
     protected boolean active = false;
 
-    private Node currentNode;
+    private NodeQWOPExplorableBase<?> currentNode;
 
     public PanelHistogram_LeafDepth() {
         super("Leaf depth beyond selected Node");
@@ -39,13 +40,17 @@ public class PanelHistogram_LeafDepth extends PanelHistogram implements IUserInt
     }
 
     @Override
-    public void update(Node node) {
+    public void update(NodeQWOPExplorableBase<?> node) {
 
-        List<Node> leafList = new ArrayList<>();
-        node.getLeaves(leafList);
-        int maxDepth = leafList.stream().map(Node::getTreeDepth).max(Comparator.naturalOrder()).orElse(5);
-        int minDepth = leafList.stream().map(Node::getTreeDepth).min(Comparator.naturalOrder()).orElse(0);
-        double[] depths = leafList.stream().map(Node::getTreeDepth).mapToDouble(Integer::doubleValue).toArray();
+        List<NodeQWOPExplorableBase<?>> leafList = new ArrayList<>();
+        node.recurseDownTreeInclusive(n -> {
+            if (n.getChildCount() == 0) {
+                leafList.add(n);
+            }
+        });
+        int maxDepth = leafList.stream().map(NodeGenericBase::getTreeDepth).max(Comparator.naturalOrder()).orElse(5);
+        int minDepth = leafList.stream().map(NodeGenericBase::getTreeDepth).min(Comparator.naturalOrder()).orElse(0);
+        double[] depths = leafList.stream().map(NodeGenericBase::getTreeDepth).mapToDouble(Integer::doubleValue).toArray();
 
         HistogramDataset dataset = new HistogramDataset();
         dataset.addSeries("",depths, maxDepth - minDepth + 1, 0, maxDepth - minDepth + 1);

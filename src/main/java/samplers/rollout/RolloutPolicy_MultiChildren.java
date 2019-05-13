@@ -1,8 +1,11 @@
 package samplers.rollout;
 
+import actions.Action;
 import evaluators.IEvaluationFunction;
 import game.IGame;
 import tree.Node;
+import tree.NodeQWOPExplorable;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * To evaluate the score of a node. Run a rollout for each of its potential child nodes. Average them out. If run for
@@ -27,11 +30,11 @@ public class RolloutPolicy_MultiChildren extends RolloutPolicy {
     }
 
     @Override
-    public float rollout(Node startNode, IGame game) {
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
         // See how we should advance through untried actions. If the number of unchecked actions is less than the
         // number of rollouts allowed, we run all of them. Otherwise, we try to evenly-space them.
         float advancement = 1f;
-        int numUnchecked = startNode.uncheckedActions.size();
+        int numUnchecked = startNode.getUntriedActionCount();
         if (numUnchecked > maxRollouts) {
             advancement = numUnchecked / (float)maxRollouts;
         }
@@ -51,21 +54,21 @@ public class RolloutPolicy_MultiChildren extends RolloutPolicy {
             }
 
             // Try one of the child actions.
-            actionQueue.addAction(startNode.uncheckedActions.get((int)i));
-            Node childNode = new Node(startNode, startNode.uncheckedActions.get((int)i), false);
+            Action nextAction = startNode.getUntriedActionByIndex((int) i);
+            actionQueue.addAction(nextAction);
             while (!actionQueue.isEmpty() && !game.getFailureStatus()) {
                 game.step(actionQueue.pollCommand());
             }
-            childNode.setState(game.getCurrentState());
+            NodeQWOPExplorableBase<?> childNode = startNode.addBackwardsLinkedChild(nextAction, game.getCurrentState());
 
             // Continue rollout randomly.
-            Node terminalNode = randomRollout(childNode, game);
+            NodeQWOPExplorableBase<?> terminalNode = randomRollout(childNode, game);
 
             // Accumulate score.
             score += evaluationFunction.getValue(terminalNode);
         }
 
-        return score/(float)(maxRollouts > startNode.uncheckedActions.size() ? startNode.uncheckedActions.size() :
+        return score/(float)(maxRollouts > startNode.getUntriedActionCount() ? startNode.getUntriedActionCount() :
                 maxRollouts);
     }
 

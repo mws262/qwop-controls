@@ -36,11 +36,23 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
                         "was: " + action.toString() + ".");
             }
         }
-        getParent().addChild(getThis());
     }
 
+    /**
+     * Make a new child. Both parent and child have references to each other.
+     * @param action
+     * @param state
+     * @return
+     */
     public abstract N addDoublyLinkedChild(Action action, State state);
 
+    /**
+     * Make a new child. The child has a reference to the parent, but the parent does not know about the child. This
+     * is useful for doing action rollouts that we don't want to be a permanent part of the tree.
+     * @param action
+     * @param state
+     * @return
+     */
     public abstract N addBackwardsLinkedChild(Action action, State state);
 
     public State getState() { return state; }
@@ -93,7 +105,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
                 }
 
                 // Otherwise, make a new one.
-                if (!foundExisting) currNode = currNode.addChild(act, game.getCurrentState());
+                if (!foundExisting) currNode = currNode.addDoublyLinkedChild(act, game.getCurrentState());
             }
         }
     }

@@ -39,7 +39,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
     private File saveLoc = new File("src/main/resources/saved_data/11_2_18");
 
-    private List<Node> leafNodes = new ArrayList<>();
+    private List<NodeQWOPGraphics> leafNodes = new ArrayList<>();
 
     /**
      * What point to start displaying from (to skip any prefix).
@@ -90,8 +90,8 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
             NodeQWOPGraphicsBase.makeNodesFromRunInfo(loadedGames, rootNode, -1);
             leafNodes.clear();
             rootNode.getLeaves(leafNodes);
-            Node endNode = leafNodes.get(0);
-            Node startNode = endNode;
+            NodeQWOPGraphics endNode = leafNodes.get(0);
+            NodeQWOPGraphics startNode = endNode;
             while (startNode.getTreeDepth() > startPt) {
                 startNode = startNode.getParent();
             }

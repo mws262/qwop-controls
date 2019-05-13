@@ -16,6 +16,8 @@ import game.State;
 import filters.INodeFilter;
 import transformations.ITransform;
 import transformations.Transform_Autoencoder;
+import tree.NodeQWOPExplorable;
+import tree.NodeQWOPExplorableBase;
 import tree.NodeQWOPGraphicsBase;
 
 public class PanelPlot_Controls extends PanelPlot implements KeyListener {
@@ -56,7 +58,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     /**
      * Nodes to be processed and plotted.
      */
-    private List<NodeQWOPGraphicsBase<?>> nodes = new ArrayList<>();
+    private List<NodeQWOPExplorableBase<?>> nodes = new ArrayList<>();
 
     public PanelPlot_Controls(int numberOfPlots) {
         super(numberOfPlots);
@@ -67,7 +69,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> plotNode) {
+    public void update(NodeQWOPExplorableBase<?> plotNode) {
         nodes.clear();
         plotNode.recurseDownTreeInclusive(nodes::add);
 
@@ -77,8 +79,8 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
         }
         plotDownsampler.filter(nodes); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.
 
-        List<State> statesBelow = nodes.stream().map(NodeQWOPGraphicsBase::getState).collect(Collectors.toList()); // Convert from node
-		// list to state list.
+        List<State> statesBelow = nodes.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
+        // Convert from node list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
         changePlots();
     }

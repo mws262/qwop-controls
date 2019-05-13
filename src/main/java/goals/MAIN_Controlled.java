@@ -28,6 +28,7 @@ import data.SavableSingleGame;
 import game.GameUnified;
 import game.State;
 import tree.Node;
+import tree.NodeQWOPGraphics;
 import tree.Utility;
 import ui.ScreenCapture;
 
@@ -52,7 +53,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
     private File prefixSave = new File("src/main/resources/" +
             "saved_data/11_2_18/single_run_2018-11-08_08-41-13.SavableSingleGame");
 
-    private List<Node> leafNodes = new ArrayList<>();
+    private List<NodeQWOPGraphics> leafNodes = new ArrayList<>();
 
     private SavableFileIO<SavableActionSequence> actionSaver = new SavableFileIO<>();
 
@@ -145,13 +146,13 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
         // Recreate prefix part of this tree.
         SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
-        Node rootNode = new Node();
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
         List<SavableSingleGame> glist = new ArrayList<>();
         fileIO.loadObjectsToCollection(prefixSave, glist);
         Node.makeNodesFromRunInfo(glist, rootNode, -1);
         leafNodes.clear();
         rootNode.getLeaves(leafNodes);
-        Node endNode = leafNodes.get(0);
+        NodeQWOPGraphics endNode = leafNodes.get(0);
 
         // Back up the tree in order to skip the end of the prefix.
         /* Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. */
@@ -160,8 +161,11 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             endNode = endNode.getParent();
         }
         // Run prefix part.
-        if (endNode.getTreeDepth() > 0)
-            actionQueue.addSequence(endNode.getSequence());
+        if (endNode.getTreeDepth() > 0) {
+            List<Action> actionList = new ArrayList<>();
+            endNode.getSequence(actionList);
+            actionQueue.addSequence(actionList);
+        }
 
         while (!actionQueue.isEmpty()) {
             executeNextOnQueue();

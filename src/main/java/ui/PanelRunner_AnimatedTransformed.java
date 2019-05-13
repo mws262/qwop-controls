@@ -14,6 +14,7 @@ import transformations.ITransform;
 import tree.Node;
 import transformations.Transform_Autoencoder;
 import transformations.Transform_PCA;
+import tree.NodeQWOPExplorableBase;
 
 import javax.swing.*;
 
@@ -78,12 +79,12 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
     }
 
     @Override
-    public void simRunToNode(Node node) {
-        List<Node> nodeList = new ArrayList<>();
-        node.getRoot().getNodesBelow(nodeList,true);
+    public void simRunToNode(NodeQWOPExplorableBase<?> node) {
+        List<NodeQWOPExplorableBase<?>> nodeList = new ArrayList<>();
+        node.getRoot().recurseDownTreeInclusive(nodeList::add);
 
         transformDownsampler.filter(nodeList);
-        List<State> stateList = nodeList.stream().map(Node::getState).collect(Collectors.toList());
+        List<State> stateList = nodeList.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
 
         for (ITransform trans : encoders) {
             trans.updateTransform(stateList);

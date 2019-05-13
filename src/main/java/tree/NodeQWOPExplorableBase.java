@@ -47,11 +47,14 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
         this.actionGenerator = new ActionGenerator_Null();
     }
 
-    public NodeQWOPExplorableBase(N parent, Action action, State state, IActionGenerator actionGenerator) {
+    NodeQWOPExplorableBase(N parent, Action action, State state, IActionGenerator actionGenerator) {
         super(parent, action, state);
         this.actionGenerator = actionGenerator;
         untriedActions = actionGenerator.getPotentialChildActionSet(parent);
     }
+
+    public abstract N addDoublyLinkedChild(Action action, State state, IActionGenerator actionGenerator);
+    public abstract N addBackwardsLinkedChild(Action action, State state, IActionGenerator actionGenerator);
 
     public boolean isFullyExplored() {
         return fullyExplored.get();

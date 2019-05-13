@@ -301,8 +301,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (sampler.expansionPolicyGuard(currentGameNode)) { // Some samplers keep adding nodes until
                         // failure, others add a fewer number and move to rollout before failure.
                         changeStatus(Status.ROLLOUT_POLICY);
-                        // TODO
-                        // if (debugDraw && lastNodeAdded != null) lastNodeAdded.clearNodeOverrideColor();
+                        // TODO if (debugDraw && lastNodeAdded != null) lastNodeAdded.clearNodeOverrideColor();
                         lastNodeAdded = currentGameNode;
 
                         // TODO
@@ -324,27 +323,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (actionQueue.isEmpty() || game.getFailureStatus()) {
                         // TODO possibly update the action to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
-                        currentGameNode = new NodeQWOPExplorableBase<?>(targetNodeToTest, targetActionToTest,
-                                game.getCurrentState()); // TODODODODOD
-                        // TODO
-//                        if (!currentGameNode.isStateUnassigned())
-//                            throw new RuntimeException("The expansion policy should only encounter new nodes. None of" +
-//                                    " them should have their state assigned before now.");
-//                        currentGameNode.setState(getGameState());
+                        currentGameNode = currentGameNode.addDoublyLinkedChild(targetActionToTest,
+                                game.getCurrentState());
+
                         sampler.expansionPolicyActionDone(currentGameNode);
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
-
-                        try {
-                            if (currentGameNode.getState().isFailed()) { // If we've added a terminal node, we need to see how
-                                // this affects the exploration status of the rest of the tree.
-                                targetNodeToTest.propagateFullyExploredStatus_lite(); //TODO see about making this
-                                // private.
-                            }
-                        } catch (NullPointerException e) {
-                            e.printStackTrace();
-                            throw new NullPointerException("Tree was given a game state that did not have a failure " +
-                                    "status assigned.");
-                        }
                     }
 
                     break;
@@ -580,7 +563,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     } // Not really applicable.
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> node) {}
+    public void update(NodeQWOPExplorableBase<?> node) {}
 }
 
 

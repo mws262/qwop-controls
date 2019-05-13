@@ -16,5 +16,5 @@ public interface NodeSelectionListener extends EventListener {
      * Callback for a node which has been selected (usually by a click on the tree).
      * @param node Selected node.
      */
-    void nodeSelected(NodeQWOPGraphicsBase node);
+    void nodeSelected(NodeQWOPGraphicsBase<?> node);
 }
