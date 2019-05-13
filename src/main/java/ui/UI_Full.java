@@ -12,6 +12,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
 import tree.Utility;
 
 /**
@@ -34,7 +36,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     /**
      * Tree root nodes associated with this interface.
      */
-    private ArrayList<Node> rootNodes = new ArrayList<>();
+    private ArrayList<NodeQWOPGraphicsBase<?>> rootNodes = new ArrayList<>();
 
     /**
      * Individual pane for the tree.
@@ -49,7 +51,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     /**
      * Selected node by user click/key
      */
-    private Node selectedNode;
+    private NodeQWOPGraphicsBase<?> selectedNode;
 
     /**
      * List of panes which can be activated, deactivated.
@@ -172,16 +174,18 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     }
 
     @Override
-    public void nodeSelected(Node selected) {
+    public void nodeSelected(NodeQWOPGraphicsBase<?> selected) {
         if (selectedNode != null) { // Clear things from the old selected node.
             selectedNode.displayPoint = false;
-            selectedNode.clearBranchColor();
-            selectedNode.clearBranchZOffset();
+            // TODO
+//            selectedNode.clearBranchColor();
+//            selectedNode.clearBranchZOffset();
         }
         selectedNode = selected;
         selectedNode.displayPoint = true;
-        selectedNode.nodeColor = Color.RED;
-        selectedNode.setBranchZOffset(0.4f);
+        // TODO
+//        selectedNode.nodeColor = Color.RED;
+//        selectedNode.setBranchZOffset(0.4f);
 
         for (TabbedPaneActivator panel : allTabbedPanes) {
             if (panel.isActive()) {
@@ -201,7 +205,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     }
 
     @Override
-    public void addRootNode(Node node) {
+    public void addRootNode(NodeQWOPGraphicsBase<?> node) {
         rootNodes.add(node);
         panelTree.addRootNode(node);
     }

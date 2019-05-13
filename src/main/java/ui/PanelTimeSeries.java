@@ -22,6 +22,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 
+import tree.NodeQWOPExplorableBase;
 import ui.IUserInterface.TabbedPaneActivator;
 
 public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActivator {
@@ -97,7 +98,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
     /**
      * Check if the bounds need expanding, tell JFreeChart to update, and set the bounds correctly
      */
-    public abstract void update(Node plotNode);
+    public abstract void update(NodeQWOPExplorableBase<?> plotNode);
 
     /**
      * Command all plots to apply updates.

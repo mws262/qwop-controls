@@ -3,7 +3,7 @@ package samplers.rollout;
 import actions.Action;
 import evaluators.IEvaluationFunction;
 import game.IGame;
-import tree.Node;
+import tree.NodeQWOPExplorableBase;
 import value.IValueFunction;
 
 public class RolloutPolicy_ValueFunction extends RolloutPolicy {
@@ -22,15 +22,12 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public float rollout(Node startNode, IGame game) {
-        Node currentNode = startNode;
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
+        NodeQWOPExplorableBase<?> currentNode = startNode;
         int rolloutTimesteps = 0;
         while (!game.getFailureStatus() && rolloutTimesteps < maxRolloutTimesteps) {
 
             Action chosenAction = valueFunction.getMaximizingAction(currentNode, game);
-
-            // For convenience and debugging, make an unattached node for the chosen action.
-            currentNode = new Node(currentNode, chosenAction, false);
 
             // Execute the action. Break out on completion or failure.
             actionQueue.addAction(chosenAction);
@@ -38,7 +35,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
                 game.step(actionQueue.pollCommand());
                 rolloutTimesteps++;
             }
-            currentNode.setState(game.getCurrentState());
+            currentNode = currentNode.addBackwardsLinkedChild(chosenAction, game.getCurrentState());
         }
 
         // System.out.println("Rollout: " + currentNode.getState().body.getX() + ", " + rolloutTimesteps);

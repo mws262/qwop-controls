@@ -1,6 +1,8 @@
 package goals.tree_search;
 
+import game.GameUnified;
 import tree.Node;
+import tree.NodeQWOPGraphics;
 
 import java.io.File;
 
@@ -19,7 +21,7 @@ public class MAIN_Search_CollectAllGameData extends MAIN_Search_Template {
     private void doGames() {
         assignAllowableActionsWider(-1);
 
-        Node rootNode = new Node();
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
         ui.addRootNode(rootNode);
 
         doFixedGamesToFailureStage(rootNode, "good_and_bad", 1, 1000000);

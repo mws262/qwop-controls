@@ -4,6 +4,7 @@ import actions.Action;
 import evaluators.IEvaluationFunction;
 import game.IGame;
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
 
@@ -21,16 +22,15 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public float rollout(Node startNode, IGame game) {
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
         int timestepCounter = 0;
-        Node rolloutNode = startNode;
+        NodeQWOPExplorableBase<?> rolloutNode = startNode;
         float accumulatedValue = 0f;
 
         float previousValue = game.getCurrentState().body.getX(); // TODO Stop hardcoding this as body x and instead
         // use the evaluation function.
-        while (!rolloutNode.isFailed() && timestepCounter < maxTimestepsToSim) {
-            Action childAction = rolloutNode.uncheckedActions.getRandom();
-            rolloutNode = new Node(rolloutNode, childAction, false);
+        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimestepsToSim) {
+            Action childAction = rolloutNode.getUntriedActionRandom();
             actionQueue.addAction(childAction);
 
             while (!actionQueue.isEmpty() && !game.getFailureStatus() && timestepCounter < maxTimestepsToSim) {
@@ -43,8 +43,7 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
 
                 timestepCounter++;
             }
-
-            rolloutNode.setState(game.getCurrentState());
+            rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState());
         }
 
         return accumulatedValue;

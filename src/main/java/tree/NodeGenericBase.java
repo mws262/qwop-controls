@@ -18,7 +18,7 @@ import java.util.function.Predicate;
  * @author matt
  * @param <N>
  */
-abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
+public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
 
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
@@ -49,23 +49,18 @@ abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     NodeGenericBase(N parent) {
         this.parent = parent;
         treeDepth = parent.getTreeDepth() + 1;
-        maxBranchDepth = treeDepth;
-        N currentNode = getParent();
-        while (currentNode.maxBranchDepth < maxBranchDepth) {
-            currentNode.maxBranchDepth = maxBranchDepth;
-            currentNode = currentNode.getParent();
-        }
     }
 
-    void addDoublyLinkedChild(N child) {
+    void addToChildList(N child) {
         assert !children.contains(child);
         children.add(child);
+        recurseUpTreeInclusive(n -> {
+            if (n.maxBranchDepth < maxBranchDepth) {
+                n.maxBranchDepth = maxBranchDepth;
+            }
+        });
     }
 
-    void addBackwardsLinkedChild(N child) {
-        assert !children.contains(child);
-        children.add(child);
-    }
 
     /**
      * Get the parent node of this node. If called from root, will return null.

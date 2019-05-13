@@ -10,11 +10,14 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import actions.Action;
 import filters.NodeFilter_Downsample;
 import filters.INodeFilter;
 import game.GameUnified;
 import game.State;
 import tree.Node;
+import tree.NodeQWOPExplorable;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * Displays fixed shots of the runner at selected nodes. Can also preview the past and future from these nodes. A tab.
@@ -26,7 +29,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     /**
      * The node that is the current focus of this panel.
      */
-    private Node snapshotNode;
+    private NodeQWOPExplorableBase<?> snapshotNode;
 
     /**
      * Filter to keep from drawing too many and killing the graphics speed.
@@ -37,14 +40,14 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
      * Potentially, a future node selected by hovering over its runner to display a specific sequence of actions in
      * all the displayed futures.
      */
-    private Node highlightedFutureMousedOver;
+    private NodeQWOPExplorableBase<?> highlightedFutureMousedOver;
 
     /**
      * Externally selected version to be highlighted. Mostly just commanded by selecting tree nodes instead.
      */
-    private Node highlightedFutureExternal;
+    private NodeQWOPExplorableBase<?> highlightedFutureExternal;
 
-    private List<Node> focusLeaves = new ArrayList<>();
+    private List<NodeQWOPExplorableBase<?>> focusLeaves = new ArrayList<>();
     private List<State> states = new ArrayList<>();
     private List<Stroke> strokes = new ArrayList<>();
     private List<Color> colors = new ArrayList<>();
@@ -85,7 +88,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
      * Assign a selected node for the snapshot pane to display.
      */
     @Override
-    public void update(Node node) {
+    public void update(NodeQWOPExplorableBase<?> node) {
         states.clear();
         focusLeaves.clear();
         strokes.clear();
@@ -100,7 +103,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         focusLeaves.add(node);
 
         /* History nodes */
-        Node historyNode = snapshotNode;
+        NodeQWOPExplorableBase<?> historyNode = snapshotNode;
         for (int i = 0; i < numHistoryStatesDisplay; i++) {
             if (historyNode.getTreeDepth() > 0) {
                 historyNode = historyNode.getParent();
@@ -112,22 +115,27 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         }
 
         /* Future leaf nodes */
-        List<Node> descendants = new ArrayList<>();
+        List<NodeQWOPExplorableBase<?>> descendants = new ArrayList<>();
         for (int i = 0; i < snapshotNode.getChildCount(); i++) {
-            Node child = snapshotNode.getChildByIndex(i);
-            child.getLeaves(descendants);
+            NodeQWOPExplorableBase<?> child = snapshotNode.getChildByIndex(i);
+
+            child.recurseDownTreeInclusive(n->{
+                if (n.getChildCount() == 0) {
+                    descendants.add(n);
+                }
+            });
             filter.filter(descendants); // temp rm
 
-            Color runnerColor = Node.getColorFromTreeDepth(i * 10);
-            child.setBranchColor(runnerColor); // Change the color on the tree too.
+            // TODO
+//            Color runnerColor = Node.getColorFromTreeDepth(i * 10);
+//            child.setBranchColor(runnerColor); // Change the color on the tree too.
 
-            for (Node descendant : descendants) {
-                if (!descendant.isStateUnassigned()) {
-                    focusLeaves.add(descendant);
-                    states.add(descendant.getState());
-                    strokes.add(normalStroke);
-                    colors.add(runnerColor);
-                }
+            for (NodeQWOPExplorableBase<?> descendant : descendants) {
+                focusLeaves.add(descendant);
+                states.add(descendant.getState());
+                strokes.add(normalStroke);
+                // TODO
+                //colors.add(runnerColor);
             }
         }
     }
@@ -198,29 +206,32 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 }
             }
 
+            // TODO reintroduce this with new nodes.
             // Change things if one runner is selected.
-            if (mouseIsIn && bestIdx >= 0) {
-                Node newHighlightNode = focusLeaves.get(bestIdx);
-                changeFocusedFuture(g2, highlightedFutureMousedOver, newHighlightNode);
-                highlightedFutureMousedOver = newHighlightNode;
-
-                // Externally commanded pick, instead of mouse-picked.
-            } else if (highlightedFutureExternal != null) {
-                changeFocusedFuture(g2, highlightedFutureMousedOver, highlightedFutureExternal);
-                highlightedFutureMousedOver = highlightedFutureExternal;
-
-            } else if (highlightedFutureMousedOver != null) { // When we stop mousing over, clear the brightness
-                // changes.
-                highlightedFutureMousedOver.displayPoint = false;
-                highlightedFutureMousedOver.nodeColor = Color.GREEN;
-                snapshotNode.getRoot().resetLineBrightness_below();
-                highlightedFutureMousedOver.clearBackwardsBranchZOffset();
-                highlightedFutureMousedOver = null;
-            }
+//            if (mouseIsIn && bestIdx >= 0) {
+//                Node newHighlightNode = focusLeaves.get(bestIdx);
+//                changeFocusedFuture(g2, highlightedFutureMousedOver, newHighlightNode);
+//                highlightedFutureMousedOver = newHighlightNode;
+//
+//                // Externally commanded pick, instead of mouse-picked.
+//            } else if (highlightedFutureExternal != null) {
+//                changeFocusedFuture(g2, highlightedFutureMousedOver, highlightedFutureExternal);
+//                highlightedFutureMousedOver = highlightedFutureExternal;
+//
+//            } else if (highlightedFutureMousedOver != null) { // When we stop mousing over, clear the brightness
+//                // changes.
+//                highlightedFutureMousedOver.displayPoint = false;
+//                highlightedFutureMousedOver.nodeColor = Color.GREEN;
+//                snapshotNode.getRoot().resetLineBrightness_below();
+//                highlightedFutureMousedOver.clearBackwardsBranchZOffset();
+//                highlightedFutureMousedOver = null;
+//            }
 
             // Draw the sequence too.
             if (snapshotNode.getTreeDepth() > 0) {
-                drawActionString(snapshotNode.getSequence(), g);
+                List<Action> actionList = new ArrayList<>();
+                snapshotNode.getSequence(actionList);
+                drawActionString(actionList.toArray(new Action[0]), g);
             }
         }
     }
@@ -228,21 +239,24 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     /**
      * Change highlighting on both the tree and the snapshot when selections change.
      */
-    private void changeFocusedFuture(Graphics2D g2, Node oldFuture, Node newFuture) {
-        // Clear out highlights from the old node.
-        if (oldFuture != null && !oldFuture.equals(newFuture)) {
-            oldFuture.clearBackwardsBranchZOffset();
-            oldFuture.displayPoint = false;
-            oldFuture.nodeColor = Color.GREEN;
-        }
+    private void changeFocusedFuture(Graphics2D g2, NodeQWOPExplorableBase<?> oldFuture,
+                                     NodeQWOPExplorableBase<?> newFuture) {
 
-        // Add highlights to the new node if it's different or previous is nonexistent
-        if (oldFuture == null || !oldFuture.equals(newFuture)) {
-            newFuture.displayPoint = true;
-            newFuture.nodeColor = Color.ORANGE;
-            newFuture.setBackwardsBranchZOffset(0.8f);
-            newFuture.highlightSingleRunToThisNode(); // Tell the tree to highlight a section and darken others.
-        }
+        // TODO
+//        // Clear out highlights from the old node.
+//        if (oldFuture != null && !oldFuture.equals(newFuture)) {
+//            oldFuture.clearBackwardsBranchZOffset();
+//            oldFuture.displayPoint = false;
+//            oldFuture.nodeColor = Color.GREEN;
+//        }
+//
+//        // Add highlights to the new node if it's different or previous is nonexistent
+//        if (oldFuture == null || !oldFuture.equals(newFuture)) {
+//            newFuture.displayPoint = true;
+//            newFuture.nodeColor = Color.ORANGE;
+//            newFuture.setBackwardsBranchZOffset(0.8f);
+//            newFuture.highlightSingleRunToThisNode(); // Tell the tree to highlight a section and darken others.
+//        }
         // Draw
         int idx = focusLeaves.indexOf(newFuture);
         if (idx > -1) { // Focus leaves no longer contains the no focus requested.
@@ -250,7 +264,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 GameUnified.drawExtraRunner(g2, states.get(idx), "", runnerScaling, xOffsetPixels - specificXOffset,
                         yOffsetPixels, colors.get(idx).darker(), boldStroke);
 
-                Node currentNode = newFuture;
+                NodeQWOPExplorableBase<?> currentNode = newFuture;
 
                 // Also draw parent nodes back the the selected one to view the run that leads to the highlighted
                 // failure.
@@ -285,14 +299,14 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     /**
      * Get the list of leave nodes (failure states) that we're displaying in the snapshot pane.
      */
-    public List<Node> getDisplayedLeaves() {
+    public List<NodeQWOPExplorableBase<?>> getDisplayedLeaves() {
         return focusLeaves;
     }
 
     /**
      * Focus a single future leaf
      */
-    public void giveSelectedFuture(Node queuedFutureLeaf) {
+    public void giveSelectedFuture(NodeQWOPExplorableBase<?> queuedFutureLeaf) {
         this.highlightedFutureExternal = queuedFutureLeaf;
     }
 

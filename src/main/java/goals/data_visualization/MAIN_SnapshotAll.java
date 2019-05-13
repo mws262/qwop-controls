@@ -10,7 +10,9 @@ import javax.swing.JFrame;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
+import game.GameUnified;
 import tree.Node;
+import tree.NodeQWOPGraphics;
 import ui.PanelRunner_Snapshot;
 
 /**
@@ -79,7 +81,7 @@ public class MAIN_SnapshotAll extends JFrame {
             return;
         }
 
-        Node rootNode = new Node();
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
 
         SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
         List<SavableSingleGame> games = new ArrayList<>();
@@ -89,9 +91,9 @@ public class MAIN_SnapshotAll extends JFrame {
         }
 
         Node.makeNodesFromRunInfo(games, rootNode, -1);
-        Node currNode = rootNode;
+        NodeQWOPGraphics currNode = rootNode;
         while (currNode.getTreeDepth() < playbackDepth && currNode.getChildCount() > 0) {
-            currNode = currNode.getChildren()[0];
+            currNode = currNode.getChildByIndex(0);
         }
         System.out.println(currNode.countDescendants());
         snapshotPane.update(currNode);

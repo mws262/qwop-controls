@@ -9,6 +9,7 @@ import game.GameUnified;
 import game.IGame;
 import game.State;
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runnable {
 
@@ -102,7 +103,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     }
 
     @Override
-    public void update(Node node) {}
+    public void update(NodeQWOPExplorableBase<?> node) {}
 
     /**
      * Check if the current run is finished.

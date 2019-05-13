@@ -109,11 +109,13 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
         Node.stripUncheckedActionsExceptOnLeaves(rootNode, 7);
 
-        List<Node> leaf = new ArrayList<>();
+        List<NodeQWOPGraphics> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
 
         ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addSequence(leaf.get(0).getSequence());
+        List<Action> actionList = new ArrayList<>();
+        leaf.get(0).getSequence(actionList);
+        actionQueue.addSequence(actionList);
 
         // Run the "prefix" section.
         while (!actionQueue.isEmpty()) {
@@ -132,7 +134,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
             }
         }
 
-        Node currNode = leaf.get(0);
+        NodeQWOPGraphics currNode = leaf.get(0);
 
         // Run the controller until failure.
         while (true) { //!qwop.game.getFailureStatus()) {
@@ -178,8 +180,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                     }
                 }
             }
-            currNode = currNode.addChild(chosenAction);
-            currNode.setState(qwop.game.getCurrentState());
+            currNode = currNode.addDoublyLinkedChild(chosenAction, qwop.game.getCurrentState());
         }
     }
 

@@ -8,6 +8,7 @@ import game.GameUnified;
 import game.IGame;
 import game.State;
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * Simple runner visualizer that either takes a node and gets its state or takes a state
@@ -34,7 +35,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(Node node) {
+    public void update(NodeQWOPExplorableBase<?> node) {
         currentState = node.getState();
     }
 

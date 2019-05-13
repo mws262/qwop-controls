@@ -2,6 +2,7 @@ package ui;
 
 import org.jfree.chart.plot.XYPlot;
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -101,7 +102,7 @@ public class PanelPlot_Simple extends PanelPlot {
     }
 
     @Override
-    public void update(Node plotNode) {}
+    public void update(NodeQWOPExplorableBase<?> plotNode) {}
 
     @Override
     public void plotClicked(int plotIdx) {}

@@ -1,9 +1,8 @@
 package ui;
 
 import game.GameUnified;
-import game.IGame;
 import game.State;
-import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 import java.awt.*;
 import java.util.Map;
@@ -14,11 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author matt
  */
 public class PanelRunner_MultiState extends PanelRunner implements Runnable {
-    /**
-     * Access to the game for the sake of the drawing methods.
-     */
-    private IGame game = new GameUnified();
-
     /**
      * Main state to draw. It will provide the x-reference position.
      */
@@ -58,7 +52,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(Node node) {
+    public void update(NodeQWOPExplorableBase<?> node) {
         mainState = node.getState();
     }
 

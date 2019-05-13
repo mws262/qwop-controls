@@ -17,7 +17,7 @@ public interface IUserInterface extends Runnable {
      */
     void kill();
 
-    void addRootNode(NodeQWOPExplorableBase<?> node);
+    void addRootNode(NodeQWOPGraphicsBase<?> node);
 
     void clearRootNodes();
 

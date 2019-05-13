@@ -2,7 +2,7 @@ package samplers.rollout;
 
 import evaluators.IEvaluationFunction;
 import game.IGame;
-import tree.Node;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * Rollout policy which does a normal random rollout followed by another one, but with the physics engine cold
@@ -17,10 +17,10 @@ public class RolloutPolicy_RandomColdStart extends RolloutPolicy{
     }
 
     @Override
-    public float rollout(Node startNode, IGame game) {
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
         actionQueue.clearAll();
 
-        Node normalRolloutEndNode = randomRollout(startNode, game);
+        NodeQWOPExplorableBase<?> normalRolloutEndNode = randomRollout(startNode, game);
         actionQueue.resetQueue();
         coldStartGameToNode(startNode, game);
 

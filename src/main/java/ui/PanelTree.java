@@ -5,10 +5,7 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.gl2.GLUT;
-import tree.Node;
-import tree.NodeQWOPGraphics;
-import tree.NodeQWOPGraphicsBase;
-import tree.TreeWorker;
+import tree.*;
 
 import javax.swing.*;
 import javax.vecmath.Vector3f;
@@ -533,7 +530,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     }
 
     @Override
-    public void update(Node node) { }
+    public void update(NodeQWOPExplorableBase<?> node) { }
 
     @Override
     public void actionPerformed(ActionEvent e) {

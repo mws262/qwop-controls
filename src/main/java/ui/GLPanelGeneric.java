@@ -3,7 +3,6 @@ package ui;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.text.NumberFormat;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;

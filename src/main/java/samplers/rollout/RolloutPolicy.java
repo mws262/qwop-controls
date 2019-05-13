@@ -74,7 +74,7 @@ public abstract class RolloutPolicy {
      *                     then there is no limit.
      * @return The Node we arrive at at failure.
      */
-    NodeQWOPBase<?> randomRollout(NodeQWOPExplorableBase<?> startNode, IGame game, int maxTimesteps) {
+    NodeQWOPExplorableBase<?> randomRollout(NodeQWOPExplorableBase<?> startNode, IGame game, int maxTimesteps) {
         int timestepCounter = 0;
         NodeQWOPExplorableBase<?> rolloutNode = startNode;
         while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps) {
@@ -86,12 +86,12 @@ public abstract class RolloutPolicy {
                 timestepCounter++;
             }
 
-            rolloutNode = rolloutNode.addChild(childAction, game.getCurrentState());
+            rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState());
         }
         return rolloutNode;
     }
 
-    NodeQWOPBase<?> randomRollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
+    NodeQWOPExplorableBase<?> randomRollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
         return randomRollout(startNode, game, Integer.MAX_VALUE);
     }
 

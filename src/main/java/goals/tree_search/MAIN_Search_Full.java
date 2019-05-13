@@ -190,7 +190,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 
             int count = 0;
             int startAt = recoveryResumePoint;
-            Node previousLeaf = null;
+            NodeQWOPGraphics previousLeaf = null;
 
             for (NodeQWOPGraphics leaf : leafList) {
                 if (count >= startAt) {

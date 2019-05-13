@@ -18,6 +18,7 @@ import org.jfree.chart.plot.XYPlot;
 import filters.NodeFilter_Downsample;
 import game.State;
 import tree.Node;
+import tree.NodeQWOPExplorableBase;
 import tree.Utility;
 
 /**
@@ -36,7 +37,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     /**
      * Node from which states are referenced.
      */
-    private Node selectedNode;
+    private NodeQWOPExplorableBase<?> selectedNode;
 
     /**
      * Which plot index has an active menu.
@@ -122,12 +123,12 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     }
 
     @Override
-    public void update(Node selectedNode) {
+    public void update(NodeQWOPExplorableBase<?> selectedNode) {
         this.selectedNode = selectedNode;
         // Fetching new data.
-        List<Node> nodesBelow = new ArrayList<>();
+        List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
         if (selectedNode != null) {
-            selectedNode.getNodesBelow(nodesBelow, true);
+            selectedNode.recurseDownTreeInclusive(nodesBelow::add);
 
             // Reduce the list size to something which renders quickly.
             plotDownsampler.filter(nodesBelow);

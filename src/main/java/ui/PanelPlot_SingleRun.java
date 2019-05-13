@@ -20,6 +20,7 @@ import actions.ActionQueue;
 import transformations.ITransform;
 import tree.Node;
 import transformations.Transform_Autoencoder;
+import tree.NodeQWOPExplorableBase;
 
 /**
  * This plotter makes plots from all the states along a single run, not
@@ -71,7 +72,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     /**
      * Node that we're plotting the actions/states up to.
      */
-    private Node selectedNode;
+    private NodeQWOPExplorableBase<?> selectedNode;
 
     public PanelPlot_SingleRun(int numberOfPlots) {
         super(numberOfPlots);
@@ -86,15 +87,17 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     /**
      * Run the simulation to collect the state info we want to plot.
      */
-    private void simRunToNode(Node node) {
+    private void simRunToNode(NodeQWOPExplorableBase<?> node) {
         stateList.clear();
         transformedStates.clear();
         commandList.clear();
         actionQueue.clearAll();
         game.makeNewWorld();
-        Action[] actionSequence = node.getSequence();
-        actionQueue.addSequence(actionSequence);
-        for (Action a : actionSequence) {
+
+        ArrayList<Action> actionList = new ArrayList<>();
+        node.getSequence(actionList);
+        actionQueue.addSequence(actionList);
+        for (Action a : actionList) {
             System.out.println(a);
         }
 
@@ -108,7 +111,8 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void update(Node plotNode) { // Note that this is different from the other PlotPanes. It plots UP TO this
+    public void update(NodeQWOPExplorableBase<?> plotNode) { // Note that this is different from the other PlotPanes.
+        // It plots UP TO this
         // node rather than below this node.
         if (plotNode.getTreeDepth() == 0) return; // Nothing to see from root.
         selectedNode = plotNode;

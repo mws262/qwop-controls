@@ -4,6 +4,7 @@ import actions.Action;
 import evaluators.IEvaluationFunction;
 import game.IGame;
 import tree.Node;
+import tree.NodeQWOPExplorable;
 import tree.NodeQWOPExplorableBase;
 
 /**
@@ -25,22 +26,26 @@ public class RolloutPolicy_WorstCaseWindow extends RolloutPolicy {
 
         // Need to do a rollout for the actual node we landed on.
         Action middleAction = startNode.getAction();
+        Action aboveAction = new Action(middleAction.getTimestepsTotal() + 1, middleAction.peek());
+        Action belowAction = new Action(middleAction.getTimestepsTotal() - 1, middleAction.peek());
 
-        // One action duration above.
-        Node nodeAbove = new Node(startNode.getParent(), new Action(middleAction.getTimestepsTotal() + 1,
-                middleAction.peek()), false);
-
-        // One action duration below.
-        Node nodeBelow = new Node(startNode.getParent(), new Action(middleAction.getTimestepsTotal() - 1,
-                middleAction.peek()), false);
 
         float startValue = evaluationFunction.getValue(startNode);
         float valMid = individualRollout.rollout(startNode, game);// - startValue;
-        simGameToNode(nodeAbove, game);
-        nodeAbove.setState(game.getCurrentState());
+        simGameToNode(startNode.getParent(), game);
+        actionQueue.addAction(aboveAction);
+        while (!actionQueue.isEmpty())
+            game.step(actionQueue.pollCommand());
+        NodeQWOPExplorableBase<?> nodeAbove = startNode.getParent().addBackwardsLinkedChild(aboveAction, game.getCurrentState());
+
         float valAbove = individualRollout.rollout(nodeAbove, game);// - startValue;
-        simGameToNode(nodeBelow, game);
-        nodeBelow.setState(game.getCurrentState());
+        simGameToNode(startNode.getParent(), game);
+        actionQueue.addAction(belowAction);
+        while (!actionQueue.isEmpty())
+            game.step(actionQueue.pollCommand());
+        NodeQWOPExplorableBase<?> nodeBelow = startNode.getParent().addBackwardsLinkedChild(belowAction, game.getCurrentState());
+
+
         float valBelow = individualRollout.rollout(nodeBelow, game);// - startValue;
 
         return Math.min(valMid, Math.min(valAbove, valBelow)); // Gets the worst out of three.
