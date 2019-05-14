@@ -1,14 +1,13 @@
 package savers;
 
+import actions.Action;
+import game.IGame;
+import game.State;
+import tree.NodeQWOPBase;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
-import game.IGame;
-import game.State;
-import actions.Action;
-import tree.Node;
-import tree.NodeQWOPBase;
 
 public interface IDataSaver {
 

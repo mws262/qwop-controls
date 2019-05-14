@@ -6,7 +6,6 @@ import actions.ActionList;
 import actions.ActionQueue;
 import distributions.Distribution_Equal;
 import game.GameUnified;
-import tree.Node;
 import tree.NodeQWOPGraphics;
 import tree.Utility;
 import ui.PanelRunner;
@@ -106,8 +105,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 //                new Action(20,true,false,false,true),
         });
 
-        Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
-        Node.stripUncheckedActionsExceptOnLeaves(rootNode, 7);
+        NodeQWOPGraphics.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
+        NodeQWOPGraphics.stripUncheckedActionsExceptOnLeaves(rootNode, 7);
 
         List<NodeQWOPGraphics> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);

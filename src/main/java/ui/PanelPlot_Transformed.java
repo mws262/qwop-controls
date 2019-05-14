@@ -1,6 +1,14 @@
 package ui;
 
-import java.awt.Color;
+import filters.INodeFilter;
+import filters.NodeFilter_Downsample;
+import game.State;
+import org.jfree.chart.plot.XYPlot;
+import transformations.ITransform;
+import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
+
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -8,16 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
-import org.jfree.chart.plot.XYPlot;
-
-import filters.NodeFilter_Downsample;
-import game.State;
-import filters.INodeFilter;
-import transformations.ITransform;
-import tree.Node;
-import tree.NodeQWOPExplorable;
-import tree.NodeQWOPExplorableBase;
 
 public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
@@ -106,7 +104,8 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
             Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
             Float[] yData = transformedStates.stream().map(ts -> ts[firstPlotRow]).toArray(Float[]::new);
             Color[] cData =
-                    nodesToTransform.stream().map(n -> Node.getColorFromTreeDepth(n.getTreeDepth())).toArray(Color[]::new);
+                    nodesToTransform.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
+                            NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Component" + " " + firstPlotRow);
             pl.getDomainAxis().setLabel("Component" + " " + currCol);

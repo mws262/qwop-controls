@@ -5,10 +5,11 @@ import actions.ActionQueue;
 import data.SavableSingleGame;
 import game.IGame;
 import game.State;
-import value.containers.IValueContainer;
-import value.containers.ValueContainer_Average;
+import value.updaters.IValueUpdater;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Most basic QWOP node. Just does states and actions.
@@ -21,8 +22,6 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
     private final Action action;
 
     private final State state;
-
-    public IValueContainer value = new ValueContainer_Average();
 
     public NodeQWOPBase(State rootState) {
         super();
@@ -142,5 +141,46 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
                 }
             }
         }
+    }
+
+
+    // Value and value updating
+
+    private float value;
+    private AtomicInteger updateCount;
+
+    private Object lock = new Object();
+    private AtomicBoolean beingUpdated = new AtomicBoolean();
+
+
+    public void updateValue(float valueUpdate, IValueUpdater updater) {
+        beingUpdated.set(true);
+        value = updater.update(value, valueUpdate, updateCount.get(), this);
+        updateCount.incrementAndGet();
+        beingUpdated.set(false);
+        lock.notify();
+    }
+
+    public float getValue() {
+        if (beingUpdated.get()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return value;
+    }
+
+    public int getUpdateCount() {
+        if (beingUpdated.get()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return updateCount.get();
     }
 }

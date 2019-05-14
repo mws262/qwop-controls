@@ -1,6 +1,6 @@
 package ui;
 
-import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
 
 public class UI_Headless implements IUserInterface {
 
@@ -13,7 +13,7 @@ public class UI_Headless implements IUserInterface {
     public void kill() {}
 
     @Override
-    public void addRootNode(NodeQWOPExplorableBase<?> node) {}
+    public void addRootNode(NodeQWOPGraphicsBase<?> node) {}
 
     @Override
     public void clearRootNodes() {}

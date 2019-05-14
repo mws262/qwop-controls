@@ -1,20 +1,14 @@
 package ui;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Stroke;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import evaluators.EvaluationFunction_SqDistFromOther;
 import game.GameUnified;
 import game.State;
-import tree.Node;
 import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
+
+import java.awt.*;
+import java.util.List;
+import java.util.*;
 
 public class PanelRunner_Comparison extends PanelRunner {
 
@@ -78,7 +72,7 @@ public class PanelRunner_Comparison extends PanelRunner {
                 focusNodes.add(closeNode);
                 states.add(closeNode.getState());
                 strokes.add(normalStroke);
-                Color matchColor = Node.getColorFromTreeDepth(i * 5);
+                Color matchColor = NodeQWOPGraphicsBase.getColorFromTreeDepth(i * 5, NodeQWOPGraphicsBase.lineBrightnessDefault);
                 colors.add(matchColor);
                 //TODO
 //                closeNode.overrideNodeColor = matchColor;

@@ -1,6 +1,5 @@
 package ui;
 
-import tree.NodeQWOPExplorable;
 import tree.NodeQWOPExplorableBase;
 import tree.NodeQWOPGraphicsBase;
 

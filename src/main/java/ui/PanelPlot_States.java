@@ -1,25 +1,20 @@
 package ui;
 
-import java.awt.Color;
-import java.awt.GridLayout;
+import filters.NodeFilter_Downsample;
+import game.State;
+import org.jfree.chart.plot.XYPlot;
+import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
+import tree.Utility;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-
-import org.jfree.chart.plot.XYPlot;
-
-import filters.NodeFilter_Downsample;
-import game.State;
-import tree.Node;
-import tree.NodeQWOPExplorableBase;
-import tree.Utility;
 
 /**
  * Pane for displaying plots of various state variables. Click each plot to pull up a menu for selecting data.
@@ -147,7 +142,8 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
 						nodesBelow.stream().map(n -> n.getState().getStateVarFromName(plotObjectsY[countDataCollect],
 								plotStatesY[countDataCollect])).toArray(Float[]::new);
                 Color[] cData =
-						nodesBelow.stream().map(n -> Node.getColorFromTreeDepth(n.getTreeDepth())).toArray(Color[]::new);
+						nodesBelow.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
+                                NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
                 setPlotBoundsFromData(pl, xData, yData);
 

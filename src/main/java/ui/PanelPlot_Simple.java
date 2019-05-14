@@ -1,7 +1,6 @@
 package ui;
 
 import org.jfree.chart.plot.XYPlot;
-import tree.Node;
 import tree.NodeQWOPExplorableBase;
 
 import java.awt.*;

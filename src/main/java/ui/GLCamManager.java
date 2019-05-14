@@ -1,19 +1,16 @@
 package ui;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.fixedfunc.GLLightingFunc;
+import com.jogamp.opengl.glu.GLU;
+import tree.NodeQWOPGraphicsBase;
 
 import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
-
-import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.fixedfunc.GLLightingFunc;
-import com.jogamp.opengl.glu.GLU;
-
-import tree.Node;
-import tree.NodeQWOPGraphicsBase;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Handle all camera motion including smooth motions, click-to-coordinate mapping, etc.
@@ -522,11 +519,11 @@ public class GLCamManager {
     }
 
     /**
-     * Take a click vector, find the nearest {@link Node} to this line.
+     * Take a click vector, find the nearest node to this line.
      *
      * @param clickVec Click direction as defined by the view frustum.
      * @param root     Root of a tree. All the nodes in this tree will be evaluated to find the closest.
-     * @return Nearest {@link Node} to the click ray.
+     * @return Nearest node to the click ray.
      * @see GLCamManager#clickVector(int, int)
      */
     public NodeQWOPGraphicsBase<?> nodeFromRay(Vector3f clickVec, NodeQWOPGraphicsBase<?> root) {

@@ -1,16 +1,5 @@
 package ui;
 
-import java.awt.Color;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.swing.*;
-
-import tree.Node;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -21,9 +10,13 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
-
 import tree.NodeQWOPExplorableBase;
 import ui.IUserInterface.TabbedPaneActivator;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActivator {
     

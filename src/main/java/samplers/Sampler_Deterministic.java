@@ -2,8 +2,6 @@ package samplers;
 
 import actions.Action;
 import game.IGame;
-import tree.Node;
-import tree.NodeQWOPBase;
 import tree.NodeQWOPExplorableBase;
 
 /**

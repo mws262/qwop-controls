@@ -4,7 +4,6 @@ import actions.Action;
 import actions.ActionList;
 import game.GameUnified;
 import game.State;
-import tree.Node;
 import tree.NodeQWOP;
 import tree.NodeQWOPGraphicsBase;
 import ui.PanelRunner_MultiState;

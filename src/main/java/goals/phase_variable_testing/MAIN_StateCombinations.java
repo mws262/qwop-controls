@@ -4,7 +4,6 @@ import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
 import game.State;
-import tree.Node;
 import tree.NodeQWOPGraphicsBase;
 import ui.PanelPlot_Simple;
 
@@ -70,7 +69,7 @@ public class MAIN_StateCombinations extends JFrame {
 
         List<Color> colorList = new ArrayList<>();
         for (int i = 0; i < xDataList.size(); i++) {
-            colorList.add(NodeQWOPGraphicsBase.getColorFromTreeDepth(i));
+            colorList.add(NodeQWOPGraphicsBase.getColorFromTreeDepth(i, NodeQWOPGraphicsBase.lineBrightnessDefault));
         }
 
         plotPanel.setPlotData(xDataList, yDataList, colorList, "timestep idx", "state value");

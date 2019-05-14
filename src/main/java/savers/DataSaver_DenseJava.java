@@ -1,12 +1,11 @@
 package savers;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import data.SavableDenseData;
 import data.SavableFileIO;
-import tree.Node;
 import tree.NodeQWOPBase;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Saves data at every timestep. Old saver which serializes java classes. Useful for manipulating data in java, not

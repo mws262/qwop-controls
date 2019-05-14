@@ -1,7 +1,6 @@
 package goals.tree_search;
 
 import game.GameUnified;
-import tree.Node;
 import tree.NodeQWOPGraphics;
 
 import java.io.File;

@@ -1,23 +1,18 @@
 package ui;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Stroke;
+import actions.Action;
+import filters.INodeFilter;
+import filters.NodeFilter_Downsample;
+import game.GameUnified;
+import game.State;
+import tree.NodeQWOPExplorableBase;
+
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
-
-import actions.Action;
-import filters.NodeFilter_Downsample;
-import filters.INodeFilter;
-import game.GameUnified;
-import game.State;
-import tree.Node;
-import tree.NodeQWOPExplorable;
-import tree.NodeQWOPExplorableBase;
 
 /**
  * Displays fixed shots of the runner at selected nodes. Can also preview the past and future from these nodes. A tab.

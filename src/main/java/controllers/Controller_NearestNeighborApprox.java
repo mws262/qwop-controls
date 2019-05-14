@@ -1,35 +1,26 @@
 package controllers;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import actions.Action;
+import data.EvictingTreeMap;
+import data.LIFOFixedSize;
+import data.TFRecordDataParsers;
+import game.GameUnified;
+import game.State;
+import game.StateVariable;
+import game.StateWeights;
+import org.tensorflow.example.FeatureList;
+import org.tensorflow.example.SequenceExample;
+import tree.NodeQWOPGraphicsBase;
+import tree.Utility;
+import ui.PanelRunner;
+
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
-
-import data.TFRecordDataParsers;
-import game.*;
-import org.tensorflow.example.FeatureList;
-import org.tensorflow.example.SequenceExample;
-
-import data.EvictingTreeMap;
-import data.LIFOFixedSize;
-import actions.Action;
-import tree.Node;
-import tree.NodeQWOPGraphics;
-import tree.NodeQWOPGraphicsBase;
-import ui.PanelRunner;
-import tree.Utility;
 
 /**
  * QWOP controller which takes known sample trajectories, and tries to pick the best match to use for feedback during
