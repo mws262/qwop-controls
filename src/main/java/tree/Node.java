@@ -574,14 +574,14 @@
 //     * @param includeOnlyNodesWithState If true, this will only get nodes which have a state assigned to them.
 //     * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
 //     */
-//    public List<Node> getNodesBelow(List<Node> nodeList, boolean includeOnlyNodesWithState) {
+//    public List<Node> getNodesBelowInclusive(List<Node> nodeList, boolean includeOnlyNodesWithState) {
 //        if (!includeOnlyNodesWithState) { // Include regardless.
 //            nodeList.add(this);
 //        } else if (!isStateUnassigned()) { // Include only if state is assigned.
 //            nodeList.add(this);
 //        }
 //        for (Node child : children) {
-//            child.getNodesBelow(nodeList, includeOnlyNodesWithState);
+//            child.getNodesBelowInclusive(nodeList, includeOnlyNodesWithState);
 //        }
 //        return nodeList;
 //    }

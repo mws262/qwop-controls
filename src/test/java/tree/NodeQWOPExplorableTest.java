@@ -357,23 +357,23 @@
 //    }
 //
 //    @Test
-//    public void getNodesBelow() {
+//    public void getNodesBelowInclusive() {
 //        setupTree();
 //
 //        // From root.
 //        List<Node> nlist = new ArrayList<>();
-//        rootNode.getNodesBelow(nlist, false);
+//        rootNode.getNodesBelowInclusive(nlist, false);
 //        Assert.assertEquals(allNodes.size(), nlist.size());
 //        for (Node n : allNodes) {
 //            Assert.assertTrue(nlist.contains(n));
 //        }
 //        nlist.clear();
-//        rootNode.getNodesBelow(nlist, true);
+//        rootNode.getNodesBelowInclusive(nlist, true);
 //        Assert.assertEquals(1, nlist.size()); // Root is the only one with state assigned.
 //
 //        // From another node.
 //        nlist.clear();
-//        node2.getNodesBelow(nlist, false);
+//        node2.getNodesBelowInclusive(nlist, false);
 //        Assert.assertEquals(6, nlist.size());
 //        Assert.assertTrue(nlist.contains(node2));
 //        Assert.assertTrue(nlist.contains(node2_1));
@@ -382,16 +382,16 @@
 //        Assert.assertTrue(nlist.contains(node2_2_2));
 //        Assert.assertTrue(nlist.contains(node2_2_3));
 //        nlist.clear();
-//        node2.getNodesBelow(nlist, true);
+//        node2.getNodesBelowInclusive(nlist, true);
 //        Assert.assertEquals(0, nlist.size());
 //
 //        // From an end node.
 //        nlist.clear();
-//        node3_3_3.getNodesBelow(nlist, false);
+//        node3_3_3.getNodesBelowInclusive(nlist, false);
 //        Assert.assertEquals(1, nlist.size());
 //        Assert.assertTrue(nlist.contains(node3_3_3));
 //        nlist.clear();
-//        node3_3_3.getNodesBelow(nlist, true);
+//        node3_3_3.getNodesBelowInclusive(nlist, true);
 //        Assert.assertEquals(0, nlist.size());
 //
 //        // With some states assigned.
@@ -401,15 +401,15 @@
 //        node2.setState(unfailedState);
 //        node1_4.setState(failedState);
 //
-//        rootNode.getNodesBelow(nlist, true);
+//        rootNode.getNodesBelowInclusive(nlist, true);
 //        Assert.assertEquals(5, nlist.size()); // 4 above plus root node.
 //        nlist.clear();
-//        node1.getNodesBelow(nlist, true);
+//        node1.getNodesBelowInclusive(nlist, true);
 //        Assert.assertEquals(2, nlist.size());
 //        Assert.assertTrue(nlist.contains(node1_2));
 //        Assert.assertTrue(nlist.contains(node1_4));
 //        nlist.clear();
-//        node3_3_2.getNodesBelow(nlist, true);
+//        node3_3_2.getNodesBelowInclusive(nlist, true);
 //        Assert.assertEquals(1, nlist.size());
 //        Assert.assertTrue(nlist.contains(node3_3_2));
 //    }

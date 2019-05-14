@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * Generic tree implementation non-specific to QWOP.
@@ -23,7 +22,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     /**
      * Node which leads up to this node. Parentage should not be changed externally.
      */
-    private final N parent;
+    private N parent;
 
     /**
      * Child nodes. Not fixed size any more.
@@ -49,14 +48,15 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     NodeGenericBase(N parent) {
         this.parent = parent;
         treeDepth = parent.getTreeDepth() + 1;
+        maxBranchDepth = treeDepth;
     }
 
     void addToChildList(N child) {
         assert !children.contains(child);
         children.add(child);
         recurseUpTreeInclusive(n -> {
-            if (n.maxBranchDepth < maxBranchDepth) {
-                n.maxBranchDepth = maxBranchDepth;
+            if (n.maxBranchDepth < child.maxBranchDepth) {
+                n.maxBranchDepth = child.maxBranchDepth;
             }
         });
     }
@@ -149,14 +149,13 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     }
 
     /**
-     * Add all the nodes below and including this one to a list. Does not include nodes whose state have not yet been
-     * assigned.
+     * Add all the nodes below and including this one to a list.
      *
      * @param nodeList                  A list to add all of this branches' nodes to. This list must be caller-provided, and will not
      *                                  be cleared.
      * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public Collection<? extends N> getNodesBelow(Collection<N> nodeList) {
+    public Collection<? extends N> getNodesBelowInclusive(Collection<N> nodeList) {
         recurseDownTreeInclusive(nodeList::add);
         return nodeList;
     }
@@ -250,6 +249,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
             child.destroyNodesBelow();
         }
         children.clear();
+        // TODO also clear parentage and get rid of other references.
     }
 
     /**
@@ -266,7 +266,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     public void recurseDownTreeExclusive(Consumer<N> operation) {
         for (N child : children) {
             operation.accept(child);
-            child.recurseDownTreeInclusive(operation);
+            child.recurseDownTreeExclusive(operation);
         }
     }
 
@@ -277,14 +277,18 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
         }
     }
     public void recurseUpTreeInclusiveNoRoot(Consumer<N> operation) {
-        operation.accept(getThis());
-        if (treeDepth > 1) {
-            parent.recurseUpTreeInclusive(operation);
+        if (treeDepth > 0) {
+            operation.accept(getThis());
+            parent.recurseUpTreeInclusiveNoRoot(operation);
         }
     }
 
-    public void applyToLeaves(Consumer<N> operation) {
-        getRoot().recurseDownTreeInclusive(n -> {
+    /**
+     * Do some lambda action to all of the leaf nodes (i.e. those with no children) below or at this node.
+     * @param operation
+     */
+    public void applyToLeavesBelow(Consumer<N> operation) {
+        recurseDownTreeInclusive(n -> {
             if (n.getChildCount() == 0) {
                 operation.accept(n);
             }

@@ -219,18 +219,18 @@ public class NodeGenericTest {
 
         // From root.
         List<NodeGeneric> nlist = new ArrayList<>();
-        rootNode.getNodesBelow(nlist);
+        rootNode.getNodesBelowInclusive(nlist);
         Assert.assertEquals(allNodes.size(), nlist.size());
         for (NodeGeneric n : allNodes) {
             Assert.assertTrue(nlist.contains(n));
         }
         nlist.clear();
-        rootNode.getNodesBelow(nlist);
+        rootNode.getNodesBelowInclusive(nlist);
         Assert.assertEquals(27, nlist.size());
 
         // From another node.
         nlist.clear();
-        node2.getNodesBelow(nlist);
+        node2.getNodesBelowInclusive(nlist);
         Assert.assertEquals(6, nlist.size());
         Assert.assertTrue(nlist.contains(node2));
         Assert.assertTrue(nlist.contains(node2_1));
@@ -242,7 +242,7 @@ public class NodeGenericTest {
 
         // From an end node.
         nlist.clear();
-        node3_3_3.getNodesBelow(nlist);
+        node3_3_3.getNodesBelowInclusive(nlist);
         Assert.assertEquals(1, nlist.size());
         Assert.assertTrue(nlist.contains(node3_3_3));
     }
@@ -536,5 +536,212 @@ public class NodeGenericTest {
         for (NodeGeneric n : nodesLvl6) {
             Assert.assertEquals(6, n.getTreeDepth());
         }
+    }
+
+    @Test
+    public void getMaxBranchDepth() {
+        setupTree();
+
+        Assert.assertEquals(6, rootNode.getMaxBranchDepth()); // Root node.
+        Assert.assertEquals(3, node3_3_4.getMaxBranchDepth()); // Leaf node.
+        Assert.assertEquals(3, node2_2.getMaxBranchDepth()); // Some middle node.
+    }
+
+    @Test
+    public void recurseDownTreeInclusive() {
+        setupTree();
+        List<NodeGeneric> nodes = new ArrayList<>();
+
+        // Root node.
+        rootNode.recurseDownTreeInclusive(nodes::add);
+        Assert.assertEquals(27, nodes.size());
+
+        // Middle node.
+        nodes.clear();
+        node1.recurseDownTreeInclusive(nodes::add);
+        Assert.assertEquals(12, nodes.size());
+
+        // Another middle node
+        nodes.clear();
+        node3_3.recurseDownTreeInclusive(nodes::add);
+        Assert.assertEquals(5, nodes.size());
+
+        // Leaf node.
+        nodes.clear();
+        node2_1.recurseDownTreeInclusive(nodes::add);
+        Assert.assertEquals(1, nodes.size());
+    }
+
+    @Test
+    public void recurseDownTreeExclusive() {
+        setupTree();
+        List<NodeGeneric> nodes = new ArrayList<>();
+
+        // Root node.
+        rootNode.recurseDownTreeExclusive(nodes::add);
+        Assert.assertEquals(26, nodes.size());
+
+        // Middle node.
+        nodes.clear();
+        node1.recurseDownTreeExclusive(nodes::add);
+        Assert.assertEquals(11, nodes.size());
+
+        // Another middle node
+        nodes.clear();
+        node3_3.recurseDownTreeExclusive(nodes::add);
+        Assert.assertEquals(4, nodes.size());
+
+        // Leaf node.
+        nodes.clear();
+        node2_1.recurseDownTreeExclusive(nodes::add);
+        Assert.assertEquals(0, nodes.size());
+    }
+
+    @Test
+    public void recurseUpTreeInclusive() {
+        setupTree();
+        List<NodeGeneric> nodes = new ArrayList<>();
+
+        // Root node.
+        rootNode.recurseUpTreeInclusive(nodes::add);
+        Assert.assertEquals(1, nodes.size());
+        Assert.assertTrue(nodes.contains(rootNode));
+
+        // Middle node.
+        nodes.clear();
+        node1.recurseUpTreeInclusive(nodes::add);
+        Assert.assertEquals(2, nodes.size());
+        Assert.assertTrue(nodes.contains(rootNode));
+        Assert.assertTrue(nodes.contains(node1));
+
+        // Another middle node
+        nodes.clear();
+        node3_3.recurseUpTreeInclusive(nodes::add);
+        Assert.assertEquals(3, nodes.size());
+        Assert.assertTrue(nodes.contains(rootNode));
+        Assert.assertTrue(nodes.contains(node3));
+        Assert.assertTrue(nodes.contains(node3_3));
+
+        // Leaf node.
+        nodes.clear();
+        node2_1.recurseUpTreeInclusive(nodes::add);
+        Assert.assertEquals(3, nodes.size());
+        Assert.assertTrue(nodes.contains(rootNode));
+        Assert.assertTrue(nodes.contains(node2));
+        Assert.assertTrue(nodes.contains(node2_1));
+    }
+
+    @Test
+    public void recurseUpTreeInclusiveNoRoot() {
+        setupTree();
+        List<NodeGeneric> nodes = new ArrayList<>();
+
+        // Root node.
+        rootNode.recurseUpTreeInclusiveNoRoot(nodes::add);
+        Assert.assertEquals(0, nodes.size());
+
+        // Middle node.
+        nodes.clear();
+        node1.recurseUpTreeInclusiveNoRoot(nodes::add);
+        Assert.assertEquals(1, nodes.size());
+        Assert.assertFalse(nodes.contains(rootNode));
+        Assert.assertTrue(nodes.contains(node1));
+
+        // Another middle node
+        nodes.clear();
+        node3_3.recurseUpTreeInclusiveNoRoot(nodes::add);
+        Assert.assertEquals(2, nodes.size());
+        Assert.assertFalse(nodes.contains(rootNode));
+        Assert.assertTrue(nodes.contains(node3));
+        Assert.assertTrue(nodes.contains(node3_3));
+
+        // Leaf node.
+        nodes.clear();
+        node2_1.recurseUpTreeInclusiveNoRoot(nodes::add);
+        Assert.assertEquals(2, nodes.size());
+        Assert.assertFalse(nodes.contains(rootNode));
+        Assert.assertTrue(nodes.contains(node2));
+        Assert.assertTrue(nodes.contains(node2_1));
+    }
+
+    @Test
+    public void applyToLeaves() {
+        setupTree();
+        List<NodeGeneric> nodes = new ArrayList<>();
+
+        // From root
+        rootNode.applyToLeavesBelow(nodes::add);
+        Assert.assertEquals(16, nodes.size());
+
+        // From leaf.
+        nodes.clear();
+        node2_1.applyToLeavesBelow(nodes::add);
+        Assert.assertEquals(1, nodes.size());
+
+        // From middle.
+        nodes.clear();
+        node1_2.applyToLeavesBelow(nodes::add);
+        Assert.assertEquals(2, nodes.size());
+    }
+
+    @Test
+    public void destroyNodesBelow() {
+        setupTree();
+
+        node3.destroyNodesBelow();
+        Assert.assertEquals(0, node3.getChildCount());
+        Assert.assertEquals(3, rootNode.getChildCount());
+
+        List<NodeGeneric> nodes = new ArrayList<>();
+        rootNode.getNodesBelowInclusive(nodes);
+        Assert.assertEquals(20, nodes.size());
+
+        node2_2_3.destroyNodesBelow(); // It's a leaf, so it shouldn't affect anything.
+        nodes.clear();
+        rootNode.getNodesBelowInclusive(nodes);
+        Assert.assertEquals(20, nodes.size());
+
+        rootNode.destroyNodesBelow();
+        Assert.assertEquals(0, rootNode.getChildCount());
+        nodes.clear();
+        rootNode.getNodesBelowInclusive(nodes);
+        Assert.assertEquals(1, nodes.size());
+    }
+
+    @Test
+    public void removeFromChildren() {
+        setupTree();
+
+        node2.removeFromChildren(node2_1);
+        Assert.assertEquals(1, node2.getChildCount());
+        Assert.assertFalse(node2.getChildren().contains(node2_1));
+
+        int node1ChildCount = node1.getChildCount();
+        node1.removeFromChildren(rootNode);
+        Assert.assertEquals(node1ChildCount, node1.getChildCount());
+    }
+
+    @Test
+    public void addDoublyAndBackwardsLinkedNodes() {
+        NodeGeneric root = new NodeGeneric();
+        NodeGeneric dChild1 = root.addDoublyLinkedChild();
+        NodeGeneric bChild2 = root.addBackwardsLinkedChild();
+        NodeGeneric bChild1_1 = dChild1.addBackwardsLinkedChild();
+        NodeGeneric dChild2_1 = bChild2.addDoublyLinkedChild();
+        NodeGeneric dChild3 = root.addDoublyLinkedChild();
+        NodeGeneric dChild3_1 = dChild3.addDoublyLinkedChild();
+        NodeGeneric dChild3_2 = dChild3.addDoublyLinkedChild();
+        NodeGeneric dChild3_1_1 = dChild3_1.addBackwardsLinkedChild();
+
+        Assert.assertEquals(4, root.countDescendants());
+        Assert.assertEquals(0, dChild1.countDescendants());
+        Assert.assertEquals(1, bChild2.countDescendants());
+        Assert.assertEquals(0, bChild1_1.countDescendants());
+        Assert.assertEquals(0, dChild2_1.countDescendants());
+
+        Assert.assertEquals(2, dChild3.countDescendants());
+        Assert.assertEquals(0, dChild3_1.countDescendants());
+        Assert.assertEquals(0, dChild3_2.countDescendants());
+        Assert.assertEquals(0, dChild3_1_1.countDescendants());
     }
 }
