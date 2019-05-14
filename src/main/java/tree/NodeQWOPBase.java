@@ -7,6 +7,8 @@ import game.IGame;
 import game.State;
 import value.updaters.IValueUpdater;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,19 +70,16 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
             throw new IndexOutOfBoundsException("Cannot get a sequence at the root node, since it has no actions " +
                     "leading up to it.");
         actionList.clear();
-        N current = getThis();
-        actionList.add(getTreeDepth() - 1, current.getAction());
-        for (int i = getTreeDepth() - 2; i >= 0; i--) {
-            current = current.getParent();
-            actionList.add(i, current.getAction());
-        }
+        recurseUpTreeInclusiveNoRoot(n -> actionList.add(n.getAction()));
+        Collections.reverse(actionList);
         return actionList;
     }
 
     /**
      * Add nodes based on saved action sequences. Has to re-simulate each to get the states.
      */
-    public static <N extends NodeQWOPBase<N>> void makeNodesFromActionSequences(List<Action[]> actions, N root, IGame game) {
+    public static <N extends NodeQWOPBase<N>> void makeNodesFromActionSequences(Collection<Action[]> actions, N root,
+                                                                                IGame game) {
 
         ActionQueue actQueue = new ActionQueue();
         for (Action[] acts : actions) {
@@ -118,7 +117,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * If trimActionAddingToDepth is >= than 0, then actions will be stripped from the imported nodes up to, and
      * including the depth specified.
      * Set to -1 or something if you don't want this.**/
-    public static synchronized <N extends NodeQWOPBase<N>> void makeNodesFromRunInfo(List<SavableSingleGame> runs,
+    public static synchronized <N extends NodeQWOPBase<N>> void makeNodesFromRunInfo(Collection<SavableSingleGame> runs,
                                                                                      N existingRootToAddTo) {
         for (SavableSingleGame run : runs) { // Go through all runs, placing them in the tree.
             N currentNode = existingRootToAddTo;
@@ -147,40 +146,18 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
     // Value and value updating
 
     private float value;
-    private AtomicInteger updateCount;
+    private int updateCount;
 
-    private Object lock = new Object();
-    private AtomicBoolean beingUpdated = new AtomicBoolean();
-
-
-    public void updateValue(float valueUpdate, IValueUpdater updater) {
-        beingUpdated.set(true);
-        value = updater.update(value, valueUpdate, updateCount.get(), this);
-        updateCount.incrementAndGet();
-        beingUpdated.set(false);
-        lock.notify();
+    public synchronized void updateValue(float valueUpdate, IValueUpdater updater) {
+        value = updater.update(value, valueUpdate, updateCount, this);
+        updateCount++;
     }
 
-    public float getValue() {
-        if (beingUpdated.get()) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
+    public synchronized float getValue() {
         return value;
     }
 
-    public int getUpdateCount() {
-        if (beingUpdated.get()) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        return updateCount.get();
+    public synchronized int getUpdateCount() {
+        return updateCount;
     }
 }
