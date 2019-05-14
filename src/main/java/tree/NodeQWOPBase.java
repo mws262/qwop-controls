@@ -2,8 +2,11 @@ package tree;
 
 import actions.Action;
 import actions.ActionQueue;
+import data.SavableSingleGame;
 import game.IGame;
 import game.State;
+import value.containers.IValueContainer;
+import value.containers.ValueContainer_Average;
 
 import java.util.List;
 
@@ -18,6 +21,8 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
     private final Action action;
 
     private final State state;
+
+    public IValueContainer value = new ValueContainer_Average();
 
     public NodeQWOPBase(State rootState) {
         super();
@@ -106,6 +111,35 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
 
                 // Otherwise, make a new one.
                 if (!foundExisting) currNode = currNode.addDoublyLinkedChild(act, game.getCurrentState());
+            }
+        }
+    }
+
+    /* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Adds to an existing givenroot.
+     * If trimActionAddingToDepth is >= than 0, then actions will be stripped from the imported nodes up to, and
+     * including the depth specified.
+     * Set to -1 or something if you don't want this.**/
+    public static synchronized <N extends NodeQWOPBase<N>> void makeNodesFromRunInfo(List<SavableSingleGame> runs,
+                                                                                     N existingRootToAddTo) {
+        for (SavableSingleGame run : runs) { // Go through all runs, placing them in the tree.
+            N currentNode = existingRootToAddTo;
+
+            for (int i = 0; i < run.actions.length; i++) { // Iterate through individual actions of this run,
+                // travelling down the tree in the process.
+
+                boolean foundExistingMatch = false;
+                for (N child : currentNode.getChildren()) { // Look at each child of the currently investigated node.
+                    if (child.getAction() == run.actions[i]) { // If there is already a node for the action we are trying
+                        // to place, just use it.
+                        currentNode = child;
+                        foundExistingMatch = true;
+                        break; // We found a match, move on.
+                    }
+                }
+                // If this action is unique at this point in the tree, we need to add a new node there.
+                if (!foundExistingMatch) {
+                    currentNode = currentNode.addDoublyLinkedChild(run.actions[i], run.states[i]);
+                }
             }
         }
     }

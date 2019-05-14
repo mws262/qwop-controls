@@ -40,27 +40,27 @@ public class MAIN_Search_Robust extends MAIN_Search_Template {
             System.out.println(score);
             node.setBranchZOffset(-0.5f);
             node.destroyNodesBelow();
-            node.nodeLabel = String.valueOf(score);
+            //TODO node.nodeLabel = String.valueOf(score);
 //            node.postPruneDrawingBelow(0.4f);
         }
     }
 
-    private float evaluateNode(NodeQWOPExplorable node) {
+    private float evaluateNode(NodeQWOPGraphics node) {
 
         // Step 1: Expand all children to depth 1.
         doBasicMinDepthStage(node, "testDev1.tmp", 1, 1, 10000);
 
         // Step 2: Expand all children. If distance travelled after > threshold and # games played < threshold,
         // "recoverable" child node, otherwise "unrecoverable".
-        List<NodeQWOPExplorable> leavesToExpand = new ArrayList<>();
+        List<NodeQWOPGraphics> leavesToExpand = new ArrayList<>();
         node.getLeaves(leavesToExpand);
 
         int successfulExpansionDepth = 0;
-        for (NodeQWOPExplorable currentLeaf : leavesToExpand) {
+        for (NodeQWOPGraphics currentLeaf : leavesToExpand) {
             if (!currentLeaf.getState().isFailed()) {
                 currentLeaf.setBranchZOffset(0.2f);
                 doBasicMaxDepthStage(currentLeaf, "testDev2.tmp", 100, 1f, 15000);
-                currentLeaf.setLineBrightness_below(0.2f);
+                currentLeaf.setLineBrightnessBelow(0.2f);
                 currentLeaf.setBranchZOffset(0.0f);
 
                 successfulExpansionDepth += currentLeaf.getMaxBranchDepth() - currentLeaf.getTreeDepth();

@@ -84,11 +84,26 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
         return untriedActions.sampleDistribution();
     }
 
+    void clearUntriedActions() {
+        untriedActions.clear();
+    }
+
     public List<Action> getUntriedActionListCopy() {
         return new ArrayList<>(untriedActions);
     }
     public Distribution<Action> getActionDistribution() {
         return untriedActions.samplingDist;
+    }
+
+    /**
+     * Helper for node adding from file. Clears unchecked actions from non-leaf nodes.
+     * Only does it for things below minDepth. Forces new building to happen only at the boundaries of this.
+     */
+    public static <N extends NodeQWOPExplorableBase<?>> void stripUncheckedActionsExceptOnLeaves(N node, int minDepth) {
+        node.recurseDownTreeInclusive(n -> {
+            if (n.getUntriedActionCount() != 0 && n.getTreeDepth() <= minDepth)
+                n.clearUntriedActions();
+        });
     }
 
     /**
@@ -145,6 +160,28 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
         for (N leaf : leaves) {
             leaf.propagateFullyExploredStatus_lite();
         }
+    }
+
+    /**
+     * Destroy a branch and try to free up its memory. Mark the trimmed branch as fully explored and propagate the
+     * status. This method can be useful when the sampler or user decides that one branch is bad and wants to keep it
+     * from being used later in sampling.
+     */
+    public void destroyNodesBelowAndCheckExplored() {
+        destroyNodesBelow();
+        propagateFullyExploredStatus_lite();
+    }
+
+    /**
+     * Try to de-reference everything on this branch so garbage collection throws out all the state values and other
+     * info stored for this branch to keep memory in check.
+     */
+    public void destroyNodesBelow() {
+        for (N child : getChildren()) {
+            // todo pointsToDraw.remove(child);
+            child.destroyNodesBelow();
+        }
+        getChildren().clear();
     }
 
     /*
@@ -234,5 +271,4 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
     public boolean isLocked() {
         return locked.get();
     }
-
 }

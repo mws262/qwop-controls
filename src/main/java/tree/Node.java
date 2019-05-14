@@ -875,8 +875,7 @@ public class Node implements INode {
         return sequence;
     }
 
-    /* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Adds to an existing given
-    root.
+    /* Takes a list of runs and figures out the tree hierarchy without duplicate objects. Adds to an existing givenroot.
      * If trimActionAddingToDepth is >= than 0, then actions will be stripped from the imported nodes up to, and
      * including the depth specified.
      * Set to -1 or something if you don't want this.**/

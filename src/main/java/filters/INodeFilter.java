@@ -1,8 +1,6 @@
 package filters;
 
-import tree.NodeQWOPExplorable;
 import tree.NodeQWOPExplorableBase;
-import tree.NodeQWOPGraphicsBase;
 
 import java.util.List;
 

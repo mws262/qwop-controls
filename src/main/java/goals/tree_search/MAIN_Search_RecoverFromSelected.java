@@ -80,7 +80,7 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
 
                 // Recreate the tree section.
                 NodeQWOPGraphics root = new NodeQWOPGraphics(GameUnified.getInitialState());
-                Node.makeNodesFromActionSequences(acts, root, game);
+                NodeQWOPBase.makeNodesFromActionSequences(acts, root, game);
 
                 // Put it on the UI.
                 NodeQWOPGraphics.pointsToDraw.clear();
