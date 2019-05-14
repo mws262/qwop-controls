@@ -100,7 +100,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             for (int i = minDuration; i < maxDuration; i++) {
                 gameLocal.step(buttons);
                 State st = gameLocal.getCurrentState();
-                NodeQWOPBase<?> nextNode = startingNode.addChild(new Action(i, buttons), st);
+                NodeQWOPBase<?> nextNode = startingNode.addBackwardsLinkedChild(new Action(i, buttons), st);
                 float val = evaluate(nextNode);
                 if (val > bestResult.value) {
                     bestResult.value = val;
@@ -136,7 +136,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 }
                 gameLocal.step(buttons);
                 State st = gameLocal.getCurrentState();
-                NodeQWOPBase<?> nextNode = startingNode.addChild(new Action(i, buttons), st);
+                NodeQWOPBase<?> nextNode = startingNode.addBackwardsLinkedChild(new Action(i, buttons), st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);
@@ -231,7 +231,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     @Override
     float[] assembleOutputFromNode(NodeQWOPBase<?> node) {
-        return new float[]{node.getValue() / node.visitCount.floatValue()};
+        return new float[]{node.value.getValue()};
     }
 
     /**

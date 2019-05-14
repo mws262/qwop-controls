@@ -18,54 +18,66 @@ import java.util.concurrent.ConcurrentHashMap;
  * @param <N>
  */
 public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> extends NodeQWOPExplorableBase<N> {
-    /**
-     * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
-     */
-    private static final boolean limitDrawing = true;
 
-    public static final Set<NodeQWOPGraphicsBase> pointsToDraw = ConcurrentHashMap.newKeySet(10000);
-    private static final float nodeDrawFilterDistSq = 0.1f;
-    public boolean notDrawnForSpeed = false;
+    /**
+     * Primary visibility flags.
+     */
     public boolean displayPoint = false;
     public boolean displayLine = true;
 
+    /**
+     * Node location information.
+     */
     public float[] nodeLocation = new float[3]; // Location that this node appears on the tree visualization
     float nodeAngle = 0; // Keep track of the angle that the line previous node to this node makes.
     float sweepAngle = 2f * (float) Math.PI;
     private float edgeLength = 1.f;
 
-    public Color pointColor = Color.GREEN;
+    /**
+     * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
+     */
+    private static final boolean limitDrawing = true;
+    public static final Set<NodeQWOPGraphicsBase> pointsToDraw = ConcurrentHashMap.newKeySet(10000);
+    private static final float nodeDrawFilterDistSq = 0.1f;
+    public boolean notDrawnForSpeed = false;
 
-    private static final float lineBrightness = 0.85f;
+    private float[] pointColorFloats = Color.green.getColorComponents(null);
+    private float[] lineColorFloats;
+    private float[] overridePointColorFloats;
+    private float[] overrideLineColorFloats;
+
+    private static final float lineBrightnessDefault = 0.85f;
+    float lineBrightness = lineBrightnessDefault;
 
     /**
      * If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z
      * offset.
      */
-    private float nodeLocationZOffset = 0.f;
+    float nodeLocationZOffset = 0.f;
 
     public NodeQWOPGraphicsBase(State rootState, IActionGenerator actionGenerator) {
         super(rootState, actionGenerator);
+        calcNodePos();
+        setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
     }
 
     public NodeQWOPGraphicsBase(State rootState) {
         super(rootState);
     }
 
-    public NodeQWOPGraphicsBase(N parent, Action action, State state, IActionGenerator actionGenerator) {
+    NodeQWOPGraphicsBase(N parent, Action action, State state, IActionGenerator actionGenerator) {
         super(parent, action, state, actionGenerator);
+        calcNodePos();
+        setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
     }
-
 
     /**
      * Draw the line connecting this node to its parent.
      */
     public void drawLine(GL2 gl) {
-        // TODO override color
         if ((getTreeDepth() > 0) && displayLine) { // No lines for root.
-            gl.glColor3fv(getColorFromTreeDepth(getTreeDepth()).getColorComponents(null), 0);
-            gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1],
-                    getParent().nodeLocation[2] + nodeLocationZOffset);
+            gl.glColor3fv((overrideLineColorFloats == null) ? lineColorFloats : overrideLineColorFloats, 0);
+            gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1], getParent().nodeLocation[2] + nodeLocationZOffset);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
         }
     }
@@ -74,28 +86,78 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Draw the node point if enabled
      */
     public void drawPoint(GL2 gl) {
-        // TODO override color.
         if (displayPoint) {
-            gl.glColor3fv(pointColor.getColorComponents(null), 0);
+            gl.glColor3fv((overridePointColorFloats == null) ? pointColorFloats : overridePointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
         }
     }
 
     /**
+     * Draw all lines in the subtree below this node.
+     *
+     * @param gl OpenGL drawing object.
+     */
+    public void drawLinesBelow(GL2 gl) {
+        recurseDownTreeExclusive(n->{
+            if (!n.notDrawnForSpeed) n.drawLine(gl);
+            assert getTreeDepth() < n.getTreeDepth();
+        });
+    }
+
+    /**
+     * Draw all nodes in the subtree below this node.
+     *
+     * @param gl OpenGL drawing object.
+     */
+    public void drawNodesBelow(GL2 gl) {
+        recurseDownTreeInclusive(n -> {
+            if (!n.notDrawnForSpeed) drawPoint(gl);
+        });
+    }
+
+    /**
      * Color the node scaled by depth in the tree. Totally for gradient pleasantness.
      */
-    public static Color getColorFromTreeDepth(float depth) {
-        return getColorFromScaledValue(depth, 10f, lineBrightness);
+    public static Color getColorFromTreeDepth(float depth, float brightness) {
+        return getColorFromScaledValue(depth, 10f, brightness);
     }
 
     public static Color getColorFromScaledValue(float val, float max, float brightness) {
-        float colorOffset = 0f;
-        float scaledDepth = val / max;
-        float H = scaledDepth * 0.38f + colorOffset;
-        float S = 0.8f;
+        final float colorOffset = 0f;
+        final float scaledDepth = val / max;
+        final float H = scaledDepth * 0.38f + colorOffset;
+        final float S = 0.8f;
         return Color.getHSBColor(H, S, brightness);
     }
 
+
+    void setLineColor(Color color) {
+        lineColorFloats = color.getColorComponents(null);
+    }
+
+    void setOverrideLineColor(Color color) {
+        if (color == null) {
+            overrideLineColorFloats = null;
+        } else {
+            overrideLineColorFloats = color.getColorComponents(null);
+        }
+    }
+
+    private void setPointColor(Color color) {
+        pointColorFloats = color.getColorComponents(null);
+    }
+    private void setOverridePointColor(Color color) {
+        if (color == null) {
+            overridePointColorFloats = null;
+        } else {
+            overridePointColorFloats = color.getColorComponents(null);
+        }
+    }
+
+    void setLineBrightness(float brightness) {
+        lineBrightness = brightness;
+        setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
+    }
 
     private void calcNodePos() {
         //Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will
@@ -158,10 +220,93 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     }
 
     /**
+     * Turn off all display for this node onward.
+     */
+    public void turnOffBranchDisplay() {
+        recurseDownTreeInclusive(n -> {
+            displayLine = false;
+            displayPoint = false;
+            notDrawnForSpeed = true;
+            pointsToDraw.remove(this);
+        });
+    }
+
+    /**
+     * Single out one run up to this node to highlight the lines, while dimming the others.
+     */
+    public void highlightSingleRunToThisNode() {
+        getRoot().setLineBrightnessBelow(0.4f); // Fade the entire tree, then go and highlight the run we care about.
+        recurseUpTreeInclusive(n -> n.setLineBrightness(lineBrightnessDefault));
+    }
+
+    /**
+     * Fade a certain part of the tree.
+     */
+    public void setLineBrightnessBelow(float brightness) {
+        recurseDownTreeInclusive(n -> n.setLineBrightness(brightness));
+    }
+
+    /**
      * Resets the angle at which child nodes will fan out from this node in the visualization. This must be done
      * before the children are created. The angle is set to 3pi/2.
      */
     public void resetSweepAngle() {
-        sweepAngle = (float)(3.*Math.PI/2.);
+        sweepAngle = (float) (3. * Math.PI / 2.);
+    }
+
+    /**
+     * Give this branch a nodeLocationZOffset to make it stand out.
+     */
+    public void setBranchZOffset(float zOffset) {
+        recurseDownTreeInclusive(n -> n.nodeLocationZOffset = zOffset);
+    }
+
+    /**
+     * Give this branch a nodeLocationZOffset to make it stand out. Goes backwards towards root.
+     */
+    public void setBackwardsBranchZOffset(float zOffset) {
+        recurseUpTreeInclusive(n -> n.nodeLocationZOffset = zOffset);
+    }
+
+    /**
+     * Clear z offsets in this branch. Works backwards towards root.
+     */
+    public void clearBackwardsBranchZOffset() {
+        setBackwardsBranchZOffset(0f);
+    }
+
+    /**
+     * Clear z offsets in this branch. Called from root, it resets all back to 0.
+     */
+    public void clearBranchZOffset() {
+        setBranchZOffset(0f);
+    }
+
+    /**
+     * Set an override line color for this branch (all descendants).
+     */
+    public void setBranchColor(Color newColor) {
+        recurseDownTreeExclusive(n -> n.setLineColor(newColor));
+    }
+
+    /**
+     * Set an override line color for this path (all ancestors).
+     */
+    public void setBackwardsBranchColor(Color newColor) {
+        recurseUpTreeInclusive(n -> n.setLineColor(newColor));
+    }
+
+    /**
+     * Clear an overridden line color on this branch. Call from root to get all line colors back to default.
+     */
+    public void clearBranchColor() {
+        setBranchColor(null);
+    }
+
+    /**
+     * Clear an overridden line color on this branch. Goes back towards root.
+     */
+    public void clearBackwardsBranchColor() {
+        setBackwardsBranchColor(null);
     }
 }

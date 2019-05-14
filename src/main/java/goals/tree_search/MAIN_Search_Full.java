@@ -10,8 +10,7 @@ import data.SavableSingleGame;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import samplers.Sampler_UCB;
-import tree.Node;
-import tree.NodeQWOPGraphics;
+import tree.*;
 
 /**
  * Does the full search in 4 stages.
@@ -135,7 +134,8 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
             File saveFile = new File(getSaveLocation().getPath() + "/" + filename1 +
                     ".SavableSingleGame");
             fileIO.loadObjectsToCollection(saveFile, glist);
-            Node.makeNodesFromRunInfo(glist, rootNode, getToSteadyDepth - trimSteadyBy - 1);
+            NodeQWOP.makeNodesFromRunInfo(glist, rootNode);
+            NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, getToSteadyDepth - trimSteadyBy - 1);
             NodeQWOPGraphics currNode = rootNode;
             while (currNode.getTreeDepth() < getToSteadyDepth - trimSteadyBy) {
                 currNode = currNode.getChildByIndex(0);
@@ -183,7 +183,9 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
             File saveFile = new File(getSaveLocation().getPath() + "/" + filename2 +
                     ".SavableSingleGame");
             fileIO.loadObjectsToCollection(saveFile, glist);
-            Node.makeNodesFromRunInfo(glist, rootNode, stage3StartDepth);
+            NodeQWOP.makeNodesFromRunInfo(glist, rootNode);
+            NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(rootNode, stage3StartDepth);
+
 
             List<NodeQWOPGraphics> leafList = new ArrayList<>();
             rootNode.getLeaves(leafList);

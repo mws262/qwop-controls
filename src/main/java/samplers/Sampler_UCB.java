@@ -93,11 +93,9 @@ public class Sampler_UCB implements ISampler {
      */
     private void propagateScore(NodeQWOPExplorableBase<?> failureNode, float score) {
         // Do evaluation and propagation of scores.
-        failureNode.visitCount.incrementAndGet();
-        failureNode.addToValue(score);
+        failureNode.value.update(score);
         while (failureNode.getTreeDepth() > 0) { // TODO test 0
             failureNode = failureNode.getParent();
-            failureNode.visitCount.incrementAndGet();
 
 //            float top1 = -Float.MAX_VALUE;
 //            float top2 = -Float.MAX_VALUE;
@@ -124,12 +122,12 @@ public class Sampler_UCB implements ISampler {
             if (failureNode.getChildCount() > 1) {
                 float mean = 0f;
                 for (NodeQWOPExplorableBase<?> child : failureNode.getChildren()) {
-                    mean += child.getValue() / child.visitCount.floatValue();
+                    mean += child.value.getValue();
                 }
                 mean = mean / (float) failureNode.getChildCount();
                 float stdev = 0f;
                 for (NodeQWOPExplorableBase<?> child : failureNode.getChildren()) {
-                    stdev += (child.getValue() / child.visitCount.floatValue() - mean) * (child.getValue() / child.visitCount.floatValue() - mean);
+                    stdev += (child.value.getValue() - mean) * (child.value.getValue() - mean);
                 }
                 stdev = (float) Math.sqrt(stdev / (float) failureNode.getChildCount());
                 failureNode.setValue((mean + stdev) * failureNode.visitCount.floatValue());
@@ -163,7 +161,7 @@ public class Sampler_UCB implements ISampler {
 
             if (!child.isFullyExplored() && !child.isLocked()) {
                 float val =
-						(float) (child.getValue() / child.visitCount.doubleValue() + c * (float) Math.sqrt(2. * Math.log(startNode.visitCount.doubleValue()) / child.visitCount.doubleValue()));
+						(float) (child.value.getValue() + c * (float) Math.sqrt(2. * Math.log((double) startNode.value.getUpdateCount()) / (double) child.value.getUpdateCount()));
                 assert !Float.isNaN(val);
                 if (val > bestScoreSoFar) {
                     bestNodeSoFar = child;
