@@ -1,22 +1,21 @@
 package ui;
 
+import filters.NodeFilter_Downsample;
+import game.GameUnified;
+import game.State;
+import transformations.ITransform;
+import transformations.Transform_Autoencoder;
+import transformations.Transform_PCA;
+import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import filters.NodeFilter_Downsample;
-import game.GameUnified;
-import game.State;
-import transformations.ITransform;
-import tree.Node;
-import transformations.Transform_Autoencoder;
-import transformations.Transform_PCA;
-import tree.NodeQWOPExplorableBase;
-
-import javax.swing.*;
 
 /**
  * For running animations of the QWOP runner side-by-side with compressed then decompressed versions of those states.
@@ -103,7 +102,9 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
                 List<State> predictedStateList = encoders.get(i).compressAndDecompress(inStates);
                 State predictedState = predictedStateList.get(0);
                 GameUnified.drawExtraRunner((Graphics2D) g, predictedState, encoders.get(i).getName(), super.runnerScaling,
-                        super.xOffsetPixels + i * 100 + 150, super.yOffsetPixels, Node.getColorFromTreeDepth(i), normalStroke);
+                        super.xOffsetPixels + i * 100 + 150, super.yOffsetPixels,
+                        NodeQWOPGraphicsBase.getColorFromTreeDepth(i, NodeQWOPGraphicsBase.lineBrightnessDefault),
+                        normalStroke);
             }
             inStates.clear();
         }

@@ -1,15 +1,12 @@
 package ui;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.util.Queue;
-
 import game.GameUnified;
 import game.IGame;
 import game.State;
-import tree.Node;
 import tree.NodeQWOPExplorableBase;
+
+import java.awt.*;
+import java.util.Queue;
 
 public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runnable {
 

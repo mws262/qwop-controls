@@ -5,7 +5,6 @@ import flashqwop.FlashGame;
 import game.GameUnified;
 import game.State;
 import org.jblas.util.Random;
-import tree.Node;
 import tree.NodeQWOP;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -65,7 +64,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     @Override
     public Action getControlAction(State state) {
-        Action action = valueFunction.getMaximizingAction(new NodeQWOP(placeholderNode));
+        Action action = valueFunction.getMaximizingAction(new NodeQWOP(state));
         if (addActionNoise && Random.nextFloat() < noiseProbability) {
             if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
                 action = new Action(action.getTimestepsTotal() + 1, action.peek());

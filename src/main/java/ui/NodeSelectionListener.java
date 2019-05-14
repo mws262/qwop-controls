@@ -1,6 +1,5 @@
 package ui;
 
-import tree.Node;
 import tree.NodeQWOPGraphicsBase;
 
 import java.util.EventListener;

@@ -1,12 +1,11 @@
 package actions;
 
-import tree.Node;
 import tree.NodeQWOPExplorableBase;
 
 import java.util.Set;
 
 /**
- * An IActionGenerator determines which {@link ActionList} should be assigned to {@link Node nodes} as potential
+ * An IActionGenerator determines which {@link ActionList} should be assigned to a node as potential
  * child nodes to explore.
  *
  * @author matt

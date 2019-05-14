@@ -1,9 +1,7 @@
 package samplers.rollout;
 
 import actions.Action;
-import evaluators.IEvaluationFunction;
 import game.IGame;
-import tree.Node;
 import tree.NodeQWOPExplorableBase;
 
 public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {

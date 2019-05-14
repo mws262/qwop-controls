@@ -6,7 +6,6 @@ import game.GameUnified;
 import game.IGame;
 import game.State;
 import transformations.Transform_Autoencoder;
-import tree.Node;
 import tree.NodeQWOPGraphicsBase;
 import ui.PanelPlot_Simple;
 
@@ -74,13 +73,12 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
         for (int i = 0; i < tformedSt.size(); i++) { // For each state transformed.
             for (int j = 0; j < tformedSt.get(i).length; j++) { // For each reduced state var.
                 yDataList.get(j)[i] = tformedSt.get(i)[j];
-
             }
         }
 
         List<Color> colorList = new ArrayList<>();
         for (int i = 0; i < xDataList.size(); i++) {
-            colorList.add(NodeQWOPGraphicsBase.getColorFromTreeDepth(i));
+            colorList.add(NodeQWOPGraphicsBase.getColorFromTreeDepth(i, NodeQWOPGraphicsBase.lineBrightnessDefault));
         }
 
         plotPanel.setPlotData(xDataList, yDataList, colorList, "timestep idx", "autoencoder output");

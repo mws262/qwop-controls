@@ -1,12 +1,11 @@
 package savers;
 
-import java.util.List;
-
+import actions.Action;
 import game.IGame;
 import game.State;
-import actions.Action;
-import tree.Node;
 import tree.NodeQWOPBase;
+
+import java.util.List;
 
 /**
  * Data saver placeholder for when we don't wish to actually save anything.

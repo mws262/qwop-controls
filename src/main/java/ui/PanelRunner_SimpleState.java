@@ -1,14 +1,11 @@
 package ui;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-
 import game.GameUnified;
 import game.IGame;
 import game.State;
-import tree.Node;
 import tree.NodeQWOPExplorableBase;
+
+import java.awt.*;
 
 /**
  * Simple runner visualizer that either takes a node and gets its state or takes a state

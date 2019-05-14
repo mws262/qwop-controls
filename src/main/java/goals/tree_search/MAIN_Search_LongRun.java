@@ -1,16 +1,15 @@
 package goals.tree_search;
 
+import data.SparseDataToDenseTFRecord;
+import game.GameUnified;
+import samplers.Sampler_UCB;
+import tree.NodeQWOPGraphics;
+import tree.Utility;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import data.SparseDataToDenseTFRecord;
-import game.GameUnified;
-import samplers.Sampler_UCB;
-import tree.Node;
-import tree.NodeQWOPGraphics;
-import tree.Utility;
 
 /**
  * Does the full search in 4 stages.

@@ -1,15 +1,14 @@
 package data;
 
-import java.io.Serializable;
-
-import game.State;
 import actions.Action;
-import tree.Node;
+import game.State;
 import tree.NodeQWOPBase;
+
+import java.io.Serializable;
 
 /**
  * Structure to hold actions and states in individual QWOP runs for saving to file. This holds data sparsely, meaning
- * that only the {@link State} at {@link Node Nodes} is recorded, along with the {@link Action Actions} going between
+ * that only the {@link State} at nodes are recorded, along with the {@link Action Actions} going between
  * them. Data at every single timestep is not used, and tree relationships are not considered. This is the container
  * used by {@link savers.DataSaver_Sparse}. The mechanism of saving to file is the direct serialization of the Java
  * classes, rather than a Protobuf or TFRecord format.

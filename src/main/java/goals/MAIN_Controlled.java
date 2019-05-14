@@ -1,6 +1,5 @@
 package goals;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -27,7 +26,7 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameUnified;
 import game.State;
-import tree.Node;
+import tree.NodeQWOPExplorable;
 import tree.NodeQWOPGraphics;
 import tree.Utility;
 import ui.ScreenCapture;
@@ -149,7 +148,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
         List<SavableSingleGame> glist = new ArrayList<>();
         fileIO.loadObjectsToCollection(prefixSave, glist);
-        Node.makeNodesFromRunInfo(glist, rootNode, -1);
+        NodeQWOPExplorable.makeNodesFromRunInfo(glist, rootNode);
         leafNodes.clear();
         rootNode.getLeaves(leafNodes);
         NodeQWOPGraphics endNode = leafNodes.get(0);

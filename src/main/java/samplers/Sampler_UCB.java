@@ -1,16 +1,15 @@
 package samplers;
 
-import game.IGame;
-import org.jblas.util.Random;
-
 import actions.Action;
 import evaluators.IEvaluationFunction;
+import game.IGame;
+import org.jblas.util.Random;
 import samplers.rollout.RolloutPolicy;
-import samplers.rollout.RolloutPolicy_RandomColdStart;
 import samplers.rollout.RolloutPolicy_SingleRandom;
-import tree.Node;
 import tree.NodeQWOPExplorableBase;
 import tree.Utility;
+import value.updaters.IValueUpdater;
+import value.updaters.ValueUpdater_Average;
 
 /**
  * Implements upper confidence bound for trees (UCBT, UCT, UCB, depending on who you ask).
@@ -29,6 +28,8 @@ public class Sampler_UCB implements ISampler {
      * Policy used to evaluate the score of a tree expansion Node by doing rollout(s).
      */
     private RolloutPolicy rolloutPolicy;
+
+    private IValueUpdater valueUpdater = new ValueUpdater_Average();
 
     /**
      * Explore/exploit trade-off parameter. Higher means more exploration. Lower means more exploitation.
@@ -93,10 +94,9 @@ public class Sampler_UCB implements ISampler {
      */
     private void propagateScore(NodeQWOPExplorableBase<?> failureNode, float score) {
         // Do evaluation and propagation of scores.
-        failureNode.value.update(score);
-        while (failureNode.getTreeDepth() > 0) { // TODO test 0
-            failureNode = failureNode.getParent();
+        failureNode.recurseUpTreeInclusive(n -> n.updateValue(score, valueUpdater));
 
+            // todo factor these into their own IValueUpdaters
 //            float top1 = -Float.MAX_VALUE;
 //            float top2 = -Float.MAX_VALUE;
 //            float top3 = -Float.MAX_VALUE;
@@ -119,24 +119,21 @@ public class Sampler_UCB implements ISampler {
 //                failureNode.addToValue(score);
 //            }
 
-            if (failureNode.getChildCount() > 1) {
-                float mean = 0f;
-                for (NodeQWOPExplorableBase<?> child : failureNode.getChildren()) {
-                    mean += child.value.getValue();
-                }
-                mean = mean / (float) failureNode.getChildCount();
-                float stdev = 0f;
-                for (NodeQWOPExplorableBase<?> child : failureNode.getChildren()) {
-                    stdev += (child.value.getValue() - mean) * (child.value.getValue() - mean);
-                }
-                stdev = (float) Math.sqrt(stdev / (float) failureNode.getChildCount());
-                failureNode.setValue((mean + stdev) * failureNode.visitCount.floatValue());
-            } else {
-                failureNode.addToValue(score);
-            }
-
-
-        }
+//            if (failureNode.getChildCount() > 1) {
+//                float mean = 0f;
+//                for (NodeQWOPExplorableBase<?> child : failureNode.getChildren()) {
+//                    mean += child.value.getValue();
+//                }
+//                mean = mean / (float) failureNode.getChildCount();
+//                float stdev = 0f;
+//                for (NodeQWOPExplorableBase<?> child : failureNode.getChildren()) {
+//                    stdev += (child.value.getValue() - mean) * (child.value.getValue() - mean);
+//                }
+//                stdev = (float) Math.sqrt(stdev / (float) failureNode.getChildCount());
+//                failureNode.setValue((mean + stdev) * failureNode.visitCount.floatValue());
+//            } else {
+//                failureNode.addToValue(score);
+//            }
     }
 
     /**
@@ -160,8 +157,7 @@ public class Sampler_UCB implements ISampler {
         for (NodeQWOPExplorableBase<?> child : startNode.getChildren()) {
 
             if (!child.isFullyExplored() && !child.isLocked()) {
-                float val =
-						(float) (child.value.getValue() + c * (float) Math.sqrt(2. * Math.log((double) startNode.value.getUpdateCount()) / (double) child.value.getUpdateCount()));
+                float val = (child.getValue() + c * (float) Math.sqrt(2. * Math.log((double) startNode.getUpdateCount()) / (double) child.getUpdateCount()));
                 assert !Float.isNaN(val);
                 if (val > bestScoreSoFar) {
                     bestNodeSoFar = child;

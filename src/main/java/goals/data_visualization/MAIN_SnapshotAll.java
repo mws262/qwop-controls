@@ -11,7 +11,6 @@ import javax.swing.JFrame;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameUnified;
-import tree.Node;
 import tree.NodeQWOPGraphics;
 import ui.PanelRunner_Snapshot;
 
@@ -90,7 +89,7 @@ public class MAIN_SnapshotAll extends JFrame {
             fileIO.loadObjectsToCollection(f, games);
         }
 
-        Node.makeNodesFromRunInfo(games, rootNode, -1);
+        NodeQWOPGraphics.makeNodesFromRunInfo(games, rootNode);
         NodeQWOPGraphics currNode = rootNode;
         while (currNode.getTreeDepth() < playbackDepth && currNode.getChildCount() > 0) {
             currNode = currNode.getChildByIndex(0);

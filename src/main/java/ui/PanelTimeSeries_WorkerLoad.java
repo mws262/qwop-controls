@@ -1,13 +1,11 @@
 package ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import tree.Node;
 import tree.NodeQWOPExplorableBase;
 import tree.TreeWorker;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runnable {
 

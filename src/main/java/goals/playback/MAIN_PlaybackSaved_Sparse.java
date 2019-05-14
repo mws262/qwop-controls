@@ -1,20 +1,18 @@
 package goals.playback;
 
-import java.awt.Dimension;
+import data.SavableFileIO;
+import data.SavableSingleGame;
+import game.GameUnified;
+import tree.NodeQWOPGraphics;
+import tree.NodeQWOPGraphicsBase;
+import ui.PanelRunner_Animated;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.swing.JFrame;
-
-import data.SavableFileIO;
-import data.SavableSingleGame;
-import game.GameUnified;
-import tree.Node;
-import tree.NodeQWOPGraphics;
-import tree.NodeQWOPGraphicsBase;
-import ui.PanelRunner_Animated;
 
 /**
  * Playback runs or sections of runs saved in {@link SavableSingleGame} files.
@@ -87,7 +85,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
             List<SavableSingleGame> loadedGames = new ArrayList<>();
             fileIO.loadObjectsToCollection(f, loadedGames);
-            NodeQWOPGraphicsBase.makeNodesFromRunInfo(loadedGames, rootNode, -1);
+            NodeQWOPGraphicsBase.makeNodesFromRunInfo(loadedGames, rootNode);
             leafNodes.clear();
             rootNode.getLeaves(leafNodes);
             NodeQWOPGraphics endNode = leafNodes.get(0);

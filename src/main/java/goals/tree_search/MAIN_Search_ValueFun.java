@@ -76,8 +76,8 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //                new Action(21,true,false,false,true),
         });
 
-        Node.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
-        Node.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
+        NodeQWOPGraphics.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
+        NodeQWOPGraphics.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
 
         List<NodeQWOPGraphics> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
@@ -179,15 +179,16 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             valueFunctionB.update(nodesBelow);
             Utility.toc();
 
-            if (!headless) {
-                ValueFunction_TensorFlow_StateOnly finalValueFunction = valueFunction;
-                Runnable updateLabels = () -> {
-                    for (NodeQWOPGraphics n : nodesBelow) {
-                        n.nodeLabelAlt = String.format("%.2f", finalValueFunction.evaluate(n));
-                    }
-                };
-                labelUpdater.execute(updateLabels);
-            }
+            // TODO
+//            if (!headless) {
+//                ValueFunction_TensorFlow_StateOnly finalValueFunction = valueFunction;
+//                Runnable updateLabels = () -> {
+//                    for (NodeQWOPGraphics n : nodesBelow) {
+//                        n.nodeLabelAlt = String.format("%.2f", finalValueFunction.evaluate(n));
+//                    }
+//                };
+//                labelUpdater.execute(updateLabels);
+//            }
 //             Save a checkpoint of the weights/biases.
 //            if (k % 2 == 0) {
                 valueFunctionB.saveCheckpoint("big" + (k + chkIdx + 1));

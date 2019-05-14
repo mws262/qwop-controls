@@ -63,10 +63,10 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * Plotting colors for dots.
      */
-    private final Color actionColor1 = NodeQWOPGraphicsBase.getColorFromTreeDepth(0);
-    private final Color actionColor2 = NodeQWOPGraphicsBase.getColorFromTreeDepth(10);
-    private final Color actionColor3 = NodeQWOPGraphicsBase.getColorFromTreeDepth(20);
-    private final Color actionColor4 = NodeQWOPGraphicsBase.getColorFromTreeDepth(30);
+    private final Color actionColor1 = NodeQWOPGraphicsBase.getColorFromTreeDepth(0, NodeQWOPGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor2 = NodeQWOPGraphicsBase.getColorFromTreeDepth(10, NodeQWOPGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor3 = NodeQWOPGraphicsBase.getColorFromTreeDepth(20, NodeQWOPGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor4 = NodeQWOPGraphicsBase.getColorFromTreeDepth(30, NodeQWOPGraphicsBase.lineBrightnessDefault);
 
     public PanelPlot(int numberOfPlots) {
         this.numberOfPlots = numberOfPlots;

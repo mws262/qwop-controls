@@ -1,20 +1,14 @@
 package ui;
 
+import tree.NodeQWOPGraphicsBase;
+import tree.Utility;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.WindowConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import tree.Node;
-import tree.NodeQWOPExplorableBase;
-import tree.NodeQWOPGraphicsBase;
-import tree.Utility;
 
 /**
  * All UI stuff happens here and most of the analysis that individual panes show happens here too.

@@ -4,7 +4,6 @@ import actions.ActionQueue;
 import game.GameUnified;
 import game.IGame;
 import game.State;
-import tree.Node;
 import tree.NodeQWOPGraphicsBase;
 
 import java.util.ArrayList;

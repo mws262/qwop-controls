@@ -4,12 +4,13 @@ import actions.Action;
 import game.GameUnified;
 import game.IGame;
 import game.State;
-import tree.NodeQWOP;
 import tree.NodeQWOPBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
@@ -231,7 +232,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     @Override
     float[] assembleOutputFromNode(NodeQWOPBase<?> node) {
-        return new float[]{node.value.getValue()};
+        return new float[]{node.getValue()};
     }
 
     /**

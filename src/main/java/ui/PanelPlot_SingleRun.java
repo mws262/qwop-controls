@@ -1,6 +1,17 @@
 package ui;
 
-import java.awt.Color;
+import actions.Action;
+import actions.ActionQueue;
+import game.GameUnified;
+import game.IGame;
+import game.State;
+import org.jfree.chart.plot.XYPlot;
+import transformations.ITransform;
+import transformations.Transform_Autoencoder;
+import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
+
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -9,18 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.IntStream;
-
-import game.GameUnified;
-import game.IGame;
-import org.jfree.chart.plot.XYPlot;
-
-import game.State;
-import actions.Action;
-import actions.ActionQueue;
-import transformations.ITransform;
-import tree.Node;
-import transformations.Transform_Autoencoder;
-import tree.NodeQWOPExplorableBase;
 
 /**
  * This plotter makes plots from all the states along a single run, not
@@ -138,7 +137,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
             Float[] yData = commandList.stream().map(b -> (float) ((b[0] ? 1 : 0) + (b[1] ? 2 : 0) + (b[2] ? 4 :
                     0) + (b[3] ? 8 : 0))).toArray(Float[]::new);
             Color[] cData =
-                    IntStream.range(0, yData.length).mapToObj(i -> Node.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.getTreeDepth()))).toArray(Color[]::new);
+                    IntStream.range(0, yData.length).mapToObj(i -> NodeQWOPGraphicsBase.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.getTreeDepth()), NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Command combination");
             pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +

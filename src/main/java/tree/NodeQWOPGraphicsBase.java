@@ -46,7 +46,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     private float[] overridePointColorFloats;
     private float[] overrideLineColorFloats;
 
-    private static final float lineBrightnessDefault = 0.85f;
+    public static final float lineBrightnessDefault = 0.85f;
     float lineBrightness = lineBrightnessDefault;
 
     /**
