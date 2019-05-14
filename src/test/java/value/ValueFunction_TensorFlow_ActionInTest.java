@@ -72,7 +72,7 @@
 //    public void updateEvaluateSaveLoad() {
 //        valFun.setTrainingStepsPerBatch(1000); // Going to run this many training steps on the same bunch of nodes.
 //        List<Node> allNodes = new ArrayList<>();
-//        rootNode.getNodesBelow(allNodes, true);
+//        rootNode.getNodesBelowInclusive(allNodes, true);
 //        allNodes.remove(rootNode); // Can't evaluate root under normal circumstances.
 //
 //        // Evaluate before training.
@@ -218,7 +218,7 @@
 //
 //        // Do various verifications that we built the tree correctly.
 //        List<Node> allNodes = new ArrayList<>();
-//        rootNode.getNodesBelow(allNodes, false);
+//        rootNode.getNodesBelowInclusive(allNodes, false);
 //        Assert.assertEquals( actionsLayer1.size() * actionsLayer2.size() * actionsLayer3.size() * actionsLayer1.size()
 //                        + actionsLayer1.size() * actionsLayer2.size() * actionsLayer3.size()
 //                        + actionsLayer1.size() * actionsLayer2.size()

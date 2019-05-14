@@ -3,13 +3,11 @@ package goals.tree_search;
 import actions.Action;
 import actions.IActionGenerator;
 import evaluators.EvaluationFunction_Constant;
-import evaluators.EvaluationFunction_Distance;
 import game.GameUnified;
 import samplers.Sampler_UCB;
 import samplers.rollout.*;
 import savers.DataSaver_StageSelected;
 import tree.*;
-import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
@@ -171,7 +169,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
             // Update the value function.
             List<NodeQWOPGraphics> nodesBelow = new ArrayList<>();
-            rootNode.getNodesBelow(nodesBelow);
+            rootNode.getNodesBelowInclusive(nodesBelow);
             nodesBelow.remove(rootNode);
             Collections.shuffle(nodesBelow);
 

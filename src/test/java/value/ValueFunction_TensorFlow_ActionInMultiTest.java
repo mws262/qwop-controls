@@ -75,7 +75,7 @@
 //        String valueFunctionRemadeName = "valfun_network__multi_remade_tmp";
 //
 //        List<Node> nodes = new ArrayList<>();
-//        rootNode.getNodesBelow(nodes, false);
+//        rootNode.getNodesBelowInclusive(nodes, false);
 //        valFun.setTrainingStepsPerBatch(1000);
 //        valFun.setVerbose(false);
 //        nodes.remove(rootNode);

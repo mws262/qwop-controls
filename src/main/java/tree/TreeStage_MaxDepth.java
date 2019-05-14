@@ -3,7 +3,6 @@ package tree;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 
 import savers.IDataSaver;
 import samplers.ISampler;
@@ -54,7 +53,7 @@ public class TreeStage_MaxDepth extends TreeStage {
     public List<NodeQWOPBase<?>> getResults() {
         List<NodeQWOPBase<?>> resultList = new ArrayList<>();
         leafList.clear();
-        getRootNode().applyToLeaves(leafList::add);
+        getRootNode().applyToLeavesBelow(leafList::add);
 
         if (getRootNode().isFullyExplored() || (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames)
             return resultList; // No results. No possible way to recover.
