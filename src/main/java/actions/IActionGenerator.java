@@ -24,5 +24,4 @@ public interface IActionGenerator {
      * @return All possibly generated Actions.
      */
     Set<Action> getAllPossibleActions();
-
 }

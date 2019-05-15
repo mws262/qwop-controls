@@ -50,7 +50,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
     NodeQWOPExplorableBase(N parent, Action action, State state, IActionGenerator actionGenerator) {
         super(parent, action, state);
         this.actionGenerator = actionGenerator;
-        untriedActions = actionGenerator.getPotentialChildActionSet(parent);
+        untriedActions = actionGenerator.getPotentialChildActionSet(this);
     }
 
     public abstract N addDoublyLinkedChild(Action action, State state, IActionGenerator actionGenerator);
@@ -95,6 +95,14 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
         return untriedActions.samplingDist;
     }
 
+
+    @Override
+    void addToChildList(N child) {
+        super.addToChildList(child);
+        untriedActions.remove(child.getAction()); // If the child being added corresponds to one of the untried
+        // actions listed, then remove it. Otherwise untried actions remains unaffected.
+
+    }
     /**
      * Helper for node adding from file. Clears unchecked actions from non-leaf nodes.
      * Only does it for things below minDepth. Forces new building to happen only at the boundaries of this.
@@ -114,7 +122,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * statuses already assigned. This should be true during normal operation, but when a bunch of saved nodes are
      * imported, it is useful to do a complete check}.
      */
-    public void propagateFullyExploredStatus_lite() {
+    void propagateFullyExploredStatus_lite() {
         boolean flag = true; // Assume this node is fully-explored and negate if we find evidence that it is not.
 
         if (!getState().isFailed()) {
@@ -137,7 +145,8 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
     /**
      * Change whether this node or any above it have become fully explored. This is the complete version, which
      * resets any existing fully-explored tags from the descendants of this node before redoing all checks. Call from
-     * root to re-label the whole tree. During normal tree-building, a {@link Node#propagateFullyExploredStatus_lite()
+     * root to re-label the whole tree. During normal tree-building, a
+     * {@link NodeQWOPExplorable#propagateFullyExploredStatus_lite()
      * lite check} should suffice and is more computationally efficient.
      * <p>
      * This should only be used when a bunch of nodes are imported at once and need to all be checked, or if we need
