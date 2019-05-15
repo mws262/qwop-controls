@@ -44,7 +44,6 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
         gameColdStart.setState(coldStartState);
 
         // Retrieve all contacts.
-        State st = gameAttemptWarmStart.getCurrentState();
 //        ContactEdge rfootC= gameAttemptWarmStart.rFootBody.getContactList();
 //        ContactEdge lfootC= gameAttemptWarmStart.lFootBody.getContactList();
 

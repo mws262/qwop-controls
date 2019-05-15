@@ -37,10 +37,9 @@ public class XForm implements Serializable {
 	public Mat22 R;
 
 	// The identity transform 
-	public static XForm identity;
+	public static final XForm identity = new XForm();
 
 	static {
-		XForm.identity = new XForm();
 		XForm.identity.setIdentity();
 	}
 

@@ -27,7 +27,7 @@ public class RolloutPolicy_WorstCaseWindow extends RolloutPolicy {
         Action belowAction = new Action(middleAction.getTimestepsTotal() - 1, middleAction.peek());
 
 
-        float startValue = evaluationFunction.getValue(startNode);
+        // float startValue = evaluationFunction.getValue(startNode);
         float valMid = individualRollout.rollout(startNode, game);// - startValue;
         simGameToNode(startNode.getParent(), game);
         actionQueue.addAction(aboveAction);

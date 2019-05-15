@@ -26,17 +26,17 @@ public class MAIN_SnapshotAll extends JFrame {
     /**
      * Window width
      */
-    public static int windowWidth = 1920;
+    private static final int windowWidth = 1920;
 
     /**
      * Window height
      */
-    public static int windowHeight = 1000;
+    private static final int windowHeight = 1000;
 
     /**
      * Display up to this tree depth.
      */
-    public static int playbackDepth = 5;
+    private static final int playbackDepth = 5;
 
     /**
      * Location where the files to be played back are located. All SavableSingleGame files will be used.

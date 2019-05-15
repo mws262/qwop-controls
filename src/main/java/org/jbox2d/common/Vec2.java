@@ -144,7 +144,7 @@ public class Vec2 implements Externalizable {
 
 	/** True if the vector represents a pair of valid, non-infinite floating point numbers. */
 	public final boolean isValid() {
-		return x != Float.NaN && x != Float.NEGATIVE_INFINITY
+		return !Float.isNaN(x) && x != Float.NEGATIVE_INFINITY
 		&& x != Float.POSITIVE_INFINITY && y != Float.NaN
 		&& y != Float.NEGATIVE_INFINITY && y != Float.POSITIVE_INFINITY;
 	}

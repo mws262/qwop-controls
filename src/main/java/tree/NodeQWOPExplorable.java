@@ -45,6 +45,10 @@ public class NodeQWOPExplorable extends NodeQWOPExplorableBase<NodeQWOPExplorabl
 
     @Override
     public NodeQWOPExplorable addBackwardsLinkedChild(Action action, State state, IActionGenerator actionGenerator) {
-        return new NodeQWOPExplorable(this, action, state, actionGenerator);
+        NodeQWOPExplorable child = new NodeQWOPExplorable(this, action, state, actionGenerator);
+        if (child.getState().isFailed()) {
+            child.setFullyExploredStatus(true); // Set fully explored, but do not let it affect any ancestors.
+        }
+        return child;
     }
 }

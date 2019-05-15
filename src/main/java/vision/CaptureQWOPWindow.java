@@ -56,7 +56,7 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
     /**
      * Frame for making sure it's capturing the correct region.
      */
-    public static JFrame frame;
+    public JFrame frame;
 
     /**
      * Detected upper corner x of the game.
@@ -184,6 +184,7 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
 
     @Override
     public void run() {
+        //noinspection InfiniteLoopStatement
         while(true) {
             repaint();
         }

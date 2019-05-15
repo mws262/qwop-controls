@@ -8,12 +8,8 @@ import java.util.Objects;
 
 public class ArduinoSerial {
 
-    volatile boolean q = false;
-    volatile boolean w = false;
-    volatile boolean o = false;
-    volatile boolean p = false;
+    private OutputStream out;
 
-    OutputStream out;
     public ArduinoSerial() throws IOException {
         // Get the correct serial port.
         SerialPort arduinoPort = null;
@@ -69,54 +65,4 @@ public class ArduinoSerial {
         out.write(keyCodeOut);
         out.flush();
     }
-//
-//    private class Listener implements KeyListener {
-//
-//
-//        @Override
-//        public void keyTyped(KeyEvent e) {
-//
-//        }
-//
-//        @Override
-//        public void keyPressed(KeyEvent e) {
-//            switch (e.getKeyCode()) {
-//                case KeyEvent.VK_Q:
-//                    q = true;
-//                    System.out.println("q");
-//                    break;
-//                case KeyEvent.VK_W:
-//                    w = true;
-//                    break;
-//                case KeyEvent.VK_O:
-//                    o = true;
-//                    break;
-//                case KeyEvent.VK_P:
-//                    p = true;
-//                    break;
-//            }
-//        }
-//
-//        @Override
-//        public void keyReleased(KeyEvent e) {
-//            switch (e.getKeyCode()) {
-//                case KeyEvent.VK_Q:
-//                    q = false;
-//                    break;
-//                case KeyEvent.VK_W:
-//                    w = false;
-//                    break;
-//                case KeyEvent.VK_O:
-//                    o = false;
-//                    break;
-//                case KeyEvent.VK_P:
-//                    p = false;
-//                    break;
-//            }
-//        }
-//    }
-//
-//    public static void main(String[] args) throws InterruptedException, IOException {
-//        new MAIN_ArduinoSerialTest();
-//    }
 }
