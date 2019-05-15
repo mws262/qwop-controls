@@ -282,7 +282,7 @@
 //     */
 //    public void destroyNodesBelowAndCheckExplored() {
 //        destroyNodesBelow();
-//        propagateFullyExploredStatus_lite();
+//        propagateFullyExploredStatusLite();
 //    }
 //
 //    /**

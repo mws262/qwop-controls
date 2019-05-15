@@ -143,4 +143,12 @@ public class ActionList extends ArrayList<Action> {
         }
         return bigger;
     }
+
+    /**
+     * Get an ActionList containing no elements.
+     * @return An empty list of actions.
+     */
+    public static ActionList getEmptyList() {
+        return new ActionList(new Distribution_Equal());
+    }
 }

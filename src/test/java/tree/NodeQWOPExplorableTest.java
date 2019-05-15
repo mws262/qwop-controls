@@ -36,7 +36,7 @@ public class NodeQWOPExplorableTest {
     │   │            └── node1_2_1_2_2
     │   │                └── node1_2_1_2_2_3
     │   ├── node1_3
-    │   └── node1_4 *
+    │
     ├── node2
     │   ├── node2_1
     │   └── node2_2
@@ -102,7 +102,6 @@ public class NodeQWOPExplorableTest {
         a4 = list2.get(0);
         a5 = list2.get(1);
         a6 = list2.get(2);
-
 
         // Depth 0.
         rootNode = new NodeQWOPExplorable(initialState, generator);
@@ -178,15 +177,15 @@ public class NodeQWOPExplorableTest {
 
         // Depth 5.
         Assert.assertEquals(a1, node1_2_1_2.getUntriedActionByIndex(0));
-        node1_2_1_2_1 = node1_2_1_2.addDoublyLinkedChild(a4, failedState);
-        node1_2_1_2_2 = node1_2_1_2.addDoublyLinkedChild(a5, unfailedState);
+        node1_2_1_2_1 = node1_2_1_2.addDoublyLinkedChild(a1, failedState);
+        node1_2_1_2_2 = node1_2_1_2.addDoublyLinkedChild(a2, unfailedState);
         nodesLvl5 = new ArrayList<>();
         nodesLvl5.add(node1_2_1_2_1);
         nodesLvl5.add(node1_2_1_2_2);
 
         // Depth 6.
         Assert.assertEquals(a4, node1_2_1_2_2.getUntriedActionByIndex(0));
-        node1_2_1_2_2_3 = node1_2_1_2_2.addDoublyLinkedChild(a3, unfailedState);
+        node1_2_1_2_2_3 = node1_2_1_2_2.addDoublyLinkedChild(a6, unfailedState);
         nodesLvl6 = new ArrayList<>();
         nodesLvl6.add(node1_2_1_2_2_3);
 
@@ -244,23 +243,80 @@ public class NodeQWOPExplorableTest {
         node2_1.addDoublyLinkedChild(node2_1.getUntriedActionRandom(), failedState);
 
         Assert.assertTrue(node2.isFullyExplored());
-
     }
 
     @Test
     public void setFullyExploredStatus() {
+
+
     }
 
     @Test
     public void getUntriedActionCount() {
+        setupTree();
+
+        Assert.assertEquals(0, rootNode.getUntriedActionCount());
+        Assert.assertEquals(0, node1.getUntriedActionCount());
+        Assert.assertEquals(1, node2.getUntriedActionCount());
+        Assert.assertEquals(0, node3.getUntriedActionCount());
+        Assert.assertEquals(1, node1_1.getUntriedActionCount());
+        Assert.assertEquals(2, node1_2.getUntriedActionCount());
+        Assert.assertEquals(3, node1_3.getUntriedActionCount());
+        Assert.assertEquals(3, node2_1.getUntriedActionCount());
+        Assert.assertEquals(0, node2_2.getUntriedActionCount());
+        Assert.assertEquals(3, node3_1.getUntriedActionCount());
+        Assert.assertEquals(0, node3_2.getUntriedActionCount());
+        Assert.assertEquals(0, node3_3.getUntriedActionCount());
+        Assert.assertEquals(3, node1_1_1.getUntriedActionCount());
+        Assert.assertEquals(0, node1_1_2.getUntriedActionCount());
+        Assert.assertEquals(2, node1_2_1.getUntriedActionCount());
+        Assert.assertEquals(3, node2_2_1.getUntriedActionCount());
+        Assert.assertEquals(0, node2_2_2.getUntriedActionCount());
+        Assert.assertEquals(0, node2_2_3.getUntriedActionCount());
+        Assert.assertEquals(0, node3_3_1.getUntriedActionCount());
+        Assert.assertEquals(0, node3_3_2.getUntriedActionCount());
+        Assert.assertEquals(0, node3_3_3.getUntriedActionCount());
+        Assert.assertEquals(1, node1_2_1_2.getUntriedActionCount());
+        Assert.assertEquals(0, node1_2_1_2_1.getUntriedActionCount());
+        Assert.assertEquals(2, node1_2_1_2_2.getUntriedActionCount());
+        Assert.assertEquals(3, node1_2_1_2_2_3.getUntriedActionCount());
     }
 
     @Test
     public void getUntriedActionByIndex() {
+        setupTree();
+
+        Assert.assertEquals(a6, node2.getUntriedActionByIndex(0));
+        Assert.assertEquals(a3, node1_1.getUntriedActionByIndex(0));
+        Assert.assertEquals(a4, node1_2_1_2_2.getUntriedActionByIndex(0));
+        Assert.assertEquals(a5, node1_2_1_2_2.getUntriedActionByIndex(1));
+
+        exception.expect(IndexOutOfBoundsException.class);
+        node1.getUntriedActionByIndex(0);
     }
 
     @Test
     public void getUntriedActionRandom() {
+        setupTree();
+        boolean a4found = false;
+        boolean a6found = false;
+        final int timeout = 10000;
+        int counter = 0;
+        while (counter++ < timeout) {
+            Action a = node1_2_1.getUntriedActionRandom();
+            if (a == a4) {
+                a4found = true;
+            } else if (a == a6) {
+                a6found = true;
+            }
+
+            if (a4found && a6found) {
+                break;
+            }
+        }
+
+        Assert.assertTrue("Random action selection failed to come up with all possible actions within " + timeout +
+                "tries. This is incredibly unlikely to be random chance.", counter < 9999);
     }
 
     @Test
@@ -269,30 +325,145 @@ public class NodeQWOPExplorableTest {
 
     @Test
     public void clearUntriedActions() {
+        // This really shouldn't be used outside the class anyway.
+
+        setupTree();
+
+        node1_2_1_2_2_3.clearUntriedActions();
+        Assert.assertTrue(node1_2_1_2_2_3.isFullyExplored());
+        Assert.assertFalse(node1_2_1_2_2.isFullyExplored());
+
+        node2_2_1.clearUntriedActions();
+        Assert.assertTrue(node2_2_1.isFullyExplored());
+        Assert.assertTrue(node2_2.isFullyExplored());
     }
 
     @Test
     public void getUntriedActionListCopy() {
+        setupTree();
+
+        List<Action> actions = node1_2_1_2_2.getUntriedActionListCopy();
+        Assert.assertEquals(node1_2_1_2_2.getUntriedActionCount(), actions.size());
+        for (int i = 0; i < node1_2_1_2_2.getUntriedActionCount(); i++) {
+            Assert.assertEquals(node1_2_1_2_2.getUntriedActionByIndex(i), actions.get(i));
+        }
+
+        actions.remove(0);
+        Assert.assertEquals(node1_2_1_2_2.getUntriedActionCount() - 1, actions.size());
+        for (int i = 0; i < actions.size(); i++) {
+            Assert.assertEquals(node1_2_1_2_2.getUntriedActionByIndex(i + 1), actions.get(i));
+        }
     }
 
     @Test
     public void getActionDistribution() {
+        setupTree();
+        Assert.assertEquals(node1.getActionDistribution().getClass(), Distribution_Equal.class);
+        Assert.assertEquals(rootNode.getActionDistribution().getClass(), Distribution_Equal.class);
     }
 
     @Test
     public void stripUncheckedActionsExceptOnLeaves() {
+        setupTree();
+        // Clear to way beyond. Only leaves should have unchecked actions now.
+        NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1_2, 10);
+        Assert.assertEquals(0, node1_2_1_2.getUntriedActionCount());
+        Assert.assertEquals(0, node1_2_1_2_1.getUntriedActionCount()); // Already failed.
+        Assert.assertEquals(0, node1_2_1_2_2.getUntriedActionCount());
+        Assert.assertEquals(3, node1_2_1_2_2_3.getUntriedActionCount());
+
+        Assert.assertFalse(node1_2_1_2_2.isFullyExplored());
+        Assert.assertFalse(node1_2_1_2.isFullyExplored());
+        Assert.assertFalse(node1_2_1_2_2_3.isFullyExplored());
+        Assert.assertTrue(node1_2_1_2_1.isFullyExplored());
+
+        // Clear just to the node we're calling it on. Only it should be affected.
+        setupTree();
+        NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1_2, 4);
+        Assert.assertEquals(0, node1_2_1_2.getUntriedActionCount());
+        Assert.assertEquals(0, node1_2_1_2_1.getUntriedActionCount()); // Already failed.
+        Assert.assertEquals(2, node1_2_1_2_2.getUntriedActionCount());
+        Assert.assertEquals(3, node1_2_1_2_2_3.getUntriedActionCount());
+
+        Assert.assertFalse(node1_2_1_2_2.isFullyExplored());
+        Assert.assertFalse(node1_2_1_2.isFullyExplored());
+        Assert.assertFalse(node1_2_1_2_2_3.isFullyExplored());
+        Assert.assertTrue(node1_2_1_2_1.isFullyExplored());
+
+        // Call with 1 less depth than the node we're calling it on. Nothing should be affected!
+        setupTree();
+        NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1_2, 3);
+        Assert.assertEquals(1, node1_2_1_2.getUntriedActionCount());
+        Assert.assertEquals(0, node1_2_1_2_1.getUntriedActionCount()); // Already failed.
+        Assert.assertEquals(2, node1_2_1_2_2.getUntriedActionCount());
+        Assert.assertEquals(3, node1_2_1_2_2_3.getUntriedActionCount());
+
+        Assert.assertFalse(node1_2_1_2_2.isFullyExplored());
+        Assert.assertFalse(node1_2_1_2.isFullyExplored());
+        Assert.assertFalse(node1_2_1_2_2_3.isFullyExplored());
+        Assert.assertTrue(node1_2_1_2_1.isFullyExplored());
+
+        // Call with a depth in between so that some, but not all get cleared.
+        setupTree();
+        NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1, 4);
+        Assert.assertEquals(0, node1_2_1_2.getUntriedActionCount());
+        Assert.assertEquals(0, node1_2_1_2_1.getUntriedActionCount()); // Already failed.
+        Assert.assertEquals(2, node1_2_1_2_2.getUntriedActionCount());
+        Assert.assertEquals(3, node1_2_1_2_2_3.getUntriedActionCount());
+        Assert.assertEquals(0, node1_2_1.getUntriedActionCount());
+
+        Assert.assertFalse(node1_2_1.isFullyExplored());
+        Assert.assertFalse(node1_2_1_2_2.isFullyExplored());
+        Assert.assertFalse(node1_2_1_2.isFullyExplored());
+        Assert.assertFalse(node1_2_1_2_2_3.isFullyExplored());
+        Assert.assertTrue(node1_2_1_2_1.isFullyExplored());
     }
 
     @Test
     public void destroyNodesBelowAndCheckExplored() {
-    }
+        setupTree();
 
-    @Test
-    public void destroyNodesBelow() {
+        // Node from which nothing should become fully-explored.
+        node1_2_1.destroyNodesBelowAndCheckExplored();
+        Assert.assertFalse(node1_2_1.isFullyExplored());
+        Assert.assertEquals(0, node1_2_1.getChildCount());
+        Assert.assertEquals(2, node1_2_1.getUntriedActionCount());
+
+        // Node which becomes fully-explored.
+        node2_2.destroyNodesBelowAndCheckExplored();
+        Assert.assertTrue(node2_2.isFullyExplored());
+        Assert.assertEquals(0, node2_2.getChildCount());
+        Assert.assertEquals(0, node2_2.getUntriedActionCount());
+
+        // Node which causes fully-explored status to propagate back beyond the original layer.
+        while(node3_1.getUntriedActionCount() > 0) { // Make it so this node only has children and nothing untried.
+            node3_1.addDoublyLinkedChild(node3_1.getUntriedActionRandom(), unfailedState);
+        }
+        node3_1.destroyNodesBelowAndCheckExplored();
+        Assert.assertTrue(node3_1.isFullyExplored());
+        Assert.assertTrue(node3.isFullyExplored());
+
+        // Keep destroying stuff until the root node is fully-explored.
+        node1.destroyNodesBelowAndCheckExplored();
+        Assert.assertFalse(rootNode.isFullyExplored()); // Node 2 can still do things.
+        node2.addDoublyLinkedChild(node2.getUntriedActionRandom(), unfailedState);
+        Assert.assertEquals(0, node2.getUntriedActionCount());
+        node2.destroyNodesBelowAndCheckExplored();
+        Assert.assertTrue(rootNode.isFullyExplored());
     }
 
     @Test
     public void reserveExpansionRights() {
+        setupTree();
+
+        Assert.assertTrue(node2_2.reserveExpansionRights());
+        Assert.assertFalse(node2_2.reserveExpansionRights()); // Can't re-reserve.
+        Assert.assertFalse(node2.isLocked());
+
+        Assert.assertTrue(node2_1.reserveExpansionRights());
+        Assert.assertFalse(node2.isLocked());
+
+        // TODO pick up here.
     }
 
     @Test
