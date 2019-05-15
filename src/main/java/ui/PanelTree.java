@@ -35,8 +35,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      * labels in world space.
      */
     private final TextRenderer textRenderSmall = new TextRenderer(new Font("Calibri", Font.PLAIN, 18));
-
-    private GLUT glut = new GLUT();
+    //private GLUT glut = new GLUT();
 
     /**
      * Tree root nodes associated with this interface.
@@ -44,7 +43,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     private ArrayList<NodeQWOPGraphicsBase<?>> rootNodes = new ArrayList<>();
 
     /**
-     * Currently selected {@link Node} on the tree.
+     * Currently selected {@link NodeQWOPGraphicsBase} on the tree.
      */
     private NodeQWOPGraphicsBase<?> selectedNode;
 
@@ -156,7 +155,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     }
 
     /**
-     * Add the root of a tree for drawing. Note that {@link Node} locations are dictated by {@link Node#nodeLocation}.
+     * Add the root of a tree for drawing. Note that {@link NodeQWOPGraphicsBase} locations are dictated by {@link NodeQWOPGraphicsBase#nodeLocation}.
      *
      * @param node A root node whose tree we want to draw. Does not literally need to be a zero-depth tree root, just
      *             some node with children we want to draw.
@@ -221,7 +220,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
         if (treePause) { // TODO Fix pausing.
             textRenderBig.setColor(0.7f, 0.1f, 0.1f, 1.0f);
-            textRenderBig.draw("PAUSED", panelWidth / 2, panelHeight - 50);
+            textRenderBig.draw("DRAWING PAUSED", panelWidth / 2, panelHeight - 50);
         }
         textRenderBig.endRendering();
 
@@ -291,7 +290,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
             // Get all nodes below all roots.
             List<NodeQWOPGraphicsBase<?>> nodesBelow = new ArrayList<>();
-            for (NodeQWOPGraphicsBase<?> node : rootNodes) { // TODO get rid of multiple roots.
+            for (NodeQWOPGraphicsBase<?> node : rootNodes) {
                  node.recurseDownTreeInclusive(nodesBelow::add);
             }
             selectNode(cam.nodeFromClick_set(e.getX(), e.getY(), nodesBelow));
@@ -363,17 +362,8 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                         break;
                     case KeyEvent.VK_P: //Pause everything except for graphics updates
                         treePause = !treePause;
-                        if (treePause) {
-                            //rootNodes.get(0).calcNodePosBelow(); // TODO
-                        }
-                        break;
-                    case KeyEvent.VK_SPACE:
-//						if (runnerPanel.isActive()) {
-//							runnerPanel.pauseToggle();
-//						}
                         break;
                     default:
-                        // Nothing.
                         break;
                 }
             }
@@ -476,7 +466,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         // deep node for causing some really huge search through the whole tree. If we don't succeed in a handful
         // of iterations, just fail quietly.
         numTimesTried++;
-        boolean success = false;
+        boolean success;
 
         //TERMINATING CONDITIONS-- fail quietly if we get back to root with nothing. Succeed if we get back to
         // the same depth we started at.
@@ -520,8 +510,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                 }
             }
         }
-        success = true;
-        return success;
+        return true;
     }
 
     @Override

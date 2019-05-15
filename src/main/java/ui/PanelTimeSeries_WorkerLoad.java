@@ -30,6 +30,7 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
 
     @Override
     public void run() {
+        //noinspection InfiniteLoopStatement
         while (true) {
             if (isActive()) {
                 for (int i = 0; i < workerList.size(); i++) {

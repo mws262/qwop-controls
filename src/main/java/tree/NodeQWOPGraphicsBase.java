@@ -31,7 +31,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     public float[] nodeLocation = new float[3]; // Location that this node appears on the tree visualization
     float nodeAngle = 0; // Keep track of the angle that the line previous node to this node makes.
     float sweepAngle = 2f * (float) Math.PI;
-    private float edgeLength = 1.f;
+    private static final float edgeLength = 1.f;
 
     /**
      * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
@@ -47,7 +47,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     private float[] overrideLineColorFloats;
 
     public static final float lineBrightnessDefault = 0.85f;
-    float lineBrightness = lineBrightnessDefault;
+    private float lineBrightness = lineBrightnessDefault;
 
     /**
      * If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z
@@ -97,6 +97,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      *
      * @param gl OpenGL drawing object.
      */
+    @SuppressWarnings("unused")
     public void drawLinesBelow(GL2 gl) {
         recurseDownTreeExclusive(n->{
             if (!n.notDrawnForSpeed) n.drawLine(gl);
@@ -109,6 +110,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      *
      * @param gl OpenGL drawing object.
      */
+    @SuppressWarnings("unused")
     public void drawNodesBelow(GL2 gl) {
         recurseDownTreeInclusive(n -> {
             if (!n.notDrawnForSpeed) drawPoint(gl);
@@ -143,10 +145,11 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         }
     }
 
-    private void setPointColor(Color color) {
+    public void setPointColor(Color color) {
         pointColorFloats = color.getColorComponents(null);
     }
-    private void setOverridePointColor(Color color) {
+
+    public void setOverridePointColor(Color color) {
         if (color == null) {
             overridePointColorFloats = null;
         } else {

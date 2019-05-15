@@ -7,9 +7,7 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
 
     private boolean active = false;
 
-    private NodeQWOPExplorableBase<?> currentNode;
-
-    public PanelPie_ViableFutures() { }
+    public PanelPie_ViableFutures() {}
 
     @Override
     public void activateTab() {
@@ -28,14 +26,12 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
 
     @Override
     public void update(NodeQWOPExplorableBase<?> node) {
-        currentNode = node;
-
         int failCount = 0;
         int cat1 = 0;
         int cat2 = 0;
         int cat3 = 0;
         int cat4 = 0;
-        for (NodeQWOPExplorableBase<?> child : currentNode.getChildren()) {
+        for (NodeQWOPExplorableBase<?> child : node.getChildren()) {
             int diffBranchDepth = child.getMaxBranchDepth() - child.getTreeDepth();
 
             if (child.getState().isFailed()) {
@@ -53,7 +49,7 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
 
         DefaultPieDataset data = getDataset();
         data.clear();
-        data.insertValue(0, "Untried", currentNode.getUntriedActionCount());
+        data.insertValue(0, "Untried", node.getUntriedActionCount());
         data.insertValue(1, "Failed", failCount);
         data.insertValue(2, "0 depth", cat1);
         data.insertValue(3, "<3 depth", cat2);

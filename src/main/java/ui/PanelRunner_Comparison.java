@@ -31,7 +31,12 @@ public class PanelRunner_Comparison extends PanelRunner {
 
     @Override
     public void update(NodeQWOPExplorableBase<?> node) {
-        //TODO node.getRoot().clearNodeOverrideColor();
+        NodeQWOPExplorableBase<?> root = node.getRoot();
+        // todo
+//        if (root instanceof NodeQWOPGraphicsBase) {
+//            NodeQWOPGraphicsBase graphicsRoot = ((NodeQWOPGraphicsBase) root);
+//            graphicsRoot.clearN();
+//        }
 
         states.clear();
         focusNodes.clear();

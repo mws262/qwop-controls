@@ -118,6 +118,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     @Override
     public void run() {
+        //noinspection InfiniteLoopStatement
         while (true) {
             if (active && !pauseFlag) {
                 if (game != null) {

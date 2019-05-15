@@ -28,11 +28,6 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     public boolean verbose = false;
 
     /**
-     * Tree root nodes associated with this interface.
-     */
-    private ArrayList<NodeQWOPGraphicsBase<?>> rootNodes = new ArrayList<>();
-
-    /**
      * Individual pane for the tree.
      */
     private PanelTree panelTree;
@@ -137,9 +132,6 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
         allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
     }
 
-    /* (non-Javadoc)
-     * @see ui.IUserInterface#run()
-     */
     @Override
     public void run() {
         while (running) {
@@ -157,9 +149,6 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
         }
     }
 
-    /* (non-Javadoc)
-     * @see ui.IUserInterface#kill()
-     */
     @Override
     public void kill() {
         running = false;
@@ -171,15 +160,14 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     public void nodeSelected(NodeQWOPGraphicsBase<?> selected) {
         if (selectedNode != null) { // Clear things from the old selected node.
             selectedNode.displayPoint = false;
-            // TODO
-//            selectedNode.clearBranchColor();
-//            selectedNode.clearBranchZOffset();
+            selectedNode.clearBranchColor();
+            selectedNode.clearBranchZOffset();
         }
         selectedNode = selected;
         selectedNode.displayPoint = true;
-        // TODO
-//        selectedNode.nodeColor = Color.RED;
-//        selectedNode.setBranchZOffset(0.4f);
+
+        selectedNode.setOverridePointColor(Color.RED);
+        selectedNode.setBranchZOffset(0.4f);
 
         for (TabbedPaneActivator panel : allTabbedPanes) {
             if (panel.isActive()) {
@@ -200,13 +188,11 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
 
     @Override
     public void addRootNode(NodeQWOPGraphicsBase<?> node) {
-        rootNodes.add(node);
         panelTree.addRootNode(node);
     }
 
     @Override
     public void clearRootNodes() {
-        rootNodes.clear();
         panelTree.clearRootNodes();
     }
 }

@@ -67,6 +67,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
 
     @Override
     public void run() {
+        //noinspection InfiniteLoopStatement
         while (true) {
             if (active && !pauseFlag) {
                 if (game != null) {

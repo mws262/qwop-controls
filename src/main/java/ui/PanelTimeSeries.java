@@ -26,11 +26,6 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
     private AtomicBoolean isActive = new AtomicBoolean();
 
     /**
-     * How many plots total?
-     */
-    private final int numberOfPlots;
-
-    /**
      * How many plots per row?
      */
     private static final int plotsPerRow = 6;
@@ -53,7 +48,9 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
     protected Map<XYPlot, TimeSeriesCollection> plotsAndData = new LinkedHashMap<>(); // Retains order of insertion.
 
     public PanelTimeSeries(int numberOfPlots) {
-        this.numberOfPlots = numberOfPlots;
+        /**
+         * How many plots total?
+         */
         plotPanels = new ChartPanel[numberOfPlots];
 
         int numRows = (int) Math.ceil(numberOfPlots / (double) plotsPerRow);

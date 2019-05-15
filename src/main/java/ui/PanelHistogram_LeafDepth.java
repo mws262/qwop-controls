@@ -14,8 +14,6 @@ public class PanelHistogram_LeafDepth extends PanelHistogram implements IUserInt
 
     protected boolean active = false;
 
-    private NodeQWOPExplorableBase<?> currentNode;
-
     public PanelHistogram_LeafDepth() {
         super("Leaf depth beyond selected Node");
         XYPlot plot = (XYPlot) chart.getPlot();
@@ -56,6 +54,5 @@ public class PanelHistogram_LeafDepth extends PanelHistogram implements IUserInt
         dataset.addSeries("",depths, maxDepth - minDepth + 1, 0, maxDepth - minDepth + 1);
 
         setDataset(dataset);
-        currentNode = node;
     }
 }

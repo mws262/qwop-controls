@@ -1,7 +1,6 @@
 package ui;
 
 import game.GameUnified;
-import game.IGame;
 import game.State;
 import tree.NodeQWOPExplorableBase;
 
@@ -14,10 +13,6 @@ import java.awt.*;
  * @author matt
  */
 public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
-    /**
-     * Access to the game for the sake of the drawing methods.
-     */
-    private IGame game = new GameUnified();
 
     /**
      * Current state being displayed.
@@ -55,6 +50,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
 
     @Override
     public void run() {
+        //noinspection InfiniteLoopStatement
         while (true) {
             repaint();
             try {
