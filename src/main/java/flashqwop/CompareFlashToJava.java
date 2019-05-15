@@ -1,7 +1,6 @@
 package flashqwop;
 
 import actions.Action;
-import actions.ActionList;
 import game.GameUnified;
 import game.State;
 import tree.NodeQWOP;
@@ -18,15 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CompareFlashToJava extends FlashGame {
-    GameUnified gameJava = new GameUnified();
-    PanelRunner_MultiState panelRunner;
-    private boolean initialized = false;
-    private ActionList bunchOfActions = ActionList.makeExhaustiveActionSet(14, 35);
+    private GameUnified gameJava = new GameUnified();
+    private PanelRunner_MultiState panelRunner;
+    private boolean initialized;
 
     private ValueFunction_TensorFlow valueFunction = null;
 
-    public CompareFlashToJava() {
-
+    private CompareFlashToJava() {
         loadController();
 
         getControlAction(GameUnified.getInitialState()); // TODO make this better. The first controller evaluation ever
@@ -40,7 +37,6 @@ public class CompareFlashToJava extends FlashGame {
         }
 //        printGameInfo();
         restart();
-
 
         gameUnifiedList.add(gameJava);
 
@@ -70,8 +66,7 @@ public class CompareFlashToJava extends FlashGame {
         cr.setMinimumSize(new Dimension(100,100));
         frame.pack();
         frame.setVisible(true);
-        Thread panelThread = new Thread(panelRunner);
-        //panelThread.start();
+        new Thread(panelRunner);
         panelRunner.activateTab();
         initialized = true;
         restart();
@@ -80,7 +75,7 @@ public class CompareFlashToJava extends FlashGame {
 
     @Override
     public Action[] getActionSequenceFromBeginning() {
-        Action[] prefix = new Action[]{
+        return new Action[]{
                 new Action(5, Action.Keys.none),
 //                new Action(49, Action.Keys.wo),
 //                new Action(20, Action.Keys.qp),
@@ -99,7 +94,6 @@ public class CompareFlashToJava extends FlashGame {
 //                new Action(7, Action.Keys.none),
 //                new Action(1, Action.Keys.p)
         };
-        return prefix;
     }
 
     @Override
@@ -107,8 +101,7 @@ public class CompareFlashToJava extends FlashGame {
         return valueFunction.getMaximizingAction(new NodeQWOP(state));
     }
 
-    int tp = 0;
-    List<GameUnified> gameUnifiedList = new ArrayList();
+    private List<GameUnified> gameUnifiedList = new ArrayList<>();
     @Override
     public void reportGameStatus(State state, boolean[] command, int timestep) {
         if (!initialized) {
@@ -122,6 +115,7 @@ public class CompareFlashToJava extends FlashGame {
             gameUnifiedList.add(gameJava);
 
         } else {
+            int tp = 0;
             if (timestep < tp + 5 && timestep > tp)
                     gameJava.iterations = 5;
 
@@ -143,14 +137,12 @@ public class CompareFlashToJava extends FlashGame {
             panelRunner.addSecondaryState(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state,
                     NodeQWOPGraphicsBase.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
 
-
-            panelRunner.setMainState(state); // gameJava.getCurrentState
-            // ());
+            panelRunner.setMainState(state);
             panelRunner.repaint();
         }
     }
 
-    public void loadController() {
+    private void loadController() {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
@@ -162,6 +154,6 @@ public class CompareFlashToJava extends FlashGame {
     }
 
     public static void main(String[] args) {
-        CompareFlashToJava comparison = new CompareFlashToJava();
+        new CompareFlashToJava();
     }
 }

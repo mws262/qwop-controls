@@ -18,8 +18,6 @@ import java.util.List;
  */
 public class ActionList extends ArrayList<Action> {
 
-    private static final long serialVersionUID = 1L;
-
     public Distribution<Action> samplingDist;
 
     /**
@@ -74,15 +72,6 @@ public class ActionList extends ArrayList<Action> {
      * @param dist Sampling distribution for the new ActionList.
      * @return A new ActionList.
      */
-    @Deprecated
-    public static ActionList makeActionSet(Integer[] durations, boolean[][] keys, Distribution<Action> dist) {
-        ActionList set = new ActionList(dist);
-        for (int i = 0; i < durations.length; i++) {
-            set.add(new Action(durations[i], keys[i]));
-        }
-        return set;
-    }
-
     public static ActionList makeActionSet(int[] durations, boolean[][] keys, Distribution<Action> dist) {
         ActionList set = new ActionList(dist);
         for (int i = 0; i < durations.length; i++) {
@@ -99,17 +88,9 @@ public class ActionList extends ArrayList<Action> {
      * @param dist
      * @return
      */
-    @Deprecated
-    public static ActionList makeActionSet(Integer[] durations, boolean[] keys, Distribution<Action> dist) {
-        ActionList set = new ActionList(dist);
-        for (Integer duration : durations) {
-            set.add(new Action(duration, keys));
-        }
-        return set;
-    }
     public static ActionList makeActionSet(int[] durations, boolean[] keys, Distribution<Action> dist) {
         ActionList set = new ActionList(dist);
-        for (Integer duration : durations) {
+        for (int duration : durations) {
             set.add(new Action(duration, keys));
         }
         return set;

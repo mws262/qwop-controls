@@ -50,7 +50,7 @@ public class Action implements Serializable {
     /**
      * Which of the QWOP keys are pressed?
      **/
-    private final boolean[] keysPressed;
+    private final boolean[] keysPressed = new boolean[4];
 
     /**
      * Is this the immutable original or a derived, mutable copy. A little bit hacky, but a way of avoiding threading
@@ -88,14 +88,10 @@ public class Action implements Serializable {
      *                             True means pressed down. False means not pressed.
      */
     public Action(int totalTimestepsToHold, boolean[] keysPressed) {
+        this(totalTimestepsToHold, keysPressed[0], keysPressed[1], keysPressed[2], keysPressed[3]);
         if (keysPressed.length != 4)
             throw new IllegalArgumentException("A QWOP action should have booleans for exactly 4 keys. Tried to " +
                     "create one with a boolean array of size: " + keysPressed.length);
-        if (totalTimestepsToHold < 0)
-            throw new IllegalArgumentException("New QWOP Action must have non-negative duration. Given: " + totalTimestepsToHold);
-        this.timestepsTotal = totalTimestepsToHold;
-        this.keysPressed = keysPressed;
-        timestepsRemaining = timestepsTotal;
     }
 
     /**
@@ -108,7 +104,14 @@ public class Action implements Serializable {
      * @param P                    Whether the P key is pressed during this action.
      */
     public Action(int totalTimestepsToHold, boolean Q, boolean W, boolean O, boolean P) {
-        this(totalTimestepsToHold, new boolean[]{Q, W, O, P}); // Chain to the other constructor.
+        if (totalTimestepsToHold < 0)
+            throw new IllegalArgumentException("New QWOP Action must have non-negative duration. Given: " + totalTimestepsToHold);
+        this.timestepsTotal = totalTimestepsToHold;
+        keysPressed[0] = Q;
+        keysPressed[1] = W;
+        keysPressed[2] = O;
+        keysPressed[3] = P;
+        timestepsRemaining = timestepsTotal;
     }
 
     /**
@@ -319,6 +322,7 @@ public class Action implements Serializable {
      * @param keys One of the 9 valid key combinations.
      * @return One-hot, 9-element representation of a key combination.
      */
+    @SuppressWarnings("WeakerAccess")
     public static float[] keysToOneHot(Keys keys) {
         return labelsToOneHot.get(keys);
     }
@@ -340,6 +344,7 @@ public class Action implements Serializable {
      * @param p Is P pressed?
      * @return The enum Keys representation of that command.
      */
+    @SuppressWarnings("WeakerAccess")
     public static Keys booleansToKeys(boolean q, boolean w, boolean o, boolean p) {
         if (q) {
             if (o) {
@@ -371,6 +376,7 @@ public class Action implements Serializable {
      * @param command 4-element boolean representation of keys pressed.
      * @return The enum key representation of that command.
      */
+    @SuppressWarnings("WeakerAccess")
     public static Keys booleansToKeys(boolean[] command) {
         return booleansToKeys(command[0], command[1], command[2], command[3]);
     }

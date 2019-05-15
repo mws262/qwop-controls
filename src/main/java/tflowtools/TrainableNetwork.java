@@ -26,7 +26,7 @@ public class TrainableNetwork {
     /**
      * Default location from which to save/load Tensorflow models.
      */
-    public static String graphPath = "src/main/resources/tflow_models/";
+    public static final String graphPath = "src/main/resources/tflow_models/";
 
     /**
      * Default location from which to save/load Tensorflow checkpoint files.

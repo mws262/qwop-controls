@@ -373,7 +373,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
     /**
      * Set a flag to indicate that the invoking TreeWorker has released exclusive rights to expand from this node.
      */
-    synchronized void releaseExpansionRights() {
+    public synchronized void releaseExpansionRights() {
         locked.set(false); // Release the lock.
         // Unlocking this node may cause nodes further up the tree to become available.
         if ((getTreeDepth() > 0)) getParent().propagateUnlock();

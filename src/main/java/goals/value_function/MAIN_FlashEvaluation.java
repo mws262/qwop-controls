@@ -90,7 +90,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     public static void main(String[] args) {
-        MAIN_FlashEvaluation controller = new MAIN_FlashEvaluation();
+        new MAIN_FlashEvaluation();
     }
 
 

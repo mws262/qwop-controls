@@ -454,6 +454,7 @@ public class NodeQWOPExplorableTest {
 
     @Test
     public void reserveExpansionRights() {
+        // TODO some multi-threaded tests would be in order.
         setupTree();
 
         Assert.assertTrue(node2_2.reserveExpansionRights());
@@ -463,23 +464,23 @@ public class NodeQWOPExplorableTest {
         Assert.assertTrue(node2_1.reserveExpansionRights());
         Assert.assertFalse(node2.isLocked());
 
-        // TODO pick up here.
-    }
+        Assert.assertFalse(node3.isLocked());
+        Assert.assertTrue(node3_1.reserveExpansionRights());
+        Assert.assertTrue(node3.isLocked());
+        Assert.assertFalse(node3.reserveExpansionRights());
+        Assert.assertFalse(node3_3.isLocked());
+        Assert.assertFalse(node3_3_1.isLocked());
 
-    @Test
-    public void releaseExpansionRights() {
-    }
+        node3_1.releaseExpansionRights();
+        Assert.assertFalse(node3_1.isLocked());
+        Assert.assertFalse(node3.isLocked());
 
-    @Test
-    public void propagateLock() {
-    }
-
-    @Test
-    public void propagateUnlock() {
-    }
-
-    @Test
-    public void isLocked() {
+        node2_2.releaseExpansionRights();
+        Assert.assertFalse(node2_2.isLocked());
+        Assert.assertFalse(node2.isLocked());
+        Assert.assertTrue(node2_1.isLocked());
+        node2_1.releaseExpansionRights();
+        Assert.assertFalse(node2_1.isLocked());
     }
 
     @Test
@@ -487,20 +488,30 @@ public class NodeQWOPExplorableTest {
         NodeQWOPExplorable node = new NodeQWOPExplorable(initialState);
         Assert.assertEquals(node, node.getThis());
     }
-
-    @Test
-    public void addDoublyLinkedChild() {
-    }
-
     @Test
     public void addBackwardsLinkedChild() {
-    }
+        setupTree();
 
-    @Test
-    public void addDoublyLinkedChild1() {
-    }
+        // Add a node not in the untried action list.
+        NodeQWOPExplorable unexpectedNode = node2.addBackwardsLinkedChild(new Action(50, Action.Keys.wp), failedState);
+        Assert.assertFalse(node2.isFullyExplored()); // Shouldn't be affected by this new node.
+        Assert.assertEquals(2, node2.getChildCount()); // Shouldn't affect the child count.
+        Assert.assertTrue(unexpectedNode.isFullyExplored());
 
-    @Test
-    public void addBackwardsLinkedChild1() {
+        // Add a node from within the untried action list.
+        NodeQWOPExplorable phantomNode = node2.addBackwardsLinkedChild(node2.getUntriedActionRandom(), failedState);
+        Assert.assertFalse(node2.isFullyExplored()); // Shouldn't be affected by this new node.
+        Assert.assertEquals(2, node2.getChildCount()); // Shouldn't affect the child count.
+        Assert.assertTrue(phantomNode.isFullyExplored());
+        Assert.assertEquals(1, node2.getUntriedActionCount());
+
+        // Make sure a real node can be added later which has the same action as the phantom node.
+        NodeQWOPExplorable realNode = node2.addDoublyLinkedChild(node2.getUntriedActionRandom(), failedState);
+        Assert.assertEquals(0, node2.getUntriedActionCount());
+        Assert.assertEquals(3, node2.getChildCount()); // Shouldn't affect the child count.
+        
+        exception.expect(IllegalArgumentException.class);
+        node2.addBackwardsLinkedChild(a4, unfailedState); // Still shouldn't be able to add duplicate actions, even
+        // if it is only backwards linked.
     }
 }

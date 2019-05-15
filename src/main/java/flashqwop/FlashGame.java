@@ -88,7 +88,7 @@ public abstract class FlashGame implements QWOPStateListener {
     /**
      * Tell the game to reset (equivalent to 'r' on the keyboard in the real game).
      */
-    public void restart() {
+    public synchronized void restart() {
         server.sendResetSignal();
         awaitingRestart = true;
     }

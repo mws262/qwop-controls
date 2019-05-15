@@ -129,8 +129,6 @@ public class GameUnified implements IGame, Serializable {
             lLArmShape = new PolygonDef(),
             headShape = new PolygonDef();
 
-//    private static final CircleDef headShape = new CircleDef();
-
     private static final MassData
             rFootMassData = new MassData(),
             lFootMassData = new MassData(),
@@ -181,14 +179,15 @@ public class GameUnified implements IGame, Serializable {
      */
     private static FSTConfiguration fstConfiguration = FSTConfiguration.createDefaultConfiguration();
 
-    Random rand = new Random(); // tmp
-    public GameUnified() { makeNewWorld();
-    rand.setSeed(55555);
+    private Random rand = new Random(); // tmp
+    public GameUnified() {
+        makeNewWorld();
+        rand.setSeed(55555);
     }
 
-    /**
+    /*
      * Call once to initialize a lot of shape definitions which only need to be created once.
-     **/
+     */
     static {
         /*
          * Make the bodies and collision shapes
@@ -937,7 +936,7 @@ public class GameUnified implements IGame, Serializable {
         setMaxMotorTorque(multiplier);
     }
 
-    public void setPointFeet(boolean usePointFeet) {
+    public static void setPointFeet(boolean usePointFeet) {
         noFeet = usePointFeet;
     }
 
