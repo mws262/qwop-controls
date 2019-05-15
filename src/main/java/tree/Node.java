@@ -663,7 +663,7 @@
 //     * statuses already assigned. This should be true during normal operation, but when a bunch of saved nodes are
 //     * imported, it is useful to do a {@link Node#propagateFullyExplored_complete() complete check}.
 //     */
-//    public void propagateFullyExploredStatus_lite() {
+//    public void propagateFullyExploredStatusLite() {
 //        boolean flag = true; // Assume this node is fully-explored and negate if we find evidence that it is not.
 //
 //        if (!isFailed.get()) {
@@ -679,14 +679,14 @@
 //        fullyExplored.set(flag);
 //
 //        if (getTreeDepth() > 0) { // We already know this node is fully explored, check the parent.
-//            parent.propagateFullyExploredStatus_lite();
+//            parent.propagateFullyExploredStatusLite();
 //        }
 //    }
 //
 //    /**
 //     * Change whether this node or any above it have become fully explored. This is the complete version, which
 //     * resets any existing fully-explored tags from the descendants of this node before redoing all checks. Call from
-//     * root to re-label the whole tree. During normal tree-building, a {@link Node#propagateFullyExploredStatus_lite()
+//     * root to re-label the whole tree. During normal tree-building, a {@link Node#propagateFullyExploredStatusLite()
 //     * lite check} should suffice and is more computationally efficient.
 //     * <p>
 //     * This should only be used when a bunch of nodes are imported at once and need to all be checked, or if we need
@@ -707,7 +707,7 @@
 //        }
 //
 //        for (Node leaf : leaves) {
-//            leaf.propagateFullyExploredStatus_lite();
+//            leaf.propagateFullyExploredStatusLite();
 //        }
 //    }
 //
@@ -718,7 +718,7 @@
 //     */
 //    public void destroyNodesBelowAndCheckExplored() {
 //        destroyNodesBelow();
-//        propagateFullyExploredStatus_lite();
+//        propagateFullyExploredStatusLite();
 //    }
 //
 //    /**

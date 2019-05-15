@@ -38,7 +38,7 @@ public class NodeQWOPExplorable extends NodeQWOPExplorableBase<NodeQWOPExplorabl
         NodeQWOPExplorable child = new NodeQWOPExplorable(this, action, state, actionGenerator);
         addToChildList(child);
         if (child.getState().isFailed()) {
-            child.propagateFullyExploredStatus_lite();
+            child.propagateFullyExploredStatusLite();
         }
         return child;
     }

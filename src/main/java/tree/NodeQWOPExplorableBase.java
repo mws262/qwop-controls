@@ -36,34 +36,124 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
 
     final IActionGenerator actionGenerator;
 
+    /**
+     * Create a new root node. It will have potential child actions assigned to it by the specified
+     * {@link IActionGenerator}.
+     *
+     * @param rootState {@link State} at this root node.
+     * @param actionGenerator Used to generate untried child actions to assign to root.
+     */
     public NodeQWOPExplorableBase(State rootState, IActionGenerator actionGenerator) {
         super(rootState);
         this.actionGenerator = actionGenerator;
-        untriedActions = actionGenerator.getPotentialChildActionSet(this);
+        if (rootState.isFailed()) {
+            untriedActions = ActionList.getEmptyList();
+        } else {
+            untriedActions = actionGenerator.getPotentialChildActionSet(this);
+        }
     }
 
+    /**
+     * Make a new root node. It will have no untried children assigned to it, and by default, all manually-added
+     * children will also have no untried children assigned. For the normal version, please use
+     * {@link NodeQWOPExplorableBase#NodeQWOPExplorableBase(State, IActionGenerator)}.
+     *
+     * @param rootState {@link State} at this root node.
+     */
     public NodeQWOPExplorableBase(State rootState) {
         super(rootState);
         this.actionGenerator = new ActionGenerator_Null();
     }
 
+    /**
+     * Create a new node given a parent node, an action which takes the game from the parent to this node, and the
+     * state at this node. The new node will be assigned potential child actions based on the specified action
+     * generator.
+     *
+     * For external users, it is much preferred to use
+     * {@link NodeQWOPExplorableBase#addDoublyLinkedChild(Action, State, IActionGenerator)}  or
+     * {@link NodeQWOPExplorableBase#addBackwardsLinkedChild(Action, State, IActionGenerator)}.
+     *
+     * @param parent Parent node to this newly created one. By default, the parent will not know about this node.
+     * @param action Action taking the game's state from the parent node to this new node.
+     * @param state State at this new node.
+     * @param actionGenerator Assigns the potential actions to try to this new node.
+     */
     NodeQWOPExplorableBase(N parent, Action action, State state, IActionGenerator actionGenerator) {
         super(parent, action, state);
         this.actionGenerator = actionGenerator;
-        untriedActions = actionGenerator.getPotentialChildActionSet(this);
+        if (state.isFailed()) {
+            untriedActions = ActionList.getEmptyList();
+        } else {
+            untriedActions = actionGenerator.getPotentialChildActionSet(this);
+        }
     }
 
+    /**
+     * Add a child node containing the {@link State} achieved when executing the specified {@link Action}. New
+     * untried actions will be assigned to this new child based on the rules of the provided {@link IActionGenerator}.
+     *
+     * This is the "normal" child adder. The created child will have a reference to its parent (this), and this will
+     * have the new child in its list of children.
+     *
+     * @see NodeQWOPExplorableBase#addBackwardsLinkedChild(Action, State)
+     * @see NodeQWOPExplorableBase#addDoublyLinkedChild(Action, State, IActionGenerator)
+     *
+     * @param action Action which leads from this node to the child node.
+     * @param state State reached after taking the specified action from this node.
+     * @param actionGenerator Generator which provides a new set of untried actions to the child node.
+     * @return A newly-created child node which has references to its parent (this), and this has references to it as
+     * a child.
+     */
     public abstract N addDoublyLinkedChild(Action action, State state, IActionGenerator actionGenerator);
+
+    /**
+     * Add a child node containing the {@link State} achieved when executing the specified {@link Action}. New
+     * untried actions will be assigned to this new child based on the rules of the provided {@link IActionGenerator}.
+     *
+     * The newly created child will have a reference to its parent (this), but this node will not be aware of the
+     * child, nor will the child action be removed from untried child actions (if present). This is useful for
+     * creating transient nodes that we don't want to become part of the tree permanently.
+     *
+     * @see NodeQWOPExplorableBase#addDoublyLinkedChild(Action, State, IActionGenerator)
+     * @see NodeQWOPExplorableBase#addBackwardsLinkedChild(Action, State)
+     *
+     * @param action Action which leads from this node to the child node.
+     * @param state State reached after taking the specified action from this node.
+     * @param actionGenerator Generator which provides a new set of untried actions to the child node.
+     * @return A newly-created child node which has a reference to its parent (this), but is unknown to the parent.
+     */
     public abstract N addBackwardsLinkedChild(Action action, State state, IActionGenerator actionGenerator);
 
+    /**
+     * Get whether this node is marked as being fully-explored. This will occur if all potential descendents are also
+     * fully-explored or failed, or this node itself is failed.
+     * @return Whether this node is marked as fully-explored.
+     */
     public boolean isFullyExplored() {
         return fullyExplored.get();
     }
 
+    /**
+     * Label this node as fully-explored. This should only happen when all potential descendents are exhausted or
+     * failed. Best to not expose this method as the potential for bugs is too high.
+     * @param fullyExploredStatus Whether this node is marked as fully-explored.
+     */
     void setFullyExploredStatus(boolean fullyExploredStatus) {
+        // Double check that conditions are met before marking.
+        if (fullyExploredStatus) {
+            assert getUntriedActionCount() == 0 || getState().isFailed();
+            for (N child : getChildren()) {
+                assert child.isFullyExplored();
+            }
+        }
         fullyExplored.set(fullyExploredStatus);
     }
 
+    /**
+     * Get the number of untried child actions as assigned upon this node's creation by the {@link IActionGenerator}.
+     * @return The number of potential child nodes, as determined by the action generator.
+     */
     public int getUntriedActionCount() {
         if (untriedActions == null) {
             return 0;
@@ -72,25 +162,69 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
         }
     }
 
+    /**
+     * Get one of the assigned potential child actions. These are assigned by this node's {@link IActionGenerator}.
+     * One way to sequentially get all the untried actions would be to call <code>getUntriedActionByIndex(0)</code>.
+     *
+     * @see NodeQWOPExplorableBase#getUntriedActionRandom()
+     * @see NodeQWOPExplorableBase#getUntriedActionCount() ()
+     * @see NodeQWOPExplorableBase#getUntriedActionOnDistribution()
+     * @see NodeQWOPExplorableBase#getUntriedActionListCopy()
+     *
+     * @param idx Index of the untried action to fetch.
+     * @return An untried potential child action.
+     */
     public Action getUntriedActionByIndex(int idx) {
         return untriedActions.get(idx);
     }
 
+    /**
+     * Get a random untried potential action.
+     * @see NodeQWOPExplorableBase#getUntriedActionByIndex(int)
+     * @return An untried potential child action.
+     */
     public Action getUntriedActionRandom() {
         return untriedActions.getRandom();
     }
 
+    /**
+     * Get an untried potential action based on the rules of the {@link Distribution} within the {@link ActionList}.
+     * @see NodeQWOPExplorableBase#getUntriedActionByIndex(int)
+     * @return An untried potential child action.
+     */
     public Action getUntriedActionOnDistribution() {
         return untriedActions.sampleDistribution();
     }
 
+    /**
+     * Remove untried child actions and check for changes to the fully-explored status.
+     */
+    @SuppressWarnings("WeakerAccess")
     void clearUntriedActions() {
         untriedActions.clear();
+        // Only mark this node as fully-explored if all child actions are also full explored.
+        for (N child: getChildren()) {
+            if (!child.isFullyExplored())
+                return;
+        }
+        setFullyExploredStatus(true);
+        propagateFullyExploredStatusLite();
     }
 
+    /**
+     * Get all the remaining untried actions assigned to this node. The actions themselves are the originals, but the
+     * list is a copy.
+     * @return A copy of the list of untried actions.
+     */
     public List<Action> getUntriedActionListCopy() {
         return new ArrayList<>(untriedActions);
     }
+
+    /**
+     * Get the action selection distribution being used by the untried action list. This distribution is used when
+     * calling {@link NodeQWOPExplorableBase#getUntriedActionOnDistribution()}
+     * @return The distribution used for untried action selection.
+     */
     public Distribution<Action> getActionDistribution() {
         return untriedActions.samplingDist;
     }
@@ -103,13 +237,26 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
         // actions listed, then remove it. Otherwise untried actions remains unaffected.
 
     }
+
     /**
-     * Helper for node adding from file. Clears unchecked actions from non-leaf nodes.
-     * Only does it for things below minDepth. Forces new building to happen only at the boundaries of this.
+     * Helper for node adding from file. Clears unchecked actions from non-leaf nodes. Only does it for nodes which
+     * are at less than or equal to depth maxDepth. Forces new building to happen further towards the boundaries of
+     * the tree. Note that maxDepth is absolute tree depth, not relative to
+     *
+     * Will not remove potential child actions:
+     * 1. Which are at leaf nodes at any depth.
+     * 2. That are less than or equal to maxDepth but NOT a descendent of node.
+     * 3. Nodes which are at a total tree depth greater than maxDepth.
+     *
+     * @param node Starting node for stripping unchecked actions.
+     * @param maxDepth Maximum absolute tree depth that untried actions will be stripped from.
+     * @param <N> Type of node, inheriting from {@link NodeQWOPExplorableBase}, that this action is being applied to.
      */
-    public static <N extends NodeQWOPExplorableBase<?>> void stripUncheckedActionsExceptOnLeaves(N node, int minDepth) {
+    public static <N extends NodeQWOPExplorableBase<?>> void stripUncheckedActionsExceptOnLeaves(N node, int maxDepth) {
+        assert maxDepth >= 0;
+
         node.recurseDownTreeInclusive(n -> {
-            if (n.getUntriedActionCount() != 0 && n.getTreeDepth() <= minDepth)
+            if (n.getUntriedActionCount() != 0 && n.getTreeDepth() <= maxDepth && n.getChildCount() != 0)
                 n.clearUntriedActions();
         });
     }
@@ -122,7 +269,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * statuses already assigned. This should be true during normal operation, but when a bunch of saved nodes are
      * imported, it is useful to do a complete check}.
      */
-    void propagateFullyExploredStatus_lite() {
+    void propagateFullyExploredStatusLite() {
         boolean flag = true; // Assume this node is fully-explored and negate if we find evidence that it is not.
 
         if (!getState().isFailed()) {
@@ -135,10 +282,11 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
                 }
             }
         }
-        setFullyExploredStatus(flag);
-
-        if (getTreeDepth() > 0) { // We already know this node is fully explored, check the parent.
-            getParent().propagateFullyExploredStatus_lite();
+        if (flag) {
+            setFullyExploredStatus(true);
+            if (getTreeDepth() > 0) { // We already know this node is fully explored, check the parent.
+                getParent().propagateFullyExploredStatusLite();
+            }
         }
     }
 
@@ -146,13 +294,13 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * Change whether this node or any above it have become fully explored. This is the complete version, which
      * resets any existing fully-explored tags from the descendants of this node before redoing all checks. Call from
      * root to re-label the whole tree. During normal tree-building, a
-     * {@link NodeQWOPExplorable#propagateFullyExploredStatus_lite()
+     * {@link NodeQWOPExplorable#propagateFullyExploredStatusLite()
      * lite check} should suffice and is more computationally efficient.
      * <p>
      * This should only be used when a bunch of nodes are imported at once and need to all be checked, or if we need
      * to validate correct behavior of some feature.
      **/
-    private void propagateFullyExplored_complete() {
+    private void propagateFullyExploredComplete() {
         ArrayList<N> leaves = new ArrayList<>(5000);
         getLeaves(leaves);
 
@@ -167,7 +315,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
         }
 
         for (N leaf : leaves) {
-            leaf.propagateFullyExploredStatus_lite();
+            leaf.propagateFullyExploredStatusLite();
         }
     }
 
@@ -178,19 +326,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      */
     public void destroyNodesBelowAndCheckExplored() {
         destroyNodesBelow();
-        propagateFullyExploredStatus_lite();
-    }
-
-    /**
-     * Try to de-reference everything on this branch so garbage collection throws out all the state values and other
-     * info stored for this branch to keep memory in check.
-     */
-    public void destroyNodesBelow() {
-        for (N child : getChildren()) {
-            // todo pointsToDraw.remove(child);
-            child.destroyNodesBelow();
-        }
-        getChildren().clear();
+        propagateFullyExploredStatusLite();
     }
 
     /*
@@ -218,6 +354,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * that someone else got to it first.
      */
     public synchronized boolean reserveExpansionRights() {
+        assert !isFullyExplored();
 
         if (locked.get()) { // Already owned by another worker.
             return false;
@@ -247,6 +384,8 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * the tree towards the root node as necessary.
      */
     synchronized void propagateLock() {
+        if (getUntriedActionCount() > 0) // may 19 - New addition. I don't see why this isn't ok...
+            return;
         // Lock this node unless we find evidence that we don't need to.
         for (N child : getChildren()) {
             if (!child.isLocked() && !child.isFullyExplored()) {
