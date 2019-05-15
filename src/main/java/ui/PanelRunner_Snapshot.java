@@ -6,6 +6,8 @@ import filters.NodeFilter_Downsample;
 import game.GameUnified;
 import game.State;
 import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphics;
+import tree.NodeQWOPGraphicsBase;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -19,7 +21,6 @@ import java.util.List;
  *
  * @author Matt
  */
-@SuppressWarnings("FieldCanBeLocal")
 public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, MouseMotionListener {
     /**
      * The node that is the current focus of this panel.
@@ -121,16 +122,17 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             });
             filter.filter(descendants); // temp rm
 
-            // TODO
-//            Color runnerColor = Node.getColorFromTreeDepth(i * 10);
-//            child.setBranchColor(runnerColor); // Change the color on the tree too.
+            Color runnerColor = NodeQWOPGraphicsBase.getColorFromTreeDepth(i * 10, NodeQWOPGraphicsBase.lineBrightnessDefault);
+            if (child instanceof NodeQWOPGraphicsBase) {
+                ((NodeQWOPGraphicsBase) child).setBranchColor(runnerColor); // Change the color on the tree too.
+            }
+
 
             for (NodeQWOPExplorableBase<?> descendant : descendants) {
                 focusLeaves.add(descendant);
                 states.add(descendant.getState());
                 strokes.add(normalStroke);
-                // TODO
-                //colors.add(runnerColor);
+                colors.add(runnerColor);
             }
         }
     }

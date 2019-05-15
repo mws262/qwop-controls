@@ -32,6 +32,7 @@ public class StandaloneRunnerDrawer extends JFrame implements Runnable {
 
     @Override
     public void run() {
+        //noinspection InfiniteLoopStatement
         while(true) {
             repaint();
             try {

@@ -16,7 +16,6 @@ import game.State;
 import filters.INodeFilter;
 import transformations.ITransform;
 import transformations.Transform_Autoencoder;
-import tree.NodeQWOPExplorable;
 import tree.NodeQWOPExplorableBase;
 import tree.NodeQWOPGraphicsBase;
 

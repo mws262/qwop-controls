@@ -95,9 +95,9 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
         }
     }
 
-
     @Override
     public void run() {
+        //noinspection InfiniteLoopStatement
         while (true) {
             repaint();
             try {

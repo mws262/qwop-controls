@@ -49,7 +49,7 @@ public class ScreenCapture {
     }
 
     /**
-     * Take a frame from the specified {@link JPanel}. TODO: make sure that the dimensions generalize properly.
+     * Take a frame from the specified {@link JPanel}.
      *
      * @param container JPanel to take a snapshot from.
      * @throws IOException Unable to encode the captured image.
@@ -65,7 +65,7 @@ public class ScreenCapture {
     /**
      * Closes out the encoder, finalizing the video.
      *
-     * @throws IOException
+     * @throws IOException Video capture is not successfully finalized to file.
      */
     public void finalize() throws IOException {
         encoder.finish();
