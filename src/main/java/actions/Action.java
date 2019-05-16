@@ -271,8 +271,7 @@ public class Action implements Serializable {
      *                                  actions.
      */
     public static List<Action> consolidateActions(List<Action> inActions) {
-        List<Action> outActions = new ArrayList<>(); //TODO: keeps making lists even when recursing. May just want to
-        // modify in place.
+        List<Action> outActions = new ArrayList<>();
 
         // Single element input.
         if (inActions.size() == 1) {
