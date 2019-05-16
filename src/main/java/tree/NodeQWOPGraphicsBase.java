@@ -57,7 +57,6 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
     public NodeQWOPGraphicsBase(State rootState, IActionGenerator actionGenerator) {
         super(rootState, actionGenerator);
-        calcNodePos();
         setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
     }
 
