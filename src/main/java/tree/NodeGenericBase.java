@@ -100,7 +100,11 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
         if (treeDepth == 0)
             throw new IndexOutOfBoundsException("The root node has no parent, and thus this method call doesn't make " +
                     "sense.");
-        return parent.getChildren().indexOf(getThis());
+        int index = parent.getChildren().indexOf(getThis());
+        assert index >= 0 : "Asked for index according to parent, but this node is not marked as a child of its " +
+                "parent. This is bad if the node should be doubly linked. If this node is only backwards linked, it " +
+                "is ok, but you shouldn't be calling this in the first place.";
+        return index;
     }
 
     /**

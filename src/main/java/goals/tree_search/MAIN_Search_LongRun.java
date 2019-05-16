@@ -1,5 +1,6 @@
 package goals.tree_search;
 
+import actions.IActionGenerator;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import samplers.Sampler_UCB;
@@ -55,7 +56,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
 
         ///////////////////////////////////////////////////////////
 
-        assignAllowableActions(-1);
+        IActionGenerator actionGenerator = assignAllowableActions(-1);
 
         // This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
         // Check if we actually need to do stage 1.
@@ -63,7 +64,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
         if (doStage1) {
             int count = 0;
             while (count < runsToGenerate) {
-                NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+                NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
                 NodeQWOPGraphics.pointsToDraw.clear();
                 ui.clearRootNodes();
                 ui.addRootNode(rootNode);
