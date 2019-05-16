@@ -10,8 +10,6 @@ import value.updaters.IValueUpdater;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Most basic QWOP node. Just does states and actions.

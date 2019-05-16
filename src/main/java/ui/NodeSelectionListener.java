@@ -10,7 +10,6 @@ import java.util.EventListener;
  * @author matt
  */
 public interface NodeSelectionListener extends EventListener {
-
     /**
      * Callback for a node which has been selected (usually by a click on the tree).
      * @param node Selected node.

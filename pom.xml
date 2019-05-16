@@ -120,14 +120,14 @@ To update the classpath settings for Eclipse:
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>3.1.10</version>
-                <dependencies>
-                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
-                    <dependency>
-                        <groupId>com.github.spotbugs</groupId>
-                        <artifactId>spotbugs</artifactId>
-                        <version>3.1.11</version>
-                    </dependency>
-                </dependencies>
+                <!--<dependencies>-->
+                    <!--&lt;!&ndash; overwrite dependency on spotbugs if you want to specify the version of spotbugs &ndash;&gt;-->
+                    <!--<dependency>-->
+                        <!--<groupId>com.github.spotbugs</groupId>-->
+                        <!--<artifactId>spotbugs</artifactId>-->
+                        <!--<version>3.1.11</version>-->
+                    <!--</dependency>-->
+                <!--</dependencies>-->
             </plugin>
         </plugins>
     </build>
