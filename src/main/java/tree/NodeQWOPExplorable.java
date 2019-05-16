@@ -14,8 +14,9 @@ public class NodeQWOPExplorable extends NodeQWOPExplorableBase<NodeQWOPExplorabl
         super(rootState, actionGenerator);
     }
 
-    private NodeQWOPExplorable(NodeQWOPExplorable parent, Action action, State state, IActionGenerator actionGenerator) {
-        super(parent, action, state, actionGenerator);
+    private NodeQWOPExplorable(NodeQWOPExplorable parent, Action action, State state,
+                               IActionGenerator actionGenerator, boolean doublyLinked) {
+        super(parent, action, state, actionGenerator, doublyLinked);
     }
 
     @Override
@@ -35,20 +36,11 @@ public class NodeQWOPExplorable extends NodeQWOPExplorableBase<NodeQWOPExplorabl
 
     @Override
     public NodeQWOPExplorable addDoublyLinkedChild(Action action, State state, IActionGenerator actionGenerator) {
-        NodeQWOPExplorable child = new NodeQWOPExplorable(this, action, state, actionGenerator);
-        addToChildList(child);
-        if (child.getState().isFailed()) {
-            child.propagateFullyExploredStatusLite();
-        }
-        return child;
+        return new NodeQWOPExplorable(this, action, state, actionGenerator, true);
     }
 
     @Override
     public NodeQWOPExplorable addBackwardsLinkedChild(Action action, State state, IActionGenerator actionGenerator) {
-        NodeQWOPExplorable child = new NodeQWOPExplorable(this, action, state, actionGenerator);
-        if (child.getState().isFailed()) {
-            child.setFullyExploredStatus(true); // Set fully explored, but do not let it affect any ancestors.
-        }
-        return child;
+        return new NodeQWOPExplorable(this, action, state, actionGenerator, false);
     }
 }

@@ -442,17 +442,20 @@ public abstract class MAIN_Search_Template {
 
         /*  Repeated action exceptions 2 -- W-O pressed */
         Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionList actionListE2 = ActionList.makeActionSet(IntStream.range(20, 50).toArray(), new boolean[]{false, true, true,
+        ActionList actionListE2 = ActionList.makeActionSet(IntStream.range(30, 50).toArray(), new boolean[]{false,
+                true, true,
                 false}, distE2);
 
         /*  Repeated action exceptions 3 -- no keys pressed. */
-        Distribution<Action> distE3 = new Distribution_Normal(24f, 2f);
-        ActionList actionListE3 = ActionList.makeActionSet(IntStream.range(10, 45).toArray(), new boolean[]{false, false, false,
+        Distribution<Action> distE3 = new Distribution_Normal(5, 2f);
+        ActionList actionListE3 = ActionList.makeActionSet(IntStream.range(1, 20).toArray(), new boolean[]{false,
+                false, false,
                 false}, distE3);
 
         /*  Repeated action exceptions 4 -- Q-P pressed */
-        Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
-        ActionList actionListE4 = ActionList.makeActionSet(IntStream.range(25, 65).toArray(), new boolean[]{true, false, false,
+        Distribution<Action> distE4 = new Distribution_Normal(25f, 2f);
+        ActionList actionListE4 = ActionList.makeActionSet(IntStream.range(15, 30).toArray(), new boolean[]{true,
+                false, false,
                 true}, distE4);
 
         /////// Action Exceptions for recovery. ////////

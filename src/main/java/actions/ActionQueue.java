@@ -203,6 +203,8 @@ public class ActionQueue {
      * @return Index of the current action.
      */
     public int getCurrentActionIdx() {
+        if (isEmpty())
+            throw new IndexOutOfBoundsException("Cannot ask for the current action index for an empty action queue.");
         int currIdx = actionListFull.size() - actionQueue.size() - 1;
         assert currIdx >= 0;
         return currIdx;

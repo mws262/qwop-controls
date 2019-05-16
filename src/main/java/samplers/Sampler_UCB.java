@@ -156,7 +156,7 @@ public class Sampler_UCB implements ISampler {
         // Otherwise, we go through the existing tree picking the "best."
         for (NodeQWOPExplorableBase<?> child : startNode.getChildren()) {
 
-            if (!child.isFullyExplored() && !child.isLocked()) {
+            if (!child.isFullyExplored() && !child.isLocked() && child.getUpdateCount() > 0) {
                 float val = (child.getValue() + c * (float) Math.sqrt(2. * Math.log((double) startNode.getUpdateCount()) / (double) child.getUpdateCount()));
                 assert !Float.isNaN(val);
                 if (val > bestScoreSoFar) {
