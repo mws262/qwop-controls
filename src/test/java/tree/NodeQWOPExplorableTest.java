@@ -76,7 +76,6 @@ public class NodeQWOPExplorableTest {
     private State failedState = mock(State.class);
 
     private IGame game = mock(IGame.class);
-    private IActionGenerator generator;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
@@ -94,7 +93,7 @@ public class NodeQWOPExplorableTest {
         ActionList list2 = ActionList.makeActionSet(new int[]{4,5,6}, new boolean[]{false, true, false, false},
                 new Distribution_Equal());
 
-        generator = new ActionGenerator_FixedSequence(new ActionList[]{list1, list2});
+        IActionGenerator generator = new ActionGenerator_FixedSequence(new ActionList[]{list1, list2});
         a1 = list1.get(0);
         a2 = list1.get(1);
         a3 = list1.get(2);
