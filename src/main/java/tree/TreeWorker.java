@@ -277,8 +277,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
                 case TREE_POLICY_EXECUTING:
 
                     executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
-                    //if (isGameFailed()) throw new RuntimeException("Game encountered a failure while executing the
-                    // tree policy. The tree policy should be safe, since it's ground that's been covered before.");
+                    assert !isGameFailed() : "Game encountered a failure while executing the tree policy. The tree " +
+                            "policy should be safe, since it's ground that's been covered before.";
 
                     // When all actions in queue are done, figure out what to do next.
                     if (actionQueue.isEmpty()) {

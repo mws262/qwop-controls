@@ -14,8 +14,9 @@ public class NodeQWOPGraphics extends NodeQWOPGraphicsBase<NodeQWOPGraphics> {
         super(rootState);
     }
 
-    public NodeQWOPGraphics(NodeQWOPGraphics parent, Action action, State state, IActionGenerator actionGenerator) {
-        super(parent, action, state, actionGenerator);
+    private NodeQWOPGraphics(NodeQWOPGraphics parent, Action action, State state, IActionGenerator actionGenerator,
+                             boolean doublyLinked) {
+        super(parent, action, state, actionGenerator, doublyLinked);
     }
 
     @Override
@@ -25,25 +26,21 @@ public class NodeQWOPGraphics extends NodeQWOPGraphicsBase<NodeQWOPGraphics> {
 
     @Override
     public NodeQWOPGraphics addDoublyLinkedChild(Action action, State state) {
-        NodeQWOPGraphics child = new NodeQWOPGraphics(this, action, state, actionGenerator);
-        addToChildList(child);
-        return child;
+        return addDoublyLinkedChild(action, state, actionGenerator);
     }
 
     @Override
     public NodeQWOPGraphics addBackwardsLinkedChild(Action action, State state) {
-        return new NodeQWOPGraphics(this, action, state, actionGenerator);
+        return addBackwardsLinkedChild(action, state, actionGenerator);
     }
 
     @Override
     public NodeQWOPGraphics addDoublyLinkedChild(Action action, State state, IActionGenerator actionGenerator) {
-        NodeQWOPGraphics child = new NodeQWOPGraphics(this, action, state, actionGenerator);
-        addToChildList(child);
-        return child;
+        return new NodeQWOPGraphics(this, action, state, actionGenerator, true);
     }
 
     @Override
     public NodeQWOPGraphics addBackwardsLinkedChild(Action action, State state, IActionGenerator actionGenerator) {
-        return new NodeQWOPGraphics(this, action, state, actionGenerator);
+        return new NodeQWOPGraphics(this, action, state, actionGenerator, false);
     }
 }

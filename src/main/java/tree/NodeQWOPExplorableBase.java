@@ -79,11 +79,19 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * @param state State at this new node.
      * @param actionGenerator Assigns the potential actions to try to this new node.
      */
-    NodeQWOPExplorableBase(N parent, Action action, State state, IActionGenerator actionGenerator) {
+    NodeQWOPExplorableBase(N parent, Action action, State state, IActionGenerator actionGenerator,
+                           boolean doublyLinked) {
         super(parent, action, state);
         this.actionGenerator = actionGenerator;
+        if (doublyLinked)
+            parent.addToChildList(getThis());
         if (state.isFailed()) {
             untriedActions = ActionList.getEmptyList();
+            if (doublyLinked) {
+                propagateFullyExploredStatusLite();
+            } else {
+                setFullyExploredStatus(true);
+            }
         } else {
             untriedActions = actionGenerator.getPotentialChildActionSet(this);
         }

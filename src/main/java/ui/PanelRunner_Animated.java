@@ -112,7 +112,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
         if (game != null) {
             game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
             keyDrawer(g, Q, W, O, P);
-            drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
+            if (!actionQueue.isEmpty())
+                drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
         }
     }
 

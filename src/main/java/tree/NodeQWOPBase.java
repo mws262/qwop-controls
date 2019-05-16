@@ -143,7 +143,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
 
     // Value and value updating
 
-    private float value;
+    private float value = 0f;
     private int updateCount;
 
     public synchronized void updateValue(float valueUpdate, IValueUpdater updater) {
