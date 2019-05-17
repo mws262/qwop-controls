@@ -1,24 +1,7 @@
 package ui;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Paint;
-import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-
 import org.apache.commons.lang.ArrayUtils;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
+import org.jfree.chart.*;
 import org.jfree.chart.annotations.XYTextAnnotation;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
@@ -28,10 +11,16 @@ import org.jfree.data.Range;
 import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
-
-import tree.NodeQWOPExplorableBase;
 import tree.NodeQWOPGraphicsBase;
 import ui.IUserInterface.TabbedPaneActivator;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, ChartMouseListener {
 
@@ -99,11 +88,6 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     protected void applyUpdates() {
         Arrays.stream(plotPanels).forEach(panel -> panel.getChart().fireChartChanged());
     }
-
-    /**
-     * Check if the bounds need expanding, tell JFreeChart to update, and set the bounds correctly
-     */
-    public abstract void update(NodeQWOPExplorableBase<?> plotNode);
 
     /**
      * Tells what plot is clicked by the user.

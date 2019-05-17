@@ -1,6 +1,15 @@
 package ui;
 
-import java.awt.Color;
+import filters.INodeFilter;
+import filters.NodeFilter_Downsample;
+import game.State;
+import org.jfree.chart.plot.XYPlot;
+import transformations.ITransform;
+import transformations.Transform_Autoencoder;
+import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
+
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -8,16 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
-import org.jfree.chart.plot.XYPlot;
-
-import filters.NodeFilter_Downsample;
-import game.State;
-import filters.INodeFilter;
-import transformations.ITransform;
-import transformations.Transform_Autoencoder;
-import tree.NodeQWOPExplorableBase;
-import tree.NodeQWOPGraphicsBase;
 
 public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 
@@ -68,9 +67,9 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void update(NodeQWOPExplorableBase<?> plotNode) {
+    public void update(NodeQWOPGraphicsBase<?> plotNode) {
         nodes.clear();
-        plotNode.recurseDownTreeInclusive(nodes::add);
+        plotNode.recurseDownTreeExclusive(nodes::add);
 
         // Apply any added filters (may be none).
         for (INodeFilter filter : nodeFilters) {

@@ -62,7 +62,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public synchronized void update(NodeQWOPExplorableBase<?> plotNode) {
+    public synchronized void update(NodeQWOPGraphicsBase<?> plotNode) {
         // Do transform update if necessary:
         nodesToTransform.clear();
         plotNode.getRoot().recurseDownTreeInclusive(nodesToTransform::add);

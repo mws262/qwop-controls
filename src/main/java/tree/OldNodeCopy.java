@@ -628,10 +628,10 @@
 //    /**
 //     * Set an override line color for this branch (all descendants).
 //     */
-//    public void setBranchColor(Color newColor) {
+//    public void setOverrideBranchColor(Color newColor) {
 //        overrideLineColor = newColor;
 //        for (OldNodeCopy child : children) {
-//            child.setBranchColor(newColor);
+//            child.setOverrideBranchColor(newColor);
 //        }
 //    }
 //
@@ -648,20 +648,20 @@
 //    /**
 //     * Clear an overridden line color on this branch. Call from root to get all line colors back to default.
 //     */
-//    public void clearBranchColor() {
+//    public void clearBranchLineOverrideColor() {
 //        overrideLineColor = null;
 //        for (OldNodeCopy child : children) {
-//            child.clearBranchColor();
+//            child.clearBranchLineOverrideColor();
 //        }
 //    }
 //
 //    /**
 //     * Clear an overridden line color on this branch. Goes back towards root.
 //     */
-//    public void clearBackwardsBranchColor() {
+//    public void clearBackwardsBranchLineOverrideColor() {
 //        overrideLineColor = null;
 //        if (getTreeDepth() > 0) {
-//            parent.clearBackwardsBranchColor();
+//            parent.clearBackwardsBranchLineOverrideColor();
 //        }
 //    }
 //

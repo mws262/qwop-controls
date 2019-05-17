@@ -1,21 +1,14 @@
 package ui;
 
-import java.awt.*;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GL2ES1;
-import com.jogamp.opengl.GL2GL3;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
+
+import java.awt.*;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
 /**
  * This attempts to hold all the things I normally do when making a new panel that uses GL.
@@ -31,7 +24,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
      **/
     private GLU glu;
     GL2 gl;
-    private GLUT glut = new GLUT();
+    GLUT glut = new GLUT();
 
     /**
      * Dark theme background. From the Solarized palette.

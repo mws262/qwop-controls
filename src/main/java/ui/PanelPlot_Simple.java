@@ -1,13 +1,13 @@
 package ui;
 
 import org.jfree.chart.plot.XYPlot;
-import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
 
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Simple plotter for adding one or more xy data series and plotting them on a single axis. Only does scatterplots;
@@ -101,7 +101,7 @@ public class PanelPlot_Simple extends PanelPlot {
     }
 
     @Override
-    public void update(NodeQWOPExplorableBase<?> plotNode) {}
+    public void update(NodeQWOPGraphicsBase<?> plotNode) {}
 
     @Override
     public void plotClicked(int plotIdx) {}

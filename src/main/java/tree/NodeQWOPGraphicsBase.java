@@ -3,7 +3,9 @@ package tree;
 import actions.Action;
 import actions.IActionGenerator;
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.util.gl2.GLUT;
 import game.State;
+import value.updaters.IValueUpdater;
 
 import java.awt.*;
 import java.util.Set;
@@ -24,6 +26,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      */
     public boolean displayPoint = false;
     public boolean displayLine = true;
+    public boolean displayLabel = false;
 
     /**
      * Node location information.
@@ -46,6 +49,9 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     private float[] overridePointColorFloats;
     private float[] overrideLineColorFloats;
 
+    private String nodeLabel;
+    private float[] nodeLabelColor = Color.CYAN.getColorComponents(null);
+
     public static final float lineBrightnessDefault = 0.85f;
     float lineBrightness = lineBrightnessDefault;
 
@@ -53,7 +59,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z
      * offset.
      */
-    float nodeLocationZOffset = 0.f;
+    float nodeLocationZOffset = 0.4f;
 
     public NodeQWOPGraphicsBase(State rootState, IActionGenerator actionGenerator) {
         super(rootState, actionGenerator);
@@ -80,7 +86,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Draw the line connecting this node to its parent.
      */
     public void drawLine(GL2 gl) {
-        if ((getTreeDepth() > 0) && displayLine) { // No lines for root.
+        if (nodeLocation != null && ((getTreeDepth() > 0) && displayLine)) { // No lines for root.
             assert lineColorFloats != null;
             gl.glColor3fv((overrideLineColorFloats == null) ? lineColorFloats : overrideLineColorFloats, 0);
             gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1], getParent().nodeLocation[2] + nodeLocationZOffset);
@@ -92,10 +98,22 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Draw the node point if enabled
      */
     public void drawPoint(GL2 gl) {
-        if (displayPoint || isLocked()) {
-            assert pointColorFloats != null;
+        if (nodeLocation != null && (displayPoint || isLocked())) {
             gl.glColor3fv((overridePointColorFloats == null) ? pointColorFloats : overridePointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
+        }
+    }
+
+    /**
+     * Draw a text string using GLUT. This string will go to a position in world coordinates, not screen coordinates.
+     */
+    public void drawLabel(GL2 gl, GLUT glut) {
+        if (nodeLabel != null && displayLabel && !nodeLabel.isEmpty()) { // I think that the node label can be null even
+            // if it is assigned as a object field on construction. Constructors chain in such a way that a child
+            // could be added to its parent before node construction is complete.
+            gl.glColor3fv(nodeLabelColor, 0);
+            gl.glRasterPos3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset + 0.1f);
+            glut.glutBitmapString(GLUT.BITMAP_HELVETICA_12, nodeLabel);
         }
     }
 
@@ -118,7 +136,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * @param gl OpenGL drawing object.
      */
     @SuppressWarnings("unused")
-    public void drawNodesBelow(GL2 gl) {
+    public void drawPointsBelow(GL2 gl) {
         recurseDownTreeInclusive(n -> {
             if (!n.notDrawnForSpeed) drawPoint(gl);
         });
@@ -228,6 +246,14 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         }
     }
 
+    public void reenableIfNotDrawnForSpeed() {
+        if (notDrawnForSpeed) {
+            setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
+            notDrawnForSpeed = false;
+            pointsToDraw.add(this);
+        }
+    }
+
     /**
      * Turn off all display for this node onward.
      */
@@ -294,28 +320,35 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Set an override line color for this branch (all descendants).
      */
-    public void setBranchColor(Color newColor) {
-        recurseDownTreeExclusive(n -> n.setLineColor(newColor));
+    public void setOverrideBranchColor(Color newColor) {
+        recurseDownTreeExclusive(n -> n.setOverrideLineColor(newColor));
     }
 
     /**
      * Set an override line color for this path (all ancestors).
      */
-    public void setBackwardsBranchColor(Color newColor) {
-        recurseUpTreeInclusive(n -> n.setLineColor(newColor));
+    public void setBackwardsBranchOverrideColor(Color newColor) {
+        recurseUpTreeInclusive(n -> n.setOverrideLineColor(newColor));
     }
 
     /**
      * Clear an overridden line color on this branch. Call from root to get all line colors back to default.
      */
-    public void clearBranchColor() {
-        setBranchColor(null);
+    public void clearBranchLineOverrideColor() {
+        setOverrideBranchColor(null);
     }
 
     /**
      * Clear an overridden line color on this branch. Goes back towards root.
      */
-    public void clearBackwardsBranchColor() {
-        setBackwardsBranchColor(null);
+    public void clearBackwardsBranchLineOverrideColor() {
+        setBackwardsBranchOverrideColor(null);
+    }
+
+    @Override
+    public synchronized void updateValue(float valueUpdate, IValueUpdater updater) {
+        super.updateValue(valueUpdate, updater);
+        displayLabel = true;
+        nodeLabel = String.format("%.2f", getValue());
     }
 }

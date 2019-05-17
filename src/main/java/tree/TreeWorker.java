@@ -1,14 +1,5 @@
 package tree;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.LongAdder;
-
 import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
@@ -19,6 +10,13 @@ import samplers.Sampler_Random;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
 import ui.PanelRunner;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Addresses limitations of the old concurrent state machine approach.
@@ -305,7 +303,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         lastNodeAdded = currentGameNode;
 
                         // TODO
-                        //  if (debugDraw) lastNodeAdded.setBranchColor(getColorFromWorkerID(workerID));
+                        //  if (debugDraw) lastNodeAdded.setOverrideBranchColor(getColorFromWorkerID(workerID));
                         sampler.expansionPolicyActionDone(currentGameNode);
                     } else {
                         targetActionToTest = sampler.expansionPolicy(currentGameNode);
@@ -323,6 +321,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (actionQueue.isEmpty() || game.getFailureStatus()) {
                         // TODO possibly update the action to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
+                        assert currentGameNode.isLocked();
                         currentGameNode = currentGameNode.addDoublyLinkedChild(targetActionToTest,
                                 game.getCurrentState());
 
@@ -347,11 +346,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     workerGamesPlayed.increment();
                     incrementTotalGameCount();
 
-                    expansionNode.releaseExpansionRights();
+                    currentGameNode.releaseExpansionRights();
 
                     // TODO
 //                    if (debugDraw) {
-//                        expansionNode.clearBackwardsBranchColor();
+//                        expansionNode.clearBackwardsBranchLineOverrideColor();
 //                        expansionNode.clearBackwardsBranchZOffset();
 //                    }
 
@@ -561,9 +560,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
     public void deactivateTab() {
         active = false;
     } // Not really applicable.
-
-    @Override
-    public void update(NodeQWOPExplorableBase<?> node) {}
 }
 
 

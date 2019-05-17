@@ -32,7 +32,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * If one TreeWorker is expanding from this leaf node (if it is one), then no other worker should try to
      * simultaneously expand from here too.
      */
-    private final AtomicBoolean locked = new AtomicBoolean(false);
+    private final AtomicBoolean locked = new AtomicBoolean(true);
 
     final IActionGenerator actionGenerator;
 
@@ -51,6 +51,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
         } else {
             untriedActions = actionGenerator.getPotentialChildActionSet(this);
         }
+        locked.set(false);
     }
 
     /**
@@ -63,6 +64,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
     public NodeQWOPExplorableBase(State rootState) {
         super(rootState);
         this.actionGenerator = new ActionGenerator_Null();
+        locked.set(false);
     }
 
     /**
@@ -363,6 +365,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      */
     public synchronized boolean reserveExpansionRights() {
         assert !isFullyExplored();
+        assert !getState().isFailed();
 
         if (locked.get()) { // Already owned by another worker.
             return false;

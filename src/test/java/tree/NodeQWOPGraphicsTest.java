@@ -254,14 +254,14 @@ public class NodeQWOPGraphicsTest {
         // Unfortunately, Mockito can't mock GL2. It's too big. We're stuck doing this, which just tests to make sure
         // errors don't occur.
 
-//        rootNode.drawNodesBelow(gl);
-//        node1.drawNodesBelow(gl);
-//        node1_2_1_2_2_3.drawNodesBelow(gl);
+//        rootNode.drawPointsBelow(gl);
+//        node1.drawPointsBelow(gl);
+//        node1_2_1_2_2_3.drawPointsBelow(gl);
 //
 //        rootNode.recurseDownTreeInclusive(n -> n.displayPoint = false);
-//        rootNode.drawNodesBelow(gl);
-//        node1.drawNodesBelow(gl);
-//        node1_2_1_2_2_3.drawNodesBelow(gl);
+//        rootNode.drawPointsBelow(gl);
+//        node1.drawPointsBelow(gl);
+//        node1_2_1_2_2_3.drawPointsBelow(gl);
     }
 
     @Test

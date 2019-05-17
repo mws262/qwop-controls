@@ -3,7 +3,6 @@ package ui;
 import game.GameUnified;
 import game.IGame;
 import game.State;
-import tree.NodeQWOPExplorableBase;
 
 import java.awt.*;
 import java.util.Queue;
@@ -99,9 +98,6 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     public void deactivateTab() {
         active = false;
     }
-
-    @Override
-    public void update(NodeQWOPExplorableBase<?> node) {}
 
     /**
      * Check if the current run is finished.
