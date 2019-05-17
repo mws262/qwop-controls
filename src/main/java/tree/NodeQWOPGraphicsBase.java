@@ -86,8 +86,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Draw the line connecting this node to its parent.
      */
     public void drawLine(GL2 gl) {
-        if (nodeLocation != null && ((getTreeDepth() > 0) && displayLine)) { // No lines for root.
-            assert lineColorFloats != null;
+        if (nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine)) { // No lines for
+            // root.
             gl.glColor3fv((overrideLineColorFloats == null) ? lineColorFloats : overrideLineColorFloats, 0);
             gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1], getParent().nodeLocation[2] + nodeLocationZOffset);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
@@ -197,8 +197,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
             int childNo = getIndexAccordingToParent();
 
-            sweepAngle = (float) Math.max((getParent().sweepAngle / possibleParentBranchSlots)
-                    * (1 + getTreeDepth() * 0.05f), 0.005);
+            sweepAngle = (float) Math.max((getParent().sweepAngle / (possibleParentBranchSlots))
+                    * (1 + (getTreeDepth() - 1) * 0.05f), 0.005);
 
             // This is to straighten out branches that are curving off to one side due to asymmetric expansion.
             // Acts like a controller to bring the angle towards the angle of the first node in this branch after
@@ -217,6 +217,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             } else {
                 nodeAngle = getParent().nodeAngle - sweepAngle * (childNo + 1) / 2 + angleAdj;
             }
+//            nodeAngle = getParent().nodeAngle + sweepAngle * (childNo - possibleParentBranchSlots/2f) + angleAdj;
+
         } else {
             sweepAngle = getParent().sweepAngle; //Only reduce the sweep angle if the parent one had more than one child.
             nodeAngle = getParent().nodeAngle;
