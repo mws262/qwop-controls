@@ -35,7 +35,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      * labels in world space.
      */
     private final TextRenderer textRenderSmall = new TextRenderer(new Font("Calibri", Font.PLAIN, 18));
-    //private GLUT glut = new GLUT();
 
     /**
      * Tree root nodes associated with this interface.
@@ -179,6 +178,15 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     @Override
     public void display(GLAutoDrawable drawable) {
+        if (treePause) {
+            textRenderBig.beginRendering(panelWidth, panelHeight);
+            textRenderBig.setColor(0.7f, 0.7f, 0.7f, 1.0f);
+            textRenderBig.setColor(0.7f, 0.1f, 0.1f, 1.0f);
+            textRenderBig.draw("DRAWING PAUSED", panelWidth / 2 - 150, panelHeight - 50);
+            textRenderBig.endRendering();
+            return;
+        }
+
         super.display(drawable);
 
         final float ptSize = Math.min(50f / cam.getZoomFactor(), 10f); //Let the points be smaller/bigger depending on
@@ -186,45 +194,23 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
         for (NodeQWOPGraphicsBase<?> node : rootNodes) {
             node.recurseDownTreeInclusive( n -> {
-                        if (!n.notDrawnForSpeed) {
-                            // TODO put labels back in.
+                if (!n.notDrawnForSpeed) {
+                    n.drawLabel(gl, glut);
 
-//                    && !n.nodeLabel.isEmpty()) {
-//                    //n.setChildrenColorFromRelativeValues();
-//                    drawString(!n.nodeLabelAlt.isEmpty() ? n.nodeLabel + ", " + n.nodeLabelAlt : n.nodeLabel,
-//                    n.nodeLocation[0],
-//                    n.nodeLocation[1],
-//                    n.nodeLocation[2],
-//                            Node.getColorFromScaledValue(n.getValue()/n.visitCount.floatValue() - Node.minVal,
-//                                    Node.maxVal - Node.minVal, 1f)); }});
+                    gl.glColor3f(1f, 0.1f, 0.1f);
+                    gl.glPointSize(ptSize);
 
-                            n.drawLabel(gl, glut);
+                    gl.glBegin(GL.GL_POINTS);
+                    n.drawPoint(gl); // Recurses through the whole tree.
+                    gl.glEnd();
 
-                            gl.glColor3f(1f, 0.1f, 0.1f);
-                            gl.glPointSize(ptSize);
-
-                            gl.glBegin(GL.GL_POINTS);
-                            n.drawPoint(gl); // Recurses through the whole tree.
-                            gl.glEnd();
-
-                            gl.glColor3f(1f, 1f, 1f);
-                            gl.glBegin(GL.GL_LINES);
-                            n.drawLine(gl); // Recurses through the whole tree.
-                            gl.glEnd();
-                        }
-                    });
+                    gl.glColor3f(1f, 1f, 1f);
+                    gl.glBegin(GL.GL_LINES);
+                    n.drawLine(gl); // Recurses through the whole tree.
+                    gl.glEnd();
+                }
+            });
         }
-
-        // Draw games played and games/sec in upper left.
-        textRenderBig.beginRendering(panelWidth, panelHeight);
-        textRenderBig.setColor(0.7f, 0.7f, 0.7f, 1.0f);
-        //tmp remove textRenderBig.draw(negotiator.getGamesPlayed() + " games", 20, panelHeight - 50);
-
-        if (treePause) { // TODO Fix pausing.
-            textRenderBig.setColor(0.7f, 0.1f, 0.1f, 1.0f);
-            textRenderBig.draw("DRAWING PAUSED", panelWidth / 2, panelHeight - 50);
-        }
-        textRenderBig.endRendering();
 
         /*
          * Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers
@@ -275,25 +261,28 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        cam.smoothZoom(1f + (float) e.getPreciseWheelRotation(), 3);
+        if (!treePause)
+            cam.smoothZoom(1f + (float) e.getPreciseWheelRotation(), 3);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        Vector3f relCamMove = cam.windowFrameToWorldFrameDiff(e.getX(), e.getY(), mouseX, mouseY);
-        cam.smoothTranslateRelative(relCamMove, relCamMove, 5);
-        mouseX = e.getX();
-        mouseY = e.getY();
+        if (!treePause) {
+            Vector3f relCamMove = cam.windowFrameToWorldFrameDiff(e.getX(), e.getY(), mouseX, mouseY);
+            cam.smoothTranslateRelative(relCamMove, relCamMove, 5);
+            mouseX = e.getX();
+            mouseY = e.getY();
+        }
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (e.isControlDown()) {
+        if (!treePause && e.isControlDown()) {
 
             // Get all nodes below all roots.
             List<NodeQWOPGraphicsBase<?>> nodesBelow = new ArrayList<>();
             for (NodeQWOPGraphicsBase<?> node : rootNodes) {
-                 node.recurseDownTreeInclusive(nodesBelow::add);
+                node.recurseDownTreeInclusive(nodesBelow::add);
             }
             selectNode(cam.nodeFromClick_set(e.getX(), e.getY(), nodesBelow));
         }
@@ -306,8 +295,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-    }
+    public void keyTyped(KeyEvent e) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -315,58 +303,59 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             //Navigating the focused node tree
             int keyCode = e.getKeyCode();
 
-            if (e.isAltDown()) {
-                switch (keyCode) {
-                    case KeyEvent.VK_UP:
-                        cam.smoothRotateLong(0.1f, 5);
-                        break;
-                    case KeyEvent.VK_DOWN:
-                        cam.smoothRotateLong(-0.1f, 5);
-                        break;
-                    case KeyEvent.VK_LEFT:
-                        cam.smoothRotateLat(0.1f, 5);
-                        break;
-                    case KeyEvent.VK_RIGHT:
-                        cam.smoothRotateLat(-0.1f, 5);
-                        break;
-                    default:
-                        // Nothing.
-                        break;
-                }
-            } else if (e.isShiftDown()) {
-                switch (keyCode) {
-                    case KeyEvent.VK_LEFT:
-                        cam.smoothTwist(0.1f, 5);
-                        break;
-                    case KeyEvent.VK_RIGHT:
-                        cam.smoothTwist(-0.1f, 5);
-                        break;
-                    case KeyEvent.VK_ESCAPE:
-                        System.exit(0);
-                        break;
-                    default:
-                        // Nothing.
-                        break;
-                }
-            } else {
-                switch (keyCode) {
-                    case KeyEvent.VK_UP: //Go out the branches of the tree
-                        arrowSwitchNode(0, 1);
-                        break;
-                    case KeyEvent.VK_DOWN: //Go back towards root one level
-                        arrowSwitchNode(0, -1);
-                        break;
-                    case KeyEvent.VK_LEFT: //Go left along an isobranch (like that word?)
-                        arrowSwitchNode(1, 0);
-                        break;
-                    case KeyEvent.VK_RIGHT: //Go right along an isobranch
-                        arrowSwitchNode(-1, 0);
-                        break;
-                    case KeyEvent.VK_P: //Pause everything except for graphics updates
-                        treePause = !treePause;
-                        break;
-                    default:
-                        break;
+            if (keyCode == KeyEvent.VK_P) // Pause graphics updates.
+                treePause = !treePause;
+
+            if (!treePause) {
+                if (e.isAltDown()) {
+                    switch (keyCode) {
+                        case KeyEvent.VK_UP:
+                            cam.smoothRotateLong(0.1f, 5);
+                            break;
+                        case KeyEvent.VK_DOWN:
+                            cam.smoothRotateLong(-0.1f, 5);
+                            break;
+                        case KeyEvent.VK_LEFT:
+                            cam.smoothRotateLat(0.1f, 5);
+                            break;
+                        case KeyEvent.VK_RIGHT:
+                            cam.smoothRotateLat(-0.1f, 5);
+                            break;
+                        default:
+                            // Nothing.
+                            break;
+                    }
+                } else if (e.isShiftDown()) {
+                    switch (keyCode) {
+                        case KeyEvent.VK_LEFT:
+                            cam.smoothTwist(0.1f, 5);
+                            break;
+                        case KeyEvent.VK_RIGHT:
+                            cam.smoothTwist(-0.1f, 5);
+                            break;
+                        case KeyEvent.VK_ESCAPE:
+                            System.exit(0);
+                            break;
+                        default:
+                            break;
+                    }
+                } else {
+                    switch (keyCode) {
+                        case KeyEvent.VK_UP: //Go out the branches of the tree
+                            arrowSwitchNode(0, 1);
+                            break;
+                        case KeyEvent.VK_DOWN: //Go back towards root one level
+                            arrowSwitchNode(0, -1);
+                            break;
+                        case KeyEvent.VK_LEFT: //Go left along an isobranch (like that word?)
+                            arrowSwitchNode(1, 0);
+                            break;
+                        case KeyEvent.VK_RIGHT: //Go right along an isobranch
+                            arrowSwitchNode(-1, 0);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
