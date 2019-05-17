@@ -21,39 +21,109 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> extends NodeQWOPExplorableBase<N> {
 
+    /* Node visibility flags
+    Note that by default lines are drawn, but points are not. Overriding the line or point color will not make it
+    visible, although this color will be preferred over the normal version until the overridden one is cleared (set
+    to null).
+     */
+
     /**
-     * Primary visibility flags.
+     * Should a dot be displayed at the position of this node?
      */
     public boolean displayPoint = false;
+
+    /**
+     * Should a line be drawn from this node's parent's position to this node?
+     */
     public boolean displayLine = true;
+
+    /**
+     * Enables a text label over this node, if one is assigned.
+     */
     public boolean displayLabel = false;
 
-    public static final boolean drawLockedNodes = true;
     /**
-     * Node location information.
+     * Sets locked nodes to have points drawn. This is useful for seeing what the workers are up to.
+     */
+    private static final boolean drawLockedNodes = true;
+
+    /**
+     * Node location in 3D space.
      */
     public float[] nodeLocation = new float[3]; // Location that this node appears on the tree visualization
+
+    /**
+     * Angle of the line between grandparent and parent. Determines the baseline angle that this node and its
+     * siblings should go off at +/- some spread between the siblings.
+     */
     float nodeAngle = 0; // Keep track of the angle that the line previous node to this node makes.
+
+    /**
+     * The arc that this node will share with its siblings. Must get narrower up the tree to accommodate the branching.
+     */
     float sweepAngle = 2f * (float) Math.PI;
-    private float edgeLength = 1.f;
+
+    /**
+     * Length of the line connecting the parent node to this. This is calculated to be biggest near the root to
+     * provide spacing for later on. It decays at greater tree depths to make lines less likely to collide with each
+     * other.
+     */
+    private float edgeLength;
 
     /**
      * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
      */
     private static final boolean limitDrawing = true;
-    public static final Set<NodeQWOPGraphicsBase> pointsToDraw = ConcurrentHashMap.newKeySet(10000);
-    private static final float nodeDrawFilterDistSq = 0.1f;
-    public boolean notDrawnForSpeed = false;
 
+    /**
+     *
+     */
+    public static final Set<NodeQWOPGraphicsBase> pointsToDraw = ConcurrentHashMap.newKeySet(10000);
+
+
+    /**
+     * Square distance between the nearest neighbor below which the node and associated lines will not be drawn.
+     */
+    private static final float nodeDrawFilterDistSq = 0.1f;
+
+    /**
+     * If filtering of drawing nodes which are very close is enabled, this will indicate whether this node is one of
+     * the ones which is invisible.
+     */
+    private boolean notDrawnForSpeed = false;
+
+    /**
+     * Default color of the point at the node's location, if point drawing is enabled. Any override color will take
+     * precedence over this.
+     */
     private float[] pointColorFloats = Color.green.getColorComponents(null);
-    private float[] lineColorFloats;
     private float[] overridePointColorFloats;
+
+    /**
+     * Default color of the line from this node to its parent, if line drawing is enabled. Any override color will
+     * take precedence over this.
+     */
+    private float[] lineColorFloats;
     private float[] overrideLineColorFloats;
 
+    /**
+     * Text label to overlaid at this node's position if label drawing is enabled.
+     */
     private String nodeLabel;
+
+    /**
+     * Color that text labels will be drawn in, if label drawing is enabled for this node.
+     */
     private float[] nodeLabelColor = Color.CYAN.getColorComponents(null);
 
+    /**
+     * Default brightness in HSV scale.
+     */
     public static final float lineBrightnessDefault = 0.85f;
+
+    /**
+     * Brightness of this particular line. Usually changed to make one part of the tree stand out from the rest.
+     */
     float lineBrightness = lineBrightnessDefault;
 
     /**
@@ -87,8 +157,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Draw the line connecting this node to its parent.
      */
     public void drawLine(GL2 gl) {
-        if (nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine)) { // No lines for
-            // root.
+        if (nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed)) { //
+            // No lines for root.
             gl.glColor3fv((overrideLineColorFloats == null) ? lineColorFloats : overrideLineColorFloats, 0);
             gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1], getParent().nodeLocation[2] + nodeLocationZOffset);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
@@ -99,7 +169,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Draw the node point if enabled
      */
     public void drawPoint(GL2 gl) {
-        if (nodeLocation != null && displayPoint) {
+        if (nodeLocation != null && displayPoint && !notDrawnForSpeed) {
             gl.glColor3fv((overridePointColorFloats == null) ? pointColorFloats : overridePointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
         }
@@ -109,8 +179,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Draw a text string using GLUT. This string will go to a position in world coordinates, not screen coordinates.
      */
     public void drawLabel(GL2 gl, GLUT glut) {
-        if (nodeLabel != null && displayLabel && !nodeLabel.isEmpty()) { // I think that the node label can be null even
-            // if it is assigned as a object field on construction. Constructors chain in such a way that a child
+        if (nodeLabel != null && displayLabel && !nodeLabel.isEmpty() && !notDrawnForSpeed) { // I think that the node label can be null
+            // even if it is assigned as a object field on construction. Constructors chain in such a way that a child
             // could be added to its parent before node construction is complete.
             gl.glColor3fv(nodeLabelColor, 0);
             gl.glRasterPos3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset + 0.1f);
@@ -126,7 +196,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     @SuppressWarnings("unused")
     public void drawLinesBelow(GL2 gl) {
         recurseDownTreeExclusive(n->{
-            if (!n.notDrawnForSpeed) n.drawLine(gl);
+            n.drawLine(gl);
             assert getTreeDepth() < n.getTreeDepth();
         });
     }
@@ -138,9 +208,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      */
     @SuppressWarnings("unused")
     public void drawPointsBelow(GL2 gl) {
-        recurseDownTreeInclusive(n -> {
-            if (!n.notDrawnForSpeed) drawPoint(gl);
-        });
+        recurseDownTreeInclusive(n -> n.drawPoint(gl));
     }
 
     /**
@@ -235,6 +303,10 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             float yDiff;
             float zDiff;
             for (NodeQWOPGraphicsBase n : pointsToDraw) {
+                if (n.getTreeDepth() != getTreeDepth()) { // Trying this as a speedup approach for the filtering.
+                    // It's rarer for nodes of a different depth to get too close to others.
+                    continue;
+                }
                 xDiff = n.nodeLocation[0] - nodeLocation[0];
                 yDiff = n.nodeLocation[1] - nodeLocation[1];
                 zDiff = n.nodeLocation[2] - nodeLocation[2];

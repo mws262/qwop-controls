@@ -336,4 +336,11 @@ public class ActionTest {
         Assert.assertEquals(Action.Keys.wp, Action.booleansToKeys(new boolean[]{false, true, false, true}));
         Assert.assertEquals(Action.Keys.none, Action.booleansToKeys(new boolean[]{false, false, false, false}));
     }
+
+    @Test
+    public void badConstructorBooleans() {
+        exception.expect(IllegalArgumentException.class);
+        boolean[] badButtons = new boolean[]{false, true, true};
+        new Action(20, badButtons);
+    }
 }

@@ -85,6 +85,7 @@ public class TrainableNetworkTest {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        assert networkForLoading != null;
         networkForLoading.loadCheckpoint("tmp_unit_test_load_ckpt");
 
         float[][] inputs = new float[][] {
