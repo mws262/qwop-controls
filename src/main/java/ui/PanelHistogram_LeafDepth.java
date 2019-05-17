@@ -5,6 +5,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.statistics.HistogramDataset;
 import tree.NodeGenericBase;
 import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -38,7 +39,7 @@ public class PanelHistogram_LeafDepth extends PanelHistogram implements IUserInt
     }
 
     @Override
-    public void update(NodeQWOPExplorableBase<?> node) {
+    public void update(NodeQWOPGraphicsBase<?> node) {
 
         List<NodeQWOPExplorableBase<?>> leafList = new ArrayList<>();
         node.recurseDownTreeInclusive(n -> {

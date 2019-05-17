@@ -5,6 +5,7 @@ import actions.ActionQueue;
 import game.GameUnified;
 import game.IGame;
 import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -154,7 +155,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(NodeQWOPExplorableBase<?> node) {
+    public void update(NodeQWOPGraphicsBase<?> node) {
         if (node.getTreeDepth() > 0)
             simRunToNode(node);
     }

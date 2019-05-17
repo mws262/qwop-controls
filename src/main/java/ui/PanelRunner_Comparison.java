@@ -30,8 +30,8 @@ public class PanelRunner_Comparison extends PanelRunner {
     public PanelRunner_Comparison() {}
 
     @Override
-    public void update(NodeQWOPExplorableBase<?> node) {
-        NodeQWOPExplorableBase<?> root = node.getRoot();
+    public void update(NodeQWOPGraphicsBase<?> node) {
+        NodeQWOPGraphicsBase<?> root = node.getRoot();
         // todo
 //        if (root instanceof NodeQWOPGraphicsBase) {
 //            NodeQWOPGraphicsBase graphicsRoot = ((NodeQWOPGraphicsBase) root);

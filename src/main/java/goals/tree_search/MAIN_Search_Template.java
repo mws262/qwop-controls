@@ -1,36 +1,33 @@
 package goals.tree_search;
 
+import actions.Action;
+import actions.ActionGenerator_FixedSequence;
+import actions.ActionList;
+import actions.IActionGenerator;
+import distributions.Distribution;
+import distributions.Distribution_Normal;
+import evaluators.EvaluationFunction_Constant;
+import evaluators.EvaluationFunction_Distance;
+import filters.NodeFilter_SurvivalHorizon;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import samplers.Sampler_FixedDepth;
+import samplers.Sampler_Greedy;
+import samplers.Sampler_UCB;
+import samplers.rollout.RolloutPolicy_RandomDecayingHorizon;
+import savers.DataSaver_DenseTFRecord;
+import savers.DataSaver_StageSelected;
+import transformations.Transform_Autoencoder;
+import transformations.Transform_PCA;
+import tree.*;
+import ui.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.IntStream;
-
-import actions.ActionList;
-import actions.IActionGenerator;
-import samplers.Sampler_Greedy;
-import savers.DataSaver_DenseTFRecord;
-import tree.*;
-import actions.Action;
-import actions.ActionGenerator_FixedSequence;
-import distributions.Distribution;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-
-import distributions.Distribution_Normal;
-import evaluators.EvaluationFunction_Distance;
-import filters.NodeFilter_SurvivalHorizon;
-import samplers.Sampler_FixedDepth;
-import samplers.Sampler_UCB;
-import savers.DataSaver_StageSelected;
-import transformations.Transform_Autoencoder;
-import transformations.Transform_PCA;
-import ui.*;
 
 public abstract class MAIN_Search_Template {
 
@@ -201,7 +198,7 @@ public abstract class MAIN_Search_Template {
         saver.overrideFilename = saveName;
         saver.setSavePath(saveLoc.getPath() + "/");
 
-        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Distance());
+        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), new RolloutPolicy_RandomDecayingHorizon());
         TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, ucbSampler, saver); // Depth to get to
 		// sorta steady state. was
         searchMax.terminateAfterXGames = maxGames; // Will terminate after this many games played regardless of

@@ -110,7 +110,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void update(NodeQWOPExplorableBase<?> plotNode) { // Note that this is different from the other PlotPanes.
+    public void update(NodeQWOPGraphicsBase<?> plotNode) { // Note that this is different from the other PlotPanes.
         // It plots UP TO this
         // node rather than below this node.
         if (plotNode.getTreeDepth() == 0) return; // Nothing to see from root.

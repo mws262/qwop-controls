@@ -145,9 +145,14 @@ public class Sampler_UCB implements ISampler {
 
     @Override
     public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
-        if (startNode.getUntriedActionCount() != 0 && startNode.reserveExpansionRights()) { // We immediately expand
-        	// if there's an untried action.
-            return startNode;
+        if (startNode.getUntriedActionCount() != 0) {
+            if (startNode.reserveExpansionRights()) { // We immediately expand
+                // if there's an untried action.
+                assert startNode.isLocked();
+                return startNode;
+            } else {
+                return null;
+            }
         }
 
         double bestScoreSoFar = -Double.MAX_VALUE;
@@ -181,6 +186,7 @@ public class Sampler_UCB implements ISampler {
         } else {
             deadlockDelayCurrent = 0; // Reset delay if we're successful again.
         }
+
         return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked action.;
     }
 

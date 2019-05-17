@@ -4,16 +4,16 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
-import com.jogamp.opengl.util.gl2.GLUT;
-import tree.*;
+import tree.NodeQWOPGraphicsBase;
+import tree.TreeWorker;
 
 import javax.swing.*;
 import javax.vecmath.Vector3f;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -197,6 +197,8 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 //                    n.nodeLocation[2],
 //                            Node.getColorFromScaledValue(n.getValue()/n.visitCount.floatValue() - Node.minVal,
 //                                    Node.maxVal - Node.minVal, 1f)); }});
+
+                            n.drawLabel(gl, glut);
 
                             gl.glColor3f(1f, 0.1f, 0.1f);
                             gl.glPointSize(ptSize);
@@ -517,9 +519,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     public boolean isActive() {
         return true;
     }
-
-    @Override
-    public void update(NodeQWOPExplorableBase<?> node) { }
 
     @Override
     public void actionPerformed(ActionEvent e) {

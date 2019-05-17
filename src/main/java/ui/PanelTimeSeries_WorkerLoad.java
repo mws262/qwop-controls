@@ -1,6 +1,5 @@
 package ui;
 
-import tree.NodeQWOPExplorableBase;
 import tree.TreeWorker;
 
 import javax.swing.*;
@@ -24,9 +23,6 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
         workerList.clear();
         workerList.addAll(workers);
     }
-
-    @Override
-    public void update(NodeQWOPExplorableBase<?> plotNode) { }
 
     @Override
     public void run() {

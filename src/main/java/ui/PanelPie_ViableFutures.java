@@ -2,6 +2,7 @@ package ui;
 
 import org.jfree.data.general.DefaultPieDataset;
 import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
 
 public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.TabbedPaneActivator {
 
@@ -25,7 +26,7 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
     }
 
     @Override
-    public void update(NodeQWOPExplorableBase<?> node) {
+    public void update(NodeQWOPGraphicsBase<?> node) {
         int failCount = 0;
         int cat1 = 0;
         int cat2 = 0;

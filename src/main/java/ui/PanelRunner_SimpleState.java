@@ -2,7 +2,7 @@ package ui;
 
 import game.GameUnified;
 import game.State;
-import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphicsBase;
 
 import java.awt.*;
 
@@ -27,7 +27,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(NodeQWOPExplorableBase<?> node) {
+    public void update(NodeQWOPGraphicsBase<?> node) {
         currentState = node.getState();
     }
 

@@ -32,7 +32,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     /**
      * Node from which states are referenced.
      */
-    private NodeQWOPExplorableBase<?> selectedNode;
+    private NodeQWOPGraphicsBase<?> selectedNode;
 
     /**
      * Which plot index has an active menu.
@@ -118,7 +118,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     }
 
     @Override
-    public void update(NodeQWOPExplorableBase<?> selectedNode) {
+    public void update(NodeQWOPGraphicsBase<?> selectedNode) {
         this.selectedNode = selectedNode;
         // Fetching new data.
         List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
