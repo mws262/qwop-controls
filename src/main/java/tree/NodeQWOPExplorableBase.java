@@ -20,6 +20,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>> extends NodeQWOPBase<N> {
 
+    /**
+     * Actions which could be executed from this node's state to make new children. These are assigned at the
+     * creation of the node by a {@link IActionGenerator}.
+     */
     private ActionList untriedActions;
 
     /**
@@ -34,6 +38,11 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      */
     private final AtomicBoolean locked = new AtomicBoolean(false);
 
+    /**
+     * Action generator used to make the set of untried child actions for this node. This is used during the creation
+     * of this node and not again by this node. When a new child is created it will 'inherit' this generator by
+     * default, unless another one is given.
+     */
     final IActionGenerator actionGenerator;
 
     /**
@@ -209,7 +218,6 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
     /**
      * Remove untried child actions and check for changes to the fully-explored status.
      */
-    @SuppressWarnings("WeakerAccess")
     void clearUntriedActions() {
         untriedActions.clear();
         // Only mark this node as fully-explored if all child actions are also full explored.
@@ -245,7 +253,6 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
         super.addToChildList(child);
         untriedActions.remove(child.getAction()); // If the child being added corresponds to one of the untried
         // actions listed, then remove it. Otherwise untried actions remains unaffected.
-
     }
 
     /**
@@ -431,6 +438,11 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
         return locked.get();
     }
 
+    /**
+     * Simply a wrapper about the lock. This is useful for inheriting classes that want to override to perform some
+     * other behavior when locking occurs.
+     * @param isLocked true for lock, false for unlock.
+     */
     void setLock(boolean isLocked) {
         locked.set(isLocked);
     }

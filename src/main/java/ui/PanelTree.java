@@ -194,21 +194,19 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
         for (NodeQWOPGraphicsBase<?> node : rootNodes) {
             node.recurseDownTreeInclusive( n -> {
-                if (!n.notDrawnForSpeed) {
-                    n.drawLabel(gl, glut);
+                n.drawLabel(gl, glut);
 
-                    gl.glColor3f(1f, 0.1f, 0.1f);
-                    gl.glPointSize(ptSize);
+                gl.glColor3f(1f, 0.1f, 0.1f);
+                gl.glPointSize(ptSize);
 
-                    gl.glBegin(GL.GL_POINTS);
-                    n.drawPoint(gl); // Recurses through the whole tree.
-                    gl.glEnd();
+                gl.glBegin(GL.GL_POINTS);
+                n.drawPoint(gl); // Recurses through the whole tree.
+                gl.glEnd();
 
-                    gl.glColor3f(1f, 1f, 1f);
-                    gl.glBegin(GL.GL_LINES);
-                    n.drawLine(gl); // Recurses through the whole tree.
-                    gl.glEnd();
-                }
+                gl.glColor3f(1f, 1f, 1f);
+                gl.glBegin(GL.GL_LINES);
+                n.drawLine(gl); // Recurses through the whole tree.
+                gl.glEnd();
             });
         }
 

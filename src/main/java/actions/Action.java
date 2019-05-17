@@ -89,10 +89,15 @@ public class Action implements Serializable {
      */
     public Action(int totalTimestepsToHold, boolean[] keysPressed) {
         this(totalTimestepsToHold, keysPressed[0], keysPressed[1], keysPressed[2], keysPressed[3]);
-        if (keysPressed.length != 4)
-            throw new IllegalArgumentException("A QWOP action should have booleans for exactly 4 keys. Tried to " +
-                    "create one with a boolean array of size: " + keysPressed.length);
+
     }
+    //TODO
+//    private static boolean[] validateBooleanKeys(boolean[] keys) {
+//        if (keysPressed.length > 4)
+//            throw new IllegalArgumentException("A QWOP action should have booleans for exactly 4 keys. Tried to " +
+//                    "create one with a boolean array of size: " + keysPressed.length);
+//        return keys;
+//    }
 
     /**
      * Create an action containing the time to hold and the key combination.
