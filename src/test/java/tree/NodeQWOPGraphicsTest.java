@@ -16,11 +16,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.awt.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.rmi.activation.Activator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
@@ -294,10 +296,80 @@ public class NodeQWOPGraphicsTest {
 
     @Test
     public void setLineColor() {
+        setupTree();
+
+        // Pick a color to change some lines to.
+        float[] pink = Color.PINK.getColorComponents(null);
+        Assert.assertEquals(3, pink.length);
+
+        // Get colors before the change.
+        float[] node1LineColor = getLineColorFloats(node1);
+        Assert.assertEquals(3, node1LineColor.length);
+        float[] rootNodeLineColor = getLineColorFloats(rootNode);
+        float[] node1_1LineColor = getLineColorFloats(node1_1);
+
+        // Check that the colors are different beforehand.
+        Assert.assertFalse(Arrays.equals(pink, node1LineColor));
+        node1.setLineColor(Color.PINK);
+        // Check that they are the same after.
+        node1LineColor = getLineColorFloats(node1);
+        Assert.assertArrayEquals(pink, node1LineColor, 0.0f);
+
+        // Make sure that the parent and child of the changed node are not affected.
+        Assert.assertArrayEquals(rootNodeLineColor, getLineColorFloats(rootNode), 0.0f);
+        Assert.assertArrayEquals(node1_1LineColor, getLineColorFloats(node1_1), 0.0f);
+
+        // Try root now.
+        rootNode.setLineColor(Color.PINK);
+        Assert.assertArrayEquals(pink, getLineColorFloats(rootNode), 0.0f);
+
+        // Try the other child now.
+        node1_1.setLineColor(Color.PINK);
+        Assert.assertArrayEquals(pink, getLineColorFloats(node1_1), 0.0f);
     }
 
     @Test
     public void setOverrideLineColor() {
+        setupTree();
+        // Pick a color to change some lines to.
+        float[] pink = Color.PINK.getColorComponents(null);
+        Assert.assertEquals(3, pink.length);
+
+        // Get the override colors before the change.
+        float[] node1LineColorOverride = getOverrideLineColorFloats(node1);
+        Assert.assertNull(node1LineColorOverride); // Null until set.
+        float[] rootNodeLineColorOverride = getOverrideLineColorFloats(rootNode);
+        Assert.assertNull(rootNodeLineColorOverride);
+        float[] node1_1LineColorOverride = getOverrideLineColorFloats(node1_1);
+        Assert.assertNull(node1_1LineColorOverride);
+
+        // Get the normal colors before the change.
+        float[] node1LineColor = getLineColorFloats(node1);
+        Assert.assertEquals(3, node1LineColor.length);
+        float[] rootNodeLineColor = getLineColorFloats(rootNode);
+        float[] node1_1LineColor = getLineColorFloats(node1_1);
+
+        // Change override color.
+        node1.setOverrideLineColor(Color.PINK);
+        // Check that they are the same after.
+        node1LineColorOverride = getOverrideLineColorFloats(node1);
+        Assert.assertArrayEquals(pink, node1LineColorOverride, 0.0f);
+
+        // Override colors for parent and child should remain null.
+        Assert.assertNull(rootNodeLineColorOverride);
+        Assert.assertNull(node1_1LineColorOverride);
+
+        // Make sure that the parent and child of the changed node are not affected.
+        Assert.assertArrayEquals(rootNodeLineColor, getLineColorFloats(rootNode), 0.0f);
+        Assert.assertArrayEquals(node1_1LineColor, getLineColorFloats(node1_1), 0.0f);
+
+        // Try root now.
+        rootNode.setOverrideLineColor(Color.PINK);
+        Assert.assertArrayEquals(pink, getOverrideLineColorFloats(rootNode), 0.0f);
+
+        // Try the other child now.
+        node1_1.setOverrideLineColor(Color.PINK);
+        Assert.assertArrayEquals(pink, getOverrideLineColorFloats(node1_1), 0.0f);
     }
 
     @Test
@@ -358,5 +430,38 @@ public class NodeQWOPGraphicsTest {
 
     @Test
     public void clearBackwardsBranchColor() {
+    }
+
+    /**
+     * Use reflection to get this private field.
+     * @param node Node to fetch from.
+     * @return 3-element float array representing the line color.
+     */
+    private static float[] getLineColorFloats(NodeQWOPGraphicsBase<?> node) {
+        return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "lineColorFloats");
+    }
+
+    private static float[] getOverrideLineColorFloats(NodeQWOPGraphicsBase<?> node) {
+        return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "overrideLineColorFloats");
+    }
+
+    private static float[] getPointColorFloats(NodeQWOPGraphicsBase<?> node) {
+        return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "pointColorFloats");
+    }
+
+    private static float[] getOverridePointColorFloats(NodeQWOPGraphicsBase<?> node) {
+        return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "overridePointColorFloats");
+    }
+
+    private static Object getPrivateField(Class clazz, Object object, String fieldName) {
+        Field field;
+        try {
+            field = clazz.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return field.get(object);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

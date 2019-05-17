@@ -32,7 +32,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * If one TreeWorker is expanding from this leaf node (if it is one), then no other worker should try to
      * simultaneously expand from here too.
      */
-    private final AtomicBoolean locked = new AtomicBoolean(true);
+    private final AtomicBoolean locked = new AtomicBoolean(false);
 
     final IActionGenerator actionGenerator;
 
@@ -429,5 +429,9 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      */
     public boolean isLocked() {
         return locked.get();
+    }
+
+    void setLock(boolean isLocked) {
+        locked.set(isLocked);
     }
 }

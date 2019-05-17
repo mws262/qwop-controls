@@ -28,6 +28,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     public boolean displayLine = true;
     public boolean displayLabel = false;
 
+    public static final boolean drawLockedNodes = true;
     /**
      * Node location information.
      */
@@ -98,7 +99,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Draw the node point if enabled
      */
     public void drawPoint(GL2 gl) {
-        if (nodeLocation != null && (displayPoint || isLocked())) {
+        if (nodeLocation != null && displayPoint) {
             gl.glColor3fv((overridePointColorFloats == null) ? pointColorFloats : overridePointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
         }
@@ -352,5 +353,13 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         super.updateValue(valueUpdate, updater);
         displayLabel = true;
         nodeLabel = String.format("%.2f", getValue());
+    }
+
+    @Override
+    void setLock(boolean isLocked) {
+        super.setLock(isLocked);
+        if (drawLockedNodes) {
+            displayPoint = isLocked;
+        }
     }
 }
