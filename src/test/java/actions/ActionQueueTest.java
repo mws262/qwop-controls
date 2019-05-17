@@ -297,10 +297,12 @@ public class ActionQueueTest {
             Assert.assertEquals(2, actQueue.getCurrentActionIdx());
         }
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 7; i++) {
             actQueue.pollCommand();
             Assert.assertEquals(3, actQueue.getCurrentActionIdx());
         }
+        actQueue.pollCommand();
+        Assert.assertTrue(actQueue.isEmpty());
     }
 
     @Test
