@@ -5,7 +5,7 @@ import actions.ActionGenerator_FixedSequence;
 import actions.ActionList;
 import actions.IActionGenerator;
 import distributions.Distribution_Equal;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -75,7 +75,7 @@ public class NodeQWOPExplorableTest {
     private State unfailedState = mock(State.class);
     private State failedState = mock(State.class);
 
-    private IGame game = mock(IGame.class);
+    private IGameInternal game = mock(IGameInternal.class);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
