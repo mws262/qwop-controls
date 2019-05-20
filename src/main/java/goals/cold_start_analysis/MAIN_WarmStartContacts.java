@@ -2,9 +2,6 @@ package goals.cold_start_analysis;
 
 import actions.ActionQueue;
 import game.*;
-import org.jbox2d.common.Mat22;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.joints.RevoluteJoint;
 
 import java.awt.*;
 
@@ -25,10 +22,10 @@ public class MAIN_WarmStartContacts extends CompareWarmStartToColdBase {
         // Ran MAIN_Search_LongRun to get these.
         ActionQueue actionQueue = getSampleActions();
 
-        IGame gameFullRun = new GameUnified(); // This game will run all the commands, start to finish.
-        IGame gameColdStart = new GameUnified(); // This will start at some point in the middle of the sequence,
+        IGameInternal gameFullRun = new GameUnified(); // This game will run all the commands, start to finish.
+        IGameInternal gameColdStart = new GameUnified(); // This will start at some point in the middle of the sequence,
 
-        IGame gameAttemptWarmStart = new GameUnified();
+        IGameInternal gameAttemptWarmStart = new GameUnified();
         // with a cloned state from gameFullRun, but a cold start on all the internal solvers.
 
         // Get to a certain part of the run where we want to introduce another cold start runner.

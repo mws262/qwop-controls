@@ -2,7 +2,7 @@ package samplers.rollout;
 
 import actions.Action;
 import evaluators.IEvaluationFunction;
-import game.IGame;
+import game.IGameInternal;
 import tree.NodeQWOPExplorableBase;
 
 /**
@@ -28,7 +28,7 @@ public class RolloutPolicy_MultiChildren extends RolloutPolicy {
     }
 
     @Override
-    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
         // See how we should advance through untried actions. If the number of unchecked actions is less than the
         // number of rollouts allowed, we run all of them. Otherwise, we try to evenly-space them.
         float advancement = 1f;

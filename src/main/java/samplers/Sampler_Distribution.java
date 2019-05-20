@@ -3,7 +3,7 @@ package samplers;
 import java.util.ArrayList;
 
 import actions.Action;
-import game.IGame;
+import game.IGameInternal;
 import tree.NodeQWOPExplorableBase;
 
 /**
@@ -98,7 +98,7 @@ public class Sampler_Distribution implements ISampler {
     }
 
     @Override
-    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGame game) {}
+    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {}
 
     @Override
     public boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode) {

@@ -1,18 +1,25 @@
 package goals.data_visualization;
 
-import controllers.Controller_NearestNeighborApprox;
-import controllers.Controller_NearestNeighborApprox.RunHolder;
-import game.GameUnified;
-import game.IGame;
-import tree.NodeQWOPGraphicsBase;
-import ui.PanelRunner;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+import controllers.Controller_NearestNeighborApprox;
+import controllers.Controller_NearestNeighborApprox.RunHolder;
+import game.GameUnified;
+import game.IGameInternal;
+import tree.NodeQWOPGraphicsBase;
+import ui.PanelRunner;
 
 
 /**
@@ -24,7 +31,7 @@ import java.util.List;
 
 public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
-    private IGame game = new GameUnified();
+    private IGameInternal game = new GameUnified();
 
     private Controller_NearestNeighborApprox justForLoading;
 

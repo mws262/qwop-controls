@@ -2,7 +2,7 @@ package goals.cold_start_analysis;
 
 import actions.ActionQueue;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import tree.NodeQWOPGraphicsBase;
 
@@ -25,7 +25,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
     public void run() {
         ActionQueue actionQueue = getSampleActions();
 
-        IGame gameFullRun = new GameUnified(); // This game will run all the commands, start to finish.
+        IGameInternal gameFullRun = new GameUnified(); // This game will run all the commands, start to finish.
         List<GameUnified> coldStartGames = new ArrayList<>();
 
         int coldStartAction = 2; // Starts the first cold start runner at this command index.

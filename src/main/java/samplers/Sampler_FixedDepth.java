@@ -3,7 +3,7 @@ package samplers;
 import java.util.*;
 
 import actions.Action;
-import game.IGame;
+import game.IGameInternal;
 import tree.NodeQWOPExplorableBase;
 
 public class Sampler_FixedDepth implements ISampler {
@@ -150,7 +150,7 @@ public class Sampler_FixedDepth implements ISampler {
     }
 
     @Override
-    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGame gameThreadSafe) {}
+    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGameInternal gameThreadSafe) {}
 
     @Override
     public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {

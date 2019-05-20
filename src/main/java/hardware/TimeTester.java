@@ -4,11 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.IOException;
 
 public class TimeTester {
 
-    ArduinoSerial serial;
+    KeypusherSerialConnection serial;
 
     private volatile boolean donePress = false;
     private volatile boolean doneDepress = false;
@@ -23,54 +22,49 @@ public class TimeTester {
         frame.setVisible(true);
 
         try {
-            serial = new ArduinoSerial();
-//            serial.doCommand(true, false,false, false);
+            serial = new KeypusherSerialConnection();
+//            serial.command(true, false,false, false);
             Thread.sleep(400);
-            serial.doCommand(false, false,false, false);
+            serial.command(false, false,false, false);
             Thread.sleep(400);
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     public long testKeyTime(int testTimes) {
         for (int i = 0; i < testTimes; i++) {
+            donePress = false;
+            serial.command(false, false, false, true);
+
+            long startTimePress = System.currentTimeMillis();
+
+            while (!donePress) {
+            }
+
+            long endTimePress = System.currentTimeMillis();
+
+            System.out.println("milliseconds to push key down: " + (endTimePress - startTimePress));
+
             try {
-                donePress = false;
-                serial.doCommand(false, false, false, true);
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-                long startTimePress = System.currentTimeMillis();
+            doneDepress = false;
+            serial.command(false, false, false, false);
+            long startTimeDepress = System.currentTimeMillis();
 
-                while (!donePress) {
-                }
+            while (!doneDepress) {
+            }
 
-                long endTimePress = System.currentTimeMillis();
+            long endTimeDepress = System.currentTimeMillis();
 
-                System.out.println("milliseconds to push key down: " + (endTimePress - startTimePress));
-
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                doneDepress = false;
-                serial.doCommand(false, false, false, false);
-                long startTimeDepress = System.currentTimeMillis();
-
-                while (!doneDepress) {
-                }
-
-                long endTimeDepress = System.currentTimeMillis();
-
-                System.out.println("milliseconds to release key : " + (endTimeDepress - startTimeDepress));
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-            } catch (IOException e) {
+            System.out.println("milliseconds to release key : " + (endTimeDepress - startTimeDepress));
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }

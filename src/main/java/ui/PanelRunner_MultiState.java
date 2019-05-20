@@ -1,6 +1,7 @@
 package ui;
 
 import game.GameUnified;
+import game.IGameInternal;
 import game.State;
 import tree.NodeQWOPGraphicsBase;
 
@@ -13,6 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author matt
  */
 public class PanelRunner_MultiState extends PanelRunner implements Runnable {
+    /**
+     * Access to the game for the sake of the drawing methods.
+     */
+    private IGameInternal game = new GameUnified();
+
     /**
      * Main state to draw. It will provide the x-reference position.
      */

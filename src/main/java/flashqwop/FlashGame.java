@@ -2,11 +2,9 @@ package flashqwop;
 
 import actions.Action;
 import actions.ActionQueue;
-import game.State;
-import game.StateVariable;
-import hardware.ArduinoSerial;
+import game.*;
+import hardware.KeypusherSerialConnection;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -20,7 +18,7 @@ import java.util.Arrays;
  * @author matt
  *
  */
-public abstract class FlashGame implements QWOPStateListener {
+public abstract class FlashGame implements IFlashStateListener {
 
     private FlashQWOPServer server;
     private ActionQueue actionQueue = new ActionQueue();
@@ -35,29 +33,45 @@ public abstract class FlashGame implements QWOPStateListener {
      */
     private boolean[] prevCommand = null;
 
-    private boolean awaitingRestart = true;
-
-    ArduinoSerial serial;
-
     boolean hardwareCommandsOut = false;
+
+    /**
+     * {@link FlashGame} will send its commands to this destination.
+     */
+    private IGameCommandTarget commandTarget;
+
     /**
      * Keeps track of the number of timesteps received since the beginning of a game to make sure that we haven't
      * lost timestep data in limbo.
      */
     private int timestepsTracked = 0;
 
-    public FlashGame() {
+    /**
+     * Have we commanded a game restart and are waiting for it to occur?
+     */
+    private boolean awaitingRestart = true;
+
+    /**
+     * Create a new Flash game interface.
+     *
+     * @param hardwareCommandsOut Are commands sent via hardware key presser or software socket?
+     */
+    public FlashGame(boolean hardwareCommandsOut) {
         server = new FlashQWOPServer();
         server.addStateListener(this);
 
         if (hardwareCommandsOut) {
-            try {
-                serial = new ArduinoSerial();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            commandTarget = new KeypusherSerialConnection();
+        } else {
+            commandTarget = server;
         }
-        //restart();
+    }
+
+    /**
+     * Default to software commands out.
+     */
+    public FlashGame() {
+        this(false);
     }
 
     /**
@@ -105,7 +119,7 @@ public abstract class FlashGame implements QWOPStateListener {
             System.out.println("zero timestep");
             awaitingRestart = false;
             actionQueue.clearAll();
-            actionQueue.addSequence(getActionSequenceFromBeginning()); // TODO Should not be here
+            actionQueue.addSequence(getActionSequenceFromBeginning());
             prevCommand = null;
             timestepsTracked = 0;
             previousState = state;
@@ -115,19 +129,8 @@ public abstract class FlashGame implements QWOPStateListener {
         } else if (state.isFailed()) { // If the runner falls, auto-restart. TODO may want to not do this automatically.
             reportGameStatus(state, prevCommand, timestep);
 
-            if (hardwareCommandsOut) {
-                try {
-                    serial.doCommand(false, false, false, false);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            commandTarget.command(false, false, false, false);
 
-                try {
-                    Thread.sleep(0);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
             try {
                 Thread.sleep(4000); // Give it time for the "thud" animation to dissipate for taking screen captures.
             } catch (InterruptedException e) {
@@ -161,19 +164,11 @@ public abstract class FlashGame implements QWOPStateListener {
         // Only send command when it's different from the previous.
         boolean[] nextCommand = actionQueue.pollCommand();
         if (!Arrays.equals(prevCommand, nextCommand)) {
-
-            if (hardwareCommandsOut) {
-                try {
-                    serial.doCommand(nextCommand[0], nextCommand[1], nextCommand[2], nextCommand[3]);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                server.sendCommand(nextCommand);
-            }
+            commandTarget.command(nextCommand);
         }
         prevCommand = nextCommand;
         previousState = state;
+
         // Check to make sure the controller didn't take way too long. This is not the most robust way to do this,
         // but it's better to at least know that this is occurring.
         long controlEvalTime = System.currentTimeMillis() - timeBeforeController;
@@ -182,7 +177,6 @@ public abstract class FlashGame implements QWOPStateListener {
         }
         timestepsTracked++;
     }
-
 
     /**
      * Pretend that states don't include velocity and estimate the velocity using finite differences.
@@ -197,7 +191,6 @@ public abstract class FlashGame implements QWOPStateListener {
                     (svCurrent[i].getX() - svPrev[i].getX())/0.04f,
                     (svCurrent[i].getY() - svPrev[i].getY())/0.04f,
                     (svCurrent[i].getTh() - svPrev[i].getTh())/0.04f);
-
         }
         return new State(svOut[0], svOut[1], svOut[2], svOut[3], svOut[4], svOut[5], svOut[6], svOut[7], svOut[8],
                 svOut[9], svOut[10], svOut[11], false);

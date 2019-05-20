@@ -2,13 +2,9 @@ package game;
 
 import actions.Action;
 import actions.ActionQueue;
-import data.TFRecordDataParsers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.tensorflow.example.SequenceExample;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,7 +23,7 @@ public class GameUnifiedTest {
         }
         game.step(true, false, true, false);
         currState = game.getCurrentState().flattenState();
-        Assert.assertEquals(1, game.getTimestepsSimulatedThisGame());
+        Assert.assertEquals(1, game.getTimestepsThisGame());
 
         float stateDiff = 0;
         for (int i = 0; i < initState.length; i++) {
@@ -40,7 +36,7 @@ public class GameUnifiedTest {
         Assert.assertTrue(game.getFailureStatus());
 
         game.makeNewWorld();
-        Assert.assertEquals(0, game.getTimestepsSimulatedThisGame());
+        Assert.assertEquals(0, game.getTimestepsThisGame());
         Assert.assertFalse(game.getFailureStatus());
         currState = game.getCurrentState().flattenState(); // Should be back to the initial state now.
         for (int i = 0; i < initState.length; i++) {
@@ -54,18 +50,18 @@ public class GameUnifiedTest {
         // huge logical problems.
         GameUnified game = new GameUnified();
         float bodyTh = game.getCurrentState().body.getTh();
-        Assert.assertEquals(0, game.getTimestepsSimulatedThisGame());
+        Assert.assertEquals(0, game.getTimestepsThisGame());
 
         game.step(true, true, false, false);
         float bodyThNext = game.getCurrentState().body.getTh();
         Assert.assertNotEquals(bodyTh, bodyThNext, 0.0); // States should change after step().
         bodyTh = bodyThNext;
-        Assert.assertEquals(1, game.getTimestepsSimulatedThisGame()); // Counter should have advanced.
+        Assert.assertEquals(1, game.getTimestepsThisGame()); // Counter should have advanced.
 
         game.step(true, false, true, false);
         bodyThNext = game.getCurrentState().body.getTh();
         Assert.assertNotEquals(bodyTh, bodyThNext, 0.0);
-        Assert.assertEquals(2, game.getTimestepsSimulatedThisGame());
+        Assert.assertEquals(2, game.getTimestepsThisGame());
     }
 
     @Test
@@ -160,19 +156,19 @@ public class GameUnifiedTest {
         GameUnified game1 = new GameUnified();
         GameUnified game2 = new GameUnified();
 
-        Assert.assertEquals(0, game1.getTimestepsSimulatedThisGame());
-        Assert.assertEquals(0, game2.getTimestepsSimulatedThisGame());
+        Assert.assertEquals(0, game1.getTimestepsThisGame());
+        Assert.assertEquals(0, game2.getTimestepsThisGame());
 
         game1.step(false, true, false, true);
-        Assert.assertEquals(1, game1.getTimestepsSimulatedThisGame());
-        Assert.assertEquals(0, game2.getTimestepsSimulatedThisGame());
+        Assert.assertEquals(1, game1.getTimestepsThisGame());
+        Assert.assertEquals(0, game2.getTimestepsThisGame());
         game2.step(true, false, false, false);
-        Assert.assertEquals(1, game2.getTimestepsSimulatedThisGame());
+        Assert.assertEquals(1, game2.getTimestepsThisGame());
 
         game2.holdKeysForTimesteps(5, true, true, true, true);
 
-        Assert.assertEquals(6, game2.getTimestepsSimulatedThisGame());
-        Assert.assertEquals(1, game1.getTimestepsSimulatedThisGame());
+        Assert.assertEquals(6, game2.getTimestepsThisGame());
+        Assert.assertEquals(1, game1.getTimestepsThisGame());
 
     }
 

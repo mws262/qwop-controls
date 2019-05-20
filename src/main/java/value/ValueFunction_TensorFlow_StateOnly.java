@@ -3,7 +3,7 @@ package value;
 import actions.Action;
 import game.GameConstants;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import tree.NodeQWOP;
 import tree.NodeQWOPBase;
@@ -154,7 +154,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 //    }
 
     @Override
-    public Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGame realGame) {
+    public Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGameInternal realGame) {
         return null;
     }
 ////        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.

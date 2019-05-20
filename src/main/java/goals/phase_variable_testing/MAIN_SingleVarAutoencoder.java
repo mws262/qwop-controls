@@ -3,7 +3,7 @@ package goals.phase_variable_testing;
 import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import transformations.Transform_Autoencoder;
 import tree.NodeQWOPGraphicsBase;
@@ -40,7 +40,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
         pack();
         setVisible(true);
 
-        IGame game = new GameUnified();
+        IGameInternal game = new GameUnified();
         String modelDir = "src/main/resources/tflow_models/";
         Transform_Autoencoder autoencoder =
                 new Transform_Autoencoder(modelDir + "AutoEnc_72to" + String.valueOf(numOutputs) + "_6layer.pb",

@@ -32,10 +32,10 @@ public class ComponentResizer extends MouseAdapter
     private Dimension snapSize;
 
     private int direction;
-    protected static final int NORTH = 1;
-    protected static final int WEST = 2;
-    protected static final int SOUTH = 4;
-    protected static final int EAST = 8;
+    private static final int NORTH = 1;
+    private static final int WEST = 2;
+    private static final int SOUTH = 4;
+    private static final int EAST = 8;
 
     private Cursor sourceCursor;
     private boolean resizing;

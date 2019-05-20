@@ -2,7 +2,7 @@ package goals.cold_start_analysis;
 
 import actions.ActionQueue;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 
 /**
@@ -20,8 +20,8 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
 
     private void run() {
         ActionQueue actionQueue = getSampleActions();
-        IGame gameFullRun = new GameUnified();
-        IGame coldStartGame = new GameUnified();
+        IGameInternal gameFullRun = new GameUnified();
+        IGameInternal coldStartGame = new GameUnified();
 
         // Start simulating the entire "good" run on the normal game.
         while (!actionQueue.isEmpty()) {
