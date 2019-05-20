@@ -78,7 +78,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     @Override
     public void reportGameStatus(State state, boolean[] command, int timestep) {}
 
-    public void loadController() {
+    private void loadController() {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +

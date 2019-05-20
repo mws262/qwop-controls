@@ -1,14 +1,14 @@
 package data;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
 import savers.DataSaver_DenseTFRecord;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Convert from a sparse representation of QWOP runs to a dense representation by re-simulating.
@@ -103,12 +103,7 @@ public class SparseDataToDenseTFRecord {
         actionQueue.clearAll();
         actionQueue.addSequence(actions);
         while (!actionQueue.isEmpty()) {
-            boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-            boolean Q = nextCommand[0];
-            boolean W = nextCommand[1];
-            boolean O = nextCommand[2];
-            boolean P = nextCommand[3];
-            game.step(Q, W, O, P);
+            game.step(actionQueue.pollCommand());
             if (game.getFailureStatus()) {
                 System.out.println("Game saver is seeing a failed state");
             }
@@ -126,11 +121,7 @@ public class SparseDataToDenseTFRecord {
         while (!actionQueue.isEmpty()) {
             boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
             Action action = actionQueue.peekThisAction();
-            boolean Q = nextCommand[0];
-            boolean W = nextCommand[1];
-            boolean O = nextCommand[2];
-            boolean P = nextCommand[3];
-            game.step(Q, W, O, P);
+            game.step(nextCommand);
             saver.reportTimestep(action, game); // Key difference
             if (game.getFailureStatus()) {
                 System.out.println("Game saver is seeing a failed state");

@@ -88,9 +88,9 @@ public class NodeQWOPExplorableTest {
         when(game.getCurrentState()).thenReturn(unfailedState);
 
         // Set up action generator.
-        ActionList list1 = ActionList.makeActionSet(new int[]{1,2,3}, new boolean[]{true, false, false, false},
+        ActionList list1 = ActionList.makeActionList(new int[]{1,2,3}, new boolean[]{true, false, false, false},
                 new Distribution_Equal());
-        ActionList list2 = ActionList.makeActionSet(new int[]{4,5,6}, new boolean[]{false, true, false, false},
+        ActionList list2 = ActionList.makeActionList(new int[]{4,5,6}, new boolean[]{false, true, false, false},
                 new Distribution_Equal());
 
         IActionGenerator generator = new ActionGenerator_FixedSequence(new ActionList[]{list1, list2});

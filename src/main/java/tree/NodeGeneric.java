@@ -1,5 +1,6 @@
 package tree;
 
+@SuppressWarnings("WeakerAccess")
 public class NodeGeneric extends NodeGenericBase<NodeGeneric> {
 
     public NodeGeneric() {

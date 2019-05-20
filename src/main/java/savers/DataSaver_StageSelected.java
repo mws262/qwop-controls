@@ -1,15 +1,15 @@
 package savers;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
+import actions.Action;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.IGameInternal;
 import game.State;
-import actions.Action;
 import tree.NodeQWOPBase;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Save save any runs specified by the TreeStage at the end of it.
@@ -22,13 +22,11 @@ public class DataSaver_StageSelected implements IDataSaver {
     /**
      * File prefix. Goes in front of date.
      */
-    @SuppressWarnings("WeakerAccess")
     public String filePrefix = "qwop_stage_sparse_java";
 
     /**
      * Do not include dot before.
      */
-    @SuppressWarnings("WeakerAccess")
     public String fileExtension = "SavableSingleGame";
 
     /**

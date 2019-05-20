@@ -257,4 +257,54 @@ public class ActionQueue {
         }
         return totalTS;
     }
+
+    /**
+     * Get some sample actions for use in tests. This is a successful short run found by tree search.
+     * @return A successful queue of actions.
+     */
+    public static ActionQueue getSampleActions() {
+        // Ran MAIN_Search_LongRun to get these.
+        ActionQueue actionQueue = new ActionQueue();
+        actionQueue.addAction(new Action(27, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(12, new boolean[]{false, true, true, false}));
+        actionQueue.addAction(new Action(10, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(44, new boolean[]{true, false, false, true}));
+
+        actionQueue.addAction(new Action(16, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(18, new boolean[]{false, true, true, false}));
+        actionQueue.addAction(new Action(23, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(12, new boolean[]{true, false, false, true}));
+
+        actionQueue.addAction(new Action(21, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(12, new boolean[]{false, true, true, false}));
+        actionQueue.addAction(new Action(17, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(13, new boolean[]{true, false, false, true}));
+
+        actionQueue.addAction(new Action(13, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(10, new boolean[]{false, true, true, false}));
+        actionQueue.addAction(new Action(16, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(8, new boolean[]{true, false, false, true}));
+
+        actionQueue.addAction(new Action(24, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(10, new boolean[]{false, true, true, false}));
+        actionQueue.addAction(new Action(23, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(10, new boolean[]{true, false, false, true}));
+
+        actionQueue.addAction(new Action(24, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(34, new boolean[]{false, true, true, false}));
+        actionQueue.addAction(new Action(5, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(18, new boolean[]{true, false, false, true}));
+
+        actionQueue.addAction(new Action(20, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(12, new boolean[]{false, true, true, false}));
+        actionQueue.addAction(new Action(3, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(8, new boolean[]{true, false, false, true}));
+
+        actionQueue.addAction(new Action(11, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(9, new boolean[]{false, true, true, false}));
+        actionQueue.addAction(new Action(3, new boolean[]{false, false, false, false}));
+        actionQueue.addAction(new Action(9, new boolean[]{true, false, false, true}));
+
+        return actionQueue;
+    }
 }

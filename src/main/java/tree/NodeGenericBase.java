@@ -157,11 +157,9 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
      *
      * @param nodeList                  A list to add all of this branches' nodes to. This list must be caller-provided, and will not
      *                                  be cleared.
-     * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public Collection<? extends N> getNodesBelowInclusive(Collection<N> nodeList) {
+    public void getNodesBelowInclusive(Collection<N> nodeList) {
         recurseDownTreeInclusive(nodeList::add);
-        return nodeList;
     }
 
     /**

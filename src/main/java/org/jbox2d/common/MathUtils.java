@@ -170,51 +170,6 @@ public class MathUtils {
 		return max(low, min(a, high));
 	}
 
-	/* djm optimized */
-	public final static Vec2 clamp(final Vec2 a, final Vec2 low, final Vec2 high) {
-		final Vec2 min = new Vec2();
-		Vec2.minToOut(a, high, min);
-		Vec2.maxToOut(low, min, min);
-		return min;
-	}
-
-	/* djm created */
-	public final static void clampToOut(final Vec2 a, final Vec2 low, final Vec2 high,
-										final Vec2 dest) {
-		Vec2.minToOut(a, high, dest);
-		Vec2.maxToOut(low, dest, dest);
-	}
-
-	public final static boolean isPowerOfTwo(final int x) {
-		return x > 0 && (x & x - 1) == 0;
-	}
-
-
-	/**
-	 * Computes a fast approximation to <code>Math.pow(a, b)</code>.
-	 * Adapted from <url>http://www.dctsystems.co.uk/Software/power.html</url>.
-	 *
-	 * @param a a positive number
-	 * @param b a number
-	 * @return a^b
-	 */
-	// UNTESTED
-	public static float pow(final float a, float b) {
-		// adapted from: http://www.dctsystems.co.uk/Software/power.html
-		if (Settings.FAST_MATH) {
-			float x = Float.floatToRawIntBits(a);
-			x *= 1.0f / (1 << 23);
-			x = x - 127;
-			float y = x - MathUtils.floor(x);
-			b *= x + (y - y * y) * 0.346607f;
-			y = b - MathUtils.floor(b);
-			y = (y - y * y) * 0.33971f;
-			return Float.intBitsToFloat((int) ((b + 127 - y) * (1 << 23)));
-		}
-		else {
-			return (float) Math.pow(a, b);
-		}
-	}
 
 	public static float sqrt(float x) {
 		return (float)StrictMath.sqrt(x);

@@ -23,7 +23,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
     }
 
     public void run() {
-        ActionQueue actionQueue = getSampleActions();
+        ActionQueue actionQueue = ActionQueue.getSampleActions();
 
         IGameInternal gameFullRun = new GameUnified(); // This game will run all the commands, start to finish.
         List<GameUnified> coldStartGames = new ArrayList<>();
@@ -32,7 +32,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
 
         while (!actionQueue.isEmpty()) { // Go until all commands used.
             // Every action interval, introduce a new cold-start runner and resume simulating all of them.
-            while (actionQueue.getCurrentActionIdx() < coldStartAction && !actionQueue.isEmpty()) {
+            while (!actionQueue.isEmpty() && actionQueue.getCurrentActionIdx() < coldStartAction) {
                 runnerPanel.clearSecondaryStates(); // Clear all the visualized runners.
 
                 boolean[] nextCommand = actionQueue.pollCommand(); // Next command.

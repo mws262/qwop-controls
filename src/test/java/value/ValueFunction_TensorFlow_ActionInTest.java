@@ -20,15 +20,15 @@
 //    private static Node rootNode;
 //
 //    // First layer actions.
-//    private static final ActionList actionsLayer1 = ActionList.makeActionSet(IntStream.range(1, 4).toArray(),
+//    private static final ActionList actionsLayer1 = ActionList.makeActionList(IntStream.range(1, 4).toArray(),
 //            new boolean[]{false, false, false, false}, new Distribution_Equal());
 //
 //    // Second layer actions.
-//    private static final ActionList actionsLayer2 = ActionList.makeActionSet(IntStream.range(4, 8).toArray(),
+//    private static final ActionList actionsLayer2 = ActionList.makeActionList(IntStream.range(4, 8).toArray(),
 //            new boolean[]{false, true, true, false}, new Distribution_Equal());
 //
 //    // Third layer actions.
-//    private static final ActionList actionsLayer3 = ActionList.makeActionSet(IntStream.range(8, 12).toArray(),
+//    private static final ActionList actionsLayer3 = ActionList.makeActionList(IntStream.range(8, 12).toArray(),
 //            new boolean[]{true, false, false, true}, new Distribution_Equal());
 //
 //    @BeforeClass

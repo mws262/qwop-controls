@@ -12,7 +12,8 @@ import game.IGameInternal;
 public interface ISampler {
 
     /**
-     * Decide a path through the existing tree to a place where a new node will be added.
+     * Decide a path through the existing tree to a place where a new node will be added. It is the tree policy's
+     * responsibility to lock the Node multithreading is used.
      **/
     NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode);
 

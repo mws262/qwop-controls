@@ -23,7 +23,6 @@ public class TimeTester {
 
         try {
             serial = new KeypusherSerialConnection();
-//            serial.command(true, false,false, false);
             Thread.sleep(400);
             serial.command(false, false,false, false);
             Thread.sleep(400);

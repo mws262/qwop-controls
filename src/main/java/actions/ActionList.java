@@ -72,7 +72,8 @@ public class ActionList extends ArrayList<Action> {
      * @param dist Sampling distribution for the new ActionList.
      * @return A new ActionList.
      */
-    public static ActionList makeActionSet(int[] durations, boolean[][] keys, Distribution<Action> dist) {
+    @SuppressWarnings("unused")
+    public static ActionList makeActionList(int[] durations, boolean[][] keys, Distribution<Action> dist) {
         ActionList set = new ActionList(dist);
         for (int i = 0; i < durations.length; i++) {
             set.add(new Action(durations[i], keys[i]));
@@ -83,12 +84,12 @@ public class ActionList extends ArrayList<Action> {
     /**
      * Same but for one set of keys and multiple durations.
      *
-     * @param durations
-     * @param keys
-     * @param dist
-     * @return
+     * @param durations Timestep duration of the actions to be created.
+     * @param keys Single set of keys to be pressed for the specified durations.
+     * @param dist Selection distribution for sampling over the {@link ActionList}.
+     * @return ActionList created with one {@link Action} per duration specified.
      */
-    public static ActionList makeActionSet(int[] durations, boolean[] keys, Distribution<Action> dist) {
+    public static ActionList makeActionList(int[] durations, boolean[] keys, Distribution<Action> dist) {
         ActionList set = new ActionList(dist);
         for (int duration : durations) {
             set.add(new Action(duration, keys));
@@ -96,33 +97,25 @@ public class ActionList extends ArrayList<Action> {
         return set;
     }
 
-    public static ActionList makeExhaustiveActionSet(int minDuration, int maxDuration) {
+    /**
+     * Make an {@link ActionList} containing all key combinations for all durations between the specified bounds.
+     * @param minDuration Inclusive bound. Minimum {@link Action} duration to be found in the list.
+     * @param maxDuration Exclusive bound. Upper bound on durations of actions found in this list.
+     * @param distribution Distribution for sampling actions once this list is created.
+     * @return An exhaustive {@link ActionList}.
+     */
+    @SuppressWarnings("unused")
+    public static ActionList makeExhaustiveActionList(int minDuration, int maxDuration,
+                                                      Distribution<Action> distribution) {
         assert minDuration < 0;
 
-        ActionList set = new ActionList(new Distribution_Equal());
+        ActionList set = new ActionList(distribution);
         for (Action.Keys key : Action.Keys.values()) {
             for (int i = minDuration; i < maxDuration; i++) {
                 set.add(new Action(i, key));
             }
         }
         return set;
-    }
-
-    /**
-     * Simply return many instances of the given keyString. Useful when making action sets sometimes.
-     *
-     * @param keyString Boolean array representing QWOP keys.
-     * @param times Number of times to replicate the given keyString in the 1st dimension.
-     * @return
-     */
-    @Deprecated
-    public static boolean[][] replicateKeyString(boolean[] keyString, int times) {
-        boolean[][] bigger = new boolean[times][];
-
-        for (int i = 0; i < times; i++) {
-            bigger[i] = keyString;
-        }
-        return bigger;
     }
 
     /**
