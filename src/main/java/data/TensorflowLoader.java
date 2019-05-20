@@ -1,17 +1,15 @@
 package data;
 
+import com.google.common.primitives.Floats;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import game.State;
+import org.tensorflow.*;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
-
-import actions.Action;
-import com.google.common.primitives.Floats;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.tensorflow.*;
-
-import game.State;
 
 /**
  * Basic utilities and loaders for getting TensorFlow models in here and working. Users should extend this class.

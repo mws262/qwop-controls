@@ -308,7 +308,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          * makes each call depend on the previous to some extent. Perhaps good for performance, terrible for
          * predicability.
          */
-        private final boolean newGameBetweenPredictions = true;
+        private final boolean newGameBetweenPredictions = false;
 
 
         private SelectionCriteria selectionCriteria = SelectionCriteria.BEST_AVERAGE_WINDOW;

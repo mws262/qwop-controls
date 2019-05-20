@@ -20,7 +20,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
 
     public void run() {
         // Ran MAIN_Search_LongRun to get these.
-        ActionQueue actionQueue = getSampleActions();
+        ActionQueue actionQueue = ActionQueue.getSampleActions();
 
         IGameInternal gameFullRun = new GameUnified(); // This game will run all the commands, start to finish.
         IGameInternal gameColdStart = new GameUnified(); // This will start at some point in the middle of the sequence,

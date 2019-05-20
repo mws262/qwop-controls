@@ -6,7 +6,7 @@ import actions.ActionList;
 import actions.ActionQueue;
 import distributions.Distribution_Equal;
 import game.GameUnified;
-import tree.NodeQWOPGraphics;
+import tree.NodeQWOPExplorable;
 import tree.Utility;
 import ui.PanelRunner;
 import ui.ScreenCapture;
@@ -76,11 +76,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         valueFunction.loadCheckpoint("small329"); // "small309"); // chk_after565"); // chk5");
 
         // Assign potential actions for the value function to choose among.
-        ActionList actionListNone = ActionList.makeActionSet(IntStream.range(1, 30).toArray(), new boolean[]{false, false,
+        ActionList actionListNone = ActionList.makeActionList(IntStream.range(1, 30).toArray(), new boolean[]{false, false,
                 false, false}, new Distribution_Equal()); // None, None
-        ActionList actionListWO = ActionList.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{false, true,
+        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 50).toArray(), new boolean[]{false, true,
                 true, false}, new Distribution_Equal()); // W, O
-        ActionList actionListQP = ActionList.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{true, false,
+        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 50).toArray(), new boolean[]{true, false,
                 false, true}, new Distribution_Equal()); // Q, P
 
         ActionList allActions = new ActionList(new Distribution_Equal());
@@ -89,7 +89,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         allActions.addAll(actionListQP);
 
         ActionGenerator_FixedActions actionGenerator = new ActionGenerator_FixedActions(allActions);
-        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
+        NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState(), actionGenerator);
 
         // Assign a "prefix" of actions, since I'm not sure if the controller will generalize to this part of running.
         List<Action[]> alist = new ArrayList<>();
@@ -105,10 +105,10 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 //                new Action(20,true,false,false,true),
         });
 
-        NodeQWOPGraphics.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
-        NodeQWOPGraphics.stripUncheckedActionsExceptOnLeaves(rootNode, 7);
+        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
+        NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, 7);
 
-        List<NodeQWOPGraphics> leaf = new ArrayList<>();
+        List<NodeQWOPExplorable> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
 
         ActionQueue actionQueue = new ActionQueue();
@@ -133,7 +133,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
             }
         }
 
-        NodeQWOPGraphics currNode = leaf.get(0);
+        NodeQWOPExplorable currNode = leaf.get(0);
 
         // Run the controller until failure.
         while (true) { //!qwop.game.getFailureStatus()) {

@@ -19,7 +19,7 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
     }
 
     private void run() {
-        ActionQueue actionQueue = getSampleActions();
+        ActionQueue actionQueue = ActionQueue.getSampleActions();
         IGameInternal gameFullRun = new GameUnified();
         IGameInternal coldStartGame = new GameUnified();
 

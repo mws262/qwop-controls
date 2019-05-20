@@ -33,15 +33,15 @@ public class ActionGenerator_Uniform implements IActionGenerator {
                 {false, false, false, true}};
         Distribution<Action> distribution = new Distribution_Equal();
         allActionLists = new ArrayList<>();
-        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[0], distribution));//ffff*
-        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[1], distribution));//tfff
-        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[2], distribution));//tftf
-        allActionLists.add(ActionList.makeActionSet(IntStream.range(10, 45).toArray(), keyRange[3], distribution));//tfft*
-        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[4], distribution));//ftff
-        allActionLists.add(ActionList.makeActionSet(IntStream.range(10, 45).toArray(), keyRange[5], distribution));//fttf*
-        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[6], distribution));//ftft
-        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[7], distribution));//fftf
-        allActionLists.add(ActionList.makeActionSet(IntStream.range(2, 25).toArray(), keyRange[8], distribution));//ffft
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), keyRange[0], distribution));//ffff*
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), keyRange[1], distribution));//tfff
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), keyRange[2], distribution));//tftf
+        allActionLists.add(ActionList.makeActionList(IntStream.range(10, 45).toArray(), keyRange[3], distribution));//tfft*
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), keyRange[4], distribution));//ftff
+        allActionLists.add(ActionList.makeActionList(IntStream.range(10, 45).toArray(), keyRange[5], distribution));//fttf*
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), keyRange[6], distribution));//ftft
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), keyRange[7], distribution));//fftf
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), keyRange[8], distribution));//ffft
     }
 
     @Override

@@ -49,6 +49,7 @@ public class LoadStateStatistics {
     /**
      * Container for state statistics information. Can also do the rescaling of states based on the contained values.
      */
+    @SuppressWarnings("WeakerAccess")
     public static class StateStatistics {
         public final float[] max;
         public final float[] min;
@@ -78,14 +79,7 @@ public class LoadStateStatistics {
          * @return Standardized array of flattened state data.
          */
         public float[] standardizeState(float[] stateData) {
-            for (int i = 0; i < stateData.length; i++) {
-                if (stdev[i] > 0) {
-                    stateData[i] = (stateData[i] - mean[i]) / stdev[i];
-                } else {
-                    stateData[i] = 0;
-                }
-            }
-            return stateData;
+            return doRescaling(stateData, stdev, mean);
         }
 
         public float[] standardizeState(State state) {
@@ -99,18 +93,23 @@ public class LoadStateStatistics {
          * @return Standardized array of flattened state data.
          */
         public float[] rescaleState(float[] stateData) {
+            return doRescaling(stateData, range, min);
+        }
+
+        @SuppressWarnings("unused")
+        public float[] rescaleState(State state) {
+            return rescaleState(state.flattenState());
+        }
+
+        private float[] doRescaling(float[] stateData, float[] span, float[] offset) {
             for (int i = 0; i < stateData.length; i++) {
-                if (range[i] > 0) {
-                    stateData[i] = (stateData[i] - min[i]) / range[i];
+                if (span[i] > 0) {
+                    stateData[i] = (stateData[i] - offset[i]) / span[i];
                 } else {
                     stateData[i] = 0;
                 }
             }
             return stateData;
-        }
-
-        public float[] rescaleState(State state) {
-            return rescaleState(state.flattenState());
         }
     }
 }

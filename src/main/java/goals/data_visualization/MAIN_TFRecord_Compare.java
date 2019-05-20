@@ -1,25 +1,18 @@
 package goals.data_visualization;
 
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_NearestNeighborApprox.RunHolder;
 import game.GameUnified;
 import game.IGameInternal;
 import tree.NodeQWOPGraphicsBase;
 import ui.PanelRunner;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -52,16 +45,10 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
 
         List<File> exampleDataFiles = new ArrayList<>();
-        int count = 0;
         for (File f : allFiles) {
             if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
                 System.out.println("Found save file: " + f.getName());
-                //if (count < 5 && count > 0) { // 10 is bad? 9 meh, 8 good
                     exampleDataFiles.add(f);
-                //}
-//8 not match
-// 9 not match
-                count++;
             }
         }
 

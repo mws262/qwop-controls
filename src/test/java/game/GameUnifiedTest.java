@@ -1,6 +1,5 @@
 package game;
 
-import actions.Action;
 import actions.ActionQueue;
 import org.junit.Assert;
 import org.junit.Test;
@@ -222,7 +221,7 @@ public class GameUnifiedTest {
         GameUnified gameSingle = new GameUnified();
 
         // Run through the full queue with no saving/loading
-        ActionQueue actions = getSampleActions();
+        ActionQueue actions = ActionQueue.getSampleActions();
         while (!actions.isEmpty()) {
             gameSingle.step(actions.pollCommand());
         }
@@ -230,7 +229,7 @@ public class GameUnifiedTest {
 
         // Redo with save/load in the middle.
         gameSingle.makeNewWorld();
-        actions = getSampleActions();
+        actions = ActionQueue.getSampleActions();
         for (int i = 0; i < 30; i++) {
             gameSingle.step(actions.pollCommand());
         }
@@ -386,46 +385,46 @@ public class GameUnifiedTest {
             }
         }
     }
-    private static ActionQueue getSampleActions() {
-        // Ran MAIN_Search_LongRun to get these. 19 steps.
-        ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addAction(new Action(1, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(34, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(19, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(45, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(10, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(38, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(5, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(31, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(21, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(21, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(14, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(35, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(10, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(23, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(20, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(23, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(13, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(20, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(24, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(22, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(18, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(23, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(20, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(24, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(21, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(20, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(19, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(21, new boolean[]{true, false, false, true}));
-
-        actionQueue.addAction(new Action(16, new boolean[]{false, false, false, false}));
-
-        return actionQueue;
-    }
+//    private static ActionQueue getSampleActions() {
+//        // Ran MAIN_Search_LongRun to get these. 19 steps.
+//        ActionQueue actionQueue = new ActionQueue();
+//        actionQueue.addAction(new Action(1, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(34, new boolean[]{false, true, true, false}));
+//        actionQueue.addAction(new Action(19, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(45, new boolean[]{true, false, false, true}));
+//
+//        actionQueue.addAction(new Action(10, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(38, new boolean[]{false, true, true, false}));
+//        actionQueue.addAction(new Action(5, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(31, new boolean[]{true, false, false, true}));
+//
+//        actionQueue.addAction(new Action(21, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(21, new boolean[]{false, true, true, false}));
+//        actionQueue.addAction(new Action(14, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(35, new boolean[]{true, false, false, true}));
+//
+//        actionQueue.addAction(new Action(10, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(23, new boolean[]{false, true, true, false}));
+//        actionQueue.addAction(new Action(20, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(23, new boolean[]{true, false, false, true}));
+//
+//        actionQueue.addAction(new Action(13, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(20, new boolean[]{false, true, true, false}));
+//        actionQueue.addAction(new Action(24, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(22, new boolean[]{true, false, false, true}));
+//
+//        actionQueue.addAction(new Action(18, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(23, new boolean[]{false, true, true, false}));
+//        actionQueue.addAction(new Action(20, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(24, new boolean[]{true, false, false, true}));
+//
+//        actionQueue.addAction(new Action(21, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(20, new boolean[]{false, true, true, false}));
+//        actionQueue.addAction(new Action(19, new boolean[]{false, false, false, false}));
+//        actionQueue.addAction(new Action(21, new boolean[]{true, false, false, true}));
+//
+//        actionQueue.addAction(new Action(16, new boolean[]{false, false, false, false}));
+//
+//        return actionQueue;
+//    }
 }

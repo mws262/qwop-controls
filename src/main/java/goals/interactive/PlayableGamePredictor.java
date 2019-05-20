@@ -14,16 +14,16 @@ import java.util.List;
 
 public class PlayableGamePredictor extends TensorflowLoader {
 
-    private String stateInputName = "input/qwop_state_input";
-    private String actionInputName = "input/qwop_action_input";
-    private String internalStateInput = "rnn/full_internal_state_input";
-    private String hiddenStateOutputName = "output/internal_state_output";
-    private String stateOutputName = "output/state_output";
+    private static final String stateInputName = "input/qwop_state_input";
+    private static final String actionInputName = "input/qwop_action_input";
+    private static final String internalStateInput = "rnn/full_internal_state_input";
+    private static final String hiddenStateOutputName = "output/internal_state_output";
+    private static final String stateOutputName = "output/state_output";
 
-    Tensor<Float> currentGameStateTensor;
-    Tensor<Float> currentInternalState;
+    private Tensor<Float> currentGameStateTensor;
+    private Tensor<Float> currentInternalState;
 
-    State currentGameState =  GameUnified.getInitialState();
+    private State currentGameState =  GameUnified.getInitialState();
 
     /**
      * Load the computational graph from a .pb file and also make a new session.
@@ -99,9 +99,6 @@ public class PlayableGamePredictor extends TensorflowLoader {
     public static void main(String[] args) {
         PlayableGamePredictor gp = new PlayableGamePredictor("frozen_model9.pb", "src/main/resources/tflow_models" +
                 "/sim_models/");
-        // +
-                //"/sim_models");
-
         JFrame frame = new JFrame();
         PanelRunner_SimpleState panelRunner = new PanelRunner_SimpleState();
         panelRunner.activateTab();

@@ -411,22 +411,22 @@ public abstract class MAIN_Search_Template {
 
         /* Repeated action 1 -- no keys pressed. */
         Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionList actionList1 = ActionList.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
+        ActionList actionList1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
                 false}, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> dist2 = new Distribution_Normal(39f, 3f);
-        ActionList actionList2 = ActionList.makeActionSet(IntStream.range(20, 60).toArray(), new boolean[]{false, true, true,
+        ActionList actionList2 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), new boolean[]{false, true, true,
                 false}, dist2);
 
         /* Repeated action 3 -- No keys pressed. */
         Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionList actionList3 = ActionList.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
+        ActionList actionList3 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
                 false}, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> dist4 = new Distribution_Normal(39f, 3f);
-        ActionList actionList4 = ActionList.makeActionSet(IntStream.range(20, 60).toArray(), new boolean[]{true, false, false,
+        ActionList actionList4 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), new boolean[]{true, false, false,
                 true}, dist4);
 
         ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
@@ -434,41 +434,41 @@ public abstract class MAIN_Search_Template {
         /////// Action Exceptions for starting up. ////////
         /* Repeated action exceptions 1 -- no keys pressed. */
         Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
-        ActionList actionListE1 = ActionList.makeActionSet(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
+        ActionList actionListE1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
                 false}, distE1);
 
         /*  Repeated action exceptions 2 -- W-O pressed */
         Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionList actionListE2 = ActionList.makeActionSet(IntStream.range(30, 50).toArray(), new boolean[]{false,
+        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(30, 50).toArray(), new boolean[]{false,
                 true, true,
                 false}, distE2);
 
         /*  Repeated action exceptions 3 -- no keys pressed. */
         Distribution<Action> distE3 = new Distribution_Normal(5, 2f);
-        ActionList actionListE3 = ActionList.makeActionSet(IntStream.range(1, 20).toArray(), new boolean[]{false,
+        ActionList actionListE3 = ActionList.makeActionList(IntStream.range(1, 20).toArray(), new boolean[]{false,
                 false, false,
                 false}, distE3);
 
         /*  Repeated action exceptions 4 -- Q-P pressed */
         Distribution<Action> distE4 = new Distribution_Normal(25f, 2f);
-        ActionList actionListE4 = ActionList.makeActionSet(IntStream.range(15, 30).toArray(), new boolean[]{true,
+        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), new boolean[]{true,
                 false, false,
                 true}, distE4);
 
         /////// Action Exceptions for recovery. ////////
         /*  Repeated action 1 and 3 -- Nothing pressed */
         Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
-        ActionList actionListFalseFalse = ActionList.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{false, false,
+        ActionList actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(), new boolean[]{false, false,
                 false, false}, distFalseFalse);
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
-        ActionList actionListWO = ActionList.makeActionSet(IntStream.range(1, 70).toArray(), new boolean[]{false, true, true,
+        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{false, true, true,
                 false}, distWO);
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
-        ActionList actionListQP = ActionList.makeActionSet(IntStream.range(1, 70).toArray(), new boolean[]{true, false, false,
+        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{true, false, false,
                 true}, distQP);
 
         Map<Integer, ActionList> actionExceptions = new HashMap<>();
@@ -510,25 +510,25 @@ public abstract class MAIN_Search_Template {
 
         /* Repeated action 1 -- no keys pressed. */
         Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionList actionList1 = ActionList.makeActionSet(IntStream.range(2, 25).toArray(), new boolean[]{false, false,
+        ActionList actionList1 = ActionList.makeActionList(IntStream.range(2, 25).toArray(), new boolean[]{false, false,
                 false,
                 false}, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> dist2 = new Distribution_Normal(25, 3f);
-        ActionList actionList2 = ActionList.makeActionSet(IntStream.range(5, 50).toArray(), new boolean[]{false, true,
+        ActionList actionList2 = ActionList.makeActionList(IntStream.range(5, 50).toArray(), new boolean[]{false, true,
                 true,
                 false}, dist2);
 
         /* Repeated action 3 -- W-O pressed */
         Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionList actionList3 = ActionList.makeActionSet(IntStream.range(2, 25).toArray(), new boolean[]{false, false,
+        ActionList actionList3 = ActionList.makeActionList(IntStream.range(2, 25).toArray(), new boolean[]{false, false,
                 false,
                 false}, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> dist4 = new Distribution_Normal(25, 3f);
-        ActionList actionList4 = ActionList.makeActionSet(IntStream.range(5, 50).toArray(), new boolean[]{true, false,
+        ActionList actionList4 = ActionList.makeActionList(IntStream.range(5, 50).toArray(), new boolean[]{true, false,
                 false,
                 true}, dist4);
 
@@ -537,42 +537,42 @@ public abstract class MAIN_Search_Template {
         /////// Action Exceptions for starting up. ////////
         /* Repeated action exceptions 1 -- no keys pressed. */
         Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
-        ActionList actionListE1 = ActionList.makeActionSet(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
+        ActionList actionListE1 = ActionList.makeActionList(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
                 false,
                 false}, distE1);
 
         /*  Repeated action exceptions 2 -- W-O pressed */
         Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionList actionListE2 = ActionList.makeActionSet(IntStream.range(5, 65).toArray(), new boolean[]{false, true,
+        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(5, 65).toArray(), new boolean[]{false, true,
                 true,
                 false}, distE2);
 
         /*  Repeated action exceptions 3 -- no keys pressed. */
         Distribution<Action> distE3 = new Distribution_Normal(24f, 2f);
-        ActionList actionListE3 = ActionList.makeActionSet(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
+        ActionList actionListE3 = ActionList.makeActionList(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
                 false,
                 false}, distE3);
 
         /*  Repeated action exceptions 4 -- Q-P pressed */
         Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
-        ActionList actionListE4 = ActionList.makeActionSet(IntStream.range(5, 65).toArray(), new boolean[]{true, false,
+        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(5, 65).toArray(), new boolean[]{true, false,
                 false,
                 true}, distE4);
 
         /////// Action Exceptions for recovery. ////////
         /*  Repeated action 1 and 3 -- Nothing pressed */
         Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
-        ActionList actionListFalseFalse = ActionList.makeActionSet(IntStream.range(1, 50).toArray(), new boolean[]{false, false,
+        ActionList actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(), new boolean[]{false, false,
                 false, false}, distFalseFalse);
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
-        ActionList actionListWO = ActionList.makeActionSet(IntStream.range(1, 70).toArray(), new boolean[]{false, true, true,
+        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{false, true, true,
                 false}, distWO);
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
-        ActionList actionListQP = ActionList.makeActionSet(IntStream.range(1, 70).toArray(), new boolean[]{true, false, false,
+        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{true, false, false,
                 true}, distQP);
 
         Map<Integer, ActionList> actionExceptions = new HashMap<>();

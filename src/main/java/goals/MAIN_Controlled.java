@@ -1,21 +1,5 @@
 package goals;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
 import actions.Action;
 import actions.ActionQueue;
 import controllers.Controller_NearestNeighborApprox;
@@ -30,6 +14,16 @@ import tree.NodeQWOPExplorable;
 import tree.NodeQWOPGraphics;
 import tree.Utility;
 import ui.ScreenCapture;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Playback runs or sections of runs saved in SavableSingleRun files.
@@ -221,14 +215,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
      **/
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {
-
-            boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-            boolean Q = nextCommand[0];
-            boolean W = nextCommand[1];
-            boolean O = nextCommand[2];
-            boolean P = nextCommand[3];
-            //if (doScreenCapture) screenCap.takeFrame(screenCapRectangle);
-            game.step(Q, W, O, P);
+            game.step(actionQueue.pollCommand());
             try {
                 if (doScreenCapture && count++ > 20) screenCap.takeFrameFromContainer(mainViewPanel);
 
@@ -249,9 +236,6 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             int xOffsetPixels = 675;
             controller.draw(g, game, runnerScaling, xOffsetPixels - (int) (runnerScaling * 2.5f), yOffsetPixels); // Optionally, the controller may want to draw some stuff for debugging.
             game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
-
-            //				keyDrawer(g, Q, W, O, P);
-            //				drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
         }
     }
 
