@@ -6,7 +6,7 @@ import java.util.List;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import actions.Action;
 import tree.NodeQWOPBase;
@@ -61,7 +61,7 @@ public class DataSaver_Sparse implements IDataSaver {
     public void reportGameInitialization(State initialState) {}
 
     @Override
-    public void reportTimestep(Action action, IGame game) {}
+    public void reportTimestep(Action action, IGameInternal game) {}
 
     @Override
     public void reportGameEnding(NodeQWOPBase<?> endNode) {

@@ -12,8 +12,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: com.fazecast:jSerialComm:2.5.0" level="project" />
-    <orderEntry type="library" name="Maven: com.fazecast:jSerialComm:2.5.0" level="project" />
-    <orderEntry type="library" name="Maven: com.fazecast:jSerialComm:2.5.0" level="project" />
     <orderEntry type="library" name="Maven: org.jblas:jblas:1.2.4" level="project" />
     <orderEntry type="library" name="Maven: org.jfree:jfreechart:1.0.19" level="project" />
     <orderEntry type="library" name="Maven: org.jfree:jcommon:1.0.23" level="project" />

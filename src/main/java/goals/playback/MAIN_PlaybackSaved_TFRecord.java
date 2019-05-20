@@ -10,7 +10,7 @@ import actions.Action;
 import actions.ActionQueue;
 import data.TFRecordDataParsers;
 import game.GameUnified;
-import game.IGame;
+import game.IGameInternal;
 import org.tensorflow.example.SequenceExample;
 
 import game.State;
@@ -80,8 +80,8 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
 
         Collections.shuffle(playbackFiles);
 
-        IGame gameForActionSim = new GameUnified();
-        IGame gameForCommandSim = new GameUnified();
+        IGameInternal gameForActionSim = new GameUnified();
+        IGameInternal gameForCommandSim = new GameUnified();
 
         // Load files one at a time.
         for (File tfrecordFile : playbackFiles) {

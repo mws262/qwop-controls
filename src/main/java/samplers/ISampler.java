@@ -1,8 +1,8 @@
 package samplers;
 
 import actions.Action;
-import game.IGame;
 import tree.NodeQWOPExplorableBase;
+import game.IGameInternal;
 
 /**
  * Defines a strategy for sampling nodes.
@@ -46,7 +46,7 @@ public interface ISampler {
     /**
      * Continued expansion which is NOT added to the tree as nodes. Only used for scoring as in UCB.
      **/
-    void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGame game);
+    void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGameInternal game);
 
     /**
      * Are we ready to switch from rollout policy to tree policy?

@@ -1,13 +1,14 @@
 package savers;
 
-import actions.Action;
-import game.IGame;
-import game.State;
-import tree.NodeQWOPBase;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
+import game.IGameInternal;
+import game.State;
+import actions.Action;
+import tree.NodeQWOPBase;
+
 
 public interface IDataSaver {
 
@@ -23,7 +24,7 @@ public interface IDataSaver {
      * @param action Current action being run.
      * @param game Instance of the game used for simulation.
      */
-    void reportTimestep(Action action, IGame game);
+    void reportTimestep(Action action, IGameInternal game);
 
     /**
      * Get the final game state for this run.

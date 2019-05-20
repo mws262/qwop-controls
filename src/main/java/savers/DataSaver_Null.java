@@ -1,7 +1,9 @@
 package savers;
 
+import java.util.List;
+
+import game.IGameInternal;
 import actions.Action;
-import game.IGame;
 import game.State;
 import tree.NodeQWOPBase;
 
@@ -19,7 +21,7 @@ public class DataSaver_Null implements IDataSaver {
     }
 
     @Override
-    public void reportTimestep(Action action, IGame game) {
+    public void reportTimestep(Action action, IGameInternal game) {
     }
 
     @Override

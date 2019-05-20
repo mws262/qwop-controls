@@ -6,9 +6,12 @@ import java.awt.*;
  * All versions of the game should do these things. Primarily so that the single thread and multithreaded versions
  * can be swapped easily, but other implementations could be added with different game rules also.
  *
+ * An {@link IGameInternal} must be able to receive commands and provide states, but additionally, it must be able to
+ * be explicitly stepped forward in time, and its state must be externally changeable.
+ *
  * @author matt
  */
-public interface IGame {
+public interface IGameInternal extends IGameExternal{
 
     /** Reset the runner to its starting state. **/
     void makeNewWorld();
@@ -28,27 +31,7 @@ public interface IGame {
      */
     void step(boolean[] commands);
 
-    /**
-     * Get the runner's state.
-     *
-     * @return {@link State} of the runner at the current timestep.
-     */
-    State getCurrentState();
-
-
-    /**
-     * Get whether the game is considered to be in a failed state.
-     * @return Whether the game is failed (true is failed).
-     */
-    boolean getFailureStatus();
-
-    long getTimestepsSimulatedThisGame();
-
     void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels);
 
     void setState(State st);
-
-    void applyBodyImpulse(float v, float v1);
-
-    byte[] getFullState();
 }

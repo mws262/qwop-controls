@@ -1,7 +1,7 @@
 package samplers.rollout;
 
 import evaluators.IEvaluationFunction;
-import game.IGame;
+import game.IGameInternal;
 import tree.NodeQWOPExplorableBase;
 
 /**
@@ -17,7 +17,7 @@ public class RolloutPolicy_RandomColdStart extends RolloutPolicy{
     }
 
     @Override
-    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
         actionQueue.clearAll();
 
         NodeQWOPExplorableBase<?> normalRolloutEndNode = randomRollout(startNode, game);

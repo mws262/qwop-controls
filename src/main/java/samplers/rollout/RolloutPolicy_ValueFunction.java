@@ -2,7 +2,7 @@ package samplers.rollout;
 
 import actions.Action;
 import evaluators.IEvaluationFunction;
-import game.IGame;
+import game.IGameInternal;
 import tree.NodeQWOPExplorableBase;
 import value.IValueFunction;
 
@@ -22,7 +22,7 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
         NodeQWOPExplorableBase<?> currentNode = startNode;
         int rolloutTimesteps = 0;
         while (!game.getFailureStatus() && rolloutTimesteps < maxRolloutTimesteps) {

@@ -1,7 +1,7 @@
 package samplers.rollout;
 
 import actions.Action;
-import game.IGame;
+import game.IGameInternal;
 import tree.NodeQWOPExplorableBase;
 
 public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
@@ -20,7 +20,7 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
         int timestepCounter = 0;
         NodeQWOPExplorableBase<?> rolloutNode = startNode;
         float accumulatedValue = 0f;

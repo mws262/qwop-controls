@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import actions.Action;
 import evaluators.IEvaluationFunction;
-import game.IGame;
+import game.IGameInternal;
 import tree.NodeQWOPExplorableBase;
 import tree.Utility;
 
@@ -204,7 +204,7 @@ public class Sampler_Greedy implements ISampler {
     }
 
     @Override
-    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGame game) {
+    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
         // No rollout policy.
     }
 

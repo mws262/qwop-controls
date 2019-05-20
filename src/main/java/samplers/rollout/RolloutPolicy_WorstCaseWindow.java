@@ -1,7 +1,7 @@
 package samplers.rollout;
 
 import actions.Action;
-import game.IGame;
+import game.IGameInternal;
 import tree.NodeQWOPExplorableBase;
 
 /**
@@ -19,7 +19,7 @@ public class RolloutPolicy_WorstCaseWindow extends RolloutPolicy {
     }
 
     @Override
-    public float rollout(NodeQWOPExplorableBase<?> startNode, IGame game) {
+    public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
 
         // Need to do a rollout for the actual node we landed on.
         Action middleAction = startNode.getAction();

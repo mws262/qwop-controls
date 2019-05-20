@@ -12,8 +12,15 @@ import java.util.List;
 
 public abstract class ValueFunction_TensorFlow implements IValueFunction {
 
-    public final int inputSize;
-    public final int outputSize;
+    /**
+     * Input layer size.
+     */
+    private final int inputSize;
+
+    /**
+     * Output layer size.
+     */
+    private final int outputSize;
 
     /**
      * TensorFlow neural network used to predict value.
@@ -23,22 +30,22 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     /**
      * Number of nodes to run through training in one shot.
      */
-    int trainingBatchSize = 100;
+    private int trainingBatchSize = 100;
 
     /**
      * How many training steps to take per batch of the update data.
      */
-    int trainingStepsPerBatch = 1;
+    private int trainingStepsPerBatch = 1;
 
     /**
      * Number of training epochs completed since the creation of this object.
      */
-    int epochCount = 0;
+    private int epochCount = 0;
 
     /**
      * Number of training batches completed since the start of the last update.
      */
-    int batchCount = 0;
+    private int batchCount = 0;
 
     /**
      * Should we spit out info after training iterations?
@@ -193,5 +200,6 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     }
 
     abstract float[] assembleInputFromNode(NodeQWOPBase<?> node);
+
     abstract float[] assembleOutputFromNode(NodeQWOPBase<?> node);
 }
