@@ -88,16 +88,9 @@ public class Action implements Serializable {
      *                             True means pressed down. False means not pressed.
      */
     public Action(int totalTimestepsToHold, boolean[] keysPressed) {
-        this(totalTimestepsToHold, keysPressed[0], keysPressed[1], keysPressed[2], keysPressed[3]);
+        this(totalTimestepsToHold, validateBooleanKeys(keysPressed)[0], keysPressed[1], keysPressed[2], keysPressed[3]);
 
     }
-    //TODO
-//    private static boolean[] validateBooleanKeys(boolean[] keys) {
-//        if (keysPressed.length > 4)
-//            throw new IllegalArgumentException("A QWOP action should have booleans for exactly 4 keys. Tried to " +
-//                    "create one with a boolean array of size: " + keysPressed.length);
-//        return keys;
-//    }
 
     /**
      * Create an action containing the time to hold and the key combination.
@@ -382,6 +375,18 @@ public class Action implements Serializable {
      */
     @SuppressWarnings("WeakerAccess")
     public static Keys booleansToKeys(boolean[] command) {
-        return booleansToKeys(command[0], command[1], command[2], command[3]);
+        return booleansToKeys(validateBooleanKeys(command)[0], command[1], command[2], command[3]);
+    }
+
+    /**
+     * Validate the length of a boolean keypress array. Throws an {@link IllegalArgumentException} if not 4 elements.
+     * @param keys Keys pressed. Should have 4 elements.
+     * @return The exact given array.
+     */
+    private static boolean[] validateBooleanKeys(boolean[] keys) {
+        if (keys.length != 4)
+            throw new IllegalArgumentException("A QWOP action should have booleans for exactly 4 keys. Tried to " +
+                    "create one with a boolean array of size: " + keys.length);
+        return keys;
     }
 }
