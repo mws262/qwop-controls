@@ -1,9 +1,11 @@
 package value;
 
 import actions.Action;
+import game.GameConstants;
 import game.GameUnified;
 import game.IGame;
 import game.State;
+import tree.NodeQWOP;
 import tree.NodeQWOPBase;
 
 import java.io.File;
@@ -11,219 +13,198 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import static actions.Action.Keys;
+import static actions.Action.keysToBooleans;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
 
+    /**
+     * Dimension of the state variable input.
+     */
     private static final int STATE_SIZE = 72;
+
+    /**
+     * Dimension of the value output.
+     */
     private static final int VALUE_SIZE = 1;
 
-    boolean multithread = true;
-    private ExecutorService ex;
+
+    private final boolean multithread = true;
+
+    /**
+     * Handles distributing different predictive simulations to different threads to run simultaneously.
+     */
+    private ExecutorService executor;
+    private List<EvaluationResult> evalResults;
+    private List<FuturePredictor> evaluations;
+
+    /**
+     * Number of threads to distribute the predictive simulations to. There are 9 predicted futures, so this is a
+     * natural number to choose, assuming the computer can handle it.
+     */
     private int numThreads = 9;
-    List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
+
     public EvaluationResult currentResult;
 
+    /**
+     * Constructor which loads an existing value function net.
+     * @param file .pb file of the existing net.
+     * @throws FileNotFoundException Unable to find an existing net.
+     */
     public ValueFunction_TensorFlow_StateOnly(File file) throws FileNotFoundException {
         super(file);
-        if (multithread) {
-            ex = Executors.newFixedThreadPool(numThreads);
-        }
+        assignFuturePredictors();
+        if (multithread)
+            executor = Executors.newFixedThreadPool(numThreads);
     }
 
+    /**
+     * Constructor which makes a new value function net based on provided parameters. If this net is similar enough
+     * to a previously-used one, you can probably load a checkpoint file with weights with it too.
+     * @param fileName File name of the new .pb net. Don't include file extension.
+     * @param hiddenLayerSizes Sizes of the hidden layers of the net. Don't include the input or output layer sizes.
+     *                         They are defined in {@link ValueFunction_TensorFlow_StateOnly#STATE_SIZE} and
+     *                         {@link ValueFunction_TensorFlow_StateOnly#VALUE_SIZE}.
+     * @param additionalArgs Additional arguments to pass to the network creation script.
+     * @throws FileNotFoundException
+     */
     public ValueFunction_TensorFlow_StateOnly(String fileName, List<Integer> hiddenLayerSizes,
                                               List<String> additionalArgs) throws FileNotFoundException {
         super(fileName, STATE_SIZE, VALUE_SIZE, hiddenLayerSizes, additionalArgs);
-        if (multithread) {
-            ex = Executors.newFixedThreadPool(numThreads);
-        }
+        assignFuturePredictors();
+        if (multithread)
+            executor = Executors.newFixedThreadPool(numThreads);
+    }
+
+    /**
+     * Assign the futures that will be explored on each controller evaluation.
+     */
+    private void assignFuturePredictors() {
+        evaluations = new ArrayList<>();
+        evalResults = new ArrayList<>();
+        evaluations.add(new FuturePredictor(Keys.none, 1, 10));
+        evaluations.add(new FuturePredictor(Keys.qp, 2, 45));
+        evaluations.add(new FuturePredictor(Keys.wo, 2, 45));
+        evaluations.add(new FuturePredictor(Keys.q, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.w, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.o, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.p, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.qo, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.wp, 2, 5));
+
     }
 
     @Override
     public Action getMaximizingAction(NodeQWOPBase<?> currentNode) {
-        State fullState = currentNode.getState();
-        Objects.requireNonNull(fullState);
+        evalResults.clear(); // Remove existing results from any previous evaluations.
 
-        List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
-        List<EvaluationResult> evalResults = new ArrayList<>();
-        evaluations.add( // No Keys
-                getCallable(fullState, currentNode, Action.Keys.none, 1, 10));
-        evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 2, 45));
-        evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 2, 45));
-        evaluations.add( // Q
-                getCallable(fullState, currentNode, Action.Keys.q, 2, 5));
-        evaluations.add( // 2
-                getCallable(fullState, currentNode, Action.Keys.w, 2, 5));
-        evaluations.add( // O
-                getCallable(fullState, currentNode, Action.Keys.o, 2, 5));
-        evaluations.add( // P
-                getCallable(fullState, currentNode, Action.Keys.p, 2, 5));
-        // Off keys -- dunno if these are ever helpful.
-        evaluations.add( // QO
-                getCallable(fullState, currentNode, Action.Keys.qo, 2, 5));
-        evaluations.add( // WP
-                getCallable(fullState, currentNode, Action.Keys.wp, 2, 5));
+        State state = Objects.requireNonNull(currentNode.getState(), "Received node did not have a state assigned.");
 
-        if (multithread) { // Multi-thread
-            List<Future<EvaluationResult>> allResults;
-            try {
-                allResults = ex.invokeAll(evaluations);
+        // Update each of the future predictors to use the new starting states.
+        evaluations.forEach(e -> e.setStartingState(state));
+
+        try{
+            if (multithread) { // Multi-thread, send to executor.
+                List<Future<EvaluationResult>> allResults = executor.invokeAll(evaluations);
                 for (Future<EvaluationResult> future : allResults) {
                     evalResults.add(future.get()); // Each blocks until the thread is done.
                 }
-            }catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        } else { // Single thread
-            try {
+
+            } else { // Single thread, just call right here.
                 for (Callable<EvaluationResult> eval : evaluations) {
                     evalResults.add(eval.call());
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        EvaluationResult evalResult = evalResults.stream().max(EvaluationResult::compareTo).get();
+        EvaluationResult evalResult = evalResults.stream().max(EvaluationResult::compareTo).orElse(null);
+        Objects.requireNonNull(evalResult);
+
         currentResult = evalResult;
         return new Action(evalResult.timestep, evalResult.keys);
     }
 
 
-    private Callable<EvaluationResult> getCallable(byte[] gameStartingState, NodeQWOPBase<?> startingNode,
-                                                   Action.Keys keys, int minDuration, int maxDuration) {
-        boolean[] buttons = Action.keysToBooleans(keys);
+//    private Callable<EvaluationResult> getCallable(byte[] gameStartingState, INode startingNode,
+//                                                   Action.Keys keys, int minDuration, int maxDuration) {
+//        boolean[] buttons = Action.keysToBooleans(keys);
+//
+//        return () -> {
+//            GameUnified gameLocal = GameUnified.restoreFullState(gameStartingState);
+//            EvaluationResult bestResult = new EvaluationResult();
+//            for (int i = minDuration; i < maxDuration; i++) {
+//                gameLocal.step(buttons);
+//                State st = gameLocal.getCurrentState();
+//                INode nextNode = new NodePlaceholder(startingNode, new Action(i, buttons), st);
+//                float val = evaluate(nextNode);
+//                if (val > bestResult.value) {
+//                    bestResult.value = val;
+//                    bestResult.timestep = i;
+//                    bestResult.keys = keys;
+//                }
+//            }
+//            return bestResult;
+//        };
+//    }
 
-        return () -> {
-            GameUnified gameLocal = GameUnified.restoreFullState(gameStartingState);
-            EvaluationResult bestResult = new EvaluationResult();
-            for (int i = minDuration; i < maxDuration; i++) {
-                gameLocal.step(buttons);
-                State st = gameLocal.getCurrentState();
-                NodeQWOPBase<?> nextNode = startingNode.addBackwardsLinkedChild(new Action(i, buttons), st);
-                float val = evaluate(nextNode);
-                if (val > bestResult.value) {
-                    bestResult.value = val;
-                    bestResult.timestep = i;
-                    bestResult.keys = keys;
-                }
-            }
-            return bestResult;
-        };
-    }
-
-    @SuppressWarnings("Duplicates")
-    private Callable<EvaluationResult> getCallable(State gameStartingState, NodeQWOPBase<?> startingNode,
-                                                   Action.Keys keys, int minDuration, int maxDuration) {
-        boolean[] buttons = Action.keysToBooleans(keys);
-
-        return () -> {
-            GameUnified gameLocal = new GameUnified();
-            gameLocal.iterations = 15;
-//            gameLocal.useWarmStarting = false;
-            gameLocal.makeNewWorld();
-
-            gameLocal.setState(gameStartingState);
-            EvaluationResult bestResult = new EvaluationResult();
-            //System.out.println("end " + keys.toString());
-            float val1 = 0;
-            float val2 = 0;
-            float val3 = 0;
-            for (int i = 1; i <= maxDuration; i++) {
-//                gameLocal.applyBodyImpulse(-0.0005f, 0.0012f);
-                if (i > 2) {
-                    gameLocal.iterations = 5;
-                }
-                gameLocal.step(buttons);
-                State st = gameLocal.getCurrentState();
-                NodeQWOPBase<?> nextNode = startingNode.addBackwardsLinkedChild(new Action(i, buttons), st);
-                val1 = val2;
-                val2 = val3;
-                val3 = evaluate(nextNode);
-                if (i == 1) {
-                   // val1 = val3;
-                    val2 = val3 * 4f/4f;
-                }
-                if (i > 1 && i > minDuration) {
-//                System.out.println(val);
-//                    float sum = val1;
-//                    if (val2 < sum) {
-//                        sum = val2;
-//                    }
-//                    if (val3 < sum) {
-//                        sum = val3;
-//                    }
-                    float sum = (val1 + val2 + val3)/3f;
-//                    float sum = val2;
-                    if (sum > bestResult.value) {
-                        bestResult.value = sum;
-                        bestResult.timestep = i - 1; //1; // TODO TEMP 2 for hardware. 1 is correct otherwise.
-                        bestResult.keys = keys;
-                        bestResult.state = st;
-                    }
-                }
-            }
-            return bestResult;
-        };
-    }
-
-    private Action getBestActionFromEvaluationResults(List<EvaluationResult> results) {
-        EvaluationResult evalResult = results.stream().max(EvaluationResult::compareTo).get();
-        return new Action(evalResult.timestep, evalResult.keys);
-    }
-
-    @SuppressWarnings("Duplicates")
     @Override
     public Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGame realGame) {
-//        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
-        State fullState = currentNode.getState();
-        Objects.requireNonNull(fullState);
-
-        List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
-        List<EvaluationResult> evalResults = new ArrayList<>();
-        evaluations.add( // No Keys
-                getCallable(fullState, currentNode, Action.Keys.none, 1, 15));
-        evaluations.add( // QP
-                getCallable(fullState, currentNode, Action.Keys.qp, 2, 55));
-        evaluations.add( // WO
-                getCallable(fullState, currentNode, Action.Keys.wo, 2, 55));
-        evaluations.add( // Q
-                getCallable(fullState, currentNode, Action.Keys.q, 2, 5));
-        evaluations.add( // W
-                getCallable(fullState, currentNode, Action.Keys.w, 2, 5));
-        evaluations.add( // O
-                getCallable(fullState, currentNode, Action.Keys.o, 2, 5));
-        evaluations.add( // P
-                getCallable(fullState, currentNode, Action.Keys.p, 2, 5));
-
-        // Off keys -- dunno if these are ever helpful.
-        evaluations.add( // QO
-                getCallable(fullState, currentNode, Action.Keys.qo, 2, 5));
-        evaluations.add( // WP
-                getCallable(fullState, currentNode, Action.Keys.wp, 2, 5));
-
-        if (multithread) { // Multi-thread
-            List<Future<EvaluationResult>> allResults;
-            try {
-                allResults = ex.invokeAll(evaluations);
-                for (Future<EvaluationResult> future : allResults) {
-                    evalResults.add(future.get()); // Each blocks until the thread is done.
-                }
-            }catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        } else { // Single thread
-            try {
-                for (Callable<EvaluationResult> eval : evaluations) {
-                    evalResults.add(eval.call());
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return getBestActionFromEvaluationResults(evalResults);
+        return null;
     }
+////        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
+//        State fullState = currentNode.getState();
+//        Objects.requireNonNull(fullState);
+//
+//        List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
+//        List<EvaluationResult> evalResults = new ArrayList<>();
+//        evaluations.add( // No Keys
+//                getCallable(fullState, currentNode, Keys.none, 1, 15));
+//        evaluations.add( // QP
+//                getCallable(fullState, currentNode, Keys.qp, 2, 55));
+//        evaluations.add( // WO
+//                getCallable(fullState, currentNode, Keys.wo, 2, 55));
+//        evaluations.add( // Q
+//                getCallable(fullState, currentNode, Keys.q, 2, 5));
+//        evaluations.add( // W
+//                getCallable(fullState, currentNode, Keys.w, 2, 5));
+//        evaluations.add( // O
+//                getCallable(fullState, currentNode, Keys.o, 2, 5));
+//        evaluations.add( // P
+//                getCallable(fullState, currentNode, Keys.p, 2, 5));
+//
+//        // Off keys -- dunno if these are ever helpful.
+//        evaluations.add( // QO
+//                getCallable(fullState, currentNode, Keys.qo, 2, 5));
+//        evaluations.add( // WP
+//                getCallable(fullState, currentNode, Keys.wp, 2, 5));
+//
+//        if (multithread) { // Multi-thread
+//            List<Future<EvaluationResult>> allResults;
+//            try {
+//                allResults = executor.invokeAll(evaluations);
+//                for (Future<EvaluationResult> future : allResults) {
+//                    evalResults.add(future.get()); // Each blocks until the thread is done.
+//                }
+//            }catch (InterruptedException | ExecutionException e) {
+//                e.printStackTrace();
+//            }
+//        } else { // Single thread
+//            try {
+//                for (Callable<EvaluationResult> eval : evaluations) {
+//                    evalResults.add(eval.call());
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        return getBestActionFromEvaluationResults(evalResults);
+//    }
 
     @Override
     float[] assembleInputFromNode(NodeQWOPBase<?> node) {
@@ -253,13 +234,169 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Keys pressed for the Action producing this result.
          */
-        public Action.Keys keys;
+        public Keys keys;
 
+        /**
+         * State observed from this evaluation.
+         */
         public State state;
 
         @Override
         public int compareTo(EvaluationResult o) {
             return Float.compare(this.value, o.value);
+        }
+    }
+
+    /**
+     * How future predictions are chosen from within a single button combination held for up to a specified duration.
+     */
+    private enum SelectionCriteria {
+        BEST_OVERALL, BEST_AVERAGE_WINDOW, BEST_WORST_CASE_WINDOW
+    }
+
+    /**
+     * For executing short-term predictions of the future in parallel or not.
+     * Each one has an assigned set of keys and a minimum and maximum number of timesteps in the future to pay
+     * attention to. Each time a new prediction is needed, just give a new starting state.
+     */
+    private class FuturePredictor implements Callable<EvaluationResult> {
+
+        /**
+         * Game copy used to predict this future.
+         */
+        private GameUnified gameLocal = new GameUnified();
+
+        /**
+         * Initial state of this future prediction.
+         */
+        private State startingState;
+
+        /**
+         * QWOP keys pressed during this future prediction.
+         */
+        private final boolean[] buttons;
+
+        /**
+         * Equivalent key representation.
+         */
+        private final Keys keys;
+
+        /**
+         * Minimum number of timesteps in the future which will be scored.
+         */
+        private final int minHorizon;
+
+        /**
+         * Maximum number of timesteps in the future which will be predicted.
+         */
+        private final int maxHorizon;
+
+        /**
+         * Number of physics iterations to start this prediction with. It is useful to have this greater than default
+         * to let the cold-started game "catch up" to the normal game.
+         */
+        private final int initialPhysicsIterations = 4 * GameConstants.physIterations;
+
+        /**
+         * Number of timesteps to run the game at the modified number of physics iterations before going back to
+         * default.
+         */
+        private final int warmstartIterationCount = 1;
+
+        /**
+         * Do we construct a new game between prediction calls? This speeds it up and reduces garbage collection, but
+         * makes each call depend on the previous to some extent. Perhaps good for performance, terrible for
+         * predicability.
+         */
+        private final boolean newGameBetweenPredictions = true;
+
+
+        private SelectionCriteria selectionCriteria = SelectionCriteria.BEST_AVERAGE_WINDOW;
+
+        /**
+         * Best result from within this prediction of the future.
+         */
+        private EvaluationResult bestResult = new EvaluationResult();
+
+        FuturePredictor(Keys keys, int minHorizon, int maxHorizon) {
+            this.keys = keys;
+            buttons = keysToBooleans(keys);
+            this.minHorizon = minHorizon;
+            this.maxHorizon = maxHorizon;
+        }
+
+        void setStartingState(State startingState) {
+            this.startingState = startingState;
+        }
+
+        @Override
+        public EvaluationResult call() {
+            gameLocal.iterations = initialPhysicsIterations; // Tunable parameter for getting caught up to the
+            // warm-start of the normal game.
+
+            // Reset the game and set it to the specified starting state.
+            bestResult.value = -Float.MAX_VALUE;
+            if (newGameBetweenPredictions)
+                gameLocal.makeNewWorld();
+            // makes the controller less predictable.
+            gameLocal.setState(startingState);
+
+            // Keep track of a window of three adjacent actions. Some of the selection approaches do a
+            // best-worst-case.
+            float val1;
+            float val2 = 0;
+            float val3 = 0;
+            for (int i = 1; i <= maxHorizon; i++) {
+                // Return to the normal number of physics iterations after the first step.
+                if (i > warmstartIterationCount + 1) {
+                    gameLocal.iterations = GameConstants.physIterations;
+                }
+                gameLocal.step(buttons);
+                State st = gameLocal.getCurrentState();
+                NodeQWOPBase<?> nextNode = new NodeQWOP(st);
+                val1 = val2;
+                val2 = val3;
+                val3 = evaluate(nextNode);
+                if (i == 1) {
+                    // val1 = val3;
+                    val2 = val3 * 4f/4f;
+                }
+                if (i > 1 && i > minHorizon) {
+
+                    // Decide what value should be recorded as best.
+                    float aggregateVal;
+                    switch (selectionCriteria) {
+                        case BEST_OVERALL:
+                            // Best overall value.
+                            aggregateVal = val2;
+                            break;
+                        case BEST_AVERAGE_WINDOW:
+                            // Best average window of 3 neighboring durations.
+                            aggregateVal = (val1 + val2 + val3)/3f;
+                            break;
+                        case BEST_WORST_CASE_WINDOW:
+                            // Best window of 3 as determined by the WORST of that 3.
+                            aggregateVal = val1;
+                            if (val2 < aggregateVal) {
+                                aggregateVal = val2;
+                            }
+                            if (val3 < aggregateVal) {
+                                aggregateVal = val3;
+                            }
+                            break;
+                        default:
+                            throw new IllegalStateException("Invalid selection criteria invoked.");
+                    }
+
+                    if (aggregateVal > bestResult.value) {
+                        bestResult.value = aggregateVal;
+                        bestResult.timestep = i - 1; // TODO TEMP 2 for hardware. 1 is correct otherwise.
+                        bestResult.keys = keys;
+                        bestResult.state = st;
+                    }
+                }
+            }
+            return bestResult;
         }
     }
 }

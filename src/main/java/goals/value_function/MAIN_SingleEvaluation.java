@@ -139,7 +139,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         while (true) { //!qwop.game.getFailureStatus()) {
 
             Utility.tic();
-            Action chosenAction = valueFunction.getMaximizingAction(currNode, qwop.game);
+            Action chosenAction = valueFunction.getMaximizingAction(currNode);//, qwop.game);
             Utility.toc();
 
             boolean[] keys =  chosenAction.peek();
