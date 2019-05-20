@@ -4,11 +4,8 @@ import actions.Action;
 import actions.ActionGenerator_FixedSequence;
 import actions.ActionList;
 import actions.IActionGenerator;
-import com.jogamp.nativewindow.DefaultGraphicsDevice;
-import com.jogamp.opengl.*;
-import com.jogamp.opengl.awt.GLJPanel;
 import distributions.Distribution_Equal;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -17,10 +14,6 @@ import org.junit.rules.ExpectedException;
 
 import java.awt.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.rmi.activation.Activator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -85,7 +78,7 @@ public class NodeQWOPGraphicsTest {
     private State unfailedState = mock(State.class);
     private State failedState = mock(State.class);
 
-    private IGame game = mock(IGame.class);
+    private IGameInternal game = mock(IGameInternal.class);
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
 

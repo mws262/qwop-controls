@@ -3,7 +3,7 @@ package tree;
 import actions.Action;
 import actions.ActionQueue;
 import data.SavableSingleGame;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import value.updaters.IValueUpdater;
 
@@ -77,7 +77,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * Add nodes based on saved action sequences. Has to re-simulate each to get the states.
      */
     public static <N extends NodeQWOPBase<N>> void makeNodesFromActionSequences(Collection<Action[]> actions, N root,
-                                                                                IGame game) {
+                                                                                IGameInternal game) {
 
         ActionQueue actQueue = new ActionQueue();
         for (Action[] acts : actions) {

@@ -1,8 +1,7 @@
 package tree;
 
 import actions.Action;
-import data.SavableSingleGame;
-import game.IGame;
+import game.IGameInternal;
 import game.State;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -13,7 +12,6 @@ import value.updaters.IValueUpdater;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -74,7 +72,7 @@ public class NodeQWOPTest {
     private State unfailedState = mock(State.class);
     private State failedState = mock(State.class);
 
-    private IGame game = mock(IGame.class);
+    private IGameInternal game = mock(IGameInternal.class);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
