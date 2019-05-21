@@ -21,7 +21,6 @@ import java.util.Random;
  *
  * @author matt
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
 public class Utility {
 
     /**

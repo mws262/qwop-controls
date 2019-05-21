@@ -4,6 +4,11 @@ import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 
+/**
+ * Object pooling for {@link TreeWorker}. These workers can be checked out and returned between {@link TreeStage}.
+ *
+ * @author matt
+ */
 public class WorkerFactory extends BasePooledObjectFactory<TreeWorker> {
 
     @Override

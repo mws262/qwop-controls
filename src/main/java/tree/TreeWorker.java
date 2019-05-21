@@ -94,11 +94,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
     public ActionQueue actionQueue = new ActionQueue();
 
     /**
-     * Initial runner state.
-     */
-    private State initState = GameUnified.getInitialState();
-
-    /**
      * Current status of this FSM
      */
     private Status currentStatus = Status.IDLE;
@@ -241,8 +236,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
 //                                "workers at the end of search stages.");
 
 
-
-
                         if (expansionNode == null) { // May happen with some samplers when the stage finishes.
                             changeStatus(Status.IDLE);
                         } else {
@@ -273,15 +266,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     // When all actions in queue are done, figure out what to do next.
                     if (actionQueue.isEmpty()) {
                         currentGameNode = targetNodeToTest;
-                        if (currentGameNode.getUntriedActionCount() == 0) { // This case should only happen if
-                            // another worker just happens to beat it here.
-                            System.out.println("Wow! Another worker must have finished this node off before this worker got here. We're going to keep running tree policy down the tree. If there aren't other workers, you should be worried.");
-                            currentGameNode = rootNode;
-                            changeStatus(Status.TREE_POLICY_CHOOSING);
-                        } else {
-                            sampler.treePolicyActionDone(currentGameNode);
-                            changeStatus(Status.EXPANSION_POLICY_CHOOSING);
-                        }
+                        assert currentGameNode.getUntriedActionCount() > 0;
+                        sampler.treePolicyActionDone(currentGameNode);
+                        changeStatus(Status.EXPANSION_POLICY_CHOOSING);
                     }
 
                     break;
@@ -377,13 +364,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                 tsPerSecondUpdateCounter = 0;
             }
         }
-    }
-
-    /**
-     * QWOP initial condition. Good way to give the root node a state.
-     */
-    public State getInitialState() {
-        return initState;
     }
 
     /**

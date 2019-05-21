@@ -73,8 +73,7 @@ public class Sampler_UCB implements ISampler {
      */
     public Sampler_UCB(IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
-        rolloutPolicy = new RolloutPolicy_SingleRandom(evaluationFunction);// RolloutPolicy_RandomColdStart
-        // (evaluationFunction);
+        rolloutPolicy = new RolloutPolicy_SingleRandom(evaluationFunction);
         c =  explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
     }
 
@@ -96,44 +95,7 @@ public class Sampler_UCB implements ISampler {
         // Do evaluation and propagation of scores.
         failureNode.recurseUpTreeInclusive(n -> n.updateValue(score, valueUpdater));
 
-            // todo factor these into their own IValueUpdaters
-//            float top1 = -Float.MAX_VALUE;
-//            float top2 = -Float.MAX_VALUE;
-//            float top3 = -Float.MAX_VALUE;
-//            if (failureNode.getChildCount() > 3) {
-//                for (Node child : failureNode.getChildren()) {
-//                    float avgVal = child.getValue()/child.visitCount.floatValue();
-//                    if (avgVal > top1) {
-//                        top3 = top2;
-//                        top2 = top1;
-//                        top1 = avgVal;
-//                    } else if (avgVal > top2) {
-//                        top3 = top2;
-//                        top2 = avgVal;
-//                    } else if (avgVal > top3) {
-//                        top3 = avgVal;
-//                    }
-//                }
-//                failureNode.setValue((top1 + top2 + top3) / 3f * failureNode.visitCount.floatValue());
-//            } else {
-//                failureNode.addToValue(score);
-//            }
-
-//            if (failureNode.getChildCount() > 1) {
-//                float mean = 0f;
-//                for (NodeQWOPExplorableBase<?> child : failureNode.getChildren()) {
-//                    mean += child.value.getValue();
-//                }
-//                mean = mean / (float) failureNode.getChildCount();
-//                float stdev = 0f;
-//                for (NodeQWOPExplorableBase<?> child : failureNode.getChildren()) {
-//                    stdev += (child.value.getValue() - mean) * (child.value.getValue() - mean);
-//                }
-//                stdev = (float) Math.sqrt(stdev / (float) failureNode.getChildCount());
-//                failureNode.setValue((mean + stdev) * failureNode.visitCount.floatValue());
-//            } else {
-//                failureNode.addToValue(score);
-//            }
+            // todo factor these into their own IValueUpdater
     }
 
     /**
@@ -224,9 +186,6 @@ public class Sampler_UCB implements ISampler {
     public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return expansionPolicyDone;
     }
-
-    //Controller_Tensorflow_ClassifyActionsPerTimestep con = new Controller_Tensorflow_ClassifyActionsPerTimestep(
-    //        "frozen_model.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
 
     @Override
     public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {

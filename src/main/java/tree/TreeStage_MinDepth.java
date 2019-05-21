@@ -1,12 +1,11 @@
 package tree;
 
+import samplers.ISampler;
+import savers.IDataSaver;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
-
-import savers.IDataSaver;
-import samplers.ISampler;
 
 /**
  * Searches until we meet a minimum depth requirement in all branches
@@ -29,6 +28,13 @@ public class TreeStage_MinDepth extends TreeStage {
      */
     private int minEffectiveDepth;
 
+    /**
+     * Tree stage which searches until all branches reach a specified depth, or all leaves less than this depth are
+     * failed.
+     * @param minDepth Search until all branches are this depth or fully-explored/failed.
+     * @param sampler Tree sampling strategy.
+     * @param saver Data-saving policy during and after the stage.
+     */
     public TreeStage_MinDepth(int minDepth, ISampler sampler, IDataSaver saver) {
         this.minDepth = minDepth;
         this.sampler = sampler;

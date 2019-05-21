@@ -1,13 +1,24 @@
 package tree;
 
+import samplers.ISampler;
+import savers.IDataSaver;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import savers.IDataSaver;
-import samplers.ISampler;
-
+/**
+ * Tree search which continues sampling until the root node is fully-explored. If a broad set of actions is provided,
+ * this will probably never occur. This is mostly useful for testing.
+ *
+ * @author matt
+ */
 public class TreeStage_SearchForever extends TreeStage {
 
+    /**
+     * Tree stage which goes forever or until the root node is fully-explored.
+     * @param sampler Sampling strategy used for creating the tree.
+     * @param saver Data-saving policy used during and after the tree stage.
+     */
     public TreeStage_SearchForever(ISampler sampler, IDataSaver saver) {
         this.sampler = sampler;
         this.saver = saver;

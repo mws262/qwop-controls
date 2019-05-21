@@ -16,7 +16,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * basic tree exploration functions, like the concepts of untested actions, fully-explored nodes, and branches locked
  * for exploration in a multi-threaded scenario.
  *
- * @param <N>
+ * @param <N> This is essentially a recursive class parameterization. Read about f-bounded polymorphism. When using
+ *            this class as an input argument, usually specify as the wildcard (?) to indicate that the class can be
+ *            any inheriting implementation of this class.
+ *
  */
 public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>> extends NodeQWOPBase<N> {
 
@@ -317,6 +320,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * This should only be used when a bunch of nodes are imported at once and need to all be checked, or if we need
      * to validate correct behavior of some feature.
      **/
+    @SuppressWarnings("unused")
     private void propagateFullyExploredComplete() {
         ArrayList<N> leaves = new ArrayList<>(5000);
         getLeaves(leaves);

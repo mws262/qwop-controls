@@ -14,8 +14,11 @@ import java.util.function.Consumer;
  * Then, fooInstance.getParent() will return something of type Foo specifically, and not of the more general type
  * NodeGenericBase.
  *
+ * @param <N> This is essentially a recursive class parameterization. Read about f-bounded polymorphism. When using
+ *            this class as an input argument, usually specify as the wildcard (?) to indicate that the class can be
+ *            any inheriting implementation of this class.
+ *
  * @author matt
- * @param <N>
  */
 public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
 
@@ -34,6 +37,9 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
      */
     private final int treeDepth;
 
+    /**
+     * Maximum absolute tree depth see amongst any of this node's descendents.
+     */
     int maxBranchDepth;
 
     /**
@@ -45,12 +51,21 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
         maxBranchDepth = 0;
     }
 
+    /**
+     * For making a node linked to a parent node.
+     * @param parent Parent of this newly added node.
+     */
     NodeGenericBase(N parent) {
         this.parent = parent;
         treeDepth = parent.getTreeDepth() + 1;
         maxBranchDepth = treeDepth;
     }
 
+    /**
+     * Add a child node to this node's list. This does not create the child. This should not be directly used outside
+     * the package, as improper linking of nodes can cause unintended behavior.
+     * @param child Child node to add to this node's children.
+     */
     void addToChildList(N child) {
         assert !children.contains(child);
         children.add(child);
@@ -74,12 +89,12 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     /**
      * Get the children of this node.
      *
-     * @return A copy of the list of children of this node. Removing the nodes from this array will not remove them
-     * from this node's actual children, but the nodes in the array are the originals.
+     * @return The actual list of children of this node.
      */
     public List<N> getChildren() {
         return children;
     }
+
 
     /**
      * Remove a node from this node's list of children if the node is present. Do NOT use this method lightly.
@@ -184,11 +199,16 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
 
     /**
      * How deep is this node down the tree? 0 is root.
+     * @return Tree depth of this node.
      */
     public int getTreeDepth() {
         return treeDepth;
     }
 
+    /**
+     * Get the maximum absolute tree depth seen amongst any of this node's descendents.
+     * @return Maximum tree depth with 0 being root.
+     */
     public int getMaxBranchDepth() {
         return maxBranchDepth;
     }
@@ -196,7 +216,6 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     /**
      * Returns the tree root no matter which node in the tree this is called from. This method defines the tree root
      * to be the node with a depth of 0.
-     *
      * @return The tree root node.
      */
     public N getRoot() {
@@ -209,7 +228,6 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
 
     /**
      * Count the number of descendants this node has. Does not include the node first called on.
-     *
      * @return Number of descendants, i.e. number of nodes on the branch below this node.
      */
     public int countDescendants() {
@@ -265,6 +283,10 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
         }
     }
 
+    /**
+     * Can pass a lambda to recurse down the tree. Will not include the node called.
+     * @param operation Lambda to run on all the nodes in the branch below the node called upon.
+     */
     public void recurseDownTreeExclusive(Consumer<N> operation) {
         for (N child : children) {
             operation.accept(child);
@@ -272,12 +294,24 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
         }
     }
 
+    /**
+     * Recurse an operation up the tree from this node (inclusive) back to root including all direct ancestors.
+     * @param operation Lambda to run on all ancestor nodes.
+     *
+     * @see NodeGenericBase#recurseUpTreeInclusiveNoRoot(Consumer)
+     */
     public void recurseUpTreeInclusive(Consumer<N> operation) {
         operation.accept(getThis());
         if (treeDepth > 0) {
             parent.recurseUpTreeInclusive(operation);
         }
     }
+
+    /**
+     * Recurse an operation up the tree from this node (inclusive) back to, but NOT including, root.l ancestor nodes.
+     * @param operation Lambda to run on ancestor nodes.
+     */
+    @SuppressWarnings("WeakerAccess")
     public void recurseUpTreeInclusiveNoRoot(Consumer<N> operation) {
         if (treeDepth > 0) {
             operation.accept(getThis());
@@ -287,8 +321,9 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
 
     /**
      * Do some lambda action to all of the leaf nodes (i.e. those with no children) below or at this node.
-     * @param operation
+     * @param operation Lambda to apply just to leaf nodes below this node.
      */
+    @SuppressWarnings("WeakerAccess")
     public void applyToLeavesBelow(Consumer<N> operation) {
         recurseDownTreeInclusive(n -> {
             if (n.getChildCount() == 0) {
@@ -297,5 +332,27 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
         });
     }
 
+    /**
+     * Do some lambda action to this node only. This can be a good way of getting around type erasure problems. For
+     * example, getChildren() could be done:
+     *
+     * <code>List<NodeGenericBase<?>> list = new ArrayList<>();
+     * node.applyToThis(n -> list.addAll(n.getChildren());
+     * </code>
+     *
+     * Using the wildcard in the list would normally cause issues.
+     *
+     * @param operation Operation to apply to this node.
+     */
+    public void applyToThis(Consumer<N> operation) {
+        operation.accept(getThis());
+    }
+
+
+    /**
+     * Get this node. Can help with type erasure issues when <code>this</code> won't work. Search for "getThis trick"
+     * for more information.
+     * @return This node.
+     */
     protected abstract N getThis();
 }
