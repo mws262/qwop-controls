@@ -4,6 +4,7 @@ import actions.Action;
 import actions.IActionGenerator;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.gl2.GLUT;
+import game.GameUnified;
 import game.State;
 import value.updaters.IValueUpdater;
 
@@ -15,9 +16,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * Explorable QWOP node which provides no additional functionality beyond drawing capabilities. If you don't need this,
  * use {@link NodeQWOPExplorableBase} for memory efficiency.
  *
- * See {@link NodeGenericBase} for an explanation of the ridiculous generics. It's not as bad as it looks.
+ * To make one of these, use {@link NodeQWOPGraphics}, which is the concrete implementation.
  *
- * @param <N>
+ * See {@link NodeGenericBase} for an explanation of the ridiculous generics. It's not as bad as it looks.
+ * See {@link NodeQWOPBase} for the version which can only contain basic QWOP information necessary to recreate a run.
+ * See {@link NodeQWOPExplorableBase} for the version which can keep track of how tree exploration is occurring.
+ *
+ * @param <N> This is essentially a recursive class parameterization. Read about f-bounded polymorphism. When using
+ *           this class as an input argument, usually specify as the wildcard (?) to indicate that the class can be
+ *           any inheriting implementation of this class.
+ *
+ * @author matt
  */
 public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> extends NodeQWOPExplorableBase<N> {
 
@@ -35,11 +44,13 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Should a line be drawn from this node's parent's position to this node?
      */
+    @SuppressWarnings("WeakerAccess")
     public boolean displayLine = true;
 
     /**
      * Enables a text label over this node, if one is assigned.
      */
+    @SuppressWarnings("WeakerAccess")
     public boolean displayLabel = false;
 
     /**
@@ -76,7 +87,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     private static final boolean limitDrawing = true;
 
     /**
-     *
+     * Set of points which should be drawn if limitDrawing is true. Points which are very close may be filtered out.
      */
     public static final Set<NodeQWOPGraphicsBase> pointsToDraw = ConcurrentHashMap.newKeySet(10000);
 
@@ -97,6 +108,10 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * precedence over this.
      */
     private float[] pointColorFloats = Color.green.getColorComponents(null);
+
+    /**
+     * Color which, if non-null, will override the default point color.
+     */
     private float[] overridePointColorFloats;
 
     /**
@@ -104,6 +119,10 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * take precedence over this.
      */
     private float[] lineColorFloats;
+
+    /**
+     * Color which, if non-null, will override the default line color.
+     */
     private float[] overrideLineColorFloats;
 
     /**
@@ -132,15 +151,40 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      */
     float nodeLocationZOffset = 0.4f;
 
+    /**
+     * Create a new root node.
+     * @param rootState State of the runner at the root state. Usually {@link GameUnified#getInitialState()}.
+     * @param actionGenerator Object used to generate actions used for potentially creating children of this node.
+     */
     public NodeQWOPGraphicsBase(State rootState, IActionGenerator actionGenerator) {
         super(rootState, actionGenerator);
         setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
     }
 
+    /**
+     * Create a new root node. This will use the default {@link IActionGenerator}. See
+     * {@link NodeQWOPExplorableBase#NodeQWOPExplorableBase(State)}.
+     * @param rootState State of the runner at the root state. Usually {@link GameUnified#getInitialState()}.
+     */
     public NodeQWOPGraphicsBase(State rootState) {
         super(rootState);
     }
 
+    /**
+     * Create a new node with all the color and position information used for drawing the tree. The rest of the
+     * project, outside the package, should NOT be using this constructor. Rather, something like
+     * {@link NodeQWOPGraphicsBase#addDoublyLinkedChild(Action, State)} or
+     * {@link NodeQWOPGraphicsBase#addBackwardsLinkedChild(Action, State)} should be used.
+     *
+     * @param parent Parent of this node.
+     * @param action Action bringing the runner from the state at the parent node to this node.
+     * @param state State reached at this node. This is a departure from previous versions in that the state MUST be
+     *              known before creating a new node.
+     * @param actionGenerator Object used to generate actions used to potentially create children of this new node.
+     * @param doublyLinked Regardless, this node will have a reference to its parent. However, the parent may not be
+     *                     aware of this node. If doubly linked, the information goes both ways. If not, then the
+     *                     information only goes backwards up the tree.
+     */
     NodeQWOPGraphicsBase(N parent, Action action, State state, IActionGenerator actionGenerator, boolean doublyLinked) {
         super(parent, action, state, actionGenerator, doublyLinked);
 
@@ -155,6 +199,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
     /**
      * Draw the line connecting this node to its parent.
+     * @param gl OpenGL object used for 3D plotting.
      */
     public void drawLine(GL2 gl) {
         if (nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed)) { //
@@ -167,6 +212,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
     /**
      * Draw the node point if enabled
+     * @param gl OpenGL object used for 3D plotting.
      */
     public void drawPoint(GL2 gl) {
         if (nodeLocation != null && displayPoint && !notDrawnForSpeed) {
@@ -177,6 +223,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
     /**
      * Draw a text string using GLUT. This string will go to a position in world coordinates, not screen coordinates.
+     * @param gl OpenGL object for changing the raster position through the world.
+     * @param glut Object used for drawing bitmap strings.
      */
     public void drawLabel(GL2 gl, GLUT glut) {
         if (nodeLabel != null && displayLabel && !nodeLabel.isEmpty() && !notDrawnForSpeed) { // I think that the node label can be null
@@ -218,6 +266,13 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         return getColorFromScaledValue(depth, 10f, brightness);
     }
 
+    /**
+     * Get a color along the HSV color space. Good for just getting a variety of colors at a specified brightness.
+     * @param val Can be anything, but was designed to be 0 <= val <= max
+     * @param max  Can be anything, but was meant to be the top value used when selecting a bunch of colors.
+     * @param brightness "Value" in the HSV color space.
+     * @return Chosen color.
+     */
     public static Color getColorFromScaledValue(float val, float max, float brightness) {
         final float colorOffset = 0f;
         final float scaledDepth = val / max;
@@ -227,10 +282,20 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     }
 
 
+    /**
+     * Set the line color from this node's parent to this node. This does not affect the rest of the tree, nor does
+     * it enable drawing of lines if they are disabled.
+     * @param color Color to make the line.
+     */
     void setLineColor(Color color) {
         lineColorFloats = color.getColorComponents(null);
     }
 
+    /**
+     * Set the override line color from this node's parent to this node. This does not enable drawing if disabled,
+     * but does cause drawing to ignore whatever the default line color is.
+     * @param color Color to make the line.
+     */
     void setOverrideLineColor(Color color) {
         if (color == null) {
             overrideLineColorFloats = null;
@@ -239,10 +304,20 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         }
     }
 
+    /**
+     * Set the dot color at this node's location. This does not enable drawing if disabled.
+     * @param color Color to make this point.
+     */
+    @SuppressWarnings("unused")
     public void setPointColor(Color color) {
         pointColorFloats = color.getColorComponents(null);
     }
 
+    /**
+     * Set the override dot color at this node's location. This does not enable drawing if disabled. It does cause
+     * drawing to ignore whatever default color is set for this point.
+     * @param color Color to override this point to.
+     */
     public void setOverridePointColor(Color color) {
         if (color == null) {
             overridePointColorFloats = null;
@@ -251,13 +326,23 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         }
     }
 
+    /**
+     * Change the brightness of the line from this node's parent to this node. This is the value in the HSV color
+     * space. This only affects the default line color and not the override color. This is useful for highlighting
+     * certain sections of the tree.
+     * @param brightness Value on the HSV color space to change the line brightness to.
+     */
     void setLineBrightness(float brightness) {
         lineBrightness = brightness;
         setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
     }
 
-    void calcNodePos() {
-        //Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will
+    /**
+     * Figure out where to place this node based on the spacing of its ancestors. This method also decides whether or
+     * not to even draw this point if {@link NodeQWOPGraphicsBase#limitDrawing} is enabled.
+     */
+    private void calcNodePos() {
+        // Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will
         // span the required sweep.
         assert getTreeDepth() > 0;
         int possibleParentBranchSlots = getParent().getChildCount() + getParent().getUntriedActionCount();
@@ -295,7 +380,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
         nodeLocation[0] = (float) (getParent().nodeLocation[0] + edgeLength * Math.cos(nodeAngle));
         nodeLocation[1] = (float) (getParent().nodeLocation[1] + edgeLength * Math.sin(nodeAngle));
-        nodeLocation[2] = 0f; // No out of plane stuff yet.
+        nodeLocation[2] = 0f; // No out-of-plane stuff yet.
 
         // Since drawing speed is a UI bottleneck, we may want to filter out some of the points that are REALLY close.
         if (limitDrawing) {
@@ -321,6 +406,10 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         }
     }
 
+    /**
+     * Re-enable drawing for a node if it was previously disabled. Will still respect drawPoint though. Useful if a
+     * non-drawn node is selected in the UI.
+     */
     public void reenableIfNotDrawnForSpeed() {
         if (notDrawnForSpeed) {
             setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
@@ -351,6 +440,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
     /**
      * Fade a certain part of the tree.
+     * @param brightness Value on the HSV color space to set the brightness of this branch to.
      */
     public void setLineBrightnessBelow(float brightness) {
         recurseDownTreeInclusive(n -> n.setLineBrightness(brightness));
@@ -366,6 +456,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
     /**
      * Give this branch a nodeLocationZOffset to make it stand out.
+     * @param zOffset Out-of-plane component of the node's position.
      */
     public void setBranchZOffset(float zOffset) {
         recurseDownTreeInclusive(n -> n.nodeLocationZOffset = zOffset);
@@ -373,6 +464,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
     /**
      * Give this branch a nodeLocationZOffset to make it stand out. Goes backwards towards root.
+     * @param zOffset Out-of-plane component of the node's position.
      */
     public void setBackwardsBranchZOffset(float zOffset) {
         recurseUpTreeInclusive(n -> n.nodeLocationZOffset = zOffset);
@@ -393,15 +485,19 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     }
 
     /**
-     * Set an override line color for this branch (all descendants).
+     * Set an override line color for this branch (all descendants). Does not include this node, since its line
+     * extends back to its parent.
+     * @param newColor Color to override this branch to.
      */
     public void setOverrideBranchColor(Color newColor) {
         recurseDownTreeExclusive(n -> n.setOverrideLineColor(newColor));
     }
 
     /**
-     * Set an override line color for this path (all ancestors).
+     * Set an override line color for this path (all direct ancestors back to root).
+     * @param newColor Color to override this path through the tree to.
      */
+    @SuppressWarnings("WeakerAccess")
     public void setBackwardsBranchOverrideColor(Color newColor) {
         recurseUpTreeInclusive(n -> n.setOverrideLineColor(newColor));
     }
@@ -416,6 +512,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Clear an overridden line color on this branch. Goes back towards root.
      */
+    @SuppressWarnings("unused")
     public void clearBackwardsBranchLineOverrideColor() {
         setBackwardsBranchOverrideColor(null);
     }

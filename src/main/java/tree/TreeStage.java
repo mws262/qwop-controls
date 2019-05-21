@@ -1,11 +1,11 @@
 package tree;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.TimeoutException;
-
 import samplers.ISampler;
 import savers.IDataSaver;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * If we want to switch and change between different
@@ -31,7 +31,7 @@ public abstract class TreeStage implements Runnable {
     /**
      * Each stage gets its own workers to avoid contamination. Probably could combine later if necessary.
      */
-    public List<TreeWorker> workers;
+    public final List<TreeWorker> workers = new ArrayList<>();
 
     /**
      * Number of TreeWorkers to be used.
@@ -55,7 +55,7 @@ public abstract class TreeStage implements Runnable {
         if (numWorkers < 1)
             throw new RuntimeException("Tried to assign a tree stage an invalid number of workers: " + numWorkers);
 
-        this.workers = treeWorkers;
+        workers.addAll(treeWorkers);
         this.stageRoot = stageRoot;
 
         for (TreeWorker tw : treeWorkers) {

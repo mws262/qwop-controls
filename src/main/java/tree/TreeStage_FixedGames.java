@@ -1,10 +1,10 @@
 package tree;
 
+import samplers.ISampler;
+import savers.IDataSaver;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import savers.IDataSaver;
-import samplers.ISampler;
 
 /**
  * This stage tries to play a fixed number of games with the given sampler.
@@ -23,6 +23,13 @@ public class TreeStage_FixedGames extends TreeStage {
      */
     private long numGamesToPlay;
 
+    /**
+     * Tree stage which executes until a specific number of games has been completed or the root node becomes fully
+     * explored ({@link NodeQWOPExplorableBase#isFullyExplored()}).
+     * @param numGamesToPlay Number of games to play.
+     * @param sampler Sampling strategy on the tree.
+     * @param saver Data-saving policy during and after the tree stage.
+     */
     public TreeStage_FixedGames(long numGamesToPlay, ISampler sampler, IDataSaver saver) {
         this.numGamesToPlay = numGamesToPlay;
         this.saver = saver;

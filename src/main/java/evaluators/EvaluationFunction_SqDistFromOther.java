@@ -1,10 +1,9 @@
 package evaluators;
 
-import java.util.Objects;
-
 import game.StateVariable;
-import tree.INode;
 import tree.NodeQWOPBase;
+
+import java.util.Objects;
 
 /**
  * Evaluation of node value based on squared difference in the node's game state from another specified node's state.

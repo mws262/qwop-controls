@@ -4,14 +4,20 @@ import actions.Action;
 import game.State;
 
 /**
- * The usable form of {@link NodeQWOPBase}.
+ * @see NodeQWOPBase
  */
 public final class NodeQWOP extends NodeQWOPBase<NodeQWOP> {
 
+    /**
+     * @see NodeQWOPBase#NodeQWOPBase(State)
+     */
     public NodeQWOP(State rootState) {
         super(rootState);
     }
 
+    /**
+     * @see NodeQWOPBase#NodeQWOPBase(NodeQWOPBase, Action, State)
+     */
     private NodeQWOP(NodeQWOP parent, Action action, State state) {
         super(parent, action, state);
     }

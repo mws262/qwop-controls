@@ -1,14 +1,14 @@
 package tree;
 
+import samplers.ISampler;
+import savers.IDataSaver;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import savers.IDataSaver;
-import samplers.ISampler;
-
 /**
- * Goes until any branch reaches a certain tree depth.
+ * Goes until any branch reaches a specified tree depth.
  *
  * @author matt
  */
@@ -34,8 +34,16 @@ public class TreeStage_MaxDepth extends TreeStage {
      * Alternate termination condition: We played more than this number of games without getting to the desired max
      * depth.
      */
-    public long terminateAfterXGames = 120000;
+    public long terminateAfterXGames = 10000000L;
 
+    /**
+     * Tree stage which searches until a certain tree depth is achieved anywhere on the tree, the root node becomes
+     * fully-explored ({@link NodeQWOPExplorableBase#isFullyExplored()}), or some maximum number of games threshold is
+     * met.
+     * @param maxDepth Depth to search until.
+     * @param sampler Tree sampling strategy.
+     * @param saver Data-saving policy during and after the stage.
+     */
     public TreeStage_MaxDepth(int maxDepth, ISampler sampler, IDataSaver saver) {
         this.maxDepth = maxDepth;
         this.sampler = sampler;
