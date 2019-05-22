@@ -73,7 +73,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("small329"); // "small309"); // chk_after565"); // chk5");
+        valueFunction.loadCheckpoint("tmp17"); // "small309"); // chk_after565"); // chk5");
 
         // Assign potential actions for the value function to choose among.
         ActionList actionListNone = ActionList.makeActionList(IntStream.range(1, 30).toArray(), new boolean[]{false, false,

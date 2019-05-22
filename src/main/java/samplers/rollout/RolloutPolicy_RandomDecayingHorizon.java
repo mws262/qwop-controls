@@ -1,6 +1,7 @@
 package samplers.rollout;
 
 import actions.Action;
+import evaluators.EvaluationFunction_Distance;
 import game.IGameInternal;
 import tree.NodeQWOPExplorableBase;
 
@@ -15,7 +16,7 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
     public int maxTimestepsToSim = 200;
 
     public RolloutPolicy_RandomDecayingHorizon() {
-        super(null);
+        super(new EvaluationFunction_Distance());
     }
 
     @SuppressWarnings("Duplicates")

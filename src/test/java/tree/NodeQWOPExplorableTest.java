@@ -453,7 +453,7 @@ public class NodeQWOPExplorableTest {
 
     @Test
     public void reserveExpansionRights() {
-        // TODO some multi-threaded tests would be in order.
+        // TODO some multi-threaded tests would be good.
         setupTree();
 
         Assert.assertTrue(node2_2.reserveExpansionRights());
