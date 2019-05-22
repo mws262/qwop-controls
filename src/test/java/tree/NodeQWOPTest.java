@@ -301,7 +301,7 @@ public class NodeQWOPTest {
     @Test
     public void updateValue() {
         IValueUpdater updater = mock(IValueUpdater.class);
-        when(updater.update(any(Float.class), any(Float.class), any(Integer.class), any(NodeQWOP.class))).thenReturn(10f);
+        when(updater.update(any(Float.class), any(NodeQWOP.class))).thenReturn(10f);
 
         NodeQWOP root = new NodeQWOP(initialState);
         Assert.assertEquals(0f, root.getValue(), 1e-12f);
