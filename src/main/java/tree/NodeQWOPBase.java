@@ -6,6 +6,7 @@ import data.SavableSingleGame;
 import game.IGameInternal;
 import game.State;
 import value.updaters.IValueUpdater;
+import value.updaters.ValueUpdater_HardSet;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -105,11 +106,16 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      */
     public static <N extends NodeQWOPBase<N>> void makeNodesFromActionSequences(Collection<Action[]> actions, N root,
                                                                                 IGameInternal game) {
-
+        IValueUpdater valueUpdater = new ValueUpdater_HardSet();
         ActionQueue actQueue = new ActionQueue();
         for (Action[] acts : actions) {
             game.makeNewWorld();
-            N currNode = root;
+            N currentNode = root;
+
+            if (currentNode.getUpdateCount() == 0) {
+                currentNode.updateValue(0, valueUpdater);
+            }
+
             actQueue.clearAll();
 
             for (Action act : acts) {
@@ -124,16 +130,20 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
 
                 // If there is already a node for this action, use it.
                 boolean foundExisting = false;
-                for (N child : currNode.getChildren()) {
+                for (N child : currentNode.getChildren()) {
                     if (child.getAction().equals(act)) {
-                        currNode = child;
+                        currentNode = child;
                         foundExisting = true;
                         break;
                     }
                 }
 
                 // Otherwise, make a new one.
-                if (!foundExisting) currNode = currNode.addDoublyLinkedChild(act, game.getCurrentState());
+                if (!foundExisting) {
+                    currentNode = currentNode.addDoublyLinkedChild(act, game.getCurrentState());
+                    currentNode.updateValue(0, valueUpdater); // It needs to be updated in some way. For now, just set all
+                    // to zero. If update count remains at 0, bad things happen.
+                }
             }
         }
     }
@@ -147,8 +157,13 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      */
     public static synchronized <N extends NodeQWOPBase<N>> void makeNodesFromRunInfo(Collection<SavableSingleGame> runs,
                                                                                      N existingRootToAddTo) {
+        IValueUpdater valueUpdater = new ValueUpdater_HardSet();
         for (SavableSingleGame run : runs) { // Go through all runs, placing them in the tree.
             N currentNode = existingRootToAddTo;
+
+            if (currentNode.getUpdateCount() == 0) {
+                currentNode.updateValue(0, valueUpdater);
+            }
 
             for (int i = 0; i < run.actions.length; i++) { // Iterate through individual actions of this run,
                 // travelling down the tree in the process.
@@ -165,6 +180,8 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
                 // If this action is unique at this point in the tree, we need to add a new node there.
                 if (!foundExistingMatch) {
                     currentNode = currentNode.addDoublyLinkedChild(run.actions[i], run.states[i]);
+                    currentNode.updateValue(0, valueUpdater); // It needs to be updated in some way. For now, just set all
+                    // to zero. If update count remains at 0, bad things happen.
                 }
             }
         }

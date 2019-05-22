@@ -69,7 +69,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     /**
      * Keep track of whether we sent a pause request to the tree.
      */
-    private boolean treePause = false; // TODO this doesn't work yet.
+    private boolean treePause = false;
 
     /**
      * Currently tracked mouse x location in screen coordinates of the panel

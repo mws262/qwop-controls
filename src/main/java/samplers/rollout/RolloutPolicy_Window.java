@@ -7,13 +7,17 @@ import tree.NodeQWOPExplorableBase;
 /**
  * This is a meta-rollout policy. It does multiple other rollouts and aggregates the results.
  *
+ * For now, this is either a best or worst out of three. Intuition says worst of three should be more robust, but so
+ * far, best of three has been better. Perhaps because overinflated scores tend to be explored by UCB and toned down,
+ * whereas underestimated scores might never be touched again.
+ *
  * @author matt
  */
-public class RolloutPolicy_WorstCaseWindow extends RolloutPolicy {
+public class RolloutPolicy_Window extends RolloutPolicy {
 
     private RolloutPolicy individualRollout;
 
-    public RolloutPolicy_WorstCaseWindow(RolloutPolicy individualRollout) {
+    public RolloutPolicy_Window(RolloutPolicy individualRollout) {
         super(individualRollout.evaluationFunction);
         this.individualRollout = individualRollout;
     }
@@ -53,11 +57,11 @@ public class RolloutPolicy_WorstCaseWindow extends RolloutPolicy {
         float valBelow =
                 individualRollout.rollout(nodeBelow, game) + individualRollout.evaluationFunction.getValue(nodeBelow) - startValue;
 
-        return Math.max(valMid, Math.max(valAbove, valBelow)); // Gets the worst out of three.
+        return Math.max(valMid, Math.max(valAbove, valBelow)); // Gets the best out of three.
     }
 
     @Override
     public RolloutPolicy getCopy() {
-        return new RolloutPolicy_WorstCaseWindow(individualRollout.getCopy());
+        return new RolloutPolicy_Window(individualRollout.getCopy());
     }
 }

@@ -128,7 +128,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Text label to overlaid at this node's position if label drawing is enabled.
      */
-    private String nodeLabel;
+    public String nodeLabel;
 
     /**
      * Color that text labels will be drawn in, if label drawing is enabled for this node.
@@ -263,7 +263,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Color the node scaled by depth in the tree. Totally for gradient pleasantness.
      */
     public static Color getColorFromTreeDepth(float depth, float brightness) {
-        return getColorFromScaledValue(depth, 10f, brightness);
+        return getColorFromScaledValue(depth/1.8f + 8, -10f, brightness);
     }
 
     /**
@@ -311,6 +311,14 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     @SuppressWarnings("unused")
     public void setPointColor(Color color) {
         pointColorFloats = color.getColorComponents(null);
+    }
+
+    /**
+     * Set the dot color at this node's location. This does not enable drawing if disabled.
+     * @param color Color to make this point.
+     */
+    public void setLabelColor(Color color) {
+        nodeLabelColor = color.getColorComponents(null);
     }
 
     /**
@@ -520,8 +528,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     @Override
     public synchronized void updateValue(float valueUpdate, IValueUpdater updater) {
         super.updateValue(valueUpdate, updater);
-        displayLabel = true;
-        nodeLabel = String.format("%.2f", getValue());
+//        displayLabel = true;
+//        nodeLabel = String.format("%.2f", getValue());
     }
 
     @Override
