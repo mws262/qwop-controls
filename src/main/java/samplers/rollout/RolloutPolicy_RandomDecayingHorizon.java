@@ -1,6 +1,7 @@
 package samplers.rollout;
 
 import actions.Action;
+import actions.IActionGenerator;
 import evaluators.EvaluationFunction_Distance;
 import game.IGameInternal;
 import tree.NodeQWOPExplorableBase;
@@ -14,6 +15,8 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
     private static final float kernelSteepness = 5; // Steepness of the drop. Higher values == more steep.
 
     public int maxTimestepsToSim = 200;
+
+    private final IActionGenerator actionGenerator = getRolloutActionGenerator();
 
     public RolloutPolicy_RandomDecayingHorizon() {
         super(new EvaluationFunction_Distance());
@@ -42,7 +45,7 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy {
 
                 timestepCounter++;
             }
-            rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState());
+            rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState(), actionGenerator);
         }
 
         return accumulatedValue;

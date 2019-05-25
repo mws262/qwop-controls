@@ -1,7 +1,7 @@
 package value;
 
 import actions.Action;
-import game.IGameInternal;
+import game.IGameSerializable;
 import tree.NodeQWOPBase;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public interface IValueFunction {
      * @param currentNode
      * @return
      */
-    Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGameInternal game);
+    Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGameSerializable game);
 
     /**
      * Calculate the value of having gotten to the provided Node.

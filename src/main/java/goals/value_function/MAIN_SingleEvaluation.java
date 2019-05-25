@@ -1,10 +1,7 @@
 package goals.value_function;
 
 import actions.Action;
-import actions.ActionGenerator_FixedActions;
-import actions.ActionList;
 import actions.ActionQueue;
-import distributions.Distribution_Equal;
 import game.GameUnified;
 import tree.NodeQWOPExplorable;
 import tree.Utility;
@@ -21,25 +18,42 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
 
-    GameUnified game = new GameUnified();
+    // Net and execution parameters.
+    String valueNetworkName = "small_net.pb";
+    String checkpointName = "med67";
+    private boolean doScreenCapture = false;
 
-    boolean q = false;
-    boolean w = false;
-    boolean o = false;
-    boolean p = false;
+    // Game and controller fields.
+    private final GameUnified game = new GameUnified();
+    private ActionQueue actionQueue = new ActionQueue();
+    private ValueFunction_TensorFlow valueFunction;
 
-    static float centerX = 600;
-    static float centerY = 400;
+    // Drawing parameters.
+    private ScreenCapture screenCapture;
 
-    public static void main(String[] args) {
-        boolean doScreenCapture = false;
-        ScreenCapture screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
+    private final JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
+    private Point mousePoint;
+    private boolean mouseActive = false;
+    private Shape arrowShape;
+    private final Color arrowColor = new Color(0,0,0,127);
+
+    private static final float centerX = 600;
+    private static final float centerY = 400;
+
+    private boolean q = false;
+    private boolean w = false;
+    private boolean o = false;
+    private boolean p = false;
+
+    MAIN_SingleEvaluation() {
+
+        /* Set up screen capture, if enabled. */
         if (doScreenCapture) {
+            screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     screenCapture.finalize();
@@ -49,55 +63,41 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
             }));
         }
 
-        // Set up the visualizer.
-        MAIN_SingleEvaluation qwop = new MAIN_SingleEvaluation();
-        qwop.game.failOnThighContact = false;
-        JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
-        frame.add(qwop);
+        /* Set up the visualizer. */
+        game.failOnThighContact = false;
+        frame.add(this);
         frame.setPreferredSize(new Dimension(1300, 800));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
-        qwop.addMouseListener(qwop);
-        qwop.addMouseMotionListener(qwop);
+        addMouseListener(this);
+        addMouseMotionListener(this);
 
-        // Fire game update every 40 ms.
-        Timer timer = new Timer(15, qwop);
+        Timer timer = new Timer(15, this); // Fire game graphics update on a schedule.
         timer.start();
 
-        // Load a value function controller.
-        ValueFunction_TensorFlow valueFunction = null;
+
+        /* Load a value function controller. */
+        valueFunction = null;
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/small_net.pb"));
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models/" + valueNetworkName));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("tmp17"); // "small309"); // chk_after565"); // chk5");
+        valueFunction.loadCheckpoint(checkpointName);
+    }
 
-        // Assign potential actions for the value function to choose among.
-        ActionList actionListNone = ActionList.makeActionList(IntStream.range(1, 30).toArray(), new boolean[]{false, false,
-                false, false}, new Distribution_Equal()); // None, None
-        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 50).toArray(), new boolean[]{false, true,
-                true, false}, new Distribution_Equal()); // W, O
-        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 50).toArray(), new boolean[]{true, false,
-                false, true}, new Distribution_Equal()); // Q, P
+    private NodeQWOPExplorable doPrefix() {
 
-        ActionList allActions = new ActionList(new Distribution_Equal());
-        allActions.addAll(actionListNone);
-        allActions.addAll(actionListWO);
-        allActions.addAll(actionListQP);
-
-        ActionGenerator_FixedActions actionGenerator = new ActionGenerator_FixedActions(allActions);
-        NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState(), actionGenerator);
+        NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState());
 
         // Assign a "prefix" of actions, since I'm not sure if the controller will generalize to this part of running.
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
-                new Action(7,false,false,false,false),
-                new Action(34,false,true,true,false),
-                new Action(19,false,false,false,false),
-//                new Action(45,true,false,false,true),
+                new Action(7, Action.Keys.none),
+                new Action(34, Action.Keys.wo),
+                new Action(19, Action.Keys.none),
+//                new Action(45, Action.Keys.qp),
 //
 //                new Action(10,false,false,false,false),
 //                new Action(27,false,true,true,false),
@@ -106,19 +106,19 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         });
 
         NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
-        NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, 7);
 
         List<NodeQWOPExplorable> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
 
-        ActionQueue actionQueue = new ActionQueue();
         List<Action> actionList = new ArrayList<>();
-        leaf.get(0).getSequence(actionList);
+
+        NodeQWOPExplorable currNode = leaf.get(0);
+        currNode.getSequence(actionList);
         actionQueue.addSequence(actionList);
 
         // Run the "prefix" section.
         while (!actionQueue.isEmpty()) {
-            qwop.game.step(actionQueue.pollCommand());
+            game.step(actionQueue.pollCommand());
             if (doScreenCapture) {
                 try {
                     screenCapture.takeFrameFromContainer(frame);
@@ -133,37 +133,38 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
             }
         }
 
-        NodeQWOPExplorable currNode = leaf.get(0);
+        return currNode;
+    }
+
+    private void doControlled(NodeQWOPExplorable currentNode) {
 
         // Run the controller until failure.
         while (true) { //!qwop.game.getFailureStatus()) {
 
             Utility.tic();
-            Action chosenAction = valueFunction.getMaximizingAction(currNode);//, qwop.game);
+            Action chosenAction = valueFunction.getMaximizingAction(currentNode, game);
             Utility.toc();
 
             boolean[] keys =  chosenAction.peek();
-            qwop.q = keys[0];
-            qwop.w = keys[1];
-            qwop.o = keys[2];
-            qwop.p = keys[3];
+            q = keys[0];
+            w = keys[1];
+            o = keys[2];
+            p = keys[3];
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {
                 long currTime = System.currentTimeMillis();
 
-                if (qwop.mouseActive) {
-                    qwop.arrowShape = PanelRunner.createArrowShape(qwop.mousePoint, new Point((int)centerX,
-                                    (int)centerY),
-                            80);
-                    float impulseX = centerX - qwop.mousePoint.x;
-                    float impulseY = centerY - qwop.mousePoint.y;
+                if (mouseActive) {
+                    arrowShape = PanelRunner.createArrowShape(mousePoint, new Point((int) centerX, (int) centerY), 80);
+                    float impulseX = centerX - mousePoint.x;
+                    float impulseY = centerY - mousePoint.y;
                     float impulseGain = 0.008f;
-                    qwop.game.applyBodyImpulse(impulseGain * impulseX, impulseGain * impulseY);
+                    game.applyBodyImpulse(impulseGain * impulseX, impulseGain * impulseY);
                 } else {
-                    qwop.arrowShape = null;
+                    arrowShape = null;
                 }
 
-                qwop.game.step(actionQueue.pollCommand());
+                game.step(actionQueue.pollCommand());
 
                 if (doScreenCapture) {
                     try {
@@ -179,21 +180,15 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                     }
                 }
             }
-            currNode = currNode.addDoublyLinkedChild(chosenAction, qwop.game.getCurrentState());
+            currentNode = currentNode.addDoublyLinkedChild(chosenAction, game.getCurrentState());
         }
     }
 
-    Point mousePoint;
-    boolean mouseActive = false;
-    Shape arrowShape;
-    Color arrowColor = new Color(0,0,0,127);
     @Override
     public void paint(Graphics g) {
         super.paint(g);
         game.draw(g, 20, (int) centerX, (int) centerY); // Redraws the game. Scaling and offsets are handpicked to work
-        // for the
-        // size of
-        // the window.
+        // for the size of the window.
         PanelRunner.keyDrawer(g, q, w, o, p, -50, 40, 480, 80);
         if (arrowShape != null) {
             ((Graphics2D) g).setColor(arrowColor);
@@ -233,4 +228,10 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
     @Override
     public void mouseMoved(MouseEvent e) {}
+
+    public static void main(String[] args) {
+        MAIN_SingleEvaluation controlledGame = new MAIN_SingleEvaluation();
+        NodeQWOPExplorable currentNode = controlledGame.doPrefix();
+        controlledGame.doControlled(currentNode);
+    }
 }

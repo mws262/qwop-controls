@@ -13,7 +13,8 @@ public class RolloutPolicy_ValueFunctionDecayingHorizon extends RolloutPolicy {
     // til later, smaller values make the drop occur earlier.
     private static final float kernelSteepness = 5; // Steepness of the drop. Higher values == more steep.
 
-    public int maxTimestepsToSim = 200;
+    public int maxTimestepsToSim = 100;
+    public float valueFunctionWeight = 0.8f;
 
     ValueFunction_TensorFlow_StateOnly valFun;
     public RolloutPolicy_ValueFunctionDecayingHorizon(ValueFunction_TensorFlow_StateOnly valFun) {
@@ -46,12 +47,16 @@ public class RolloutPolicy_ValueFunctionDecayingHorizon extends RolloutPolicy {
             }
             rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState());
         }
-        return accumulatedValue;
+        return (1 - valueFunctionWeight) * accumulatedValue + valueFunctionWeight * valFun.evaluate(startNode);
     }
 
     @Override
     public RolloutPolicy getCopy() {
-        return new RolloutPolicy_ValueFunctionDecayingHorizon(valFun);
+        RolloutPolicy_ValueFunctionDecayingHorizon rolloutCopy =
+                new RolloutPolicy_ValueFunctionDecayingHorizon(valFun.getCopy());
+        rolloutCopy.maxTimestepsToSim = this.maxTimestepsToSim;
+        rolloutCopy.valueFunctionWeight = this.valueFunctionWeight;
+        return rolloutCopy;
     }
 
     private float getKernelMultiplier(float timestepsIn) {

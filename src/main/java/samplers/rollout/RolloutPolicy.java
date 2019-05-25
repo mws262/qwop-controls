@@ -1,7 +1,8 @@
 package samplers.rollout;
 
-import actions.Action;
-import actions.ActionQueue;
+import actions.*;
+import distributions.Distribution;
+import distributions.Distribution_Normal;
 import evaluators.IEvaluationFunction;
 import game.IGameInternal;
 import tree.NodeQWOPBase;
@@ -9,6 +10,7 @@ import tree.NodeQWOPExplorableBase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Sometimes, rollouts need to be a composite of many actions, some which may involve multiple simulations. This
@@ -96,4 +98,33 @@ public abstract class RolloutPolicy {
     }
 
     public abstract RolloutPolicy getCopy();
+
+    public static IActionGenerator getRolloutActionGenerator() {
+        /* Space of allowed actions to sample */
+        //Distribution<Action> uniform_dist = new Distribution_Equal();
+
+        /* Repeated action 1 -- no keys pressed. */
+        Distribution<Action> dist1 = new Distribution_Normal(12, 1f);
+        ActionList actionList1 = ActionList.makeActionList(IntStream.range(8, 15).toArray(), new boolean[]{false,
+                false, false, false}, dist1);
+
+        /*  Repeated action 2 -- W-O pressed */
+        Distribution<Action> dist2 = new Distribution_Normal(20, 1f);
+        ActionList actionList2 = ActionList.makeActionList(IntStream.range(18, 22).toArray(), new boolean[]{false, true,
+                true, false}, dist2);
+
+        /* Repeated action 3 -- W-O pressed */
+        Distribution<Action> dist3 = new Distribution_Normal(12f, 1f);
+        ActionList actionList3 = ActionList.makeActionList(IntStream.range(8, 15).toArray(), new boolean[]{false,
+                false, false, false}, dist3);
+
+        /*  Repeated action 4 -- Q-P pressed */
+        Distribution<Action> dist4 = new Distribution_Normal(20, 1f);
+        ActionList actionList4 = ActionList.makeActionList(IntStream.range(18, 22).toArray(), new boolean[]{true, false,
+                false, true}, dist4);
+
+        ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
+
+        return new ActionGenerator_FixedSequence(repeatedActions);
+    }
 }

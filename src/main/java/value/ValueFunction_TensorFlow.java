@@ -97,6 +97,18 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     }
 
     /**
+     * Existing network. It will not be validated. Mostly for use when copying.
+     * @param network Existing value network.
+     */
+    ValueFunction_TensorFlow(TrainableNetwork network) {
+        int[] layerSizes = network.getLayerSizes();
+        assert layerSizes.length >= 2;
+        inputSize = layerSizes[0];
+        outputSize = layerSizes[layerSizes.length - 1];
+        this.network = network;
+    }
+
+    /**
      * Load a checkpoint file for the neural network. This should be in the checkpoints directory, and should not
      * include any file extensions.
      * @param checkpointName Name of the checkpoint to load.

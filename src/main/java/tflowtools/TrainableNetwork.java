@@ -79,7 +79,7 @@ public class TrainableNetwork {
         graph.importGraphDef(graphDef);
 
         // Initialize
-        session.runner().addTarget("init").run(); // TODO could be removed if it proves too slow and we only care
+        session.runner().addTarget("init").run(); // Could be removed if it proves too slow and we only care
         // about loading rather than initializing from scratch.
     }
 

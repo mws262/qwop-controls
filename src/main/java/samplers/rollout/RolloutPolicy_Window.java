@@ -57,7 +57,7 @@ public class RolloutPolicy_Window extends RolloutPolicy {
         float valBelow =
                 individualRollout.rollout(nodeBelow, game) + individualRollout.evaluationFunction.getValue(nodeBelow) - startValue;
 
-        return Math.max(valMid, Math.max(valAbove, valBelow)); // Gets the best out of three.
+        return (0.6f * valMid + 0.2f * valAbove + 0.2f * valBelow); // Gets the best out of three. or avg or worst
     }
 
     @Override
