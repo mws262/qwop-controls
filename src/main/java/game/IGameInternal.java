@@ -11,7 +11,7 @@ import java.awt.*;
  *
  * @author matt
  */
-public interface IGameInternal extends IGameExternal{
+public interface IGameInternal extends IGameExternal {
 
     /** Reset the runner to its starting state. **/
     void makeNewWorld();

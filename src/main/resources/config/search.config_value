@@ -1,8 +1,8 @@
 # Directory for saved runs
 saveLocation=./test_dir
-headless=false
+headless=true
 workersFractionOfCores=0.7
-UCBExplorationMultiplier=1
+UCBExplorationMultiplier=3
 getToSteadyDepth=100
 fractionOfMaxWorkers=1
 bailAfterXGames=20000

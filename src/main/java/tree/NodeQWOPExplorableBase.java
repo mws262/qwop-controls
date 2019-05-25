@@ -74,9 +74,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * @param rootState {@link State} at this root node.
      */
     public NodeQWOPExplorableBase(State rootState) {
-        super(rootState);
-        this.actionGenerator = new ActionGenerator_Null();
-        locked.set(false);
+        this(rootState, new ActionGenerator_Null());
     }
 
     /**

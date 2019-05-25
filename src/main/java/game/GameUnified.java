@@ -18,7 +18,6 @@ import org.nustaq.serialization.FSTConfiguration;
 
 import java.awt.*;
 import java.io.Serializable;
-import java.util.Random;
 
 import static game.GameConstants.*;
 
@@ -26,7 +25,7 @@ import static game.GameConstants.*;
  * @author matt
  */
 @SuppressWarnings("Duplicates")
-public class GameUnified implements IGameInternal, Serializable {
+public class GameUnified implements IGameInternal, IGameSerializable {
 
     /**
      * Keep track of sim stats since beginning of execution.
@@ -1323,11 +1322,13 @@ public class GameUnified implements IGameInternal, Serializable {
         }
     }
 
-    public synchronized byte[] getFullState() {
+    @Override
+    public synchronized byte[] getSerializedState() {
         return fstConfiguration.asByteArray(this);
     }
 
-    public static GameUnified restoreFullState(byte[] fullState) {
+    @Override
+    public GameUnified restoreSerializedState(byte[] fullState) {
         GameUnified gameRestored = (GameUnified) fstConfiguration.asObject(fullState);
         // Replace all the relevant game fields which have been loaded.
         assert gameRestored != null;

@@ -3,6 +3,7 @@ package samplers.rollout;
 import actions.Action;
 import evaluators.IEvaluationFunction;
 import game.IGameInternal;
+import game.IGameSerializable;
 import tree.NodeQWOPExplorableBase;
 import value.IValueFunction;
 
@@ -27,7 +28,12 @@ public class RolloutPolicy_ValueFunction extends RolloutPolicy {
         int rolloutTimesteps = 0;
         while (!game.getFailureStatus() && rolloutTimesteps < maxRolloutTimesteps) {
 
-            Action chosenAction = valueFunction.getMaximizingAction(currentNode, game);
+            Action chosenAction;
+            if (game instanceof IGameSerializable) {
+                chosenAction = valueFunction.getMaximizingAction(currentNode, (IGameSerializable) game);
+            } else {
+                chosenAction = valueFunction.getMaximizingAction(currentNode);
+            }
 
             // Execute the action. Break out on completion or failure.
             actionQueue.addAction(chosenAction);

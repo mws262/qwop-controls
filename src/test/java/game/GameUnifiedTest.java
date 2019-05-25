@@ -237,13 +237,13 @@ public class GameUnifiedTest {
         State stateBeforeLoad = gameSingle.getCurrentState();
 
         // Save
-        byte[] fullState = gameSingle.getFullState();
+        byte[] fullState = gameSingle.getSerializedState();
 
         // Step forward arbitrarily.
         gameSingle.holdKeysForTimesteps(10, true, false, false, true);
 
         // Load
-        gameSingle = gameSingle.restoreFullState(fullState);
+        gameSingle = gameSingle.restoreSerializedState(fullState);
         State stateAfterLoad = gameSingle.getCurrentState();
 
         // Make sure states at save and after load are equal.
@@ -269,12 +269,12 @@ public class GameUnifiedTest {
         game.holdKeysForTimesteps(10, false, true, true, false);
 
         State stateAtSave = game.getCurrentState();
-        byte[] gameSave = game.getFullState();
+        byte[] gameSave = game.getSerializedState();
 
         game.holdKeysForTimesteps(10, true, false, false, true);
         State stateAfter10 = game.getCurrentState();
 
-        GameUnified gameRestored = game.restoreFullState(gameSave);
+        GameUnified gameRestored = game.restoreSerializedState(gameSave);
         State stateAtRestore = gameRestored.getCurrentState();
         gameRestored.holdKeysForTimesteps(10, true, false, false, true);
 
@@ -298,10 +298,10 @@ public class GameUnifiedTest {
         GameUnified game = new GameUnified();
         game.holdKeysForTimesteps(10, false, true, true, false);
 
-        byte[] gameSave = game.getFullState();
+        byte[] gameSave = game.getSerializedState();
 
         Callable<State> sim = () -> {
-            GameUnified gameForLoading = game.restoreFullState(gameSave);
+            GameUnified gameForLoading = game.restoreSerializedState(gameSave);
             gameForLoading.holdKeysForTimesteps(10, false, true, false, true);
             return gameForLoading.getCurrentState();
         };
@@ -342,11 +342,11 @@ public class GameUnifiedTest {
             GameUnified game = new GameUnified();
             game.holdKeysForTimesteps(10, false, true, true, false);
 
-            byte[] gameSave = game.getFullState();
+            byte[] gameSave = game.getSerializedState();
 
             game.holdKeysForTimesteps(10, true, false, false, false);
 
-            GameUnified gameLoaded = game.restoreFullState(gameSave);
+            GameUnified gameLoaded = game.restoreSerializedState(gameSave);
 
             gameLoaded.holdKeysForTimesteps(10, true, false, false, false);
 

@@ -1,10 +1,8 @@
 package value;
 
 import actions.Action;
-import game.GameConstants;
-import game.GameUnified;
-import game.IGameInternal;
-import game.State;
+import game.*;
+import tflowtools.TrainableNetwork;
 import tree.NodeQWOP;
 import tree.NodeQWOPBase;
 
@@ -81,6 +79,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             executor = Executors.newFixedThreadPool(numThreads);
     }
 
+    private ValueFunction_TensorFlow_StateOnly(TrainableNetwork network) {
+        super(network);
+    }
     /**
      * Assign the futures that will be explored on each controller evaluation.
      */
@@ -101,13 +102,20 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     @Override
     public Action getMaximizingAction(NodeQWOPBase<?> currentNode) {
-        evalResults.clear(); // Remove existing results from any previous evaluations.
-
-        State state = Objects.requireNonNull(currentNode.getState(), "Received node did not have a state assigned.");
-
         // Update each of the future predictors to use the new starting states.
-        evaluations.forEach(e -> e.setStartingState(state));
+        evaluations.forEach(e -> e.setStartingState(currentNode.getState()));
+        return runEvaluations();
 
+    }
+
+    @Override
+    public Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGameSerializable realGame) {
+        evaluations.forEach(e -> e.setStartingState(realGame.getSerializedState()));
+        return runEvaluations();
+    }
+
+    private Action runEvaluations() {
+        evalResults.clear(); // Remove existing results from any previous evaluations.
         try{
             if (multithread) { // Multi-thread, send to executor.
                 List<Future<EvaluationResult>> allResults = executor.invokeAll(evaluations);
@@ -129,82 +137,6 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         currentResult = evalResult;
         return new Action(evalResult.timestep, evalResult.keys);
     }
-
-
-//    private Callable<EvaluationResult> getCallable(byte[] gameStartingState, INode startingNode,
-//                                                   Action.Keys keys, int minDuration, int maxDuration) {
-//        boolean[] buttons = Action.keysToBooleans(keys);
-//
-//        return () -> {
-//            GameUnified gameLocal = GameUnified.restoreFullState(gameStartingState);
-//            EvaluationResult bestResult = new EvaluationResult();
-//            for (int i = minDuration; i < maxDuration; i++) {
-//                gameLocal.step(buttons);
-//                State st = gameLocal.getCurrentState();
-//                INode nextNode = new NodePlaceholder(startingNode, new Action(i, buttons), st);
-//                float val = evaluate(nextNode);
-//                if (val > bestResult.value) {
-//                    bestResult.value = val;
-//                    bestResult.timestep = i;
-//                    bestResult.keys = keys;
-//                }
-//            }
-//            return bestResult;
-//        };
-//    }
-
-    @Override
-    public Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGameInternal realGame) {
-        return null;
-    }
-////        byte[] fullState = realGame.getFullState(); // This one has perfect state recall.
-//        State fullState = currentNode.getState();
-//        Objects.requireNonNull(fullState);
-//
-//        List<Callable<EvaluationResult>> evaluations = new ArrayList<>();
-//        List<EvaluationResult> evalResults = new ArrayList<>();
-//        evaluations.add( // No Keys
-//                getCallable(fullState, currentNode, Keys.none, 1, 15));
-//        evaluations.add( // QP
-//                getCallable(fullState, currentNode, Keys.qp, 2, 55));
-//        evaluations.add( // WO
-//                getCallable(fullState, currentNode, Keys.wo, 2, 55));
-//        evaluations.add( // Q
-//                getCallable(fullState, currentNode, Keys.q, 2, 5));
-//        evaluations.add( // W
-//                getCallable(fullState, currentNode, Keys.w, 2, 5));
-//        evaluations.add( // O
-//                getCallable(fullState, currentNode, Keys.o, 2, 5));
-//        evaluations.add( // P
-//                getCallable(fullState, currentNode, Keys.p, 2, 5));
-//
-//        // Off keys -- dunno if these are ever helpful.
-//        evaluations.add( // QO
-//                getCallable(fullState, currentNode, Keys.qo, 2, 5));
-//        evaluations.add( // WP
-//                getCallable(fullState, currentNode, Keys.wp, 2, 5));
-//
-//        if (multithread) { // Multi-thread
-//            List<Future<EvaluationResult>> allResults;
-//            try {
-//                allResults = executor.invokeAll(evaluations);
-//                for (Future<EvaluationResult> future : allResults) {
-//                    evalResults.add(future.get()); // Each blocks until the thread is done.
-//                }
-//            }catch (InterruptedException | ExecutionException e) {
-//                e.printStackTrace();
-//            }
-//        } else { // Single thread
-//            try {
-//                for (Callable<EvaluationResult> eval : evaluations) {
-//                    evalResults.add(eval.call());
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        return getBestActionFromEvaluationResults(evalResults);
-//    }
 
     @Override
     float[] assembleInputFromNode(NodeQWOPBase<?> node) {
@@ -271,6 +203,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          */
         private State startingState;
 
+        private byte[] startStateFull;
+        private boolean useSerializedState = false;
+
         /**
          * QWOP keys pressed during this future prediction.
          */
@@ -308,7 +243,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          * makes each call depend on the previous to some extent. Perhaps good for performance, terrible for
          * predicability.
          */
-        private final boolean newGameBetweenPredictions = false;
+        private final boolean newGameBetweenPredictions = true;
 
 
         private SelectionCriteria selectionCriteria = SelectionCriteria.BEST_AVERAGE_WINDOW;
@@ -327,19 +262,31 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
         void setStartingState(State startingState) {
             this.startingState = startingState;
+            useSerializedState = false;
+        }
+
+        void setStartingState(byte[] startingState) {
+            this.startStateFull = startingState;
+            useSerializedState = true;
         }
 
         @Override
         public EvaluationResult call() {
-            gameLocal.iterations = initialPhysicsIterations; // Tunable parameter for getting caught up to the
-            // warm-start of the normal game.
+
+            if (useSerializedState) {
+                gameLocal = gameLocal.restoreSerializedState(startStateFull);
+                gameLocal.iterations = initialPhysicsIterations; // Tunable parameter for getting caught up to the
+            } else {
+                if (newGameBetweenPredictions)
+                    gameLocal.makeNewWorld();
+
+                gameLocal.setState(startingState);
+                gameLocal.iterations = GameConstants.physIterations; // Don't need to 'catch up', since full game is
+                // restored.
+            }
 
             // Reset the game and set it to the specified starting state.
             bestResult.value = -Float.MAX_VALUE;
-            if (newGameBetweenPredictions)
-                gameLocal.makeNewWorld();
-            // makes the controller less predictable.
-            gameLocal.setState(startingState);
 
             // Keep track of a window of three adjacent actions. Some of the selection approaches do a
             // best-worst-case.
@@ -398,5 +345,13 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             }
             return bestResult;
         }
+    }
+
+    public ValueFunction_TensorFlow_StateOnly getCopy() {
+        ValueFunction_TensorFlow_StateOnly valFunCopy = new ValueFunction_TensorFlow_StateOnly(network);
+        valFunCopy.assignFuturePredictors();
+        if (multithread)
+            valFunCopy.executor = Executors.newFixedThreadPool(numThreads);
+        return valFunCopy;
     }
 }

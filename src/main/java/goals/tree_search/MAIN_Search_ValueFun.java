@@ -51,16 +51,16 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         // Make new tree root and assign to GUI.
         // Assign default available actions.
         IActionGenerator actionGenerator = assignAllowableActionsWider(-1);
-        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
+        NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState(), actionGenerator);
         NodeQWOPGraphics.pointsToDraw.clear();
-        ui.clearRootNodes();
-        ui.addRootNode(rootNode);
+//        ui.clearRootNodes();
+//        ui.addRootNode(rootNode);
 
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
                 new Action(7,false,false,false,false),
                 new Action(49, Action.Keys.wo),
-                new Action(2, Action.Keys.none),
+//                new Action(2, Action.Keys.none),
                 //new Action(25, Action.Keys.qp),
 
 //                new Action(34, Action.Keys.none),
@@ -69,13 +69,13 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //                new Action(21,true,false,false,true),
         });
 
-        NodeQWOPGraphics.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
-        NodeQWOPGraphics.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
+        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
+        NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
 
-        List<NodeQWOPGraphics> leaf = new ArrayList<>();
+        List<NodeQWOPExplorable> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
         assert leaf.size() == 1;
-        leaf.get(0).resetSweepAngle();
+//        leaf.get(0).resetSweepAngle();
 
         DataSaver_StageSelected saver = new DataSaver_StageSelected();
         saver.overrideFilename = "tmp";
@@ -83,8 +83,11 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         // Make the value function.
         ArrayList<Integer> hiddenLayerSizes = new ArrayList<>();
-        hiddenLayerSizes.add(128);
-        hiddenLayerSizes.add(64);
+        hiddenLayerSizes.add(10);
+        hiddenLayerSizes.add(10);
+        hiddenLayerSizes.add(10);
+        hiddenLayerSizes.add(5);
+        hiddenLayerSizes.add(5);
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");
         extraNetworkArgs.add("1e-3");
@@ -106,7 +109,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //            e.printStackTrace();
 //        }
         int chkIdx = 0;
-//        valueFunction.loadCheckpoint("small" + chkIdx);
+//        valueFunction.loadCheckpoint("med" + chkIdx);
 //        valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
 //        valueFunction.setTrainingBatchSize(1000);
         boolean valueFunctionRollout = false;
@@ -115,18 +118,19 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             RolloutPolicy rollout;
 
             if (valueFunctionRollout) {
-                rollout = new RolloutPolicy_RandomHorizonWithValue(valueFunction);
-                ((RolloutPolicy_RandomHorizonWithValue) rollout).valueFunctionWeight = 0.8f;
+//                rollout = new RolloutPolicy_RandomHorizonWithValue(valueFunction);
+//                ((RolloutPolicy_RandomHorizonWithValue) rollout).valueFunctionWeight = 0.8f;
+//                rollout = new RolloutPolicy_Window(rollout);
+
                 // Rollout using value function controller.
-                //rollout = new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
-//                        new RolloutPolicy_Window(new RolloutPolicy_ValueFunction(new EvaluationFunction_Distance(), valueFunction));
+                rollout = new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
             } else {
                 //new RolloutPolicy_Window(
                 rollout = new RolloutPolicy_Window(new RolloutPolicy_RandomDecayingHorizon());
                         //new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
             }
 
-            Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout);
+            Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout.getCopy());
 
             TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, ucbSampler, saver);
             searchMax.terminateAfterXGames = bailAfterXGames;
@@ -146,7 +150,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             }
 
             // Update the value function.
-            List<NodeQWOPGraphics> nodesBelow = new ArrayList<>();
+            List<NodeQWOPExplorable> nodesBelow = new ArrayList<>();
             rootNode.getNodesBelowInclusive(nodesBelow);
             nodesBelow.remove(rootNode);
             Collections.shuffle(nodesBelow);
@@ -156,23 +160,23 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             Utility.toc();
 
             // TODO
-            if (!headless) {
-                ValueFunction_TensorFlow_StateOnly finalValueFunction = valueFunction;
-                Runnable updateLabels = () -> {
-                    for (NodeQWOPGraphics n : nodesBelow) {
-                        float percDiff = Math.abs((finalValueFunction.evaluate(n) - n.getValue())/n.getValue() * 100f);
-                        n.nodeLabel = String.format("%.1f, %.0f%%", n.getValue(), percDiff);
-                        n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(percDiff, 100f) + 100
-                                , 100,
-                                0.9f));
-                        n.displayLabel = true;
-                    }
-                };
-                labelUpdater.execute(updateLabels);
-            }
+//            if (!headless) {
+//                ValueFunction_TensorFlow_StateOnly finalValueFunction = valueFunction;
+//                Runnable updateLabels = () -> {
+//                    for (NodeQWOPGraphics n : nodesBelow) {
+//                        float percDiff = Math.abs((finalValueFunction.evaluate(n) - n.getValue())/n.getValue() * 100f);
+//                        n.nodeLabel = String.format("%.1f, %.0f%%", n.getValue(), percDiff);
+//                        n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(percDiff, 100f) + 100
+//                                , 100,
+//                                0.9f));
+//                        n.displayLabel = true;
+//                    }
+//                };
+//                labelUpdater.execute(updateLabels);
+//            }
 //             Save a checkpoint of the weights/biases.
 //            if (k % 2 == 0) {
-                valueFunction.saveCheckpoint("tmp" + (k + chkIdx + 1));
+                valueFunction.saveCheckpoint("med" + (k + chkIdx + 1));
                 System.out.println("Saved");
 //            }
         }
