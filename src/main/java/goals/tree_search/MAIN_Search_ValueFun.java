@@ -91,11 +91,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         // Make the value function.
         ArrayList<Integer> hiddenLayerSizes = new ArrayList<>();
-        hiddenLayerSizes.add(10);
-        hiddenLayerSizes.add(10);
-        hiddenLayerSizes.add(10);
-        hiddenLayerSizes.add(5);
-        hiddenLayerSizes.add(5);
+        hiddenLayerSizes.add(128);
+        hiddenLayerSizes.add(64);
+
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");
         extraNetworkArgs.add("1e-3");

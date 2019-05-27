@@ -257,7 +257,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          * makes each call depend on the previous to some extent. Perhaps good for performance, terrible for
          * predicability.
          */
-        private final boolean newGameBetweenPredictions = true;
+        private final boolean newGameBetweenPredictions = false;
 
 
         private SelectionCriteria selectionCriteria = SelectionCriteria.BEST_AVERAGE_WINDOW;
@@ -291,14 +291,14 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
             if (useSerializedState) {
                 gameLocal = gameLocal.restoreSerializedState(startStateFull);
-                gameLocal.iterations = initialPhysicsIterations; // Tunable parameter for getting caught up to the
+                gameLocal.iterations = GameConstants.physIterations; // Don't need to 'catch up', since full game is
             } else {
                 if (newGameBetweenPredictions)
                     gameLocal.makeNewWorld();
 
                 gameLocal.setState(startingState);
-                gameLocal.iterations = GameConstants.physIterations; // Don't need to 'catch up', since full game is
-                // restored.
+                gameLocal.iterations = initialPhysicsIterations; // Catch-up iterations for cold-start game to
+                // "catch-up" to warm-started game.
             }
 
             // Reset the game and set it to the specified starting state.

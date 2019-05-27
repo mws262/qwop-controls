@@ -4,6 +4,8 @@ import actions.Action;
 import actions.ActionQueue;
 import game.*;
 import hardware.KeypusherSerialConnection;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 
@@ -33,8 +35,6 @@ public abstract class FlashGame implements IFlashStateListener {
      */
     private boolean[] prevCommand = null;
 
-    boolean hardwareCommandsOut = false;
-
     /**
      * {@link FlashGame} will send its commands to this destination.
      */
@@ -51,6 +51,7 @@ public abstract class FlashGame implements IFlashStateListener {
      */
     private boolean awaitingRestart = true;
 
+    private Logger logger = LogManager.getLogger(FlashGame.class);
     /**
      * Create a new Flash game interface.
      *
@@ -59,6 +60,9 @@ public abstract class FlashGame implements IFlashStateListener {
     public FlashGame(boolean hardwareCommandsOut) {
         server = new FlashQWOPServer();
         server.addStateListener(this);
+
+        logger.info("Flash game interface created with " + (hardwareCommandsOut ? "hardware" : "software") + " output" +
+                " to game.");
 
         if (hardwareCommandsOut) {
             commandTarget = new KeypusherSerialConnection();
@@ -116,19 +120,20 @@ public abstract class FlashGame implements IFlashStateListener {
     public synchronized void stateReceived(int timestep, State state) {
         // New run has started. Add the sequence of actions from the beginning.
         if (timestep == 0) {
-            System.out.println("zero timestep");
-            awaitingRestart = false;
+            logger.debug("Zero timestep from Flash game.");
             actionQueue.clearAll();
             actionQueue.addSequence(getActionSequenceFromBeginning());
             prevCommand = null;
             timestepsTracked = 0;
             previousState = state;
+            awaitingRestart = false;
         } else if (awaitingRestart) { // If a restart has been commanded, but has not finished occurring on the Flash
             // side, then just wait.
             return;
         } else if (state.isFailed()) { // If the runner falls, auto-restart. TODO may want to not do this automatically.
             reportGameStatus(state, prevCommand, timestep);
 
+            // Send all-keys-up command so it doesn't restart with some buttons active.
             commandTarget.command(false, false, false, false);
 
             try {
@@ -136,9 +141,12 @@ public abstract class FlashGame implements IFlashStateListener {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            // Restart the Flash game.
             restart();
             return;
         }
+        //
         reportGameStatus(state, prevCommand, timestep);
 
         assert timestep == timestepsTracked; // Have we lost any timesteps?
@@ -157,7 +165,6 @@ public abstract class FlashGame implements IFlashStateListener {
             if (a == null) {
                 return;
             }
-            System.out.println(a.toString() + ". Eval time: " + (System.currentTimeMillis() - timeBeforeController) + " ms.");
             actionQueue.addAction(a);
         }
 
@@ -173,7 +180,7 @@ public abstract class FlashGame implements IFlashStateListener {
         // but it's better to at least know that this is occurring.
         long controlEvalTime = System.currentTimeMillis() - timeBeforeController;
         if (controlEvalTime > 30) {
-            System.out.println("Warning: the control loop time was " + controlEvalTime + "ms. This might be too high.");
+            logger.warn("The control loop time was " + controlEvalTime + "ms. This might be too high.");
         }
         timestepsTracked++;
     }
