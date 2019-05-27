@@ -56,7 +56,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
 
         ///////////////////////////////////////////////////////////
 
-        IActionGenerator actionGenerator = assignAllowableActionsWider(-1);
+        IActionGenerator actionGenerator = getExtendedActionGenerator(-1);
 
         // This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
         // Check if we actually need to do stage 1.
@@ -69,10 +69,10 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
                 ui.clearRootNodes();
                 ui.addRootNode(rootNode);
 
-                appendSummaryLog("Starting stage 1. Run: " + count + ".");
+                logger.info("Starting stage 1. Run: " + count + ".");
                 doBasicMaxDepthStage(rootNode, filename1 + Utility.getTimestamp(), getToSteadyDepth,
                         maxWorkerFraction1, bailAfterXGames1);
-                appendSummaryLog("Stage 1 done. Run: " + count + ".");
+                logger.info("Stage 1 done. Run: " + count + ".");
                 count++;
             }
         }
@@ -92,7 +92,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
             converter.trimLast = trimEndBy;
             converter.convert(filesToConvert, true);
 
-            appendSummaryLog("Stage 2 done.");
+            logger.info("Stage 2 done.");
         }
 
         System.exit(0);

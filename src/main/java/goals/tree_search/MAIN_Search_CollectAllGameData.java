@@ -18,9 +18,8 @@ public class MAIN_Search_CollectAllGameData extends MAIN_Search_Template {
     }
 
     private void doGames() {
-        assignAllowableActionsWider(-1);
 
-        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), getExtendedActionGenerator(-1));
         ui.addRootNode(rootNode);
 
         doFixedGamesToFailureStage(rootNode, "good_and_bad", 1, 1000000);

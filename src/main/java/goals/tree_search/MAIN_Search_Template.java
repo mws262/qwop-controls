@@ -11,6 +11,8 @@ import evaluators.EvaluationFunction_Distance;
 import filters.NodeFilter_SurvivalHorizon;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import samplers.Sampler_FixedDepth;
 import samplers.Sampler_Greedy;
 import samplers.Sampler_UCB;
@@ -23,6 +25,7 @@ import tree.*;
 import ui.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -71,42 +74,47 @@ public abstract class MAIN_Search_Template {
      */
     private PanelTimeSeries_WorkerLoad workerMonitorPanel;
 
+    static Logger logger;
+    static {
+        Utility.loadLoggerConfiguration();
+        logger = LogManager.getLogger(MAIN_Search_Template.class);
+    }
+
     /**
      * Maximum number of workers any stage can recruit.
      */
     final int maxWorkers;
 
     public MAIN_Search_Template(File configFile) {
+
         // Load the configuration file.
         properties = Utility.loadConfigFile(configFile);
-
-        String logPrefix = "MAIN: ";
+        float workersFractionOfCores = Float.parseFloat(properties.getProperty("workersFractionOfCores", "0.8"));
+        headless = Boolean.valueOf(properties.getProperty("headless", "false")); // Default to using fullUI
 
         // Create the data save directory.
         saveLoc = new File("src/main/resources/saved_data/" + properties.getProperty("saveLocation", "./"));
+
         if (!saveLoc.exists()) {
             boolean success = saveLoc.mkdirs();
-            if (!success) throw new RuntimeException("Could not make save directory.");
+            if (!success) try {
+                throw new FileNotFoundException("Could not make save directory.");
+            } catch (FileNotFoundException e) {
+                logger.error("Could not make save directory.", e);
+            }
+            logger.info("Made a data-saving directory at: " + saveLoc.getName());
+        } else {
+            logger.info("Using existing data-save directory at: " + saveLoc.getName());
         }
-        // WORKER CORES:
-        // Worker threads to run. Each worker independently explores the tree and has its own loaded copy of the
-        // Box2D libraries.
-        float workersFractionOfCores = Float.parseFloat(properties.getProperty("workersFractionOfCores", "0.8"));
-        int cores = Runtime.getRuntime().availableProcessors();
-        maxWorkers = (int) (workersFractionOfCores * cores); // Basing of number of cores including hyperthreading.
-        // May want to optimize this a tad.
-        System.out.println("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
 
-        workerPool = new GenericObjectPool<>(new WorkerFactory());
-        workerPool.setMaxTotal(maxWorkers);
-        workerPool.setMaxIdle(-1); // No limit to idle. Would have defaulted to 8, meaning all others would get
-        // culled between stages.
+        // Worker threads to run. Each worker independently explores the tree.
+
+        workerPool = makeWorkerPool(workersFractionOfCores);
+        maxWorkers = workerPool.getMaxTotal();
 
         // UI CONFIG:
-        headless = Boolean.valueOf(properties.getProperty("headless", "false")); // Default to using fullUI
-        appendSummaryLog(logPrefix + "Full UI is " + (headless ? "not" : "") + "on.");
+        logger.info("Full UI is " + (headless ? "not" : "") + "on.");
         ui = (headless) ? new UI_Headless() : setupFullUI(); // Make the UI.
-
         Thread uiThread = new Thread(ui);
         uiThread.start();
 
@@ -119,31 +127,38 @@ public abstract class MAIN_Search_Template {
         }
 
         // Write machine details to log.
-        appendSummaryLog(logPrefix + "OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version"));
+        logger.info("Machine info:\n " +  "OS: " + System.getProperty("os.name") + " " + System.getProperty("os" +
+                ".version"));
         String hostname = "Unknown";
         try {
             InetAddress addr;
             addr = InetAddress.getLocalHost();
             hostname = addr.getHostName();
         } catch (UnknownHostException ex) {
-            System.out.println("Hostname can not be resolved");
+            logger.warn("Machine name can not be resolved");
         }
 
-        appendSummaryLog(logPrefix + "Name: " + hostname);
-        appendSummaryLog(logPrefix + "Save directory: " + saveLoc.getAbsolutePath());
+        logger.info("Machine name: " + hostname + "\nSave directory: " + saveLoc.getAbsolutePath());
+    }
 
+    /**
+     * Make a pool of tree workers. TODO this is somewhat deprecated. When each worker had its own classloader, it
+     * was important to not create too many workers. Now, I don't think it matters too much.
+     *
+     * @param coreFraction Portion of detected machine cores used to decide how many worker threads to make.
+     * @return A pool of tree workers.
+     */
+    GenericObjectPool<TreeWorker> makeWorkerPool(float coreFraction) {
+        int cores = Runtime.getRuntime().availableProcessors();
+        int maxWorkers = (int) (coreFraction * cores); // Basing of number of cores including hyperthreading.
+        logger.info("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
 
-        // Save a progress log before shutting down.
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            appendSummaryLog(logPrefix + "Finalizing log.");
-            try {
-                Utility.stringToLogFile(endLog, saveLoc.toString() + "/" + "summary_" + Utility.getTimestamp() +
-						".log");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            workerPool.close();
-        }));
+        GenericObjectPool<TreeWorker> workerPool = new GenericObjectPool<>(new WorkerFactory());
+        workerPool.setMaxTotal(maxWorkers);
+        workerPool.setMaxIdle(-1); // No limit to idle. Would have defaulted to 8, meaning all others would get
+        // culled between stages.
+
+        return workerPool;
     }
 
     /**
@@ -154,13 +169,23 @@ public abstract class MAIN_Search_Template {
         try {
             worker = workerPool.borrowObject();
             activeWorkers.add(worker);
-            if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
-
+            if (workerMonitorPanel != null) {
+                workerMonitorPanel.setWorkers(activeWorkers);
+                logger.debug("Worker borrowed from pool: " + worker.workerName);
+            }
         } catch (Exception e) {
-            System.out.println("Failed to borrow a worker.");
-            e.printStackTrace();
+            logger.error("Failed to borrow a worker.", e);
         }
+
         return worker;
+    }
+
+    List<TreeWorker> borrowNWorkers(int numberOfWorkers) {
+        List<TreeWorker> workerList = new ArrayList<>();
+        for (int i = 0; i < numberOfWorkers; i++) {
+            workerList.add(borrowWorker());
+        }
+        return workerList;
     }
 
     /**
@@ -168,6 +193,7 @@ public abstract class MAIN_Search_Template {
      */
     void returnWorker(TreeWorker finishedWorker) {
         workerPool.returnObject(finishedWorker);
+        logger.debug("Worker returned to pool: " + finishedWorker.workerName);
         activeWorkers.remove(finishedWorker);
         if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
     }
@@ -188,40 +214,33 @@ public abstract class MAIN_Search_Template {
         if (fractionOfWorkers > 1)
             throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
 
-        String logPrefix = "BasicMaxDepthSearch: ";
+        String stageName = "BasicMaxDepthSearch";
+        int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
+        writeLogStageHeader(stageName, saveName, rootNode.getTreeDepth(), numWorkersToUse, maxGames);
 
         long startTime = System.currentTimeMillis();
-        int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
-        writeLogStageHeader(logPrefix, saveName, rootNode.getTreeDepth(), numWorkersToUse, maxGames);
-
+;
         DataSaver_StageSelected saver = new DataSaver_StageSelected();
         saver.overrideFilename = saveName;
         saver.setSavePath(saveLoc.getPath() + "/");
 
         Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), new RolloutPolicy_RandomDecayingHorizon());
-        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, ucbSampler, saver); // Depth to get to
-		// sorta steady state. was
-        searchMax.terminateAfterXGames = maxGames; // Will terminate after this many games played regardless of
-		// whether goals have been met.
+        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, ucbSampler, saver);
+        searchMax.terminateAfterXGames = maxGames;
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws1 = new ArrayList<>();
-        for (int i = 0; i < numWorkersToUse; i++) {
-            tws1.add(borrowWorker());
-        }
+        List<TreeWorker> tws1 = borrowNWorkers(numWorkersToUse);
 
         // Do stage search
         searchMax.initialize(tws1, rootNode);
 
         float elapsedSeconds = Math.floorDiv(System.currentTimeMillis() - startTime, 100) / 10f; // To one decimal
 		// place.
-        appendSummaryLog(logPrefix + "Finished after " + elapsedSeconds + " seconds.");
-        appendSummaryLog(logPrefix + "Results -- " + (searchMax.getResults().isEmpty() ? "<goal not met>" :
-				searchMax.getResults().get(0).getTreeDepth() + " depth achieved."));
+        logger.info(stageName + " finished after " + elapsedSeconds + " seconds.\n" + "Results -- "
+                + (searchMax.getResults().isEmpty() ? "<goal not met>" : searchMax.getResults().get(0).getTreeDepth() + " depth achieved."));
+
         // Return the checked out workers.
-        for (TreeWorker w : tws1) {
-            returnWorker(w);
-        }
+        tws1.forEach(this::returnWorker);
     }
 
     /**
@@ -239,39 +258,29 @@ public abstract class MAIN_Search_Template {
         if (fractionOfWorkers > 1)
             throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
 
-        String logPrefix = "BasicMinDepthSearch: ";
+        String stageName = "BasicMinDepthSearch: ";
 
         long startTime = System.currentTimeMillis();
         int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
-        writeLogStageHeader(logPrefix, saveName, rootNode.getTreeDepth(), numWorkersToUse, maxGames);
+        writeLogStageHeader(stageName, saveName, rootNode.getTreeDepth(), numWorkersToUse, maxGames);
 
         DataSaver_StageSelected saver = new DataSaver_StageSelected();
-
         saver.overrideFilename = saveName;
         saver.setSavePath(saveLoc.getPath() + "/");
 
         TreeStage searchMin = new TreeStage_MinDepth(minDepth, new Sampler_FixedDepth(minDepth), saver);
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws2 = new ArrayList<>();
-        for (int i = 0; i < numWorkersToUse; i++) {
-            try {
-                tws2.add(borrowWorker());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        List<TreeWorker> tws2 = borrowNWorkers(numWorkersToUse);
+
         searchMin.initialize(tws2, rootNode);
 
         float elapsedSeconds = Math.floorDiv(System.currentTimeMillis() - startTime, 100) / 10f; // To one decimal
 		// place.
-        appendSummaryLog(logPrefix + "Finished after " + elapsedSeconds + " seconds.");
-        appendSummaryLog(logPrefix + "Did " + searchMin.getResults().size() + " deviations.");
+        logger.info(stageName + " finished after " + elapsedSeconds + " seconds.\n" +  stageName + "did " + searchMin.getResults().size() + " deviations.");
 
         // Return the checked out workers.
-        for (TreeWorker w : tws2) {
-            returnWorker(w);
-        }
+        tws2.forEach(this::returnWorker);
     }
 
     /**
@@ -303,23 +312,17 @@ public abstract class MAIN_Search_Template {
         TreeStage_FixedGames search = new TreeStage_FixedGames(numGames, sampler, saver); // Depth to get to
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws1 = new ArrayList<>();
-        for (int i = 0; i < numWorkersToUse; i++) {
-            tws1.add(borrowWorker());
-        }
+        List<TreeWorker> tws1 = borrowNWorkers(numWorkersToUse);
 
         // Do stage search
         search.initialize(tws1, rootNode);
 
         float elapsedSeconds = Math.floorDiv(System.currentTimeMillis() - startTime, 100) / 10f; // To one decimal
         // place.
-        appendSummaryLog(logPrefix + "Finished after " + elapsedSeconds + " seconds.");
-        appendSummaryLog(logPrefix + "Results -- " + (search.getResults().isEmpty() ? "<goal not met>" :
-                search.getResults().get(0).getMaxBranchDepth() + " depth achieved."));
+        logger.info(logPrefix + "Finished after " + elapsedSeconds + " seconds." + logPrefix + "\nResults -- "
+                + (search.getResults().isEmpty() ? "<goal not met>" : search.getResults().get(0).getMaxBranchDepth() + " depth achieved."));
         // Return the checked out workers.
-        for (TreeWorker w : tws1) {
-            returnWorker(w);
-        }
+        tws1.forEach(this::returnWorker);
     }
 
     /**
@@ -365,16 +368,8 @@ public abstract class MAIN_Search_Template {
         Thread monitorThread = new Thread(workerMonitorPanel);
         monitorThread.start();
 
-        System.out.println("GUI: Running in full graphics mode.");
+        logger.info("GUI: Running in full graphics mode.");
         return fullUI;
-    }
-
-    /**
-     * Add something to the log which will be finalized when the program is closed.
-     */
-    public void appendSummaryLog(String addedLine) {
-        endLog += addedLine + "\n";
-        System.out.println(addedLine);
     }
 
     /**
@@ -387,10 +382,10 @@ public abstract class MAIN_Search_Template {
      * @param maxGames Maximum number of games to be played by this stage.
      */
     private void writeLogStageHeader(String stageName, String saveName, int treedepth, int numWorkers, int maxGames) {
-        appendSummaryLog(stageName + "starting from a root of absolute depth " + treedepth);
-        appendSummaryLog(stageName + "save file,  " + saveName);
-        appendSummaryLog(stageName + "playing a max of " + maxGames + " games.");
-        appendSummaryLog(stageName + "checked out " + numWorkers + " workers.");
+        logger.info("Beginning " + stageName + ".\nStart depth: " + treedepth
+                + "\nMax games to play: " + maxGames
+                + "\nNumber of workers: " + numWorkers
+                + "\nSave file: " + saveName);
     }
 
     /**
@@ -405,7 +400,7 @@ public abstract class MAIN_Search_Template {
      * Will assign a broader set of options for "recovery" at the specified starting depth.
      * Pass -1 to disable this.
      */
-    public static IActionGenerator assignAllowableActions(int recoveryExceptionStart) {
+    public static IActionGenerator getDefaultActionGenerator(int recoveryExceptionStart) {
         /* Space of allowed actions to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
@@ -504,7 +499,7 @@ public abstract class MAIN_Search_Template {
         return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 
-    public static IActionGenerator assignAllowableActionsWider(int recoveryExceptionStart) {
+    public static IActionGenerator getExtendedActionGenerator(int recoveryExceptionStart) {
         /* Space of allowed actions to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 

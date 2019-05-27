@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -32,6 +33,20 @@ public class Utility {
      * Random number generator for new node selection
      */
     private final static Random rand = new Random();
+
+
+    public static void loadLoggerConfiguration() {
+        try {
+            File file = new File(".", File.separatorChar + "log4j.xml");
+            if (!file.exists()) {
+                file = new File("./src/main/resources/log4j.xml");
+            }
+
+            System.setProperty("log4j.configurationFile", file.toURI().toURL().toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Generate a random integer between two values, inclusive.
@@ -75,19 +90,6 @@ public class Utility {
     }
 
     /**
-     * Write a string to file.
-     *
-     * @param contents String to be written in the file.
-     * @param outPath  Full path and filename of the log file.
-     * @throws IOException File cannot be opened or written to.
-     */
-    public static void stringToLogFile(String contents, String outPath) throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outPath))) {
-            writer.write(contents);
-        }
-    }
-
-    /**
      * Write some part of a file to a log. Begin logging with !LOG_START and end with !LOG_END. This can be done
      * multiple times in the same file. This is useful when we want to record the settings specified in a configuration
      * file to a log file.
@@ -96,6 +98,7 @@ public class Utility {
      * @param outPath Full path and filename of the log file.
      * @throws IOException File cannot be opened or written to.
      */
+    @Deprecated
     public static void sectionToLogFile(String inPath, String outPath) throws IOException {
         boolean collecting = false;
 

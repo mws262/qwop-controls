@@ -22,6 +22,10 @@ import java.util.List;
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
 
+    static{
+        Utility.loadLoggerConfiguration();
+    }
+
     // Net and execution parameters.
     String valueNetworkName = "small_net.pb";
     String checkpointName = "med67";
@@ -141,9 +145,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         // Run the controller until failure.
         while (true) { //!qwop.game.getFailureStatus()) {
 
-            Utility.tic();
             Action chosenAction = valueFunction.getMaximizingAction(currentNode, game);
-            Utility.toc();
 
             boolean[] keys =  chosenAction.peek();
             q = keys[0];
