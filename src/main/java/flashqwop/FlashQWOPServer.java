@@ -1,6 +1,10 @@
 package flashqwop;
 import game.*;
+import actions.Action;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+import tree.Utility;
 import ui.PanelRunner_SimpleState;
 
 import javax.swing.*;
@@ -42,6 +46,22 @@ public class FlashQWOPServer implements IGameExternal {
     private DataReceiver dataInput;
 
     /**
+     * Cods for each action to send to the Flash game over the socket.
+     */
+    private static final String none = "00000\0";
+    private static final String q = "10000\0";
+    private static final String w = "01000\0";
+    private static final String o = "00100\0";
+    private static final String p = "00010\0";
+    private static final String qo = "10100\0";
+    private static final String qp = "10010\0";
+    private static final String wo = "01100\0";
+    private static final String wp = "01010\0";
+
+    private final boolean useJSONState = true;
+
+    private static Logger logger = LogManager.getLogger(FlashQWOPServer.class);
+    /**
      * Open a socket for communicating back and forth with the real QWOP game.
      * @param port Specified port for communication. Currently real QWOP is hardcoded to use 2900.
      */
@@ -49,7 +69,7 @@ public class FlashQWOPServer implements IGameExternal {
         try {
             ServerSocket s = new ServerSocket(port); // TODO figure out how to make it start over if the client
             // disconnects.
-            System.out.println("Server started. Waiting for connections...");
+            logger.info("Server started on port " + port + ". Waiting for connections....");
             Socket incoming = s.accept();
             dataOutput = new PrintWriter(incoming.getOutputStream());
 
@@ -91,12 +111,40 @@ public class FlashQWOPServer implements IGameExternal {
      */
     @Override
     public void command(boolean q, boolean w, boolean o, boolean p) {
-        String commandString =
-                (q ? "1" : "0") +
-                        (w ? "1" : "0") +
-                        (o ? "1" : "0") +
-                        (p ? "1" : "0") +
-                        "0\0";
+        // Trying to avoid building new strings all the time.
+        Action.Keys keys = Action.booleansToKeys(q, w, o, p);
+        String commandString;
+        switch (keys) {
+            case q:
+                commandString = FlashQWOPServer.q;
+                break;
+            case w:
+                commandString = FlashQWOPServer.w;
+                break;
+            case o:
+                commandString = FlashQWOPServer.o;
+                break;
+            case p:
+                commandString = FlashQWOPServer.p;
+                break;
+            case qp:
+                commandString = FlashQWOPServer.qp;
+                break;
+            case wo:
+                commandString = FlashQWOPServer.wo;
+                break;
+            case qo:
+                commandString = FlashQWOPServer.qo;
+                break;
+            case wp:
+                commandString = FlashQWOPServer.wp;
+                break;
+            case none:
+                commandString = FlashQWOPServer.none;
+                break;
+            default:
+                commandString = "\0";
+        }
         dataOutput.print(commandString);
         dataOutput.flush();
     }
@@ -105,6 +153,7 @@ public class FlashQWOPServer implements IGameExternal {
         String commandString = "getinfo";
         dataOutput.print(commandString);
         dataOutput.flush();
+        logger.debug("Sent game information request.");
     }
 
     /**
@@ -114,11 +163,11 @@ public class FlashQWOPServer implements IGameExternal {
         String commandString = "00001\0";
         dataOutput.println(commandString);
         dataOutput.flush();
+        logger.debug("Sent reset request.");
     }
 
     /**
      * Just for minor testing/playing around to make sure the connections work properly.
-     * @param args
      */
     public static void main(String[] args) {
         try {
@@ -136,7 +185,7 @@ public class FlashQWOPServer implements IGameExternal {
                 Thread.sleep(1000);
             }
         } catch (Exception e) {
-            System.out.println("Connection lost");
+            logger.warn("Connection lost");
         }
     }
 
@@ -171,7 +220,7 @@ public class FlashQWOPServer implements IGameExternal {
      * State data input receiver for the Flash QWOP game. This should run on a separate thread to keep the state
      * updated in real time.
      */
-    private static class DataReceiver implements Runnable {
+    private class DataReceiver implements Runnable {
 
         /**
          * Reader which gets the input stream from the socket.
@@ -226,14 +275,46 @@ public class FlashQWOPServer implements IGameExternal {
         public void run() {
             while (true) {
                 try {
-                    if (reader.ready()) {
-                        String msg = reader.readLine().replace("\u0000", ""); // JSON parser hates the null character
-                        // in front.
+                    State st = null;
+                    if (useJSONState) { // JSON state corresponds to socket.swf
+                        if (reader.ready()) {
+                            //long initialTime = System.currentTimeMillis();
+                            String msg = reader.readLine().replace("\u0000", ""); // JSON parser hates the null character
+                            // in front.
+                            if (msg.contains("{")) {
+                                JSONObject stateFromFlash = new JSONObject(msg);
+                                if (stateFromFlash.keySet().contains("timestep")) {
+                                    st = convertJSONToState(stateFromFlash);
+                                    currentState = st;
+                                    if (debugDraw) {
+                                        panelRunner.updateState(st);
+                                    }
+                                    // Send the update to any listeners.
+                                    for (IFlashStateListener listener : listenerList) {
+                                        listener.stateReceived(getCurrentTimestep(), st);
+                                    }
+                                    // System.out.println(stateFromFlash.toString(2));
 
-                        if (msg.contains("{")) {
-                            JSONObject stateFromFlash = new JSONObject(msg);
-                            if (stateFromFlash.keySet().contains("timestep")) {
-                                State st = convertJSONToState(stateFromFlash);
+                                } else {
+                                    System.out.println(stateFromFlash.toString(2));
+                                }
+                            } else {
+                                if (getCurrentTimestep() == 0) {
+                                    System.out.println(msg); // TODO handle other messages.
+                                }
+                            }
+                            //logger.debug(System.currentTimeMillis() - initialTime + "ms.");
+
+                        }
+                    } else { // Non-JSON is just a string of numbers that you need to know the order of to use. Set
+                        // flag to false here, and use socket_numberstate.swf
+                        if (reader.ready()) {
+                            //long initialTime = System.currentTimeMillis();
+                            String msg = reader.readLine();
+                            msg = msg.replace("\u0000", ""); // JSON parser hates the null character
+
+                            if (msg.contains(",")) {
+                                st = convertStringToState(msg);
                                 currentState = st;
                                 if (debugDraw) {
                                     panelRunner.updateState(st);
@@ -242,23 +323,44 @@ public class FlashQWOPServer implements IGameExternal {
                                 for (IFlashStateListener listener : listenerList) {
                                     listener.stateReceived(getCurrentTimestep(), st);
                                 }
-                                // System.out.println(stateFromFlash.toString(2));
-
                             } else {
-                                System.out.println(stateFromFlash.toString(2));
+                                System.out.println(msg);
                             }
-                        }
-                        else {
-                            if (getCurrentTimestep() == 0) {
-                                System.out.println(msg); // TODO handle other messages.
-                            }
+                            //logger.debug(System.currentTimeMillis() - initialTime + "ms.");
                         }
                     }
+
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
+
+        private State convertStringToState(String stateString) {
+            String[] strArray = stateString.split(",");
+            currentTimestep.set(Integer.parseInt(strArray[0]));
+            boolean isFallen = Boolean.parseBoolean(strArray[1]);
+            fallen.set(isFallen);
+
+            float[] stateVals = new float[72];
+            for (int i = 0; i < stateVals.length; i++) {
+                stateVals[i] = Float.parseFloat(strArray[i + 2]);
+            }
+            stateVals[2] += GameConstants.torsoAngAdj;
+            stateVals[8] += GameConstants.headAngAdj;
+            stateVals[14] += GameConstants.rThighAngAdj;
+            stateVals[20] += GameConstants.lThighAngAdj;
+            stateVals[26] += GameConstants.rCalfAngAdj;
+            stateVals[32] += GameConstants.lCalfAngAdj;
+
+            stateVals[50] += GameConstants.rUArmAngAdj;
+            stateVals[56] += GameConstants.lUArmAngAdj;
+            stateVals[62] += GameConstants.rLArmAngAdj;
+            stateVals[68] += GameConstants.lLArmAngAdj;
+            return new State(stateVals, isFallen);
+        }
+
 
         /**
          * JSON formatted data will come in from the real QWOP game. This will extract it, add in the angle offsets,

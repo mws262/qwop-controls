@@ -98,11 +98,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         // Assign a "prefix" of actions, since I'm not sure if the controller will generalize to this part of running.
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
-                new Action(7, Action.Keys.none),
-                new Action(34, Action.Keys.wo),
-                new Action(19, Action.Keys.none),
-//                new Action(45, Action.Keys.qp),
-//
+                new Action(6, Action.Keys.none),
+//                new Action(34, Action.Keys.wo),
+//                new Action(19, Action.Keys.none),
+//                new Action(20, Action.Keys.qp),
+////
 //                new Action(10,false,false,false,false),
 //                new Action(27,false,true,true,false),
 //                 new Action(8,false,false,false,false),
@@ -136,7 +136,6 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                 e.printStackTrace();
             }
         }
-
         return currNode;
     }
 
@@ -145,7 +144,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         // Run the controller until failure.
         while (true) { //!qwop.game.getFailureStatus()) {
 
-            Action chosenAction = valueFunction.getMaximizingAction(currentNode, game);
+            Action chosenAction = valueFunction.getMaximizingAction(currentNode);//, game);
 
             boolean[] keys =  chosenAction.peek();
             q = keys[0];
