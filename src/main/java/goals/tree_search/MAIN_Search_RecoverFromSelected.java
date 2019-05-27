@@ -1,22 +1,23 @@
 package goals.tree_search;
 
+import actions.Action;
+import data.SavableActionSequence;
+import data.SavableFileIO;
+import data.SparseDataToDenseTFRecord;
+import game.GameUnified;
+import game.IGameInternal;
+import org.apache.commons.lang3.ArrayUtils;
+import samplers.Sampler_UCB;
+import tree.NodeQWOPBase;
+import tree.NodeQWOPGraphics;
+import tree.Utility;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import actions.Action;
-import data.SavableActionSequence;
-import data.SparseDataToDenseTFRecord;
-import game.GameUnified;
-import game.IGameInternal;
-import org.apache.commons.lang3.ArrayUtils;
-
-import data.SavableFileIO;
-import samplers.Sampler_UCB;
-import tree.*;
 
 /**
  * Does the full search in 4 stages.
@@ -68,18 +69,17 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
 
         for (File f : actionFiles) {
             if (f.getName().contains("SavableActionSequence") && f.getName().contains("6_08")) {
-                appendSummaryLog("Processing file: " + f.getName());
+                logger.info("Processing file: " + f.getName());
                 List<SavableActionSequence> actionSeq = new ArrayList<>();
                 actionSequenceLoader.loadObjectsToCollection(f, actionSeq);
 
                 List<Action[]> acts = actionSeq.stream().map(SavableActionSequence::getActions).collect(Collectors.toList());
 
                 trimStartBy = acts.get(0).length;
-                assignAllowableActions(trimStartBy); // Assign the broader recovery action sets to the depth at the
-				// end of the action list.
 
                 // Recreate the tree section.
-                NodeQWOPGraphics root = new NodeQWOPGraphics(GameUnified.getInitialState());
+                NodeQWOPGraphics root = new NodeQWOPGraphics(GameUnified.getInitialState(),
+                        getDefaultActionGenerator(trimStartBy));
                 NodeQWOPBase.makeNodesFromActionSequences(acts, root, game);
 
                 // Put it on the UI.
@@ -91,7 +91,7 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
                 root.getLeaves(leafList);
 
                 // Expand the deviated spots and find recoveries.
-                appendSummaryLog("Starting leaf expansion.");
+                logger.info("Starting leaf expansion.");
                 NodeQWOPGraphics previousLeaf = null;
 
                 // Should only be 1 element in leafList now. Keeping the loop for the future however.
@@ -110,7 +110,7 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
                             List<File> toConvert = new ArrayList<>();
                             toConvert.add(dfiles);
                             converter.convert(toConvert, false);
-                            appendSummaryLog("Converted to TFRecord.");
+                            logger.info("Converted to TFRecord.");
                             break;
                         }
                     }
@@ -123,10 +123,10 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
                     }
                     previousLeaf = leaf;
 
-                    appendSummaryLog("Expanded leaf.");
+                    logger.info("Expanded leaf.");
                 }
             }
-            appendSummaryLog("Stage done.");
+            logger.info("Stage done.");
         }
     }
 }

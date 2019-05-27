@@ -21,9 +21,7 @@ public class MAIN_Search_Robust extends MAIN_Search_Template {
     }
 
     private void doGames() {
-        assignAllowableActions(10);
-
-        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), getDefaultActionGenerator(10));
         ui.addRootNode(rootNode);
 
         doBasicMinDepthStage(rootNode, "testDev0.tmp", 1, 1, 10000);
@@ -37,7 +35,6 @@ public class MAIN_Search_Robust extends MAIN_Search_Template {
             System.out.println(score);
             node.setBranchZOffset(-0.5f);
             node.destroyNodesBelow();
-            //TODO node.nodeLabel = String.valueOf(score);
 //            node.postPruneDrawingBelow(0.4f);
         }
     }
@@ -64,10 +61,7 @@ public class MAIN_Search_Robust extends MAIN_Search_Template {
             }
         }
 
-
-
         // Step 3: Result -- each child will have a fraction of recoverable children.
-
         return (float)((float)successfulExpansionDepth/(1.*leavesToExpand.size()));
     }
 }

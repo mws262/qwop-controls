@@ -4,8 +4,13 @@ import actions.Action;
 import actions.IActionGenerator;
 import evaluators.EvaluationFunction_Constant;
 import game.GameUnified;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import samplers.Sampler_UCB;
-import samplers.rollout.*;
+import samplers.rollout.RolloutPolicy;
+import samplers.rollout.RolloutPolicy_RandomDecayingHorizon;
+import samplers.rollout.RolloutPolicy_ValueFunctionDecayingHorizon;
+import samplers.rollout.RolloutPolicy_Window;
 import savers.DataSaver_StageSelected;
 import tree.*;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -20,8 +25,11 @@ import java.util.concurrent.Executors;
 
 public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
+    private Logger logger;
+
     public MAIN_Search_ValueFun(File configFile) {
         super(configFile);
+        logger = LogManager.getLogger(MAIN_Search_ValueFun.class);
     }
 
     public static void main(String[] args) {
@@ -50,7 +58,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         // Make new tree root and assign to GUI.
         // Assign default available actions.
-        IActionGenerator actionGenerator = assignAllowableActionsWider(-1);
+        IActionGenerator actionGenerator = getExtendedActionGenerator(-1);
         NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState(), actionGenerator);
         NodeQWOPGraphics.pointsToDraw.clear();
 //        ui.clearRootNodes();
@@ -114,21 +122,25 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //        valueFunction.setTrainingBatchSize(1000);
         boolean valueFunctionRollout = false;
 
-        for (int k = 0; k < 10000; k++) {
-            RolloutPolicy rollout;
+        RolloutPolicy rollout;
 
-            if (valueFunctionRollout) {
+        if (valueFunctionRollout) {
 //                rollout = new RolloutPolicy_RandomHorizonWithValue(valueFunction);
 //                ((RolloutPolicy_RandomHorizonWithValue) rollout).valueFunctionWeight = 0.8f;
 //                rollout = new RolloutPolicy_Window(rollout);
 
-                // Rollout using value function controller.
-                rollout = new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
-            } else {
-                //new RolloutPolicy_Window(
-                rollout = new RolloutPolicy_Window(new RolloutPolicy_RandomDecayingHorizon());
-                        //new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
-            }
+            // Rollout using value function controller.
+            rollout = new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
+            logger.info("Using value-function-based rollout policy.");
+        } else {
+            //new RolloutPolicy_Window(
+            rollout = new RolloutPolicy_Window(new RolloutPolicy_RandomDecayingHorizon());
+            //new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
+            logger.info("Using non-value-function-based rollout policy.");
+        }
+
+        for (int k = 0; k < 10000; k++) {
+
 
             Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout.getCopy());
 
@@ -136,18 +148,13 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             searchMax.terminateAfterXGames = bailAfterXGames;
 
             // Grab some workers from the pool.
-            List<TreeWorker> tws = new ArrayList<>();
-            for (int i = 0; i < numWorkersToUse; i++) {
-                tws.add(borrowWorker());
-            }
+            List<TreeWorker> tws = borrowNWorkers(numWorkersToUse);
 
             // Do stage search
             searchMax.initialize(tws, rootNode);
 
             // Return the workers.
-            for (TreeWorker w : tws) {
-                returnWorker(w);
-            }
+            tws.forEach(this::returnWorker);
 
             // Update the value function.
             List<NodeQWOPExplorable> nodesBelow = new ArrayList<>();
@@ -155,9 +162,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             nodesBelow.remove(rootNode);
             Collections.shuffle(nodesBelow);
 
-            Utility.tic();
             valueFunction.update(nodesBelow);
-            Utility.toc();
 
             // TODO
 //            if (!headless) {
@@ -177,7 +182,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //             Save a checkpoint of the weights/biases.
 //            if (k % 2 == 0) {
                 valueFunction.saveCheckpoint("med" + (k + chkIdx + 1));
-                System.out.println("Saved");
+                logger.info("Saved checkpoint as: " + "med" + (k + chkIdx + 1));
 //            }
         }
     }

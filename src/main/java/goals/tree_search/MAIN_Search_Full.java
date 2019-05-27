@@ -1,16 +1,20 @@
 package goals.tree_search;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
+import actions.IActionGenerator;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import samplers.Sampler_UCB;
-import tree.*;
+import tree.NodeQWOP;
+import tree.NodeQWOPExplorable;
+import tree.NodeQWOPExplorableBase;
+import tree.NodeQWOPGraphics;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Does the full search in 4 stages.
@@ -82,7 +86,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 
         ///////////////////////////////////////////////////////////
 
-        assignAllowableActions(stage3StartDepth);
+        IActionGenerator actionGenerator = getDefaultActionGenerator(stage3StartDepth);
 
         // This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
         // Check if we actually need to do stage 1.
@@ -90,7 +94,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
             File[] existingFiles = getSaveLocation().listFiles();
             for (File f : Objects.requireNonNull(existingFiles)) {
                 if (f.getName().contains("steadyRunPrefix")) {
-                    appendSummaryLog("Found a completed stage 1 file. Skipping.");
+                    logger.info("Found a completed stage 1 file. Skipping.");
                     doStage1 = false;
                     break;
                 }
@@ -98,14 +102,14 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
         }
 
         if (doStage1) {
-            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
             NodeQWOPGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(rootNode);
 
-            appendSummaryLog("Starting stage 1.");
+            logger.info("Starting stage 1.");
             doBasicMaxDepthStage(rootNode, filename1, getToSteadyDepth, maxWorkerFraction1, bailAfterXGames1);
-            appendSummaryLog("Stage 1 done.");
+            logger.info("Stage 1 done.");
         }
 
         // This stage generates deviations from nominal. Load nominal gait. Do not allow expansion near the root.
@@ -115,15 +119,15 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
             File[] existingFiles = getSaveLocation().listFiles();
             for (File f : Objects.requireNonNull(existingFiles)) {
                 if (f.getName().contains("deviations")) {
-                    appendSummaryLog("Found a completed stage 2 file. Skipping.");
+                    logger.info("Found a completed stage 2 file. Skipping.");
                     doStage2 = false;
                     break;
                 }
             }
         }
         if (doStage2) {
-            appendSummaryLog("Starting stage 2.");
-            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+            logger.info("Starting stage 2.");
+            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
 
             NodeQWOPGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
@@ -143,12 +147,12 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 
             doBasicMinDepthStage(currNode, filename2, deviationDepth, maxWorkerFraction2, bailAfterXGames2);
 
-            appendSummaryLog("Stage 2 done.");
+            logger.info("Stage 2 done.");
         }
 
         // Expand the deviated spots and find recoveries.
         if (doStage3) {
-            appendSummaryLog("Starting stage 3.");
+            logger.info("Starting stage 3.");
 
             // Auto-detect where we left off if this setting is selected.
             if (autoResume) {
@@ -158,7 +162,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                 while (startIdx < Objects.requireNonNull(existingFiles).length) {
                     for (File f : existingFiles) {
                         if (f.getName().contains("recoveries" + startIdx)) {
-                            appendSummaryLog("Found file for recovery " + startIdx);
+                            logger.info("Found file for recovery " + startIdx);
                             foundFile = true;
                             break;
                         }
@@ -168,12 +172,12 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                     startIdx++;
                     foundFile = false;
                 }
-                appendSummaryLog("Resuming at recovery #: " + startIdx);
+                logger.info("Resuming at recovery #: " + startIdx);
                 recoveryResumePoint = startIdx;
             }
 
             // Saver makeNewWorld.
-            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
             NodeQWOPGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(rootNode);
@@ -207,9 +211,9 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
                 previousLeaf = leaf;
 
                 count++;
-                appendSummaryLog("Expanded leaf: " + count + ".");
+                logger.info("Expanded leaf: " + count + ".");
             }
-            appendSummaryLog("Stage 3 done.");
+            logger.info("Stage 3 done.");
         }
 
         // Convert the sections of the runs we care about to dense data by re-simulating.
@@ -226,7 +230,7 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
             converter.trimLast = trimEndBy;
             converter.convert(filesToConvert, true);
 
-            appendSummaryLog("Stage 4 done.");
+            logger.info("Stage 4 done.");
         }
     }
 }

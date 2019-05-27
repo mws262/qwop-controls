@@ -2,6 +2,8 @@ package value;
 
 import com.google.common.collect.Iterables;
 import data.LoadStateStatistics;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tflowtools.TrainableNetwork;
 import tree.NodeQWOPBase;
 
@@ -45,14 +47,14 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     /**
      * Number of training batches completed since the start of the last update.
      */
-    private int batchCount = 0;
+    private int batchCount;
 
     /**
-     * Should we spit out info after training iterations?
+     * Sum of losses during one update. Exists for logging.
      */
-    boolean verbose = true;
+    private float lossSum;
 
-    public LoadStateStatistics.StateStatistics stateStats;
+    LoadStateStatistics.StateStatistics stateStats;
     {
         try {
             stateStats = LoadStateStatistics.loadStatsFromFile();
@@ -60,6 +62,8 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
             e.printStackTrace();
         }
     }
+
+    private static Logger logger = LogManager.getLogger(ValueFunction_TensorFlow.class);
 
     /**
      * Constructor which also creates a new TensorFlow model.
@@ -72,6 +76,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      */
     ValueFunction_TensorFlow(String fileName, int inputSize, int outputSize, List<Integer> hiddenLayerSizes,
                              List<String> additionalArgs) throws FileNotFoundException {
+        logger.info("Making a new network for the value function.");
         this.inputSize = inputSize;
         this.outputSize = outputSize;
 
@@ -89,6 +94,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * @throws FileNotFoundException Occurs when the specified model file is not found.
      */
     ValueFunction_TensorFlow(File existingFile) throws FileNotFoundException {
+        logger.info("Loading existing network for the value function.");
 
         network = new TrainableNetwork(existingFile);
         int[] layerSizes = network.getLayerSizes();
@@ -101,6 +107,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * @param network Existing value network.
      */
     ValueFunction_TensorFlow(TrainableNetwork network) {
+        logger.info("Using provided network for the value function.");
         int[] layerSizes = network.getLayerSizes();
         assert layerSizes.length >= 2;
         inputSize = layerSizes[0];
@@ -137,6 +144,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * Get the file containing the tensorflow definition of the neural network.
      * @return The .pb file holding the graph definition. Does not include weights.
      */
+    @SuppressWarnings("unused")
     public File getGraphDefinitionFile() {
         return network.getGraphDefinitionFile();
     }
@@ -146,6 +154,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * @param batchSize Size of each batch. In number of examples.
      */
     public void setTrainingBatchSize(int batchSize) {
+        logger.info("Training batch size set to " + batchSize + " samples.");
         trainingBatchSize = batchSize;
     }
 
@@ -154,15 +163,8 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * @param stepsPerBatch Number of training steps taken per batch fed in.
      */
     public void setTrainingStepsPerBatch(int stepsPerBatch) {
+        logger.info("Training iterations per batch set to " + stepsPerBatch + ".");
         trainingStepsPerBatch = stepsPerBatch;
-    }
-
-    /**
-     * Decide whether loss reports will be printed out during training.
-     * @param verbose True -- verbose print out. False -- silent.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     @Override
@@ -170,9 +172,14 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
         assert trainingBatchSize > 0;
 
         batchCount = 0;
+        lossSum = 0f;
 
         float[][] trainingInput = new float[trainingBatchSize][inputSize];
         float[][] trainingOutput = new float[trainingBatchSize][outputSize];
+
+        long startTime = System.currentTimeMillis();
+
+        logger.info("Beginning value function update containing " + nodes.size() + " samples divided into batches of " + trainingBatchSize);
 
         // Divide into batches.
         Iterables.partition(nodes, trainingBatchSize).forEach(batch -> {
@@ -195,11 +202,11 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
                 trainingInput[i] = input;
                 trainingOutput[i] = output;
             }
-            float loss = network.trainingStep(trainingInput, trainingOutput, trainingStepsPerBatch);
-            if (verbose)
-                System.out.println("Loss: " + loss + " Epoch: " + epochCount + ", Batch: " + (++batchCount));
+            lossSum += network.trainingStep(trainingInput, trainingOutput, trainingStepsPerBatch);
+            batchCount++;
         });
-
+        logger.info("Update complete. Epoch: " + epochCount + ". Batches this epoch: " + batchCount + ". Average " +
+                "loss: " + (lossSum / (float) batchCount) + ". Total time elapsed: " + ((System.currentTimeMillis() - startTime)/100)/10f);
         epochCount++;
     }
 

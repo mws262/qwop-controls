@@ -1,7 +1,13 @@
 package value;
 
 import actions.Action;
-import game.*;
+import com.sun.istack.NotNull;
+import game.GameConstants;
+import game.GameUnified;
+import game.IGameSerializable;
+import game.State;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tflowtools.TrainableNetwork;
 import tree.NodeQWOP;
 import tree.NodeQWOPBase;
@@ -49,6 +55,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     public EvaluationResult currentResult;
 
+    private static Logger logger = LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class);
+
     /**
      * Constructor which loads an existing value function net.
      * @param file .pb file of the existing net.
@@ -69,7 +77,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      *                         They are defined in {@link ValueFunction_TensorFlow_StateOnly#STATE_SIZE} and
      *                         {@link ValueFunction_TensorFlow_StateOnly#VALUE_SIZE}.
      * @param additionalArgs Additional arguments to pass to the network creation script.
-     * @throws FileNotFoundException
+     * @throws FileNotFoundException Model file was not successfully created.
      */
     public ValueFunction_TensorFlow_StateOnly(String fileName, List<Integer> hiddenLayerSizes,
                                               List<String> additionalArgs) throws FileNotFoundException {
@@ -115,6 +123,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     private Action runEvaluations() {
+        long initialTime = System.currentTimeMillis();
+
         evalResults.clear(); // Remove existing results from any previous evaluations.
         try{
             if (multithread) { // Multi-thread, send to executor.
@@ -135,6 +145,10 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         Objects.requireNonNull(evalResult);
 
         currentResult = evalResult;
+        logger.info(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f",
+                System.currentTimeMillis() - initialTime, evalResult.timestep, evalResult.keys.toString(),
+                Math.round(evalResult.value * 100)/100f));
+
         return new Action(evalResult.timestep, evalResult.keys);
     }
 
@@ -260,11 +274,13 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             this.maxHorizon = maxHorizon;
         }
 
+        @NotNull
         void setStartingState(State startingState) {
             this.startingState = startingState;
             useSerializedState = false;
         }
 
+        @NotNull
         void setStartingState(byte[] startingState) {
             this.startStateFull = startingState;
             useSerializedState = true;
@@ -347,6 +363,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         }
     }
 
+    @NotNull
     public ValueFunction_TensorFlow_StateOnly getCopy() {
         ValueFunction_TensorFlow_StateOnly valFunCopy = new ValueFunction_TensorFlow_StateOnly(network);
         valFunCopy.assignFuturePredictors();

@@ -1,5 +1,7 @@
 package tflowtools;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tensorflow.*;
 
 import java.io.File;
@@ -51,7 +53,12 @@ public class TrainableNetwork {
     /**
      * Send Python TensorFlow output to console? Tests don't like this, and it kind of clutters up stuff.
      */
-    public static boolean tflowDebugOutput = false;
+    private static boolean tflowDebugOutput = false;
+
+    /**
+     * For logger message output.
+     */
+    private static Logger logger = LogManager.getLogger(TrainableNetwork.class);
 
     /**
      * Create a new wrapper for an existing Tensorflow graph.
@@ -73,7 +80,7 @@ public class TrainableNetwork {
             e.printStackTrace();
         }
 
-        // Put the graph together and potentially load a previous checkpoint.
+        // Put the graph together.
         graph = new Graph();
         session = new Session(graph);
         graph.importGraphDef(graphDef);
@@ -81,6 +88,8 @@ public class TrainableNetwork {
         // Initialize
         session.runner().addTarget("init").run(); // Could be removed if it proves too slow and we only care
         // about loading rather than initializing from scratch.
+
+        logger.info("Created a network from a saved model file: " + graphDefinition.toString() + ".");
     }
 
     /**
@@ -132,6 +141,9 @@ public class TrainableNetwork {
                 checkpointFiles.add(file);
             }
         }
+
+        logger.info("Saved checkpoint files:");
+        checkpointFiles.forEach(f -> logger.info(f.getName()));
         return checkpointFiles;
     }
 
@@ -140,8 +152,10 @@ public class TrainableNetwork {
      * @param checkpointName Name of the checkpoint to load.
      */
     public void loadCheckpoint(String checkpointName) {
-        Tensor<String> checkpointTensor = Tensors.create(Paths.get(checkpointPath, checkpointName).toString());
+        String pathName = Paths.get(checkpointPath, checkpointName).toString();
+        Tensor<String> checkpointTensor = Tensors.create(pathName);
         session.runner().feed("save/Const", checkpointTensor).addTarget("save/restore_all").run();
+        logger.info("Loaded checkpoint from: " + pathName);
     }
 
     /**
@@ -270,8 +284,12 @@ public class TrainableNetwork {
         commandList.add(graphPath + graphName + ".pb");
         commandList.addAll(additionalArgs);
 
+        StringBuilder sb = new StringBuilder();
+        commandList.forEach(c -> sb.append(c).append(" "));
+        logger.info("Python network-creator script called with arguments:\n" + sb.toString());
+
         // Make and run the command line process.
-        ProcessBuilder pb = new ProcessBuilder(commandList.toArray(new String[commandList.size()]));
+        ProcessBuilder pb = new ProcessBuilder(commandList.toArray(new String[0]));
         if (tflowDebugOutput) {
             pb.redirectOutput(ProcessBuilder.Redirect.INHERIT); // Makes sure that error messages and outputs go to console.
             pb.redirectError(ProcessBuilder.Redirect.INHERIT);
