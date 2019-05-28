@@ -27,8 +27,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     }
 
     // Net and execution parameters.
-    String valueNetworkName = "small_net.pb";
-    String checkpointName = "med67";
+    String valueNetworkName = "tuesday.pb";
+    String checkpointName = "tuesdaychk17";//"med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.

@@ -34,6 +34,14 @@ import java.util.stream.IntStream;
 
 public abstract class MAIN_Search_Template {
 
+    static Logger logger;
+    static {
+        Utility.loadLoggerConfiguration();
+        logger = LogManager.getLogger(MAIN_Search_Template.class);
+    }
+
+    static final String configFilePath = "src/main/resources/config/";
+
     /**
      * Settings loaded from the config file. Should AT LEAST contain:
      * boolean headless
@@ -55,11 +63,6 @@ public abstract class MAIN_Search_Template {
     private File saveLoc;
 
     /**
-     * Information put in a running log to be saved at shutdown.
-     */
-    protected String endLog = "";
-
-    /**
      * Pool of {@link TreeWorker} to be shared for building the tree.
      */
     private final GenericObjectPool<TreeWorker> workerPool;
@@ -73,12 +76,6 @@ public abstract class MAIN_Search_Template {
      * A tabbed panel for displaying how many games per second each worker is running.
      */
     private PanelTimeSeries_WorkerLoad workerMonitorPanel;
-
-    static Logger logger;
-    static {
-        Utility.loadLoggerConfiguration();
-        logger = LogManager.getLogger(MAIN_Search_Template.class);
-    }
 
     /**
      * Maximum number of workers any stage can recruit.

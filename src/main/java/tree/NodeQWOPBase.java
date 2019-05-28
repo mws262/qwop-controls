@@ -104,13 +104,13 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * @param game Game instance used to simulate the given actions and generate the state information needed to make
      *            the nodes.
      */
-    public static <N extends NodeQWOPBase<N>> void makeNodesFromActionSequences(Collection<Action[]> actions, N root,
+    public static <N extends NodeQWOPBase<?>> void makeNodesFromActionSequences(Collection<Action[]> actions, N root,
                                                                                 IGameInternal game) {
         IValueUpdater valueUpdater = new ValueUpdater_HardSet();
         ActionQueue actQueue = new ActionQueue();
         for (Action[] acts : actions) {
             game.makeNewWorld();
-            N currentNode = root;
+            NodeQWOPBase<?> currentNode = root;
 
             if (currentNode.getUpdateCount() == 0) {
                 currentNode.updateValue(0, valueUpdater);
@@ -130,7 +130,8 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
 
                 // If there is already a node for this action, use it.
                 boolean foundExisting = false;
-                for (N child : currentNode.getChildren()) {
+
+                for (NodeQWOPBase<?> child : currentNode.getChildren()) {
                     if (child.getAction().equals(act)) {
                         currentNode = child;
                         foundExisting = true;

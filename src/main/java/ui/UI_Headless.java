@@ -5,9 +5,7 @@ import tree.NodeQWOPGraphicsBase;
 public class UI_Headless implements IUserInterface {
 
     @Override
-    public void run() {
-        System.out.println("Headless mode: Running without user interface.");
-    }
+    public void run() {}
 
     @Override
     public void kill() {}

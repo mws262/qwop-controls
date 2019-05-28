@@ -7,8 +7,12 @@ getToSteadyDepth=100
 fractionOfMaxWorkers=1
 bailAfterXGames=20000
 
-# Number of training steps each time new data is fed into the neural network.
-netTrainingStepsPerIter = 1
+# Specific to value function net.
+networkName=tuesday
+checkpointNamePrefix=tuesdaychk
+checkpointIndex=0
 
+learningRate=1e-3
+trainingBatchSize=1000
 
-
+hiddenLayerSizes=128,64
