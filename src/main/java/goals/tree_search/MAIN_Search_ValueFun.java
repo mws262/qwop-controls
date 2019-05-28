@@ -3,15 +3,13 @@ package goals.tree_search;
 import actions.Action;
 import actions.IActionGenerator;
 import evaluators.EvaluationFunction_Constant;
+import evaluators.EvaluationFunction_Distance;
 import game.GameUnified;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import samplers.Sampler_UCB;
-import samplers.rollout.RolloutPolicy;
-import samplers.rollout.RolloutPolicy_RandomDecayingHorizon;
-import samplers.rollout.RolloutPolicy_ValueFunctionDecayingHorizon;
-import samplers.rollout.RolloutPolicy_Window;
-import savers.DataSaver_StageSelected;
+import samplers.rollout.*;
+import savers.DataSaver_Null;
 import tree.*;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -25,44 +23,153 @@ import java.util.concurrent.Executors;
 
 public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
+    /**
+     * Search configuration parameter file name. Do not need to include the path. TODO move more other parameters to
+     * config file.
+     */
+    private static final String configFileName = "search.config_value";
+
+    /**
+     * Name of the neural network to use/create. Do not add the .pb file extension.
+     */
+    private final String networkName;
+
+    /**
+     * Network checkpoint file prefix. Each save will create 2 files which will look like [prefix][number].*
+     */
+    private final String checkpointNamePrefix;
+
+    /**
+     * Starting checkpoint index. If greater than zero, it will attempt to load. If == 0, will just start afresh.
+     */
+    private final int checkpointIndex;
+
+    private final String learningRate; // String because it goes to command line argument.
+
+    private final int trainingBatchSize;
+
+    /**
+     * Network hidden layer sizes. These should not include input and output layers.
+     */
+    ArrayList<Integer> hiddenLayerSizes = new ArrayList<>();
+
+    /**
+     * Handle logging messages.
+     */
     private Logger logger;
 
+    private int bailAfterXGames;
+    private int getToSteadyDepth;
+    private int numWorkersToUse;
+
+    private ValueFunction_TensorFlow_StateOnly valueFunction;
+
+    @SuppressWarnings("ConstantConditions")
     public MAIN_Search_ValueFun(File configFile) {
         super(configFile);
         logger = LogManager.getLogger(MAIN_Search_ValueFun.class);
+
+        /* Load parameters from config file. */
+        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
+        bailAfterXGames = Integer.parseInt(properties.getProperty("bailAfterXGames", "100000"));
+        getToSteadyDepth = Integer.parseInt(properties.getProperty("getToSteadyDepth", "100"));
+
+        float maxWorkerFraction = Float.parseFloat(properties.getProperty("fractionOfMaxWorkers", "1"));
+        numWorkersToUse = (int) Math.max(1, maxWorkerFraction * maxWorkers);
+
+        networkName = properties.getProperty("networkName");
+        checkpointNamePrefix = properties.getProperty("checkpointNamePrefix", "default_name");
+        checkpointIndex = Integer.parseInt(properties.getProperty("checkpointIndex", "1000"));
+
+        learningRate = properties.getProperty("learningRate", "1e-3");
+        trainingBatchSize = Integer.parseInt(properties.getProperty("trainingBatchSize", "1000"));
+
+        String[] hiddenLayerSizesString = properties.getProperty("hiddenLayerSizes", "128,64").split(",");
+        for (String layerSize : hiddenLayerSizesString) {
+            hiddenLayerSizes.add(Integer.parseInt(layerSize));
+        }
+
+        if (checkpointIndex < 0)
+            logger.warn("Network checkpoint index was: " + checkpointIndex + ". These will not automatically load " +
+                    "when reused here.");
+        if (networkName.isEmpty())
+            logger.error("Network name should not be empty.", new StringIndexOutOfBoundsException());
+
+        if (checkpointNamePrefix.isEmpty()) {
+            logger.warn("No checkpoint name prefix given. This will result in saves that only have numbers for names.");
+        }
+
+        makeValueFunction();
     }
 
     public static void main(String[] args) {
         MAIN_Search_ValueFun manager = new MAIN_Search_ValueFun(
-                new File("src/main/resources/config/" + "search.config_value"));
+                new File(configFilePath + configFileName));
         manager.doGames();
     }
+
+    enum Rollouts {
+        SINGLE_RANDOM, RANDOM_HORIZON, VALUE_HORIZON
+    }
+
+    private boolean asWindow = true;
+    private boolean weightWithValueFunction = false;
+    private Rollouts chosenRollout = Rollouts.SINGLE_RANDOM;
 
     @SuppressWarnings("Duplicates")
     public void doGames() {
 
-        // Load parameters from config file.
-        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
-        float maxWorkerFraction = Float.parseFloat(properties.getProperty("fractionOfMaxWorkers", "1"));
-        int bailAfterXGames = Integer.parseInt(properties.getProperty("bailAfterXGames", "100000"));
-        int getToSteadyDepth = Integer.parseInt(properties.getProperty("getToSteadyDepth", "100"));
-        int netTrainingStepsPerIter = Integer.parseInt(properties.getProperty("netTrainingStepsPerIter", "20"));
+        /* Pick rollout configuration. */
+        RolloutPolicy rollout;
 
-        int numWorkersToUse = (int) Math.max(1, maxWorkerFraction * maxWorkers);
-
-        ExecutorService labelUpdater = null;
-        if (!headless) {
-            labelUpdater = Executors.newSingleThreadExecutor();
+        // BASIC ROLLOUT STRATEGY
+        switch (chosenRollout) {
+            case SINGLE_RANDOM:
+                // Rollout goes randomly among a limited set of actions until failure. Score based on distance
+                // travelled from start to end of rollout.
+                rollout = new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
+                break;
+            case RANDOM_HORIZON:
+                // Rollout goes randomly to a fixed horizon in the future. Future values are weighted less than
+                // nearer ones. Based on distances travelled.
+                RolloutPolicy_DecayingHorizon decayingHorizonRandom = new RolloutPolicy_RandomDecayingHorizon();
+                decayingHorizonRandom.maxTimestepsToSim = 200;
+                rollout = decayingHorizonRandom;
+                break;
+            case VALUE_HORIZON:
+                // Rollout follows value function controller to a fixed horizon in the future. Future values are
+                // weighted less than nearer ones. Based on distance travelled.
+                RolloutPolicy_ValueFunctionDecayingHorizon decayingHorizonValue =
+                        new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
+                decayingHorizonValue.maxTimestepsToSim = 200;
+                rollout = decayingHorizonValue;
+                break;
+            default:
+                rollout = new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
+                break;
         }
+
+        // ALSO WEIGHT ROLLOUT RESULTS WITH VALUE FUNCTION?
+        if (weightWithValueFunction) {
+            RolloutPolicy_WeightWithValueFunction weightedRollout = new RolloutPolicy_WeightWithValueFunction(rollout
+                    , valueFunction); // Does not have to be the same value function as the one used in value
+            // function POLICY rollouts.
+            weightedRollout.valueFunctionWeight = 0.6f;
+            rollout = weightedRollout;
+        }
+
+        // ROLLOUT ACTIONS ABOVE AND BELOW ALSO.
+        if (asWindow) {
+            rollout = new RolloutPolicy_Window(rollout);
+        }
+
+        logger.info("Rollout policy chosen: " + chosenRollout.name() + ". Weighted with value function? " + weightWithValueFunction + ". As " +
+                "a window of 3? " + asWindow + ".");
 
 
         // Make new tree root and assign to GUI.
         // Assign default available actions.
         IActionGenerator actionGenerator = getExtendedActionGenerator(-1);
-        NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState(), actionGenerator);
-        NodeQWOPGraphics.pointsToDraw.clear();
-//        ui.clearRootNodes();
-//        ui.addRootNode(rootNode);
 
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
@@ -70,118 +177,107 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 new Action(49, Action.Keys.wo),
 //                new Action(2, Action.Keys.none),
                 //new Action(25, Action.Keys.qp),
-
-//                new Action(34, Action.Keys.none),
-//                new Action(11,false,true,true,false),
-//                new Action(10,false,false,false,false),
-//                new Action(21,true,false,false,true),
         });
+
+
+        NodeQWOPExplorableBase<?> rootNode = headless ?
+                new NodeQWOPExplorable(GameUnified.getInitialState(), actionGenerator) :
+                new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
+
 
         NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
         NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
 
-        List<NodeQWOPExplorable> leaf = new ArrayList<>();
-        rootNode.getLeaves(leaf);
-        assert leaf.size() == 1;
-//        leaf.get(0).resetSweepAngle();
 
-        DataSaver_StageSelected saver = new DataSaver_StageSelected();
-        saver.overrideFilename = "tmp";
-        saver.setSavePath("src/main/resources/saved_data/");
+        ExecutorService labelUpdater = null;
+        if (!headless) {
+            labelUpdater = Executors.newSingleThreadExecutor();
 
-        // Make the value function.
-        ArrayList<Integer> hiddenLayerSizes = new ArrayList<>();
-        hiddenLayerSizes.add(128);
-        hiddenLayerSizes.add(64);
+            NodeQWOPGraphics graphicsRootNode = (NodeQWOPGraphics) rootNode;
+            NodeQWOPGraphics.pointsToDraw.clear();
+            ui.clearRootNodes();
+            ui.addRootNode(graphicsRootNode);
+            List<NodeQWOPGraphics> leaf = new ArrayList<>();
+            graphicsRootNode.getLeaves(leaf);
+            assert leaf.size() == 1;
+            leaf.get(0).resetSweepAngle();
+        }
 
+        /* Training and exploration loop. */
+
+        for (int k = 0; k < 10000; k++) {
+
+            doSearchAndUpdate(rootNode, rollout, k);
+
+            // Update node labels if graphics are enabled.
+            if (!headless) {
+                NodeQWOPGraphics graphicsRootNode = (NodeQWOPGraphics) rootNode;
+
+                Runnable updateLabels = () -> graphicsRootNode.recurseDownTreeExclusive(n -> {
+                    float percDiff = Math.abs((valueFunction.evaluate(n) - n.getValue())/n.getValue() * 100f);
+                    n.nodeLabel = String.format("%.1f, %.0f%%", n.getValue(), percDiff);
+                    n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(percDiff, 100f) + 100
+                            , 100,
+                            0.9f));
+                    n.displayLabel = true;
+                });
+                labelUpdater.execute(updateLabels);
+            }
+        }
+    }
+
+    private void doSearchAndUpdate(NodeQWOPExplorableBase<?> rootNode, RolloutPolicy rollout, int updateIdx) {
+        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout.getCopy());
+        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, ucbSampler, new DataSaver_Null());
+        searchMax.terminateAfterXGames = bailAfterXGames;
+
+        // Grab some workers from the pool.
+        List<TreeWorker> tws = borrowNWorkers(numWorkersToUse);
+
+        // Do stage search
+        searchMax.initialize(tws, rootNode);
+
+        // Return the workers.
+        tws.forEach(this::returnWorker);
+
+        // Update the value function.
+        List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
+        rootNode.recurseDownTreeExclusive(nodesBelow::add);
+        Collections.shuffle(nodesBelow);
+        valueFunction.update(nodesBelow);
+
+        // Save a checkpoint of the weights/biases.
+        valueFunction.saveCheckpoint(checkpointNamePrefix + (updateIdx + checkpointIndex + 1));
+        logger.info("Saved checkpoint as: " + checkpointNamePrefix + (updateIdx + checkpointIndex + 1));
+    }
+
+
+    private void makeValueFunction() {
+        /* Make the value function net. */
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");
-        extraNetworkArgs.add("1e-3");
+        extraNetworkArgs.add(learningRate);
 
-        ValueFunction_TensorFlow_StateOnly valueFunction = null;
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly("small_net",
-                    hiddenLayerSizes, extraNetworkArgs);
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, hiddenLayerSizes, extraNetworkArgs);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
+        StringBuilder hiddenLayerString = new StringBuilder();
+        for (Integer i : hiddenLayerSizes) {
+            hiddenLayerString.append(i).append(", ");
+        }
+        logger.info("Using value function with learning rate: " + learningRate + " and hidden layer sizes " + hiddenLayerString.toString());
 
-//        ValueFunction_TensorFlow valueFunction = null;
-//        try {
-//            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-//                    "/state_only.pb"));
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-        int chkIdx = 0;
-//        valueFunction.loadCheckpoint("med" + chkIdx);
-//        valueFunction.setTrainingStepsPerBatch(netTrainingStepsPerIter);
-//        valueFunction.setTrainingBatchSize(1000);
-        boolean valueFunctionRollout = false;
-
-        RolloutPolicy rollout;
-
-        if (valueFunctionRollout) {
-//                rollout = new RolloutPolicy_RandomHorizonWithValue(valueFunction);
-//                ((RolloutPolicy_RandomHorizonWithValue) rollout).valueFunctionWeight = 0.8f;
-//                rollout = new RolloutPolicy_Window(rollout);
-
-            // Rollout using value function controller.
-            rollout = new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
-            logger.info("Using value-function-based rollout policy.");
+        // Load checkpoint.
+        if (checkpointIndex > 0) {
+            logger.info("Specified checkpoint name: " + (checkpointNamePrefix + checkpointIndex) + ". Loading.");
+            valueFunction.loadCheckpoint(checkpointNamePrefix + checkpointIndex);
         } else {
-            //new RolloutPolicy_Window(
-            rollout = new RolloutPolicy_Window(new RolloutPolicy_RandomDecayingHorizon());
-            //new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
-            logger.info("Using non-value-function-based rollout policy.");
+            logger.info("Specified checkpoint index: " + checkpointIndex + ". Not loading.");
         }
-
-        for (int k = 0; k < 10000; k++) {
-
-
-            Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout.getCopy());
-
-            TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, ucbSampler, saver);
-            searchMax.terminateAfterXGames = bailAfterXGames;
-
-            // Grab some workers from the pool.
-            List<TreeWorker> tws = borrowNWorkers(numWorkersToUse);
-
-            // Do stage search
-            searchMax.initialize(tws, rootNode);
-
-            // Return the workers.
-            tws.forEach(this::returnWorker);
-
-            // Update the value function.
-            List<NodeQWOPExplorable> nodesBelow = new ArrayList<>();
-            rootNode.getNodesBelowInclusive(nodesBelow);
-            nodesBelow.remove(rootNode);
-            Collections.shuffle(nodesBelow);
-
-            valueFunction.update(nodesBelow);
-
-            // TODO
-//            if (!headless) {
-//                ValueFunction_TensorFlow_StateOnly finalValueFunction = valueFunction;
-//                Runnable updateLabels = () -> {
-//                    for (NodeQWOPGraphics n : nodesBelow) {
-//                        float percDiff = Math.abs((finalValueFunction.evaluate(n) - n.getValue())/n.getValue() * 100f);
-//                        n.nodeLabel = String.format("%.1f, %.0f%%", n.getValue(), percDiff);
-//                        n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(percDiff, 100f) + 100
-//                                , 100,
-//                                0.9f));
-//                        n.displayLabel = true;
-//                    }
-//                };
-//                labelUpdater.execute(updateLabels);
-//            }
-//             Save a checkpoint of the weights/biases.
-//            if (k % 2 == 0) {
-                valueFunction.saveCheckpoint("med" + (k + chkIdx + 1));
-                logger.info("Saved checkpoint as: " + "med" + (k + chkIdx + 1));
-//            }
-        }
+        valueFunction.setTrainingBatchSize(trainingBatchSize);
+        logger.info("Training batch size set to: " + trainingBatchSize);
     }
 }

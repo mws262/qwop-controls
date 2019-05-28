@@ -183,18 +183,9 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
      *
      * @param leaves A list of leaves below this node. The list must be provided by the caller, and will not be
      *               cleared by this method.
-     * @return Returns the list of nodes below. This is done in place, so the object is the same as the argument one.
      */
-    public Collection<N> getLeaves(Collection<N> leaves) {
-
-        if (children.isEmpty()) { // If leaf, add itself.
-            leaves.add(getThis());
-        } else { // Otherwise keep traversing down.
-            for (NodeGenericBase<N> child : children) {
-                child.getLeaves(leaves);
-            }
-        }
-        return leaves;
+    public void getLeaves(Collection<N> leaves) {
+        applyToLeavesBelow(leaves::add);
     }
 
     /**
@@ -348,6 +339,15 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
         operation.accept(getThis());
     }
 
+    /**
+     * Do some lambda action to the children of this node. This can be a good way of getting around type erasure problems.
+     * @param operation A lambda to apply to the children of this node.
+     */
+    public void applyToChildren(Consumer<N> operation) {
+        for (N child : getChildren()) {
+            operation.accept(child);
+        }
+    }
 
     /**
      * Get this node. Can help with type erasure issues when <code>this</code> won't work. Search for "getThis trick"

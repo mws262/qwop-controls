@@ -30,11 +30,11 @@ public class RolloutPolicy_Window extends RolloutPolicy {
         Action aboveAction = new Action(middleAction.getTimestepsTotal() + 1, middleAction.peek());
         Action belowAction = new Action(middleAction.getTimestepsTotal() - 1, middleAction.peek());
 
-
+        /* Value of the center action (the one we are targeting). */
         float startValue = individualRollout.evaluationFunction.getValue(startNode);
-
         float valMid = individualRollout.rollout(startNode, game);
 
+        /* Value of the action one above the target one. */
         if (startNode.getTreeDepth() > 1)
             simGameToNode(startNode.getParent(), game);
         actionQueue.addAction(aboveAction);
@@ -45,6 +45,7 @@ public class RolloutPolicy_Window extends RolloutPolicy {
         float valAbove =
                 individualRollout.rollout(nodeAbove, game) + individualRollout.evaluationFunction.getValue(nodeAbove) - startValue;
 
+
         if (startNode.getTreeDepth() > 1)
             simGameToNode(startNode.getParent(), game);
         actionQueue.addAction(belowAction);
@@ -52,8 +53,6 @@ public class RolloutPolicy_Window extends RolloutPolicy {
             game.step(actionQueue.pollCommand());
 
         NodeQWOPExplorableBase<?> nodeBelow = startNode.getParent().addBackwardsLinkedChild(belowAction, game.getCurrentState());
-
-
         float valBelow =
                 individualRollout.rollout(nodeBelow, game) + individualRollout.evaluationFunction.getValue(nodeBelow) - startValue;
 

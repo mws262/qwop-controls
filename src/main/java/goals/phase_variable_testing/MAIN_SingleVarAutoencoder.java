@@ -43,7 +43,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
         IGameInternal game = new GameUnified();
         String modelDir = "src/main/resources/tflow_models/";
         Transform_Autoencoder autoencoder =
-                new Transform_Autoencoder(modelDir + "AutoEnc_72to" + String.valueOf(numOutputs) + "_6layer.pb",
+                new Transform_Autoencoder(modelDir + "AutoEnc_72to" + numOutputs + "_6layer.pb",
                         numOutputs);
 
         ActionQueue actionQueue = getSampleActions();

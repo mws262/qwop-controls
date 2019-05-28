@@ -1,19 +1,18 @@
 package tree;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
 
@@ -34,6 +33,11 @@ public class Utility {
      */
     private final static Random rand = new Random();
 
+    private static final Logger logger;
+    static {
+        loadLoggerConfiguration();
+        logger = LogManager.getLogger(Utility.class);
+    }
 
     public static void loadLoggerConfiguration() {
         try {
@@ -82,53 +86,11 @@ public class Utility {
         long tocTime = System.nanoTime();
         long difference = tocTime - ticTime;
         if (difference < Long.MAX_VALUE) {
-            System.out.println(Math.floor(difference / 10000.) / 100 + " ms elapsed.");
+            logger.debug(Math.floor(difference / 10000.) / 100 + " ms elapsed.");
         } else {
-            System.out.println(Math.floor(difference / 100000000.) / 10. + " s elapsed.");
+            logger.debug(Math.floor(difference / 100000000.) / 10. + " s elapsed.");
         }
         return difference;
-    }
-
-    /**
-     * Write some part of a file to a log. Begin logging with !LOG_START and end with !LOG_END. This can be done
-     * multiple times in the same file. This is useful when we want to record the settings specified in a configuration
-     * file to a log file.
-     *
-     * @param inPath  Full path and filename of the file to selectively send to log.
-     * @param outPath Full path and filename of the log file.
-     * @throws IOException File cannot be opened or written to.
-     */
-    @Deprecated
-    public static void sectionToLogFile(String inPath, String outPath) throws IOException {
-        boolean collecting = false;
-
-        String divider = "**************************************************************";
-
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(inPath));
-             BufferedWriter writer = Files.newBufferedWriter(Paths.get(outPath))) {
-
-            while (reader.ready()) {
-                String nextLine = reader.readLine();
-                Objects.requireNonNull(nextLine, "Line read returned null.");
-
-                if (nextLine.contains("!LOG_START")) {
-                    collecting = true;
-                    writer.write(divider + "\n");
-                } else if (nextLine.contains("!LOG_STOP")) {
-                    if (!collecting)
-                        System.out.println("WARNING: sectionToLogFile found mismatched !LOG_START and !LOG_STOP commands. This is" +
-                                " tolerated, but could represent a larger problem.");
-                    collecting = false;
-                    writer.write(divider + "\n");
-                }
-                if (collecting) {
-                    writer.write(nextLine + "\n");
-                }
-            }
-        }
-        if (collecting)
-            System.out.println("WARNING: sectionToLogFile found mismatched !LOG_START and !LOG_STOP commands. This is" +
-                    " tolerated, but could represent a larger problem.");
     }
 
     /**
@@ -142,7 +104,7 @@ public class Utility {
         File file = new File(fileName);
         try {
             success = Files.deleteIfExists(file.toPath());
-            if (success) System.out.println("Cleared file: " + file.getName());
+            if (success) logger.info("Cleared file: " + file.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -184,6 +146,7 @@ public class Utility {
         Properties prop = new Properties();
         try (FileInputStream fis = new FileInputStream(file)) {
             prop.load(fis);
+            logger.info("Loaded properties file: " + file.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
