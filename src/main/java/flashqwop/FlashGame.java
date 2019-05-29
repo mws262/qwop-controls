@@ -146,7 +146,6 @@ public abstract class FlashGame implements IFlashStateListener {
             restart();
             return;
         }
-        //
         reportGameStatus(state, prevCommand, timestep);
 
         assert timestep == timestepsTracked; // Have we lost any timesteps?
@@ -205,7 +204,7 @@ public abstract class FlashGame implements IFlashStateListener {
 
     /**
      * Get the underlying interface which communicates with the Flash version of QWOP.
-     * @return
+     * @return The communication interface with the Flash game.
      */
     public FlashQWOPServer getServer() {
         return server;

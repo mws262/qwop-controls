@@ -7,8 +7,9 @@
         </Console>
     </Appenders>
     <Loggers>
-    <Root level="debug">
-        <AppenderRef ref="Console"/>
-    </Root>
+        <!-- Can change the default logging level here. -->
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
     </Loggers>
 </Configuration>

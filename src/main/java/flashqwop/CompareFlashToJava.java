@@ -23,6 +23,8 @@ public class CompareFlashToJava extends FlashGame {
 
     private ValueFunction_TensorFlow valueFunction = null;
 
+    private List<GameUnified> gameUnifiedList = new ArrayList<>();
+
     private CompareFlashToJava() {
         loadController();
 
@@ -101,7 +103,6 @@ public class CompareFlashToJava extends FlashGame {
         return valueFunction.getMaximizingAction(new NodeQWOP(state));
     }
 
-    private List<GameUnified> gameUnifiedList = new ArrayList<>();
     @Override
     public void reportGameStatus(State state, boolean[] command, int timestep) {
         if (!initialized) {

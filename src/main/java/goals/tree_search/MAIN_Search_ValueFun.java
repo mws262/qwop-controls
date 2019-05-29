@@ -109,12 +109,12 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
     }
 
     enum Rollouts {
-        SINGLE_RANDOM, RANDOM_HORIZON, VALUE_HORIZON
+        RANDOM, RANDOM_HORIZON, VALUE_HORIZON
     }
 
-    private boolean asWindow = true;
-    private boolean weightWithValueFunction = false;
-    private Rollouts chosenRollout = Rollouts.SINGLE_RANDOM;
+    private boolean asWindow = false;
+    private boolean weightWithValueFunction = true;
+    private Rollouts chosenRollout = Rollouts.RANDOM_HORIZON;
 
     @SuppressWarnings("Duplicates")
     public void doGames() {
@@ -124,7 +124,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         // BASIC ROLLOUT STRATEGY
         switch (chosenRollout) {
-            case SINGLE_RANDOM:
+            case RANDOM:
                 // Rollout goes randomly among a limited set of actions until failure. Score based on distance
                 // travelled from start to end of rollout.
                 rollout = new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
@@ -154,7 +154,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             RolloutPolicy_WeightWithValueFunction weightedRollout = new RolloutPolicy_WeightWithValueFunction(rollout
                     , valueFunction); // Does not have to be the same value function as the one used in value
             // function POLICY rollouts.
-            weightedRollout.valueFunctionWeight = 0.6f;
+            weightedRollout.valueFunctionWeight = 0.4f;
             rollout = weightedRollout;
         }
 

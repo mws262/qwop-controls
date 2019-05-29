@@ -1,18 +1,21 @@
 package flashqwop;
-import game.*;
 import actions.Action;
+import game.GameConstants;
+import game.IGameExternal;
+import game.State;
+import game.StateVariable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
-import tree.Utility;
 import ui.PanelRunner_SimpleState;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.net.*;
-import java.util.List;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,15 +51,16 @@ public class FlashQWOPServer implements IGameExternal {
     /**
      * Cods for each action to send to the Flash game over the socket.
      */
-    private static final String none = "00000\0";
-    private static final String q = "10000\0";
-    private static final String w = "01000\0";
-    private static final String o = "00100\0";
-    private static final String p = "00010\0";
-    private static final String qo = "10100\0";
-    private static final String qp = "10010\0";
-    private static final String wo = "01100\0";
-    private static final String wp = "01010\0";
+    private static final String
+            none = "00000\0",
+            q = "10000\0",
+            w = "01000\0",
+            o = "00100\0",
+            p = "00010\0",
+            qo = "10100\0",
+            qp = "10010\0",
+            wo = "01100\0",
+            wp = "01010\0";
 
     private final boolean useJSONState = true;
 
@@ -329,7 +333,6 @@ public class FlashQWOPServer implements IGameExternal {
                             //logger.debug(System.currentTimeMillis() - initialTime + "ms.");
                         }
                     }
-
 
                 } catch (IOException e) {
                     e.printStackTrace();

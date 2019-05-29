@@ -94,8 +94,6 @@ public class Sampler_UCB implements ISampler {
     private void propagateScore(NodeQWOPExplorableBase<?> failureNode, float score) {
         // Do evaluation and propagation of scores.
         failureNode.recurseUpTreeInclusive(n -> n.updateValue(score, valueUpdater));
-
-            // todo factor these into their own IValueUpdater
     }
 
     /**

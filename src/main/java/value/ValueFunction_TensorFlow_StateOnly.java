@@ -99,12 +99,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add(new FuturePredictor(Keys.none, 1, 10));
         evaluations.add(new FuturePredictor(Keys.qp, 2, 45));
         evaluations.add(new FuturePredictor(Keys.wo, 2, 45));
-        evaluations.add(new FuturePredictor(Keys.q, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.w, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.o, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.p, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.qo, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.wp, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.q, 2, 15));
+        evaluations.add(new FuturePredictor(Keys.w, 2, 15));
+        evaluations.add(new FuturePredictor(Keys.o, 2, 15));
+        evaluations.add(new FuturePredictor(Keys.p, 2, 15));
+        evaluations.add(new FuturePredictor(Keys.qo, 2, 15));
+        evaluations.add(new FuturePredictor(Keys.wp, 2, 15));
 
     }
 
@@ -301,6 +301,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 // "catch-up" to warm-started game.
             }
 
+            float startX = gameLocal.getCurrentState().body.getDx();
+
             // Reset the game and set it to the specified starting state.
             bestResult.value = -Float.MAX_VALUE;
 
@@ -309,21 +311,32 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             float val1;
             float val2 = 0;
             float val3 = 0;
+
+            float x2 = startX;
+            float x3 = startX;
+
             for (int i = 1; i <= maxHorizon; i++) {
                 // Return to the normal number of physics iterations after the first step.
                 if (i > warmstartIterationCount + 1) {
                     gameLocal.iterations = GameConstants.physIterations;
                 }
+
+                x2 = x3;
+
                 gameLocal.step(buttons);
                 State st = gameLocal.getCurrentState();
                 NodeQWOPBase<?> nextNode = new NodeQWOP(st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);
+
+                x3 = st.body.getDx();
+
                 if (i == 1) {
                     // val1 = val3;
                     val2 = val3 * 4f/4f;
                 }
+
                 if (i > 1 && i > minHorizon) {
 
                     // Decide what value should be recorded as best.
@@ -350,6 +363,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                         default:
                             throw new IllegalStateException("Invalid selection criteria invoked.");
                     }
+
+                    aggregateVal += 1f * x2; //(x2 - startX) * .2f;
 
                     if (aggregateVal > bestResult.value) {
                         bestResult.value = aggregateVal;

@@ -1,5 +1,7 @@
 package tree;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import samplers.ISampler;
 import savers.IDataSaver;
 
@@ -8,7 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * If we want to switch and change between different
+ * If we want to switch and change between different tree stage goals.
  *
  * @author matt
  */
@@ -44,11 +46,13 @@ public abstract class TreeStage implements Runnable {
     private volatile boolean running = true;
 
     /**
-     * Does this stage block the mai thread until done?
+     * Does this stage block the main thread until done?
      */
     public boolean blocking = true;
 
     private final Object lock = new Object();
+
+    private Logger logger = LogManager.getLogger(TreeStage.class);
 
     public void initialize(List<TreeWorker> treeWorkers, NodeQWOPExplorableBase<?> stageRoot) {
         numWorkers = treeWorkers.size();
@@ -120,13 +124,11 @@ public abstract class TreeStage implements Runnable {
      */
     public void terminate() {
         running = false;
-        System.out.println("Terminate called on a stage.");
+        logger.info("Terminate called on a stage.");
         saver.reportStageEnding(getRootNode().getRoot(), getResults()); // Changed to save ALL the way back to real
         // root, not just subtree root.
 
-        for (TreeWorker tw : workers) {
-            tw.pauseWorker(); // Pause the worker until another stage needs it.
-        }
+        workers.forEach(TreeWorker::pauseWorker);
 
         // Stop the monitoring thread and let the goals thread continue.
         synchronized (lock) {
