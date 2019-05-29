@@ -1,6 +1,6 @@
 # Directory for saved runs
 saveLocation=./test_dir
-headless=true
+headless=false
 workersFractionOfCores=0.7
 UCBExplorationMultiplier=3
 getToSteadyDepth=100
@@ -10,7 +10,7 @@ bailAfterXGames=20000
 # Specific to value function net.
 networkName=tuesday
 checkpointNamePrefix=tuesdaychk
-checkpointIndex=0
+checkpointIndex=17
 
 learningRate=1e-3
 trainingBatchSize=1000

@@ -3,6 +3,8 @@ package goals.value_function;
 import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tree.NodeQWOPExplorable;
 import tree.Utility;
 import ui.PanelRunner;
@@ -22,13 +24,16 @@ import java.util.List;
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
 
-    static{
+    static {
         Utility.loadLoggerConfiguration();
     }
 
+
+    private boolean doFullGameSerialization = false;
+
     // Net and execution parameters.
     String valueNetworkName = "tuesday.pb";
-    String checkpointName = "tuesdaychk17";//"med67";
+    String checkpointName = "tuesdaychk69"; // "med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
@@ -45,13 +50,17 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private Shape arrowShape;
     private final Color arrowColor = new Color(0,0,0,127);
 
-    private static final float centerX = 600;
-    private static final float centerY = 400;
+    private static final float
+            centerX = 600,
+            centerY = 400;
 
-    private boolean q = false;
-    private boolean w = false;
-    private boolean o = false;
-    private boolean p = false;
+    private boolean
+            q = false,
+            w = false,
+            o = false,
+            p = false;
+
+    private Logger logger = LogManager.getLogger(MAIN_SingleEvaluation.class);
 
     MAIN_SingleEvaluation() {
 
@@ -142,9 +151,14 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private void doControlled(NodeQWOPExplorable currentNode) {
 
         // Run the controller until failure.
-        while (true) { //!qwop.game.getFailureStatus()) {
-
-            Action chosenAction = valueFunction.getMaximizingAction(currentNode);//, game);
+        while (currentNode.getState().body.getY() < 30) { // Ends if the runner falls off the edge of the world.
+            // Does not end on falling, as we might want to see its behavior.
+            Action chosenAction;
+            if (doFullGameSerialization) {
+                chosenAction = valueFunction.getMaximizingAction(currentNode, game);
+            } else {
+                chosenAction = valueFunction.getMaximizingAction(currentNode);
+            }
 
             boolean[] keys =  chosenAction.peek();
             q = keys[0];
@@ -183,6 +197,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
             }
             currentNode = currentNode.addDoublyLinkedChild(chosenAction, game.getCurrentState());
         }
+        logger.warn("Game complete. Runner has gone off the edge of the world.");
     }
 
     @Override
