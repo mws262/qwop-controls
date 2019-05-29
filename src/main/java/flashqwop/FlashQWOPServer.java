@@ -304,7 +304,7 @@ public class FlashQWOPServer implements IGameExternal {
                                 }
                             } else {
                                 if (getCurrentTimestep() == 0) {
-                                    System.out.println(msg); // TODO handle other messages.
+                                    logger.warn("From Flash game: " + msg);
                                 }
                             }
                             //logger.debug(System.currentTimeMillis() - initialTime + "ms.");
@@ -328,7 +328,7 @@ public class FlashQWOPServer implements IGameExternal {
                                     listener.stateReceived(getCurrentTimestep(), st);
                                 }
                             } else {
-                                System.out.println(msg);
+                                logger.warn("From Flash game: " + msg);
                             }
                             //logger.debug(System.currentTimeMillis() - initialTime + "ms.");
                         }

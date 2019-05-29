@@ -4,6 +4,10 @@ import actions.Action;
 import flashqwop.FlashGame;
 import game.GameUnified;
 import game.State;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.jblas.util.Random;
 import tree.NodeQWOP;
 import tree.Utility;
@@ -13,8 +17,6 @@ import vision.VisionDataSaver;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 @SuppressWarnings("Duplicates")
 public class MAIN_FlashEvaluation extends FlashGame {
@@ -31,8 +33,8 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private File captureDir = new File("vision_capture");
 
     // Net and execution parameters.
-    String valueNetworkName = "small_net.pb"; // "deepnarrow_net.pb";
-    String checkpointName = "small329"; // "med67";
+    String valueNetworkName = "tuesday.pb"; // "deepnarrow_net.pb";
+    String checkpointName = "tuesdaychk69"; // "med67";
 
     Action[] prefix = new Action[]{
             new Action(7, Action.Keys.none),
@@ -49,7 +51,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private ValueFunction_TensorFlow valueFunction = null;
 
     public MAIN_FlashEvaluation() {
-        super(true); // Do hardware commands out?
+        super(false); // Do hardware commands out?
         if (imageCapture) {
             visionSaver = new VisionDataSaver(captureDir, gameMonitorIndex);
             getServer().addStateListener(visionSaver);
@@ -60,9 +62,13 @@ public class MAIN_FlashEvaluation extends FlashGame {
         // "Warming-up" the JVM. I think that this helps trigger JIT compilation of the correct stuff before time
         // sensitive things need to happen.
         logger.debug("Doing dummy controller evaluations as a hack to prime(?) the caches.");
+        // Temporarily disable logging for the value function controller. It's not useful clogging the log with the
+        // warm-up iterations.
+        Configurator.setLevel(LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class).getName(), Level.OFF);
         for (int i = 0; i < 50; i++) {
             getControlAction(GameUnified.getInitialState()); // TODO make this better. The first controller evaluation ever
         }
+        Configurator.setLevel(LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class).getName(), Level.INFO);
         logger.debug("Dummy evaluations complete.");
 
         try {

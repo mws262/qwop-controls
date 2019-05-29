@@ -99,12 +99,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add(new FuturePredictor(Keys.none, 1, 10));
         evaluations.add(new FuturePredictor(Keys.qp, 2, 45));
         evaluations.add(new FuturePredictor(Keys.wo, 2, 45));
-        evaluations.add(new FuturePredictor(Keys.q, 2, 15));
-        evaluations.add(new FuturePredictor(Keys.w, 2, 15));
-        evaluations.add(new FuturePredictor(Keys.o, 2, 15));
-        evaluations.add(new FuturePredictor(Keys.p, 2, 15));
-        evaluations.add(new FuturePredictor(Keys.qo, 2, 15));
-        evaluations.add(new FuturePredictor(Keys.wp, 2, 15));
+        evaluations.add(new FuturePredictor(Keys.q, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.w, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.o, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.p, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.qo, 2, 5));
+        evaluations.add(new FuturePredictor(Keys.wp, 2, 5));
 
     }
 
@@ -257,7 +257,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          * makes each call depend on the previous to some extent. Perhaps good for performance, terrible for
          * predicability.
          */
-        private final boolean newGameBetweenPredictions = false;
+        private final boolean newGameBetweenPredictions = true;
 
 
         private SelectionCriteria selectionCriteria = SelectionCriteria.BEST_AVERAGE_WINDOW;
