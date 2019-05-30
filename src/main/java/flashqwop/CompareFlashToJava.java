@@ -1,10 +1,13 @@
 package flashqwop;
 
 import actions.Action;
+import data.LoadStateStatistics;
 import game.GameUnified;
 import game.State;
+import org.jblas.util.Random;
+import tflowtools.TrainableRNN;
 import tree.NodeQWOP;
-import tree.NodeQWOPGraphicsBase;
+import tree.Utility;
 import ui.PanelRunner_MultiState;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -17,6 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CompareFlashToJava extends FlashGame {
+    static {
+        Utility.loadLoggerConfiguration();
+    }
+
     private GameUnified gameJava = new GameUnified();
     private PanelRunner_MultiState panelRunner;
     private boolean initialized;
@@ -25,19 +32,47 @@ public class CompareFlashToJava extends FlashGame {
 
     private List<GameUnified> gameUnifiedList = new ArrayList<>();
 
+    TrainableRNN net;
+
+    private int iteration = 0;
+
+
+    LoadStateStatistics.StateStatistics stateStats;
+    {
+        try {
+            stateStats = LoadStateStatistics.loadStatsFromFile();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     private CompareFlashToJava() {
+
+        List<Integer> layerSizes = new ArrayList<>();
+        layerSizes.add(72);
+        layerSizes.add(36);
+        layerSizes.add(2);
+        List<String> netOpts = new ArrayList<>();
+        netOpts.add("--learnrate");
+        netOpts.add("1e-3");
+
+        try {
+            net = TrainableRNN.makeNewNetwork("corrector", layerSizes);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        net.loadCheckpoint("correctorchk" + iteration);
+
         loadController();
 
         getControlAction(GameUnified.getInitialState()); // TODO make this better. The first controller evaluation ever
-        // takes 8 times longer than the rest. I don't know why. In the meantime, just do the first evaluation in a
-        // non-time-critical section of the code. In the long term, the controller should be an anytime approach
-        // anyway.
+        // takes 8 times longer than the rest.
+
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-//        printGameInfo();
         restart();
 
         gameUnifiedList.add(gameJava);
@@ -48,12 +83,12 @@ public class CompareFlashToJava extends FlashGame {
         frame.setPreferredSize(new Dimension(1280, 800));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        frame.setUndecorated(true);
-        frame.setBackground(new Color(1,1,1,.0f));
-        frame.setOpacity(0.5f);
+//        frame.setUndecorated(true);
+//        frame.setBackground(new Color(1,1,1,.0f));
+//        frame.setOpacity(0.5f);
         frame.setLocation(2279,299);
         panelRunner.runnerScaling = 19.15f * 2f;
-        panelRunner.mainRunnerColor = Color.YELLOW;
+        panelRunner.mainRunnerColor = Color.BLACK;
         panelRunner.xOffsetPixels = panelRunner.xOffsetPixels + 45;
         panelRunner.yOffsetPixels = panelRunner.yOffsetPixels + 222;
 
@@ -79,68 +114,96 @@ public class CompareFlashToJava extends FlashGame {
     public Action[] getActionSequenceFromBeginning() {
         return new Action[]{
                 new Action(5, Action.Keys.none),
-//                new Action(49, Action.Keys.wo),
-//                new Action(20, Action.Keys.qp),
-//                new Action(1, Action.Keys.p),
-//                new Action(17, Action.Keys.qp),
-//                new Action(3, Action.Keys.w),
-//                new Action(3, Action.Keys.p),
-//                new Action(1, Action.Keys.none),
-//                new Action(15, Action.Keys.wo),
-
-
-
-//                new Action(4, Action.Keys.w),
-//                new Action(17, Action.Keys.qp),
-//                new Action(4, Action.Keys.p),
-//                new Action(7, Action.Keys.none),
-//                new Action(1, Action.Keys.p)
         };
     }
 
     @Override
     public Action getControlAction(State state) {
-        return valueFunction.getMaximizingAction(new NodeQWOP(state));
+
+//        if (((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult != null) {
+//            float bodyErrorX =
+//                    state.body.getX() - ((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state.body.getX();
+//            float bodyErrorY =
+//                    state.body.getY() - ((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state.body.getY();
+//
+//            System.out.println(bodyErrorX + ", " + bodyErrorY);
+//        }
+        gameJava.makeNewWorld();
+        gameJava.setState(state);
+        gameJava.iterations = 20;
+
+
+        Action action =  valueFunction.getMaximizingAction(new NodeQWOP(state));
+
+        // perturb for variety.
+        float rnum = Random.nextFloat();
+        if (rnum > 0.9f) {
+            action = new Action(Integer.max(1, action.getTimestepsTotal() - 1), action.peek());
+        } else if (rnum > 0.8f) {
+            action = new Action(action.getTimestepsTotal() + 1, action.peek());
+        }
+        return action;
     }
 
+    State prevState;
+    List<State> stateList = new ArrayList<>();
+    List<float[]> errorList = new ArrayList<>();
     @Override
     public void reportGameStatus(State state, boolean[] command, int timestep) {
         if (!initialized) {
-            return; // This
+            return;
         }
 
         if (timestep == 0) {
+            if (stateList.size() > 0) {
+                train();
+            }
+            prevState = state;
             gameJava.makeNewWorld();
-            gameJava.iterations = 15;
-            gameUnifiedList.clear();
-            gameUnifiedList.add(gameJava);
+//            gameJava.makeNewWorld();
+//            gameJava.iterations = 15;
+//            gameUnifiedList.clear();
+//            gameUnifiedList.add(gameJava);
+            stateList.clear();
+            errorList.clear();
 
         } else {
-            int tp = 0;
-            if (timestep < tp + 5 && timestep > tp)
-                    gameJava.iterations = 5;
 
-//            if (timestep % 160 == 0) {
-//                GameUnified newGame = new GameUnified();
-//                newGame.setState(state);
-//                gameUnifiedList.add(newGame);
-//            }
-//            //            gameJava.fullStatePDController(state);
-//            panelRunner.clearSecondaryStates();
-//            int idx = 0;
-//            for (GameUnified game : gameUnifiedList) {
-//                game.step(command);
-//                panelRunner.addSecondaryState(game.getCurrentState(), Node.getColorFromTreeDepth(idx++));
-//
-//            }
+            gameJava.makeNewWorld();
+            gameJava.iterations = 15;
+            gameJava.setState(prevState);
+            gameJava.step(command);
 
-            panelRunner.clearSecondaryStates();
-            panelRunner.addSecondaryState(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state,
-                    NodeQWOPGraphicsBase.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
+            float bodyErrorX =
+                    state.body.getX() - gameJava.getCurrentState().body.getX();
+            float bodyErrorY =
+                    state.body.getY() - gameJava.getCurrentState().body.getY();
 
-            panelRunner.setMainState(state);
-            panelRunner.repaint();
+//            float[][] eval = new float[][]{stateStats.rescaleState(prevState)};
+//            float[][] result = net.evaluateInput(eval);
+//            System.out.println(bodyErrorX + ", " + bodyErrorY + ", " + result[0][0] + ", " + result[0][1]);
+
+            stateList.add(prevState);
+            errorList.add(new float[]{bodyErrorX, bodyErrorY});
+
+            prevState = state;
+
         }
+    }
+
+    private void train() {
+        assert stateList.size() == errorList.size();
+
+        float[][] states = new float[stateList.size()][72];
+        float[][] error = new float[errorList.size()][2];
+        for (int i = 0; i < stateList.size(); i++) {
+            states[i] = stateStats.rescaleState(stateList.get(i));
+            error[i] = errorList.get(i);
+        }
+
+        float loss = net.trainingStep(states, error, 1);
+        System.out.println("Loss: " + loss);
+        net.saveCheckpoint("correctorchk" + ++iteration);
     }
 
     private void loadController() {
