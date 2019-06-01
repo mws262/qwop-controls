@@ -17,6 +17,12 @@ public class RolloutPolicy_Window extends RolloutPolicy {
 
     private RolloutPolicy individualRollout;
 
+    public enum Criteria {
+        WORST, BEST, AVERAGE,
+    }
+
+    public Criteria selectionCriteria = Criteria.BEST;
+
     public RolloutPolicy_Window(RolloutPolicy individualRollout) {
         super(individualRollout.evaluationFunction);
         this.individualRollout = individualRollout;
@@ -56,7 +62,17 @@ public class RolloutPolicy_Window extends RolloutPolicy {
         float valBelow =
                 individualRollout.rollout(nodeBelow, game) + individualRollout.evaluationFunction.getValue(nodeBelow) - startValue;
 
-        return (0.6f * valMid + 0.2f * valAbove + 0.2f * valBelow); // Gets the best out of three. or avg or worst
+        switch(selectionCriteria) {
+
+            case WORST:
+                return Float.min(valMid, Float.min(valAbove, valBelow));
+            case BEST:
+                return Float.max(valMid, Float.max(valAbove, valBelow));
+            case AVERAGE:
+                return (valMid + valAbove + valBelow) / 3f;
+            default:
+                return (valMid + valAbove + valBelow) / 3f;
+        }
     }
 
     @Override

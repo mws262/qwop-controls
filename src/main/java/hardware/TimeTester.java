@@ -34,7 +34,7 @@ public class TimeTester {
     public long testKeyTime(int testTimes) {
         for (int i = 0; i < testTimes; i++) {
             donePress = false;
-            serial.command(false, false, false, true);
+            serial.command(false, false, true, false);
 
             long startTimePress = System.currentTimeMillis();
 

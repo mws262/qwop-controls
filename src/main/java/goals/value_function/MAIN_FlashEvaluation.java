@@ -33,8 +33,10 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private File captureDir = new File("vision_capture");
 
     // Net and execution parameters.
-    String valueNetworkName = "tuesday.pb"; // "deepnarrow_net.pb";
-    String checkpointName = "tuesdaychk69"; // "med67";
+    String valueNetworkName = "small_net.pb"; // "deepnarrow_net.pb";
+    String checkpointName = "small698"; //329"; // "med67";
+
+    private static boolean hardware = false;
 
     Action[] prefix = new Action[]{
             new Action(7, Action.Keys.none),
@@ -51,7 +53,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private ValueFunction_TensorFlow valueFunction = null;
 
     public MAIN_FlashEvaluation() {
-        super(false); // Do hardware commands out?
+        super(hardware); // Do hardware commands out?
         if (imageCapture) {
             visionSaver = new VisionDataSaver(captureDir, gameMonitorIndex);
             getServer().addStateListener(visionSaver);

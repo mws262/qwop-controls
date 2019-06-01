@@ -44,9 +44,28 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
      */
     private final int checkpointIndex;
 
+    /**
+     * Network training learning rate. Set in config file. Default 1e-3.
+     */
     private final String learningRate; // String because it goes to command line argument.
 
+    /**
+     *
+     */
     private final int trainingBatchSize;
+
+    private Rollouts rolloutType; // In properties file.
+
+    private int rolloutHorizonTimesteps; // In properties file.
+
+    private boolean windowRollout; // In properties file.
+
+    RolloutPolicy_Window.Criteria windowSelectionType;
+
+    private boolean rolloutWeightedWithValFun;
+
+    private float rolloutValFunWeight;
+
 
     /**
      * Network hidden layer sizes. These should not include input and output layers.
@@ -99,6 +118,13 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             logger.warn("No checkpoint name prefix given. This will result in saves that only have numbers for names.");
         }
 
+        rolloutType = Rollouts.valueOf(properties.getProperty("rolloutType", "RANDOM_HORIZON"));
+        rolloutHorizonTimesteps = Integer.parseInt(properties.getProperty("rolloutHorizonTimesteps", "100"));
+        windowRollout = Boolean.parseBoolean(properties.getProperty("windowRollout", "false"));
+        windowSelectionType = RolloutPolicy_Window.Criteria.valueOf(properties.getProperty("windowSelectionType", "AVERAGE"));
+        rolloutWeightedWithValFun = Boolean.parseBoolean(properties.getProperty("rolloutWeightedWithValFun", "false"));
+        rolloutValFunWeight = Float.parseFloat(properties.getProperty("rolloutValFunWeight", "0.75"));
+
         makeValueFunction();
     }
 
@@ -112,9 +138,6 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         RANDOM, RANDOM_HORIZON, VALUE_HORIZON
     }
 
-    private boolean asWindow = false;
-    private boolean weightWithValueFunction = true;
-    private Rollouts chosenRollout = Rollouts.RANDOM_HORIZON;
 
     @SuppressWarnings("Duplicates")
     public void doGames() {
@@ -123,7 +146,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         RolloutPolicy rollout;
 
         // BASIC ROLLOUT STRATEGY
-        switch (chosenRollout) {
+        switch (rolloutType) {
             case RANDOM:
                 // Rollout goes randomly among a limited set of actions until failure. Score based on distance
                 // travelled from start to end of rollout.
@@ -133,7 +156,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 // Rollout goes randomly to a fixed horizon in the future. Future values are weighted less than
                 // nearer ones. Based on distances travelled.
                 RolloutPolicy_DecayingHorizon decayingHorizonRandom = new RolloutPolicy_RandomDecayingHorizon();
-                decayingHorizonRandom.maxTimestepsToSim = 200;
+                decayingHorizonRandom.maxTimestepsToSim = rolloutHorizonTimesteps;
                 rollout = decayingHorizonRandom;
                 break;
             case VALUE_HORIZON:
@@ -141,7 +164,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 // weighted less than nearer ones. Based on distance travelled.
                 RolloutPolicy_ValueFunctionDecayingHorizon decayingHorizonValue =
                         new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
-                decayingHorizonValue.maxTimestepsToSim = 200;
+                decayingHorizonValue.maxTimestepsToSim = rolloutHorizonTimesteps;
                 rollout = decayingHorizonValue;
                 break;
             default:
@@ -150,33 +173,33 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         }
 
         // ALSO WEIGHT ROLLOUT RESULTS WITH VALUE FUNCTION?
-        if (weightWithValueFunction) {
+        if (rolloutWeightedWithValFun) {
             RolloutPolicy_WeightWithValueFunction weightedRollout = new RolloutPolicy_WeightWithValueFunction(rollout
                     , valueFunction); // Does not have to be the same value function as the one used in value
             // function POLICY rollouts.
-            weightedRollout.valueFunctionWeight = 0.4f;
+            weightedRollout.valueFunctionWeight = rolloutValFunWeight;
             rollout = weightedRollout;
         }
 
         // ROLLOUT ACTIONS ABOVE AND BELOW ALSO.
-        if (asWindow) {
+        if (windowRollout) {
             rollout = new RolloutPolicy_Window(rollout);
         }
 
-        logger.info("Rollout policy chosen: " + chosenRollout.name() + ". Weighted with value function? " + weightWithValueFunction + ". As " +
-                "a window of 3? " + asWindow + ".");
+        logger.info("Rollout policy chosen: " + rolloutType.name() + ". Weighted with value function? " + rolloutWeightedWithValFun + ". As " +
+                "a window of 3? " + windowRollout + ".");
 
 
         // Make new tree root and assign to GUI.
         // Assign default available actions.
-        IActionGenerator actionGenerator = getExtendedActionGenerator(-1);
+        IActionGenerator actionGenerator = getExtendedActionGenerator(-1);// new ActionGenerator_Uniform();//
 
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
                 new Action(7,false,false,false,false),
-                new Action(49, Action.Keys.wo),
+//                new Action(49, Action.Keys.wo),
 //                new Action(2, Action.Keys.none),
-                //new Action(25, Action.Keys.qp),
+//                new Action(46, Action.Keys.qp),
         });
 
 

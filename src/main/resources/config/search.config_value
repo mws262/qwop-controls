@@ -1,18 +1,35 @@
-# Directory for saved runs
+# Tree search configuration.
+# GUI on?
+headless=true
 saveLocation=./test_dir
-headless=false
-workersFractionOfCores=0.7
-UCBExplorationMultiplier=3
-getToSteadyDepth=100
+workersFractionOfCores=0.7 
 fractionOfMaxWorkers=1
+getToSteadyDepth=1000
 bailAfterXGames=20000
 
-# Specific to value function net.
-networkName=tuesday
-checkpointNamePrefix=tuesdaychk
-checkpointIndex=17
+# Important exploration configuration.
+# Larger is more exploration.
+UCBExplorationMultiplier=4
+# Currently: RANDOM, RANDOM_HORIZON, VALUE_HORIZON
+rolloutType=RANDOM
+# Active for horizon rollouts only.
+rolloutHorizonTimesteps=200
 
-learningRate=1e-3
-trainingBatchSize=1000
+# Do rollout for action above and below too.
+windowRollout=false
+# If window, score aggregation method: AVERAGE, BEST, WORST.
+windowSelectionType=WORST
 
+# New node value estimates based on both rollout and direct val fun evaluation.
+rolloutWeightedWithValFun=false 
+# Weight that the value function gets in determining node value. Higher means greater confidence in val fun.
+rolloutValFunWeight=0.3
+
+# Value function net configuration
+networkName=small_net
+checkpointNamePrefix=small
+checkpointIndex=610
+learningRate=1e-4
+trainingBatchSize=2000
 hiddenLayerSizes=128,64
+
