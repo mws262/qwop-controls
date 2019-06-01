@@ -4,6 +4,8 @@ import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
 import game.IGameInternal;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tree.NodeQWOPExplorableBase;
 import tree.NodeQWOPGraphicsBase;
 
@@ -42,6 +44,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
      */
     private int fastForwardTimesteps = 0;
 
+    private Logger logger = LogManager.getLogger(PanelRunner_Animated.class);
+
     public PanelRunner_Animated() {
         game = new GameUnified();
     }
@@ -60,8 +64,9 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
         node.getSequence(actionList);
         actionQueue.addSequence(actionList);
         fastForwardTimesteps = 0;
+        logger.info("Animating sequence.");
         for (Action a : actionList) {
-            System.out.println(a);
+            logger.info(a);
         }
     }
 

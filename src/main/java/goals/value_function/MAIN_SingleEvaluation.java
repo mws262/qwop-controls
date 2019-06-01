@@ -32,8 +32,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private boolean doFullGameSerialization = false;
 
     // Net and execution parameters.
-    String valueNetworkName = "tuesday.pb";
-    String checkpointName = "tuesdaychk69"; // "med67";
+    String valueNetworkName = "small_net.pb";
+    String checkpointName = "small660"; // "med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.

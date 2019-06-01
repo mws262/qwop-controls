@@ -2,6 +2,8 @@ package hardware;
 
 import com.fazecast.jSerialComm.SerialPort;
 import game.IGameCommandTarget;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,18 +17,21 @@ import java.io.OutputStream;
 public class KeypusherSerialConnection implements IGameCommandTarget {
 
     private OutputStream out;
+
+    private Logger logger = LogManager.getLogger(KeypusherSerialConnection.class);
+
     public KeypusherSerialConnection() {
         // Get the correct serial port.
         SerialPort arduinoPort = null;
         SerialPort[] serialPorts = SerialPort.getCommPorts();
         for (SerialPort sp : serialPorts) {
-            System.out.println("Found: " + sp.getSystemPortName() + ", " + sp.getDescriptivePortName() + ", " + sp.getPortDescription());
+            logger.info("Found: " + sp.getSystemPortName() + ", " + sp.getDescriptivePortName() + ", " + sp.getPortDescription());
             if (sp.getPortDescription().contains("USB-Based Serial Port") || sp.getPortDescription().contains(
                     "Arduino")) {
                 if (arduinoPort == null) {
                     arduinoPort = sp;
                 } else {
-                    System.out.println("Multiple USB-serial ports found. May have identified the wrong one.");
+                    logger.warn("Multiple USB-serial ports found. May have identified the wrong one.");
                 }
             }
         }

@@ -97,8 +97,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
         evaluations.add(new FuturePredictor(Keys.none, 1, 10));
-        evaluations.add(new FuturePredictor(Keys.qp, 2, 45));
-        evaluations.add(new FuturePredictor(Keys.wo, 2, 45));
+        evaluations.add(new FuturePredictor(Keys.qp, 2, 40));
+        evaluations.add(new FuturePredictor(Keys.wo, 2, 40));
         evaluations.add(new FuturePredictor(Keys.q, 2, 5));
         evaluations.add(new FuturePredictor(Keys.w, 2, 5));
         evaluations.add(new FuturePredictor(Keys.o, 2, 5));
@@ -364,7 +364,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                             throw new IllegalStateException("Invalid selection criteria invoked.");
                     }
 
-                    aggregateVal += 1f * x2; //(x2 - startX) * .2f;
+                    aggregateVal += 0.0f * x2; //(x2 - startX) * .2f;
 
                     if (aggregateVal > bestResult.value) {
                         bestResult.value = aggregateVal;
