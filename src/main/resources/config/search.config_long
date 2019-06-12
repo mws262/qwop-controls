@@ -2,7 +2,7 @@
 saveLocation=./11_2_18
 headless=false
 workersFractionOfCores=0.7
-UCBExplorationMultiplier=1
+UCBExplorationMultiplier=0.2
 
 # Stage 1 toggle: find single long run from rest.
 doStage1=true
