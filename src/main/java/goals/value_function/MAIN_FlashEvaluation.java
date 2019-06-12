@@ -18,14 +18,21 @@ import vision.VisionDataSaver;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+/**
+ * Note: with many JVM garbage collectors, the control evaluation time has large spikes. Should use ZGC or Shenandoah
+ * . For Linux, ZGC is built-in. For windows, it isn't. Shenandoah is built into Red Hat's Java build for windows
+ * though.
+ *
+ * -XX:+UseEpsilonGC
+ */
 @SuppressWarnings("Duplicates")
 public class MAIN_FlashEvaluation extends FlashGame {
     static{
         Utility.loadLoggerConfiguration();
     }
     private boolean imageCapture = false;
-    private boolean addActionNoise = false;
-    private float noiseProbability = 0.3f;
+    private boolean addActionNoise = true;
+    private float noiseProbability = 0.99f;
 
 
     private VisionDataSaver visionSaver;
@@ -34,9 +41,9 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     // Net and execution parameters.
     String valueNetworkName = "small_net.pb"; // "deepnarrow_net.pb";
-    String checkpointName = "small698"; //329"; // "med67";
+    String checkpointName = "small329";//698"; //329"; // "med67";
 
-    private static boolean hardware = false;
+    private static boolean hardware = true;
 
     Action[] prefix = new Action[]{
             new Action(7, Action.Keys.none),
@@ -92,8 +99,10 @@ public class MAIN_FlashEvaluation extends FlashGame {
         if (addActionNoise && Random.nextFloat() < noiseProbability) {
             if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
                 action = new Action(action.getTimestepsTotal() + 1, action.peek());
+                // logger.warn("Action disturbed 1 up.");
             } else {
                 action = new Action(action.getTimestepsTotal() - 1, action.peek());
+                // logger.warn("Action disturbed 1 down.");
             }
         }
         return action;
