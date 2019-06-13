@@ -145,9 +145,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         Objects.requireNonNull(evalResult);
 
         currentResult = evalResult;
-        logger.info(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f",
+        logger.info(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f \tBodyX: %3.2f",
                 System.currentTimeMillis() - initialTime, evalResult.timestep, evalResult.keys.toString(),
-                Math.round(evalResult.value * 100)/100f));
+                Math.round(evalResult.value * 100)/100f, evalResult.state.body.getX()));
 
         return new Action(evalResult.timestep, evalResult.keys);
     }

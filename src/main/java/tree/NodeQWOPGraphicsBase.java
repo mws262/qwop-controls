@@ -263,7 +263,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Color the node scaled by depth in the tree. Totally for gradient pleasantness.
      */
     public static Color getColorFromTreeDepth(float depth, float brightness) {
-        return getColorFromScaledValue(depth/1.8f + 8, -10f, brightness);
+        return getColorFromScaledValue(depth/1.8f + 10, -10f, brightness);
     }
 
     /**

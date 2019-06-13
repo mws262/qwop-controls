@@ -135,6 +135,15 @@ public abstract class FlashGame implements IFlashStateListener {
 
             // Send all-keys-up command so it doesn't restart with some buttons active.
             commandTarget.command(false, false, false, false);
+            if (state.body.getX() < 1000) {
+                logger.warn("Runner fallen at " + ((int) state.body.getX()) / 10f + " meters.");
+            } else {
+                logger.warn("Runner reached finish.");
+            }
+
+            long freeMemoryBefore = Runtime.getRuntime().freeMemory();
+            System.gc();
+            logger.warn("Requested garbage collection in between runs. Freed " + (int)((Runtime.getRuntime().freeMemory() - freeMemoryBefore) / 1e6) + "mb.");
 
             try {
                 Thread.sleep(4000); // Give it time for the "thud" animation to dissipate for taking screen captures.
