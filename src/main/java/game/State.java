@@ -316,5 +316,19 @@ public class State implements Serializable {
     public synchronized boolean isFailed() {
         return failedState;
     }
+
+    /**
+     * Get a tab-separated list of the states in String form. This takes the same order that
+     * {@link State#flattenState()} uses.
+     * @return String containing all the state values on a line.
+     */
+    public String toFlatString() {
+        float[] states = flattenState();
+        StringBuilder sb = new StringBuilder();
+        for (float f : states) {
+            sb.append(f).append('\t');
+        }
+        return sb.toString();
+    }
 }
 

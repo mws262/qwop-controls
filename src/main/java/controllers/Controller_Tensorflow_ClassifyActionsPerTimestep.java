@@ -4,7 +4,7 @@ import java.util.List;
 
 import game.State;
 import actions.Action;
-import data.TensorflowLoader;
+import tflowtools.TensorflowLoader;
 
 /**
  * Neural-network-based controller which uses a {@link State state} to classify which key combination should be

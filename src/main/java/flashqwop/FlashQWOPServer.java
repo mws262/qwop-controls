@@ -12,8 +12,7 @@ import ui.PanelRunner_SimpleState;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,6 +36,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author matt
  */
 public class FlashQWOPServer implements IGameExternal {
+
+    private static URL qwopPageUrl;
+    static {
+        try {
+            qwopPageUrl = new URL("http://localhost:8000/index.html");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Writer which streams to the socket output. The Flash game should be listening to whatever this sends
@@ -70,6 +78,9 @@ public class FlashQWOPServer implements IGameExternal {
      * @param port Specified port for communication. Currently real QWOP is hardcoded to use 2900.
      */
     public FlashQWOPServer(int port) {
+        if (!doesServerExist())
+            logger.error("QWOP local server does not exist. Run the shell script local_server_launch.sh; then reload " +
+                    "localhost:8000/index.html");
         try {
             ServerSocket s = new ServerSocket(port); // TODO figure out how to make it start over if the client
             // disconnects.
@@ -218,6 +229,37 @@ public class FlashQWOPServer implements IGameExternal {
      */
     public void addStateListener(IFlashStateListener listener) {
         dataInput.addStateListener(listener);
+    }
+
+
+    public static boolean doesServerExist() {
+        try {
+            HttpURLConnection huc = (HttpURLConnection) qwopPageUrl.openConnection();
+            huc.setRequestMethod("HEAD");
+            huc.connect();
+            int code = huc.getResponseCode();
+            return code == 200;
+        } catch(IOException e){
+            return false;
+        }
+    }
+
+    /**
+     * Launch the web server and certificate server for the QWOP flash game. If the server is already running, then
+     * this does nothing. TODO not quite worked out yet.
+     */
+    public static void launchWebserver() {
+        if (doesServerExist())
+            return;
+        ProcessBuilder pb = new ProcessBuilder("sh", "./flash/local_server_launch.sh");
+        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT); // Makes sure that error messages and outputs go to console.
+        pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+        try {
+            Process p = pb.start();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
