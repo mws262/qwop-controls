@@ -1,6 +1,6 @@
 package goals.interactive;
 
-import data.TensorflowLoader;
+import tflowtools.TensorflowLoader;
 import game.GameUnified;
 import game.State;
 import org.tensorflow.Tensor;

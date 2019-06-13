@@ -1,4 +1,4 @@
-package data;
+package tflowtools;
 
 import com.google.common.primitives.Floats;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

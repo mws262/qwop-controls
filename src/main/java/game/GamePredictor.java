@@ -2,7 +2,7 @@ package game;
 
 import actions.Action;
 import actions.ActionQueue;
-import data.TensorflowLoader;
+import tflowtools.TensorflowLoader;
 import org.tensorflow.Tensor;
 import ui.PanelRunner_SimpleState;
 

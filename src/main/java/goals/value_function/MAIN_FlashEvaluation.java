@@ -2,6 +2,7 @@ package goals.value_function;
 
 import actions.Action;
 import flashqwop.FlashGame;
+import flashqwop.FlashStateLogger;
 import game.GameUnified;
 import game.State;
 import org.apache.logging.log4j.Level;
@@ -54,10 +55,13 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     public MAIN_FlashEvaluation() {
         super(hardware); // Do hardware commands out?
+
         if (imageCapture) {
             visionSaver = new VisionDataSaver(captureDir, gameMonitorIndex);
             getServer().addStateListener(visionSaver);
         }
+
+        getServer().addStateListener(new FlashStateLogger());
 
         loadController();
 
