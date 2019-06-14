@@ -22,4 +22,6 @@ public interface IState {
 
     boolean isFailed();
 
+    int getStateVariableCount();
+
 }

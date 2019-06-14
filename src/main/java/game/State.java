@@ -116,6 +116,11 @@ public class State implements IState, Serializable {
     }
 
     @Override
+    public int getStateVariableCount() {
+        return stateVariables.length;
+    }
+
+    @Override
     public float getCenterX() {
         return body.getX();
     }
