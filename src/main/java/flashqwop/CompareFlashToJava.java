@@ -2,7 +2,7 @@ package flashqwop;
 
 import actions.Action;
 import game.GameUnified;
-import game.State;
+import game.IState;
 import tree.NodeQWOP;
 import tree.NodeQWOPGraphicsBase;
 import ui.PanelRunner_MultiState;
@@ -99,12 +99,12 @@ public class CompareFlashToJava extends FlashGame {
     }
 
     @Override
-    public Action getControlAction(State state) {
+    public Action getControlAction(IState state) {
         return valueFunction.getMaximizingAction(new NodeQWOP(state));
     }
 
     @Override
-    public void reportGameStatus(State state, boolean[] command, int timestep) {
+    public void reportGameStatus(IState state, boolean[] command, int timestep) {
         if (!initialized) {
             return; // This
         }

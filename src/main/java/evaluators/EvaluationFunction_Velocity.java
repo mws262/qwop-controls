@@ -1,5 +1,6 @@
 package evaluators;
 
+import game.IState;
 import tree.NodeQWOPBase;
 
 import java.util.Objects;
@@ -13,7 +14,7 @@ public class EvaluationFunction_Velocity implements IEvaluationFunction {
 
     @Override
     public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
-        return Objects.requireNonNull(nodeToEvaluate.getState()).body.getDx();
+        return Objects.requireNonNull(nodeToEvaluate.getState()).getStateVariableFromName(IState.ObjectName.BODY).getDx();
     }
 
     @Override

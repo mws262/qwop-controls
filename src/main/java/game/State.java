@@ -8,7 +8,7 @@ import java.io.Serializable;
  *
  * @author matt
  */
-public class State implements Serializable {
+public class State implements IState, Serializable {
 
     private static final long serialVersionUID = 2L;
 
@@ -25,21 +25,7 @@ public class State implements Serializable {
     /**
      * Array holding a StateVariable for each body part.
      */
-    private final StateVariable[] stateVariables;
-
-    /**
-     * Name of each body part.
-     */
-    public enum ObjectName {
-        BODY, HEAD, RTHIGH, LTHIGH, RCALF, LCALF, RFOOT, LFOOT, RUARM, LUARM, RLARM, LLARM
-    }
-
-    /**
-     * Name of each state value (configurations and velocities).
-     */
-    public enum StateName {
-        X, Y, TH, DX, DY, DTH
-    }
+    final StateVariable[] stateVariables;
 
     /**
      * Make new state from list of ordered numbers. Most useful for interacting with neural network stuff. Number
@@ -124,18 +110,18 @@ public class State implements Serializable {
      *
      * @return Array containing a {@link StateVariable StateVariable} for each runner link.
      */
-    public StateVariable[] getStates() {
+    @Override
+    public StateVariable[] getAllStateVariables() {
         return stateVariables;
     }
 
-    /**
-     * Get a specific state value by specifying the link and desired configuration/velocity.
-     *
-     * @param obj   Runner body who we want to fetch a state value from.
-     * @param state Configuration/velocity we want to fetch for the specified runner link.
-     * @return Value of the requested state.
-     */
-    public float getStateVarFromName(ObjectName obj, StateName state) {
+    @Override
+    public float getCenterX() {
+        return body.getX();
+    }
+
+    @Override
+    public StateVariable getStateVariableFromName(ObjectName obj) {
         StateVariable st;
         switch (obj) {
             case BODY:
@@ -177,35 +163,11 @@ public class State implements Serializable {
             default:
                 throw new RuntimeException("Unknown object state queried.");
         }
-        float stateValue;
-        switch (state) {
-            case DTH:
-                stateValue = st.getDth();
-                break;
-            case DX:
-                stateValue = st.getDx();
-                break;
-            case DY:
-                stateValue = st.getDy();
-                break;
-            case TH:
-                stateValue = st.getTh();
-                break;
-            case X:
-                stateValue = st.getX();
-                break;
-            case Y:
-                stateValue = st.getY();
-                break;
-            default:
-                throw new RuntimeException("Unknown object state queried.");
-        }
-        return stateValue;
+
+        return st;
     }
 
-    /**
-     * Turn the state into an array of floats with body x subtracted from all x coordinates.
-     **/
+    @Override
     public float[] flattenState() {
         float[] flatState = new float[72];
         float bodyX = body.getX();
@@ -289,6 +251,7 @@ public class State implements Serializable {
         flatState[57] = luarm.getDx();
         flatState[58] = luarm.getDy();
         flatState[59] = luarm.getDth();
+
         // rlarm
         flatState[60] = rlarm.getX() - bodyX;
         flatState[61] = rlarm.getY();
@@ -313,6 +276,7 @@ public class State implements Serializable {
      *
      * @return Runner "fallen" status. True means failed. False means not failed.
      */
+    @Override
     public synchronized boolean isFailed() {
         return failedState;
     }

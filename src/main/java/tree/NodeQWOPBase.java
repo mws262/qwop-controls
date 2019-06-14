@@ -4,7 +4,7 @@ import actions.Action;
 import actions.ActionQueue;
 import data.SavableSingleGame;
 import game.IGameInternal;
-import game.State;
+import game.IState;
 import value.updaters.IValueUpdater;
 import value.updaters.ValueUpdater_HardSet;
 
@@ -30,7 +30,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
     /**
      * State arrived at when taking this node's action from the parent node's state.
      */
-    private final State state;
+    private final IState state;
 
     /**
      * A value associated with this node. This will depend greatly on the update strategy used.
@@ -45,13 +45,13 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
     private int updateCount;
 
 
-    public NodeQWOPBase(State rootState) {
+    public NodeQWOPBase(IState rootState) {
         super();
         action = null;
         state = rootState;
     }
 
-    NodeQWOPBase(N parent, Action action, State state) {
+    NodeQWOPBase(N parent, Action action, IState state) {
         super(parent);
         this.action = action;
         this.state = state;
@@ -70,7 +70,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * @param state State arrived at when taking the specified action to the new node.
      * @return A new child node.
      */
-    public abstract N addDoublyLinkedChild(Action action, State state);
+    public abstract N addDoublyLinkedChild(Action action, IState state);
 
     /**
      * Make a new child. The child has a reference to the parent, but the parent does not know about the child. This
@@ -79,9 +79,9 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * @param state State arrived at when taking the specified action to the new node.
      * @return A new child node.
      */
-    public abstract N addBackwardsLinkedChild(Action action, State state);
+    public abstract N addBackwardsLinkedChild(Action action, IState state);
 
-    public State getState() { return state; }
+    public IState getState() { return state; }
 
     public Action getAction() { return action; }
 

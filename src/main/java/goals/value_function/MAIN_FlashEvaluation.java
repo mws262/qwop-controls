@@ -4,7 +4,7 @@ import actions.Action;
 import flashqwop.FlashGame;
 import flashqwop.FlashStateLogger;
 import game.GameUnified;
-import game.State;
+import game.IState;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -98,7 +98,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public Action getControlAction(State state) {
+    public Action getControlAction(IState state) {
         Action action = valueFunction.getMaximizingAction(new NodeQWOP(state));
         if (addActionNoise && Random.nextFloat() < noiseProbability) {
             if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
@@ -113,7 +113,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public void reportGameStatus(State state, boolean[] command, int timestep) {}
+    public void reportGameStatus(IState state, boolean[] command, int timestep) {}
 
     private void loadController() {
         // Load a value function controller.

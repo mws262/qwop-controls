@@ -1,7 +1,7 @@
 package actions;
 
 import game.GameUnified;
-import game.State;
+import game.IState;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -336,7 +336,7 @@ public class ActionQueueTest {
         }
         Assert.assertEquals(26, counter);
 
-        State finalStateWithQueue = game.getCurrentState();
+        IState finalStateWithQueue = game.getCurrentState();
 
         // Try simulating the game by manually sending a bunch of commands.
         game.makeNewWorld();
@@ -368,7 +368,7 @@ public class ActionQueueTest {
             Assert.assertEquals(initialState1[i], initialState2[i], 1e-10f);
         }
 
-        State finalStateManualActions = game.getCurrentState();
+        IState finalStateManualActions = game.getCurrentState();
 
         float[] autoStateVals = finalStateWithQueue.flattenState();
         float[] manualStateVals = finalStateManualActions.flattenState();

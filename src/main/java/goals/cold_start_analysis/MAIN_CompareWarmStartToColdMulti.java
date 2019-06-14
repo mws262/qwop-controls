@@ -3,7 +3,7 @@ package goals.cold_start_analysis;
 import actions.ActionQueue;
 import game.GameUnified;
 import game.IGameInternal;
-import game.State;
+import game.IState;
 import tree.NodeQWOPGraphicsBase;
 
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
                 while (coldStartGameIter.hasNext()) {
                     GameUnified gm = coldStartGameIter.next();
                     gm.step(nextCommand);
-                    State st = gm.getCurrentState();
+                    IState st = gm.getCurrentState();
                     if (st.isFailed()) {
                         coldStartGameIter.remove();
                     } else {

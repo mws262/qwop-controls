@@ -1,7 +1,8 @@
 package ui;
 
 import filters.NodeFilter_Downsample;
-import game.State;
+import game.IState.ObjectName;
+import game.StateVariable.StateName;
 import org.jfree.chart.plot.XYPlot;
 import tree.NodeQWOPExplorableBase;
 import tree.NodeQWOPGraphicsBase;
@@ -42,14 +43,14 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     /**
      * Body parts associated with each plot and axis.
      */
-    private State.ObjectName[] plotObjectsX = new State.ObjectName[numberOfPlots];
-    private State.ObjectName[] plotObjectsY = new State.ObjectName[numberOfPlots];
+    private ObjectName[] plotObjectsX = new ObjectName[numberOfPlots];
+    private ObjectName[] plotObjectsY = new ObjectName[numberOfPlots];
 
     /**
      * State variables associated with each plot and axis.
      */
-    private State.StateName[] plotStatesX = new State.StateName[numberOfPlots];
-    private State.StateName[] plotStatesY = new State.StateName[numberOfPlots];
+    private StateName[] plotStatesX = new StateName[numberOfPlots];
+    private StateName[] plotStatesY = new StateName[numberOfPlots];
 
     /**
      * Drop down menus for the things to plot.
@@ -71,25 +72,25 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
         // Make string arrays of the body part and state variable names.
         int count = 0;
         // String names of the body parts.
-        String[] objNames = new String[State.ObjectName.values().length];
-        for (State.ObjectName obj : State.ObjectName.values()) {
+        String[] objNames = new String[ObjectName.values().length];
+        for (ObjectName obj : ObjectName.values()) {
             objNames[count] = obj.name();
             count++;
         }
         count = 0;
         // String names of the state variables.
-        String[] stateNames = new String[State.StateName.values().length];
-        for (State.StateName st : State.StateName.values()) {
+        String[] stateNames = new String[StateName.values().length];
+        for (StateName st : StateName.values()) {
             stateNames[count] = st.name();
             count++;
         }
 
         // Initial plots to display
         for (int i = 0; i < numberOfPlots; i++) {
-            plotObjectsX[i] = State.ObjectName.values()[Utility.randInt(0, numberOfPlots - 1)];
-            plotStatesX[i] = State.StateName.values()[Utility.randInt(0, numberOfPlots - 1)];
-            plotObjectsY[i] = State.ObjectName.values()[Utility.randInt(0, numberOfPlots - 1)];
-            plotStatesY[i] = State.StateName.values()[Utility.randInt(0, numberOfPlots - 1)];
+            plotObjectsX[i] = ObjectName.values()[Utility.randInt(0, numberOfPlots - 1)];
+            plotStatesX[i] = StateName.values()[Utility.randInt(0, numberOfPlots - 1)];
+            plotObjectsY[i] = ObjectName.values()[Utility.randInt(0, numberOfPlots - 1)];
+            plotStatesY[i] = StateName.values()[Utility.randInt(0, numberOfPlots - 1)];
         }
 
         // Drop down menus
@@ -136,11 +137,9 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
                 PlotDataset dat = plotAndData.getValue();
 
                 Float[] xData =
-						nodesBelow.stream().map(n -> n.getState().getStateVarFromName(plotObjectsX[countDataCollect],
-								plotStatesX[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
+						nodesBelow.stream().map(n -> n.getState().getStateVariableFromName(plotObjectsX[countDataCollect]).getStateByName(plotStatesX[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
                 Float[] yData =
-						nodesBelow.stream().map(n -> n.getState().getStateVarFromName(plotObjectsY[countDataCollect],
-								plotStatesY[countDataCollect])).toArray(Float[]::new);
+						nodesBelow.stream().map(n -> n.getState().getStateVariableFromName(plotObjectsY[countDataCollect]).getStateByName(plotStatesY[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
                 Color[] cData =
 						nodesBelow.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
                                 NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
@@ -182,13 +181,13 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
         int state = e.getStateChange();
         if (state == ItemEvent.SELECTED) {
             if (e.getSource() == objListX) {
-                plotObjectsX[activePlotIdx] = State.ObjectName.valueOf((String) e.getItem());
+                plotObjectsX[activePlotIdx] = ObjectName.valueOf((String) e.getItem());
             } else if (e.getSource() == objListY) {
-                plotObjectsY[activePlotIdx] = State.ObjectName.valueOf((String) e.getItem());
+                plotObjectsY[activePlotIdx] = ObjectName.valueOf((String) e.getItem());
             } else if (e.getSource() == stateListX) {
-                plotStatesX[activePlotIdx] = State.StateName.valueOf((String) e.getItem());
+                plotStatesX[activePlotIdx] = StateName.valueOf((String) e.getItem());
             } else if ((e.getSource() == stateListY)) {
-                plotStatesY[activePlotIdx] = State.StateName.valueOf((String) e.getItem());
+                plotStatesY[activePlotIdx] = StateName.valueOf((String) e.getItem());
             } else {
                 throw new RuntimeException("Unknown item status in plots from: " + e.getSource().toString());
             }

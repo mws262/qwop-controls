@@ -2,7 +2,7 @@ package goals.phase_variable_testing;
 
 import actions.ActionQueue;
 import game.GameUnified;
-import game.State;
+import game.IState;
 import tree.NodeQWOPGraphicsBase;
 import ui.PanelPlot_Simple;
 
@@ -41,11 +41,11 @@ public class MAIN_StateCombinations extends JFrame {
 
         ActionQueue actionQueue = ActionQueue.getSampleActions();
 
-        List<State> stateList = new ArrayList<>();
+        List<IState> stateList = new ArrayList<>();
         stateList.add(GameUnified.getInitialState());
         while (!actionQueue.isEmpty()) {
             game.step(actionQueue.pollCommand());
-            State st = game.getCurrentState();
+            IState st = game.getCurrentState();
             stateList.add(st);
         }
 
@@ -61,7 +61,8 @@ public class MAIN_StateCombinations extends JFrame {
         xDataList.add(xData);
         float[] stVals = new float[stateList.size()];
         for (int i = 0; i < stateList.size(); i++) {
-            stVals[i] = stateList.get(i).rthigh.getTh() - stateList.get(i).lthigh.getTh(); // Pick data out here.
+            stVals[i] =
+                    stateList.get(i).getStateVariableFromName(IState.ObjectName.RTHIGH).getTh() - stateList.get(i).getStateVariableFromName(IState.ObjectName.LTHIGH).getTh(); // Pick data out here.
         }
         yDataList.add(stVals);
 

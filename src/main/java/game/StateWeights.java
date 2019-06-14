@@ -9,7 +9,7 @@ public class StateWeights {
     private static final float W_X = 1f, W_Y = 1f, W_TH = 1f,
             W_DX = 1f, W_DY = 1f, W_DTH = 1f;
 
-    public static float getWeight(State.ObjectName obj, State.StateName st) {
+    public static float getWeight(State.ObjectName obj, StateVariable.StateName st) {
         float multiplier = 1f;
         switch (obj) {
             case BODY:

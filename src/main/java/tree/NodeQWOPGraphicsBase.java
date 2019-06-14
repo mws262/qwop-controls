@@ -5,7 +5,7 @@ import actions.IActionGenerator;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.gl2.GLUT;
 import game.GameUnified;
-import game.State;
+import game.IState;
 import value.updaters.IValueUpdater;
 
 import java.awt.*;
@@ -156,25 +156,25 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * @param rootState State of the runner at the root state. Usually {@link GameUnified#getInitialState()}.
      * @param actionGenerator Object used to generate actions used for potentially creating children of this node.
      */
-    public NodeQWOPGraphicsBase(State rootState, IActionGenerator actionGenerator) {
+    public NodeQWOPGraphicsBase(IState rootState, IActionGenerator actionGenerator) {
         super(rootState, actionGenerator);
         setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
     }
 
     /**
      * Create a new root node. This will use the default {@link IActionGenerator}. See
-     * {@link NodeQWOPExplorableBase#NodeQWOPExplorableBase(State)}.
+     * {@link NodeQWOPExplorableBase#NodeQWOPExplorableBase(IState)}.
      * @param rootState State of the runner at the root state. Usually {@link GameUnified#getInitialState()}.
      */
-    public NodeQWOPGraphicsBase(State rootState) {
+    public NodeQWOPGraphicsBase(IState rootState) {
         super(rootState);
     }
 
     /**
      * Create a new node with all the color and position information used for drawing the tree. The rest of the
      * project, outside the package, should NOT be using this constructor. Rather, something like
-     * {@link NodeQWOPGraphicsBase#addDoublyLinkedChild(Action, State)} or
-     * {@link NodeQWOPGraphicsBase#addBackwardsLinkedChild(Action, State)} should be used.
+     * {@link NodeQWOPGraphicsBase#addDoublyLinkedChild(Action, IState)} or
+     * {@link NodeQWOPGraphicsBase#addBackwardsLinkedChild(Action, IState)} should be used.
      *
      * @param parent Parent of this node.
      * @param action Action bringing the runner from the state at the parent node to this node.
@@ -185,7 +185,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      *                     aware of this node. If doubly linked, the information goes both ways. If not, then the
      *                     information only goes backwards up the tree.
      */
-    NodeQWOPGraphicsBase(N parent, Action action, State state, IActionGenerator actionGenerator, boolean doublyLinked) {
+    NodeQWOPGraphicsBase(N parent, Action action, IState state, IActionGenerator actionGenerator,
+                         boolean doublyLinked) {
         super(parent, action, state, actionGenerator, doublyLinked);
 
         setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));

@@ -2,7 +2,9 @@ package ui;
 
 import filters.INodeFilter;
 import filters.NodeFilter_Downsample;
+import game.IState;
 import game.State;
+import game.StateVariable;
 import org.jfree.chart.plot.XYPlot;
 import transformations.ITransform;
 import transformations.Transform_Autoencoder;
@@ -77,7 +79,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
         }
         plotDownsampler.filter(nodes); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.
 
-        List<State> statesBelow = nodes.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
+        List<IState> statesBelow = nodes.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
         // Convert from node list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
         changePlots();
@@ -103,7 +105,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 
             pl.getRangeAxis().setLabel("Command duration");
             pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +
-                    State.StateName.values()[count].toString());
+                    StateVariable.StateName.values()[count].toString());
 
             dat.addSeries(0, xData, yData, cData);
             setPlotBoundsFromData(pl, xData, yData);

@@ -15,6 +15,13 @@ public class StateVariable implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * Name of each state value (configurations and velocities).
+     */
+    public enum StateName {
+        X, Y, TH, DX, DY, DTH
+    }
+
+    /**
      * Horizontal position of the body.
      */
     private final float x;
@@ -132,5 +139,34 @@ public class StateVariable implements Serializable {
      */
     public float getDth() {
         return dth;
+    }
+
+
+    public float getStateByName(StateName name) {
+        float stateValue;
+        switch(name) {
+            case DTH:
+                stateValue = getDth();
+                break;
+            case DX:
+                stateValue = getDx();
+                break;
+            case DY:
+                stateValue = getDy();
+                break;
+            case TH:
+                stateValue = getTh();
+                break;
+            case X:
+                stateValue = getX();
+                break;
+            case Y:
+                stateValue = getY();
+                break;
+            default:
+                throw new RuntimeException("Unknown object state queried.");
+        }
+
+        return stateValue;
     }
 }

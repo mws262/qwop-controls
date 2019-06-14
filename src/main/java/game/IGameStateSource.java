@@ -5,9 +5,9 @@ public interface IGameStateSource {
     /**
      * Get the runner's state.
      *
-     * @return {@link State} of the runner at the current timestep.
+     * @return {@link IState} of the runner at the current timestep.
      */
-    State getCurrentState();
+    IState getCurrentState();
 
     /**
      * Get whether the game is considered to be in a failed state.

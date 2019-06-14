@@ -2,7 +2,7 @@ package ui;
 
 import filters.NodeFilter_Downsample;
 import game.GameUnified;
-import game.State;
+import game.IState;
 import transformations.ITransform;
 import transformations.Transform_Autoencoder;
 import transformations.Transform_PCA;
@@ -38,7 +38,7 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
     private NodeFilter_Downsample transformDownsampler = new NodeFilter_Downsample(2000);
 
     private List<ITransform> encoders;
-    private List<State> inStates = new ArrayList<>();
+    private List<IState> inStates = new ArrayList<>();
 
     /**
      * Checkbox for enabling the drawing of transformed runners.
@@ -83,7 +83,7 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
         node.getRoot().recurseDownTreeInclusive(nodeList::add);
 
         transformDownsampler.filter(nodeList);
-        List<State> stateList = nodeList.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
+        List<IState> stateList = nodeList.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
 
         for (ITransform trans : encoders) {
             trans.updateTransform(stateList);
@@ -96,11 +96,11 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (drawTransformedRunners && super.isActive() && transformsInitialized) {
-            State currState = game.getCurrentState();
+            IState currState = game.getCurrentState();
             if (currState != null) inStates.add(currState);
             for (int i = 0; i < encoders.size(); i++) {
-                List<State> predictedStateList = encoders.get(i).compressAndDecompress(inStates);
-                State predictedState = predictedStateList.get(0);
+                List<IState> predictedStateList = encoders.get(i).compressAndDecompress(inStates);
+                IState predictedState = predictedStateList.get(0);
                 GameUnified.drawExtraRunner((Graphics2D) g, predictedState, encoders.get(i).getName(), super.runnerScaling,
                         super.xOffsetPixels + i * 100 + 150, super.yOffsetPixels,
                         NodeQWOPGraphicsBase.getColorFromTreeDepth(i, NodeQWOPGraphicsBase.lineBrightnessDefault),

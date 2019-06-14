@@ -3,6 +3,7 @@ package goals.value_function;
 import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
+import game.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.NodeQWOPExplorable;
@@ -151,7 +152,10 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private void doControlled(NodeQWOPExplorable currentNode) {
 
         // Run the controller until failure.
-        while (currentNode.getState().body.getY() < 30) { // Ends if the runner falls off the edge of the world.
+        while (currentNode.getState().getStateVariableFromName(IState.ObjectName.BODY).getY() < 30) { // Ends if the
+            // runner
+            // falls off the
+            // edge of the world.
             // Does not end on falling, as we might want to see its behavior.
             Action chosenAction;
             if (doFullGameSerialization) {

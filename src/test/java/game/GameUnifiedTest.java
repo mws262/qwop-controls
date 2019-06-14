@@ -1,6 +1,7 @@
 package game;
 
 import actions.ActionQueue;
+import game.IState.ObjectName;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,17 +49,17 @@ public class GameUnifiedTest {
         // Hard to test against "ground truth." Mostly going to make sure it's error free and that there aren't any
         // huge logical problems.
         GameUnified game = new GameUnified();
-        float bodyTh = game.getCurrentState().body.getTh();
+        float bodyTh = game.getCurrentState().getStateVariableFromName(ObjectName.BODY).getTh();
         Assert.assertEquals(0, game.getTimestepsThisGame());
 
         game.step(true, true, false, false);
-        float bodyThNext = game.getCurrentState().body.getTh();
+        float bodyThNext = game.getCurrentState().getStateVariableFromName(ObjectName.BODY).getTh();
         Assert.assertNotEquals(bodyTh, bodyThNext, 0.0); // States should change after step().
         bodyTh = bodyThNext;
         Assert.assertEquals(1, game.getTimestepsThisGame()); // Counter should have advanced.
 
         game.step(true, false, true, false);
-        bodyThNext = game.getCurrentState().body.getTh();
+        bodyThNext = game.getCurrentState().getStateVariableFromName(ObjectName.BODY).getTh();
         Assert.assertNotEquals(bodyTh, bodyThNext, 0.0);
         Assert.assertEquals(2, game.getTimestepsThisGame());
     }
@@ -71,12 +72,16 @@ public class GameUnifiedTest {
         game1.step(true, false, true, false);
         game2.step(new boolean[]{true, false, true, false});
 
-        State gameState1 = game1.getCurrentState();
-        State gameState2 = game2.getCurrentState();
+        IState gameState1 = game1.getCurrentState();
+        IState gameState2 = game2.getCurrentState();
 
-        Assert.assertEquals(gameState1.body.getX(), gameState2.body.getX(), 1e-12);
-        Assert.assertEquals(gameState1.rthigh.getTh(), gameState2.rthigh.getTh(), 1e-12);
-        Assert.assertEquals(gameState1.luarm.getY(), gameState2.luarm.getY(), 1e-12);
+        Assert.assertEquals(gameState1.getCenterX(), gameState2.getCenterX(), 1e-12);
+        Assert.assertEquals(gameState1.getStateVariableFromName(ObjectName.RTHIGH).getTh(),
+                gameState2.getStateVariableFromName(ObjectName.RTHIGH).getTh(),
+                1e-12);
+        Assert.assertEquals(gameState1.getStateVariableFromName(ObjectName.LUARM).getY(),
+                gameState2.getStateVariableFromName(ObjectName.LUARM).getY(),
+                1e-12);
     }
 
     @Test
@@ -86,7 +91,7 @@ public class GameUnifiedTest {
 
         game1.holdKeysForTimesteps(10, true, false, true, false);
 
-        State gameState1 = game1.getCurrentState();
+        IState gameState1 = game1.getCurrentState();
         game2.setState(gameState1);
         float[] gameState2f = game2.getCurrentState().flattenState();
         float[] gameState1f = gameState1.flattenState();
@@ -225,7 +230,7 @@ public class GameUnifiedTest {
         while (!actions.isEmpty()) {
             gameSingle.step(actions.pollCommand());
         }
-        State stateEndNoLoad = gameSingle.getCurrentState();
+        IState stateEndNoLoad = gameSingle.getCurrentState();
 
         // Redo with save/load in the middle.
         gameSingle.makeNewWorld();
@@ -234,7 +239,7 @@ public class GameUnifiedTest {
             gameSingle.step(actions.pollCommand());
         }
 
-        State stateBeforeLoad = gameSingle.getCurrentState();
+        IState stateBeforeLoad = gameSingle.getCurrentState();
 
         // Save
         byte[] fullState = gameSingle.getSerializedState();
@@ -244,7 +249,7 @@ public class GameUnifiedTest {
 
         // Load
         gameSingle = gameSingle.restoreSerializedState(fullState);
-        State stateAfterLoad = gameSingle.getCurrentState();
+        IState stateAfterLoad = gameSingle.getCurrentState();
 
         // Make sure states at save and after load are equal.
         Assert.assertArrayEquals(stateBeforeLoad.flattenState(), stateAfterLoad.flattenState(), 1e-15f);
@@ -254,7 +259,7 @@ public class GameUnifiedTest {
             gameSingle.step(actions.pollCommand());
         }
 
-        State stateEndAfterLoad = gameSingle.getCurrentState();
+        IState stateEndAfterLoad = gameSingle.getCurrentState();
 
         Assert.assertArrayEquals(stateEndNoLoad.flattenState(), stateEndAfterLoad.flattenState(), 1e-15f);
 
@@ -268,17 +273,17 @@ public class GameUnifiedTest {
 
         game.holdKeysForTimesteps(10, false, true, true, false);
 
-        State stateAtSave = game.getCurrentState();
+        IState stateAtSave = game.getCurrentState();
         byte[] gameSave = game.getSerializedState();
 
         game.holdKeysForTimesteps(10, true, false, false, true);
-        State stateAfter10 = game.getCurrentState();
+        IState stateAfter10 = game.getCurrentState();
 
         GameUnified gameRestored = game.restoreSerializedState(gameSave);
-        State stateAtRestore = gameRestored.getCurrentState();
+        IState stateAtRestore = gameRestored.getCurrentState();
         gameRestored.holdKeysForTimesteps(10, true, false, false, true);
 
-        State stateReloadAfter10 = gameRestored.getCurrentState();
+        IState stateReloadAfter10 = gameRestored.getCurrentState();
 
         Assert.assertArrayEquals(stateAtSave.flattenState(), stateAtRestore.flattenState(), 1e-15f);
         Assert.assertArrayEquals(stateAfter10.flattenState(), stateReloadAfter10.flattenState(), 1e-15f);
@@ -300,19 +305,19 @@ public class GameUnifiedTest {
 
         byte[] gameSave = game.getSerializedState();
 
-        Callable<State> sim = () -> {
+        Callable<IState> sim = () -> {
             GameUnified gameForLoading = game.restoreSerializedState(gameSave);
             gameForLoading.holdKeysForTimesteps(10, false, true, false, true);
             return gameForLoading.getCurrentState();
         };
 
         ExecutorService executorService = Executors.newFixedThreadPool(5);
-        List<Callable<State>> sims = new ArrayList<>();
+        List<Callable<IState>> sims = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             sims.add(sim);
         }
 
-        List<Future<State>> results = null;
+        List<Future<IState>> results = null;
         try {
             results = executorService.invokeAll(sims);
         } catch (InterruptedException e) {
@@ -320,9 +325,9 @@ public class GameUnifiedTest {
         }
 
         float[] stateComparison = null;
-        for (Future<State> f : Objects.requireNonNull(results)) {
+        for (Future<IState> f : Objects.requireNonNull(results)) {
             try {
-                State s = f.get();
+                IState s = f.get();
                 if (stateComparison == null) {
                     stateComparison = s.flattenState();
                 } else {
@@ -338,7 +343,7 @@ public class GameUnifiedTest {
     public void simultaneousGameLoad() {
 
         // Make sure that a bunch of things loading and saving at the same time are ok.
-        Callable<State> sim = () -> {
+        Callable<IState> sim = () -> {
             GameUnified game = new GameUnified();
             game.holdKeysForTimesteps(10, false, true, true, false);
 
@@ -350,7 +355,7 @@ public class GameUnifiedTest {
 
             gameLoaded.holdKeysForTimesteps(10, true, false, false, false);
 
-            State s = game.getCurrentState();
+            IState s = game.getCurrentState();
             float[] s1 = s.flattenState();
             float[] s2 = gameLoaded.getCurrentState().flattenState();
             Assert.assertArrayEquals(s1, s2, 1e-15f);
@@ -359,12 +364,12 @@ public class GameUnifiedTest {
         };
 
         ExecutorService executorService = Executors.newFixedThreadPool(5);
-        List<Callable<State>> sims = new ArrayList<>();
+        List<Callable<IState>> sims = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             sims.add(sim);
         }
 
-        List<Future<State>> results = null;
+        List<Future<IState>> results = null;
         try {
             results = executorService.invokeAll(sims);
         } catch (InterruptedException e) {
@@ -372,9 +377,9 @@ public class GameUnifiedTest {
         }
 
         float[] stateComparison = null;
-        for (Future<State> f : Objects.requireNonNull(results)) {
+        for (Future<IState> f : Objects.requireNonNull(results)) {
             try {
-                State s = f.get();
+                IState s = f.get();
                 if (stateComparison == null) {
                     stateComparison = s.flattenState();
                 } else {

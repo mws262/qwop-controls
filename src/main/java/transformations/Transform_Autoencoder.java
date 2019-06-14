@@ -1,17 +1,20 @@
 package transformations;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import game.IState;
+import game.State;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tensorflow.Graph;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 
-import game.State;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Transform based around a TensorFlow neural network. The neural network takes all the values in a {@link State} and
@@ -38,10 +41,14 @@ public class Transform_Autoencoder implements ITransform {
      */
     private final int outputSize;
 
+    private final int stateDimension = 72;
+
     /**
      * State needs to be turned into a 1x72 float array to be fed into the network.
      */
-    private float[][] flatSt = new float[1][72];
+    private float[][] flatSt = new float[1][stateDimension];
+
+    private final Logger logger = LogManager.getLogger(Transform_Autoencoder.class);
 
     /**
      * Make a transform which uses a neural network autoencoder to transform state data into a reduced state.
@@ -68,14 +75,21 @@ public class Transform_Autoencoder implements ITransform {
     }
 
     @Override
-    public void updateTransform(List<State> nodesToUpdateFrom) {} // Nothing is adaptive about this transform.
+    public void updateTransform(List<IState> nodesToUpdateFrom) {} // Nothing is adaptive about this transform.
 
     @Override
-    public List<float[]> transform(List<State> originalStates) {
+    public List<float[]> transform(List<IState> originalStates) {
         List<float[]> transformedStates = new ArrayList<>();
 
-        for (State st : originalStates) {
-            flatSt[0] = st.flattenState();
+        for (IState st : originalStates) {
+            float[] flattenedState = st.flattenState();
+            if (flattenedState.length != this.stateDimension) {
+                flatSt[0] = Arrays.copyOf(flattenedState, stateDimension); // Will truncate state if too big. Beware!
+                logger.warn("Dimension of state input is longer than expected (" + stateDimension + "). Was " + flattenedState.length + ". Truncating down to size.");
+            } else {
+                flatSt[0] = flattenedState;
+            }
+
             Tensor<Float> inputTensor = Tensor.create(flatSt, Float.class);
             Tensor<Float> result =
                     tensorflowSession.runner().feed("Squeeze:0", inputTensor)
@@ -89,16 +103,22 @@ public class Transform_Autoencoder implements ITransform {
     }
 
     @Override
-    public List<State> untransform(List<float[]> transformedStates) {
+    public List<IState> untransform(List<float[]> transformedStates) {
         return null; // TODO figure out how to get the correct layers in/out for this.
     }
 
     @Override
-    public List<State> compressAndDecompress(List<State> originalStates) {
-        List<State> transformedStates = new ArrayList<>();
+    public List<IState> compressAndDecompress(List<IState> originalStates) {
+        List<IState> transformedStates = new ArrayList<>();
 
-        for (State st : originalStates) {
-            flatSt[0] = st.flattenState();
+        for (IState st : originalStates) {
+            float[] flattenedState = st.flattenState();
+            if (flattenedState.length != this.stateDimension) {
+                flatSt[0] = Arrays.copyOf(flattenedState, stateDimension); // Will truncate state if too big. Beware!
+                logger.warn("Dimension of state input is longer than expected (" + stateDimension + "). Was " + flattenedState.length + ". Truncating down to size.");
+            } else {
+                flatSt[0] = flattenedState;
+            }
             Tensor<Float> inputTensor = Tensor.create(flatSt, Float.class);
             Tensor<Float> result =
                     tensorflowSession.runner().feed("Squeeze:0", inputTensor)

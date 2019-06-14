@@ -1,7 +1,10 @@
 package vision;
 
 import flashqwop.IFlashStateListener;
+import game.IState;
 import game.State;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +23,7 @@ import java.util.Queue;
 public class VisionDataSaver implements IFlashStateListener {
 
     private Queue<File> capturesThisRun = new LinkedList<>();
-    private Queue<State> statesThisRun = new LinkedList<>();
+    private Queue<IState> statesThisRun = new LinkedList<>();
 
     /**
      * Super-directory to which all individual run data directories will be saved.
@@ -47,6 +50,8 @@ public class VisionDataSaver implements IFlashStateListener {
      */
     private int runCounter = 0;
 
+    Logger logger = LogManager.getLogger(VisionDataSaver.class);
+
     /**
      * Make a new screenshot and state information saver with a specified save directory.
      */
@@ -67,7 +72,7 @@ public class VisionDataSaver implements IFlashStateListener {
     }
 
     @Override
-    public void stateReceived(int timestep, State state) {
+    public void stateReceived(int timestep, IState state) {
         /*
          * Four important cases:
          * 1. Timestep is 0, i.e. beginning of new game. Need to clear caches and make new directories.
@@ -137,7 +142,7 @@ public class VisionDataSaver implements IFlashStateListener {
         while (!capturesThisRun.isEmpty()) {
             File f = capturesThisRun.poll();
             str.append(f.getName()).append('\t');
-            State s = Objects.requireNonNull(statesThisRun.poll());
+            IState s = Objects.requireNonNull(statesThisRun.poll());
             str.append(formatState(s)).append("\r\n");
         }
         assert !statesThisRun.isEmpty(); // TODO: will be true if the data comes before the screen updates.
@@ -152,35 +157,41 @@ public class VisionDataSaver implements IFlashStateListener {
     /**
      * Format the state portion of one line of the data log file. This differs from other state representations in
      * the project in that all the position coordinates come before the velocities.
-     * @param s State to format.
+     * @param state State to format.
      * @return One-line String representing the state info.
      */
-    private String formatState(State s) {
-        float bodyX = s.body.getX();
-        return bodyX + "\t" + s.body.getY() + "\t" + s.body.getTh() + "\t"
-                + (s.head.getX() - bodyX) + "\t" + s.head.getY() + "\t" + s.head.getTh() + "\t"
-                + (s.rthigh.getX() - bodyX) + "\t" + s.rthigh.getY() + "\t" + s.rthigh.getTh() + "\t"
-                + (s.lthigh.getX() - bodyX) + "\t" + s.lthigh.getY() + "\t" + s.lthigh.getTh() + "\t"
-                + (s.rcalf.getX() - bodyX) + "\t" + s.rcalf.getY() + "\t" + s.rcalf.getTh() + "\t"
-                + (s.lcalf.getX() - bodyX) + "\t" + s.lcalf.getY() + "\t" + s.lcalf.getTh() + "\t"
-                + (s.rfoot.getX() - bodyX) + "\t" + s.rfoot.getY() + "\t" + s.rfoot.getTh() + "\t"
-                + (s.lfoot.getX() - bodyX) + "\t" + s.lfoot.getY() + "\t" + s.lfoot.getTh() + "\t"
-                + (s.ruarm.getX() - bodyX) + "\t" + s.ruarm.getY() + "\t" + s.ruarm.getTh() + "\t"
-                + (s.luarm.getX() - bodyX) + "\t" + s.luarm.getY() + "\t" + s.luarm.getTh() + "\t"
-                + (s.rlarm.getX() - bodyX) + "\t" + s.rlarm.getY() + "\t" + s.rlarm.getTh() + "\t"
-                + (s.llarm.getX() - bodyX) + "\t" + s.llarm.getY() + "\t" + s.llarm.getTh() + "\t"
+    private String formatState(IState state) {
+        if (state instanceof State) {
+            State s = (State) state;
+            float bodyX = s.body.getX();
+            return bodyX + "\t" + s.body.getY() + "\t" + s.body.getTh() + "\t"
+                    + (s.head.getX() - bodyX) + "\t" + s.head.getY() + "\t" + s.head.getTh() + "\t"
+                    + (s.rthigh.getX() - bodyX) + "\t" + s.rthigh.getY() + "\t" + s.rthigh.getTh() + "\t"
+                    + (s.lthigh.getX() - bodyX) + "\t" + s.lthigh.getY() + "\t" + s.lthigh.getTh() + "\t"
+                    + (s.rcalf.getX() - bodyX) + "\t" + s.rcalf.getY() + "\t" + s.rcalf.getTh() + "\t"
+                    + (s.lcalf.getX() - bodyX) + "\t" + s.lcalf.getY() + "\t" + s.lcalf.getTh() + "\t"
+                    + (s.rfoot.getX() - bodyX) + "\t" + s.rfoot.getY() + "\t" + s.rfoot.getTh() + "\t"
+                    + (s.lfoot.getX() - bodyX) + "\t" + s.lfoot.getY() + "\t" + s.lfoot.getTh() + "\t"
+                    + (s.ruarm.getX() - bodyX) + "\t" + s.ruarm.getY() + "\t" + s.ruarm.getTh() + "\t"
+                    + (s.luarm.getX() - bodyX) + "\t" + s.luarm.getY() + "\t" + s.luarm.getTh() + "\t"
+                    + (s.rlarm.getX() - bodyX) + "\t" + s.rlarm.getY() + "\t" + s.rlarm.getTh() + "\t"
+                    + (s.llarm.getX() - bodyX) + "\t" + s.llarm.getY() + "\t" + s.llarm.getTh() + "\t"
 
-                + s.body.getDx() + "\t" + s.body.getDy() + "\t" + s.body.getDth() + "\t"
-                + s.head.getDx() + "\t" + s.head.getDy() + "\t" + s.head.getDth() + "\t"
-                + s.rthigh.getDx() + "\t" + s.rthigh.getDy() + "\t" + s.rthigh.getDth() + "\t"
-                + s.lthigh.getDx()  + "\t" + s.lthigh.getDy() + "\t" + s.lthigh.getDth() + "\t"
-                + s.rcalf.getDx() + "\t" + s.rcalf.getDy() + "\t" + s.rcalf.getDth() + "\t"
-                + s.lcalf.getDx() + "\t" + s.lcalf.getDy() + "\t" + s.lcalf.getDth() + "\t"
-                + s.rfoot.getDx() + "\t" + s.rfoot.getDy() + "\t" + s.rfoot.getDth() + "\t"
-                + s.lfoot.getDx() + "\t" + s.lfoot.getDy() + "\t" + s.lfoot.getDth() + "\t"
-                + s.ruarm.getDx() + "\t" + s.ruarm.getDy() + "\t" + s.ruarm.getDth() + "\t"
-                + s.luarm.getDx() + "\t" + s.luarm.getDy() + "\t" + s.luarm.getDth() + "\t"
-                + s.rlarm.getDx() + "\t" + s.rlarm.getDy() + "\t" + s.rlarm.getDth() + "\t"
-                + s.llarm.getDx() + "\t" + s.llarm.getDy() + "\t" + s.llarm.getDth() + "\t";
+                    + s.body.getDx() + "\t" + s.body.getDy() + "\t" + s.body.getDth() + "\t"
+                    + s.head.getDx() + "\t" + s.head.getDy() + "\t" + s.head.getDth() + "\t"
+                    + s.rthigh.getDx() + "\t" + s.rthigh.getDy() + "\t" + s.rthigh.getDth() + "\t"
+                    + s.lthigh.getDx() + "\t" + s.lthigh.getDy() + "\t" + s.lthigh.getDth() + "\t"
+                    + s.rcalf.getDx() + "\t" + s.rcalf.getDy() + "\t" + s.rcalf.getDth() + "\t"
+                    + s.lcalf.getDx() + "\t" + s.lcalf.getDy() + "\t" + s.lcalf.getDth() + "\t"
+                    + s.rfoot.getDx() + "\t" + s.rfoot.getDy() + "\t" + s.rfoot.getDth() + "\t"
+                    + s.lfoot.getDx() + "\t" + s.lfoot.getDy() + "\t" + s.lfoot.getDth() + "\t"
+                    + s.ruarm.getDx() + "\t" + s.ruarm.getDy() + "\t" + s.ruarm.getDth() + "\t"
+                    + s.luarm.getDx() + "\t" + s.luarm.getDy() + "\t" + s.luarm.getDth() + "\t"
+                    + s.rlarm.getDx() + "\t" + s.rlarm.getDy() + "\t" + s.rlarm.getDth() + "\t"
+                    + s.llarm.getDx() + "\t" + s.llarm.getDy() + "\t" + s.llarm.getDth() + "\t";
+        } else {
+            logger.warn("State type passed in is currently not supported. Returning a blank string.");
+            return "";
+        }
     }
 }

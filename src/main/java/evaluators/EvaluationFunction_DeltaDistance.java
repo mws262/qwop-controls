@@ -15,7 +15,7 @@ public class EvaluationFunction_DeltaDistance implements IEvaluationFunction {
     public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
 
         if (nodeToEvaluate.getParent() != null)
-            return Objects.requireNonNull(nodeToEvaluate.getState()).body.getX() - nodeToEvaluate.getParent().getState().body.getX();
+            return Objects.requireNonNull(nodeToEvaluate.getState()).getCenterX() - nodeToEvaluate.getParent().getState().getCenterX();
         else
             return 0;
     }

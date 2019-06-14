@@ -2,9 +2,7 @@ package ui;
 
 import actions.Action;
 import actions.ActionQueue;
-import game.GameUnified;
-import game.IGameInternal;
-import game.State;
+import game.*;
 import org.jfree.chart.plot.XYPlot;
 import transformations.ITransform;
 import transformations.Transform_Autoencoder;
@@ -49,7 +47,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     /**
      * List of all the states that we got from simulating. Not just at nodes.
      */
-    private List<State> stateList = new ArrayList<>();
+    private List<IState> stateList = new ArrayList<>();
     private List<float[]> transformedStates = new ArrayList<>();
     private List<boolean[]> commandList = new ArrayList<>();
 
@@ -141,7 +139,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
             pl.getRangeAxis().setLabel("Command combination");
             pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +
-                    State.StateName.values()[count].toString());
+                    StateVariable.StateName.values()[count].toString());
 
             dat.addSeries(0, Arrays.copyOf(xData, xData.length - 1), yData, cData); // Have more states than actions,
             // so will kill the last one.

@@ -1,7 +1,7 @@
 package ui;
 
 import game.GameUnified;
-import game.State;
+import game.IState;
 import tree.NodeQWOPGraphicsBase;
 
 import java.awt.*;
@@ -17,12 +17,12 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     /**
      * Current state being displayed.
      */
-    private State currentState;
+    private IState currentState;
 
     /**
      * Update the state to be displayed.
      */
-    public void updateState(State state) {
+    public void updateState(IState state) {
         currentState = state;
     }
 
@@ -45,7 +45,10 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         GameUnified.drawExtraRunner(g2, currentState, "", runnerScaling,
-				500 - (int) (currentState.body.getX() * runnerScaling), yOffsetPixels + 100, Color.BLACK, normalStroke);
+				500 - (int) (currentState.getCenterX() * runnerScaling),
+                yOffsetPixels + 100,
+                Color.BLACK,
+                normalStroke);
     }
 
     @Override

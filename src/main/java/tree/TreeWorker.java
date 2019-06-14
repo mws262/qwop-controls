@@ -3,8 +3,9 @@ package tree;
 import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
+import game.GameUnifiedCaching;
 import game.IGameInternal;
-import game.State;
+import game.IState;
 import samplers.ISampler;
 import samplers.Sampler_Random;
 import savers.DataSaver_Null;
@@ -59,7 +60,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * The current game instance that this FSM is using. This will now not change.
      */
-    private final IGameInternal game = new GameUnified();
+    private IGameInternal game;
 
     /**
      * Strategy for sampling new nodes. Defaults to random sampling.
@@ -148,7 +149,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     private final List<Action> actionSequence = new ArrayList<>();
 
-    public TreeWorker() {
+    private TreeWorker() {
         workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
 
@@ -158,6 +159,26 @@ public class TreeWorker extends PanelRunner implements Runnable {
         Thread workerThread = new Thread(this);
         workerThread.setName(workerName);
         workerThread.start();
+    }
+
+    /**
+     * Make a worker that uses {@link GameUnified} under the hood.
+     * @return A brand new TreeWorker.
+     */
+    public static TreeWorker makeStandardTreeWorker() {
+        TreeWorker treeWorker = new TreeWorker();
+        treeWorker.game = new GameUnified();
+        return treeWorker;
+    }
+
+    /**
+     * Make a worker that uses {@link game.GameUnifiedCaching} under the hood.
+     * @return A brand new TreeWorker.
+     */
+    public static TreeWorker makeCachedStateTreeWorker() {
+        TreeWorker treeWorker = new TreeWorker();
+        treeWorker.game = new GameUnifiedCaching();
+        return treeWorker;
     }
 
     /**
@@ -369,7 +390,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Get the state of the runner.
      */
-    public State getGameState() {
+    public IState getGameState() {
         return game.getCurrentState();
     }
 
