@@ -92,7 +92,7 @@ public abstract class FlashGame implements IFlashStateListener {
      * @param state Most recent state received from the Flash game.
      * @return An Action from a feedback controller.
      */
-    public abstract Action getControlAction(State state);
+    public abstract Action getControlAction(IState state);
 
     /**
      * This class will handle the execution of actions, but inheriting classes may want to listen in.
@@ -101,7 +101,7 @@ public abstract class FlashGame implements IFlashStateListener {
      *                preceding command.
      * @param timestep Timestep count at this state.
      */
-    public abstract void reportGameStatus(State state, boolean[] command, int timestep);
+    public abstract void reportGameStatus(IState state, boolean[] command, int timestep);
 
     /**
      * Tell the game to reset (equivalent to 'r' on the keyboard in the real game).
@@ -115,9 +115,9 @@ public abstract class FlashGame implements IFlashStateListener {
         server.sendInfoRequest();
     }
 
-    private State previousState;
+    private IState previousState;
     @Override
-    public synchronized void stateReceived(int timestep, State state) {
+    public synchronized void stateReceived(int timestep, IState state) {
         // New run has started. Add the sequence of actions from the beginning.
         if (timestep == 0) {
             logger.debug("Zero timestep from Flash game.");
@@ -135,8 +135,8 @@ public abstract class FlashGame implements IFlashStateListener {
 
             // Send all-keys-up command so it doesn't restart with some buttons active.
             commandTarget.command(false, false, false, false);
-            if (state.body.getX() < 1000) {
-                logger.warn("Runner fallen at " + ((int) state.body.getX()) / 10f + " meters.");
+            if (state.getCenterX() < 1000) {
+                logger.warn("Runner fallen at " + ((int) state.getCenterX()) / 10f + " meters.");
             } else {
                 logger.warn("Runner reached finish.");
             }
@@ -163,7 +163,7 @@ public abstract class FlashGame implements IFlashStateListener {
         // Get a new Action if one is required.
         if (actionQueue.isEmpty()) {
             // TESTING FINITE DIFFERENCE STUFF TEMP
-            State st;
+            IState st;
             if (velocityEstimation) {
                 st = doFiniteDifferenceVelocityTransformation(previousState, state);
             } else {
@@ -196,9 +196,9 @@ public abstract class FlashGame implements IFlashStateListener {
     /**
      * Pretend that states don't include velocity and estimate the velocity using finite differences.
      */
-    private static State doFiniteDifferenceVelocityTransformation(State statePrev, State stateCurrent) {
-        StateVariable[] svCurrent = stateCurrent.getStates();
-        StateVariable[] svPrev = statePrev.getStates();
+    private static IState doFiniteDifferenceVelocityTransformation(IState statePrev, IState stateCurrent) {
+        StateVariable[] svCurrent = stateCurrent.getAllStateVariables();
+        StateVariable[] svPrev = statePrev.getAllStateVariables();
 
         StateVariable[] svOut = new StateVariable[svCurrent.length];
         for (int i = 0; i < svCurrent.length; i++) {

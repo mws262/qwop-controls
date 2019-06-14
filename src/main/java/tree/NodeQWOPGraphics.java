@@ -2,7 +2,7 @@ package tree;
 
 import actions.Action;
 import actions.IActionGenerator;
-import game.State;
+import game.IState;
 
 /**
  * Concrete implementation of the QWOP tree node which contains additional information for graphical drawing (colors,
@@ -19,23 +19,23 @@ import game.State;
 public class NodeQWOPGraphics extends NodeQWOPGraphicsBase<NodeQWOPGraphics> {
 
     /**
-     * @see NodeQWOPGraphicsBase#NodeQWOPGraphicsBase(State)
+     * @see NodeQWOPGraphicsBase#NodeQWOPGraphicsBase(IState)
      */
-    public NodeQWOPGraphics(State rootState, IActionGenerator actionGenerator) {
+    public NodeQWOPGraphics(IState rootState, IActionGenerator actionGenerator) {
         super(rootState, actionGenerator);
     }
 
     /**
-     * @see NodeQWOPGraphicsBase#NodeQWOPGraphicsBase(State, IActionGenerator)
+     * @see NodeQWOPGraphicsBase#NodeQWOPGraphicsBase(IState, IActionGenerator)
      */
-    public NodeQWOPGraphics(State rootState) {
+    public NodeQWOPGraphics(IState rootState) {
         super(rootState);
     }
 
     /**
-     * @see NodeQWOPGraphicsBase#NodeQWOPGraphicsBase(NodeQWOPGraphicsBase, Action, State, IActionGenerator, boolean)
+     * @see NodeQWOPGraphicsBase#NodeQWOPGraphicsBase(NodeQWOPGraphicsBase, Action, IState, IActionGenerator, boolean)
      */
-    private NodeQWOPGraphics(NodeQWOPGraphics parent, Action action, State state, IActionGenerator actionGenerator,
+    private NodeQWOPGraphics(NodeQWOPGraphics parent, Action action, IState state, IActionGenerator actionGenerator,
                              boolean doublyLinked) {
         super(parent, action, state, actionGenerator, doublyLinked);
     }
@@ -46,22 +46,22 @@ public class NodeQWOPGraphics extends NodeQWOPGraphicsBase<NodeQWOPGraphics> {
     }
 
     @Override
-    public NodeQWOPGraphics addDoublyLinkedChild(Action action, State state) {
+    public NodeQWOPGraphics addDoublyLinkedChild(Action action, IState state) {
         return addDoublyLinkedChild(action, state, actionGenerator);
     }
 
     @Override
-    public NodeQWOPGraphics addBackwardsLinkedChild(Action action, State state) {
+    public NodeQWOPGraphics addBackwardsLinkedChild(Action action, IState state) {
         return addBackwardsLinkedChild(action, state, actionGenerator);
     }
 
     @Override
-    public NodeQWOPGraphics addDoublyLinkedChild(Action action, State state, IActionGenerator actionGenerator) {
+    public NodeQWOPGraphics addDoublyLinkedChild(Action action, IState state, IActionGenerator actionGenerator) {
         return new NodeQWOPGraphics(this, action, state, actionGenerator, true);
     }
 
     @Override
-    public NodeQWOPGraphics addBackwardsLinkedChild(Action action, State state, IActionGenerator actionGenerator) {
+    public NodeQWOPGraphics addBackwardsLinkedChild(Action action, IState state, IActionGenerator actionGenerator) {
         return new NodeQWOPGraphics(this, action, state, actionGenerator, false);
     }
 }

@@ -1,9 +1,11 @@
 package transformations;
 
+import game.IState;
+import game.State;
+import game.StateVariable;
+
 import java.util.List;
 import java.util.stream.Collectors;
-
-import game.State;
 
 /**
  * Transform that simply turns a state into an array of numbers and back. No state reduction occurs. This is
@@ -16,26 +18,26 @@ import game.State;
 public class Transform_Identity implements ITransform {
 
     @Override
-    public void updateTransform(List<State> nodesToUpdateFrom) {}
+    public void updateTransform(List<IState> nodesToUpdateFrom) {}
 
     @Override
-    public List<float[]> transform(List<State> originalStates) {
-        return originalStates.stream().map(State::flattenState).collect(Collectors.toList());
+    public List<float[]> transform(List<IState> originalStates) {
+        return originalStates.stream().map(IState::flattenState).collect(Collectors.toList());
     }
 
     @Override
-    public List<State> untransform(List<float[]> transformedStates) {
+    public List<IState> untransform(List<float[]> transformedStates) {
         return transformedStates.stream().map(f -> new State(f, false)).collect(Collectors.toList());
     }
 
     @Override
-    public List<State> compressAndDecompress(List<State> originalStates) {
+    public List<IState> compressAndDecompress(List<IState> originalStates) {
         return originalStates;
     }
 
     @Override
     public int getOutputStateSize() {
-        return State.ObjectName.values().length * State.StateName.values().length;
+        return State.ObjectName.values().length * StateVariable.StateName.values().length;
     }
 
     @Override

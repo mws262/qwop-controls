@@ -3,7 +3,7 @@ package samplers.rollout;
 import actions.Action;
 import actions.IActionGenerator;
 import evaluators.EvaluationFunction_Distance;
-import game.State;
+import game.IState;
 import tree.NodeQWOPExplorableBase;
 
 public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy_DecayingHorizon {
@@ -23,7 +23,7 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy_DecayingH
     }
 
     @Override
-    NodeQWOPExplorableBase<?> addNextRolloutNode(NodeQWOPExplorableBase<?> currentNode, Action action, State state) {
+    NodeQWOPExplorableBase<?> addNextRolloutNode(NodeQWOPExplorableBase<?> currentNode, Action action, IState state) {
         return currentNode.addBackwardsLinkedChild(action, state, actionGenerator);
     }
 

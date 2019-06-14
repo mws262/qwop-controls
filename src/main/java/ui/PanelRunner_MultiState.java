@@ -1,8 +1,7 @@
 package ui;
 
 import game.GameUnified;
-import game.IGameInternal;
-import game.State;
+import game.IState;
 import tree.NodeQWOPGraphicsBase;
 
 import java.awt.*;
@@ -14,20 +13,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author matt
  */
 public class PanelRunner_MultiState extends PanelRunner implements Runnable {
-    /**
-     * Access to the game for the sake of the drawing methods.
-     */
-    private IGameInternal game = new GameUnified();
 
     /**
      * Main state to draw. It will provide the x-reference position.
      */
-    private State mainState;
+    private IState mainState;
 
     /**
      * Additional states to draw, and their colors. x-coordinate will be relative to the mainState.
      */
-    private Map<State, Color> secondaryStates = new ConcurrentHashMap<>();
+    private Map<IState, Color> secondaryStates = new ConcurrentHashMap<>();
     public Color mainRunnerColor = Color.BLACK;
     public Stroke customStrokeExtra;
 
@@ -37,7 +32,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
      * @param state State to draw the runner at.
      * @param color Color to draw the runner outlined with.
      */
-    public void addSecondaryState(State state, Color color) {
+    public void addSecondaryState(IState state, Color color) {
         secondaryStates.put(state, color);
     }
 
@@ -53,7 +48,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
      * states drawn.
      * @param state Main runner state to be drawn.
      */
-    public void setMainState(State state) {
+    public void setMainState(IState state) {
         mainState = state;
     }
 
@@ -77,7 +72,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
         Graphics2D g2 = (Graphics2D) g;
 
         // x offset comes from the main state and is applied to all states drawn.
-        int xOffset = (int) (mainState.body.getX() * runnerScaling);
+        int xOffset = (int) (mainState.getCenterX() * runnerScaling);
 
         offset[0] = xOffsetPixels - xOffset;
         offset[1] = 100 + yOffsetPixels;
@@ -87,8 +82,8 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
                 offset[0], offset[1], mainRunnerColor, (customStroke != null) ? customStroke : boldStroke);
 
         // Draw secondary states, if any.
-        for (Map.Entry<State, Color> entry : secondaryStates.entrySet()) {
-            State st = entry.getKey();
+        for (Map.Entry<IState, Color> entry : secondaryStates.entrySet()) {
+            IState st = entry.getKey();
             Color col = entry.getValue();
             GameUnified.drawExtraRunner(g2, st, "", runnerScaling,
                     offset[0], offset[1], col, (customStrokeExtra != null) ? customStrokeExtra : normalStroke);
@@ -96,7 +91,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
 
         //This draws the "road" markings to show that the ground is moving relative to the dude.
         for (int i = 0; i < 2000 / 69; i++) {
-            g.drawString("_", ((-(int) (runnerScaling * mainState.body.getX()) - i * 70) % 2000) + 2000,
+            g.drawString("_", ((-(int) (runnerScaling * mainState.getCenterX()) - i * 70) % 2000) + 2000,
                     yOffsetPixels + 195);
         }
     }

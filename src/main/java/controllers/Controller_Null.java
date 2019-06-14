@@ -1,7 +1,7 @@
 package controllers;
 
-import game.State;
 import actions.Action;
+import game.IState;
 
 /**
  * A do-nothing placeholder controller. It always concludes that no keys should be pressed.
@@ -11,7 +11,7 @@ import actions.Action;
 public class Controller_Null implements IController {
 
     @Override
-    public Action policy(State state) {
+    public Action policy(IState state) {
         return new Action(1, false, false, false, false);
     }
 }

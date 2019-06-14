@@ -1,10 +1,11 @@
 package controllers;
 
-import java.util.List;
-
-import game.State;
 import actions.Action;
+import game.IState;
+import game.State;
 import tflowtools.TensorflowLoader;
+
+import java.util.List;
 
 /**
  * Neural-network-based controller which uses a {@link State state} to classify which key combination should be
@@ -56,7 +57,7 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     }
 
     @Override
-    public Action policy(State state) {
+    public Action policy(IState state) {
         List<Float> keyClassification = sisoFloatPrediction(state, inputName, outputName);
 
         float probability0 = keyClassification.get(0);

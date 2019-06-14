@@ -1,13 +1,13 @@
 package savers;
 
+import actions.Action;
+import game.IGameInternal;
+import game.IState;
+import tree.NodeQWOPBase;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
-import game.IGameInternal;
-import game.State;
-import actions.Action;
-import tree.NodeQWOPBase;
 
 
 public interface IDataSaver {
@@ -15,7 +15,7 @@ public interface IDataSaver {
     /**
      * Report initial state.
      */
-    void reportGameInitialization(State initialState);
+    void reportGameInitialization(IState initialState);
 
     /**
      * Report intermediate nodes as they are being run. Useful for dense

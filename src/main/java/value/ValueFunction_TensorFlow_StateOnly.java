@@ -2,10 +2,7 @@ package value;
 
 import actions.Action;
 import com.sun.istack.NotNull;
-import game.GameConstants;
-import game.GameUnified;
-import game.IGameSerializable;
-import game.State;
+import game.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tflowtools.TrainableNetwork;
@@ -147,7 +144,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         currentResult = evalResult;
         logger.info(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f \tBodyX: %3.2f",
                 System.currentTimeMillis() - initialTime, evalResult.timestep, evalResult.keys.toString(),
-                Math.round(evalResult.value * 100)/100f, evalResult.state.body.getX()));
+                Math.round(evalResult.value * 100)/100f, evalResult.state.getCenterX()));
 
         return new Action(evalResult.timestep, evalResult.keys);
     }
@@ -185,7 +182,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * State observed from this evaluation.
          */
-        public State state;
+        public IState state;
 
         @Override
         public int compareTo(EvaluationResult o) {
@@ -215,7 +212,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Initial state of this future prediction.
          */
-        private State startingState;
+        private IState startingState;
 
         private byte[] startStateFull;
         private boolean useSerializedState = false;
@@ -275,7 +272,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         }
 
         @NotNull
-        void setStartingState(State startingState) {
+        void setStartingState(IState startingState) {
             this.startingState = startingState;
             useSerializedState = false;
         }
@@ -301,7 +298,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 // "catch-up" to warm-started game.
             }
 
-            float startX = gameLocal.getCurrentState().body.getDx();
+            float startX = gameLocal.getCurrentState().getStateVariableFromName(IState.ObjectName.BODY).getDx();
 
             // Reset the game and set it to the specified starting state.
             bestResult.value = -Float.MAX_VALUE;
@@ -324,13 +321,13 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 x2 = x3;
 
                 gameLocal.step(buttons);
-                State st = gameLocal.getCurrentState();
+                IState st = gameLocal.getCurrentState();
                 NodeQWOPBase<?> nextNode = new NodeQWOP(st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);
 
-                x3 = st.body.getDx();
+                x3 = st.getStateVariableFromName(IState.ObjectName.BODY).getDx();
 
                 if (i == 1) {
                     // val1 = val3;

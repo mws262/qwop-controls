@@ -33,7 +33,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
         while (actionQueue.getCurrentActionIdx() < coldStartAction) {
             gameFullRun.step(actionQueue.pollCommand());
         }
-        State coldStartState = gameFullRun.getCurrentState();
+        IState coldStartState = gameFullRun.getCurrentState();
         gameColdStart.setState(coldStartState);
 
         runnerPanel.setMainState(gameFullRun.getCurrentState());

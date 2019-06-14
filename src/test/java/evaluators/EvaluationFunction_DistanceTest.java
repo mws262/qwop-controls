@@ -48,18 +48,18 @@ public class EvaluationFunction_DistanceTest {
     public void getValue() {
         IEvaluationFunction efun = new EvaluationFunction_Distance();
 
-        Assert.assertEquals(node2.getState().body.getX(), efun.getValue(node2), 1e-10);
-        Assert.assertEquals(node3.getState().body.getX(), efun.getValue(node3), 1e-10);
-        Assert.assertEquals(node4.getState().body.getX(), efun.getValue(node4), 1e-10);
+        Assert.assertEquals(node2.getState().getCenterX(), efun.getValue(node2), 1e-10);
+        Assert.assertEquals(node3.getState().getCenterX(), efun.getValue(node3), 1e-10);
+        Assert.assertEquals(node4.getState().getCenterX(), efun.getValue(node4), 1e-10);
     }
 
     @Test
     public void getValueString() {
         IEvaluationFunction efun = new EvaluationFunction_Distance();
 
-        Assert.assertEquals(String.valueOf(node2.getState().body.getX()), efun.getValueString(node2));
-        Assert.assertEquals(String.valueOf(node3.getState().body.getX()), efun.getValueString(node3));
-        Assert.assertEquals(String.valueOf(node4.getState().body.getX()), efun.getValueString(node4));
+        Assert.assertEquals(String.valueOf(node2.getState().getCenterX()), efun.getValueString(node2));
+        Assert.assertEquals(String.valueOf(node3.getState().getCenterX()), efun.getValueString(node3));
+        Assert.assertEquals(String.valueOf(node4.getState().getCenterX()), efun.getValueString(node4));
     }
 
     @Test
@@ -67,8 +67,8 @@ public class EvaluationFunction_DistanceTest {
         IEvaluationFunction efun = new EvaluationFunction_Distance();
         IEvaluationFunction efuncpy = efun.getCopy();
 
-        Assert.assertEquals(node2.getState().body.getX(), efuncpy.getValue(node2), 1e-10);
-        Assert.assertEquals(node3.getState().body.getX(), efuncpy.getValue(node3), 1e-10);
-        Assert.assertEquals(node4.getState().body.getX(), efuncpy.getValue(node4), 1e-10);
+        Assert.assertEquals(node2.getState().getCenterX(), efuncpy.getValue(node2), 1e-10);
+        Assert.assertEquals(node3.getState().getCenterX(), efuncpy.getValue(node3), 1e-10);
+        Assert.assertEquals(node4.getState().getCenterX(), efuncpy.getValue(node4), 1e-10);
     }
 }

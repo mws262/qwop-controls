@@ -3,7 +3,7 @@ package samplers.rollout;
 import actions.Action;
 import evaluators.IEvaluationFunction;
 import game.IGameInternal;
-import game.State;
+import game.IState;
 import tree.NodeQWOPExplorableBase;
 
 public abstract class RolloutPolicy_DecayingHorizon extends RolloutPolicy {
@@ -26,7 +26,11 @@ public abstract class RolloutPolicy_DecayingHorizon extends RolloutPolicy {
         NodeQWOPExplorableBase<?> rolloutNode = startNode;
         float accumulatedValue = 0f;
 
-        float previousValue = game.getCurrentState().body.getX(); // TODO Stop hardcoding this as body x and instead
+        float previousValue = game.getCurrentState().getCenterX();
+        // TODO Stop hardcoding
+        // this as
+        // body x
+        // and instead
         // use the evaluation function.
         while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimestepsToSim) {
             Action childAction = getNextAction(rolloutNode);
@@ -34,7 +38,7 @@ public abstract class RolloutPolicy_DecayingHorizon extends RolloutPolicy {
 
             while (!actionQueue.isEmpty() && !game.getFailureStatus() && timestepCounter < maxTimestepsToSim) {
                 game.step(actionQueue.pollCommand());
-                float currentValue = game.getCurrentState().body.getX();
+                float currentValue = game.getCurrentState().getCenterX();
                 float multiplier = getKernelMultiplier(timestepCounter / (float) maxTimestepsToSim);
 
                 accumulatedValue += multiplier * (currentValue - previousValue);
@@ -50,7 +54,7 @@ public abstract class RolloutPolicy_DecayingHorizon extends RolloutPolicy {
     abstract float calculateFinalValue(float accumulatedValue, NodeQWOPExplorableBase<?> startNode);
 
     abstract NodeQWOPExplorableBase<?> addNextRolloutNode(NodeQWOPExplorableBase<?> currentNode, Action action,
-                                                          State state);
+                                                          IState state);
 
     abstract Action getNextAction(NodeQWOPExplorableBase<?> currentNode);
 

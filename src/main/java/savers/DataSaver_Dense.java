@@ -1,12 +1,12 @@
 package savers;
 
+import actions.Action;
+import game.IGameInternal;
+import game.IState;
+import tree.NodeQWOPBase;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import game.IGameInternal;
-import game.State;
-import actions.Action;
-import tree.NodeQWOPBase;
 
 /**
  * Saving to file with full state and action data at every timestep.
@@ -26,7 +26,7 @@ public abstract class DataSaver_Dense implements IDataSaver {
     /**
      * State buffer cleared once per game.
      */
-    ArrayList<State> stateBuffer = new ArrayList<>();
+    ArrayList<IState> stateBuffer = new ArrayList<>();
 
     /**
      * Number of games in between saves to file.
@@ -44,7 +44,7 @@ public abstract class DataSaver_Dense implements IDataSaver {
     }
 
     @Override
-    public void reportGameInitialization(State initialState) {
+    public void reportGameInitialization(IState initialState) {
         actionBuffer.clear();
         stateBuffer.clear();
         stateBuffer.add(initialState);

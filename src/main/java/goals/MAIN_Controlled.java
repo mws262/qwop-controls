@@ -9,7 +9,7 @@ import data.SavableActionSequence;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameUnified;
-import game.State;
+import game.IState;
 import tree.NodeQWOPExplorable;
 import tree.NodeQWOPGraphics;
 import tree.Utility;
@@ -177,8 +177,8 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         //noinspection InfiniteLoopStatement
         while (true) {
             long initTime = System.currentTimeMillis();
-            State state = game.getCurrentState();
-            System.out.println(state.body.getX());
+            IState state = game.getCurrentState();
+            System.out.println(state.getCenterX());
             Action nextAction = controller.policy(state);
             actionQueue.addAction(nextAction);
             while (!actionQueue.isEmpty()) {

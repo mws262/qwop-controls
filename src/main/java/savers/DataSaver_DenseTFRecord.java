@@ -1,26 +1,19 @@
 package savers;
 
+import actions.Action;
+import com.google.protobuf.ByteString;
+import data.TFRecordWriter;
+import game.IState;
+import game.State;
+import game.StateVariable;
+import org.tensorflow.example.*;
+import tree.NodeQWOPBase;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
-
-import org.tensorflow.example.BytesList;
-import org.tensorflow.example.Feature;
-import org.tensorflow.example.FeatureList;
-import org.tensorflow.example.FeatureLists;
-import org.tensorflow.example.Features;
-import org.tensorflow.example.FloatList;
-import org.tensorflow.example.Int64List;
-import org.tensorflow.example.SequenceExample;
-
-import com.google.protobuf.ByteString;
-
-import data.TFRecordWriter;
-import game.State;
-import actions.Action;
-import tree.NodeQWOPBase;
 
 public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
@@ -104,11 +97,11 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      * @param bodyPart Body part that the data is being given for. Comes from {@link State.ObjectName}.
      * @param listToAppendTo
      */
-    private static void makeFeature(State state, State.ObjectName bodyPart, FeatureList.Builder listToAppendTo) {
+    private static void makeFeature(IState state, State.ObjectName bodyPart, FeatureList.Builder listToAppendTo) {
         Feature.Builder feat = Feature.newBuilder();
         FloatList.Builder featVals = FloatList.newBuilder();
-        for (State.StateName stateName : State.StateName.values()) { // Iterate over all 6 state variables.
-            featVals.addValue(state.getStateVarFromName(bodyPart, stateName));
+        for (StateVariable.StateName stateName : StateVariable.StateName.values()) { // Iterate over all 6 state variables.
+            featVals.addValue(state.getStateVariableFromName(bodyPart).getStateByName(stateName));
         }
         feat.setFloatList(featVals.build());
         listToAppendTo.addFeature(feat.build());
@@ -118,10 +111,10 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      * Make a time series for a single run of a single state variable as a
      * FeatureList. Add to the broader list of FeatureList for this run.
      */
-    private static void makeStateFeatureList(ArrayList<State> states, State.ObjectName bodyPart,
+    private static void makeStateFeatureList(ArrayList<IState> states, State.ObjectName bodyPart,
 											 FeatureLists.Builder featLists) {
         FeatureList.Builder featList = FeatureList.newBuilder();
-        for (State st : states) { // Iterate through the timesteps in a single run.
+        for (IState st : states) { // Iterate through the timesteps in a single run.
             makeFeature(st, bodyPart, featList);
         }
         featLists.putFeatureList(bodyPart.toString(), featList.build()); // Add this feature to the broader list of
@@ -286,9 +279,9 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     private static class GameContainer {
 
         ArrayList<Action> actions = new ArrayList<>();
-        ArrayList<State> states = new ArrayList<>();
+        ArrayList<IState> states = new ArrayList<>();
 
-        private GameContainer(ArrayList<Action> actions, ArrayList<State> states) {
+        private GameContainer(ArrayList<Action> actions, ArrayList<IState> states) {
             this.actions.addAll(actions);
             this.states.addAll(states);
         }

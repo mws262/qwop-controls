@@ -5,7 +5,7 @@ import actions.ActionGenerator_Null;
 import actions.ActionList;
 import actions.IActionGenerator;
 import distributions.Distribution;
-import game.State;
+import game.IState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,10 +52,10 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * Create a new root node. It will have potential child actions assigned to it by the specified
      * {@link IActionGenerator}.
      *
-     * @param rootState {@link State} at this root node.
+     * @param rootState {@link IState} at this root node.
      * @param actionGenerator Used to generate untried child actions to assign to root.
      */
-    public NodeQWOPExplorableBase(State rootState, IActionGenerator actionGenerator) {
+    public NodeQWOPExplorableBase(IState rootState, IActionGenerator actionGenerator) {
         super(rootState);
         this.actionGenerator = actionGenerator;
         if (rootState.isFailed()) {
@@ -69,11 +69,11 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
     /**
      * Make a new root node. It will have no untried children assigned to it, and by default, all manually-added
      * children will also have no untried children assigned. For the normal version, please use
-     * {@link NodeQWOPExplorableBase#NodeQWOPExplorableBase(State, IActionGenerator)}.
+     * {@link NodeQWOPExplorableBase#NodeQWOPExplorableBase(IState, IActionGenerator)}.
      *
-     * @param rootState {@link State} at this root node.
+     * @param rootState {@link IState} at this root node.
      */
-    public NodeQWOPExplorableBase(State rootState) {
+    public NodeQWOPExplorableBase(IState rootState) {
         this(rootState, new ActionGenerator_Null());
     }
 
@@ -83,15 +83,15 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * generator.
      *
      * For external users, it is much preferred to use
-     * {@link NodeQWOPExplorableBase#addDoublyLinkedChild(Action, State, IActionGenerator)}  or
-     * {@link NodeQWOPExplorableBase#addBackwardsLinkedChild(Action, State, IActionGenerator)}.
+     * {@link NodeQWOPExplorableBase#addDoublyLinkedChild(Action, IState, IActionGenerator)}  or
+     * {@link NodeQWOPExplorableBase#addBackwardsLinkedChild(Action, IState, IActionGenerator)}.
      *
      * @param parent Parent node to this newly created one. By default, the parent will not know about this node.
      * @param action Action taking the game's state from the parent node to this new node.
      * @param state State at this new node.
      * @param actionGenerator Assigns the potential actions to try to this new node.
      */
-    NodeQWOPExplorableBase(N parent, Action action, State state, IActionGenerator actionGenerator,
+    NodeQWOPExplorableBase(N parent, Action action, IState state, IActionGenerator actionGenerator,
                            boolean doublyLinked) {
         super(parent, action, state);
         this.actionGenerator = actionGenerator;
@@ -110,14 +110,14 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
     }
 
     /**
-     * Add a child node containing the {@link State} achieved when executing the specified {@link Action}. New
+     * Add a child node containing the {@link IState} achieved when executing the specified {@link Action}. New
      * untried actions will be assigned to this new child based on the rules of the provided {@link IActionGenerator}.
      *
      * This is the "normal" child adder. The created child will have a reference to its parent (this), and this will
      * have the new child in its list of children.
      *
-     * @see NodeQWOPExplorableBase#addBackwardsLinkedChild(Action, State)
-     * @see NodeQWOPExplorableBase#addDoublyLinkedChild(Action, State, IActionGenerator)
+     * @see NodeQWOPExplorableBase#addBackwardsLinkedChild(Action, IState)
+     * @see NodeQWOPExplorableBase#addDoublyLinkedChild(Action, IState, IActionGenerator)
      *
      * @param action Action which leads from this node to the child node.
      * @param state State reached after taking the specified action from this node.
@@ -125,25 +125,25 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * @return A newly-created child node which has references to its parent (this), and this has references to it as
      * a child.
      */
-    public abstract N addDoublyLinkedChild(Action action, State state, IActionGenerator actionGenerator);
+    public abstract N addDoublyLinkedChild(Action action, IState state, IActionGenerator actionGenerator);
 
     /**
-     * Add a child node containing the {@link State} achieved when executing the specified {@link Action}. New
+     * Add a child node containing the {@link IState} achieved when executing the specified {@link Action}. New
      * untried actions will be assigned to this new child based on the rules of the provided {@link IActionGenerator}.
      *
      * The newly created child will have a reference to its parent (this), but this node will not be aware of the
      * child, nor will the child action be removed from untried child actions (if present). This is useful for
      * creating transient nodes that we don't want to become part of the tree permanently.
      *
-     * @see NodeQWOPExplorableBase#addDoublyLinkedChild(Action, State, IActionGenerator)
-     * @see NodeQWOPExplorableBase#addBackwardsLinkedChild(Action, State)
+     * @see NodeQWOPExplorableBase#addDoublyLinkedChild(Action, IState, IActionGenerator)
+     * @see NodeQWOPExplorableBase#addBackwardsLinkedChild(Action, IState)
      *
      * @param action Action which leads from this node to the child node.
      * @param state State reached after taking the specified action from this node.
      * @param actionGenerator Generator which provides a new set of untried actions to the child node.
      * @return A newly-created child node which has a reference to its parent (this), but is unknown to the parent.
      */
-    public abstract N addBackwardsLinkedChild(Action action, State state, IActionGenerator actionGenerator);
+    public abstract N addBackwardsLinkedChild(Action action, IState state, IActionGenerator actionGenerator);
 
     /**
      * Get whether this node is marked as being fully-explored. This will occur if all potential descendents are also

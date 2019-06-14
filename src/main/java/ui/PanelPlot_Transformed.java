@@ -2,7 +2,7 @@ package ui;
 
 import filters.INodeFilter;
 import filters.NodeFilter_Downsample;
-import game.State;
+import game.IState;
 import org.jfree.chart.plot.XYPlot;
 import transformations.ITransform;
 import tree.NodeQWOPExplorableBase;
@@ -67,7 +67,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
         nodesToTransform.clear();
         plotNode.getRoot().recurseDownTreeInclusive(nodesToTransform::add);
         transformDownsampler.filter(nodesToTransform);
-        List<State> statesBelow =
+        List<IState> statesBelow =
                 nodesToTransform.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
         // Convert from node list to state list.
         transformer.updateTransform(statesBelow); // Update transform with all states.

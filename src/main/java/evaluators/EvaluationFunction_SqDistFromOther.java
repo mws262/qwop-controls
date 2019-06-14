@@ -31,12 +31,12 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
      */
     public EvaluationFunction_SqDistFromOther(NodeQWOPBase<?> nodeToCompareAllOthersTo) {
         this.nodeToCompareAllOthersTo = nodeToCompareAllOthersTo;
-        baseStateVars = nodeToCompareAllOthersTo.getState().getStates();
+        baseStateVars = nodeToCompareAllOthersTo.getState().getAllStateVariables();
     }
 
     @Override
     public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
-        StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getStates();
+        StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getAllStateVariables();
 
         float sqError = 0;
 
@@ -60,7 +60,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
 
     @Override
     public String getValueString(NodeQWOPBase<?> nodeToEvaluate) {
-        StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getStates();
+        StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getAllStateVariables();
         StringBuilder valueString = new StringBuilder();
 
         for (int i = 0; i < baseStateVars.length; i++) {

@@ -33,5 +33,5 @@ public interface IGameInternal extends IGameExternal {
 
     void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels);
 
-    void setState(State st);
+    void setState(IState st);
 }

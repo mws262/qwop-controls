@@ -1,10 +1,10 @@
 package controllers;
 
-import java.awt.Graphics;
-
-import game.GameUnified;
-import game.State;
 import actions.Action;
+import game.GameUnified;
+import game.IState;
+
+import java.awt.*;
 
 /**
  * Interface for defining general QWOP controllers. Follows the typical state to action mapping. If an implementation
@@ -20,7 +20,7 @@ public interface IController {
      * @param state Current state.
      * @return An action to take.
      */
-    Action policy(State state);
+    Action policy(IState state);
 
     /**
      * Optionally, if we want the controller to draw anything to see what it's doing. Defaults to doing nothing if

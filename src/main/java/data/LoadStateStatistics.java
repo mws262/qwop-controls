@@ -1,6 +1,9 @@
 package data;
 
+import game.IState;
 import game.State;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,6 +18,8 @@ import java.util.Scanner;
  * @author matt
  */
 public class LoadStateStatistics {
+
+    private static final Logger logger = LogManager.getLogger(LoadStateStatistics.class);
 
     public static StateStatistics loadStatsFromFile() throws FileNotFoundException {
         File fileMax = new File("./src/main/resources/data_stats/state_max.txt");
@@ -79,10 +84,14 @@ public class LoadStateStatistics {
          * @return Standardized array of flattened state data.
          */
         public float[] standardizeState(float[] stateData) {
+            if (stateData.length != mean.length) {
+                logger.error("State size does not match statistics size. Not changing the data.");
+                return stateData;
+            }
             return doRescaling(stateData, stdev, mean);
         }
 
-        public float[] standardizeState(State state) {
+        public float[] standardizeState(IState state) {
             return standardizeState(state.flattenState());
         }
 

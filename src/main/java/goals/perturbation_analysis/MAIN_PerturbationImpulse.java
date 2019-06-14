@@ -1,12 +1,12 @@
 package goals.perturbation_analysis;
 
+import actions.Action;
 import actions.ActionQueue;
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import actions.Action;
 import game.GameUnified;
 import game.IGameInternal;
-import game.State;
+import game.IState;
 import tree.NodeQWOPGraphicsBase;
 import ui.PanelRunner_MultiState;
 
@@ -14,8 +14,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.File;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Takes a known running sequence, adds a disturbance impulse at one point along the trajectory in a number of
@@ -162,17 +162,17 @@ public class MAIN_PerturbationImpulse extends JFrame {
         }
 
         /**
-         * Add a secondary state to draw. Same as {@link PanelRunner_MultiState#addSecondaryState(State, Color)}
+         * Add a secondary state to draw. Same as {@link PanelRunner_MultiState#addSecondaryState(IState, Color)}
          * except with an arrow drawn from the runner center.
          *
          * @param state          State to add to drawing list.
          * @param color          Color to outline the runner in.
          * @param arrowDirection Direction of the arrow.
          */
-        void addSecondaryStateWithArrow(State state, Color color, float[] arrowDirection) {
+        void addSecondaryStateWithArrow(IState state, Color color, float[] arrowDirection) {
             super.addSecondaryState(state, color);
             Integer[] arrowCoord = new Integer[4];
-            arrowCoord[0] = offset[0] + (int) (state.body.getX() * runnerScaling);
+            arrowCoord[0] = offset[0] + (int) (state.getCenterX() * runnerScaling);
             arrowCoord[1] = offset[1] - 100;
             arrowCoord[2] = (int) (50 * arrowDirection[0]) + arrowCoord[0];
             arrowCoord[3] = (int) (50 * arrowDirection[1]) + arrowCoord[1];

@@ -1,7 +1,7 @@
 package samplers.rollout;
 
 import actions.Action;
-import game.State;
+import game.IState;
 import tree.NodeQWOPExplorableBase;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -23,7 +23,7 @@ public class RolloutPolicy_ValueFunctionDecayingHorizon extends RolloutPolicy_De
     }
 
     @Override
-    NodeQWOPExplorableBase<?> addNextRolloutNode(NodeQWOPExplorableBase<?> currentNode, Action action, State state) {
+    NodeQWOPExplorableBase<?> addNextRolloutNode(NodeQWOPExplorableBase<?> currentNode, Action action, IState state) {
         return currentNode.addBackwardsLinkedChild(action, state);
     }
 

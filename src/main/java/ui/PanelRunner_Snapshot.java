@@ -4,7 +4,7 @@ import actions.Action;
 import filters.INodeFilter;
 import filters.NodeFilter_Downsample;
 import game.GameUnified;
-import game.State;
+import game.IState;
 import tree.NodeQWOPExplorableBase;
 import tree.NodeQWOPGraphicsBase;
 
@@ -43,7 +43,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     private NodeQWOPGraphicsBase<?> highlightedFutureExternal;
 
     private List<NodeQWOPGraphicsBase<?>> focusLeaves = new ArrayList<>();
-    private List<State> states = new ArrayList<>();
+    private List<IState> states = new ArrayList<>();
     private List<Stroke> strokes = new ArrayList<>();
     private List<Color> colors = new ArrayList<>();
 
@@ -91,7 +91,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
         /* Focused node first */
         snapshotNode = node;
-        specificXOffset = (int) (runnerScaling * snapshotNode.getState().body.getX());
+        specificXOffset = (int) (runnerScaling * snapshotNode.getState().getCenterX());
         states.add(snapshotNode.getState());
         strokes.add(boldStroke);
         colors.add(Color.BLACK);
@@ -153,8 +153,8 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
 
                 // Check body first
                 for (int i = 0; i < focusLeaves.size(); i++) {
-                    float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().body.getX(),
-                            focusLeaves.get(i).getState().body.getY());
+                    float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().getCenterX(),
+                            focusLeaves.get(i).getState().getStateVariableFromName(IState.ObjectName.BODY).getY());
                     if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                         bestSoFar = distSq;
                         bestIdx = i;
@@ -163,8 +163,8 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 // Then head
                 if (bestIdx < 0) { // Only goes to this if we didn't find a near-enough torso.
                     for (int i = 0; i < focusLeaves.size(); i++) {
-                        float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().head.getX(),
-                                focusLeaves.get(i).getState().head.getY());
+                        float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().getCenterX(),
+                                focusLeaves.get(i).getState().getStateVariableFromName(IState.ObjectName.HEAD).getY());
                         if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                             bestSoFar = distSq;
                             bestIdx = i;
@@ -174,14 +174,16 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 // Then both feet equally
                 if (bestIdx < 0) { // Only goes to this if we didn't find a near-enough torso OR head.
                     for (int i = 0; i < focusLeaves.size(); i++) {
-                        float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().lfoot.getX(),
-                                focusLeaves.get(i).getState().lfoot.getY());
+                        float distSq =
+                                getDistFromMouseSq(focusLeaves.get(i).getState().getStateVariableFromName(IState.ObjectName.LFOOT).getX(),
+                                focusLeaves.get(i).getState().getStateVariableFromName(IState.ObjectName.LFOOT).getY());
                         if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                             bestSoFar = distSq;
                             bestIdx = i;
                         }
-                        distSq = getDistFromMouseSq(focusLeaves.get(i).getState().rfoot.getX(),
-                                focusLeaves.get(i).getState().rfoot.getY());
+                        distSq =
+                                getDistFromMouseSq(focusLeaves.get(i).getState().getStateVariableFromName(IState.ObjectName.RFOOT).getX(),
+                                focusLeaves.get(i).getState().getStateVariableFromName(IState.ObjectName.RFOOT).getY());
                         if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                             bestSoFar = distSq;
                             bestIdx = i;

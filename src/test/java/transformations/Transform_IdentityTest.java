@@ -1,5 +1,6 @@
 package transformations;
 
+import game.IState;
 import game.State;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,7 +28,7 @@ public class Transform_IdentityTest {
         State state2 = new State(s2, false);
         State state3 = new State(s3, false);
 
-        List<State> slist = new ArrayList<>();
+        List<IState> slist = new ArrayList<>();
         slist.add(state1);
         slist.add(state2);
         slist.add(state3);
@@ -57,7 +58,7 @@ public class Transform_IdentityTest {
         // Single state
         List<float[]> slist = new ArrayList<>();
         slist.add(s1);
-        List<State> tformState = tform.untransform(slist);
+        List<IState> tformState = tform.untransform(slist);
         float[] state_values = tformState.get(0).flattenState();
 
         Assert.assertArrayEquals(s1, state_values, 1e-10f);
@@ -68,7 +69,7 @@ public class Transform_IdentityTest {
         slist.add(s2);
         slist.add(s3);
 
-        List<State> tformStateMulti = tform.untransform(slist);
+        List<IState> tformStateMulti = tform.untransform(slist);
         Assert.assertEquals(3, tformStateMulti.size());
         Assert.assertArrayEquals(s1, tformStateMulti.get(0).flattenState(),1e-10f);
         Assert.assertArrayEquals(s2, tformStateMulti.get(1).flattenState(),1e-10f);
@@ -80,12 +81,12 @@ public class Transform_IdentityTest {
         State st1 = new State(new float[72], false);
         State st2 = new State(new float[72], false);
 
-        List<State> slist = new ArrayList<>();
+        List<IState> slist = new ArrayList<>();
         slist.add(st1);
         slist.add(st2);
 
         ITransform tform = new Transform_Identity();
-        List<State> slistReturn = tform.compressAndDecompress(slist);
+        List<IState> slistReturn = tform.compressAndDecompress(slist);
         Assert.assertEquals(2, slistReturn.size());
         Assert.assertEquals(slist.get(0), slistReturn.get(0));
         Assert.assertEquals(slist.get(1), slistReturn.get(1));
