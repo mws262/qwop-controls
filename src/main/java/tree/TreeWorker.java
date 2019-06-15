@@ -175,9 +175,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Make a worker that uses {@link game.GameUnifiedCaching} under the hood.
      * @return A brand new TreeWorker.
      */
-    public static TreeWorker makeCachedStateTreeWorker() {
+    public static TreeWorker makeCachedStateTreeWorker(int timestepDelay, int numDelayedStates) {
         TreeWorker treeWorker = new TreeWorker();
-        treeWorker.game = new GameUnifiedCaching();
+        treeWorker.game = new GameUnifiedCaching(timestepDelay, numDelayedStates);
         return treeWorker;
     }
 

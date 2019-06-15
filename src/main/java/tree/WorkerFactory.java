@@ -13,7 +13,7 @@ public class WorkerFactory extends BasePooledObjectFactory<TreeWorker> {
 
     @Override
     public TreeWorker create() {
-        return TreeWorker.makeCachedStateTreeWorker();
+        return TreeWorker.makeCachedStateTreeWorker(1, 2);
     }
 
     @Override
