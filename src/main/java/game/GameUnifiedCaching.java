@@ -8,8 +8,13 @@ public class GameUnifiedCaching extends GameUnified {
     private LinkedList<IState> cachedStates;
 
     // For delay embedding.
-    public int timestepDelay = 1;
-    public int numDelayedStates = 2;
+    public final int timestepDelay;
+    public final int numDelayedStates;
+
+    public GameUnifiedCaching(int timestepDelay, int numDelayedStates) {
+        this.timestepDelay = timestepDelay;
+        this.numDelayedStates = numDelayedStates;
+    }
 
     @Override
     public void makeNewWorld() {

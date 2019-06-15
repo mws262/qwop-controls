@@ -6,19 +6,19 @@ public class StateDelayEmbedded implements IState {
 
     private IState[] individualStates;
 
-    private final int getStateVariableCount;
+    private final int stateVariableCount;
 
     // Order is NEWEST to OLDEST
     public StateDelayEmbedded(IState[] states) {
         individualStates = Arrays.copyOf(states, states.length);
         // Configurations variables (3), number of individual States making up this composite, number of body parts.
-        getStateVariableCount = 3 * individualStates.length * individualStates[0].getStateVariableCount();
+        stateVariableCount = individualStates.length * individualStates[0].getStateVariableCount();
     }
 
     @Override
     public float[] flattenState() {
 
-        float[] flatState = new float[getStateVariableCount];
+        float[] flatState = new float[3 * stateVariableCount];
 
         // Subtract out the current body x from all other x coordinates, even the time delayed ones.
         float currentBodyX = individualStates[0].getCenterX();
@@ -60,6 +60,6 @@ public class StateDelayEmbedded implements IState {
 
     @Override
     public int getStateVariableCount() {
-        return getStateVariableCount;
+        return stateVariableCount;
     }
 }
