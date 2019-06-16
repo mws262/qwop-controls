@@ -10,6 +10,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import samplers.Sampler_UCB;
 import tree.NodeQWOPBase;
 import tree.NodeQWOPGraphics;
+import tree.TreeWorker;
 import tree.Utility;
 
 import java.io.File;
@@ -128,5 +129,10 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
             }
             logger.info("Stage done.");
         }
+    }
+
+    @Override
+    TreeWorker getTreeWorker() {
+        return TreeWorker.makeStandardTreeWorker();
     }
 }

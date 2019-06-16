@@ -2,6 +2,7 @@ package goals.tree_search;
 
 import game.GameUnified;
 import tree.NodeQWOPGraphics;
+import tree.TreeWorker;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,6 +19,11 @@ public class MAIN_Search_Robust extends MAIN_Search_Template {
         MAIN_Search_Robust manager =
                 new MAIN_Search_Robust(new File("src/main/resources/config/search.config_full"));
         manager.doGames();
+    }
+
+    @Override
+    TreeWorker getTreeWorker() {
+        return TreeWorker.makeStandardTreeWorker();
     }
 
     private void doGames() {

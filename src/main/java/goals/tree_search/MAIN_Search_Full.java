@@ -6,10 +6,7 @@ import data.SavableSingleGame;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import samplers.Sampler_UCB;
-import tree.NodeQWOP;
-import tree.NodeQWOPExplorable;
-import tree.NodeQWOPExplorableBase;
-import tree.NodeQWOPGraphics;
+import tree.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -232,5 +229,10 @@ public class MAIN_Search_Full extends MAIN_Search_Template {
 
             logger.info("Stage 4 done.");
         }
+    }
+
+    @Override
+    TreeWorker getTreeWorker() {
+        return TreeWorker.makeStandardTreeWorker();
     }
 }

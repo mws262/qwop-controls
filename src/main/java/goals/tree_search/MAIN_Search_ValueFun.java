@@ -128,6 +128,11 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         makeValueFunction();
     }
 
+    @Override
+    TreeWorker getTreeWorker() {
+        return TreeWorker.makeCachedStateTreeWorker(1, 2);
+    }
+
     public static void main(String[] args) {
         MAIN_Search_ValueFun manager = new MAIN_Search_ValueFun(
                 new File(configFilePath + configFileName));
@@ -255,13 +260,13 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         searchMax.terminateAfterXGames = bailAfterXGames;
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws = borrowNWorkers(numWorkersToUse);
+        List<TreeWorker> tws = getTreeWorkers(numWorkersToUse);
 
         // Do stage search
         searchMax.initialize(tws, rootNode);
 
         // Return the workers.
-        tws.forEach(this::returnWorker);
+        tws.forEach(this::removeWorkerFromPanel);
 
         // Update the value function.
         List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
@@ -281,8 +286,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         extraNetworkArgs.add("--learnrate");
         extraNetworkArgs.add(learningRate);
 
-        try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, hiddenLayerSizes, extraNetworkArgs);
+        try { // TODO don't hardcode the 108
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, 108, hiddenLayerSizes,
+                    extraNetworkArgs);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

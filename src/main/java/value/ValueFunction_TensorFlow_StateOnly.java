@@ -27,7 +27,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     /**
      * Dimension of the state variable input.
      */
-    private static final int STATE_SIZE = 72;
+    private int STATE_SIZE = 72;
 
     /**
      * Dimension of the value output.
@@ -76,9 +76,10 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * @param additionalArgs Additional arguments to pass to the network creation script.
      * @throws FileNotFoundException Model file was not successfully created.
      */
-    public ValueFunction_TensorFlow_StateOnly(String fileName, List<Integer> hiddenLayerSizes,
+    public ValueFunction_TensorFlow_StateOnly(String fileName, int inputSize, List<Integer> hiddenLayerSizes,
                                               List<String> additionalArgs) throws FileNotFoundException {
-        super(fileName, STATE_SIZE, VALUE_SIZE, hiddenLayerSizes, additionalArgs);
+        super(fileName, inputSize, VALUE_SIZE, hiddenLayerSizes, additionalArgs);
+        STATE_SIZE = inputSize;
         assignFuturePredictors();
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);

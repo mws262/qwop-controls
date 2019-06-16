@@ -10,7 +10,6 @@ import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_Distance;
 import filters.NodeFilter_SurvivalHorizon;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import samplers.Sampler_FixedDepth;
@@ -63,11 +62,6 @@ public abstract class MAIN_Search_Template {
     private File saveLoc;
 
     /**
-     * Pool of {@link TreeWorker} to be shared for building the tree.
-     */
-    private final GenericObjectPool<TreeWorker> workerPool;
-
-    /**
      * Keep a list of the checked out workers so they can be added to the monitor panel if it exists.
      */
     private List<TreeWorker> activeWorkers = new ArrayList<>();
@@ -105,9 +99,7 @@ public abstract class MAIN_Search_Template {
         }
 
         // Worker threads to run. Each worker independently explores the tree.
-
-        workerPool = makeWorkerPool(workersFractionOfCores);
-        maxWorkers = workerPool.getMaxTotal();
+        maxWorkers = (int) (workersFractionOfCores * Runtime.getRuntime().availableProcessors());
 
         // UI CONFIG:
         logger.info("Full UI is " + (headless ? "not" : "") + "on.");
@@ -138,59 +130,17 @@ public abstract class MAIN_Search_Template {
         logger.info("Machine name: " + hostname + "\nSave directory: " + saveLoc.getAbsolutePath());
     }
 
-    /**
-     * Make a pool of tree workers. TODO this is somewhat deprecated. When each worker had its own classloader, it
-     * was important to not create too many workers. Now, I don't think it matters too much.
-     *
-     * @param coreFraction Portion of detected machine cores used to decide how many worker threads to make.
-     * @return A pool of tree workers.
-     */
-    GenericObjectPool<TreeWorker> makeWorkerPool(float coreFraction) {
-        int cores = Runtime.getRuntime().availableProcessors();
-        int maxWorkers = (int) (coreFraction * cores); // Basing of number of cores including hyperthreading.
-        logger.info("Detected " + cores + " physical cores. Making a max of " + maxWorkers + " workers.");
+    abstract TreeWorker getTreeWorker();
 
-        GenericObjectPool<TreeWorker> workerPool = new GenericObjectPool<>(new WorkerFactory());
-        workerPool.setMaxTotal(maxWorkers);
-        workerPool.setMaxIdle(-1); // No limit to idle. Would have defaulted to 8, meaning all others would get
-        // culled between stages.
-
-        return workerPool;
-    }
-
-    /**
-     * Borrow a {@link TreeWorker} from the pool. Be sure to return it later!
-     */
-    TreeWorker borrowWorker() {
-        TreeWorker worker = null;
-        try {
-            worker = workerPool.borrowObject();
-            activeWorkers.add(worker);
-            if (workerMonitorPanel != null) {
-                workerMonitorPanel.setWorkers(activeWorkers);
-                logger.debug("Worker borrowed from pool: " + worker.workerName);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to borrow a worker.", e);
-        }
-
-        return worker;
-    }
-
-    List<TreeWorker> borrowNWorkers(int numberOfWorkers) {
+    List<TreeWorker> getTreeWorkers(int numberOfWorkers) {
         List<TreeWorker> workerList = new ArrayList<>();
         for (int i = 0; i < numberOfWorkers; i++) {
-            workerList.add(borrowWorker());
+            workerList.add(getTreeWorker());
         }
         return workerList;
     }
 
-    /**
-     * Give the worker back to the pool to be reused later.
-     */
-    void returnWorker(TreeWorker finishedWorker) {
-        workerPool.returnObject(finishedWorker);
-        logger.debug("Worker returned to pool: " + finishedWorker.workerName);
+    void removeWorkerFromPanel(TreeWorker finishedWorker) {
         activeWorkers.remove(finishedWorker);
         if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
     }
@@ -216,7 +166,7 @@ public abstract class MAIN_Search_Template {
         writeLogStageHeader(stageName, saveName, rootNode.getTreeDepth(), numWorkersToUse, maxGames);
 
         long startTime = System.currentTimeMillis();
-;
+        ;
         DataSaver_StageSelected saver = new DataSaver_StageSelected();
         saver.overrideFilename = saveName;
         saver.setSavePath(saveLoc.getPath() + "/");
@@ -226,18 +176,18 @@ public abstract class MAIN_Search_Template {
         searchMax.terminateAfterXGames = maxGames;
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws1 = borrowNWorkers(numWorkersToUse);
+        List<TreeWorker> tws1 = getTreeWorkers(numWorkersToUse);
 
         // Do stage search
         searchMax.initialize(tws1, rootNode);
 
         float elapsedSeconds = Math.floorDiv(System.currentTimeMillis() - startTime, 100) / 10f; // To one decimal
-		// place.
+        // place.
         logger.info(stageName + " finished after " + elapsedSeconds + " seconds.\n" + "Results -- "
                 + (searchMax.getResults().isEmpty() ? "<goal not met>" : searchMax.getResults().get(0).getTreeDepth() + " depth achieved."));
 
         // Return the checked out workers.
-        tws1.forEach(this::returnWorker);
+        tws1.forEach(this::removeWorkerFromPanel);
     }
 
     /**
@@ -251,7 +201,7 @@ public abstract class MAIN_Search_Template {
      * @param maxGames Maximum number of games to play before giving up.
      */
     protected void doBasicMinDepthStage(NodeQWOPExplorableBase<?> rootNode, String saveName, int minDepth, float fractionOfWorkers,
-										int maxGames) {
+                                        int maxGames) {
         if (fractionOfWorkers > 1)
             throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
 
@@ -268,16 +218,16 @@ public abstract class MAIN_Search_Template {
         TreeStage searchMin = new TreeStage_MinDepth(minDepth, new Sampler_FixedDepth(minDepth), saver);
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws2 = borrowNWorkers(numWorkersToUse);
+        List<TreeWorker> tws2 = getTreeWorkers(numWorkersToUse);
 
         searchMin.initialize(tws2, rootNode);
 
         float elapsedSeconds = Math.floorDiv(System.currentTimeMillis() - startTime, 100) / 10f; // To one decimal
-		// place.
+        // place.
         logger.info(stageName + " finished after " + elapsedSeconds + " seconds.\n" +  stageName + "did " + searchMin.getResults().size() + " deviations.");
 
         // Return the checked out workers.
-        tws2.forEach(this::returnWorker);
+        tws2.forEach(this::removeWorkerFromPanel);
     }
 
     /**
@@ -309,7 +259,7 @@ public abstract class MAIN_Search_Template {
         TreeStage_FixedGames search = new TreeStage_FixedGames(numGames, sampler, saver); // Depth to get to
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws1 = borrowNWorkers(numWorkersToUse);
+        List<TreeWorker> tws1 = getTreeWorkers(numWorkersToUse);
 
         // Do stage search
         search.initialize(tws1, rootNode);
@@ -319,7 +269,7 @@ public abstract class MAIN_Search_Template {
         logger.info(logPrefix + "Finished after " + elapsedSeconds + " seconds." + logPrefix + "\nResults -- "
                 + (search.getResults().isEmpty() ? "<goal not met>" : search.getResults().get(0).getMaxBranchDepth() + " depth achieved."));
         // Return the checked out workers.
-        tws1.forEach(this::returnWorker);
+        tws1.forEach(this::removeWorkerFromPanel);
     }
 
     /**
@@ -337,11 +287,11 @@ public abstract class MAIN_Search_Template {
         PanelPie_ViableFutures viableFuturesPane = new PanelPie_ViableFutures();
         PanelHistogram_LeafDepth leafDepthPane = new PanelHistogram_LeafDepth();
         PanelPlot_Transformed pcaPlotPane =
-				new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
+                new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
         PanelPlot_Controls controlsPlotPane = new PanelPlot_Controls(6); // 6 plots per view at the bottom.
         PanelPlot_Transformed autoencPlotPane =
-				new PanelPlot_Transformed(new Transform_Autoencoder("src/main/resources/tflow_models" +
-						"/AutoEnc_72to12_6layer.pb", 12), 6);
+                new PanelPlot_Transformed(new Transform_Autoencoder("src/main/resources/tflow_models" +
+                        "/AutoEnc_72to12_6layer.pb", 12), 6);
         autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon(1));
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun(6);
         workerMonitorPanel = new PanelTimeSeries_WorkerLoad(maxWorkers);
@@ -359,7 +309,7 @@ public abstract class MAIN_Search_Template {
         fullUI.addTab(workerMonitorPanel, "Worker status");
 
         Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameThreadSafe should
-		// have their own threads.
+        // have their own threads.
         runnerPanelThread.start();
 
         Thread monitorThread = new Thread(workerMonitorPanel);
