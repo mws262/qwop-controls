@@ -12,6 +12,9 @@ public class GameUnifiedCaching extends GameUnified {
     public final int numDelayedStates;
 
     public GameUnifiedCaching(int timestepDelay, int numDelayedStates) {
+        if (timestepDelay < 1) {
+            throw new IllegalArgumentException("Timestep delay must be at least one. Was: " + timestepDelay);
+        }
         this.timestepDelay = timestepDelay;
         this.numDelayedStates = numDelayedStates;
     }
@@ -41,7 +44,7 @@ public class GameUnifiedCaching extends GameUnified {
         IState[] states = new IState[numDelayedStates + 1];
         Arrays.fill(states, getInitialState());
 
-        for (int i = 0; i < Integer.min(states.length, cachedStates.size()); i++) {
+        for (int i = 0; i < Integer.min(states.length, (cachedStates.size() + timestepDelay - 1) / timestepDelay); i++) {
             states[i] = cachedStates.get(timestepDelay * i);
         }
 
