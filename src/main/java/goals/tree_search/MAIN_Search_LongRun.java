@@ -5,6 +5,7 @@ import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import samplers.Sampler_UCB;
 import tree.NodeQWOPGraphics;
+import tree.TreeWorker;
 import tree.Utility;
 
 import java.io.File;
@@ -96,5 +97,10 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
         }
 
         System.exit(0);
+    }
+
+    @Override
+    TreeWorker getTreeWorker() {
+        return TreeWorker.makeStandardTreeWorker();
     }
 }

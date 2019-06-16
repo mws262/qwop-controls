@@ -26,9 +26,9 @@ rolloutWeightedWithValFun=false
 rolloutValFunWeight=0.3
 
 # Value function net configuration
-networkName=small_net
-checkpointNamePrefix=small
-checkpointIndex=610
+networkName=embeddedstate
+checkpointNamePrefix=embeddedstate
+checkpointIndex=0
 learningRate=1e-4
 trainingBatchSize=2000
 hiddenLayerSizes=128,64

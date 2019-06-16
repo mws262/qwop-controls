@@ -2,6 +2,7 @@ package goals.tree_search;
 
 import game.GameUnified;
 import tree.NodeQWOPGraphics;
+import tree.TreeWorker;
 
 import java.io.File;
 
@@ -23,5 +24,10 @@ public class MAIN_Search_CollectAllGameData extends MAIN_Search_Template {
         ui.addRootNode(rootNode);
 
         doFixedGamesToFailureStage(rootNode, "good_and_bad", 1, 1000000);
+    }
+
+    @Override
+    TreeWorker getTreeWorker() {
+        return TreeWorker.makeStandardTreeWorker();
     }
 }

@@ -11,12 +11,12 @@ public class GameUnifiedCachingTest {
     public void test_stateCorrectness() {
         for (int i = 1; i < 10; i++) {
             for (int j = 0; j < 4; j++) {
-                runTests(i,j);
+                checkSpecificDelayEmbedding(i,j);
             }
         }
     }
 
-    private void runTests(int delay, int numDelayedStates) {
+    private void checkSpecificDelayEmbedding(int delay, int numDelayedStates) {
         float tol = 1e-6f;
         GameUnifiedCaching gameCache = new GameUnifiedCaching(delay, numDelayedStates);
         GameUnified gameBasic = new GameUnified();
