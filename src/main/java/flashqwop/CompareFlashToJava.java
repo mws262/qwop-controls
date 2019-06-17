@@ -147,7 +147,7 @@ public class CompareFlashToJava extends FlashGame {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/small_net.pb")); // state_only.pb"));
+                    "/small_net.pb"), new GameUnified()); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

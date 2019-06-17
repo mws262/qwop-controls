@@ -119,7 +119,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/" + valueNetworkName)); // state_only.pb"));
+                    "/" + valueNetworkName), new GameUnified()); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

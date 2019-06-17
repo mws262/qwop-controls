@@ -225,6 +225,11 @@ public class FlashQWOPServer implements IGameExternal {
         return dataInput.getCurrentTimestep();
     }
 
+    @Override
+    public int getStateDimension() {
+        return 72;
+    }
+
     /**
      * Any listeners will receive the updated state when it comes in from the real QWOP game.
      * @param listener A listener for the real QWOP state.

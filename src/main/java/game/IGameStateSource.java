@@ -21,4 +21,6 @@ public interface IGameStateSource {
      */
     long getTimestepsThisGame();
 
+    int getStateDimension();
+
 }

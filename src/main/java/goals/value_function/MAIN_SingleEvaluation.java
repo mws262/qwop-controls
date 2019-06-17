@@ -30,16 +30,15 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         Utility.loadLoggerConfiguration();
     }
 
-
+    GameUnified game = new GameUnifiedCaching(4,2);
     private boolean doFullGameSerialization = false;
 
     // Net and execution parameters.
     String valueNetworkName = "embeddedstate.pb";
-    String checkpointName = "embeddedstate52"; // "med67";
+    String checkpointName = "embeddedstate60"; // "med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
-    private final GameUnifiedCaching game = new GameUnifiedCaching(5, 1);
     private ActionQueue actionQueue = new ActionQueue();
     private ValueFunction_TensorFlow valueFunction;
 
@@ -95,7 +94,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         /* Load a value function controller. */
         valueFunction = null;
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models/" + valueNetworkName));
+            valueFunction =
+                    new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models/" + valueNetworkName), game);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -120,7 +120,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 //                new Action(20,true,false,false,true),
         });
 
-        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
+        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, game);
 
         List<NodeQWOPExplorable> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);

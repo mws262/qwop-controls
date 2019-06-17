@@ -5,7 +5,9 @@ import java.util.LinkedList;
 
 public class GameUnifiedCaching extends GameUnified {
 
-    private LinkedList<IState> cachedStates;
+    public final int STATE_SIZE;
+
+    private LinkedList<State> cachedStates;
 
     // For delay embedding.
     public final int timestepDelay;
@@ -17,6 +19,8 @@ public class GameUnifiedCaching extends GameUnified {
         }
         this.timestepDelay = timestepDelay;
         this.numDelayedStates = numDelayedStates;
+
+        STATE_SIZE = (numDelayedStates + 1) * 36;
     }
 
     @Override
@@ -27,21 +31,19 @@ public class GameUnifiedCaching extends GameUnified {
             cachedStates = new LinkedList<>();
         }
         cachedStates.clear();
-        cachedStates.add(getInitialState());
+        cachedStates.add((State)getInitialState());
     }
 
     @Override
     public void step(boolean q, boolean w, boolean o, boolean p) {
         super.step(q, w, o, p);
-        cachedStates.addFirst(super.getCurrentState());
+        cachedStates.addFirst((State)super.getCurrentState());
     }
 
     @Override
     public IState getCurrentState() {
 
-        assert !cachedStates.isEmpty();
-
-        IState[] states = new IState[numDelayedStates + 1];
+        State[] states = new State[numDelayedStates + 1];
         Arrays.fill(states, getInitialState());
 
         for (int i = 0; i < Integer.min(states.length, (cachedStates.size() + timestepDelay - 1) / timestepDelay); i++) {
@@ -49,5 +51,15 @@ public class GameUnifiedCaching extends GameUnified {
         }
 
         return new StateDelayEmbedded(states);
+    }
+
+    @Override
+    public int getStateDimension() {
+        return STATE_SIZE;
+    }
+
+    @Override
+    public GameUnified getCopy() {
+        return new GameUnifiedCaching(timestepDelay, numDelayedStates);
     }
 }

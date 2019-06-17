@@ -1,5 +1,6 @@
 package data;
 
+import game.State;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,11 +55,11 @@ public class LoadStateStatistics {
      */
     @SuppressWarnings("WeakerAccess")
     public static class StateStatistics {
-        public final float[] max;
-        public final float[] min;
-        public final float[] mean;
-        public final float[] range;
-        public final float[] stdev;
+        public final State max;
+        public final State min;
+        public final State mean;
+        public final State range;
+        public final State stdev;
 
         private StateStatistics(float[] max, float[] min, float[] mean, float[] range, float[] stdev) {
             assert max.length == 72;
@@ -67,56 +68,11 @@ public class LoadStateStatistics {
             assert range.length == 72;
             assert stdev.length == 72;
 
-            this.max = max;
-            this.min = min;
-            this.mean = mean;
-            this.range = range;
-            this.stdev = stdev;
+            this.max = new State(max, false);
+            this.min = new State(min, false);
+            this.mean = new State(mean, false);
+            this.range = new State(range, false);
+            this.stdev = new State(stdev, false);
         }
-
-//        /**
-//         * Take state data, subtract the mean of each variable and divide by standard deviation. This results in
-//         * zero-mean, unit-variance in all dimensions. This operation is in place, i.e. stateData input will be
-//         * modified.
-//         * @param stateData Array of flattened state data.
-//         * @return Standardized array of flattened state data.
-//         */
-//        public float[] standardizeState(float[] stateData) {
-//            if (stateData.length != mean.length) {
-//                logger.error("State size does not match statistics size. Not changing the data.");
-//                return stateData;
-//            }
-//            return doRescaling(stateData, stdev, mean);
-//        }
-//
-//        public float[] standardizeState(IState state) {
-//            return standardizeState(state.flattenState());
-//        }
-//
-//        /**
-//         * Take state data, subtract the minimum of each variable and divide by its range. This results in [0,1]
-//         * range data in all dimensions. This operation is in place, i.e. stateData input will be modified.
-//         * @param stateData Array of flattened state data.
-//         * @return Standardized array of flattened state data.
-//         */
-//        public float[] rescaleState(float[] stateData) {
-//            return doRescaling(stateData, range, min);
-//        }
-//
-//        @SuppressWarnings("unused")
-//        public float[] rescaleState(State state) {
-//            return rescaleState(state.flattenState());
-//        }
-//
-//        private float[] doRescaling(float[] stateData, float[] span, float[] offset) {
-//            for (int i = 0; i < stateData.length; i++) {
-//                if (span[i] > 0) {
-//                    stateData[i] = (stateData[i] - offset[i]) / span[i];
-//                } else {
-//                    stateData[i] = 0;
-//                }
-//            }
-//            return stateData;
-//        }
     }
 }

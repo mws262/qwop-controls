@@ -1,6 +1,6 @@
 # Tree search configuration.
 # GUI on?
-headless=false
+headless=true
 saveLocation=./test_dir
 workersFractionOfCores=0.7 
 fractionOfMaxWorkers=1

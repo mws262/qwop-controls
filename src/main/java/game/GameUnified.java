@@ -28,6 +28,8 @@ import static game.GameConstants.*;
 @SuppressWarnings("Duplicates")
 public class GameUnified implements IGameInternal, IGameSerializable {
 
+    public static final int STATE_SIZE = 72;
+
     /**
      * Keep track of sim stats since beginning of execution.
      **/
@@ -909,6 +911,10 @@ public class GameUnified implements IGameInternal, IGameSerializable {
         setBodyToStateVariable(torsoBody, state.getStateVariableFromName(ObjectName.BODY));
     }
 
+    public GameUnified getCopy() {
+        return new GameUnified();
+    }
+
     /**
      * Is this state in failure?
      **/
@@ -922,6 +928,11 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     @Override
     public long getTimestepsThisGame() {
         return timestepsSimulated;
+    }
+
+    @Override
+    public int getStateDimension() {
+        return STATE_SIZE;
     }
 
     public boolean isRightFootDown() {
