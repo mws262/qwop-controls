@@ -1,6 +1,6 @@
 # Tree search configuration.
 # GUI on?
-headless=true
+headless=false
 saveLocation=./test_dir
 workersFractionOfCores=0.7 
 fractionOfMaxWorkers=1
@@ -29,7 +29,7 @@ rolloutValFunWeight=0.3
 networkName=embeddedstate
 checkpointNamePrefix=embeddedstate
 checkpointIndex=0
-learningRate=1e-4
+learningRate=1e-3
 trainingBatchSize=2000
 hiddenLayerSizes=128,64
 

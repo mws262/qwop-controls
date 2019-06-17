@@ -1,7 +1,5 @@
 package data;
 
-import game.IState;
-import game.State;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -76,49 +74,49 @@ public class LoadStateStatistics {
             this.stdev = stdev;
         }
 
-        /**
-         * Take state data, subtract the mean of each variable and divide by standard deviation. This results in
-         * zero-mean, unit-variance in all dimensions. This operation is in place, i.e. stateData input will be
-         * modified.
-         * @param stateData Array of flattened state data.
-         * @return Standardized array of flattened state data.
-         */
-        public float[] standardizeState(float[] stateData) {
-            if (stateData.length != mean.length) {
-                logger.error("State size does not match statistics size. Not changing the data.");
-                return stateData;
-            }
-            return doRescaling(stateData, stdev, mean);
-        }
-
-        public float[] standardizeState(IState state) {
-            return standardizeState(state.flattenState());
-        }
-
-        /**
-         * Take state data, subtract the minimum of each variable and divide by its range. This results in [0,1]
-         * range data in all dimensions. This operation is in place, i.e. stateData input will be modified.
-         * @param stateData Array of flattened state data.
-         * @return Standardized array of flattened state data.
-         */
-        public float[] rescaleState(float[] stateData) {
-            return doRescaling(stateData, range, min);
-        }
-
-        @SuppressWarnings("unused")
-        public float[] rescaleState(State state) {
-            return rescaleState(state.flattenState());
-        }
-
-        private float[] doRescaling(float[] stateData, float[] span, float[] offset) {
-            for (int i = 0; i < stateData.length; i++) {
-                if (span[i] > 0) {
-                    stateData[i] = (stateData[i] - offset[i]) / span[i];
-                } else {
-                    stateData[i] = 0;
-                }
-            }
-            return stateData;
-        }
+//        /**
+//         * Take state data, subtract the mean of each variable and divide by standard deviation. This results in
+//         * zero-mean, unit-variance in all dimensions. This operation is in place, i.e. stateData input will be
+//         * modified.
+//         * @param stateData Array of flattened state data.
+//         * @return Standardized array of flattened state data.
+//         */
+//        public float[] standardizeState(float[] stateData) {
+//            if (stateData.length != mean.length) {
+//                logger.error("State size does not match statistics size. Not changing the data.");
+//                return stateData;
+//            }
+//            return doRescaling(stateData, stdev, mean);
+//        }
+//
+//        public float[] standardizeState(IState state) {
+//            return standardizeState(state.flattenState());
+//        }
+//
+//        /**
+//         * Take state data, subtract the minimum of each variable and divide by its range. This results in [0,1]
+//         * range data in all dimensions. This operation is in place, i.e. stateData input will be modified.
+//         * @param stateData Array of flattened state data.
+//         * @return Standardized array of flattened state data.
+//         */
+//        public float[] rescaleState(float[] stateData) {
+//            return doRescaling(stateData, range, min);
+//        }
+//
+//        @SuppressWarnings("unused")
+//        public float[] rescaleState(State state) {
+//            return rescaleState(state.flattenState());
+//        }
+//
+//        private float[] doRescaling(float[] stateData, float[] span, float[] offset) {
+//            for (int i = 0; i < stateData.length; i++) {
+//                if (span[i] > 0) {
+//                    stateData[i] = (stateData[i] - offset[i]) / span[i];
+//                } else {
+//                    stateData[i] = 0;
+//                }
+//            }
+//            return stateData;
+//        }
     }
 }

@@ -5,6 +5,7 @@ import actions.IActionGenerator;
 import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_Distance;
 import game.GameUnified;
+import game.GameUnifiedCaching;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import samplers.Sampler_UCB;
@@ -83,6 +84,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
     private ValueFunction_TensorFlow_StateOnly valueFunction;
 
+    int prevStates = 1;
+    int delayTs = 5;
+
     @SuppressWarnings("ConstantConditions")
     public MAIN_Search_ValueFun(File configFile) {
         super(configFile);
@@ -130,7 +134,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
     @Override
     TreeWorker getTreeWorker() {
-        return TreeWorker.makeCachedStateTreeWorker(1, 2);
+        return TreeWorker.makeCachedStateTreeWorker(delayTs, prevStates);
     }
 
     public static void main(String[] args) {
@@ -202,9 +206,9 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
                 new Action(7,false,false,false,false),
-//                new Action(49, Action.Keys.wo),
-//                new Action(2, Action.Keys.none),
-//                new Action(46, Action.Keys.qp),
+                new Action(49, Action.Keys.wo),
+                new Action(2, Action.Keys.none),
+                new Action(46, Action.Keys.qp),
         });
 
 
@@ -213,7 +217,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
 
 
-        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
+        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, new GameUnifiedCaching(delayTs, prevStates));
         NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
 
 
@@ -266,7 +270,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         searchMax.initialize(tws, rootNode);
 
         // Return the workers.
-        tws.forEach(this::removeWorkerFromPanel);
+        tws.forEach(this::removeWorker);
 
         // Update the value function.
         List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
@@ -286,8 +290,8 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         extraNetworkArgs.add("--learnrate");
         extraNetworkArgs.add(learningRate);
 
-        try { // TODO don't hardcode the 108
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, 108, hiddenLayerSizes,
+        try {
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, 36 * (prevStates + 1), hiddenLayerSizes,
                     extraNetworkArgs);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

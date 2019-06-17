@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 
 /**
  * Makes it easier to feed Actions to the Flash game. With my game implementations, the caller requests the game to
@@ -24,6 +25,7 @@ public abstract class FlashGame implements IFlashStateListener {
 
     private FlashQWOPServer server;
     private ActionQueue actionQueue = new ActionQueue();
+    private LinkedList<IState> stateCache = new LinkedList<>();
 
     /**
      * Using velocity estimation or use the "cheating" exact result.
@@ -140,6 +142,7 @@ public abstract class FlashGame implements IFlashStateListener {
             } else {
                 logger.warn("Runner reached finish.");
             }
+            stateCache.clear();
 
             long freeMemoryBefore = Runtime.getRuntime().freeMemory();
             System.gc();
@@ -155,7 +158,20 @@ public abstract class FlashGame implements IFlashStateListener {
             restart();
             return;
         }
-        reportGameStatus(state, prevCommand, timestep);
+
+        stateCache.add(state);
+
+        // TODO don't hardcode this.
+        int numDelayedStates = 2;
+        int timestepDelay = 5;
+        IState[] states = new IState[numDelayedStates + 1];
+        Arrays.fill(states, GameUnified.getInitialState());
+
+        for (int i = 0; i < Integer.min(states.length, (stateCache.size() + timestepDelay - 1) / timestepDelay); i++) {
+            states[i] = stateCache.get(timestepDelay * i);
+        }
+
+        reportGameStatus(new StateDelayEmbedded(states), prevCommand, timestep);
 
         assert timestep == timestepsTracked; // Have we lost any timesteps?
         long timeBeforeController = System.currentTimeMillis();

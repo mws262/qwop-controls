@@ -3,6 +3,7 @@ package goals.value_function;
 import actions.Action;
 import actions.ActionQueue;
 import game.GameUnified;
+import game.GameUnifiedCaching;
 import game.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,12 +34,12 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private boolean doFullGameSerialization = false;
 
     // Net and execution parameters.
-    String valueNetworkName = "small_net.pb";
-    String checkpointName = "small698"; // "med67";
+    String valueNetworkName = "embeddedstate.pb";
+    String checkpointName = "embeddedstate52"; // "med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
-    private final GameUnified game = new GameUnified();
+    private final GameUnifiedCaching game = new GameUnifiedCaching(5, 1);
     private ActionQueue actionQueue = new ActionQueue();
     private ValueFunction_TensorFlow valueFunction;
 

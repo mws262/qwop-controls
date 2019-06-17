@@ -1,5 +1,7 @@
 package game;
 
+import data.LoadStateStatistics;
+
 public interface IState {
 
     /**
@@ -13,6 +15,8 @@ public interface IState {
      * Turn the state into an array of floats with body x subtracted from all x coordinates.
      **/
     float[] flattenState();
+
+    float[] flattenStateWithRescaling(LoadStateStatistics.StateStatistics stateStatistics);
 
     StateVariable getStateVariableFromName(ObjectName obj);
 

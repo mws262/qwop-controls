@@ -1,5 +1,7 @@
 package game;
 
+import data.LoadStateStatistics;
+
 import java.util.Arrays;
 
 public class StateDelayEmbedded implements IState {
@@ -20,18 +22,60 @@ public class StateDelayEmbedded implements IState {
 
         float[] flatState = new float[3 * stateVariableCount];
 
-        // Subtract out the current body x from all other x coordinates, even the time delayed ones.
-        float currentBodyX = individualStates[0].getCenterX();
+//        // Subtract out the current body x from all other x coordinates, even the time delayed ones.
+//        float currentBodyX = individualStates[0].getCenterX();
+
+//        int idx = 0;
+//        for (IState state : individualStates) {
+//            StateVariable[] stateVariables = state.getAllStateVariables();
+//
+//            for (StateVariable stateVariable : stateVariables) {
+//                // So far, just position coordinates. May want to implement first, second difference stuff.
+//                flatState[idx++] = stateVariable.getX() - currentBodyX;
+//                flatState[idx++] = stateVariable.getY();
+//                flatState[idx++] = stateVariable.getTh();
+//            }
+//        }
 
         int idx = 0;
-        for (IState state : individualStates) {
-            StateVariable[] stateVariables = state.getAllStateVariables();
+        StateVariable[] currStateVariables = individualStates[0].getAllStateVariables();
+        for (int i = 0; i < individualStates.length; i++) {
+            if (i == 0) {
+                for (StateVariable st : currStateVariables) {
+                    flatState[idx++] = st.getX() - currStateVariables[0].getX();
+                    flatState[idx++] = st.getY();
+                    flatState[idx++] = st.getTh();
+                }
+            } else {
+                StateVariable[] stateVariables = individualStates[i].getAllStateVariables();
 
-            for (StateVariable stateVariable : stateVariables) {
-                // So far, just position coordinates. May want to implement first, second difference stuff.
-                flatState[idx++] = stateVariable.getX() - currentBodyX;
-                flatState[idx++] = stateVariable.getY();
-                flatState[idx++] = stateVariable.getTh();
+                for (int j = 0; j < stateVariables.length; j++) {
+                    flatState[idx++] = stateVariables[j].getX() - currStateVariables[i].getX();
+                    flatState[idx++] = stateVariables[j].getY() - currStateVariables[i].getY();
+                    flatState[idx++] = stateVariables[j].getTh() - currStateVariables[i].getTh();
+                }
+            }
+        }
+
+        return flatState;
+    }
+
+    @Override
+    public float[] flattenStateWithRescaling(LoadStateStatistics.StateStatistics stateStatistics) {
+
+        // TODO this does not generalize well. Fix it later.
+        float[] flatState = flattenState();
+        for (int i = 0; i < individualStates.length; i++) {
+            for (int j = 0; j < 12; j++) {
+                for (int k = 0; k < 3; k++) {
+                    float span = stateStatistics.range[6 * j + k];
+                    if (span <= 0) {
+                        span = 1f;
+                    }
+                    if (i == 0) { // Temp to only normalize the first set of positions.
+                        flatState[i * 36 + 3 * j + k] = (flatState[i * 36 + j] - stateStatistics.max[6 * j + k]) / span;
+                    }
+                }
             }
         }
         return flatState;
