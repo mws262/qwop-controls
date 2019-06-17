@@ -25,11 +25,6 @@ import static actions.Action.keysToBooleans;
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
 
     /**
-     * Dimension of the state variable input.
-     */
-    private int STATE_SIZE = 72;
-
-    /**
      * Dimension of the value output.
      */
     private static final int VALUE_SIZE = 1;
@@ -43,6 +38,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     private ExecutorService executor;
     private List<EvaluationResult> evalResults;
     private List<FuturePredictor> evaluations;
+
+    private GameUnified gameTemplate;
 
     /**
      * Number of threads to distribute the predictive simulations to. There are 9 predicted futures, so this is a
@@ -59,9 +56,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * @param file .pb file of the existing net.
      * @throws FileNotFoundException Unable to find an existing net.
      */
-    public ValueFunction_TensorFlow_StateOnly(File file) throws FileNotFoundException {
-        super(file);
-        assignFuturePredictors();
+    public ValueFunction_TensorFlow_StateOnly(File file, GameUnified gameTemplate) throws FileNotFoundException {
+        super(file, gameTemplate);
+        assignFuturePredictors(gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
     }
@@ -71,38 +68,38 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * to a previously-used one, you can probably load a checkpoint file with weights with it too.
      * @param fileName File name of the new .pb net. Don't include file extension.
      * @param hiddenLayerSizes Sizes of the hidden layers of the net. Don't include the input or output layer sizes.
-     *                         They are defined in {@link ValueFunction_TensorFlow_StateOnly#STATE_SIZE} and
-     *                         {@link ValueFunction_TensorFlow_StateOnly#VALUE_SIZE}.
      * @param additionalArgs Additional arguments to pass to the network creation script.
      * @throws FileNotFoundException Model file was not successfully created.
      */
-    public ValueFunction_TensorFlow_StateOnly(String fileName, int inputSize, List<Integer> hiddenLayerSizes,
+    public ValueFunction_TensorFlow_StateOnly(String fileName,
+                                              GameUnified gameTemplate,
+                                              List<Integer> hiddenLayerSizes,
                                               List<String> additionalArgs) throws FileNotFoundException {
-        super(fileName, inputSize, VALUE_SIZE, hiddenLayerSizes, additionalArgs);
-        STATE_SIZE = inputSize;
-        assignFuturePredictors();
+        super(fileName, gameTemplate, VALUE_SIZE, hiddenLayerSizes, additionalArgs);
+        this.gameTemplate = gameTemplate;
+        assignFuturePredictors(gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
     }
 
-    private ValueFunction_TensorFlow_StateOnly(TrainableNetwork network) {
-        super(network);
+    private ValueFunction_TensorFlow_StateOnly(TrainableNetwork network, GameUnified gameTemplate) {
+        super(network, gameTemplate);
     }
     /**
      * Assign the futures that will be explored on each controller evaluation.
      */
-    private void assignFuturePredictors() {
+    private void assignFuturePredictors(GameUnified gameTemplate) {
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
-        evaluations.add(new FuturePredictor(Keys.none, 1, 10));
-        evaluations.add(new FuturePredictor(Keys.qp, 2, 40));
-        evaluations.add(new FuturePredictor(Keys.wo, 2, 40));
-        evaluations.add(new FuturePredictor(Keys.q, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.w, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.o, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.p, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.qo, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.wp, 2, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.none, 1, 10));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.qp, 2, 40));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.wo, 2, 40));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.q, 2, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.w, 2, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.o, 2, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.p, 2, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.qo, 2, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.wp, 2, 5));
 
     }
 
@@ -208,8 +205,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Game copy used to predict this future.
          */
-        // TODO
-        private GameUnifiedCaching gameLocal = new GameUnifiedCaching(5,1);
+        private GameUnified gameLocal;
 
         /**
          * Initial state of this future prediction.
@@ -266,7 +262,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          */
         private EvaluationResult bestResult = new EvaluationResult();
 
-        FuturePredictor(Keys keys, int minHorizon, int maxHorizon) {
+        FuturePredictor(GameUnified gameTemplate, Keys keys, int minHorizon, int maxHorizon) {
+            this.gameLocal = gameTemplate.getCopy();
             this.keys = keys;
             buttons = keysToBooleans(keys);
             this.minHorizon = minHorizon;
@@ -289,8 +286,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         public EvaluationResult call() {
 
             if (useSerializedState) {
-//                gameLocal = gameLocal.restoreSerializedState(startStateFull);
-//                gameLocal.iterations = GameConstants.physIterations; // Don't need to 'catch up', since full game is
+                gameLocal = gameLocal.restoreSerializedState(startStateFull);
+                gameLocal.iterations = GameConstants.physIterations; // Don't need to 'catch up', since full game is
             } else {
                 if (newGameBetweenPredictions)
                     gameLocal.makeNewWorld();
@@ -379,8 +376,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     @NotNull
     public ValueFunction_TensorFlow_StateOnly getCopy() {
-        ValueFunction_TensorFlow_StateOnly valFunCopy = new ValueFunction_TensorFlow_StateOnly(network);
-        valFunCopy.assignFuturePredictors();
+        ValueFunction_TensorFlow_StateOnly valFunCopy = new ValueFunction_TensorFlow_StateOnly(network, gameTemplate);
+        valFunCopy.assignFuturePredictors(gameTemplate);
         if (multithread)
             valFunCopy.executor = Executors.newFixedThreadPool(numThreads);
         return valFunCopy;

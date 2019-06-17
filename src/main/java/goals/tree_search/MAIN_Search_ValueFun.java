@@ -6,6 +6,7 @@ import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_Distance;
 import game.GameUnified;
 import game.GameUnifiedCaching;
+import game.IGameInternal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import samplers.Sampler_UCB;
@@ -23,6 +24,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MAIN_Search_ValueFun extends MAIN_Search_Template {
+
+    GameUnified game;
 
     /**
      * Search configuration parameter file name. Do not need to include the path. TODO move more other parameters to
@@ -84,8 +87,8 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
     private ValueFunction_TensorFlow_StateOnly valueFunction;
 
-    int prevStates = 1;
-    int delayTs = 5;
+    private int prevStates = 2;
+    private int delayTs = 4;
 
     @SuppressWarnings("ConstantConditions")
     public MAIN_Search_ValueFun(File configFile) {
@@ -129,7 +132,8 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         rolloutWeightedWithValFun = Boolean.parseBoolean(properties.getProperty("rolloutWeightedWithValFun", "false"));
         rolloutValFunWeight = Float.parseFloat(properties.getProperty("rolloutValFunWeight", "0.75"));
 
-        makeValueFunction();
+        game = (prevStates > 0) ? new GameUnifiedCaching(delayTs, prevStates) : new GameUnified();
+        makeValueFunction(game);
     }
 
     @Override
@@ -216,8 +220,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
                 new NodeQWOPExplorable(GameUnified.getInitialState(), actionGenerator) :
                 new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
 
-
-        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, new GameUnifiedCaching(delayTs, prevStates));
+        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, game);
         NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
 
 
@@ -284,14 +287,14 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
     }
 
 
-    private void makeValueFunction() {
+    private void makeValueFunction(GameUnified gameTemplate) {
         /* Make the value function net. */
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");
         extraNetworkArgs.add(learningRate);
 
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, 36 * (prevStates + 1), hiddenLayerSizes,
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, gameTemplate, hiddenLayerSizes,
                     extraNetworkArgs);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

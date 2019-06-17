@@ -25,7 +25,7 @@ public abstract class FlashGame implements IFlashStateListener {
 
     private FlashQWOPServer server;
     private ActionQueue actionQueue = new ActionQueue();
-    private LinkedList<IState> stateCache = new LinkedList<>();
+    private LinkedList<State> stateCache = new LinkedList<>();
 
     /**
      * Using velocity estimation or use the "cheating" exact result.
@@ -159,12 +159,12 @@ public abstract class FlashGame implements IFlashStateListener {
             return;
         }
 
-        stateCache.add(state);
+        stateCache.add((State)state);
 
         // TODO don't hardcode this.
         int numDelayedStates = 2;
         int timestepDelay = 5;
-        IState[] states = new IState[numDelayedStates + 1];
+        State[] states = new State[numDelayedStates + 1];
         Arrays.fill(states, GameUnified.getInitialState());
 
         for (int i = 0; i < Integer.min(states.length, (stateCache.size() + timestepDelay - 1) / timestepDelay); i++) {

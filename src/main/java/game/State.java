@@ -176,11 +176,14 @@ public class State implements IState, Serializable {
 
     @Override
     public float[] flattenState() {
-        float[] flatState = new float[72];
-        float bodyX = body.getX();
+        return flattenState(body.getX());
+    }
 
+    // with arbitrary x offset
+    float[] flattenState(float bodyX) {
+        float[] flatState = new float[72];
         // Body
-        flatState[0] = 0;
+        flatState[0] = body.getX() - bodyX;
         flatState[1] = body.getY();
         flatState[2] = body.getTh();
         flatState[3] = body.getDx();
@@ -277,19 +280,12 @@ public class State implements IState, Serializable {
 
         return flatState;
     }
-
     @Override
     public float[] flattenStateWithRescaling(LoadStateStatistics.StateStatistics stateStatistics) {
-
-        float[] flatState = flattenState();
-        for (int i = 0; i < flatState.length; i++) {
-            float span = stateStatistics.stdev[i];
-            if (span <= 0) {
-                span = 1f;
-            }
-            flatState[i] = (flatState[i] - stateStatistics.mean[i]) / span;
-        }
-        return flatState;
+        return xOffsetState(getCenterX())
+                .subtract(stateStatistics.mean)
+                .divide(stateStatistics.stdev)
+                .flattenState();
     }
 
     /**
@@ -314,6 +310,77 @@ public class State implements IState, Serializable {
             sb.append(f).append('\t');
         }
         return sb.toString();
+    }
+
+    // TODO ALL BELOW ARE INEFFICIENT.
+    public State add(State s) {
+        float[] sflat1 = this.flattenState(0);
+        float[] sflat2 = s.flattenState(0);
+
+        for (int i = 0; i < sflat1.length; i++) {
+            sflat1[i] += sflat2[i];
+        }
+        return new State(sflat1, this.failedState || s.failedState);
+    }
+
+    public State subtract(State s) {
+        float[] sflat1 = this.flattenState(0);
+        float[] sflat2 = s.flattenState(0);
+
+        for (int i = 0; i < sflat1.length; i++) {
+            sflat1[i] -= sflat2[i];
+        }
+        return new State(sflat1, this.failedState || s.failedState);
+    }
+
+    public State divide(State s) {
+        float[] sflat1 = this.flattenState(0);
+        float[] sflat2 = s.flattenState(0);
+
+        for (int i = 0; i < sflat1.length; i++) {
+            float divisor = (sflat2[i] == 0) ? 1f : sflat2[i]; // Divides by 1 if a value is 0.
+            sflat1[i] /= divisor;
+        }
+        return new State(sflat1, this.failedState || s.failedState);
+    }
+
+    public State multiply(State s) {
+        float[] sflat1 = this.flattenState(0);
+        float[] sflat2 = s.flattenState(0);
+
+        for (int i = 0; i < sflat1.length; i++) {
+            sflat1[i] *= sflat2[i];
+        }
+        return new State(sflat1, this.failedState || s.failedState);
+    }
+
+    public float[] extractPositions(float xOffset) {
+        float[] sflat = new float[stateVariables.length * 3];
+        int idx = 0;
+        for (StateVariable sVar : stateVariables) {
+            sflat[idx++] = sVar.getX() - xOffset;
+            sflat[idx++] = sVar.getY();
+            sflat[idx++] = sVar.getTh();
+        }
+        return sflat;
+    }
+
+    public float[] extractPositions() {
+        return extractPositions(0f);
+    }
+
+    public State xOffsetState(float xOffset) {
+        float[] sflat = new float[stateVariables.length * 6];
+        int idx = 0;
+        for (StateVariable sVar : stateVariables) {
+            sflat[idx++] = sVar.getX() - xOffset;
+            sflat[idx++] = sVar.getY();
+            sflat[idx++] = sVar.getTh();
+            sflat[idx++] = sVar.getDx();
+            sflat[idx++] = sVar.getDy();
+            sflat[idx++] = sVar.getDth();
+        }
+        return new State(sflat, isFailed());
     }
 }
 
