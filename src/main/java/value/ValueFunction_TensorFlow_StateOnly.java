@@ -152,7 +152,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     @Override
     float[] assembleInputFromNode(NodeQWOPBase<?> node) {
-        return stateStats.standardizeState(node.getState());
+        return node.getState().flattenStateWithRescaling(stateStats);
     }
 
     @Override
@@ -208,7 +208,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Game copy used to predict this future.
          */
-        private GameUnified gameLocal = new GameUnified();
+        // TODO
+        private GameUnifiedCaching gameLocal = new GameUnifiedCaching(5,1);
 
         /**
          * Initial state of this future prediction.
@@ -288,8 +289,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         public EvaluationResult call() {
 
             if (useSerializedState) {
-                gameLocal = gameLocal.restoreSerializedState(startStateFull);
-                gameLocal.iterations = GameConstants.physIterations; // Don't need to 'catch up', since full game is
+//                gameLocal = gameLocal.restoreSerializedState(startStateFull);
+//                gameLocal.iterations = GameConstants.physIterations; // Don't need to 'catch up', since full game is
             } else {
                 if (newGameBetweenPredictions)
                     gameLocal.makeNewWorld();

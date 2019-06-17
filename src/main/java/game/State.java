@@ -1,5 +1,7 @@
 package game;
 
+import data.LoadStateStatistics;
+
 import java.io.Serializable;
 
 /**
@@ -273,6 +275,20 @@ public class State implements IState, Serializable {
         flatState[70] = llarm.getDy();
         flatState[71] = llarm.getDth();
 
+        return flatState;
+    }
+
+    @Override
+    public float[] flattenStateWithRescaling(LoadStateStatistics.StateStatistics stateStatistics) {
+
+        float[] flatState = flattenState();
+        for (int i = 0; i < flatState.length; i++) {
+            float span = stateStatistics.stdev[i];
+            if (span <= 0) {
+                span = 1f;
+            }
+            flatState[i] = (flatState[i] - stateStatistics.mean[i]) / span;
+        }
         return flatState;
     }
 

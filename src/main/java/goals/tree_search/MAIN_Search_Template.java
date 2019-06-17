@@ -140,7 +140,8 @@ public abstract class MAIN_Search_Template {
         return workerList;
     }
 
-    void removeWorkerFromPanel(TreeWorker finishedWorker) {
+    void removeWorker(TreeWorker finishedWorker) {
+        finishedWorker.terminateWorker();
         activeWorkers.remove(finishedWorker);
         if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
     }
@@ -187,7 +188,7 @@ public abstract class MAIN_Search_Template {
                 + (searchMax.getResults().isEmpty() ? "<goal not met>" : searchMax.getResults().get(0).getTreeDepth() + " depth achieved."));
 
         // Return the checked out workers.
-        tws1.forEach(this::removeWorkerFromPanel);
+        tws1.forEach(this::removeWorker);
     }
 
     /**
@@ -227,7 +228,7 @@ public abstract class MAIN_Search_Template {
         logger.info(stageName + " finished after " + elapsedSeconds + " seconds.\n" +  stageName + "did " + searchMin.getResults().size() + " deviations.");
 
         // Return the checked out workers.
-        tws2.forEach(this::removeWorkerFromPanel);
+        tws2.forEach(this::removeWorker);
     }
 
     /**
@@ -269,7 +270,7 @@ public abstract class MAIN_Search_Template {
         logger.info(logPrefix + "Finished after " + elapsedSeconds + " seconds." + logPrefix + "\nResults -- "
                 + (search.getResults().isEmpty() ? "<goal not met>" : search.getResults().get(0).getMaxBranchDepth() + " depth achieved."));
         // Return the checked out workers.
-        tws1.forEach(this::removeWorkerFromPanel);
+        tws1.forEach(this::removeWorker);
     }
 
     /**
