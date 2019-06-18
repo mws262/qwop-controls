@@ -4,7 +4,7 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
-import tree.NodeQWOPGraphicsBase;
+import tree.node.NodeQWOPGraphicsBase;
 import tree.TreeWorker;
 
 import javax.swing.*;

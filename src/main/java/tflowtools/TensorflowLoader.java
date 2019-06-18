@@ -2,7 +2,7 @@ package tflowtools;
 
 import com.google.common.primitives.Floats;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import game.IState;
+import game.state.IState;
 import org.tensorflow.*;
 
 import java.io.IOException;

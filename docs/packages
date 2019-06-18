@@ -1,4 +1,4 @@
-transformations
+game.state.transformations
 tflowtools
 ui
 filters
@@ -20,10 +20,10 @@ savers
 flash
 data
 value
-samplers
-samplers.rollout
-actions.perturbers
-actions
+tree.samplers
+tree.samplers.rollout
+game.actions.perturbers
+game.actions
 tree
 game
 evaluators

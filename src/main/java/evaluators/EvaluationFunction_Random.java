@@ -2,7 +2,7 @@ package evaluators;
 
 import java.util.Random;
 
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 /**
  * This evaluation function returns a random value regardless of the given node.

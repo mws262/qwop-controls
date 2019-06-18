@@ -1,15 +1,16 @@
 package tree;
 
-import actions.Action;
-import actions.ActionQueue;
+import game.actions.Action;
+import game.actions.ActionQueue;
 import game.GameUnified;
 import game.GameUnifiedCaching;
 import game.IGameInternal;
-import game.IState;
-import samplers.ISampler;
-import samplers.Sampler_Random;
+import game.state.IState;
+import tree.sampler.ISampler;
+import tree.sampler.Sampler_Random;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
+import tree.node.NodeQWOPExplorableBase;
 import ui.PanelRunner;
 
 import java.awt.*;
@@ -257,7 +258,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 //                                "workers at the end of search stages.");
 
 
-                        if (expansionNode == null) { // May happen with some samplers when the stage finishes.
+                        if (expansionNode == null) { // May happen with some tree.samplers when the stage finishes.
                             changeStatus(Status.IDLE);
                         } else {
                             assert !expansionNode.getState().isFailed() : "Tree policy picked a node with a failed state." +
@@ -280,11 +281,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case TREE_POLICY_EXECUTING:
 
-                    executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
+                    executeNextOnQueue(); // Execute a single timestep with the game.actions that have been queued.
                     assert !game.getFailureStatus() : "Game encountered a failure while executing the tree policy. The tree " +
                             "policy should be safe, since it's ground that's been covered before.";
 
-                    // When all actions in queue are done, figure out what to do next.
+                    // When all game.actions in queue are done, figure out what to do next.
                     if (actionQueue.isEmpty()) {
                         currentGameNode = targetNodeToTest;
                         assert currentGameNode.getUntriedActionCount() > 0;
@@ -294,7 +295,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
                     break;
                 case EXPANSION_POLICY_CHOOSING:
-                    if (sampler.expansionPolicyGuard(currentGameNode)) { // Some samplers keep adding nodes until
+                    if (sampler.expansionPolicyGuard(currentGameNode)) { // Some tree.samplers keep adding nodes until
                         // failure, others add a fewer number and move to rollout before failure.
                         changeStatus(Status.ROLLOUT_POLICY);
                         sampler.expansionPolicyActionDone(currentGameNode);
@@ -308,7 +309,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case EXPANSION_POLICY_EXECUTING:
 
-                    executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
+                    executeNextOnQueue(); // Execute a single timestep with the game.actions that have been queued.
 
                     // When done, record state and go back to choosing. If failed, the sampler guards will tell us.
                     if (actionQueue.isEmpty() || game.getFailureStatus()) {
@@ -409,7 +410,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     }
 
     /**
-     * Pause what the worker is doing. Good for changing objectives and samplers, etc. This blocks until the worker
+     * Pause what the worker is doing. Good for changing objectives and tree.samplers, etc. This blocks until the worker
      * is done with the current evaluation and is back to IDLE.
      */
     public void pauseWorker() {

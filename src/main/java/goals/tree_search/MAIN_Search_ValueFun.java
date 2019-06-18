@@ -1,18 +1,23 @@
 package goals.tree_search;
 
-import actions.Action;
-import actions.IActionGenerator;
+import game.actions.Action;
+import game.actions.IActionGenerator;
 import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_Distance;
 import game.GameUnified;
 import game.GameUnifiedCaching;
-import game.StateDelayEmbedded;
+import game.state.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import samplers.Sampler_UCB;
-import samplers.rollout.*;
+import tree.sampler.Sampler_UCB;
+import tree.sampler.rollout.*;
 import savers.DataSaver_Null;
 import tree.*;
+import tree.node.NodeQWOPExplorable;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeQWOPGraphics;
+import tree.node.NodeQWOPGraphicsBase;
+import tree.stage.TreeStage_MaxDepth;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
@@ -23,7 +28,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MAIN_Search_ValueFun extends MAIN_Search_Template {
+public class MAIN_Search_ValueFun extends SearchTemplate {
 
     GameUnified game;
 
@@ -162,7 +167,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         // BASIC ROLLOUT STRATEGY
         switch (rolloutType) {
             case RANDOM:
-                // Rollout goes randomly among a limited set of actions until failure. Score based on distance
+                // Rollout goes randomly among a limited set of game.actions until failure. Score based on distance
                 // travelled from start to end of rollout.
                 rollout = new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
                 break;
@@ -205,7 +210,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
 
         // Make new tree root and assign to GUI.
-        // Assign default available actions.
+        // Assign default available game.actions.
         IActionGenerator actionGenerator = getExtendedActionGenerator(-1);// new ActionGenerator_Uniform();//
 
         List<Action[]> alist = new ArrayList<>();

@@ -1,14 +1,14 @@
 package data;
 
-import actions.Action;
-import game.IState;
-import game.State;
+import game.actions.Action;
+import game.state.IState;
+import game.state.State;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Holds all the states and actions on a TIMESTEP level for an entire game.
+ * Holds all the states and game.actions on a TIMESTEP level for an entire game.
  * Note that a state corresponds to the action that is being held during it, not
  * the action which leads to it like in other parts of the code. Also, there may
  * be 1 more state than action. this is because we arrive at the final state

@@ -1,8 +1,8 @@
 package vision;
 
 import flashqwop.IFlashStateListener;
-import game.IState;
-import game.State;
+import game.state.IState;
+import game.state.State;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

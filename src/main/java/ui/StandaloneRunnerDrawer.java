@@ -1,6 +1,6 @@
 package ui;
 
-import game.State;
+import game.state.State;
 
 import javax.swing.*;
 import java.awt.*;

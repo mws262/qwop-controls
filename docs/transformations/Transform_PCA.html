@@ -50,11 +50,11 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../transformations/Transform_Identity.html" title="class in transformations"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../game.state.transformations/Transform_Identity.html" title="class in game.state.transform"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li>Next&nbsp;Class</li>
 </ul>
 <ul class="navList">
-<li><a href="../index.html?transformations/Transform_PCA.html" target="_top">Frames</a></li>
+<li><a href="../index.html?game.state.transformations/Transform_PCA.html" target="_top">Frames</a></li>
 <li><a href="Transform_PCA.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_top">
@@ -93,7 +93,7 @@ var activeTableTab = "activeTableTab";
 <!-- ========= END OF TOP NAVBAR ========= -->
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
-<div class="subTitle">transformations</div>
+<div class="subTitle">game.state.transform</div>
 <h2 title="Class Transform_PCA" class="title">Class Transform_PCA</h2>
 </div>
 <div class="contentContainer">
@@ -101,7 +101,7 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li>transformations.Transform_PCA</li>
+<li>game.state.transform.Transform_PCA</li>
 </ul>
 </li>
 </ul>
@@ -110,13 +110,13 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <dl>
 <dt>All Implemented Interfaces:</dt>
-<dd><a href="../transformations/ITransform.html" title="interface in transformations">ITransform</a></dd>
+<dd><a href="../game.state.transformations/ITransform.html" title="interface in game.state.transform">ITransform</a></dd>
 </dl>
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">Transform_PCA</span>
 extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>
-implements <a href="../transformations/ITransform.html" title="interface in transformations">ITransform</a></pre>
+implements <a href="../game.state.transformations/ITransform.html" title="interface in game.state.transform">ITransform</a></pre>
 </li>
 </ul>
 </div>
@@ -135,7 +135,7 @@ implements <a href="../transformations/ITransform.html" title="interface in tran
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../transformations/Transform_PCA.html#Transform_PCA-int:A-">Transform_PCA</a></span>(int[]&nbsp;transformPCAComponents)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../game.state.transformations/Transform_PCA.html#Transform_PCA-int:A-">Transform_PCA</a></span>(int[]&nbsp;transformPCAComponents)</code>
 <div class="block">Make a new PCA transformer.</div>
 </td>
 </tr>
@@ -156,37 +156,37 @@ implements <a href="../transformations/ITransform.html" title="interface in tran
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../transformations/Transform_PCA.html#compressAndDecompress-java.util.List-">compressAndDecompress</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;originalStates)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.state.transformations/Transform_PCA.html#compressAndDecompress-java.util.List-">compressAndDecompress</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;originalStates)</code>
 <div class="block">Transform and then untransform a list of states.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../transformations/Transform_PCA.html#getName--">getName</a></span>()</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.state.transformations/Transform_PCA.html#getName--">getName</a></span>()</code>
 <div class="block">Get the name of this transform.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../transformations/Transform_PCA.html#getOutputStateSize--">getOutputStateSize</a></span>()</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.state.transformations/Transform_PCA.html#getOutputStateSize--">getOutputStateSize</a></span>()</code>
 <div class="block">Find out the number of floats used to represent each state after transformation.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;float[]&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../transformations/Transform_PCA.html#transform-java.util.List-">transform</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;originalStates)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.state.transformations/Transform_PCA.html#transform-java.util.List-">transform</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;originalStates)</code>
 <div class="block">Transform states into arrays of numbers.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../transformations/Transform_PCA.html#untransform-java.util.List-">untransform</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;float[]&gt;&nbsp;transformedStates)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.state.transformations/Transform_PCA.html#untransform-java.util.List-">untransform</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;float[]&gt;&nbsp;transformedStates)</code>
 <div class="block">Reverse a transform, if possible.</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../transformations/Transform_PCA.html#updateTransform-java.util.List-">updateTransform</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;nodesToUpdateFrom)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.state.transformations/Transform_PCA.html#updateTransform-java.util.List-">updateTransform</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;nodesToUpdateFrom)</code>
 <div class="block">Update any necessary transform calculations.</div>
 </td>
 </tr>
@@ -243,11 +243,11 @@ implements <a href="../transformations/ITransform.html" title="interface in tran
 <li class="blockList">
 <h4>updateTransform</h4>
 <pre>public&nbsp;void&nbsp;updateTransform(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;nodesToUpdateFrom)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../transformations/ITransform.html#updateTransform-java.util.List-">ITransform</a></code></span></div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../game.state.transformations/ITransform.html#updateTransform-java.util.List-">ITransform</a></code></span></div>
 <div class="block">Update any necessary transform calculations. Not used by all types of transforms.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../transformations/ITransform.html#updateTransform-java.util.List-">updateTransform</a></code>&nbsp;in interface&nbsp;<code><a href="../transformations/ITransform.html" title="interface in transformations">ITransform</a></code></dd>
+<dd><code><a href="../game.state.transformations/ITransform.html#updateTransform-java.util.List-">updateTransform</a></code>&nbsp;in interface&nbsp;<code><a href="../game.state.transformations/ITransform.html" title="interface in game.state.transform">ITransform</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>nodesToUpdateFrom</code> - The transform is updated using the data in this list of <a href="../tree/Node.html" title="class in tree"><code>nodes</code></a>.</dd>
 </dl>
@@ -260,12 +260,12 @@ implements <a href="../transformations/ITransform.html" title="interface in tran
 <li class="blockList">
 <h4>transform</h4>
 <pre>public&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;float[]&gt;&nbsp;transform(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;originalStates)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../transformations/ITransform.html#transform-java.util.List-">ITransform</a></code></span></div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../game.state.transformations/ITransform.html#transform-java.util.List-">ITransform</a></code></span></div>
 <div class="block">Transform states into arrays of numbers. Potentially, this is state reduction by means of an
  autoencoder, PCA, etc.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../transformations/ITransform.html#transform-java.util.List-">transform</a></code>&nbsp;in interface&nbsp;<code><a href="../transformations/ITransform.html" title="interface in transformations">ITransform</a></code></dd>
+<dd><code><a href="../game.state.transformations/ITransform.html#transform-java.util.List-">transform</a></code>&nbsp;in interface&nbsp;<code><a href="../game.state.transformations/ITransform.html" title="interface in game.state.transform">ITransform</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>originalStates</code> - List of states to transform.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -280,11 +280,11 @@ implements <a href="../transformations/ITransform.html" title="interface in tran
 <li class="blockList">
 <h4>untransform</h4>
 <pre>public&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;untransform(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;float[]&gt;&nbsp;transformedStates)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../transformations/ITransform.html#untransform-java.util.List-">ITransform</a></code></span></div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../game.state.transformations/ITransform.html#untransform-java.util.List-">ITransform</a></code></span></div>
 <div class="block">Reverse a transform, if possible. In other words, take an array of numbers and turn it into a state.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../transformations/ITransform.html#untransform-java.util.List-">untransform</a></code>&nbsp;in interface&nbsp;<code><a href="../transformations/ITransform.html" title="interface in transformations">ITransform</a></code></dd>
+<dd><code><a href="../game.state.transformations/ITransform.html#untransform-java.util.List-">untransform</a></code>&nbsp;in interface&nbsp;<code><a href="../game.state.transformations/ITransform.html" title="interface in game.state.transform">ITransform</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>transformedStates</code> - List of float arrays containing transformed representations of states.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -299,12 +299,12 @@ implements <a href="../transformations/ITransform.html" title="interface in tran
 <li class="blockList">
 <h4>compressAndDecompress</h4>
 <pre>public&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;compressAndDecompress(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;originalStates)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../transformations/ITransform.html#compressAndDecompress-java.util.List-">ITransform</a></code></span></div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../game.state.transformations/ITransform.html#compressAndDecompress-java.util.List-">ITransform</a></code></span></div>
 <div class="block">Transform and then untransform a list of states. This can be useful to see what kinds of properties are
  preserved under the transformation, or what sort of things are lost by compressing the state.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../transformations/ITransform.html#compressAndDecompress-java.util.List-">compressAndDecompress</a></code>&nbsp;in interface&nbsp;<code><a href="../transformations/ITransform.html" title="interface in transformations">ITransform</a></code></dd>
+<dd><code><a href="../game.state.transformations/ITransform.html#compressAndDecompress-java.util.List-">compressAndDecompress</a></code>&nbsp;in interface&nbsp;<code><a href="../game.state.transformations/ITransform.html" title="interface in game.state.transform">ITransform</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>originalStates</code> - A list of states to transform/untransform.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -319,15 +319,15 @@ implements <a href="../transformations/ITransform.html" title="interface in tran
 <li class="blockList">
 <h4>getOutputStateSize</h4>
 <pre>public&nbsp;int&nbsp;getOutputStateSize()</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../transformations/ITransform.html#getOutputStateSize--">ITransform</a></code></span></div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../game.state.transformations/ITransform.html#getOutputStateSize--">ITransform</a></code></span></div>
 <div class="block">Find out the number of floats used to represent each state after transformation. For model reduction, this
  value will be less than the number of values in a <a href="../game/State.html" title="class in game"><code>State</code></a>.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../transformations/ITransform.html#getOutputStateSize--">getOutputStateSize</a></code>&nbsp;in interface&nbsp;<code><a href="../transformations/ITransform.html" title="interface in transformations">ITransform</a></code></dd>
+<dd><code><a href="../game.state.transformations/ITransform.html#getOutputStateSize--">getOutputStateSize</a></code>&nbsp;in interface&nbsp;<code><a href="../game.state.transformations/ITransform.html" title="interface in game.state.transform">ITransform</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Number of floats that each <a href="../game/State.html" title="class in game"><code>State</code></a> will be transformed into when calling
- <a href="../transformations/ITransform.html#transform-java.util.List-"><code>ITransform.transform(List)</code></a>.</dd>
+ <a href="../game.state.transformations/ITransform.html#transform-java.util.List-"><code>ITransform.transform(List)</code></a>.</dd>
 </dl>
 </li>
 </ul>
@@ -338,11 +338,11 @@ implements <a href="../transformations/ITransform.html" title="interface in tran
 <li class="blockList">
 <h4>getName</h4>
 <pre>public&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;getName()</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../transformations/ITransform.html#getName--">ITransform</a></code></span></div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../game.state.transformations/ITransform.html#getName--">ITransform</a></code></span></div>
 <div class="block">Get the name of this transform.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../transformations/ITransform.html#getName--">getName</a></code>&nbsp;in interface&nbsp;<code><a href="../transformations/ITransform.html" title="interface in transformations">ITransform</a></code></dd>
+<dd><code><a href="../game.state.transformations/ITransform.html#getName--">getName</a></code>&nbsp;in interface&nbsp;<code><a href="../game.state.transformations/ITransform.html" title="interface in game.state.transform">ITransform</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The name of this transform.</dd>
 </dl>
@@ -376,11 +376,11 @@ implements <a href="../transformations/ITransform.html" title="interface in tran
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../transformations/Transform_Identity.html" title="class in transformations"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../game.state.transformations/Transform_Identity.html" title="class in game.state.transform"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li>Next&nbsp;Class</li>
 </ul>
 <ul class="navList">
-<li><a href="../index.html?transformations/Transform_PCA.html" target="_top">Frames</a></li>
+<li><a href="../index.html?game.state.transformations/Transform_PCA.html" target="_top">Frames</a></li>
 <li><a href="Transform_PCA.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_bottom">

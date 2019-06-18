@@ -1,12 +1,12 @@
 package goals.tree_search;
 
 import game.GameUnified;
-import tree.NodeQWOPGraphics;
+import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
 
 import java.io.File;
 
-public class MAIN_Search_CollectAllGameData extends MAIN_Search_Template {
+public class MAIN_Search_CollectAllGameData extends SearchTemplate {
 
 
     public MAIN_Search_CollectAllGameData() {

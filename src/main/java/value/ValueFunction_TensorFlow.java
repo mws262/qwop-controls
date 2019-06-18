@@ -6,7 +6,7 @@ import game.GameUnified;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tflowtools.TrainableNetwork;
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;

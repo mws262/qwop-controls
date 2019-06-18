@@ -50,11 +50,11 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../actions/ActionQueue.html" title="class in actions"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../actions/IActionGenerator.html" title="interface in actions"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../game.actions/ActionQueue.html" title="class in game.actions"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../game.actions/IActionGenerator.html" title="interface in game.actions"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../index.html?actions/ActionSet.html" target="_top">Frames</a></li>
+<li><a href="../index.html?game.actions/ActionSet.html" target="_top">Frames</a></li>
 <li><a href="ActionSet.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_top">
@@ -93,7 +93,7 @@ var activeTableTab = "activeTableTab";
 <!-- ========= END OF TOP NAVBAR ========= -->
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
-<div class="subTitle">actions</div>
+<div class="subTitle">game.actions</div>
 <h2 title="Class ActionSet" class="title">Class ActionSet</h2>
 </div>
 <div class="contentContainer">
@@ -107,10 +107,10 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/java/util/AbstractList.html?is-external=true" title="class or interface in java.util">java.util.AbstractList</a>&lt;E&gt;</li>
 <li>
 <ul class="inheritance">
-<li><a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util">java.util.ArrayList</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;</li>
+<li><a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util">java.util.ArrayList</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;</li>
 <li>
 <ul class="inheritance">
-<li>actions.ActionSet</li>
+<li>game.actions.ActionSet</li>
 </ul>
 </li>
 </ul>
@@ -125,23 +125,23 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <dl>
 <dt>All Implemented Interfaces:</dt>
-<dd><a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializable.html?is-external=true" title="class or interface in java.io">Serializable</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Cloneable.html?is-external=true" title="class or interface in java.lang">Cloneable</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Iterable.html?is-external=true" title="class or interface in java.lang">Iterable</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;, <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html?is-external=true" title="class or interface in java.util">Collection</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;, <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;, <a href="https://docs.oracle.com/javase/8/docs/api/java/util/RandomAccess.html?is-external=true" title="class or interface in java.util">RandomAccess</a></dd>
+<dd><a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializable.html?is-external=true" title="class or interface in java.io">Serializable</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Cloneable.html?is-external=true" title="class or interface in java.lang">Cloneable</a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Iterable.html?is-external=true" title="class or interface in java.lang">Iterable</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;, <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html?is-external=true" title="class or interface in java.util">Collection</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;, <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;, <a href="https://docs.oracle.com/javase/8/docs/api/java/util/RandomAccess.html?is-external=true" title="class or interface in java.util">RandomAccess</a></dd>
 </dl>
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">ActionSet</span>
-extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util">ArrayList</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;</pre>
-<div class="block">An ActionSet acts like an <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util"><code>ArrayList</code></a> for <a href="../actions/Action.html" title="class in actions"><code>actions</code></a>, except it allows for sampling
+extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util">ArrayList</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;</pre>
+<div class="block">An ActionSet acts like an <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util"><code>ArrayList</code></a> for <a href="../game.actions/Action.html" title="class in game.actions"><code>game.actions</code></a>, except it allows for sampling
  from the list on a <a href="../distributions/Distribution.html" title="class in distributions"><code>Distribution</code></a>.</div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
 <dd>Matt</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../actions/Action.html" title="class in actions"><code>Action</code></a>, 
-<a href="../actions/ActionQueue.html" title="class in actions"><code>ActionQueue</code></a>, 
-<a href="../actions/IActionGenerator.html" title="interface in actions"><code>IActionGenerator</code></a>, 
+<dd><a href="../game.actions/Action.html" title="class in game.actions"><code>Action</code></a>,
+<a href="../game.actions/ActionQueue.html" title="class in game.actions"><code>ActionQueue</code></a>,
+<a href="../game.actions/IActionGenerator.html" title="interface in game.actions"><code>IActionGenerator</code></a>,
 <a href="../distributions/Distribution.html" title="class in distributions"><code>Distribution</code></a>, 
-<a href="../serialized-form.html#actions.ActionSet">Serialized Form</a></dd>
+<a href="../serialized-form.html#game.actions.ActionSet">Serialized Form</a></dd>
 </dl>
 </li>
 </ul>
@@ -162,8 +162,8 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionSet.html#samplingDist">samplingDist</a></span></code>&nbsp;</td>
+<td class="colFirst"><code><a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#samplingDist">samplingDist</a></span></code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -187,7 +187,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../actions/ActionSet.html#ActionSet-distributions.Distribution-">ActionSet</a></span>(<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;samplingDist)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#ActionSet-distributions.Distribution-">ActionSet</a></span>(<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;samplingDist)</code>
 <div class="block">Create a new ActionSet which can sample according to the rules of a <a href="../distributions/Distribution.html" title="class in distributions"><code>Distribution</code></a>.</div>
 </td>
 </tr>
@@ -207,56 +207,56 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../actions/ActionSet.html" title="class in actions">ActionSet</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionSet.html#getCopy--">getCopy</a></span>()</code>
-<div class="block">Duplicate this ActionSet, producing a copy with the same <a href="../actions/Action.html" title="class in actions"><code>Action</code></a> elements and same sampling
+<td class="colFirst"><code><a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#getCopy--">getCopy</a></span>()</code>
+<div class="block">Duplicate this ActionSet, producing a copy with the same <a href="../game.actions/Action.html" title="class in game.actions"><code>Action</code></a> elements and same sampling
  <a href="../distributions/Distribution.html" title="class in distributions"><code>Distribution</code></a>.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../actions/Action.html" title="class in actions">Action</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionSet.html#getRandom--">getRandom</a></span>()</code>
+<td class="colFirst"><code><a href="../game.actions/Action.html" title="class in game.actions">Action</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#getRandom--">getRandom</a></span>()</code>
 <div class="block">Get an element from this ActionSet at random.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>static <a href="../actions/ActionSet.html" title="class in actions">ActionSet</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionSet.html#makeActionSet-int:A-boolean:A:A-distributions.Distribution-">makeActionSet</a></span>(int[]&nbsp;durations,
+<td class="colFirst"><code>static <a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#makeActionSet-int:A-boolean:A:A-distributions.Distribution-">makeActionSet</a></span>(int[]&nbsp;durations,
              boolean[][]&nbsp;keys,
-             <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;dist)</code>&nbsp;</td>
+             <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;dist)</code>&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>static <a href="../actions/ActionSet.html" title="class in actions">ActionSet</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionSet.html#makeActionSet-int:A-boolean:A-distributions.Distribution-">makeActionSet</a></span>(int[]&nbsp;durations,
+<td class="colFirst"><code>static <a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#makeActionSet-int:A-boolean:A-distributions.Distribution-">makeActionSet</a></span>(int[]&nbsp;durations,
              boolean[]&nbsp;keys,
-             <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;dist)</code>&nbsp;</td>
+             <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;dist)</code>&nbsp;</td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>static <a href="../actions/ActionSet.html" title="class in actions">ActionSet</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionSet.html#makeActionSet-java.lang.Integer:A-boolean:A:A-distributions.Distribution-">makeActionSet</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html?is-external=true" title="class or interface in java.lang">Integer</a>[]&nbsp;durations,
+<td class="colFirst"><code>static <a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#makeActionSet-java.lang.Integer:A-boolean:A:A-distributions.Distribution-">makeActionSet</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html?is-external=true" title="class or interface in java.lang">Integer</a>[]&nbsp;durations,
              boolean[][]&nbsp;keys,
-             <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;dist)</code>
+             <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;dist)</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code>static <a href="../actions/ActionSet.html" title="class in actions">ActionSet</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionSet.html#makeActionSet-java.lang.Integer:A-boolean:A-distributions.Distribution-">makeActionSet</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html?is-external=true" title="class or interface in java.lang">Integer</a>[]&nbsp;durations,
+<td class="colFirst"><code>static <a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#makeActionSet-java.lang.Integer:A-boolean:A-distributions.Distribution-">makeActionSet</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html?is-external=true" title="class or interface in java.lang">Integer</a>[]&nbsp;durations,
              boolean[]&nbsp;keys,
-             <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;dist)</code>
+             <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;dist)</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>static boolean[][]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionSet.html#replicateKeyString-boolean:A-int-">replicateKeyString</a></span>(boolean[]&nbsp;keyString,
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#replicateKeyString-boolean:A-int-">replicateKeyString</a></span>(boolean[]&nbsp;keyString,
                   int&nbsp;times)</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
-<td class="colFirst"><code><a href="../actions/Action.html" title="class in actions">Action</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionSet.html#sampleDistribution--">sampleDistribution</a></span>()</code>
+<td class="colFirst"><code><a href="../game.actions/Action.html" title="class in game.actions">Action</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#sampleDistribution--">sampleDistribution</a></span>()</code>
 <div class="block">Get a random sample from the defined distribution.</div>
 </td>
 </tr>
@@ -323,7 +323,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <ul class="blockListLast">
 <li class="blockList">
 <h4>samplingDist</h4>
-<pre>public&nbsp;<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt; samplingDist</pre>
+<pre>public&nbsp;<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt; samplingDist</pre>
 </li>
 </ul>
 </li>
@@ -340,13 +340,13 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ActionSet</h4>
-<pre>public&nbsp;ActionSet(<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;samplingDist)</pre>
+<pre>public&nbsp;ActionSet(<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;samplingDist)</pre>
 <div class="block">Create a new ActionSet which can sample according to the rules of a <a href="../distributions/Distribution.html" title="class in distributions"><code>Distribution</code></a>. It may otherwise be
  treated as an <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util"><code>ArrayList</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>samplingDist</code> - Distribution that samples of the action set will be pulled when calling
- <a href="../actions/ActionSet.html#sampleDistribution--"><code>sampleDistribution()</code></a>.</dd>
+ <a href="../game.actions/ActionSet.html#sampleDistribution--"><code>sampleDistribution()</code></a>.</dd>
 </dl>
 </li>
 </ul>
@@ -364,7 +364,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <ul class="blockList">
 <li class="blockList">
 <h4>getRandom</h4>
-<pre>public&nbsp;<a href="../actions/Action.html" title="class in actions">Action</a>&nbsp;getRandom()</pre>
+<pre>public&nbsp;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&nbsp;getRandom()</pre>
 <div class="block">Get an element from this ActionSet at random.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -380,7 +380,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <ul class="blockList">
 <li class="blockList">
 <h4>sampleDistribution</h4>
-<pre>public&nbsp;<a href="../actions/Action.html" title="class in actions">Action</a>&nbsp;sampleDistribution()</pre>
+<pre>public&nbsp;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&nbsp;sampleDistribution()</pre>
 <div class="block">Get a random sample from the defined distribution.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -394,8 +394,8 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <ul class="blockList">
 <li class="blockList">
 <h4>getCopy</h4>
-<pre>public&nbsp;<a href="../actions/ActionSet.html" title="class in actions">ActionSet</a>&nbsp;getCopy()</pre>
-<div class="block">Duplicate this ActionSet, producing a copy with the same <a href="../actions/Action.html" title="class in actions"><code>Action</code></a> elements and same sampling
+<pre>public&nbsp;<a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a>&nbsp;getCopy()</pre>
+<div class="block">Duplicate this ActionSet, producing a copy with the same <a href="../game.actions/Action.html" title="class in game.actions"><code>Action</code></a> elements and same sampling
  <a href="../distributions/Distribution.html" title="class in distributions"><code>Distribution</code></a>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -410,15 +410,15 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <li class="blockList">
 <h4>makeActionSet</h4>
 <pre><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Deprecated.html?is-external=true" title="class or interface in java.lang">@Deprecated</a>
-public static&nbsp;<a href="../actions/ActionSet.html" title="class in actions">ActionSet</a>&nbsp;makeActionSet(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html?is-external=true" title="class or interface in java.lang">Integer</a>[]&nbsp;durations,
+public static&nbsp;<a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a>&nbsp;makeActionSet(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html?is-external=true" title="class or interface in java.lang">Integer</a>[]&nbsp;durations,
                                                   boolean[][]&nbsp;keys,
-                                                  <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;dist)</pre>
+                                                  <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;dist)</pre>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 <div class="block">Get an ActionSet defined by as many durations as desired, 4 keys for each, and a sampling distribution. This
- is equivalent to just making <a href="../actions/Action.html" title="class in actions"><code>actions</code></a> and adding them with <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true#add-E-" title="class or interface in java.util"><code>ArrayList.add(Object)</code></a>.</div>
+ is equivalent to just making <a href="../game.actions/Action.html" title="class in game.actions"><code>game.actions</code></a> and adding them with <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true#add-E-" title="class or interface in java.util"><code>ArrayList.add(Object)</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>durations</code> - Timestep durations of the actions which will be in the returned ActionSet.</dd>
+<dd><code>durations</code> - Timestep durations of the game.actions which will be in the returned ActionSet.</dd>
 <dd><code>keys</code> - 2D array of QWOP keypress statuses. First dimension corresponds to the action, while the second
              dimension corresponds to a QwOP key.</dd>
 <dd><code>dist</code> - Sampling distribution for the new ActionSet.</dd>
@@ -433,9 +433,9 @@ public static&nbsp;<a href="../actions/ActionSet.html" title="class in actions">
 <ul class="blockList">
 <li class="blockList">
 <h4>makeActionSet</h4>
-<pre>public static&nbsp;<a href="../actions/ActionSet.html" title="class in actions">ActionSet</a>&nbsp;makeActionSet(int[]&nbsp;durations,
+<pre>public static&nbsp;<a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a>&nbsp;makeActionSet(int[]&nbsp;durations,
                                       boolean[][]&nbsp;keys,
-                                      <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;dist)</pre>
+                                      <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;dist)</pre>
 </li>
 </ul>
 <a name="makeActionSet-java.lang.Integer:A-boolean:A-distributions.Distribution-">
@@ -445,9 +445,9 @@ public static&nbsp;<a href="../actions/ActionSet.html" title="class in actions">
 <li class="blockList">
 <h4>makeActionSet</h4>
 <pre><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Deprecated.html?is-external=true" title="class or interface in java.lang">@Deprecated</a>
-public static&nbsp;<a href="../actions/ActionSet.html" title="class in actions">ActionSet</a>&nbsp;makeActionSet(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html?is-external=true" title="class or interface in java.lang">Integer</a>[]&nbsp;durations,
+public static&nbsp;<a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a>&nbsp;makeActionSet(<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html?is-external=true" title="class or interface in java.lang">Integer</a>[]&nbsp;durations,
                                                   boolean[]&nbsp;keys,
-                                                  <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;dist)</pre>
+                                                  <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;dist)</pre>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 <div class="block">Same but for one set of keys and multiple durations.</div>
 <dl>
@@ -465,9 +465,9 @@ public static&nbsp;<a href="../actions/ActionSet.html" title="class in actions">
 <ul class="blockList">
 <li class="blockList">
 <h4>makeActionSet</h4>
-<pre>public static&nbsp;<a href="../actions/ActionSet.html" title="class in actions">ActionSet</a>&nbsp;makeActionSet(int[]&nbsp;durations,
+<pre>public static&nbsp;<a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a>&nbsp;makeActionSet(int[]&nbsp;durations,
                                       boolean[]&nbsp;keys,
-                                      <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;dist)</pre>
+                                      <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;dist)</pre>
 </li>
 </ul>
 <a name="replicateKeyString-boolean:A-int-">
@@ -517,11 +517,11 @@ public static&nbsp;boolean[][]&nbsp;replicateKeyString(boolean[]&nbsp;keyString,
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../actions/ActionQueue.html" title="class in actions"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../actions/IActionGenerator.html" title="interface in actions"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../game.actions/ActionQueue.html" title="class in game.actions"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../game.actions/IActionGenerator.html" title="interface in game.actions"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../index.html?actions/ActionSet.html" target="_top">Frames</a></li>
+<li><a href="../index.html?game.actions/ActionSet.html" target="_top">Frames</a></li>
 <li><a href="ActionSet.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_bottom">

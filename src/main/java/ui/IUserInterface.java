@@ -1,6 +1,6 @@
 package ui;
 
-import tree.NodeQWOPGraphicsBase;
+import tree.node.NodeQWOPGraphicsBase;
 
 public interface IUserInterface extends Runnable {
 

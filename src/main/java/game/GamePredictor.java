@@ -1,7 +1,9 @@
 package game;
 
-import actions.Action;
-import actions.ActionQueue;
+import game.actions.Action;
+import game.actions.ActionQueue;
+import game.state.IState;
+import game.state.State;
 import tflowtools.TensorflowLoader;
 import org.tensorflow.Tensor;
 import ui.PanelRunner_SimpleState;

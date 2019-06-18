@@ -1,6 +1,6 @@
 package evaluators;
 
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 import java.util.Objects;
 

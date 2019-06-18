@@ -1,6 +1,6 @@
 package evaluators;
 
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 /**
  * Generic evaluation of a node based on any factors. Going with "higher-is-better" interpretation of value.

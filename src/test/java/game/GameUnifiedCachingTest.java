@@ -1,6 +1,9 @@
 package game;
 
 import data.LoadStateStatistics;
+import game.state.IState;
+import game.state.State;
+import game.state.StateDelayEmbedded;
 import org.junit.Assert;
 import org.junit.Test;
 

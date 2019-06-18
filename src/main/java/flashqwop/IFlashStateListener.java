@@ -1,6 +1,6 @@
 package flashqwop;
 
-import game.IState;
+import game.state.IState;
 
 /**
  * New state information is sent from the real QWOP game every timestep. If anyone needs to listen in for these

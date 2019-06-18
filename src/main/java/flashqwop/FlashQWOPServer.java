@@ -1,10 +1,10 @@
 package flashqwop;
 
-import actions.Action;
+import game.actions.Action;
 import game.GameConstants;
 import game.IGameExternal;
-import game.State;
-import game.StateVariable;
+import game.state.State;
+import game.state.StateVariable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;

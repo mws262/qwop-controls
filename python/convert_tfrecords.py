@@ -183,7 +183,7 @@ def extract_games(f):
   stateConcat = np.empty(shape=(0,NUM_STATES_PER * NUM_BODY_PARTS),dtype=np.float32)
   for states in allStatesInFile:
       stateConcat = np.concatenate((stateConcat, states), axis=0)
-  return {'states' : allStatesInFile, 'actions' : allActionssInFile, 'concatState' : stateConcat, 'concatTS' : justTSToTransition}
+  return {'states' : allStatesInFile, 'game.actions' : allActionssInFile, 'concatState' : stateConcat, 'concatTS' : justTSToTransition}
 
 def unison_shuffled_copies(a, b):
     assert len(a) == len(b)

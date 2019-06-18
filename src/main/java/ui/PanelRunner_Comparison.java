@@ -2,9 +2,9 @@ package ui;
 
 import evaluators.EvaluationFunction_SqDistFromOther;
 import game.GameUnified;
-import game.IState;
-import tree.NodeQWOPExplorableBase;
-import tree.NodeQWOPGraphicsBase;
+import game.state.IState;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeQWOPGraphicsBase;
 
 import java.awt.*;
 import java.util.List;

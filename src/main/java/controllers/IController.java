@@ -1,14 +1,14 @@
 package controllers;
 
-import actions.Action;
+import game.actions.Action;
 import game.GameUnified;
-import game.IState;
+import game.state.IState;
 
 import java.awt.*;
 
 /**
  * Interface for defining general QWOP controllers. Follows the typical state to action mapping. If an implementation
- * of an IController wants to use a history of states or actions, it should store these locally itself.
+ * of an IController wants to use a history of states or game.actions, it should store these locally itself.
  *
  * @author matt
  */

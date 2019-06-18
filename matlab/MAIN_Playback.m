@@ -1,9 +1,9 @@
-% Simulate a known sequence of actions.
+% Simulate a known sequence of game.actions.
 
 % Handle Java imports.
 eval('javaaddpath ../target/qwop-controls-1.0-jar-with-dependencies.jar'); % Strange issues with trying to directly call these commands. Eval seems to fix it.
 eval('javaaddpath ../jbox2d.jar');
-eval('import game.State game.StateVariable game.GameSingleThread actions.Action actions.ActionQueue');
+eval('import game.state.State game.state.StateVariable game.GameSingleThread game.actions.Action game.actions.ActionQueue');
 
 % Key combinations used.
 noKey = [false, false, false, false];
@@ -12,7 +12,7 @@ qp = [true, false, false, true];
 
 % Queue up a known sequence of keypresses. Action and ActionQueue are Java
 % objects.
-actionQueue = actions.ActionQueue;
+actionQueue = game.actions.ActionQueue;
 actionQueue.addAction(Action(1, noKey));
 actionQueue.addAction(Action(34, wo));
 actionQueue.addAction(Action(19, noKey));

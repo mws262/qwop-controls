@@ -1,18 +1,18 @@
 package savers;
 
-import actions.Action;
+import game.actions.Action;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.IGameInternal;
-import game.IState;
-import tree.NodeQWOPBase;
+import game.state.IState;
+import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Saver for sparse game information. Basically this includes actions
+ * Saver for sparse game information. Basically this includes game.actions
  * needed to recreate a run, but not full state information at every timestep.
  *
  * @author matt

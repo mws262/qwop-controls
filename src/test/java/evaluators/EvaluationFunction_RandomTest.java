@@ -1,16 +1,16 @@
 package evaluators;
 
-import actions.Action;
-import game.State;
+import game.actions.Action;
+import game.state.State;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import tree.NodeQWOP;
+import tree.node.NodeQWOP;
 
 import static org.mockito.Mockito.mock;
 
 public class EvaluationFunction_RandomTest {
-    // Some sample actions (mocked).
+    // Some sample game.actions (mocked).
     private Action a1 = mock(Action.class);
     private Action a2 = mock(Action.class);
     private Action a3 = mock(Action.class);
