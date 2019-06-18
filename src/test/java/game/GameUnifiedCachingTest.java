@@ -1,15 +1,19 @@
 package game;
 
+import data.LoadStateStatistics;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+// Combined with testing for StateDelayEmbedded
 public class GameUnifiedCachingTest {
 
     @Test
     public void test_stateCorrectness() {
-        StateDelayEmbedded.useFiniteDifferences = true;
         for (int i = 1; i < 10; i++) {
             for (int j = 1; j < 4; j++) {
                 checkSpecificDelayEmbedding(i,j);
@@ -20,10 +24,11 @@ public class GameUnifiedCachingTest {
     private void checkSpecificDelayEmbedding(int delay, int numDelayedStates) {
         float tol = 1e-6f;
         GameUnifiedCaching gameCache = new GameUnifiedCaching(delay, numDelayedStates);
+        Assert.assertEquals((numDelayedStates + 1) * 36, gameCache.getStateDimension());
         GameUnified gameBasic = new GameUnified();
 
-        IState initState = GameUnified.getInitialState();
-        float[] initStateFlatPositions = extractPositionsFlat(initState.flattenState(), 0);
+        State initState = (State) GameUnified.getInitialState();
+        float[] initStateFlatPositions = initState.extractPositions(initState.getCenterX());
 
         // Test initial state. All cached states should be initial positions.
         IState s = gameCache.getCurrentState();
@@ -218,7 +223,7 @@ public class GameUnifiedCachingTest {
     }
 
     @Test
-    public void test_finiteDifferenceStates() {
+    public void finiteDifferenceStates() {
         float[] f1 = {0.24f, 0.44f, 0.74f, 0.56f, 0.44f, 0.60f, 0.18f, 0.81f, 0.82f, 0.49f, 0.76f, 0.40f, 0.73f, 0.15f, 0.51f, 0.67f, 0.15f, 0.06f, 0.34f, 0.45f, 0.76f, 0.13f, 0.90f, 0.22f, 0.38f, 0.42f, 0.97f, 0.18f, 0.88f, 0.55f, 0.32f, 0.90f, 0.54f, 0.46f, 0.81f, 0.36f, 0.97f, 0.56f, 0.77f, 0.68f, 0.21f, 0.83f, 0.87f, 0.04f, 0.61f, 0.27f, 0.75f, 0.49f, 0.79f, 0.52f, 0.60f, 0.22f, 0.36f, 0.30f, 0.85f, 0.97f, 0.62f, 0.89f, 0.98f, 0.65f, 0.80f, 0.40f, 0.48f, 0.06f, 0.80f, 0.35f, 0.85f, 0.99f, 0.48f, 0.36f, 0.05f, 0.91f};
 
         float[] f2 = {0.70f, 0.44f, 0.97f, 0.72f, 0.66f, 0.51f, 0.88f, 0.06f, 0.47f, 0.31f, 0.19f, 0.15f, 0.90f,
@@ -250,9 +255,45 @@ public class GameUnifiedCachingTest {
 
         StateDelayEmbedded.useFiniteDifferences = true;
         StateDelayEmbedded fullState = new StateDelayEmbedded(new State[]{s1, s2, s3, s4, s5});
-        StateDelayEmbedded.useFiniteDifferences = false;
         float[] result = fullState.flattenState();
-        Assert.assertArrayEquals(expected, result, 1e-6f);
+        StateDelayEmbedded.useFiniteDifferences = false;
 
+        Assert.assertArrayEquals(expected, result, 1e-5f);
+    }
+
+    @Test
+    public void flattenStateWithRescaling() {
+        // Fake means and standard deviations to test against.
+        float[] stdev1 = new float[72];
+        for (int i = 71; i >= 0; i--) {
+            stdev1[i] = i;
+        }
+        State stdevState1 = new State(stdev1, false);
+
+        float[] mean1 = new float[72];
+        for (int i = 0; i < 72; i++) {
+            mean1[i] = i;
+        }
+        State meanState1 = new State(mean1, false);
+
+        LoadStateStatistics.StateStatistics stateStats = mock(LoadStateStatistics.StateStatistics.class);
+        when(stateStats.getStdev()).thenReturn(stdevState1);
+        when(stateStats.getMean()).thenReturn(meanState1);
+
+        GameUnifiedCaching gameCache = new GameUnifiedCaching(1, 3);
+        IState st = gameCache.getCurrentState();
+        IState init = GameUnified.getInitialState();
+        float[] initFlat = init.flattenState();
+
+        float[] rescaled = st.flattenStateWithRescaling(stateStats);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 36; j++) {
+                int fullIdx = j + (j/3) * 3; // Different since these are positions and velocities while others are
+                // just positions.
+                Assert.assertEquals((initFlat[fullIdx] - mean1[fullIdx]) / (stdev1[fullIdx] == 0 ? 1 : stdev1[fullIdx]),
+                rescaled[36 * i + j], 1e-6f);
+
+            }
+        }
     }
 }

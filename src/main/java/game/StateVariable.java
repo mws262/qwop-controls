@@ -77,7 +77,7 @@ public class StateVariable implements Serializable {
      */
     public StateVariable(List<Float> stateVals) {
         if (stateVals.size() != 6)
-            throw new RuntimeException("Tried to make a StateVariable with the wrong number of values.");
+            throw new IndexOutOfBoundsException("Tried to make a StateVariable with the wrong number of values.");
 
         x = stateVals.get(0);
         y = stateVals.get(1);
@@ -85,6 +85,18 @@ public class StateVariable implements Serializable {
         dx = stateVals.get(3);
         dy = stateVals.get(4);
         dth = stateVals.get(5);
+    }
+
+    public StateVariable(float[] stateVals) {
+        if (stateVals.length != 6)
+            throw new IndexOutOfBoundsException("Tried to make a StateVariable with the wrong number of values.");
+
+        x = stateVals[0];
+        y = stateVals[1];
+        th = stateVals[2];
+        dx = stateVals[3];
+        dy = stateVals[4];
+        dth = stateVals[5];
     }
 
     /**
@@ -168,5 +180,26 @@ public class StateVariable implements Serializable {
         }
 
         return stateValue;
+    }
+
+    public StateVariable add(StateVariable other) {
+        return new StateVariable(getX() + other.getX(), getY() + other.getY(), getTh() + other.getTh(),
+                getDx() + other.getDx(), getDy() + other.getDy(), getDth() + other.getDth());
+    }
+    public StateVariable subtract(StateVariable other) {
+        return new StateVariable(getX() - other.getX(), getY() - other.getY(), getTh() - other.getTh(),
+                getDx() - other.getDx(), getDy() - other.getDy(), getDth() - other.getDth());
+    }
+    public StateVariable multiply(StateVariable other) {
+        return new StateVariable(getX() * other.getX(), getY() * other.getY(), getTh() * other.getTh(),
+                getDx() * other.getDx(), getDy() * other.getDy(), getDth() * other.getDth());
+    }
+    public StateVariable divide(StateVariable other) {
+        return new StateVariable(getX() / (other.getX() == 0 ? 1 : other.getX()),
+                getY() / (other.getY() == 0 ? 1 : other.getY()),
+                getTh() / (other.getTh() == 0 ? 1 : other.getTh()),
+                getDx() / (other.getDx() == 0 ? 1 : other.getDx()),
+                getDy() / (other.getDy() == 0 ? 1 : other.getDy()),
+                getDth() / (other.getDth() == 0 ? 1 : other.getDth()));
     }
 }

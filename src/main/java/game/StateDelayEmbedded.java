@@ -11,7 +11,7 @@ public class StateDelayEmbedded implements IState {
     private final int stateVariableCount;
 
 
-    public static boolean useFiniteDifferences = true;
+    public static boolean useFiniteDifferences = false;
 
     // Order is NEWEST to OLDEST
     public StateDelayEmbedded(State[] states) {
@@ -55,7 +55,7 @@ public class StateDelayEmbedded implements IState {
             State[] stateDiff = new State[states.length - 1];
 
             for (int i = 0; i < states.length - 1; i++) {
-                stateDiff[i] = states[i].subtract(states[i + 1]);
+                stateDiff[i] = states[i + 1].subtract(states[i]);
             }
             finalDifferences[j] = stateDiff[0];
             states = stateDiff;
@@ -71,10 +71,10 @@ public class StateDelayEmbedded implements IState {
         for (int i = 0; i < individualStates.length; i++) {
             float[] flatRescaled =
                     individualStates[i]
-                            .xOffsetState(xOffset)
-                            .subtract(stateStatistics.mean)
-                            .divide(stateStatistics.stdev)
-                            .flattenState();
+                            .xOffsetSubtract(xOffset)
+                            .subtract(stateStatistics.getMean())
+                            .divide(stateStatistics.getStdev())
+                            .extractPositions();
             System.arraycopy(flatRescaled, 0, flatState, i * 36, 36);
         }
 

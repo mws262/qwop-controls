@@ -47,6 +47,7 @@ public class LoadStateStatistics {
         for (int i = 0; i < valuesList.size(); i++) {
             valuesArray[i] = valuesList.get(i);
         }
+        logger.info("State statistics loaded from file: " + file.getName());
         return valuesArray;
     }
 
@@ -55,11 +56,11 @@ public class LoadStateStatistics {
      */
     @SuppressWarnings("WeakerAccess")
     public static class StateStatistics {
-        public final State max;
-        public final State min;
-        public final State mean;
-        public final State range;
-        public final State stdev;
+        private final State max;
+        private final State min;
+        private final State mean;
+        private final State range;
+        private final State stdev;
 
         private StateStatistics(float[] max, float[] min, float[] mean, float[] range, float[] stdev) {
             assert max.length == 72;
@@ -74,5 +75,26 @@ public class LoadStateStatistics {
             this.range = new State(range, false);
             this.stdev = new State(stdev, false);
         }
+
+        public State getMax() {
+            return max;
+        }
+
+        public State getMin() {
+            return min;
+        }
+
+        public State getMean() {
+            return mean;
+        }
+
+        public State getRange() {
+            return range;
+        }
+
+        public State getStdev() {
+            return stdev;
+        }
+
     }
 }

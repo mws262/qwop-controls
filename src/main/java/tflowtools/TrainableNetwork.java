@@ -137,7 +137,8 @@ public class TrainableNetwork {
         // Also report the files created.
         List<File> checkpointFiles = new ArrayList<>();
         for (File file : Objects.requireNonNull(files)) {
-            if (file.getName().contains(checkpointName)) {
+            if (file.getName().contains(checkpointName + ".")) { // Period keeps others with additional numbers from
+                // appearing too.
                 checkpointFiles.add(file);
             }
         }

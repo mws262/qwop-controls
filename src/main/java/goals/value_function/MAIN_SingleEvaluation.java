@@ -5,6 +5,7 @@ import actions.ActionQueue;
 import game.GameUnified;
 import game.GameUnifiedCaching;
 import game.IState;
+import game.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.NodeQWOPExplorable;
@@ -30,12 +31,13 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         Utility.loadLoggerConfiguration();
     }
 
-    GameUnified game = new GameUnifiedCaching(4,2);
+    GameUnified game = new GameUnifiedCaching(1,2);
+
     private boolean doFullGameSerialization = false;
 
     // Net and execution parameters.
     String valueNetworkName = "embeddedstate.pb";
-    String checkpointName = "embeddedstate60"; // "med67";
+    String checkpointName = "embeddedstate25"; // "med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
@@ -64,7 +66,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private Logger logger = LogManager.getLogger(MAIN_SingleEvaluation.class);
 
     MAIN_SingleEvaluation() {
-
+        StateDelayEmbedded.useFiniteDifferences = true;
         /* Set up screen capture, if enabled. */
         if (doScreenCapture) {
             screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
