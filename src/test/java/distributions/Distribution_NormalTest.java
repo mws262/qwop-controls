@@ -1,6 +1,6 @@
 package distributions;
 
-import actions.Action;
+import game.actions.Action;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

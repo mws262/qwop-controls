@@ -37,7 +37,7 @@ public class DefaultContactFilter implements ContactFilter, Serializable {
 
 	/**
 	 * Return true if contact calculations should be performed between these two shapes.
-	 * If you implement your own collision filter you may want to build from this implementation.
+	 * If you implement your own collision tree.node.filter you may want to build from this implementation.
 	 */
 	public boolean shouldCollide(Shape shape1, Shape shape2) {
 		

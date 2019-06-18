@@ -1,10 +1,10 @@
 package flashqwop;
 
-import actions.Action;
+import game.actions.Action;
 import game.GameUnified;
-import game.IState;
-import tree.NodeQWOP;
-import tree.NodeQWOPGraphicsBase;
+import game.state.IState;
+import tree.node.NodeQWOP;
+import tree.node.NodeQWOPGraphicsBase;
 import ui.PanelRunner_MultiState;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;

@@ -1,8 +1,8 @@
 package controllers;
 
-import actions.Action;
-import game.IState;
-import game.State;
+import game.actions.Action;
+import game.state.IState;
+import game.state.State;
 import tflowtools.TensorflowLoader;
 
 import java.util.List;

@@ -1,13 +1,13 @@
 package ui;
 
-import actions.Action;
-import actions.ActionQueue;
+import game.actions.Action;
+import game.actions.ActionQueue;
 import game.GameUnified;
 import game.IGameInternal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tree.NodeQWOPExplorableBase;
-import tree.NodeQWOPGraphicsBase;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeQWOPGraphicsBase;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     protected IGameInternal game;
 
     /**
-     * Stores the QWOP actions we're going to execute.
+     * Stores the QWOP game.actions we're going to execute.
      */
     private ActionQueue actionQueue = new ActionQueue();
 
@@ -71,7 +71,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     /**
-     * This version only animates the actions between startNode and endNode. Still simulates all of course.
+     * This version only animates the game.actions between startNode and endNode. Still simulates all of course.
      */
     public void simRunToNode(NodeQWOPExplorableBase<?> startNode, NodeQWOPExplorableBase<?> endNode) {
         simRunToNode(endNode);

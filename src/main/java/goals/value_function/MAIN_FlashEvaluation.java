@@ -1,16 +1,16 @@
 package goals.value_function;
 
-import actions.Action;
+import game.actions.Action;
 import flashqwop.FlashGame;
 import flashqwop.FlashStateLogger;
 import game.GameUnified;
-import game.IState;
+import game.state.IState;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jblas.util.Random;
-import tree.NodeQWOP;
+import tree.node.NodeQWOP;
 import tree.Utility;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;

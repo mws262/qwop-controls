@@ -1,14 +1,14 @@
 package goals.tree_search;
 
 import game.GameUnified;
-import tree.NodeQWOPGraphics;
+import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MAIN_Search_Robust extends MAIN_Search_Template {
+public class MAIN_Search_Robust extends SearchTemplate {
 
 
     private MAIN_Search_Robust(File configFile) {

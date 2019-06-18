@@ -1,6 +1,6 @@
 //package value;
 //
-//import actions.Action;
+//import game.actions.Action;
 //import org.junit.Assert;
 //import org.junit.BeforeClass;
 //import org.junit.Test;
@@ -25,7 +25,7 @@
 //    @BeforeClass
 //    public static void setUp() {
 //
-//        // We are setting up actions:
+//        // We are setting up game.actions:
 //        rootNode = ValueFunction_TensorFlow_ActionInTest.makeDemoTree();
 //        hiddenLayerSizes.add(128);
 //        hiddenLayerSizes.add(64);

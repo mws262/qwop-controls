@@ -1,6 +1,6 @@
 package evaluators;
 
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 /**
  * Scores nodes by returning a constant value no matter what node is input. Mainly useful for testing.

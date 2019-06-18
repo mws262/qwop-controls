@@ -1,15 +1,19 @@
 package controllers;
 
-import actions.Action;
+import game.actions.Action;
 import data.EvictingTreeMap;
 import data.LIFOFixedSize;
 import data.TFRecordDataParsers;
 import game.*;
-import game.IState.ObjectName;
-import game.StateVariable.StateName;
+import game.state.IState;
+import game.state.IState.ObjectName;
+import game.state.State;
+import game.state.StateVariable;
+import game.state.StateVariable.StateName;
+import game.state.StateWeights;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
-import tree.NodeQWOPGraphicsBase;
+import tree.node.NodeQWOPGraphicsBase;
 import tree.Utility;
 import ui.PanelRunner;
 
@@ -322,7 +326,7 @@ public class Controller_NearestNeighborApprox implements IController {
 
                 RunHolder rh = new RunHolder();
 
-                // Unpack the actions as durations. TODO: turn them into full-fledged Actions
+                // Unpack the game.actions as durations. TODO: turn them into full-fledged Actions
                 for (int i = 0; i < singleSequence.getFeatureLists().getFeatureListMap().get("ACTIONS").getFeatureCount(); i++) {
                     rh.actionDurations.add(Byte.toUnsignedInt(singleSequence.getFeatureLists().getFeatureListMap()
                             .get("ACTIONS").getFeature(i) // This is the action number
@@ -354,7 +358,7 @@ public class Controller_NearestNeighborApprox implements IController {
                             sVarBuffer[5], sVarBuffer[6], sVarBuffer[7], sVarBuffer[8], sVarBuffer[9], sVarBuffer[10]
                             , sVarBuffer[11], false);
 
-                    // Get actions as keypresses at the current state.
+                    // Get game.actions as keypresses at the current state.
                     byte[] keyPressBytes =
                             singleSequence.getFeatureLists().getFeatureListMap().get("PRESSED_KEYS").getFeature(i).getBytesList().getValue(0).toByteArray();
                     boolean[] keyPress = new boolean[4];

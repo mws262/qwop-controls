@@ -34,7 +34,7 @@ import org.jbox2d.collision.shapes.Shape;
  */
 public interface ContactFilter {
 	/**
-	 * Default contact filter, using groupIndex, maskBits and categoryBits as detailed
+	 * Default contact tree.node.filter, using groupIndex, maskBits and categoryBits as detailed
 	 * in Box2d manual.
 	 */
 	ContactFilter DEFAULT_FILTER = new DefaultContactFilter();

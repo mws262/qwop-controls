@@ -3,7 +3,7 @@ package ui;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.glu.GLU;
-import tree.NodeQWOPGraphicsBase;
+import tree.node.NodeQWOPGraphicsBase;
 
 import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix3f;
@@ -134,7 +134,7 @@ public class GLCamManager {
      */
     public void update(GL2 gl, GLU glu) {
 
-        /* Do all the queued actions. **/
+        /* Do all the queued game.actions. **/
         // Sum eye movements.
         netMovement.scale(0);
         for (int i = 0; i < eyeIncrement.size(); i++) {

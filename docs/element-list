@@ -1,5 +1,5 @@
-actions
-actions.perturbers
+game.actions
+game.actions.perturbers
 controllers
 data
 distributions
@@ -16,10 +16,10 @@ goals.playback
 goals.save_file_manipulation
 goals.tree_search
 org.tensorflow.example
-samplers
-samplers.rollout
+tree.samplers
+tree.samplers.rollout
 savers
 server
-transformations
+game.state.transformations
 tree
 ui

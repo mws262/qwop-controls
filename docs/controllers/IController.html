@@ -108,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public interface <span class="typeNameLabel">IController</span></pre>
 <div class="block">Interface for defining general QWOP controllers. Follows the typical state to action mapping. If an implementation
- of an IController wants to use a history of states or actions, it should store these locally itself.</div>
+ of an IController wants to use a history of states or game.actions, it should store these locally itself.</div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
 <dd>matt</dd>
@@ -142,7 +142,7 @@ var activeTableTab = "activeTableTab";
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../actions/Action.html" title="class in actions">Action</a></code></td>
+<td class="colFirst"><code><a href="../game.actions/Action.html" title="class in game.actions">Action</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../controllers/IController.html#policy-game.State-">policy</a></span>(<a href="../game/State.html" title="class in game">State</a>&nbsp;state)</code>
 <div class="block">Controller maps a current state to an action to take.</div>
 </td>
@@ -168,7 +168,7 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>policy</h4>
-<pre><a href="../actions/Action.html" title="class in actions">Action</a>&nbsp;policy(<a href="../game/State.html" title="class in game">State</a>&nbsp;state)</pre>
+<pre><a href="../game.actions/Action.html" title="class in game.actions">Action</a>&nbsp;policy(<a href="../game/State.html" title="class in game">State</a>&nbsp;state)</pre>
 <div class="block">Controller maps a current state to an action to take.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

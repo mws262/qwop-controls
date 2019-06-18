@@ -3,8 +3,8 @@ package goals.playback;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameUnified;
-import tree.NodeQWOPGraphics;
-import tree.NodeQWOPGraphicsBase;
+import tree.node.NodeQWOPGraphics;
+import tree.node.NodeQWOPGraphicsBase;
 import ui.PanelRunner_Animated;
 
 import javax.swing.*;
@@ -59,7 +59,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
         Thread runnerThread = new Thread(runnerPane);
         runnerThread.start();
 
-        setTitle("Simulate saved actions from file");
+        setTitle("Simulate saved game.actions from file");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(windowWidth, windowHeight));
         pack();

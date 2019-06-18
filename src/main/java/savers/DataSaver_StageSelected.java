@@ -1,11 +1,11 @@
 package savers;
 
-import actions.Action;
+import game.actions.Action;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.IGameInternal;
-import game.IState;
-import tree.NodeQWOPBase;
+import game.state.IState;
+import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.util.ArrayList;

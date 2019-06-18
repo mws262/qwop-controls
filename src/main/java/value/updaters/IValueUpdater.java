@@ -1,9 +1,9 @@
 package value.updaters;
 
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 /**
- * A rule for updating the estimated value of a {@link tree.NodeQWOPBase} given a node and an update value.
+ * A rule for updating the estimated value of a {@link NodeQWOPBase} given a node and an update value.
  *
  * @author matt
  */

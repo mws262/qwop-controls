@@ -1,6 +1,6 @@
 //package value;
 //
-//import actions.Action;
+//import game.actions.Action;
 //import tree.Node;
 //
 //import java.io.File;
@@ -47,15 +47,15 @@
 //    private Map<KeyCombination, ValueFunction_TensorFlow_ActionIn> allValueFunctions = new HashMap<>();
 //
 //    /**
-//     * Creates a new value function and figures out which actions need to be possibly classified by the value
+//     * Creates a new value function and figures out which game.actions need to be possibly classified by the value
 //     * function. This does not load models directly, and so is not public. Call
 //     * {@link ValueFunction_TensorFlow_ActionInMulti#makeNew(Collection, String, List, List)} or
 //     * {@link ValueFunction_TensorFlow_ActionInMulti#loadExisting(Collection, String, String)}.
-//     * @param allPossibleActions ALl actions which this value function will be aware of.
+//     * @param allPossibleActions ALl game.actions which this value function will be aware of.
 //     */
 //    private ValueFunction_TensorFlow_ActionInMulti(Collection<Action> allPossibleActions) {
 //
-//        // Sort out all the actions we'll potentially have to differentiate between.
+//        // Sort out all the game.actions we'll potentially have to differentiate between.
 //        for (Action a : allPossibleActions) {
 //            KeyCombination actionKeys = getKeyCombination(a.peek());
 //
@@ -215,11 +215,11 @@
 //
 //    /**
 //     * Load an existing set of value functions using existing TensorFlow files. Note that the dimensionality of
-//     * inputs/outputs is NOT checked and will cause issues later on if incorrect. Also, if extra actions have been
+//     * inputs/outputs is NOT checked and will cause issues later on if incorrect. Also, if extra game.actions have been
 //     * added to allPossibleActions since when the models were created, then some may be missing. NOTE: If checkpoint
 //     * files exist, these need to be loaded separately with
 //     * {@link ValueFunction_TensorFlow_ActionInMulti#loadCheckpoints(String)}.
-//     * @param allPossibleActions All possible actions that this value function should be able to differentiate between.
+//     * @param allPossibleActions All possible game.actions that this value function should be able to differentiate between.
 //     * @param fileNamePrefix Saved model file prefix (e.g. if files are testQP.pb..., then the prefix would be "test").
 //     * @param modelPath Location of the model files relative to the base project directory.
 //     * @return ValueFunction created using existing model files.
@@ -242,7 +242,7 @@
 //
 //    /**
 //     * Make a new value function and create new TensorFlow models to go with it.
-//     * @param allPossibleActions All possible actions that this value function should be able to differentiate between.
+//     * @param allPossibleActions All possible game.actions that this value function should be able to differentiate between.
 //     * @param fileNamePrefix Saved model file prefix (e.g. if files are testQP.pb..., then the prefix would be "test").
 //     * @param hiddenLayerSizes Hidden layer sizes for the value function TensorFlow networks. Don't include
 //     *                         input/output sizes.

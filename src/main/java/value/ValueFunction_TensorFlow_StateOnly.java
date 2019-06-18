@@ -1,13 +1,14 @@
 package value;
 
-import actions.Action;
+import game.actions.Action;
 import com.sun.istack.NotNull;
 import game.*;
+import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tflowtools.TrainableNetwork;
-import tree.NodeQWOP;
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOP;
+import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,8 +20,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static actions.Action.Keys;
-import static actions.Action.keysToBooleans;
+import static game.actions.Action.Keys;
+import static game.actions.Action.keysToBooleans;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
 
@@ -302,7 +303,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             // Reset the game and set it to the specified starting state.
             bestResult.value = -Float.MAX_VALUE;
 
-            // Keep track of a window of three adjacent actions. Some of the selection approaches do a
+            // Keep track of a window of three adjacent game.actions. Some of the selection approaches do a
             // best-worst-case.
             float val1;
             float val2 = 0;

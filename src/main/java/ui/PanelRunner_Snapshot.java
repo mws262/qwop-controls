@@ -1,12 +1,12 @@
 package ui;
 
-import actions.Action;
-import filters.INodeFilter;
-import filters.NodeFilter_Downsample;
+import game.actions.Action;
+import tree.node.filter.INodeFilter;
+import tree.node.filter.NodeFilter_Downsample;
 import game.GameUnified;
-import game.IState;
-import tree.NodeQWOPExplorableBase;
-import tree.NodeQWOPGraphicsBase;
+import game.state.IState;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeQWOPGraphicsBase;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -32,7 +32,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     private INodeFilter filter = new NodeFilter_Downsample(50);
 
     /**
-     * Potentially, a future node selected by hovering over its runner to display a specific sequence of actions in
+     * Potentially, a future node selected by hovering over its runner to display a specific sequence of game.actions in
      * all the displayed futures.
      */
     private NodeQWOPGraphicsBase<?> highlightedFutureMousedOver;

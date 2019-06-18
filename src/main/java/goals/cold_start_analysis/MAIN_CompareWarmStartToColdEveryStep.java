@@ -1,12 +1,12 @@
 package goals.cold_start_analysis;
 
-import actions.ActionQueue;
+import game.actions.ActionQueue;
 import game.GameUnified;
 import game.IGameInternal;
-import game.IState;
+import game.state.IState;
 
 /**
- * This version runs a normal sequence of actions, but adds another cold-started runner at every timestep, and seeing
+ * This version runs a normal sequence of game.actions, but adds another cold-started runner at every timestep, and seeing
  * the distance travelled before failure for each.
  * @author matt
  */

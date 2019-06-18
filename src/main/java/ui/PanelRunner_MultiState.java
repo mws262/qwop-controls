@@ -1,8 +1,8 @@
 package ui;
 
 import game.GameUnified;
-import game.IState;
-import tree.NodeQWOPGraphicsBase;
+import game.state.IState;
+import tree.node.NodeQWOPGraphicsBase;
 
 import java.awt.*;
 import java.util.Map;

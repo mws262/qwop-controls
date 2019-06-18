@@ -1,13 +1,13 @@
 package ui;
 
-import filters.NodeFilter_Downsample;
+import tree.node.filter.NodeFilter_Downsample;
 import game.GameUnified;
-import game.IState;
-import transformations.ITransform;
-import transformations.Transform_Autoencoder;
-import transformations.Transform_PCA;
-import tree.NodeQWOPExplorableBase;
-import tree.NodeQWOPGraphicsBase;
+import game.state.IState;
+import game.state.transform.ITransform;
+import game.state.transform.Transform_Autoencoder;
+import game.state.transform.Transform_PCA;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeQWOPGraphicsBase;
 
 import javax.swing.*;
 import java.awt.*;

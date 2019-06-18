@@ -1,6 +1,6 @@
 package ui;
 
-import tree.NodeQWOPGraphicsBase;
+import tree.node.NodeQWOPGraphicsBase;
 import tree.Utility;
 
 import javax.swing.*;

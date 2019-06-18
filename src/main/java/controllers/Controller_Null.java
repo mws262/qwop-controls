@@ -1,7 +1,7 @@
 package controllers;
 
-import actions.Action;
-import game.IState;
+import game.actions.Action;
+import game.state.IState;
 
 /**
  * A do-nothing placeholder controller. It always concludes that no keys should be pressed.

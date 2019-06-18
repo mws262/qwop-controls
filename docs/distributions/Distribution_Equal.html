@@ -101,7 +101,7 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li><a href="../distributions/Distribution.html" title="class in distributions">distributions.Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;</li>
+<li><a href="../distributions/Distribution.html" title="class in distributions">distributions.Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;</li>
 <li>
 <ul class="inheritance">
 <li>distributions.Distribution_Equal</li>
@@ -116,10 +116,10 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">Distribution_Equal</span>
-extends <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;</pre>
-<div class="block">Most basic action sampling distribution. This will just randomly pick one of the provided possible actions with
+extends <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;</pre>
+<div class="block">Most basic action sampling distribution. This will just randomly pick one of the provided possible game.actions with
  equal probability. Note that this is not precisely the same as a uniform distribution. If the provided possible
- actions are heavily skewed in some way, then the outputs of this distribution will be similarly skewed since each
+ game.actions are heavily skewed in some way, then the outputs of this distribution will be similarly skewed since each
  possible sample has equal probability.</div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
@@ -161,9 +161,9 @@ extends <a href="../distributions/Distribution.html" title="class in distributio
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../actions/Action.html" title="class in actions">Action</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../distributions/Distribution_Equal.html#randOnDistribution-java.util.List-">randOnDistribution</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;set)</code>
-<div class="block">Get a random sample from the provided set of actions.</div>
+<td class="colFirst"><code><a href="../game.actions/Action.html" title="class in game.actions">Action</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../distributions/Distribution_Equal.html#randOnDistribution-java.util.List-">randOnDistribution</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;set)</code>
+<div class="block">Get a random sample from the provided set of game.actions.</div>
 </td>
 </tr>
 </table>
@@ -218,15 +218,15 @@ extends <a href="../distributions/Distribution.html" title="class in distributio
 <ul class="blockListLast">
 <li class="blockList">
 <h4>randOnDistribution</h4>
-<pre>public&nbsp;<a href="../actions/Action.html" title="class in actions">Action</a>&nbsp;randOnDistribution(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;set)</pre>
-<div class="block">Get a random sample from the provided set of actions.</div>
+<pre>public&nbsp;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&nbsp;randOnDistribution(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;set)</pre>
+<div class="block">Get a random sample from the provided set of game.actions.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../distributions/Distribution.html#randOnDistribution-java.util.List-">randOnDistribution</a></code>&nbsp;in class&nbsp;<code><a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;</code></dd>
+<dd><code><a href="../distributions/Distribution.html#randOnDistribution-java.util.List-">randOnDistribution</a></code>&nbsp;in class&nbsp;<code><a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;</code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>set</code> - A List of possible actions to sample from.</dd>
+<dd><code>set</code> - A List of possible game.actions to sample from.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>An <a href="../actions/Action.html" title="class in actions"><code>action</code></a> sampled from the input set according to this distribution.</dd>
+<dd>An <a href="../game.actions/Action.html" title="class in game.actions"><code>action</code></a> sampled from the input set according to this distribution.</dd>
 </dl>
 </li>
 </ul>

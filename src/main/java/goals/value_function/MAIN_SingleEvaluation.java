@@ -1,14 +1,14 @@
 package goals.value_function;
 
-import actions.Action;
-import actions.ActionQueue;
+import game.actions.Action;
+import game.actions.ActionQueue;
 import game.GameUnified;
 import game.GameUnifiedCaching;
-import game.IState;
-import game.StateDelayEmbedded;
+import game.state.IState;
+import game.state.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tree.NodeQWOPExplorable;
+import tree.node.NodeQWOPExplorable;
 import tree.Utility;
 import ui.PanelRunner;
 import ui.ScreenCapture;
@@ -108,7 +108,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
         NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState());
 
-        // Assign a "prefix" of actions, since I'm not sure if the controller will generalize to this part of running.
+        // Assign a "prefix" of game.actions, since I'm not sure if the controller will generalize to this part of running.
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
                 new Action(6, Action.Keys.none),

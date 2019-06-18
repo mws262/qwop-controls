@@ -1,5 +1,7 @@
 package game;
 
+import game.state.IState;
+
 public interface IGameStateSource {
 
     /**

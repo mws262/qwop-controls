@@ -1,15 +1,17 @@
 package goals.tree_search;
 
-import actions.Action;
+import game.actions.Action;
 import data.SavableActionSequence;
 import data.SavableFileIO;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import game.IGameInternal;
 import org.apache.commons.lang3.ArrayUtils;
-import samplers.Sampler_UCB;
-import tree.NodeQWOPBase;
-import tree.NodeQWOPGraphics;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import tree.sampler.Sampler_UCB;
+import tree.node.NodeQWOPBase;
+import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
 import tree.Utility;
 
@@ -29,7 +31,9 @@ import java.util.stream.Collectors;
  *
  * @author matt
  */
-public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
+public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
+
+    private Logger logger = LogManager.getLogger(this.getClass());
 
     public MAIN_Search_RecoverFromSelected() {
         super(new File("src/main/resources/config/" + "search.config_selected"));

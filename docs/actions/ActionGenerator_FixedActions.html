@@ -50,11 +50,11 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../actions/Action.html" title="class in actions"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../actions/ActionGenerator_FixedSequence.html" title="class in actions"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../game.actions/Action.html" title="class in game.actions"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../game.actions/ActionGenerator_FixedSequence.html" title="class in game.actions"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../index.html?actions/ActionGenerator_FixedActions.html" target="_top">Frames</a></li>
+<li><a href="../index.html?game.actions/ActionGenerator_FixedActions.html" target="_top">Frames</a></li>
 <li><a href="ActionGenerator_FixedActions.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_top">
@@ -93,7 +93,7 @@ var activeTableTab = "activeTableTab";
 <!-- ========= END OF TOP NAVBAR ========= -->
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
-<div class="subTitle">actions</div>
+<div class="subTitle">game.actions</div>
 <h2 title="Class ActionGenerator_FixedActions" class="title">Class ActionGenerator_FixedActions</h2>
 </div>
 <div class="contentContainer">
@@ -101,7 +101,7 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li>actions.ActionGenerator_FixedActions</li>
+<li>game.actions.ActionGenerator_FixedActions</li>
 </ul>
 </li>
 </ul>
@@ -110,13 +110,13 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <dl>
 <dt>All Implemented Interfaces:</dt>
-<dd><a href="../actions/IActionGenerator.html" title="interface in actions">IActionGenerator</a></dd>
+<dd><a href="../game.actions/IActionGenerator.html" title="interface in game.actions">IActionGenerator</a></dd>
 </dl>
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">ActionGenerator_FixedActions</span>
 extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>
-implements <a href="../actions/IActionGenerator.html" title="interface in actions">IActionGenerator</a></pre>
+implements <a href="../game.actions/IActionGenerator.html" title="interface in game.actions">IActionGenerator</a></pre>
 <div class="block">ActionGenerator which is defined for a single ActionSet which is always returned when queried.</div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
@@ -140,7 +140,7 @@ implements <a href="../actions/IActionGenerator.html" title="interface in action
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../actions/ActionGenerator_FixedActions.html#ActionGenerator_FixedActions-actions.ActionSet-">ActionGenerator_FixedActions</a></span>(<a href="../actions/ActionSet.html" title="class in actions">ActionSet</a>&nbsp;fixedActionSet)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../game.actions/ActionGenerator_FixedActions.html#ActionGenerator_FixedActions-game.actions.ActionSet-">ActionGenerator_FixedActions</a></span>(<a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a>&nbsp;fixedActionSet)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -158,15 +158,15 @@ implements <a href="../actions/IActionGenerator.html" title="interface in action
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html?is-external=true" title="class or interface in java.util">Set</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionGenerator_FixedActions.html#getAllPossibleActions--">getAllPossibleActions</a></span>()</code>
-<div class="block">Get a set of all possible actions which this generator could return.</div>
+<td class="colFirst"><code><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html?is-external=true" title="class or interface in java.util">Set</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionGenerator_FixedActions.html#getAllPossibleActions--">getAllPossibleActions</a></span>()</code>
+<div class="block">Get a set of all possible game.actions which this generator could return.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../actions/ActionSet.html" title="class in actions">ActionSet</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../actions/ActionGenerator_FixedActions.html#getPotentialChildActionSet-tree.Node-">getPotentialChildActionSet</a></span>(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;parentNode)</code>
-<div class="block">Get an <a href="../actions/ActionSet.html" title="class in actions"><code>ActionSet</code></a> of potential actions to explore from a newly created node as its potential children.</div>
+<td class="colFirst"><code><a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionGenerator_FixedActions.html#getPotentialChildActionSet-tree.Node-">getPotentialChildActionSet</a></span>(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;parentNode)</code>
+<div class="block">Get an <a href="../game.actions/ActionSet.html" title="class in game.actions"><code>ActionSet</code></a> of potential game.actions to explore from a newly created node as its potential children.</div>
 </td>
 </tr>
 </table>
@@ -191,13 +191,13 @@ implements <a href="../actions/IActionGenerator.html" title="interface in action
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ActionGenerator_FixedActions-actions.ActionSet-">
+<a name="ActionGenerator_FixedActions-game.actions.ActionSet-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ActionGenerator_FixedActions</h4>
-<pre>public&nbsp;ActionGenerator_FixedActions(<a href="../actions/ActionSet.html" title="class in actions">ActionSet</a>&nbsp;fixedActionSet)</pre>
+<pre>public&nbsp;ActionGenerator_FixedActions(<a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a>&nbsp;fixedActionSet)</pre>
 </li>
 </ul>
 </li>
@@ -214,16 +214,16 @@ implements <a href="../actions/IActionGenerator.html" title="interface in action
 <ul class="blockList">
 <li class="blockList">
 <h4>getPotentialChildActionSet</h4>
-<pre>public&nbsp;<a href="../actions/ActionSet.html" title="class in actions">ActionSet</a>&nbsp;getPotentialChildActionSet(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;parentNode)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../actions/IActionGenerator.html#getPotentialChildActionSet-tree.Node-">IActionGenerator</a></code></span></div>
-<div class="block">Get an <a href="../actions/ActionSet.html" title="class in actions"><code>ActionSet</code></a> of potential actions to explore from a newly created node as its potential children.</div>
+<pre>public&nbsp;<a href="../game.actions/ActionSet.html" title="class in game.actions">ActionSet</a>&nbsp;getPotentialChildActionSet(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;parentNode)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../game.actions/IActionGenerator.html#getPotentialChildActionSet-tree.Node-">IActionGenerator</a></code></span></div>
+<div class="block">Get an <a href="../game.actions/ActionSet.html" title="class in game.actions"><code>ActionSet</code></a> of potential game.actions to explore from a newly created node as its potential children.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../actions/IActionGenerator.html#getPotentialChildActionSet-tree.Node-">getPotentialChildActionSet</a></code>&nbsp;in interface&nbsp;<code><a href="../actions/IActionGenerator.html" title="interface in actions">IActionGenerator</a></code></dd>
+<dd><code><a href="../game.actions/IActionGenerator.html#getPotentialChildActionSet-tree.Node-">getPotentialChildActionSet</a></code>&nbsp;in interface&nbsp;<code><a href="../game.actions/IActionGenerator.html" title="interface in game.actions">IActionGenerator</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>parentNode</code> - Node for which we want to pick potential child actions.</dd>
+<dd><code>parentNode</code> - Node for which we want to pick potential child game.actions.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>A set of actions to try as potential children.</dd>
+<dd>A set of game.actions to try as potential children.</dd>
 </dl>
 </li>
 </ul>
@@ -233,12 +233,12 @@ implements <a href="../actions/IActionGenerator.html" title="interface in action
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getAllPossibleActions</h4>
-<pre>public&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html?is-external=true" title="class or interface in java.util">Set</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;getAllPossibleActions()</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../actions/IActionGenerator.html#getAllPossibleActions--">IActionGenerator</a></code></span></div>
-<div class="block">Get a set of all possible actions which this generator could return.</div>
+<pre>public&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html?is-external=true" title="class or interface in java.util">Set</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;getAllPossibleActions()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../game.actions/IActionGenerator.html#getAllPossibleActions--">IActionGenerator</a></code></span></div>
+<div class="block">Get a set of all possible game.actions which this generator could return.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../actions/IActionGenerator.html#getAllPossibleActions--">getAllPossibleActions</a></code>&nbsp;in interface&nbsp;<code><a href="../actions/IActionGenerator.html" title="interface in actions">IActionGenerator</a></code></dd>
+<dd><code><a href="../game.actions/IActionGenerator.html#getAllPossibleActions--">getAllPossibleActions</a></code>&nbsp;in interface&nbsp;<code><a href="../game.actions/IActionGenerator.html" title="interface in game.actions">IActionGenerator</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>All possibly generated Actions.</dd>
 </dl>
@@ -272,11 +272,11 @@ implements <a href="../actions/IActionGenerator.html" title="interface in action
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../actions/Action.html" title="class in actions"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../actions/ActionGenerator_FixedSequence.html" title="class in actions"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../game.actions/Action.html" title="class in game.actions"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../game.actions/ActionGenerator_FixedSequence.html" title="class in game.actions"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../index.html?actions/ActionGenerator_FixedActions.html" target="_top">Frames</a></li>
+<li><a href="../index.html?game.actions/ActionGenerator_FixedActions.html" target="_top">Frames</a></li>
 <li><a href="ActionGenerator_FixedActions.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_bottom">

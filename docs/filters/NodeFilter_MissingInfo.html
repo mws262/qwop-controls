@@ -101,7 +101,7 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li>filters.NodeFilter_MissingInfo</li>
+<li>tree.node.filter.NodeFilter_MissingInfo</li>
 </ul>
 </li>
 </ul>
@@ -117,7 +117,7 @@ var activeTableTab = "activeTableTab";
 <pre>public class <span class="typeNameLabel">NodeFilter_MissingInfo</span>
 extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>
 implements <a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a></pre>
-<div class="block">Very new nodes might not have state or action assigned yet. This will filter those out. Note that this will filter
+<div class="block">Very new nodes might not have state or action assigned yet. This will tree.node.filter those out. Note that this will tree.node.filter
  the root node out.</div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
@@ -160,7 +160,7 @@ implements <a href="../filters/INodeFilter.html" title="interface in filters">IN
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../filters/NodeFilter_MissingInfo.html#filter-tree.Node-">filter</a></span>(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;node)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../filters/NodeFilter_MissingInfo.html#tree.node.filter-tree.Node-">tree.node.filter</a></span>(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;node)</code>
 <div class="block">Decide if this node should be included or filtered out.</div>
 </td>
 </tr>
@@ -177,7 +177,7 @@ implements <a href="../filters/INodeFilter.html" title="interface in filters">IN
 <!--   -->
 </a>
 <h3>Methods inherited from interface&nbsp;filters.<a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a></h3>
-<code><a href="../filters/INodeFilter.html#filter-java.util.List-">filter</a></code></li>
+<code><a href="../filters/INodeFilter.html#tree.node.filter-java.util.List-">tree.node.filter</a></code></li>
 </ul>
 </li>
 </ul>
@@ -210,22 +210,22 @@ implements <a href="../filters/INodeFilter.html" title="interface in filters">IN
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="filter-tree.Node-">
+<a name="tree.node.filter-tree.Node-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>filter</h4>
-<pre>public&nbsp;boolean&nbsp;filter(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;node)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../filters/INodeFilter.html#filter-tree.Node-">INodeFilter</a></code></span></div>
+<h4>tree.node.filter</h4>
+<pre>public&nbsp;boolean&nbsp;tree.node.filter(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;node)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../filters/INodeFilter.html#tree.node.filter-tree.Node-">INodeFilter</a></code></span></div>
 <div class="block">Decide if this node should be included or filtered out. If not overridden, this will default to true.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../filters/INodeFilter.html#filter-tree.Node-">filter</a></code>&nbsp;in interface&nbsp;<code><a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a></code></dd>
+<dd><code><a href="../filters/INodeFilter.html#tree.node.filter-tree.Node-">tree.node.filter</a></code>&nbsp;in interface&nbsp;<code><a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>node</code> - Node to apply filtering rules to.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Whether this node should be kept. True means keep. False means filter out.</dd>
+<dd>Whether this node should be kept. True means keep. False means tree.node.filter out.</dd>
 </dl>
 </li>
 </ul>

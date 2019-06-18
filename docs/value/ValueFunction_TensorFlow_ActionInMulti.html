@@ -148,7 +148,7 @@ implements <a href="../value/IValueFunction.html" title="interface in value">IVa
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../actions/Action.html" title="class in actions">Action</a></code></td>
+<td class="colFirst"><code><a href="../game.actions/Action.html" title="class in game.actions">Action</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../value/ValueFunction_TensorFlow_ActionInMulti.html#getMaximizingAction-tree.Node-">getMaximizingAction</a></span>(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;currentNode)</code>
 <div class="block">Find the child Action which is predicted to maximize value.</div>
 </td>
@@ -161,7 +161,7 @@ implements <a href="../value/IValueFunction.html" title="interface in value">IVa
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>static <a href="../value/ValueFunction_TensorFlow_ActionInMulti.html" title="class in value">ValueFunction_TensorFlow_ActionInMulti</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../value/ValueFunction_TensorFlow_ActionInMulti.html#loadExisting-java.util.Collection-java.lang.String-java.lang.String-">loadExisting</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html?is-external=true" title="class or interface in java.util">Collection</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;allPossibleActions,
+<td class="colLast"><code><span class="memberNameLink"><a href="../value/ValueFunction_TensorFlow_ActionInMulti.html#loadExisting-java.util.Collection-java.lang.String-java.lang.String-">loadExisting</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html?is-external=true" title="class or interface in java.util">Collection</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;allPossibleActions,
             <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fileNamePrefix,
             <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;modelPath)</code>
 <div class="block">Load an existing set of value functions using existing TensorFlow files.</div>
@@ -169,7 +169,7 @@ implements <a href="../value/IValueFunction.html" title="interface in value">IVa
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>static <a href="../value/ValueFunction_TensorFlow_ActionInMulti.html" title="class in value">ValueFunction_TensorFlow_ActionInMulti</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../value/ValueFunction_TensorFlow_ActionInMulti.html#makeNew-java.util.Collection-java.lang.String-java.util.List-java.util.List-">makeNew</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html?is-external=true" title="class or interface in java.util">Collection</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;allPossibleActions,
+<td class="colLast"><code><span class="memberNameLink"><a href="../value/ValueFunction_TensorFlow_ActionInMulti.html#makeNew-java.util.Collection-java.lang.String-java.util.List-java.util.List-">makeNew</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html?is-external=true" title="class or interface in java.util">Collection</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;allPossibleActions,
        <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fileNamePrefix,
        <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html?is-external=true" title="class or interface in java.lang">Integer</a>&gt;&nbsp;hiddenLayerSizes,
        <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&gt;&nbsp;additionalArgs)</code>
@@ -216,7 +216,7 @@ implements <a href="../value/IValueFunction.html" title="interface in value">IVa
 <ul class="blockList">
 <li class="blockList">
 <h4>getMaximizingAction</h4>
-<pre>public&nbsp;<a href="../actions/Action.html" title="class in actions">Action</a>&nbsp;getMaximizingAction(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;currentNode)</pre>
+<pre>public&nbsp;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&nbsp;getMaximizingAction(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;currentNode)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../value/IValueFunction.html#getMaximizingAction-tree.Node-">IValueFunction</a></code></span></div>
 <div class="block">Find the child Action which is predicted to maximize value.</div>
 <dl>
@@ -291,17 +291,17 @@ implements <a href="../value/IValueFunction.html" title="interface in value">IVa
 <ul class="blockList">
 <li class="blockList">
 <h4>loadExisting</h4>
-<pre>public static&nbsp;<a href="../value/ValueFunction_TensorFlow_ActionInMulti.html" title="class in value">ValueFunction_TensorFlow_ActionInMulti</a>&nbsp;loadExisting(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html?is-external=true" title="class or interface in java.util">Collection</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;allPossibleActions,
+<pre>public static&nbsp;<a href="../value/ValueFunction_TensorFlow_ActionInMulti.html" title="class in value">ValueFunction_TensorFlow_ActionInMulti</a>&nbsp;loadExisting(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html?is-external=true" title="class or interface in java.util">Collection</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;allPossibleActions,
                                                                   <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fileNamePrefix,
                                                                   <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;modelPath)</pre>
 <div class="block">Load an existing set of value functions using existing TensorFlow files. Note that the dimensionality of
- inputs/outputs is NOT checked and will cause issues later on if incorrect. Also, if extra actions have been
+ inputs/outputs is NOT checked and will cause issues later on if incorrect. Also, if extra game.actions have been
  added to allPossibleActions since when the models were created, then some may be missing. NOTE: If checkpoint
  files exist, these need to be loaded separately with
  <a href="../value/ValueFunction_TensorFlow_ActionInMulti.html#loadCheckpoints-java.lang.String-"><code>loadCheckpoints(String)</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>allPossibleActions</code> - All possible actions that this value function should be able to differentiate between.</dd>
+<dd><code>allPossibleActions</code> - All possible game.actions that this value function should be able to differentiate between.</dd>
 <dd><code>fileNamePrefix</code> - Saved model file prefix (e.g. if files are testQP.pb..., then the prefix would be "test").</dd>
 <dd><code>modelPath</code> - Location of the model files relative to the base project directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -315,14 +315,14 @@ implements <a href="../value/IValueFunction.html" title="interface in value">IVa
 <ul class="blockListLast">
 <li class="blockList">
 <h4>makeNew</h4>
-<pre>public static&nbsp;<a href="../value/ValueFunction_TensorFlow_ActionInMulti.html" title="class in value">ValueFunction_TensorFlow_ActionInMulti</a>&nbsp;makeNew(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html?is-external=true" title="class or interface in java.util">Collection</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;allPossibleActions,
+<pre>public static&nbsp;<a href="../value/ValueFunction_TensorFlow_ActionInMulti.html" title="class in value">ValueFunction_TensorFlow_ActionInMulti</a>&nbsp;makeNew(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html?is-external=true" title="class or interface in java.util">Collection</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;allPossibleActions,
                                                              <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fileNamePrefix,
                                                              <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html?is-external=true" title="class or interface in java.lang">Integer</a>&gt;&nbsp;hiddenLayerSizes,
                                                              <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&gt;&nbsp;additionalArgs)</pre>
 <div class="block">Make a new value function and create new TensorFlow models to go with it.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>allPossibleActions</code> - All possible actions that this value function should be able to differentiate between.</dd>
+<dd><code>allPossibleActions</code> - All possible game.actions that this value function should be able to differentiate between.</dd>
 <dd><code>fileNamePrefix</code> - Saved model file prefix (e.g. if files are testQP.pb..., then the prefix would be "test").</dd>
 <dd><code>hiddenLayerSizes</code> - Hidden layer sizes for the value function TensorFlow networks. Don't include
                          input/output sizes.</dd>

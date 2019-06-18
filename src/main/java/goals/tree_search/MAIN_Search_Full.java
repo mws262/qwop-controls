@@ -1,12 +1,18 @@
 package goals.tree_search;
 
-import actions.IActionGenerator;
+import game.actions.IActionGenerator;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
-import samplers.Sampler_UCB;
-import tree.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import tree.sampler.Sampler_UCB;
+import tree.TreeWorker;
+import tree.node.NodeQWOP;
+import tree.node.NodeQWOPExplorable;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeQWOPGraphics;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,7 +28,9 @@ import java.util.Objects;
  *
  * @author matt
  */
-public class MAIN_Search_Full extends MAIN_Search_Template {
+public class MAIN_Search_Full extends SearchTemplate {
+
+    private Logger logger = LogManager.getLogger(this.getClass());
 
     public MAIN_Search_Full() {
         super(new File("src/main/resources/config/search.config_full"));

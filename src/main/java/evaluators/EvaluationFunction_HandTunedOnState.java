@@ -1,7 +1,7 @@
 package evaluators;
 
-import game.IState.ObjectName;
-import tree.NodeQWOPBase;
+import game.state.IState.ObjectName;
+import tree.node.NodeQWOPBase;
 
 import java.util.Objects;
 

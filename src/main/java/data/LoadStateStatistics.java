@@ -1,6 +1,6 @@
 package data;
 
-import game.State;
+import game.state.State;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

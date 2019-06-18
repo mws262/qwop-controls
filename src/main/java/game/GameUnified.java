@@ -1,6 +1,9 @@
 package game;
 
-import game.IState.ObjectName;
+import game.state.IState;
+import game.state.IState.ObjectName;
+import game.state.State;
+import game.state.StateVariable;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
 import org.jbox2d.collision.shapes.Shape;
@@ -438,7 +441,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
 //
 //        blockShapeDef.friction = 1;
 //        blockShapeDef.density = 1;
-//        blockShapeDef.filter.groupIndex = 1; // Same as track.
+//        blockShapeDef.tree.node.filter.groupIndex = 1; // Same as track.
 //
 //        blockBodyDef.position = (torsoPos).add(new Vec2(20,-2));
 //        blockBodyDef.angle = 0;
@@ -663,7 +666,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
 //
 //            blockShapeDef.friction = 1;
 //            blockShapeDef.density = 1;
-//            blockShapeDef.filter.groupIndex = 1; // Same as track.
+//            blockShapeDef.tree.node.filter.groupIndex = 1; // Same as track.
 //
 //            blockBodyDef.position = (torsoBody.getPosition()).add(new Vec2(30,4));
 //            blockBodyDef.angle = 2 * 3.14f * rand.nextFloat();

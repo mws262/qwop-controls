@@ -146,7 +146,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
 <tr class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../data/SparseDataToDenseTFRecord.html#trimFirst">trimFirst</a></span></code>
-<div class="block">If we don't want to save data for the first or last actions in a sequence.</div>
+<div class="block">If we don't want to save data for the first or last game.actions in a sequence.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -224,7 +224,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
 <li class="blockList">
 <h4>trimFirst</h4>
 <pre>public&nbsp;int trimFirst</pre>
-<div class="block">If we don't want to save data for the first or last actions in a sequence.</div>
+<div class="block">If we don't want to save data for the first or last game.actions in a sequence.</div>
 </li>
 </ul>
 <a name="trimLast">
@@ -275,7 +275,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
 <h4>convert</h4>
 <pre>public&nbsp;void&nbsp;convert(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html?is-external=true" title="class or interface in java.io">File</a>&gt;&nbsp;files,
                     boolean&nbsp;saveBulk)</pre>
-<div class="block">Given files containing sparsely saved information (i.e. just at actions transitions, not at every timestep),
+<div class="block">Given files containing sparsely saved information (i.e. just at game.actions transitions, not at every timestep),
  convert to densely saved data by re-simulating.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
