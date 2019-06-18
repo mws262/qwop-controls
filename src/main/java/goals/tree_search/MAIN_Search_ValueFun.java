@@ -6,7 +6,7 @@ import evaluators.EvaluationFunction_Constant;
 import evaluators.EvaluationFunction_Distance;
 import game.GameUnified;
 import game.GameUnifiedCaching;
-import game.IGameInternal;
+import game.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import samplers.Sampler_UCB;
@@ -88,7 +88,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
     private ValueFunction_TensorFlow_StateOnly valueFunction;
 
     private int prevStates = 2;
-    private int delayTs = 4;
+    private int delayTs = 1;
 
     @SuppressWarnings("ConstantConditions")
     public MAIN_Search_ValueFun(File configFile) {
@@ -133,6 +133,7 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         rolloutValFunWeight = Float.parseFloat(properties.getProperty("rolloutValFunWeight", "0.75"));
 
         game = (prevStates > 0) ? new GameUnifiedCaching(delayTs, prevStates) : new GameUnified();
+        StateDelayEmbedded.useFiniteDifferences = true;
         makeValueFunction(game);
     }
 
