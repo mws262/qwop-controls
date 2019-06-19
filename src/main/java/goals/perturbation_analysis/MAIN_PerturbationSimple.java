@@ -4,7 +4,7 @@ import game.actions.ActionQueue;
 import game.actions.perturbers.ActionPerturber_SwitchTooSoon;
 import game.GameUnified;
 import game.IGameInternal;
-import ui.PanelRunner_MultiState;
+import ui.runner.PanelRunner_MultiState;
 
 import javax.swing.*;
 import java.awt.*;

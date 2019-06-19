@@ -8,7 +8,7 @@ import game.GameUnified;
 import game.IGameInternal;
 import game.state.IState;
 import tree.node.NodeQWOPGraphicsBase;
-import ui.PanelRunner_MultiState;
+import ui.runner.PanelRunner_MultiState;
 
 import javax.swing.*;
 import java.awt.*;

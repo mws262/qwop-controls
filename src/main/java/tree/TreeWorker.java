@@ -11,7 +11,7 @@ import tree.sampler.Sampler_Random;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
 import tree.node.NodeQWOPExplorableBase;
-import ui.PanelRunner;
+import ui.runner.PanelRunner;
 
 import java.awt.*;
 import java.util.ArrayList;

@@ -3,7 +3,7 @@ package tree.sampler.rollout;
 import game.actions.*;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
-import evaluators.IEvaluationFunction;
+import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;

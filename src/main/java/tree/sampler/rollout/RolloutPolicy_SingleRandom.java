@@ -1,6 +1,6 @@
 package tree.sampler.rollout;
 
-import evaluators.IEvaluationFunction;
+import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
 

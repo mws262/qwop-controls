@@ -3,7 +3,7 @@ game.actions.perturbers
 controllers
 data
 distributions
-evaluators
+tree.node.evaluator
 filters
 flash
 game

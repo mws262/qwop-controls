@@ -14,7 +14,7 @@ import game.IGameInternal;
 import org.tensorflow.example.SequenceExample;
 
 import game.state.State;
-import ui.PanelRunner_MultiState;
+import ui.runner.PanelRunner_MultiState;
 
 /**
  * Playback runs or sections of runs saved densely in TFRecord files. This draws three things: state data drawn over

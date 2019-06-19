@@ -1,4 +1,4 @@
-package ui;
+package ui.runner;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

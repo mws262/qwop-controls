@@ -174,12 +174,12 @@ implements <a href="../samplers/ISampler.html" title="interface in tree.sampler"
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../samplers/Sampler_UCB.html#Sampler_UCB-evaluators.IEvaluationFunction-">Sampler_UCB</a></span>(<a href="../evaluators/IEvaluationFunction.html" title="interface in evaluators">IEvaluationFunction</a>&nbsp;evaluationFunction)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../samplers/Sampler_UCB.html#Sampler_UCB-tree.node.evaluators.IEvaluationFunction-">Sampler_UCB</a></span>(<a href="../tree.node.evaluators/IEvaluationFunction.html" title="interface in tree.node.evaluator">IEvaluationFunction</a>&nbsp;evaluationFunction)</code>
 <div class="block">Must provide an evaluationFunction to get a numeric score for nodes after a rollout.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../samplers/Sampler_UCB.html#Sampler_UCB-evaluators.IEvaluationFunction-samplers.rollout.RolloutPolicy-">Sampler_UCB</a></span>(<a href="../evaluators/IEvaluationFunction.html" title="interface in evaluators">IEvaluationFunction</a>&nbsp;evaluationFunction,
+<td class="colOne"><code><span class="memberNameLink"><a href="../samplers/Sampler_UCB.html#Sampler_UCB-tree.node.evaluators.IEvaluationFunction-samplers.rollout.RolloutPolicy-">Sampler_UCB</a></span>(<a href="../tree.node.evaluators/IEvaluationFunction.html" title="interface in tree.node.evaluator">IEvaluationFunction</a>&nbsp;evaluationFunction,
            <a href="../samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout">RolloutPolicy</a>&nbsp;rolloutPolicy)</code>
 <div class="block">Must provide an evaluationFunction to get a numeric score for nodes after a rollout.</div>
 </td>
@@ -239,7 +239,7 @@ implements <a href="../samplers/ISampler.html" title="interface in tree.sampler"
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../samplers/Sampler_UCB.html#setEvaluationFunction-evaluators.IEvaluationFunction-">setEvaluationFunction</a></span>(<a href="../evaluators/IEvaluationFunction.html" title="interface in evaluators">IEvaluationFunction</a>&nbsp;evaluationFunction)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../samplers/Sampler_UCB.html#setEvaluationFunction-tree.node.evaluators.IEvaluationFunction-">setEvaluationFunction</a></span>(<a href="../tree.node.evaluators/IEvaluationFunction.html" title="interface in tree.node.evaluator">IEvaluationFunction</a>&nbsp;evaluationFunction)</code>
 <div class="block">Set a new evaluation function for this sampler.</div>
 </td>
 </tr>
@@ -322,23 +322,23 @@ implements <a href="../samplers/ISampler.html" title="interface in tree.sampler"
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="Sampler_UCB-evaluators.IEvaluationFunction-">
+<a name="Sampler_UCB-tree.node.evaluators.IEvaluationFunction-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>Sampler_UCB</h4>
-<pre>public&nbsp;Sampler_UCB(<a href="../evaluators/IEvaluationFunction.html" title="interface in evaluators">IEvaluationFunction</a>&nbsp;evaluationFunction)</pre>
+<pre>public&nbsp;Sampler_UCB(<a href="../tree.node.evaluators/IEvaluationFunction.html" title="interface in tree.node.evaluator">IEvaluationFunction</a>&nbsp;evaluationFunction)</pre>
 <div class="block">Must provide an evaluationFunction to get a numeric score for nodes after a rollout.</div>
 </li>
 </ul>
-<a name="Sampler_UCB-evaluators.IEvaluationFunction-samplers.rollout.RolloutPolicy-">
+<a name="Sampler_UCB-tree.node.evaluators.IEvaluationFunction-samplers.rollout.RolloutPolicy-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>Sampler_UCB</h4>
-<pre>public&nbsp;Sampler_UCB(<a href="../evaluators/IEvaluationFunction.html" title="interface in evaluators">IEvaluationFunction</a>&nbsp;evaluationFunction,
+<pre>public&nbsp;Sampler_UCB(<a href="../tree.node.evaluators/IEvaluationFunction.html" title="interface in tree.node.evaluator">IEvaluationFunction</a>&nbsp;evaluationFunction,
                    <a href="../samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout">RolloutPolicy</a>&nbsp;rolloutPolicy)</pre>
 <div class="block">Must provide an evaluationFunction to get a numeric score for nodes after a rollout.
  Also specify a rollout policy to use.</div>
@@ -352,13 +352,13 @@ implements <a href="../samplers/ISampler.html" title="interface in tree.sampler"
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="setEvaluationFunction-evaluators.IEvaluationFunction-">
+<a name="setEvaluationFunction-tree.node.evaluators.IEvaluationFunction-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>setEvaluationFunction</h4>
-<pre>public&nbsp;void&nbsp;setEvaluationFunction(<a href="../evaluators/IEvaluationFunction.html" title="interface in evaluators">IEvaluationFunction</a>&nbsp;evaluationFunction)</pre>
+<pre>public&nbsp;void&nbsp;setEvaluationFunction(<a href="../tree.node.evaluators/IEvaluationFunction.html" title="interface in tree.node.evaluator">IEvaluationFunction</a>&nbsp;evaluationFunction)</pre>
 <div class="block">Set a new evaluation function for this sampler. Should be hot-swappable at any point.</div>
 </li>
 </ul>

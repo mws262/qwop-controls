@@ -5,7 +5,7 @@ import data.SavableSingleGame;
 import game.GameUnified;
 import tree.node.NodeQWOPGraphics;
 import tree.node.NodeQWOPGraphicsBase;
-import ui.PanelRunner_Animated;
+import ui.runner.PanelRunner_Animated;
 
 import javax.swing.*;
 import java.awt.*;

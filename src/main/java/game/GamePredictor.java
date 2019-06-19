@@ -6,7 +6,7 @@ import game.state.IState;
 import game.state.State;
 import tflowtools.TensorflowLoader;
 import org.tensorflow.Tensor;
-import ui.PanelRunner_SimpleState;
+import ui.runner.PanelRunner_SimpleState;
 
 import javax.swing.*;
 import java.awt.*;
