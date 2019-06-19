@@ -1,6 +1,6 @@
 package game;
 
-import game.actions.Action;
+import game.action.Action;
 import game.state.IState;
 import game.state.IState.ObjectName;
 import game.state.State;

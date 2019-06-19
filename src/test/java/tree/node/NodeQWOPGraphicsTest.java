@@ -1,9 +1,9 @@
 package tree.node;
 
-import game.actions.Action;
-import game.actions.ActionGenerator_FixedSequence;
-import game.actions.ActionList;
-import game.actions.IActionGenerator;
+import game.action.Action;
+import game.action.ActionGenerator_FixedSequence;
+import game.action.ActionList;
+import game.action.IActionGenerator;
 import distributions.Distribution_Equal;
 import game.IGameInternal;
 import game.state.State;
@@ -65,7 +65,7 @@ public class NodeQWOPGraphicsTest {
 
     private List<NodeQWOPGraphics> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
 
-    // Some sample game.actions (mocked).
+    // Some sample game.action (mocked).
     private Action a1;
     private Action a2;
     private Action a3;

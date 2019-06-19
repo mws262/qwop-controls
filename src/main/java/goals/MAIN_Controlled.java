@@ -1,7 +1,7 @@
 package goals;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
 import controllers.IController;
@@ -106,7 +106,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         graphicsThread.start(); // Makes it smoother by updating the graphics faster than the timestep updates.
 
         JButton saveButton = new JButton();
-        saveButton.setText("Save game.actions");
+        saveButton.setText("Save game.action");
         saveButton.addActionListener(this);
         saveButton.setVisible(true);
         saveButton.setPreferredSize(new Dimension(1000, 50));
@@ -242,7 +242,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        if (e.getActionCommand().equals("Save game.actions")) {
+        if (e.getActionCommand().equals("Save game.action")) {
             Action[] acts = actionQueue.getActionsInCurrentRun();
             List<Action> actsConsolidated = Action.consolidateActions(Arrays.asList(acts));
 

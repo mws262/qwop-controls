@@ -1,9 +1,9 @@
 package tree.node;
 
-import game.actions.Action;
-import game.actions.ActionGenerator_FixedSequence;
-import game.actions.ActionList;
-import game.actions.IActionGenerator;
+import game.action.Action;
+import game.action.ActionGenerator_FixedSequence;
+import game.action.ActionList;
+import game.action.IActionGenerator;
 import distributions.Distribution_Equal;
 import game.IGameInternal;
 import game.state.State;
@@ -62,7 +62,7 @@ public class NodeQWOPExplorableTest {
 
     private List<NodeQWOPExplorable> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
 
-    // Some sample game.actions (mocked).
+    // Some sample game.action (mocked).
     private Action a1;
     private Action a2;
     private Action a3;
@@ -213,7 +213,7 @@ public class NodeQWOPExplorableTest {
         Assert.assertTrue(node3_3_2.isFullyExplored());
         Assert.assertTrue(node3_3_3.isFullyExplored());
 
-        // Node which has all failed children and no untried game.actions should be fully-explored.
+        // Node which has all failed children and no untried game.action should be fully-explored.
         Assert.assertEquals(3, node3_3.getChildCount());
         Assert.assertEquals(0, node3_3.getUntriedActionCount());
         Assert.assertTrue(node3_3.isFullyExplored());
@@ -223,7 +223,7 @@ public class NodeQWOPExplorableTest {
         Assert.assertFalse(node1_2_1_2.isFullyExplored());
         Assert.assertFalse(node3.isFullyExplored());
 
-        // Add all failed child game.actions to a node should make it fully explored and cause correct propagation up the
+        // Add all failed child game.action to a node should make it fully explored and cause correct propagation up the
         // tree.
         Assert.assertFalse(node2_2.isFullyExplored());
         Assert.assertFalse(node2_2_1.isFullyExplored());
@@ -314,7 +314,7 @@ public class NodeQWOPExplorableTest {
             }
         }
 
-        Assert.assertTrue("Random action selection failed to come up with all possible game.actions within " + timeout +
+        Assert.assertTrue("Random action selection failed to come up with all possible game.action within " + timeout +
                 "tries. This is incredibly unlikely to be random chance.", counter < 9999);
     }
 
@@ -364,7 +364,7 @@ public class NodeQWOPExplorableTest {
     @Test
     public void stripUncheckedActionsExceptOnLeaves() {
         setupTree();
-        // Clear to way beyond. Only leaves should have unchecked game.actions now.
+        // Clear to way beyond. Only leaves should have unchecked game.action now.
         NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1_2, 10);
         Assert.assertEquals(0, node1_2_1_2.getUntriedActionCount());
         Assert.assertEquals(0, node1_2_1_2_1.getUntriedActionCount()); // Already failed.
@@ -510,7 +510,7 @@ public class NodeQWOPExplorableTest {
         Assert.assertEquals(3, node2.getChildCount()); // Shouldn't affect the child count.
         
         exception.expect(IllegalArgumentException.class);
-        node2.addBackwardsLinkedChild(a4, unfailedState); // Still shouldn't be able to add duplicate game.actions, even
+        node2.addBackwardsLinkedChild(a4, unfailedState); // Still shouldn't be able to add duplicate game.action, even
         // if it is only backwards linked.
     }
 }

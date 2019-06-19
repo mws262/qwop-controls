@@ -1,6 +1,6 @@
 package tree.sampler.rollout;
 
-import game.actions.Action;
+import game.action.Action;
 import game.state.IState;
 import tree.node.NodeQWOPExplorableBase;
 import value.ValueFunction_TensorFlow_StateOnly;

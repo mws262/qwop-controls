@@ -1,7 +1,7 @@
 package goals.perturbation_analysis;
 
-import game.actions.ActionQueue;
-import game.actions.perturbers.ActionPerturber_SwitchTooSoon;
+import game.action.ActionQueue;
+import game.action.perturbers.ActionPerturber_SwitchTooSoon;
 import game.GameUnified;
 import game.IGameInternal;
 import ui.runner.PanelRunner_MultiState;

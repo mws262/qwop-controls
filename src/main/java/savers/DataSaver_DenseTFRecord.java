@@ -1,6 +1,6 @@
 package savers;
 
-import game.actions.Action;
+import game.action.Action;
 import com.google.protobuf.ByteString;
 import data.TFRecordWriter;
 import game.state.IState;
@@ -42,7 +42,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     private int saveCounter = 0;
 
     /**
-     * List of sets of states and game.actions for individual games awaiting file write.
+     * List of sets of states and game.action for individual games awaiting file write.
      */
     private ArrayList<GameContainer> gameData = new ArrayList<>();
 
@@ -143,7 +143,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
                 continue;
             }
             SequenceExample.Builder seqEx = SequenceExample.newBuilder();
-            FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & game.actions) in a
+            FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & game.action) in a
 			// single run.
 
             // Pack up states
@@ -152,7 +152,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
                 makeStateFeatureList(dat.states, bodyPart, featLists);
             }
 
-            // Pack up game.actions -- 3 different ways:
+            // Pack up game.action -- 3 different ways:
             // 1) a Keys pressed at individual timestep.
             // 1) b Key categories pressed at individual timestep i.e. WO, QP, __ are three categories, labeled one hot.
             // 2) Timesteps until transition for each timestep.
@@ -271,7 +271,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     }
 
     /**
-     * Just a holder for the states and game.actions of individual games.
+     * Just a holder for the states and game.action of individual games.
      * Just so we can add these combinations to another list.
      *
      * @author matt

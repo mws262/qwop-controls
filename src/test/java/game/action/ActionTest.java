@@ -1,4 +1,4 @@
-package game.actions;
+package game.action;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -240,7 +240,7 @@ public class ActionTest {
 
     @Test
     public void consolidateActions() {
-        // General list of game.actions with weird ordering and some zero-duration game.actions.
+        // General list of game.action with weird ordering and some zero-duration game.action.
         List<Action> actions = new ArrayList<>();
         actions.add(new Action(4, false, false, false, false));
         actions.add(new Action(1, false, false, false, false));

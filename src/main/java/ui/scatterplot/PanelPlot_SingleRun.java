@@ -1,7 +1,7 @@
 package ui.scatterplot;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.*;
 import game.state.IState;
 import game.state.State;
@@ -43,7 +43,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
             "/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
     /**
-     * Stores the qwop game.actions we're going to execute.
+     * Stores the qwop game.action we're going to execute.
      */
     private ActionQueue actionQueue = new ActionQueue();
 
@@ -70,7 +70,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     private final int numPlots;
 
     /**
-     * Node that we're plotting the game.actions/states up to.
+     * Node that we're plotting the game.action/states up to.
      */
     private NodeQWOPExplorableBase<?> selectedNode;
 
@@ -144,7 +144,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
             pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +
                     StateVariable.StateName.values()[count].toString());
 
-            dat.addSeries(0, Arrays.copyOf(xData, xData.length - 1), yData, cData); // Have more states than game.actions,
+            dat.addSeries(0, Arrays.copyOf(xData, xData.length - 1), yData, cData); // Have more states than game.action,
             // so will kill the last one.
 
             setPlotBoundsFromData(pl, xData, yData);

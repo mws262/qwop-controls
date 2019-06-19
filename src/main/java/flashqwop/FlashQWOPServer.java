@@ -1,6 +1,6 @@
 package flashqwop;
 
-import game.actions.Action;
+import game.action.Action;
 import game.GameConstants;
 import game.IGameExternal;
 import game.state.State;

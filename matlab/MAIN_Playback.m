@@ -1,9 +1,9 @@
-% Simulate a known sequence of game.actions.
+% Simulate a known sequence of game.action
 
 % Handle Java imports.
 eval('javaaddpath ../target/qwop-controls-1.0-jar-with-dependencies.jar'); % Strange issues with trying to directly call these commands. Eval seems to fix it.
 eval('javaaddpath ../jbox2d.jar');
-eval('import game.state.State game.state.StateVariable game.GameSingleThread game.actions.Action game.actions.ActionQueue');
+eval('import game.state.State game.state.StateVariable game.GameSingleThread game.action.Action game.action.ActionQueue');
 
 % Key combinations used.
 noKey = [false, false, false, false];

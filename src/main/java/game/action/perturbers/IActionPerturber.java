@@ -1,6 +1,6 @@
-package game.actions.perturbers;
+package game.action.perturbers;
 
-import game.actions.ActionQueue;
+import game.action.ActionQueue;
 
 /**
  * Interface for adding perturbations to {@ActionQueue}. This mutation must happen before executing the queue. Future

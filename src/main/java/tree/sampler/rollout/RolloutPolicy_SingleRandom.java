@@ -5,15 +5,22 @@ import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
 
 /**
- * Most basic rollout policy. Just randomly picks game.actions until failure. This is how {@link tree.sampler.Sampler_UCB} was
+ * Most basic rollout policy. Just randomly picks game.action until failure. This is how {@link tree.sampler.Sampler_UCB} was
  * hardcoded for most of its life.
  *
  * @author matt
  */
 public class RolloutPolicy_SingleRandom extends RolloutPolicy {
 
+    /**
+     * Maximum forward timesteps performed in a single rollout regardless of failure.
+     */
+    public int maxTimesteps = 100;
 
-    int maxTimesteps = 100;
+    /**
+     * Reward can be reduced by a factor if failure results.
+     */
+    public float failureMultiplier = 1.0f;
 
    public RolloutPolicy_SingleRandom(IEvaluationFunction evaluationFunction) {
         super(evaluationFunction);
@@ -24,15 +31,15 @@ public class RolloutPolicy_SingleRandom extends RolloutPolicy {
         actionQueue.clearAll();
         NodeQWOPExplorableBase<?> normalRolloutEndNode = randomRollout(startNode, game, maxTimesteps);
 
-        float multiplier = 1f;
-        if (normalRolloutEndNode.getState().isFailed()) {
-            multiplier = 0.75f;
-        }
-        return multiplier * (evaluationFunction.getValue(normalRolloutEndNode) - evaluationFunction.getValue(startNode));
+        return (normalRolloutEndNode.getState().isFailed() ? failureMultiplier : 1.0f)
+                * (evaluationFunction.getValue(normalRolloutEndNode) - evaluationFunction.getValue(startNode));
     }
 
     @Override
-    public RolloutPolicy getCopy() {
-       return new RolloutPolicy_SingleRandom(evaluationFunction.getCopy());
+    public RolloutPolicy_SingleRandom getCopy() {
+       RolloutPolicy_SingleRandom copy = new RolloutPolicy_SingleRandom(evaluationFunction.getCopy());
+       copy.maxTimesteps = maxTimesteps;
+       copy.failureMultiplier = failureMultiplier;
+       return copy;
     }
 }

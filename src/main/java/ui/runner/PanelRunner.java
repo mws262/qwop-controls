@@ -5,7 +5,7 @@ import java.awt.geom.AffineTransform;
 
 import javax.swing.JPanel;
 
-import game.actions.Action;
+import game.action.Action;
 import ui.IUserInterface.TabbedPaneActivator;
 
 /**
@@ -130,7 +130,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
     }
 
     /**
-     * Draw the game.actions on the left side pane.
+     * Draw the game.action on the left side pane.
      */
     protected void drawActionString(Action[] sequence, Graphics g) {
         drawActionString(g, sequence, -1);

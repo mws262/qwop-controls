@@ -1,6 +1,6 @@
 package tree.sampler;
 
-import game.actions.Action;
+import game.action.Action;
 import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
 
@@ -39,7 +39,7 @@ public class Sampler_Deterministic implements ISampler {
 			// expand directly.
             if (currentNode.getUntriedActionCount() != 0 && currentNode.reserveExpansionRights()) return currentNode;
 
-            // Get the first child with some untried game.actions after it, or at least a not-fully-explored one.
+            // Get the first child with some untried game.action after it, or at least a not-fully-explored one.
             boolean foundViableChild = false;
             for (NodeQWOPExplorableBase<?> child : currentNode.getChildren()) {
                 if (child.getUntriedActionCount() != 0 && child.reserveExpansionRights()) {
@@ -73,7 +73,7 @@ public class Sampler_Deterministic implements ISampler {
         if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
-        return startNode.getUntriedActionByIndex(0); // Get the first available untried game.actions.
+        return startNode.getUntriedActionByIndex(0); // Get the first available untried game.action.
     }
 
     @Override

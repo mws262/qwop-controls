@@ -1,7 +1,7 @@
 package ui.runner;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.GameUnified;
 import game.IGameInternal;
 import org.apache.logging.log4j.LogManager;
@@ -26,7 +26,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     protected IGameInternal game;
 
     /**
-     * Stores the QWOP game.actions we're going to execute.
+     * Stores the QWOP game.action we're going to execute.
      */
     private ActionQueue actionQueue = new ActionQueue();
 
@@ -71,7 +71,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     /**
-     * This version only animates the game.actions between startNode and endNode. Still simulates all of course.
+     * This version only animates the game.action between startNode and endNode. Still simulates all of course.
      */
     public void simRunToNode(NodeQWOPExplorableBase<?> startNode, NodeQWOPExplorableBase<?> endNode) {
         simRunToNode(endNode);

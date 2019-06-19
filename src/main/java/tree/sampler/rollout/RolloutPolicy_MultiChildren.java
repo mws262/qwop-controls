@@ -1,6 +1,6 @@
 package tree.sampler.rollout;
 
-import game.actions.Action;
+import game.action.Action;
 import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
@@ -29,7 +29,7 @@ public class RolloutPolicy_MultiChildren extends RolloutPolicy {
 
     @Override
     public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
-        // See how we should advance through untried game.actions. If the number of unchecked game.actions is less than the
+        // See how we should advance through untried game.action. If the number of unchecked game.action is less than the
         // number of rollouts allowed, we run all of them. Otherwise, we try to evenly-space them.
         float advancement = 1f;
         int numUnchecked = startNode.getUntriedActionCount();
@@ -51,7 +51,7 @@ public class RolloutPolicy_MultiChildren extends RolloutPolicy {
                 }
             }
 
-            // Try one of the child game.actions.
+            // Try one of the child game.action.
             Action nextAction = startNode.getUntriedActionByIndex((int) i);
             actionQueue.addAction(nextAction);
             while (!actionQueue.isEmpty() && !game.getFailureStatus()) {

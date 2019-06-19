@@ -1,7 +1,7 @@
 package flashqwop;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.*;
 import game.state.IState;
 import game.state.State;
@@ -20,7 +20,7 @@ import java.util.LinkedList;
  * up. Hence this interface is a little different.
  *
  * This effectively extends the functionality of {@link FlashQWOPServer}. It provides the ability to send commands
- * and receive {@link State states}, but does not help with getting specific game.actions executed or timed correctly.
+ * and receive {@link State states}, but does not help with getting specific game.action executed or timed correctly.
  *
  * @author matt
  *
@@ -86,7 +86,7 @@ public abstract class FlashGame implements IFlashStateListener {
 
     /**
      * These Actions will be executed first, from the very beginning of the run after a reset. If you just want to
-     * run a single, known sequence, this is the way to go. After these added game.actions are consumed, then
+     * run a single, known sequence, this is the way to go. After these added game.action are consumed, then
      * {@link FlashGame} will turn to a feedback controller.
      * @return
      */
@@ -101,7 +101,7 @@ public abstract class FlashGame implements IFlashStateListener {
     public abstract Action getControlAction(IState state);
 
     /**
-     * This class will handle the execution of game.actions, but inheriting classes may want to listen in.
+     * This class will handle the execution of game.action, but inheriting classes may want to listen in.
      * @param state Most-recent state received from the Flash game.
      * @param command Command WHICH LEAD TO THIS STATE. This will be null for for the first state, since it has no
      *                preceding command.
@@ -124,7 +124,7 @@ public abstract class FlashGame implements IFlashStateListener {
     private IState previousState;
     @Override
     public synchronized void stateReceived(int timestep, IState state) {
-        // New run has started. Add the sequence of game.actions from the beginning.
+        // New run has started. Add the sequence of game.action from the beginning.
         if (timestep == 0) {
             logger.debug("Zero timestep from Flash game.");
             actionQueue.clearAll();

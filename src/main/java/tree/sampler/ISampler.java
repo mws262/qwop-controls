@@ -1,6 +1,6 @@
 package tree.sampler;
 
-import game.actions.Action;
+import game.action.Action;
 import tree.node.NodeQWOPExplorableBase;
 import game.IGameInternal;
 

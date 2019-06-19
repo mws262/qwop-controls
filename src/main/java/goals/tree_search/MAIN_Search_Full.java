@@ -1,7 +1,7 @@
 package goals.tree_search;
 
-import game.actions.ActionGenerator_FixedSequence;
-import game.actions.IActionGenerator;
+import game.action.ActionGenerator_FixedSequence;
+import game.action.IActionGenerator;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import data.SparseDataToDenseTFRecord;

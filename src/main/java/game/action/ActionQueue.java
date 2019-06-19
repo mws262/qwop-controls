@@ -1,13 +1,13 @@
-package game.actions;
+package game.action;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * All things related to storing and going through sequences of game.actions. {@link ActionQueue} itself acts like a
- * {@link Queue} of {@link Action game.actions}, while game.actions act like queues of keypresses (commands). When
+ * All things related to storing and going through sequences of game.action. {@link ActionQueue} itself acts like a
+ * {@link Queue} of {@link Action game.action}, while game.action act like queues of keypresses (commands). When
  * calling {@link ActionQueue#pollCommand()}, this will return the next set of keypresses from the current action,
- * while automatically advancing through game.actions when one's duration is complete.
+ * while automatically advancing through game.action when one's duration is complete.
  *
  * @author Matt
  *
@@ -23,7 +23,7 @@ public class ActionQueue {
     private Queue<Action> actionQueue = new LinkedList<>();
 
     /**
-     * All game.actions done or queued since the last reset. Unlike the queue, things aren't removed until reset.
+     * All game.action done or queued since the last reset. Unlike the queue, things aren't removed until reset.
      */
     private ArrayList<Action> actionListFull = new ArrayList<>();
 
@@ -57,10 +57,10 @@ public class ActionQueue {
     /**
      * See the next action we will execute. Does not change the queue.
      *
-     * @return Next full action that will run (i.e. timings and keys). Returns null if no future game.actions remain.
+     * @return Next full action that will run (i.e. timings and keys). Returns null if no future game.action remain.
      */
     public synchronized Action peekNextAction() {
-        if (isEmpty()) throw new IndexOutOfBoundsException("No game.actions have been added to this queue. " +
+        if (isEmpty()) throw new IndexOutOfBoundsException("No game.action have been added to this queue. " +
                 "Cannot peek.");
         return actionQueue.peek();
     }
@@ -87,13 +87,13 @@ public class ActionQueue {
 
     /**
      * Adds a new action to the end of the queue. If this is the first action to be added, it is loaded up as the
-     * current action. All added game.actions are copied internally.
+     * current action. All added game.action are copied internally.
      *
      * @param action Action to add to the end of the queue as a copy. Does not influence current polling of the queue
      *               elements.
      */
     public synchronized void addAction(Action action) {
-        if (action.getTimestepsTotal() == 0) return; // Zero-duration game.actions are tolerated, but not added to the queue.
+        if (action.getTimestepsTotal() == 0) return; // Zero-duration game.action are tolerated, but not added to the queue.
 
         Action localCopy = action.getCopy();
         actionQueue.add(localCopy);
@@ -108,14 +108,14 @@ public class ActionQueue {
     }
 
     /**
-     * Add a sequence of game.actions. All added game.actions are copied.
+     * Add a sequence of game.action. All added game.action are copied.
      *
-     * @param actions Array of game.actions to add to the end of the queue. They are copied, and adding does not influence
+     * @param actions Array of game.action to add to the end of the queue. They are copied, and adding does not influence
      *                polling of the existing queue.
      */
     public synchronized void addSequence(Action[] actions) {
         if (actions.length == 0)
-            throw new IllegalArgumentException("Tried to add an empty array of game.actions to a queue.");
+            throw new IllegalArgumentException("Tried to add an empty array of game.action to a queue.");
 
         for (Action action : actions) {
             addAction(action); // Copy happens in addAction. No need to duplicate here.
@@ -123,14 +123,14 @@ public class ActionQueue {
     }
 
     /**
-     * Add a sequence of game.actions. All added game.actions are copied.
+     * Add a sequence of game.action. All added game.action are copied.
      *
-     * @param actions List of game.actions to add to the end of the queue. They are copied, and adding does not influence
+     * @param actions List of game.action to add to the end of the queue. They are copied, and adding does not influence
      *                polling of the existing queue.
      */
     public synchronized void addSequence(List<Action> actions) {
         if (actions.size() == 0)
-            throw new IllegalArgumentException("Tried to add an empty array of game.actions to a queue.");
+            throw new IllegalArgumentException("Tried to add an empty array of game.action to a queue.");
 
         for (Action action : actions) {
             addAction(action); // Copy happens in addAction. No need to duplicate here.
@@ -138,7 +138,7 @@ public class ActionQueue {
     }
 
     /**
-     * Request the next QWOP keypress commands from the added sequence. Automatically advances between game.actions.
+     * Request the next QWOP keypress commands from the added sequence. Automatically advances between game.action.
      *
      * @return Get the next command (QWOP true/false array) on the queue.
      */
@@ -189,9 +189,9 @@ public class ActionQueue {
     }
 
     /**
-     * Get all the game.actions in this queue.
+     * Get all the game.action in this queue.
      *
-     * @return All game.actions in this queue, including ones which have already been executed.
+     * @return All game.action in this queue, including ones which have already been executed.
      */
     public Action[] getActionsInCurrentRun() {
         return actionListFull.toArray(new Action[0]);
@@ -211,8 +211,8 @@ public class ActionQueue {
     }
 
     /**
-     * Resets all progress on the queue making it ready to execute the same game.actions again. Note that to actually
-     * remove game.actions, you should use {@link ActionQueue#clearAll()}.
+     * Resets all progress on the queue making it ready to execute the same game.action again. Note that to actually
+     * remove game.action, you should use {@link ActionQueue#clearAll()}.
      */
     public void resetQueue() {
         Action[] actions = getActionsInCurrentRun();
@@ -221,9 +221,9 @@ public class ActionQueue {
     }
 
     /**
-     * Get a copy of this ActionQueue, with none of the game.actions performed yet.
+     * Get a copy of this ActionQueue, with none of the game.action performed yet.
      *
-     * @return An ActionQueue with all the same game.actions, but no progress in them done yet.
+     * @return An ActionQueue with all the same game.action, but no progress in them done yet.
      */
     public ActionQueue getCopyOfUnexecutedQueue() {
         ActionQueue actionQueueCopy = new ActionQueue();
@@ -232,7 +232,7 @@ public class ActionQueue {
     }
 
     /**
-     * Get a copy of this ActionQueue, with the same game.actions, and the same progress made on those game.actions.
+     * Get a copy of this ActionQueue, with the same game.action, and the same progress made on those game.action.
      *
      * @return An ActionQueue which should behave identically to the original.
      */
@@ -259,8 +259,8 @@ public class ActionQueue {
     }
 
     /**
-     * Get some sample game.actions for use in tests. This is a successful short run found by tree search.
-     * @return A successful queue of game.actions.
+     * Get some sample game.action for use in tests. This is a successful short run found by tree search.
+     * @return A successful queue of game.action.
      */
     public static ActionQueue getSampleActions() {
         // Ran MAIN_Search_LongRun to get these.

@@ -52,7 +52,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
                     (int) (xOffsetPixels - currState.body.getX() * runnerScaling), yOffsetPixels, Color.BLACK,
                     normalStroke);
 
-            // No game.actions being displayed, so just draw the keys.
+            // No game.action being displayed, so just draw the keys.
             keyDrawer(g, false, false, false, false);
 
             //This draws the "road" markings to show that the ground is moving relative to the dude.

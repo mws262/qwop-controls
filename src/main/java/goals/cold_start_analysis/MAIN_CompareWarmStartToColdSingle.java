@@ -1,13 +1,13 @@
 package goals.cold_start_analysis;
 
-import game.actions.ActionQueue;
+import game.action.ActionQueue;
 import game.*;
 import game.state.IState;
 
 import java.awt.*;
 
 /**
- * Take a known sequence of reasonable game.actions, simulate for some number of game.actions, and introduce a second runner,
+ * Take a known sequence of reasonable game.action, simulate for some number of game.action, and introduce a second runner,
  * with a cloned state, but a cold start of the Box2D internal solvers. Simulate both together for the rest of the
  * run with identical input commands.
  *

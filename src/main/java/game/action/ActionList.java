@@ -1,14 +1,15 @@
-package game.actions;
+package game.action;
 
 import distributions.Distribution;
 import distributions.Distribution_Equal;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
- * An ActionList acts like an {@link java.util.ArrayList} for {@link Action game.actions}, except it allows for sampling
- * from the list on a {@link Distribution}.
+ * An ActionList acts like an {@link java.util.ArrayList} for {@link Action game.action}, except it allows for sampling
+ * from the list on a {@link Distribution}. DOES NOT ALLOW DUPLICATES!!
  *
  * @author Matt
  * @see Action
@@ -64,9 +65,9 @@ public class ActionList extends ArrayList<Action> {
 
     /**
      * Get an ActionList defined by as many durations as desired, 4 keys for each, and a sampling distribution. This
-     * is equivalent to just making {@link Action game.actions} and adding them with {@link ActionList#add(Object)}.
+     * is equivalent to just making {@link Action game.action} and adding them with {@link ActionList#add(Object)}.
      *
-     * @param durations Timestep durations of the game.actions which will be in the returned ActionList.
+     * @param durations Timestep durations of the game.action which will be in the returned ActionList.
      * @param keys 2D array of QWOP keypress statuses. First dimension corresponds to the action, while the second
      *             dimension corresponds to a QwOP key.
      * @param dist Sampling distribution for the new ActionList.
@@ -84,7 +85,7 @@ public class ActionList extends ArrayList<Action> {
     /**
      * Same but for one set of keys and multiple durations.
      *
-     * @param durations Timestep duration of the game.actions to be created.
+     * @param durations Timestep duration of the game.action to be created.
      * @param keys Single set of keys to be pressed for the specified durations.
      * @param dist Selection distribution for sampling over the {@link ActionList}.
      * @return ActionList created with one {@link Action} per duration specified.
@@ -100,8 +101,8 @@ public class ActionList extends ArrayList<Action> {
     /**
      * Make an {@link ActionList} containing all key combinations for all durations between the specified bounds.
      * @param minDuration Inclusive bound. Minimum {@link Action} duration to be found in the list.
-     * @param maxDuration Exclusive bound. Upper bound on durations of game.actions found in this list.
-     * @param distribution Distribution for sampling game.actions once this list is created.
+     * @param maxDuration Exclusive bound. Upper bound on durations of game.action found in this list.
+     * @param distribution Distribution for sampling game.action once this list is created.
      * @return An exhaustive {@link ActionList}.
      */
     @SuppressWarnings("unused")
@@ -120,9 +121,48 @@ public class ActionList extends ArrayList<Action> {
 
     /**
      * Get an ActionList containing no elements.
-     * @return An empty list of game.actions.
+     * @return An empty list of game.action.
      */
     public static ActionList getEmptyList() {
         return new ActionList(new Distribution_Equal());
     }
+
+    @Override
+    public boolean add(Action action) {
+        if (contains(action)) {
+            return false;
+        } else {
+            return super.add(action);
+        }
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends Action> actions) {
+        for (Action action : actions) {
+            if (!contains(action)) {
+                super.add(action);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void add(int index, Action action) {
+        if (!contains(action)) {
+            super.add(index, action);
+        }
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends Action> actions) {
+        List<Action> alist = new ArrayList<>(actions);
+        for (Action action : actions) {
+            if (!contains(action)) {
+                alist.remove(action);
+            }
+        }
+        super.addAll(index, alist);
+        return true;
+    }
+
 }

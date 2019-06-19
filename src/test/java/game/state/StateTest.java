@@ -1,10 +1,14 @@
 package game.state;
 
+import game.GameUnified;
 import game.state.IState.ObjectName;
 import game.state.State;
 import game.state.StateVariable;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class StateTest {
 
@@ -274,5 +278,97 @@ public class StateTest {
 
         Assert.assertEquals(12, s.getStateVariableCount());
         Assert.assertEquals(12, s.getAllStateVariables().length);
+    }
+
+    @Test
+    public void getAllStateVariables() {
+        float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
+                0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
+        State s = new State(f, false);
+
+        StateVariable[] sv = s.getAllStateVariables();
+
+        Assert.assertEquals(12, sv.length); // 12 body parts expected.
+        Assert.assertEquals(f[0], sv[0].getX(), 1e-12f);
+        Assert.assertEquals(f[2], sv[0].getTh(), 1e-12f);
+        Assert.assertEquals(f[f.length - 1], sv[sv.length - 1].getDth(), 1e-12);
+
+        Assert.assertEquals(sv[1], s.getStateVariableFromName(State.ObjectName.HEAD));
+    }
+
+    @Test
+    public void getStateVariableCount() {
+        float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
+                0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
+        State s = new State(f, false);
+
+        Assert.assertEquals(12, s.getStateVariableCount());
+    }
+
+    @Test
+    public void isFailed() {
+        GameUnified game = new GameUnified();
+
+        Assert.assertFalse(game.getCurrentState().isFailed());
+
+        for (int i = 0; i < 400; i++) {
+            game.step(true, false, false, true);
+        }
+
+        Assert.assertTrue(game.getCurrentState().isFailed());
+    }
+
+    @Test
+    public void testEquals() {
+        float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
+                0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
+        State s1 = new State(f, false);
+        State s2 = new State(f, false);
+
+        Assert.assertEquals(s1, s2);
+
+        GameUnified game = new GameUnified();
+
+        game.step(true, false, false, true);
+        IState s3 = game.getCurrentState();
+
+        game.makeNewWorld();
+        game.step(true, false, false, true);
+        IState s4 = game.getCurrentState();
+
+        Assert.assertEquals(s3, s4);
+    }
+
+    @Test
+    public void testHashCode() {
+        float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
+                0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
+        State s1 = new State(f, false);
+        State s2 = new State(f, false);
+
+        Assert.assertEquals(s1.hashCode(), s2.hashCode());
+
+        GameUnified game = new GameUnified();
+
+        game.step(true, false, false, true);
+        IState s3 = game.getCurrentState();
+
+        game.makeNewWorld();
+        game.step(true, false, false, true);
+        IState s4 = game.getCurrentState();
+
+        Assert.assertEquals(s3.hashCode(), s4.hashCode());
+
+        Set<IState> states = new HashSet<>();
+        states.add(s1);
+        states.add(s2);
+        states.add(s3);
+        states.add(s4);
+
+        Assert.assertEquals(2, states.size());
+        Assert.assertTrue(states.contains(s1));
+        Assert.assertTrue(states.contains(s2));
+        Assert.assertTrue(states.contains(s3));
+        Assert.assertTrue(states.contains(s4));
     }
 }

@@ -1,6 +1,6 @@
 package goals.save_file_manipulation;
 
-import game.actions.Action;
+import game.action.Action;
 import com.google.protobuf.ByteString;
 import data.SavableDenseData;
 import data.SavableFileIO;
@@ -122,7 +122,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
             }
             Example.Builder exB = Example.newBuilder();
             SequenceExample.Builder seqEx = SequenceExample.newBuilder();
-            FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & game.actions) in a
+            FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & game.action) in a
             // single run.
 
             // Pack up states
@@ -131,7 +131,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
                 makeStateFeatureList(dat, bodyPart, featLists);
             }
 
-            // Pack up game.actions -- 3 different ways:
+            // Pack up game.action -- 3 different ways:
             // 1) Keys pressed at individual timestep.
             // 2) Timesteps until transition for each timestep.
             // 3) Just the action sequence (shorter than number of timesteps)

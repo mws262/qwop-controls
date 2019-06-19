@@ -1,6 +1,6 @@
 package goals.phase_variable_testing;
 
-import game.actions.ActionQueue;
+import game.action.ActionQueue;
 import game.GameUnified;
 import game.state.IState;
 import tree.node.NodeQWOPGraphicsBase;
@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Trying to see what sorts of things would work as a phase variable to indicate what part of the gait cycle we are
  * in. One logical choice is a neural network which compresses the full 72 state values to a single 1. This runs a
- * sample set of game.actions through and spits out what the network says.
+ * sample set of game.action through and spits out what the network says.
  *
  * @author matt
  */

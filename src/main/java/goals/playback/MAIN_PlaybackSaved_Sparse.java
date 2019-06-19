@@ -59,7 +59,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
         Thread runnerThread = new Thread(runnerPane);
         runnerThread.start();
 
-        setTitle("Simulate saved game.actions from file");
+        setTitle("Simulate saved game.action from file");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(windowWidth, windowHeight));
         pack();

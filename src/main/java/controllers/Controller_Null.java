@@ -1,6 +1,6 @@
 package controllers;
 
-import game.actions.Action;
+import game.action.Action;
 import game.state.IState;
 
 /**

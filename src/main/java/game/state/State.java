@@ -2,6 +2,8 @@ package game.state;
 
 import data.LoadStateStatistics;
 import game.IGameInternal;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.io.Serializable;
 
@@ -391,6 +393,36 @@ public class State implements IState, Serializable {
             sflat[idx++] = sVar.getDth();
         }
         return new State(sflat, isFailed());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || (obj.getClass() != this.getClass())) {
+            return false;
+        }
+        State other = (State) obj;
+
+        EqualsBuilder equalsBuilder = new EqualsBuilder();
+        StateVariable[] stThis = this.getAllStateVariables();
+        StateVariable[] stOther = other.getAllStateVariables();
+
+        for (int i = 0; i < stThis.length; i++) {
+            equalsBuilder.append(stThis[i], stOther[i]);
+        }
+        equalsBuilder.append(this.isFailed(), other.isFailed());
+
+        return equalsBuilder.isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        HashCodeBuilder hashCodeBuilder = new HashCodeBuilder();
+        for (StateVariable sv : stateVariables) {
+            hashCodeBuilder.append(sv);
+        }
+
+        hashCodeBuilder.append(failedState);
+        return hashCodeBuilder.toHashCode();
     }
 }
 

@@ -1,24 +1,32 @@
 package tree.sampler.rollout;
 
 import game.GameUnified;
-import game.actions.Action;
-import game.actions.ActionGenerator_FixedSequence;
-import game.actions.IActionGenerator;
+import game.action.Action;
+import game.action.ActionGenerator_FixedSequence;
+import game.action.IActionGenerator;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import tree.node.NodeQWOP;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.node.evaluator.IEvaluationFunction;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+// Also includes most of the testing for abstract RolloutPolicy class.
 public class RolloutPolicy_SingleRandomTest {
+    @Rule
+    public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
 
     private EvaluationFunction_Distance evaluator = new EvaluationFunction_Distance();
-    private RolloutPolicy_SingleRandom rollout = new RolloutPolicy_SingleRandom(evaluator);
+    private RolloutPolicy rollout = new RolloutPolicy_SingleRandom(evaluator);
 
     private Action a1 = new Action(10, false, true, true, false);
     private Action a2 = new Action(5, true, false, false, true);
@@ -84,47 +92,134 @@ public class RolloutPolicy_SingleRandomTest {
 
     @Test
     public void simGameToNode() {
+        GameUnified game = new GameUnified();
+
+        rollout.simGameToNode(n1_2_4, game);
+        IState st1 = game.getCurrentState();
+
+        game.step(false, true, true, false);
+        rollout.simGameToNode(n1_2_4, game);
+        IState st2 = game.getCurrentState();
+
+        Assert.assertEquals(n1_2_4.getState(), st1);
+        Assert.assertEquals(n1_2_4.getState(), st2);
     }
 
     @Test
     public void coldStartGameToNode() {
+        GameUnified game = new GameUnified();
+        game.step(true, false, false, true);
+        IState st1 = game.getCurrentState();
+
+        game.makeNewWorld();
+        rollout.coldStartGameToNode(new NodeQWOP(st1), game);
+        IState st2 = game.getCurrentState();
+
+        Assert.assertEquals(st1, st2);
     }
 
     @Test
     public void randomRollout() {
         NodeQWOPExplorableBase<?> startNode = n1_2_4;
+        Assert.assertFalse(n1_2_4.isFullyExplored());
+        Assert.assertFalse(n1_2_4.getState().isFailed());
+        int startNodeChildOptions = startNode.getUntriedActionCount();
         GameUnified game = new GameUnified();
-        rollout.simGameToNode(startNode, game);
-        NodeQWOPExplorableBase<?> rolloutResult = rollout.randomRollout(startNode, game);
 
-        // Make sure that all actions used in the rollout are ones that the ActionGenerator can generate.
-        Set<Action> rolloutActions = new HashSet<>();
-        rolloutResult.recurseUpTreeInclusive(n -> {
-            if (n.getTreeDepth() > startNode.getTreeDepth()) {
-                rolloutActions.add(n.getAction());
-            }
-        });
+        // For no maximum of timesteps. Always goes until failure.
+        Set<NodeQWOPExplorableBase<?>> rolloutResults = new HashSet<>();
+        for (int i = 0; i < 10; i++) {
+            rollout.simGameToNode(startNode, game);
+            rolloutResults.add(rollout.randomRollout(startNode, game));
+        }
 
-        // TODO there are actions in rolloutActions which are not in possible. Need to debug this. currently on a
-        //  side-track testing the action generators as a result.
-        Assert.assertTrue(possibleRolloutActions.containsAll(rolloutActions));
+        for (NodeQWOPExplorableBase<?> node : rolloutResults) {
+            // Make sure that all action used in the rollout are ones that the ActionGenerator can generate.
+            Set<Action> rolloutActions = new HashSet<>();
+            node.recurseUpTreeInclusive(n -> {
+                if (n.getTreeDepth() > startNode.getTreeDepth()) {
+                    rolloutActions.add(n.getAction());
+                }
+            });
 
-        Assert.assertTrue(((NodeQWOPExplorable)rolloutResult).isOtherNodeAncestor(n1_2_4));
-    }
+            Assert.assertTrue(possibleRolloutActions.containsAll(rolloutActions));
+            Assert.assertTrue(((NodeQWOPExplorable) node).isOtherNodeAncestor(n1_2_4));
+            Assert.assertTrue(node.isFullyExplored());
+            Assert.assertTrue(node.getState().isFailed());
 
-    @Test
-    public void randomRollout1() {
+            // Rollout should not affect the normal tree building and adding of children.
+            Assert.assertEquals(startNodeChildOptions, startNode.getUntriedActionCount());
+        }
+
+        // With varied max timestep cap.
+        rolloutResults.clear();
+        for (int i = 1; i < 5; i++) {
+            rollout.simGameToNode(startNode, game);
+            rolloutResults.add(rollout.randomRollout(startNode, game, i));
+        }
+
+        for (NodeQWOPExplorableBase<?> node : rolloutResults) {
+            // Make sure that all action used in the rollout are ones that the ActionGenerator can generate.
+            Set<Action> rolloutActions = new HashSet<>();
+            node.recurseUpTreeInclusive(n -> {
+                if (n.getTreeDepth() > startNode.getTreeDepth()) {
+                    rolloutActions.add(n.getAction());
+                }
+            });
+
+            Assert.assertTrue(possibleRolloutActions.containsAll(rolloutActions));
+            Assert.assertTrue(((NodeQWOPExplorable) node).isOtherNodeAncestor(n1_2_4));
+
+            Assert.assertFalse(node.getState().isFailed());
+            Assert.assertFalse(node.isFullyExplored());
+
+            // Rollout should not affect the normal tree building and adding of children.
+            Assert.assertEquals(startNodeChildOptions, startNode.getUntriedActionCount());
+        }
+
+        // Can't do a zero timestep rollout.
+        exception.expect(IllegalArgumentException.class);
+        rollout.randomRollout(n1, game, 0);
     }
 
     @Test
     public void getRolloutActionGenerator() {
+        IActionGenerator gen = RolloutPolicy.getRolloutActionGenerator();
+        Assert.assertTrue(!gen.getAllPossibleActions().isEmpty());
     }
 
     @Test
     public void rollout() {
+
+        IEvaluationFunction evalFun = new EvaluationFunction_Distance();
+        RolloutPolicy_SingleRandom rollout = new RolloutPolicy_SingleRandom(evalFun);
+
+        for (int ts = 5; ts < 400; ts += 50) {
+            rollout.maxTimesteps = ts;
+            GameUnified game = new GameUnified();
+            NodeQWOPExplorable startNode = n1_2_3;
+            int startIterations = game.iterations;
+            rollout.simGameToNode(startNode, game);
+            float rolloutScore = rollout.rollout(startNode, game);
+
+            Assert.assertTrue((game.iterations - startIterations) <= rollout.maxTimesteps);
+            IState finalState = game.getCurrentState();
+            float expectedScore = (evalFun.getValue(new NodeQWOP(finalState)) - evalFun.getValue(startNode))
+                    * (finalState.isFailed() ? rollout.failureMultiplier : 1.0f);
+
+            Assert.assertEquals(expectedScore, rolloutScore, 1e-12f);
+        }
     }
 
     @Test
     public void getCopy() {
+        IEvaluationFunction evalFun = new EvaluationFunction_Distance();
+        RolloutPolicy_SingleRandom rollout = new RolloutPolicy_SingleRandom(evalFun);
+        RolloutPolicy_SingleRandom copy = rollout.getCopy();
+
+        Assert.assertEquals(rollout.evaluationFunction.getValue(n1_2_3), copy.evaluationFunction.getValue(n1_2_3),
+                1e-12f);
+        Assert.assertEquals(rollout.maxTimesteps, copy.maxTimesteps);
+        Assert.assertEquals(rollout.failureMultiplier, copy.failureMultiplier, 1e-12f);
     }
 }

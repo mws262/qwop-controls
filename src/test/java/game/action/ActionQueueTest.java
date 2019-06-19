@@ -1,4 +1,4 @@
-package game.actions;
+package game.action;
 
 import game.GameUnified;
 import game.state.IState;
@@ -445,7 +445,7 @@ public class ActionQueueTest {
         Assert.assertEquals(26, actQueue.getTotalQueueLengthTimesteps());
 
         for (int i = 0; i < 3; i++) {
-            actQueue.pollCommand(); // Should not change even after game.actions have been polled.
+            actQueue.pollCommand(); // Should not change even after game.action have been polled.
         }
         Assert.assertEquals(26, actQueue.getTotalQueueLengthTimesteps());
     }

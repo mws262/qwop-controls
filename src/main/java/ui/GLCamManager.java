@@ -134,7 +134,7 @@ public class GLCamManager {
      */
     public void update(GL2 gl, GLU glu) {
 
-        /* Do all the queued game.actions. **/
+        /* Do all the queued game.action. **/
         // Sum eye movements.
         netMovement.scale(0);
         for (int i = 0; i < eyeIncrement.size(); i++) {

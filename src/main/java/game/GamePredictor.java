@@ -1,7 +1,7 @@
 package game;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.state.IState;
 import game.state.State;
 import tflowtools.TensorflowLoader;

@@ -1,6 +1,6 @@
 package goals.cold_start_analysis;
 
-import game.actions.ActionQueue;
+import game.action.ActionQueue;
 import game.GameUnified;
 import game.IGameInternal;
 import game.state.IState;
@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Take a known sequence of reasonable game.actions, and introduce extra runners all along the way with the same state,
+ * Take a known sequence of reasonable game.action, and introduce extra runners all along the way with the same state,
  * but lacking the warm-start of the physics engine solver. Simulate these all with the same commands at each timestep.
  *
  * @author matt
@@ -67,7 +67,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
             coldStartGame.setState(gameFullRun.getCurrentState());
             coldStartGames.add(coldStartGame);
 
-            // Every how many game.actions we introduce a new cold-started runner to simulate and visualize.
+            // Every how many game.action we introduce a new cold-started runner to simulate and visualize.
             int coldStartRunnerIntroductionInterval = 1;
             coldStartAction += coldStartRunnerIntroductionInterval;
         }

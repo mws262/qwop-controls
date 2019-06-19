@@ -138,4 +138,24 @@ public class StateVariableTest {
         Assert.assertEquals(svar1.getDy() / (svar2.getDy() == 0 ? 1f : svar2.getDy()), svResult.getDy(),1e-6f);
         Assert.assertEquals(svar1.getDth() / (svar2.getDth() == 0 ? 1f : svar2.getDth()), svResult.getDth(),1e-6f);
     }
+
+    @Test
+    public void testEquals() {
+        StateVariable st1 = new StateVariable(0, 1, 2, 3, 4, 5);
+        StateVariable st2 = new StateVariable(0, 1, 2, 3, 4, 5);
+        StateVariable st3 = new StateVariable(0, 1, 2, 3, 4, 10);
+
+        Assert.assertEquals(st1, st2);
+        Assert.assertNotEquals(st1, st3);
+    }
+
+    @Test
+    public void testHashCode() {
+        StateVariable st1 = new StateVariable(0, 1, 2, 3, 4, 5);
+        StateVariable st2 = new StateVariable(0, 1, 2, 3, 4, 5);
+        StateVariable st3 = new StateVariable(0, 1, 2, 3, 4, 10);
+
+        Assert.assertEquals(st1.hashCode(), st2.hashCode());
+        Assert.assertNotEquals(st1.hashCode(), st3.hashCode());
+    }
 }
