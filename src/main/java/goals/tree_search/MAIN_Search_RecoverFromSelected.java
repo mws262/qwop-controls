@@ -6,6 +6,7 @@ import data.SavableFileIO;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import game.IGameInternal;
+import game.actions.ActionGenerator_FixedSequence;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -84,7 +85,7 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
 
                 // Recreate the tree section.
                 NodeQWOPGraphics root = new NodeQWOPGraphics(GameUnified.getInitialState(),
-                        getDefaultActionGenerator(trimStartBy));
+                        ActionGenerator_FixedSequence.makeDefaultGenerator(trimStartBy));
                 NodeQWOPBase.makeNodesFromActionSequences(acts, root, game);
 
                 // Put it on the UI.

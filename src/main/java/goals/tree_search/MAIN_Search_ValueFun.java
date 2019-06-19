@@ -1,6 +1,7 @@
 package goals.tree_search;
 
 import game.actions.Action;
+import game.actions.ActionGenerator_FixedSequence;
 import game.actions.IActionGenerator;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
@@ -211,7 +212,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         // Make new tree root and assign to GUI.
         // Assign default available game.actions.
-        IActionGenerator actionGenerator = getExtendedActionGenerator(-1);// new ActionGenerator_Uniform();//
+        IActionGenerator actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);// new ActionGenerator_UniformNoRepeats();//
 
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{

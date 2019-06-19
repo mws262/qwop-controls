@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOPExplorable;
 import tree.Utility;
 import ui.runner.PanelRunner;
-import ui.ScreenCapture;
+import vision.ScreenCapture;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 

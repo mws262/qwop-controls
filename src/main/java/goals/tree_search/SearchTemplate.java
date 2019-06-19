@@ -1,32 +1,29 @@
 package goals.tree_search;
 
-import game.actions.Action;
-import game.actions.ActionGenerator_FixedSequence;
-import game.actions.ActionList;
-import game.actions.IActionGenerator;
-import distributions.Distribution;
-import distributions.Distribution_Normal;
-import tree.node.evaluator.EvaluationFunction_Constant;
-import tree.node.evaluator.EvaluationFunction_Distance;
-import tree.node.filter.NodeFilter_SurvivalHorizon;
+import game.state.transform.Transform_Autoencoder;
+import game.state.transform.Transform_PCA;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import savers.DataSaver_DenseTFRecord;
+import savers.DataSaver_StageSelected;
+import tree.TreeWorker;
+import tree.Utility;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_FixedDepth;
 import tree.sampler.Sampler_Greedy;
 import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.RolloutPolicy_RandomDecayingHorizon;
-import savers.DataSaver_DenseTFRecord;
-import savers.DataSaver_StageSelected;
-import game.state.transform.Transform_Autoencoder;
-import game.state.transform.Transform_PCA;
-import tree.*;
-import tree.node.NodeQWOPExplorableBase;
 import tree.stage.TreeStage;
 import tree.stage.TreeStage_FixedGames;
 import tree.stage.TreeStage_MaxDepth;
 import tree.stage.TreeStage_MinDepth;
-import ui.*;
+import ui.IUserInterface;
+import ui.UI_Full;
+import ui.UI_Headless;
 import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
 import ui.runner.PanelRunner_AnimatedTransformed;
@@ -43,7 +40,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.stream.IntStream;
 
 public abstract class SearchTemplate {
@@ -386,213 +385,5 @@ public abstract class SearchTemplate {
      */
     protected File getSaveLocation() {
         return saveLoc;
-    }
-
-    /**
-     * Assign the correct generator of game.actions based on the baseline options and exceptions.
-     * Will assign a broader set of options for "recovery" at the specified starting depth.
-     * Pass -1 to disable this.
-     */
-    public static IActionGenerator getDefaultActionGenerator(int recoveryExceptionStart) {
-        /* Space of allowed game.actions to sample */
-        //Distribution<Action> uniform_dist = new Distribution_Equal();
-
-        /* Repeated action 1 -- no keys pressed. */
-        Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionList actionList1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
-                false}, dist1);
-
-        /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> dist2 = new Distribution_Normal(39f, 3f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), new boolean[]{false, true, true,
-                false}, dist2);
-
-        /* Repeated action 3 -- No keys pressed. */
-        Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionList actionList3 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
-                false}, dist3);
-
-        /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> dist4 = new Distribution_Normal(39f, 3f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), new boolean[]{true, false, false,
-                true}, dist4);
-
-        ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
-
-        /////// Action Exceptions for starting up. ////////
-        /* Repeated action exceptions 1 -- no keys pressed. */
-        Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
-        ActionList actionListE1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
-                false}, distE1);
-
-        /*  Repeated action exceptions 2 -- W-O pressed */
-        Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(30, 50).toArray(), new boolean[]{false,
-                true, true,
-                false}, distE2);
-
-        /*  Repeated action exceptions 3 -- no keys pressed. */
-        Distribution<Action> distE3 = new Distribution_Normal(5, 2f);
-        ActionList actionListE3 = ActionList.makeActionList(IntStream.range(1, 20).toArray(), new boolean[]{false,
-                false, false,
-                false}, distE3);
-
-        /*  Repeated action exceptions 4 -- Q-P pressed */
-        Distribution<Action> distE4 = new Distribution_Normal(25f, 2f);
-        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), new boolean[]{true,
-                false, false,
-                true}, distE4);
-
-        /////// Action Exceptions for recovery. ////////
-        /*  Repeated action 1 and 3 -- Nothing pressed */
-        Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
-        ActionList actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(), new boolean[]{false, false,
-                false, false}, distFalseFalse);
-
-        /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
-        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{false, true, true,
-                false}, distWO);
-
-        /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
-        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{true, false, false,
-                true}, distQP);
-
-        Map<Integer, ActionList> actionExceptions = new HashMap<>();
-        actionExceptions.put(0, actionListE1);
-        actionExceptions.put(1, actionListE2);
-        actionExceptions.put(2, actionListE3);
-        actionExceptions.put(3, actionListE4);
-
-        // Put the recovery exceptions in the right spot.
-        if (recoveryExceptionStart >= 0) {
-            for (int i = 0; i < 4; i++) {
-                int sequencePos = (recoveryExceptionStart + i) % 4;
-
-                switch (sequencePos) {
-                    case 0:
-                        actionExceptions.put(recoveryExceptionStart + i, actionListFalseFalse);
-                        break;
-                    case 1:
-                        actionExceptions.put(recoveryExceptionStart + i, actionListWO);
-                        break;
-                    case 2:
-                        actionExceptions.put(recoveryExceptionStart + i, actionListFalseFalse);
-                        break;
-                    case 3:
-                        actionExceptions.put(recoveryExceptionStart + i, actionListQP);
-                        break;
-                    default:
-                        throw new IllegalStateException("unknown sequence position.");
-                }
-            }
-        }
-        // Define the specific way that these allowed game.actions are assigned as potential options for nodes.
-        return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
-    }
-
-    public static IActionGenerator getExtendedActionGenerator(int recoveryExceptionStart) {
-        /* Space of allowed game.actions to sample */
-        //Distribution<Action> uniform_dist = new Distribution_Equal();
-
-        /* Repeated action 1 -- no keys pressed. */
-        Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionList actionList1 = ActionList.makeActionList(IntStream.range(2, 25).toArray(), new boolean[]{false, false,
-                false,
-                false}, dist1);
-
-        /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> dist2 = new Distribution_Normal(25, 3f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(5, 50).toArray(), new boolean[]{false, true,
-                true,
-                false}, dist2);
-
-        /* Repeated action 3 -- W-O pressed */
-        Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionList actionList3 = ActionList.makeActionList(IntStream.range(2, 25).toArray(), new boolean[]{false, false,
-                false,
-                false}, dist3);
-
-        /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> dist4 = new Distribution_Normal(25, 3f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(5, 50).toArray(), new boolean[]{true, false,
-                false,
-                true}, dist4);
-
-        ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
-
-        /////// Action Exceptions for starting up. ////////
-        /* Repeated action exceptions 1 -- no keys pressed. */
-        Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
-        ActionList actionListE1 = ActionList.makeActionList(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
-                false,
-                false}, distE1);
-
-        /*  Repeated action exceptions 2 -- W-O pressed */
-        Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(5, 65).toArray(), new boolean[]{false, true,
-                true,
-                false}, distE2);
-
-        /*  Repeated action exceptions 3 -- no keys pressed. */
-        Distribution<Action> distE3 = new Distribution_Normal(24f, 2f);
-        ActionList actionListE3 = ActionList.makeActionList(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
-                false,
-                false}, distE3);
-
-        /*  Repeated action exceptions 4 -- Q-P pressed */
-        Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
-        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(5, 65).toArray(), new boolean[]{true, false,
-                false,
-                true}, distE4);
-
-        /////// Action Exceptions for recovery. ////////
-        /*  Repeated action 1 and 3 -- Nothing pressed */
-        Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
-        ActionList actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(), new boolean[]{false, false,
-                false, false}, distFalseFalse);
-
-        /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
-        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{false, true, true,
-                false}, distWO);
-
-        /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
-        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{true, false, false,
-                true}, distQP);
-
-        Map<Integer, ActionList> actionExceptions = new HashMap<>();
-        actionExceptions.put(0, actionListE1);
-        actionExceptions.put(1, actionListE2);
-        actionExceptions.put(2, actionListE3);
-        actionExceptions.put(3, actionListE4);
-
-        // Put the recovery exceptions in the right spot.
-        if (recoveryExceptionStart >= 0) {
-            for (int i = 0; i < 4; i++) {
-                int sequencePos = (recoveryExceptionStart + i) % 4;
-
-                switch (sequencePos) {
-                    case 0:
-                        actionExceptions.put(recoveryExceptionStart + i, actionListFalseFalse);
-                        break;
-                    case 1:
-                        actionExceptions.put(recoveryExceptionStart + i, actionListWO);
-                        break;
-                    case 2:
-                        actionExceptions.put(recoveryExceptionStart + i, actionListFalseFalse);
-                        break;
-                    case 3:
-                        actionExceptions.put(recoveryExceptionStart + i, actionListQP);
-                        break;
-                    default:
-                        throw new RuntimeException("unknown sequence position.");
-                }
-            }
-        }
-        // Define the specific way that these allowed game.actions are assigned as potential options for nodes.
-        return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 }

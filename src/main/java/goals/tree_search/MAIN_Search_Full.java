@@ -1,5 +1,6 @@
 package goals.tree_search;
 
+import game.actions.ActionGenerator_FixedSequence;
 import game.actions.IActionGenerator;
 import data.SavableFileIO;
 import data.SavableSingleGame;
@@ -91,7 +92,7 @@ public class MAIN_Search_Full extends SearchTemplate {
 
         ///////////////////////////////////////////////////////////
 
-        IActionGenerator actionGenerator = getDefaultActionGenerator(stage3StartDepth);
+        IActionGenerator actionGenerator = ActionGenerator_FixedSequence.makeDefaultGenerator(stage3StartDepth);
 
         // This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
         // Check if we actually need to do stage 1.
