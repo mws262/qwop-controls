@@ -1,5 +1,6 @@
 package game;
 
+import game.actions.Action;
 import game.state.IState;
 import game.state.IState.ObjectName;
 import game.state.State;
@@ -1094,6 +1095,13 @@ public class GameUnified implements IGameInternal, IGameSerializable {
         public float groundHeight;
         public float[][] bodyVerts = new float[11][8];
         public float[] headLocAndRadius = new float[3];
+    }
+
+    public void doAction(Action action) {
+        Action a = action.getCopy();
+        while (a.hasNext()) {
+            command(a.poll());
+        }
     }
 
     /**

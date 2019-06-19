@@ -1,5 +1,8 @@
 package game.actions;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -196,25 +199,23 @@ public class Action implements Serializable {
      */
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Action)) {
+        if((other == null) || (other.getClass() != this.getClass())) {
             return false;
         }
         Action otherAction = (Action) other;
 
-        boolean equal = true;
+        EqualsBuilder builder = new EqualsBuilder();
+        builder.append(keysPressed, otherAction.keysPressed);
+        builder.append(getTimestepsTotal(), otherAction.getTimestepsTotal());
+        return builder.isEquals();
+    }
 
-        // Negate equality if any of the QWOP keys don't match.
-        for (int i = 0; i < keysPressed.length; i++) {
-            if (keysPressed[i] != otherAction.peek()[i]) {
-                equal = false;
-                break;
-            }
-        }
-
-        // Negate if we haven't already and they have different durations.
-        if (equal && timestepsTotal != otherAction.getTimestepsTotal()) equal = false;
-
-        return equal;
+    @Override
+    public int hashCode() {
+        HashCodeBuilder builder = new HashCodeBuilder();
+        builder.append(keysPressed);
+        builder.append(getTimestepsTotal());
+        return builder.toHashCode();
     }
 
     /**

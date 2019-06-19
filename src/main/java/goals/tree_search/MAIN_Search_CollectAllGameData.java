@@ -1,6 +1,7 @@
 package goals.tree_search;
 
 import game.GameUnified;
+import game.actions.ActionGenerator_FixedSequence;
 import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
 
@@ -20,7 +21,8 @@ public class MAIN_Search_CollectAllGameData extends SearchTemplate {
 
     private void doGames() {
 
-        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), getExtendedActionGenerator(-1));
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(),
+                ActionGenerator_FixedSequence.makeExtendedGenerator(-1));
         ui.addRootNode(rootNode);
 
         doFixedGamesToFailureStage(rootNode, "good_and_bad", 1, 1000000);

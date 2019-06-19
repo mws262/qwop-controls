@@ -184,14 +184,18 @@ public class ActionTest {
     }
 
     @Test
-    public void equals() {
+    public void equalsAndHash() {
 
         Assert.assertNotEquals(validAction1, String.valueOf(5));
         Assert.assertNotEquals(validAction1, validAction2);
+        Assert.assertNotEquals(validAction1.hashCode(), validAction2.hashCode());
 
         Assert.assertEquals(validAction1, validAction1);
         Assert.assertEquals(validAction2, validAction2);
         Assert.assertEquals(validAction3, validAction3);
+        Assert.assertEquals(validAction1.hashCode(), validAction1.hashCode());
+        Assert.assertEquals(validAction2.hashCode(), validAction2.hashCode());
+        Assert.assertEquals(validAction3.hashCode(), validAction3.hashCode());
 
         // Must copy to get a pollable version of the action.
         Action action1Copy = validAction1.getCopy();
@@ -199,11 +203,15 @@ public class ActionTest {
         Action action3Copy = validAction3.getCopy();
 
         Assert.assertEquals(validAction1, action1Copy);
+        Assert.assertEquals(validAction1.hashCode(), action1Copy.hashCode());
         Assert.assertEquals(validAction2, action2Copy);
+        Assert.assertEquals(validAction2.hashCode(), action2Copy.hashCode());
         Assert.assertEquals(validAction3, action3Copy);
+        Assert.assertEquals(validAction3.hashCode(), action3Copy.hashCode());
 
         Action equivAction = new Action(actTimesteps1, keys1).getCopy();
         Assert.assertEquals(equivAction, action1Copy);
+        Assert.assertEquals(equivAction.hashCode(), action1Copy.hashCode());
 
 
         for (int i = 0; i < 5; i++) {
@@ -211,6 +219,7 @@ public class ActionTest {
             equivAction.poll();
         }
         Assert.assertEquals(equivAction, action1Copy);
+        Assert.assertEquals(equivAction.hashCode(), action1Copy.hashCode());
     }
 
     @Test

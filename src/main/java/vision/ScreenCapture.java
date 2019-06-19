@@ -1,13 +1,12 @@
-package ui;
+package vision;
 
+import org.jcodec.api.awt.AWTSequenceEncoder;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
-import javax.swing.JPanel;
-
-import org.jcodec.api.awt.AWTSequenceEncoder;
 
 /**
  * Video capture and saving. Currently encodes at 25fps.

@@ -13,7 +13,7 @@ import game.state.IState;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPGraphics;
 import tree.Utility;
-import ui.ScreenCapture;
+import vision.ScreenCapture;
 
 import javax.swing.*;
 import java.awt.*;

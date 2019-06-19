@@ -88,7 +88,7 @@ public abstract class RolloutPolicy {
                 timestepCounter++;
             }
 
-            rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState());
+            rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState(), getRolloutActionGenerator());
         }
         return rolloutNode;
     }

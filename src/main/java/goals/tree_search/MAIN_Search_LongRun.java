@@ -1,5 +1,6 @@
 package goals.tree_search;
 
+import game.actions.ActionGenerator_FixedSequence;
 import game.actions.IActionGenerator;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
@@ -60,7 +61,7 @@ public class MAIN_Search_LongRun extends SearchTemplate {
 
         ///////////////////////////////////////////////////////////
 
-        IActionGenerator actionGenerator = getExtendedActionGenerator(-1);
+        IActionGenerator actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);
 
         // This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
         // Check if we actually need to do stage 1.
