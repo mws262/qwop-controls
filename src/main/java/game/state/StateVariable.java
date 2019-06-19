@@ -1,5 +1,8 @@
 package game.state;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -201,5 +204,36 @@ public class StateVariable implements Serializable {
                 getDx() / (other.getDx() == 0 ? 1 : other.getDx()),
                 getDy() / (other.getDy() == 0 ? 1 : other.getDy()),
                 getDth() / (other.getDth() == 0 ? 1 : other.getDth()));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
+
+        StateVariable other = (StateVariable) obj;
+        EqualsBuilder equalsBuilder = new EqualsBuilder();
+        equalsBuilder.append(this.getX(), other.getX());
+        equalsBuilder.append(this.getY(), other.getY());
+        equalsBuilder.append(this.getTh(), other.getTh());
+        equalsBuilder.append(this.getDx(), other.getDx());
+        equalsBuilder.append(this.getDy(), other.getDy());
+        equalsBuilder.append(this.getDth(), other.getDth());
+
+        return equalsBuilder.isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        HashCodeBuilder hashCodeBuilder = new HashCodeBuilder();
+        hashCodeBuilder.append(this.getX());
+        hashCodeBuilder.append(this.getY());
+        hashCodeBuilder.append(this.getTh());
+        hashCodeBuilder.append(this.getDx());
+        hashCodeBuilder.append(this.getDy());
+        hashCodeBuilder.append(this.getDth());
+
+        return hashCodeBuilder.toHashCode();
     }
 }

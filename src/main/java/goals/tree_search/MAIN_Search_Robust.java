@@ -1,7 +1,7 @@
 package goals.tree_search;
 
 import game.GameUnified;
-import game.actions.ActionGenerator_FixedSequence;
+import game.action.ActionGenerator_FixedSequence;
 import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
 

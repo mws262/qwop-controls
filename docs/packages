@@ -22,8 +22,8 @@ data
 value
 tree.samplers
 tree.samplers.rollout
-game.actions.perturbers
-game.actions
+game.action.perturbers
+game.action
 tree
 game
 tree.node.evaluator

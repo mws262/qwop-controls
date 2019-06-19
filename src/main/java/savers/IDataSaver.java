@@ -1,6 +1,6 @@
 package savers;
 
-import game.actions.Action;
+import game.action.Action;
 import game.IGameInternal;
 import game.state.IState;
 import tree.node.NodeQWOPBase;

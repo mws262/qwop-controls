@@ -1,6 +1,6 @@
 package game;
 
-import game.actions.ActionQueue;
+import game.action.ActionQueue;
 import game.state.IState;
 import game.state.IState.ObjectName;
 import org.junit.Assert;

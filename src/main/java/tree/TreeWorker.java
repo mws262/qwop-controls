@@ -1,7 +1,7 @@
 package tree;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.GameUnified;
 import game.GameUnifiedCaching;
 import game.IGameInternal;
@@ -281,11 +281,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case TREE_POLICY_EXECUTING:
 
-                    executeNextOnQueue(); // Execute a single timestep with the game.actions that have been queued.
+                    executeNextOnQueue(); // Execute a single timestep with the game.action that have been queued.
                     assert !game.getFailureStatus() : "Game encountered a failure while executing the tree policy. The tree " +
                             "policy should be safe, since it's ground that's been covered before.";
 
-                    // When all game.actions in queue are done, figure out what to do next.
+                    // When all game.action in queue are done, figure out what to do next.
                     if (actionQueue.isEmpty()) {
                         currentGameNode = targetNodeToTest;
                         assert currentGameNode.getUntriedActionCount() > 0;
@@ -309,7 +309,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case EXPANSION_POLICY_EXECUTING:
 
-                    executeNextOnQueue(); // Execute a single timestep with the game.actions that have been queued.
+                    executeNextOnQueue(); // Execute a single timestep with the game.action that have been queued.
 
                     // When done, record state and go back to choosing. If failed, the sampler guards will tell us.
                     if (actionQueue.isEmpty() || game.getFailureStatus()) {

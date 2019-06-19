@@ -2,7 +2,7 @@ package tree.sampler;
 
 import java.util.*;
 
-import game.actions.Action;
+import game.action.Action;
 import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
 

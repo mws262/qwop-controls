@@ -1,6 +1,6 @@
 package value;
 
-import game.actions.Action;
+import game.action.Action;
 import game.IGameSerializable;
 import tree.node.NodeQWOPBase;
 

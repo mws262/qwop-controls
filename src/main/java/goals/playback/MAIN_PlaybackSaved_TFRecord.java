@@ -6,8 +6,8 @@ import java.util.*;
 import java.util.List;
 import javax.swing.JFrame;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import data.TFRecordDataParsers;
 import game.GameUnified;
 import game.IGameInternal;
@@ -120,7 +120,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                     runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
                     runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
                     if (actionQueue.isEmpty()) {
-                        System.out.println("Warning: game.actions ended before states did.");
+                        System.out.println("Warning: game.action ended before states did.");
                     } else {
                         boolean[] actionQueueCommand = actionQueue.pollCommand();
                         gameForActionSim.step(actionQueueCommand);

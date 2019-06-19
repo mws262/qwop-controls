@@ -1,6 +1,6 @@
 package ui.runner;
 
-import game.actions.Action;
+import game.action.Action;
 import tree.node.filter.INodeFilter;
 import tree.node.filter.NodeFilter_Downsample;
 import game.GameUnified;
@@ -32,7 +32,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     private INodeFilter filter = new NodeFilter_Downsample(50);
 
     /**
-     * Potentially, a future node selected by hovering over its runner to display a specific sequence of game.actions in
+     * Potentially, a future node selected by hovering over its runner to display a specific sequence of game.action in
      * all the displayed futures.
      */
     private NodeQWOPGraphicsBase<?> highlightedFutureMousedOver;

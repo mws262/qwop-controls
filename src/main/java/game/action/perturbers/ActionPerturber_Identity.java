@@ -1,9 +1,9 @@
-package game.actions.perturbers;
+package game.action.perturbers;
 
-import game.actions.ActionQueue;
+import game.action.ActionQueue;
 
 /**
- * Placeholder {@link IActionPerturber} which just copies the input {@link game.actions.ActionQueue}.
+ * Placeholder {@link IActionPerturber} which just copies the input {@link game.action.ActionQueue}.
  *
  * @author matt
  */

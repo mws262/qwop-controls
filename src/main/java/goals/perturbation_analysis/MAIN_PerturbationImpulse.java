@@ -1,7 +1,7 @@
 package goals.perturbation_analysis;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameUnified;
@@ -33,7 +33,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
     private int numPerturbedRunners = 30;
 
     /**
-     * Location of the perturbation, in terms of game.actions along the known, good sequence.
+     * Location of the perturbation, in terms of game.action along the known, good sequence.
      */
     private int perturbationLocation = 15;
 
@@ -74,7 +74,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
 
         Action[] baseActions = gameList.get(0).actions;
 
-        // Simulate the base game.actions.
+        // Simulate the base game.action.
         IGameInternal game = new GameUnified();
 
         // These are the runners which will be perturbed.

@@ -1,11 +1,10 @@
-package game.actions;
+package game.action;
 
 import game.state.State;
 import org.junit.Assert;
 import org.junit.Test;
 import tree.node.NodeQWOPExplorable;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 public class ActionGenerator_NullTest {

@@ -1,4 +1,4 @@
-package game.actions;
+package game.action;
 
 import distributions.Distribution_Equal;
 import game.state.State;

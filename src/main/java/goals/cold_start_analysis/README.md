@@ -26,13 +26,13 @@ Since QWOP's constraint solver only runs a few iterations, its result is *highly
 previous timestep, which is highly dependent on the timestep before that. And so on. In a sense, these solver 
 solutions act like state variables, evolving over time with their own dynamics. These additional "states" are 
 particularly annoying since they can't be directly observed on the screen. We could potentially infer these hidden 
-solver states from the entire history of previous observable states and game.actions, but we don't know how the 
+solver states from the entire history of previous observable states and game.action, but we don't know how the 
 hidden states behave, at least not without modelling aspects of Box2D that I don't care to. We also can't set these 
 states without hacking Box2D more than I care to.
 
 As a result, if two QWOP runners look like they are in the same state and we apply the same action to both, they will
  only have the same final state if both runners have the same state/action history. When searching for 
- game.actions, we cannot just arbitrarily set the runner state and assume that the game.actions we find to locomote will 
+ game.action, we cannot just arbitrarily set the runner state and assume that the game.action we find to locomote will 
  generalize to all ways that the runner ended up in that (observable) state. However, the problem cannot be hopeless.
   Humans can play QWOP (albeit, not very well). It seems reasonable that people might use a small amount of state 
   history to decide when to hit buttons, but it's hard to believe that people have 10 or 20 previous steps memorized.
@@ -44,9 +44,9 @@ As a result, if two QWOP runners look like they are in the same state and we app
  
 #### Approaches
 1. Find a "good" run using one of the tree searches.
-2. Simulate the good run's game.actions partway.
+2. Simulate the good run's game.action partway.
 3. Introduce a new runner at the other's observable state, but with a cold start for the constraint solver. 
-4. Continue to simulate both runners with the same game.actions.
+4. Continue to simulate both runners with the same game.action.
 5. See how long, and it what way, the cold-start runner diverges.
 6. Investigate when the sensitivity is highest/lowest. When, throughout the gait, are the warm-start's effects most 
 significant?
@@ -54,9 +54,9 @@ significant?
 ##### Faking warm starts
 
 There is a middle ground between a completely cold-start and a warm-start which is the result of an entire history of
- game.actions. We can fake a warm start by simulating a cold-start runner in some generic way as an approximation of a 
+ game.action. We can fake a warm start by simulating a cold-start runner in some generic way as an approximation of a 
  full warm start. I can see two approaches:
- 1. (easier) Start a new runner. Simulate it with no control game.actions for 10-100 timesteps. Use this warm-start.
+ 1. (easier) Start a new runner. Simulate it with no control game.action for 10-100 timesteps. Use this warm-start.
  2. (harder) Start a new runner. Use a previously-generated run to warm-start the runner. Stop the warm-start 
  simulation in the same general part of the gait cycle, or the same contact configuration,  as in the place we want to 
  apply this simulation.

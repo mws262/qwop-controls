@@ -1,8 +1,8 @@
 package goals.tree_search;
 
-import game.actions.Action;
-import game.actions.ActionGenerator_FixedSequence;
-import game.actions.IActionGenerator;
+import game.action.Action;
+import game.action.ActionGenerator_FixedSequence;
+import game.action.IActionGenerator;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import game.GameUnified;
@@ -168,7 +168,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         // BASIC ROLLOUT STRATEGY
         switch (rolloutType) {
             case RANDOM:
-                // Rollout goes randomly among a limited set of game.actions until failure. Score based on distance
+                // Rollout goes randomly among a limited set of game.action until failure. Score based on distance
                 // travelled from start to end of rollout.
                 rollout = new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
                 break;
@@ -211,7 +211,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
 
         // Make new tree root and assign to GUI.
-        // Assign default available game.actions.
+        // Assign default available game.action.
         IActionGenerator actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);// new ActionGenerator_UniformNoRepeats();//
 
         List<Action[]> alist = new ArrayList<>();

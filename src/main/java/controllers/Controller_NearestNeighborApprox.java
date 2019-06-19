@@ -1,6 +1,6 @@
 package controllers;
 
-import game.actions.Action;
+import game.action.Action;
 import data.EvictingTreeMap;
 import data.LIFOFixedSize;
 import data.TFRecordDataParsers;
@@ -326,7 +326,7 @@ public class Controller_NearestNeighborApprox implements IController {
 
                 RunHolder rh = new RunHolder();
 
-                // Unpack the game.actions as durations. TODO: turn them into full-fledged Actions
+                // Unpack the game.action as durations. TODO: turn them into full-fledged Actions
                 for (int i = 0; i < singleSequence.getFeatureLists().getFeatureListMap().get("ACTIONS").getFeatureCount(); i++) {
                     rh.actionDurations.add(Byte.toUnsignedInt(singleSequence.getFeatureLists().getFeatureListMap()
                             .get("ACTIONS").getFeature(i) // This is the action number
@@ -358,7 +358,7 @@ public class Controller_NearestNeighborApprox implements IController {
                             sVarBuffer[5], sVarBuffer[6], sVarBuffer[7], sVarBuffer[8], sVarBuffer[9], sVarBuffer[10]
                             , sVarBuffer[11], false);
 
-                    // Get game.actions as keypresses at the current state.
+                    // Get game.action as keypresses at the current state.
                     byte[] keyPressBytes =
                             singleSequence.getFeatureLists().getFeatureListMap().get("PRESSED_KEYS").getFeature(i).getBytesList().getValue(0).toByteArray();
                     boolean[] keyPress = new boolean[4];

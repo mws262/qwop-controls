@@ -101,7 +101,7 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li><a href="../distributions/Distribution.html" title="class in distributions">distributions.Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;</li>
+<li><a href="../distributions/Distribution.html" title="class in distributions">distributions.Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;</li>
 <li>
 <ul class="inheritance">
 <li>distributions.Distribution_Normal</li>
@@ -116,7 +116,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">Distribution_Normal</span>
-extends <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;</pre>
+extends <a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;</pre>
 <div class="block">Action sampling distribution implementation which is weighted according to a normal distribution. Once the mean
  and standard deviation of the distribution have been set in the constructor, they cannot be changed. New
  distributions should be created rather than editing existing ones.</div>
@@ -163,8 +163,8 @@ extends <a href="../distributions/Distribution.html" title="class in distributio
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../game.actions/Action.html" title="class in game.actions">Action</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../distributions/Distribution_Normal.html#randOnDistribution-java.util.List-">randOnDistribution</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;set)</code>
+<td class="colFirst"><code><a href="../game.actions/Action.html" title="class in game.action">Action</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../distributions/Distribution_Normal.html#randOnDistribution-java.util.List-">randOnDistribution</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;&nbsp;set)</code>
 <div class="block">Get an action based on duration sampled from a normal distribution with mean and standardDeviation.</div>
 </td>
 </tr>
@@ -227,17 +227,17 @@ extends <a href="../distributions/Distribution.html" title="class in distributio
 <ul class="blockListLast">
 <li class="blockList">
 <h4>randOnDistribution</h4>
-<pre>public&nbsp;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&nbsp;randOnDistribution(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;&nbsp;set)</pre>
+<pre>public&nbsp;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&nbsp;randOnDistribution(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;&nbsp;set)</pre>
 <div class="block">Get an action based on duration sampled from a normal distribution with mean and standardDeviation. This
  method will choose the nearest duration action to whatever value is sampled from the continuous Gaussian
  distribution.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../distributions/Distribution.html#randOnDistribution-java.util.List-">randOnDistribution</a></code>&nbsp;in class&nbsp;<code><a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.actions">Action</a>&gt;</code></dd>
+<dd><code><a href="../distributions/Distribution.html#randOnDistribution-java.util.List-">randOnDistribution</a></code>&nbsp;in class&nbsp;<code><a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;</code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>set</code> - A list of game.actions to sample from.</dd>
+<dd><code>set</code> - A list of game.action to sample from.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>An <a href="../game.actions/Action.html" title="class in game.actions"><code>action</code></a> sampled from the input set according to this distribution.</dd>
+<dd>An <a href="../game.actions/Action.html" title="class in game.action"><code>action</code></a> sampled from the input set according to this distribution.</dd>
 </dl>
 </li>
 </ul>

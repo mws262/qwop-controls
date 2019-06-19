@@ -1,7 +1,7 @@
 package tree.node;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import data.SavableSingleGame;
 import game.IGameInternal;
 import game.state.IState;
@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Most basic QWOP node. Mainly just a linked container for states, game.actions, and an estimated value of the node..
+ * Most basic QWOP node. Mainly just a linked container for states, game.action, and an estimated value of the node..
  * Also inherits very basic tree functionality from {@link NodeGenericBase}. Can also handle some node importing.
  *
  * @param <N> This is essentially a recursive class parameterization. Read about f-bounded polymorphism. When using
@@ -87,7 +87,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
 
     public synchronized List<Action> getSequence(List<Action> actionList) {
         if (getTreeDepth() == 0)
-            throw new IndexOutOfBoundsException("Cannot get a sequence at the root node, since it has no game.actions " +
+            throw new IndexOutOfBoundsException("Cannot get a sequence at the root node, since it has no game.action " +
                     "leading up to it.");
         actionList.clear();
         recurseUpTreeInclusiveNoRoot(n -> actionList.add(n.getAction()));
@@ -99,9 +99,9 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * Add nodes based on saved action sequences. Has to re-simulate each to get the states. This should not add
      * redundant nodes if the desired nodes already exist.
      *
-     * @param actions A collection of action arrays. These game.actions should represent unfailing running sequences.
+     * @param actions A collection of action arrays. These game.action should represent unfailing running sequences.
      * @param root The root node to add these runs under.
-     * @param game Game instance used to simulate the given game.actions and generate the state information needed to make
+     * @param game Game instance used to simulate the given game.action and generate the state information needed to make
      *            the nodes.
      */
     public static <N extends NodeQWOPBase<?>> void makeNodesFromActionSequences(Collection<Action[]> actions, N root,
@@ -153,7 +153,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      *  given root.
      *
      * @param runs Saved run information that will be used to create new tree nodes. This will not verify the given
-     *             game.actions against simulation, so if the states don't match the game.actions, it will not be detected here.
+     *             game.action against simulation, so if the states don't match the game.action, it will not be detected here.
      * @param existingRootToAddTo A root node to add the new tree nodes below.
      */
     public static synchronized <N extends NodeQWOPBase<N>> void makeNodesFromRunInfo(Collection<SavableSingleGame> runs,
@@ -166,7 +166,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
                 currentNode.updateValue(0, valueUpdater);
             }
 
-            for (int i = 0; i < run.actions.length; i++) { // Iterate through individual game.actions of this run,
+            for (int i = 0; i < run.actions.length; i++) { // Iterate through individual game.action of this run,
                 // travelling down the tree in the process.
 
                 boolean foundExistingMatch = false;

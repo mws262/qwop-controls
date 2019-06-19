@@ -1,7 +1,7 @@
-package game.actions.perturbers;
+package game.action.perturbers;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

@@ -1,6 +1,6 @@
 package tree.sampler.rollout;
 
-import game.actions.Action;
+import game.action.Action;
 import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
 import game.IGameSerializable;

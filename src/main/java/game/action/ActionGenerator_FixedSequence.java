@@ -1,4 +1,4 @@
-package game.actions;
+package game.action;
 
 import distributions.Distribution;
 import distributions.Distribution_Normal;
@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
  * Assigns potential action choices to nodes. This fixed sequence version has an {@link ActionList} for
  * each subsequent {@link Action} choice, and cycles through these choices. This is a more general version of the fixed
  * nil/nil - WO - nil/nil - QP sequence I've used for quite awhile. Also, action "exceptions" can be specified to
- * override the normal ActionList in the cycle. This can be useful for defining a different set of game.actions for the
+ * override the normal ActionList in the cycle. This can be useful for defining a different set of game.action for the
  * first few steps when the runner is getting moving.
  *
  * @author matt
@@ -19,26 +19,26 @@ import java.util.stream.IntStream;
 public class ActionGenerator_FixedSequence implements IActionGenerator {
 
     /**
-     * These are the possible game.actions which are generated in a cycle.
+     * These are the possible game.action which are generated in a cycle.
      **/
     private ActionList[] repeatedActions;
 
     /**
-     * These game.actions are exceptions which will override the repeated game.actions. Key is the
+     * These game.action are exceptions which will override the repeated game.action. Key is the
      * tree depth this applies to. Value is the set of Actions. The keySequence booleans
      * are still obeyed. Usually exceptions are at the beginning of a sequence.
      */
     private final Map<Integer, ActionList> actionExceptions;
 
     /**
-     * How many game.actions are in one repeated cycle.
+     * How many game.action are in one repeated cycle.
      **/
     private final int cycleLength;
 
     /**
      * This action generator will produce the nil-WO-nil-QP sequence. actionRepeats will be chosen in repeating order
      * like 1234,1234,1234, or 123,123,123, etc. Note that this starts from tree root EVEN if there are action
-     * exceptions. However, action exceptions for specified tree depths will be chosen over the repeating game.actions if
+     * exceptions. However, action exceptions for specified tree depths will be chosen over the repeating game.action if
      * they are assigned.
      *
      * @param repeatedActions  An array of {@link ActionList}, with one for every choice in the sequence. Each
@@ -91,12 +91,12 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
     }
 
     /**
-     * Assign the correct generator of game.actions based on the baseline options and exceptions.
+     * Assign the correct generator of game.action based on the baseline options and exceptions.
      * Will assign a broader set of options for "recovery" at the specified starting depth.
      * Pass -1 to disable this.
      */
     public static IActionGenerator makeDefaultGenerator(int recoveryExceptionStart) {
-        /* Space of allowed game.actions to sample */
+        /* Space of allowed game.action to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
         /* Repeated action 1 -- no keys pressed. */
@@ -190,12 +190,12 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
                 }
             }
         }
-        // Define the specific way that these allowed game.actions are assigned as potential options for nodes.
+        // Define the specific way that these allowed game.action are assigned as potential options for nodes.
         return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 
     public static IActionGenerator makeExtendedGenerator(int recoveryExceptionStart) {
-        /* Space of allowed game.actions to sample */
+        /* Space of allowed game.action to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
         /* Repeated action 1 -- no keys pressed. */
@@ -294,7 +294,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
                 }
             }
         }
-        // Define the specific way that these allowed game.actions are assigned as potential options for nodes.
+        // Define the specific way that these allowed game.action are assigned as potential options for nodes.
         return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 }

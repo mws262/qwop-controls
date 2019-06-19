@@ -1,6 +1,6 @@
 package flashqwop;
 
-import game.actions.Action;
+import game.action.Action;
 import game.GameUnified;
 import game.state.IState;
 import tree.node.NodeQWOP;

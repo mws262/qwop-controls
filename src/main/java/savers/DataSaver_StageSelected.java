@@ -1,6 +1,6 @@
 package savers;
 
-import game.actions.Action;
+import game.action.Action;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.IGameInternal;

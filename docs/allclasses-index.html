@@ -113,53 +113,54 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><a href="game.actions/Action.html" title="class in game.actions">Action</a></td>
+<td class="colFirst"><a href="game.actions/Action.html" title="class in game.action">Action</a></td>
 <th class="colLast" scope="row">
 <div class="block">Contains the keypresses and durations for a single action.</div>
 </th>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><a href="game.actions/ActionGenerator_FixedSequence.html" title="class in game.actions">ActionGenerator_FixedSequence</a></td>
+<td class="colFirst"><a href="game.actions/ActionGenerator_FixedSequence.html" title="class in game.action">ActionGenerator_FixedSequence</a></td>
 <th class="colLast" scope="row">
 <div class="block">Assigns potential action choices to <a href="tree/Node.html" title="class in tree"><code>nodes</code></a>.</div>
 </th>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><a href="game.actions/ActionGenerator_Uniform.html" title="class in game.actions">ActionGenerator_Uniform</a></td>
+<td class="colFirst"><a href="game.actions/ActionGenerator_Uniform.html" title="class in game.action">ActionGenerator_Uniform</a></td>
 <th class="colLast" scope="row">
-<div class="block">Gives the same choice of game.actions at every node, with the exception that a new Node must not be given the same key
- combination options as its parent (i.e.</div>
+<div class="block">Gives the same choice of game.action at every node, with the exception that a new Node must not be
+    given the same key
+    combination options as its parent (i.e.</div>
 </th>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><a href="game.actions/perturbers/ActionPerturber_Identity.html" title="class in game.actions.perturbers">ActionPerturber_Identity</a></td>
+<td class="colFirst"><a href="game.actions/perturbers/ActionPerturber_Identity.html" title="class in game.action.perturbers">ActionPerturber_Identity</a></td>
 <th class="colLast" scope="row">
-<div class="block">Placeholder <a href="game.actions/perturbers/IActionPerturber.html" title="interface in game.actions.perturbers"><code>IActionPerturber</code></a> which just copies the input <a href="game.actions/ActionQueue.html" title="class in game.actions"><code>ActionQueue</code></a>.</div>
+<div class="block">Placeholder <a href="game.actions/perturbers/IActionPerturber.html" title="interface in game.action.perturbers"><code>IActionPerturber</code></a> which just copies the input <a href="game.actions/ActionQueue.html" title="class in game.action"><code>ActionQueue</code></a>.</div>
 </th>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><a href="game.actions/perturbers/ActionPerturber_MissingTimesteps.html" title="class in game.actions.perturbers">ActionPerturber_MissingTimesteps</a></td>
+<td class="colFirst"><a href="game.actions/perturbers/ActionPerturber_MissingTimesteps.html" title="class in game.action.perturbers">ActionPerturber_MissingTimesteps</a></td>
 <th class="colLast" scope="row">
-<div class="block">Perturbs an <a href="game.actions/ActionQueue.html" title="class in game.actions"><code>ActionQueue</code></a> by removing timesteps (shortening <a href="game.actions/Action.html" title="class in game.actions"><code>Action</code></a>) without replacement at
+<div class="block">Perturbs an <a href="game.actions/ActionQueue.html" title="class in game.action"><code>ActionQueue</code></a> by removing timesteps (shortening <a href="game.actions/Action.html" title="class in game.action"><code>Action</code></a>) without replacement at
  specified locations in the sequence.</div>
 </th>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><a href="game.actions/perturbers/ActionPerturber_SwitchTooSoon.html" title="class in game.actions.perturbers">ActionPerturber_SwitchTooSoon</a></td>
+<td class="colFirst"><a href="game.actions/perturbers/ActionPerturber_SwitchTooSoon.html" title="class in game.action.perturbers">ActionPerturber_SwitchTooSoon</a></td>
 <th class="colLast" scope="row">
-<div class="block">Perturbs <a href="game.actions/ActionQueue.html" title="class in game.actions"><code>ActionQueue</code></a> by making some or all of the transitions between game.actions happen too early.</div>
+<div class="block">Perturbs <a href="game.actions/ActionQueue.html" title="class in game.action"><code>ActionQueue</code></a> by making some or all of the transitions between game.action happen too early.</div>
 </th>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><a href="game.actions/ActionQueue.html" title="class in game.actions">ActionQueue</a></td>
+<td class="colFirst"><a href="game.actions/ActionQueue.html" title="class in game.action">ActionQueue</a></td>
 <th class="colLast" scope="row">
-<div class="block">All things related to storing and going through sequences of game.actions.</div>
+<div class="block">All things related to storing and going through sequences of game.action.</div>
 </th>
 </tr>
 <tr id="i7" class="rowColor">
-<td class="colFirst"><a href="game.actions/ActionSet.html" title="class in game.actions">ActionSet</a></td>
+<td class="colFirst"><a href="game.actions/ActionSet.html" title="class in game.action">ActionSet</a></td>
 <th class="colLast" scope="row">
-<div class="block">An ActionSet acts like an <code>ArrayList</code> for <a href="game.actions/Action.html" title="class in game.actions"><code>game.actions</code></a>, except it allows for sampling
+<div class="block">An ActionSet acts like an <code>ArrayList</code> for <a href="game.actions/Action.html" title="class in game.action"><code>game.action</code></a>, except it allows for sampling
  from the list on a <a href="distributions/Distribution.html" title="class in distributions"><code>Distribution</code></a>.</div>
 </th>
 </tr>
@@ -540,14 +541,14 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </th>
 </tr>
 <tr id="i76" class="altColor">
-<td class="colFirst"><a href="game.actions/IActionGenerator.html" title="interface in game.actions">IActionGenerator</a></td>
+<td class="colFirst"><a href="game.actions/IActionGenerator.html" title="interface in game.action">IActionGenerator</a></td>
 <th class="colLast" scope="row">
-<div class="block">An IActionGenerator determines which <a href="game.actions/ActionSet.html" title="class in game.actions"><code>ActionSet</code></a> should be assigned to <a href="tree/Node.html" title="class in tree"><code>nodes</code></a> as potential
+<div class="block">An IActionGenerator determines which <a href="game.actions/ActionSet.html" title="class in game.action"><code>ActionSet</code></a> should be assigned to <a href="tree/Node.html" title="class in tree"><code>nodes</code></a> as potential
  child nodes to explore.</div>
 </th>
 </tr>
 <tr id="i77" class="rowColor">
-<td class="colFirst"><a href="game.actions/perturbers/IActionPerturber.html" title="interface in game.actions.perturbers">IActionPerturber</a></td>
+<td class="colFirst"><a href="game.actions/perturbers/IActionPerturber.html" title="interface in game.action.perturbers">IActionPerturber</a></td>
 <th class="colLast" scope="row">
 <div class="block">Interface for adding perturbations to .</div>
 </th>
@@ -619,22 +620,25 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <tr id="i90" class="altColor">
 <td class="colFirst"><a href="goals/cold_start_analysis/MAIN_CompareWarmStartToColdEveryStep.html" title="class in goals.cold_start_analysis">MAIN_CompareWarmStartToColdEveryStep</a></td>
 <th class="colLast" scope="row">
-<div class="block">This version runs a normal sequence of game.actions, but adds another cold-started runner at every timestep, and seeing
- the distance travelled before failure for each.</div>
+<div class="block">This version runs a normal sequence of game.action, but adds another cold-started runner at every
+    timestep, and seeing
+    the distance travelled before failure for each.</div>
 </th>
 </tr>
 <tr id="i91" class="rowColor">
 <td class="colFirst"><a href="goals/cold_start_analysis/MAIN_CompareWarmStartToColdMulti.html" title="class in goals.cold_start_analysis">MAIN_CompareWarmStartToColdMulti</a></td>
 <th class="colLast" scope="row">
-<div class="block">Take a known sequence of reasonable game.actions, and introduce extra runners all along the way with the same state,
- but lacking the warm-start of the physics engine solver.</div>
+<div class="block">Take a known sequence of reasonable game.action, and introduce extra runners all along the way with
+    the same state,
+    but lacking the warm-start of the physics engine solver.</div>
 </th>
 </tr>
 <tr id="i92" class="altColor">
 <td class="colFirst"><a href="goals/cold_start_analysis/MAIN_CompareWarmStartToColdSingle.html" title="class in goals.cold_start_analysis">MAIN_CompareWarmStartToColdSingle</a></td>
 <th class="colLast" scope="row">
-<div class="block">Take a known sequence of reasonable game.actions, simulate for some number of game.actions, and introduce a second runner,
- with a cloned state, but a cold start of the Box2D internal solvers.</div>
+<div class="block">Take a known sequence of reasonable game.action, simulate for some number of game.action, and
+    introduce a second runner,
+    with a cloned state, but a cold start of the Box2D internal solvers.</div>
 </th>
 </tr>
 <tr id="i93" class="rowColor">
@@ -756,7 +760,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <tr id="i114" class="altColor">
 <td class="colFirst"><a href="tree/Node.html" title="class in tree">Node</a></td>
 <th class="colLast" scope="row">
-<div class="block">Representation of a node in a tree of game.actions for QWOP.</div>
+<div class="block">Representation of a node in a tree of game.action for QWOP.</div>
 </th>
 </tr>
 <tr id="i115" class="rowColor">
@@ -906,7 +910,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <tr id="i143" class="rowColor">
 <td class="colFirst"><a href="samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout">RolloutPolicy</a></td>
 <th class="colLast" scope="row">
-<div class="block">Sometimes, rollouts need to be a composite of many game.actions, some which may involve multiple simulations.</div>
+<div class="block">Sometimes, rollouts need to be a composite of many game.action, some which may involve multiple
+    simulations.</div>
 </th>
 </tr>
 <tr id="i144" class="altColor">
@@ -967,7 +972,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <tr id="i154" class="altColor">
 <td class="colFirst"><a href="data/SavableDenseData.html" title="class in data">SavableDenseData</a></td>
 <th class="colLast" scope="row">
-<div class="block">Holds all the states and game.actions on a TIMESTEP level for an entire game.</div>
+<div class="block">Holds all the states and game.action on a TIMESTEP level for an entire game.</div>
 </th>
 </tr>
 <tr id="i155" class="rowColor">
@@ -983,7 +988,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <tr id="i157" class="rowColor">
 <td class="colFirst"><a href="data/SavableSingleGame.html" title="class in data">SavableSingleGame</a></td>
 <th class="colLast" scope="row">
-<div class="block">Structure to hold game.actions and states in individual QWOP runs for saving to file.</div>
+<div class="block">Structure to hold game.action and states in individual QWOP runs for saving to file.</div>
 </th>
 </tr>
 <tr id="i158" class="altColor">

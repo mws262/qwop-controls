@@ -1,6 +1,6 @@
 package tree.sampler;
 
-import game.actions.Action;
+import game.action.Action;
 import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
 import org.jblas.util.Random;

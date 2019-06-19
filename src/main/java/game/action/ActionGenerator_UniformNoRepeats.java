@@ -1,4 +1,4 @@
-package game.actions;
+package game.action;
 
 import distributions.Distribution;
 import distributions.Distribution_Equal;
@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 /**
- * Gives the same choice of game.actions at every node, with the exception that a new Node must not be given the same key
+ * Gives the same choice of game.action at every node, with the exception that a new Node must not be given the same key
  * combination options as its parent (i.e. two nodes in a row shouldn't be QP).
  *
  * @author matt

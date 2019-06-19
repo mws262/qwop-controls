@@ -1,6 +1,6 @@
 package goals.value_function;
 
-import game.actions.Action;
+import game.action.Action;
 import flashqwop.FlashGame;
 import flashqwop.FlashStateLogger;
 import game.GameUnified;

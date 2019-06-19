@@ -1,6 +1,6 @@
 package tree.node;
 
-import game.actions.Action;
+import game.action.Action;
 import game.IGameInternal;
 import game.state.State;
 import org.junit.Assert;
@@ -61,7 +61,7 @@ public class NodeQWOPTest {
 
     private List<NodeQWOP> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
 
-        // Some sample game.actions (mocked).
+        // Some sample game.action (mocked).
     private Action a1 = new Action(10, Action.Keys.q);
     private Action a2 = new Action(15, Action.Keys.w);
     private Action a3 = new Action(12, Action.Keys.o);

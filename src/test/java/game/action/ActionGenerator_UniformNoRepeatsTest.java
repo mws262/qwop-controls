@@ -1,4 +1,4 @@
-package game.actions;
+package game.action;
 
 import distributions.Distribution_Equal;
 import game.state.State;
@@ -70,7 +70,7 @@ public class ActionGenerator_UniformNoRepeatsTest {
             depth2.add(subdepth2);
         }
 
-        // All actions are candidates for the first layer.
+        // All action are candidates for the first layer.
         Set<Action> allPossible = generator.getAllPossibleActions();
         Assert.assertEquals(allPossible.size(), depth1.size());
 

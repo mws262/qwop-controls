@@ -1,4 +1,4 @@
-package game.actions;
+package game.action;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -12,7 +12,7 @@ import java.util.*;
  * sure there are timesteps left in this action. Call {@link Action#reset()} to restore the duration of the action back to
  * original.
  * <p>
- * Note that when constructed, game.actions may not be changed or polled. They serve as an "immutable" backup of the
+ * Note that when constructed, game.action may not be changed or polled. They serve as an "immutable" backup of the
  * action. To get a pollable version of the {@link Action}, call {@link Action#getCopy()}.
  *
  * @author Matt
@@ -190,7 +190,7 @@ public class Action implements Serializable {
 
     /**
      * Check if this action is equal to another in regards to keypresses and durations. Completely overrides default
-     * equals, so when doing ArrayList checks, this will be the only way to judge. Note that the game.actions do not need
+     * equals, so when doing ArrayList checks, this will be the only way to judge. Note that the game.action do not need
      * to have the same number of timesteps remaining to be judged as equal as long as their timestep totals and keys
      * are the same.
      *
@@ -259,15 +259,15 @@ public class Action implements Serializable {
     }
 
     /**
-     * Take a list of game.actions and combine adjacent game.actions which have the same keypresses.
+     * Take a list of game.action and combine adjacent game.action which have the same keypresses.
      * These mostly arise when doing control on a timestep-by-timestep basis. Only timestepsTotal are
-     * used. Timesteps remaining are not preserved. 0-duration game.actions are squashed away.
-     * An empty array input or one containing nothing but 0 length game.actions will produce an exception.
+     * used. Timesteps remaining are not preserved. 0-duration game.action are squashed away.
+     * An empty array input or one containing nothing but 0 length game.action will produce an exception.
      *
-     * @param inActions A list of game.actions which we wish to consolidate.
-     * @return A new list of game.actions which is the consolidated version of the input action list.
-     * @throws IllegalArgumentException When trying to consolidate a list of game.actions containing nothing but 0-length
-     *                                  game.actions.
+     * @param inActions A list of game.action which we wish to consolidate.
+     * @return A new list of game.action which is the consolidated version of the input action list.
+     * @throws IllegalArgumentException When trying to consolidate a list of game.action containing nothing but 0-length
+     *                                  game.action.
      */
     public static List<Action> consolidateActions(List<Action> inActions) {
         List<Action> outActions = new ArrayList<>();
@@ -283,13 +283,13 @@ public class Action implements Serializable {
         }
 
         int consolidations = 0;
-        // Combine adjacent same button game.actions.
+        // Combine adjacent same button game.action.
         for (int i = 0; i < inActions.size() - 1; ) {
             Action a1 = inActions.get(i);
             Action a2 = inActions.get(i + 1);
 
             if (a1.getTimestepsTotal() == 0) {
-                // Eliminate 0-duration game.actions.
+                // Eliminate 0-duration game.action.
                 i++;
                 if (inActions.size() - 1 == i && a2.getTimestepsTotal() != 0) outActions.add(a2);
             } else if (Arrays.equals(a1.peek(), a2.peek())) {

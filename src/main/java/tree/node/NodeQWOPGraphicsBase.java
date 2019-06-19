@@ -1,7 +1,7 @@
 package tree.node;
 
-import game.actions.Action;
-import game.actions.IActionGenerator;
+import game.action.Action;
+import game.action.IActionGenerator;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.gl2.GLUT;
 import game.GameUnified;
@@ -154,7 +154,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Create a new root node.
      * @param rootState State of the runner at the root state. Usually {@link GameUnified#getInitialState()}.
-     * @param actionGenerator Object used to generate game.actions used for potentially creating children of this node.
+     * @param actionGenerator Object used to generate game.action used for potentially creating children of this node.
      */
     public NodeQWOPGraphicsBase(IState rootState, IActionGenerator actionGenerator) {
         super(rootState, actionGenerator);
@@ -180,7 +180,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * @param action Action bringing the runner from the state at the parent node to this node.
      * @param state State reached at this node. This is a departure from previous versions in that the state MUST be
      *              known before creating a new node.
-     * @param actionGenerator Object used to generate game.actions used to potentially create children of this new node.
+     * @param actionGenerator Object used to generate game.action used to potentially create children of this new node.
      * @param doublyLinked Regardless, this node will have a reference to its parent. However, the parent may not be
      *                     aware of this node. If doubly linked, the information goes both ways. If not, then the
      *                     information only goes backwards up the tree.

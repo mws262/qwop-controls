@@ -1,6 +1,6 @@
 package tree.sampler;
 
-import game.actions.Action;
+import game.action.Action;
 import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
 import tree.Utility;
@@ -48,7 +48,7 @@ public class Sampler_Random implements ISampler {
                 return currentNode;
             }
 
-            if (currentNode.getUntriedActionCount() == 0) { // No unchecked game.actions means that we pick a random
+            if (currentNode.getUntriedActionCount() == 0) { // No unchecked game.action means that we pick a random
             	// not-fully-explored child.
                 // Pick random not fully explored child. Keep going.
                 int selection = Utility.randInt(0, notFullyExploredChildren - 1);

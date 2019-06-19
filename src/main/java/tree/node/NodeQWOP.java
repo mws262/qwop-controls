@@ -1,6 +1,6 @@
 package tree.node;
 
-import game.actions.Action;
+import game.action.Action;
 import game.state.IState;
 
 /**

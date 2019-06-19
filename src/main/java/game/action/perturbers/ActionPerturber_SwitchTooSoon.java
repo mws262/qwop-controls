@@ -1,12 +1,12 @@
-package game.actions.perturbers;
+package game.action.perturbers;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 
 import java.util.Map;
 
 /**
- * Perturbs {@link ActionQueue} by making some or all of the transitions between game.actions happen too early. Total
+ * Perturbs {@link ActionQueue} by making some or all of the transitions between game.action happen too early. Total
  * number of timesteps should be preserved.
  */
 public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
@@ -18,7 +18,7 @@ public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
     private Map<Integer, Integer> perturbationIndexAndSize;
 
     /**
-     * Make a new perturber by defining which game.actions should be changed and by how much.
+     * Make a new perturber by defining which game.action should be changed and by how much.
      *
      * @param perturbationIndexAndSize Map specifying which action should be started too soon, and how early (in
      *                                 timesteps) it should be started. Only the second action onward (indices 1+)

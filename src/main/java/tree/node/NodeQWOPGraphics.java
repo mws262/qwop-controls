@@ -1,7 +1,7 @@
 package tree.node;
 
-import game.actions.Action;
-import game.actions.IActionGenerator;
+import game.action.Action;
+import game.action.IActionGenerator;
 import game.state.IState;
 
 /**

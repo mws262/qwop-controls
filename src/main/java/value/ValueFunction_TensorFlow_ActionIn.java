@@ -1,7 +1,7 @@
 //package value;
 //
-//import game.actions.Action;
-//import game.actions.ActionList;
+//import game.action.Action;
+//import game.action.ActionList;
 //import distributions.Distribution_Equal;
 //import game.IGame;
 //import tree.INode;
@@ -25,7 +25,7 @@
 // *
 // * When using it as a controller, given a node:
 // * 1. Take the state at the current node.
-// * 2. Get all possible game.actions leaving this node.
+// * 2. Get all possible game.action leaving this node.
 // * 3. Concatenate and pass to TensorFlow.
 // * 4. Pick the Action which maximizes the resulting value.
 // *
@@ -68,7 +68,7 @@
 //    public Action getMaximizingAction(Node currentNode) {
 //        ActionList actionChoices;
 //
-//        // If no action generator is assigned, just use the game.actions of this node's children.
+//        // If no action generator is assigned, just use the game.action of this node's children.
 //        if (Node.potentialActionGenerator == null) {
 //            if (currentNode.getChildCount() == 0) {
 //                throw new IllegalStateException("Tried to get a maximizing action using a node with no action " +
@@ -83,7 +83,7 @@
 //        }
 //
 //        if (actionChoices.isEmpty() || actionChoices.contains(null)) {
-//            throw new IllegalStateException("Node has no action generator and this node has no children with game.actions.");
+//            throw new IllegalStateException("Node has no action generator and this node has no children with game.action.");
 //        }
 //
 //

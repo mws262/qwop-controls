@@ -1,6 +1,6 @@
 package savers;
 
-import game.actions.Action;
+import game.action.Action;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.IGameInternal;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Saver for sparse game information. Basically this includes game.actions
+ * Saver for sparse game information. Basically this includes game.action
  * needed to recreate a run, but not full state information at every timestep.
  *
  * @author matt

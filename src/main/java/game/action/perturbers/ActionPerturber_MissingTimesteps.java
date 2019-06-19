@@ -1,12 +1,12 @@
-package game.actions.perturbers;
+package game.action.perturbers;
 
-import game.actions.Action;
-import game.actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 
 import java.util.Map;
 
 /**
- * Perturbs an {@link ActionQueue} by removing timesteps (shortening {@link game.actions.Action}) without replacement at
+ * Perturbs an {@link ActionQueue} by removing timesteps (shortening {@link game.action.Action}) without replacement at
  * specified locations in the sequence.
  *
  * See {@link ActionPerturber_SwitchTooSoon} for an implementation which preserves the number of timesteps by moving

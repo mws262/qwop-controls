@@ -1,6 +1,6 @@
 package value;
 
-import game.actions.Action;
+import game.action.Action;
 import com.sun.istack.NotNull;
 import game.*;
 import game.state.IState;
@@ -20,8 +20,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static game.actions.Action.Keys;
-import static game.actions.Action.keysToBooleans;
+import static game.action.Action.Keys;
+import static game.action.Action.keysToBooleans;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
 
@@ -303,7 +303,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             // Reset the game and set it to the specified starting state.
             bestResult.value = -Float.MAX_VALUE;
 
-            // Keep track of a window of three adjacent game.actions. Some of the selection approaches do a
+            // Keep track of a window of three adjacent game.action. Some of the selection approaches do a
             // best-worst-case.
             float val1;
             float val2 = 0;

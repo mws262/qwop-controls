@@ -1,7 +1,7 @@
 package goals.tree_search;
 
-import game.actions.ActionGenerator_FixedSequence;
-import game.actions.IActionGenerator;
+import game.action.ActionGenerator_FixedSequence;
+import game.action.IActionGenerator;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import org.apache.logging.log4j.LogManager;
