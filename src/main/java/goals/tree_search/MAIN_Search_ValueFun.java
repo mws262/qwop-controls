@@ -2,8 +2,8 @@ package goals.tree_search;
 
 import game.actions.Action;
 import game.actions.IActionGenerator;
-import evaluators.EvaluationFunction_Constant;
-import evaluators.EvaluationFunction_Distance;
+import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
 import game.GameUnified;
 import game.GameUnifiedCaching;
 import game.state.StateDelayEmbedded;

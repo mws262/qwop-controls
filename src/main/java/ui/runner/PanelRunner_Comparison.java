@@ -1,6 +1,6 @@
-package ui;
+package ui.runner;
 
-import evaluators.EvaluationFunction_SqDistFromOther;
+import tree.node.evaluator.EvaluationFunction_SqDistFromOther;
 import game.GameUnified;
 import game.state.IState;
 import tree.node.NodeQWOPExplorableBase;

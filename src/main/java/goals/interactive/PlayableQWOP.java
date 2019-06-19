@@ -1,7 +1,7 @@
 package goals.interactive;
 
 import game.GameUnified;
-import ui.PanelRunner;
+import ui.runner.PanelRunner;
 
 import javax.swing.*;
 import java.awt.*;

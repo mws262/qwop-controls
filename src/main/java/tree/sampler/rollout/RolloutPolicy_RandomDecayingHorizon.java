@@ -2,7 +2,7 @@ package tree.sampler.rollout;
 
 import game.actions.Action;
 import game.actions.IActionGenerator;
-import evaluators.EvaluationFunction_Distance;
+import tree.node.evaluator.EvaluationFunction_Distance;
 import game.state.IState;
 import tree.node.NodeQWOPExplorableBase;
 

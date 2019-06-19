@@ -15,7 +15,7 @@ import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 import tree.node.NodeQWOPGraphicsBase;
 import tree.Utility;
-import ui.PanelRunner;
+import ui.runner.PanelRunner;
 
 import java.awt.*;
 import java.io.File;

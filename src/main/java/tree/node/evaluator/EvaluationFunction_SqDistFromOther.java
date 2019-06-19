@@ -1,4 +1,4 @@
-package evaluators;
+package tree.node.evaluator;
 
 import game.state.StateVariable;
 import tree.node.NodeQWOPBase;

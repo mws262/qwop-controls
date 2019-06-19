@@ -5,7 +5,7 @@ import controllers.Controller_NearestNeighborApprox.RunHolder;
 import game.GameUnified;
 import game.IGameInternal;
 import tree.node.NodeQWOPGraphicsBase;
-import ui.PanelRunner;
+import ui.runner.PanelRunner;
 
 import javax.swing.*;
 import java.awt.*;

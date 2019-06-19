@@ -26,4 +26,4 @@ game.actions.perturbers
 game.actions
 tree
 game
-evaluators
+tree.node.evaluator

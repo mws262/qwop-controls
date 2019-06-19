@@ -12,7 +12,7 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameUnified;
 import tree.node.NodeQWOPGraphics;
-import ui.PanelRunner_Snapshot;
+import ui.runner.PanelRunner_Snapshot;
 
 /**
  * Playback runs or sections of runs saved in SavableSingleRun files.

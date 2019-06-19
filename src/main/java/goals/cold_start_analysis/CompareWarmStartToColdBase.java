@@ -1,7 +1,7 @@
 package goals.cold_start_analysis;
 
 import game.GameUnified;
-import ui.PanelRunner_MultiState;
+import ui.runner.PanelRunner_MultiState;
 
 import javax.swing.*;
 import java.awt.*;

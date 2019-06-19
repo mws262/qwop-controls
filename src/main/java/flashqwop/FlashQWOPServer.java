@@ -8,7 +8,7 @@ import game.state.StateVariable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
-import ui.PanelRunner_SimpleState;
+import ui.runner.PanelRunner_SimpleState;
 
 import javax.swing.*;
 import java.awt.*;

@@ -3,7 +3,7 @@ package tree.sampler;
 import java.util.ArrayList;
 
 import game.actions.Action;
-import evaluators.IEvaluationFunction;
+import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
 import tree.Utility;

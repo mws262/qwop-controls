@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOPExplorable;
 import tree.Utility;
-import ui.PanelRunner;
+import ui.runner.PanelRunner;
 import ui.ScreenCapture;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;

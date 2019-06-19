@@ -1,7 +1,7 @@
 package tree.sampler;
 
 import game.actions.Action;
-import evaluators.IEvaluationFunction;
+import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
 import org.jblas.util.Random;
 import tree.sampler.rollout.RolloutPolicy;

@@ -1,4 +1,4 @@
-package ui;
+package ui.runner;
 
 import game.actions.Action;
 import tree.node.filter.INodeFilter;
