@@ -19,6 +19,7 @@ public class GameUnifiedCachingTest {
     public void test_stateCorrectness() {
         for (int i = 1; i < 10; i++) {
             for (int j = 1; j < 4; j++) {
+                StateDelayEmbedded.useFiniteDifferences = false;
                 checkSpecificDelayEmbedding(i,j);
             }
         }
@@ -284,6 +285,7 @@ public class GameUnifiedCachingTest {
         when(stateStats.getMean()).thenReturn(meanState1);
 
         GameUnifiedCaching gameCache = new GameUnifiedCaching(1, 3);
+        StateDelayEmbedded.useFiniteDifferences = false;
         IState st = gameCache.getCurrentState();
         IState init = GameUnified.getInitialState();
         float[] initFlat = init.flattenState();

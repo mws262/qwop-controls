@@ -6,12 +6,12 @@ import java.util.Arrays;
 
 public class StateDelayEmbedded implements IState {
 
-    private State[] individualStates;
+    public State[] individualStates;
 
     private final int stateVariableCount;
 
 
-    public static boolean useFiniteDifferences = false;
+    public static boolean useFiniteDifferences = true;
 
     // Order is NEWEST to OLDEST
     public StateDelayEmbedded(State[] states) {
@@ -65,17 +65,19 @@ public class StateDelayEmbedded implements IState {
 
     @Override
     public float[] flattenStateWithRescaling(LoadStateStatistics.StateStatistics stateStatistics) {
-        float[] flatState = new float[3 * stateVariableCount];
+        float[] flatState = flattenState();
         float xOffset = individualStates[0].getCenterX();
 
         for (int i = 0; i < individualStates.length; i++) {
-            float[] flatRescaled =
-                    individualStates[i]
-                            .xOffsetSubtract(xOffset)
-                            .subtract(stateStatistics.getMean())
-                            .divide(stateStatistics.getStdev())
-                            .extractPositions();
-            System.arraycopy(flatRescaled, 0, flatState, i * 36, 36);
+            if (i == 0 || !useFiniteDifferences) {
+                float[] flatRescaled =
+                        individualStates[i]
+                                .xOffsetSubtract(xOffset)
+                                .subtract(stateStatistics.getMean())
+                                .divide(stateStatistics.getStdev())
+                                .extractPositions();
+                System.arraycopy(flatRescaled, 0, flatState, i * 36, 36);
+            }
         }
 
         return flatState;

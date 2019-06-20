@@ -92,15 +92,15 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     private void assignFuturePredictors(GameUnified gameTemplate) {
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.none, 1, 10));
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.qp, 2, 40));
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.wo, 2, 40));
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.q, 2, 5));
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.w, 2, 5));
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.o, 2, 5));
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.p, 2, 5));
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.qo, 2, 5));
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.wp, 2, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.none, 5, 25));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.qp, 5, 40));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.wo, 5, 40));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.q, 5, 10));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.w, 5, 10));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.o, 5, 10));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.p, 5, 10));
+//        evaluations.add(new FuturePredictor(gameTemplate, Keys.qo, 5, 15));
+//        evaluations.add(new FuturePredictor(gameTemplate, Keys.wp, 5, 15));
 
     }
 

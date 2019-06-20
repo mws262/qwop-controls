@@ -93,7 +93,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
     private ValueFunction_TensorFlow_StateOnly valueFunction;
 
-    private int prevStates = 2;
+    private int prevStates = 4;
     private int delayTs = 1;
 
     @SuppressWarnings("ConstantConditions")
@@ -138,14 +138,15 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         rolloutWeightedWithValFun = Boolean.parseBoolean(properties.getProperty("rolloutWeightedWithValFun", "false"));
         rolloutValFunWeight = Float.parseFloat(properties.getProperty("rolloutValFunWeight", "0.75"));
 
-        game = (prevStates > 0) ? new GameUnifiedCaching(delayTs, prevStates) : new GameUnified();
+        game = (prevStates > 0 && delayTs > 0) ? new GameUnifiedCaching(delayTs, prevStates) : new GameUnified();
         StateDelayEmbedded.useFiniteDifferences = true;
         makeValueFunction(game);
     }
 
     @Override
     TreeWorker getTreeWorker() {
-        return TreeWorker.makeCachedStateTreeWorker(delayTs, prevStates);
+        return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(delayTs, prevStates) :
+                TreeWorker.makeStandardTreeWorker();
     }
 
     public static void main(String[] args) {
@@ -175,19 +176,21 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
             case RANDOM_HORIZON:
                 // Rollout goes randomly to a fixed horizon in the future. Future values are weighted less than
                 // nearer ones. Based on distances travelled.
-                RolloutPolicy_DecayingHorizon decayingHorizonRandom = new RolloutPolicy_RandomDecayingHorizon();
-                decayingHorizonRandom.maxTimestepsToSim = rolloutHorizonTimesteps;
+                RolloutPolicy_DecayingHorizon decayingHorizonRandom =
+                        new RolloutPolicy_DecayingHorizonRandom(new EvaluationFunction_Distance());
+                RolloutPolicy_DecayingHorizon.maxTimestepsToSim = rolloutHorizonTimesteps;
                 rollout = decayingHorizonRandom;
                 break;
             case VALUE_HORIZON:
                 // Rollout follows value function controller to a fixed horizon in the future. Future values are
                 // weighted less than nearer ones. Based on distance travelled.
-                RolloutPolicy_ValueFunctionDecayingHorizon decayingHorizonValue =
-                        new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
-                decayingHorizonValue.maxTimestepsToSim = rolloutHorizonTimesteps;
+                RolloutPolicy_DecayingHorizonValueFunction decayingHorizonValue =
+                        new RolloutPolicy_DecayingHorizonValueFunction(valueFunction);
+                RolloutPolicy_DecayingHorizon.maxTimestepsToSim = rolloutHorizonTimesteps;
                 rollout = decayingHorizonValue;
                 break;
             default:
+                logger.warn("Unknown rollout type specified. Just using single random instead.");
                 rollout = new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
                 break;
         }
@@ -203,7 +206,9 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         // ROLLOUT ACTIONS ABOVE AND BELOW ALSO.
         if (windowRollout) {
-            rollout = new RolloutPolicy_Window(rollout);
+            RolloutPolicy_Window windowRollout = new RolloutPolicy_Window(rollout);
+            windowRollout.selectionCriteria = windowSelectionType;
+            rollout = windowRollout;
         }
 
         logger.info("Rollout policy chosen: " + rolloutType.name() + ". Weighted with value function? " + rolloutWeightedWithValFun + ". As " +
@@ -217,9 +222,9 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
                 new Action(7,false,false,false,false),
-                new Action(49, Action.Keys.wo),
-                new Action(2, Action.Keys.none),
-                new Action(46, Action.Keys.qp),
+//                new Action(49, Action.Keys.wo),
+//                new Action(2, Action.Keys.none),
+//                new Action(46, Action.Keys.qp),
         });
 
 
@@ -284,7 +289,12 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         // Update the value function.
         List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
-        rootNode.recurseDownTreeExclusive(nodesBelow::add);
+        rootNode.recurseDownTreeExclusive(n -> {
+                    if (n.getChildCount() > 0) { // TODO TEMP EXCLUDE LEAVES
+                        nodesBelow.add(n);
+                    }
+                });
+
         Collections.shuffle(nodesBelow);
         valueFunction.update(nodesBelow);
 

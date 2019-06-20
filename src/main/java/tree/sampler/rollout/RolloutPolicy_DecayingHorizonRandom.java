@@ -1,15 +1,14 @@
 package tree.sampler.rollout;
 
 import game.action.Action;
-import game.action.IActionGenerator;
-import tree.node.evaluator.EvaluationFunction_Distance;
 import game.state.IState;
 import tree.node.NodeQWOPExplorableBase;
+import tree.node.evaluator.IEvaluationFunction;
 
-public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy_DecayingHorizon {
+public class RolloutPolicy_DecayingHorizonRandom extends RolloutPolicy_DecayingHorizon {
 
-    public RolloutPolicy_RandomDecayingHorizon() {
-        super(new EvaluationFunction_Distance());
+    public RolloutPolicy_DecayingHorizonRandom(IEvaluationFunction evaluationFunction) {
+        super(evaluationFunction);
     }
 
     @Override
@@ -29,10 +28,6 @@ public class RolloutPolicy_RandomDecayingHorizon extends RolloutPolicy_DecayingH
 
     @Override
     public RolloutPolicy getCopy() {
-        RolloutPolicy_RandomDecayingHorizon rolloutCopy = new RolloutPolicy_RandomDecayingHorizon();
-        rolloutCopy.maxTimestepsToSim = this.maxTimestepsToSim;
-        return rolloutCopy;
+        return new RolloutPolicy_DecayingHorizonRandom(evaluationFunction.getCopy());
     }
-
-
 }

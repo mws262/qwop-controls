@@ -1,20 +1,19 @@
 package controllers;
 
-import game.action.Action;
 import data.EvictingTreeMap;
 import data.LIFOFixedSize;
 import data.TFRecordDataParsers;
-import game.*;
+import game.GameUnified;
+import game.action.Action;
 import game.state.IState;
 import game.state.IState.ObjectName;
 import game.state.State;
 import game.state.StateVariable;
 import game.state.StateVariable.StateName;
-import game.state.StateWeights;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
-import tree.node.NodeQWOPGraphicsBase;
 import tree.Utility;
+import tree.node.NodeQWOPGraphicsBase;
 import ui.runner.PanelRunner;
 
 import java.awt.*;
@@ -111,6 +110,8 @@ public class Controller_NearestNeighborApprox implements IController {
     //IMPORTANT  DUE TO COLLECTION BUG
     private boolean killFirstTwoActions = true;
 
+    private State weights;
+
     /**
      * Create a trajectory library-type controller by providing a list of files to look through.
      *
@@ -124,6 +125,10 @@ public class Controller_NearestNeighborApprox implements IController {
             e.printStackTrace();
         }
         System.out.println("Wow! " + numStatesLoaded + " states were loaded!");
+
+        float[] weightVals = new float[State.STATE_SIZE];
+        Arrays.fill(weightVals, 1f);
+        weights = new State(weightVals, false);
     }
 
     @Override
@@ -290,7 +295,7 @@ public class Controller_NearestNeighborApprox implements IController {
                 float otherVal = s2.getStateVariableFromName(bodyPart).getStateByName(stateVar) - ((stateVar == StateName.X) ?
                         xOffset2 : 0);
                 float diff = thisVal - otherVal;
-                errorAccumulator += StateWeights.getWeight(bodyPart, stateVar) * diff * diff;
+                errorAccumulator += weights.getStateVariableFromName(bodyPart).getStateByName(stateVar) * diff * diff;
             }
         }
         return errorAccumulator;

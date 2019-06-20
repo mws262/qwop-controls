@@ -5,14 +5,14 @@ import game.state.IState;
 import tree.node.NodeQWOPExplorableBase;
 import value.ValueFunction_TensorFlow_StateOnly;
 
-public class RolloutPolicy_ValueFunctionDecayingHorizon extends RolloutPolicy_DecayingHorizon {
+public class RolloutPolicy_DecayingHorizonValueFunction extends RolloutPolicy_DecayingHorizon {
 
     /**
      * Value function controller used to execute the rollouts.
      */
     private final ValueFunction_TensorFlow_StateOnly valFun;
 
-    public RolloutPolicy_ValueFunctionDecayingHorizon(ValueFunction_TensorFlow_StateOnly valFun) {
+    public RolloutPolicy_DecayingHorizonValueFunction(ValueFunction_TensorFlow_StateOnly valFun) {
         super(null);
         this.valFun = valFun;
     }
@@ -34,8 +34,8 @@ public class RolloutPolicy_ValueFunctionDecayingHorizon extends RolloutPolicy_De
 
     @Override
     public RolloutPolicy getCopy() {
-        RolloutPolicy_ValueFunctionDecayingHorizon rolloutCopy =
-                new RolloutPolicy_ValueFunctionDecayingHorizon(valFun.getCopy());
+        RolloutPolicy_DecayingHorizonValueFunction rolloutCopy =
+                new RolloutPolicy_DecayingHorizonValueFunction(valFun.getCopy());
         rolloutCopy.maxTimestepsToSim = this.maxTimestepsToSim;
         return rolloutCopy;
     }

@@ -58,6 +58,20 @@ public class GameUnifiedCaching extends GameUnified {
     }
 
     @Override
+    public void setState(IState state) {
+        cachedStates.clear();
+        if (state instanceof StateDelayEmbedded) {
+            StateDelayEmbedded st = (StateDelayEmbedded) state;
+            for (int i = st.individualStates.length - 1; i >= 0; i--) { // element zero is the newest.
+                cachedStates.add(st.individualStates[i]);
+            }
+            super.setState(st.individualStates[0]);
+        } else {
+            super.setState(state);
+        }
+    }
+
+    @Override
     public int getStateDimension() {
         return STATE_SIZE;
     }

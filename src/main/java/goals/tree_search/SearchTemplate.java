@@ -16,7 +16,7 @@ import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_FixedDepth;
 import tree.sampler.Sampler_Greedy;
 import tree.sampler.Sampler_UCB;
-import tree.sampler.rollout.RolloutPolicy_RandomDecayingHorizon;
+import tree.sampler.rollout.RolloutPolicy_DecayingHorizonRandom;
 import tree.stage.TreeStage;
 import tree.stage.TreeStage_FixedGames;
 import tree.stage.TreeStage_MaxDepth;
@@ -197,7 +197,8 @@ public abstract class SearchTemplate {
         saver.overrideFilename = saveName;
         saver.setSavePath(saveLoc.getPath() + "/");
 
-        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), new RolloutPolicy_RandomDecayingHorizon());
+        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f),
+                new RolloutPolicy_DecayingHorizonRandom(new EvaluationFunction_Distance()));
         TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, ucbSampler, saver);
         searchMax.terminateAfterXGames = maxGames;
 
