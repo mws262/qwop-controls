@@ -1,17 +1,17 @@
 # Tree search configuration.
 # GUI on?
-headless=true
+headless=false
 saveLocation=./test_dir
 workersFractionOfCores=0.7 
 fractionOfMaxWorkers=1
 getToSteadyDepth=1000
-bailAfterXGames=20000
+bailAfterXGames=10000
 
 # Important exploration configuration.
 # Larger is more exploration.
-UCBExplorationMultiplier=4
+UCBExplorationMultiplier=3
 # Currently: RANDOM, RANDOM_HORIZON, VALUE_HORIZON
-rolloutType=RANDOM
+rolloutType=RANDOM_HORIZON
 # Active for horizon rollouts only.
 rolloutHorizonTimesteps=200
 
@@ -30,6 +30,6 @@ networkName=embeddedstate
 checkpointNamePrefix=embeddedstate
 checkpointIndex=0
 learningRate=1e-3
-trainingBatchSize=2000
+trainingBatchSize=5000
 hiddenLayerSizes=128,64
 

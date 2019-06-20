@@ -1,19 +1,19 @@
 package goals.value_function;
 
-import game.action.Action;
-import game.action.ActionQueue;
 import game.GameUnified;
 import game.GameUnifiedCaching;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.state.IState;
 import game.state.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tree.node.NodeQWOPExplorable;
 import tree.Utility;
+import tree.node.NodeQWOPExplorable;
 import ui.runner.PanelRunner;
-import vision.ScreenCapture;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
+import vision.ScreenCapture;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,15 +29,16 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
     static {
         Utility.loadLoggerConfiguration();
+        StateDelayEmbedded.useFiniteDifferences = true;
     }
 
-    GameUnified game = new GameUnifiedCaching(1,2);
+    GameUnified game = new GameUnifiedCaching(1,4);
 
     private boolean doFullGameSerialization = false;
 
     // Net and execution parameters.
     String valueNetworkName = "embeddedstate.pb";
-    String checkpointName = "embeddedstate25"; // "med67";
+    String checkpointName = "embeddedstate54"; // "med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
@@ -111,7 +112,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         // Assign a "prefix" of game.action, since I'm not sure if the controller will generalize to this part of running.
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
-                new Action(6, Action.Keys.none),
+                new Action(7, Action.Keys.none),
 //                new Action(34, Action.Keys.wo),
 //                new Action(19, Action.Keys.none),
 //                new Action(20, Action.Keys.qp),
