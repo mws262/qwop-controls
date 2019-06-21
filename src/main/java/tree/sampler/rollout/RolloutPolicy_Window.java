@@ -1,8 +1,13 @@
 package tree.sampler.rollout;
 
-import game.action.Action;
+import com.google.common.primitives.Floats;
 import game.IGameInternal;
+import game.action.Action;
+import game.action.ActionQueue;
 import tree.node.NodeQWOPExplorableBase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is a meta-rollout policy. It does multiple other rollouts and aggregates the results.
@@ -13,9 +18,13 @@ import tree.node.NodeQWOPExplorableBase;
  *
  * @author matt
  */
-public class RolloutPolicy_Window extends RolloutPolicy {
+public class RolloutPolicy_Window implements IRolloutPolicy {
 
-    private RolloutPolicy individualRollout;
+    private IRolloutPolicy individualRollout;
+
+    ActionQueue actionQueue = new ActionQueue();
+    private final List<Action> actionSequence = new ArrayList<>(); // Reused local list.
+
 
     public enum Criteria {
         WORST, BEST, AVERAGE,
@@ -23,8 +32,7 @@ public class RolloutPolicy_Window extends RolloutPolicy {
 
     public Criteria selectionCriteria = Criteria.BEST;
 
-    public RolloutPolicy_Window(RolloutPolicy individualRollout) {
-        super(individualRollout.evaluationFunction);
+    public RolloutPolicy_Window(IRolloutPolicy individualRollout) {
         this.individualRollout = individualRollout;
     }
 
@@ -33,50 +41,52 @@ public class RolloutPolicy_Window extends RolloutPolicy {
 
         // Need to do a rollout for the actual node we landed on.
         Action middleAction = startNode.getAction();
-        Action aboveAction = new Action(middleAction.getTimestepsTotal() + 1, middleAction.peek());
-        Action belowAction = new Action(middleAction.getTimestepsTotal() - 1, middleAction.peek());
+        float scoreMid = individualRollout.rollout(startNode, game);
 
-        /* Value of the center action (the one we are targeting). */
-        float startValue = individualRollout.evaluationFunction.getValue(startNode);
-        float valMid = individualRollout.rollout(startNode, game);
+        // Pick valid actions above and below -- TODO generalize this to larger windows also.
+        List<Action> windowActions = new ArrayList<>();
+        windowActions.add(new Action(middleAction.getTimestepsTotal() + 1, middleAction.peek()));
+        if (middleAction.getTimestepsTotal() > 1) {
+            windowActions.add(new Action(middleAction.getTimestepsTotal() - 1, middleAction.peek()));
+        }
 
-        /* Value of the action one above the target one. */
-        if (startNode.getTreeDepth() > 1)
-            simGameToNode(startNode.getParent(), game);
-        actionQueue.addAction(aboveAction);
-        while (!actionQueue.isEmpty())
-            game.step(actionQueue.pollCommand());
+        float[] windowScores = new float[windowActions.size()];
+        for (int i = 0; i < windowActions.size(); i++) {
+            startNode.getParent().getSequence(actionSequence);
+            actionQueue.clearAll();
+            actionQueue.addSequence(actionSequence);
+            actionQueue.addAction(windowActions.get(i));
+            game.makeNewWorld();
+            while (!actionQueue.isEmpty()) {
+                game.step(actionQueue.pollCommand());
+            }
 
-        NodeQWOPExplorableBase<?> nodeAbove = startNode.getParent().addBackwardsLinkedChild(aboveAction, game.getCurrentState());
-        float valAbove =
-                individualRollout.rollout(nodeAbove, game) + individualRollout.evaluationFunction.getValue(nodeAbove) - startValue;
-
-
-        if (startNode.getTreeDepth() > 1)
-            simGameToNode(startNode.getParent(), game);
-        actionQueue.addAction(belowAction);
-        while (!actionQueue.isEmpty())
-            game.step(actionQueue.pollCommand());
-
-        NodeQWOPExplorableBase<?> nodeBelow = startNode.getParent().addBackwardsLinkedChild(belowAction, game.getCurrentState());
-        float valBelow =
-                individualRollout.rollout(nodeBelow, game) + individualRollout.evaluationFunction.getValue(nodeBelow) - startValue;
+            NodeQWOPExplorableBase<?> windowNode = startNode.getParent().addBackwardsLinkedChild(windowActions.get(i),
+                    game.getCurrentState());
+            windowScores[i] = individualRollout.rollout(windowNode, game);
+        }
 
         switch(selectionCriteria) {
 
             case WORST:
-                return Float.min(valMid, Float.min(valAbove, valBelow));
+                return Float.min(scoreMid, Floats.min(windowScores));
             case BEST:
-                return Float.max(valMid, Float.max(valAbove, valBelow));
+                return Float.max(scoreMid, Floats.max(windowScores));
             case AVERAGE:
-                return (valMid + valAbove + valBelow) / 3f;
+                float sum = 0;
+                for (float score : windowScores) {
+                    sum += score;
+                }
+                sum += scoreMid;
+                return sum / (float)(windowScores.length + 1);
             default:
-                return (valMid + valAbove + valBelow) / 3f;
+                throw new IllegalArgumentException("Unknown selection criteria specified: " + selectionCriteria.name());
         }
     }
 
     @Override
-    public RolloutPolicy getCopy() {
+    public IRolloutPolicy getCopy() {
         return new RolloutPolicy_Window(individualRollout.getCopy());
     }
+
 }

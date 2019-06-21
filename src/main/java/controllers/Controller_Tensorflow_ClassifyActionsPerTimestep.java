@@ -1,9 +1,9 @@
 package controllers;
 
 import game.action.Action;
-import game.state.IState;
 import game.state.State;
 import tflowtools.TensorflowLoader;
+import tree.node.NodeQWOPExplorableBase;
 
 import java.util.List;
 
@@ -57,8 +57,8 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     }
 
     @Override
-    public Action policy(IState state) {
-        List<Float> keyClassification = sisoFloatPrediction(state, inputName, outputName);
+    public Action policy(NodeQWOPExplorableBase<?> state) {
+        List<Float> keyClassification = sisoFloatPrediction(state.getState(), inputName, outputName);
 
         float probability0 = keyClassification.get(0);
         float probability1 = keyClassification.get(1);
@@ -90,5 +90,10 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
         }
 
         return chosenAction;
+    }
+
+    @Override
+    public IController getCopy() {
+        throw new RuntimeException("Haven't implemented copy on this controller yet!");
     }
 }

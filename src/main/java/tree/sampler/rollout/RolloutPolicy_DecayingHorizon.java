@@ -1,13 +1,11 @@
 package tree.sampler.rollout;
 
-import game.IGameInternal;
-import game.action.Action;
-import game.state.IState;
+import controllers.IController;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
-public abstract class RolloutPolicy_DecayingHorizon extends RolloutPolicy {
+public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
 
     // Decaying horizon kernel parameters.
     // Kernel is an s-curve meant to be evaluated from 0 to 1 and producing values from 0 to 1.
@@ -15,52 +13,49 @@ public abstract class RolloutPolicy_DecayingHorizon extends RolloutPolicy {
     // til later, smaller values make the drop occur earlier.
     public static float kernelSteepness = 5; // Steepness of the drop. Higher values == more steep.
 
-    public static int maxTimestepsToSim = 200;
+    public static final int defaultMaxTimesteps = 200;
 
-    RolloutPolicy_DecayingHorizon(IEvaluationFunction evaluationFunction) {
-        super(evaluationFunction);
+    private IController rolloutController;
+
+    public RolloutPolicy_DecayingHorizon(IEvaluationFunction evaluationFunction, IController rolloutController,
+                                   int maxTimestepsToSim) {
+        super(evaluationFunction, maxTimestepsToSim);
+        this.rolloutController = rolloutController;
+    }
+
+    public RolloutPolicy_DecayingHorizon(IEvaluationFunction evaluationFunction, IController rolloutController) {
+        this(evaluationFunction, rolloutController, defaultMaxTimesteps);
+    }
+
+    float startScore(NodeQWOPExplorableBase<?> startNode) {
+        return 0; // -evaluationFunction.getValue(startNode);
+    }
+
+    float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?> before, NodeQWOPBase<?> after) {
+        float multiplier = getKernelMultiplier(
+                timestepSinceRolloutStart / (float) (maxTimesteps - 1));
+
+        return multiplier * (evaluationFunction.getValue(after) - evaluationFunction.getValue(before));
+    }
+
+    float endScore(NodeQWOPExplorableBase<?> endNode) {
+        return 0; // evaluationFunction.getValue(endNode);
+    }
+
+    float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
+                        NodeQWOPExplorableBase<?> endNode) {
+        return accumulatedValue;
     }
 
     @Override
-    public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
-        assert startNode.getState().equals(game.getCurrentState());
-
-        // Duplicate the start node, but use the rollout-specific action generator.
-        NodeQWOPExplorableBase<?> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
-                startNode.getState(), rolloutActionGenerator);
-        float accumulatedValue = 0f;
-        int timestepCounter = 0;
-
-        float previousValue = evaluationFunction.getValue(startNode);
-        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimestepsToSim) {
-            Action childAction = getNextAction(rolloutNode);
-            actionQueue.addAction(childAction);
-
-            NodeQWOPBase<?> intermediateNode = rolloutNode;
-            while (!actionQueue.isEmpty() && !game.getFailureStatus() && timestepCounter < maxTimestepsToSim) {
-                game.step(actionQueue.pollCommand());
-
-                intermediateNode = intermediateNode.addBackwardsLinkedChild(childAction, game.getCurrentState());
-
-                float currentValue = evaluationFunction.getValue(intermediateNode);
-                float multiplier = getKernelMultiplier(timestepCounter / (float) (maxTimestepsToSim - 1));
-
-                accumulatedValue += multiplier * (currentValue - previousValue); // Incremental distance travelled.
-                previousValue = currentValue;
-
-                timestepCounter++;
-            }
-            rolloutNode = addNextRolloutNode(rolloutNode, childAction, game.getCurrentState());
-        }
-        return calculateFinalValue(accumulatedValue, startNode);
+    IController getController() {
+        return rolloutController;
     }
 
-    abstract float calculateFinalValue(float accumulatedValue, NodeQWOPExplorableBase<?> startNode);
-
-    abstract NodeQWOPExplorableBase<?> addNextRolloutNode(NodeQWOPExplorableBase<?> currentNode, Action action,
-                                                          IState state);
-
-    abstract Action getNextAction(NodeQWOPExplorableBase<?> currentNode);
+    @Override
+    public RolloutPolicyBase getCopy() {
+        return new RolloutPolicy_DecayingHorizon(evaluationFunction.getCopy(), rolloutController.getCopy(), maxTimesteps);
+    }
 
     float getKernelMultiplier(float normalizedTimesteps) {
         assert normalizedTimesteps <= 1f;

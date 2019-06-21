@@ -11,16 +11,15 @@ import value.IValueFunction;
  * @author matt
  *
  */
-public class RolloutPolicy_WeightWithValueFunction extends RolloutPolicy {
+public class RolloutPolicy_WeightWithValueFunction implements IRolloutPolicy {
 
     public float valueFunctionWeight = 0.8f;
 
-    private RolloutPolicy individualRollout;
+    private IRolloutPolicy individualRollout;
 
     private IValueFunction valueFunction;
 
-    public RolloutPolicy_WeightWithValueFunction(RolloutPolicy individualRollout, IValueFunction valueFunction) {
-        super(individualRollout.evaluationFunction);
+    public RolloutPolicy_WeightWithValueFunction(IRolloutPolicy individualRollout, IValueFunction valueFunction) {
         this.individualRollout = individualRollout;
         this.valueFunction = valueFunction;
     }
@@ -29,12 +28,14 @@ public class RolloutPolicy_WeightWithValueFunction extends RolloutPolicy {
     public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
         float rolloutValue = individualRollout.rollout(startNode, game);
 
-        return (1 - valueFunctionWeight) * rolloutValue + valueFunctionWeight * valueFunction.evaluate(startNode);    }
+        return (1 - valueFunctionWeight) * rolloutValue + valueFunctionWeight * valueFunction.evaluate(startNode);
+    }
 
     @Override
-    public RolloutPolicy getCopy() {
+    public IRolloutPolicy getCopy() {
         RolloutPolicy_WeightWithValueFunction rolloutCopy =
-                new RolloutPolicy_WeightWithValueFunction(individualRollout.getCopy(), valueFunction);
+                new RolloutPolicy_WeightWithValueFunction(individualRollout.getCopy(), valueFunction); // TODO decide
+        // if it would be better to copy value function also.
         rolloutCopy.valueFunctionWeight = valueFunctionWeight;
         return rolloutCopy;
     }

@@ -13,6 +13,7 @@ import game.state.StateVariable.StateName;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 import tree.Utility;
+import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphicsBase;
 import ui.runner.PanelRunner;
 
@@ -132,9 +133,10 @@ public class Controller_NearestNeighborApprox implements IController {
     }
 
     @Override
-    public Action policy(IState state) {
+    public Action policy(NodeQWOPExplorableBase<?> state) {
         // Get nearest states (determined ONLY by body theta).
-        float sortBy = state.getStateVariableFromName(sortByPart).getStateByName(sortBySt);
+        IState st = state.getState();
+        float sortBy = st.getStateVariableFromName(sortByPart).getStateByName(sortBySt);
 
         NavigableMap<Float, StateHolder> lowerSet = allStates.headMap(sortBy, true);
         NavigableMap<Float, StateHolder> upperSet = allStates.tailMap(sortBy, false);
@@ -142,8 +144,8 @@ public class Controller_NearestNeighborApprox implements IController {
         EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<>(10);
 
         Utility.tic();
-        lowerSet.values().stream().limit(lowerSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state), v));
-        upperSet.values().stream().limit(upperSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state), v));
+        lowerSet.values().stream().limit(lowerSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, st), v));
+        upperSet.values().stream().limit(upperSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, st), v));
         Utility.toc();
         Entry<Float, StateHolder> bestEntry = topMatches.firstEntry();
         StateHolder bestMatch = bestEntry.getValue();
@@ -196,7 +198,7 @@ public class Controller_NearestNeighborApprox implements IController {
             if (lastStIdx < currentTrajectory.states.size() - 2) {
 
                 StateHolder nextStateOnOldTraj = currentTrajectory.states.get(lastStIdx + 1);
-                float oldTrajError = sqError(nextStateOnOldTraj.state, state);
+                float oldTrajError = sqError(nextStateOnOldTraj.state, st);
 
                 if (bestMatchError + trajectorySnappingThreshold < oldTrajError) {
                     currentTrajectory = bestMatch.parentRun;
@@ -215,13 +217,18 @@ public class Controller_NearestNeighborApprox implements IController {
             currentTrajectoryStateMatch = bestMatch;
         }
 
-        previousStatesLIFO.push(state); // Keep previous states too.
+        previousStatesLIFO.push(st); // Keep previous states too.
 
         Action currentAction = new Action(1, chosenKeys);
 
         currentDecision = new DecisionHolder(currentAction, currentTrajectory,
                 currentTrajectory.states.indexOf(currentTrajectoryStateMatch));
         return currentAction;
+    }
+
+    @Override
+    public IController getCopy() {
+        throw new RuntimeException("Haven't implemented copy on this controller yet!");
     }
 
 

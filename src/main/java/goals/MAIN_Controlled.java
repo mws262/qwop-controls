@@ -1,7 +1,5 @@
 package goals;
 
-import game.action.Action;
-import game.action.ActionQueue;
 import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_Null;
 import controllers.IController;
@@ -9,10 +7,12 @@ import data.SavableActionSequence;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameUnified;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.state.IState;
+import tree.Utility;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPGraphics;
-import tree.Utility;
 import vision.ScreenCapture;
 
 import javax.swing.*;
@@ -179,7 +179,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
             long initTime = System.currentTimeMillis();
             IState state = game.getCurrentState();
             System.out.println(state.getCenterX());
-            Action nextAction = controller.policy(state);
+            Action nextAction = controller.policy(new NodeQWOPExplorable(state));
             actionQueue.addAction(nextAction);
             while (!actionQueue.isEmpty()) {
 //                game.applyBodyImpulse(rand.nextFloat() - 0.5f, rand.nextFloat() - 0.5f);

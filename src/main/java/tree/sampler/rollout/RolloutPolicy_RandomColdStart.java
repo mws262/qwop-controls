@@ -1,5 +1,6 @@
 package tree.sampler.rollout;
 
+import controllers.Controller_Random;
 import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
@@ -10,33 +11,21 @@ import tree.node.NodeQWOPExplorableBase;
  *
  * @author matt
  */
-public class RolloutPolicy_RandomColdStart extends RolloutPolicy{
+public class RolloutPolicy_RandomColdStart extends RolloutPolicy_DeltaScore{
 
     public RolloutPolicy_RandomColdStart(IEvaluationFunction evaluationFunction) {
-        super(evaluationFunction);
+        super(evaluationFunction, new Controller_Random());
     }
 
     @Override
     public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
-        actionQueue.clearAll();
-
-        NodeQWOPExplorableBase<?> normalRolloutEndNode = randomRollout(startNode, game);
-        actionQueue.resetQueue();
+        float normalScore = super.rollout(startNode, game);
         coldStartGameToNode(startNode, game);
-
-//        Node coldStartRolloutEndNode = randomRollout(startNode, game);
-
-        while (!actionQueue.isEmpty() && !game.getFailureStatus()) {
-            game.step(actionQueue.pollCommand());
-        }
-
-
-        return (evaluationFunction.getValue(normalRolloutEndNode) +
-                game.getCurrentState().getCenterX() - startNode.getState().getCenterX()) / 2f; // TODO Stop hardcoding
-        // this.
+        float coldStartScore = super.rollout(startNode, game);
+        return (normalScore + coldStartScore) / 2f;
     }
     @Override
-    public RolloutPolicy getCopy() {
+    public RolloutPolicy_DeltaScore getCopy() {
         return new RolloutPolicy_RandomColdStart(evaluationFunction.getCopy());
     }
 }
