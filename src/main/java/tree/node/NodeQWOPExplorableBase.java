@@ -1,11 +1,13 @@
 package tree.node;
 
+import distributions.Distribution;
 import game.action.Action;
 import game.action.ActionGenerator_Null;
 import game.action.ActionList;
 import game.action.IActionGenerator;
-import distributions.Distribution;
 import game.state.IState;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,8 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * default, unless another one is given.
      */
     final IActionGenerator actionGenerator;
+
+    private static Logger logger = LogManager.getLogger(NodeQWOPExplorableBase.class);
 
     /**
      * Create a new root node. It will have potential child game.action assigned to it by the specified
@@ -252,8 +256,13 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
     @Override
     void addToChildList(N child) {
         super.addToChildList(child);
-        untriedActions.remove(child.getAction()); // If the child being added corresponds to one of the untried
+        boolean removed = untriedActions.remove(child.getAction()); // If the child being added corresponds to one of
+        // the untried
         // game.action listed, then remove it. Otherwise untried game.action remains unaffected.
+        if (!removed) {
+            logger.warn("Added a doubly-linked child with an action that the parent didn't have. May be ok, but you " +
+                    "should know why this is happening.");
+        }
     }
 
     /**
