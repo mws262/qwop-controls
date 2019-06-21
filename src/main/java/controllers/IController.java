@@ -1,8 +1,8 @@
 package controllers;
 
-import game.action.Action;
 import game.GameUnified;
-import game.state.IState;
+import game.action.Action;
+import tree.node.NodeQWOPExplorableBase;
 
 import java.awt.*;
 
@@ -20,7 +20,9 @@ public interface IController {
      * @param state Current state.
      * @return An action to take.
      */
-    Action policy(IState state);
+    Action policy(NodeQWOPExplorableBase<?> state);
+
+    IController getCopy();
 
     /**
      * Optionally, if we want the controller to draw anything to see what it's doing. Defaults to doing nothing if

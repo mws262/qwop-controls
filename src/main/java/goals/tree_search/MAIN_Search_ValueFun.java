@@ -1,5 +1,7 @@
 package goals.tree_search;
 
+import controllers.Controller_Random;
+import controllers.Controller_ValueFunction;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
 import game.action.IActionGenerator;
@@ -164,41 +166,36 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     public void doGames() {
 
         /* Pick rollout configuration. */
-        RolloutPolicy rollout;
+        IRolloutPolicy rollout;
 
         // BASIC ROLLOUT STRATEGY
         switch (rolloutType) {
             case RANDOM:
                 // Rollout goes randomly among a limited set of game.action until failure. Score based on distance
                 // travelled from start to end of rollout.
-                rollout = new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
+                rollout = new RolloutPolicy_DeltaScore(new EvaluationFunction_Distance(), new Controller_Random());
                 break;
             case RANDOM_HORIZON:
                 // Rollout goes randomly to a fixed horizon in the future. Future values are weighted less than
                 // nearer ones. Based on distances travelled.
-                RolloutPolicy_DecayingHorizon decayingHorizonRandom =
-                        new RolloutPolicy_DecayingHorizonRandom(new EvaluationFunction_Distance());
-                RolloutPolicy_DecayingHorizon.maxTimestepsToSim = rolloutHorizonTimesteps;
-                rollout = decayingHorizonRandom;
+                rollout = new RolloutPolicy_DecayingHorizon(new EvaluationFunction_Distance(),
+                        new Controller_Random(), rolloutHorizonTimesteps);
                 break;
             case VALUE_HORIZON:
                 // Rollout follows value function controller to a fixed horizon in the future. Future values are
                 // weighted less than nearer ones. Based on distance travelled.
-                RolloutPolicy_DecayingHorizonValueFunction decayingHorizonValue =
-                        new RolloutPolicy_DecayingHorizonValueFunction(valueFunction);
-                RolloutPolicy_DecayingHorizon.maxTimestepsToSim = rolloutHorizonTimesteps;
-                rollout = decayingHorizonValue;
+                rollout = new RolloutPolicy_DecayingHorizon(new EvaluationFunction_Distance(),
+                        new Controller_ValueFunction(valueFunction), rolloutHorizonTimesteps);
                 break;
             default:
                 logger.warn("Unknown rollout type specified. Just using single random instead.");
-                rollout = new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
+                rollout = new RolloutPolicy_DeltaScore(new EvaluationFunction_Distance(), new Controller_Random());
                 break;
         }
 
         // ALSO WEIGHT ROLLOUT RESULTS WITH VALUE FUNCTION?
         if (rolloutWeightedWithValFun) {
-            RolloutPolicy_WeightWithValueFunction weightedRollout = new RolloutPolicy_WeightWithValueFunction(rollout
-                    , valueFunction); // Does not have to be the same value function as the one used in value
+            RolloutPolicy_WeightWithValueFunction weightedRollout = new RolloutPolicy_WeightWithValueFunction(rollout, valueFunction); // Does not have to be the same value function as the one used in value
             // function POLICY rollouts.
             weightedRollout.valueFunctionWeight = rolloutValFunWeight;
             rollout = weightedRollout;
@@ -273,7 +270,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         }
     }
 
-    private void doSearchAndUpdate(NodeQWOPExplorableBase<?> rootNode, RolloutPolicy rollout, int updateIdx) {
+    private void doSearchAndUpdate(NodeQWOPExplorableBase<?> rootNode, IRolloutPolicy rollout, int updateIdx) {
         Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout.getCopy());
         TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, ucbSampler, new DataSaver_Null());
         searchMax.terminateAfterXGames = bailAfterXGames;

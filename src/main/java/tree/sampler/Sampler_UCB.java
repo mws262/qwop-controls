@@ -1,13 +1,12 @@
 package tree.sampler;
 
-import game.action.Action;
-import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
+import game.action.Action;
 import org.jblas.util.Random;
-import tree.sampler.rollout.RolloutPolicy;
-import tree.sampler.rollout.RolloutPolicy_SingleRandom;
-import tree.node.NodeQWOPExplorableBase;
 import tree.Utility;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.evaluator.IEvaluationFunction;
+import tree.sampler.rollout.IRolloutPolicy;
 import value.updaters.IValueUpdater;
 import value.updaters.ValueUpdater_Average;
 
@@ -27,7 +26,7 @@ public class Sampler_UCB implements ISampler {
     /**
      * Policy used to evaluate the score of a tree expansion Node by doing rollout(s).
      */
-    private RolloutPolicy rolloutPolicy;
+    private IRolloutPolicy rolloutPolicy;
 
     private IValueUpdater valueUpdater = new ValueUpdater_Average();
 
@@ -70,23 +69,13 @@ public class Sampler_UCB implements ISampler {
 
     /**
      * Must provide an evaluationFunction to get a numeric score for nodes after a rollout.
-     */
-    public Sampler_UCB(IEvaluationFunction evaluationFunction) {
-        this.evaluationFunction = evaluationFunction;
-        rolloutPolicy = new RolloutPolicy_SingleRandom(evaluationFunction);
-        c =  explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
-    }
-
-    /**
-     * Must provide an evaluationFunction to get a numeric score for nodes after a rollout.
      * Also specify a rollout policy to use.
      */
-    public Sampler_UCB(IEvaluationFunction evaluationFunction, RolloutPolicy rolloutPolicy) {
+    public Sampler_UCB(IEvaluationFunction evaluationFunction, IRolloutPolicy rolloutPolicy) {
         this.evaluationFunction = evaluationFunction;
         this.rolloutPolicy = rolloutPolicy;
         c = explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
     }
-
 
     /**
      * Propagate the score and visit count back up the tree.
