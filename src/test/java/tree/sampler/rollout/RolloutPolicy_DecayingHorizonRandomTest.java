@@ -102,7 +102,7 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
         CacheHalfwayPoint cachingGame = new CacheHalfwayPoint(false, maxTimestepsToSim); // Will go to full 200 timesteps.
         startDistance = cachingGame.getCurrentState().getCenterX();
         finalValue = rollout.rollout(startNode, cachingGame);
-        Assert.assertEquals(cachingGame.halfwayCachedState.getCenterX() - startDistance, finalValue, 1e-6f);
+        Assert.assertEquals(cachingGame.halfwayCachedState.getCenterX() - startDistance, finalValue, 1e-4f);
     }
 
     @Test

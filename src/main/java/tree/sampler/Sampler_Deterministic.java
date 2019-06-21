@@ -24,37 +24,28 @@ public class Sampler_Deterministic implements ISampler {
 					" which is already fully-explored. Whoever called this is at fault.");
         NodeQWOPExplorableBase<?> currentNode = startNode;
 
-        while (true) {
-            // TEMPORARY DELAY
-            if (currentNode.isFullyExplored())
-                throw new IllegalStateException("Tree policy got itself to a node which is fully-explored. This is its " +
-						"fault.");
             if (currentNode.isLocked()) {
-                currentNode = startNode.getParent();
-                continue;
-                //throw new RuntimeException("Deterministic sampler stuck on locked node at depth: " + currentNode
-				// .treeDepth);
-            }
-            // If the given node has unchecked options (e.g. root hasn't tried all possible immediate children),
-			// expand directly.
-            if (currentNode.getUntriedActionCount() != 0 && currentNode.reserveExpansionRights()) return currentNode;
-
-            // Get the first child with some untried game.action after it, or at least a not-fully-explored one.
-            boolean foundViableChild = false;
-            for (NodeQWOPExplorableBase<?> child : currentNode.getChildren()) {
-                if (child.getUntriedActionCount() != 0 && child.reserveExpansionRights()) {
-                    return child;
-                } else if (!child.isFullyExplored()) {
-                    currentNode = child;
-                    foundViableChild = true;
-                    break;
+                if (currentNode.getTreeDepth() > 0) {
+                    treePolicy(startNode.getParent());
+                } else {
+                    return null;
                 }
             }
-            if (!foundViableChild) {
-                System.out.println("One worker has to start over because its options were taken. Back to depth: " + startNode.getTreeDepth());
-                currentNode = startNode;
+
+            // If the given node has unchecked options (e.g. root hasn't tried all possible immediate children),
+			// expand directly.
+            if (currentNode.getUntriedActionCount() != 0 && currentNode.reserveExpansionRights())
+                return currentNode;
+
+            // Get the first child with some untried game.action after it, or at least a not-fully-explored one.
+            for (NodeQWOPExplorableBase<?> child : currentNode.getChildren()) {
+                if (child.getUntriedActionCount() > 0 && child.reserveExpansionRights()) {
+                    return child;
+                } else if (!child.isFullyExplored()) {
+                    return treePolicy(child);
+                }
             }
-        }
+            return null;
     }
 
     @Override
