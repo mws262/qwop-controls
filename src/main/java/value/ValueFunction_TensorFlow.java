@@ -18,12 +18,12 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     /**
      * Input layer size.
      */
-    private final int inputSize;
+    public final int inputSize;
 
     /**
      * Output layer size.
      */
-    private final int outputSize;
+    public final int outputSize;
 
     /**
      * TensorFlow neural network used to predict value.
