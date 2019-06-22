@@ -99,8 +99,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evaluations.add(new FuturePredictor(gameTemplate, Keys.w, 5, 10));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.o, 5, 10));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.p, 5, 10));
-//        evaluations.add(new FuturePredictor(gameTemplate, Keys.qo, 5, 15));
-//        evaluations.add(new FuturePredictor(gameTemplate, Keys.wp, 5, 15));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.qo, 5, 15));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.wp, 5, 15));
 
     }
 
