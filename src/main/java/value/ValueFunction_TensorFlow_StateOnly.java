@@ -1,12 +1,13 @@
 package value;
 
-import game.action.Action;
 import com.sun.istack.NotNull;
-import game.*;
+import game.GameConstants;
+import game.GameUnified;
+import game.IGameSerializable;
+import game.action.Action;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tflowtools.TrainableNetwork;
 import tree.node.NodeQWOP;
 import tree.node.NodeQWOPBase;
 
@@ -83,9 +84,6 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             executor = Executors.newFixedThreadPool(numThreads);
     }
 
-    private ValueFunction_TensorFlow_StateOnly(TrainableNetwork network, GameUnified gameTemplate) {
-        super(network, gameTemplate);
-    }
     /**
      * Assign the futures that will be explored on each controller evaluation.
      */
@@ -377,10 +375,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     @NotNull
     public ValueFunction_TensorFlow_StateOnly getCopy() {
-        ValueFunction_TensorFlow_StateOnly valFunCopy = new ValueFunction_TensorFlow_StateOnly(network, gameTemplate);
-        valFunCopy.assignFuturePredictors(gameTemplate);
-        if (multithread)
-            valFunCopy.executor = Executors.newFixedThreadPool(numThreads);
+        ValueFunction_TensorFlow_StateOnly valFunCopy = null;
+        try {
+            valFunCopy = new ValueFunction_TensorFlow_StateOnly(getGraphDefinitionFile(), gameTemplate);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         return valFunCopy;
     }
 }

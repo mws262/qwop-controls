@@ -6,7 +6,6 @@ import game.IGameSerializable;
 import game.action.Action;
 import org.junit.Assert;
 import org.junit.Test;
-import tflowtools.TrainableNetwork;
 import tree.node.NodeQWOP;
 import tree.node.NodeQWOPBase;
 
@@ -16,39 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ValueFunction_TensorFlowTest {
-
-    @Test
-    public void loadCheckpoint() {
-    }
-
-    @Test
-    public void saveCheckpoint() {
-    }
-
-    @Test
-    public void getCheckpointPath() {
-    }
-
-    @Test
-    public void getGraphDefinitionFile() {
-    }
-
-    @Test
-    public void setTrainingBatchSize() {
-    }
-
-    @Test
-    public void setTrainingStepsPerBatch() {
-    }
-
-    @Test
-    public void update() {
-    }
-
-    @Test
-    public void evaluate() {
-    }
-
 
     @Test
     public void constructor1() {
@@ -66,7 +32,7 @@ public class ValueFunction_TensorFlowTest {
 
         Assert.assertNotNull(valFun);
         Assert.assertTrue(valFun.getGraphDefinitionFile().exists());
-        valFun.network.getGraphDefinitionFile().deleteOnExit(); // Try not to clog files up with tests.
+        valFun.getGraphDefinitionFile().deleteOnExit(); // Try not to clog files up with tests.
 
         Assert.assertTrue(valFun.getGraphDefinitionFile().getName().contains("test_net"));
 
@@ -101,7 +67,7 @@ public class ValueFunction_TensorFlowTest {
 
         Assert.assertNotNull(valFun);
         Assert.assertTrue(valFun.getGraphDefinitionFile().exists());
-        valFun.network.getGraphDefinitionFile().deleteOnExit(); // Try not to clog files up with tests.
+        valFun.getGraphDefinitionFile().deleteOnExit(); // Try not to clog files up with tests.
 
         Assert.assertTrue(valFun.getGraphDefinitionFile().getName().contains("test_net2"));
 
@@ -130,7 +96,7 @@ public class ValueFunction_TensorFlowTest {
 
         Assert.assertNotNull(valFun);
         Assert.assertTrue(valFun.getGraphDefinitionFile().exists());
-        valFun.network.getGraphDefinitionFile().deleteOnExit(); // Try not to clog files up with tests.
+        valFun.getGraphDefinitionFile().deleteOnExit(); // Try not to clog files up with tests.
 
         Assert.assertTrue(valFun.getGraphDefinitionFile().getName().contains("test_net3"));
 
@@ -149,6 +115,66 @@ public class ValueFunction_TensorFlowTest {
         valFun.evaluate(new NodeQWOP(null)); // Just to make sure it doesn't error out. The value is basically
     }
 
+    @Test
+    public void constructor2() {
+        // Constructor 1 to create from scratch.
+        ValFunTest valFun = null;
+        GameUnified game = new GameUnified();
+        List<Integer> layerSizes = new ArrayList<>();
+        layerSizes.add(10);
+        layerSizes.add(4);
+
+        int outputSize = 1;
+        try {
+            valFun = new ValFunTest("test_net4", game, outputSize, layerSizes, new ArrayList<>());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        Assert.assertNotNull(valFun);
+        Assert.assertTrue(valFun.getGraphDefinitionFile().exists());
+        valFun.getGraphDefinitionFile().deleteOnExit(); // Try not to clog files up with tests.
+
+        List<File> checkpoint = valFun.saveCheckpoint("test_checkpoint1");
+        checkpoint.forEach(File::deleteOnExit);
+
+        File netFile = valFun.getGraphDefinitionFile();
+
+        // Load existing graph with constructor 2.
+        ValFunTest valFunLoad = null;
+        try {
+            valFunLoad = new ValFunTest(netFile, game);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        Assert.assertNotNull(valFunLoad.getGraphDefinitionFile());
+
+        // Input/output sizes should still match.
+        Assert.assertEquals(valFun.getGraphDefinitionFile(), valFunLoad.getGraphDefinitionFile());
+        Assert.assertEquals(valFun.inputSize, valFunLoad.inputSize);
+        Assert.assertEquals(valFun.outputSize, valFunLoad.outputSize);
+
+        Assert.assertArrayEquals(valFun.assembleInputFromNode(new NodeQWOP(null)),
+                valFunLoad.assembleInputFromNode(new NodeQWOP(null)), 1e-8f);
+        Assert.assertArrayEquals(valFun.assembleOutputFromNode(new NodeQWOP(null)),
+                valFunLoad.assembleOutputFromNode(new NodeQWOP(null)), 1e-8f);
+
+        // Checkpoint loading should produce the same results.
+        float oldNetEval = valFun.evaluate(new NodeQWOP(null));
+        Assert.assertNotEquals(oldNetEval, valFunLoad.evaluate(new NodeQWOP(null)), 1e-12f);
+        valFunLoad.loadCheckpoint("test_checkpoint1");
+        float newNetEval = valFunLoad.evaluate(new NodeQWOP(null));
+        Assert.assertEquals(oldNetEval, newNetEval, 1e-12f);
+
+        List<NodeQWOP> updateList = new ArrayList<>();
+        updateList.add(new NodeQWOP(null));
+        valFun.update(updateList);
+        Assert.assertNotEquals(oldNetEval, valFun.evaluate(new NodeQWOP(null))); // Should be different after update.
+        Assert.assertEquals(newNetEval, valFunLoad.evaluate(new NodeQWOP(null)), 1e-12f); // Update of one net should
+        // not affect the other.
+    }
+
     // Testing stubs.
     class ValFunTest extends ValueFunction_TensorFlow {
 
@@ -158,10 +184,6 @@ public class ValueFunction_TensorFlowTest {
 
         ValFunTest(File existingFile, GameUnified gameTemplate) throws FileNotFoundException {
             super(existingFile, gameTemplate);
-        }
-
-        ValFunTest(TrainableNetwork network, GameUnified gameTemplate) {
-            super(network, gameTemplate);
         }
 
         @Override
