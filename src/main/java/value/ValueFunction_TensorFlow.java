@@ -70,7 +70,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     /**
      * Constructor which also creates a new TensorFlow model.
      * @param fileName Name of the .pb file (without extension) to be created.
-     * @param inputSize 1D size of the input layer.
+     * @param gameTemplate Defines the input dimension of the net.
      * @param outputSize 1D size of the output layer.
      * @param hiddenLayerSizes Size of the fully-connected interior layers.
      * @param additionalArgs Additional arguments used when creating the net (see {@link TrainableNetwork}.
