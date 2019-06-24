@@ -9,7 +9,7 @@ bailAfterXGames=10000
 
 # Important exploration configuration.
 # Larger is more exploration.
-UCBExplorationMultiplier=3
+UCBExplorationMultiplier=1
 # Currently: RANDOM, RANDOM_HORIZON, VALUE_HORIZON
 rolloutType=RANDOM_HORIZON
 # Active for horizon rollouts only.
@@ -28,8 +28,8 @@ rolloutValFunWeight=0.3
 # Value function net configuration
 networkName=embeddedstate
 checkpointNamePrefix=embeddedstate
-checkpointIndex=0
+checkpointIndex=24
 learningRate=1e-3
-trainingBatchSize=5000
+trainingBatchSize=2000
 hiddenLayerSizes=128,64
 
