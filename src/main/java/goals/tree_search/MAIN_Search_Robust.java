@@ -1,9 +1,14 @@
 package goals.tree_search;
 
+import controllers.Controller_Random;
 import game.GameUnified;
 import game.action.ActionGenerator_FixedSequence;
-import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
+import tree.node.NodeQWOPGraphics;
+import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.sampler.Sampler_UCB;
+import tree.sampler.rollout.RolloutPolicy_DeltaScore;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,7 +29,11 @@ public class MAIN_Search_Robust extends SearchTemplate {
 
     @Override
     TreeWorker getTreeWorker() {
-        return TreeWorker.makeStandardTreeWorker();
+        return TreeWorker.makeStandardTreeWorker(new Sampler_UCB(
+                new EvaluationFunction_Constant(0f),
+                new RolloutPolicy_DeltaScore(
+                        new EvaluationFunction_Distance(),
+                        new Controller_Random())));
     }
 
     private void doGames() {
