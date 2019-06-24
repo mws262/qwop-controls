@@ -32,13 +32,13 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         StateDelayEmbedded.useFiniteDifferences = true;
     }
 
-    GameUnified game = new GameUnifiedCaching(1,2);
+    GameUnified game = new GameUnified(); // new GameUnifiedCaching(1,2);
 
     private boolean doFullGameSerialization = false;
 
     // Net and execution parameters.
     String valueNetworkName = "embeddedstate.pb";
-    String checkpointName = "embeddedstate73"; // "med67";
+    String checkpointName = "embeddedstate52"; // "med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
@@ -181,7 +181,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                     arrowShape = PanelRunner.createArrowShape(mousePoint, new Point((int) centerX, (int) centerY), 80);
                     float impulseX = centerX - mousePoint.x;
                     float impulseY = centerY - mousePoint.y;
-                    float impulseGain = 0.008f;
+                    float impulseGain = 0.012f;
                     game.applyBodyImpulse(impulseGain * impulseX, impulseGain * impulseY);
                 } else {
                     arrowShape = null;

@@ -11,9 +11,11 @@ import java.util.Objects;
  */
 public class EvaluationFunction_Distance implements IEvaluationFunction {
 
+    public float scalingFactor = 1f;
+
     @Override
     public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
-        return Objects.requireNonNull(nodeToEvaluate.getState()).getCenterX();
+        return Objects.requireNonNull(nodeToEvaluate.getState()).getCenterX() * scalingFactor;
     }
 
     @Override

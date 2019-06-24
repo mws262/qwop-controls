@@ -140,9 +140,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         Objects.requireNonNull(evalResult);
 
         currentResult = evalResult;
-        logger.info(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f \tBodyX: %3.2f",
-                System.currentTimeMillis() - initialTime, evalResult.timestep, evalResult.keys.toString(),
-                Math.round(evalResult.value * 100)/100f, evalResult.state.getCenterX()));
+//        logger.info(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f \tBodyX: %3.2f",
+//                System.currentTimeMillis() - initialTime, evalResult.timestep, evalResult.keys.toString(),
+//                Math.round(evalResult.value * 100)/100f, evalResult.state.getCenterX()));
 
         return new Action(evalResult.timestep, evalResult.keys);
     }
@@ -313,7 +313,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
             for (int i = 1; i <= maxHorizon; i++) {
                 // Return to the normal number of physics iterations after the first step.
-                if (i > warmstartIterationCount + 1) {
+                if (i > warmstartIterationCount) {
                     gameLocal.iterations = GameConstants.physIterations;
                 }
 

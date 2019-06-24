@@ -8,6 +8,7 @@ import game.action.ActionQueue;
 import game.state.IState;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
+import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
 import tree.sampler.ISampler;
 import ui.runner.PanelRunner;
@@ -70,7 +71,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * How data is saved. Defaults to no saving.
      */
-    private IDataSaver saver = new DataSaver_Null();
+    private final IDataSaver saver;
 
     /**
      * Root of tree that this FSM is operating on.
@@ -149,11 +150,12 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     private final List<Action> actionSequence = new ArrayList<>();
 
-    private TreeWorker(ISampler sampler) {
+    private TreeWorker(ISampler sampler, IDataSaver saver) {
         workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
 
-        this.sampler = sampler.getCopy();
+        this.sampler = sampler;
+        this.saver = saver;
         lastTsTimeMs = System.currentTimeMillis();
 
         // Thread that this worker is running on. Will stay constant with this worker.
@@ -166,20 +168,31 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Make a worker that uses {@link GameUnified} under the hood.
      * @return A brand new TreeWorker.
      */
-    public static TreeWorker makeStandardTreeWorker(ISampler sampler) {
-        TreeWorker treeWorker = new TreeWorker(sampler);
+    public static TreeWorker makeStandardTreeWorker(ISampler sampler, IDataSaver saver) {
+        TreeWorker treeWorker = new TreeWorker(sampler, saver);
         treeWorker.game = new GameUnified();
         return treeWorker;
+    }
+
+    // With no data saving.
+    public static TreeWorker makeStandardTreeWorker(ISampler sampler) {
+        return makeStandardTreeWorker(sampler, new DataSaver_Null());
     }
 
     /**
      * Make a worker that uses {@link game.GameUnifiedCaching} under the hood.
      * @return A brand new TreeWorker.
      */
-    public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, int timestepDelay, int numDelayedStates) {
-        TreeWorker treeWorker = new TreeWorker(sampler);
+    public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, IDataSaver saver, int timestepDelay,
+                                                       int numDelayedStates) {
+        TreeWorker treeWorker = new TreeWorker(sampler, saver);
         treeWorker.game = new GameUnifiedCaching(timestepDelay, numDelayedStates);
         return treeWorker;
+    }
+
+    // No data saving.
+    public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, int timestepDelay, int numDelayedStates) {
+        return makeCachedStateTreeWorker(sampler, new DataSaver_Null(), timestepDelay, numDelayedStates);
     }
 
     /**
@@ -190,13 +203,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
      */
     public void setRoot(NodeQWOPExplorableBase<?> rootNode) {
         this.rootNode = rootNode;
-    }
-
-    /**
-     * Set which saver to  use. Defaults to no saving, Sampler_Null. Clones when reassigned.
-     */
-    public void setSaver(IDataSaver saver) {
-        this.saver = saver.getCopy();
     }
 
     /**
@@ -420,9 +426,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Pause what the worker is doing. Tells its saver to do whatever it should when the stage is complete.
      */
-    public void triggerStageCompleted() {
-        paused = true;
+    public void terminateStageComplete(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
+        saver.reportStageEnding(rootNode, targetNodes);
         saver.finalizeSaverData();
+        terminateWorker();
     }
 
     /**
