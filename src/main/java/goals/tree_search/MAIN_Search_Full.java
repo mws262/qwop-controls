@@ -1,5 +1,6 @@
 package goals.tree_search;
 
+import controllers.Controller_Random;
 import game.action.ActionGenerator_FixedSequence;
 import game.action.IActionGenerator;
 import data.SavableFileIO;
@@ -8,12 +9,16 @@ import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.sampler.ISampler;
 import tree.sampler.Sampler_UCB;
 import tree.TreeWorker;
 import tree.node.NodeQWOP;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphics;
+import tree.sampler.rollout.RolloutPolicy_DeltaScore;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -242,6 +247,11 @@ public class MAIN_Search_Full extends SearchTemplate {
 
     @Override
     TreeWorker getTreeWorker() {
-        return TreeWorker.makeStandardTreeWorker();
+        ISampler sampler = new Sampler_UCB(
+                new EvaluationFunction_Constant(0f),
+                new RolloutPolicy_DeltaScore(
+                        new EvaluationFunction_Distance(),
+                        new Controller_Random()));
+        return TreeWorker.makeStandardTreeWorker(sampler);
     }
 }

@@ -1,16 +1,15 @@
 package tree;
 
-import game.action.Action;
-import game.action.ActionQueue;
 import game.GameUnified;
 import game.GameUnifiedCaching;
 import game.IGameInternal;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.state.IState;
-import tree.sampler.ISampler;
-import tree.sampler.Sampler_Random;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
 import tree.node.NodeQWOPExplorableBase;
+import tree.sampler.ISampler;
 import ui.runner.PanelRunner;
 
 import java.awt.*;
@@ -66,7 +65,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Strategy for sampling new nodes. Defaults to random sampling.
      */
-    private ISampler sampler = new Sampler_Random();
+    private final ISampler sampler;
 
     /**
      * How data is saved. Defaults to no saving.
@@ -150,10 +149,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     private final List<Action> actionSequence = new ArrayList<>();
 
-    private TreeWorker() {
+    private TreeWorker(ISampler sampler) {
         workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
 
+        this.sampler = sampler.getCopy();
         lastTsTimeMs = System.currentTimeMillis();
 
         // Thread that this worker is running on. Will stay constant with this worker.
@@ -166,8 +166,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Make a worker that uses {@link GameUnified} under the hood.
      * @return A brand new TreeWorker.
      */
-    public static TreeWorker makeStandardTreeWorker() {
-        TreeWorker treeWorker = new TreeWorker();
+    public static TreeWorker makeStandardTreeWorker(ISampler sampler) {
+        TreeWorker treeWorker = new TreeWorker(sampler);
         treeWorker.game = new GameUnified();
         return treeWorker;
     }
@@ -176,8 +176,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Make a worker that uses {@link game.GameUnifiedCaching} under the hood.
      * @return A brand new TreeWorker.
      */
-    public static TreeWorker makeCachedStateTreeWorker(int timestepDelay, int numDelayedStates) {
-        TreeWorker treeWorker = new TreeWorker();
+    public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, int timestepDelay, int numDelayedStates) {
+        TreeWorker treeWorker = new TreeWorker(sampler);
         treeWorker.game = new GameUnifiedCaching(timestepDelay, numDelayedStates);
         return treeWorker;
     }
@@ -190,13 +190,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
      */
     public void setRoot(NodeQWOPExplorableBase<?> rootNode) {
         this.rootNode = rootNode;
-    }
-
-    /**
-     * Set which sampler is used. Defaults to Sampler_Random. Clones when reassigned.
-     */
-    public void setSampler(ISampler sampler) {
-        this.sampler = sampler.getCopy();
     }
 
     /**

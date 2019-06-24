@@ -3,7 +3,6 @@ package tree.sampler;
 import game.IGameInternal;
 import game.action.Action;
 import org.jblas.util.Random;
-import tree.Utility;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 import tree.sampler.rollout.IRolloutPolicy;
@@ -28,7 +27,7 @@ public class Sampler_UCB implements ISampler {
      */
     private IRolloutPolicy rolloutPolicy;
 
-    private IValueUpdater valueUpdater = new ValueUpdater_Average();
+    private IValueUpdater valueUpdater = new ValueUpdater_Average(); // TODO make this an assignable parameter.
 
     /**
      * Explore/exploit trade-off parameter. Higher means more exploration. Lower means more exploitation.
@@ -153,8 +152,8 @@ public class Sampler_UCB implements ISampler {
     @Override
     public Action expansionPolicy(NodeQWOPExplorableBase<?> startNode) {
         if (startNode.getUntriedActionCount() == 0)
-            throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
-        return startNode.getUntriedActionByIndex(Utility.randInt(0, startNode.getUntriedActionCount() - 1));
+            throw new IndexOutOfBoundsException("Expansion policy received a node from which there are no new nodes to try!");
+        return startNode.getUntriedActionOnDistribution();
     }
 
     @Override
@@ -192,6 +191,9 @@ public class Sampler_UCB implements ISampler {
 
     @Override
     public Sampler_UCB getCopy() {
-        return new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy());
+        Sampler_UCB sampler = new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy());
+        sampler.c = c;
+        sampler.valueUpdater = valueUpdater;
+        return sampler;
     }
 }

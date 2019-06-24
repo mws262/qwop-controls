@@ -2,24 +2,25 @@ package goals.tree_search;
 
 import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
+import game.GameUnified;
+import game.GameUnifiedCaching;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
 import game.action.IActionGenerator;
-import tree.node.evaluator.EvaluationFunction_Constant;
-import tree.node.evaluator.EvaluationFunction_Distance;
-import game.GameUnified;
-import game.GameUnifiedCaching;
 import game.state.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tree.sampler.Sampler_UCB;
-import tree.sampler.rollout.*;
 import savers.DataSaver_Null;
-import tree.*;
+import tree.TreeWorker;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphics;
 import tree.node.NodeQWOPGraphicsBase;
+import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.sampler.ISampler;
+import tree.sampler.Sampler_UCB;
+import tree.sampler.rollout.*;
 import tree.stage.TreeStage_MaxDepth;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -147,8 +148,14 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
     @Override
     TreeWorker getTreeWorker() {
-        return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(delayTs, prevStates) :
-                TreeWorker.makeStandardTreeWorker();
+        ISampler sampler = new Sampler_UCB(
+                new EvaluationFunction_Constant(0f),
+                new RolloutPolicy_DeltaScore(
+                        new EvaluationFunction_Distance(),
+                        new Controller_Random()));
+
+        return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates) :
+                TreeWorker.makeStandardTreeWorker(sampler);
     }
 
     public static void main(String[] args) {

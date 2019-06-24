@@ -68,7 +68,6 @@ public abstract class TreeStage implements Runnable {
         for (TreeWorker tw : treeWorkers) {
             tw.setRoot(stageRoot);
             tw.setSaver(saver);
-            tw.setSampler(sampler);
             tw.startWorker();
         }
 
