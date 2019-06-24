@@ -32,13 +32,13 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         StateDelayEmbedded.useFiniteDifferences = true;
     }
 
-    GameUnified game = new GameUnifiedCaching(1,4);
+    GameUnified game = new GameUnifiedCaching(1,2);
 
     private boolean doFullGameSerialization = false;
 
     // Net and execution parameters.
     String valueNetworkName = "embeddedstate.pb";
-    String checkpointName = "embeddedstate54"; // "med67";
+    String checkpointName = "embeddedstate73"; // "med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
@@ -203,7 +203,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                     }
                 }
             }
-            currentNode = currentNode.addDoublyLinkedChild(chosenAction, game.getCurrentState());
+            currentNode = currentNode.addBackwardsLinkedChild(chosenAction, game.getCurrentState());
         }
         logger.warn("Game complete. Runner has gone off the edge of the world.");
     }

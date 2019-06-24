@@ -96,7 +96,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
     private ValueFunction_TensorFlow_StateOnly valueFunction;
 
-    private int prevStates = 4;
+    private int prevStates = 2;
     private int delayTs = 1;
 
     @SuppressWarnings("ConstantConditions")
@@ -150,9 +150,10 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     TreeWorker getTreeWorker() {
         ISampler sampler = new Sampler_UCB(
                 new EvaluationFunction_Constant(0f),
-                new RolloutPolicy_DeltaScore(
+                new RolloutPolicy_DecayingHorizon(
                         new EvaluationFunction_Distance(),
-                        new Controller_Random()));
+                        new Controller_Random(),
+                        300));
 
         return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates) :
                 TreeWorker.makeStandardTreeWorker(sampler);
@@ -265,10 +266,11 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
                 NodeQWOPGraphics graphicsRootNode = (NodeQWOPGraphics) rootNode;
 
                 Runnable updateLabels = () -> graphicsRootNode.recurseDownTreeExclusive(n -> {
-                    float percDiff = Math.abs((valueFunction.evaluate(n) - n.getValue())/n.getValue() * 100f);
-                    n.nodeLabel = String.format("%.1f, %.0f%%", n.getValue(), percDiff);
-                    n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(percDiff, 100f) + 100
-                            , 100,
+                    float percDiff = valueFunction.evaluate(n); // Temp disable percent diff for absolute diff.
+//                    float percDiff = Math.abs((valueFunction.evaluate(n) - n.getValue())/n.getValue() * 100f);
+                    n.nodeLabel = String.format("%.1f, %.1f", n.getValue(), percDiff);
+                    n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - n.getValue()), 20) + 20
+                            , 20,
                             0.9f));
                     n.displayLabel = true;
                 });
@@ -294,9 +296,9 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         // Update the value function.
         List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
         rootNode.recurseDownTreeExclusive(n -> {
-                    if (n.getChildCount() > 0) { // TODO TEMP EXCLUDE LEAVES
+                   // if (n.getChildCount() > 0) { // TODO TEMP EXCLUDE LEAVES
                         nodesBelow.add(n);
-                    }
+                   // }
                 });
 
         Collections.shuffle(nodesBelow);
