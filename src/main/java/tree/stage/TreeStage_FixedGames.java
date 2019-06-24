@@ -1,7 +1,5 @@
 package tree.stage;
 
-import tree.sampler.ISampler;
-import savers.IDataSaver;
 import tree.TreeWorker;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -30,13 +28,9 @@ public class TreeStage_FixedGames extends TreeStage {
      * Tree stage which executes until a specific number of games has been completed or the root node becomes fully
      * explored ({@link NodeQWOPExplorableBase#isFullyExplored()}).
      * @param numGamesToPlay Number of games to play.
-     * @param sampler Sampling strategy on the tree.
-     * @param saver Data-saving policy during and after the tree stage.
      */
-    public TreeStage_FixedGames(long numGamesToPlay, ISampler sampler, IDataSaver saver) {
+    public TreeStage_FixedGames(long numGamesToPlay) {
         this.numGamesToPlay = numGamesToPlay;
-        this.saver = saver;
-        this.sampler = sampler;
     }
 
     @Override

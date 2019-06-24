@@ -206,7 +206,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> dist2 = new Distribution_Normal(25, 3f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(5, 50).toArray(), new boolean[]{false, true,
+        ActionList actionList2 = ActionList.makeActionList(IntStream.range(5, 35).toArray(), new boolean[]{false, true,
                 true,
                 false}, dist2);
 
@@ -218,7 +218,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> dist4 = new Distribution_Normal(25, 3f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(5, 50).toArray(), new boolean[]{true, false,
+        ActionList actionList4 = ActionList.makeActionList(IntStream.range(5, 35).toArray(), new boolean[]{true, false,
                 false,
                 true}, dist4);
 
@@ -233,7 +233,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
         /*  Repeated action exceptions 2 -- W-O pressed */
         Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(5, 65).toArray(), new boolean[]{false, true,
+        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), new boolean[]{false, true,
                 true,
                 false}, distE2);
 
@@ -245,7 +245,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
         /*  Repeated action exceptions 4 -- Q-P pressed */
         Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
-        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(5, 65).toArray(), new boolean[]{true, false,
+        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), new boolean[]{true, false,
                 false,
                 true}, distE4);
 

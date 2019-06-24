@@ -147,8 +147,6 @@ public abstract class SearchTemplate {
      * Specific tree search will want to decide the configuration of the tree worker.
      * @return A {@link TreeWorker} configured specifically for the tree search's application.
      *
-     * @see TreeWorker#makeStandardTreeWorker()
-     * @see TreeWorker#makeCachedStateTreeWorker(int, int)
      */
     abstract TreeWorker getTreeWorker();
 
@@ -195,14 +193,16 @@ public abstract class SearchTemplate {
         long startTime = System.currentTimeMillis();
 
         // Will save whatever the stage defines as important.
-        DataSaver_StageSelected saver = new DataSaver_StageSelected();
-        saver.overrideFilename = saveName;
-        saver.setSavePath(saveLoc.getPath() + "/");
-
-        IController randomController = new Controller_Random();
-        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f),
-                new RolloutPolicy_DecayingHorizon(new EvaluationFunction_Distance(), randomController));
-        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, ucbSampler, saver);
+//        DataSaver_StageSelected saver = new DataSaver_StageSelected();
+//        saver.overrideFilename = saveName;
+//        saver.setSavePath(saveLoc.getPath() + "/");
+//
+//        IController randomController = new Controller_Random();
+//        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f),
+//                new RolloutPolicy_DecayingHorizon(new EvaluationFunction_Distance(), randomController));
+        // TODO now saver and sampler are supplied when creating the workers. Make sure everything is still
+        //  consistent with this.
+        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth);
         searchMax.terminateAfterXGames = maxGames;
 
         // Grab some workers from the pool.
@@ -241,11 +241,10 @@ public abstract class SearchTemplate {
         int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
         logTreeStage(stageName, saveName, rootNode.getTreeDepth(), numWorkersToUse, maxGames);
 
-        DataSaver_StageSelected saver = new DataSaver_StageSelected();
-        saver.overrideFilename = saveName;
-        saver.setSavePath(saveLoc.getPath() + "/");
 
-        TreeStage searchMin = new TreeStage_MinDepth(minDepth, new Sampler_FixedDepth(minDepth), saver);
+        // TODO now saver and sampler are supplied when creating the workers. Make sure everything is still
+        //  consistent with this.
+        TreeStage searchMin = new TreeStage_MinDepth(minDepth);
 
         // Grab some workers from the pool.
         List<TreeWorker> tws2 = getTreeWorkers(numWorkersToUse);
@@ -280,13 +279,9 @@ public abstract class SearchTemplate {
         int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
         logTreeStage(logPrefix, saveName, rootNode.getTreeDepth(), numWorkersToUse, numGames);
 
-        DataSaver_DenseTFRecord saver = new DataSaver_DenseTFRecord();
-        saver.filePrefix = saveName;
-        saver.setSavePath(saveLoc.getPath() + "/");
-
-        saver.setSaveInterval(1000);
-        Sampler_Greedy sampler = new Sampler_Greedy(new EvaluationFunction_Distance());
-        TreeStage_FixedGames search = new TreeStage_FixedGames(numGames, sampler, saver); // Depth to get to
+        // TODO now saver and sampler are supplied when creating the workers. Make sure everything is still
+        //  consistent with this.
+        TreeStage_FixedGames search = new TreeStage_FixedGames(numGames); // Depth to get to
 
         // Grab some workers from the pool.
         List<TreeWorker> tws1 = getTreeWorkers(numWorkersToUse);

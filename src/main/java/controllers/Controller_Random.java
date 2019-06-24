@@ -6,7 +6,7 @@ import tree.node.NodeQWOPExplorableBase;
 public class Controller_Random implements IController {
     @Override
     public Action policy(NodeQWOPExplorableBase<?> state) {
-        return state.getUntriedActionRandom();
+        return state.getUntriedActionOnDistribution();
     }
 
     @Override

@@ -9,16 +9,17 @@ bailAfterXGames=10000
 
 # Important exploration configuration.
 # Larger is more exploration.
-UCBExplorationMultiplier=1
-# Currently: RANDOM, RANDOM_HORIZON, VALUE_HORIZON
-rolloutType=RANDOM_HORIZON
+UCBExplorationMultiplier=3
+rolloutType=DECAYING_HORIZON
+rolloutController=RANDOM
+rolloutEvaluator=DISTANCE
 # Active for horizon rollouts only.
 rolloutHorizonTimesteps=200
 
 # Do rollout for action above and below too.
 windowRollout=false
 # If window, score aggregation method: AVERAGE, BEST, WORST.
-windowSelectionType=WORST
+windowSelectionType=AVERAGE
 
 # New node value estimates based on both rollout and direct val fun evaluation.
 rolloutWeightedWithValFun=false 
@@ -28,8 +29,8 @@ rolloutValFunWeight=0.3
 # Value function net configuration
 networkName=embeddedstate
 checkpointNamePrefix=embeddedstate
-checkpointIndex=24
+checkpointIndex=37
 learningRate=1e-3
-trainingBatchSize=2000
+trainingBatchSize=500
 hiddenLayerSizes=128,64
 

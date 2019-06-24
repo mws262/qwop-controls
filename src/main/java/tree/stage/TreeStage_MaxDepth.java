@@ -1,7 +1,5 @@
 package tree.stage;
 
-import tree.sampler.ISampler;
-import savers.IDataSaver;
 import tree.TreeWorker;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -44,13 +42,9 @@ public class TreeStage_MaxDepth extends TreeStage {
      * fully-explored ({@link NodeQWOPExplorableBase#isFullyExplored()}), or some maximum number of games threshold is
      * met.
      * @param maxDepth Depth to search until.
-     * @param sampler Tree sampling strategy.
-     * @param saver Data-saving policy during and after the stage.
      */
-    public TreeStage_MaxDepth(int maxDepth, ISampler sampler, IDataSaver saver) {
+    public TreeStage_MaxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
-        this.sampler = sampler;
-        this.saver = saver;
     }
 
     @Override

@@ -123,23 +123,23 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
         /* Repeated action 1 -- no keys pressed. */
-        Distribution<Action> dist1 = new Distribution_Normal(12, 1f);
-        ActionList actionList1 = ActionList.makeActionList(IntStream.range(8, 15).toArray(), new boolean[]{false,
+        Distribution<Action> dist1 = new Distribution_Normal(12, 5f);
+        ActionList actionList1 = ActionList.makeActionList(IntStream.range(2, 20).toArray(), new boolean[]{false,
                 false, false, false}, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> dist2 = new Distribution_Normal(20, 1f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(18, 22).toArray(), new boolean[]{false, true,
+        Distribution<Action> dist2 = new Distribution_Normal(20, 5f);
+        ActionList actionList2 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), new boolean[]{false, true,
                 true, false}, dist2);
 
         /* Repeated action 3 -- W-O pressed */
-        Distribution<Action> dist3 = new Distribution_Normal(12f, 1f);
-        ActionList actionList3 = ActionList.makeActionList(IntStream.range(8, 15).toArray(), new boolean[]{false,
+        Distribution<Action> dist3 = new Distribution_Normal(12f, 5f);
+        ActionList actionList3 = ActionList.makeActionList(IntStream.range(2, 20).toArray(), new boolean[]{false,
                 false, false, false}, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> dist4 = new Distribution_Normal(20, 1f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(18, 22).toArray(), new boolean[]{true, false,
+        Distribution<Action> dist4 = new Distribution_Normal(20, 5f);
+        ActionList actionList4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), new boolean[]{true, false,
                 false, true}, dist4);
 
         ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};

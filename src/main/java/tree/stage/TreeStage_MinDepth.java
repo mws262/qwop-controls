@@ -1,7 +1,5 @@
 package tree.stage;
 
-import tree.sampler.ISampler;
-import savers.IDataSaver;
 import tree.TreeWorker;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -35,13 +33,9 @@ public class TreeStage_MinDepth extends TreeStage {
      * Tree stage which searches until all branches reach a specified depth, or all leaves less than this depth are
      * failed.
      * @param minDepth Search until all branches are this depth or fully-explored/failed.
-     * @param sampler Tree sampling strategy.
-     * @param saver Data-saving policy during and after the stage.
      */
-    public TreeStage_MinDepth(int minDepth, ISampler sampler, IDataSaver saver) {
+    public TreeStage_MinDepth(int minDepth) {
         this.minDepth = minDepth;
-        this.sampler = sampler;
-        this.saver = saver;
     }
 
     @Override

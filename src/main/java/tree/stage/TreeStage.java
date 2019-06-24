@@ -2,7 +2,6 @@ package tree.stage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tree.sampler.ISampler;
 import savers.IDataSaver;
 import tree.TreeWorker;
 import tree.node.NodeQWOPBase;
@@ -21,17 +20,6 @@ public abstract class TreeStage implements Runnable {
 
     /** **/
     private NodeQWOPExplorableBase<?> stageRoot;
-
-    /**
-     * Currently only supporting one sampler per stage. Must define which sampler to use in the inheritors of this
-     * abstract class.
-     */
-    protected ISampler sampler;
-
-    /**
-     * Data saving selection. Must define which saver to use in the inheritors of this abstract class.
-     */
-    protected IDataSaver saver;
 
     /**
      * Each stage gets its own workers to avoid contamination. Probably could combine later if necessary.
@@ -67,7 +55,6 @@ public abstract class TreeStage implements Runnable {
 
         for (TreeWorker tw : treeWorkers) {
             tw.setRoot(stageRoot);
-            tw.setSaver(saver);
             tw.startWorker();
         }
 
@@ -127,10 +114,9 @@ public abstract class TreeStage implements Runnable {
     public void terminate() {
         running = false;
         logger.info("Terminate called on a stage.");
-        saver.reportStageEnding(getRootNode().getRoot(), getResults()); // Changed to save ALL the way back to real
-        // root, not just subtree root.
 
-        workers.forEach(TreeWorker::pauseWorker);
+        // Reports any results and kills the worker.
+        workers.forEach(tw -> tw.terminateStageComplete(getRootNode().getRoot(), getResults()));
 
         // Stop the monitoring thread and let the goals thread continue.
         synchronized (lock) {
