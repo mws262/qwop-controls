@@ -2,7 +2,7 @@ package tflowtools;
 
 import com.google.common.primitives.Floats;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import game.State;
+import game.state.IState;
 import org.tensorflow.*;
 
 import java.io.IOException;
@@ -62,7 +62,7 @@ public abstract class TensorflowLoader {
      * @param outputName Name of the graph output to fetch.
      * @return List of values returned by the specified graph output.
      */
-    protected List<Float> sisoFloatPrediction(State state, String inputName, String outputName) {
+    protected List<Float> sisoFloatPrediction(IState state, String inputName, String outputName) {
         Tensor<Float> inputTensor = Tensor.create(flattenState(state), Float.class);
         Tensor<Float> result =
                 session.runner().feed(inputName + ":0", inputTensor)
@@ -114,8 +114,8 @@ public abstract class TensorflowLoader {
      * @return A 1x72 element array containing all the concatenated state variable values, with the torso x-component
      * subtracted out.
      */
-    public static float[][] flattenState(State state) {
-        float[][] flatState = new float[1][72];
+    public static float[][] flattenState(IState state) {
+        float[][] flatState = new float[1][];
         flatState[0] = state.flattenState();
 
         return flatState;

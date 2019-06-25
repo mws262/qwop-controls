@@ -1,29 +1,21 @@
 package goals.save_file_manipulation;
 
+import game.action.Action;
+import com.google.protobuf.ByteString;
+import data.SavableDenseData;
+import data.SavableFileIO;
+import data.TFRecordWriter;
+import game.state.IState;
+import game.state.State;
+import game.state.StateVariable;
+import org.tensorflow.example.*;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import data.SavableDenseData;
-import data.SavableFileIO;
-import data.TFRecordWriter;
-import org.tensorflow.example.BytesList;
-import org.tensorflow.example.Example;
-import org.tensorflow.example.Feature;
-import org.tensorflow.example.FeatureList;
-import org.tensorflow.example.FeatureLists;
-import org.tensorflow.example.Features;
-import org.tensorflow.example.FloatList;
-import org.tensorflow.example.Int64List;
-import org.tensorflow.example.SequenceExample;
-
-import com.google.protobuf.ByteString;
-
-import game.State;
-import actions.Action;
 
 public class MAIN_ConvertDenseDataToTFRecord {
 
@@ -89,11 +81,11 @@ public class MAIN_ConvertDenseDataToTFRecord {
      * Make a single feature representing the 6 state variables for a single body part at a single timestep. Append to
      * existing FeatureList for that body part.
      **/
-    private static void makeFeature(State.ObjectName bodyPart, State state, FeatureList.Builder listToAppendTo) {
+    private static void makeFeature(IState.ObjectName bodyPart, IState state, FeatureList.Builder listToAppendTo) {
         Feature.Builder feat = Feature.newBuilder();
         FloatList.Builder featVals = FloatList.newBuilder();
-        for (State.StateName stateName : State.StateName.values()) { // Iterate over all 6 state variables.
-            featVals.addValue(state.getStateVarFromName(bodyPart, stateName));
+        for (StateVariable.StateName stateName : StateVariable.StateName.values()) { // Iterate over all 6 state variables.
+            featVals.addValue(state.getStateVariableFromName(bodyPart).getStateByName(stateName));
         }
         feat.setFloatList(featVals.build());
         listToAppendTo.addFeature(feat.build());
@@ -103,10 +95,10 @@ public class MAIN_ConvertDenseDataToTFRecord {
      * Make a time series for a single run of a single state variable as a FeatureList. Add to the broader list of
      * FeatureList for this run.
      **/
-    private static void makeStateFeatureList(SavableDenseData data, State.ObjectName bodyPart,
+    private static void makeStateFeatureList(SavableDenseData data, IState.ObjectName bodyPart,
                                              FeatureLists.Builder featLists) {
         FeatureList.Builder featList = FeatureList.newBuilder();
-        for (State st : data.getState()) { // Iterate through the timesteps in a single run.
+        for (IState st : data.getState()) { // Iterate through the timesteps in a single run.
             makeFeature(bodyPart, st, featList);
         }
         featLists.putFeatureList(bodyPart.toString(), featList.build()); // Add this feature to the broader list of
@@ -130,7 +122,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
             }
             Example.Builder exB = Example.newBuilder();
             SequenceExample.Builder seqEx = SequenceExample.newBuilder();
-            FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & actions) in a
+            FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & game.action) in a
             // single run.
 
             // Pack up states
@@ -139,7 +131,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
                 makeStateFeatureList(dat, bodyPart, featLists);
             }
 
-            // Pack up actions -- 3 different ways:
+            // Pack up game.action -- 3 different ways:
             // 1) Keys pressed at individual timestep.
             // 2) Timesteps until transition for each timestep.
             // 3) Just the action sequence (shorter than number of timesteps)

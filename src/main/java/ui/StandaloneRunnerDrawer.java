@@ -1,6 +1,7 @@
 package ui;
 
-import game.State;
+import game.state.State;
+import ui.runner.PanelRunner_SimpleState;
 
 import javax.swing.*;
 import java.awt.*;

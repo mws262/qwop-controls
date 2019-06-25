@@ -113,10 +113,10 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/JPanel.html?is-external=true" title="class or interface in javax.swing">javax.swing.JPanel</a></li>
 <li>
 <ul class="inheritance">
-<li><a href="../ui/PanelRunner.html" title="class in ui">ui.PanelRunner</a></li>
+<li><a href="../ui/PanelRunner.html" title="class in ui">ui.runner.PanelRunner</a></li>
 <li>
 <ul class="inheritance">
-<li>ui.PanelRunner_Animated</li>
+<li>ui.runner.PanelRunner_Animated</li>
 </ul>
 </li>
 </ul>
@@ -272,7 +272,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../ui/PanelRunner_Animated.html#addAction-actions.Action-">addAction</a></span>(<a href="../actions/Action.html" title="class in actions">Action</a>&nbsp;action)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../ui/PanelRunner_Animated.html#addAction-game.actions.Action-">addAction</a></span>(<a href="../game.actions/Action.html" title="class in game.action">Action</a>&nbsp;action)</code>
 <div class="block">Add a single action to the end of what is already going on.</div>
 </td>
 </tr>
@@ -310,7 +310,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../ui/PanelRunner_Animated.html#simRunToNode-tree.Node-tree.Node-">simRunToNode</a></span>(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;startNode,
             <a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;endNode)</code>
-<div class="block">This version only animates the actions between startNode and endNode.</div>
+<div class="block">This version only animates the game.action between startNode and endNode.</div>
 </td>
 </tr>
 <tr id="i8" class="altColor">
@@ -323,7 +323,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;ui.<a href="../ui/PanelRunner.html" title="class in ui">PanelRunner</a></h3>
-<code><a href="../ui/PanelRunner.html#activateTab--">activateTab</a>, <a href="../ui/PanelRunner.html#drawActionString-actions.Action:A-java.awt.Graphics-">drawActionString</a>, <a href="../ui/PanelRunner.html#drawActionString-java.awt.Graphics-actions.Action:A-int-">drawActionString</a>, <a href="../ui/PanelRunner.html#isActive--">isActive</a>, <a href="../ui/PanelRunner.html#keyDrawer-java.awt.Graphics-boolean-boolean-boolean-boolean-">keyDrawer</a></code></li>
+<code><a href="../ui/PanelRunner.html#activateTab--">activateTab</a>, <a href="../ui/PanelRunner.html#drawActionString-game.actions.Action:A-java.awt.Graphics-">drawActionString</a>, <a href="../ui/PanelRunner.html#drawActionString-java.awt.Graphics-game.actions.Action:A-int-">drawActionString</a>, <a href="../ui/PanelRunner.html#isActive--">isActive</a>, <a href="../ui/PanelRunner.html#keyDrawer-java.awt.Graphics-boolean-boolean-boolean-boolean-">keyDrawer</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.javax.swing.JPanel">
@@ -428,16 +428,17 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable
 <h4>simRunToNode</h4>
 <pre>public&nbsp;void&nbsp;simRunToNode(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;startNode,
                          <a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;endNode)</pre>
-<div class="block">This version only animates the actions between startNode and endNode. Still simulates all of course.</div>
+<div class="block">This version only animates the game.action between startNode and endNode. Still simulates all of
+    course.</div>
 </li>
 </ul>
-<a name="addAction-actions.Action-">
+<a name="addAction-game.actions.Action-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>addAction</h4>
-<pre>public&nbsp;void&nbsp;addAction(<a href="../actions/Action.html" title="class in actions">Action</a>&nbsp;action)</pre>
+<pre>public&nbsp;void&nbsp;addAction(<a href="../game.actions/Action.html" title="class in game.action">Action</a>&nbsp;action)</pre>
 <div class="block">Add a single action to the end of what is already going on.</div>
 </li>
 </ul>

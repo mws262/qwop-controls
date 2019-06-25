@@ -1,8 +1,8 @@
 //package value;
 //
-//import actions.Action;
-//import actions.ActionList;
-//import actions.ActionQueue;
+//import game.action.Action;
+//import game.action.ActionList;
+//import game.action.ActionQueue;
 //import distributions.Distribution_Equal;
 //import game.GameUnified;
 //import org.junit.*;
@@ -19,15 +19,15 @@
 //
 //    private static Node rootNode;
 //
-//    // First layer actions.
+//    // First layer game.action.
 //    private static final ActionList actionsLayer1 = ActionList.makeActionList(IntStream.range(1, 4).toArray(),
 //            new boolean[]{false, false, false, false}, new Distribution_Equal());
 //
-//    // Second layer actions.
+//    // Second layer game.action.
 //    private static final ActionList actionsLayer2 = ActionList.makeActionList(IntStream.range(4, 8).toArray(),
 //            new boolean[]{false, true, true, false}, new Distribution_Equal());
 //
-//    // Third layer actions.
+//    // Third layer game.action.
 //    private static final ActionList actionsLayer3 = ActionList.makeActionList(IntStream.range(8, 12).toArray(),
 //            new boolean[]{true, false, false, true}, new Distribution_Equal());
 //
@@ -187,10 +187,10 @@
 //    /**
 //     * Makes a small demo tree for testing. It has 4 layers below root, fully populated (game failure is unchecked).
 //     * States are fully assigned. Values are set to body Y coordinate (arbitrary choice). Visit counts set to 1.
-//     * First actions : No keys, 1,2,3
-//     * Second actions : WO, 4,5,6,7
-//     * Third actions : QP, 8,9,10,11
-//     * Fourth actions : [repeats first]
+//     * First game.action : No keys, 1,2,3
+//     * Second game.action : WO, 4,5,6,7
+//     * Third game.action : QP, 8,9,10,11
+//     * Fourth game.action : [repeats first]
 //     * @return The root of the constructed test tree.
 //     */
 //    static Node makeDemoTree() {

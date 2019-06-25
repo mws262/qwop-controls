@@ -1,6 +1,6 @@
 package distributions;
 
-import actions.Action;
+import game.action.Action;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import static tree.Utility.randInt;
  * Framework for sampling from a discrete set on different distributions. Extend this to make specific distribution
  * types.
  *
- * @param <T> The types of objects to be sampled over, typically {@link Action actions}.
+ * @param <T> The types of objects to be sampled over, typically {@link Action game.action}.
  */
 public abstract class Distribution<T> {
 

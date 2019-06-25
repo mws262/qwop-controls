@@ -117,11 +117,11 @@ var activeTableTab = "activeTableTab";
 <pre>public class <span class="typeNameLabel">SavableDenseData</span>
 extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>
 implements <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializable.html?is-external=true" title="class or interface in java.io">Serializable</a></pre>
-<div class="block">Holds all the states and actions on a TIMESTEP level for an entire game.
- Note that a state corresponds to the action that is being held during it, not
- the action which leads to it like in other parts of the code. Also, there may
- be 1 more state than action. this is because we arrive at the final state
- without needing to select an action once we get there.</div>
+<div class="block">Holds all the states and game.action on a TIMESTEP level for an entire game.
+    Note that a state corresponds to the action that is being held during it, not
+    the action which leads to it like in other parts of the code. Also, there may
+    be 1 more state than action. this is because we arrive at the final state
+    without needing to select an action once we get there.</div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
 <dd>matt</dd>
@@ -147,11 +147,11 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializab
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../data/SavableDenseData.html#SavableDenseData-java.util.ArrayList-java.util.ArrayList-">SavableDenseData</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util">ArrayList</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;state,
-                <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util">ArrayList</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;action)</code>&nbsp;</td>
+                <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util">ArrayList</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;&nbsp;action)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../data/SavableDenseData.html#SavableDenseData-game.State:A-actions.Action:A-">SavableDenseData</a></span>(<a href="../game/State.html" title="class in game">State</a>[]&nbsp;state,
-                <a href="../actions/Action.html" title="class in actions">Action</a>[]&nbsp;action)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../data/SavableDenseData.html#SavableDenseData-game.State:A-game.actions.Action:A-">SavableDenseData</a></span>(<a href="../game/State.html" title="class in game">State</a>[]&nbsp;state,
+                <a href="../game.actions/Action.html" title="class in game.action">Action</a>[]&nbsp;action)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -169,7 +169,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializab
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../actions/Action.html" title="class in actions">Action</a>[]</code></td>
+<td class="colFirst"><code><a href="../game.actions/Action.html" title="class in game.action">Action</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../data/SavableDenseData.html#getAction--">getAction</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
@@ -198,14 +198,14 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializab
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="SavableDenseData-game.State:A-actions.Action:A-">
+<a name="SavableDenseData-game.State:A-game.actions.Action:A-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>SavableDenseData</h4>
 <pre>public&nbsp;SavableDenseData(<a href="../game/State.html" title="class in game">State</a>[]&nbsp;state,
-                        <a href="../actions/Action.html" title="class in actions">Action</a>[]&nbsp;action)</pre>
+                        <a href="../game.actions/Action.html" title="class in game.action">Action</a>[]&nbsp;action)</pre>
 </li>
 </ul>
 <a name="SavableDenseData-java.util.ArrayList-java.util.ArrayList-">
@@ -215,7 +215,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializab
 <li class="blockList">
 <h4>SavableDenseData</h4>
 <pre>public&nbsp;SavableDenseData(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util">ArrayList</a>&lt;<a href="../game/State.html" title="class in game">State</a>&gt;&nbsp;state,
-                        <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util">ArrayList</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;action)</pre>
+                        <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util">ArrayList</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;&nbsp;action)</pre>
 </li>
 </ul>
 </li>
@@ -241,7 +241,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializab
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getAction</h4>
-<pre>public&nbsp;<a href="../actions/Action.html" title="class in actions">Action</a>[]&nbsp;getAction()</pre>
+<pre>public&nbsp;<a href="../game.actions/Action.html" title="class in game.action">Action</a>[]&nbsp;getAction()</pre>
 </li>
 </ul>
 </li>

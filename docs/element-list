@@ -1,9 +1,9 @@
-actions
-actions.perturbers
+game.action
+game.action.perturbers
 controllers
 data
 distributions
-evaluators
+tree.node.evaluator
 filters
 flash
 game
@@ -16,10 +16,10 @@ goals.playback
 goals.save_file_manipulation
 goals.tree_search
 org.tensorflow.example
-samplers
-samplers.rollout
+tree.samplers
+tree.samplers.rollout
 savers
 server
-transformations
+game.state.transformations
 tree
 ui

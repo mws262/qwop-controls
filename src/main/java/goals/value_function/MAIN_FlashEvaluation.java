@@ -1,16 +1,16 @@
 package goals.value_function;
 
-import actions.Action;
+import game.action.Action;
 import flashqwop.FlashGame;
 import flashqwop.FlashStateLogger;
 import game.GameUnified;
-import game.State;
+import game.state.IState;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jblas.util.Random;
-import tree.NodeQWOP;
+import tree.node.NodeQWOP;
 import tree.Utility;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -98,7 +98,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public Action getControlAction(State state) {
+    public Action getControlAction(IState state) {
         Action action = valueFunction.getMaximizingAction(new NodeQWOP(state));
         if (addActionNoise && Random.nextFloat() < noiseProbability) {
             if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
@@ -113,13 +113,13 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public void reportGameStatus(State state, boolean[] command, int timestep) {}
+    public void reportGameStatus(IState state, boolean[] command, int timestep) {}
 
     private void loadController() {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/" + valueNetworkName)); // state_only.pb"));
+                    "/" + valueNetworkName), new GameUnified()); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

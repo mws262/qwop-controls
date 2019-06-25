@@ -2,10 +2,11 @@ package value;
 
 import com.google.common.collect.Iterables;
 import data.LoadStateStatistics;
+import game.GameUnified;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tflowtools.TrainableNetwork;
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,18 +18,19 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     /**
      * Input layer size.
      */
-    private final int inputSize;
+    public final int inputSize;
 
     /**
      * Output layer size.
      */
-    private final int outputSize;
+    public final int outputSize;
 
     /**
      * TensorFlow neural network used to predict value.
      */
     TrainableNetwork network;
 
+    GameUnified gameTemplate;
     /**
      * Number of nodes to run through training in one shot.
      */
@@ -68,17 +70,18 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     /**
      * Constructor which also creates a new TensorFlow model.
      * @param fileName Name of the .pb file (without extension) to be created.
-     * @param inputSize 1D size of the input layer.
+     * @param gameTemplate Defines the input dimension of the net.
      * @param outputSize 1D size of the output layer.
      * @param hiddenLayerSizes Size of the fully-connected interior layers.
      * @param additionalArgs Additional arguments used when creating the net (see {@link TrainableNetwork}.
      * @throws FileNotFoundException Occurs when the file is not created successfully.
      */
-    ValueFunction_TensorFlow(String fileName, int inputSize, int outputSize, List<Integer> hiddenLayerSizes,
+    ValueFunction_TensorFlow(String fileName, GameUnified gameTemplate, int outputSize, List<Integer> hiddenLayerSizes,
                              List<String> additionalArgs) throws FileNotFoundException {
         logger.info("Making a new network for the value function.");
-        this.inputSize = inputSize;
+        this.inputSize = gameTemplate.getStateDimension();
         this.outputSize = outputSize;
+        this.gameTemplate = gameTemplate;
 
         // Supplement the hidden layer sizes with the input and output sizes.
         List<Integer> allLayerSizes = new ArrayList<>(hiddenLayerSizes);
@@ -93,10 +96,11 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * @param existingFile A .pb file referring to an existing model.
      * @throws FileNotFoundException Occurs when the specified model file is not found.
      */
-    ValueFunction_TensorFlow(File existingFile) throws FileNotFoundException {
+    ValueFunction_TensorFlow(File existingFile, GameUnified gameTemplate) throws FileNotFoundException {
         logger.info("Loading existing network for the value function.");
 
         network = new TrainableNetwork(existingFile);
+        this.gameTemplate = gameTemplate;
         int[] layerSizes = network.getLayerSizes();
         inputSize = layerSizes[0];
         outputSize = layerSizes[layerSizes.length - 1];
@@ -106,8 +110,9 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * Existing network. It will not be validated. Mostly for use when copying.
      * @param network Existing value network.
      */
-    ValueFunction_TensorFlow(TrainableNetwork network) {
+    ValueFunction_TensorFlow(TrainableNetwork network, GameUnified gameTemplate) {
         logger.info("Using provided network for the value function.");
+        this.gameTemplate = gameTemplate;
         int[] layerSizes = network.getLayerSizes();
         assert layerSizes.length >= 2;
         inputSize = layerSizes[0];

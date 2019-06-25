@@ -1,13 +1,18 @@
 package flashqwop;
 
-import actions.Action;
-import actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.*;
+import game.state.IState;
+import game.state.State;
+import game.state.StateDelayEmbedded;
+import game.state.StateVariable;
 import hardware.KeypusherSerialConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 
 /**
  * Makes it easier to feed Actions to the Flash game. With my game implementations, the caller requests the game to
@@ -15,7 +20,7 @@ import java.util.Arrays;
  * up. Hence this interface is a little different.
  *
  * This effectively extends the functionality of {@link FlashQWOPServer}. It provides the ability to send commands
- * and receive {@link State states}, but does not help with getting specific actions executed or timed correctly.
+ * and receive {@link State states}, but does not help with getting specific game.action executed or timed correctly.
  *
  * @author matt
  *
@@ -24,6 +29,7 @@ public abstract class FlashGame implements IFlashStateListener {
 
     private FlashQWOPServer server;
     private ActionQueue actionQueue = new ActionQueue();
+    private LinkedList<State> stateCache = new LinkedList<>();
 
     /**
      * Using velocity estimation or use the "cheating" exact result.
@@ -80,7 +86,7 @@ public abstract class FlashGame implements IFlashStateListener {
 
     /**
      * These Actions will be executed first, from the very beginning of the run after a reset. If you just want to
-     * run a single, known sequence, this is the way to go. After these added actions are consumed, then
+     * run a single, known sequence, this is the way to go. After these added game.action are consumed, then
      * {@link FlashGame} will turn to a feedback controller.
      * @return
      */
@@ -92,16 +98,16 @@ public abstract class FlashGame implements IFlashStateListener {
      * @param state Most recent state received from the Flash game.
      * @return An Action from a feedback controller.
      */
-    public abstract Action getControlAction(State state);
+    public abstract Action getControlAction(IState state);
 
     /**
-     * This class will handle the execution of actions, but inheriting classes may want to listen in.
+     * This class will handle the execution of game.action, but inheriting classes may want to listen in.
      * @param state Most-recent state received from the Flash game.
      * @param command Command WHICH LEAD TO THIS STATE. This will be null for for the first state, since it has no
      *                preceding command.
      * @param timestep Timestep count at this state.
      */
-    public abstract void reportGameStatus(State state, boolean[] command, int timestep);
+    public abstract void reportGameStatus(IState state, boolean[] command, int timestep);
 
     /**
      * Tell the game to reset (equivalent to 'r' on the keyboard in the real game).
@@ -115,10 +121,10 @@ public abstract class FlashGame implements IFlashStateListener {
         server.sendInfoRequest();
     }
 
-    private State previousState;
+    private IState previousState;
     @Override
-    public synchronized void stateReceived(int timestep, State state) {
-        // New run has started. Add the sequence of actions from the beginning.
+    public synchronized void stateReceived(int timestep, IState state) {
+        // New run has started. Add the sequence of game.action from the beginning.
         if (timestep == 0) {
             logger.debug("Zero timestep from Flash game.");
             actionQueue.clearAll();
@@ -135,11 +141,12 @@ public abstract class FlashGame implements IFlashStateListener {
 
             // Send all-keys-up command so it doesn't restart with some buttons active.
             commandTarget.command(false, false, false, false);
-            if (state.body.getX() < 1000) {
-                logger.warn("Runner fallen at " + ((int) state.body.getX()) / 10f + " meters.");
+            if (state.getCenterX() < 1000) {
+                logger.warn("Runner fallen at " + ((int) state.getCenterX()) / 10f + " meters.");
             } else {
                 logger.warn("Runner reached finish.");
             }
+            stateCache.clear();
 
             long freeMemoryBefore = Runtime.getRuntime().freeMemory();
             System.gc();
@@ -155,7 +162,20 @@ public abstract class FlashGame implements IFlashStateListener {
             restart();
             return;
         }
-        reportGameStatus(state, prevCommand, timestep);
+
+        stateCache.add((State)state);
+
+        // TODO don't hardcode this.
+        int numDelayedStates = 2;
+        int timestepDelay = 5;
+        State[] states = new State[numDelayedStates + 1];
+        Arrays.fill(states, GameUnified.getInitialState());
+
+        for (int i = 0; i < Integer.min(states.length, (stateCache.size() + timestepDelay - 1) / timestepDelay); i++) {
+            states[i] = stateCache.get(timestepDelay * i);
+        }
+
+        reportGameStatus(new StateDelayEmbedded(states), prevCommand, timestep);
 
         assert timestep == timestepsTracked; // Have we lost any timesteps?
         long timeBeforeController = System.currentTimeMillis();
@@ -163,7 +183,7 @@ public abstract class FlashGame implements IFlashStateListener {
         // Get a new Action if one is required.
         if (actionQueue.isEmpty()) {
             // TESTING FINITE DIFFERENCE STUFF TEMP
-            State st;
+            IState st;
             if (velocityEstimation) {
                 st = doFiniteDifferenceVelocityTransformation(previousState, state);
             } else {
@@ -196,9 +216,9 @@ public abstract class FlashGame implements IFlashStateListener {
     /**
      * Pretend that states don't include velocity and estimate the velocity using finite differences.
      */
-    private static State doFiniteDifferenceVelocityTransformation(State statePrev, State stateCurrent) {
-        StateVariable[] svCurrent = stateCurrent.getStates();
-        StateVariable[] svPrev = statePrev.getStates();
+    private static IState doFiniteDifferenceVelocityTransformation(IState statePrev, IState stateCurrent) {
+        StateVariable[] svCurrent = stateCurrent.getAllStateVariables();
+        StateVariable[] svPrev = statePrev.getAllStateVariables();
 
         StateVariable[] svOut = new StateVariable[svCurrent.length];
         for (int i = 0; i < svCurrent.length; i++) {

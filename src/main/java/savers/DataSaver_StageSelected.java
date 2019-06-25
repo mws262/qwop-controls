@@ -1,11 +1,11 @@
 package savers;
 
-import actions.Action;
+import game.action.Action;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.IGameInternal;
-import game.State;
-import tree.NodeQWOPBase;
+import game.state.IState;
+import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class DataSaver_StageSelected implements IDataSaver {
     private String fileLocation = "./";
 
     @Override
-    public void reportGameInitialization(State initialState) {}
+    public void reportGameInitialization(IState initialState) {}
 
     @Override
     public void reportTimestep(Action action, IGameInternal game) {}

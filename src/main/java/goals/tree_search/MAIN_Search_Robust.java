@@ -1,13 +1,20 @@
 package goals.tree_search;
 
+import controllers.Controller_Random;
 import game.GameUnified;
-import tree.NodeQWOPGraphics;
+import game.action.ActionGenerator_FixedSequence;
+import tree.TreeWorker;
+import tree.node.NodeQWOPGraphics;
+import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.sampler.Sampler_UCB;
+import tree.sampler.rollout.RolloutPolicy_DeltaScore;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MAIN_Search_Robust extends MAIN_Search_Template {
+public class MAIN_Search_Robust extends SearchTemplate {
 
 
     private MAIN_Search_Robust(File configFile) {
@@ -20,8 +27,18 @@ public class MAIN_Search_Robust extends MAIN_Search_Template {
         manager.doGames();
     }
 
+    @Override
+    TreeWorker getTreeWorker() {
+        return TreeWorker.makeStandardTreeWorker(new Sampler_UCB(
+                new EvaluationFunction_Constant(0f),
+                new RolloutPolicy_DeltaScore(
+                        new EvaluationFunction_Distance(),
+                        new Controller_Random())));
+    }
+
     private void doGames() {
-        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), getDefaultActionGenerator(10));
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(),
+                ActionGenerator_FixedSequence.makeDefaultGenerator(10));
         ui.addRootNode(rootNode);
 
         doBasicMinDepthStage(rootNode, "testDev0.tmp", 1, 1, 10000);

@@ -1,12 +1,13 @@
 package goals.cold_start_analysis;
 
-import actions.ActionQueue;
+import game.action.ActionQueue;
 import game.*;
+import game.state.IState;
 
 import java.awt.*;
 
 /**
- * Take a known sequence of reasonable actions, simulate for some number of actions, and introduce a second runner,
+ * Take a known sequence of reasonable game.action, simulate for some number of game.action, and introduce a second runner,
  * with a cloned state, but a cold start of the Box2D internal solvers. Simulate both together for the rest of the
  * run with identical input commands.
  *
@@ -33,7 +34,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
         while (actionQueue.getCurrentActionIdx() < coldStartAction) {
             gameFullRun.step(actionQueue.pollCommand());
         }
-        State coldStartState = gameFullRun.getCurrentState();
+        IState coldStartState = gameFullRun.getCurrentState();
         gameColdStart.setState(coldStartState);
 
         runnerPanel.setMainState(gameFullRun.getCurrentState());

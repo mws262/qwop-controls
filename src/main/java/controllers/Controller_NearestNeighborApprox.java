@@ -1,18 +1,21 @@
 package controllers;
 
-import actions.Action;
 import data.EvictingTreeMap;
 import data.LIFOFixedSize;
 import data.TFRecordDataParsers;
 import game.GameUnified;
-import game.State;
-import game.StateVariable;
-import game.StateWeights;
+import game.action.Action;
+import game.state.IState;
+import game.state.IState.ObjectName;
+import game.state.State;
+import game.state.StateVariable;
+import game.state.StateVariable.StateName;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
-import tree.NodeQWOPGraphicsBase;
 import tree.Utility;
-import ui.PanelRunner;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeQWOPGraphicsBase;
+import ui.runner.PanelRunner;
 
 import java.awt.*;
 import java.io.File;
@@ -33,11 +36,11 @@ public class Controller_NearestNeighborApprox implements IController {
     /**
      *
      */
-    private State.ObjectName sortByPart = State.ObjectName.BODY;
+    private ObjectName sortByPart = ObjectName.BODY;
     /**
      *
      */
-    private State.StateName sortBySt = State.StateName.TH;
+    private StateName sortBySt = StateName.TH;
 
     /**
      *
@@ -101,12 +104,14 @@ public class Controller_NearestNeighborApprox implements IController {
     private RunHolder currentTrajectory;
     private StateHolder currentTrajectoryStateMatch;
     private DecisionHolder currentDecision;
-    private LIFOFixedSize<State> previousStatesLIFO = new LIFOFixedSize<>(numPreviousStatesToCompare);
+    private LIFOFixedSize<IState> previousStatesLIFO = new LIFOFixedSize<>(numPreviousStatesToCompare);
 
     private boolean[] chosenKeys = new boolean[4];
 
     //IMPORTANT  DUE TO COLLECTION BUG
     private boolean killFirstTwoActions = true;
+
+    private State weights;
 
     /**
      * Create a trajectory library-type controller by providing a list of files to look through.
@@ -121,12 +126,17 @@ public class Controller_NearestNeighborApprox implements IController {
             e.printStackTrace();
         }
         System.out.println("Wow! " + numStatesLoaded + " states were loaded!");
+
+        float[] weightVals = new float[State.STATE_SIZE];
+        Arrays.fill(weightVals, 1f);
+        weights = new State(weightVals, false);
     }
 
     @Override
-    public Action policy(State state) {
+    public Action policy(NodeQWOPExplorableBase<?> state) {
         // Get nearest states (determined ONLY by body theta).
-        float sortBy = state.getStateVarFromName(sortByPart, sortBySt);
+        IState st = state.getState();
+        float sortBy = st.getStateVariableFromName(sortByPart).getStateByName(sortBySt);
 
         NavigableMap<Float, StateHolder> lowerSet = allStates.headMap(sortBy, true);
         NavigableMap<Float, StateHolder> upperSet = allStates.tailMap(sortBy, false);
@@ -134,8 +144,8 @@ public class Controller_NearestNeighborApprox implements IController {
         EvictingTreeMap<Float, StateHolder> topMatches = new EvictingTreeMap<>(10);
 
         Utility.tic();
-        lowerSet.values().stream().limit(lowerSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state), v));
-        upperSet.values().stream().limit(upperSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, state), v));
+        lowerSet.values().stream().limit(lowerSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, st), v));
+        upperSet.values().stream().limit(upperSetLimit).forEach(v -> topMatches.put(totalEvalFunction(v, st), v));
         Utility.toc();
         Entry<Float, StateHolder> bestEntry = topMatches.firstEntry();
         StateHolder bestMatch = bestEntry.getValue();
@@ -188,7 +198,7 @@ public class Controller_NearestNeighborApprox implements IController {
             if (lastStIdx < currentTrajectory.states.size() - 2) {
 
                 StateHolder nextStateOnOldTraj = currentTrajectory.states.get(lastStIdx + 1);
-                float oldTrajError = sqError(nextStateOnOldTraj.state, state);
+                float oldTrajError = sqError(nextStateOnOldTraj.state, st);
 
                 if (bestMatchError + trajectorySnappingThreshold < oldTrajError) {
                     currentTrajectory = bestMatch.parentRun;
@@ -207,7 +217,7 @@ public class Controller_NearestNeighborApprox implements IController {
             currentTrajectoryStateMatch = bestMatch;
         }
 
-        previousStatesLIFO.push(state); // Keep previous states too.
+        previousStatesLIFO.push(st); // Keep previous states too.
 
         Action currentAction = new Action(1, chosenKeys);
 
@@ -216,8 +226,13 @@ public class Controller_NearestNeighborApprox implements IController {
         return currentAction;
     }
 
+    @Override
+    public IController getCopy() {
+        throw new RuntimeException("Haven't implemented copy on this controller yet!");
+    }
 
-    private float totalEvalFunction(StateHolder sh, State actualState) {
+
+    private float totalEvalFunction(StateHolder sh, IState actualState) {
         float cost = 0f;
 
         // Error relative to current state.
@@ -251,10 +266,10 @@ public class Controller_NearestNeighborApprox implements IController {
         // Also compare previous states.
         if (comparePreviousStates) {
             int count = 1;
-            Iterator<State> iter = previousStatesLIFO.iterator();
+            Iterator<IState> iter = previousStatesLIFO.iterator();
             float oldStateError = 0;
             while (iter.hasNext()) {
-                State oldState = iter.next();
+                IState oldState = iter.next();
                 int idx = stateLocInSequence - count;
                 if (idx >= 0) {
                     State stateFromLibrary = sh.parentRun.states.get(idx).state;
@@ -274,20 +289,20 @@ public class Controller_NearestNeighborApprox implements IController {
     /**
      * Sum of squared distance of all values in two states.
      **/
-    private float sqError(State s1, State s2) {
+    private float sqError(IState s1, IState s2) {
         float errorAccumulator = 0;
-        float xOffset1 = s1.getStateVarFromName(State.ObjectName.BODY, State.StateName.X);
-        float xOffset2 = s2.getStateVarFromName(State.ObjectName.BODY, State.StateName.X);
+        float xOffset1 = s1.getCenterX();
+        float xOffset2 = s2.getCenterX();
 
-        for (State.ObjectName bodyPart : State.ObjectName.values()) {
-            for (State.StateName stateVar : State.StateName.values()) {
+        for (ObjectName bodyPart : ObjectName.values()) {
+            for (StateName stateVar : StateName.values()) {
 
-                float thisVal = s1.getStateVarFromName(bodyPart, stateVar) - ((stateVar == State.StateName.X) ?
+                float thisVal = s1.getStateVariableFromName(bodyPart).getStateByName(stateVar) - ((stateVar == StateName.X) ?
                         xOffset1 : 0);
-                float otherVal = s2.getStateVarFromName(bodyPart, stateVar) - ((stateVar == State.StateName.X) ?
+                float otherVal = s2.getStateVariableFromName(bodyPart).getStateByName(stateVar) - ((stateVar == StateName.X) ?
                         xOffset2 : 0);
                 float diff = thisVal - otherVal;
-                errorAccumulator += StateWeights.getWeight(bodyPart, stateVar) * diff * diff;
+                errorAccumulator += weights.getStateVariableFromName(bodyPart).getStateByName(stateVar) * diff * diff;
             }
         }
         return errorAccumulator;
@@ -323,7 +338,7 @@ public class Controller_NearestNeighborApprox implements IController {
 
                 RunHolder rh = new RunHolder();
 
-                // Unpack the actions as durations. TODO: turn them into full-fledged Actions
+                // Unpack the game.action as durations. TODO: turn them into full-fledged Actions
                 for (int i = 0; i < singleSequence.getFeatureLists().getFeatureListMap().get("ACTIONS").getFeatureCount(); i++) {
                     rh.actionDurations.add(Byte.toUnsignedInt(singleSequence.getFeatureLists().getFeatureListMap()
                             .get("ACTIONS").getFeature(i) // This is the action number
@@ -339,10 +354,10 @@ public class Controller_NearestNeighborApprox implements IController {
 
                     // Unpack each x y th... value in a given timestep. Turn them into StateVariables.
                     Map<String, FeatureList> featureListMap = singleSequence.getFeatureLists().getFeatureListMap();
-                    StateVariable[] sVarBuffer = new StateVariable[State.ObjectName.values().length];
+                    StateVariable[] sVarBuffer = new StateVariable[ObjectName.values().length];
 
                     int idx = 0;
-                    for (State.ObjectName bodyPart : State.ObjectName.values()) {
+                    for (ObjectName bodyPart : ObjectName.values()) {
                         List<Float> sValList =
                                 featureListMap.get(bodyPart.toString()).getFeature(i).getFloatList().getValueList();
 
@@ -355,7 +370,7 @@ public class Controller_NearestNeighborApprox implements IController {
                             sVarBuffer[5], sVarBuffer[6], sVarBuffer[7], sVarBuffer[8], sVarBuffer[9], sVarBuffer[10]
                             , sVarBuffer[11], false);
 
-                    // Get actions as keypresses at the current state.
+                    // Get game.action as keypresses at the current state.
                     byte[] keyPressBytes =
                             singleSequence.getFeatureLists().getFeatureListMap().get("PRESSED_KEYS").getFeature(i).getBytesList().getValue(0).toByteArray();
                     boolean[] keyPress = new boolean[4];
@@ -365,7 +380,7 @@ public class Controller_NearestNeighborApprox implements IController {
                     keyPress[3] = keyPressBytes[3] == (byte) 1;
 
                     StateHolder newState = new StateHolder(st, keyPress, rh);
-                    allStates.put(st.getStateVarFromName(sortByPart, sortBySt), newState);
+                    allStates.put(st.getStateVariableFromName(sortByPart).getStateByName(sortBySt), newState);
                     numStatesLoaded++;
                 }
 
@@ -456,7 +471,7 @@ public class Controller_NearestNeighborApprox implements IController {
     public void draw(Graphics g, GameUnified game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
         if (!previousStatesLIFO.isEmpty()) {
             g.setColor(Color.WHITE);
-            g.drawString(String.valueOf(previousStatesLIFO.peek().body.getX()), 50, 50);
+            g.drawString(String.valueOf(previousStatesLIFO.peek().getCenterX()), 50, 50);
         }
 
         if (currentTrajectory != null && currentTrajectoryStateMatch != null) {

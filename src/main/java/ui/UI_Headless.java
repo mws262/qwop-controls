@@ -1,6 +1,6 @@
 package ui;
 
-import tree.NodeQWOPGraphicsBase;
+import tree.node.NodeQWOPGraphicsBase;
 
 public class UI_Headless implements IUserInterface {
 

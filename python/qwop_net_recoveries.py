@@ -76,7 +76,7 @@ def _parse_function(example_proto):
 
     pkoh = tf.cast(tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS_ONE_HOT'], tf.uint8), [-1, 3]), dtype=tf.float32)
 
-    extended_states = tf.concat(values=[statesConcat, pkoh], axis=1) # States with actions attached.
+    extended_states = tf.concat(values=[statesConcat, pkoh], axis=1) # States with game.action attached.
 
     return extended_states
 

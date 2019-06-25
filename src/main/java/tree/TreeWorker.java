@@ -1,15 +1,17 @@
 package tree;
 
-import actions.Action;
-import actions.ActionQueue;
 import game.GameUnified;
+import game.GameUnifiedCaching;
 import game.IGameInternal;
-import game.State;
-import samplers.ISampler;
-import samplers.Sampler_Random;
+import game.action.Action;
+import game.action.ActionQueue;
+import game.state.IState;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
-import ui.PanelRunner;
+import tree.node.NodeQWOPBase;
+import tree.node.NodeQWOPExplorableBase;
+import tree.sampler.ISampler;
+import ui.runner.PanelRunner;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -59,17 +61,17 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * The current game instance that this FSM is using. This will now not change.
      */
-    private final IGameInternal game = new GameUnified();
+    private IGameInternal game;
 
     /**
      * Strategy for sampling new nodes. Defaults to random sampling.
      */
-    private ISampler sampler = new Sampler_Random();
+    private final ISampler sampler;
 
     /**
      * How data is saved. Defaults to no saving.
      */
-    private IDataSaver saver = new DataSaver_Null();
+    private final IDataSaver saver;
 
     /**
      * Root of tree that this FSM is operating on.
@@ -148,16 +150,49 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     private final List<Action> actionSequence = new ArrayList<>();
 
-    public TreeWorker() {
+    private TreeWorker(ISampler sampler, IDataSaver saver) {
         workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
 
+        this.sampler = sampler;
+        this.saver = saver;
         lastTsTimeMs = System.currentTimeMillis();
 
         // Thread that this worker is running on. Will stay constant with this worker.
         Thread workerThread = new Thread(this);
         workerThread.setName(workerName);
         workerThread.start();
+    }
+
+    /**
+     * Make a worker that uses {@link GameUnified} under the hood.
+     * @return A brand new TreeWorker.
+     */
+    public static TreeWorker makeStandardTreeWorker(ISampler sampler, IDataSaver saver) {
+        TreeWorker treeWorker = new TreeWorker(sampler, saver);
+        treeWorker.game = new GameUnified();
+        return treeWorker;
+    }
+
+    // With no data saving.
+    public static TreeWorker makeStandardTreeWorker(ISampler sampler) {
+        return makeStandardTreeWorker(sampler, new DataSaver_Null());
+    }
+
+    /**
+     * Make a worker that uses {@link game.GameUnifiedCaching} under the hood.
+     * @return A brand new TreeWorker.
+     */
+    public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, IDataSaver saver, int timestepDelay,
+                                                       int numDelayedStates) {
+        TreeWorker treeWorker = new TreeWorker(sampler, saver);
+        treeWorker.game = new GameUnifiedCaching(timestepDelay, numDelayedStates);
+        return treeWorker;
+    }
+
+    // No data saving.
+    public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, int timestepDelay, int numDelayedStates) {
+        return makeCachedStateTreeWorker(sampler, new DataSaver_Null(), timestepDelay, numDelayedStates);
     }
 
     /**
@@ -168,20 +203,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
      */
     public void setRoot(NodeQWOPExplorableBase<?> rootNode) {
         this.rootNode = rootNode;
-    }
-
-    /**
-     * Set which sampler is used. Defaults to Sampler_Random. Clones when reassigned.
-     */
-    public void setSampler(ISampler sampler) {
-        this.sampler = sampler.getCopy();
-    }
-
-    /**
-     * Set which saver to  use. Defaults to no saving, Sampler_Null. Clones when reassigned.
-     */
-    public void setSaver(IDataSaver saver) {
-        this.saver = saver.getCopy();
     }
 
     /**
@@ -236,7 +257,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 //                                "workers at the end of search stages.");
 
 
-                        if (expansionNode == null) { // May happen with some samplers when the stage finishes.
+                        if (expansionNode == null) { // May happen with some tree.samplers when the stage finishes.
                             changeStatus(Status.IDLE);
                         } else {
                             assert !expansionNode.getState().isFailed() : "Tree policy picked a node with a failed state." +
@@ -259,11 +280,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case TREE_POLICY_EXECUTING:
 
-                    executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
+                    executeNextOnQueue(); // Execute a single timestep with the game.action that have been queued.
                     assert !game.getFailureStatus() : "Game encountered a failure while executing the tree policy. The tree " +
                             "policy should be safe, since it's ground that's been covered before.";
 
-                    // When all actions in queue are done, figure out what to do next.
+                    // When all game.action in queue are done, figure out what to do next.
                     if (actionQueue.isEmpty()) {
                         currentGameNode = targetNodeToTest;
                         assert currentGameNode.getUntriedActionCount() > 0;
@@ -273,7 +294,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
                     break;
                 case EXPANSION_POLICY_CHOOSING:
-                    if (sampler.expansionPolicyGuard(currentGameNode)) { // Some samplers keep adding nodes until
+                    if (sampler.expansionPolicyGuard(currentGameNode)) { // Some tree.samplers keep adding nodes until
                         // failure, others add a fewer number and move to rollout before failure.
                         changeStatus(Status.ROLLOUT_POLICY);
                         sampler.expansionPolicyActionDone(currentGameNode);
@@ -287,7 +308,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case EXPANSION_POLICY_EXECUTING:
 
-                    executeNextOnQueue(); // Execute a single timestep with the actions that have been queued.
+                    executeNextOnQueue(); // Execute a single timestep with the game.action that have been queued.
 
                     // When done, record state and go back to choosing. If failed, the sampler guards will tell us.
                     if (actionQueue.isEmpty() || game.getFailureStatus()) {
@@ -369,7 +390,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Get the state of the runner.
      */
-    public State getGameState() {
+    public IState getGameState() {
         return game.getCurrentState();
     }
 
@@ -388,7 +409,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     }
 
     /**
-     * Pause what the worker is doing. Good for changing objectives and samplers, etc. This blocks until the worker
+     * Pause what the worker is doing. Good for changing objectives and tree.samplers, etc. This blocks until the worker
      * is done with the current evaluation and is back to IDLE.
      */
     public void pauseWorker() {
@@ -405,9 +426,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Pause what the worker is doing. Tells its saver to do whatever it should when the stage is complete.
      */
-    public void triggerStageCompleted() {
-        paused = true;
+    public void terminateStageComplete(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
+        saver.reportStageEnding(rootNode, targetNodes);
         saver.finalizeSaverData();
+        terminateWorker();
     }
 
     /**

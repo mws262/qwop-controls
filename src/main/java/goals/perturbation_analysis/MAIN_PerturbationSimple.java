@@ -1,10 +1,10 @@
 package goals.perturbation_analysis;
 
-import actions.ActionQueue;
-import actions.perturbers.ActionPerturber_SwitchTooSoon;
+import game.action.ActionQueue;
+import game.action.perturbers.ActionPerturber_SwitchTooSoon;
 import game.GameUnified;
 import game.IGameInternal;
-import ui.PanelRunner_MultiState;
+import ui.runner.PanelRunner_MultiState;
 
 import javax.swing.*;
 import java.awt.*;

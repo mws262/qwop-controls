@@ -1,12 +1,12 @@
 package goals.cold_start_analysis;
 
-import actions.ActionQueue;
+import game.action.ActionQueue;
 import game.GameUnified;
 import game.IGameInternal;
-import game.State;
+import game.state.IState;
 
 /**
- * This version runs a normal sequence of actions, but adds another cold-started runner at every timestep, and seeing
+ * This version runs a normal sequence of game.action, but adds another cold-started runner at every timestep, and seeing
  * the distance travelled before failure for each.
  * @author matt
  */
@@ -29,17 +29,17 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
             gameFullRun.step(nextCommand); // Sim the main runner and put on screen.
 
             coldStartGame.makeNewWorld();
-            State st = gameFullRun.getCurrentState();
+            IState st = gameFullRun.getCurrentState();
             coldStartGame.setState(st);
             ActionQueue coldStartActionQueue = actionQueue.getCopyOfQueueAtExecutionPoint();
 
             // Simulate ahead on the cold started version until failure for each timestep of the original version.
-            float initX = st.body.getX();
+            float initX = st.getCenterX();
             while (!coldStartActionQueue.isEmpty()) {
                 nextCommand = coldStartActionQueue.pollCommand();
                 coldStartGame.step(nextCommand);
                 if (coldStartGame.getFailureStatus()) {
-                    System.out.println((coldStartGame.getCurrentState().body.getX() - initX)/17.);
+                    System.out.println((coldStartGame.getCurrentState().getCenterX() - initX)/17.);
                     break;
                 }
             }

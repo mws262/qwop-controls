@@ -119,17 +119,17 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
 implements <a href="../value/IValueFunction.html" title="interface in value">IValueFunction</a></pre>
 <div class="block">[state, action duration] ----> |NEURAL NET| ----> single scalar value
 
- This value function evaluates a Node like this:
- 1. Get the state from the parent Node.
- 2. Get the action leading to this node (i.e. its action).
- 3. Concatenate [state, action] and pass to TensorFlow network.
- 4. A single scalar value pops out.
+    This value function evaluates a Node like this:
+    1. Get the state from the parent Node.
+    2. Get the action leading to this node (i.e. its action).
+    3. Concatenate [state, action] and pass to TensorFlow network.
+    4. A single scalar value pops out.
 
- When using it as a controller, given a node:
- 1. Take the state at the current node.
- 2. Get all possible actions leaving this node.
- 3. Concatenate and pass to TensorFlow.
- 4. Pick the Action which maximizes the resulting value.</div>
+    When using it as a controller, given a node:
+    1. Take the state at the current node.
+    2. Get all possible game.action leaving this node.
+    3. Concatenate and pass to TensorFlow.
+    4. Pick the Action which maximizes the resulting value.</div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
 <dd>matt</dd>
@@ -205,7 +205,7 @@ implements <a href="../value/IValueFunction.html" title="interface in value">IVa
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../actions/Action.html" title="class in actions">Action</a></code></td>
+<td class="colFirst"><code><a href="../game.actions/Action.html" title="class in game.action">Action</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../value/ValueFunction_TensorFlow_ActionIn.html#getMaximizingAction-tree.Node-">getMaximizingAction</a></span>(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;currentNode)</code>
 <div class="block">Find the child Action which is predicted to maximize value.</div>
 </td>
@@ -321,7 +321,7 @@ implements <a href="../value/IValueFunction.html" title="interface in value">IVa
 <ul class="blockList">
 <li class="blockList">
 <h4>getMaximizingAction</h4>
-<pre>public&nbsp;<a href="../actions/Action.html" title="class in actions">Action</a>&nbsp;getMaximizingAction(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;currentNode)</pre>
+<pre>public&nbsp;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&nbsp;getMaximizingAction(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;currentNode)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../value/IValueFunction.html#getMaximizingAction-tree.Node-">IValueFunction</a></code></span></div>
 <div class="block">Find the child Action which is predicted to maximize value.</div>
 <dl>

@@ -1,5 +1,10 @@
 package game;
 
+import game.action.Action;
+import game.state.IState;
+import game.state.IState.ObjectName;
+import game.state.State;
+import game.state.StateVariable;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
 import org.jbox2d.collision.shapes.Shape;
@@ -26,6 +31,8 @@ import static game.GameConstants.*;
  */
 @SuppressWarnings("Duplicates")
 public class GameUnified implements IGameInternal, IGameSerializable {
+
+    public static final int STATE_SIZE = 72;
 
     /**
      * Keep track of sim stats since beginning of execution.
@@ -145,7 +152,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     /**
      * Initial runner state.
      **/
-    private static final State initState;
+    private static final IState initState;
 
     /** Can turn off feet (just leg stumps) for trying stuff out. **/
     private static boolean noFeet = false;
@@ -435,7 +442,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
 //
 //        blockShapeDef.friction = 1;
 //        blockShapeDef.density = 1;
-//        blockShapeDef.filter.groupIndex = 1; // Same as track.
+//        blockShapeDef.tree.node.filter.groupIndex = 1; // Same as track.
 //
 //        blockBodyDef.position = (torsoPos).add(new Vec2(20,-2));
 //        blockBodyDef.angle = 0;
@@ -660,7 +667,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
 //
 //            blockShapeDef.friction = 1;
 //            blockShapeDef.density = 1;
-//            blockShapeDef.filter.groupIndex = 1; // Same as track.
+//            blockShapeDef.tree.node.filter.groupIndex = 1; // Same as track.
 //
 //            blockBodyDef.position = (torsoBody.getPosition()).add(new Vec2(30,4));
 //            blockBodyDef.angle = 2 * 3.14f * rand.nextFloat();
@@ -823,14 +830,14 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     /**
      * QWOP initial condition. Good way to give the root node a state.
      **/
-    public static State getInitialState() {
+    public static IState getInitialState() {
         return initState;
     }
 
     /**
      * Get the current full state of the runner.
      */
-    public synchronized State getCurrentState() {
+    public synchronized IState getCurrentState() {
         return new State(
                 getCurrentBodyState(torsoBody),
                 getCurrentBodyState(headBody),
@@ -887,25 +894,29 @@ public class GameUnified implements IGameInternal, IGameSerializable {
         body.setAngularVelocity(stateVariable.getDth());
     }
 
-    public void setState(State state) {
+    public void setState(IState state) {
         isFailed = false;
-        setBodyToStateVariable(rFootBody, state.rfoot);
-        setBodyToStateVariable(lFootBody, state.lfoot);
+        setBodyToStateVariable(rFootBody, state.getStateVariableFromName(ObjectName.RFOOT));
+        setBodyToStateVariable(lFootBody, state.getStateVariableFromName(ObjectName.LFOOT));
 
-        setBodyToStateVariable(rThighBody, state.rthigh);
-        setBodyToStateVariable(lThighBody, state.lthigh);
+        setBodyToStateVariable(rThighBody, state.getStateVariableFromName(ObjectName.RTHIGH));
+        setBodyToStateVariable(lThighBody, state.getStateVariableFromName(ObjectName.LTHIGH));
 
-        setBodyToStateVariable(rCalfBody, state.rcalf);
-        setBodyToStateVariable(lCalfBody, state.lcalf);
+        setBodyToStateVariable(rCalfBody, state.getStateVariableFromName(ObjectName.RCALF));
+        setBodyToStateVariable(lCalfBody, state.getStateVariableFromName(ObjectName.LCALF));
 
-        setBodyToStateVariable(rUArmBody, state.ruarm);
-        setBodyToStateVariable(lUArmBody, state.luarm);
+        setBodyToStateVariable(rUArmBody, state.getStateVariableFromName(ObjectName.RUARM));
+        setBodyToStateVariable(lUArmBody, state.getStateVariableFromName(ObjectName.LUARM));
 
-        setBodyToStateVariable(rLArmBody, state.rlarm);
-        setBodyToStateVariable(lLArmBody, state.llarm);
+        setBodyToStateVariable(rLArmBody, state.getStateVariableFromName(ObjectName.RLARM));
+        setBodyToStateVariable(lLArmBody, state.getStateVariableFromName(ObjectName.LLARM));
 
-        setBodyToStateVariable(headBody, state.head);
-        setBodyToStateVariable(torsoBody, state.body);
+        setBodyToStateVariable(headBody, state.getStateVariableFromName(ObjectName.HEAD));
+        setBodyToStateVariable(torsoBody, state.getStateVariableFromName(ObjectName.BODY));
+    }
+
+    public GameUnified getCopy() {
+        return new GameUnified();
     }
 
     /**
@@ -921,6 +932,11 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     @Override
     public long getTimestepsThisGame() {
         return timestepsSimulated;
+    }
+
+    @Override
+    public int getStateDimension() {
+        return STATE_SIZE;
     }
 
     public boolean isRightFootDown() {
@@ -973,44 +989,44 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     }
 
 
-    public void fullStatePDController(State targetState) {
-        State currentState = getCurrentState();
-        pdForce(targetState.body, currentState.body, torsoBody);
-        pdTorque(targetState.body, currentState.body, torsoBody);
-
-        pdForce(targetState.head, currentState.head, torsoBody);
-        pdTorque(targetState.head, currentState.head, torsoBody);
-
-        pdForce(targetState.rthigh, currentState.rthigh, torsoBody);
-        pdTorque(targetState.rthigh, currentState.rthigh, torsoBody);
-
-        pdForce(targetState.lthigh, currentState.lthigh, torsoBody);
-        pdTorque(targetState.lthigh, currentState.lthigh, torsoBody);
-
-        pdForce(targetState.rcalf, currentState.rcalf, torsoBody);
-        pdTorque(targetState.rcalf, currentState.rcalf, torsoBody);
-
-        pdForce(targetState.lcalf, currentState.lcalf, torsoBody);
-        pdTorque(targetState.lcalf, currentState.lcalf, torsoBody);
-
-        pdForce(targetState.rfoot, currentState.rfoot, torsoBody);
-        pdTorque(targetState.rfoot, currentState.rfoot, torsoBody);
-
-        pdForce(targetState.lfoot, currentState.lfoot, torsoBody);
-        pdTorque(targetState.lfoot, currentState.lfoot, torsoBody);
-
-        pdForce(targetState.ruarm, currentState.ruarm, torsoBody);
-        pdTorque(targetState.ruarm, currentState.ruarm, torsoBody);
-
-        pdForce(targetState.luarm, currentState.luarm, torsoBody);
-        pdTorque(targetState.luarm, currentState.luarm, torsoBody);
-
-        pdForce(targetState.rlarm, currentState.rlarm, torsoBody);
-        pdTorque(targetState.rlarm, currentState.rlarm, torsoBody);
-
-        pdForce(targetState.llarm, currentState.llarm, torsoBody);
-        pdTorque(targetState.llarm, currentState.llarm, torsoBody);
-    }
+//    public void fullStatePDController(State targetState) {
+//        State currentState = getCurrentState();
+//        pdForce(targetState.body, currentState.body, torsoBody);
+//        pdTorque(targetState.body, currentState.body, torsoBody);
+//
+//        pdForce(targetState.head, currentState.head, torsoBody);
+//        pdTorque(targetState.head, currentState.head, torsoBody);
+//
+//        pdForce(targetState.rthigh, currentState.rthigh, torsoBody);
+//        pdTorque(targetState.rthigh, currentState.rthigh, torsoBody);
+//
+//        pdForce(targetState.lthigh, currentState.lthigh, torsoBody);
+//        pdTorque(targetState.lthigh, currentState.lthigh, torsoBody);
+//
+//        pdForce(targetState.rcalf, currentState.rcalf, torsoBody);
+//        pdTorque(targetState.rcalf, currentState.rcalf, torsoBody);
+//
+//        pdForce(targetState.lcalf, currentState.lcalf, torsoBody);
+//        pdTorque(targetState.lcalf, currentState.lcalf, torsoBody);
+//
+//        pdForce(targetState.rfoot, currentState.rfoot, torsoBody);
+//        pdTorque(targetState.rfoot, currentState.rfoot, torsoBody);
+//
+//        pdForce(targetState.lfoot, currentState.lfoot, torsoBody);
+//        pdTorque(targetState.lfoot, currentState.lfoot, torsoBody);
+//
+//        pdForce(targetState.ruarm, currentState.ruarm, torsoBody);
+//        pdTorque(targetState.ruarm, currentState.ruarm, torsoBody);
+//
+//        pdForce(targetState.luarm, currentState.luarm, torsoBody);
+//        pdTorque(targetState.luarm, currentState.luarm, torsoBody);
+//
+//        pdForce(targetState.rlarm, currentState.rlarm, torsoBody);
+//        pdTorque(targetState.rlarm, currentState.rlarm, torsoBody);
+//
+//        pdForce(targetState.llarm, currentState.llarm, torsoBody);
+//        pdTorque(targetState.llarm, currentState.llarm, torsoBody);
+//    }
 
     private void pdForce(StateVariable targetSV, StateVariable currentSV, Body b) {
         float kp = 10;
@@ -1079,6 +1095,13 @@ public class GameUnified implements IGameInternal, IGameSerializable {
         public float groundHeight;
         public float[][] bodyVerts = new float[11][8];
         public float[] headLocAndRadius = new float[3];
+    }
+
+    public void doAction(Action action) {
+        Action a = action.getCopy();
+        while (a.hasNext()) {
+            command(a.poll());
+        }
     }
 
     /**
@@ -1162,7 +1185,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     /**
      * Draw the runner at a specified set of transforms..
      **/
-    public static void drawExtraRunner(Graphics2D g, State state, String label, float scaling, int xOffset,
+    public static void drawExtraRunner(Graphics2D g, IState state, String label, float scaling, int xOffset,
                                        int yOffset, Color drawColor, Stroke stroke) {
 
         XForm[] transforms = getXForms(state);
@@ -1210,20 +1233,20 @@ public class GameUnified implements IGameInternal, IGameSerializable {
      * Get the transform associated with this State. Note that these transforms can ONLY be used with this instance
      * of GameThreadSafe.
      */
-    public static XForm[] getXForms(State st) {
+    public static XForm[] getXForms(IState st) {
         XForm[] transforms = new XForm[13];
-        transforms[0] = getXForm(st.body);
-        transforms[1] = getXForm(st.head);
-        transforms[2] = getXForm(st.rfoot);
-        transforms[3] = getXForm(st.lfoot);
-        transforms[4] = getXForm(st.rcalf);
-        transforms[5] = getXForm(st.lcalf);
-        transforms[6] = getXForm(st.rthigh);
-        transforms[7] = getXForm(st.lthigh);
-        transforms[8] = getXForm(st.ruarm);
-        transforms[9] = getXForm(st.luarm);
-        transforms[10] = getXForm(st.rlarm);
-        transforms[11] = getXForm(st.llarm);
+        transforms[0] = getXForm(st.getStateVariableFromName(ObjectName.BODY));
+        transforms[1] = getXForm(st.getStateVariableFromName(ObjectName.HEAD));
+        transforms[2] = getXForm(st.getStateVariableFromName(ObjectName.RFOOT));
+        transforms[3] = getXForm(st.getStateVariableFromName(ObjectName.LFOOT));
+        transforms[4] = getXForm(st.getStateVariableFromName(ObjectName.RCALF));
+        transforms[5] = getXForm(st.getStateVariableFromName(ObjectName.LCALF));
+        transforms[6] = getXForm(st.getStateVariableFromName(ObjectName.RTHIGH));
+        transforms[7] = getXForm(st.getStateVariableFromName(ObjectName.LTHIGH));
+        transforms[8] = getXForm(st.getStateVariableFromName(ObjectName.RUARM));
+        transforms[9] = getXForm(st.getStateVariableFromName(ObjectName.LUARM));
+        transforms[10] = getXForm(st.getStateVariableFromName(ObjectName.RLARM));
+        transforms[11] = getXForm(st.getStateVariableFromName(ObjectName.LLARM));
         transforms[12] = getXForm(new StateVariable(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
         // Offset by 20 because its now a box.
         return transforms;

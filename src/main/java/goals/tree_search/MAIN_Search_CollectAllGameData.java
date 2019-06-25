@@ -1,11 +1,18 @@
 package goals.tree_search;
 
+import controllers.Controller_Random;
 import game.GameUnified;
-import tree.NodeQWOPGraphics;
+import game.action.ActionGenerator_FixedSequence;
+import tree.node.NodeQWOPGraphics;
+import tree.TreeWorker;
+import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.sampler.Sampler_UCB;
+import tree.sampler.rollout.RolloutPolicy_DeltaScore;
 
 import java.io.File;
 
-public class MAIN_Search_CollectAllGameData extends MAIN_Search_Template {
+public class MAIN_Search_CollectAllGameData extends SearchTemplate {
 
 
     public MAIN_Search_CollectAllGameData() {
@@ -19,9 +26,19 @@ public class MAIN_Search_CollectAllGameData extends MAIN_Search_Template {
 
     private void doGames() {
 
-        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), getExtendedActionGenerator(-1));
+        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(),
+                ActionGenerator_FixedSequence.makeExtendedGenerator(-1));
         ui.addRootNode(rootNode);
 
         doFixedGamesToFailureStage(rootNode, "good_and_bad", 1, 1000000);
+    }
+
+    @Override
+    TreeWorker getTreeWorker() {
+        return TreeWorker.makeStandardTreeWorker(new Sampler_UCB(
+                new EvaluationFunction_Constant(0f),
+                new RolloutPolicy_DeltaScore(
+                        new EvaluationFunction_Distance(),
+                        new Controller_Random())));
     }
 }

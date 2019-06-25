@@ -202,8 +202,8 @@ public class World implements Externalizable {
 	}
 
 	/**
-	 *  Register a contact filter to provide specific control over collision.
-	 *  Otherwise the default filter is used (b2_defaultFilter).
+	 *  Register a contact tree.node.filter to provide specific control over collision.
+	 *  Otherwise the default tree.node.filter is used (b2_defaultFilter).
 	 */
 	public void setContactFilter(final ContactFilter filter) {
 		m_contactFilter = filter;

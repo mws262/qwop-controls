@@ -113,7 +113,7 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/JPanel.html?is-external=true" title="class or interface in javax.swing">javax.swing.JPanel</a></li>
 <li>
 <ul class="inheritance">
-<li><a href="../ui/PanelRunner.html" title="class in ui">ui.PanelRunner</a></li>
+<li><a href="../ui/PanelRunner.html" title="class in ui">ui.runner.PanelRunner</a></li>
 <li>
 <ul class="inheritance">
 <li>tree.TreeWorker</li>
@@ -218,7 +218,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../actions/ActionQueue.html" title="class in actions">ActionQueue</a></code></td>
+<td class="colFirst"><code><a href="../game.actions/ActionQueue.html" title="class in game.action">ActionQueue</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../tree/TreeWorker.html#actionQueue">actionQueue</a></span></code>
 <div class="block">Queued commands, IE QWOP key presses</div>
 </td>
@@ -389,7 +389,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable
 </tr>
 <tr id="i15" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../tree/TreeWorker.html#setSampler-samplers.ISampler-">setSampler</a></span>(<a href="../samplers/ISampler.html" title="interface in samplers">ISampler</a>&nbsp;sampler)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../tree/TreeWorker.html#setSampler-samplers.ISampler-">setSampler</a></span>(<a href="../samplers/ISampler.html" title="interface in tree.sampler">ISampler</a>&nbsp;sampler)</code>
 <div class="block">Set which sampler is used.</div>
 </td>
 </tr>
@@ -427,7 +427,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;ui.<a href="../ui/PanelRunner.html" title="class in ui">PanelRunner</a></h3>
-<code><a href="../ui/PanelRunner.html#activateTab--">activateTab</a>, <a href="../ui/PanelRunner.html#drawActionString-actions.Action:A-java.awt.Graphics-">drawActionString</a>, <a href="../ui/PanelRunner.html#drawActionString-java.awt.Graphics-actions.Action:A-int-">drawActionString</a>, <a href="../ui/PanelRunner.html#isActive--">isActive</a>, <a href="../ui/PanelRunner.html#keyDrawer-java.awt.Graphics-boolean-boolean-boolean-boolean-">keyDrawer</a></code></li>
+<code><a href="../ui/PanelRunner.html#activateTab--">activateTab</a>, <a href="../ui/PanelRunner.html#drawActionString-game.actions.Action:A-java.awt.Graphics-">drawActionString</a>, <a href="../ui/PanelRunner.html#drawActionString-java.awt.Graphics-game.actions.Action:A-int-">drawActionString</a>, <a href="../ui/PanelRunner.html#isActive--">isActive</a>, <a href="../ui/PanelRunner.html#keyDrawer-java.awt.Graphics-boolean-boolean-boolean-boolean-">keyDrawer</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.javax.swing.JPanel">
@@ -504,7 +504,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable
 <ul class="blockList">
 <li class="blockList">
 <h4>actionQueue</h4>
-<pre>public&nbsp;<a href="../actions/ActionQueue.html" title="class in actions">ActionQueue</a> actionQueue</pre>
+<pre>public&nbsp;<a href="../game.actions/ActionQueue.html" title="class in game.action">ActionQueue</a> actionQueue</pre>
 <div class="block">Queued commands, IE QWOP key presses</div>
 </li>
 </ul>
@@ -563,7 +563,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable
 <ul class="blockList">
 <li class="blockList">
 <h4>setSampler</h4>
-<pre>public&nbsp;void&nbsp;setSampler(<a href="../samplers/ISampler.html" title="interface in samplers">ISampler</a>&nbsp;sampler)</pre>
+<pre>public&nbsp;void&nbsp;setSampler(<a href="../samplers/ISampler.html" title="interface in tree.sampler">ISampler</a>&nbsp;sampler)</pre>
 <div class="block">Set which sampler is used. Defaults to Sampler_Random. Clones when reassigned.</div>
 </li>
 </ul>
@@ -648,7 +648,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable
 <li class="blockList">
 <h4>pauseWorker</h4>
 <pre>public&nbsp;void&nbsp;pauseWorker()</pre>
-<div class="block">Pause what the worker is doing. Good for changing objectives and samplers, etc.</div>
+<div class="block">Pause what the worker is doing. Good for changing objectives and tree.sampler, etc.</div>
 </li>
 </ul>
 <a name="triggerStageCompleted--">

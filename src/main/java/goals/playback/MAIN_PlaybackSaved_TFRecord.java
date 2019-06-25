@@ -6,15 +6,15 @@ import java.util.*;
 import java.util.List;
 import javax.swing.JFrame;
 
-import actions.Action;
-import actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
 import data.TFRecordDataParsers;
 import game.GameUnified;
 import game.IGameInternal;
 import org.tensorflow.example.SequenceExample;
 
-import game.State;
-import ui.PanelRunner_MultiState;
+import game.state.State;
+import ui.runner.PanelRunner_MultiState;
 
 /**
  * Playback runs or sections of runs saved densely in TFRecord files. This draws three things: state data drawn over
@@ -120,7 +120,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                     runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
                     runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
                     if (actionQueue.isEmpty()) {
-                        System.out.println("Warning: actions ended before states did.");
+                        System.out.println("Warning: game.action ended before states did.");
                     } else {
                         boolean[] actionQueueCommand = actionQueue.pollCommand();
                         gameForActionSim.step(actionQueueCommand);

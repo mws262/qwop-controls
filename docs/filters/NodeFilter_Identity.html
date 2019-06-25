@@ -101,7 +101,7 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li>filters.NodeFilter_Identity</li>
+<li>tree.node.filter.NodeFilter_Identity</li>
 </ul>
 </li>
 </ul>
@@ -159,7 +159,7 @@ implements <a href="../filters/INodeFilter.html" title="interface in filters">IN
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../filters/NodeFilter_Identity.html#filter-java.util.List-">filter</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../tree/Node.html" title="class in tree">Node</a>&gt;&nbsp;nodes)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../filters/NodeFilter_Identity.html#tree.node.filter-java.util.List-">tree.node.filter</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../tree/Node.html" title="class in tree">Node</a>&gt;&nbsp;nodes)</code>
 <div class="block">Decide which of these should be kept.</div>
 </td>
 </tr>
@@ -176,7 +176,7 @@ implements <a href="../filters/INodeFilter.html" title="interface in filters">IN
 <!--   -->
 </a>
 <h3>Methods inherited from interface&nbsp;filters.<a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a></h3>
-<code><a href="../filters/INodeFilter.html#filter-tree.Node-">filter</a></code></li>
+<code><a href="../filters/INodeFilter.html#tree.node.filter-tree.Node-">tree.node.filter</a></code></li>
 </ul>
 </li>
 </ul>
@@ -209,21 +209,21 @@ implements <a href="../filters/INodeFilter.html" title="interface in filters">IN
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="filter-java.util.List-">
+<a name="tree.node.filter-java.util.List-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>filter</h4>
-<pre>public&nbsp;void&nbsp;filter(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../tree/Node.html" title="class in tree">Node</a>&gt;&nbsp;nodes)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../filters/INodeFilter.html#filter-java.util.List-">INodeFilter</a></code></span></div>
-<div class="block">Decide which of these should be kept. Alters the list in place. Default is to call single node filter for all
+<h4>tree.node.filter</h4>
+<pre>public&nbsp;void&nbsp;tree.node.filter(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../tree/Node.html" title="class in tree">Node</a>&gt;&nbsp;nodes)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../filters/INodeFilter.html#tree.node.filter-java.util.List-">INodeFilter</a></code></span></div>
+<div class="block">Decide which of these should be kept. Alters the list in place. Default is to call single node tree.node.filter for all
  elements of the list and remove those which return false.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../filters/INodeFilter.html#filter-java.util.List-">filter</a></code>&nbsp;in interface&nbsp;<code><a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a></code></dd>
+<dd><code><a href="../filters/INodeFilter.html#tree.node.filter-java.util.List-">tree.node.filter</a></code>&nbsp;in interface&nbsp;<code><a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>nodes</code> - A list of nodes to filter. This list will be modified in place.</dd>
+<dd><code>nodes</code> - A list of nodes to tree.node.filter. This list will be modified in place.</dd>
 </dl>
 </li>
 </ul>

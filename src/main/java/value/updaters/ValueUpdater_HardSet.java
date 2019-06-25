@@ -1,6 +1,6 @@
 package value.updaters;
 
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 /**
  * Node value estimator which just replaces the existing estimate with the newly-provided value. Mostly useful as a

@@ -117,8 +117,8 @@ var activeTableTab = "activeTableTab";
 <pre>public class <span class="typeNameLabel">DataSaver_Sparse</span>
 extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>
 implements <a href="../savers/IDataSaver.html" title="interface in savers">IDataSaver</a></pre>
-<div class="block">Saver for sparse game information. Basically this includes actions
- needed to recreate a run, but not full state information at every timestep.</div>
+<div class="block">Saver for sparse game information. Basically this includes game.action
+    needed to recreate a run, but not full state information at every timestep.</div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
 <dd>matt</dd>
@@ -218,7 +218,7 @@ implements <a href="../savers/IDataSaver.html" title="interface in savers">IData
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../savers/DataSaver_Sparse.html#reportTimestep-actions.Action-game.GameThreadSafe-">reportTimestep</a></span>(<a href="../actions/Action.html" title="class in actions">Action</a>&nbsp;action,
+<td class="colLast"><code><span class="memberNameLink"><a href="../savers/DataSaver_Sparse.html#reportTimestep-game.actions.Action-game.GameThreadSafe-">reportTimestep</a></span>(<a href="../game.actions/Action.html" title="class in game.action">Action</a>&nbsp;action,
               <a href="../game/GameThreadSafe.html" title="class in game">GameThreadSafe</a>&nbsp;game)</code>
 <div class="block">Report intermediate nodes as they are being run.</div>
 </td>
@@ -324,20 +324,20 @@ implements <a href="../savers/IDataSaver.html" title="interface in savers">IData
 </dl>
 </li>
 </ul>
-<a name="reportTimestep-actions.Action-game.GameThreadSafe-">
+<a name="reportTimestep-game.actions.Action-game.GameThreadSafe-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>reportTimestep</h4>
-<pre>public&nbsp;void&nbsp;reportTimestep(<a href="../actions/Action.html" title="class in actions">Action</a>&nbsp;action,
+<pre>public&nbsp;void&nbsp;reportTimestep(<a href="../game.actions/Action.html" title="class in game.action">Action</a>&nbsp;action,
                            <a href="../game/GameThreadSafe.html" title="class in game">GameThreadSafe</a>&nbsp;game)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../savers/IDataSaver.html#reportTimestep-actions.Action-game.GameThreadSafe-">IDataSaver</a></code></span></div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../savers/IDataSaver.html#reportTimestep-game.actions.Action-game.GameThreadSafe-">IDataSaver</a></code></span></div>
 <div class="block">Report intermediate nodes as they are being run. Useful for dense
  saving of data for TFRecords or other.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../savers/IDataSaver.html#reportTimestep-actions.Action-game.GameThreadSafe-">reportTimestep</a></code>&nbsp;in interface&nbsp;<code><a href="../savers/IDataSaver.html" title="interface in savers">IDataSaver</a></code></dd>
+<dd><code><a href="../savers/IDataSaver.html#reportTimestep-game.actions.Action-game.GameThreadSafe-">reportTimestep</a></code>&nbsp;in interface&nbsp;<code><a href="../savers/IDataSaver.html" title="interface in savers">IDataSaver</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>action</code> - Current action being run.</dd>
 <dd><code>game</code> - Instance of the game used for simulation.</dd>

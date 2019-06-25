@@ -1,11 +1,11 @@
 package flashqwop;
 
-import actions.Action;
+import game.action.Action;
 import game.GameUnified;
-import game.State;
-import tree.NodeQWOP;
-import tree.NodeQWOPGraphicsBase;
-import ui.PanelRunner_MultiState;
+import game.state.IState;
+import tree.node.NodeQWOP;
+import tree.node.NodeQWOPGraphicsBase;
+import ui.runner.PanelRunner_MultiState;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -99,12 +99,12 @@ public class CompareFlashToJava extends FlashGame {
     }
 
     @Override
-    public Action getControlAction(State state) {
+    public Action getControlAction(IState state) {
         return valueFunction.getMaximizingAction(new NodeQWOP(state));
     }
 
     @Override
-    public void reportGameStatus(State state, boolean[] command, int timestep) {
+    public void reportGameStatus(IState state, boolean[] command, int timestep) {
         if (!initialized) {
             return; // This
         }
@@ -147,7 +147,7 @@ public class CompareFlashToJava extends FlashGame {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/small_net.pb")); // state_only.pb"));
+                    "/small_net.pb"), new GameUnified()); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

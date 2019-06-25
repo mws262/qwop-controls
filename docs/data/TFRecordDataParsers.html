@@ -116,7 +116,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
  a byte array by <a href="../data/TFRecordReader.html" title="class in data"><code>TFRecordReader</code></a>. That step is generic to all types of TFRecord information. For our case,
  all TFRecord data is a <a href="../org/tensorflow/example/SequenceExample.html" title="class in org.tensorflow.example"><code>SequenceExample</code></a> of a specific form. This class has methods for loading the byte
  arrays into <a href="../org/tensorflow/example/SequenceExample.html" title="class in org.tensorflow.example"><code>SequenceExample</code></a>, and methods for parsing the <a href="../org/tensorflow/example/SequenceExample.html" title="class in org.tensorflow.example"><code>SequenceExample</code></a> into <a href="../game/State.html" title="class in game"><code>State</code></a>,
- <a href="../actions/Action.html" title="class in actions"><code>Action</code></a>, etc.</div>
+ <a href="../game.actions/Action.html" title="class in game.action"><code>Action</code></a>, etc.</div>
 <dl>
 <dt><span class="simpleTagLabel">Author:</span></dt>
 <dd>matt</dd>
@@ -157,9 +157,9 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>static <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;</code></td>
+<td class="colFirst"><code>static <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../data/TFRecordDataParsers.html#getActionsFromLoadedSequence-org.tensorflow.example.SequenceExample-">getActionsFromLoadedSequence</a></span>(<a href="../org/tensorflow/example/SequenceExample.html" title="class in org.tensorflow.example">SequenceExample</a>&nbsp;sequenceFromTFRecord)</code>
-<div class="block">Takes a <a href="../org/tensorflow/example/SequenceExample.html" title="class in org.tensorflow.example"><code>SequenceExample</code></a> loaded from a TFRecord file and parses the sequence of <a href="../actions/Action.html" title="class in actions"><code>actions</code></a>
+<div class="block">Takes a <a href="../org/tensorflow/example/SequenceExample.html" title="class in org.tensorflow.example"><code>SequenceExample</code></a> loaded from a TFRecord file and parses the sequence of <a href="../game.actions/Action.html" title="class in game.action"><code>game.action</code></a>
  stored in it.</div>
 </td>
 </tr>
@@ -264,14 +264,14 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
 <ul class="blockList">
 <li class="blockList">
 <h4>getActionsFromLoadedSequence</h4>
-<pre>public static&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../actions/Action.html" title="class in actions">Action</a>&gt;&nbsp;getActionsFromLoadedSequence(<a href="../org/tensorflow/example/SequenceExample.html" title="class in org.tensorflow.example">SequenceExample</a>&nbsp;sequenceFromTFRecord)</pre>
-<div class="block">Takes a <a href="../org/tensorflow/example/SequenceExample.html" title="class in org.tensorflow.example"><code>SequenceExample</code></a> loaded from a TFRecord file and parses the sequence of <a href="../actions/Action.html" title="class in actions"><code>actions</code></a>
+<pre>public static&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;&nbsp;getActionsFromLoadedSequence(<a href="../org/tensorflow/example/SequenceExample.html" title="class in org.tensorflow.example">SequenceExample</a>&nbsp;sequenceFromTFRecord)</pre>
+<div class="block">Takes a <a href="../org/tensorflow/example/SequenceExample.html" title="class in org.tensorflow.example"><code>SequenceExample</code></a> loaded from a TFRecord file and parses the sequence of <a href="../game.actions/Action.html" title="class in game.action"><code>game.action</code></a>
  stored in it.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>sequenceFromTFRecord</code> - One sequence loaded from a TFRecord that we wish to parse into a series of Actions.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>A list of actions for the loaded run.</dd>
+<dd>A list of game.action for the loaded run.</dd>
 </dl>
 </li>
 </ul>

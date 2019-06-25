@@ -101,7 +101,7 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li>goals.tree_search.MAIN_Search_Template</li>
+<li>goals.tree_search.SearchTemplate</li>
 </ul>
 </li>
 </ul>
@@ -197,7 +197,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../goals/tree_search/MAIN_Search_Template.html#assignAllowableActions-int-">assignAllowableActions</a></span>(int&nbsp;recoveryExceptionStart)</code>
-<div class="block">Assign the correct generator of actions based on the baseline options and exceptions.</div>
+<div class="block">Assign the correct generator of game.action based on the baseline options and exceptions.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
@@ -340,7 +340,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
                                     float&nbsp;fractionOfWorkers,
                                     int&nbsp;maxGames)</pre>
 <div class="block">Setup and perform a <a href="../../tree/TreeStage_MaxDepth.html" title="class in tree"><code>TreeStage_MaxDepth</code></a> search. Tries to get at least one branch to the specified
-  depth. Uses <a href="../../samplers/Sampler_UCB.html" title="class in samplers"><code>Sampler_UCB</code></a> with <a href="../../evaluators/EvaluationFunction_Distance.html" title="class in evaluators"><code>EvaluationFunction_Distance</code></a>.</div>
+  depth. Uses <a href="../../samplers/Sampler_UCB.html" title="class in tree.sampler"><code>Sampler_UCB</code></a> with <a href="../../tree.node.evaluators/EvaluationFunction_Distance.html" title="class in tree.node.evaluator"><code>EvaluationFunction_Distance</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>rootNode</code> - Tree root node.</dd>
@@ -363,7 +363,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
                                     float&nbsp;fractionOfWorkers,
                                     int&nbsp;maxGames)</pre>
 <div class="block">Setup and perform a <a href="../../tree/TreeStage_MinDepth.html" title="class in tree"><code>TreeStage_MinDepth</code></a> search. Tries to get ALL branches to a minimum depth (if
- possible). Uses <a href="../../samplers/Sampler_FixedDepth.html" title="class in samplers"><code>Sampler_FixedDepth</code></a></div>
+ possible). Uses <a href="../../samplers/Sampler_FixedDepth.html" title="class in tree.sampler"><code>Sampler_FixedDepth</code></a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>rootNode</code> - Tree root node.</dd>
@@ -422,9 +422,9 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html
 <li class="blockList">
 <h4>assignAllowableActions</h4>
 <pre>public static&nbsp;void&nbsp;assignAllowableActions(int&nbsp;recoveryExceptionStart)</pre>
-<div class="block">Assign the correct generator of actions based on the baseline options and exceptions.
- Will assign a broader set of options for "recovery" at the specified starting depth.
- Pass -1 to disable this.</div>
+<div class="block">Assign the correct generator of game.action based on the baseline options and exceptions.
+    Will assign a broader set of options for "recovery" at the specified starting depth.
+    Pass -1 to disable this.</div>
 </li>
 </ul>
 <a name="assignAllowableActionsWider-int-">

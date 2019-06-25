@@ -1,13 +1,14 @@
 package flashqwop;
-import actions.Action;
+
+import game.action.Action;
 import game.GameConstants;
 import game.IGameExternal;
-import game.State;
-import game.StateVariable;
+import game.state.State;
+import game.state.StateVariable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
-import ui.PanelRunner_SimpleState;
+import ui.runner.PanelRunner_SimpleState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -209,6 +210,7 @@ public class FlashQWOPServer implements IGameExternal {
      * consumers should add themselves as {@link IFlashStateListener} for immediate updates.
      * @return
      */
+    @Override
     public State getCurrentState() {
         return dataInput.getCurrentState();
     }
@@ -221,6 +223,11 @@ public class FlashQWOPServer implements IGameExternal {
     @Override
     public long getTimestepsThisGame() {
         return dataInput.getCurrentTimestep();
+    }
+
+    @Override
+    public int getStateDimension() {
+        return 72;
     }
 
     /**
@@ -405,7 +412,6 @@ public class FlashQWOPServer implements IGameExternal {
             stateVals[68] += GameConstants.lLArmAngAdj;
             return new State(stateVals, isFallen);
         }
-
 
         /**
          * JSON formatted data will come in from the real QWOP game. This will extract it, add in the angle offsets,
