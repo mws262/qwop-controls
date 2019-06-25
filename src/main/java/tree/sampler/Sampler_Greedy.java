@@ -2,6 +2,8 @@ package tree.sampler;
 
 import java.util.ArrayList;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Action;
 import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
@@ -70,7 +72,8 @@ public class Sampler_Greedy implements ISampler {
      */
     private Sampler_Distribution distributionSampler = new Sampler_Distribution();
 
-    public Sampler_Greedy(IEvaluationFunction evaluationFunction) {
+    @JsonCreator
+    public Sampler_Greedy(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
     }
 
