@@ -1,6 +1,6 @@
 package value.updaters;
 
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 import java.util.ArrayList;
 import java.util.Collections;

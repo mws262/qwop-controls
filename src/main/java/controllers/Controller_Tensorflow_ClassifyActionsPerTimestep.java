@@ -1,10 +1,11 @@
 package controllers;
 
-import java.util.List;
-
-import game.State;
-import actions.Action;
+import game.action.Action;
+import game.state.State;
 import tflowtools.TensorflowLoader;
+import tree.node.NodeQWOPExplorableBase;
+
+import java.util.List;
 
 /**
  * Neural-network-based controller which uses a {@link State state} to classify which key combination should be
@@ -56,8 +57,8 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     }
 
     @Override
-    public Action policy(State state) {
-        List<Float> keyClassification = sisoFloatPrediction(state, inputName, outputName);
+    public Action policy(NodeQWOPExplorableBase<?> state) {
+        List<Float> keyClassification = sisoFloatPrediction(state.getState(), inputName, outputName);
 
         float probability0 = keyClassification.get(0);
         float probability1 = keyClassification.get(1);
@@ -89,5 +90,10 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
         }
 
         return chosenAction;
+    }
+
+    @Override
+    public IController getCopy() {
+        throw new RuntimeException("Haven't implemented copy on this controller yet!");
     }
 }

@@ -3,7 +3,7 @@ clear java;
 % Run maven's package phase if the jar isn't found.
 eval('javaaddpath ../target/qwop-controls-1.0-jar-with-dependencies.jar'); % Strange issues with trying to directly call these commands. Eval seems to fix it.
 eval('javaaddpath ../jbox2d.jar');
-eval('import game.State game.StateVariable game.GameSingleThread actions.Action actions.ActionQueue data
+eval('import game.state.State game.state.StateVariable game.GameSingleThread game.action.Action game.action.ActionQueue data
 .TFRecordDataParsers');
 
 files = dir('../src/main/resources/saved_data/training_data/');

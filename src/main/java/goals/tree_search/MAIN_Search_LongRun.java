@@ -1,11 +1,19 @@
 package goals.tree_search;
 
-import actions.IActionGenerator;
+import controllers.Controller_Random;
+import game.action.ActionGenerator_FixedSequence;
+import game.action.IActionGenerator;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
-import samplers.Sampler_UCB;
-import tree.NodeQWOPGraphics;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.sampler.Sampler_UCB;
+import tree.node.NodeQWOPGraphics;
+import tree.TreeWorker;
 import tree.Utility;
+import tree.sampler.rollout.RolloutPolicy_DeltaScore;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,7 +29,8 @@ import java.util.Objects;
  *
  * @author matt
  */
-public class MAIN_Search_LongRun extends MAIN_Search_Template {
+public class MAIN_Search_LongRun extends SearchTemplate {
+    private Logger logger = LogManager.getLogger(this.getClass());
 
     public MAIN_Search_LongRun() {
         super(new File("src/main/resources/config/" + "search.config_long"));
@@ -56,7 +65,7 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
 
         ///////////////////////////////////////////////////////////
 
-        IActionGenerator actionGenerator = getExtendedActionGenerator(-1);
+        IActionGenerator actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);
 
         // This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
         // Check if we actually need to do stage 1.
@@ -96,5 +105,14 @@ public class MAIN_Search_LongRun extends MAIN_Search_Template {
         }
 
         System.exit(0);
+    }
+
+    @Override
+    TreeWorker getTreeWorker() {
+        return TreeWorker.makeStandardTreeWorker(new Sampler_UCB(
+                new EvaluationFunction_Constant(0f),
+                new RolloutPolicy_DeltaScore(
+                        new EvaluationFunction_Distance(),
+                        new Controller_Random())));
     }
 }

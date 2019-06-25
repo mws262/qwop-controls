@@ -1,6 +1,6 @@
 package value.updaters;
 
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 /**
  * Node value estimate update rule. The value is always estimated to be the average of all update value seen. This is

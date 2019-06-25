@@ -11,8 +11,8 @@ import javax.swing.JFrame;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameUnified;
-import tree.NodeQWOPGraphics;
-import ui.PanelRunner_Snapshot;
+import tree.node.NodeQWOPGraphics;
+import ui.runner.PanelRunner_Snapshot;
 
 /**
  * Playback runs or sections of runs saved in SavableSingleRun files.

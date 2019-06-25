@@ -2,7 +2,7 @@ package data;
 
 import java.io.Serializable;
 
-import actions.Action;
+import game.action.Action;
 
 public class SavableActionSequence implements Serializable {
 

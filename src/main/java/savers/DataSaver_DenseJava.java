@@ -2,7 +2,7 @@ package savers;
 
 import data.SavableDenseData;
 import data.SavableFileIO;
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
 
     @Override
     public void reportGameEnding(NodeQWOPBase<?> endNode) {
-        // Collect all the states and actions into a data object.
+        // Collect all the states and game.action into a data object.
         saveBuffer.add(new SavableDenseData(stateBuffer, actionBuffer));
         saveCounter++;
 

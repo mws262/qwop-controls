@@ -1,16 +1,19 @@
 package goals.value_function;
 
-import actions.Action;
-import actions.ActionQueue;
 import game.GameUnified;
+import game.GameUnifiedCaching;
+import game.action.Action;
+import game.action.ActionQueue;
+import game.state.IState;
+import game.state.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tree.NodeQWOPExplorable;
 import tree.Utility;
-import ui.PanelRunner;
-import ui.ScreenCapture;
+import tree.node.NodeQWOPExplorable;
+import ui.runner.PanelRunner;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
+import vision.ScreenCapture;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,18 +29,19 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
     static {
         Utility.loadLoggerConfiguration();
+        StateDelayEmbedded.useFiniteDifferences = true;
     }
 
+    GameUnified game = new GameUnified(); // new GameUnifiedCaching(1,2);
 
     private boolean doFullGameSerialization = false;
 
     // Net and execution parameters.
-    String valueNetworkName = "small_net.pb";
-    String checkpointName = "small698"; // "med67";
+    String valueNetworkName = "embeddedstate.pb";
+    String checkpointName = "embeddedstate52"; // "med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
-    private final GameUnified game = new GameUnified();
     private ActionQueue actionQueue = new ActionQueue();
     private ValueFunction_TensorFlow valueFunction;
 
@@ -63,7 +67,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private Logger logger = LogManager.getLogger(MAIN_SingleEvaluation.class);
 
     MAIN_SingleEvaluation() {
-
+        StateDelayEmbedded.useFiniteDifferences = true;
         /* Set up screen capture, if enabled. */
         if (doScreenCapture) {
             screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
@@ -93,7 +97,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         /* Load a value function controller. */
         valueFunction = null;
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models/" + valueNetworkName));
+            valueFunction =
+                    new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models/" + valueNetworkName), game);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -104,10 +109,10 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
         NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState());
 
-        // Assign a "prefix" of actions, since I'm not sure if the controller will generalize to this part of running.
+        // Assign a "prefix" of game.action, since I'm not sure if the controller will generalize to this part of running.
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
-                new Action(6, Action.Keys.none),
+                new Action(7, Action.Keys.none),
 //                new Action(34, Action.Keys.wo),
 //                new Action(19, Action.Keys.none),
 //                new Action(20, Action.Keys.qp),
@@ -118,7 +123,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 //                new Action(20,true,false,false,true),
         });
 
-        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
+        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, game);
 
         List<NodeQWOPExplorable> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
@@ -151,7 +156,10 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private void doControlled(NodeQWOPExplorable currentNode) {
 
         // Run the controller until failure.
-        while (currentNode.getState().body.getY() < 30) { // Ends if the runner falls off the edge of the world.
+        while (currentNode.getState().getStateVariableFromName(IState.ObjectName.BODY).getY() < 30) { // Ends if the
+            // runner
+            // falls off the
+            // edge of the world.
             // Does not end on falling, as we might want to see its behavior.
             Action chosenAction;
             if (doFullGameSerialization) {
@@ -173,7 +181,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                     arrowShape = PanelRunner.createArrowShape(mousePoint, new Point((int) centerX, (int) centerY), 80);
                     float impulseX = centerX - mousePoint.x;
                     float impulseY = centerY - mousePoint.y;
-                    float impulseGain = 0.008f;
+                    float impulseGain = 0.012f;
                     game.applyBodyImpulse(impulseGain * impulseX, impulseGain * impulseY);
                 } else {
                     arrowShape = null;
@@ -195,7 +203,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                     }
                 }
             }
-            currentNode = currentNode.addDoublyLinkedChild(chosenAction, game.getCurrentState());
+            currentNode = currentNode.addBackwardsLinkedChild(chosenAction, game.getCurrentState());
         }
         logger.warn("Game complete. Runner has gone off the edge of the world.");
     }

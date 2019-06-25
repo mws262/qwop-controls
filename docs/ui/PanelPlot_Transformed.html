@@ -113,10 +113,10 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/javax/swing/JPanel.html?is-external=true" title="class or interface in javax.swing">javax.swing.JPanel</a></li>
 <li>
 <ul class="inheritance">
-<li><a href="../ui/PanelPlot.html" title="class in ui">ui.PanelPlot</a></li>
+<li><a href="../ui/PanelPlot.html" title="class in ui">ui.scatterplot.PanelPlot</a></li>
 <li>
 <ul class="inheritance">
-<li>ui.PanelPlot_Transformed</li>
+<li>ui.scatterplot.PanelPlot_Transformed</li>
 </ul>
 </li>
 </ul>
@@ -243,7 +243,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/awt/event/Key
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../ui/PanelPlot_Transformed.html#PanelPlot_Transformed-transformations.ITransform-int-">PanelPlot_Transformed</a></span>(<a href="../transformations/ITransform.html" title="interface in transformations">ITransform</a>&nbsp;transformer,
+<td class="colOne"><code><span class="memberNameLink"><a href="../ui/PanelPlot_Transformed.html#PanelPlot_Transformed-game.state.transformations.ITransform-int-">PanelPlot_Transformed</a></span>(<a href="../game.state.transformations/ITransform.html" title="interface in game.state.transform">ITransform</a>&nbsp;transformer,
                      int&nbsp;plotsPerView)</code>&nbsp;</td>
 </tr>
 </table>
@@ -263,8 +263,8 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/awt/event/Key
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../ui/PanelPlot_Transformed.html#addFilter-filters.INodeFilter-">addFilter</a></span>(<a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a>&nbsp;filter)</code>
-<div class="block">Add a filter to be applied to the list of nodes to be plotted.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../ui/PanelPlot_Transformed.html#addFilter-filters.INodeFilter-">addFilter</a></span>(<a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a>&nbsp;tree.node.filter)</code>
+<div class="block">Add a tree.node.filter to be applied to the list of nodes to be plotted.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
@@ -352,13 +352,13 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/awt/event/Key
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="PanelPlot_Transformed-transformations.ITransform-int-">
+<a name="PanelPlot_Transformed-game.state.transformations.ITransform-int-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>PanelPlot_Transformed</h4>
-<pre>public&nbsp;PanelPlot_Transformed(<a href="../transformations/ITransform.html" title="interface in transformations">ITransform</a>&nbsp;transformer,
+<pre>public&nbsp;PanelPlot_Transformed(<a href="../game.state.transformations/ITransform.html" title="interface in game.state.transform">ITransform</a>&nbsp;transformer,
                              int&nbsp;plotsPerView)</pre>
 </li>
 </ul>
@@ -402,8 +402,8 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/awt/event/Key
 <ul class="blockList">
 <li class="blockList">
 <h4>addFilter</h4>
-<pre>public&nbsp;void&nbsp;addFilter(<a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a>&nbsp;filter)</pre>
-<div class="block">Add a filter to be applied to the list of nodes to be plotted.</div>
+<pre>public&nbsp;void&nbsp;addFilter(<a href="../filters/INodeFilter.html" title="interface in filters">INodeFilter</a>&nbsp;tree.node.filter)</pre>
+<div class="block">Add a tree.node.filter to be applied to the list of nodes to be plotted.</div>
 </li>
 </ul>
 <a name="plotClicked-int-">

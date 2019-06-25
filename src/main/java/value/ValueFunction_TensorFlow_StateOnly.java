@@ -1,16 +1,15 @@
 package value;
 
-import actions.Action;
 import com.sun.istack.NotNull;
 import game.GameConstants;
 import game.GameUnified;
 import game.IGameSerializable;
-import game.State;
+import game.action.Action;
+import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tflowtools.TrainableNetwork;
-import tree.NodeQWOP;
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOP;
+import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,15 +21,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static actions.Action.Keys;
-import static actions.Action.keysToBooleans;
+import static game.action.Action.Keys;
+import static game.action.Action.keysToBooleans;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
-
-    /**
-     * Dimension of the state variable input.
-     */
-    private static final int STATE_SIZE = 72;
 
     /**
      * Dimension of the value output.
@@ -47,6 +41,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     private List<EvaluationResult> evalResults;
     private List<FuturePredictor> evaluations;
 
+    private GameUnified gameTemplate;
+
     /**
      * Number of threads to distribute the predictive simulations to. There are 9 predicted futures, so this is a
      * natural number to choose, assuming the computer can handle it.
@@ -62,9 +58,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * @param file .pb file of the existing net.
      * @throws FileNotFoundException Unable to find an existing net.
      */
-    public ValueFunction_TensorFlow_StateOnly(File file) throws FileNotFoundException {
-        super(file);
-        assignFuturePredictors();
+    public ValueFunction_TensorFlow_StateOnly(File file, GameUnified gameTemplate) throws FileNotFoundException {
+        super(file, gameTemplate);
+        assignFuturePredictors(gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
     }
@@ -74,37 +70,36 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * to a previously-used one, you can probably load a checkpoint file with weights with it too.
      * @param fileName File name of the new .pb net. Don't include file extension.
      * @param hiddenLayerSizes Sizes of the hidden layers of the net. Don't include the input or output layer sizes.
-     *                         They are defined in {@link ValueFunction_TensorFlow_StateOnly#STATE_SIZE} and
-     *                         {@link ValueFunction_TensorFlow_StateOnly#VALUE_SIZE}.
      * @param additionalArgs Additional arguments to pass to the network creation script.
      * @throws FileNotFoundException Model file was not successfully created.
      */
-    public ValueFunction_TensorFlow_StateOnly(String fileName, List<Integer> hiddenLayerSizes,
+    public ValueFunction_TensorFlow_StateOnly(String fileName,
+                                              GameUnified gameTemplate,
+                                              List<Integer> hiddenLayerSizes,
                                               List<String> additionalArgs) throws FileNotFoundException {
-        super(fileName, STATE_SIZE, VALUE_SIZE, hiddenLayerSizes, additionalArgs);
-        assignFuturePredictors();
+        super(fileName, gameTemplate, VALUE_SIZE, hiddenLayerSizes, additionalArgs);
+        this.gameTemplate = gameTemplate;
+        assignFuturePredictors(gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
     }
 
-    private ValueFunction_TensorFlow_StateOnly(TrainableNetwork network) {
-        super(network);
-    }
     /**
      * Assign the futures that will be explored on each controller evaluation.
      */
-    private void assignFuturePredictors() {
+    private void assignFuturePredictors(GameUnified gameTemplate) {
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
-        evaluations.add(new FuturePredictor(Keys.none, 1, 10));
-        evaluations.add(new FuturePredictor(Keys.qp, 2, 40));
-        evaluations.add(new FuturePredictor(Keys.wo, 2, 40));
-        evaluations.add(new FuturePredictor(Keys.q, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.w, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.o, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.p, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.qo, 2, 5));
-        evaluations.add(new FuturePredictor(Keys.wp, 2, 5));
+        int min = 2;
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.none, min, 25));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.qp, min, 40));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.wo, min, 40));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.q, min, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.w, min, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.o, min, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.p, min, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.qo, min, 5));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.wp, min, 5));
 
     }
 
@@ -145,16 +140,16 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         Objects.requireNonNull(evalResult);
 
         currentResult = evalResult;
-        logger.info(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f \tBodyX: %3.2f",
-                System.currentTimeMillis() - initialTime, evalResult.timestep, evalResult.keys.toString(),
-                Math.round(evalResult.value * 100)/100f, evalResult.state.body.getX()));
+//        logger.info(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f \tBodyX: %3.2f",
+//                System.currentTimeMillis() - initialTime, evalResult.timestep, evalResult.keys.toString(),
+//                Math.round(evalResult.value * 100)/100f, evalResult.state.getCenterX()));
 
         return new Action(evalResult.timestep, evalResult.keys);
     }
 
     @Override
     float[] assembleInputFromNode(NodeQWOPBase<?> node) {
-        return stateStats.standardizeState(node.getState());
+        return node.getState().flattenStateWithRescaling(stateStats);
     }
 
     @Override
@@ -185,7 +180,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * State observed from this evaluation.
          */
-        public State state;
+        public IState state;
 
         @Override
         public int compareTo(EvaluationResult o) {
@@ -210,12 +205,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Game copy used to predict this future.
          */
-        private GameUnified gameLocal = new GameUnified();
+        private GameUnified gameLocal;
 
         /**
          * Initial state of this future prediction.
          */
-        private State startingState;
+        private IState startingState;
 
         private byte[] startStateFull;
         private boolean useSerializedState = false;
@@ -267,7 +262,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          */
         private EvaluationResult bestResult = new EvaluationResult();
 
-        FuturePredictor(Keys keys, int minHorizon, int maxHorizon) {
+        FuturePredictor(GameUnified gameTemplate, Keys keys, int minHorizon, int maxHorizon) {
+            this.gameLocal = gameTemplate.getCopy();
             this.keys = keys;
             buttons = keysToBooleans(keys);
             this.minHorizon = minHorizon;
@@ -275,7 +271,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         }
 
         @NotNull
-        void setStartingState(State startingState) {
+        void setStartingState(IState startingState) {
             this.startingState = startingState;
             useSerializedState = false;
         }
@@ -301,12 +297,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 // "catch-up" to warm-started game.
             }
 
-            float startX = gameLocal.getCurrentState().body.getDx();
+            float startX = gameLocal.getCurrentState().getStateVariableFromName(IState.ObjectName.BODY).getDx();
 
             // Reset the game and set it to the specified starting state.
             bestResult.value = -Float.MAX_VALUE;
 
-            // Keep track of a window of three adjacent actions. Some of the selection approaches do a
+            // Keep track of a window of three adjacent game.action. Some of the selection approaches do a
             // best-worst-case.
             float val1;
             float val2 = 0;
@@ -317,20 +313,20 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
             for (int i = 1; i <= maxHorizon; i++) {
                 // Return to the normal number of physics iterations after the first step.
-                if (i > warmstartIterationCount + 1) {
+                if (i > warmstartIterationCount) {
                     gameLocal.iterations = GameConstants.physIterations;
                 }
 
                 x2 = x3;
 
                 gameLocal.step(buttons);
-                State st = gameLocal.getCurrentState();
+                IState st = gameLocal.getCurrentState();
                 NodeQWOPBase<?> nextNode = new NodeQWOP(st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);
 
-                x3 = st.body.getDx();
+                x3 = st.getStateVariableFromName(IState.ObjectName.BODY).getDx();
 
                 if (i == 1) {
                     // val1 = val3;
@@ -380,10 +376,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     @NotNull
     public ValueFunction_TensorFlow_StateOnly getCopy() {
-        ValueFunction_TensorFlow_StateOnly valFunCopy = new ValueFunction_TensorFlow_StateOnly(network);
-        valFunCopy.assignFuturePredictors();
-        if (multithread)
-            valFunCopy.executor = Executors.newFixedThreadPool(numThreads);
+        ValueFunction_TensorFlow_StateOnly valFunCopy = null;
+        try {
+            valFunCopy = new ValueFunction_TensorFlow_StateOnly(getGraphDefinitionFile(), gameTemplate);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         return valFunCopy;
     }
 }

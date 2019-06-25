@@ -1,8 +1,8 @@
 package value;
 
-import actions.Action;
+import game.action.Action;
 import game.IGameSerializable;
-import tree.NodeQWOPBase;
+import tree.node.NodeQWOPBase;
 
 import java.util.List;
 

@@ -18,7 +18,7 @@ objects can be painful in MATLAB, you can call `myState.flattenState` to get an 
 Java classes can be used (relatively) easily in MATLAB. The classes need to be in the `javaclasspath` of MATLAB, 
 which can be done with `javaaddpath`. These can be `.jar` or `.class` files. Once on the path, specific classes can 
 be imported with the `import` command. Note that specific packages must be referenced correctly, e.g. 
-`import actions.Action`. After being imported, these classes can be used directly. For example `action = Action(10, 
+`import game.action.Action`. After being imported, these classes can be used directly. For example `action = Action(10, 
 false, false, false, false);` in MATLAB is equivalent to `Action action = new Action(10, false, false, false, false);
 `. If a method returns an object, then you can use it in MATLAB the same as you would in Java. If it returns a 
 primitive type or primitive array, MATLAB will convert it into its own primitive types, e.g. Java `float` to MATLAB 

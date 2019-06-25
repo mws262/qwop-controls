@@ -111,8 +111,8 @@
 <pre>public class <span class="typeNameLabel">SavableSingleGame</span>
 extends <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a>
 implements <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializable.html?is-external=true" title="class or interface in java.io">Serializable</a></pre>
-<div class="block">Structure to hold actions and states in individual QWOP runs for saving to file. This holds data sparsely, meaning
- that only the <a href="../game/State.html" title="class in game"><code>State</code></a> at <a href="../tree/Node.html" title="class in tree"><code>Nodes</code></a> is recorded, along with the <a href="../actions/Action.html" title="class in actions"><code>Actions</code></a> going between
+<div class="block">Structure to hold game.action and states in individual QWOP runs for saving to file. This holds data sparsely, meaning
+ that only the <a href="../game/State.html" title="class in game"><code>State</code></a> at <a href="../tree/Node.html" title="class in tree"><code>Nodes</code></a> is recorded, along with the <a href="../game.actions/Action.html" title="class in game.action"><code>Actions</code></a> going between
  them. Data at every single timestep is not used, and tree relationships are not considered. This is the container
  used by <a href="../savers/DataSaver_Sparse.html" title="class in savers"><code>DataSaver_Sparse</code></a>. The mechanism of saving to file is the direct serialization of the Java
  classes, rather than a Protobuf or TFRecord format.</div>
@@ -141,8 +141,8 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializab
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../actions/Action.html" title="class in actions">Action</a>[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../data/SavableSingleGame.html#actions">actions</a></span></code>&nbsp;</td>
+<td class="colFirst"><code><a href="../game.actions/Action.html" title="class in game.action">Action</a>[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../data/SavableSingleGame.html#game.actions">game.action</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../game/State.html" title="class in game">State</a>[]</code></td>
@@ -197,13 +197,13 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializab
 <!--   -->
 </a>
 <h3>Field Detail</h3>
-<a name="actions">
+<a name="game.actions">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>actions</h4>
-<pre>public&nbsp;<a href="../actions/Action.html" title="class in actions">Action</a>[] actions</pre>
+<h4>game.action</h4>
+<pre>public&nbsp;<a href="../game.actions/Action.html" title="class in game.action">Action</a>[] game.action</pre>
 </li>
 </ul>
 <a name="states">
@@ -233,7 +233,7 @@ implements <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializab
 <div class="block">Make a new container for holding the sparse representation of a single run.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>terminalNode</code> - End node of the run to be saved. All states and actions up to this point will be saved.</dd>
+<dd><code>terminalNode</code> - End node of the run to be saved. All states and game.action up to this point will be saved.</dd>
 </dl>
 </li>
 </ul>

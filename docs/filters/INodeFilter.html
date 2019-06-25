@@ -132,13 +132,13 @@ var activeTableTab = "activeTableTab";
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>default void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../filters/INodeFilter.html#filter-java.util.List-">filter</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../tree/Node.html" title="class in tree">Node</a>&gt;&nbsp;nodes)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../filters/INodeFilter.html#tree.node.filter-java.util.List-">tree.node.filter</a></span>(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../tree/Node.html" title="class in tree">Node</a>&gt;&nbsp;nodes)</code>
 <div class="block">Decide which of these should be kept.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>default boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../filters/INodeFilter.html#filter-tree.Node-">filter</a></span>(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;node)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../filters/INodeFilter.html#tree.node.filter-tree.Node-">tree.node.filter</a></span>(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;node)</code>
 <div class="block">Decide if this node should be included or filtered out.</div>
 </td>
 </tr>
@@ -157,34 +157,34 @@ var activeTableTab = "activeTableTab";
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="filter-tree.Node-">
+<a name="tree.node.filter-tree.Node-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>filter</h4>
-<pre>default&nbsp;boolean&nbsp;filter(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;node)</pre>
+<h4>tree.node.filter</h4>
+<pre>default&nbsp;boolean&nbsp;tree.node.filter(<a href="../tree/Node.html" title="class in tree">Node</a>&nbsp;node)</pre>
 <div class="block">Decide if this node should be included or filtered out. If not overridden, this will default to true.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>node</code> - Node to apply filtering rules to.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Whether this node should be kept. True means keep. False means filter out.</dd>
+<dd>Whether this node should be kept. True means keep. False means tree.node.filter out.</dd>
 </dl>
 </li>
 </ul>
-<a name="filter-java.util.List-">
+<a name="tree.node.filter-java.util.List-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>filter</h4>
-<pre>default&nbsp;void&nbsp;filter(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../tree/Node.html" title="class in tree">Node</a>&gt;&nbsp;nodes)</pre>
-<div class="block">Decide which of these should be kept. Alters the list in place. Default is to call single node filter for all
+<h4>tree.node.filter</h4>
+<pre>default&nbsp;void&nbsp;tree.node.filter(<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</a>&lt;<a href="../tree/Node.html" title="class in tree">Node</a>&gt;&nbsp;nodes)</pre>
+<div class="block">Decide which of these should be kept. Alters the list in place. Default is to call single node tree.node.filter for all
  elements of the list and remove those which return false.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>nodes</code> - A list of nodes to filter. This list will be modified in place.</dd>
+<dd><code>nodes</code> - A list of nodes to tree.node.filter. This list will be modified in place.</dd>
 </dl>
 </li>
 </ul>

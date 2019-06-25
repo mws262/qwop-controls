@@ -50,11 +50,11 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../samplers/rollout/RolloutPolicy.html" title="class in samplers.rollout"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../samplers/rollout/RolloutPolicy_RandomColdStart.html" title="class in samplers.rollout"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../samplers/rollout/RolloutPolicy_RandomColdStart.html" title="class in tree.sampler.rollout"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../index.html?samplers/rollout/RolloutPolicy_MultiChildren.html" target="_top">Frames</a></li>
+<li><a href="../../index.html?tree.samplers/rollout/RolloutPolicy_MultiChildren.html" target="_top">Frames</a></li>
 <li><a href="RolloutPolicy_MultiChildren.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_top">
@@ -93,7 +93,7 @@ var activeTableTab = "activeTableTab";
 <!-- ========= END OF TOP NAVBAR ========= -->
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
-<div class="subTitle">samplers.rollout</div>
+<div class="subTitle">tree.sampler.rollout</div>
 <h2 title="Class RolloutPolicy_MultiChildren" class="title">Class RolloutPolicy_MultiChildren</h2>
 </div>
 <div class="contentContainer">
@@ -101,10 +101,10 @@ var activeTableTab = "activeTableTab";
 <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li><a href="../../samplers/rollout/RolloutPolicy.html" title="class in samplers.rollout">samplers.rollout.RolloutPolicy</a></li>
+<li><a href="../../samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout">tree.sampler.rollout.RolloutPolicyBase</a></li>
 <li>
 <ul class="inheritance">
-<li>samplers.rollout.RolloutPolicy_MultiChildren</li>
+<li>tree.sampler.rollout.RolloutPolicy_MultiChildren</li>
 </ul>
 </li>
 </ul>
@@ -116,7 +116,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">RolloutPolicy_MultiChildren</span>
-extends <a href="../../samplers/rollout/RolloutPolicy.html" title="class in samplers.rollout">RolloutPolicy</a></pre>
+extends <a href="../../samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout">RolloutPolicy</a></pre>
 <div class="block">To evaluate the score of a node. Run a rollout for each of its potential child nodes. Average them out. If run for
  all potential children, this can be quite slow.</div>
 <dl>
@@ -168,7 +168,7 @@ extends <a href="../../samplers/rollout/RolloutPolicy.html" title="class in samp
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../samplers/rollout/RolloutPolicy_MultiChildren.html#RolloutPolicy_MultiChildren-evaluators.IEvaluationFunction-">RolloutPolicy_MultiChildren</a></span>(<a href="../../evaluators/IEvaluationFunction.html" title="interface in evaluators">IEvaluationFunction</a>&nbsp;evaluationFunction)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../samplers/rollout/RolloutPolicy_MultiChildren.html#RolloutPolicy_MultiChildren-tree.node.evaluators.IEvaluationFunction-">RolloutPolicy_MultiChildren</a></span>(<a href="../../tree.node.evaluators/IEvaluationFunction.html" title="interface in tree.node.evaluator">IEvaluationFunction</a>&nbsp;evaluationFunction)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -186,7 +186,7 @@ extends <a href="../../samplers/rollout/RolloutPolicy.html" title="class in samp
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../../samplers/rollout/RolloutPolicy.html" title="class in samplers.rollout">RolloutPolicy</a></code></td>
+<td class="colFirst"><code><a href="../../samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout">RolloutPolicy</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../samplers/rollout/RolloutPolicy_MultiChildren.html#getCopy--">getCopy</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
@@ -246,13 +246,13 @@ extends <a href="../../samplers/rollout/RolloutPolicy.html" title="class in samp
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="RolloutPolicy_MultiChildren-evaluators.IEvaluationFunction-">
+<a name="RolloutPolicy_MultiChildren-tree.node.evaluators.IEvaluationFunction-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>RolloutPolicy_MultiChildren</h4>
-<pre>public&nbsp;RolloutPolicy_MultiChildren(<a href="../../evaluators/IEvaluationFunction.html" title="interface in evaluators">IEvaluationFunction</a>&nbsp;evaluationFunction)</pre>
+<pre>public&nbsp;RolloutPolicy_MultiChildren(<a href="../../tree.node.evaluators/IEvaluationFunction.html" title="interface in tree.node.evaluator">IEvaluationFunction</a>&nbsp;evaluationFunction)</pre>
 </li>
 </ul>
 </li>
@@ -275,7 +275,7 @@ extends <a href="../../samplers/rollout/RolloutPolicy.html" title="class in samp
 <div class="block">Do a rollout from a given node. Assumes that the given game is in the state of startNode! Be careful!</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../samplers/rollout/RolloutPolicy.html#rollout-tree.Node-game.GameThreadSafe-">rollout</a></code>&nbsp;in class&nbsp;<code><a href="../../samplers/rollout/RolloutPolicy.html" title="class in samplers.rollout">RolloutPolicy</a></code></dd>
+<dd><code><a href="../../samplers/rollout/RolloutPolicy.html#rollout-tree.Node-game.GameThreadSafe-">rollout</a></code>&nbsp;in class&nbsp;<code><a href="../../samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout">RolloutPolicy</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>startNode</code> - Starting Node to rollout from.</dd>
 <dd><code>game</code> - Instance of the game to use. Must already be at the state of startNode.</dd>
@@ -289,10 +289,10 @@ extends <a href="../../samplers/rollout/RolloutPolicy.html" title="class in samp
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getCopy</h4>
-<pre>public&nbsp;<a href="../../samplers/rollout/RolloutPolicy.html" title="class in samplers.rollout">RolloutPolicy</a>&nbsp;getCopy()</pre>
+<pre>public&nbsp;<a href="../../samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout">RolloutPolicy</a>&nbsp;getCopy()</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../samplers/rollout/RolloutPolicy.html#getCopy--">getCopy</a></code>&nbsp;in class&nbsp;<code><a href="../../samplers/rollout/RolloutPolicy.html" title="class in samplers.rollout">RolloutPolicy</a></code></dd>
+<dd><code><a href="../../samplers/rollout/RolloutPolicy.html#getCopy--">getCopy</a></code>&nbsp;in class&nbsp;<code><a href="../../samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout">RolloutPolicy</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -324,11 +324,11 @@ extends <a href="../../samplers/rollout/RolloutPolicy.html" title="class in samp
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../samplers/rollout/RolloutPolicy.html" title="class in samplers.rollout"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../samplers/rollout/RolloutPolicy_RandomColdStart.html" title="class in samplers.rollout"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../samplers/rollout/RolloutPolicy.html" title="class in tree.sampler.rollout"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../samplers/rollout/RolloutPolicy_RandomColdStart.html" title="class in tree.sampler.rollout"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../index.html?samplers/rollout/RolloutPolicy_MultiChildren.html" target="_top">Frames</a></li>
+<li><a href="../../index.html?tree.samplers/rollout/RolloutPolicy_MultiChildren.html" target="_top">Frames</a></li>
 <li><a href="RolloutPolicy_MultiChildren.html" target="_top">No&nbsp;Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_bottom">

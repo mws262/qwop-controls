@@ -1513,7 +1513,7 @@ var out = {
             file = this.files[filename];
             relativePath = filename.slice(this.root.length, filename.length);
             if (relativePath && filename.slice(0, this.root.length) === this.root) { // the file is in the current root
-                cb(relativePath, file); // TODO reverse the parameters ? need to be clean AND consistent with the filter search fn...
+                cb(relativePath, file); // TODO reverse the parameters ? need to be clean AND consistent with the tree.node.filter search fn...
             }
         }
     },

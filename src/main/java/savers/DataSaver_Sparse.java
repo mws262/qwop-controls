@@ -1,18 +1,18 @@
 package savers;
 
-import actions.Action;
+import game.action.Action;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.IGameInternal;
-import game.State;
-import tree.NodeQWOPBase;
+import game.state.IState;
+import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Saver for sparse game information. Basically this includes actions
+ * Saver for sparse game information. Basically this includes game.action
  * needed to recreate a run, but not full state information at every timestep.
  *
  * @author matt
@@ -56,7 +56,7 @@ public class DataSaver_Sparse implements IDataSaver {
     private ArrayList<SavableSingleGame> saveBuffer = new ArrayList<>();
 
     @Override
-    public void reportGameInitialization(State initialState) {}
+    public void reportGameInitialization(IState initialState) {}
 
     @Override
     public void reportTimestep(Action action, IGameInternal game) {}

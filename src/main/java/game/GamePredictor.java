@@ -1,10 +1,12 @@
 package game;
 
-import actions.Action;
-import actions.ActionQueue;
+import game.action.Action;
+import game.action.ActionQueue;
+import game.state.IState;
+import game.state.State;
 import tflowtools.TensorflowLoader;
 import org.tensorflow.Tensor;
-import ui.PanelRunner_SimpleState;
+import ui.runner.PanelRunner_SimpleState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,9 +33,9 @@ public class GamePredictor extends TensorflowLoader {
         super(pbFile, directory);
     }
 
-    public List<State> predictSimulation(State initialState, ActionQueue actions) {
+    public List<IState> predictSimulation(IState initialState, ActionQueue actions) {
 
-        List<State> resultStates = new ArrayList<>();
+        List<IState> resultStates = new ArrayList<>();
 
         float[][][] stateIn = new float[1][][]; // Awkward singleton dimensions: [sample no (1), timesteps (1), state
         // vals (72)]
@@ -106,14 +108,14 @@ public class GamePredictor extends TensorflowLoader {
     public static void main(String[] args) {
         GamePredictor gp = new GamePredictor("frozen_model.pb", "src/main/resources/tflow_models");
 
-        State initState = GameUnified.getInitialState();
+        IState initState = GameUnified.getInitialState();
         Action singleAction = new Action(1000, false, true, true, false);
 
         ActionQueue actionQueue = new ActionQueue();
         actionQueue.addAction(singleAction);
 //        ActionQueue actionQueue = CompareWarmStartToColdBase.getSampleActions();
 
-        List<State> states = gp.predictSimulation(initState, actionQueue);
+        List<IState> states = gp.predictSimulation(initState, actionQueue);
 
         JFrame frame = new JFrame();
         PanelRunner_SimpleState panelRunner = new PanelRunner_SimpleState();
@@ -125,7 +127,7 @@ public class GamePredictor extends TensorflowLoader {
         frame.setVisible(true);
 
 
-        for (State st : states) {
+        for (IState st : states) {
             panelRunner.updateState(st);
             panelRunner.repaint();
 

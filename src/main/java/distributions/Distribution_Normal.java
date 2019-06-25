@@ -3,7 +3,7 @@ package distributions;
 import java.util.Comparator;
 import java.util.List;
 
-import actions.Action;
+import game.action.Action;
 
 /**
  * Action sampling distribution implementation which is weighted according to a normal distribution. Once the mean
@@ -43,7 +43,7 @@ public class Distribution_Normal extends Distribution<Action> {
      * method will choose the nearest duration action to whatever value is sampled from the continuous Gaussian
      * distribution.
      *
-     * @param set A list of actions to sample from.
+     * @param set A list of game.action to sample from.
      * @return An {@link Action action} sampled from the input set according to this distribution.
      */
     @Override

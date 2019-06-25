@@ -1,16 +1,31 @@
 package goals.tree_search;
 
-import actions.Action;
-import actions.IActionGenerator;
-import evaluators.EvaluationFunction_Constant;
-import evaluators.EvaluationFunction_Distance;
+import controllers.Controller_Random;
+import controllers.Controller_ValueFunction;
+import controllers.IController;
 import game.GameUnified;
+import game.GameUnifiedCaching;
+import game.action.Action;
+import game.action.ActionGenerator_FixedSequence;
+import game.action.IActionGenerator;
+import game.state.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import samplers.Sampler_UCB;
-import samplers.rollout.*;
 import savers.DataSaver_Null;
-import tree.*;
+import tree.TreeWorker;
+import tree.node.NodeQWOPExplorable;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeQWOPGraphics;
+import tree.node.NodeQWOPGraphicsBase;
+import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.node.evaluator.EvaluationFunction_Velocity;
+import tree.node.evaluator.IEvaluationFunction;
+import tree.sampler.ISampler;
+import tree.sampler.Sampler_UCB;
+import tree.sampler.rollout.*;
+import tree.stage.TreeStage_MaxDepth;
+import value.IValueFunction;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
@@ -21,7 +36,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MAIN_Search_ValueFun extends MAIN_Search_Template {
+public class MAIN_Search_ValueFun extends SearchTemplate {
+
+    GameUnified game;
 
     /**
      * Search configuration parameter file name. Do not need to include the path. TODO move more other parameters to
@@ -55,6 +72,8 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
     private final int trainingBatchSize;
 
     private Rollouts rolloutType; // In properties file.
+    private RolloutControllers rolloutControllerType;
+    private RolloutEvaluators rolloutEvaluatorType;
 
     private int rolloutHorizonTimesteps; // In properties file.
 
@@ -83,6 +102,21 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
     private ValueFunction_TensorFlow_StateOnly valueFunction;
 
+    private int prevStates = 0;
+    private int delayTs = 1;
+//    ValueFunction_TensorFlow_StateOnly vfunCopy = null;
+//    {
+//        try {
+//            List<Integer> layers = new ArrayList<>();
+//            layers.add(128);
+//            layers.add(64);
+//            vfunCopy = new ValueFunction_TensorFlow_StateOnly("small_net", new GameUnified(), layers,
+//                    new ArrayList<>());
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        vfunCopy.loadCheckpoint("small329");
+//    }
     @SuppressWarnings("ConstantConditions")
     public MAIN_Search_ValueFun(File configFile) {
         super(configFile);
@@ -118,14 +152,83 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
             logger.warn("No checkpoint name prefix given. This will result in saves that only have numbers for names.");
         }
 
-        rolloutType = Rollouts.valueOf(properties.getProperty("rolloutType", "RANDOM_HORIZON"));
-        rolloutHorizonTimesteps = Integer.parseInt(properties.getProperty("rolloutHorizonTimesteps", "100"));
+        rolloutType = Rollouts.valueOf(properties.getProperty("rolloutType", "DECAYING_HORIZON"));
+        rolloutControllerType = RolloutControllers.valueOf(properties.getProperty("rolloutController", "RANDOM"));
+        rolloutEvaluatorType = RolloutEvaluators.valueOf(properties.getProperty("rolloutEvaluator", "DISTANCE"));
+
+        rolloutHorizonTimesteps = Integer.parseInt(properties.getProperty("rolloutHorizonTimesteps", "200"));
         windowRollout = Boolean.parseBoolean(properties.getProperty("windowRollout", "false"));
         windowSelectionType = RolloutPolicy_Window.Criteria.valueOf(properties.getProperty("windowSelectionType", "AVERAGE"));
+
+
+        // TODO fix these that were disabled temporarily.
         rolloutWeightedWithValFun = Boolean.parseBoolean(properties.getProperty("rolloutWeightedWithValFun", "false"));
         rolloutValFunWeight = Float.parseFloat(properties.getProperty("rolloutValFunWeight", "0.75"));
 
-        makeValueFunction();
+        game = (prevStates > 0 && delayTs > 0) ? new GameUnifiedCaching(delayTs, prevStates) : new GameUnified();
+        StateDelayEmbedded.useFiniteDifferences = true;
+        makeValueFunction(game);
+    }
+
+    @Override
+    TreeWorker getTreeWorker() {
+
+        /* Pick rollout configuration. */
+        IRolloutPolicy rollout;
+        IController rolloutController;
+        IEvaluationFunction rolloutEvaluator;
+
+        switch(rolloutControllerType) {
+            case RANDOM:
+                rolloutController = new Controller_Random();
+                break;
+            case VALUE_FUNCTION:
+//                ValueFunction_TensorFlow_StateOnly hmm = vfunCopy.getCopy();
+//                hmm.loadCheckpoint("small329");
+                rolloutController = new Controller_ValueFunction(valueFunction.getCopy()); // NOTE: this copy is
+                // independent. I don't know if that's good or bad.
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown rollout controller type specified: " + rolloutControllerType.name());
+        }
+
+        switch(rolloutEvaluatorType) {
+            case DISTANCE:
+                rolloutEvaluator = new EvaluationFunction_Distance();
+                break;
+            case VELOCITY:
+                rolloutEvaluator = new EvaluationFunction_Velocity();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown rollout evaluator type specified: " + rolloutEvaluatorType.name());
+        }
+
+        // BASIC ROLLOUT STRATEGY
+        switch (rolloutType) {
+            case END_SCORE:
+                rollout = new RolloutPolicy_EndScore(rolloutEvaluator, rolloutController);
+                break;
+            case DELTA_SCORE:
+                rollout = new RolloutPolicy_DeltaScore(rolloutEvaluator, rolloutController);
+                break;
+            case DECAYING_HORIZON:
+                rollout = new RolloutPolicy_DecayingHorizon(rolloutEvaluator, rolloutController, rolloutHorizonTimesteps);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown rollout type specified: " + rolloutType.name());
+        }
+
+        // ROLLOUT ACTIONS ABOVE AND BELOW ALSO.
+        if (windowRollout) {
+            RolloutPolicy_Window windowRollout = new RolloutPolicy_Window(rollout);
+            windowRollout.selectionCriteria = windowSelectionType;
+            rollout = windowRollout;
+        }
+
+        ISampler sampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout);
+
+        return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates) :
+                TreeWorker.makeStandardTreeWorker(sampler);
     }
 
     public static void main(String[] args) {
@@ -135,64 +238,25 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
     }
 
     enum Rollouts {
-        RANDOM, RANDOM_HORIZON, VALUE_HORIZON
+        END_SCORE, DELTA_SCORE, DECAYING_HORIZON
     }
 
+    enum RolloutControllers {
+        RANDOM, VALUE_FUNCTION
+    }
+
+    enum RolloutEvaluators {
+        DISTANCE, VELOCITY
+    }
 
     @SuppressWarnings("Duplicates")
     public void doGames() {
-
-        /* Pick rollout configuration. */
-        RolloutPolicy rollout;
-
-        // BASIC ROLLOUT STRATEGY
-        switch (rolloutType) {
-            case RANDOM:
-                // Rollout goes randomly among a limited set of actions until failure. Score based on distance
-                // travelled from start to end of rollout.
-                rollout = new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
-                break;
-            case RANDOM_HORIZON:
-                // Rollout goes randomly to a fixed horizon in the future. Future values are weighted less than
-                // nearer ones. Based on distances travelled.
-                RolloutPolicy_DecayingHorizon decayingHorizonRandom = new RolloutPolicy_RandomDecayingHorizon();
-                decayingHorizonRandom.maxTimestepsToSim = rolloutHorizonTimesteps;
-                rollout = decayingHorizonRandom;
-                break;
-            case VALUE_HORIZON:
-                // Rollout follows value function controller to a fixed horizon in the future. Future values are
-                // weighted less than nearer ones. Based on distance travelled.
-                RolloutPolicy_ValueFunctionDecayingHorizon decayingHorizonValue =
-                        new RolloutPolicy_ValueFunctionDecayingHorizon(valueFunction);
-                decayingHorizonValue.maxTimestepsToSim = rolloutHorizonTimesteps;
-                rollout = decayingHorizonValue;
-                break;
-            default:
-                rollout = new RolloutPolicy_SingleRandom(new EvaluationFunction_Distance());
-                break;
-        }
-
-        // ALSO WEIGHT ROLLOUT RESULTS WITH VALUE FUNCTION?
-        if (rolloutWeightedWithValFun) {
-            RolloutPolicy_WeightWithValueFunction weightedRollout = new RolloutPolicy_WeightWithValueFunction(rollout
-                    , valueFunction); // Does not have to be the same value function as the one used in value
-            // function POLICY rollouts.
-            weightedRollout.valueFunctionWeight = rolloutValFunWeight;
-            rollout = weightedRollout;
-        }
-
-        // ROLLOUT ACTIONS ABOVE AND BELOW ALSO.
-        if (windowRollout) {
-            rollout = new RolloutPolicy_Window(rollout);
-        }
-
-        logger.info("Rollout policy chosen: " + rolloutType.name() + ". Weighted with value function? " + rolloutWeightedWithValFun + ". As " +
-                "a window of 3? " + windowRollout + ".");
-
+        logger.info("Rollout policy chosen: " + rolloutType.name() + " Rollout controller: " + rolloutControllerType.name() + " Rollout evaluator: " + rolloutEvaluatorType.name() +
+                " Weighted with value function? " + rolloutWeightedWithValFun + ". As a window of 3? " + windowRollout + ".");
 
         // Make new tree root and assign to GUI.
-        // Assign default available actions.
-        IActionGenerator actionGenerator = getExtendedActionGenerator(-1);// new ActionGenerator_Uniform();//
+        // Assign default available game.action.
+        IActionGenerator actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);// new ActionGenerator_UniformNoRepeats();//
 
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
@@ -202,13 +266,11 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 //                new Action(46, Action.Keys.qp),
         });
 
-
         NodeQWOPExplorableBase<?> rootNode = headless ?
                 new NodeQWOPExplorable(GameUnified.getInitialState(), actionGenerator) :
                 new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
 
-
-        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, new GameUnified());
+        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, game);
         NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
 
 
@@ -230,17 +292,18 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
 
         for (int k = 0; k < 10000; k++) {
 
-            doSearchAndUpdate(rootNode, rollout, k);
+            doSearchAndUpdate(rootNode, k);
 
             // Update node labels if graphics are enabled.
             if (!headless) {
                 NodeQWOPGraphics graphicsRootNode = (NodeQWOPGraphics) rootNode;
 
                 Runnable updateLabels = () -> graphicsRootNode.recurseDownTreeExclusive(n -> {
-                    float percDiff = Math.abs((valueFunction.evaluate(n) - n.getValue())/n.getValue() * 100f);
-                    n.nodeLabel = String.format("%.1f, %.0f%%", n.getValue(), percDiff);
-                    n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(percDiff, 100f) + 100
-                            , 100,
+                    float percDiff = valueFunction.evaluate(n); // Temp disable percent diff for absolute diff.
+//                    float percDiff = Math.abs((valueFunction.evaluate(n) - n.getValue())/n.getValue() * 100f);
+                    n.nodeLabel = String.format("%.1f, %.1f", n.getValue(), percDiff);
+                    n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - n.getValue()), 20) + 20
+                            , 20,
                             0.9f));
                     n.displayLabel = true;
                 });
@@ -249,23 +312,27 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
         }
     }
 
-    private void doSearchAndUpdate(NodeQWOPExplorableBase<?> rootNode, RolloutPolicy rollout, int updateIdx) {
-        Sampler_UCB ucbSampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout.getCopy());
-        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, ucbSampler, new DataSaver_Null());
+    private void doSearchAndUpdate(NodeQWOPExplorableBase<?> rootNode, int updateIdx) {
+        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth);
         searchMax.terminateAfterXGames = bailAfterXGames;
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws = borrowNWorkers(numWorkersToUse);
+        List<TreeWorker> tws = getTreeWorkers(numWorkersToUse);
 
         // Do stage search
         searchMax.initialize(tws, rootNode);
 
         // Return the workers.
-        tws.forEach(this::returnWorker);
+        tws.forEach(this::removeWorker);
 
         // Update the value function.
         List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
-        rootNode.recurseDownTreeExclusive(nodesBelow::add);
+        rootNode.recurseDownTreeExclusive(n -> {
+                    //if (n.getChildCount() > 0) { // TODO TEMP EXCLUDE LEAVES
+                        nodesBelow.add(n);
+                    //}
+                });
+
         Collections.shuffle(nodesBelow);
         valueFunction.update(nodesBelow);
 
@@ -275,14 +342,15 @@ public class MAIN_Search_ValueFun extends MAIN_Search_Template {
     }
 
 
-    private void makeValueFunction() {
+    private void makeValueFunction(GameUnified gameTemplate) {
         /* Make the value function net. */
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");
         extraNetworkArgs.add(learningRate);
 
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, hiddenLayerSizes, extraNetworkArgs);
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, gameTemplate, hiddenLayerSizes,
+                    extraNetworkArgs);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

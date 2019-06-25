@@ -1,9 +1,9 @@
 package data;
 
-import actions.Action;
+import game.action.Action;
 import com.google.protobuf.ByteString;
-import game.State;
-import game.StateVariable;
+import game.state.State;
+import game.state.StateVariable;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
@@ -17,7 +17,7 @@ import java.util.Map;
  * a byte array by {@link TFRecordReader}. That step is generic to all types of TFRecord information. For our case,
  * all TFRecord data is a {@link SequenceExample} of a specific form. This class has methods for loading the byte
  * arrays into {@link SequenceExample}, and methods for parsing the {@link SequenceExample} into {@link State},
- * {@link actions.Action}, etc.
+ * {@link game.action.Action}, etc.
  *
  * @author matt
  */
@@ -73,11 +73,11 @@ public class TFRecordDataParsers {
     }
 
     /**
-     * Takes a {@link SequenceExample} loaded from a TFRecord file and parses the sequence of {@link Action actions}
+     * Takes a {@link SequenceExample} loaded from a TFRecord file and parses the sequence of {@link Action game.action}
      * stored in it.
      *
      * @param sequenceFromTFRecord One sequence loaded from a TFRecord that we wish to parse into a series of Actions.
-     * @return A list of actions for the loaded run.
+     * @return A list of game.action for the loaded run.
      */
     public static List<Action> getActionsFromLoadedSequence(SequenceExample sequenceFromTFRecord) {
         List<Action> actionList = new ArrayList<>();

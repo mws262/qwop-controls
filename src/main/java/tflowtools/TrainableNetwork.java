@@ -137,7 +137,8 @@ public class TrainableNetwork {
         // Also report the files created.
         List<File> checkpointFiles = new ArrayList<>();
         for (File file : Objects.requireNonNull(files)) {
-            if (file.getName().contains(checkpointName)) {
+            if (file.getName().contains(checkpointName + ".")) { // Period keeps others with additional numbers from
+                // appearing too.
                 checkpointFiles.add(file);
             }
         }
@@ -274,6 +275,18 @@ public class TrainableNetwork {
      */
     public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes,
                                                   List<String> additionalArgs) throws FileNotFoundException {
+
+        for (Integer layerSize : layerSizes) {
+            if (layerSize <= 0 ) {
+                throw new IllegalArgumentException("No network layer sizes may be less than or equal to zero. A layer" +
+                        " was specified as: " + layerSize);
+            }
+        }
+
+        if (graphName.isEmpty()) {
+            throw new IllegalArgumentException("Graph name may not be empty.");
+        }
+
         // Add all command line arguments for the python script to a list.
         List<String> commandList = new ArrayList<>();
         commandList.add("python3");

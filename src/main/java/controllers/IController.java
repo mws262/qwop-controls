@@ -1,14 +1,14 @@
 package controllers;
 
-import java.awt.Graphics;
-
 import game.GameUnified;
-import game.State;
-import actions.Action;
+import game.action.Action;
+import tree.node.NodeQWOPExplorableBase;
+
+import java.awt.*;
 
 /**
  * Interface for defining general QWOP controllers. Follows the typical state to action mapping. If an implementation
- * of an IController wants to use a history of states or actions, it should store these locally itself.
+ * of an IController wants to use a history of states or game.action, it should store these locally itself.
  *
  * @author matt
  */
@@ -20,7 +20,9 @@ public interface IController {
      * @param state Current state.
      * @return An action to take.
      */
-    Action policy(State state);
+    Action policy(NodeQWOPExplorableBase<?> state);
+
+    IController getCopy();
 
     /**
      * Optionally, if we want the controller to draw anything to see what it's doing. Defaults to doing nothing if

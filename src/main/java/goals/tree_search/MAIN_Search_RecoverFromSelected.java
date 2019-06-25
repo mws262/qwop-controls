@@ -1,16 +1,25 @@
 package goals.tree_search;
 
-import actions.Action;
+import controllers.Controller_Random;
+import game.action.Action;
 import data.SavableActionSequence;
 import data.SavableFileIO;
 import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import game.IGameInternal;
+import game.action.ActionGenerator_FixedSequence;
 import org.apache.commons.lang3.ArrayUtils;
-import samplers.Sampler_UCB;
-import tree.NodeQWOPBase;
-import tree.NodeQWOPGraphics;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.sampler.ISampler;
+import tree.sampler.Sampler_UCB;
+import tree.node.NodeQWOPBase;
+import tree.node.NodeQWOPGraphics;
+import tree.TreeWorker;
 import tree.Utility;
+import tree.sampler.rollout.RolloutPolicy_DeltaScore;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,7 +37,9 @@ import java.util.stream.Collectors;
  *
  * @author matt
  */
-public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
+public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
+
+    private Logger logger = LogManager.getLogger(this.getClass());
 
     public MAIN_Search_RecoverFromSelected() {
         super(new File("src/main/resources/config/" + "search.config_selected"));
@@ -79,7 +90,7 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
 
                 // Recreate the tree section.
                 NodeQWOPGraphics root = new NodeQWOPGraphics(GameUnified.getInitialState(),
-                        getDefaultActionGenerator(trimStartBy));
+                        ActionGenerator_FixedSequence.makeDefaultGenerator(trimStartBy));
                 NodeQWOPBase.makeNodesFromActionSequences(acts, root, game);
 
                 // Put it on the UI.
@@ -128,5 +139,15 @@ public class MAIN_Search_RecoverFromSelected extends MAIN_Search_Template {
             }
             logger.info("Stage done.");
         }
+    }
+
+    @Override
+    TreeWorker getTreeWorker() {
+        ISampler sampler = new Sampler_UCB(
+                new EvaluationFunction_Constant(0f),
+                new RolloutPolicy_DeltaScore(
+                        new EvaluationFunction_Distance(),
+                        new Controller_Random()));
+        return TreeWorker.makeStandardTreeWorker(sampler);
     }
 }

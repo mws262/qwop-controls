@@ -1,10 +1,11 @@
 package goals.interactive;
 
-import tflowtools.TensorflowLoader;
 import game.GameUnified;
-import game.State;
+import game.state.IState;
+import game.state.State;
 import org.tensorflow.Tensor;
-import ui.PanelRunner_SimpleState;
+import tflowtools.TensorflowLoader;
+import ui.runner.PanelRunner_SimpleState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +24,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
     private Tensor<Float> currentGameStateTensor;
     private Tensor<Float> currentInternalState;
 
-    private State currentGameState =  GameUnified.getInitialState();
+    private IState currentGameState =  GameUnified.getInitialState();
 
     /**
      * Load the computational graph from a .pb file and also make a new session.
@@ -40,7 +41,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
         currentInternalState = null;
     }
 
-    public State advance(boolean[] keys) {
+    public IState advance(boolean[] keys) {
 
         if (currentInternalState == null) { // First timestep we don't supply an internal state.
 
