@@ -1,5 +1,8 @@
 package tree.node.evaluator;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import tree.node.NodeQWOPBase;
 
 /**
@@ -8,6 +11,13 @@ import tree.node.NodeQWOPBase;
  *
  * @author Matt
  */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = EvaluationFunction_Constant.class, name = "constant"),
+        @JsonSubTypes.Type(value = EvaluationFunction_Distance.class, name = "distance")
+})
 public interface IEvaluationFunction {
 
     /**
@@ -32,5 +42,6 @@ public interface IEvaluationFunction {
      *
      * @return A copy of this object.
      */
+    @JsonIgnore
     IEvaluationFunction getCopy();
 }

@@ -1,12 +1,21 @@
 package tree.stage;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import savers.IDataSaver;
 import tree.TreeWorker;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
+import tree.sampler.rollout.RolloutPolicy_DeltaScore;
+import tree.sampler.rollout.RolloutPolicy_JustEvaluate;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +25,15 @@ import java.util.List;
  *
  * @author matt
  */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = TreeStage_FixedGames.class, name = "fixed_games"),
+        @JsonSubTypes.Type(value = TreeStage_MaxDepth.class, name = "max_depth"),
+        @JsonSubTypes.Type(value = TreeStage_MinDepth.class, name = "min_depth"),
+        @JsonSubTypes.Type(value = TreeStage_SearchForever.class, name = "search_forever")
+})
 public abstract class TreeStage implements Runnable {
 
     /** **/
