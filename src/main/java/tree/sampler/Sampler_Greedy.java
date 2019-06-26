@@ -108,6 +108,10 @@ public class Sampler_Greedy implements ISampler {
         this.evaluationFunction = evaluationFunction;
     }
 
+    public IEvaluationFunction getEvaluationFunction() {
+        return evaluationFunction;
+    }
+
     @Override
     public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
         // Decide what to do with the given start node.

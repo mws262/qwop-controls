@@ -57,7 +57,7 @@ public class PanelRunner_Comparison extends PanelRunner {
         focusNodes.add(node);
 
         // Get the nearest ones, according to the provided metric.
-        EvaluationFunction_SqDistFromOther evFun = new EvaluationFunction_SqDistFromOther(selectedNode);
+        EvaluationFunction_SqDistFromOther evFun = new EvaluationFunction_SqDistFromOther(selectedNode.getState());
 
         Map<Float, NodeQWOPExplorableBase<?>> evaluatedNodeList = new TreeMap<>();
 
