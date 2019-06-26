@@ -1,5 +1,6 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.GameUnified;
 import game.IGameInternal;
 import game.state.State;
@@ -29,7 +30,10 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
      */
     private State currState;
 
-    public PanelRunner_AnimatedFromStates() {
+    private final String name;
+
+    public PanelRunner_AnimatedFromStates(@JsonProperty("name") String name) {
+        this.name = name;
         game = new GameUnified();
         game.makeNewWorld();
     }
@@ -104,5 +108,10 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
      */
     public boolean isFinishedWithRun() {
         return states.isEmpty();
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

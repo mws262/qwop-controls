@@ -6,30 +6,39 @@
     <logLevel>DEBUG</logLevel>
   </machine>
   <searchOperations>
-    <searchOperations>
-      <stage type="max_depth">
-        <maxDepth>10</maxDepth>
-        <maxGames>10000</maxGames>
-      </stage>
-      <sampler type="ucb">
+    <stage type="max_depth">
+      <maxDepth>10</maxDepth>
+      <maxGames>10000</maxGames>
+    </stage>
+    <sampler type="ucb">
+      <evaluationFunction type="constant">
+        <constantValue>5.0</constantValue>
+      </evaluationFunction>
+      <rolloutPolicy type="end_score">
         <evaluationFunction type="constant">
-          <constantValue>5.0</constantValue>
+          <constantValue>10.0</constantValue>
         </evaluationFunction>
-        <rolloutPolicy type="end_score">
-          <evaluationFunction type="constant">
-            <constantValue>10.0</constantValue>
-          </evaluationFunction>
-          <controller type="null"/>
-          <maxTimesteps>2147483647</maxTimesteps>
-          <failureMultiplier>1.0</failureMultiplier>
-        </rolloutPolicy>
-        <c>5.612214</c>
-      </sampler>
-      <saver type="null"/>
-      <repetitionCount>0</repetitionCount>
-    </searchOperations>
+        <controller type="null"/>
+        <maxTimesteps>2147483647</maxTimesteps>
+        <failureMultiplier>1.0</failureMultiplier>
+      </rolloutPolicy>
+      <c>3.8862896</c>
+    </sampler>
+    <saver type="null"/>
+    <repetitionCount>0</repetitionCount>
   </searchOperations>
   <ui>
-    <ui type="full"/>
+    <ui type="full">
+      <tabbedPanes type="runner_animated_transformed">
+        <name>Name1</name>
+      </tabbedPanes>
+      <tabbedPanes type="runner_snapshot">
+        <name>Name2</name>
+        <numHistoryStatesDisplay>25</numHistoryStatesDisplay>
+      </tabbedPanes>
+      <tabbedPanes type="runner_animated">
+        <name>Name3</name>
+      </tabbedPanes>
+    </ui>
   </ui>
 </SearchConfiguration>

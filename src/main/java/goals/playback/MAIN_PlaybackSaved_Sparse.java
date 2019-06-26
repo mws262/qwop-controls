@@ -52,7 +52,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
     public void setup() {
         /* Runner pane */
-        runnerPane = new PanelRunner_Animated();
+        runnerPane = new PanelRunner_Animated("Animated runner");
         runnerPane.activateTab();
         runnerPane.yOffsetPixels = 600;
         add(runnerPane);

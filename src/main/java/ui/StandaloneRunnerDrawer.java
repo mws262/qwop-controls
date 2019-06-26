@@ -19,7 +19,7 @@ public class StandaloneRunnerDrawer extends JFrame implements Runnable {
      * @param state The state to draw the runner at.
      */
     public StandaloneRunnerDrawer(State state) {
-        PanelRunner_SimpleState panel = new PanelRunner_SimpleState();
+        PanelRunner_SimpleState panel = new PanelRunner_SimpleState("Runner");
         panel.activateTab();
         getContentPane().add(panel);
         setPreferredSize(new Dimension(1000, 400));

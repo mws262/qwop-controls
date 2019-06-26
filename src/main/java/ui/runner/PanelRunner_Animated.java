@@ -1,5 +1,7 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.GameUnified;
@@ -9,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphicsBase;
 
-import java.awt.*;
+import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +48,10 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     private Logger logger = LogManager.getLogger(PanelRunner_Animated.class);
 
-    public PanelRunner_Animated() {
+    private final String name;
+
+    public PanelRunner_Animated(@JsonProperty("name") String name) {
+        this.name = name;
         game = new GameUnified();
     }
 
@@ -104,6 +109,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
         }
     }
 
+    @JsonIgnore
     public boolean isFinishedWithRun() {
         return (actionQueue.isEmpty());
     }
@@ -163,5 +169,10 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     public void update(NodeQWOPGraphicsBase<?> node) {
         if (node.getTreeDepth() > 0)
             simRunToNode(node);
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

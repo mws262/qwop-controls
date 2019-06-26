@@ -1,5 +1,7 @@
 package ui.scatterplot;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.lang.ArrayUtils;
 import org.jfree.chart.*;
 import org.jfree.chart.annotations.XYTextAnnotation;
@@ -12,6 +14,7 @@ import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 import tree.node.NodeQWOPGraphicsBase;
+import tree.sampler.*;
 import ui.IUserInterface.TabbedPaneActivator;
 
 import javax.swing.*;
@@ -21,7 +24,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = PanelPlot_Simple.class, name = "simple"),
+        @JsonSubTypes.Type(value = PanelPlot_Transformed.class, name = "transformed"),
+        @JsonSubTypes.Type(value = PanelPlot_Controls.class, name = "controls"),
+        @JsonSubTypes.Type(value = PanelPlot_SingleRun.class, name = "single_run"),
+        @JsonSubTypes.Type(value = PanelPlot_States.class, name = "states")
 
+})
 public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, ChartMouseListener {
 
     private static final long serialVersionUID = 1L;

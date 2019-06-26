@@ -1,5 +1,6 @@
 package ui.scatterplot;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.filter.INodeFilter;
 import tree.node.filter.NodeFilter_Downsample;
 import game.state.IState;
@@ -52,8 +53,11 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     private int firstPlotRow = 0;
     private int firstPlotCol = 0;
 
-    public PanelPlot_Transformed(ITransform transformer, int plotsPerView) {
+    private final String name;
+
+    public PanelPlot_Transformed(ITransform transformer, @JsonProperty("name") String name, int plotsPerView) {
         super(plotsPerView);
+        this.name = name;
         this.plotsPerView = plotsPerView;
         this.transformer = transformer;
 
@@ -160,4 +164,9 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {}
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }

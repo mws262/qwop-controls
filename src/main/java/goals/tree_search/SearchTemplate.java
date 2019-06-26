@@ -293,37 +293,38 @@ public abstract class SearchTemplate {
      * This is the heavyweight, full UI, with tree visualization and a bunch of data visualization tabs. Includes some
      * TFlow components which are troublesome on some computers.
      */
-    private UI_Full setupFullUI() {
+    public UI_Full setupFullUI() {
         UI_Full fullUI = new UI_Full();
 
         /* Make each UI component */
-        PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed();
-        PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot();
-        PanelRunner_Comparison comparisonPane = new PanelRunner_Comparison();
-        PanelPlot_States statePlotPane = new PanelPlot_States(6); // 6 plots per view at the bottom.
-        PanelPie_ViableFutures viableFuturesPane = new PanelPie_ViableFutures();
-        PanelHistogram_LeafDepth leafDepthPane = new PanelHistogram_LeafDepth();
+        PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed("Run Animation");
+        PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot("State Viewer");
+        PanelRunner_Comparison comparisonPane = new PanelRunner_Comparison("State Compare");
+        PanelPlot_States statePlotPane = new PanelPlot_States("State Plots", 6); // 6 plots per view at the bottom.
+        PanelPie_ViableFutures viableFuturesPane = new PanelPie_ViableFutures("Viable Futures");
+        PanelHistogram_LeafDepth leafDepthPane = new PanelHistogram_LeafDepth("Leaf depth distribution");
         PanelPlot_Transformed pcaPlotPane =
-                new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), 6);
-        PanelPlot_Controls controlsPlotPane = new PanelPlot_Controls(6); // 6 plots per view at the bottom.
+                new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), "PCA Plots",6);
+        PanelPlot_Controls controlsPlotPane = new PanelPlot_Controls("Controls Plots", 6); // 6 plots per view at the
+        // bottom.
         PanelPlot_Transformed autoencPlotPane =
                 new PanelPlot_Transformed(new Transform_Autoencoder("src/main/resources/tflow_models" +
-                        "/AutoEnc_72to12_6layer.pb", 12), 6);
+                        "/AutoEnc_72to12_6layer.pb", 12), "Autoenc Plots", 6);
         autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon(1));
-        PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun(6);
-        workerMonitorPanel = new PanelTimeSeries_WorkerLoad(maxWorkers);
+        PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
+        workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 
-        fullUI.addTab(runnerPanel, "Run Animation");
-        fullUI.addTab(snapshotPane, "State Viewer");
-        fullUI.addTab(comparisonPane, "State Compare");
-        fullUI.addTab(statePlotPane, "State Plots");
-        fullUI.addTab(viableFuturesPane, "Viable Futures");
-        fullUI.addTab(leafDepthPane, "Leaf depth distribution");
-        fullUI.addTab(controlsPlotPane, "Controls Plots");
-        fullUI.addTab(singleRunPlotPane, "Single Run Plots");
-        fullUI.addTab(pcaPlotPane, "PCA Plots");
-        fullUI.addTab(autoencPlotPane, "Autoenc Plots");
-        fullUI.addTab(workerMonitorPanel, "Worker status");
+        fullUI.addTab(runnerPanel);
+        fullUI.addTab(snapshotPane);
+        fullUI.addTab(comparisonPane);
+        fullUI.addTab(statePlotPane);
+        fullUI.addTab(viableFuturesPane);
+        fullUI.addTab(leafDepthPane);
+        fullUI.addTab(controlsPlotPane);
+        fullUI.addTab(singleRunPlotPane);
+        fullUI.addTab(pcaPlotPane);
+        fullUI.addTab(autoencPlotPane);
+        fullUI.addTab(workerMonitorPanel);
 
         Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameThreadSafe should
         // have their own threads.

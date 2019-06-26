@@ -1,5 +1,6 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.filter.NodeFilter_Downsample;
 import game.GameUnified;
 import game.state.IState;
@@ -50,8 +51,11 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
      */
     private boolean drawTransformedRunners = false;
 
-    public PanelRunner_AnimatedTransformed() {
-        super();
+    private final String name;
+
+    public PanelRunner_AnimatedTransformed(@JsonProperty("name") String name) {
+        super(name);
+        this.name = name;
         String modelDir = "src/main/resources/tflow_models/";
         encoders = new ArrayList<>();
         encoders.add(new Transform_Autoencoder(modelDir + "AutoEnc_72to1_6layer.pb", 1));
@@ -120,5 +124,10 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
         if (e.getSource().equals(enableTransformedRunners)) {
             drawTransformedRunners = enableTransformedRunners.isSelected();
         }
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }
