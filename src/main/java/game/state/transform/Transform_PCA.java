@@ -1,5 +1,7 @@
 package game.state.transform;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import game.state.IState;
 import game.state.IState.ObjectName;
 import game.state.State;
@@ -36,7 +38,8 @@ public class Transform_PCA implements ITransform {
     /**
      * PCA components used to do transforms. Usually will only be the first couple.
      */
-    private int[] transformPCAComponents;
+    @JacksonXmlElementWrapper(useWrapping=false)
+    public int[] transformPCAComponents;
 
     /**
      * Make a new PCA transformer. Note that it will do the full PCA, but will only used
@@ -45,7 +48,7 @@ public class Transform_PCA implements ITransform {
      *
      * @param transformPCAComponents The PCA components that will be used for the transform.
      */
-    public Transform_PCA(int[] transformPCAComponents) {
+    public Transform_PCA(@JsonProperty("transformPCAComponents") int[] transformPCAComponents) {
         this.transformPCAComponents = transformPCAComponents;
     }
 
@@ -174,12 +177,12 @@ public class Transform_PCA implements ITransform {
     }
 
     @Override
-    public int getOutputStateSize() {
+    public int getOutputSize() {
         return transformPCAComponents.length;
     }
 
     @Override
     public String getName() {
-        return "PCA " + getOutputStateSize();
+        return "PCA " + getOutputSize();
     }
 }

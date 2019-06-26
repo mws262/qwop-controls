@@ -1,5 +1,6 @@
 package ui.pie;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -50,10 +51,10 @@ public class PanelPie extends ChartPanel {
         setChart(chart);
     }
 
+    @JsonIgnore
     public DefaultPieDataset getDataset() {
         return dataset;
     }
-
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

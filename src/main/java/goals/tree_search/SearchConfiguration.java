@@ -14,6 +14,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.google.common.base.Preconditions;
 import controllers.Controller_Null;
+import game.state.transform.Transform_Autoencoder;
+import game.state.transform.Transform_PCA;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.logging.log4j.Level;
@@ -23,6 +25,7 @@ import savers.IDataSaver;
 import tree.TreeWorker;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.ISampler;
 import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.RolloutPolicy_EndScore;
@@ -30,10 +33,14 @@ import tree.stage.TreeStage;
 import tree.stage.TreeStage_MaxDepth;
 import ui.IUserInterface;
 import ui.UI_Full;
+import ui.histogram.PanelHistogram_LeafDepth;
+import ui.pie.PanelPie_ViableFutures;
 import ui.runner.PanelRunner_Animated;
 import ui.runner.PanelRunner_AnimatedTransformed;
+import ui.runner.PanelRunner_Comparison;
 import ui.runner.PanelRunner_Snapshot;
-import ui.scatterplot.PanelPlot_Simple;
+import ui.scatterplot.*;
+import ui.timeseries.PanelTimeSeries_WorkerLoad;
 
 import javax.swing.*;
 import java.io.File;
@@ -43,25 +50,13 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 public class SearchConfiguration implements Serializable {
 
     public Machine machine = new Machine(0.5f, 1, 20, "DEBUG");
     public List<SearchOperation> searchOperations = new ArrayList<>();
-    public UI ui = new UI();
-
-    public static void loadLoggerConfiguration() {
-        try {
-            File file = new File(".", File.separatorChar + "log4j.xml");
-            if (!file.exists()) {
-                file = new File("./src/main/resources/log4j.xml");
-            }
-
-            System.setProperty("log4j.configurationFile", file.toURI().toURL().toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-    }
+    public UI ui;
 
     public SearchConfiguration() {}
 
@@ -73,6 +68,7 @@ public class SearchConfiguration implements Serializable {
         private final int coreMinimum;
         private final int coreMaximum;
         private final String logLevel;
+        private final int coreCount;
 
         Machine(@JsonProperty(value = "coreFraction", required = true) float coreFraction,
                 @JsonProperty(value = "coreMinimum", required = true) int coreMinimum,
@@ -88,6 +84,8 @@ public class SearchConfiguration implements Serializable {
             this.coreMinimum = coreMinimum;
             this.coreMaximum = coreMaximum;
             this.logLevel = logLevel;
+            coreCount = Runtime.getRuntime().availableProcessors();
+            assert coreCount > 0 && coreCount < 100;
 
             loadLoggerConfiguration();
             Configurator.setRootLevel(Level.valueOf(logLevel));
@@ -105,6 +103,16 @@ public class SearchConfiguration implements Serializable {
         public String getLogLevel() {
             return logLevel;
         }
+
+        @JsonIgnore
+        public int getCoreCount() {
+            return coreCount;
+        }
+
+        @JsonIgnore
+        public int getRequestedThreadCount() {
+            return Math.min(Math.max((int)(coreFraction * coreCount), coreMinimum), coreMinimum);
+        }
     }
 
     /**
@@ -112,12 +120,13 @@ public class SearchConfiguration implements Serializable {
      */
     public static class UI {
         @JacksonXmlProperty(isAttribute=true)
-        public IUserInterface ui;
-        public UI() {
-            ui = new UI_Full();
-            ((UI_Full) ui).addTab(new PanelRunner_AnimatedTransformed("Name1"));
-            ((UI_Full) ui).addTab(new PanelRunner_Snapshot("Name2"));
-            ((UI_Full) ui).addTab(new PanelRunner_Animated("Name3"));
+        private final IUserInterface UI;
+
+        public UI(@JsonProperty("UI") IUserInterface UI) {
+            this.UI = UI;
+        }
+        public IUserInterface getUI() {
+            return UI;
         }
     }
 
@@ -163,12 +172,15 @@ public class SearchConfiguration implements Serializable {
         public TreeStage getStage() {
             return stage;
         }
+
         public ISampler getSampler() {
             return sampler;
         }
+
         public IDataSaver getSaver() {
             return saver;
         }
+
         public int getRepetitionCount() {
             return repetitionCount;
         }
@@ -178,8 +190,7 @@ public class SearchConfiguration implements Serializable {
             Preconditions.checkNotNull(machine);
 
             ArrayList<TreeWorker> treeWorkers = new ArrayList<>();
-            int workersRequested = 3; // TODO worker fraction.
-            for (int i = 0; i < Math.min(Math.max(workersRequested, machine.coreMinimum), machine.coreMinimum); i++) {
+            for (int i = 0; i < machine.getRequestedThreadCount(); i++) {
                 treeWorkers.add(getTreeWorker());
             }
             stage.initialize(treeWorkers, rootNode);
@@ -193,22 +204,12 @@ public class SearchConfiguration implements Serializable {
     }
 
     public static void main(String[] args) {
-        SearchConfiguration configuration = new SearchConfiguration();
-        configuration.searchOperations.add(new SearchOperation(
-                        new TreeStage_MaxDepth(10, 10000),
-                        new Sampler_UCB(
-                                new EvaluationFunction_Constant(5f),
-                                new RolloutPolicy_EndScore(new EvaluationFunction_Constant(10f),
-                                        new Controller_Null())),
-                new DataSaver_Null()));
-
         // configuration.searchOperations.add(configuration.searchOperations.get(0));
-        serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
+//        serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
 //        serializeToJson(new File("./src/main/resources/config/config.json"), configuration);
 //        serializeToYaml(new File("./src/main/resources/config/config.yaml"), configuration);
 
-        configuration = deserializeXML(new File("./src/main/resources/config/config.xml"));
-//        System.out.println(configuration.searchOperations.size());
+//        configuration = deserializeXML(new File("./src/main/resources/config/config.xml"));
     }
 
     public static void serializeToJson(File jsonFileOutput, SearchConfiguration configuration) {
@@ -259,13 +260,28 @@ public class SearchConfiguration implements Serializable {
         return null;
     }
 
+    public static void loadLoggerConfiguration() {
+        try {
+            File file = new File(".", File.separatorChar + "log4j.xml");
+            if (!file.exists()) {
+                file = new File("./src/main/resources/log4j.xml");
+            }
+            System.setProperty("log4j.configurationFile", file.toURI().toURL().toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
     // Prevent serialization of lots of graphics things.
     private static class IgnoreInheritedIntrospector extends JacksonAnnotationIntrospector {
         @Override
         public boolean hasIgnoreMarker(final AnnotatedMember m) {
             // System.out.println(m.getDeclaringClass());
-            return m.getDeclaringClass().getName().contains("sun.awt") || m.getDeclaringClass().getName().contains(
-                    "java.awt") || m.getDeclaringClass().getName().contains("javax.swing") || super.hasIgnoreMarker(m);
+            return m.getDeclaringClass().getName().contains("sun.awt")
+                    || m.getDeclaringClass().getName().contains("java.awt")
+                    || m.getDeclaringClass().getName().contains("javax.swing")
+                    || m.getDeclaringClass().getName().contains("org.jfree")
+                    || super.hasIgnoreMarker(m);
         }
     }
 }

@@ -28,12 +28,11 @@ import java.util.Map;
         use = JsonTypeInfo.Id.NAME,
         property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = PanelPlot_Simple.class, name = "simple"),
-        @JsonSubTypes.Type(value = PanelPlot_Transformed.class, name = "transformed"),
-        @JsonSubTypes.Type(value = PanelPlot_Controls.class, name = "controls"),
-        @JsonSubTypes.Type(value = PanelPlot_SingleRun.class, name = "single_run"),
-        @JsonSubTypes.Type(value = PanelPlot_States.class, name = "states")
-
+        @JsonSubTypes.Type(value = PanelPlot_Simple.class, name = "plot_simple"),
+        @JsonSubTypes.Type(value = PanelPlot_Transformed.class, name = "plot_transformed"),
+        @JsonSubTypes.Type(value = PanelPlot_Controls.class, name = "plot_controls"),
+        @JsonSubTypes.Type(value = PanelPlot_SingleRun.class, name = "plot_single_run"),
+        @JsonSubTypes.Type(value = PanelPlot_States.class, name = "plot_states")
 })
 public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, ChartMouseListener {
 
