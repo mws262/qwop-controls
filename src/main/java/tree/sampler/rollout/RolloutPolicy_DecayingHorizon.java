@@ -1,5 +1,6 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers.IController;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -35,7 +36,7 @@ public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
         float multiplier = getKernelMultiplier(
                 timestepSinceRolloutStart / (float) (maxTimesteps - 1));
 
-        return multiplier * (evaluationFunction.getValue(after) - evaluationFunction.getValue(before));
+        return multiplier * (getEvaluationFunction().getValue(after) - getEvaluationFunction().getValue(before));
     }
 
     float endScore(NodeQWOPExplorableBase<?> endNode) {
@@ -48,13 +49,14 @@ public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
     }
 
     @Override
-    IController getController() {
+    public IController getController() {
         return rolloutController;
     }
 
+    @JsonIgnore
     @Override
     public RolloutPolicyBase getCopy() {
-        return new RolloutPolicy_DecayingHorizon(evaluationFunction.getCopy(), rolloutController.getCopy(), maxTimesteps);
+        return new RolloutPolicy_DecayingHorizon(getEvaluationFunction().getCopy(), rolloutController.getCopy(), maxTimesteps);
     }
 
     float getKernelMultiplier(float normalizedTimesteps) {

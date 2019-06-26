@@ -1,89 +1,239 @@
 package goals.tree_search;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.google.common.base.Preconditions;
 import controllers.Controller_Null;
-import game.GameUnified;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
-import tree.node.NodeQWOP;
-import tree.node.NodeQWOPBase;
-import tree.node.evaluator.*;
+import tree.TreeWorker;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.sampler.ISampler;
-import tree.sampler.Sampler_Greedy;
-import tree.sampler.Sampler_Random;
-import tree.sampler.rollout.IRolloutPolicy;
-import tree.sampler.rollout.RolloutPolicy_JustEvaluate;
+import tree.sampler.Sampler_UCB;
+import tree.sampler.rollout.RolloutPolicy_EndScore;
 import tree.stage.TreeStage;
+import tree.stage.TreeStage_MaxDepth;
+import ui.IUserInterface;
+import ui.UI_Full;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SearchConfiguration implements Serializable {
 
-    public Machine machine = new Machine();
-    public List<Stage> stages = new ArrayList<>();
+    public Machine machine = new Machine(0.5f, 1, 20, "DEBUG");
+    public List<SearchOperation> searchOperations = new ArrayList<>();
+
+    public UI ui = new UI();
+
+    public static void loadLoggerConfiguration() {
+        try {
+            File file = new File(".", File.separatorChar + "log4j.xml");
+            if (!file.exists()) {
+                file = new File("./src/main/resources/log4j.xml");
+            }
+
+            System.setProperty("log4j.configurationFile", file.toURI().toURL().toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
 
     public SearchConfiguration() {
-        Stage st = new Stage();
-        stages.add(st);
     }
 
     /**
      * Defines run parameters having to do with threads, logging, etc.
      */
     public static class Machine {
-        public float coreFraction = 0.5f;
-        public int coreMinimum = 1;
-        public int coreMaximum = 32;
+        private final float coreFraction;
+        private final int coreMinimum;
+        private final int coreMaximum;
+        private final String logLevel;
+
+        Machine(@JsonProperty(value = "coreFraction", required = true) float coreFraction,
+                @JsonProperty(value = "coreMinimum", required = true) int coreMinimum,
+                @JsonProperty(value = "coreMaximum", required = true) int coreMaximum,
+                @JsonProperty(value = "logLevel") String logLevel) {
+            Preconditions.checkArgument(coreFraction > 0 && coreFraction <= 1, "Core fraction should be between zero " +
+                    "and one.", coreFraction);
+            Preconditions.checkArgument(coreMinimum > 0, "Minimum allotted core should be at least one.", coreMinimum);
+            Preconditions.checkArgument(coreMaximum >= coreMinimum, "Core maximum must be at least as big as the core" +
+                    " minimum.", coreMaximum);
+
+            this.coreFraction = coreFraction;
+            this.coreMinimum = coreMinimum;
+            this.coreMaximum = coreMaximum;
+            this.logLevel = logLevel;
+
+            loadLoggerConfiguration();
+            Configurator.setRootLevel(Level.valueOf(logLevel));
+        }
+
+        public float getCoreFraction() {
+            return coreFraction;
+        }
+
+        public int getCoreMinimum() {
+            return coreMinimum;
+        }
+
+        public int getCoreMaximum() {
+            return coreMaximum;
+        }
+
+        public String getLogLevel() {
+            return logLevel;
+        }
     }
 
     /**
      * Defines user interface settings.
      */
     public static class UI {
-        public enum UIType {
-            CONSOLE, GUI
-        }
         @JacksonXmlProperty(isAttribute=true)
-        public String type;
+        public IUserInterface ui;
+
+        public UI() {
+            ui = new UI_Full();
+        }
     }
 
     /**
      * Defines a tree search operation.
      */
-    public static class Stage {
-
-        public enum StageType { // Fully-serializing the stage catches too much unnecessary information.
-            FIXED_GAMES, MAX_DEPTH, MIN_DEPTH, SEARCH_FOREVER
-        }
+    public static class SearchOperation {
 
         @JacksonXmlProperty(isAttribute=true)
-        public StageType type = StageType.FIXED_GAMES;
+        private final TreeStage stage;
 
-        public ISampler sampler =
-                new Sampler_Greedy(new EvaluationFunction_SqDistFromOther(GameUnified.getInitialState()));
+        private final ISampler sampler;
 
-        public IDataSaver saver = new DataSaver_Null();
+        private final IDataSaver saver;
 
+        private final int repetitionCount;
+
+        SearchOperation(@JsonProperty(value = "stage", required = true) TreeStage stage,
+                        @JsonProperty(value = "sampler", required = true) ISampler sampler,
+                        @JsonProperty("saver") IDataSaver saver,
+                        @JsonProperty("repetitionCount") int repetitionCount // Defaults to zero if not
+                        // set in config file.
+        ) {
+            Preconditions.checkArgument(repetitionCount >= 0, "Stage repetitions may not be less than zero.",
+                    repetitionCount);
+            Preconditions.checkNotNull(stage);
+            Preconditions.checkNotNull(sampler);
+
+            this.stage = stage;
+            this.sampler = sampler;
+            this.saver = Objects.isNull(saver) ? new DataSaver_Null() : saver; // Default to no saving.
+            this.repetitionCount = repetitionCount;
+        }
+
+        SearchOperation(TreeStage stage, ISampler sampler, IDataSaver saver) {
+            this.stage = stage;
+            this.sampler = sampler;
+            this.saver = saver;
+            this.repetitionCount = 0;
+        }
+
+        public TreeStage getStage() {
+            return stage;
+        }
+
+        public ISampler getSampler() {
+            return sampler;
+        }
+
+        public IDataSaver getSaver() {
+            return saver;
+        }
+        public int getRepetitionCount() {
+            return repetitionCount;
+        }
+
+        public void startOperation(NodeQWOPExplorableBase<?> rootNode, Machine machine) {
+            Preconditions.checkNotNull(rootNode);
+            Preconditions.checkNotNull(machine);
+
+            ArrayList<TreeWorker> treeWorkers = new ArrayList<>();
+            int workersRequested = 3; // TODO worker fraction.
+            for (int i = 0; i < Math.min(Math.max(workersRequested, machine.coreMinimum), machine.coreMinimum); i++) {
+                treeWorkers.add(getTreeWorker());
+            }
+
+            stage.initialize(treeWorkers, rootNode);
+        }
+
+        @JsonIgnore
+        public TreeWorker getTreeWorker() {
+            return TreeWorker.makeStandardTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other kinds of
+            // treeworkers.
+        }
     }
 
     public static void main(String[] args) {
         SearchConfiguration configuration = new SearchConfiguration();
-        serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
+        configuration.searchOperations.add(
+                new SearchOperation(
+                        new TreeStage_MaxDepth(10, 10000),
+                        new Sampler_UCB(
+                                new EvaluationFunction_Constant(5f),
+                                new RolloutPolicy_EndScore(new EvaluationFunction_Constant(10f),
+                                        new Controller_Null())),
+                new DataSaver_Null()));
 
-        configuration = deserializeXML(new File("./src/main/resources/config/config.xml"));
+        // configuration.searchOperations.add(configuration.searchOperations.get(0));
+        serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
+        serializeToJson(new File("./src/main/resources/config/config.json"), configuration);
+        serializeToYaml(new File("./src/main/resources/config/config.yaml"), configuration);
+
+//        configuration = deserializeXML(new File("./src/main/resources/config/config.xml"));
     }
 
+    public static void serializeToJson(File jsonFileOutput, SearchConfiguration configuration) {
+        ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        try {
+            objectMapper.writeValue(jsonFileOutput, configuration);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public static void serializeToXML(File xmlFileOutput, SearchConfiguration configuration) {
         try {
             XmlMapper xmlMapper = new XmlMapper();
+            xmlMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
             XmlStreamWriter xmlStreamWriter = new XmlStreamWriter(xmlFileOutput);
             xmlMapper.writeValue(xmlStreamWriter, configuration);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void serializeToYaml(File xmlFileOutput, SearchConfiguration configuration) {
+        try {
+            ObjectMapper objectMapper =
+                    new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
+            XmlStreamWriter xmlStreamWriter = new XmlStreamWriter(xmlFileOutput);
+            objectMapper.writeValue(xmlStreamWriter, configuration);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -94,7 +244,6 @@ public class SearchConfiguration implements Serializable {
             XmlStreamReader xmlStreamReader = new XmlStreamReader(xmlFileInput);
             XmlMapper xmlMapper = new XmlMapper();
             xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
             return xmlMapper.readValue(xmlStreamReader, SearchConfiguration.class);
         } catch (IOException e) {
             e.printStackTrace();

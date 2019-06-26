@@ -1,7 +1,16 @@
 package game.state;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import data.LoadStateStatistics;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = State.class, name = "state_standard"),
+        @JsonSubTypes.Type(value = StateDelayEmbedded.class, name = "state_delay_embedded"),
+})
 public interface IState {
 
     /**

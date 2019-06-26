@@ -5,15 +5,14 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
-import tree.node.evaluator.EvaluationFunction_Constant;
-import tree.node.evaluator.EvaluationFunction_Distance;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = RolloutPolicy_JustEvaluate.class, name = "just_evaluate"),
-        @JsonSubTypes.Type(value = RolloutPolicy_DeltaScore.class, name = "delta_score")
+        @JsonSubTypes.Type(value = RolloutPolicy_DeltaScore.class, name = "delta_score"),
+        @JsonSubTypes.Type(value = RolloutPolicy_EndScore.class, name = "end_score")
 })
 public interface IRolloutPolicy {
 

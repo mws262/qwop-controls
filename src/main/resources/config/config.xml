@@ -1,1 +1,35 @@
-<SearchConfiguration><machine><coreFraction>0.5</coreFraction><coreMinimum>1</coreMinimum><coreMaximum>32</coreMaximum></machine><stages><stages type="FIXED_GAMES"><sampler type="greedy"><evaluationFunction type="square_dist"><comparisonNode><body><x>2.525</x><y>-1.92625</y><th>0.40091407</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></body><rthigh><x>1.65875</x><y>1.99875</y><th>-0.07602501</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></rthigh><lthigh><x>2.52</x><y>1.615</y><th>-0.35759318</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></lthigh><rcalf><x>0.085</x><y>5.38125</y><th>0.7852057</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></rcalf><lcalf><x>2.98625</x><y>5.5225</y><th>0.025570154</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></lcalf><rfoot><x>-0.9675</x><y>7.7725</y><th>0.74982154</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></rfoot><lfoot><x>3.7625</x><y>8.10125</y><th>0.14289457</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></lfoot><ruarm><x>1.165</x><y>-3.61625</y><th>1.1055855</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></ruarm><luarm><x>4.475</x><y>-2.91125</y><th>-0.8473251</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></luarm><rlarm><x>0.36625</x><y>-1.2475</y><th>-0.24111187</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></rlarm><llarm><x>5.89875</x><y>-3.06</y><th>0.1960578</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></llarm><head><x>3.89625</x><y>-5.67875</y><th>0.259916</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></head><failed>false</failed><allStateVariables><allStateVariables><x>2.525</x><y>-1.92625</y><th>0.40091407</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>3.89625</x><y>-5.67875</y><th>0.259916</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>1.65875</x><y>1.99875</y><th>-0.07602501</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>2.52</x><y>1.615</y><th>-0.35759318</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>0.085</x><y>5.38125</y><th>0.7852057</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>2.98625</x><y>5.5225</y><th>0.025570154</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>-0.9675</x><y>7.7725</y><th>0.74982154</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>3.7625</x><y>8.10125</y><th>0.14289457</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>1.165</x><y>-3.61625</y><th>1.1055855</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>4.475</x><y>-2.91125</y><th>-0.8473251</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>0.36625</x><y>-1.2475</y><th>-0.24111187</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables><allStateVariables><x>5.89875</x><y>-3.06</y><th>0.1960578</th><dx>0.0</dx><dy>0.0</dy><dth>0.0</dth></allStateVariables></allStateVariables><centerX>2.525</centerX><stateVariableCount>12</stateVariableCount></comparisonNode></evaluationFunction><samplesAt0>1000</samplesAt0><depthN>5</depthN><samplesAtN>200</samplesAtN><samplesAtInf>75</samplesAtInf><forwardJump>1</forwardJump><backwardsJump>10</backwardsJump><backwardsJumpMin>5</backwardsJumpMin><backwardsJumpFailureMultiplier>1.5</backwardsJumpFailureMultiplier></sampler><saver type="null"/></stages></stages></SearchConfiguration>
+<SearchConfiguration>
+  <machine>
+    <coreFraction>0.5</coreFraction>
+    <coreMinimum>1</coreMinimum>
+    <coreMaximum>20</coreMaximum>
+    <logLevel>DEBUG</logLevel>
+  </machine>
+  <searchOperations>
+    <searchOperations>
+      <stage type="max_depth">
+        <maxDepth>10</maxDepth>
+        <maxGames>10000</maxGames>
+      </stage>
+      <sampler type="ucb">
+        <evaluationFunction type="constant">
+          <constantValue>5.0</constantValue>
+        </evaluationFunction>
+        <rolloutPolicy type="end_score">
+          <evaluationFunction type="constant">
+            <constantValue>10.0</constantValue>
+          </evaluationFunction>
+          <controller type="null"/>
+          <maxTimesteps>2147483647</maxTimesteps>
+          <failureMultiplier>1.0</failureMultiplier>
+        </rolloutPolicy>
+        <c>5.612214</c>
+      </sampler>
+      <saver type="null"/>
+      <repetitionCount>0</repetitionCount>
+    </searchOperations>
+  </searchOperations>
+  <ui>
+    <ui type="full"/>
+  </ui>
+</SearchConfiguration>

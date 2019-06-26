@@ -15,17 +15,14 @@ import java.util.ArrayList;
  *
  * @author Matt
  */
-public class UI_Full extends JFrame implements ChangeListener, NodeSelectionListener, Runnable, IUserInterface {
+public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable, IUserInterface {
+
+    private final JFrame frame = new JFrame();
 
     /**
      * Thread loop running?
      */
     private boolean running = true;
-
-    /**
-     * Verbose printing?
-     */
-    public boolean verbose = false;
 
     /**
      * Individual pane for the tree.
@@ -68,7 +65,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     private long millisecondsPerFrame = (long) (1f / targetFramesPerSecond * 1000f);
 
     public UI_Full() {
-        Container pane = getContentPane();
+        Container pane = frame.getContentPane();
 
         /* Tabbed panes */
         tabPane = new JTabbedPane();
@@ -86,20 +83,20 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
         splitPane.setResizeWeight(0.85);
         pane.add(splitPane);
 
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        this.setPreferredSize(new Dimension(windowWidth, windowHeight));
-        this.setContentPane(getContentPane());
+        frame.setPreferredSize(new Dimension(windowWidth, windowHeight));
+        frame.setContentPane(frame.getContentPane());
 
         // Add toolbar icon.
         Toolkit kit = Toolkit.getDefaultToolkit();
         Image img = kit.createImage("src/main/resources/icons/QWOP_tree_ico.png");
-        setIconImage(img);
+        frame.setIconImage(img);
 
-        this.pack();
-        this.setVisible(true);
+        frame.pack();
+        frame.setVisible(true);
 
-        Utility.showOnScreen(this, 0, false); // Choose the monitor to display on, filling that monitor.
+        Utility.showOnScreen(frame, 0, false); // Choose the monitor to display on, filling that monitor.
     }
 
     /**
@@ -136,7 +133,7 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     public void run() {
         while (running) {
             long currentTime = System.currentTimeMillis();
-            repaint();
+            frame.repaint();
 
             long extraTime = millisecondsPerFrame - (System.currentTimeMillis() - currentTime);
             if (extraTime > 5) {
@@ -152,8 +149,8 @@ public class UI_Full extends JFrame implements ChangeListener, NodeSelectionList
     @Override
     public void kill() {
         running = false;
-        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
     }
 
     @Override

@@ -179,10 +179,9 @@ public class RolloutPolicy_DeltaScoreTest {
     public void rollout() {
 
         IEvaluationFunction evalFun = new EvaluationFunction_Distance();
-        RolloutPolicy_DeltaScore rollout = new RolloutPolicy_DeltaScore(evalFun, new Controller_Random());
 
         for (int ts = 5; ts < 400; ts += 50) {
-            rollout.maxTimesteps = ts;
+            RolloutPolicy_DeltaScore rollout = new RolloutPolicy_DeltaScore(evalFun, new Controller_Random(), ts);
             GameUnified game = new GameUnified();
             NodeQWOPExplorable startNode = n1_2_3;
             int startIterations = game.iterations;
@@ -204,7 +203,7 @@ public class RolloutPolicy_DeltaScoreTest {
         RolloutPolicy_DeltaScore rollout = new RolloutPolicy_DeltaScore(evalFun, new Controller_Random());
         RolloutPolicy_DeltaScore copy = rollout.getCopy();
 
-        Assert.assertEquals(rollout.evaluationFunction.getValue(n1_2_3), copy.evaluationFunction.getValue(n1_2_3),
+        Assert.assertEquals(rollout.getEvaluationFunction().getValue(n1_2_3), copy.getEvaluationFunction().getValue(n1_2_3),
                 1e-12f);
         Assert.assertEquals(rollout.maxTimesteps, copy.maxTimesteps);
         Assert.assertEquals(rollout.failureMultiplier, copy.failureMultiplier, 1e-12f);

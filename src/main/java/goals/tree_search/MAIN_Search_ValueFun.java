@@ -11,7 +11,6 @@ import game.action.IActionGenerator;
 import game.state.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import savers.DataSaver_Null;
 import tree.TreeWorker;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPExplorableBase;
@@ -25,7 +24,6 @@ import tree.sampler.ISampler;
 import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.*;
 import tree.stage.TreeStage_MaxDepth;
-import value.IValueFunction;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
@@ -313,8 +311,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     }
 
     private void doSearchAndUpdate(NodeQWOPExplorableBase<?> rootNode, int updateIdx) {
-        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth);
-        searchMax.terminateAfterXGames = bailAfterXGames;
+        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, bailAfterXGames);
 
         // Grab some workers from the pool.
         List<TreeWorker> tws = getTreeWorkers(numWorkersToUse);

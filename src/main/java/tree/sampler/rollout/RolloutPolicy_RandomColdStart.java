@@ -26,6 +26,6 @@ public class RolloutPolicy_RandomColdStart extends RolloutPolicy_DeltaScore{
     }
     @Override
     public RolloutPolicy_DeltaScore getCopy() {
-        return new RolloutPolicy_RandomColdStart(evaluationFunction.getCopy());
+        return new RolloutPolicy_RandomColdStart(getEvaluationFunction().getCopy());
     }
 }

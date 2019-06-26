@@ -31,7 +31,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
      *
      * @param comparisonState State all others will be compared to.
      */
-    public EvaluationFunction_SqDistFromOther(@JsonProperty("comparisonNode") IState comparisonState) {
+    public EvaluationFunction_SqDistFromOther(@JsonProperty("comparisonState") IState comparisonState) {
         this.comparisonState = comparisonState;
         baseStateVars = comparisonState.getAllStateVariables();
     }
@@ -88,7 +88,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
         return new EvaluationFunction_SqDistFromOther(comparisonState);
     }
 
-    public IState getComparisonNode() {
+    public IState getComparisonState() {
         return comparisonState;
     }
 }

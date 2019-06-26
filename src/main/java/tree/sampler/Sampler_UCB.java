@@ -1,5 +1,7 @@
 package tree.sampler;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Action;
 import org.jblas.util.Random;
@@ -20,12 +22,12 @@ public class Sampler_UCB implements ISampler {
     /**
      * Evaluation function used to score single nodes after rollouts are done.
      */
-    private IEvaluationFunction evaluationFunction;
+    private final IEvaluationFunction evaluationFunction;
 
     /**
      * Policy used to evaluate the score of a tree expansion Node by doing rollout(s).
      */
-    private IRolloutPolicy rolloutPolicy;
+    private final IRolloutPolicy rolloutPolicy;
 
     private IValueUpdater valueUpdater = new ValueUpdater_Average(); // TODO make this an assignable parameter.
 
@@ -70,7 +72,9 @@ public class Sampler_UCB implements ISampler {
      * Must provide an evaluationFunction to get a numeric score for nodes after a rollout.
      * Also specify a rollout policy to use.
      */
-    public Sampler_UCB(IEvaluationFunction evaluationFunction, IRolloutPolicy rolloutPolicy) {
+    public Sampler_UCB(
+            @JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
+            @JsonProperty("rolloutPolicy") IRolloutPolicy rolloutPolicy) {
         this.evaluationFunction = evaluationFunction;
         this.rolloutPolicy = rolloutPolicy;
         c = explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
@@ -84,12 +88,12 @@ public class Sampler_UCB implements ISampler {
         failureNode.recurseUpTreeInclusive(n -> n.updateValue(score, valueUpdater));
     }
 
-    /**
-     * Set a new evaluation function for this sampler. Should be hot-swappable at any point.
-     */
-    public void setEvaluationFunction(IEvaluationFunction evaluationFunction) {
-        this.evaluationFunction = evaluationFunction;
-    }
+//    /**
+//     * Set a new evaluation function for this sampler. Should be hot-swappable at any point.
+//     */
+//    public void setEvaluationFunction(IEvaluationFunction evaluationFunction) {
+//        this.evaluationFunction = evaluationFunction;
+//    }
 
     @Override
     public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
@@ -189,11 +193,20 @@ public class Sampler_UCB implements ISampler {
         return rolloutPolicyDone;
     }
 
+    @JsonIgnore
     @Override
     public Sampler_UCB getCopy() {
         Sampler_UCB sampler = new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy());
         sampler.c = c;
         sampler.valueUpdater = valueUpdater;
         return sampler;
+    }
+
+    public IEvaluationFunction getEvaluationFunction() {
+        return evaluationFunction;
+    }
+
+    public IRolloutPolicy getRolloutPolicy() {
+        return rolloutPolicy;
     }
 }

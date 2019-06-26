@@ -1,5 +1,8 @@
 package controllers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.GameUnified;
 import game.action.Action;
 import tree.node.NodeQWOPExplorableBase;
@@ -12,6 +15,16 @@ import java.awt.*;
  *
  * @author matt
  */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = Controller_Random.class, name = "random"),
+        @JsonSubTypes.Type(value = Controller_Null.class, name = "null"),
+        @JsonSubTypes.Type(value = Controller_ValueFunction.class, name = "value_function"),
+        @JsonSubTypes.Type(value = Controller_NearestNeighborApprox.class, name = "nearest_neighbor"),
+        @JsonSubTypes.Type(value = Controller_Tensorflow_ClassifyActionsPerTimestep.class, name = "classifier")
+})
 public interface IController {
 
     /**
@@ -22,6 +35,7 @@ public interface IController {
      */
     Action policy(NodeQWOPExplorableBase<?> state);
 
+    @JsonIgnore
     IController getCopy();
 
     /**
