@@ -1,5 +1,6 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.evaluator.EvaluationFunction_SqDistFromOther;
 import game.GameUnified;
 import game.state.IState;
@@ -27,7 +28,11 @@ public class PanelRunner_Comparison extends PanelRunner {
     private List<Stroke> strokes = new ArrayList<>();
     private List<Color> colors = new ArrayList<>();
 
-    public PanelRunner_Comparison() {}
+    private final String name;
+
+    public PanelRunner_Comparison(@JsonProperty("name") String name) {
+        this.name = name;
+    }
 
     @Override
     public void update(NodeQWOPGraphicsBase<?> node) {
@@ -114,5 +119,10 @@ public class PanelRunner_Comparison extends PanelRunner {
         focusNodes.clear();
         strokes.clear();
         colors.clear();
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

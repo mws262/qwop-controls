@@ -42,7 +42,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
     /**
      * List of panes which can be activated, deactivated.
      */
-    private ArrayList<TabbedPaneActivator> allTabbedPanes = new ArrayList<>();
+    public ArrayList<TabbedPaneActivator> tabbedPanes = new ArrayList<>();
 
     /**
      * Window width
@@ -103,15 +103,14 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
      * Add a new tab to this frame's set of tabbed panels.
      *
      * @param newTab New tab to add to the existing set of tabbed panels in this frame.
-     * @param name Name of the tab to display on the tab itself.
      */
-    public void addTab(TabbedPaneActivator newTab, String name) {
-        tabPane.addTab(name, (Component) newTab);
-        allTabbedPanes.add(newTab);
+    public void addTab(TabbedPaneActivator newTab) {
+        tabPane.addTab(newTab.getName(), (Component) newTab);
+        tabbedPanes.add(newTab);
         tabPane.revalidate();
 
         //Make sure the currently active tab is actually being updated.
-        allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+        tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
     }
 
     /**
@@ -120,13 +119,13 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
      * @param tabToRemove Tab to be removed from the set. Throws if the tab is not part of the group.
      */
     public void removeTab(TabbedPaneActivator tabToRemove) {
-        if (allTabbedPanes.contains(tabToRemove))
-            allTabbedPanes.remove(tabToRemove);
+        if (tabbedPanes.contains(tabToRemove))
+            tabbedPanes.remove(tabToRemove);
         else
             throw new IllegalArgumentException("Tried to remove a UI tab which did not exist.");
 
         //Make sure the currently active tab is actually being updated.
-        allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+        tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
     }
 
     @Override
@@ -167,7 +166,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
         selectedNode.setOverridePointColor(Color.RED);
         selectedNode.setBranchZOffset(0.4f);
 
-        for (TabbedPaneActivator panel : allTabbedPanes) {
+        for (TabbedPaneActivator panel : tabbedPanes) {
             if (panel.isActive()) {
                 panel.update(selectedNode);
             }
@@ -176,11 +175,11 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        if (!allTabbedPanes.isEmpty()) {
-            for (TabbedPaneActivator p : allTabbedPanes) {
+        if (!tabbedPanes.isEmpty()) {
+            for (TabbedPaneActivator p : tabbedPanes) {
                 p.deactivateTab();
             }
-            allTabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+            tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
         }
     }
 

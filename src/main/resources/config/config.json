@@ -29,7 +29,7 @@
         "maxTimesteps" : 2147483647,
         "failureMultiplier" : 1.0
       },
-      "c" : 5.612214
+      "c" : 1.7759495
     },
     "saver" : {
       "type" : "null"
@@ -38,7 +38,8 @@
   } ],
   "ui" : {
     "ui" : {
-      "type" : "full"
+      "type" : "full",
+      "tabbedPanes" : [ ]
     }
   }
 }

@@ -310,7 +310,7 @@ public class FlashQWOPServer implements IGameExternal {
         @SuppressWarnings({"Duplicates", "ConstantConditions"})
         DataReceiver(InputStream inStream) {
             if (debugDraw) {
-                panelRunner = new PanelRunner_SimpleState();
+                panelRunner = new PanelRunner_SimpleState("Runner");
                 JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
                 frame.add(panelRunner);
                 frame.setPreferredSize(new Dimension(600, 400));

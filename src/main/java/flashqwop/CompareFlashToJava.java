@@ -42,7 +42,7 @@ public class CompareFlashToJava extends FlashGame {
 
         gameUnifiedList.add(gameJava);
 
-        panelRunner = new PanelRunner_MultiState();
+        panelRunner = new PanelRunner_MultiState("Runners");
         JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
         frame.add(panelRunner);
         frame.setPreferredSize(new Dimension(1280, 800));

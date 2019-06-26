@@ -1,5 +1,6 @@
 package ui.scatterplot;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.filter.NodeFilter_Downsample;
 import game.state.IState.ObjectName;
 import game.state.StateVariable.StateName;
@@ -67,8 +68,12 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
 
     private int countDataCollect = 0;
 
-    public PanelPlot_States(int numPlots) {
+    private final String name;
+
+    public PanelPlot_States(@JsonProperty("name") String name, int numPlots) {
         super(numPlots);
+        this.name = name;
+
         // Make string arrays of the body part and state variable names.
         int count = 0;
         // String names of the body parts.
@@ -193,5 +198,10 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
             }
             update(selectedNode);
         }
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

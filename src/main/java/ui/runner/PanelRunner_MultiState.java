@@ -1,5 +1,6 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.GameUnified;
 import game.state.IState;
 import tree.node.NodeQWOPGraphicsBase;
@@ -27,6 +28,13 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     public Stroke customStrokeExtra;
 
     public int[] offset = new int[2];
+
+    private final String name;
+
+    public PanelRunner_MultiState(@JsonProperty("name") String name) {
+        this.name = name;
+    }
+
     /**
      * Add a state to be displayed.
      * @param state State to draw the runner at.
@@ -107,5 +115,10 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

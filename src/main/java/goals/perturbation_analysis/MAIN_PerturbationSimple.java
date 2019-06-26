@@ -19,7 +19,7 @@ public class MAIN_PerturbationSimple extends JFrame {
     }
 
     public void run() {
-        PanelRunner_MultiState runnerPanel = new PanelRunner_MultiState();
+        PanelRunner_MultiState runnerPanel = new PanelRunner_MultiState("Runners");
         runnerPanel.activateTab();
         getContentPane().add(runnerPanel);
         setPreferredSize(new Dimension(1000, 400));

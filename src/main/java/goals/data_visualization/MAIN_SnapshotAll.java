@@ -53,7 +53,7 @@ public class MAIN_SnapshotAll extends JFrame {
      * Set up the graphics for animating the runner.
      */
     public void setup() {
-        snapshotPane = new PanelRunner_Snapshot();
+        snapshotPane = new PanelRunner_Snapshot("Runner snapshot");
         snapshotPane.activateTab();
         snapshotPane.yOffsetPixels = 600;
         add(snapshotPane);

@@ -12,8 +12,11 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
 
     private List<TreeWorker> workerList = new ArrayList<>();
 
-    public PanelTimeSeries_WorkerLoad(int maxWorkers) {
+    private final String name;
+
+    public PanelTimeSeries_WorkerLoad(String name, int maxWorkers) {
         super(maxWorkers);
+        this.name = name;
         JLabel label = new JLabel();
         label.setText("All plots are game timesteps simulated per wall time vs. wall time.");
         add(label);
@@ -40,5 +43,10 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

@@ -1,5 +1,6 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.GameUnified;
 import game.state.IState;
 import tree.node.NodeQWOPGraphicsBase;
@@ -18,6 +19,12 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
      * Current state being displayed.
      */
     private IState currentState;
+
+    private final String name;
+
+    public PanelRunner_SimpleState(@JsonProperty("name") String name) {
+        this.name = name;
+    }
 
     /**
      * Update the state to be displayed.
@@ -62,5 +69,10 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

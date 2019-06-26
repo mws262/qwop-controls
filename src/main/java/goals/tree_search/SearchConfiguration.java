@@ -1,10 +1,13 @@
 package goals.tree_search;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -27,7 +30,12 @@ import tree.stage.TreeStage;
 import tree.stage.TreeStage_MaxDepth;
 import ui.IUserInterface;
 import ui.UI_Full;
+import ui.runner.PanelRunner_Animated;
+import ui.runner.PanelRunner_AnimatedTransformed;
+import ui.runner.PanelRunner_Snapshot;
+import ui.scatterplot.PanelPlot_Simple;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -40,7 +48,6 @@ public class SearchConfiguration implements Serializable {
 
     public Machine machine = new Machine(0.5f, 1, 20, "DEBUG");
     public List<SearchOperation> searchOperations = new ArrayList<>();
-
     public UI ui = new UI();
 
     public static void loadLoggerConfiguration() {
@@ -56,8 +63,7 @@ public class SearchConfiguration implements Serializable {
         }
     }
 
-    public SearchConfiguration() {
-    }
+    public SearchConfiguration() {}
 
     /**
      * Defines run parameters having to do with threads, logging, etc.
@@ -90,15 +96,12 @@ public class SearchConfiguration implements Serializable {
         public float getCoreFraction() {
             return coreFraction;
         }
-
         public int getCoreMinimum() {
             return coreMinimum;
         }
-
         public int getCoreMaximum() {
             return coreMaximum;
         }
-
         public String getLogLevel() {
             return logLevel;
         }
@@ -110,9 +113,11 @@ public class SearchConfiguration implements Serializable {
     public static class UI {
         @JacksonXmlProperty(isAttribute=true)
         public IUserInterface ui;
-
         public UI() {
             ui = new UI_Full();
+            ((UI_Full) ui).addTab(new PanelRunner_AnimatedTransformed("Name1"));
+            ((UI_Full) ui).addTab(new PanelRunner_Snapshot("Name2"));
+            ((UI_Full) ui).addTab(new PanelRunner_Animated("Name3"));
         }
     }
 
@@ -130,8 +135,9 @@ public class SearchConfiguration implements Serializable {
 
         private final int repetitionCount;
 
-        SearchOperation(@JsonProperty(value = "stage", required = true) TreeStage stage,
-                        @JsonProperty(value = "sampler", required = true) ISampler sampler,
+        @JsonCreator
+        SearchOperation(@JsonProperty("stage") TreeStage stage,
+                        @JsonProperty("sampler") ISampler sampler,
                         @JsonProperty("saver") IDataSaver saver,
                         @JsonProperty("repetitionCount") int repetitionCount // Defaults to zero if not
                         // set in config file.
@@ -157,11 +163,9 @@ public class SearchConfiguration implements Serializable {
         public TreeStage getStage() {
             return stage;
         }
-
         public ISampler getSampler() {
             return sampler;
         }
-
         public IDataSaver getSaver() {
             return saver;
         }
@@ -178,7 +182,6 @@ public class SearchConfiguration implements Serializable {
             for (int i = 0; i < Math.min(Math.max(workersRequested, machine.coreMinimum), machine.coreMinimum); i++) {
                 treeWorkers.add(getTreeWorker());
             }
-
             stage.initialize(treeWorkers, rootNode);
         }
 
@@ -191,8 +194,7 @@ public class SearchConfiguration implements Serializable {
 
     public static void main(String[] args) {
         SearchConfiguration configuration = new SearchConfiguration();
-        configuration.searchOperations.add(
-                new SearchOperation(
+        configuration.searchOperations.add(new SearchOperation(
                         new TreeStage_MaxDepth(10, 10000),
                         new Sampler_UCB(
                                 new EvaluationFunction_Constant(5f),
@@ -202,23 +204,27 @@ public class SearchConfiguration implements Serializable {
 
         // configuration.searchOperations.add(configuration.searchOperations.get(0));
         serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
-        serializeToJson(new File("./src/main/resources/config/config.json"), configuration);
-        serializeToYaml(new File("./src/main/resources/config/config.yaml"), configuration);
+//        serializeToJson(new File("./src/main/resources/config/config.json"), configuration);
+//        serializeToYaml(new File("./src/main/resources/config/config.yaml"), configuration);
 
-//        configuration = deserializeXML(new File("./src/main/resources/config/config.xml"));
+        configuration = deserializeXML(new File("./src/main/resources/config/config.xml"));
+//        System.out.println(configuration.searchOperations.size());
     }
 
     public static void serializeToJson(File jsonFileOutput, SearchConfiguration configuration) {
         ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
         try {
             objectMapper.writeValue(jsonFileOutput, configuration);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     public static void serializeToXML(File xmlFileOutput, SearchConfiguration configuration) {
         try {
             XmlMapper xmlMapper = new XmlMapper();
+            xmlMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
             xmlMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
             XmlStreamWriter xmlStreamWriter = new XmlStreamWriter(xmlFileOutput);
             xmlMapper.writeValue(xmlStreamWriter, configuration);
@@ -231,6 +237,7 @@ public class SearchConfiguration implements Serializable {
         try {
             ObjectMapper objectMapper =
                     new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
+            objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
             XmlStreamWriter xmlStreamWriter = new XmlStreamWriter(xmlFileOutput);
             objectMapper.writeValue(xmlStreamWriter, configuration);
@@ -243,11 +250,22 @@ public class SearchConfiguration implements Serializable {
         try {
             XmlStreamReader xmlStreamReader = new XmlStreamReader(xmlFileInput);
             XmlMapper xmlMapper = new XmlMapper();
+            xmlMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
             xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             return xmlMapper.readValue(xmlStreamReader, SearchConfiguration.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // Prevent serialization of lots of graphics things.
+    private static class IgnoreInheritedIntrospector extends JacksonAnnotationIntrospector {
+        @Override
+        public boolean hasIgnoreMarker(final AnnotatedMember m) {
+            // System.out.println(m.getDeclaringClass());
+            return m.getDeclaringClass().getName().contains("sun.awt") || m.getDeclaringClass().getName().contains(
+                    "java.awt") || m.getDeclaringClass().getName().contains("javax.swing") || super.hasIgnoreMarker(m);
+        }
     }
 }
