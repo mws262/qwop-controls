@@ -21,13 +21,13 @@ import java.util.stream.IntStream;
  */
 public abstract class RolloutPolicyBase implements IRolloutPolicy {
 
-    IEvaluationFunction evaluationFunction;
+    private final IEvaluationFunction evaluationFunction;
 
     ActionQueue actionQueue = new ActionQueue();
 
     private final List<Action> actionSequence = new ArrayList<>(); // Reused local list.
 
-    int maxTimesteps;
+    public final int maxTimesteps;
 
     RolloutPolicyBase(IEvaluationFunction evaluationFunction, int maxTimesteps) {
         this.evaluationFunction = evaluationFunction;
@@ -113,7 +113,7 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
     abstract float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
                                        NodeQWOPExplorableBase<?> endNode);
 
-    abstract IController getController();
+    public abstract IController getController();
 
     @Override
     public abstract RolloutPolicyBase getCopy();
@@ -145,5 +145,9 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
         ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
 
         return new ActionGenerator_FixedSequence(repeatedActions);
+    }
+
+    public IEvaluationFunction getEvaluationFunction() {
+        return evaluationFunction;
     }
 }

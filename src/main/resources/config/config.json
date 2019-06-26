@@ -1,0 +1,44 @@
+{
+  "machine" : {
+    "coreFraction" : 0.5,
+    "coreMinimum" : 1,
+    "coreMaximum" : 20,
+    "logLevel" : "DEBUG"
+  },
+  "searchOperations" : [ {
+    "stage" : {
+      "type" : "max_depth",
+      "maxDepth" : 10,
+      "maxGames" : 10000
+    },
+    "sampler" : {
+      "type" : "ucb",
+      "evaluationFunction" : {
+        "type" : "constant",
+        "constantValue" : 5.0
+      },
+      "rolloutPolicy" : {
+        "type" : "end_score",
+        "evaluationFunction" : {
+          "type" : "constant",
+          "constantValue" : 10.0
+        },
+        "controller" : {
+          "type" : "null"
+        },
+        "maxTimesteps" : 2147483647,
+        "failureMultiplier" : 1.0
+      },
+      "c" : 5.612214
+    },
+    "saver" : {
+      "type" : "null"
+    },
+    "repetitionCount" : 0
+  } ],
+  "ui" : {
+    "ui" : {
+      "type" : "full"
+    }
+  }
+}

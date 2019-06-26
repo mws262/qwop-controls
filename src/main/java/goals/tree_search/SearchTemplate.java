@@ -1,24 +1,17 @@
 package goals.tree_search;
 
-import controllers.Controller_Random;
-import controllers.IController;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import savers.DataSaver_DenseTFRecord;
-import savers.DataSaver_StageSelected;
 import tree.TreeWorker;
 import tree.Utility;
 import tree.node.NodeQWOPExplorableBase;
-import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_FixedDepth;
-import tree.sampler.Sampler_Greedy;
 import tree.sampler.Sampler_UCB;
-import tree.sampler.rollout.RolloutPolicy_DecayingHorizon;
 import tree.stage.TreeStage;
 import tree.stage.TreeStage_FixedGames;
 import tree.stage.TreeStage_MaxDepth;
@@ -202,8 +195,7 @@ public abstract class SearchTemplate {
 //                new RolloutPolicy_DecayingHorizon(new EvaluationFunction_Distance(), randomController));
         // TODO now saver and sampler are supplied when creating the workers. Make sure everything is still
         //  consistent with this.
-        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth);
-        searchMax.terminateAfterXGames = maxGames;
+        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, maxGames);
 
         // Grab some workers from the pool.
         List<TreeWorker> tws1 = getTreeWorkers(numWorkersToUse);

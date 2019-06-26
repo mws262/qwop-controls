@@ -1,5 +1,6 @@
 package tree.stage;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.TreeWorker;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -19,7 +20,7 @@ public class TreeStage_MaxDepth extends TreeStage {
     /**
      * Max relative depth (i.e. specified relative to the given root node).
      */
-    private int maxDepth;
+    public final int maxDepth;
 
     /**
      * Max effective depth (i.e. absolute depth relative to the entire tree root).
@@ -35,7 +36,7 @@ public class TreeStage_MaxDepth extends TreeStage {
      * Alternate termination condition: We played more than this number of games without getting to the desired max
      * depth.
      */
-    public long terminateAfterXGames = Long.MAX_VALUE;
+    public final int maxGames;
 
     /**
      * Tree stage which searches until a certain tree depth is achieved anywhere on the tree, the root node becomes
@@ -43,8 +44,10 @@ public class TreeStage_MaxDepth extends TreeStage {
      * met.
      * @param maxDepth Depth to search until.
      */
-    public TreeStage_MaxDepth(int maxDepth) {
+    public TreeStage_MaxDepth(@JsonProperty("maxDepth") int maxDepth,
+                              @JsonProperty("maxGames") int maxGames) {
         this.maxDepth = maxDepth;
+        this.maxGames = maxGames;
     }
 
     @Override
@@ -60,7 +63,7 @@ public class TreeStage_MaxDepth extends TreeStage {
         leafList.clear();
         getRootNode().applyToLeavesBelow(leafList::add);
 
-        if (getRootNode().isFullyExplored() || (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames)
+        if (getRootNode().isFullyExplored() || (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > maxGames)
             return resultList; // No results. No possible way to recover.
 
         assert leafList.size() > 1;
@@ -86,6 +89,6 @@ public class TreeStage_MaxDepth extends TreeStage {
         NodeQWOPExplorableBase<?> rootNode = getRootNode();
         // Also terminate if it's been too long and we haven't found anything.
         return rootNode.isFullyExplored() || rootNode.getMaxBranchDepth() >= maxEffectiveDepth ||
-                (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > terminateAfterXGames;
+                (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > maxGames;
     }
 }

@@ -1,21 +1,14 @@
 package tree.stage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import savers.IDataSaver;
 import tree.TreeWorker;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
-import tree.sampler.rollout.RolloutPolicy_DeltaScore;
-import tree.sampler.rollout.RolloutPolicy_JustEvaluate;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,7 +35,7 @@ public abstract class TreeStage implements Runnable {
     /**
      * Each stage gets its own workers to avoid contamination. Probably could combine later if necessary.
      */
-    public final List<TreeWorker> workers = new ArrayList<>();
+    private final List<TreeWorker> workers = new ArrayList<>();
 
     /**
      * Number of TreeWorkers to be used.
@@ -57,7 +50,7 @@ public abstract class TreeStage implements Runnable {
     /**
      * Does this stage block the main thread until done?
      */
-    public boolean blocking = true;
+    private boolean blocking = true;
 
     private final Object lock = new Object();
 
@@ -112,6 +105,7 @@ public abstract class TreeStage implements Runnable {
     /**
      * Externally check if this stage has wrapped up yet.
      */
+    @JsonIgnore
     public boolean isFinished() {
         return !running;
     }
@@ -119,6 +113,7 @@ public abstract class TreeStage implements Runnable {
     /**
      * Query the stage for its final results.
      */
+    @JsonIgnore
     public abstract List<NodeQWOPBase<?>> getResults();
 
     /**
@@ -163,10 +158,12 @@ public abstract class TreeStage implements Runnable {
      * Get the root node that this stage is operating from. It cannot change from an external caller's perspective,
      * so no set method.
      */
+    @JsonIgnore
     public NodeQWOPExplorableBase<?> getRootNode() {
         return stageRoot;
     }
 
+    @JsonIgnore
     public int getNumberOfWorkers() {
         return numWorkers;
     }

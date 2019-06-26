@@ -110,29 +110,29 @@ public class Sampler_UCBTest {
         n2_2 = n2.addDoublyLinkedChild(a2_2, s2_2);
     }
 
-    @Test
-    public void setEvaluationFunction() {
-        IEvaluationFunction evalFun1 = new EvaluationFunction_Constant(5f);
-        Sampler_UCB sampler = new Sampler_UCB(evalFun1, new RolloutPolicy_JustEvaluate(evalFun1));
-
-        sampler.rolloutPolicy(n1_1_1, null);
-        Assert.assertEquals(5f, n1_1_1.getValue(), 1e-12f);
-
-        sampler.setEvaluationFunction(new EvaluationFunction_Constant(3f));
-        sampler.rolloutPolicy(n2_2, null);
-        Assert.assertEquals(5f, n2_2.getValue(), 1e-12f); // Changing the evaluation function shouldn't change the
-        // results when the rollout is doing the evaluating.
-
-        IState failedState = mock(State.class);
-        when(failedState.isFailed()).thenReturn(true);
-
-        NodeQWOPExplorableBase<?> badNode = n1_1_1.addDoublyLinkedChild(new Action(1010101, false, false, false,
-                false), failedState);
-
-        sampler.expansionPolicyActionDone(badNode);
-        Assert.assertEquals(3f, badNode.getValue(), 1e-12); // When an expanded node is failed, then the rollout is
-        // never called, and the sampler's default evaluation function is used.
-    }
+//    @Test
+//    public void setEvaluationFunction() {
+//        IEvaluationFunction evalFun1 = new EvaluationFunction_Constant(5f);
+//        Sampler_UCB sampler = new Sampler_UCB(evalFun1, new RolloutPolicy_JustEvaluate(evalFun1));
+//
+//        sampler.rolloutPolicy(n1_1_1, null);
+//        Assert.assertEquals(5f, n1_1_1.getValue(), 1e-12f);
+//
+//        sampler.setEvaluationFunction(new EvaluationFunction_Constant(3f));
+//        sampler.rolloutPolicy(n2_2, null);
+//        Assert.assertEquals(5f, n2_2.getValue(), 1e-12f); // Changing the evaluation function shouldn't change the
+//        // results when the rollout is doing the evaluating.
+//
+//        IState failedState = mock(State.class);
+//        when(failedState.isFailed()).thenReturn(true);
+//
+//        NodeQWOPExplorableBase<?> badNode = n1_1_1.addDoublyLinkedChild(new Action(1010101, false, false, false,
+//                false), failedState);
+//
+//        sampler.expansionPolicyActionDone(badNode);
+//        Assert.assertEquals(3f, badNode.getValue(), 1e-12); // When an expanded node is failed, then the rollout is
+//        // never called, and the sampler's default evaluation function is used.
+//    }
 
     @Test
     public void treePolicy() {
