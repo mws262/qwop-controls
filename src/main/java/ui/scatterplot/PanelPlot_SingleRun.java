@@ -82,7 +82,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
         this.name = name;
         game = new GameUnified();
 
-        numPlots = transformer.getOutputStateSize();
+        numPlots = transformer.getOutputSize();
         this.plotsPerView = numberOfPlots;
         addKeyListener(this);
         setFocusable(true);
@@ -176,7 +176,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
                 firstPlotRow--;
                 break;
             case KeyEvent.VK_DOWN:
-                if (firstPlotRow >= (transformer.getOutputStateSize() - plotsPerView) / plotsPerView) return;
+                if (firstPlotRow >= (transformer.getOutputSize() - plotsPerView) / plotsPerView) return;
                 firstPlotRow++;
                 break;
             default:

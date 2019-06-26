@@ -20,9 +20,7 @@ import tree.node.NodeQWOPBase;
         @JsonSubTypes.Type(value = EvaluationFunction_HandTunedOnState.class, name = "hand_tuned"),
         @JsonSubTypes.Type(value = EvaluationFunction_Random.class, name = "random"),
         @JsonSubTypes.Type(value = EvaluationFunction_SqDistFromOther.class, name = "square_dist"),
-        @JsonSubTypes.Type(value = EvaluationFunction_Velocity.class, name = "velocity"),
-
-
+        @JsonSubTypes.Type(value = EvaluationFunction_Velocity.class, name = "velocity")
 })
 public interface IEvaluationFunction {
 

@@ -1,5 +1,6 @@
 package ui.histogram;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -17,6 +18,7 @@ public class PanelHistogram extends ChartPanel {
 
     private HistogramDataset dataset = new HistogramDataset();
 
+    @JsonIgnore
     JFreeChart chart;
 
     public PanelHistogram() {
@@ -56,10 +58,12 @@ public class PanelHistogram extends ChartPanel {
         setChart(chart);
     }
 
+    @JsonIgnore
     public HistogramDataset getDataset() {
         return dataset;
     }
 
+    @JsonIgnore
     public void setDataset(HistogramDataset dataset) {
         this.dataset = dataset;
         chart.getXYPlot().setDataset(dataset);
@@ -84,5 +88,4 @@ public class PanelHistogram extends ChartPanel {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
-
 }

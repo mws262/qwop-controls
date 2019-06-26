@@ -96,7 +96,7 @@ public class Transform_IdentityTest {
     @Test
     public void getOutputStateSize() {
         ITransform tform = new Transform_Identity();
-        Assert.assertEquals(72, tform.getOutputStateSize());
+        Assert.assertEquals(72, tform.getOutputSize());
     }
 
     @Test
