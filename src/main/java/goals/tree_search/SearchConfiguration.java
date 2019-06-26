@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import controllers.Controller_Null;
+import game.GameUnified;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
-import tree.node.evaluator.EvaluationFunction_Constant;
-import tree.node.evaluator.IEvaluationFunction;
+import tree.node.NodeQWOP;
+import tree.node.NodeQWOPBase;
+import tree.node.evaluator.*;
 import tree.sampler.ISampler;
 import tree.sampler.Sampler_Greedy;
 import tree.sampler.Sampler_Random;
@@ -31,12 +33,18 @@ public class SearchConfiguration implements Serializable {
         stages.add(st);
     }
 
+    /**
+     * Defines run parameters having to do with threads, logging, etc.
+     */
     public static class Machine {
         public float coreFraction = 0.5f;
         public int coreMinimum = 1;
         public int coreMaximum = 32;
     }
 
+    /**
+     * Defines user interface settings.
+     */
     public static class UI {
         public enum UIType {
             CONSOLE, GUI
@@ -45,15 +53,21 @@ public class SearchConfiguration implements Serializable {
         public String type;
     }
 
+    /**
+     * Defines a tree search operation.
+     */
     public static class Stage {
 
-        public enum StageType {
+        public enum StageType { // Fully-serializing the stage catches too much unnecessary information.
             FIXED_GAMES, MAX_DEPTH, MIN_DEPTH, SEARCH_FOREVER
         }
 
         @JacksonXmlProperty(isAttribute=true)
         public StageType type = StageType.FIXED_GAMES;
-        public ISampler sampler = new Sampler_Greedy(new EvaluationFunction_Constant(5f));
+
+        public ISampler sampler =
+                new Sampler_Greedy(new EvaluationFunction_SqDistFromOther(GameUnified.getInitialState()));
+
         public IDataSaver saver = new DataSaver_Null();
 
     }

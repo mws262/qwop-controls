@@ -46,7 +46,7 @@ public class EvaluationFunction_SqDistFromOtherTest {
 
     @Test
     public void getValue() {
-        IEvaluationFunction efun = new EvaluationFunction_SqDistFromOther(node1);
+        IEvaluationFunction efun = new EvaluationFunction_SqDistFromOther(node1.getState());
 
         Assert.assertEquals(invSqDist(node1.getState().flattenState(), node1.getState().flattenState()),
                 efun.getValue(node1), 1e-3);
@@ -57,7 +57,7 @@ public class EvaluationFunction_SqDistFromOtherTest {
         Assert.assertEquals(invSqDist(node1.getState().flattenState(), node4.getState().flattenState()),
                 efun.getValue(node4), 1e-3);
 
-        efun = new EvaluationFunction_SqDistFromOther(node2);
+        efun = new EvaluationFunction_SqDistFromOther(node2.getState());
 
         Assert.assertEquals(invSqDist(node2.getState().flattenState(), node1.getState().flattenState()),
                 efun.getValue(node1), 1e-3);
@@ -68,7 +68,7 @@ public class EvaluationFunction_SqDistFromOtherTest {
         Assert.assertEquals(invSqDist(node2.getState().flattenState(), node4.getState().flattenState()),
                 efun.getValue(node4), 1e-3);
 
-        efun = new EvaluationFunction_SqDistFromOther(node3);
+        efun = new EvaluationFunction_SqDistFromOther(node3.getState());
 
         Assert.assertEquals(invSqDist(node3.getState().flattenState(), node1.getState().flattenState()),
                 efun.getValue(node1), 1e-3);
@@ -79,7 +79,7 @@ public class EvaluationFunction_SqDistFromOtherTest {
         Assert.assertEquals(invSqDist(node3.getState().flattenState(), node4.getState().flattenState()),
                 efun.getValue(node4), 1e-3);
 
-        efun = new EvaluationFunction_SqDistFromOther(node4);
+        efun = new EvaluationFunction_SqDistFromOther(node4.getState());
 
         Assert.assertEquals(invSqDist(node4.getState().flattenState(), node1.getState().flattenState()),
                 efun.getValue(node1), 1e-3);
@@ -93,7 +93,7 @@ public class EvaluationFunction_SqDistFromOtherTest {
 
     @Test
     public void getCopy() {
-        IEvaluationFunction efun = new EvaluationFunction_SqDistFromOther(node1);
+        IEvaluationFunction efun = new EvaluationFunction_SqDistFromOther(node1.getState());
         IEvaluationFunction efuncpy = efun.getCopy();
 
         Assert.assertEquals(invSqDist(node1.getState().flattenState(), node1.getState().flattenState()),
@@ -105,7 +105,7 @@ public class EvaluationFunction_SqDistFromOtherTest {
         Assert.assertEquals(invSqDist(node1.getState().flattenState(), node4.getState().flattenState()),
                 efuncpy.getValue(node4), 1e-3);
 
-        efun = new EvaluationFunction_SqDistFromOther(node2);
+        efun = new EvaluationFunction_SqDistFromOther(node2.getState());
         efuncpy = efun.getCopy();
 
         Assert.assertEquals(invSqDist(node2.getState().flattenState(), node1.getState().flattenState()),
@@ -117,7 +117,7 @@ public class EvaluationFunction_SqDistFromOtherTest {
         Assert.assertEquals(invSqDist(node2.getState().flattenState(), node4.getState().flattenState()),
                 efuncpy.getValue(node4), 1e-3);
 
-        efun = new EvaluationFunction_SqDistFromOther(node3);
+        efun = new EvaluationFunction_SqDistFromOther(node3.getState());
         efuncpy = efun.getCopy();
 
         Assert.assertEquals(invSqDist(node3.getState().flattenState(), node1.getState().flattenState()),
@@ -129,7 +129,7 @@ public class EvaluationFunction_SqDistFromOtherTest {
         Assert.assertEquals(invSqDist(node3.getState().flattenState(), node4.getState().flattenState()),
                 efuncpy.getValue(node4), 1e-3);
 
-        efun = new EvaluationFunction_SqDistFromOther(node4);
+        efun = new EvaluationFunction_SqDistFromOther(node4.getState());
         efuncpy = efun.getCopy();
 
         Assert.assertEquals(invSqDist(node4.getState().flattenState(), node1.getState().flattenState()),
