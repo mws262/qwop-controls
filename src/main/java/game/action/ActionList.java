@@ -1,11 +1,25 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import distributions.Distribution;
 import distributions.Distribution_Equal;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * An ActionList acts like an {@link java.util.ArrayList} for {@link Action game.action}, except it allows for sampling
@@ -17,19 +31,22 @@ import java.util.List;
  * @see IActionGenerator
  * @see Distribution
  */
+@JsonSerialize(using = ActionList.ActionListSerializer.class)
+@JsonDeserialize(using = ActionList.ActionListDeserializer.class)
+@JacksonXmlRootElement(localName = "ActionList")
 public class ActionList extends ArrayList<Action> {
 
-    public Distribution<Action> samplingDist;
+    private final Distribution<Action> samplingDistribution;
 
     /**
      * Create a new ActionList which can sample according to the rules of a {@link Distribution}. It may otherwise be
      * treated as an {@link ArrayList}.
      *
-     * @param samplingDist Distribution that samples of the action set will be pulled when calling
+     * @param samplingDistribution Distribution that samples of the action set will be pulled when calling
      * {@link ActionList#sampleDistribution}.
      */
-    public ActionList(Distribution<Action> samplingDist) {
-        this.samplingDist = samplingDist;
+    public ActionList(@JsonProperty("samplingDistribution") Distribution<Action> samplingDistribution) {
+        this.samplingDistribution = samplingDistribution;
     }
 
     /**
@@ -38,8 +55,9 @@ public class ActionList extends ArrayList<Action> {
      * @return A random element of this ActionList.
      * @see Distribution#randSample(List)
      */
+    @JsonIgnore
     public Action getRandom() {
-        return samplingDist.randSample(this);
+        return samplingDistribution.randSample(this);
     }
 
     /**
@@ -48,7 +66,7 @@ public class ActionList extends ArrayList<Action> {
      * @return An action sampled from this ActionList according to its defined {@link Distribution}.
      **/
     public Action sampleDistribution() {
-        return samplingDist.randOnDistribution(this);
+        return samplingDistribution.randOnDistribution(this);
     }
 
     /**
@@ -58,7 +76,7 @@ public class ActionList extends ArrayList<Action> {
      * @return A getCopy of this ActionList.
      */
     public ActionList getCopy() {
-        ActionList duplicate = new ActionList(samplingDist);
+        ActionList duplicate = new ActionList(samplingDistribution);
         duplicate.addAll(this);
         return duplicate;
     }
@@ -165,4 +183,86 @@ public class ActionList extends ArrayList<Action> {
         return true;
     }
 
+    public Distribution<Action> getSamplingDistribution() {
+        return samplingDistribution;
+    }
+
+    public static class ActionListDeserializer extends StdDeserializer<ActionList> {
+
+        public ActionListDeserializer() {
+            this(null);
+        }
+
+        public ActionListDeserializer(Class<ActionList> t) {
+            super(t);
+        }
+
+        @Override
+        public ActionList deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = p.getCodec().readTree(p);
+
+            JsonNode alistNode = node;//node.get("actionList");
+
+            Distribution<Action> dist = mapper.convertValue(alistNode.get("distribution"),
+                    new TypeReference<Distribution<Action>>() {});
+
+            ActionList alist = new ActionList(dist);
+
+            Iterator<String> fieldIterator = alistNode.fieldNames();
+            while(fieldIterator.hasNext()) {
+                String actionField = fieldIterator.next();
+                String durationList = alistNode.get(actionField).asText();
+                try {
+                    Action.Keys keys = Action.Keys.valueOf(actionField);
+                    String[] durations = durationList.split(" ");
+                    for (String duration : durations) {
+                        alist.add(new Action(Integer.parseInt(duration), keys));
+                    }
+                } catch (IllegalArgumentException ignored) {} // For any fields which are not keys.
+            }
+            return alist;
+        }
+    }
+
+    public static class ActionListSerializer extends StdSerializer<ActionList> {
+
+        public ActionListSerializer() {
+            this(null);
+        }
+
+        public ActionListSerializer(Class<ActionList> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(ActionList value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+
+            Map<String, String> actions = convert(value);
+            jgen.writeStartObject();
+            jgen.writeObjectField("distribution", value.getSamplingDistribution());
+            for (Map.Entry<String, String> a : actions.entrySet()) {
+                jgen.writeStringField(a.getKey(), a.getValue());
+            }
+            jgen.writeEndObject();
+        }
+        public Map<String, String> convert(ActionList alist) {
+            Map<String, String> actionMap = new HashMap<>();
+            Set<Action.Keys> presentKeys = new HashSet<>();
+            for (Action a : alist) {
+                presentKeys.add(a.getKeys());
+            }
+
+            for (Action.Keys keys : presentKeys) {
+                StringBuilder sb = new StringBuilder();
+                for (Action a : alist) {
+                    if (a.getKeys() == keys) {
+                        sb.append(a.getTimestepsTotal()).append(" ");
+                    }
+                }
+                actionMap.put(keys.toString(), sb.toString());
+            }
+            return actionMap;
+        }
+    }
 }

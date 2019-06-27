@@ -1,5 +1,6 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.primitives.Floats;
 import game.IGameInternal;
 import game.action.Action;
@@ -20,9 +21,9 @@ import java.util.List;
  */
 public class RolloutPolicy_Window implements IRolloutPolicy {
 
-    private IRolloutPolicy individualRollout;
+    public final IRolloutPolicy individualRollout;
 
-    ActionQueue actionQueue = new ActionQueue();
+    private ActionQueue actionQueue = new ActionQueue();
     private final List<Action> actionSequence = new ArrayList<>(); // Reused local list.
 
 
@@ -32,7 +33,7 @@ public class RolloutPolicy_Window implements IRolloutPolicy {
 
     public Criteria selectionCriteria = Criteria.BEST;
 
-    public RolloutPolicy_Window(IRolloutPolicy individualRollout) {
+    public RolloutPolicy_Window(@JsonProperty("individualRollout") IRolloutPolicy individualRollout) {
         this.individualRollout = individualRollout;
     }
 

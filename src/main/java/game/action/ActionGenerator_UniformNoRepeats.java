@@ -1,5 +1,8 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import distributions.Distribution;
 import distributions.Distribution_Equal;
 import tree.node.NodeQWOPExplorableBase;
@@ -18,12 +21,11 @@ public class ActionGenerator_UniformNoRepeats implements IActionGenerator {
     private final List<ActionList> allActionLists = new ArrayList<>();
 
     public ActionGenerator_UniformNoRepeats(ActionList[] actions) {
-        for (ActionList a : actions) {
-            allActionLists.add(a);
-        }
+        allActionLists.addAll(Arrays.asList(actions));
     }
 
-    public ActionGenerator_UniformNoRepeats(Collection<ActionList> actions) {
+    @JsonCreator
+    public ActionGenerator_UniformNoRepeats(@JsonProperty("allActionLists") Collection<ActionList> actions) {
         allActionLists.addAll(actions);
     }
 
@@ -40,6 +42,7 @@ public class ActionGenerator_UniformNoRepeats implements IActionGenerator {
     }
 
     @Override
+    @JsonIgnore
     public Set<Action> getAllPossibleActions() {
         Set<Action> allActions = new HashSet<>();
         for (ActionList as : allActionLists) {
@@ -48,7 +51,11 @@ public class ActionGenerator_UniformNoRepeats implements IActionGenerator {
         return allActions;
     }
 
-    static ActionGenerator_UniformNoRepeats makeDefaultGenerator() {
+    public List<ActionList> getAllActionLists() {
+        return allActionLists;
+    }
+
+    public static ActionGenerator_UniformNoRepeats makeDefaultGenerator() {
         // All durations.
         boolean[][] keyRange = new boolean[][]{{false, false, false, false}, // All 9 combinations.
                 {true, false, false, false},

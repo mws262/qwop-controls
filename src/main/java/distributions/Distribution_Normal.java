@@ -1,9 +1,10 @@
 package distributions;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Action;
+
 import java.util.Comparator;
 import java.util.List;
-
-import game.action.Action;
 
 /**
  * Action sampling distribution implementation which is weighted according to a normal distribution. Once the mean
@@ -31,7 +32,8 @@ public class Distribution_Normal extends Distribution<Action> {
      * @param mean  Center of created distribution.
      * @param stdev Standard deviation of the created distribution.
      */
-    public Distribution_Normal(float mean, float stdev) {
+    public Distribution_Normal(@JsonProperty("mean") float mean,
+                               @JsonProperty("standardDeviation") float stdev) {
         if (stdev < 0)
             throw new IllegalArgumentException("Standard deviation argument may not be negative.");
         this.mean = mean;
@@ -59,4 +61,11 @@ public class Distribution_Normal extends Distribution<Action> {
         return set.stream().min(comp).orElse(null); // Returns value (or null if something goes WEIRD).
     }
 
+    public float getMean() {
+        return mean;
+    }
+
+    public float getStandardDeviation() {
+        return standardDeviation;
+    }
 }

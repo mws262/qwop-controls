@@ -1,9 +1,9 @@
 {
   "machine" : {
-    "coreFraction" : 0.5,
+    "coreFraction" : 0.7,
     "coreMinimum" : 1,
-    "coreMaximum" : 20,
-    "logLevel" : "DEBUG"
+    "coreMaximum" : 32,
+    "logLevel" : "INFO"
   },
   "searchOperations" : [ {
     "stage" : {
@@ -18,74 +18,47 @@
         "constantValue" : 5.0
       },
       "rolloutPolicy" : {
-        "type" : "end_score",
-        "evaluationFunction" : {
-          "type" : "constant",
-          "constantValue" : 10.0
+        "type" : "window",
+        "individualRollout" : {
+          "type" : "decaying_horizon",
+          "evaluationFunction" : {
+            "type" : "constant",
+            "constantValue" : 10.0
+          },
+          "rolloutController" : {
+            "type" : "value_function",
+            "valueFunction" : {
+              "type" : "tflow_state_only",
+              "fileName" : "src/main/resources/tflow_models/test.pb",
+              "gameTemplate" : {
+                "type" : "default"
+              },
+              "hiddenLayerSizes" : [ 45, 55 ],
+              "additionalNetworkArgs" : [ ],
+              "inputSize" : 72,
+              "outputSize" : 1
+            }
+          },
+          "maxTimesteps" : 200
         },
-        "controller" : {
-          "type" : "null"
-        },
-        "maxTimesteps" : 2147483647,
-        "failureMultiplier" : 1.0
+        "selectionCriteria" : "BEST"
       },
-      "c" : 6.386179
+      "c" : 4.441495
     },
     "saver" : {
       "type" : "null"
     },
     "repetitionCount" : 0
   } ],
-  "ui" : {
-    "ui" : {
-      "type" : "full",
-      "tabbedPanes" : [ {
-        "type" : "runner_animated_transformed",
-        "name" : "Run Animation"
-      }, {
-        "type" : "runner_snapshot",
-        "name" : "State Viewer",
-        "numHistoryStatesDisplay" : 25
-      }, {
-        "type" : "runner_comparison",
-        "name" : "State Compare",
-        "maxNumStatesToShow" : 50
-      }, {
-        "type" : "plot_states",
-        "name" : "State Plots"
-      }, {
-        "type" : "futures_pie",
-        "name" : "Viable Futures"
-      }, {
-        "type" : "depth_histogram",
-        "name" : "Leaf depth distribution"
-      }, {
-        "type" : "plot_controls",
-        "name" : "Controls Plots"
-      }, {
-        "type" : "plot_single_run",
-        "name" : "Single Run Plots"
-      }, {
-        "type" : "plot_transformed",
-        "transformer" : {
-          "type" : "pca",
-          "transformPCAComponents" : [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71 ],
-          "name" : "PCA 72",
-          "outputSize" : 72
-        },
-        "name" : "PCA Plots",
-        "plotsPerView" : 6
-      }, {
-        "type" : "plot_transformed",
-        "transformer" : {
-          "type" : "autoencoder",
-          "graphFile" : "src/main/resources/tflow_models/AutoEnc_72to12_6layer.pb",
-          "outputSize" : 12,
-          "name" : "AutoEnc 12"
-        },
-        "name" : "Autoenc Plots",
-        "plotsPerView" : 6
-      } ]
-    }
+  "ui" : null,
+  "actionGenerator" : {
+    "type" : "fixed_actions_no_repeats",
+    "allActionLists" : [ {
+      "distribution" : {
+        "type" : "equal"
+      },
+      "none" : "34 ",
+      "qo" : "11 12 "
+    } ]
   }
 }

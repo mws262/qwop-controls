@@ -143,7 +143,7 @@ public class ValueFunction_TensorFlowTest {
         // Load existing graph with constructor 2.
         ValFunTest valFunLoad = null;
         try {
-            valFunLoad = new ValFunTest(netFile, game);
+            valFunLoad = new ValFunTest(netFile);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -179,11 +179,11 @@ public class ValueFunction_TensorFlowTest {
     class ValFunTest extends ValueFunction_TensorFlow {
 
         ValFunTest(String fileName, GameUnified gameTemplate, int outputSize, List<Integer> hiddenLayerSizes, List<String> additionalArgs) throws FileNotFoundException {
-            super(fileName, gameTemplate, outputSize, hiddenLayerSizes, additionalArgs);
+            super(fileName, gameTemplate.getStateDimension(), outputSize, hiddenLayerSizes, additionalArgs);
         }
 
-        ValFunTest(File existingFile, GameUnified gameTemplate) throws FileNotFoundException {
-            super(existingFile, gameTemplate);
+        ValFunTest(File existingFile) throws FileNotFoundException {
+            super(existingFile);
         }
 
         @Override

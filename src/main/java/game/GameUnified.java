@@ -1,5 +1,8 @@
 package game;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Action;
 import game.state.IState;
 import game.state.IState.ObjectName;
@@ -29,6 +32,13 @@ import static game.GameConstants.*;
 /**
  * @author matt
  */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = GameUnified.class, name = "default"),
+        @JsonSubTypes.Type(value = GameUnifiedCaching.class, name = "delay_embedded"),
+})
 @SuppressWarnings("Duplicates")
 public class GameUnified implements IGameInternal, IGameSerializable {
 
@@ -158,15 +168,9 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     private static boolean noFeet = false;
 
     /**
-     * Is Box2D warmstarting used?
-     */
-    public boolean useWarmStarting = true;
-
-    public boolean usePositionCorrection = true;
-
-    /**
      * Number of constraint-solving steps.
      */
+    @JsonIgnore
     public int iterations = physIterations;
 
     /** Listens for collisions between any body part and the ground. **/
@@ -368,8 +372,11 @@ public class GameUnified implements IGameInternal, IGameSerializable {
 
         /* World Settings */
         world = new World(worldAABB, gravity, true);
-        world.setWarmStarting(useWarmStarting);
-        world.setPositionCorrection(usePositionCorrection);
+        /**
+         * Is Box2D warmstarting used?
+         */
+        world.setWarmStarting(true);
+        world.setPositionCorrection(true);
         world.setContinuousPhysics(true);
 
         // NOTE: The order of creating bodies actually changes the answers slightly!! This is really dumb, but will
@@ -823,6 +830,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     /**
      * Get the actual Box2D world.
      **/
+    @JsonIgnore
     public World getWorld() {
         return world;
     }
@@ -830,6 +838,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     /**
      * QWOP initial condition. Good way to give the root node a state.
      **/
+    @JsonIgnore
     public static IState getInitialState() {
         return initState;
     }
@@ -837,6 +846,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     /**
      * Get the current full state of the runner.
      */
+    @JsonIgnore
     public synchronized IState getCurrentState() {
         return new State(
                 getCurrentBodyState(torsoBody),
@@ -870,6 +880,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
         return new StateVariable(x, y, th, dx, dy, dth);
     }
 
+    @JsonIgnore
     public Body[] getAllBodies() {
         return allBodies;
     }
@@ -915,6 +926,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
         setBodyToStateVariable(torsoBody, state.getStateVariableFromName(ObjectName.BODY));
     }
 
+    @JsonIgnore
     public GameUnified getCopy() {
         return new GameUnified();
     }
@@ -922,6 +934,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     /**
      * Is this state in failure?
      **/
+    @JsonIgnore
     public boolean getFailureStatus() {
         return isFailed;
     }
@@ -930,19 +943,23 @@ public class GameUnified implements IGameInternal, IGameSerializable {
      * Get the number of timesteps simulated since the beginning of execution.
      **/
     @Override
+    @JsonIgnore
     public long getTimestepsThisGame() {
         return timestepsSimulated;
     }
 
     @Override
+    @JsonIgnore
     public int getStateDimension() {
         return STATE_SIZE;
     }
 
+    @JsonIgnore
     public boolean isRightFootDown() {
         return collisionListener.isRightFootGrounded();
     }
 
+    @JsonIgnore
     public boolean isLeftFootDown() {
         return collisionListener.isLeftFootGrounded();
     }
@@ -1053,6 +1070,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
      * <p>
      * This is primarily for drawing using external tools, e.g. in MATLAB.
      **/
+    @JsonIgnore
     public VertHolder getDebugVertices() {
 
         VertHolder vertHolder = new VertHolder();
@@ -1346,6 +1364,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     }
 
     @Override
+    @JsonIgnore
     public synchronized byte[] getSerializedState() {
         return fstConfiguration.asByteArray(this);
     }

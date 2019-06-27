@@ -24,11 +24,11 @@ public class TrainableNetwork {
      * Networks are not created in Java. Java calls a python script defined here to create the network.
      */
     public static final String pythonGraphCreatorScript = "python/java_value_function/create_generic_graph.py";
-
-    /**
-     * Default location from which to save/load Tensorflow models.
-     */
-    public static final String graphPath = "src/main/resources/tflow_models/";
+//
+//    /**
+//     * Default location from which to save/load Tensorflow models.
+//     */
+//    public static final String graphPath = "src/main/resources/tflow_models/";
 
     /**
      * Default location from which to save/load Tensorflow checkpoint files.
@@ -266,14 +266,14 @@ public class TrainableNetwork {
     /**
      * Create a new fully-connected neural network structure. This calls a python script to make the net.
      *
-     * @param graphName      Name of the graph file (without path or file extension).
+     * @param graphFileName  Name of the graph file.
      * @param layerSizes     List of layer sizes. Make sure that the first and last layers match the inputs and desired
      *                       output sizes.
      * @param additionalArgs Additional inputs defined by the python script. Make sure that the list is separated out
      *                       by each word in the command line.
      * @return A new TrainableNetwork based on the specifications.
      */
-    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes,
+    public static TrainableNetwork makeNewNetwork(String graphFileName, List<Integer> layerSizes,
                                                   List<String> additionalArgs) throws FileNotFoundException {
 
         for (Integer layerSize : layerSizes) {
@@ -283,7 +283,7 @@ public class TrainableNetwork {
             }
         }
 
-        if (graphName.isEmpty()) {
+        if (graphFileName.isEmpty()) {
             throw new IllegalArgumentException("Graph name may not be empty.");
         }
 
@@ -294,7 +294,7 @@ public class TrainableNetwork {
         commandList.add("--layers");
         commandList.addAll(layerSizes.stream().map(String::valueOf).collect(Collectors.toList()));
         commandList.add("--savepath");
-        commandList.add(graphPath + graphName + ".pb");
+        commandList.add(graphFileName);
         commandList.addAll(additionalArgs);
 
         StringBuilder sb = new StringBuilder();
@@ -316,7 +316,7 @@ public class TrainableNetwork {
         }
 
         // Send the newly-created graph file to a new TrainableNetwork object.
-        File graphFile = new File(graphPath + graphName + ".pb");
+        File graphFile = new File(graphFileName);
         if (!graphFile.exists()) {
             throw new FileNotFoundException("Failed. Unable to locate the TensorFlow graph file which was supposedly " +
                     "created.");
