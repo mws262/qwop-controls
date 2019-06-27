@@ -249,7 +249,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      * @return The distribution used for untried action selection.
      */
     public Distribution<Action> getActionDistribution() {
-        return untriedActions.samplingDist;
+        return untriedActions.getSamplingDistribution();
     }
 
 

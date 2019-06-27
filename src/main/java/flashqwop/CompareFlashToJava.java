@@ -1,10 +1,9 @@
 package flashqwop;
 
-import game.action.Action;
 import game.GameUnified;
+import game.action.Action;
 import game.state.IState;
 import tree.node.NodeQWOP;
-import tree.node.NodeQWOPGraphicsBase;
 import ui.runner.PanelRunner_MultiState;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -134,9 +133,9 @@ public class CompareFlashToJava extends FlashGame {
 //
 //            }
 
-            panelRunner.clearSecondaryStates();
-            panelRunner.addSecondaryState(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state,
-                    NodeQWOPGraphicsBase.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
+//            panelRunner.clearSecondaryStates();
+//            panelRunner.addSecondaryState(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state,
+//                    NodeQWOPGraphicsBase.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
 
             panelRunner.setMainState(state);
             panelRunner.repaint();

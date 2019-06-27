@@ -1,11 +1,20 @@
 package value;
 
-import game.action.Action;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.IGameSerializable;
+import game.action.Action;
 import tree.node.NodeQWOPBase;
 
 import java.util.List;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = ValueFunction_Constant.class, name = "constant"),
+        @JsonSubTypes.Type(value = ValueFunction_TensorFlow.class, name = "tensorflow")
+})
 public interface IValueFunction {
 
     /**

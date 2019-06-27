@@ -3,6 +3,7 @@ package goals.tree_search;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -10,12 +11,15 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Preconditions;
-import controllers.Controller_Null;
-import game.state.transform.Transform_Autoencoder;
-import game.state.transform.Transform_PCA;
+import distributions.Distribution_Equal;
+import game.GameUnified;
+import game.action.Action;
+import game.action.ActionGenerator_UniformNoRepeats;
+import game.action.ActionList;
+import game.action.IActionGenerator;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.logging.log4j.Level;
@@ -23,26 +27,14 @@ import org.apache.logging.log4j.core.config.Configurator;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
 import tree.TreeWorker;
+import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPExplorableBase;
-import tree.node.evaluator.EvaluationFunction_Constant;
-import tree.node.filter.NodeFilter_SurvivalHorizon;
+import tree.node.NodeQWOPGraphics;
 import tree.sampler.ISampler;
-import tree.sampler.Sampler_UCB;
-import tree.sampler.rollout.RolloutPolicy_EndScore;
 import tree.stage.TreeStage;
-import tree.stage.TreeStage_MaxDepth;
 import ui.IUserInterface;
-import ui.UI_Full;
-import ui.histogram.PanelHistogram_LeafDepth;
-import ui.pie.PanelPie_ViableFutures;
-import ui.runner.PanelRunner_Animated;
-import ui.runner.PanelRunner_AnimatedTransformed;
-import ui.runner.PanelRunner_Comparison;
-import ui.runner.PanelRunner_Snapshot;
-import ui.scatterplot.*;
-import ui.timeseries.PanelTimeSeries_WorkerLoad;
+import ui.UI_Headless;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -50,13 +42,29 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.IntStream;
 
 public class SearchConfiguration implements Serializable {
 
     public Machine machine = new Machine(0.5f, 1, 20, "DEBUG");
     public List<SearchOperation> searchOperations = new ArrayList<>();
     public UI ui;
+
+    private transient ActionList alist = new ActionList(new Distribution_Equal());
+    {
+        alist.add(new Action(34, false, false, false, false));
+        alist.add(new Action(11, true, true, true, true));
+        alist.add(new Action(12, true, true, true, true));
+
+    }
+    public IActionGenerator actionGenerator =
+            new ActionGenerator_UniformNoRepeats(new ActionList[]{alist});///ActionGenerator_FixedSequence
+    // .makeDefaultGenerator(-1);
+
+    // (-1);
+    //new
+    // new ActionGenerator_FixedActions(alist);
+    // ActionGenerator_FixedSequence
+    // .makeDefaultGenerator(-1);
 
     public SearchConfiguration() {}
 
@@ -125,9 +133,15 @@ public class SearchConfiguration implements Serializable {
         public UI(@JsonProperty("UI") IUserInterface UI) {
             this.UI = UI;
         }
+
         public IUserInterface getUI() {
             return UI;
         }
+    }
+
+    public static class TreeConfiguration {
+        public IActionGenerator actionGenerator;
+
     }
 
     /**
@@ -203,13 +217,19 @@ public class SearchConfiguration implements Serializable {
         }
     }
 
-    public static void main(String[] args) {
-        // configuration.searchOperations.add(configuration.searchOperations.get(0));
-//        serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
-//        serializeToJson(new File("./src/main/resources/config/config.json"), configuration);
-//        serializeToYaml(new File("./src/main/resources/config/config.yaml"), configuration);
+    public void execute() {
+        NodeQWOPExplorableBase<?> rootNode;
+        if (ui.getUI() instanceof UI_Headless) {
+            rootNode = new NodeQWOPExplorable(GameUnified.getInitialState());
+        } else {
+            rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+        }
+        for (SearchOperation operation : searchOperations) {
+            for (int i = 0; i <= operation.getRepetitionCount(); i++) {
+                operation.startOperation(rootNode, machine);
+            }
+        }
 
-//        configuration = deserializeXML(new File("./src/main/resources/config/config.xml"));
     }
 
     public static void serializeToJson(File jsonFileOutput, SearchConfiguration configuration) {
@@ -236,8 +256,13 @@ public class SearchConfiguration implements Serializable {
 
     public static void serializeToYaml(File xmlFileOutput, SearchConfiguration configuration) {
         try {
-            ObjectMapper objectMapper =
-                    new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
+            YAMLMapper objectMapper = new YAMLMapper();
+            objectMapper.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
+            objectMapper.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
+            objectMapper.enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
+            objectMapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
+            objectMapper.disable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+
             objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
             XmlStreamWriter xmlStreamWriter = new XmlStreamWriter(xmlFileOutput);
@@ -254,6 +279,24 @@ public class SearchConfiguration implements Serializable {
             xmlMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
             xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             return xmlMapper.readValue(xmlStreamReader, SearchConfiguration.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static SearchConfiguration deserializeYaml(File yamlFileOutput) {
+        try {
+            YAMLMapper objectMapper = new YAMLMapper();
+            objectMapper.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
+            objectMapper.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
+            objectMapper.enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
+            objectMapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
+            objectMapper.disable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+
+            objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            return objectMapper.readValue(yamlFileOutput, SearchConfiguration.class);
         } catch (IOException e) {
             e.printStackTrace();
         }

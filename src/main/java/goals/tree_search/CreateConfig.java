@@ -1,13 +1,15 @@
 package goals.tree_search;
 
-import controllers.Controller_Null;
+import controllers.Controller_ValueFunction;
+import game.GameUnified;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import savers.DataSaver_Null;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_UCB;
-import tree.sampler.rollout.RolloutPolicy_EndScore;
+import tree.sampler.rollout.RolloutPolicy_DecayingHorizon;
+import tree.sampler.rollout.RolloutPolicy_Window;
 import tree.stage.TreeStage_MaxDepth;
 import ui.UI_Full;
 import ui.histogram.PanelHistogram_LeafDepth;
@@ -19,30 +21,52 @@ import ui.scatterplot.PanelPlot_Controls;
 import ui.scatterplot.PanelPlot_SingleRun;
 import ui.scatterplot.PanelPlot_States;
 import ui.scatterplot.PanelPlot_Transformed;
+import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class CreateConfig {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         SearchConfiguration configuration = new SearchConfiguration();
-        configuration.ui = new SearchConfiguration.UI(setupFullUI());
+        List<Integer> layerSizes = new ArrayList<>();
+        layerSizes.add(45);
+        layerSizes.add(55);
+//        configuration.ui = new SearchConfiguration.UI(setupFullUI());
         configuration.machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
         configuration.searchOperations.add(new SearchConfiguration.SearchOperation(
                 new TreeStage_MaxDepth(10, 10000),
                 new Sampler_UCB(
                         new EvaluationFunction_Constant(5f),
-                        new RolloutPolicy_EndScore(new EvaluationFunction_Constant(10f),
-                                new Controller_Null())),
+                        new RolloutPolicy_Window(
+                                new RolloutPolicy_DecayingHorizon(
+                                        new EvaluationFunction_Constant(10f),
+                                        new Controller_ValueFunction(
+                                                new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
+                                                        new GameUnified(),
+                                                        layerSizes,
+                                                        new ArrayList<>()))))),
                 new DataSaver_Null()));
 
         SearchConfiguration.serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
+        SearchConfiguration.serializeToJson(new File("./src/main/resources/config/config.json"), configuration);
+        SearchConfiguration.serializeToYaml(new File("./src/main/resources/config/config.yaml"), configuration);
+        // configuration.searchOperations.add(configuration.searchOperations.get(0));
+//        serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
+//        serializeToJson(new File("./src/main/resources/config/config.json"), configuration);
+//        serializeToYaml(new File("./src/main/resources/config/config.yaml"), configuration);
+
+        configuration = SearchConfiguration.deserializeYaml(new File("./src/main/resources/config/config.yaml"));
     }
     /**
      * This is the heavyweight, full UI, with tree visualization and a bunch of data visualization tabs. Includes some
      * TFlow components which are troublesome on some computers.
      */
+    @SuppressWarnings("Duplicates")
     public static UI_Full setupFullUI() {
         UI_Full fullUI = new UI_Full();
 

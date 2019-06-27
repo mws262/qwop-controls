@@ -1,5 +1,6 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
@@ -21,7 +22,7 @@ import java.util.stream.IntStream;
  */
 public abstract class RolloutPolicyBase implements IRolloutPolicy {
 
-    private final IEvaluationFunction evaluationFunction;
+    public final IEvaluationFunction evaluationFunction;
 
     ActionQueue actionQueue = new ActionQueue();
 
@@ -29,7 +30,9 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
 
     public final int maxTimesteps;
 
-    RolloutPolicyBase(IEvaluationFunction evaluationFunction, int maxTimesteps) {
+    RolloutPolicyBase(
+            @JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
+            @JsonProperty("maxTimesteps") int maxTimesteps) {
         this.evaluationFunction = evaluationFunction;
         this.maxTimesteps = maxTimesteps;
     }

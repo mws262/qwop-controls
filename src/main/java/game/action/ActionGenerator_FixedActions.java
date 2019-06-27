@@ -1,5 +1,6 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.NodeQWOPExplorableBase;
 
 import java.util.HashSet;
@@ -12,19 +13,25 @@ import java.util.Set;
  */
 public class ActionGenerator_FixedActions implements IActionGenerator {
 
-    private final ActionList fixedActionList;
+    private final ActionList actionList;
 
-    public ActionGenerator_FixedActions(ActionList fixedActionList) {
-        this.fixedActionList = fixedActionList;
+    public ActionGenerator_FixedActions(@JsonProperty("actionList") ActionList actionList) {
+        this.actionList = actionList;
     }
 
     @Override
     public ActionList getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode) {
-        return fixedActionList.getCopy();
+        return actionList.getCopy();
     }
 
     @Override
     public Set<Action> getAllPossibleActions() {
-        return new HashSet<>(fixedActionList);
+        return new HashSet<>(actionList);
     }
+
+    public ActionList getActionList() {
+        return actionList;
+    }
+
+
 }

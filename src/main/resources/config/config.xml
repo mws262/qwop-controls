@@ -14,136 +14,36 @@
       <evaluationFunction type="constant">
         <constantValue>5.0</constantValue>
       </evaluationFunction>
-      <rolloutPolicy type="end_score">
-        <evaluationFunction type="constant">
-          <constantValue>10.0</constantValue>
-        </evaluationFunction>
-        <controller type="null"/>
-        <maxTimesteps>2147483647</maxTimesteps>
-        <failureMultiplier>1.0</failureMultiplier>
+      <rolloutPolicy type="window">
+        <individualRollout type="decaying_horizon">
+          <evaluationFunction type="constant">
+            <constantValue>10.0</constantValue>
+          </evaluationFunction>
+          <rolloutController type="value_function">
+            <valueFunction type="tflow_state_only">
+              <fileName>src/main/resources/tflow_models/test.pb</fileName>
+              <gameTemplate type="default"/>
+              <hiddenLayerSizes>45</hiddenLayerSizes>
+              <hiddenLayerSizes>55</hiddenLayerSizes>
+              <inputSize>72</inputSize>
+              <outputSize>1</outputSize>
+            </valueFunction>
+          </rolloutController>
+          <maxTimesteps>200</maxTimesteps>
+        </individualRollout>
+        <selectionCriteria>BEST</selectionCriteria>
       </rolloutPolicy>
-      <c>4.087611</c>
+      <c>4.441495</c>
     </sampler>
     <saver type="null"/>
     <repetitionCount>0</repetitionCount>
   </searchOperations>
-  <ui>
-    <ui type="full">
-      <tabbedPanes type="runner_animated_transformed">
-        <name>Run Animation</name>
-      </tabbedPanes>
-      <tabbedPanes type="runner_snapshot">
-        <name>State Viewer</name>
-        <numHistoryStatesDisplay>25</numHistoryStatesDisplay>
-      </tabbedPanes>
-      <tabbedPanes type="runner_comparison">
-        <name>State Compare</name>
-        <maxNumStatesToShow>50</maxNumStatesToShow>
-      </tabbedPanes>
-      <tabbedPanes type="plot_states">
-        <name>State Plots</name>
-      </tabbedPanes>
-      <tabbedPanes type="futures_pie">
-        <name>Viable Futures</name>
-      </tabbedPanes>
-      <tabbedPanes type="depth_histogram">
-        <name>Leaf depth distribution</name>
-      </tabbedPanes>
-      <tabbedPanes type="plot_controls">
-        <name>Controls Plots</name>
-      </tabbedPanes>
-      <tabbedPanes type="plot_single_run">
-        <name>Single Run Plots</name>
-      </tabbedPanes>
-      <tabbedPanes type="plot_transformed">
-        <transformer type="pca">
-          <transformPCAComponents>0</transformPCAComponents>
-          <transformPCAComponents>1</transformPCAComponents>
-          <transformPCAComponents>2</transformPCAComponents>
-          <transformPCAComponents>3</transformPCAComponents>
-          <transformPCAComponents>4</transformPCAComponents>
-          <transformPCAComponents>5</transformPCAComponents>
-          <transformPCAComponents>6</transformPCAComponents>
-          <transformPCAComponents>7</transformPCAComponents>
-          <transformPCAComponents>8</transformPCAComponents>
-          <transformPCAComponents>9</transformPCAComponents>
-          <transformPCAComponents>10</transformPCAComponents>
-          <transformPCAComponents>11</transformPCAComponents>
-          <transformPCAComponents>12</transformPCAComponents>
-          <transformPCAComponents>13</transformPCAComponents>
-          <transformPCAComponents>14</transformPCAComponents>
-          <transformPCAComponents>15</transformPCAComponents>
-          <transformPCAComponents>16</transformPCAComponents>
-          <transformPCAComponents>17</transformPCAComponents>
-          <transformPCAComponents>18</transformPCAComponents>
-          <transformPCAComponents>19</transformPCAComponents>
-          <transformPCAComponents>20</transformPCAComponents>
-          <transformPCAComponents>21</transformPCAComponents>
-          <transformPCAComponents>22</transformPCAComponents>
-          <transformPCAComponents>23</transformPCAComponents>
-          <transformPCAComponents>24</transformPCAComponents>
-          <transformPCAComponents>25</transformPCAComponents>
-          <transformPCAComponents>26</transformPCAComponents>
-          <transformPCAComponents>27</transformPCAComponents>
-          <transformPCAComponents>28</transformPCAComponents>
-          <transformPCAComponents>29</transformPCAComponents>
-          <transformPCAComponents>30</transformPCAComponents>
-          <transformPCAComponents>31</transformPCAComponents>
-          <transformPCAComponents>32</transformPCAComponents>
-          <transformPCAComponents>33</transformPCAComponents>
-          <transformPCAComponents>34</transformPCAComponents>
-          <transformPCAComponents>35</transformPCAComponents>
-          <transformPCAComponents>36</transformPCAComponents>
-          <transformPCAComponents>37</transformPCAComponents>
-          <transformPCAComponents>38</transformPCAComponents>
-          <transformPCAComponents>39</transformPCAComponents>
-          <transformPCAComponents>40</transformPCAComponents>
-          <transformPCAComponents>41</transformPCAComponents>
-          <transformPCAComponents>42</transformPCAComponents>
-          <transformPCAComponents>43</transformPCAComponents>
-          <transformPCAComponents>44</transformPCAComponents>
-          <transformPCAComponents>45</transformPCAComponents>
-          <transformPCAComponents>46</transformPCAComponents>
-          <transformPCAComponents>47</transformPCAComponents>
-          <transformPCAComponents>48</transformPCAComponents>
-          <transformPCAComponents>49</transformPCAComponents>
-          <transformPCAComponents>50</transformPCAComponents>
-          <transformPCAComponents>51</transformPCAComponents>
-          <transformPCAComponents>52</transformPCAComponents>
-          <transformPCAComponents>53</transformPCAComponents>
-          <transformPCAComponents>54</transformPCAComponents>
-          <transformPCAComponents>55</transformPCAComponents>
-          <transformPCAComponents>56</transformPCAComponents>
-          <transformPCAComponents>57</transformPCAComponents>
-          <transformPCAComponents>58</transformPCAComponents>
-          <transformPCAComponents>59</transformPCAComponents>
-          <transformPCAComponents>60</transformPCAComponents>
-          <transformPCAComponents>61</transformPCAComponents>
-          <transformPCAComponents>62</transformPCAComponents>
-          <transformPCAComponents>63</transformPCAComponents>
-          <transformPCAComponents>64</transformPCAComponents>
-          <transformPCAComponents>65</transformPCAComponents>
-          <transformPCAComponents>66</transformPCAComponents>
-          <transformPCAComponents>67</transformPCAComponents>
-          <transformPCAComponents>68</transformPCAComponents>
-          <transformPCAComponents>69</transformPCAComponents>
-          <transformPCAComponents>70</transformPCAComponents>
-          <transformPCAComponents>71</transformPCAComponents>
-          <name>PCA 72</name>
-          <outputSize>72</outputSize>
-        </transformer>
-        <name>PCA Plots</name>
-        <plotsPerView>6</plotsPerView>
-      </tabbedPanes>
-      <tabbedPanes type="plot_transformed">
-        <transformer type="autoencoder">
-          <graphFile>src/main/resources/tflow_models/AutoEnc_72to12_6layer.pb</graphFile>
-          <outputSize>12</outputSize>
-          <name>AutoEnc 12</name>
-        </transformer>
-        <name>Autoenc Plots</name>
-        <plotsPerView>6</plotsPerView>
-      </tabbedPanes>
-    </ui>
-  </ui>
+  <ui/>
+  <actionGenerator type="fixed_actions_no_repeats">
+    <allActionLists>
+      <distribution type="equal"/>
+      <none>34 </none>
+      <qo>11 12 </qo>
+    </allActionLists>
+  </actionGenerator>
 </SearchConfiguration>

@@ -1,14 +1,16 @@
 package controllers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Action;
 import tree.node.NodeQWOPExplorableBase;
 import value.IValueFunction;
 
 public class Controller_ValueFunction implements IController {
 
-    private IValueFunction valueFunction;
+    private final IValueFunction valueFunction;
 
-    public Controller_ValueFunction(IValueFunction valueFunction) {
+    public Controller_ValueFunction(@JsonProperty("valueFunction") IValueFunction valueFunction) {
         this.valueFunction = valueFunction;
     }
 
@@ -18,7 +20,12 @@ public class Controller_ValueFunction implements IController {
     }
 
     @Override
+    @JsonIgnore
     public IController getCopy() {
         return null;
+    }
+
+    public IValueFunction getValueFunction() {
+        return valueFunction;
     }
 }
