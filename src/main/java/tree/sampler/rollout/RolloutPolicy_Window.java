@@ -21,11 +21,11 @@ import java.util.List;
  */
 public class RolloutPolicy_Window implements IRolloutPolicy {
 
-    public final IRolloutPolicy individualRollout;
+    @JsonProperty
+    private final IRolloutPolicy individualRollout;
 
     private ActionQueue actionQueue = new ActionQueue();
     private final List<Action> actionSequence = new ArrayList<>(); // Reused local list.
-
 
     public enum Criteria {
         WORST, BEST, AVERAGE,
@@ -90,4 +90,7 @@ public class RolloutPolicy_Window implements IRolloutPolicy {
         return new RolloutPolicy_Window(individualRollout.getCopy());
     }
 
+    public IRolloutPolicy getIndividualRollout() {
+        return individualRollout;
+    }
 }

@@ -121,7 +121,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         logger = LogManager.getLogger(MAIN_Search_ValueFun.class);
 
         /* Load parameters from config file. */
-        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
+//        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
         bailAfterXGames = Integer.parseInt(properties.getProperty("bailAfterXGames", "100000"));
         getToSteadyDepth = Integer.parseInt(properties.getProperty("getToSteadyDepth", "100"));
 
@@ -223,7 +223,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
             rollout = windowRollout;
         }
 
-        ISampler sampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout);
+        ISampler sampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout, 5, 1); // TODO hardcoded.
 
         return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates) :
                 TreeWorker.makeStandardTreeWorker(sampler);

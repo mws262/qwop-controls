@@ -1,5 +1,6 @@
 package ui.scatterplot;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.lang.ArrayUtils;
@@ -14,7 +15,6 @@ import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 import tree.node.NodeQWOPGraphicsBase;
-import tree.sampler.*;
 import ui.IUserInterface.TabbedPaneActivator;
 
 import javax.swing.*;
@@ -46,7 +46,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * How many plots do we want to squeeze in there horizontally?
      */
-    protected final int numberOfPlots;
+    public final int numberOfPlots;
 
     /**
      * Array of the numberOfPlots number of plots we make.
@@ -69,7 +69,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     private final Color actionColor3 = NodeQWOPGraphicsBase.getColorFromTreeDepth(20, NodeQWOPGraphicsBase.lineBrightnessDefault);
     private final Color actionColor4 = NodeQWOPGraphicsBase.getColorFromTreeDepth(30, NodeQWOPGraphicsBase.lineBrightnessDefault);
 
-    public PanelPlot(int numberOfPlots) {
+    public PanelPlot(@JsonProperty("numberOfPlots") int numberOfPlots) {
         this.numberOfPlots = numberOfPlots;
         plotPanels = new ChartPanel[numberOfPlots];
 

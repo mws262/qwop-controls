@@ -22,8 +22,8 @@ public class Controller_ValueFunction implements IController {
     @Override
     @JsonIgnore
     public IController getCopy() {
-        return null;
-    }
+        return new Controller_ValueFunction(valueFunction);
+    } // TODO doesn't duplicate underlying value function. Is this bad? I don't know yet.
 
     public IValueFunction getValueFunction() {
         return valueFunction;

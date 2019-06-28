@@ -77,7 +77,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
     private final String name;
 
-    public PanelPlot_SingleRun(@JsonProperty("name") String name, int numberOfPlots) {
+    public PanelPlot_SingleRun(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numberOfPlots) {
         super(numberOfPlots);
         this.name = name;
         game = new GameUnified();

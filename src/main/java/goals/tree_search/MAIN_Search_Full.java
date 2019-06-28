@@ -50,7 +50,7 @@ public class MAIN_Search_Full extends SearchTemplate {
     public void doGames() {
 
         // Load all parameters specific to this search.
-        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
+//        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
         boolean doStage1 = Boolean.parseBoolean(properties.getProperty("doStage1", "false"));
         boolean doStage2 = Boolean.parseBoolean(properties.getProperty("doStage2", "false"));
         boolean doStage3 = Boolean.parseBoolean(properties.getProperty("doStage3", "false"));
@@ -251,7 +251,7 @@ public class MAIN_Search_Full extends SearchTemplate {
                 new EvaluationFunction_Constant(0f),
                 new RolloutPolicy_DeltaScore(
                         new EvaluationFunction_Distance(),
-                        new Controller_Random()));
+                        new Controller_Random()), 5, 1); // TODO hardcoded.
         return TreeWorker.makeStandardTreeWorker(sampler);
     }
 }
