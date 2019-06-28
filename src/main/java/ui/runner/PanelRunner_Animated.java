@@ -32,6 +32,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
      */
     private ActionQueue actionQueue = new ActionQueue();
 
+    private Thread thread;
+
     /**
      * Current status of each keypress.
      */
@@ -131,9 +133,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     @Override
     public void run() {
-        //noinspection InfiniteLoopStatement
-        while (true) {
-            if (active && !pauseFlag) {
+        while (active) {
+            if (!pauseFlag) {
                 if (game != null) {
                     executeNextOnQueue();
                 }
@@ -160,9 +161,22 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     @Override
+    public void activateTab() {
+        actionQueue.clearAll();
+        active = true;
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    @Override
     public void deactivateTab() {
         actionQueue.clearAll();
         active = false;
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

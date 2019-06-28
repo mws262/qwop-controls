@@ -18,11 +18,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActivator {
-    
-    /**
-     * Is this panel active and drawing?
-     */
-    private AtomicBoolean isActive = new AtomicBoolean();
 
     /**
      * How many plots per row?
@@ -116,20 +111,5 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
         chart.setBorderVisible(false);
 
         return chart;
-    }
-
-    @Override
-    public void activateTab() {
-        isActive.set(true);
-    }
-
-    @Override
-    public void deactivateTab() {
-        isActive.set(false);
-    }
-
-    @Override
-    public boolean isActive() {
-        return isActive.get();
     }
 }

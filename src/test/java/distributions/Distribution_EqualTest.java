@@ -1,7 +1,7 @@
 package distributions;
 
 import game.action.Action;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -38,5 +38,20 @@ public class Distribution_EqualTest {
         }
 
         Assert.assertTrue(count > 0);
+    }
+
+    @Test
+    public void equalsTest() {
+        Distribution_Equal distEq1 = new Distribution_Equal();
+        Distribution_Equal distEq2 = new Distribution_Equal();
+
+        Distribution_Normal distNorm = new Distribution_Normal(5,1);
+
+        Object object = new Object();
+
+        Assert.assertEquals(distEq1, distEq1);
+        Assert.assertEquals(distEq1, distEq2);
+        Assert.assertNotEquals(distEq1, distNorm);
+        Assert.assertNotEquals(distEq1, object);
     }
 }

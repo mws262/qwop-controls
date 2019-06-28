@@ -214,6 +214,10 @@ public class Transform_PCA implements ITransform {
             String[] durations = durationList.split(" ");
             int[] components = new int[durations.length];
 
+            for (int i = 0; i < durations.length; i++)  {
+                components[i] = Integer.valueOf(durations[i]);
+            }
+
             return components;
         }
     }

@@ -22,6 +22,8 @@ import ui.timeseries.PanelTimeSeries;
 })
 public interface IUserInterface extends Runnable {
 
+    void start();
+
     /**
      * Main graphics loop.
      */

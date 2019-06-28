@@ -71,7 +71,8 @@ public class CreateConfig {
 //        serializeToJson(new File("./src/main/resources/config/config.json"), configuration);
 //        serializeToYaml(new File("./src/main/resources/config/config.yaml"), configuration);
 
-        configuration = SearchConfiguration.deserializeYaml(new File("./src/main/resources/config/config.yaml"));
+        configuration = SearchConfiguration.deserializeYaml(new File("./src/main/resources/config/config.yaml"),
+                SearchConfiguration.class);
     }
     /**
      * This is the heavyweight, full UI, with tree visualization and a bunch of data visualization tabs. Includes some

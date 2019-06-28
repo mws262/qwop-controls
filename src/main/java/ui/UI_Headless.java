@@ -5,6 +5,9 @@ import tree.node.NodeQWOPGraphicsBase;
 public class UI_Headless implements IUserInterface {
 
     @Override
+    public void start() {}
+
+    @Override
     public void run() {}
 
     @Override

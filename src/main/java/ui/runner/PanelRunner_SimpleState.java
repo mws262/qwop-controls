@@ -20,6 +20,8 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
      */
     private IState currentState;
 
+    private Thread thread;
+
     private final String name;
 
     public PanelRunner_SimpleState(@JsonProperty("name") String name) {
@@ -36,11 +38,6 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     @Override
     public void update(NodeQWOPGraphicsBase<?> node) {
         currentState = node.getState();
-    }
-
-    @Override
-    public void deactivateTab() {
-        active = false;
     }
 
     /**
@@ -60,8 +57,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
 
     @Override
     public void run() {
-        //noinspection InfiniteLoopStatement
-        while (true) {
+        while (active) {
             repaint();
             try {
                 Thread.sleep(15);
@@ -74,5 +70,22 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void activateTab() {
+        active = true;
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    @Override
+    public void deactivateTab() {
+        active = false;
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

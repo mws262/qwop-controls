@@ -524,6 +524,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
     }
 
     @Override
+    public void activateTab() {
+        active = true;
+    }
+
+    @Override
     public void deactivateTab() {
         active = false;
     } // Not really applicable.

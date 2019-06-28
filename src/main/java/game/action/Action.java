@@ -1,5 +1,6 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -123,7 +124,9 @@ public class Action implements Serializable {
      * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
      * @param keysPressed Keys pressed during this action.
      */
-    public Action(int totalTimestepsToHold, Keys keysPressed) {
+    @JsonCreator
+    public Action(@JsonProperty("duration") int totalTimestepsToHold,
+                  @JsonProperty("keys") Keys keysPressed) {
         this(totalTimestepsToHold, Action.keysToBooleans(keysPressed));
     }
 

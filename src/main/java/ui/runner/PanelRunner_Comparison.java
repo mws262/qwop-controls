@@ -109,6 +109,11 @@ public class PanelRunner_Comparison extends PanelRunner {
     }
 
     @Override
+    public void activateTab() {
+        active = true;
+    }
+
+    @Override
     public void deactivateTab() {
         // TODO
 //        if (selectedNode != null) {

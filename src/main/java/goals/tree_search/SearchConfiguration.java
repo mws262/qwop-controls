@@ -112,7 +112,7 @@ public class SearchConfiguration implements Serializable {
 
         @JsonIgnore
         public int getRequestedThreadCount() {
-            return Math.min(Math.max((int)(coreFraction * coreCount), coreMinimum), coreMinimum);
+            return Math.min(Math.max((int)(coreFraction * coreCount), coreMinimum), coreMaximum);
         }
     }
 
@@ -187,6 +187,7 @@ public class SearchConfiguration implements Serializable {
             for (int i = 0; i < machine.getRequestedThreadCount(); i++) {
                 treeWorkers.add(getTreeWorker());
             }
+
             stage.initialize(treeWorkers, rootNode);
         }
 
@@ -206,6 +207,8 @@ public class SearchConfiguration implements Serializable {
             ui.addRootNode(root);
             rootNode = root;
         }
+        ui.start();
+
         for (SearchOperation operation : searchOperations) {
             for (int i = 0; i <= operation.getRepetitionCount(); i++) {
                 operation.startOperation(rootNode, machine);
@@ -214,7 +217,7 @@ public class SearchConfiguration implements Serializable {
 
     }
 
-    public static void serializeToJson(File jsonFileOutput, SearchConfiguration configuration) {
+    public static void serializeToJson(File jsonFileOutput, Object configuration) {
         ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
         try {
@@ -224,7 +227,7 @@ public class SearchConfiguration implements Serializable {
         }
     }
 
-    public static void serializeToXML(File xmlFileOutput, SearchConfiguration configuration) {
+    public static void serializeToXML(File xmlFileOutput, Object configuration) {
         try {
             XmlMapper xmlMapper = new XmlMapper();
             xmlMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
@@ -236,7 +239,7 @@ public class SearchConfiguration implements Serializable {
         }
     }
 
-    public static void serializeToYaml(File xmlFileOutput, SearchConfiguration configuration) {
+    public static void serializeToYaml(File xmlFileOutput, Object configuration) {
         try {
             YAMLMapper objectMapper = new YAMLMapper();
             objectMapper.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
@@ -267,7 +270,7 @@ public class SearchConfiguration implements Serializable {
         return null;
     }
 
-    public static SearchConfiguration deserializeYaml(File yamlFileOutput) {
+    public static <T extends Object> T deserializeYaml(File yamlFileOutput, Class<T> clazz) {
         try {
             YAMLMapper objectMapper = new YAMLMapper();
             objectMapper.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
@@ -278,7 +281,7 @@ public class SearchConfiguration implements Serializable {
 
             objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            return objectMapper.readValue(yamlFileOutput, SearchConfiguration.class);
+            return objectMapper.readValue(yamlFileOutput, clazz);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -311,7 +314,8 @@ public class SearchConfiguration implements Serializable {
     }
 
     public static void main(String[] args) {
-        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/config.yaml"));
-        config.execute();
+        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/config.yaml"),
+                SearchConfiguration.class);
+        Objects.requireNonNull(config).execute();
     }
 }
