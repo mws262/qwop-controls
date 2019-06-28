@@ -2,6 +2,7 @@ package goals.tree_search;
 
 import controllers.Controller_ValueFunction;
 import game.GameUnified;
+import game.action.ActionGenerator_FixedSequence;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import savers.DataSaver_Null;
@@ -11,6 +12,7 @@ import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.RolloutPolicy_DecayingHorizon;
 import tree.sampler.rollout.RolloutPolicy_Window;
 import tree.stage.TreeStage_MaxDepth;
+import ui.IUserInterface;
 import ui.UI_Full;
 import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
@@ -32,13 +34,16 @@ import java.util.stream.IntStream;
 public class CreateConfig {
 
     public static void main(String[] args) throws FileNotFoundException {
-        SearchConfiguration configuration = new SearchConfiguration();
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(45);
         layerSizes.add(55);
 //        configuration.ui = new SearchConfiguration.UI(setupFullUI());
-        configuration.machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
-        configuration.searchOperations.add(new SearchConfiguration.SearchOperation(
+        SearchConfiguration.Machine machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
+        SearchConfiguration.Tree tree = new SearchConfiguration.Tree(ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
+        List<SearchConfiguration.SearchOperation> searchOperations = new ArrayList<>();
+        IUserInterface ui = CreateConfig.setupFullUI();
+
+        searchOperations.add(new SearchConfiguration.SearchOperation(
                 new TreeStage_MaxDepth(10, 10000),
                 new Sampler_UCB(
                         new EvaluationFunction_Constant(5f),
@@ -49,8 +54,14 @@ public class CreateConfig {
                                                 new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
                                                         new GameUnified(),
                                                         layerSizes,
-                                                        new ArrayList<>()))))),
+                                                        new ArrayList<>())))),
+                        5,
+                        1),
                 new DataSaver_Null()));
+
+
+        SearchConfiguration configuration = new SearchConfiguration(machine, tree, searchOperations, ui);
+
 
         SearchConfiguration.serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
         SearchConfiguration.serializeToJson(new File("./src/main/resources/config/config.json"), configuration);

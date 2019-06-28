@@ -31,7 +31,7 @@ public class RolloutPolicy_DeltaScore extends RolloutPolicyBase {
     }
 
     public RolloutPolicy_DeltaScore(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
-                                    @JsonProperty("controller") IController rolloutController,
+                                    @JsonProperty("getRolloutController") IController rolloutController,
                                     @JsonProperty("maxTimesteps") int maxTimesteps) {
         super(evaluationFunction, maxTimesteps);
         this.rolloutController = rolloutController;
@@ -58,7 +58,7 @@ public class RolloutPolicy_DeltaScore extends RolloutPolicyBase {
     }
 
     @Override
-    public IController getController() {
+    public IController getRolloutController() {
         return rolloutController;
     }
 
@@ -66,7 +66,7 @@ public class RolloutPolicy_DeltaScore extends RolloutPolicyBase {
     @Override
     public RolloutPolicy_DeltaScore getCopy() {
        RolloutPolicy_DeltaScore copy = new RolloutPolicy_DeltaScore(getEvaluationFunction().getCopy(),
-               getController().getCopy(), maxTimesteps);
+               getRolloutController().getCopy(), maxTimesteps);
        copy.failureMultiplier = failureMultiplier;
        return copy;
     }

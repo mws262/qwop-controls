@@ -327,6 +327,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (sampler.rolloutPolicyGuard(currentGameNode)) {
                         changeStatus(Status.EVALUATE_GAME);
                     } else {
+                        assert currentGameNode.getTreeDepth() > 0;
                         sampler.rolloutPolicy(currentGameNode, game);
                     }
 

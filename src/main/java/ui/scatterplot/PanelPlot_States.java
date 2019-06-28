@@ -70,7 +70,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
 
     private final String name;
 
-    public PanelPlot_States(@JsonProperty("name") String name, int numPlots) {
+    public PanelPlot_States(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numPlots) {
         super(numPlots);
         this.name = name;
 

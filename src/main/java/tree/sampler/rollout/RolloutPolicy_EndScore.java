@@ -29,7 +29,7 @@ public class RolloutPolicy_EndScore extends RolloutPolicyBase {
     }
 
     public RolloutPolicy_EndScore(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
-                                  @JsonProperty("controller") IController rolloutController,
+                                  @JsonProperty("getRolloutController") IController rolloutController,
                                   @JsonProperty("maxTimesteps") int maxTimesteps) {
         super(evaluationFunction, maxTimesteps);
         this.rolloutController = rolloutController;
@@ -57,14 +57,14 @@ public class RolloutPolicy_EndScore extends RolloutPolicyBase {
     }
 
     @Override
-    public IController getController() {
+    public IController getRolloutController() {
         return rolloutController;
     }
 
     @Override
     public RolloutPolicy_EndScore getCopy() {
        RolloutPolicy_EndScore copy = new RolloutPolicy_EndScore(getEvaluationFunction().getCopy(),
-               getController().getCopy(), maxTimesteps);
+               getRolloutController().getCopy(), maxTimesteps);
        copy.failureMultiplier = failureMultiplier;
        return copy;
     }

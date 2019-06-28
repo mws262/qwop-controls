@@ -1,5 +1,6 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Random;
 import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
@@ -13,7 +14,7 @@ import tree.node.NodeQWOPExplorableBase;
  */
 public class RolloutPolicy_RandomColdStart extends RolloutPolicy_DeltaScore{
 
-    public RolloutPolicy_RandomColdStart(IEvaluationFunction evaluationFunction) {
+    public RolloutPolicy_RandomColdStart(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction) {
         super(evaluationFunction, new Controller_Random());
     }
 

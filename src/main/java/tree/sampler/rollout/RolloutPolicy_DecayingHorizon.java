@@ -52,7 +52,7 @@ public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
 
     @Override
     @JsonIgnore
-    public IController getController() {
+    public IController getRolloutController() {
         return rolloutController;
     }
 

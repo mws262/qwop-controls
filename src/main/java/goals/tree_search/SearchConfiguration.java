@@ -14,11 +14,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Preconditions;
-import distributions.Distribution_Equal;
 import game.GameUnified;
-import game.action.Action;
-import game.action.ActionGenerator_UniformNoRepeats;
-import game.action.ActionList;
 import game.action.IActionGenerator;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
@@ -45,28 +41,25 @@ import java.util.Objects;
 
 public class SearchConfiguration implements Serializable {
 
-    public Machine machine = new Machine(0.5f, 1, 20, "DEBUG");
-    public List<SearchOperation> searchOperations = new ArrayList<>();
-    public UI ui;
+    public final Machine machine;
+    public final Tree tree;
+    public final List<SearchOperation> searchOperations;
+    public final IUserInterface ui;
 
-    private transient ActionList alist = new ActionList(new Distribution_Equal());
-    {
-        alist.add(new Action(34, false, false, false, false));
-        alist.add(new Action(11, true, true, true, true));
-        alist.add(new Action(12, true, true, true, true));
+    public SearchConfiguration(@JsonProperty("machine") Machine machine,
+                               @JsonProperty("tree") Tree tree,
+                               @JsonProperty("searchOperations") List<SearchOperation> searchOperations,
+                               @JsonProperty("ui") IUserInterface ui) {
+        Preconditions.checkNotNull(machine);
+        Preconditions.checkNotNull(tree);
+        Preconditions.checkNotNull(searchOperations);
+        Preconditions.checkNotNull(ui);
 
+        this.machine = machine;
+        this.tree = tree;
+        this.searchOperations = searchOperations;
+        this.ui = ui;
     }
-    public IActionGenerator actionGenerator =
-            new ActionGenerator_UniformNoRepeats(new ActionList[]{alist});///ActionGenerator_FixedSequence
-    // .makeDefaultGenerator(-1);
-
-    // (-1);
-    //new
-    // new ActionGenerator_FixedActions(alist);
-    // ActionGenerator_FixedSequence
-    // .makeDefaultGenerator(-1);
-
-    public SearchConfiguration() {}
 
     /**
      * Defines run parameters having to do with threads, logging, etc.
@@ -123,25 +116,12 @@ public class SearchConfiguration implements Serializable {
         }
     }
 
-    /**
-     * Defines user interface settings.
-     */
-    public static class UI {
-        @JacksonXmlProperty(isAttribute=true)
-        private final IUserInterface UI;
+    public static class Tree {
+        public final IActionGenerator actionGenerator;
 
-        public UI(@JsonProperty("UI") IUserInterface UI) {
-            this.UI = UI;
+        public Tree(@JsonProperty("actionGenerator") IActionGenerator actionGenerator) {
+            this.actionGenerator = actionGenerator;
         }
-
-        public IUserInterface getUI() {
-            return UI;
-        }
-    }
-
-    public static class TreeConfiguration {
-        public IActionGenerator actionGenerator;
-
     }
 
     /**
@@ -219,10 +199,12 @@ public class SearchConfiguration implements Serializable {
 
     public void execute() {
         NodeQWOPExplorableBase<?> rootNode;
-        if (ui.getUI() instanceof UI_Headless) {
-            rootNode = new NodeQWOPExplorable(GameUnified.getInitialState());
+        if (ui instanceof UI_Headless) {
+            rootNode = new NodeQWOPExplorable(GameUnified.getInitialState(), tree.actionGenerator);
         } else {
-            rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+            NodeQWOPGraphics root = new NodeQWOPGraphics(GameUnified.getInitialState(), tree.actionGenerator);
+            ui.addRootNode(root);
+            rootNode = root;
         }
         for (SearchOperation operation : searchOperations) {
             for (int i = 0; i <= operation.getRepetitionCount(); i++) {
@@ -326,5 +308,10 @@ public class SearchConfiguration implements Serializable {
                     || m.getDeclaringClass().getName().contains("org.jfree")
                     || super.hasIgnoreMarker(m);
         }
+    }
+
+    public static void main(String[] args) {
+        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/config.yaml"));
+        config.execute();
     }
 }

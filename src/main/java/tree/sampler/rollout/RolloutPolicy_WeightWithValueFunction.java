@@ -1,5 +1,6 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
 import value.IValueFunction;
@@ -15,11 +16,13 @@ public class RolloutPolicy_WeightWithValueFunction implements IRolloutPolicy {
 
     public float valueFunctionWeight = 0.8f;
 
-    private IRolloutPolicy individualRollout;
+    private final IRolloutPolicy individualRollout;
 
-    private IValueFunction valueFunction;
+    private final IValueFunction valueFunction;
 
-    public RolloutPolicy_WeightWithValueFunction(IRolloutPolicy individualRollout, IValueFunction valueFunction) {
+    public RolloutPolicy_WeightWithValueFunction(
+            @JsonProperty("individualRollout") IRolloutPolicy individualRollout,
+            @JsonProperty("valueFunction") IValueFunction valueFunction) {
         this.individualRollout = individualRollout;
         this.valueFunction = valueFunction;
     }
@@ -38,5 +41,13 @@ public class RolloutPolicy_WeightWithValueFunction implements IRolloutPolicy {
         // if it would be better to copy value function also.
         rolloutCopy.valueFunctionWeight = valueFunctionWeight;
         return rolloutCopy;
+    }
+
+    public IRolloutPolicy getIndividualRollout() {
+        return individualRollout;
+    }
+
+    public IValueFunction getValueFunction() {
+        return valueFunction;
     }
 }

@@ -9,6 +9,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * All UI stuff happens here and most of the analysis that individual panes show happens here too.
@@ -42,7 +43,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
     /**
      * List of panes which can be activated, deactivated.
      */
-    public ArrayList<TabbedPaneActivator> tabbedPanes = new ArrayList<>();
+    private List<TabbedPaneActivator> tabbedPanes = new ArrayList<>();
 
     /**
      * Window width
@@ -126,6 +127,15 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
 
         //Make sure the currently active tab is actually being updated.
         tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+    }
+
+
+    public void setTabbedPanes(List<TabbedPaneActivator> tabbedPanes) {
+        tabbedPanes.forEach(this::addTab);
+    }
+
+    public List<TabbedPaneActivator> getTabbedPanes() {
+        return tabbedPanes;
     }
 
     @Override

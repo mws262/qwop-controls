@@ -63,7 +63,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 
     private final String name;
 
-    public PanelPlot_Controls(@JsonProperty("name") String name, int numberOfPlots) {
+    public PanelPlot_Controls(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numberOfPlots) {
         super(numberOfPlots);
         this.name = name;
         numPlots = transformer.getOutputSize();

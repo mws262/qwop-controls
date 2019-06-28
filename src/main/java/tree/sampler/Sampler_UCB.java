@@ -20,6 +20,16 @@ import value.updaters.ValueUpdater_Average;
 public class Sampler_UCB implements ISampler {
 
     /**
+     * Constant term on UCB exploration factor. Higher means more exploration.
+     */
+    public final float explorationConstant;
+
+    /**
+     *
+     */
+    public final float explorationRandomFactor;
+
+    /**
      * Evaluation function used to score single nodes after rollouts are done.
      */
     private final IEvaluationFunction evaluationFunction;
@@ -34,17 +44,7 @@ public class Sampler_UCB implements ISampler {
     /**
      * Explore/exploit trade-off parameter. Higher means more exploration. Lower means more exploitation.
      */
-    public float c = 6; // 7 during most long batch runs.
-
-    /**
-     * A multiplier to tone down or amp up exploration. Higher means more exploration.
-     */
-    public static float explorationMultiplier = 1f;
-
-    /**
-     * Constant term on UCB exploration factor. Higher means more exploration.
-     */
-    public static float explorationConstant = 1f;
+    private final float c;
 
     /**
      * Are we done with the tree policy?
@@ -74,10 +74,14 @@ public class Sampler_UCB implements ISampler {
      */
     public Sampler_UCB(
             @JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
-            @JsonProperty("rolloutPolicy") IRolloutPolicy rolloutPolicy) {
+            @JsonProperty("rolloutPolicy") IRolloutPolicy rolloutPolicy,
+            @JsonProperty("explorationConstant") float explorationConstant,
+            @JsonProperty("explorationRandomFactor") float explorationRandomFactor) {
         this.evaluationFunction = evaluationFunction;
         this.rolloutPolicy = rolloutPolicy;
-        c = explorationMultiplier * (Random.nextFloat() * c + explorationConstant);
+        this.explorationConstant = explorationConstant;
+        this.explorationRandomFactor = explorationRandomFactor;
+        c = explorationRandomFactor * Random.nextFloat() + explorationConstant;
     }
 
     /**
@@ -196,8 +200,8 @@ public class Sampler_UCB implements ISampler {
     @JsonIgnore
     @Override
     public Sampler_UCB getCopy() {
-        Sampler_UCB sampler = new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy());
-        sampler.c = c;
+        Sampler_UCB sampler = new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy(),
+                explorationConstant, explorationRandomFactor);
         sampler.valueUpdater = valueUpdater;
         return sampler;
     }
@@ -208,5 +212,10 @@ public class Sampler_UCB implements ISampler {
 
     public IRolloutPolicy getRolloutPolicy() {
         return rolloutPolicy;
+    }
+
+    @JsonIgnore
+    public float getC() {
+        return c;
     }
 }
