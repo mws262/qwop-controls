@@ -109,9 +109,6 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
         tabPane.addTab(newTab.getName(), (Component) newTab);
         tabbedPanes.add(newTab);
         tabPane.revalidate();
-
-        //Make sure the currently active tab is actually being updated.
-        tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
     }
 
     /**
@@ -138,6 +135,14 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
         return tabbedPanes;
     }
 
+    @Override
+    public void start() {
+        running = true;
+        Thread thread = new Thread(this);
+        thread.start();
+        tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+
+    }
     @Override
     public void run() {
         while (running) {

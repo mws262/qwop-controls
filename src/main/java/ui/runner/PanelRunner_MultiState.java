@@ -20,6 +20,8 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
      */
     private IState mainState;
 
+    private Thread thread;
+
     /**
      * Additional states to draw, and their colors. x-coordinate will be relative to the mainState.
      */
@@ -65,11 +67,6 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
         mainState = node.getState();
     }
 
-    @Override
-    public void deactivateTab() {
-        active = false;
-    }
-
     /**
      * Draws the selected node state and potentially previous and future states.
      */
@@ -106,8 +103,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
 
     @Override
     public void run() {
-        //noinspection InfiniteLoopStatement
-        while (true) {
+        while (active) {
             repaint();
             try {
                 Thread.sleep(30);
@@ -120,5 +116,22 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void activateTab() {
+        active = true;
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    @Override
+    public void deactivateTab() {
+        active = false;
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

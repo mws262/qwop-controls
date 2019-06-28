@@ -53,9 +53,11 @@ public class RolloutPolicy_Window implements IRolloutPolicy {
 
         float[] windowScores = new float[windowActions.size()];
         for (int i = 0; i < windowActions.size(); i++) {
-            startNode.getParent().getSequence(actionSequence);
             actionQueue.clearAll();
-            actionQueue.addSequence(actionSequence);
+            if (startNode.getTreeDepth() > 1) {
+                startNode.getParent().getSequence(actionSequence);
+                actionQueue.addSequence(actionSequence);
+            }
             actionQueue.addAction(windowActions.get(i));
             game.makeNewWorld();
             while (!actionQueue.isEmpty()) {

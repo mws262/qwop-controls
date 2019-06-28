@@ -86,7 +86,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
     public Action getAction() { return action; }
 
     public synchronized List<Action> getSequence(List<Action> actionList) {
-        if (getTreeDepth() == 0)
+        if (getTreeDepth() <= 0)
             throw new IndexOutOfBoundsException("Cannot get a sequence at the root node, since it has no game.action " +
                     "leading up to it.");
         actionList.clear();

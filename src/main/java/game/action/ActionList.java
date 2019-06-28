@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import distributions.Distribution;
 import distributions.Distribution_Equal;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.io.IOException;
 import java.util.*;
@@ -126,7 +128,8 @@ public class ActionList extends ArrayList<Action> {
     @SuppressWarnings("unused")
     public static ActionList makeExhaustiveActionList(int minDuration, int maxDuration,
                                                       Distribution<Action> distribution) {
-        assert minDuration < 0;
+        assert minDuration > 0;
+        assert maxDuration > minDuration;
 
         ActionList set = new ActionList(distribution);
         for (Action.Keys key : Action.Keys.values()) {
@@ -181,6 +184,29 @@ public class ActionList extends ArrayList<Action> {
         }
         super.addAll(index, alist);
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ActionList other = (ActionList) o;
+        EqualsBuilder eb = new EqualsBuilder();
+        eb.append(this.samplingDistribution, other.samplingDistribution);
+        eb.append(this.size(), other.size());
+        eb.appendSuper(this.containsAll(other));
+        return eb.isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        HashCodeBuilder hash = new HashCodeBuilder();
+        hash.append(samplingDistribution);
+        for (Action a : this) {
+            hash.append(a); // FIXME Technically this isn't quite right because order is going to matter.
+        }
+        return hash.toHashCode();
     }
 
     public Distribution<Action> getSamplingDistribution() {

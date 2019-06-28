@@ -5,6 +5,7 @@ import game.action.Action;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Action sampling distribution implementation which is weighted according to a normal distribution. Once the mean
@@ -67,5 +68,19 @@ public class Distribution_Normal extends Distribution<Action> {
 
     public float getStandardDeviation() {
         return standardDeviation;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Distribution_Normal that = (Distribution_Normal) o;
+        return Float.compare(that.mean, mean) == 0 &&
+                Float.compare(that.standardDeviation, standardDeviation) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mean, standardDeviation);
     }
 }
