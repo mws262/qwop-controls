@@ -2,9 +2,12 @@ package goals.tree_search;
 
 import controllers.Controller_Null;
 import controllers.Controller_ValueFunction;
+import distributions.Distribution_Equal;
 import distributions.Distribution_Normal;
 import game.GameUnified;
 import game.action.Action;
+import game.action.ActionGenerator_FixedActions;
+import game.action.ActionGenerator_FixedSequence;
 import game.action.ActionList;
 import game.state.IState;
 import game.state.State;
@@ -33,13 +36,37 @@ public class SearchConfigurationTest {
     @Before
     public void setup() {
         GameUnified game = new GameUnified();
-
         for (int i = 0; i < 10; i++) {
             game.step(false, true, true, false);
         }
         testState2 = game.getCurrentState();
         sampleNode2 = new NodeQWOPExplorable(testState2);
+    }
 
+    @Test
+    public void yamlDistribution_Equal() throws IOException {
+        File file = File.createTempFile("disteq", "yaml");
+        file.deleteOnExit();
+        Distribution_Equal dist = new Distribution_Equal();
+        SearchConfiguration.serializeToYaml(file, dist);
+        Assert.assertTrue(file.exists());
+
+        Distribution_Equal distLoaded = SearchConfiguration.deserializeYaml(file, Distribution_Equal.class);
+        Assert.assertNotNull(distLoaded);
+        Assert.assertEquals(dist, distLoaded);
+    }
+
+    @Test
+    public void yamlDistribution_Normal() throws IOException {
+        File file = File.createTempFile("distnorm", "yaml");
+        file.deleteOnExit();
+        Distribution_Normal dist = new Distribution_Normal(12, 3);
+        SearchConfiguration.serializeToYaml(file, dist);
+        Assert.assertTrue(file.exists());
+
+        Distribution_Normal distLoaded = SearchConfiguration.deserializeYaml(file, Distribution_Normal.class);
+        Assert.assertNotNull(distLoaded);
+        Assert.assertEquals(dist, distLoaded);
     }
 
     @Test
@@ -73,6 +100,33 @@ public class SearchConfigurationTest {
         ActionList alistLoaded = SearchConfiguration.deserializeYaml(file, ActionList.class);
         Assert.assertNotNull(alistLoaded);
         Assert.assertEquals(actionList, alistLoaded);
+    }
+
+    @Test
+    public void yamlActionGenerator_FixedActions() throws IOException{
+        File file = File.createTempFile("actiongenfixed", "yaml");
+        file.deleteOnExit();
+        ActionGenerator_FixedActions agen = new ActionGenerator_FixedActions(ActionList.makeExhaustiveActionList(8,
+                11, new Distribution_Equal()));
+        SearchConfiguration.serializeToYaml(file, agen);
+        Assert.assertTrue(file.exists());
+
+        ActionGenerator_FixedActions agenLoaded = SearchConfiguration.deserializeYaml(file, ActionGenerator_FixedActions.class);
+        Assert.assertNotNull(agenLoaded);
+        Assert.assertEquals(agen, agenLoaded);
+    }
+
+    @Test
+    public void yamlActionGenerator_FixedSequence() throws IOException {
+        File file = File.createTempFile("actiongenfixedseq", "yaml");
+        file.deleteOnExit();
+        ActionGenerator_FixedSequence agen = ActionGenerator_FixedSequence.makeDefaultGenerator(5);
+        SearchConfiguration.serializeToYaml(file, agen);
+        Assert.assertTrue(file.exists());
+
+        ActionGenerator_FixedSequence agenLoaded = SearchConfiguration.deserializeYaml(file, ActionGenerator_FixedSequence.class);
+        Assert.assertNotNull(agenLoaded);
+        Assert.assertEquals(agen, agenLoaded);
     }
 
     @Test
