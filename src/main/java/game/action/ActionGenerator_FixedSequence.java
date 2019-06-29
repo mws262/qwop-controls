@@ -17,10 +17,7 @@ import distributions.Distribution_Normal;
 import tree.node.NodeQWOPExplorableBase;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
 /**
@@ -118,12 +115,28 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
         return actionExceptions;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ActionGenerator_FixedSequence that = (ActionGenerator_FixedSequence) o;
+        return Arrays.equals(repeatedActions, that.repeatedActions) &&
+                Objects.equals(actionExceptions, that.actionExceptions);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(actionExceptions);
+        result = 31 * result + Arrays.hashCode(repeatedActions);
+        return result;
+    }
+
     /**
      * Assign the correct generator of game.action based on the baseline options and exceptions.
      * Will assign a broader set of options for "recovery" at the specified starting depth.
      * Pass -1 to disable this.
      */
-    public static IActionGenerator makeDefaultGenerator(int recoveryExceptionStart) {
+    public static ActionGenerator_FixedSequence makeDefaultGenerator(int recoveryExceptionStart) {
         /* Space of allowed game.action to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
@@ -222,7 +235,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
         return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 
-    public static IActionGenerator makeExtendedGenerator(int recoveryExceptionStart) {
+    public static ActionGenerator_FixedSequence makeExtendedGenerator(int recoveryExceptionStart) {
         /* Space of allowed game.action to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
@@ -324,35 +337,6 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
         }
         // Define the specific way that these allowed game.action are assigned as potential options for nodes.
         return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
-    }
-
-    public static class FixedSequenceSerializer extends StdSerializer<ActionGenerator_FixedSequence> {
-
-        public FixedSequenceSerializer() {
-            this(null);
-        }
-
-        public FixedSequenceSerializer(Class<ActionGenerator_FixedSequence> t) {
-            super(t);
-        }
-
-        @Override
-        public void serialize(ActionGenerator_FixedSequence value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-            jgen.writeFieldName("repeatedActions");
-            jgen.writeStartObject();
-            for (ActionList alist : value.getRepeatedActions()) {
-//                jgen.writeObjectField("a", alist);
-                jgen.writeStartObject(alist);
-            }
-            jgen.writeEndObject();
-        }
-        @Override
-        public void serializeWithType(ActionGenerator_FixedSequence value, JsonGenerator gen,
-                                      SerializerProvider provider, TypeSerializer typeSer) throws IOException {
-            typeSer.writeTypePrefixForObject(value, gen);
-            serialize(value, gen, provider); // call your customized serialize method
-            typeSer.writeTypeSuffixForObject(value, gen);
-        }
     }
 
     private static class ExceptionDeserializer extends KeyDeserializer {
