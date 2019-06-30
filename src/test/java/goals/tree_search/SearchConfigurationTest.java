@@ -5,10 +5,7 @@ import controllers.Controller_ValueFunction;
 import distributions.Distribution_Equal;
 import distributions.Distribution_Normal;
 import game.GameUnified;
-import game.action.Action;
-import game.action.ActionGenerator_FixedActions;
-import game.action.ActionGenerator_FixedSequence;
-import game.action.ActionList;
+import game.action.*;
 import game.state.IState;
 import game.state.State;
 import org.junit.Assert;
@@ -125,6 +122,32 @@ public class SearchConfigurationTest {
         Assert.assertTrue(file.exists());
 
         ActionGenerator_FixedSequence agenLoaded = SearchConfiguration.deserializeYaml(file, ActionGenerator_FixedSequence.class);
+        Assert.assertNotNull(agenLoaded);
+        Assert.assertEquals(agen, agenLoaded);
+    }
+
+    @Test
+    public void yamlActionGenerator_Null() throws IOException {
+        File file = File.createTempFile("actiongennull", "yaml");
+        file.deleteOnExit();
+        ActionGenerator_Null agen = new ActionGenerator_Null();
+        SearchConfiguration.serializeToYaml(file, agen);
+        Assert.assertTrue(file.exists());
+
+        ActionGenerator_Null agenLoaded = SearchConfiguration.deserializeYaml(file, ActionGenerator_Null.class);
+        Assert.assertNotNull(agenLoaded);
+        Assert.assertEquals(agen, agenLoaded);
+    }
+
+    @Test
+    public void yamlActionGenerator_UniformNoRepeats() throws IOException {
+        File file = File.createTempFile("actiongennorepeats", "yaml");
+        file.deleteOnExit();
+        ActionGenerator_UniformNoRepeats agen = ActionGenerator_UniformNoRepeats.makeDefaultGenerator();
+        SearchConfiguration.serializeToYaml(file, agen);
+        Assert.assertTrue(file.exists());
+
+        ActionGenerator_UniformNoRepeats agenLoaded = SearchConfiguration.deserializeYaml(file, ActionGenerator_UniformNoRepeats.class);
         Assert.assertNotNull(agenLoaded);
         Assert.assertEquals(agen, agenLoaded);
     }

@@ -55,6 +55,19 @@ public class ActionGenerator_UniformNoRepeats implements IActionGenerator {
         return allActionLists;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ActionGenerator_UniformNoRepeats that = (ActionGenerator_UniformNoRepeats) o;
+        return allActionLists.equals(that.allActionLists);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(allActionLists);
+    }
+
     public static ActionGenerator_UniformNoRepeats makeDefaultGenerator() {
         // All durations.
         boolean[][] keyRange = new boolean[][]{{false, false, false, false}, // All 9 combinations.
