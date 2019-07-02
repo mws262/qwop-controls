@@ -54,7 +54,8 @@ public class CreateConfig {
                                                 new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
                                                         new GameUnified(),
                                                         layerSizes,
-                                                        new ArrayList<>())))),
+                                                        new ArrayList<>(),
+                                                        "")))),
                         5,
                         1),
                 new DataSaver_Null()));

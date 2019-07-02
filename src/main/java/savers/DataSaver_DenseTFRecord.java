@@ -23,13 +23,13 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      * Filename prefix. Goes in front of date.
      */
     @SuppressWarnings("WeakerAccess")
-    public String filePrefix = "denseTF";
+    public final String filePrefix = "denseTF";
 
     /**
      * File extension. Do not include dot before.
      */
     @SuppressWarnings("WeakerAccess")
-    public String fileExtension = "TFRecord";
+    public final String fileExtension = "TFRecord";
 
     /**
      * If changed, will use this. Otherwise, a timestamp is used.
@@ -51,7 +51,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     }
     /**
      * Finalize data stored during a run and send to file. If not called, data will not be saved. Data will be sent
-     * to file every {@link DataSaver_DenseTFRecord#saveInterval} games.
+     * to file every {@link DataSaver_DenseTFRecord#getSaveInterval()} games.
      *
      * @param endNode Not required. Null may be given.
      */
@@ -60,7 +60,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
         saveCounter++;
         gameData.add(new GameContainer(actionBuffer, stateBuffer));
 
-        if (saveInterval == saveCounter) {
+        if (getSaveInterval() == saveCounter) {
             toFile();
             saveCounter = 0;
         }
@@ -72,7 +72,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
     @Override
     public void finalizeSaverData() {
-        if (saveInterval == 0) {
+        if (getSaveInterval() == 0) {
             toFile(); // If save interval is unset, then a single save at the end of the stage will be done.
         }
     }
@@ -290,7 +290,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     @Override
     public DataSaver_DenseTFRecord getCopy() {
         DataSaver_DenseTFRecord newSaver = new DataSaver_DenseTFRecord();
-        newSaver.setSaveInterval(saveInterval);
+        newSaver.setSaveInterval(getSaveInterval());
         newSaver.setSavePath(fileLocation);
         return newSaver;
     }

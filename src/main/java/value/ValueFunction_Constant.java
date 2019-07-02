@@ -6,6 +6,7 @@ import game.action.Action;
 import tree.node.NodeQWOPBase;
 
 import java.util.List;
+import java.util.Objects;
 
 public class ValueFunction_Constant implements IValueFunction {
 
@@ -33,5 +34,18 @@ public class ValueFunction_Constant implements IValueFunction {
     @Override
     public void update(List<? extends NodeQWOPBase<?>> nodes) {
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ValueFunction_Constant that = (ValueFunction_Constant) o;
+        return Float.compare(that.constantValue, constantValue) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(constantValue);
     }
 }

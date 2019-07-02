@@ -19,4 +19,14 @@ public class Controller_Null implements IController {
     public IController getCopy() {
         return new Controller_Null();
     }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof Controller_Null;
+    }
+
+    @Override
+    public int hashCode() {
+        return Controller_Null.class.hashCode();
+    }
 }
