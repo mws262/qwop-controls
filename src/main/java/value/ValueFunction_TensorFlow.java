@@ -13,6 +13,7 @@ import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,7 +92,8 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
                              @JsonProperty("inputSize") int inputSize,
                              @JsonProperty("outputSize") int outputSize,
                              @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
-                             @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs) throws FileNotFoundException {
+                             @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
+                             @JsonProperty("activeCheckpoint") String activeCheckpoint) throws FileNotFoundException {
         logger.info("Making a new network for the value function.");
         this.inputSize = inputSize;
         this.outputSize = outputSize;
@@ -104,17 +106,21 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
         this.additionalNetworkArgs = additionalNetworkArgs;
 
         network = TrainableNetwork.makeNewNetwork(fileName, allLayerSizes, additionalNetworkArgs);
+        // Load checkpoint if provided.
+        if (activeCheckpoint != null && !activeCheckpoint.isEmpty()) {
+            loadCheckpoint(activeCheckpoint);
+        }
     }
 
     /**
      * Constructor which uses existing model.
-     * @param existingFile A .pb file referring to an existing model.
+     * @param existingModel A .pb file referring to an existing model.
      * @throws FileNotFoundException Occurs when the specified model file is not found.
      */
-    ValueFunction_TensorFlow(File existingFile) throws FileNotFoundException {
+    ValueFunction_TensorFlow(File existingModel) throws FileNotFoundException {
         logger.info("Loading existing network for the value function.");
-        fileName = existingFile.getPath();
-        network = new TrainableNetwork(existingFile);
+        fileName = existingModel.getPath();
+        network = new TrainableNetwork(existingModel);
         int[] layerSizes = network.getLayerSizes();
         hiddenLayerSizes = new ArrayList<>();
         for (int i = 1; i < layerSizes.length - 1; i++) {
@@ -158,14 +164,9 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * @param checkpointName Name of the checkpoint file. Do not include file extension or directory.
      * @return A list of checkpoint with that name.
      */
-    public List<File> saveCheckpoint(String checkpointName) {
+    public List<File> saveCheckpoint(String checkpointName) throws IOException {
         assert !checkpointName.isEmpty();
         return network.saveCheckpoint(checkpointName);
-    }
-
-    @JsonIgnore
-    public File getCheckpointPath() {
-        return new File(network.checkpointPath);
     }
 
     /**
@@ -176,6 +177,11 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     @JsonIgnore
     public File getGraphDefinitionFile() {
         return network.getGraphDefinitionFile();
+    }
+
+    @JsonProperty("activeCheckpoint")
+    public String getActiveCheckpoint() {
+        return network.getActiveCheckpoint();
     }
 
     /**

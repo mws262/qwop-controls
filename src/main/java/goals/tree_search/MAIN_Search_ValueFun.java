@@ -28,6 +28,7 @@ import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -334,7 +335,11 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         valueFunction.update(nodesBelow);
 
         // Save a checkpoint of the weights/biases.
-        valueFunction.saveCheckpoint(checkpointNamePrefix + (updateIdx + checkpointIndex + 1));
+        try {
+            valueFunction.saveCheckpoint(checkpointNamePrefix + (updateIdx + checkpointIndex + 1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         logger.info("Saved checkpoint as: " + checkpointNamePrefix + (updateIdx + checkpointIndex + 1));
     }
 
@@ -347,7 +352,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, gameTemplate, hiddenLayerSizes,
-                    extraNetworkArgs);
+                    extraNetworkArgs, "");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -362,6 +367,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         if (checkpointIndex > 0) {
             logger.info("Specified checkpoint name: " + (checkpointNamePrefix + checkpointIndex) + ". Loading.");
             valueFunction.loadCheckpoint(checkpointNamePrefix + checkpointIndex);
+
         } else {
             logger.info("Specified checkpoint index: " + checkpointIndex + ". Not loading.");
         }

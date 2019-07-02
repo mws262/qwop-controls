@@ -85,8 +85,10 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     public ValueFunction_TensorFlow_StateOnly(@JsonProperty("fileName") String fileName,
                                               @JsonProperty("gameTemplate") GameUnified gameTemplate,
                                               @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
-                                              @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs) throws FileNotFoundException {
-        super(fileName, gameTemplate.getStateDimension(), VALUE_SIZE, hiddenLayerSizes, additionalNetworkArgs);
+                                              @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
+                                              @JsonProperty("activeCheckpoint") String checkpointFile) throws FileNotFoundException {
+        super(fileName, gameTemplate.getStateDimension(), VALUE_SIZE, hiddenLayerSizes, additionalNetworkArgs,
+                checkpointFile);
         this.gameTemplate = gameTemplate;
         this.fileName = fileName;
         assignFuturePredictors(gameTemplate);

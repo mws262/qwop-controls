@@ -20,13 +20,13 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
      * File prefix. Goes in front of date.
      */
     @SuppressWarnings("WeakerAccess")
-    public String filePrefix = "qwop_dense_java";
+    public static final String filePrefix = "qwop_dense_java";
 
     /**
      * Do not include dot before.
      */
     @SuppressWarnings("WeakerAccess")
-    public String fileExtension = "SavableDenseData";
+    public static final String fileExtension = "SavableDenseData";
 
     /**
      * Games since last save.
@@ -36,12 +36,12 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
     /**
      * Handles class serialization and writing to file.
      */
-    private SavableFileIO<SavableDenseData> fileIO = new SavableFileIO<>();
+    private final SavableFileIO<SavableDenseData> fileIO = new SavableFileIO<>();
 
     /**
      * Buffered games waiting to be written to file.
      */
-    private ArrayList<SavableDenseData> saveBuffer = new ArrayList<>();
+    private final ArrayList<SavableDenseData> saveBuffer = new ArrayList<>();
 
     @Override
     public void reportGameEnding(NodeQWOPBase<?> endNode) {
@@ -49,7 +49,7 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
         saveBuffer.add(new SavableDenseData(stateBuffer, actionBuffer));
         saveCounter++;
 
-        if (saveInterval == saveCounter) {
+        if (getSaveInterval() == saveCounter) {
             File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix,
                     fileExtension));
             fileIO.storeObjects(saveBuffer, saveFile, false);
@@ -62,7 +62,7 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
 
     @Override
     public void finalizeSaverData() {
-        if (saveInterval == 0) {
+        if (getSaveInterval() == 0) {
             File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix,
                     fileExtension));
             fileIO.storeObjects(saveBuffer, saveFile, false);
@@ -72,7 +72,7 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
     @Override
     public DataSaver_DenseJava getCopy() {
         DataSaver_DenseJava newSaver = new DataSaver_DenseJava();
-        newSaver.setSaveInterval(saveInterval);
+        newSaver.setSaveInterval(getSaveInterval());
         newSaver.setSavePath(fileLocation);
         return newSaver;
     }

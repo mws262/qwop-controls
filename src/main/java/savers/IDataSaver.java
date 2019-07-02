@@ -3,11 +3,10 @@ package savers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import game.action.Action;
 import game.IGameInternal;
+import game.action.Action;
 import game.state.IState;
 import tree.node.NodeQWOPBase;
-import tree.sampler.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -61,10 +60,14 @@ public interface IDataSaver {
      */
     void setSaveInterval(int numGames);
 
+    int getSaveInterval();
+
     /**
      * Set where the files are saved. Defaults to working directory otherwise.
      */
     void setSavePath(String fileLoc);
+
+    String getSavePath();
 
     /**
      * Get a fresh copy of this saver with the same settings.

@@ -22,16 +22,16 @@ public abstract class DataSaver_Dense implements IDataSaver {
     /**
      * Action buffer cleared once per game.
      */
-    ArrayList<Action> actionBuffer = new ArrayList<>();
+    final ArrayList<Action> actionBuffer = new ArrayList<>();
     /**
      * State buffer cleared once per game.
      */
-    ArrayList<IState> stateBuffer = new ArrayList<>();
+    final ArrayList<IState> stateBuffer = new ArrayList<>();
 
     /**
      * Number of games in between saves to file.
      */
-    int saveInterval;
+    private int saveInterval;
 
     /**
      * File save location.
@@ -66,8 +66,18 @@ public abstract class DataSaver_Dense implements IDataSaver {
     }
 
     @Override
+    public int getSaveInterval() {
+        return saveInterval;
+    }
+
+    @Override
     public void setSavePath(String fileLoc) {
         this.fileLocation = fileLoc;
+    }
+
+    @Override
+    public String getSavePath() {
+        return fileLocation;
     }
 
     @Override

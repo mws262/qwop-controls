@@ -1,9 +1,10 @@
 package savers;
 
-import game.action.Action;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.IGameInternal;
+import game.action.Action;
 import game.state.IState;
 import tree.node.NodeQWOPBase;
 
@@ -22,17 +23,17 @@ public class DataSaver_StageSelected implements IDataSaver {
     /**
      * File prefix. Goes in front of date.
      */
-    public String filePrefix = "qwop_stage_sparse_java";
+    public final String filePrefix = "qwop_stage_sparse_java";
 
     /**
      * Do not include dot before.
      */
-    public String fileExtension = "SavableSingleGame";
+    public final String fileExtension = "SavableSingleGame";
 
     /**
      * If this string is not empty, use this as the filename instead.
      */
-    public String overrideFilename = "";
+    public String overrideFilename;
 
     /**
      * Handles class serialization and writing to file.
@@ -71,7 +72,7 @@ public class DataSaver_StageSelected implements IDataSaver {
             saveBuffer.add(new SavableSingleGame(rootNode));
         }
 
-        if (overrideFilename.isEmpty()) {
+        if (overrideFilename == null || overrideFilename.isEmpty()) {
             File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix + successStatus,
                     fileExtension));
             fileIO.storeObjects(saveBuffer, saveFile, false);
@@ -87,12 +88,24 @@ public class DataSaver_StageSelected implements IDataSaver {
     @Override
     public void finalizeSaverData() {}
 
+    @JsonIgnore
     @Override
     public void setSaveInterval(int numGames) {} // Not applicable for once-per-stage saving.
 
     @Override
     public void setSavePath(String fileLoc) {
         this.fileLocation = fileLoc;
+    }
+
+    @JsonIgnore
+    @Override
+    public int getSaveInterval() {
+        return 0;
+    }
+
+    @Override
+    public String getSavePath() {
+        return fileLocation;
     }
 
     @Override

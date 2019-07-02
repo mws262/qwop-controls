@@ -27,7 +27,17 @@ public class DataSaver_Null implements IDataSaver {
     public void setSaveInterval(int numGames) {}
 
     @Override
+    public int getSaveInterval() {
+        return 0;
+    }
+
+    @Override
     public void setSavePath(String fileLoc) {}
+
+    @Override
+    public String getSavePath() {
+        return "";
+    }
 
     @Override
     public void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {}

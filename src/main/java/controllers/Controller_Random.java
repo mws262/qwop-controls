@@ -13,4 +13,14 @@ public class Controller_Random implements IController {
     public IController getCopy() {
         return new Controller_Random();
     }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof Controller_Random;
+    }
+
+    @Override
+    public int hashCode() {
+        return Controller_Random.class.hashCode();
+    }
 }
