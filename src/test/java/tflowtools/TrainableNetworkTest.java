@@ -115,7 +115,7 @@ public class TrainableNetworkTest {
         // Should find two files: the <name>.data-.... and <name>.index.
         int foundFiles = 0;
         for (File f : Objects.requireNonNull(filesInCheckpointPath)) {
-            if (f.getName().contains(fileContains)) {
+            if (f.getPath().contains(fileContains)) {
                 f.deleteOnExit(); // Remove when done.
                 foundFiles++;
             }
