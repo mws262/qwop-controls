@@ -214,7 +214,6 @@ public class SearchConfiguration implements Serializable {
                 operation.startOperation(rootNode, machine);
             }
         }
-
     }
 
     public static void serializeToJson(File jsonFileOutput, Object configuration) {

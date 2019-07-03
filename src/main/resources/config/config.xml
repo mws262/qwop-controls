@@ -68,9 +68,29 @@
     </actionGenerator>
   </tree>
   <searchOperations>
-    <stage type="max_depth">
-      <maxDepth>10</maxDepth>
-      <maxGames>10000</maxGames>
+    <stage type="grouping">
+      <treeStages type="max_depth">
+        <maxDepth>100</maxDepth>
+        <maxGames>10000</maxGames>
+      </treeStages>
+      <treeStages type="value_update">
+        <valueFunction type="tflow_state_only">
+          <fileName>src/main/resources/tflow_models/test.pb</fileName>
+          <gameTemplate type="default"/>
+          <hiddenLayerSizes>128</hiddenLayerSizes>
+          <hiddenLayerSizes>64</hiddenLayerSizes>
+          <activeCheckpoint/>
+          <inputSize>72</inputSize>
+          <outputSize>1</outputSize>
+        </valueFunction>
+        <checkpointName>src/main/resources/tflow_models/checkpoints/checkpoint_name</checkpointName>
+        <excludeLeaves>false</excludeLeaves>
+        <updateGraphicalLabels>true</updateGraphicalLabels>
+      </treeStages>
+      <activeStage type="max_depth">
+        <maxDepth>100</maxDepth>
+        <maxGames>10000</maxGames>
+      </activeStage>
     </stage>
     <sampler type="ucb">
       <evaluationFunction type="constant">
@@ -81,16 +101,7 @@
           <evaluationFunction type="constant">
             <constantValue>10.0</constantValue>
           </evaluationFunction>
-          <rolloutController type="value_function">
-            <valueFunction type="tflow_state_only">
-              <fileName>src/main/resources/tflow_models/test.pb</fileName>
-              <gameTemplate type="default"/>
-              <hiddenLayerSizes>45</hiddenLayerSizes>
-              <hiddenLayerSizes>55</hiddenLayerSizes>
-              <inputSize>72</inputSize>
-              <outputSize>1</outputSize>
-            </valueFunction>
-          </rolloutController>
+          <rolloutController type="random"/>
           <maxTimesteps>200</maxTimesteps>
           <rolloutActionGenerator type="fixed_sequence">
             <repeatedActions>
@@ -128,7 +139,10 @@
       <explorationConstant>5.0</explorationConstant>
       <explorationRandomFactor>1.0</explorationRandomFactor>
     </sampler>
-    <saver type="null"/>
+    <saver type="null">
+      <saveInterval>0</saveInterval>
+      <savePath></savePath>
+    </saver>
     <repetitionCount>0</repetitionCount>
   </searchOperations>
   <ui type="full">

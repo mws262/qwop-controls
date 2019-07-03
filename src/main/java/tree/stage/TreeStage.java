@@ -23,7 +23,10 @@ import java.util.*;
         @JsonSubTypes.Type(value = TreeStage_FixedGames.class, name = "fixed_games"),
         @JsonSubTypes.Type(value = TreeStage_MaxDepth.class, name = "max_depth"),
         @JsonSubTypes.Type(value = TreeStage_MinDepth.class, name = "min_depth"),
-        @JsonSubTypes.Type(value = TreeStage_SearchForever.class, name = "search_forever")
+        @JsonSubTypes.Type(value = TreeStage_SearchForever.class, name = "search_forever"),
+        @JsonSubTypes.Type(value = TreeStage_Grouping.class, name = "grouping"),
+        @JsonSubTypes.Type(value = TreeStage_ValueFunctionUpdate.class, name = "value_update")
+
 })
 public abstract class TreeStage {
 

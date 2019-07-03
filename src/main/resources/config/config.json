@@ -75,9 +75,34 @@
   },
   "searchOperations" : [ {
     "stage" : {
-      "type" : "max_depth",
-      "maxDepth" : 10,
-      "maxGames" : 10000
+      "type" : "grouping",
+      "treeStages" : [ {
+        "type" : "max_depth",
+        "maxDepth" : 100,
+        "maxGames" : 10000
+      }, {
+        "type" : "value_update",
+        "valueFunction" : {
+          "type" : "tflow_state_only",
+          "fileName" : "src/main/resources/tflow_models/test.pb",
+          "gameTemplate" : {
+            "type" : "default"
+          },
+          "hiddenLayerSizes" : [ 128, 64 ],
+          "additionalNetworkArgs" : [ ],
+          "activeCheckpoint" : null,
+          "inputSize" : 72,
+          "outputSize" : 1
+        },
+        "checkpointName" : "src/main/resources/tflow_models/checkpoints/checkpoint_name",
+        "excludeLeaves" : false,
+        "updateGraphicalLabels" : true
+      } ],
+      "activeStage" : {
+        "type" : "max_depth",
+        "maxDepth" : 100,
+        "maxGames" : 10000
+      }
     },
     "sampler" : {
       "type" : "ucb",
@@ -94,18 +119,7 @@
             "constantValue" : 10.0
           },
           "rolloutController" : {
-            "type" : "value_function",
-            "valueFunction" : {
-              "type" : "tflow_state_only",
-              "fileName" : "src/main/resources/tflow_models/test.pb",
-              "gameTemplate" : {
-                "type" : "default"
-              },
-              "hiddenLayerSizes" : [ 45, 55 ],
-              "additionalNetworkArgs" : [ ],
-              "inputSize" : 72,
-              "outputSize" : 1
-            }
+            "type" : "random"
           },
           "maxTimesteps" : 200,
           "rolloutActionGenerator" : {
@@ -147,7 +161,9 @@
       "explorationRandomFactor" : 1.0
     },
     "saver" : {
-      "type" : "null"
+      "type" : "null",
+      "saveInterval" : 0,
+      "savePath" : ""
     },
     "repetitionCount" : 0
   } ],
