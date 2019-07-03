@@ -29,7 +29,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     /**
      * Maximum allowed datapoints. Will downsample if above. Prevents extreme lag.
      */
-    private NodeFilter_Downsample plotDownsampler = new NodeFilter_Downsample(5000);
+    private final NodeFilter_Downsample plotDownsampler = new NodeFilter_Downsample(5000);
 
     /**
      * Node from which states are referenced.
@@ -44,22 +44,22 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     /**
      * Body parts associated with each plot and axis.
      */
-    private ObjectName[] plotObjectsX = new ObjectName[numberOfPlots];
-    private ObjectName[] plotObjectsY = new ObjectName[numberOfPlots];
+    private final ObjectName[] plotObjectsX;
+    private final ObjectName[] plotObjectsY;
 
     /**
      * State variables associated with each plot and axis.
      */
-    private StateName[] plotStatesX = new StateName[numberOfPlots];
-    private StateName[] plotStatesY = new StateName[numberOfPlots];
+    private final StateName[] plotStatesX;
+    private final StateName[] plotStatesY;
 
     /**
      * Drop down menus for the things to plot.
      */
-    private JComboBox<String> objListX;
-    private JComboBox<String> stateListX;
-    private JComboBox<String> objListY;
-    private JComboBox<String> stateListY;
+    private final JComboBox<String> objListX;
+    private final JComboBox<String> stateListX;
+    private final JComboBox<String> objListY;
+    private final JComboBox<String> stateListY;
 
     /**
      * Menu for selecting which data is displayed.
@@ -73,6 +73,10 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     public PanelPlot_States(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numPlots) {
         super(numPlots);
         this.name = name;
+        plotObjectsX = new ObjectName[numPlots];
+        plotObjectsY = new ObjectName[numPlots];
+        plotStatesX = new StateName[numPlots];
+        plotStatesY = new StateName[numPlots];
 
         // Make string arrays of the body part and state variable names.
         int count = 0;
@@ -91,11 +95,11 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
         }
 
         // Initial plots to display
-        for (int i = 0; i < numberOfPlots; i++) {
-            plotObjectsX[i] = ObjectName.values()[Utility.randInt(0, numberOfPlots - 1)];
-            plotStatesX[i] = StateName.values()[Utility.randInt(0, numberOfPlots - 1)];
-            plotObjectsY[i] = ObjectName.values()[Utility.randInt(0, numberOfPlots - 1)];
-            plotStatesY[i] = StateName.values()[Utility.randInt(0, numberOfPlots - 1)];
+        for (int i = 0; i < numPlots - 1; i++) {
+            plotObjectsX[i] = ObjectName.values()[Utility.randInt(0, numPlots - 1)];
+            plotStatesX[i] = StateName.values()[Utility.randInt(0, numPlots - 1)];
+            plotObjectsY[i] = ObjectName.values()[Utility.randInt(0, numPlots - 1)];
+            plotStatesY[i] = StateName.values()[Utility.randInt(0, numPlots - 1)];
         }
 
         // Drop down menus

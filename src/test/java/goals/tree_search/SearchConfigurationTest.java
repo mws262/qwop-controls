@@ -9,6 +9,7 @@ import game.GameUnified;
 import game.action.*;
 import game.state.IState;
 import game.state.State;
+import game.state.transform.Transform_Identity;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,9 +18,22 @@ import tree.node.NodeQWOPExplorable;
 import tree.node.evaluator.*;
 import tree.sampler.*;
 import tree.sampler.rollout.*;
+import ui.PanelTree;
+import ui.UI_Full;
+import ui.UI_Headless;
+import ui.histogram.PanelHistogram_LeafDepth;
+import ui.pie.PanelPie_ViableFutures;
+import ui.runner.*;
+import ui.scatterplot.*;
+import ui.timeseries.PanelTimeSeries_WorkerLoad;
 import value.ValueFunction_Constant;
 import value.ValueFunction_TensorFlow_StateOnly;
+import value.updaters.ValueUpdater_Average;
+import value.updaters.ValueUpdater_HardSet;
+import value.updaters.ValueUpdater_StdDev;
+import value.updaters.ValueUpdater_TopNChildren;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -746,5 +760,463 @@ public class SearchConfigurationTest {
                 loaded.getEvaluationFunction().getValue(sampleNode1), 1e-10f);
         Assert.assertEquals(sampler.getRolloutPolicy().rollout(sampleNode2, new GameUnified()),
                 sampler.getRolloutPolicy().rollout(sampleNode2, new GameUnified()), 1e-10f);
+    }
+
+    @Test
+    public void yamlHistogram_LeafDepth() throws IOException {
+        File file = File.createTempFile("histodepth", "yaml");
+        file.deleteOnExit();
+
+        PanelHistogram_LeafDepth panel = new PanelHistogram_LeafDepth("myname");
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelHistogram_LeafDepth loaded = SearchConfiguration.deserializeYaml(file, PanelHistogram_LeafDepth.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.getName(), loaded.getName());
+    }
+
+    @Test
+    public void yamlPie_ViableFutures() throws IOException {
+        File file = File.createTempFile("piefuture", "yaml");
+        file.deleteOnExit();
+
+        PanelPie_ViableFutures panel = new PanelPie_ViableFutures("myname");
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelPie_ViableFutures loaded = SearchConfiguration.deserializeYaml(file, PanelPie_ViableFutures.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.getName(), loaded.getName());
+    }
+
+    @Test
+    public void yamlRunner_Animated() throws IOException {
+        File file = File.createTempFile("runneranimated", "yaml");
+        file.deleteOnExit();
+
+        PanelRunner_Animated panel = new PanelRunner_Animated("myname");
+        panel.yOffsetPixels++;
+        panel.xOffsetPixels++;
+        panel.customStroke = new BasicStroke(202);
+        panel.activateTab();
+
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelRunner_Animated loaded = SearchConfiguration.deserializeYaml(file, PanelRunner_Animated.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.getName(), loaded.getName());
+        Assert.assertFalse(loaded.isActive());
+        Assert.assertNotEquals(panel.xOffsetPixels, loaded.xOffsetPixels);
+        Assert.assertNotEquals(panel.yOffsetPixels, loaded.yOffsetPixels);
+        Assert.assertNotEquals(panel.customStroke, loaded.customStroke);
+
+        panel.deactivateTab();
+    }
+
+    @Test
+    public void yamlRunner_AnimatedFromStates() throws IOException {
+        File file = File.createTempFile("animatedfromstates", "yaml");
+        file.deleteOnExit();
+
+        PanelRunner_AnimatedFromStates panel = new PanelRunner_AnimatedFromStates("myname");
+        panel.yOffsetPixels++;
+        panel.xOffsetPixels++;
+        panel.customStroke = new BasicStroke(202);
+        panel.activateTab();
+
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelRunner_AnimatedFromStates loaded = SearchConfiguration.deserializeYaml(file, PanelRunner_AnimatedFromStates.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.getName(), loaded.getName());
+        Assert.assertFalse(loaded.isActive());
+        Assert.assertNotEquals(panel.xOffsetPixels, loaded.xOffsetPixels);
+        Assert.assertNotEquals(panel.yOffsetPixels, loaded.yOffsetPixels);
+        Assert.assertNotEquals(panel.customStroke, loaded.customStroke);
+
+        panel.deactivateTab();
+    }
+
+    @Test
+    public void yamlRunner_AnimatedTranformed() throws IOException {
+        File file = File.createTempFile("animatedtransformed", "yaml");
+        file.deleteOnExit();
+
+        PanelRunner_AnimatedTransformed panel = new PanelRunner_AnimatedTransformed("myname");
+        panel.yOffsetPixels++;
+        panel.xOffsetPixels++;
+        panel.customStroke = new BasicStroke(202);
+        panel.activateTab();
+
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelRunner_AnimatedTransformed loaded = SearchConfiguration.deserializeYaml(file, PanelRunner_AnimatedTransformed.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.getName(), loaded.getName());
+        Assert.assertFalse(loaded.isActive());
+        Assert.assertNotEquals(panel.xOffsetPixels, loaded.xOffsetPixels);
+        Assert.assertNotEquals(panel.yOffsetPixels, loaded.yOffsetPixels);
+        Assert.assertNotEquals(panel.customStroke, loaded.customStroke);
+
+        panel.deactivateTab();
+    }
+
+    @Test
+    public void yamlRunner_Comparison() throws IOException {
+        File file = File.createTempFile("runnercomparison", "yaml");
+        file.deleteOnExit();
+
+        PanelRunner_Comparison panel = new PanelRunner_Comparison("myname");
+        panel.yOffsetPixels++;
+        panel.xOffsetPixels++;
+        panel.customStroke = new BasicStroke(202);
+        panel.maxNumStatesToShow = 78;
+        panel.activateTab();
+
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelRunner_Comparison loaded = SearchConfiguration.deserializeYaml(file, PanelRunner_Comparison.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.getName(), loaded.getName());
+        Assert.assertFalse(loaded.isActive());
+        Assert.assertNotEquals(panel.xOffsetPixels, loaded.xOffsetPixels);
+        Assert.assertNotEquals(panel.yOffsetPixels, loaded.yOffsetPixels);
+        Assert.assertNotEquals(panel.customStroke, loaded.customStroke);
+        Assert.assertEquals(panel.maxNumStatesToShow, loaded.maxNumStatesToShow);
+
+        panel.deactivateTab();
+    }
+
+    @Test
+    public void yamlRunner_MultiState() throws IOException {
+        File file = File.createTempFile("runnermultistate", "yaml");
+        file.deleteOnExit();
+
+        PanelRunner_MultiState panel = new PanelRunner_MultiState("myname");
+        panel.yOffsetPixels++;
+        panel.xOffsetPixels++;
+        panel.customStroke = new BasicStroke(202);
+        panel.customStrokeExtra = new BasicStroke(202);
+        panel.activateTab();
+
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelRunner_MultiState loaded = SearchConfiguration.deserializeYaml(file, PanelRunner_MultiState.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.getName(), loaded.getName());
+        Assert.assertFalse(loaded.isActive());
+        Assert.assertNotEquals(panel.xOffsetPixels, loaded.xOffsetPixels);
+        Assert.assertNotEquals(panel.yOffsetPixels, loaded.yOffsetPixels);
+        Assert.assertNotEquals(panel.customStroke, loaded.customStroke);
+        Assert.assertNotEquals(panel.customStrokeExtra, loaded.customStrokeExtra);
+
+        panel.deactivateTab();
+    }
+
+    @Test
+    public void yamlRunner_SimpleState() throws IOException {
+        File file = File.createTempFile("runnersimplestate", "yaml");
+        file.deleteOnExit();
+
+        PanelRunner_Comparison panel = new PanelRunner_Comparison("myname");
+        panel.yOffsetPixels++;
+        panel.xOffsetPixels++;
+        panel.customStroke = new BasicStroke(202);
+        panel.maxNumStatesToShow = 78;
+        panel.activateTab();
+
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelRunner_Comparison loaded = SearchConfiguration.deserializeYaml(file, PanelRunner_Comparison.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.getName(), loaded.getName());
+        Assert.assertFalse(loaded.isActive());
+        Assert.assertNotEquals(panel.xOffsetPixels, loaded.xOffsetPixels);
+        Assert.assertNotEquals(panel.yOffsetPixels, loaded.yOffsetPixels);
+        Assert.assertNotEquals(panel.customStroke, loaded.customStroke);
+        Assert.assertEquals(panel.maxNumStatesToShow, loaded.maxNumStatesToShow);
+
+        panel.deactivateTab();
+    }
+
+    @Test
+    public void yamlRunner_Snapshot() throws IOException {
+        File file = File.createTempFile("runnersnapshot", "yaml");
+        file.deleteOnExit();
+
+        PanelRunner_Snapshot panel = new PanelRunner_Snapshot("myname");
+        panel.yOffsetPixels++;
+        panel.xOffsetPixels++;
+        panel.customStroke = new BasicStroke(202);
+        panel.numHistoryStatesDisplay++;
+        panel.activateTab();
+
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelRunner_Snapshot loaded = SearchConfiguration.deserializeYaml(file, PanelRunner_Snapshot.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.getName(), loaded.getName());
+        Assert.assertFalse(loaded.isActive());
+        Assert.assertNotEquals(panel.xOffsetPixels, loaded.xOffsetPixels);
+        Assert.assertNotEquals(panel.yOffsetPixels, loaded.yOffsetPixels);
+        Assert.assertNotEquals(panel.customStroke, loaded.customStroke);
+        Assert.assertEquals(panel.numHistoryStatesDisplay, loaded.numHistoryStatesDisplay);
+
+        panel.deactivateTab();
+    }
+
+    @Test
+    public void yamlPlot_Controls() throws IOException {
+        File file = File.createTempFile("plotcontrols", "yaml");
+        file.deleteOnExit();
+
+        PanelPlot_Controls panel = new PanelPlot_Controls("myname", 7);
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelPlot_Controls loaded = SearchConfiguration.deserializeYaml(file, PanelPlot_Controls.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.numberOfPlots, loaded.numberOfPlots);
+        Assert.assertEquals(panel.getName(), loaded.getName());
+    }
+
+    @Test
+    public void yamlPlot_Simple() throws IOException {
+        File file = File.createTempFile("plotsimple", "yaml");
+        file.deleteOnExit();
+
+        PanelPlot_Simple panel = new PanelPlot_Simple("myname");
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelPlot_Simple loaded = SearchConfiguration.deserializeYaml(file, PanelPlot_Simple.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.numberOfPlots, loaded.numberOfPlots);
+        Assert.assertEquals(panel.getName(), loaded.getName());
+    }
+
+    @Test
+    public void yamlPlot_SingleRun() throws IOException {
+        File file = File.createTempFile("plotsingle", "yaml");
+        file.deleteOnExit();
+
+        PanelPlot_SingleRun panel = new PanelPlot_SingleRun("myname", 7);
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelPlot_SingleRun loaded = SearchConfiguration.deserializeYaml(file, PanelPlot_SingleRun.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.numberOfPlots, loaded.numberOfPlots);
+        Assert.assertEquals(panel.getName(), loaded.getName());
+    }
+
+    @Test
+    public void yamlPlot_States() throws IOException {
+        File file = File.createTempFile("plotstates", "yaml");
+        file.deleteOnExit();
+
+        PanelPlot_States panel = new PanelPlot_States("myname", 5);
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelPlot_States loaded = SearchConfiguration.deserializeYaml(file, PanelPlot_States.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.numberOfPlots, loaded.numberOfPlots);
+        Assert.assertEquals(panel.getName(), loaded.getName());
+    }
+
+    @Test
+    public void yamlPlot_Transformed() throws IOException {
+        File file = File.createTempFile("plottransformed", "yaml");
+        file.deleteOnExit();
+
+        PanelPlot_Transformed panel = new PanelPlot_Transformed(new Transform_Identity(), "myname", 7);
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelPlot_Transformed loaded = SearchConfiguration.deserializeYaml(file, PanelPlot_Transformed.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.numberOfPlots, loaded.numberOfPlots);
+        Assert.assertEquals(panel.getName(), loaded.getName());
+        Assert.assertTrue(loaded.transformer instanceof Transform_Identity);
+
+        // TODO handle serializing the filters too.
+    }
+
+    @Test
+    public void yamlTimeSeries_Worker() throws IOException {
+        File file = File.createTempFile("plotworkerseries", "yaml");
+        file.deleteOnExit();
+
+        PanelTimeSeries_WorkerLoad panel = new PanelTimeSeries_WorkerLoad("myname", 7);
+        panel.maxPtsPerPlot = 111;
+        Assert.assertEquals("myname", panel.getName());
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelTimeSeries_WorkerLoad loaded = SearchConfiguration.deserializeYaml(file, PanelTimeSeries_WorkerLoad.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(panel.maxPtsPerPlot, loaded.maxPtsPerPlot);
+        Assert.assertEquals(panel.getName(), loaded.getName());
+        Assert.assertEquals(panel.getNumberOfPlots(), loaded.getNumberOfPlots());
+    }
+
+    @Test
+    public void yamlPanel_Tree() throws IOException {
+        File file = File.createTempFile("paneltree", "yaml");
+        file.deleteOnExit();
+
+        PanelTree panel = new PanelTree();
+
+        SearchConfiguration.serializeToYaml(file, panel);
+        Assert.assertTrue(file.exists());
+
+        PanelTree loaded = SearchConfiguration.deserializeYaml(file, PanelTree.class);
+        Assert.assertNotNull(loaded);
+    }
+
+    @Test
+    public void yamlUI_Headless() throws IOException {
+        File file = File.createTempFile("uiheadless", "yaml");
+        file.deleteOnExit();
+
+        UI_Headless ui = new UI_Headless();
+
+        SearchConfiguration.serializeToYaml(file, ui);
+        Assert.assertTrue(file.exists());
+
+        UI_Headless loaded = SearchConfiguration.deserializeYaml(file, UI_Headless.class);
+        Assert.assertNotNull(loaded);
+    }
+
+    @Test
+    public void yamlUI_Full() throws IOException {
+        File file = File.createTempFile("uiheadless", "yaml");
+        file.deleteOnExit();
+
+        UI_Full ui = new UI_Full();
+        ui.addTab(new PanelPlot_States("myname", 4));
+
+        SearchConfiguration.serializeToYaml(file, ui);
+        Assert.assertTrue(file.exists());
+
+        UI_Full loaded = SearchConfiguration.deserializeYaml(file, UI_Full.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertEquals(1, loaded.getTabbedPanes().size());
+        Assert.assertEquals(ui.getTabbedPanes().get(0).getName(), loaded.getTabbedPanes().get(0).getName());
+        Assert.assertTrue(loaded.getTabbedPanes().get(0) instanceof PanelPlot_States);
+        Assert.assertEquals(4, ((PanelPlot_States) loaded.getTabbedPanes().get(0)).numberOfPlots);
+    }
+
+    @Test
+    public void yamlUpdaterAvg() throws IOException {
+        File file = File.createTempFile("updateravg", "yaml");
+        file.deleteOnExit();
+
+        ValueUpdater_Average valUpdater = new ValueUpdater_Average();
+
+        SearchConfiguration.serializeToYaml(file, valUpdater);
+        Assert.assertTrue(file.exists());
+
+        ValueUpdater_Average loaded = SearchConfiguration.deserializeYaml(file, ValueUpdater_Average.class);
+        Assert.assertNotNull(loaded);
+    }
+
+    @Test
+    public void yamlUpdaterHardSet() throws IOException {
+        File file = File.createTempFile("updaterhardset", "yaml");
+        file.deleteOnExit();
+
+        ValueUpdater_HardSet valUpdater = new ValueUpdater_HardSet();
+
+        SearchConfiguration.serializeToYaml(file, valUpdater);
+        Assert.assertTrue(file.exists());
+
+        ValueUpdater_HardSet loaded = SearchConfiguration.deserializeYaml(file, ValueUpdater_HardSet.class);
+        Assert.assertNotNull(loaded);
+    }
+
+    @Test
+    public void yamlUpdaterStdDev() throws IOException {
+        File file = File.createTempFile("updaterstdev", "yaml");
+        file.deleteOnExit();
+
+        ValueUpdater_StdDev valUpdater = new ValueUpdater_StdDev();
+        valUpdater.stdevAbove = 4.3f;
+
+        SearchConfiguration.serializeToYaml(file, valUpdater);
+        Assert.assertTrue(file.exists());
+
+        ValueUpdater_StdDev loaded = SearchConfiguration.deserializeYaml(file, ValueUpdater_StdDev.class);
+        Assert.assertNotNull(loaded);
+        Assert.assertEquals(valUpdater.stdevAbove, loaded.stdevAbove, 1e-10f);
+    }
+
+    @Test
+    public void yamlUpdaterTopNChildren() throws IOException {
+        File file = File.createTempFile("updatertopnchildren", "yaml");
+        file.deleteOnExit();
+
+        ValueUpdater_TopNChildren valUpdater = new ValueUpdater_TopNChildren(15);
+
+        SearchConfiguration.serializeToYaml(file, valUpdater);
+        Assert.assertTrue(file.exists());
+
+        ValueUpdater_TopNChildren loaded = SearchConfiguration.deserializeYaml(file, ValueUpdater_TopNChildren.class);
+        Assert.assertNotNull(loaded);
+        Assert.assertEquals(valUpdater.numChildrenToAvg, loaded.numChildrenToAvg);
     }
 }

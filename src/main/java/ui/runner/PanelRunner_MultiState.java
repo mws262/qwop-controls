@@ -1,8 +1,12 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import game.GameUnified;
 import game.state.IState;
+import tree.Utility;
 import tree.node.NodeQWOPGraphicsBase;
 
 import java.awt.*;
@@ -26,10 +30,14 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
      * Additional states to draw, and their colors. x-coordinate will be relative to the mainState.
      */
     private Map<IState, Color> secondaryStates = new ConcurrentHashMap<>();
-    public Color mainRunnerColor = Color.BLACK;
-    public Stroke customStrokeExtra;
 
-    public int[] offset = new int[2];
+    @JsonSerialize(using = Utility.ColorSerializer.class)
+    @JsonDeserialize(using = Utility.ColorDeserializer.class)
+    public Color mainRunnerColor = Color.BLACK;
+
+    transient public Stroke customStrokeExtra;
+
+    private int[] offset = new int[2];
 
     private final String name;
 
@@ -133,5 +141,10 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    @JsonIgnore
+    public int[] getOffset() {
+        return offset;
     }
 }

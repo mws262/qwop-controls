@@ -23,8 +23,8 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
      * GLU is the line/point graphics
      **/
     private GLU glu;
-    GL2 gl;
-    GLUT glut = new GLUT();
+    transient GL2 gl;
+    transient GLUT glut = new GLUT();
 
     /**
      * Dark theme background. From the Solarized palette.
@@ -39,7 +39,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
     /**
      * Camera manager for this scene
      */
-    GLCamManager cam;
+    transient GLCamManager cam;
 
     int panelWidth = 1920;
     int panelHeight = 700;

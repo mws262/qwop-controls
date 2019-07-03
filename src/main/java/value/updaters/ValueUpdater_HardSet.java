@@ -9,6 +9,7 @@ import tree.node.NodeQWOPBase;
  * @author matt
  */
 public class ValueUpdater_HardSet implements IValueUpdater {
+
     @Override
     public float update(float valueUpdate, NodeQWOPBase<?> node) {
         return valueUpdate;

@@ -1,5 +1,7 @@
 package ui.timeseries;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.TreeWorker;
 
 import javax.swing.*;
@@ -19,8 +21,8 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
 
     private Thread thread;
 
-    public PanelTimeSeries_WorkerLoad(String name, int maxWorkers) {
-        super(maxWorkers);
+    public PanelTimeSeries_WorkerLoad(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numberOfPlots) {
+        super(numberOfPlots);
         this.name = name;
         JLabel label = new JLabel();
         label.setText("All plots are game timesteps simulated per wall time vs. wall time.");
@@ -72,6 +74,7 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
     }
 
     @Override
+    @JsonIgnore
     public boolean isActive() {
         return active.get();
     }

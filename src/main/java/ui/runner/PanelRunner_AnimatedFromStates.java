@@ -1,5 +1,6 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.GameUnified;
 import game.IGameInternal;
@@ -119,6 +120,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     /**
      * Check if the current run is finished.
      */
+    @JsonIgnore
     public boolean isFinishedWithRun() {
         return states.isEmpty();
     }
