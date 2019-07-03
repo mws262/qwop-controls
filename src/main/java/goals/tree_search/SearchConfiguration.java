@@ -270,7 +270,7 @@ public class SearchConfiguration implements Serializable {
         return null;
     }
 
-    public static <T extends Object> T deserializeYaml(File yamlFileOutput, Class<T> clazz) {
+    public static <T> T deserializeYaml(File yamlFileOutput, Class<T> clazz) {
         try {
             YAMLMapper objectMapper = new YAMLMapper();
             objectMapper.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
