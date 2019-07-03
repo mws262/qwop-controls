@@ -56,21 +56,38 @@ tree:
         qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
 searchOperations:
 - stage:
-    type: max_depth
-    maxDepth: 5
-    maxGames: 20000
+    type: grouping
+    treeStages:
+    - type: max_depth
+      maxDepth: 100
+      maxGames: 2000
+    - type: value_update
+      valueFunction:
+        type: tflow_state_only
+        fileName: src/main/resources/tflow_models/test.pb
+        gameTemplate:
+          type: default
+        hiddenLayerSizes:
+        - 128
+        - 64
+        additionalNetworkArgs: []
+        activeCheckpoint: null
+        inputSize: 72
+        outputSize: 1
+      checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
+      excludeLeaves: false
+      updateGraphicalLabels: true
   sampler:
     type: ucb
     evaluationFunction:
       type: constant
-      constantValue: 5.0
+      constantValue: 0
     rolloutPolicy:
       type: window
       individualRollout:
         type: decaying_horizon
         evaluationFunction:
-          type: constant
-          constantValue: 10.0
+          type: distance
         rolloutController:
           type: random
         maxTimesteps: 200
@@ -97,60 +114,14 @@ searchOperations:
               mean: 20.0
               standardDeviation: 5.0
             qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-      selectionCriteria: BEST
-    explorationConstant: 1.0
-    explorationRandomFactor: 0.1
+      selectionCriteria: AVERAGE
+    explorationConstant: 3.0
+    explorationRandomFactor: 2.0
   saver:
     type: null
-  repetitionCount: 0
-- stage:
-    type: max_depth
-    maxDepth: 8
-    maxGames: 20000
-  sampler:
-    type: ucb
-    evaluationFunction:
-      type: constant
-      constantValue: 5.0
-    rolloutPolicy:
-      type: window
-      individualRollout:
-        type: decaying_horizon
-        evaluationFunction:
-          type: constant
-          constantValue: 10.0
-        rolloutController:
-          type: random
-        maxTimesteps: 200
-        rolloutActionGenerator:
-          type: fixed_sequence
-          repeatedActions:
-            - distribution:
-                type: normal
-                mean: 12.0
-                standardDeviation: 5.0
-              none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
-            - distribution:
-                type: normal
-                mean: 20.0
-                standardDeviation: 5.0
-              wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-            - distribution:
-                type: normal
-                mean: 12.0
-                standardDeviation: 5.0
-              none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
-            - distribution:
-                type: normal
-                mean: 20.0
-                standardDeviation: 5.0
-              qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-      selectionCriteria: BEST
-    explorationConstant: 2.0
-    explorationRandomFactor: 1.0
-  saver:
-    type: null
-  repetitionCount: 0
+    saveInterval: 0
+    savePath:
+  repetitionCount: 100
 ui:
   type: full
   tabbedPanes:

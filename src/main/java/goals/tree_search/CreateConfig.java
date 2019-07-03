@@ -1,5 +1,6 @@
 package goals.tree_search;
 
+import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
 import game.GameUnified;
 import game.action.ActionGenerator_FixedSequence;
@@ -9,9 +10,10 @@ import savers.DataSaver_Null;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_UCB;
+import tree.sampler.rollout.IRolloutPolicy;
 import tree.sampler.rollout.RolloutPolicy_DecayingHorizon;
 import tree.sampler.rollout.RolloutPolicy_Window;
-import tree.stage.TreeStage_MaxDepth;
+import tree.stage.*;
 import ui.IUserInterface;
 import ui.UI_Full;
 import ui.histogram.PanelHistogram_LeafDepth;
@@ -23,6 +25,7 @@ import ui.scatterplot.PanelPlot_Controls;
 import ui.scatterplot.PanelPlot_SingleRun;
 import ui.scatterplot.PanelPlot_States;
 import ui.scatterplot.PanelPlot_Transformed;
+import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
@@ -34,30 +37,36 @@ import java.util.stream.IntStream;
 public class CreateConfig {
 
     public static void main(String[] args) throws FileNotFoundException {
+
+        // Value function setup.
         List<Integer> layerSizes = new ArrayList<>();
-        layerSizes.add(45);
-        layerSizes.add(55);
-//        configuration.ui = new SearchConfiguration.UI(setupFullUI());
+        layerSizes.add(128);
+        layerSizes.add(64);
+        ValueFunction_TensorFlow valueFunction = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
+                new GameUnified(), layerSizes, new ArrayList<>(), "");
+
+
         SearchConfiguration.Machine machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
         SearchConfiguration.Tree tree = new SearchConfiguration.Tree(ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
         List<SearchConfiguration.SearchOperation> searchOperations = new ArrayList<>();
         IUserInterface ui = CreateConfig.setupFullUI();
 
-        searchOperations.add(new SearchConfiguration.SearchOperation(
-                new TreeStage_MaxDepth(10, 10000),
+
+
+
+        TreeStage tstage1 = new TreeStage_MaxDepth(100, 10000);
+        TreeStage tstage2 = new TreeStage_ValueFunctionUpdate(valueFunction, "src/main/resources" +
+                "/tflow_models/checkpoints/checkpoint_name", 1);
+        TreeStage stagegroup = new TreeStage_Grouping(new TreeStage[] {tstage1, tstage2});
+
+        IRolloutPolicy rollout1 = new RolloutPolicy_Window(
+                new RolloutPolicy_DecayingHorizon(
+                        new EvaluationFunction_Constant(10f),
+                        new Controller_Random()));
+
+        searchOperations.add(new SearchConfiguration.SearchOperation(stagegroup,
                 new Sampler_UCB(
-                        new EvaluationFunction_Constant(5f),
-                        new RolloutPolicy_Window(
-                                new RolloutPolicy_DecayingHorizon(
-                                        new EvaluationFunction_Constant(10f),
-                                        new Controller_ValueFunction(
-                                                new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
-                                                        new GameUnified(),
-                                                        layerSizes,
-                                                        new ArrayList<>(),
-                                                        "")))),
-                        5,
-                        1),
+                        new EvaluationFunction_Constant(5f), rollout1, 5, 1),
                 new DataSaver_Null()));
 
 
