@@ -10,6 +10,6 @@ before_install:
   - python3 -m pip install --user --upgrade tensorflow
   - python3 -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([100, 100])))"
   - sudo apt-get install xvfb
-  - nohup Xvfb :1 -screen 0 1152x900x8 &
-  - export DISPLAY="localhost:1"
+  - sudo Xvfb :1 -screen 0 1024x768x24 </dev/null &
+  - export DISPLAY=":1"
 
