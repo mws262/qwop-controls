@@ -309,6 +309,7 @@ public class SearchConfiguration implements Serializable {
                     || m.getDeclaringClass().getName().contains("java.awt")
                     || m.getDeclaringClass().getName().contains("javax.swing")
                     || m.getDeclaringClass().getName().contains("org.jfree")
+                    || m.getDeclaringClass().getName().contains("com.jogamp")
                     || super.hasIgnoreMarker(m);
         }
     }

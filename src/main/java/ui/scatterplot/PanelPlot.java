@@ -1,5 +1,6 @@
 package ui.scatterplot;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -229,6 +230,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     }
 
     @Override
+    @JsonIgnore
     public boolean isActive() {
         return active;
     }
@@ -284,6 +286,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
         }
 
         @Override
+        @JsonIgnore
         public int getSeriesCount() {
             return series.size();
         }
@@ -293,6 +296,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
             return null;
         }
 
+        @JsonIgnore
         XYLineAndShapeRenderer getRenderer() {
             return renderer;
         }

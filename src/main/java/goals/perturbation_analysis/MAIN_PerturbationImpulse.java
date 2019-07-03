@@ -176,8 +176,8 @@ public class MAIN_PerturbationImpulse extends JFrame {
         void addSecondaryStateWithArrow(IState state, Color color, float[] arrowDirection) {
             super.addSecondaryState(state, color);
             Integer[] arrowCoord = new Integer[4];
-            arrowCoord[0] = offset[0] + (int) (state.getCenterX() * runnerScaling);
-            arrowCoord[1] = offset[1] - 100;
+            arrowCoord[0] = getOffset()[0] + (int) (state.getCenterX() * runnerScaling);
+            arrowCoord[1] = getOffset()[1] - 100;
             arrowCoord[2] = (int) (50 * arrowDirection[0]) + arrowCoord[0];
             arrowCoord[3] = (int) (50 * arrowDirection[1]) + arrowCoord[1];
             arrowCoords.add(arrowCoord);
