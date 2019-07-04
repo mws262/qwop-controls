@@ -32,6 +32,7 @@ import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -44,8 +45,13 @@ public class CreateConfig {
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(128);
         layerSizes.add(64);
-        ValueFunction_TensorFlow valueFunction = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
-                new GameUnified(), layerSizes, new ArrayList<>(), "");
+        ValueFunction_TensorFlow valueFunction = null;
+        try {
+            valueFunction = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
+                    new GameUnified(), layerSizes, new ArrayList<>(), "");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         SearchConfiguration.Machine machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
@@ -125,9 +131,9 @@ public class CreateConfig {
         fullUI.addTab(autoencPlotPane);
 //        fullUI.addTab(workerMonitorPanel);
 
-        Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameThreadSafe should
+        Thread uiThread = new Thread(fullUI); // All components with a copy of the GameThreadSafe should
         // have their own threads.
-        runnerPanelThread.start();
+        uiThread.start();
 
 //        Thread monitorThread = new Thread(workerMonitorPanel);
 //        monitorThread.start();

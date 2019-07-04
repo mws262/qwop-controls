@@ -172,10 +172,12 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     public void deactivateTab() {
         actionQueue.clearAll();
         active = false;
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (thread != null) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 

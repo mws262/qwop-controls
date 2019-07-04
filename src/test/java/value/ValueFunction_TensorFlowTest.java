@@ -27,7 +27,7 @@ public class ValueFunction_TensorFlowTest {
         ValFunTest valFun = null;
         try {
             valFun = new ValFunTest("src/test/resources/test_net", game, 1, layerSizes, new ArrayList<>(), "");
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -62,7 +62,7 @@ public class ValueFunction_TensorFlowTest {
         int outputSize = 5;
         try {
             valFun = new ValFunTest("src/test/resources/test_net2", game, outputSize, layerSizes, new ArrayList<>(), "");
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -91,7 +91,7 @@ public class ValueFunction_TensorFlowTest {
         game = new GameUnifiedCaching(1, 3);
         try {
             valFun = new ValFunTest("src/test/resources/test_net3", game, outputSize, layerSizes, new ArrayList<>(), "");
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -193,7 +193,7 @@ public class ValueFunction_TensorFlowTest {
     class ValFunTest extends ValueFunction_TensorFlow {
 
         ValFunTest(String fileName, GameUnified gameTemplate, int outputSize, List<Integer> hiddenLayerSizes,
-                   List<String> additionalArgs, String checkpoint) throws FileNotFoundException {
+                   List<String> additionalArgs, String checkpoint) throws IOException {
             super(fileName, gameTemplate.getStateDimension(), outputSize, hiddenLayerSizes, additionalArgs, checkpoint);
         }
 

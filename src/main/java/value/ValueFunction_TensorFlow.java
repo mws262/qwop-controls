@@ -93,7 +93,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
                              @JsonProperty("outputSize") int outputSize,
                              @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                              @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
-                             @JsonProperty("activeCheckpoint") String activeCheckpoint) throws FileNotFoundException {
+                             @JsonProperty("activeCheckpoint") String activeCheckpoint) throws IOException {
         logger.info("Making a new network for the value function.");
         this.inputSize = inputSize;
         this.outputSize = outputSize;
@@ -153,7 +153,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * include any file extensions.
      * @param checkpointName Name of the checkpoint to load.
      */
-    public void loadCheckpoint(String checkpointName) {
+    public void loadCheckpoint(String checkpointName) throws IOException {
         assert !checkpointName.isEmpty();
         network.loadCheckpoint(checkpointName);
     }
