@@ -1,7 +1,6 @@
 package goals.tree_search;
 
 import controllers.Controller_Random;
-import controllers.Controller_ValueFunction;
 import game.GameUnified;
 import game.action.ActionGenerator_FixedSequence;
 import game.state.transform.Transform_Autoencoder;
@@ -13,7 +12,10 @@ import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.IRolloutPolicy;
 import tree.sampler.rollout.RolloutPolicy_DecayingHorizon;
 import tree.sampler.rollout.RolloutPolicy_Window;
-import tree.stage.*;
+import tree.stage.TreeStage;
+import tree.stage.TreeStage_Grouping;
+import tree.stage.TreeStage_MaxDepth;
+import tree.stage.TreeStage_ValueFunctionUpdate;
 import ui.IUserInterface;
 import ui.UI_Full;
 import ui.histogram.PanelHistogram_LeafDepth;
@@ -47,7 +49,8 @@ public class CreateConfig {
 
 
         SearchConfiguration.Machine machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
-        SearchConfiguration.Tree tree = new SearchConfiguration.Tree(ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
+        SearchConfiguration.Tree tree =
+                new SearchConfiguration.Tree(ActionGenerator_FixedSequence.makeExtendedGenerator(-1));
         List<SearchConfiguration.SearchOperation> searchOperations = new ArrayList<>();
         IUserInterface ui = CreateConfig.setupFullUI();
 
@@ -73,15 +76,15 @@ public class CreateConfig {
         SearchConfiguration configuration = new SearchConfiguration(machine, tree, searchOperations, ui);
 
 
-        SearchConfiguration.serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
-        SearchConfiguration.serializeToJson(new File("./src/main/resources/config/config.json"), configuration);
-        SearchConfiguration.serializeToYaml(new File("./src/main/resources/config/config.yaml"), configuration);
+        SearchConfiguration.serializeToXML(new File("./src/main/resources/config/default.xml"), configuration);
+        SearchConfiguration.serializeToJson(new File("./src/main/resources/config/default.json"), configuration);
+        SearchConfiguration.serializeToYaml(new File("./src/main/resources/config/default.yaml"), configuration);
         // configuration.searchOperations.add(configuration.searchOperations.get(0));
 //        serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
 //        serializeToJson(new File("./src/main/resources/config/config.json"), configuration);
 //        serializeToYaml(new File("./src/main/resources/config/config.yaml"), configuration);
 
-        configuration = SearchConfiguration.deserializeYaml(new File("./src/main/resources/config/config.yaml"),
+        configuration = SearchConfiguration.deserializeYaml(new File("./src/main/resources/config/default.yaml"),
                 SearchConfiguration.class);
     }
     /**
