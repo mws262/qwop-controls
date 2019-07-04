@@ -1,5 +1,7 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.GameUnified;
@@ -9,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphicsBase;
 
-import java.awt.*;
+import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +32,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
      */
     private ActionQueue actionQueue = new ActionQueue();
 
+    private Thread thread;
+
     /**
      * Current status of each keypress.
      */
@@ -46,7 +50,10 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     private Logger logger = LogManager.getLogger(PanelRunner_Animated.class);
 
-    public PanelRunner_Animated() {
+    private final String name;
+
+    public PanelRunner_Animated(@JsonProperty("name") String name) {
+        this.name = name;
         game = new GameUnified();
     }
 
@@ -104,6 +111,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
         }
     }
 
+    @JsonIgnore
     public boolean isFinishedWithRun() {
         return (actionQueue.isEmpty());
     }
@@ -125,9 +133,8 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     @Override
     public void run() {
-        //noinspection InfiniteLoopStatement
-        while (true) {
-            if (active && !pauseFlag) {
+        while (active) {
+            if (!pauseFlag) {
                 if (game != null) {
                     executeNextOnQueue();
                 }
@@ -154,14 +161,32 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     @Override
+    public void activateTab() {
+        actionQueue.clearAll();
+        active = true;
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    @Override
     public void deactivateTab() {
         actionQueue.clearAll();
         active = false;
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void update(NodeQWOPGraphicsBase<?> node) {
         if (node.getTreeDepth() > 0)
             simRunToNode(node);
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

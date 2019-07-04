@@ -12,6 +12,10 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: com.fazecast:jSerialComm:2.5.0" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8" level="project" />
+    <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.23" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8" level="project" />
+    <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.23" level="project" />
     <orderEntry type="library" name="Maven: org.jblas:jblas:1.2.4" level="project" />
     <orderEntry type="library" name="Maven: org.jfree:jfreechart:1.0.19" level="project" />
     <orderEntry type="library" name="Maven: org.jfree:jcommon:1.0.23" level="project" />
@@ -58,7 +62,7 @@
     <orderEntry type="module-library">
       <library name="Maven: jdk.tools:jdk.tools:1.8">
         <CLASSES>
-          <root url="jar:///usr/lib/jvm/java-8-oracle/lib/tools.jar!/" />
+          <root url="jar://C:/Program Files/Java/jdk1.8.0_181/lib/tools.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -141,7 +145,6 @@
     <orderEntry type="library" name="Maven: org.apache.kerby:kerb-identity:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.kerby:kerby-xdr:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.7.8" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.7.0" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.woodstox:stax2-api:3.1.4" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.woodstox:woodstox-core:5.0.3" level="project" />
     <orderEntry type="library" name="Maven: org.jcodec:jcodec:0.2.2" level="project" />
@@ -160,5 +163,10 @@
     <orderEntry type="library" name="Maven: com.fazecast:jSerialComm:2.5.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-api:2.11.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-core:2.11.2" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.0" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.9.0" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.9.0" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8" level="project" />
+    <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.23" level="project" />
   </component>
 </module>

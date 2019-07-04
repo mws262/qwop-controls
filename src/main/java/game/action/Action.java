@@ -1,5 +1,8 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -121,7 +124,9 @@ public class Action implements Serializable {
      * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
      * @param keysPressed Keys pressed during this action.
      */
-    public Action(int totalTimestepsToHold, Keys keysPressed) {
+    @JsonCreator
+    public Action(@JsonProperty("duration") int totalTimestepsToHold,
+                  @JsonProperty("keys") Keys keysPressed) {
         this(totalTimestepsToHold, Action.keysToBooleans(keysPressed));
     }
 
@@ -152,6 +157,10 @@ public class Action implements Serializable {
         return keysPressed;
     }
 
+    public Keys getKeys() {
+        return Action.booleansToKeys(peek());
+    }
+
     /**
      * Check whether this action is finished (i.e. internal step counter hit zero).
      *
@@ -175,6 +184,7 @@ public class Action implements Serializable {
      *
      * @return The number of timesteps remaining in this action.
      */
+    @JsonIgnore
     public int getTimestepsRemaining() {
         return timestepsRemaining;
     }
@@ -184,6 +194,7 @@ public class Action implements Serializable {
      *
      * @return Total duration of this action (timesteps).
      */
+    @JsonProperty("duration")
     public int getTimestepsTotal() {
         return timestepsTotal;
     }
@@ -242,6 +253,7 @@ public class Action implements Serializable {
      *
      * @return A poll-able copy of this Action with all timesteps of the duration remaining.
      */
+    @JsonIgnore
     public synchronized Action getCopy() {
         Action copiedAction = new Action(timestepsTotal, keysPressed);
         copiedAction.isExecutableCopy = true;
@@ -254,6 +266,7 @@ public class Action implements Serializable {
      *
      * @return Returns whether this action can be polled. If false, then it is the original version of the action.
      */
+    @JsonIgnore
     public boolean isMutable() {
         return isExecutableCopy;
     }

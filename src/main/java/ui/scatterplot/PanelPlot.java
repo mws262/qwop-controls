@@ -1,5 +1,9 @@
 package ui.scatterplot;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.lang.ArrayUtils;
 import org.jfree.chart.*;
 import org.jfree.chart.annotations.XYTextAnnotation;
@@ -21,7 +25,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = PanelPlot_Simple.class, name = "plot_simple"),
+        @JsonSubTypes.Type(value = PanelPlot_Transformed.class, name = "plot_transformed"),
+        @JsonSubTypes.Type(value = PanelPlot_Controls.class, name = "plot_controls"),
+        @JsonSubTypes.Type(value = PanelPlot_SingleRun.class, name = "plot_single_run"),
+        @JsonSubTypes.Type(value = PanelPlot_States.class, name = "plot_states")
+})
 public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, ChartMouseListener {
 
     private static final long serialVersionUID = 1L;
@@ -34,7 +47,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * How many plots do we want to squeeze in there horizontally?
      */
-    protected final int numberOfPlots;
+    public final int numberOfPlots;
 
     /**
      * Array of the numberOfPlots number of plots we make.
@@ -57,7 +70,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     private final Color actionColor3 = NodeQWOPGraphicsBase.getColorFromTreeDepth(20, NodeQWOPGraphicsBase.lineBrightnessDefault);
     private final Color actionColor4 = NodeQWOPGraphicsBase.getColorFromTreeDepth(30, NodeQWOPGraphicsBase.lineBrightnessDefault);
 
-    public PanelPlot(int numberOfPlots) {
+    public PanelPlot(@JsonProperty("numberOfPlots") int numberOfPlots) {
         this.numberOfPlots = numberOfPlots;
         plotPanels = new ChartPanel[numberOfPlots];
 
@@ -217,6 +230,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     }
 
     @Override
+    @JsonIgnore
     public boolean isActive() {
         return active;
     }
@@ -272,6 +286,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
         }
 
         @Override
+        @JsonIgnore
         public int getSeriesCount() {
             return series.size();
         }
@@ -281,6 +296,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
             return null;
         }
 
+        @JsonIgnore
         XYLineAndShapeRenderer getRenderer() {
             return renderer;
         }

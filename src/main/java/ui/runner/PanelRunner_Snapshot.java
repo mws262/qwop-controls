@@ -1,5 +1,7 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Action;
 import tree.node.filter.INodeFilter;
 import tree.node.filter.NodeFilter_Downsample;
@@ -73,8 +75,11 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
      */
     private boolean mouseIsIn = false;
 
-    public PanelRunner_Snapshot() {
+    private final String name;
+
+    public PanelRunner_Snapshot(@JsonProperty("name") String name) {
         super();
+        this.name = name;
         addMouseListener(this);
         addMouseMotionListener(this);
     }
@@ -294,6 +299,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     /**
      * Get the list of leave nodes (failure states) that we're displaying in the snapshot pane.
      */
+    @JsonIgnore
     public List<NodeQWOPGraphicsBase<?>> getDisplayedLeaves() {
         return focusLeaves;
     }
@@ -335,11 +341,21 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     }
 
     @Override
+    public void activateTab() {
+        active = true;
+    }
+
+    @Override
     public void deactivateTab() {
         states.clear();
         focusLeaves.clear();
         strokes.clear();
         colors.clear();
         active = false;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

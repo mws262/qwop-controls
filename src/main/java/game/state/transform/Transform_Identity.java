@@ -36,7 +36,7 @@ public class Transform_Identity implements ITransform {
     }
 
     @Override
-    public int getOutputStateSize() {
+    public int getOutputSize() {
         return State.ObjectName.values().length * StateVariable.StateName.values().length;
     }
 

@@ -1,8 +1,11 @@
 package value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Iterables;
 import data.LoadStateStatistics;
-import game.GameUnified;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tflowtools.TrainableNetwork;
@@ -10,9 +13,16 @@ import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = ValueFunction_TensorFlow_StateOnly.class, name = "tflow_state_only"),
+})
 public abstract class ValueFunction_TensorFlow implements IValueFunction {
 
     /**
@@ -30,7 +40,9 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      */
     TrainableNetwork network;
 
-    GameUnified gameTemplate;
+    public final String fileName;
+    public final List<Integer> hiddenLayerSizes;
+    public List<String> additionalNetworkArgs;
     /**
      * Number of nodes to run through training in one shot.
      */
@@ -69,39 +81,51 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
 
     /**
      * Constructor which also creates a new TensorFlow model.
-     * @param fileName Name of the .pb file (without extension) to be created.
-     * @param gameTemplate Defines the input dimension of the net.
+     * @param fileName Name of the file to be created.
+     * @param inputSize Defines the input dimension of the net.
      * @param outputSize 1D size of the output layer.
      * @param hiddenLayerSizes Size of the fully-connected interior layers.
-     * @param additionalArgs Additional arguments used when creating the net (see {@link TrainableNetwork}.
+     * @param additionalNetworkArgs Additional arguments used when creating the net (see {@link TrainableNetwork}.
      * @throws FileNotFoundException Occurs when the file is not created successfully.
      */
-    ValueFunction_TensorFlow(String fileName, GameUnified gameTemplate, int outputSize, List<Integer> hiddenLayerSizes,
-                             List<String> additionalArgs) throws FileNotFoundException {
+    ValueFunction_TensorFlow(@JsonProperty("fileName") String fileName,
+                             @JsonProperty("inputSize") int inputSize,
+                             @JsonProperty("outputSize") int outputSize,
+                             @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
+                             @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
+                             @JsonProperty("activeCheckpoint") String activeCheckpoint) throws FileNotFoundException {
         logger.info("Making a new network for the value function.");
-        this.inputSize = gameTemplate.getStateDimension();
+        this.inputSize = inputSize;
         this.outputSize = outputSize;
-        this.gameTemplate = gameTemplate;
-
+        this.fileName = fileName;
+        this.hiddenLayerSizes = hiddenLayerSizes;
         // Supplement the hidden layer sizes with the input and output sizes.
         List<Integer> allLayerSizes = new ArrayList<>(hiddenLayerSizes);
         allLayerSizes.add(0, inputSize);
         allLayerSizes.add(outputSize);
+        this.additionalNetworkArgs = additionalNetworkArgs;
 
-        network = TrainableNetwork.makeNewNetwork(fileName, allLayerSizes, additionalArgs);
+        network = TrainableNetwork.makeNewNetwork(fileName, allLayerSizes, additionalNetworkArgs);
+        // Load checkpoint if provided.
+        if (activeCheckpoint != null && !activeCheckpoint.isEmpty()) {
+            loadCheckpoint(activeCheckpoint);
+        }
     }
 
     /**
      * Constructor which uses existing model.
-     * @param existingFile A .pb file referring to an existing model.
+     * @param existingModel A .pb file referring to an existing model.
      * @throws FileNotFoundException Occurs when the specified model file is not found.
      */
-    ValueFunction_TensorFlow(File existingFile, GameUnified gameTemplate) throws FileNotFoundException {
+    ValueFunction_TensorFlow(File existingModel) throws FileNotFoundException {
         logger.info("Loading existing network for the value function.");
-
-        network = new TrainableNetwork(existingFile);
-        this.gameTemplate = gameTemplate;
+        fileName = existingModel.getPath();
+        network = new TrainableNetwork(existingModel);
         int[] layerSizes = network.getLayerSizes();
+        hiddenLayerSizes = new ArrayList<>();
+        for (int i = 1; i < layerSizes.length - 1; i++) {
+            hiddenLayerSizes.add(layerSizes[i]);
+        }
         inputSize = layerSizes[0];
         outputSize = layerSizes[layerSizes.length - 1];
     }
@@ -110,13 +134,17 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * Existing network. It will not be validated. Mostly for use when copying.
      * @param network Existing value network.
      */
-    ValueFunction_TensorFlow(TrainableNetwork network, GameUnified gameTemplate) {
+    ValueFunction_TensorFlow(TrainableNetwork network) {
         logger.info("Using provided network for the value function.");
-        this.gameTemplate = gameTemplate;
+        this.fileName = network.getGraphDefinitionFile().getPath();
         int[] layerSizes = network.getLayerSizes();
         assert layerSizes.length >= 2;
         inputSize = layerSizes[0];
+        hiddenLayerSizes = new ArrayList<>();
         outputSize = layerSizes[layerSizes.length - 1];
+        for (int i = 1; i < layerSizes.length - 1; i++) {
+            hiddenLayerSizes.add(layerSizes[i]);
+        }
         this.network = network;
     }
 
@@ -136,13 +164,9 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * @param checkpointName Name of the checkpoint file. Do not include file extension or directory.
      * @return A list of checkpoint with that name.
      */
-    public List<File> saveCheckpoint(String checkpointName) {
+    public List<File> saveCheckpoint(String checkpointName) throws IOException {
         assert !checkpointName.isEmpty();
         return network.saveCheckpoint(checkpointName);
-    }
-
-    public File getCheckpointPath() {
-        return new File(network.checkpointPath);
     }
 
     /**
@@ -150,8 +174,14 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * @return The .pb file holding the graph definition. Does not include weights.
      */
     @SuppressWarnings("unused")
+    @JsonIgnore
     public File getGraphDefinitionFile() {
         return network.getGraphDefinitionFile();
+    }
+
+    @JsonProperty("activeCheckpoint")
+    public String getActiveCheckpoint() {
+        return network.getActiveCheckpoint();
     }
 
     /**

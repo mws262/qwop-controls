@@ -16,9 +16,6 @@ public class Sampler_Random implements ISampler {
     private boolean treePolicyDone = false;
     private boolean expansionPolicyDone = false;
 
-    public Sampler_Random() {
-    }
-
     @Override
     public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
         if (startNode.isFullyExplored()) {

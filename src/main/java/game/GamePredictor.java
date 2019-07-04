@@ -118,7 +118,7 @@ public class GamePredictor extends TensorflowLoader {
         List<IState> states = gp.predictSimulation(initState, actionQueue);
 
         JFrame frame = new JFrame();
-        PanelRunner_SimpleState panelRunner = new PanelRunner_SimpleState();
+        PanelRunner_SimpleState panelRunner = new PanelRunner_SimpleState("Runner");
         panelRunner.activateTab();
         frame.getContentPane().add(panelRunner);
         frame.setPreferredSize(new Dimension(1000, 400));

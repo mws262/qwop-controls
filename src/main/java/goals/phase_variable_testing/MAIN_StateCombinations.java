@@ -29,7 +29,7 @@ public class MAIN_StateCombinations extends JFrame {
     }
     public void run() {
         // Vis makeNewWorld.
-        PanelPlot_Simple plotPanel = new PanelPlot_Simple();
+        PanelPlot_Simple plotPanel = new PanelPlot_Simple("Runner");
         plotPanel.activateTab();
         getContentPane().add(plotPanel);
         setPreferredSize(new Dimension(1000, 400));

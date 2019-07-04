@@ -1,10 +1,12 @@
 package tree.sampler;
 
-import java.util.*;
-
-import game.action.Action;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
+import game.action.Action;
 import tree.node.NodeQWOPExplorableBase;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class Sampler_FixedDepth implements ISampler {
 
@@ -34,7 +36,7 @@ public class Sampler_FixedDepth implements ISampler {
     private Set<NodeQWOPExplorableBase<?>> finishedNodes = new HashSet<>(); // Note: each worker populates its own list. This is kind of
     // dumb, but I don't expect to use this sampler enough for it to be a big deal.
 
-    public Sampler_FixedDepth(int horizonDepth) {
+    public Sampler_FixedDepth(@JsonProperty("horizonDepth") int horizonDepth) {
         this.horizonDepth = horizonDepth;
     }
 
@@ -155,6 +157,11 @@ public class Sampler_FixedDepth implements ISampler {
     @Override
     public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
         return true; // No rollout policy
+    }
+
+    @JsonProperty("horizonDepth")
+    public int getHorizonDepth() {
+        return horizonDepth;
     }
 
     @Override

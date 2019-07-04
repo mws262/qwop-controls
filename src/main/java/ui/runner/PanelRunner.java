@@ -5,8 +5,16 @@ import java.awt.geom.AffineTransform;
 
 import javax.swing.JPanel;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Action;
 import ui.IUserInterface.TabbedPaneActivator;
+import ui.PanelTree;
+import ui.histogram.PanelHistogram_LeafDepth;
+import ui.pie.PanelPie_ViableFutures;
+import ui.scatterplot.PanelPlot;
+import ui.scatterplot.PanelPlot_Simple;
+import ui.timeseries.PanelTimeSeries;
 
 /**
  * Snapshot viewers of the runner and animations of the runner share a lot of features and dimensions.
@@ -14,12 +22,24 @@ import ui.IUserInterface.TabbedPaneActivator;
  *
  * @author matt
  */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = PanelRunner_Animated.class, name = "runner_animated"),
+        @JsonSubTypes.Type(value = PanelRunner_Snapshot.class, name = "runner_snapshot"),
+        @JsonSubTypes.Type(value = PanelRunner_MultiState.class, name = "runner_multistate"),
+        @JsonSubTypes.Type(value = PanelRunner_SimpleState.class, name = "runner_simplestate"),
+        @JsonSubTypes.Type(value = PanelRunner_AnimatedTransformed.class, name = "runner_animated_transformed"),
+        @JsonSubTypes.Type(value = PanelRunner_Comparison.class, name = "runner_comparison"),
+        @JsonSubTypes.Type(value = PanelRunner_AnimatedFromStates.class, name = "runner_animated_states")
+})
 public abstract class PanelRunner extends JPanel implements TabbedPaneActivator {
 
     /**
      * Should this panel be drawing or is it hidden.
      */
-    protected boolean active = false;
+    transient protected boolean active = false;
 
     /**
      * Fonts for drawing the keyboard keys when pressed/not pressed.
@@ -38,7 +58,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
      */
     public final static Stroke boldStroke = new BasicStroke(2);
 
-    public Stroke customStroke;
+    transient public Stroke customStroke;
 
     /**
      * Faded out gray for drawing past states and such.
@@ -48,13 +68,13 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
     /**
      * Drawing offsets within the viewing panel (i.e. non-physical)
      */
-    public int xOffsetPixels = 500;
-    public int yOffsetPixels = 100;
+    transient public int xOffsetPixels = 500;
+    transient public int yOffsetPixels = 100;
 
     /**
      * Runner coordinates to pixels.
      */
-    public float runnerScaling = 10f;
+    transient public float runnerScaling = 10f;
 
     private final int startX = -45;
     private final int startY = yOffsetPixels - 85;
@@ -187,9 +207,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
     }
 
     @Override
-    public void activateTab() {
-        active = true;
-    }
+    public abstract void activateTab();
 
     @Override
     public abstract void deactivateTab();

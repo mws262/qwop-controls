@@ -1,5 +1,8 @@
 package game.state.transform;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import controllers.*;
 import game.state.IState;
 
 import java.util.List;
@@ -9,6 +12,14 @@ import java.util.List;
  *
  * @author matt
  */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = Transform_Autoencoder.class, name = "autoencoder"),
+        @JsonSubTypes.Type(value = Transform_PCA.class, name = "pca"),
+        @JsonSubTypes.Type(value = Transform_Identity.class, name = "identity")
+})
 public interface ITransform {
 
     /**
@@ -51,7 +62,7 @@ public interface ITransform {
      * @return Number of floats that each {@link IState} will be transformed into when calling
      * {@link ITransform#transform(List)}.
      */
-    int getOutputStateSize();
+    int getOutputSize();
 
     /**
      * Get the name of this transform.

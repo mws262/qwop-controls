@@ -1,5 +1,6 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.GameUnified;
 import game.state.IState;
 import tree.node.NodeQWOPGraphicsBase;
@@ -19,6 +20,14 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
      */
     private IState currentState;
 
+    private Thread thread;
+
+    private final String name;
+
+    public PanelRunner_SimpleState(@JsonProperty("name") String name) {
+        this.name = name;
+    }
+
     /**
      * Update the state to be displayed.
      */
@@ -29,11 +38,6 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     @Override
     public void update(NodeQWOPGraphicsBase<?> node) {
         currentState = node.getState();
-    }
-
-    @Override
-    public void deactivateTab() {
-        active = false;
     }
 
     /**
@@ -53,14 +57,35 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
 
     @Override
     public void run() {
-        //noinspection InfiniteLoopStatement
-        while (true) {
+        while (active) {
             repaint();
             try {
                 Thread.sleep(15);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void activateTab() {
+        active = true;
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    @Override
+    public void deactivateTab() {
+        active = false;
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }

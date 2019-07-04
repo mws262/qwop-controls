@@ -23,12 +23,12 @@ public class DataSaver_Sparse implements IDataSaver {
     /**
      * File prefix. Goes in front of date.
      */
-    public String filePrefix = "qwop_sparse_java";
+    public final String filePrefix = "qwop_sparse_java";
 
     /**
      * Do not include dot before.
      */
-    public String fileExtension = "SavableSingleGame";
+    public final String fileExtension = "SavableSingleGame";
 
     /**
      * File save location.
@@ -86,6 +86,16 @@ public class DataSaver_Sparse implements IDataSaver {
     }
 
     @Override
+    public int getSaveInterval() {
+        return saveInterval;
+    }
+
+    @Override
+    public String getSavePath() {
+        return fileLocation;
+    }
+
+    @Override
     public void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
         // If the save buffer still has stuff in it, save!
         if (!saveBuffer.isEmpty()) {
@@ -95,9 +105,7 @@ public class DataSaver_Sparse implements IDataSaver {
     }
 
     @Override
-    public void finalizeSaverData() {
-
-    }
+    public void finalizeSaverData() {}
 
     @Override
     public DataSaver_Sparse getCopy() {

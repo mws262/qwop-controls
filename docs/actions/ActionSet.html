@@ -163,7 +163,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#samplingDist">samplingDist</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#samplingDistribution">samplingDistribution</a></span></code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -187,7 +187,7 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#ActionSet-distributions.Distribution-">ActionSet</a></span>(<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;&nbsp;samplingDist)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../game.actions/ActionSet.html#ActionSet-distributions.Distribution-">ActionSet</a></span>(<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;&nbsp;samplingDistribution)</code>
 <div class="block">Create a new ActionSet which can sample according to the rules of a <a href="../distributions/Distribution.html" title="class in distributions"><code>Distribution</code></a>.</div>
 </td>
 </tr>
@@ -317,13 +317,13 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <!--   -->
 </a>
 <h3>Field Detail</h3>
-<a name="samplingDist">
+<a name="samplingDistribution">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>samplingDist</h4>
-<pre>public&nbsp;<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt; samplingDist</pre>
+<h4>samplingDistribution</h4>
+<pre>public&nbsp;<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt; samplingDistribution</pre>
 </li>
 </ul>
 </li>
@@ -340,12 +340,12 @@ extends <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.h
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ActionSet</h4>
-<pre>public&nbsp;ActionSet(<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;&nbsp;samplingDist)</pre>
+<pre>public&nbsp;ActionSet(<a href="../distributions/Distribution.html" title="class in distributions">Distribution</a>&lt;<a href="../game.actions/Action.html" title="class in game.action">Action</a>&gt;&nbsp;samplingDistribution)</pre>
 <div class="block">Create a new ActionSet which can sample according to the rules of a <a href="../distributions/Distribution.html" title="class in distributions"><code>Distribution</code></a>. It may otherwise be
  treated as an <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html?is-external=true" title="class or interface in java.util"><code>ArrayList</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>samplingDist</code> - Distribution that samples of the action set will be pulled when calling
+<dd><code>samplingDistribution</code> - Distribution that samples of the action set will be pulled when calling
  <a href="../game.actions/ActionSet.html#sampleDistribution--"><code>sampleDistribution()</code></a>.</dd>
 </dl>
 </li>

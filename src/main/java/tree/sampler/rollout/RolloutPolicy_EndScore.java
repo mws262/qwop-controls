@@ -1,5 +1,6 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -27,8 +28,9 @@ public class RolloutPolicy_EndScore extends RolloutPolicyBase {
        this.rolloutController = rolloutController;
     }
 
-    public RolloutPolicy_EndScore(IEvaluationFunction evaluationFunction,
-                                  IController rolloutController, int maxTimesteps) {
+    public RolloutPolicy_EndScore(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
+                                  @JsonProperty("getRolloutController") IController rolloutController,
+                                  @JsonProperty("maxTimesteps") int maxTimesteps) {
         super(evaluationFunction, maxTimesteps);
         this.rolloutController = rolloutController;
     }
@@ -46,7 +48,7 @@ public class RolloutPolicy_EndScore extends RolloutPolicyBase {
 
     @Override
     float endScore(NodeQWOPExplorableBase<?> endNode) {
-        return evaluationFunction.getValue(endNode);
+        return getEvaluationFunction().getValue(endNode);
     }
 
     @Override
@@ -55,14 +57,14 @@ public class RolloutPolicy_EndScore extends RolloutPolicyBase {
     }
 
     @Override
-    IController getController() {
+    public IController getRolloutController() {
         return rolloutController;
     }
 
     @Override
     public RolloutPolicy_EndScore getCopy() {
-       RolloutPolicy_EndScore copy = new RolloutPolicy_EndScore(evaluationFunction.getCopy(),
-               getController().getCopy(), maxTimesteps);
+       RolloutPolicy_EndScore copy = new RolloutPolicy_EndScore(getEvaluationFunction().getCopy(),
+               getRolloutController().getCopy(), maxTimesteps);
        copy.failureMultiplier = failureMultiplier;
        return copy;
     }

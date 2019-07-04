@@ -1,5 +1,15 @@
 package game.state.transform;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import game.state.IState;
 import game.state.IState.ObjectName;
 import game.state.State;
@@ -7,6 +17,7 @@ import game.state.StateVariable.StateName;
 import org.jblas.FloatMatrix;
 import org.jblas.Singular;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +47,9 @@ public class Transform_PCA implements ITransform {
     /**
      * PCA components used to do transforms. Usually will only be the first couple.
      */
-    private int[] transformPCAComponents;
+    @JsonSerialize(using = Transform_PCA.Serializer.class)
+    @JsonDeserialize(using = Transform_PCA.Deserializer.class)
+    public final int[] transformPCAComponents;
 
     /**
      * Make a new PCA transformer. Note that it will do the full PCA, but will only used
@@ -45,7 +58,7 @@ public class Transform_PCA implements ITransform {
      *
      * @param transformPCAComponents The PCA components that will be used for the transform.
      */
-    public Transform_PCA(int[] transformPCAComponents) {
+    public Transform_PCA(@JsonProperty("transformPCAComponents") int[] transformPCAComponents) {
         this.transformPCAComponents = transformPCAComponents;
     }
 
@@ -174,12 +187,61 @@ public class Transform_PCA implements ITransform {
     }
 
     @Override
-    public int getOutputStateSize() {
+    public int getOutputSize() {
         return transformPCAComponents.length;
     }
 
     @Override
     public String getName() {
-        return "PCA " + getOutputStateSize();
+        return "PCA " + getOutputSize();
+    }
+
+    public static class Deserializer extends StdDeserializer<Object> {
+
+        public Deserializer() {
+            this(null);
+        }
+
+        public Deserializer(Class<Object> t) {
+            super(t);
+        }
+
+        @Override
+        public int[] deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            JsonNode node = p.getCodec().readTree(p);
+
+            String durationList = node.iterator().next().asText();
+            String[] durations = durationList.split(" ");
+            int[] components = new int[durations.length];
+
+            for (int i = 0; i < durations.length; i++)  {
+                components[i] = Integer.valueOf(durations[i]);
+            }
+
+            return components;
+        }
+    }
+
+    public static class Serializer extends StdSerializer<Object> {
+
+        public Serializer() {
+            this(null);
+        }
+
+        public Serializer(Class<Object> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(Object value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+
+            StringBuilder sb = new StringBuilder();
+            for (int component : (int[]) value) {
+                sb.append(component).append(" ");
+            }
+            jgen.writeStartObject();
+            jgen.writeStringField("transformPCAComponents", sb.toString());
+            jgen.writeEndObject();
+        }
     }
 }

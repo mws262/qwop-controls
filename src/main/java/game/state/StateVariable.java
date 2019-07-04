@@ -1,5 +1,6 @@
 package game.state;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -64,7 +65,12 @@ public class StateVariable implements Serializable {
      * @param dy  Vertical velocity of the body.
      * @param dth Counterclockwise angular rate of the body.
      */
-    public StateVariable(float x, float y, float th, float dx, float dy, float dth) {
+    public StateVariable(@JsonProperty("x") float x,
+                         @JsonProperty("y") float y,
+                         @JsonProperty("th") float th,
+                         @JsonProperty("dx") float dx,
+                         @JsonProperty("dy") float dy,
+                         @JsonProperty("dth") float dth) {
         this.x = x;
         this.y = y;
         this.th = th;

@@ -1,5 +1,6 @@
 package ui.scatterplot;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.filter.INodeFilter;
 import tree.node.filter.NodeFilter_Downsample;
 import game.state.IState;
@@ -60,9 +61,12 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
      */
     private List<NodeQWOPExplorableBase<?>> nodes = new ArrayList<>();
 
-    public PanelPlot_Controls(int numberOfPlots) {
+    private final String name;
+
+    public PanelPlot_Controls(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numberOfPlots) {
         super(numberOfPlots);
-        numPlots = transformer.getOutputStateSize();
+        this.name = name;
+        numPlots = transformer.getOutputSize();
         this.plotsPerView = numberOfPlots;
         addKeyListener(this);
         setFocusable(true);
@@ -134,7 +138,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
                 firstPlotRow--;
                 break;
             case KeyEvent.VK_DOWN:
-                if (firstPlotRow >= (transformer.getOutputStateSize() - plotsPerView) / plotsPerView) return;
+                if (firstPlotRow >= (transformer.getOutputSize() - plotsPerView) / plotsPerView) return;
                 firstPlotRow++;
                 break;
             default:
@@ -146,4 +150,9 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {}
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }

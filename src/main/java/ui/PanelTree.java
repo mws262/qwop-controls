@@ -1,5 +1,6 @@
 package ui;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
@@ -503,6 +504,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     }
 
     @Override
+    @JsonIgnore
     public boolean isActive() {
         return true;
     }

@@ -1,9 +1,22 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.KeyDeserializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
 import tree.node.NodeQWOPExplorableBase;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -28,6 +41,9 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
      * tree depth this applies to. Value is the set of Actions. The keySequence booleans
      * are still obeyed. Usually exceptions are at the beginning of a sequence.
      */
+    @JsonSerialize(keyUsing = ExceptionSerializer.class) // Take care of the fact that the keys are integers, which
+    // throws off XML.
+    @JsonDeserialize(keyUsing = ExceptionDeserializer.class)
     private final Map<Integer, ActionList> actionExceptions;
 
     /**
@@ -48,7 +64,8 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
      *                         depth specified in the map, it will use the ActionList corresponding to this index
      *                         rather than the normal ActionList in the cycle.
      */
-    public ActionGenerator_FixedSequence(ActionList[] repeatedActions, Map<Integer, ActionList> actionExceptions) {
+    public ActionGenerator_FixedSequence(@JsonProperty("repeatedActions") ActionList[] repeatedActions,
+                                         @JsonProperty("actionExceptions") Map<Integer, ActionList> actionExceptions) {
 
         if (repeatedActions.length == 0) {
             throw new IllegalArgumentException("There must be at least 1 repeated action. The array was empty.");
@@ -90,12 +107,36 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
         return allActions;
     }
 
+    public ActionList[] getRepeatedActions() {
+        return repeatedActions;
+    }
+    @JsonUnwrapped
+    public Map<Integer, ActionList> getActionExceptions() {
+        return actionExceptions;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ActionGenerator_FixedSequence that = (ActionGenerator_FixedSequence) o;
+        return Arrays.equals(repeatedActions, that.repeatedActions) &&
+                Objects.equals(actionExceptions, that.actionExceptions);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(actionExceptions);
+        result = 31 * result + Arrays.hashCode(repeatedActions);
+        return result;
+    }
+
     /**
      * Assign the correct generator of game.action based on the baseline options and exceptions.
      * Will assign a broader set of options for "recovery" at the specified starting depth.
      * Pass -1 to disable this.
      */
-    public static IActionGenerator makeDefaultGenerator(int recoveryExceptionStart) {
+    public static ActionGenerator_FixedSequence makeDefaultGenerator(int recoveryExceptionStart) {
         /* Space of allowed game.action to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
@@ -194,7 +235,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
         return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
     }
 
-    public static IActionGenerator makeExtendedGenerator(int recoveryExceptionStart) {
+    public static ActionGenerator_FixedSequence makeExtendedGenerator(int recoveryExceptionStart) {
         /* Space of allowed game.action to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
@@ -296,5 +337,23 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
         }
         // Define the specific way that these allowed game.action are assigned as potential options for nodes.
         return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
+    }
+
+    private static class ExceptionDeserializer extends KeyDeserializer {
+
+        @Override
+        public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+            return new Integer(key.replace("depth", ""));
+        }
+    }
+
+    // XML doesn't like tags with only integers in them.
+    private static class ExceptionSerializer extends StdKeySerializer {
+
+        @Override
+        public void serialize(Object value, JsonGenerator g, SerializerProvider provider) throws IOException {
+            g.writeFieldName("depth" + value.toString());
+        }
+
     }
 }

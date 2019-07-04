@@ -1,5 +1,6 @@
 package ui.pie;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jfree.data.general.DefaultPieDataset;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphicsBase;
@@ -9,7 +10,11 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
 
     private boolean active = false;
 
-    public PanelPie_ViableFutures() {}
+    private final String name;
+
+    public PanelPie_ViableFutures(@JsonProperty("name") String name) {
+        this.name = name;
+    }
 
     @Override
     public void activateTab() {
@@ -57,5 +62,10 @@ public class PanelPie_ViableFutures extends PanelPie implements IUserInterface.T
         data.insertValue(3, "<3 depth", cat2);
         data.insertValue(4, "<6 depth", cat3);
         data.insertValue(5, ">6 depth", cat4);
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

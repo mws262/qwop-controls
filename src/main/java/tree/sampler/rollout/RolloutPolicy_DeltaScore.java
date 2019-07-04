@@ -1,5 +1,7 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -18,24 +20,26 @@ public class RolloutPolicy_DeltaScore extends RolloutPolicyBase {
      */
     public float failureMultiplier = 1.0f;
 
-    private IController rolloutController;
+    private final IController rolloutController;
 
     public static final int defaultMaxTimesteps = Integer.MAX_VALUE;
 
-   public RolloutPolicy_DeltaScore(IEvaluationFunction evaluationFunction, IController rolloutController) {
+   public RolloutPolicy_DeltaScore(IEvaluationFunction evaluationFunction,
+                                   IController rolloutController) {
        super(evaluationFunction, defaultMaxTimesteps);
        this.rolloutController = rolloutController;
     }
 
-    public RolloutPolicy_DeltaScore(IEvaluationFunction evaluationFunction,
-                                    IController rolloutController, int maxTimesteps) {
+    public RolloutPolicy_DeltaScore(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
+                                    @JsonProperty("getRolloutController") IController rolloutController,
+                                    @JsonProperty("maxTimesteps") int maxTimesteps) {
         super(evaluationFunction, maxTimesteps);
         this.rolloutController = rolloutController;
     }
 
     @Override
     float startScore(NodeQWOPExplorableBase<?> startNode) {
-        return -evaluationFunction.getValue(startNode);
+        return -getEvaluationFunction().getValue(startNode);
     }
 
     @Override
@@ -45,7 +49,7 @@ public class RolloutPolicy_DeltaScore extends RolloutPolicyBase {
 
     @Override
     float endScore(NodeQWOPExplorableBase<?> endNode) {
-        return evaluationFunction.getValue(endNode);
+        return getEvaluationFunction().getValue(endNode);
     }
 
     @Override
@@ -54,14 +58,15 @@ public class RolloutPolicy_DeltaScore extends RolloutPolicyBase {
     }
 
     @Override
-    IController getController() {
+    public IController getRolloutController() {
         return rolloutController;
     }
 
+    @JsonIgnore
     @Override
     public RolloutPolicy_DeltaScore getCopy() {
-       RolloutPolicy_DeltaScore copy = new RolloutPolicy_DeltaScore(evaluationFunction.getCopy(),
-               getController().getCopy(), maxTimesteps);
+       RolloutPolicy_DeltaScore copy = new RolloutPolicy_DeltaScore(getEvaluationFunction().getCopy(),
+               getRolloutController().getCopy(), maxTimesteps);
        copy.failureMultiplier = failureMultiplier;
        return copy;
     }

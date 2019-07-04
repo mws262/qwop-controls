@@ -11,7 +11,6 @@ import game.action.IActionGenerator;
 import game.state.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import savers.DataSaver_Null;
 import tree.TreeWorker;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPExplorableBase;
@@ -25,11 +24,11 @@ import tree.sampler.ISampler;
 import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.*;
 import tree.stage.TreeStage_MaxDepth;
-import value.IValueFunction;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -123,7 +122,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         logger = LogManager.getLogger(MAIN_Search_ValueFun.class);
 
         /* Load parameters from config file. */
-        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
+//        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
         bailAfterXGames = Integer.parseInt(properties.getProperty("bailAfterXGames", "100000"));
         getToSteadyDepth = Integer.parseInt(properties.getProperty("getToSteadyDepth", "100"));
 
@@ -225,7 +224,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
             rollout = windowRollout;
         }
 
-        ISampler sampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout);
+        ISampler sampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout, 5, 1); // TODO hardcoded.
 
         return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates) :
                 TreeWorker.makeStandardTreeWorker(sampler);
@@ -313,8 +312,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     }
 
     private void doSearchAndUpdate(NodeQWOPExplorableBase<?> rootNode, int updateIdx) {
-        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth);
-        searchMax.terminateAfterXGames = bailAfterXGames;
+        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, bailAfterXGames);
 
         // Grab some workers from the pool.
         List<TreeWorker> tws = getTreeWorkers(numWorkersToUse);
@@ -337,7 +335,11 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         valueFunction.update(nodesBelow);
 
         // Save a checkpoint of the weights/biases.
-        valueFunction.saveCheckpoint(checkpointNamePrefix + (updateIdx + checkpointIndex + 1));
+        try {
+            valueFunction.saveCheckpoint(checkpointNamePrefix + (updateIdx + checkpointIndex + 1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         logger.info("Saved checkpoint as: " + checkpointNamePrefix + (updateIdx + checkpointIndex + 1));
     }
 
@@ -350,7 +352,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, gameTemplate, hiddenLayerSizes,
-                    extraNetworkArgs);
+                    extraNetworkArgs, "");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -365,6 +367,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         if (checkpointIndex > 0) {
             logger.info("Specified checkpoint name: " + (checkpointNamePrefix + checkpointIndex) + ". Loading.");
             valueFunction.loadCheckpoint(checkpointNamePrefix + checkpointIndex);
+
         } else {
             logger.info("Specified checkpoint index: " + checkpointIndex + ". Not loading.");
         }

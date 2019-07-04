@@ -1,5 +1,6 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.primitives.Floats;
 import game.IGameInternal;
 import game.action.Action;
@@ -20,11 +21,11 @@ import java.util.List;
  */
 public class RolloutPolicy_Window implements IRolloutPolicy {
 
-    private IRolloutPolicy individualRollout;
+    @JsonProperty
+    private final IRolloutPolicy individualRollout;
 
-    ActionQueue actionQueue = new ActionQueue();
+    private ActionQueue actionQueue = new ActionQueue();
     private final List<Action> actionSequence = new ArrayList<>(); // Reused local list.
-
 
     public enum Criteria {
         WORST, BEST, AVERAGE,
@@ -32,7 +33,7 @@ public class RolloutPolicy_Window implements IRolloutPolicy {
 
     public Criteria selectionCriteria = Criteria.BEST;
 
-    public RolloutPolicy_Window(IRolloutPolicy individualRollout) {
+    public RolloutPolicy_Window(@JsonProperty("individualRollout") IRolloutPolicy individualRollout) {
         this.individualRollout = individualRollout;
     }
 
@@ -52,9 +53,11 @@ public class RolloutPolicy_Window implements IRolloutPolicy {
 
         float[] windowScores = new float[windowActions.size()];
         for (int i = 0; i < windowActions.size(); i++) {
-            startNode.getParent().getSequence(actionSequence);
             actionQueue.clearAll();
-            actionQueue.addSequence(actionSequence);
+            if (startNode.getTreeDepth() > 1) {
+                startNode.getParent().getSequence(actionSequence);
+                actionQueue.addSequence(actionSequence);
+            }
             actionQueue.addAction(windowActions.get(i));
             game.makeNewWorld();
             while (!actionQueue.isEmpty()) {
@@ -89,4 +92,7 @@ public class RolloutPolicy_Window implements IRolloutPolicy {
         return new RolloutPolicy_Window(individualRollout.getCopy());
     }
 
+    public IRolloutPolicy getIndividualRollout() {
+        return individualRollout;
+    }
 }
