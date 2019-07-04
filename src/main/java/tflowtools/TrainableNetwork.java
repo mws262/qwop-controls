@@ -147,15 +147,19 @@ public class TrainableNetwork {
      * Load a checkpoint file. Must match the graph loaded. Name does not need to include path or file extension.
      * @param checkpointName Name of the checkpoint to load.
      */
-    public void loadCheckpoint(String checkpointName) {
+    public void loadCheckpoint(String checkpointName) throws IOException {
         if (checkpointName == null || checkpointName.isEmpty()) {
             throw new IllegalArgumentException("Back checkpoint load name given. Was: " + checkpointName);
         }
 
-        Tensor<String> checkpointTensor = Tensors.create(checkpointName);
-        session.runner().feed("save/Const", checkpointTensor).addTarget("save/restore_all").run();
-        logger.info("Loaded checkpoint from: " + checkpointName);
-        activeCheckpoint = checkpointName;
+        try {
+            Tensor<String> checkpointTensor = Tensors.create(checkpointName);
+            session.runner().feed("save/Const", checkpointTensor).addTarget("save/restore_all").run();
+            logger.info("Loaded checkpoint from: " + checkpointName);
+            activeCheckpoint = checkpointName;
+        } catch (IllegalArgumentException | TensorFlowException e) {
+            throw new IOException("Checkpoint file did not match the inputs of the selected model. " + e.getMessage());
+        }
     }
 
     /**

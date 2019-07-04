@@ -1,5 +1,10 @@
 package goals.tree_search;
 
+import controllers.Controller_Null;
+import controllers.Controller_Random;
+import controllers.Controller_ValueFunction;
+import game.GameUnified;
+import game.GameUnifiedCaching;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import org.apache.commons.io.FileUtils;
@@ -12,6 +17,7 @@ import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_FixedDepth;
 import tree.sampler.Sampler_UCB;
+import tree.sampler.rollout.RolloutPolicyBase;
 import tree.stage.TreeStage;
 import tree.stage.TreeStage_FixedGames;
 import tree.stage.TreeStage_MaxDepth;
@@ -21,14 +27,13 @@ import ui.UI_Full;
 import ui.UI_Headless;
 import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
-import ui.runner.PanelRunner_AnimatedTransformed;
-import ui.runner.PanelRunner_Comparison;
-import ui.runner.PanelRunner_Snapshot;
+import ui.runner.*;
 import ui.scatterplot.PanelPlot_Controls;
 import ui.scatterplot.PanelPlot_SingleRun;
 import ui.scatterplot.PanelPlot_States;
 import ui.scatterplot.PanelPlot_Transformed;
 import ui.timeseries.PanelTimeSeries_WorkerLoad;
+import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -312,7 +317,7 @@ public abstract class SearchTemplate {
                         "/AutoEnc_72to12_6layer.pb", 12), "Autoenc Plots", 6);
         autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon(1));
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
-        workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
+        //workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 
         fullUI.addTab(runnerPanel);
         fullUI.addTab(snapshotPane);
@@ -324,14 +329,29 @@ public abstract class SearchTemplate {
         fullUI.addTab(singleRunPlotPane);
         fullUI.addTab(pcaPlotPane);
         fullUI.addTab(autoencPlotPane);
-        fullUI.addTab(workerMonitorPanel);
 
-        Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameThreadSafe should
-        // have their own threads.
-        runnerPanelThread.start();
+        PanelRunner_ControlledTFlow controllerPane = null;
+        try {
+            controllerPane = new PanelRunner_ControlledTFlow("Controller", new GameUnified(),
+                    new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources" +
+                            "/tflow_models/small_net.pb"), new GameUnified()));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        controllerPane.actionGenerator = RolloutPolicyBase.getRolloutActionGenerator();
 
-        Thread monitorThread = new Thread(workerMonitorPanel);
-        monitorThread.start();
+        fullUI.addTab(controllerPane);
+
+        fullUI.start();
+        //fullUI.addTab(workerMonitorPanel);
+
+//        Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameThreadSafe should
+//        // have their own threads.
+//        runnerPanelThread.start();
+
+//        Thread monitorThread = new Thread(workerMonitorPanel);
+//        monitorThread.start();
+
 
         logger.info("GUI: Running in full graphics mode.");
         return fullUI;

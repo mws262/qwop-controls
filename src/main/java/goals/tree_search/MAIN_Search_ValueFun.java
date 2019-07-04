@@ -353,7 +353,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, gameTemplate, hiddenLayerSizes,
                     extraNetworkArgs, "");
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -366,7 +366,11 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         // Load checkpoint.
         if (checkpointIndex > 0) {
             logger.info("Specified checkpoint name: " + (checkpointNamePrefix + checkpointIndex) + ". Loading.");
-            valueFunction.loadCheckpoint(checkpointNamePrefix + checkpointIndex);
+            try {
+                valueFunction.loadCheckpoint(checkpointNamePrefix + checkpointIndex);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         } else {
             logger.info("Specified checkpoint index: " + checkpointIndex + ". Not loading.");
