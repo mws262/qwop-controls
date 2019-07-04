@@ -1,5 +1,6 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
@@ -21,15 +22,19 @@ import java.util.stream.IntStream;
  */
 public abstract class RolloutPolicyBase implements IRolloutPolicy {
 
-    IEvaluationFunction evaluationFunction;
+    public final IEvaluationFunction evaluationFunction;
 
-    ActionQueue actionQueue = new ActionQueue();
+    public IActionGenerator rolloutActionGenerator = getRolloutActionGenerator();
+
+    private ActionQueue actionQueue = new ActionQueue();
 
     private final List<Action> actionSequence = new ArrayList<>(); // Reused local list.
 
-    int maxTimesteps;
+    public final int maxTimesteps;
 
-    RolloutPolicyBase(IEvaluationFunction evaluationFunction, int maxTimesteps) {
+    RolloutPolicyBase(
+            @JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
+            @JsonProperty("maxTimesteps") int maxTimesteps) {
         this.evaluationFunction = evaluationFunction;
         this.maxTimesteps = maxTimesteps;
     }
@@ -85,7 +90,7 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
 
         int timestepCounter = 0;
         while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps) {
-            Action childAction = getController().policy(rolloutNode);
+            Action childAction = getRolloutController().policy(rolloutNode);
 
             actionQueue.addAction(childAction);
 
@@ -99,13 +104,14 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
                 timestepCounter++;
             }
 
-            rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState(), getRolloutActionGenerator());
+            rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState(), rolloutActionGenerator);
         }
         totalScore += endScore(rolloutNode);
         return calculateFinalScore(totalScore, startNode, rolloutNode);
     }
 
     abstract float startScore(NodeQWOPExplorableBase<?> startNode);
+
     abstract float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?> before,
                                    NodeQWOPBase<?> after);
     abstract float endScore(NodeQWOPExplorableBase<?> endNode);
@@ -113,7 +119,7 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
     abstract float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
                                        NodeQWOPExplorableBase<?> endNode);
 
-    abstract IController getController();
+    public abstract IController getRolloutController();
 
     @Override
     public abstract RolloutPolicyBase getCopy();
@@ -145,5 +151,9 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
         ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
 
         return new ActionGenerator_FixedSequence(repeatedActions);
+    }
+
+    public IEvaluationFunction getEvaluationFunction() {
+        return evaluationFunction;
     }
 }

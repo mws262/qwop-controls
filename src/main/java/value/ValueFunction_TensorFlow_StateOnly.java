@@ -1,5 +1,8 @@
 package value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 import com.sun.istack.NotNull;
 import game.GameConstants;
 import game.GameUnified;
@@ -41,7 +44,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     private List<EvaluationResult> evalResults;
     private List<FuturePredictor> evaluations;
 
-    private GameUnified gameTemplate;
+    public final GameUnified gameTemplate;
+    public final String fileName;
 
     /**
      * Number of threads to distribute the predictive simulations to. There are 9 predicted futures, so this is a
@@ -49,7 +53,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      */
     private int numThreads = 9;
 
-    public EvaluationResult currentResult;
+    private EvaluationResult currentResult;
 
     private static Logger logger = LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class);
 
@@ -59,8 +63,13 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * @throws FileNotFoundException Unable to find an existing net.
      */
     public ValueFunction_TensorFlow_StateOnly(File file, GameUnified gameTemplate) throws FileNotFoundException {
-        super(file, gameTemplate);
+        super(file);
+        Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
+                "state size.", gameTemplate.getStateDimension());
+
         assignFuturePredictors(gameTemplate);
+        this.gameTemplate = gameTemplate;
+        fileName = file.getName();
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
     }
@@ -70,15 +79,18 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * to a previously-used one, you can probably load a checkpoint file with weights with it too.
      * @param fileName File name of the new .pb net. Don't include file extension.
      * @param hiddenLayerSizes Sizes of the hidden layers of the net. Don't include the input or output layer sizes.
-     * @param additionalArgs Additional arguments to pass to the network creation script.
+     * @param additionalNetworkArgs Additional arguments to pass to the network creation script.
      * @throws FileNotFoundException Model file was not successfully created.
      */
-    public ValueFunction_TensorFlow_StateOnly(String fileName,
-                                              GameUnified gameTemplate,
-                                              List<Integer> hiddenLayerSizes,
-                                              List<String> additionalArgs) throws FileNotFoundException {
-        super(fileName, gameTemplate, VALUE_SIZE, hiddenLayerSizes, additionalArgs);
+    public ValueFunction_TensorFlow_StateOnly(@JsonProperty("fileName") String fileName,
+                                              @JsonProperty("gameTemplate") GameUnified gameTemplate,
+                                              @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
+                                              @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
+                                              @JsonProperty("activeCheckpoint") String checkpointFile) throws FileNotFoundException {
+        super(fileName, gameTemplate.getStateDimension(), VALUE_SIZE, hiddenLayerSizes, additionalNetworkArgs,
+                checkpointFile);
         this.gameTemplate = gameTemplate;
+        this.fileName = fileName;
         assignFuturePredictors(gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
@@ -375,6 +387,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @NotNull
+    @JsonIgnore
     public ValueFunction_TensorFlow_StateOnly getCopy() {
         ValueFunction_TensorFlow_StateOnly valFunCopy = null;
         try {

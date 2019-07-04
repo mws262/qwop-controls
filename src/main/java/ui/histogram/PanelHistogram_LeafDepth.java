@@ -1,5 +1,6 @@
 package ui.histogram;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.statistics.HistogramDataset;
@@ -16,8 +17,11 @@ public class PanelHistogram_LeafDepth extends PanelHistogram implements IUserInt
 
     protected boolean active = false;
 
-    public PanelHistogram_LeafDepth() {
+    private final String name;
+
+    public PanelHistogram_LeafDepth(@JsonProperty("name") String name) {
         super("Leaf depth beyond selected Node");
+        this.name = name;
         XYPlot plot = (XYPlot) chart.getPlot();
         NumberAxis xAxis = (NumberAxis) plot.getDomainAxis();
         xAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
@@ -56,5 +60,10 @@ public class PanelHistogram_LeafDepth extends PanelHistogram implements IUserInt
         dataset.addSeries("",depths, maxDepth - minDepth + 1, 0, maxDepth - minDepth + 1);
 
         setDataset(dataset);
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

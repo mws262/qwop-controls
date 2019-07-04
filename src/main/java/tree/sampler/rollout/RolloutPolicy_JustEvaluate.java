@@ -1,5 +1,7 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
@@ -10,9 +12,10 @@ import tree.node.evaluator.IEvaluationFunction;
  */
 public class RolloutPolicy_JustEvaluate implements IRolloutPolicy {
 
-    private final IEvaluationFunction evaluationFunction;
+    public final IEvaluationFunction evaluationFunction;
 
-    public RolloutPolicy_JustEvaluate(IEvaluationFunction evaluationFunction) {
+    @JsonCreator
+    public RolloutPolicy_JustEvaluate(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
     }
 

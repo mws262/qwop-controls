@@ -24,4 +24,14 @@ public class Distribution_Equal extends Distribution<Action> {
     public Action randOnDistribution(List<Action> set) {
         return randSample(set);
     }
+
+    @Override
+    public boolean equals(Object other) {
+        return (this.getClass() == other.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return 1084739;
+    }
 }

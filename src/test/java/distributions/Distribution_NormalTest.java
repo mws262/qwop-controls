@@ -64,4 +64,25 @@ public class Distribution_NormalTest {
         Distribution<Action> distribution = new Distribution_Normal(5, 1);
         distribution.randSample(new ArrayList<>()); // Empty list should not be tolerated.
     }
+
+    @Test
+    public void equalsTest() {
+        Distribution_Normal distNorm1 = new Distribution_Normal(8,1);
+        Distribution_Normal distNorm2 = new Distribution_Normal(8,1);
+        Distribution_Normal distNorm3 = new Distribution_Normal(8,2);
+        Distribution_Normal distNorm4 = new Distribution_Normal(7,1);
+        Distribution_Normal distNorm5 = new Distribution_Normal(7,6);
+
+        Distribution_Equal distEq = new Distribution_Equal();
+        Object object = new Object();
+
+        Assert.assertEquals(distNorm1, distNorm1);
+        Assert.assertEquals(distNorm1, distNorm2);
+        Assert.assertNotEquals(distNorm1, distNorm3);
+        Assert.assertNotEquals(distNorm1, distNorm4);
+        Assert.assertNotEquals(distNorm1, distNorm5);
+
+        Assert.assertNotEquals(distNorm1, distEq);
+        Assert.assertNotEquals(distNorm1, object);
+    }
 }

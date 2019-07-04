@@ -1,5 +1,6 @@
 package ui.timeseries;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -15,14 +16,8 @@ import ui.IUserInterface.TabbedPaneActivator;
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActivator {
-    
-    /**
-     * Is this panel active and drawing?
-     */
-    private AtomicBoolean isActive = new AtomicBoolean();
 
     /**
      * How many plots per row?
@@ -46,7 +41,7 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
 
     protected Map<XYPlot, TimeSeriesCollection> plotsAndData = new LinkedHashMap<>(); // Retains order of insertion.
 
-    public PanelTimeSeries(int numberOfPlots) {
+    public PanelTimeSeries(@JsonProperty("numberOfPlots") int numberOfPlots) {
         /**
          * How many plots total?
          */
@@ -118,18 +113,8 @@ public abstract class PanelTimeSeries extends JPanel implements TabbedPaneActiva
         return chart;
     }
 
-    @Override
-    public void activateTab() {
-        isActive.set(true);
-    }
-
-    @Override
-    public void deactivateTab() {
-        isActive.set(false);
-    }
-
-    @Override
-    public boolean isActive() {
-        return isActive.get();
+    @JsonProperty("numberOfPlots")
+    public int getNumberOfPlots() {
+        return plotPanels.length;
     }
 }

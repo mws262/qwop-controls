@@ -1,5 +1,7 @@
 package value.updaters;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import tree.node.NodeQWOPBase;
 
 /**
@@ -7,6 +9,15 @@ import tree.node.NodeQWOPBase;
  *
  * @author matt
  */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = ValueUpdater_Average.class, name = "average"),
+        @JsonSubTypes.Type(value = ValueUpdater_HardSet.class, name = "hard_set"),
+        @JsonSubTypes.Type(value = ValueUpdater_StdDev.class, name = "stdev_above"),
+        @JsonSubTypes.Type(value = ValueUpdater_TopNChildren.class, name = "top_children")
+})
 public interface IValueUpdater {
 
     /**

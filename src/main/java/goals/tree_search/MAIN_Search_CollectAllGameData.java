@@ -39,6 +39,8 @@ public class MAIN_Search_CollectAllGameData extends SearchTemplate {
                 new EvaluationFunction_Constant(0f),
                 new RolloutPolicy_DeltaScore(
                         new EvaluationFunction_Distance(),
-                        new Controller_Random())));
+                        new Controller_Random()),
+                5,
+                1));
     }
 }

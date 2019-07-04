@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,19 +25,11 @@ public class TrainableNetwork {
     public static final String pythonGraphCreatorScript = "python/java_value_function/create_generic_graph.py";
 
     /**
-     * Default location from which to save/load Tensorflow models.
-     */
-    public static final String graphPath = "src/main/resources/tflow_models/";
-
-    /**
-     * Default location from which to save/load Tensorflow checkpoint files.
-     */
-    public String checkpointPath = "src/main/resources/tflow_models/checkpoints";
-
-    /**
      * .pb file defining the structure (but not yet weights) of the network.
      */
     private final File graphDefinition;
+
+    private String activeCheckpoint;
 
     /**
      * Loaded Tensorflow graph definition.
@@ -122,27 +113,31 @@ public class TrainableNetwork {
      * doing strict checking on the number of files. If you suspect that some other source is adding similarly-named
      * files, check this.
      */
-    public List<File> saveCheckpoint(String checkpointName) {
-        assert !checkpointName.isEmpty();
+    public List<File> saveCheckpoint(String checkpointName) throws IOException {
+        if (checkpointName == null || checkpointName.isEmpty()) {
+            throw new IllegalArgumentException("Back checkpoint save name given. Was: " + checkpointName);
+        }
 
-        Tensor<String> checkpointTensor = Tensors.create(Paths.get(checkpointPath, checkpointName).toString());
+        Tensor<String> checkpointTensor = Tensors.create(checkpointName);
         session.runner().feed("save/Const", checkpointTensor).addTarget("save/control_dependency").run();
 
-        File checkPointDirectory = new File(checkpointPath);
-        assert checkPointDirectory.isDirectory();
-        assert checkPointDirectory.exists();
+        File checkPointDirectory = new File(checkpointName).getParentFile();
+        if (!checkPointDirectory.exists() && !checkPointDirectory.mkdirs()) {
+            throw new IOException("Checkpoint directory did not exist and could not be created for: " + checkpointName);
+        }
 
         File[] files = checkPointDirectory.listFiles();
 
         // Also report the files created.
         List<File> checkpointFiles = new ArrayList<>();
         for (File file : Objects.requireNonNull(files)) {
-            if (file.getName().contains(checkpointName + ".")) { // Period keeps others with additional numbers from
+            if (file.getPath().contains(checkpointName + ".")) { // Period keeps others with additional numbers from
                 // appearing too.
                 checkpointFiles.add(file);
             }
         }
 
+        activeCheckpoint = checkpointName;
         logger.info("Saved checkpoint files:");
         checkpointFiles.forEach(f -> logger.info(f.getName()));
         return checkpointFiles;
@@ -153,10 +148,14 @@ public class TrainableNetwork {
      * @param checkpointName Name of the checkpoint to load.
      */
     public void loadCheckpoint(String checkpointName) {
-        String pathName = Paths.get(checkpointPath, checkpointName).toString();
-        Tensor<String> checkpointTensor = Tensors.create(pathName);
+        if (checkpointName == null || checkpointName.isEmpty()) {
+            throw new IllegalArgumentException("Back checkpoint load name given. Was: " + checkpointName);
+        }
+
+        Tensor<String> checkpointTensor = Tensors.create(checkpointName);
         session.runner().feed("save/Const", checkpointTensor).addTarget("save/restore_all").run();
-        logger.info("Loaded checkpoint from: " + pathName);
+        logger.info("Loaded checkpoint from: " + checkpointName);
+        activeCheckpoint = checkpointName;
     }
 
     /**
@@ -263,17 +262,21 @@ public class TrainableNetwork {
         return graphDefinition;
     }
 
+    public String getActiveCheckpoint() {
+        return activeCheckpoint;
+    }
+
     /**
      * Create a new fully-connected neural network structure. This calls a python script to make the net.
      *
-     * @param graphName      Name of the graph file (without path or file extension).
+     * @param graphFileName  Name of the graph file.
      * @param layerSizes     List of layer sizes. Make sure that the first and last layers match the inputs and desired
      *                       output sizes.
      * @param additionalArgs Additional inputs defined by the python script. Make sure that the list is separated out
      *                       by each word in the command line.
      * @return A new TrainableNetwork based on the specifications.
      */
-    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes,
+    public static TrainableNetwork makeNewNetwork(String graphFileName, List<Integer> layerSizes,
                                                   List<String> additionalArgs) throws FileNotFoundException {
 
         for (Integer layerSize : layerSizes) {
@@ -283,7 +286,7 @@ public class TrainableNetwork {
             }
         }
 
-        if (graphName.isEmpty()) {
+        if (graphFileName.isEmpty()) {
             throw new IllegalArgumentException("Graph name may not be empty.");
         }
 
@@ -294,7 +297,7 @@ public class TrainableNetwork {
         commandList.add("--layers");
         commandList.addAll(layerSizes.stream().map(String::valueOf).collect(Collectors.toList()));
         commandList.add("--savepath");
-        commandList.add(graphPath + graphName + ".pb");
+        commandList.add(graphFileName);
         commandList.addAll(additionalArgs);
 
         StringBuilder sb = new StringBuilder();
@@ -316,7 +319,7 @@ public class TrainableNetwork {
         }
 
         // Send the newly-created graph file to a new TrainableNetwork object.
-        File graphFile = new File(graphPath + graphName + ".pb");
+        File graphFile = new File(graphFileName);
         if (!graphFile.exists()) {
             throw new FileNotFoundException("Failed. Unable to locate the TensorFlow graph file which was supposedly " +
                     "created.");

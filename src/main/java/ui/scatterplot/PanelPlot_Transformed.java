@@ -1,5 +1,6 @@
 package ui.scatterplot;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.filter.INodeFilter;
 import tree.node.filter.NodeFilter_Downsample;
 import game.state.IState;
@@ -22,7 +23,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     /**
      * Transformer to use to transform normal states into reduced coordinates.
      */
-    private final ITransform transformer;
+    public final ITransform transformer;
 
     /**
      * Filters to be applied to the node list.
@@ -38,7 +39,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     /**
      * How many plots to squeeze in one displayed row.
      */
-    private int plotsPerView;
+    public final int plotsPerView;
 
     /**
      * Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation.
@@ -52,8 +53,13 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     private int firstPlotRow = 0;
     private int firstPlotCol = 0;
 
-    public PanelPlot_Transformed(ITransform transformer, int plotsPerView) {
+    private final String name;
+
+    public PanelPlot_Transformed(@JsonProperty("transformer") ITransform transformer,
+                                 @JsonProperty("name") String name,
+                                 @JsonProperty("plotsPerView") int plotsPerView) {
         super(plotsPerView);
+        this.name = name;
         this.plotsPerView = plotsPerView;
         this.transformer = transformer;
 
@@ -136,7 +142,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
         switch (e.getKeyCode()) {
             case KeyEvent.VK_RIGHT:
-                if (firstPlotCol >= transformer.getOutputStateSize() - plotsPerView) return;
+                if (firstPlotCol >= transformer.getOutputSize() - plotsPerView) return;
                 firstPlotCol++;
                 break;
             case KeyEvent.VK_LEFT:
@@ -148,7 +154,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
                 firstPlotRow--;
                 break;
             case KeyEvent.VK_DOWN:
-                if (firstPlotRow >= transformer.getOutputStateSize() - plotsPerView) return;
+                if (firstPlotRow >= transformer.getOutputSize() - plotsPerView) return;
                 firstPlotRow++;
                 break;
             default:
@@ -160,4 +166,9 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {}
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }

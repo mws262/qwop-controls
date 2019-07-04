@@ -1,5 +1,6 @@
 package value.updaters;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.NodeQWOPBase;
 
 import java.util.ArrayList;
@@ -19,15 +20,15 @@ public class ValueUpdater_TopNChildren implements IValueUpdater {
     /**
      * Number of children to average when updating the value estimate for a node.
      */
-    private final int childrenToAverage;
+    public final int numChildrenToAvg;
 
     /**
      * List of children of the node being updated.
      */
     private List<NodeQWOPBase<?>> children = new ArrayList<>();
 
-    public ValueUpdater_TopNChildren(int numberOfChildrenToAverage) {
-        childrenToAverage = numberOfChildrenToAverage;
+    public ValueUpdater_TopNChildren(@JsonProperty("numChildrenToAvg") int numChildrenToAvg) {
+        this.numChildrenToAvg = numChildrenToAvg;
     }
 
     @Override
@@ -41,12 +42,12 @@ public class ValueUpdater_TopNChildren implements IValueUpdater {
             Collections.reverse(children);
 
             float value = 0f;
-            for (int i = 0; i < childrenToAverage; i++) {
+            for (int i = 0; i < numChildrenToAvg; i++) {
                 int idx = Math.min(i, children.size() - 1); // Fills any remaining "slots" with the lowest child if
                 // less children than number of children to average.
                 value += children.get(idx).getValue();
             }
-            return value /(float) childrenToAverage;
+            return value /(float) numChildrenToAvg;
         }
     }
 }

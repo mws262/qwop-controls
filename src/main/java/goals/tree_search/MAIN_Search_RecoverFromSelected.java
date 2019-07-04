@@ -52,7 +52,7 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
 
     public void doGames() {
         // Load all parameters specific to this search.
-        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
+//        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));
 
         // Stage 1 - recovering
         int getBackToSteadyDepth = Integer.parseInt(properties.getProperty("getBackToSteadyDepth", "18")); // Stage
@@ -147,7 +147,7 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
                 new EvaluationFunction_Constant(0f),
                 new RolloutPolicy_DeltaScore(
                         new EvaluationFunction_Distance(),
-                        new Controller_Random()));
+                        new Controller_Random()), 5, 1); // TODO hardcoded.
         return TreeWorker.makeStandardTreeWorker(sampler);
     }
 }

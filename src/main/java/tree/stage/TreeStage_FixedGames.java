@@ -1,5 +1,7 @@
 package tree.stage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.TreeWorker;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -22,14 +24,14 @@ public class TreeStage_FixedGames extends TreeStage {
     /**
      * Number of games this stage should play.
      */
-    private long numGamesToPlay;
+    public final long numGamesToPlay;
 
     /**
      * Tree stage which executes until a specific number of games has been completed or the root node becomes fully
      * explored ({@link NodeQWOPExplorableBase#isFullyExplored()}).
      * @param numGamesToPlay Number of games to play.
      */
-    public TreeStage_FixedGames(long numGamesToPlay) {
+    public TreeStage_FixedGames(@JsonProperty("numGamesToPlay") long numGamesToPlay) {
         this.numGamesToPlay = numGamesToPlay;
     }
 
@@ -39,6 +41,7 @@ public class TreeStage_FixedGames extends TreeStage {
         super.initialize(workers, stageRoot);
     }
 
+    @JsonIgnore
     @Override
     public List<NodeQWOPBase<?>> getResults() {
         List<NodeQWOPBase<?>> resultList = new ArrayList<>();

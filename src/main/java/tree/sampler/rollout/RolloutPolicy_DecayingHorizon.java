@@ -1,5 +1,7 @@
 package tree.sampler.rollout;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -15,11 +17,12 @@ public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
 
     public static final int defaultMaxTimesteps = 200;
 
-    private IController rolloutController;
+    public final IController rolloutController;
 
-    public RolloutPolicy_DecayingHorizon(IEvaluationFunction evaluationFunction, IController rolloutController,
-                                   int maxTimestepsToSim) {
-        super(evaluationFunction, maxTimestepsToSim);
+    public RolloutPolicy_DecayingHorizon(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
+                                         @JsonProperty("rolloutController") IController rolloutController,
+                                         @JsonProperty("maxTimesteps") int maxTimesteps) {
+        super(evaluationFunction, maxTimesteps);
         this.rolloutController = rolloutController;
     }
 
@@ -35,7 +38,7 @@ public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
         float multiplier = getKernelMultiplier(
                 timestepSinceRolloutStart / (float) (maxTimesteps - 1));
 
-        return multiplier * (evaluationFunction.getValue(after) - evaluationFunction.getValue(before));
+        return multiplier * (getEvaluationFunction().getValue(after) - getEvaluationFunction().getValue(before));
     }
 
     float endScore(NodeQWOPExplorableBase<?> endNode) {
@@ -48,13 +51,15 @@ public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
     }
 
     @Override
-    IController getController() {
+    @JsonIgnore
+    public IController getRolloutController() {
         return rolloutController;
     }
 
+    @JsonIgnore
     @Override
     public RolloutPolicyBase getCopy() {
-        return new RolloutPolicy_DecayingHorizon(evaluationFunction.getCopy(), rolloutController.getCopy(), maxTimesteps);
+        return new RolloutPolicy_DecayingHorizon(getEvaluationFunction().getCopy(), rolloutController.getCopy(), maxTimesteps);
     }
 
     float getKernelMultiplier(float normalizedTimesteps) {

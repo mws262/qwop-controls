@@ -1,5 +1,6 @@
 package ui.scatterplot;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jfree.chart.plot.XYPlot;
 import tree.node.NodeQWOPGraphicsBase;
 
@@ -17,8 +18,11 @@ import java.util.Map;
  */
 public class PanelPlot_Simple extends PanelPlot {
 
-    public PanelPlot_Simple() {
+    private final String name;
+
+    public PanelPlot_Simple(@JsonProperty("name") String name) {
         super(1); // Currently only does 1 plot in a single panel.
+        this.name = name;
     }
 
     /**
@@ -105,4 +109,9 @@ public class PanelPlot_Simple extends PanelPlot {
 
     @Override
     public void plotClicked(int plotIdx) {}
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }

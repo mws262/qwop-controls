@@ -1,5 +1,7 @@
 package distributions;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Action;
 
 import java.util.ArrayList;
@@ -14,6 +16,13 @@ import static tree.Utility.randInt;
  *
  * @param <T> The types of objects to be sampled over, typically {@link Action game.action}.
  */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = Distribution_Equal.class, name = "equal"),
+        @JsonSubTypes.Type(value = Distribution_Normal.class, name = "normal"),
+})
 public abstract class Distribution<T> {
 
     static Random rand = new Random();

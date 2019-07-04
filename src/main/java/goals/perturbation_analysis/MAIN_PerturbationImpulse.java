@@ -57,7 +57,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
 
     public void run(String fileName) {
         // Vis makeNewWorld.
-        PanelRunner_MultiStateWithArrows panelRunner = new PanelRunner_MultiStateWithArrows();
+        PanelRunner_MultiStateWithArrows panelRunner = new PanelRunner_MultiStateWithArrows("Runner");
         panelRunner.activateTab();
         getContentPane().add(panelRunner);
         setPreferredSize(new Dimension(2000, 400));
@@ -152,6 +152,10 @@ public class MAIN_PerturbationImpulse extends JFrame {
 
         private List<Integer[]> arrowCoords = new Vector<>();
 
+        public PanelRunner_MultiStateWithArrows(String name) {
+            super(name);
+        }
+
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -172,8 +176,8 @@ public class MAIN_PerturbationImpulse extends JFrame {
         void addSecondaryStateWithArrow(IState state, Color color, float[] arrowDirection) {
             super.addSecondaryState(state, color);
             Integer[] arrowCoord = new Integer[4];
-            arrowCoord[0] = offset[0] + (int) (state.getCenterX() * runnerScaling);
-            arrowCoord[1] = offset[1] - 100;
+            arrowCoord[0] = getOffset()[0] + (int) (state.getCenterX() * runnerScaling);
+            arrowCoord[1] = getOffset()[1] - 100;
             arrowCoord[2] = (int) (50 * arrowDirection[0]) + arrowCoord[0];
             arrowCoord[3] = (int) (50 * arrowDirection[1]) + arrowCoord[1];
             arrowCoords.add(arrowCoord);

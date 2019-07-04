@@ -1,5 +1,6 @@
 package ui.scatterplot;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.*;
@@ -74,11 +75,14 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
      */
     private NodeQWOPExplorableBase<?> selectedNode;
 
-    public PanelPlot_SingleRun(int numberOfPlots) {
+    private final String name;
+
+    public PanelPlot_SingleRun(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numberOfPlots) {
         super(numberOfPlots);
+        this.name = name;
         game = new GameUnified();
 
-        numPlots = transformer.getOutputStateSize();
+        numPlots = transformer.getOutputSize();
         this.plotsPerView = numberOfPlots;
         addKeyListener(this);
         setFocusable(true);
@@ -172,7 +176,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
                 firstPlotRow--;
                 break;
             case KeyEvent.VK_DOWN:
-                if (firstPlotRow >= (transformer.getOutputStateSize() - plotsPerView) / plotsPerView) return;
+                if (firstPlotRow >= (transformer.getOutputSize() - plotsPerView) / plotsPerView) return;
                 firstPlotRow++;
                 break;
             default:
@@ -186,4 +190,9 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
     @Override
     public void plotClicked(int plotIdx) {}
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }

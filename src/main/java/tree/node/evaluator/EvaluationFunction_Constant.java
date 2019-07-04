@@ -1,5 +1,7 @@
 package tree.node.evaluator;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.NodeQWOPBase;
 
 /**
@@ -20,7 +22,8 @@ public class EvaluationFunction_Constant implements IEvaluationFunction {
      *
      * @param constantValue Value which will always be returned by this object.
      */
-    public EvaluationFunction_Constant(float constantValue) {
+    @JsonCreator
+    public EvaluationFunction_Constant(@JsonProperty("constantValue") float constantValue) {
         this.constantValue = constantValue;
     }
 
@@ -37,5 +40,9 @@ public class EvaluationFunction_Constant implements IEvaluationFunction {
     @Override
     public IEvaluationFunction getCopy() {
         return new EvaluationFunction_Constant(constantValue);
+    }
+
+    public float getConstantValue() {
+        return constantValue;
     }
 }

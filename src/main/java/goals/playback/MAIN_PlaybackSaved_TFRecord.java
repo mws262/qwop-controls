@@ -42,7 +42,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
     }
 
     public void setup() {
-        runnerPane = new PanelRunner_MultiState();
+        runnerPane = new PanelRunner_MultiState("Runners");
         runnerPane.activateTab();
         add(runnerPane);
         Thread runnerThread = new Thread(runnerPane);

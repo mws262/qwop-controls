@@ -1,6 +1,6 @@
 language: java
 jdk:
-  - oraclejdk11
+  - openjdk11
 before_install:
   - sudo apt-get update
   - sudo apt-get install python3
@@ -9,3 +9,7 @@ before_install:
   - sudo python3 -m pip install --upgrade pip
   - python3 -m pip install --user --upgrade tensorflow
   - python3 -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([100, 100])))"
+  - sudo apt-get install xvfb
+  - sudo Xvfb :1 -screen 0 1024x768x24 </dev/null &
+  - export DISPLAY=":1"
+

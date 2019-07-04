@@ -1,5 +1,7 @@
 package game.state;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import data.LoadStateStatistics;
 import game.IGameInternal;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -94,10 +96,19 @@ public class State implements IState, Serializable {
      * @param llarmS   State of the left lower arm.
      * @param isFailed Whether this state represents a fallen runner.
      */
-    public State(StateVariable bodyS, StateVariable headS, StateVariable rthighS, StateVariable lthighS,
-                 StateVariable rcalfS, StateVariable lcalfS, StateVariable rfootS, StateVariable lfootS,
-                 StateVariable ruarmS, StateVariable luarmS, StateVariable rlarmS, StateVariable llarmS,
-                 boolean isFailed) {
+    public State(@JsonProperty("body") StateVariable bodyS,
+                 @JsonProperty("head") StateVariable headS,
+                 @JsonProperty("rthigh") StateVariable rthighS,
+                 @JsonProperty("lthigh") StateVariable lthighS,
+                 @JsonProperty("rcalf") StateVariable rcalfS,
+                 @JsonProperty("lcalf") StateVariable lcalfS,
+                 @JsonProperty("rfoot") StateVariable rfootS,
+                 @JsonProperty("lfoot") StateVariable lfootS,
+                 @JsonProperty("ruarm") StateVariable ruarmS,
+                 @JsonProperty("luarm") StateVariable luarmS,
+                 @JsonProperty("rlarm") StateVariable rlarmS,
+                 @JsonProperty("llarm") StateVariable llarmS,
+                 @JsonProperty("failed") boolean isFailed) {
         body = bodyS;
         head = headS;
         rthigh = rthighS;
@@ -130,16 +141,19 @@ public class State implements IState, Serializable {
      *
      * @return Array containing a {@link StateVariable StateVariable} for each runner link.
      */
+    @JsonIgnore
     @Override
     public StateVariable[] getAllStateVariables() {
         return stateVariables;
     }
 
+    @JsonIgnore
     @Override
     public int getStateVariableCount() {
         return stateVariables.length;
     }
 
+    @JsonIgnore
     @Override
     public float getCenterX() {
         return body.getX();

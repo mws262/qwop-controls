@@ -1,7 +1,12 @@
 package ui.runner;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import game.GameUnified;
 import game.state.IState;
+import tree.Utility;
 import tree.node.NodeQWOPGraphicsBase;
 
 import java.awt.*;
@@ -19,14 +24,27 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
      */
     private IState mainState;
 
+    private Thread thread;
+
     /**
      * Additional states to draw, and their colors. x-coordinate will be relative to the mainState.
      */
     private Map<IState, Color> secondaryStates = new ConcurrentHashMap<>();
-    public Color mainRunnerColor = Color.BLACK;
-    public Stroke customStrokeExtra;
 
-    public int[] offset = new int[2];
+    @JsonSerialize(using = Utility.ColorSerializer.class)
+    @JsonDeserialize(using = Utility.ColorDeserializer.class)
+    public Color mainRunnerColor = Color.BLACK;
+
+    transient public Stroke customStrokeExtra;
+
+    private int[] offset = new int[2];
+
+    private final String name;
+
+    public PanelRunner_MultiState(@JsonProperty("name") String name) {
+        this.name = name;
+    }
+
     /**
      * Add a state to be displayed.
      * @param state State to draw the runner at.
@@ -55,11 +73,6 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     @Override
     public void update(NodeQWOPGraphicsBase<?> node) {
         mainState = node.getState();
-    }
-
-    @Override
-    public void deactivateTab() {
-        active = false;
     }
 
     /**
@@ -98,8 +111,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
 
     @Override
     public void run() {
-        //noinspection InfiniteLoopStatement
-        while (true) {
+        while (active) {
             repaint();
             try {
                 Thread.sleep(30);
@@ -107,5 +119,32 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void activateTab() {
+        active = true;
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    @Override
+    public void deactivateTab() {
+        active = false;
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @JsonIgnore
+    public int[] getOffset() {
+        return offset;
     }
 }

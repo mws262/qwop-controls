@@ -1,5 +1,6 @@
 package game.state.transform;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import game.state.IState;
 import game.state.State;
@@ -30,7 +31,6 @@ import java.util.List;
  * @author matt
  */
 public class Transform_Autoencoder implements ITransform {
-
     /**
      * TensorFlow session. Data can be fed into the neural network and outputs retrieved.
      */
@@ -50,18 +50,21 @@ public class Transform_Autoencoder implements ITransform {
 
     private final Logger logger = LogManager.getLogger(Transform_Autoencoder.class);
 
+    public final String graphFile;
+
     /**
      * Make a transform which uses a neural network autoencoder to transform state data into a reduced state.
      *
-     * @param filename Full path/filename of the TensorFlow model
      * @param outputSize Dimension of the output (i.e. how many numbers the state is reduced to.
      */
     @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "Null pointer is caught.")
-    public Transform_Autoencoder(String filename, int outputSize) {
+    public Transform_Autoencoder(@JsonProperty("graphFile") String graphFile,
+                                 @JsonProperty("outputSize") int outputSize) {
+        this.graphFile = graphFile;
         this.outputSize = outputSize;
         byte[] graphDef = null;
         try {
-            graphDef = Files.readAllBytes(Paths.get(filename));
+            graphDef = Files.readAllBytes(Paths.get(graphFile));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -132,13 +135,13 @@ public class Transform_Autoencoder implements ITransform {
     }
 
     @Override
-    public int getOutputStateSize() {
+    public int getOutputSize() {
         return outputSize;
     }
 
     @Override
     public String getName() {
-        return "AutoEnc " + getOutputStateSize();
+        return "AutoEnc " + getOutputSize();
     }
 
     //TODO move to unit test.

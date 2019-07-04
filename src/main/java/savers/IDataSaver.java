@@ -1,7 +1,10 @@
 package savers;
 
-import game.action.Action;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.IGameInternal;
+import game.action.Action;
 import game.state.IState;
 import tree.node.NodeQWOPBase;
 
@@ -9,7 +12,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = DataSaver_Null.class, name = "null"),
+        @JsonSubTypes.Type(value = DataSaver_DenseTFRecord.class, name = "dense_tfrecord"),
+        @JsonSubTypes.Type(value = DataSaver_DenseJava.class, name = "dense_java"),
+        @JsonSubTypes.Type(value = DataSaver_Sparse.class, name = "sparse"),
+        @JsonSubTypes.Type(value = DataSaver_StageSelected.class, name = "stage_selected")
 
+})
 public interface IDataSaver {
 
     /**
@@ -47,14 +60,19 @@ public interface IDataSaver {
      */
     void setSaveInterval(int numGames);
 
+    int getSaveInterval();
+
     /**
      * Set where the files are saved. Defaults to working directory otherwise.
      */
     void setSavePath(String fileLoc);
 
+    String getSavePath();
+
     /**
      * Get a fresh copy of this saver with the same settings.
      */
+    @JsonIgnore
     IDataSaver getCopy();
 
     /**

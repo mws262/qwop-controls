@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -65,16 +66,16 @@ public class TrainableNetworkTest {
     }
 
     @Test
-    public void saveCheckpoint() {
-        String filePrefix = "tmp_unit_test_ckpt";
+    public void saveCheckpoint() throws IOException {
+        String filePrefix = "src/test/resources/tmp_unit_test_ckpt";
         testNetwork.saveCheckpoint(filePrefix);
         int numFiles = flagCheckpointForRemoval(filePrefix);
         Assert.assertEquals(2, numFiles);
     }
 
     @Test
-    public void loadCheckpoint() {
-        String filePrefix = "tmp_unit_test_load_ckpt";
+    public void loadCheckpoint() throws IOException {
+        String filePrefix = "src/test/resources/tmp_unit_test_load_ckpt";
         testNetwork.saveCheckpoint(filePrefix);
         int numFiles = flagCheckpointForRemoval(filePrefix);
         Assert.assertEquals(2, numFiles);
@@ -86,7 +87,7 @@ public class TrainableNetworkTest {
             e.printStackTrace();
         }
         assert networkForLoading != null;
-        networkForLoading.loadCheckpoint("tmp_unit_test_load_ckpt");
+        networkForLoading.loadCheckpoint("src/test/resources/tmp_unit_test_load_ckpt");
 
         float[][] inputs = new float[][] {
                 {-20f, 15f, -50f, 90f},
@@ -106,7 +107,7 @@ public class TrainableNetworkTest {
      * @return Number of matching files flagged for deletion
      */
     private int flagCheckpointForRemoval(String fileContains) {
-        File checkpointPath = new File(testNetwork.checkpointPath);
+        File checkpointPath = new File("src/test/resources/");
         Assert.assertTrue(checkpointPath.exists());
         Assert.assertTrue(checkpointPath.isDirectory());
         File[] filesInCheckpointPath = checkpointPath.listFiles();
@@ -114,7 +115,7 @@ public class TrainableNetworkTest {
         // Should find two files: the <name>.data-.... and <name>.index.
         int foundFiles = 0;
         for (File f : Objects.requireNonNull(filesInCheckpointPath)) {
-            if (f.getName().contains(fileContains)) {
+            if (f.getPath().contains(fileContains)) {
                 f.deleteOnExit(); // Remove when done.
                 foundFiles++;
             }
