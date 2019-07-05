@@ -16,6 +16,7 @@ import tree.node.NodeQWOPBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -66,6 +67,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         super(file);
         Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
                 "state size.", gameTemplate.getStateDimension());
+        Preconditions.checkArgument(outputSize == 1, "Value function output for this controller should have precisely" +
+                " one output.");
 
         assignFuturePredictors(gameTemplate);
         this.gameTemplate = gameTemplate;
@@ -86,7 +89,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                                               @JsonProperty("gameTemplate") GameUnified gameTemplate,
                                               @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                                               @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
-                                              @JsonProperty("activeCheckpoint") String checkpointFile) throws FileNotFoundException {
+                                              @JsonProperty("activeCheckpoint") String checkpointFile) throws IOException {
         super(fileName, gameTemplate.getStateDimension(), VALUE_SIZE, hiddenLayerSizes, additionalNetworkArgs,
                 checkpointFile);
         this.gameTemplate = gameTemplate;

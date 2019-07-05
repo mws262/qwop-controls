@@ -22,6 +22,7 @@ import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
 import ui.runner.PanelRunner_AnimatedTransformed;
 import ui.runner.PanelRunner_Comparison;
+import ui.runner.PanelRunner_ControlledTFlow;
 import ui.runner.PanelRunner_Snapshot;
 import ui.scatterplot.PanelPlot_Controls;
 import ui.scatterplot.PanelPlot_SingleRun;
@@ -31,21 +32,26 @@ import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public class CreateConfig {
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
 
         // Value function setup.
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(128);
         layerSizes.add(64);
-        ValueFunction_TensorFlow valueFunction = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
-                new GameUnified(), layerSizes, new ArrayList<>(), "");
+        ValueFunction_TensorFlow valueFunction = null;
+        try {
+            valueFunction = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
+                    new GameUnified(), layerSizes, new ArrayList<>(), "");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         SearchConfiguration.Machine machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
@@ -53,8 +59,6 @@ public class CreateConfig {
                 new SearchConfiguration.Tree(ActionGenerator_FixedSequence.makeExtendedGenerator(-1));
         List<SearchConfiguration.SearchOperation> searchOperations = new ArrayList<>();
         IUserInterface ui = CreateConfig.setupFullUI();
-
-
 
 
         TreeStage tstage1 = new TreeStage_MaxDepth(100, 10000);
@@ -113,6 +117,10 @@ public class CreateConfig {
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
 //        workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 
+        PanelRunner_ControlledTFlow<GameUnified> controlledRunnerPane = new PanelRunner_ControlledTFlow<>("ValFun " +
+                "controller", new GameUnified(), "src/main/resources/tflow_models", "src/main/resources/tflow_models" +
+                "/checkpoints");
+
         fullUI.addTab(runnerPanel);
         fullUI.addTab(snapshotPane);
         fullUI.addTab(comparisonPane);
@@ -123,11 +131,11 @@ public class CreateConfig {
         fullUI.addTab(singleRunPlotPane);
         fullUI.addTab(pcaPlotPane);
         fullUI.addTab(autoencPlotPane);
+        fullUI.addTab(controlledRunnerPane);
+
 //        fullUI.addTab(workerMonitorPanel);
 
-        Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameThreadSafe should
-        // have their own threads.
-        runnerPanelThread.start();
+        fullUI.start();
 
 //        Thread monitorThread = new Thread(workerMonitorPanel);
 //        monitorThread.start();

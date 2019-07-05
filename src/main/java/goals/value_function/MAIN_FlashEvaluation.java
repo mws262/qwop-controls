@@ -18,6 +18,7 @@ import vision.VisionDataSaver;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Note: with many JVM garbage collectors, the control evaluation time has large spikes. Should use ZGC or Shenandoah
@@ -123,7 +124,11 @@ public class MAIN_FlashEvaluation extends FlashGame {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint(checkpointName);//"small329"); // "small289"); // _after439");//273");//chk_after1");
+        try {
+            valueFunction.loadCheckpoint(checkpointName);//"small329"); // "small289"); // _after439");//273");//chk_after1");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {

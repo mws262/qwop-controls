@@ -12,6 +12,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -150,7 +151,11 @@ public class CompareFlashToJava extends FlashGame {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint("small289"); // _after439");//273");//chk_after1");
+        try {
+            valueFunction.loadCheckpoint("small289"); // _after439");//273");//chk_after1");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {

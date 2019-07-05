@@ -123,6 +123,11 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     public void paintComponent(Graphics g) {
         if (!active) return;
         super.paintComponent(g);
+        if (!pauseFlag) {
+            if (game != null) {
+                executeNextOnQueue();
+            }
+        }
         if (game != null) {
             game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
             keyDrawer(g, Q, W, O, P);
@@ -172,10 +177,12 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     public void deactivateTab() {
         actionQueue.clearAll();
         active = false;
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (thread != null) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
