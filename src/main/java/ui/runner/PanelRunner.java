@@ -1,20 +1,15 @@
 package ui.runner;
 
-import java.awt.*;
-import java.awt.geom.AffineTransform;
-
-import javax.swing.JPanel;
-
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Action;
 import ui.IUserInterface.TabbedPaneActivator;
-import ui.PanelTree;
-import ui.histogram.PanelHistogram_LeafDepth;
-import ui.pie.PanelPie_ViableFutures;
-import ui.scatterplot.PanelPlot;
-import ui.scatterplot.PanelPlot_Simple;
-import ui.timeseries.PanelTimeSeries;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.geom.AffineTransform;
 
 /**
  * Snapshot viewers of the runner and animations of the runner share a lot of features and dimensions.
@@ -34,7 +29,7 @@ import ui.timeseries.PanelTimeSeries;
         @JsonSubTypes.Type(value = PanelRunner_Comparison.class, name = "runner_comparison"),
         @JsonSubTypes.Type(value = PanelRunner_AnimatedFromStates.class, name = "runner_animated_states")
 })
-public abstract class PanelRunner extends JPanel implements TabbedPaneActivator {
+public abstract class PanelRunner extends JPanel implements TabbedPaneActivator, ComponentListener {
 
     /**
      * Should this panel be drawing or is it hidden.
@@ -78,9 +73,14 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 
     private final int startX = -45;
     private final int startY = yOffsetPixels - 85;
+    private float keyScaling;
+
+    public PanelRunner() {
+        this.addComponentListener(this);
+    }
 
     protected void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
-        keyDrawer(g, q, w, o, p, startX, startY, 30, 40);
+        keyDrawer(g, q, w, o, p, startX, startY, 30, (int) keyScaling);
     }
 
     /**
@@ -269,8 +269,26 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator 
 
         return transform.createTransformedShape(arrowPolygon);
     }
+
     private static Point midpoint(Point p1, Point p2) {
         return new Point((int)((p1.x + p2.x)/2.0),
                 (int)((p1.y + p2.y)/2.0));
     }
+
+    @Override
+    public void componentResized(ComponentEvent e) {
+        this.xOffsetPixels = getWidth()/2;
+        this.yOffsetPixels = getHeight()/2;
+        runnerScaling = getHeight()/25f;
+        keyScaling = Math.min(getHeight() / 6f, getWidth() / 30f);
+    }
+
+    @Override
+    public void componentMoved(ComponentEvent e) {}
+
+    @Override
+    public void componentShown(ComponentEvent e) {}
+
+    @Override
+    public void componentHidden(ComponentEvent e) {}
 }

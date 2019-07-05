@@ -1,10 +1,6 @@
 package goals.tree_search;
 
-import controllers.Controller_Null;
-import controllers.Controller_Random;
-import controllers.Controller_ValueFunction;
 import game.GameUnified;
-import game.GameUnifiedCaching;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import org.apache.commons.io.FileUtils;
@@ -27,13 +23,15 @@ import ui.UI_Full;
 import ui.UI_Headless;
 import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
-import ui.runner.*;
+import ui.runner.PanelRunner_AnimatedTransformed;
+import ui.runner.PanelRunner_Comparison;
+import ui.runner.PanelRunner_ControlledTFlow;
+import ui.runner.PanelRunner_Snapshot;
 import ui.scatterplot.PanelPlot_Controls;
 import ui.scatterplot.PanelPlot_SingleRun;
 import ui.scatterplot.PanelPlot_States;
 import ui.scatterplot.PanelPlot_Transformed;
 import ui.timeseries.PanelTimeSeries_WorkerLoad;
-import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -127,8 +125,7 @@ public abstract class SearchTemplate {
         // UI CONFIG:
         logger.info("Full UI is " + (headless ? "not" : "") + "on.");
         ui = (headless) ? new UI_Headless() : setupFullUI(); // Make the UI.
-        Thread uiThread = new Thread(ui);
-        uiThread.start();
+        ui.start();
 
         // Copy the config file into the save directory.
         File configSave = new File(saveLoc.toString() + "/config_" + Utility.getTimestamp() + ".config");
@@ -331,13 +328,8 @@ public abstract class SearchTemplate {
         fullUI.addTab(autoencPlotPane);
 
         PanelRunner_ControlledTFlow controllerPane = null;
-        try {
-            controllerPane = new PanelRunner_ControlledTFlow("Controller", new GameUnified(),
-                    new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources" +
-                            "/tflow_models/small_net.pb"), new GameUnified()));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        controllerPane = new PanelRunner_ControlledTFlow<>("Controller",
+                new GameUnified());
         controllerPane.actionGenerator = RolloutPolicyBase.getRolloutActionGenerator();
 
         fullUI.addTab(controllerPane);

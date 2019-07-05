@@ -67,6 +67,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         super(file);
         Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
                 "state size.", gameTemplate.getStateDimension());
+        Preconditions.checkArgument(outputSize == 1, "Value function output for this controller should have precisely" +
+                " one output.");
 
         assignFuturePredictors(gameTemplate);
         this.gameTemplate = gameTemplate;

@@ -1,7 +1,7 @@
 package ui;
 
-import tree.node.NodeQWOPGraphicsBase;
 import tree.Utility;
+import tree.node.NodeQWOPGraphicsBase;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -16,14 +16,9 @@ import java.util.List;
  *
  * @author Matt
  */
-public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable, IUserInterface {
+public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInterface {
 
     private final JFrame frame = new JFrame();
-
-    /**
-     * Thread loop running?
-     */
-    private boolean running = true;
 
     /**
      * Individual pane for the tree.
@@ -64,6 +59,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
      * Usable milliseconds per frame
      */
     private long millisecondsPerFrame = (long) (1f / targetFramesPerSecond * 1000f);
+    private Timer redrawTimer;
 
     public UI_Full() {
         Container pane = frame.getContentPane();
@@ -137,32 +133,14 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, Runnable,
 
     @Override
     public void start() {
-        running = true;
-        Thread thread = new Thread(this);
-        thread.start();
+        redrawTimer = new Timer(35, e -> frame.repaint());
+        redrawTimer.start();
         tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
-
-    }
-    @Override
-    public void run() {
-        while (running) {
-            long currentTime = System.currentTimeMillis();
-            frame.repaint();
-
-            long extraTime = millisecondsPerFrame - (System.currentTimeMillis() - currentTime);
-            if (extraTime > 5) {
-                try {
-                    Thread.sleep(extraTime);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     @Override
     public void kill() {
-        running = false;
+        redrawTimer.stop();
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
     }
