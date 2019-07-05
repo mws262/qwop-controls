@@ -1,5 +1,6 @@
 package goals.tree_search;
 
+import game.GameUnified;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import org.apache.commons.io.FileUtils;
@@ -12,6 +13,7 @@ import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_FixedDepth;
 import tree.sampler.Sampler_UCB;
+import tree.sampler.rollout.RolloutPolicyBase;
 import tree.stage.TreeStage;
 import tree.stage.TreeStage_FixedGames;
 import tree.stage.TreeStage_MaxDepth;
@@ -23,6 +25,7 @@ import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
 import ui.runner.PanelRunner_AnimatedTransformed;
 import ui.runner.PanelRunner_Comparison;
+import ui.runner.PanelRunner_ControlledTFlow;
 import ui.runner.PanelRunner_Snapshot;
 import ui.scatterplot.PanelPlot_Controls;
 import ui.scatterplot.PanelPlot_SingleRun;
@@ -122,8 +125,7 @@ public abstract class SearchTemplate {
         // UI CONFIG:
         logger.info("Full UI is " + (headless ? "not" : "") + "on.");
         ui = (headless) ? new UI_Headless() : setupFullUI(); // Make the UI.
-        Thread uiThread = new Thread(ui);
-        uiThread.start();
+        ui.start();
 
         // Copy the config file into the save directory.
         File configSave = new File(saveLoc.toString() + "/config_" + Utility.getTimestamp() + ".config");
@@ -312,7 +314,7 @@ public abstract class SearchTemplate {
                         "/AutoEnc_72to12_6layer.pb", 12), "Autoenc Plots", 6);
         autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon(1));
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
-        workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
+        //workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 
         fullUI.addTab(runnerPanel);
         fullUI.addTab(snapshotPane);
@@ -324,14 +326,27 @@ public abstract class SearchTemplate {
         fullUI.addTab(singleRunPlotPane);
         fullUI.addTab(pcaPlotPane);
         fullUI.addTab(autoencPlotPane);
-        fullUI.addTab(workerMonitorPanel);
 
-        Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameThreadSafe should
-        // have their own threads.
-        runnerPanelThread.start();
+        PanelRunner_ControlledTFlow controllerPane
+                = new PanelRunner_ControlledTFlow<>(
+                "Controller",
+                new GameUnified(),
+                "src/main/resources/tflow_models",
+                "src/main/resources/tflow_models/checkpoints");
+        controllerPane.actionGenerator = RolloutPolicyBase.getRolloutActionGenerator();
 
-        Thread monitorThread = new Thread(workerMonitorPanel);
-        monitorThread.start();
+        fullUI.addTab(controllerPane);
+
+        fullUI.start();
+        //fullUI.addTab(workerMonitorPanel);
+
+//        Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameThreadSafe should
+//        // have their own threads.
+//        runnerPanelThread.start();
+
+//        Thread monitorThread = new Thread(workerMonitorPanel);
+//        monitorThread.start();
+
 
         logger.info("GUI: Running in full graphics mode.");
         return fullUI;

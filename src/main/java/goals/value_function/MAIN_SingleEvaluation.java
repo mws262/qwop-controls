@@ -101,7 +101,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueFunction.loadCheckpoint(checkpointName);
+        try {
+            valueFunction.loadCheckpoint(checkpointName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private NodeQWOPExplorable doPrefix() {
