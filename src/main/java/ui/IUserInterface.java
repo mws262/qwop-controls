@@ -4,13 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import tree.node.NodeQWOPGraphicsBase;
-import tree.sampler.*;
-import ui.histogram.PanelHistogram;
 import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
 import ui.runner.PanelRunner;
 import ui.scatterplot.PanelPlot;
-import ui.scatterplot.PanelPlot_Simple;
 import ui.timeseries.PanelTimeSeries;
 
 @JsonTypeInfo(
@@ -20,19 +17,10 @@ import ui.timeseries.PanelTimeSeries;
         @JsonSubTypes.Type(value = UI_Headless.class, name = "headless"),
         @JsonSubTypes.Type(value = UI_Full.class, name = "full"),
 })
-public interface IUserInterface extends Runnable {
+public interface IUserInterface {
 
     void start();
 
-    /**
-     * Main graphics loop.
-     */
-    @Override
-    void run();
-
-    /**
-     * Stop the FSM.
-     */
     void kill();
 
     void addRootNode(NodeQWOPGraphicsBase<?> node);

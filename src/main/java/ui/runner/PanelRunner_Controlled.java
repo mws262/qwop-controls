@@ -2,7 +2,6 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
-import game.GameUnified;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
@@ -14,18 +13,26 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class PanelRunner_Controlled extends PanelRunner implements Runnable, ActionListener {
+/**
+ *
+ * @param <C>
+ * @param <G>
+ */
+public class PanelRunner_Controlled<C extends IController, G extends IGameInternal> extends PanelRunner implements ActionListener {
 
-    IController controller;
-    GameUnified game;
+    C controller;
+    G game;
     private ActionQueue actionQueue = new ActionQueue();
 
     private Action mostRecentAction;
 
+    private Timer controllerTimer;
+
     private boolean active = false;
     private JButton resetButton;
-    private Thread thread;
     public final String name;
 
     public IActionGenerator actionGenerator;
@@ -34,8 +41,9 @@ public class PanelRunner_Controlled extends PanelRunner implements Runnable, Act
     final int layoutRows = 25;
     final int layoutColumns = 15;
     GridBagConstraints constraints = new GridBagConstraints();
+    private ControllerExecutor controllerExecutor;
 
-    public PanelRunner_Controlled(@JsonProperty("name") String name, GameUnified game, IController controller) {
+    public PanelRunner_Controlled(@JsonProperty("name") String name, G game, C controller) {
         this.name = name;
         this.controller = controller;
         this.game = game;
@@ -43,7 +51,6 @@ public class PanelRunner_Controlled extends PanelRunner implements Runnable, Act
         resetButton = new JButton("Restart");
         resetButton.addActionListener(this);
         resetButton.setPreferredSize(new Dimension(50, 25));
-
 
         layout.columnWeights = new double[layoutColumns];
         layout.rowWeights = new double[layoutRows];
@@ -62,11 +69,9 @@ public class PanelRunner_Controlled extends PanelRunner implements Runnable, Act
         placeholder.setPreferredSize(new Dimension(75,25));
         this.add(placeholder, constraints);
 
-
         constraints.gridx = 0;
         constraints.gridy = layoutRows - 1;
         this.add(resetButton, constraints);
-
     }
 
     @Override
@@ -82,12 +87,54 @@ public class PanelRunner_Controlled extends PanelRunner implements Runnable, Act
     }
 
     @Override
-    public void run() {
-        game.makeNewWorld();
+    public void activateTab() {
+        active = true;
+        if (controller != null) {
+            controllerTimer = new Timer();
+            controllerExecutor = new ControllerExecutor();
+            controllerExecutor.reset();
+            controllerTimer.scheduleAtFixedRate(controllerExecutor, 0, 35);
+        }
+    }
+
+    void activateDrawingButNotController() {
+        active = true;
+    }
+
+    @Override
+    public void deactivateTab() {
         actionQueue.clearAll();
-        NodeQWOPExplorable node = null;
-        while(active) {
-            // Get another action from the controller if the queue is exhausted.
+        active = false;
+        if (controllerTimer != null) {
+            controllerTimer.cancel();
+            controllerTimer.purge();
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource().equals(resetButton)) {
+            controllerExecutor.reset();
+        }
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+
+    private class ControllerExecutor extends TimerTask {
+
+        private NodeQWOPExplorable node;
+
+        public void reset() {
+            game.makeNewWorld();
+            actionQueue.clearAll();
+            node = null;
+        }
+        @Override
+        public void run() {
             if (actionQueue.isEmpty()) {
                 // Either make the first node since the game began, or add a child to the previous node.
                 if (node == null) {
@@ -104,45 +151,6 @@ public class PanelRunner_Controlled extends PanelRunner implements Runnable, Act
             }
 
             game.step(actionQueue.pollCommand());
-
-            try {
-                Thread.sleep(30);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
-    }
-
-    @Override
-    public void activateTab() {
-        active = true;
-        thread = new Thread(this);
-        thread.start();
-    }
-
-    @Override
-    public void deactivateTab() {
-        actionQueue.clearAll();
-        active = false;
-        if (thread != null) {
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(resetButton)) {
-            deactivateTab();
-            activateTab();
-        }
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 }

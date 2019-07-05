@@ -6,11 +6,11 @@ import game.action.Action;
 import tree.node.NodeQWOPExplorableBase;
 import value.IValueFunction;
 
-public class Controller_ValueFunction implements IController {
+public class Controller_ValueFunction<V extends IValueFunction> implements IController {
 
-    private final IValueFunction valueFunction;
+    private final V valueFunction;
 
-    public Controller_ValueFunction(@JsonProperty("valueFunction") IValueFunction valueFunction) {
+    public Controller_ValueFunction(@JsonProperty("valueFunction") V valueFunction) {
         this.valueFunction = valueFunction;
     }
 
@@ -22,10 +22,10 @@ public class Controller_ValueFunction implements IController {
     @Override
     @JsonIgnore
     public IController getCopy() {
-        return new Controller_ValueFunction(valueFunction);
+        return new Controller_ValueFunction<>(valueFunction);
     } // TODO doesn't duplicate underlying value function. Is this bad? I don't know yet.
 
-    public IValueFunction getValueFunction() {
+    public V getValueFunction() {
         return valueFunction;
     }
 }

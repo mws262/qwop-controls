@@ -8,9 +8,6 @@ public class UI_Headless implements IUserInterface {
     public void start() {}
 
     @Override
-    public void run() {}
-
-    @Override
     public void kill() {}
 
     @Override

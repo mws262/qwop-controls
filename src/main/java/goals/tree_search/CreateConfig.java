@@ -31,7 +31,6 @@ import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,7 @@ import java.util.stream.IntStream;
 
 public class CreateConfig {
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
 
         // Value function setup.
         List<Integer> layerSizes = new ArrayList<>();
@@ -59,8 +58,6 @@ public class CreateConfig {
                 new SearchConfiguration.Tree(ActionGenerator_FixedSequence.makeExtendedGenerator(-1));
         List<SearchConfiguration.SearchOperation> searchOperations = new ArrayList<>();
         IUserInterface ui = CreateConfig.setupFullUI();
-
-
 
 
         TreeStage tstage1 = new TreeStage_MaxDepth(100, 10000);
@@ -131,9 +128,7 @@ public class CreateConfig {
         fullUI.addTab(autoencPlotPane);
 //        fullUI.addTab(workerMonitorPanel);
 
-        Thread uiThread = new Thread(fullUI); // All components with a copy of the GameThreadSafe should
-        // have their own threads.
-        uiThread.start();
+        fullUI.start();
 
 //        Thread monitorThread = new Thread(workerMonitorPanel);
 //        monitorThread.start();

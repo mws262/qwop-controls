@@ -2,11 +2,8 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_ValueFunction;
-import controllers.IController;
 import game.GameUnified;
-import game.IGameInternal;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
-import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import javax.swing.*;
@@ -21,7 +18,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class PanelRunner_ControlledTFlow extends PanelRunner_Controlled {
+public class PanelRunner_ControlledTFlow<G extends GameUnified> extends PanelRunner_Controlled<Controller_ValueFunction<ValueFunction_TensorFlow_StateOnly>, G> {
 
     private File checkpointSaveLocation = new File("src/main/resources/tflow_models/checkpoints");
     private File modelSaveLocation = new File("src/main/resources/tflow_models");
@@ -29,10 +26,10 @@ public class PanelRunner_ControlledTFlow extends PanelRunner_Controlled {
     private final JComboBox<String> modelSelection;
     private final JComboBox<String> checkpointSelection;
     private final JLabel badCheckpointMsg;
+    private final JLabel badModelMsg;
 
-    public PanelRunner_ControlledTFlow(@JsonProperty("name") String name, GameUnified game,
-                                       ValueFunction_TensorFlow valueFunction) {
-        super(name, game, new Controller_ValueFunction(valueFunction));
+    public PanelRunner_ControlledTFlow(@JsonProperty("name") String name, G game) {
+        super(name, game, null);
 
         // Selecting the TFlow model.
         JLabel modelLabel = new JLabel("Model");
@@ -58,12 +55,22 @@ public class PanelRunner_ControlledTFlow extends PanelRunner_Controlled {
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) {}
         });
-
+        modelSelection.setMaximumRowCount(50);
         add(modelSelection, constraints);
+        modelSelection.setSelectedIndex(-1);
         modelSelection.addActionListener(this);
+
+        badModelMsg = new JLabel("Model input/output size incorrect.");
+        badModelMsg.setForeground(Color.RED);
+        badModelMsg.setVisible(false);
+        constraints.gridx = 1;
+        constraints.gridy = layoutRows - 4;
+        constraints.anchor = GridBagConstraints.LINE_END;
+        add(badModelMsg, constraints);
 
         // Selecting the checkpoint.
         JLabel checkpointLabel = new JLabel("Controller checkpoint");
+        constraints.gridx = 0;
         constraints.gridy = layoutRows - 3;
         constraints.anchor = GridBagConstraints.PAGE_END;
         add(checkpointLabel, constraints);
@@ -72,8 +79,6 @@ public class PanelRunner_ControlledTFlow extends PanelRunner_Controlled {
         constraints.gridy = layoutRows - 2;
         constraints.anchor = GridBagConstraints.PAGE_START;
 
-        add(checkpointSelection, constraints);
-        checkpointSelection.addActionListener(this);
         checkpointSelection.addPopupMenuListener(new PopupMenuListener() { // Update the available files right before
             // the menu opens.
             @Override
@@ -85,6 +90,10 @@ public class PanelRunner_ControlledTFlow extends PanelRunner_Controlled {
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) {}
         });
+        checkpointSelection.setMaximumRowCount(50);
+        add(checkpointSelection, constraints);
+        checkpointSelection.setSelectedIndex(-1);
+        checkpointSelection.addActionListener(this);
 
         badCheckpointMsg = new JLabel("Checkpoint does not match model.");
         badCheckpointMsg.setForeground(Color.RED);
@@ -120,48 +129,56 @@ public class PanelRunner_ControlledTFlow extends PanelRunner_Controlled {
     @Override
     public void actionPerformed(ActionEvent e) {
         super.actionPerformed(e);
+        badModelMsg.setVisible(false);
         if (e.getSource().equals(modelSelection)) {
-            System.out.println("Model selection!");
-            System.out.println(((JComboBox<String>) e.getSource()).getSelectedItem());
             deactivateTab();
             // Switch controllers to the one
             try {
+                String selectedModel = Objects.requireNonNull(modelSelection.getSelectedItem()).toString();
                 controller =
-                        new Controller_ValueFunction(
+                        new Controller_ValueFunction<>(
                                 new ValueFunction_TensorFlow_StateOnly(
                                         Paths.get(
                                                 modelSaveLocation.getPath(),
-                                                modelSelection.getSelectedItem().toString()
+                                                selectedModel
                                         ).toFile(),
                                         game
                                 )
                         );
-                tryCheckpoint(checkpointSelection);
+                if (tryCheckpoint(checkpointSelection)) {
+                    activateTab();
+                } else {
+                    activateDrawingButNotController();
+                }
             } catch (FileNotFoundException e1) {
                 e1.printStackTrace();
+            } catch (IllegalArgumentException modeNotMatchingGameException) { // Dimension of model input does not
+                // match game state size
+                activateDrawingButNotController();
+                badModelMsg.setVisible(true);
             }
-
-            activateTab();
         } else if (e.getSource().equals(checkpointSelection)) {
             deactivateTab();
-            tryCheckpoint(checkpointSelection);
-            activateTab();
-
+            if (tryCheckpoint(checkpointSelection)) {
+                activateTab();
+            } else {
+                activateDrawingButNotController();
+            }
         }
     }
 
-    private void tryCheckpoint(JComboBox<String> checkpointSelection) {
+    private boolean tryCheckpoint(JComboBox<String> checkpointSelection) {
+        if (checkpointSelection == null || controller == null)
+            return false;
+
         badCheckpointMsg.setVisible(false);
-        System.out.println("Checkpoint selection!");
-        System.out.println(checkpointSelection.getSelectedItem());
-        // TODO: below is probably the worst line of code I've ever written.
         try {
-            ((ValueFunction_TensorFlow) ((Controller_ValueFunction) controller).getValueFunction()).loadCheckpoint(checkpointSaveLocation.getPath() + "/" + checkpointSelection.getSelectedItem().toString());
+            String checkpointName = (String) checkpointSelection.getSelectedItem();
+            controller.getValueFunction().loadCheckpoint(checkpointSaveLocation.getPath() + "/" + checkpointName);
+            return true;
         } catch (IOException exception) {
-            System.out.println("Couldn't use this one.");
             badCheckpointMsg.setVisible(true);
-            return;
+            return false;
         }
-        System.out.println("Loaded checkpoint!");
     }
 }
