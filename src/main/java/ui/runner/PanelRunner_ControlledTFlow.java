@@ -73,7 +73,7 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
     private float disturbanceY;
 
     public PanelRunner_ControlledTFlow(@JsonProperty("name") String name,
-                                       G game,
+                                       @JsonProperty("game") G game,
                                        @JsonProperty("modelLocation") String modelLocation,
                                        @JsonProperty("checkpointLocation") String checkpointLocation) {
         super(name, game, null);

@@ -184,6 +184,10 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
         return name;
     }
 
+    public G getGame() {
+        return game;
+    }
+
     /**
      * Handles advancing the game and querying the controller. Should be run on a timer.
      */

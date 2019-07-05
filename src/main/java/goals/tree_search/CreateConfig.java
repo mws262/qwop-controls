@@ -22,6 +22,7 @@ import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
 import ui.runner.PanelRunner_AnimatedTransformed;
 import ui.runner.PanelRunner_Comparison;
+import ui.runner.PanelRunner_ControlledTFlow;
 import ui.runner.PanelRunner_Snapshot;
 import ui.scatterplot.PanelPlot_Controls;
 import ui.scatterplot.PanelPlot_SingleRun;
@@ -116,6 +117,10 @@ public class CreateConfig {
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
 //        workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 
+        PanelRunner_ControlledTFlow<GameUnified> controlledRunnerPane = new PanelRunner_ControlledTFlow<>("ValFun " +
+                "controller", new GameUnified(), "src/main/resources/tflow_models", "src/main/resources/tflow_models" +
+                "/checkpoints");
+
         fullUI.addTab(runnerPanel);
         fullUI.addTab(snapshotPane);
         fullUI.addTab(comparisonPane);
@@ -126,6 +131,8 @@ public class CreateConfig {
         fullUI.addTab(singleRunPlotPane);
         fullUI.addTab(pcaPlotPane);
         fullUI.addTab(autoencPlotPane);
+        fullUI.addTab(controlledRunnerPane);
+
 //        fullUI.addTab(workerMonitorPanel);
 
         fullUI.start();

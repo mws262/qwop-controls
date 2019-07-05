@@ -27,7 +27,9 @@ import java.awt.geom.AffineTransform;
         @JsonSubTypes.Type(value = PanelRunner_SimpleState.class, name = "runner_simplestate"),
         @JsonSubTypes.Type(value = PanelRunner_AnimatedTransformed.class, name = "runner_animated_transformed"),
         @JsonSubTypes.Type(value = PanelRunner_Comparison.class, name = "runner_comparison"),
-        @JsonSubTypes.Type(value = PanelRunner_AnimatedFromStates.class, name = "runner_animated_states")
+        @JsonSubTypes.Type(value = PanelRunner_AnimatedFromStates.class, name = "runner_animated_states"),
+        @JsonSubTypes.Type(value = PanelRunner_Controlled.class, name = "controlled"),
+        @JsonSubTypes.Type(value = PanelRunner_ControlledTFlow.class, name = "controlled_valfun")
 })
 public abstract class PanelRunner extends JPanel implements TabbedPaneActivator, ComponentListener {
 
