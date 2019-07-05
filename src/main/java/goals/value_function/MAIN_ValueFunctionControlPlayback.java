@@ -13,8 +13,10 @@ public class MAIN_ValueFunctionControlPlayback {
 
         JFrame jFrame = new JFrame();
 
-        PanelRunner_ControlledTFlow<GameUnified> controlPanel = new PanelRunner_ControlledTFlow<>("Controlled runner"
-                , new GameUnified());
+        PanelRunner_ControlledTFlow<GameUnified> controlPanel = new PanelRunner_ControlledTFlow<>("Controlled runner",
+                new GameUnified(),
+                "src/main/resources/tflow_models",
+                "src/main/resources/tflow_models/checkpoints");
 
         jFrame.setPreferredSize(new Dimension(1000, 1000));
         jFrame.add(controlPanel);

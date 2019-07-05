@@ -17,41 +17,94 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
+ * Basic panel for displaying the runner under controls. Inheriting from this class is the best way to get anything
+ * besides basic behavior.
  *
- * @param <C>
- * @param <G>
+ * @param <C> Controller type being used. Must implement the IController interface.
+ * @param <G> Game implementation used. Must implement the IGameInternal interface.
  */
 public class PanelRunner_Controlled<C extends IController, G extends IGameInternal> extends PanelRunner implements ActionListener {
 
+    /**
+     * Controller being visualized.
+     */
     C controller;
+
+    /**
+     * Game instance being used. Its state size should match what the controller needs.
+     */
     G game;
+
+    /**
+     * Actions are queued as the controller provides them.
+     */
     private ActionQueue actionQueue = new ActionQueue();
 
+    /**
+     * Action most recently returned by the controller.
+     */
     private Action mostRecentAction;
 
+    /**
+     * Timer that handles updating the game and querying the controller when necessary.
+     */
     private Timer controllerTimer;
 
+    /**
+     * Is this an active window? If its in a hidden tab or something, then we want to deactivate all the internal
+     * behavior.
+     */
     private boolean active = false;
+
+    /**
+     * Button for resetting the runner to the initial configuration.
+     */
     private JButton resetButton;
+
+    /**
+     * Name of this panel. Used when inserted as a tab.
+     */
     public final String name;
 
+    /**
+     * If the controller needs an assigned action generator for nodes, then this can be externally set. Not the best
+     * solution, but not many controllers need this anyway.
+     */
     public IActionGenerator actionGenerator;
 
-    GridBagLayout layout = new GridBagLayout();
+    /**
+     * Number of layout row slots for the layout manager.
+     */
     final int layoutRows = 25;
+
+    /**
+     * Number of layout column slots for the layout manager.
+     */
     final int layoutColumns = 15;
+
+    /**
+     * Constraints for the layout manager.
+     */
     GridBagConstraints constraints = new GridBagConstraints();
+
+    /**
+     * Handles advancing the game and querying the controller.
+     */
     private ControllerExecutor controllerExecutor;
 
     public PanelRunner_Controlled(@JsonProperty("name") String name, G game, C controller) {
         this.name = name;
         this.controller = controller;
         this.game = game;
+        this.setName(name);
 
+        // Reset button setup.
         resetButton = new JButton("Restart");
         resetButton.addActionListener(this);
         resetButton.setPreferredSize(new Dimension(50, 25));
 
+        // Setup the panel layout.
+        GridBagLayout layout = new GridBagLayout();
         layout.columnWeights = new double[layoutColumns];
         layout.rowWeights = new double[layoutRows];
         Arrays.fill(layout.columnWeights, 1);
@@ -64,15 +117,27 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
         constraints.ipadx = 100;
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.insets = new Insets(0,0,0,0);
-        JPanel placeholder = new JPanel();
-
-        placeholder.setPreferredSize(new Dimension(75,25));
-        this.add(placeholder, constraints);
+        constraints.anchor = GridBagConstraints.PAGE_END;
+        JLabel gameDescription = new JLabel("Provided game state dimension: " + game.getStateDimension());
+        add(gameDescription, constraints);
 
         constraints.gridx = 0;
         constraints.gridy = layoutRows - 1;
-        this.add(resetButton, constraints);
+        add(resetButton, constraints);
     }
+
+    /**
+     * Can be useful to keep drawing the runner in a frozen position when an invalid controller is selected.
+     */
+    void activateDrawingButNotController() {
+        active = true;
+    }
+
+    /**
+     * Will be called before each game timestep. Override for anything specific.
+     * @param game Game to apply a disturbance to.
+     */
+    void applyDisturbance(G game) {}
 
     @Override
     public void paintComponent(Graphics g) {
@@ -97,10 +162,6 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
         }
     }
 
-    void activateDrawingButNotController() {
-        active = true;
-    }
-
     @Override
     public void deactivateTab() {
         actionQueue.clearAll();
@@ -123,18 +184,25 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
         return name;
     }
 
-
+    /**
+     * Handles advancing the game and querying the controller. Should be run on a timer.
+     */
     private class ControllerExecutor extends TimerTask {
 
         private NodeQWOPExplorable node;
 
+        /**
+         * Reset the game.
+         */
         public void reset() {
             game.makeNewWorld();
             actionQueue.clearAll();
             node = null;
         }
+
         @Override
         public void run() {
+            // If the queue is out of actions, then ask the controller for a new one.
             if (actionQueue.isEmpty()) {
                 // Either make the first node since the game began, or add a child to the previous node.
                 if (node == null) {
@@ -149,7 +217,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
                 mostRecentAction = controller.policy(node);
                 actionQueue.addAction(mostRecentAction);
             }
-
+            applyDisturbance(game);
             game.step(actionQueue.pollCommand());
         }
     }

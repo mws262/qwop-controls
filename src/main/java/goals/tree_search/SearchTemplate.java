@@ -327,9 +327,12 @@ public abstract class SearchTemplate {
         fullUI.addTab(pcaPlotPane);
         fullUI.addTab(autoencPlotPane);
 
-        PanelRunner_ControlledTFlow controllerPane = null;
-        controllerPane = new PanelRunner_ControlledTFlow<>("Controller",
-                new GameUnified());
+        PanelRunner_ControlledTFlow controllerPane
+                = new PanelRunner_ControlledTFlow<>(
+                "Controller",
+                new GameUnified(),
+                "src/main/resources/tflow_models",
+                "src/main/resources/tflow_models/checkpoints");
         controllerPane.actionGenerator = RolloutPolicyBase.getRolloutActionGenerator();
 
         fullUI.addTab(controllerPane);
