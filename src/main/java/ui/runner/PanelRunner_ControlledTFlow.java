@@ -89,7 +89,7 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
         constraints.anchor = GridBagConstraints.PAGE_END;
         add(modelLabel, constraints);
 
-        modelSelection = new JComboBox<>(updateModels());
+        modelSelection = new JComboBox<>(getAvailableModels());
         constraints.gridx = 0;
         constraints.gridy = layoutRows - 4;
         constraints.ipady = 0;
@@ -98,7 +98,10 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
             // the menu opens.
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                updateModels();
+                DefaultComboBoxModel model = (DefaultComboBoxModel) modelSelection.getModel();
+                model.removeAllElements();
+                Arrays.stream(getAvailableModels()).forEach(model::addElement);
+                modelSelection.setModel(model);
             }
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -125,7 +128,7 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
         constraints.anchor = GridBagConstraints.PAGE_END;
         add(checkpointLabel, constraints);
 
-        checkpointSelection = new JComboBox<>(updateCheckpoints());
+        checkpointSelection = new JComboBox<>(getAvailableCheckpoints());
         constraints.gridy = layoutRows - 2;
         constraints.anchor = GridBagConstraints.PAGE_START;
 
@@ -133,7 +136,10 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
             // the menu opens.
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                updateCheckpoints();
+                DefaultComboBoxModel model = (DefaultComboBoxModel) checkpointSelection.getModel();
+                model.removeAllElements();
+                Arrays.stream(getAvailableCheckpoints()).forEach(model::addElement);
+                checkpointSelection.setModel(model);
             }
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -161,7 +167,7 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
      * Check for new checkpoint files to put on the menu when it is opened.
      * @return All checkpoints in the directory.
      */
-    private String[] updateCheckpoints() {
+    private String[] getAvailableCheckpoints() {
         File[] files = new File(checkpointLocation).listFiles();
         Objects.requireNonNull(files);
         if (files.length > 0) {
@@ -176,7 +182,7 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
      * Check for model files to put on the menu when it is opened.
      * @return All model files in the directory.
      */
-    private String[] updateModels() {
+    private String[] getAvailableModels() {
         File[] files = new File(modelLocation).listFiles();
         Objects.requireNonNull(files);
         if (files.length > 0) {
@@ -194,11 +200,12 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
         badModelMsg.setVisible(false);
 
         // Model selection.
-        if (e.getSource().equals(modelSelection)) {
+        if (e.getSource().equals(modelSelection) && modelSelection.getSelectedItem() != null) { // Can be null
+            // briefly while the entries are being updated.
             deactivateTab();
             // Switch controllers to the one
             try {
-                String selectedModel = Objects.requireNonNull(modelSelection.getSelectedItem()).toString();
+                String selectedModel = modelSelection.getSelectedItem().toString();
                 controller =
                         new Controller_ValueFunction<>(
                                 new ValueFunction_TensorFlow_StateOnly(

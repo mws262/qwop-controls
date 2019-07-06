@@ -383,7 +383,7 @@ public class SearchConfiguration implements Serializable {
     }
 
     public static void main(String[] args) {
-        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/default.yaml"),
+        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/config.yaml"),
                 SearchConfiguration.class);
         Objects.requireNonNull(config).execute();
     }
