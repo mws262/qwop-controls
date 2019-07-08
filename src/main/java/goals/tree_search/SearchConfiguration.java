@@ -65,10 +65,30 @@ public class SearchConfiguration implements Serializable {
      * Defines run parameters having to do with threads, logging, etc.
      */
     public static class Machine {
+
+        /**
+         * Fraction of machine cores to use for the tree search.
+         */
         private final float coreFraction;
+
+        /**
+         * Minimum number of cores to be used for the tree search.
+         */
         private final int coreMinimum;
+
+        /**
+         * Maximum number of cores to be used for the tree search.
+         */
         private final int coreMaximum;
+
+        /**
+         * Log level to be used for log4j (e.g. debug, info, warn, error).
+         */
         private final String logLevel;
+
+        /**
+         * Actual number of cores to be used for the search.
+         */
         private final int coreCount;
 
         Machine(@JsonProperty(value = "coreFraction", required = true) float coreFraction,
@@ -106,7 +126,7 @@ public class SearchConfiguration implements Serializable {
         }
 
         @JsonIgnore
-        public int getCoreCount() {
+        public int getCoreCount() { // Calculated from the other fields. Should not be saved.
             return coreCount;
         }
 
@@ -116,7 +136,15 @@ public class SearchConfiguration implements Serializable {
         }
     }
 
+    /**
+     * Tree-building settings that apply to all stages.
+     */
     public static class Tree {
+
+        /**
+         * Action generator to be used to assign the potential child actions throughout the entire tree. This remains
+         * the same regardless of the tree stage being run.
+         */
         public final IActionGenerator actionGenerator;
 
         public Tree(@JsonProperty("actionGenerator") IActionGenerator actionGenerator) {
@@ -125,17 +153,30 @@ public class SearchConfiguration implements Serializable {
     }
 
     /**
-     * Defines a tree search operation.
+     * Defines a single tree search operation.
      */
     public static class SearchOperation {
 
+        /**
+         * Stage operation. Defines the goals and stopping points of this search.
+         */
         @JacksonXmlProperty(isAttribute=true)
         private final TreeStage stage;
 
+        /**
+         * Defines how new nodes are added and scored.
+         */
         private final ISampler sampler;
 
+        /**
+         * Defines how and what data is saved at various points of the tree stage.
+         */
         private final IDataSaver saver;
 
+        /**
+         * Number of consecutive times that this operation is repeated. 0 means it only runs once. 1 means that it
+         * runs one extra time.
+         */
         private final int repetitionCount;
 
         @JsonCreator
@@ -179,6 +220,11 @@ public class SearchConfiguration implements Serializable {
             return repetitionCount;
         }
 
+        /**
+         * Begin this tree operation.
+         * @param rootNode Node to build from.
+         * @param machine Machine details, e.g. how many cores to use.
+         */
         public void startOperation(NodeQWOPExplorableBase<?> rootNode, Machine machine) {
             Preconditions.checkNotNull(rootNode);
             Preconditions.checkNotNull(machine);
@@ -198,6 +244,9 @@ public class SearchConfiguration implements Serializable {
         }
     }
 
+    /**
+     * Run all the operations defined in this SearchConfiguration. Tree stages will be run in the order they are listed.
+     */
     public void execute() {
         NodeQWOPExplorableBase<?> rootNode;
         if (ui instanceof UI_Headless) {
@@ -238,7 +287,15 @@ public class SearchConfiguration implements Serializable {
         }
     }
 
-    public static void serializeToYaml(File xmlFileOutput, Object configuration) {
+    /**
+     * Attempt to serialize the provided object to a .yaml file. Can be applied to any object, but various
+     * annotations may help make only the correct things save in the yaml.
+     *
+     * @param fileOutput File to save the .yaml configuration to.
+     * @param object Particular object to serialize to yaml.
+     */
+    public static void serializeToYaml(File fileOutput, Object object) {
+
         try {
             YAMLMapper objectMapper = new YAMLMapper();
             objectMapper.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
@@ -249,8 +306,8 @@ public class SearchConfiguration implements Serializable {
 
             objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
-            XmlStreamWriter xmlStreamWriter = new XmlStreamWriter(xmlFileOutput);
-            objectMapper.writeValue(xmlStreamWriter, configuration);
+            XmlStreamWriter xmlStreamWriter = new XmlStreamWriter(fileOutput);
+            objectMapper.writeValue(xmlStreamWriter, object);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -269,6 +326,13 @@ public class SearchConfiguration implements Serializable {
         return null;
     }
 
+    /**
+     * Take a .yaml definition of a class and attempt to recreate the Java object.
+     * @param yamlFileOutput File containing the yaml definition.
+     * @param clazz Class which the yaml is defining.
+     * @param <T> Class type.
+     * @return The recreated (deserialized) object.
+     */
     public static <T> T deserializeYaml(File yamlFileOutput, Class<T> clazz) {
         try {
             YAMLMapper objectMapper = new YAMLMapper();
@@ -287,6 +351,9 @@ public class SearchConfiguration implements Serializable {
         return null;
     }
 
+    /**
+     * Load the configuration for log4j.
+     */
     public static void loadLoggerConfiguration() {
         try {
             File file = new File(".", File.separatorChar + "log4j.xml");
@@ -299,7 +366,9 @@ public class SearchConfiguration implements Serializable {
         }
     }
 
-    // Prevent serialization of lots of graphics things.
+    /**
+     * Prevent the serialization of certain library classes.
+     */
     private static class IgnoreInheritedIntrospector extends JacksonAnnotationIntrospector {
         @Override
         public boolean hasIgnoreMarker(final AnnotatedMember m) {
@@ -314,7 +383,7 @@ public class SearchConfiguration implements Serializable {
     }
 
     public static void main(String[] args) {
-        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/default.yaml"),
+        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/config.yaml"),
                 SearchConfiguration.class);
         Objects.requireNonNull(config).execute();
     }

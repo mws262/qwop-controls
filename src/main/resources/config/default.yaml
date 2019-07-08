@@ -7,27 +7,27 @@ tree:
   actionGenerator:
     type: fixed_sequence
     repeatedActions:
-      - distribution:
-          type: normal
-          mean: 10.0
-          standardDeviation: 2.0
-        none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 '
-      - distribution:
-          type: normal
-          mean: 25.0
-          standardDeviation: 3.0
-        wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+    - distribution:
+        type: normal
+        mean: 10.0
+        standardDeviation: 2.0
+      none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 '
+    - distribution:
+        type: normal
+        mean: 25.0
+        standardDeviation: 3.0
+      wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
         31 32 33 34 '
-      - distribution:
-          type: normal
-          mean: 10.0
-          standardDeviation: 2.0
-        none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 '
-      - distribution:
-          type: normal
-          mean: 25.0
-          standardDeviation: 3.0
-        qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+    - distribution:
+        type: normal
+        mean: 10.0
+        standardDeviation: 2.0
+      none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 '
+    - distribution:
+        type: normal
+        mean: 25.0
+        standardDeviation: 3.0
+      qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
         31 32 33 34 '
     actionExceptions:
       depth0:
@@ -85,48 +85,52 @@ searchOperations:
     type: ucb
     evaluationFunction:
       type: constant
-      constantValue: 0
+      constantValue: 5.0
     rolloutPolicy:
-      type: decaying_horizon
-      evaluationFunction:
-        type: distance
-      rolloutController:
-        type: random
-      maxTimesteps: 200
-      rolloutActionGenerator:
-        type: fixed_sequence
-        repeatedActions:
-        - distribution:
-            type: normal
-            mean: 12.0
-            standardDeviation: 5.0
-          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
-        - distribution:
-            type: normal
-            mean: 20.0
-            standardDeviation: 5.0
-          wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-        - distribution:
-            type: normal
-            mean: 12.0
-            standardDeviation: 5.0
-          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
-        - distribution:
-            type: normal
-            mean: 20.0
-            standardDeviation: 5.0
-          qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-    explorationConstant: 3.0
-    explorationRandomFactor: 2.0
+      type: window
+      individualRollout:
+        type: decaying_horizon
+        evaluationFunction:
+          type: constant
+          constantValue: 10.0
+        rolloutController:
+          type: random
+        maxTimesteps: 200
+        rolloutActionGenerator:
+          type: fixed_sequence
+          repeatedActions:
+          - distribution:
+              type: normal
+              mean: 12.0
+              standardDeviation: 5.0
+            none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+          - distribution:
+              type: normal
+              mean: 20.0
+              standardDeviation: 5.0
+            wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+          - distribution:
+              type: normal
+              mean: 12.0
+              standardDeviation: 5.0
+            none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+          - distribution:
+              type: normal
+              mean: 20.0
+              standardDeviation: 5.0
+            qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+      selectionCriteria: BEST
+    explorationConstant: 5.0
+    explorationRandomFactor: 1.0
     valueUpdater:
       type: top_window
       windowSize: 3
       windowScoringCriterion: WORST
   saver:
     type: null
-    saveInterval: 0
     savePath:
-  repetitionCount: 100
+    saveInterval: 0
+  repetitionCount: 0
 ui:
   type: full
   tabbedPanes:
@@ -159,8 +163,8 @@ ui:
           20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43
           44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67
           68 69 70 71 '
-      outputSize: 72
       name: PCA 72
+      outputSize: 72
     name: PCA Plots
     plotsPerView: 6
     numberOfPlots: 6
