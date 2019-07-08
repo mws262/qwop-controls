@@ -40,7 +40,7 @@ public class Sampler_UCB implements ISampler {
      */
     private final IRolloutPolicy rolloutPolicy;
 
-    private IValueUpdater valueUpdater = new ValueUpdater_TopWindow(3); //TopNChildren(8); // TODO make this an
+    public IValueUpdater valueUpdater = new ValueUpdater_TopWindow(3); //TopNChildren(8); // TODO make this an
     // assignable
     // parameter.
 

@@ -11,6 +11,12 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
 
     public final int windowSize;
 
+    public enum Criteria {
+        WORST, AVERAGE
+    }
+
+    public Criteria windowScoringCriterion = Criteria.WORST;
+
     public ValueUpdater_TopWindow(@JsonProperty("windowSize") int windowSize) {
         Preconditions.checkArgument(windowSize > 0, "Window size should be at least 1.", windowSize);
 
@@ -41,11 +47,36 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
                 for (List<NodeQWOPBase<?>> cluster : clusters) {
                     if (cluster.size() >= effectiveWindowSize) {
                         for (int i = 0; i <= cluster.size() - effectiveWindowSize; i++) {
-                            float value = 0;
-                            for (int j = i; j < i + effectiveWindowSize; j++) {
-                                value += cluster.get(j).getValue();
+                            float value;
+                            switch (windowScoringCriterion) {
+                                case WORST:
+                                    value = Float.MAX_VALUE;
+                                    break;
+                                case AVERAGE:
+                                    value = 0;
+                                    break;
+                                default:
+                                    throw new IllegalStateException("Unhandled window criterion.");
                             }
-                            value /= effectiveWindowSize; // just windowSize?
+
+                            for (int j = i; j < i + effectiveWindowSize; j++) {
+                                float nodeVal = cluster.get(j).getValue();
+                                switch (windowScoringCriterion) {
+                                    case WORST:
+                                        if (nodeVal < value) {
+                                            value = nodeVal;
+                                        }
+                                        break;
+                                    case AVERAGE:
+                                        value += nodeVal;
+                                        break;
+                                }
+                            }
+
+                            if (windowScoringCriterion == Criteria.AVERAGE) {
+                                value /= windowSize; // just windowSize?
+                            }
+
                             foundAtLeastOne = true;
                             if (value > bestValue) {
                                 bestValue = value;
