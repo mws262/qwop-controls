@@ -33,12 +33,12 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
     /**
      * Name of the directory containing all the model (.pb) files.
      */
-    public final String modelLocation; // = new File("src/main/resources/tflow_models");
+    public final String modelLocation;
 
     /**
-     * Name of the directory containing all the checkpoing files.
+     * Name of the directory containing all the checkpoint files.
      */
-    public final String checkpointLocation;// = new File("src/main/resources/tflow_models/checkpoints");
+    public final String checkpointLocation;
 
     /**
      * Drop-down menu for selecting Tensorflow model.
