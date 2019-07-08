@@ -16,7 +16,8 @@ import tree.node.NodeQWOPBase;
         @JsonSubTypes.Type(value = ValueUpdater_Average.class, name = "average"),
         @JsonSubTypes.Type(value = ValueUpdater_HardSet.class, name = "hard_set"),
         @JsonSubTypes.Type(value = ValueUpdater_StdDev.class, name = "stdev_above"),
-        @JsonSubTypes.Type(value = ValueUpdater_TopNChildren.class, name = "top_children")
+        @JsonSubTypes.Type(value = ValueUpdater_TopNChildren.class, name = "top_children"),
+        @JsonSubTypes.Type(value = ValueUpdater_TopWindow.class, name = "top_window")
 })
 public interface IValueUpdater {
 

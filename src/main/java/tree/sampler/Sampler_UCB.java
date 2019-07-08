@@ -10,6 +10,7 @@ import tree.node.evaluator.IEvaluationFunction;
 import tree.sampler.rollout.IRolloutPolicy;
 import value.updaters.IValueUpdater;
 import value.updaters.ValueUpdater_Average;
+import value.updaters.ValueUpdater_TopWindow;
 
 /**
  * Implements upper confidence bound for trees (UCBT, UCT, UCB, depending on who you ask).
@@ -39,7 +40,9 @@ public class Sampler_UCB implements ISampler {
      */
     private final IRolloutPolicy rolloutPolicy;
 
-    private IValueUpdater valueUpdater = new ValueUpdater_Average(); // TODO make this an assignable parameter.
+    public IValueUpdater valueUpdater = new ValueUpdater_TopWindow(3); //TopNChildren(8); // TODO make this an
+    // assignable
+    // parameter.
 
     /**
      * Explore/exploit trade-off parameter. Higher means more exploration. Lower means more exploitation.

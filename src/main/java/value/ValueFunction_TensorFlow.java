@@ -46,7 +46,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     /**
      * Number of nodes to run through training in one shot.
      */
-    private int trainingBatchSize = 100;
+    private int trainingBatchSize = 1000;
 
     /**
      * How many training steps to take per batch of the update data.

@@ -22,7 +22,7 @@ import java.util.*;
  * @see java.util.Queue
  * @see ActionList
  */
-public class Action implements Serializable {
+public class Action implements Comparable<Action>, Serializable {
 
     private static final long serialVersionUID = 2L;
 
@@ -227,6 +227,17 @@ public class Action implements Serializable {
         builder.append(keysPressed);
         builder.append(getTimestepsTotal());
         return builder.toHashCode();
+    }
+
+    @Override
+    public int compareTo(Action o) {
+        // Ranks first by keys pressed (more trues is higher). Then ranks by timesteps.
+        for (int i = 0; i < keysPressed.length; i++) {
+            if (keysPressed[i] != o.keysPressed[i]) {
+                return keysPressed[i] ? 1 : -1;
+            }
+        }
+        return Integer.compare(getTimestepsTotal(), o.getTimestepsTotal());
     }
 
     /**

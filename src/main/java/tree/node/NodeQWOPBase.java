@@ -1,5 +1,6 @@
 package tree.node;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import game.action.Action;
 import game.action.ActionQueue;
 import data.SavableSingleGame;
@@ -36,7 +37,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * A value associated with this node. This will depend greatly on the update strategy used.
      * @see IValueUpdater
      */
-    private float value = 0f;
+    private AtomicDouble value = new AtomicDouble(0);
 
     /**
      * Number of times that the value has been update (or in many cases, number of times the node has been "visited")
@@ -194,7 +195,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * @param updater The update rule used to change the value of this node.
      */
     public synchronized void updateValue(float valueUpdate, IValueUpdater updater) {
-        value = updater.update(valueUpdate, this);
+        value.set(updater.update(valueUpdate, this));
         updateCount++;
     }
 
@@ -202,8 +203,8 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * Get the estimated value associated with this node.
      * @return The scalar value estimated for this node.
      */
-    public synchronized float getValue() {
-        return value;
+    public float getValue() {
+        return value.floatValue();
     }
 
     /**
