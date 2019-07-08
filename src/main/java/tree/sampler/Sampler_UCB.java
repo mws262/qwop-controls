@@ -39,7 +39,8 @@ public class Sampler_UCB implements ISampler {
      */
     private final IRolloutPolicy rolloutPolicy;
 
-    private IValueUpdater valueUpdater = new ValueUpdater_Average(); // TODO make this an assignable parameter.
+    private IValueUpdater valueUpdater = new ValueUpdater_Average(); //TopNChildren(8); // TODO make this an assignable
+    // parameter.
 
     /**
      * Explore/exploit trade-off parameter. Higher means more exploration. Lower means more exploitation.

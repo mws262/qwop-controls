@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ActionTest {
@@ -220,6 +221,46 @@ public class ActionTest {
         }
         Assert.assertEquals(equivAction, action1Copy);
         Assert.assertEquals(equivAction.hashCode(), action1Copy.hashCode());
+    }
+
+    @Test
+    public void comparing() {
+        Action a1 = new Action(5, true, false, false, true);
+        Action a2 = new Action(5, true, false, true, false);
+        Action a3 = new Action(5, true, false, true, false);
+        Action a4 = new Action(7, false, false, true, false);
+        Action a5 = new Action(50, false, false, false, false);
+        Action a6 = new Action(3, false, false, false, false);
+        Action a7 = new Action(8, true, false, true, false);
+        Action a8 = new Action(11, true, false, false, true);
+        Action a9 = new Action(12, true, false, false, false);
+        Action a10 = new Action(30, false, true, true, false);
+        Action a11 = new Action(18, false, true, true, false);
+        List<Action> alist = new ArrayList<>();
+        alist.add(a1);
+        alist.add(a2);
+        alist.add(a3);
+        alist.add(a4);
+        alist.add(a5);
+        alist.add(a6);
+        alist.add(a7);
+        alist.add(a8);
+        alist.add(a9);
+        alist.add(a10);
+        alist.add(a11);
+
+        Collections.sort(alist);
+        Assert.assertEquals(a6, alist.get(0));
+        Assert.assertEquals(a5, alist.get(1));
+        Assert.assertEquals(a4, alist.get(2));
+        Assert.assertEquals(a11, alist.get(3));
+        Assert.assertEquals(a10, alist.get(4));
+        Assert.assertEquals(a9, alist.get(5));
+        Assert.assertEquals(a1, alist.get(6));
+        Assert.assertEquals(a8, alist.get(7));
+        Assert.assertEquals(a2, alist.get(8));
+        Assert.assertEquals(a2, alist.get(9));
+        Assert.assertEquals(a7, alist.get(10));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package value.updaters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jcodec.common.Preconditions;
 import tree.node.NodeQWOPBase;
 
 import java.util.ArrayList;
@@ -22,12 +23,9 @@ public class ValueUpdater_TopNChildren implements IValueUpdater {
      */
     public final int numChildrenToAvg;
 
-    /**
-     * List of children of the node being updated.
-     */
-    private List<NodeQWOPBase<?>> children = new ArrayList<>();
-
     public ValueUpdater_TopNChildren(@JsonProperty("numChildrenToAvg") int numChildrenToAvg) {
+        Preconditions.checkArgument(numChildrenToAvg > 0, "Number of children to average in the updater must be at " +
+                "least 1.", numChildrenToAvg);
         this.numChildrenToAvg = numChildrenToAvg;
     }
 
@@ -36,7 +34,7 @@ public class ValueUpdater_TopNChildren implements IValueUpdater {
         if (node.getChildCount() == 0) {
             return valueUpdate;
         } else {
-            children.clear();
+            List<NodeQWOPBase<?>> children = new ArrayList<>();
             node.applyToThis(n -> children.addAll(n.getChildren())); // Trick to get around type erasure.
             children.sort(Comparator.comparing(NodeQWOPBase::getValue));
             Collections.reverse(children);
@@ -45,6 +43,7 @@ public class ValueUpdater_TopNChildren implements IValueUpdater {
             for (int i = 0; i < numChildrenToAvg; i++) {
                 int idx = Math.min(i, children.size() - 1); // Fills any remaining "slots" with the lowest child if
                 // less children than number of children to average.
+//                int idx = i >= children.size() ? 0 : i;
                 value += children.get(idx).getValue();
             }
             return value /(float) numChildrenToAvg;
