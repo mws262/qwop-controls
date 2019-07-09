@@ -12,7 +12,7 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
     public final int windowSize;
 
     public enum Criteria {
-        WORST, AVERAGE
+        WORST, AVERAGE_OPTIMISTIC, AVERAGE_PESSIMISTIC
     }
 
     public Criteria windowScoringCriterion = Criteria.WORST;
@@ -52,8 +52,11 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
                                 case WORST:
                                     value = Float.MAX_VALUE;
                                     break;
-                                case AVERAGE:
-                                    value = 0;
+                                case AVERAGE_OPTIMISTIC:
+                                    value = 0f;
+                                    break;
+                                case AVERAGE_PESSIMISTIC:
+                                    value = 0f;
                                     break;
                                 default:
                                     throw new IllegalStateException("Unhandled window criterion.");
@@ -67,14 +70,26 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
                                             value = nodeVal;
                                         }
                                         break;
-                                    case AVERAGE:
+                                    case AVERAGE_OPTIMISTIC:
+                                        value += nodeVal;
+                                        break;
+                                    case AVERAGE_PESSIMISTIC:
                                         value += nodeVal;
                                         break;
                                 }
                             }
 
-                            if (windowScoringCriterion == Criteria.AVERAGE) {
-                                value /= windowSize; // just windowSize?
+                            switch (windowScoringCriterion) {
+                                case WORST:
+                                    break;
+                                case AVERAGE_OPTIMISTIC:
+                                    value /= effectiveWindowSize;
+                                    break;
+                                case AVERAGE_PESSIMISTIC: // Average based on desired window size. If there isn't a
+                                    // grouping of actions as big as the window, then missing elements get an
+                                    // effective value of zero.
+                                    value /= windowSize;
+                                    break;
                             }
 
                             foundAtLeastOne = true;
