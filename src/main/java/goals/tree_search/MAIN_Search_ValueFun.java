@@ -8,7 +8,6 @@ import game.GameUnifiedCaching;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
 import game.action.IActionGenerator;
-import game.state.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.TreeWorker;
@@ -27,7 +26,6 @@ import tree.stage.TreeStage_MaxDepth;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -164,8 +162,8 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         rolloutWeightedWithValFun = Boolean.parseBoolean(properties.getProperty("rolloutWeightedWithValFun", "false"));
         rolloutValFunWeight = Float.parseFloat(properties.getProperty("rolloutValFunWeight", "0.75"));
 
-        game = (prevStates > 0 && delayTs > 0) ? new GameUnifiedCaching(delayTs, prevStates) : new GameUnified();
-        StateDelayEmbedded.useFiniteDifferences = true;
+        game = (prevStates > 0 && delayTs > 0) ? new GameUnifiedCaching(delayTs, prevStates, GameUnifiedCaching.StateType.HIGHER_DIFFERENCES) :
+                new GameUnified();
         makeValueFunction(game);
     }
 
@@ -226,7 +224,8 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         ISampler sampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout, 5, 1); // TODO hardcoded.
 
-        return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates) :
+        return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates,
+                GameUnifiedCaching.StateType.HIGHER_DIFFERENCES) :
                 TreeWorker.makeStandardTreeWorker(sampler);
     }
 

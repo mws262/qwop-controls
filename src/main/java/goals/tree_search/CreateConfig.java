@@ -2,20 +2,19 @@ package goals.tree_search;
 
 import controllers.Controller_Random;
 import game.GameUnified;
+import game.GameUnifiedCaching;
 import game.action.ActionGenerator_FixedSequence;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import savers.DataSaver_Null;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.filter.NodeFilter_SurvivalHorizon;
+import tree.sampler.Sampler_Distribution;
 import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.IRolloutPolicy;
 import tree.sampler.rollout.RolloutPolicy_DecayingHorizon;
 import tree.sampler.rollout.RolloutPolicy_Window;
-import tree.stage.TreeStage;
-import tree.stage.TreeStage_Grouping;
-import tree.stage.TreeStage_MaxDepth;
-import tree.stage.TreeStage_ValueFunctionUpdate;
+import tree.stage.*;
 import ui.IUserInterface;
 import ui.UI_Full;
 import ui.histogram.PanelHistogram_LeafDepth;
@@ -39,6 +38,8 @@ import java.util.stream.IntStream;
 
 public class CreateConfig {
 
+    static GameUnifiedCaching game = new GameUnifiedCaching(1,2, GameUnifiedCaching.StateType.DIFFERENCES);
+
     public static void main(String[] args) {
 
         // Value function setup.
@@ -48,7 +49,7 @@ public class CreateConfig {
         ValueFunction_TensorFlow valueFunction = null;
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
-                    new GameUnified(), layerSizes, new ArrayList<>(), "");
+                    game.getCopy(), layerSizes, new ArrayList<>(), "");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,8 +61,12 @@ public class CreateConfig {
         List<SearchConfiguration.SearchOperation> searchOperations = new ArrayList<>();
         IUserInterface ui = CreateConfig.setupFullUI();
 
+        searchOperations.add(new SearchConfiguration.SearchOperation(new TreeStage_FixedGames(80000),
+                new Sampler_Distribution(),
+                new DataSaver_Null()));
 
-        TreeStage tstage1 = new TreeStage_MaxDepth(100, 10000);
+
+        TreeStage tstage1 = new TreeStage_FixedGames(10000);
         TreeStage tstage2 = new TreeStage_ValueFunctionUpdate(valueFunction, "src/main/resources" +
                 "/tflow_models/checkpoints/checkpoint_name", 1);
         TreeStage stagegroup = new TreeStage_Grouping(new TreeStage[] {tstage1, tstage2});
@@ -118,7 +123,7 @@ public class CreateConfig {
 //        workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 
         PanelRunner_ControlledTFlow<GameUnified> controlledRunnerPane = new PanelRunner_ControlledTFlow<>("ValFun " +
-                "controller", new GameUnified(), "src/main/resources/tflow_models", "src/main/resources/tflow_models" +
+                "controller", game.getCopy(), "src/main/resources/tflow_models", "src/main/resources/tflow_models" +
                 "/checkpoints");
 
         fullUI.addTab(runnerPanel);

@@ -1,6 +1,7 @@
 package goals.value_function;
 
 import game.GameUnified;
+import game.GameUnifiedCaching;
 import ui.runner.PanelRunner_ControlledTFlow;
 
 import javax.swing.*;
@@ -8,13 +9,13 @@ import java.awt.*;
 
 public class MAIN_ValueFunctionControlPlayback {
 
-
+    private GameUnifiedCaching game = new GameUnifiedCaching(1,2, GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
     public MAIN_ValueFunctionControlPlayback() {
 
         JFrame jFrame = new JFrame();
 
         PanelRunner_ControlledTFlow<GameUnified> controlPanel = new PanelRunner_ControlledTFlow<>("Controlled runner",
-                new GameUnified(),
+                game,
                 "src/main/resources/tflow_models",
                 "src/main/resources/tflow_models/checkpoints");
 
@@ -30,9 +31,6 @@ public class MAIN_ValueFunctionControlPlayback {
     }
 
     public static void main(String[] args) {
-
-        MAIN_ValueFunctionControlPlayback playback = new MAIN_ValueFunctionControlPlayback();
-
-
+        new MAIN_ValueFunctionControlPlayback();
     }
 }

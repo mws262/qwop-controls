@@ -10,6 +10,9 @@ import data.LoadStateStatistics;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = State.class, name = "state_standard"),
         @JsonSubTypes.Type(value = StateDelayEmbedded.class, name = "state_delay_embedded"),
+        @JsonSubTypes.Type(value = StateDelayEmbedded_Poses.class, name = "delay_embedded_poses"),
+        @JsonSubTypes.Type(value = StateDelayEmbedded_Differences.class, name = "delay_differences"),
+        @JsonSubTypes.Type(value = StateDelayEmbedded_HigherDifferences.class, name = "delay_higher_differences")
 })
 public interface IState {
 

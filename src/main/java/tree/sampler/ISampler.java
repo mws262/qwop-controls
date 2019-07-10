@@ -3,12 +3,9 @@ package tree.sampler;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import game.action.Action;
-import org.apache.htrace.core.Sampler;
-import tree.node.NodeQWOPExplorableBase;
 import game.IGameInternal;
-import tree.sampler.rollout.RolloutPolicy_DeltaScore;
-import tree.sampler.rollout.RolloutPolicy_JustEvaluate;
+import game.action.Action;
+import tree.node.NodeQWOPExplorableBase;
 
 /**
  * Defines a strategy for sampling nodes.
@@ -19,7 +16,7 @@ import tree.sampler.rollout.RolloutPolicy_JustEvaluate;
         use = JsonTypeInfo.Id.NAME,
         property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = Sampler_Random.class, name = "just_evaluate"),
+        @JsonSubTypes.Type(value = Sampler_Random.class, name = "random"),
         @JsonSubTypes.Type(value = Sampler_Greedy.class, name = "greedy"),
         @JsonSubTypes.Type(value = Sampler_UCB.class, name = "ucb"),
         @JsonSubTypes.Type(value = Sampler_Deterministic.class, name = "deterministic"),

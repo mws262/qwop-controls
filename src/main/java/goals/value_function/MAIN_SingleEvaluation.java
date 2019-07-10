@@ -4,7 +4,6 @@ import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.state.IState;
-import game.state.StateDelayEmbedded;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.Utility;
@@ -28,7 +27,6 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
     static {
         Utility.loadLoggerConfiguration();
-        StateDelayEmbedded.useFiniteDifferences = true;
     }
 
     GameUnified game = new GameUnified(); // new GameUnifiedCaching(1,2);
@@ -66,7 +64,6 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private Logger logger = LogManager.getLogger(MAIN_SingleEvaluation.class);
 
     MAIN_SingleEvaluation() {
-        StateDelayEmbedded.useFiniteDifferences = true;
         /* Set up screen capture, if enabled. */
         if (doScreenCapture) {
             screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));

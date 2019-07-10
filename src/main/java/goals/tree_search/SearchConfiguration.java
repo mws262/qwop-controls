@@ -15,6 +15,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Preconditions;
 import game.GameUnified;
+import game.GameUnifiedCaching;
 import game.action.IActionGenerator;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
@@ -239,8 +240,11 @@ public class SearchConfiguration implements Serializable {
 
         @JsonIgnore
         public TreeWorker getTreeWorker() {
-            return TreeWorker.makeStandardTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other kinds of
+            //return TreeWorker.makeStandardTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other
+            // kinds of
             // treeworkers.
+            return TreeWorker.makeCachedStateTreeWorker(sampler.getCopy(), saver.getCopy(), 1, 2,
+                    GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
         }
     }
 

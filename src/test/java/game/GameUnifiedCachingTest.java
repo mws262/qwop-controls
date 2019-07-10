@@ -4,6 +4,7 @@ import data.LoadStateStatistics;
 import game.state.IState;
 import game.state.State;
 import game.state.StateDelayEmbedded;
+import game.state.StateDelayEmbedded_HigherDifferences;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,7 +20,6 @@ public class GameUnifiedCachingTest {
     public void test_stateCorrectness() {
         for (int i = 1; i < 10; i++) {
             for (int j = 1; j < 4; j++) {
-                StateDelayEmbedded.useFiniteDifferences = false;
                 checkSpecificDelayEmbedding(i,j);
             }
         }
@@ -27,7 +27,7 @@ public class GameUnifiedCachingTest {
 
     private void checkSpecificDelayEmbedding(int delay, int numDelayedStates) {
         float tol = 1e-6f;
-        GameUnifiedCaching gameCache = new GameUnifiedCaching(delay, numDelayedStates);
+        GameUnifiedCaching gameCache = new GameUnifiedCaching(delay, numDelayedStates, GameUnifiedCaching.StateType.POSES);
         Assert.assertEquals((numDelayedStates + 1) * 36, gameCache.getStateDimension());
         GameUnified gameBasic = new GameUnified();
 
@@ -257,10 +257,8 @@ public class GameUnifiedCachingTest {
         State s4 = new State(f4, false);
         State s5 = new State(f5, false);
 
-        StateDelayEmbedded.useFiniteDifferences = true;
-        StateDelayEmbedded fullState = new StateDelayEmbedded(new State[]{s1, s2, s3, s4, s5});
+        StateDelayEmbedded fullState = new StateDelayEmbedded_HigherDifferences(new State[]{s1, s2, s3, s4, s5});
         float[] result = fullState.flattenState();
-        StateDelayEmbedded.useFiniteDifferences = false;
 
         Assert.assertArrayEquals(expected, result, 1e-5f);
     }
@@ -284,8 +282,7 @@ public class GameUnifiedCachingTest {
         when(stateStats.getStdev()).thenReturn(stdevState1);
         when(stateStats.getMean()).thenReturn(meanState1);
 
-        GameUnifiedCaching gameCache = new GameUnifiedCaching(1, 3);
-        StateDelayEmbedded.useFiniteDifferences = false;
+        GameUnifiedCaching gameCache = new GameUnifiedCaching(1, 3, GameUnifiedCaching.StateType.POSES);
         IState st = gameCache.getCurrentState();
         IState init = GameUnified.getInitialState();
         float[] initFlat = init.flattenState();

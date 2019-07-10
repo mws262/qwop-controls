@@ -3,10 +3,7 @@ package flashqwop;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.*;
-import game.state.IState;
-import game.state.State;
-import game.state.StateDelayEmbedded;
-import game.state.StateVariable;
+import game.state.*;
 import hardware.KeypusherSerialConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -175,7 +172,7 @@ public abstract class FlashGame implements IFlashStateListener {
             states[i] = stateCache.get(timestepDelay * i);
         }
 
-        reportGameStatus(new StateDelayEmbedded(states), prevCommand, timestep);
+        reportGameStatus(new StateDelayEmbedded_HigherDifferences(states), prevCommand, timestep);
 
         assert timestep == timestepsTracked; // Have we lost any timesteps?
         long timeBeforeController = System.currentTimeMillis();

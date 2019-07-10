@@ -75,23 +75,38 @@
   },
   "searchOperations" : [ {
     "stage" : {
+      "type" : "fixed_games",
+      "numGamesToPlay" : 80000
+    },
+    "sampler" : {
+      "type" : "distribution"
+    },
+    "saver" : {
+      "type" : "null",
+      "saveInterval" : 0,
+      "savePath" : ""
+    },
+    "repetitionCount" : 0
+  }, {
+    "stage" : {
       "type" : "grouping",
       "treeStages" : [ {
-        "type" : "max_depth",
-        "maxDepth" : 100,
-        "maxGames" : 10000
+        "type" : "fixed_games",
+        "numGamesToPlay" : 10000
       }, {
         "type" : "value_update",
         "valueFunction" : {
           "type" : "tflow_state_only",
           "fileName" : "src/main/resources/tflow_models/test.pb",
           "gameTemplate" : {
-            "type" : "default"
+            "type" : "delay_embedded",
+            "timestepDelay" : 1,
+            "numDelayedStates" : 2,
+            "stateType" : "DIFFERENCES"
           },
           "hiddenLayerSizes" : [ 128, 64 ],
           "additionalNetworkArgs" : [ ],
           "activeCheckpoint" : null,
-          "inputSize" : 72,
           "outputSize" : 1
         },
         "checkpointName" : "src/main/resources/tflow_models/checkpoints/checkpoint_name",
@@ -155,15 +170,13 @@
       "explorationConstant" : 5.0,
       "explorationRandomFactor" : 1.0,
       "valueUpdater" : {
-        "type" : "top_window",
-        "windowSize" : 3,
-        "windowScoringCriterion" : "WORST"
+        "type" : "average"
       }
     },
     "saver" : {
       "type" : "null",
-      "savePath" : "",
-      "saveInterval" : 0
+      "saveInterval" : 0,
+      "savePath" : ""
     },
     "repetitionCount" : 0
   } ],
@@ -205,8 +218,8 @@
         "transformPCAComponents" : {
           "transformPCAComponents" : "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 "
         },
-        "name" : "PCA 72",
-        "outputSize" : 72
+        "outputSize" : 72,
+        "name" : "PCA 72"
       },
       "name" : "PCA Plots",
       "plotsPerView" : 6,
@@ -226,7 +239,10 @@
       "type" : "controlled_valfun",
       "name" : "ValFun controller",
       "game" : {
-        "type" : "default"
+        "type" : "delay_embedded",
+        "timestepDelay" : 1,
+        "numDelayedStates" : 2,
+        "stateType" : "DIFFERENCES"
       },
       "modelLocation" : "src/main/resources/tflow_models",
       "checkpointLocation" : "src/main/resources/tflow_models/checkpoints",

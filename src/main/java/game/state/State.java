@@ -314,8 +314,8 @@ public class State implements IState, Serializable {
     @Override
     public float[] flattenStateWithRescaling(LoadStateStatistics.StateStatistics stateStatistics) {
         return xOffsetSubtract(getCenterX())
-                .subtract(stateStatistics.getMean())
-                .divide(stateStatistics.getStdev())
+                .subtract(stateStatistics.getMin())
+                .divide(stateStatistics.getRange())
                 .flattenState();
     }
 
@@ -380,6 +380,16 @@ public class State implements IState, Serializable {
         return new State(resultStates, this.failedState || s.failedState);
     }
 
+    // Scalar multiplication.
+    public State multiply(float multiplier) {
+        StateVariable[] resultStates = new StateVariable[stateVariables.length];
+        StateVariable svMultiplier = new StateVariable(multiplier, multiplier, multiplier, multiplier, multiplier, multiplier);
+        for (int i = 0; i < stateVariables.length; i++) {
+            resultStates[i] = stateVariables[i].multiply(svMultiplier);
+        }
+        return new State(resultStates, this.failedState);
+    }
+
     public float[] extractPositions(float xOffset) {
         float[] sflat = new float[STATE_SIZE/2];
         int idx = 0;
@@ -393,6 +403,31 @@ public class State implements IState, Serializable {
 
     public float[] extractPositions() {
         return extractPositions(0f);
+    }
+
+    public float[] extractVelocities() {
+        float[] vflat = new float[STATE_SIZE/2];
+        int idx = 0;
+        for (StateVariable sVar : stateVariables) {
+            vflat[idx++] = sVar.getDx();
+            vflat[idx++] = sVar.getDy();
+            vflat[idx++] = sVar.getDth();
+        }
+        return vflat;
+    }
+
+    public State swapPosAndVel() {
+        float[] flat = new float[STATE_SIZE];
+        int idx = 0;
+        for (StateVariable sVar : stateVariables) {
+            flat[idx++] = sVar.getDx();
+            flat[idx++] = sVar.getDy();
+            flat[idx++] = sVar.getDth();
+            flat[idx++] = sVar.getX();
+            flat[idx++] = sVar.getY();
+            flat[idx++] = sVar.getTh();
+        }
+        return new State(flat, isFailed());
     }
 
     public State xOffsetSubtract(float xOffset) {

@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class TreeWorker extends PanelRunner implements Runnable {
 
     private static final long serialVersionUID = 1L;
+    private NodeQWOPExplorableBase<?> expansionNode;
 
     public enum Status {
         IDLE, INITIALIZE, TREE_POLICY_CHOOSING, TREE_POLICY_EXECUTING, EXPANSION_POLICY_CHOOSING,
@@ -184,15 +185,16 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * @return A brand new TreeWorker.
      */
     public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, IDataSaver saver, int timestepDelay,
-                                                       int numDelayedStates) {
+                                                       int numDelayedStates, GameUnifiedCaching.StateType stateType) {
         TreeWorker treeWorker = new TreeWorker(sampler, saver);
-        treeWorker.game = new GameUnifiedCaching(timestepDelay, numDelayedStates);
+        treeWorker.game = new GameUnifiedCaching(timestepDelay, numDelayedStates, stateType);
         return treeWorker;
     }
 
     // No data saving.
-    public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, int timestepDelay, int numDelayedStates) {
-        return makeCachedStateTreeWorker(sampler, new DataSaver_Null(), timestepDelay, numDelayedStates);
+    public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, int timestepDelay, int numDelayedStates,
+                                                       GameUnifiedCaching.StateType stateType) {
+        return makeCachedStateTreeWorker(sampler, new DataSaver_Null(), timestepDelay, numDelayedStates, stateType);
     }
 
     /**
@@ -252,7 +254,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
                     } else {
                         // This gets us through the existing tree to a place that we plan to add a new node.
-                        NodeQWOPExplorableBase<?> expansionNode = sampler.treePolicy(currentGameNode);
+                        expansionNode = sampler.treePolicy(currentGameNode);
 //                        Objects.requireNonNull(expansionNode, "This could be a sign of improperly shutting down " +
 //                                "workers at the end of search stages.");
 
@@ -317,6 +319,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         assert currentGameNode.isLocked();
                         currentGameNode = currentGameNode.addDoublyLinkedChild(targetActionToTest,
                                 game.getCurrentState());
+                        //currentGameNode.setLock(true); // Don't need to propagate since the first expansion node is
+                        // already locked.
 
                         sampler.expansionPolicyActionDone(currentGameNode);
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
@@ -340,7 +344,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     workerGamesPlayed.increment();
                     incrementTotalGameCount();
 
-                    currentGameNode.releaseExpansionRights();
+                    expansionNode.releaseExpansionRights();
 
                     if (rootNode.isFullyExplored()) {
                         pauseWorker();
