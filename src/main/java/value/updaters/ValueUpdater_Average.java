@@ -14,4 +14,9 @@ public class ValueUpdater_Average implements IValueUpdater {
     public float update(float valueUpdate, NodeQWOPBase<?> node) {
         return (node.getValue() * node.getUpdateCount() + valueUpdate) / (node.getUpdateCount() + 1);
     }
+
+    @Override
+    public IValueUpdater getCopy() {
+        return new ValueUpdater_Average();
+    }
 }

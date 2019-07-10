@@ -240,11 +240,11 @@ public class SearchConfiguration implements Serializable {
 
         @JsonIgnore
         public TreeWorker getTreeWorker() {
-            //return TreeWorker.makeStandardTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other
+            return TreeWorker.makeStandardTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other
             // kinds of
             // treeworkers.
-            return TreeWorker.makeCachedStateTreeWorker(sampler.getCopy(), saver.getCopy(), 1, 2,
-                    GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
+//            return TreeWorker.makeCachedStateTreeWorker(sampler.getCopy(), saver.getCopy(), 1, 2,
+//                    GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
         }
     }
 

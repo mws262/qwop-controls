@@ -9,7 +9,8 @@ import java.awt.*;
 
 public class MAIN_ValueFunctionControlPlayback {
 
-    private GameUnifiedCaching game = new GameUnifiedCaching(1,2, GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
+    private GameUnified game = new GameUnified(); //new GameUnifiedCaching(1,2,
+            //GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
     public MAIN_ValueFunctionControlPlayback() {
 
         JFrame jFrame = new JFrame();

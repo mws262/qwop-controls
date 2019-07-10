@@ -1,5 +1,6 @@
 package tree;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import game.GameUnified;
 import game.GameUnifiedCaching;
 import game.IGameInternal;
@@ -195,6 +196,13 @@ public class TreeWorker extends PanelRunner implements Runnable {
     public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, int timestepDelay, int numDelayedStates,
                                                        GameUnifiedCaching.StateType stateType) {
         return makeCachedStateTreeWorker(sampler, new DataSaver_Null(), timestepDelay, numDelayedStates, stateType);
+    }
+
+    @JsonIgnore
+    public TreeWorker getCopy() {
+        TreeWorker treeWorker = new TreeWorker(sampler.getCopy(), saver.getCopy());
+        treeWorker.game = game.getCopy();
+        return treeWorker;
     }
 
     /**

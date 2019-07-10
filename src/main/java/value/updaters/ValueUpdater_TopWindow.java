@@ -111,6 +111,11 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
                 "handle that case appropriately.");
     }
 
+    @Override
+    public IValueUpdater getCopy() {
+        return new ValueUpdater_TopWindow(windowSize);
+    }
+
     static List<List<NodeQWOPBase<?>>> separateClustersInSortedList(List<NodeQWOPBase<?>> nodes) {
         List<List<NodeQWOPBase<?>>> clusters = new ArrayList<>();
         int idx = 0;

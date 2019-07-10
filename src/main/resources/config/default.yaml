@@ -66,8 +66,8 @@ searchOperations:
     type: distribution
   saver:
     type: null
-    saveInterval: 0
     savePath:
+    saveInterval: 0
   repetitionCount: 0
 - stage:
     type: grouping
@@ -86,7 +86,9 @@ searchOperations:
         hiddenLayerSizes:
         - 128
         - 64
-        additionalNetworkArgs: []
+        additionalNetworkArgs:
+        - --learnrate
+        - 1e-4
         activeCheckpoint: null
         outputSize: 1
       checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
@@ -131,14 +133,14 @@ searchOperations:
               standardDeviation: 5.0
             qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
       selectionCriteria: BEST
-    explorationConstant: 5.0
-    explorationRandomFactor: 1.0
     valueUpdater:
       type: average
+    explorationConstant: 5.0
+    explorationRandomFactor: 1.0
   saver:
     type: null
-    saveInterval: 0
     savePath:
+    saveInterval: 0
   repetitionCount: 0
 ui:
   type: full

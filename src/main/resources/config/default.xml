@@ -73,8 +73,8 @@
     </stage>
     <sampler type="distribution"/>
     <saver type="null">
-      <saveInterval>0</saveInterval>
       <savePath></savePath>
+      <saveInterval>0</saveInterval>
     </saver>
     <repetitionCount>0</repetitionCount>
   </searchOperations>
@@ -93,6 +93,8 @@
           </gameTemplate>
           <hiddenLayerSizes>128</hiddenLayerSizes>
           <hiddenLayerSizes>64</hiddenLayerSizes>
+          <additionalNetworkArgs>--learnrate</additionalNetworkArgs>
+          <additionalNetworkArgs>1e-4</additionalNetworkArgs>
           <activeCheckpoint/>
           <outputSize>1</outputSize>
         </valueFunction>
@@ -145,13 +147,13 @@
         </individualRollout>
         <selectionCriteria>BEST</selectionCriteria>
       </rolloutPolicy>
+      <valueUpdater type="average"/>
       <explorationConstant>5.0</explorationConstant>
       <explorationRandomFactor>1.0</explorationRandomFactor>
-      <valueUpdater type="average"/>
     </sampler>
     <saver type="null">
-      <saveInterval>0</saveInterval>
       <savePath></savePath>
+      <saveInterval>0</saveInterval>
     </saver>
     <repetitionCount>0</repetitionCount>
   </searchOperations>

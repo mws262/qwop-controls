@@ -14,6 +14,7 @@ import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
 import tree.Utility;
 import tree.sampler.rollout.RolloutPolicy_DeltaScore;
+import value.updaters.ValueUpdater_Average;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -114,6 +115,7 @@ public class MAIN_Search_LongRun extends SearchTemplate {
                 new RolloutPolicy_DeltaScore(
                         new EvaluationFunction_Distance(),
                         new Controller_Random()),
+                new ValueUpdater_Average(),
                 5f, // TODO hardcoded.
                 1f));
     }

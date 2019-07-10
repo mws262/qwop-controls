@@ -83,8 +83,8 @@
     },
     "saver" : {
       "type" : "null",
-      "saveInterval" : 0,
-      "savePath" : ""
+      "savePath" : "",
+      "saveInterval" : 0
     },
     "repetitionCount" : 0
   }, {
@@ -105,7 +105,7 @@
             "stateType" : "DIFFERENCES"
           },
           "hiddenLayerSizes" : [ 128, 64 ],
-          "additionalNetworkArgs" : [ ],
+          "additionalNetworkArgs" : [ "--learnrate", "1e-4" ],
           "activeCheckpoint" : null,
           "outputSize" : 1
         },
@@ -167,16 +167,16 @@
         },
         "selectionCriteria" : "BEST"
       },
-      "explorationConstant" : 5.0,
-      "explorationRandomFactor" : 1.0,
       "valueUpdater" : {
         "type" : "average"
-      }
+      },
+      "explorationConstant" : 5.0,
+      "explorationRandomFactor" : 1.0
     },
     "saver" : {
       "type" : "null",
-      "saveInterval" : 0,
-      "savePath" : ""
+      "savePath" : "",
+      "saveInterval" : 0
     },
     "repetitionCount" : 0
   } ],

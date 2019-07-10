@@ -14,4 +14,9 @@ public class ValueUpdater_HardSet implements IValueUpdater {
     public float update(float valueUpdate, NodeQWOPBase<?> node) {
         return valueUpdate;
     }
+
+    @Override
+    public IValueUpdater getCopy() {
+        return new ValueUpdater_HardSet();
+    }
 }

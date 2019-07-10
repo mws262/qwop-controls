@@ -1,5 +1,6 @@
 package value.updaters;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.NodeQWOPBase;
 
 import java.util.ArrayList;
@@ -16,9 +17,13 @@ public class ValueUpdater_StdDev implements IValueUpdater {
     /**
      * How many standard deviations above the child values should this node be updated to?
      */
-    public float stdevAbove = 1.0f;
+    public final float stdevAbove;
 
     private List<NodeQWOPBase<?>> children = new ArrayList<>();
+
+    public ValueUpdater_StdDev(@JsonProperty("stdevAbove") float stdevAbove) {
+        this.stdevAbove = stdevAbove;
+    }
 
     @Override
     public float update(float valueUpdate, NodeQWOPBase<?> node) {
@@ -45,5 +50,10 @@ public class ValueUpdater_StdDev implements IValueUpdater {
         } else {
             return valueUpdate;
         }
+    }
+
+    @Override
+    public IValueUpdater getCopy() {
+        return new ValueUpdater_StdDev(stdevAbove);
     }
 }

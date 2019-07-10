@@ -40,8 +40,7 @@ Note that all bodies are done first, and then joints afterwards.
     /**
      * Number of Box2D solver iterations.
      */
-    public static int physIterations = 5; // I think the real value should be 10. Leaving for now for the sake of the
-    // unit tests.
+    public static int physIterations = 5;
 
     /**
      * AABB bounds.

@@ -9,6 +9,7 @@ import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.RolloutPolicy_DeltaScore;
+import value.updaters.ValueUpdater_Average;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class MAIN_Search_Robust extends SearchTemplate {
                 new EvaluationFunction_Constant(0f),
                 new RolloutPolicy_DeltaScore(
                         new EvaluationFunction_Distance(),
-                        new Controller_Random()), 5, 1)); // TODO hardcoded.
+                        new Controller_Random()), new ValueUpdater_Average(), 5, 1)); // TODO hardcoded.
     }
 
     private void doGames() {
