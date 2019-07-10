@@ -335,7 +335,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         // Save a checkpoint of the weights/biases.
         try {
-            valueFunction.saveCheckpoint(checkpointNamePrefix + (updateIdx + checkpointIndex + 1));
+            valueFunction.saveCheckpoint("src/main/resources/tflow_models/checkpoints/" + checkpointNamePrefix + (updateIdx + checkpointIndex + 1));
         } catch (IOException e) {
             e.printStackTrace();
         }
