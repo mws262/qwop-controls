@@ -94,13 +94,6 @@ public class Sampler_UCB implements ISampler {
         failureNode.recurseUpTreeInclusive(n -> n.updateValue(score, valueUpdater));
     }
 
-//    /**
-//     * Set a new evaluation function for this sampler. Should be hot-swappable at any point.
-//     */
-//    public void setEvaluationFunction(IEvaluationFunction evaluationFunction) {
-//        this.evaluationFunction = evaluationFunction;
-//    }
-
     @Override
     public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
         if (startNode.getUntriedActionCount() != 0) {

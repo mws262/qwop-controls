@@ -1,9 +1,9 @@
 machine:
-  coreFraction: 0.7
+  coreFraction: 0.6
   coreMinimum: 1
-  coreMaximum: 1
+  coreMaximum: 32
   logLevel: INFO
-tree:
+tree:HappyFemininejourney
   actionGenerator:
     type: fixed_sequence
     repeatedActions:
@@ -61,9 +61,51 @@ tree:
 searchOperations:
 - stage:
     type: fixed_games
-    numGamesToPlay: 80000
+    numGamesToPlay: 25000
   sampler:
-    type: random
+    type: ucb
+    evaluationFunction:
+      type: constant
+      constantValue: 0
+    rolloutPolicy:
+      type: delta_score
+      evaluationFunction:
+        type: distance
+      rolloutController:
+        type: random
+      maxTimesteps: 150
+      rolloutActionGenerator:
+        type: fixed_sequence
+        repeatedActions:
+        - distribution:
+            type: normal
+            mean: 12.0
+            standardDeviation: 2.0
+          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+        - distribution:
+            type: normal
+            mean: 20.0
+            standardDeviation: 2.0
+          wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+        - distribution:
+            type: normal
+            mean: 12.0
+            standardDeviation: 2.0
+          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+        - distribution:
+            type: normal
+            mean: 20.0
+            standardDeviation: 2.0
+          qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+    explorationConstant: 30.0
+    explorationRandomFactor: 15.0
+    valueUpdater:
+      type: average
+      # windowSize: 3
+      # windowScoringCriterion: AVERAGE_OPTIMISTIC
+    type: null
+    saveInterval: 0
+    savePath:
   saver:
     type: null
     saveInterval: 0
@@ -74,6 +116,7 @@ searchOperations:
     treeStages:
     - type: fixed_games
       numGamesToPlay: 10000
+    - type: value_update
       valueFunction:
         type: tflow_state_only
         fileName: src/main/resources/tflow_models/test.pb
@@ -97,7 +140,7 @@ searchOperations:
       type: constant
       constantValue: 0
     rolloutPolicy:
-      type: decaying_horizon
+      type: delta_score
       evaluationFunction:
         type: distance
       rolloutController:
@@ -109,22 +152,22 @@ searchOperations:
         - distribution:
             type: normal
             mean: 12.0
-            standardDeviation: 5.0
+            standardDeviation: 2.0
           none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
         - distribution:
             type: normal
             mean: 20.0
-            standardDeviation: 5.0
+            standardDeviation: 2.0
           wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
         - distribution:
             type: normal
             mean: 12.0
-            standardDeviation: 5.0
+            standardDeviation: 2.0
           none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
         - distribution:
             type: normal
             mean: 20.0
-            standardDeviation: 5.0
+            standardDeviation: 2.0
           qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
     explorationConstant: 3.0
     explorationRandomFactor: 2.0
