@@ -40,9 +40,11 @@ public class Sampler_Random implements ISampler {
                 continue; // TODO: investigate this error further.
             }
 
-            if (notFullyExploredChildren == 0 && currentNode.reserveExpansionRights()) {
-                // We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
-                return currentNode;
+            if (notFullyExploredChildren == 0) {
+                if (currentNode.reserveExpansionRights()) {
+                    // We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
+                    return currentNode;
+                }
             }
 
             if (currentNode.getUntriedActionCount() == 0) { // No unchecked game.action means that we pick a random
@@ -64,10 +66,12 @@ public class Sampler_Random implements ISampler {
                 // Probability decides.
                 int selection = Utility.randInt(1, notFullyExploredChildren + currentNode.getUntriedActionCount());
                 // Make a new node or pick a not fully explored child.
-                if (selection > notFullyExploredChildren && currentNode.reserveExpansionRights()) {
-                    if (currentNode.getState() != null && currentNode.getState().isFailed())
-                        throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
-                    return currentNode;
+                if (selection > notFullyExploredChildren) {
+                    if (currentNode.reserveExpansionRights()) {
+                        if (currentNode.getState() != null && currentNode.getState().isFailed())
+                            throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
+                        return currentNode;
+                    }
                 }
             }
         }

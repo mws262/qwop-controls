@@ -1,7 +1,7 @@
 machine:
   coreFraction: 0.7
   coreMinimum: 1
-  coreMaximum: 32
+  coreMaximum: 1
   logLevel: INFO
 tree:
   actionGenerator:
@@ -60,23 +60,33 @@ tree:
           30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
 searchOperations:
 - stage:
+    type: fixed_games
+    numGamesToPlay: 80000
+  sampler:
+    type: random
+  saver:
+    type: null
+    saveInterval: 0
+    savePath:
+  repetitionCount: 0
+- stage:
     type: grouping
     treeStages:
-    - type: max_depth
-      maxDepth: 100
-      maxGames: 10000
-    - type: value_update
+    - type: fixed_games
+      numGamesToPlay: 10000
       valueFunction:
         type: tflow_state_only
         fileName: src/main/resources/tflow_models/test.pb
         gameTemplate:
-          type: default
+          type: delay_embedded
+          timestepDelay: 1
+          numDelayedStates: 2
+          stateType: DIFFERENCES
         hiddenLayerSizes:
         - 128
         - 64
         additionalNetworkArgs: []
         activeCheckpoint: null
-        inputSize: 72
         outputSize: 1
       checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
       excludeLeaves: false
@@ -92,7 +102,7 @@ searchOperations:
         type: distance
       rolloutController:
         type: random
-      maxTimesteps: 200
+      maxTimesteps: 150
       rolloutActionGenerator:
         type: fixed_sequence
         repeatedActions:
@@ -119,10 +129,9 @@ searchOperations:
     explorationConstant: 3.0
     explorationRandomFactor: 2.0
     valueUpdater:
-      type: top_window
-      windowSize: 3
-      windowScoringCriterion: WORST
-  saver:
+      type: average
+      # windowSize: 3
+      # windowScoringCriterion: AVERAGE_OPTIMISTIC
     type: null
     saveInterval: 0
     savePath:
@@ -176,7 +185,10 @@ ui:
   - type: controlled_valfun
     name: ValFun controller
     game:
-      type: default
+      type: delay_embedded
+      timestepDelay: 1
+      numDelayedStates: 2
+      stateType: DIFFERENCES
     modelLocation: src/main/resources/tflow_models
     checkpointLocation: src/main/resources/tflow_models/checkpoints
     actionGenerator: null

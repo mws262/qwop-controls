@@ -28,6 +28,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     /**
      * Input layer size.
      */
+    @JsonIgnore
     public final int inputSize;
 
     /**
@@ -89,7 +90,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
      * @throws FileNotFoundException Occurs when the file is not created successfully.
      */
     ValueFunction_TensorFlow(@JsonProperty("fileName") String fileName,
-                             @JsonProperty("inputSize") int inputSize,
+                             int inputSize,
                              @JsonProperty("outputSize") int outputSize,
                              @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                              @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,

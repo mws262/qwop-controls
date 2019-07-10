@@ -88,7 +88,7 @@ public class ValueFunction_TensorFlowTest {
 
         // Bigger input due to delay-embedded version of the game.
         outputSize = 2;
-        game = new GameUnifiedCaching(1, 3);
+        game = new GameUnifiedCaching(1, 3, GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
         try {
             valFun = new ValFunTest("src/test/resources/test_net3", game, outputSize, layerSizes, new ArrayList<>(), "");
         } catch (IOException e) {

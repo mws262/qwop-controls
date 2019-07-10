@@ -68,19 +68,32 @@
     </actionGenerator>
   </tree>
   <searchOperations>
+    <stage type="fixed_games">
+      <numGamesToPlay>80000</numGamesToPlay>
+    </stage>
+    <sampler type="distribution"/>
+    <saver type="null">
+      <saveInterval>0</saveInterval>
+      <savePath></savePath>
+    </saver>
+    <repetitionCount>0</repetitionCount>
+  </searchOperations>
+  <searchOperations>
     <stage type="grouping">
-      <treeStages type="max_depth">
-        <maxDepth>100</maxDepth>
-        <maxGames>10000</maxGames>
+      <treeStages type="fixed_games">
+        <numGamesToPlay>10000</numGamesToPlay>
       </treeStages>
       <treeStages type="value_update">
         <valueFunction type="tflow_state_only">
           <fileName>src/main/resources/tflow_models/test.pb</fileName>
-          <gameTemplate type="default"/>
+          <gameTemplate type="delay_embedded">
+            <timestepDelay>1</timestepDelay>
+            <numDelayedStates>2</numDelayedStates>
+            <stateType>DIFFERENCES</stateType>
+          </gameTemplate>
           <hiddenLayerSizes>128</hiddenLayerSizes>
           <hiddenLayerSizes>64</hiddenLayerSizes>
           <activeCheckpoint/>
-          <inputSize>72</inputSize>
           <outputSize>1</outputSize>
         </valueFunction>
         <checkpointName>src/main/resources/tflow_models/checkpoints/checkpoint_name</checkpointName>
@@ -134,14 +147,11 @@
       </rolloutPolicy>
       <explorationConstant>5.0</explorationConstant>
       <explorationRandomFactor>1.0</explorationRandomFactor>
-      <valueUpdater type="top_window">
-        <windowSize>3</windowSize>
-        <windowScoringCriterion>WORST</windowScoringCriterion>
-      </valueUpdater>
+      <valueUpdater type="average"/>
     </sampler>
     <saver type="null">
-      <savePath></savePath>
       <saveInterval>0</saveInterval>
+      <savePath></savePath>
     </saver>
     <repetitionCount>0</repetitionCount>
   </searchOperations>
@@ -180,8 +190,8 @@
         <transformPCAComponents>
           <transformPCAComponents>0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 </transformPCAComponents>
         </transformPCAComponents>
-        <name>PCA 72</name>
         <outputSize>72</outputSize>
+        <name>PCA 72</name>
       </transformer>
       <name>PCA Plots</name>
       <plotsPerView>6</plotsPerView>
@@ -199,7 +209,11 @@
     </tabbedPanes>
     <tabbedPanes type="controlled_valfun">
       <name>ValFun controller</name>
-      <game type="default"/>
+      <game type="delay_embedded">
+        <timestepDelay>1</timestepDelay>
+        <numDelayedStates>2</numDelayedStates>
+        <stateType>DIFFERENCES</stateType>
+      </game>
       <modelLocation>src/main/resources/tflow_models</modelLocation>
       <checkpointLocation>src/main/resources/tflow_models/checkpoints</checkpointLocation>
       <actionGenerator/>
