@@ -746,7 +746,8 @@ public class SearchConfigurationTest {
         file.deleteOnExit();
 
         Sampler_UCB sampler = new Sampler_UCB(new EvaluationFunction_Constant(1.6f),
-                new RolloutPolicy_JustEvaluate(new EvaluationFunction_Constant(9.9f)), 5, 1);
+                new RolloutPolicy_JustEvaluate(new EvaluationFunction_Constant(9.9f)),
+                new ValueUpdater_Average(), 5, 1);
 
         SearchConfiguration.serializeToYaml(file, sampler);
         Assert.assertTrue(file.exists());
@@ -1194,8 +1195,7 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("updaterstdev", "yaml");
         file.deleteOnExit();
 
-        ValueUpdater_StdDev valUpdater = new ValueUpdater_StdDev();
-        valUpdater.stdevAbove = 4.3f;
+        ValueUpdater_StdDev valUpdater = new ValueUpdater_StdDev(4.3f);
 
         SearchConfiguration.serializeToYaml(file, valUpdater);
         Assert.assertTrue(file.exists());

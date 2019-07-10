@@ -105,7 +105,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     private void assignFuturePredictors(GameUnified gameTemplate) {
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
-        int min = 2;
+        int min = 1;
         evaluations.add(new FuturePredictor(gameTemplate, Keys.none, min, 25));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.qp, min, 40));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.wo, min, 40));
@@ -254,7 +254,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          * Number of physics iterations to start this prediction with. It is useful to have this greater than default
          * to let the cold-started game "catch up" to the normal game.
          */
-        private final int initialPhysicsIterations = 4 * GameConstants.physIterations;
+        private final int initialPhysicsIterations = 22;//3 * GameConstants.physIterations;
 
         /**
          * Number of timesteps to run the game at the modified number of physics iterations before going back to
@@ -312,7 +312,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 // "catch-up" to warm-started game.
             }
 
-            float startX = gameLocal.getCurrentState().getStateVariableFromName(IState.ObjectName.BODY).getDx();
+            float startX = gameLocal.getCurrentState().getStateVariableFromName(IState.ObjectName.BODY).getX();
 
             // Reset the game and set it to the specified starting state.
             bestResult.value = -Float.MAX_VALUE;
@@ -341,7 +341,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 val2 = val3;
                 val3 = evaluate(nextNode);
 
-                x3 = st.getStateVariableFromName(IState.ObjectName.BODY).getDx();
+                x3 = st.getStateVariableFromName(IState.ObjectName.BODY).getX();
 
                 if (i == 1) {
                     // val1 = val3;
@@ -375,7 +375,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                             throw new IllegalStateException("Invalid selection criteria invoked.");
                     }
 
-                    aggregateVal += 0.0f * x2; //(x2 - startX) * .2f;
+                    aggregateVal += (x2 - startX) * 0f;
 
                     if (aggregateVal > bestResult.value) {
                         bestResult.value = aggregateVal;

@@ -9,6 +9,7 @@ import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.RolloutPolicy_DeltaScore;
+import value.updaters.ValueUpdater_Average;
 
 import java.io.File;
 
@@ -40,6 +41,7 @@ public class MAIN_Search_CollectAllGameData extends SearchTemplate {
                 new RolloutPolicy_DeltaScore(
                         new EvaluationFunction_Distance(),
                         new Controller_Random()),
+                new ValueUpdater_Average(),
                 5,
                 1));
     }

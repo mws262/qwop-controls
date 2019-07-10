@@ -20,6 +20,7 @@ import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
 import tree.Utility;
 import tree.sampler.rollout.RolloutPolicy_DeltaScore;
+import value.updaters.ValueUpdater_Average;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -147,7 +148,7 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
                 new EvaluationFunction_Constant(0f),
                 new RolloutPolicy_DeltaScore(
                         new EvaluationFunction_Distance(),
-                        new Controller_Random()), 5, 1); // TODO hardcoded.
+                        new Controller_Random()), new ValueUpdater_Average(), 5, 1); // TODO hardcoded.
         return TreeWorker.makeStandardTreeWorker(sampler);
     }
 }

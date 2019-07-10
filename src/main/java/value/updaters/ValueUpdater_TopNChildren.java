@@ -49,4 +49,9 @@ public class ValueUpdater_TopNChildren implements IValueUpdater {
             return value /(float) numChildrenToAvg;
         }
     }
+
+    @Override
+    public IValueUpdater getCopy() {
+        return new ValueUpdater_TopNChildren(numChildrenToAvg);
+    }
 }

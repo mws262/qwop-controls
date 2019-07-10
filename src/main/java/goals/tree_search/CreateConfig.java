@@ -29,6 +29,7 @@ import ui.scatterplot.PanelPlot_States;
 import ui.scatterplot.PanelPlot_Transformed;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
+import value.updaters.ValueUpdater_Average;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,9 +48,12 @@ public class CreateConfig {
         layerSizes.add(128);
         layerSizes.add(64);
         ValueFunction_TensorFlow valueFunction = null;
+        List<String> opts = new ArrayList<>();
+        opts.add("--learnrate");
+        opts.add("1e-4");
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
-                    game.getCopy(), layerSizes, new ArrayList<>(), "");
+                    game.getCopy(), layerSizes, opts, "");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,7 +82,7 @@ public class CreateConfig {
 
         searchOperations.add(new SearchConfiguration.SearchOperation(stagegroup,
                 new Sampler_UCB(
-                        new EvaluationFunction_Constant(5f), rollout1, 5, 1),
+                        new EvaluationFunction_Constant(5f), rollout1, new ValueUpdater_Average(), 5, 1),
                 new DataSaver_Null()));
 
 

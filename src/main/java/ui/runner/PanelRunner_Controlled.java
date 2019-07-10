@@ -124,6 +124,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
         constraints.gridx = 0;
         constraints.gridy = layoutRows - 1;
         add(resetButton, constraints);
+        actionQueue.addAction(new Action(7, Action.Keys.none));
     }
 
     /**
@@ -146,7 +147,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
         if (game != null) {
             game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
             boolean[] mostRecentKeys = actionQueue.isEmpty() ? new boolean[]{false, false, false, false} :
-                    mostRecentAction.peek();
+                    actionQueue.peekThisAction().peek();
             keyDrawer(g, mostRecentKeys[0], mostRecentKeys[1], mostRecentKeys[2], mostRecentKeys[3]);
         }
     }
@@ -201,6 +202,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
         public void reset() {
             game.makeNewWorld();
             actionQueue.clearAll();
+            actionQueue.addAction(new Action(7, Action.Keys.none));
             node = null;
         }
 

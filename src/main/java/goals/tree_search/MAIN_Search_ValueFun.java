@@ -24,6 +24,7 @@ import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.*;
 import tree.stage.TreeStage_MaxDepth;
 import value.ValueFunction_TensorFlow_StateOnly;
+import value.updaters.ValueUpdater_Average;
 
 import java.io.File;
 import java.io.IOException;
@@ -222,7 +223,9 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
             rollout = windowRollout;
         }
 
-        ISampler sampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout, 5, 1); // TODO hardcoded.
+        ISampler sampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout, new ValueUpdater_Average(), 5
+                , 1); // TODO
+        // hardcoded.
 
         return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates,
                 GameUnifiedCaching.StateType.HIGHER_DIFFERENCES) :

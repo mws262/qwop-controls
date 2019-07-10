@@ -1,5 +1,6 @@
 package game;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import game.state.IState;
 
 import java.awt.*;
@@ -36,4 +37,7 @@ public interface IGameInternal extends IGameExternal {
     void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels);
 
     void setState(IState st);
+
+    @JsonIgnore
+    IGameInternal getCopy();
 }

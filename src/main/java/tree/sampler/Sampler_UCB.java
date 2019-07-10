@@ -39,7 +39,7 @@ public class Sampler_UCB implements ISampler {
      */
     private final IRolloutPolicy rolloutPolicy;
 
-    public IValueUpdater valueUpdater = new ValueUpdater_Average(); //TopNChildren(8); // TODO make this an
+    public final IValueUpdater valueUpdater; //TopNChildren(8); // TODO make this an
     // assignable
     // parameter.
 
@@ -77,10 +77,12 @@ public class Sampler_UCB implements ISampler {
     public Sampler_UCB(
             @JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
             @JsonProperty("rolloutPolicy") IRolloutPolicy rolloutPolicy,
+            @JsonProperty("valueUpdater") IValueUpdater valueUpdater,
             @JsonProperty("explorationConstant") float explorationConstant,
             @JsonProperty("explorationRandomFactor") float explorationRandomFactor) {
         this.evaluationFunction = evaluationFunction;
         this.rolloutPolicy = rolloutPolicy;
+        this.valueUpdater = valueUpdater;
         this.explorationConstant = explorationConstant;
         this.explorationRandomFactor = explorationRandomFactor;
         c = explorationRandomFactor * Random.nextFloat() + explorationConstant;
@@ -196,8 +198,7 @@ public class Sampler_UCB implements ISampler {
     @Override
     public Sampler_UCB getCopy() {
         Sampler_UCB sampler = new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy(),
-                explorationConstant, explorationRandomFactor);
-        sampler.valueUpdater = valueUpdater;
+                valueUpdater.getCopy(), explorationConstant, explorationRandomFactor);
         return sampler;
     }
 

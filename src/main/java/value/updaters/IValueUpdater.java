@@ -1,5 +1,6 @@
 package value.updaters;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import tree.node.NodeQWOPBase;
@@ -28,4 +29,7 @@ public interface IValueUpdater {
      * @return The provided node's updated value.
      */
     float update(float valueUpdate, NodeQWOPBase<?> node);
+
+    @JsonIgnore
+    IValueUpdater getCopy();
 }
