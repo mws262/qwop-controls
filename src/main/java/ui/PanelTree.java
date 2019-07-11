@@ -1,17 +1,22 @@
 package ui;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
-import tree.node.NodeQWOPGraphicsBase;
 import tree.TreeWorker;
+import tree.node.NodeQWOPGraphicsBase;
 
 import javax.swing.*;
 import javax.vecmath.Vector3f;
 import java.awt.*;
 import java.awt.event.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -97,6 +102,8 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      */
     private JButton resetButton;
 
+    private int [] aiVertexBufferIndices = new int [] {-1};
+
     public PanelTree() {
         super();
         setFocusable(true);
@@ -177,6 +184,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     @Override
     public void deactivateTab() {}
 
+    private long lastUpdateTree = System.currentTimeMillis();
     @Override
     public void display(GLAutoDrawable drawable) {
         if (treePause) {
@@ -193,23 +201,48 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         final float ptSize = Math.min(50f / cam.getZoomFactor(), 10f); //Let the points be smaller/bigger depending on
         // zoom, but make sure to cap out the size!
 
+//        for (NodeQWOPGraphicsBase<?> node : rootNodes) {
+//            node.drawLinesBelow(gl);
+////            node.recurseDownTreeInclusive( n -> {
+////                n.drawLabel(gl, glut);
+////
+////                gl.glColor3f(1f, 0.1f, 0.1f);
+////                gl.glPointSize(ptSize);
+////
+////                gl.glBegin(GL.GL_POINTS);
+////                n.drawPoint(gl); // Recurses through the whole tree.
+////                gl.glEnd();
+////
+////                gl.glColor3f(1f, 1f, 1f);
+////                gl.glBegin(GL.GL_LINES);
+////                n.drawLine(gl); // Recurses through the whole tree.
+////                gl.glEnd();
+////            });
+//        }
+
+
+        List<NodeQWOPGraphicsBase<?>> nodeList = new ArrayList<>();
         for (NodeQWOPGraphicsBase<?> node : rootNodes) {
-            node.recurseDownTreeInclusive( n -> {
-                n.drawLabel(gl, glut);
-
-                gl.glColor3f(1f, 0.1f, 0.1f);
-                gl.glPointSize(ptSize);
-
-                gl.glBegin(GL.GL_POINTS);
-                n.drawPoint(gl); // Recurses through the whole tree.
-                gl.glEnd();
-
-                gl.glColor3f(1f, 1f, 1f);
-                gl.glBegin(GL.GL_LINES);
-                n.drawLine(gl); // Recurses through the whole tree.
-                gl.glEnd();
-            });
+            node.recurseDownTreeExclusive(nodeList::add);
         }
+//        if (nodeList.size() > 1) {
+        if (System.currentTimeMillis() - this.lastUpdateTree > 100 * (float)(avgLoopTime * avgLoopTime)/ (25f * 25f)) {
+            aiVertexBufferIndices[0] = -1;
+            int[] aiNumOfVertices = createAndFillVertexBuffer(gl, nodeList);
+            lastUpdateTree = System.currentTimeMillis();
+        }
+            gl.glBindBuffer(GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0]);
+            gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+            gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
+            gl.glVertexPointer(3, GL.GL_FLOAT, 6 * Buffers.SIZEOF_FLOAT, 0);
+            gl.glColorPointer(3, GL.GL_FLOAT, 6 * Buffers.SIZEOF_FLOAT, 3 * Buffers.SIZEOF_FLOAT);
+            gl.glDrawArrays(GL2.GL_LINES, 0, nodeList.size() * 2);
+            gl.glDrawArrays(GL2.GL_POINTS, nodeList.size() * 2, nodeList.size() * 3);
+            // disable arrays once we're done
+            gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+            gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+            gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
+//        }
 
         /*
          * Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers
@@ -515,5 +548,48 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         if (e.getSource().equals(resetButton)) {
             cam = new GLCamManager(panelWidth, panelHeight);
         }
+    }
+
+    // Altered from: https://wadeawalker.wordpress.com/2010/10/17/tutorial-faster-rendering-with-vertex-buffer-objects/
+    private int [] createAndFillVertexBuffer(GL2 gl2, List<NodeQWOPGraphicsBase<?>> nodeList) {
+
+        int [] aiNumOfVertices = new int [] {nodeList.size() * 3}; // Enough space for two vertices for
+        // lines and one vertex for a point for each line (even if not all are used).
+
+        // create vertex buffer object if needed
+        if( aiVertexBufferIndices[0] == -1 ) {
+            // check for VBO support
+            if(    !gl2.isFunctionAvailable( "glGenBuffers" )
+                    || !gl2.isFunctionAvailable( "glBindBuffer" )
+                    || !gl2.isFunctionAvailable( "glBufferData" )
+                    || !gl2.isFunctionAvailable( "glDeleteBuffers" ) ) {
+                throw new RuntimeException( "Vertex buffer objects not supported." );
+            }
+
+            gl2.glGenBuffers( 1, aiVertexBufferIndices, 0 );
+
+            // create vertex buffer data store without initial copy
+            gl2.glBindBuffer( GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0] );
+            gl2.glBufferData( GL.GL_ARRAY_BUFFER,
+                    aiNumOfVertices[0] * 3 * Buffers.SIZEOF_FLOAT * 2,
+                    null,
+                    GL2.GL_DYNAMIC_DRAW );
+        }
+
+        // map the buffer and write vertex and color data directly into it
+        gl2.glBindBuffer( GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0] );
+        ByteBuffer bytebuffer = gl2.glMapBuffer( GL.GL_ARRAY_BUFFER, GL2.GL_WRITE_ONLY );
+        FloatBuffer floatbuffer = bytebuffer.order( ByteOrder.nativeOrder() ).asFloatBuffer();
+
+        for( NodeQWOPGraphicsBase<?> node : nodeList ) {
+            node.addLineToBuffer(floatbuffer);
+        }
+        for( NodeQWOPGraphicsBase<?> node : nodeList ) {
+            node.addPointToBuffer(floatbuffer);
+        }
+
+        gl2.glUnmapBuffer( GL.GL_ARRAY_BUFFER );
+
+        return aiNumOfVertices;
     }
 }

@@ -163,7 +163,7 @@ searchOperations:
         additionalNetworkArgs:
           - --learnrate
           - 1e-4
-        activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_name37
+        activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_name45
         outputSize: 1
       checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
       excludeLeaves: false

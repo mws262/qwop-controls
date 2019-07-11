@@ -9,6 +9,7 @@ import game.state.IState;
 import value.updaters.IValueUpdater;
 
 import java.awt.*;
+import java.nio.FloatBuffer;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -84,7 +85,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
      */
-    private static final boolean limitDrawing = true;
+    private static final boolean limitDrawing = false;
 
     /**
      * Set of points which should be drawn if limitDrawing is true. Points which are very close may be filtered out.
@@ -118,7 +119,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Default color of the line from this node to its parent, if line drawing is enabled. Any override color will
      * take precedence over this.
      */
-    private float[] lineColorFloats;
+    float[] lineColorFloats;
 
     /**
      * Color which, if non-null, will override the default line color.
@@ -198,6 +199,28 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             calcNodePos();
     }
 
+
+    public void addLineToBuffer(FloatBuffer floatBuffer) {
+        if (nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed)) { //
+            floatBuffer.put(nodeLocation[0]);
+            floatBuffer.put(nodeLocation[1]);
+            floatBuffer.put(nodeLocation[2] + nodeLocationZOffset);
+            floatBuffer.put(lineColorFloats);
+            floatBuffer.put(getParent().nodeLocation[0]);
+            floatBuffer.put(getParent().nodeLocation[1]);
+            floatBuffer.put(getParent().nodeLocation[2] + getParent().nodeLocationZOffset);
+            floatBuffer.put(getParent().lineColorFloats);
+        }
+    }
+
+    public void addPointToBuffer(FloatBuffer floatBuffer) {
+        if (nodeLocation != null && displayPoint && !notDrawnForSpeed) {
+            floatBuffer.put(nodeLocation[0]);
+            floatBuffer.put(nodeLocation[1]);
+            floatBuffer.put(nodeLocation[2] + nodeLocationZOffset);
+            floatBuffer.put((overridePointColorFloats == null) ? pointColorFloats : overridePointColorFloats);
+        }
+    }
     /**
      * Draw the line connecting this node to its parent.
      * @param gl OpenGL object used for 3D plotting.
