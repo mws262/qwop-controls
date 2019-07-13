@@ -1,16 +1,21 @@
 package tree.node;
 
-import game.action.Action;
-import game.action.IActionGenerator;
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.gl2.GLUT;
 import game.GameUnified;
+import game.action.Action;
+import game.action.IActionGenerator;
 import game.state.IState;
 import value.updaters.IValueUpdater;
 
 import java.awt.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.Set;
+import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -85,7 +90,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Determines whether very close lines/nodes will be drawn. Can greatly speed up UI for very dense trees.
      */
-    private static final boolean limitDrawing = false;
+    private static final boolean limitDrawing = true;
 
     /**
      * Set of points which should be drawn if limitDrawing is true. Points which are very close may be filtered out.
@@ -96,7 +101,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Square distance between the nearest neighbor below which the node and associated lines will not be drawn.
      */
-    private static final float nodeDrawFilterDistSq = 0.1f;
+    private static final float nodeDrawFilterDistSq = 0.001f;
 
     /**
      * If filtering of drawing nodes which are very close is enabled, this will indicate whether this node is one of
@@ -152,6 +157,106 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      */
     float nodeLocationZOffset = 0.4f;
 
+    public int bufferIdx = -1;
+    public static int bufferFrequency = 500;
+
+    static Vector<NodeQWOPGraphicsBase<?>> unbufferedNodes = new Vector<>();
+
+    static Map<Integer, List<NodeQWOPGraphicsBase<?>>> bufferMap = new HashMap<>();
+
+    private static synchronized int makeNewBuffer(GL2 gl, List<NodeQWOPGraphicsBase<?>> nodesToBuffer) {
+        int [] aiVertexBufferIndices = new int [] {-1};
+
+        if(    !gl.isFunctionAvailable( "glGenBuffers" )
+                || !gl.isFunctionAvailable( "glBindBuffer" )
+                || !gl.isFunctionAvailable( "glBufferData" )
+                || !gl.isFunctionAvailable( "glDeleteBuffers" ) ) {
+            throw new RuntimeException( "Vertex buffer objects not supported." );
+        }
+        // create vertex buffer object
+        gl.glGenBuffers( 1, aiVertexBufferIndices, 0);
+
+        // create vertex buffer data store without initial copy
+        gl.glBindBuffer( GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0]);
+        gl.glBufferData( GL.GL_ARRAY_BUFFER,
+                nodesToBuffer.size() * Buffers.SIZEOF_FLOAT * 9 * 2,
+                null, GL2.GL_DYNAMIC_DRAW );
+
+        // map the buffer and write vertex and color data directly into it
+        gl.glBindBuffer( GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0] );
+        ByteBuffer bytebuffer = gl.glMapBuffer( GL.GL_ARRAY_BUFFER, GL2.GL_WRITE_ONLY );
+        FloatBuffer floatbuffer = bytebuffer.order( ByteOrder.nativeOrder() ).asFloatBuffer();
+
+        for( NodeQWOPGraphicsBase<?> node : nodesToBuffer ) {
+            node.addLineToBuffer(floatbuffer);
+        }
+        for( NodeQWOPGraphicsBase<?> node : nodesToBuffer ) {
+            node.addPointToBuffer(floatbuffer);
+        }
+
+        gl.glUnmapBuffer(GL.GL_ARRAY_BUFFER);
+
+        return aiVertexBufferIndices[0];
+    }
+
+    public static synchronized void updateBuffers(GL2 gl) {
+
+        if (unbufferedNodes.size() > bufferFrequency) {
+            //if (bufferMap.size() > 1) return;
+
+            List<NodeQWOPGraphicsBase<?>> toBuffer = new ArrayList<>(unbufferedNodes);
+            toBuffer.removeIf(n -> !n.shouldLineBeDrawn());
+            unbufferedNodes.clear();
+
+            if (toBuffer.size() < 1) {
+                return;
+            }
+//            unbufferedNodes = new Vector<>();
+
+            int newBufferIdx = makeNewBuffer(gl, toBuffer);
+            bufferMap.put(newBufferIdx, toBuffer);
+
+            for (NodeQWOPGraphicsBase<?> node : toBuffer) {
+                node.bufferIdx = newBufferIdx;
+            }
+        }
+    }
+
+    public static synchronized void drawAllBuffered(GL2 gl) {
+
+        gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
+        //for (int i = 0; i < bufferMap.size(); i++) {
+            gl.glEnableVertexAttribArray(0);
+        //}
+
+
+        for (Map.Entry<Integer, List<NodeQWOPGraphicsBase<?>>> bufferEntry : bufferMap.entrySet()) {
+            gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferEntry.getKey());
+            gl.glVertexAttribPointer(0, 3, GL.GL_FLOAT, false, 6 * Buffers.SIZEOF_FLOAT, 0);
+            gl.glColorPointer(3, GL.GL_FLOAT, 6 * Buffers.SIZEOF_FLOAT, 3 * Buffers.SIZEOF_FLOAT);
+            gl.glDrawArrays(GL2.GL_LINES, 0, bufferEntry.getValue().size() * 2);
+            gl.glDrawArrays(GL2.GL_POINTS, bufferEntry.getValue().size() * 2, bufferEntry.getValue().size() * 3);
+            // disable arrays once we're done
+        }
+
+        //for (int i = 0; i < bufferMap.size(); i++) {
+            gl.glDisableVertexAttribArray(0);
+        //}
+
+        gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+        gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
+
+
+    }
+
+    public static synchronized void drawAllUnbuffered(GL2 gl) {
+        gl.glBegin(GL.GL_LINES);
+        for (int i = 0; i < unbufferedNodes.size(); i++) {
+            unbufferedNodes.get(i).drawLine(gl);
+        }
+        gl.glEnd();
+    }
     /**
      * Create a new root node.
      * @param rootState State of the runner at the root state. Usually {@link GameUnified#getInitialState()}.
@@ -160,6 +265,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     public NodeQWOPGraphicsBase(IState rootState, IActionGenerator actionGenerator) {
         super(rootState, actionGenerator);
         setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
+        if (!notDrawnForSpeed)
+            unbufferedNodes.add(this);
     }
 
     /**
@@ -169,6 +276,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      */
     public NodeQWOPGraphicsBase(IState rootState) {
         super(rootState);
+        if (!notDrawnForSpeed)
+            unbufferedNodes.add(this);
     }
 
     /**
@@ -190,27 +299,37 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
                          boolean doublyLinked) {
         super(parent, action, state, actionGenerator, doublyLinked);
 
-        setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
-        edgeLength = 5.00f * (float) Math.pow(0.6947, 0.1903 * getTreeDepth()) + 1.5f;
-        lineBrightness = parent.lineBrightness;
-        nodeLocationZOffset = parent.nodeLocationZOffset;
-
-        if (doublyLinked)
+        if (doublyLinked) {
+            setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
+            edgeLength = 5.00f * (float) Math.pow(0.6947, 0.1903 * getTreeDepth()) + 1.5f;
+            lineBrightness = parent.lineBrightness;
+            nodeLocationZOffset = parent.nodeLocationZOffset;
             calcNodePos();
+            if (!notDrawnForSpeed)
+                unbufferedNodes.add(this);
+        }
     }
 
 
     public void addLineToBuffer(FloatBuffer floatBuffer) {
-        if (nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed)) { //
+        if (shouldLineBeDrawn()) { //
             floatBuffer.put(nodeLocation[0]);
             floatBuffer.put(nodeLocation[1]);
             floatBuffer.put(nodeLocation[2] + nodeLocationZOffset);
-            floatBuffer.put(lineColorFloats);
+            floatBuffer.put(getActiveLineColor());
             floatBuffer.put(getParent().nodeLocation[0]);
             floatBuffer.put(getParent().nodeLocation[1]);
             floatBuffer.put(getParent().nodeLocation[2] + getParent().nodeLocationZOffset);
-            floatBuffer.put(getParent().lineColorFloats);
+            floatBuffer.put(getParent().getActiveLineColor());
         }
+    }
+
+    boolean shouldLineBeDrawn() {
+       return nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed);
+    }
+
+    float[] getActiveLineColor() {
+        return (overrideLineColorFloats == null) ? lineColorFloats : overrideLineColorFloats;
     }
 
     public void addPointToBuffer(FloatBuffer floatBuffer) {
