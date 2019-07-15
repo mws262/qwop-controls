@@ -101,13 +101,13 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Square distance between the nearest neighbor below which the node and associated lines will not be drawn.
      */
-    private static final float nodeDrawFilterDistSq = 0.001f;
+    private static final float nodeDrawFilterDistSq = 0.05f;
 
     /**
      * If filtering of drawing nodes which are very close is enabled, this will indicate whether this node is one of
      * the ones which is invisible.
      */
-    private boolean notDrawnForSpeed = false;
+    boolean notDrawnForSpeed = false;
 
     /**
      * Default color of the point at the node's location, if point drawing is enabled. Any override color will take
@@ -202,7 +202,6 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     public static synchronized void updateBuffers(GL2 gl) {
 
         if (unbufferedNodes.size() > bufferFrequency) {
-            //if (bufferMap.size() > 1) return;
 
             List<NodeQWOPGraphicsBase<?>> toBuffer = new ArrayList<>(unbufferedNodes);
             toBuffer.removeIf(n -> !n.shouldLineBeDrawn());
@@ -211,7 +210,6 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             if (toBuffer.size() < 1) {
                 return;
             }
-//            unbufferedNodes = new Vector<>();
 
             int newBufferIdx = makeNewBuffer(gl, toBuffer);
             bufferMap.put(newBufferIdx, toBuffer);
@@ -226,10 +224,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
         gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
         gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
-        //for (int i = 0; i < bufferMap.size(); i++) {
-            gl.glEnableVertexAttribArray(0);
-        //}
-
+        gl.glEnableVertexAttribArray(0);
 
         for (Map.Entry<Integer, List<NodeQWOPGraphicsBase<?>>> bufferEntry : bufferMap.entrySet()) {
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferEntry.getKey());
@@ -240,9 +235,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             // disable arrays once we're done
         }
 
-        //for (int i = 0; i < bufferMap.size(); i++) {
-            gl.glDisableVertexAttribArray(0);
-        //}
+        gl.glDisableVertexAttribArray(0);
 
         gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
         gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
@@ -311,7 +304,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     }
 
 
-    public void addLineToBuffer(FloatBuffer floatBuffer) {
+    private void addLineToBuffer(FloatBuffer floatBuffer) {
         if (shouldLineBeDrawn()) { //
             floatBuffer.put(nodeLocation[0]);
             floatBuffer.put(nodeLocation[1]);
@@ -324,7 +317,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         }
     }
 
-    boolean shouldLineBeDrawn() {
+    private boolean shouldLineBeDrawn() {
        return nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed);
     }
 
@@ -333,11 +326,11 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     }
 
     public void addPointToBuffer(FloatBuffer floatBuffer) {
-        if (nodeLocation != null && displayPoint && !notDrawnForSpeed) {
+        if (nodeLocation != null && displayPoint && !notDrawnForSpeed && overridePointColorFloats == null) {
             floatBuffer.put(nodeLocation[0]);
             floatBuffer.put(nodeLocation[1]);
             floatBuffer.put(nodeLocation[2] + nodeLocationZOffset);
-            floatBuffer.put((overridePointColorFloats == null) ? pointColorFloats : overridePointColorFloats);
+            floatBuffer.put(pointColorFloats); // Override colors are not buffered.
         }
     }
     /**
@@ -364,6 +357,13 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         }
     }
 
+    public void drawOverridePoints(GL2 gl) {
+        if (overridePointColorFloats != null || nodeLocation != null && displayPoint && !notDrawnForSpeed) {
+            gl.glColor3fv(overridePointColorFloats, 0);
+            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
+        }
+    }
+
     /**
      * Draw a text string using GLUT. This string will go to a position in world coordinates, not screen coordinates.
      * @param gl OpenGL object for changing the raster position through the world.
@@ -386,10 +386,12 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      */
     @SuppressWarnings("unused")
     public void drawLinesBelow(GL2 gl) {
+        gl.glBegin(GL2.GL_POINTS);
         recurseDownTreeExclusive(n->{
             n.drawLine(gl);
             assert getTreeDepth() < n.getTreeDepth();
         });
+        gl.glEnd();
     }
 
     /**
@@ -402,6 +404,11 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         recurseDownTreeInclusive(n -> n.drawPoint(gl));
     }
 
+    public void drawOverridePointsBelow(GL2 gl) {
+        gl.glBegin(GL2.GL_POINTS);
+        recurseDownTreeInclusive(n -> n.drawOverridePoints(gl));
+        gl.glEnd();
+    }
     /**
      * Color the node scaled by depth in the tree. Totally for gradient pleasantness.
      */
@@ -563,9 +570,14 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      */
     public void reenableIfNotDrawnForSpeed() {
         if (notDrawnForSpeed) {
-            setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
-            notDrawnForSpeed = false;
-            pointsToDraw.add(this);
+            recurseUpTreeInclusive(n -> {
+                if (n.notDrawnForSpeed) {
+                    n.notDrawnForSpeed = false;
+                    pointsToDraw.add(n);
+                    n.setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
+                    unbufferedNodes.add(n);
+                }
+            });
         }
     }
 

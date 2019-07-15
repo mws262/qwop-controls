@@ -149,8 +149,12 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     public void nodeSelected(NodeQWOPGraphicsBase<?> selected) {
         if (selectedNode != null) { // Clear things from the old selected node.
             selectedNode.displayPoint = false;
+            selectedNode.setOverridePointColor(null);
             selectedNode.clearBranchLineOverrideColor();
             selectedNode.clearBranchZOffset();
+        }
+        if (selected == null) {
+            return;
         }
         selectedNode = selected;
         selectedNode.reenableIfNotDrawnForSpeed(); // If the node was previously disabled to avoid drawing too many
@@ -172,6 +176,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
             for (TabbedPaneActivator p : tabbedPanes) {
                 p.deactivateTab();
             }
+            nodeSelected(null);
             tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
         }
     }

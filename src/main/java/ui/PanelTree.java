@@ -91,11 +91,17 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      */
     private Set<NodeSelectionListener> nodeSelectionListeners = new HashSet<>();
 
+    private JButton pauseButton;
+
     /**
      * Button for resetting the camera view.
      */
     private JButton resetButton;
 
+    /**
+     * Enable/disable node text labels.
+     */
+    private JCheckBox labelToggleCheck;
 
     public PanelTree() {
         super();
@@ -109,12 +115,25 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         layout.setAlignment(FlowLayout.LEFT); // So the button goes to the top left corner.
         setLayout(layout);
 
+        pauseButton = new JButton("Pause drawing");
+        pauseButton.setToolTipText("Pause or resume drawing of the game tree.");
+        pauseButton.addActionListener(this);
+        pauseButton.setBackground(new Color(255, 255, 255, 100));
+        add(pauseButton);
+
         // Button for resetting the camera to default position/target.
         resetButton = new JButton("Reset camera");
         resetButton.setToolTipText("Reset the camera view back to the initial view if you're lost.");
         resetButton.addActionListener(this);
         resetButton.setBackground(new Color(255, 255, 255, 100));
         add(resetButton);
+
+        // Enable node labels.
+        labelToggleCheck = new JCheckBox("Enable text labels (slow).");
+        labelToggleCheck.setToolTipText("Enable text labels at nodes (if set). This is much slower than all other " +
+                "drawing processes.");
+        labelToggleCheck.setBackground(new Color(255, 255, 255, 60));
+        add(labelToggleCheck);
     }
 
     /**
@@ -177,17 +196,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     @Override
     public void deactivateTab() {}
 
-    private long lastUpdateTree = System.currentTimeMillis();
-
-    boolean tmp = false;
-    int[] buff1 = null;
-    int[] buff2 = null;
-    int[] buff3 = null;
-
-    float i = 0;
-
-    int bufferIncrement = 5000;
-
     @Override
     public void display(GLAutoDrawable drawable) {
         if (treePause) {
@@ -206,94 +214,20 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
 
         gl.glPointSize(ptSize);
-
+        for (NodeQWOPGraphicsBase<?> node : rootNodes) {
+            node.drawOverridePointsBelow(gl);
+        }
         NodeQWOPGraphicsBase.updateBuffers(gl);
         NodeQWOPGraphicsBase.drawAllBuffered(gl);
-
         NodeQWOPGraphicsBase.drawAllUnbuffered(gl);
 
-//                for (NodeQWOPGraphicsBase<?> node : rootNodes) {
-//            node.drawLinesBelow(gl);
-////            node.recurseDownTreeInclusive( n -> {
-////                n.drawLabel(gl, glut);
-////
-////                gl.glColor3f(1f, 0.1f, 0.1f);
-////                gl.glPointSize(ptSize);
-////
-////                gl.glBegin(GL.GL_POINTS);
-////                n.drawPoint(gl); // Recurses through the whole tree.
-////                gl.glEnd();
-////
-////                gl.glColor3f(1f, 1f, 1f);
-////                gl.glBegin(GL.GL_LINES);
-////                n.drawLine(gl); // Recurses through the whole tree.
-////                gl.glEnd();
-////            });
-//        }
+        if (labelToggleCheck.isSelected()) {
+            for (NodeQWOPGraphicsBase<?> node : rootNodes) {
+                node.recurseDownTreeInclusive(n -> n.drawLabel(gl, glut));
+            }
+        }
 
-//
-//        List<NodeQWOPGraphicsBase<?>> nodeList1 = new ArrayList<>();
-//        List<NodeQWOPGraphicsBase<?>> nodeList2 = new ArrayList<>();
-//        List<NodeQWOPGraphicsBase<?>> nodeList3 = new ArrayList<>();
-//
-//
-//        if (rootNodes.size() == 3) {
-//            rootNodes.get(0).recurseDownTreeExclusive(nodeList1::add);
-//            rootNodes.get(1).recurseDownTreeExclusive(nodeList2::add);
-//            rootNodes.get(2).recurseDownTreeExclusive(nodeList3::add);
-//
-//            if (!tmp) {
-//
-//                if (nodeList1.size() > 1 && nodeList2.size() > 1 && nodeList3.size() > 1) {
-//                    //        if (System.currentTimeMillis() - this.lastUpdateTree > 100 * (float)(avgLoopTime * avgLoopTime)/ (25f * 25f)) {
-//                    rootNodes.get(0).setOverrideBranchColor(Color.red);
-//                    buff1 = createAndFillVertexBuffer(gl, nodeList1);
-//                    rootNodes.get(1).setBranchZOffset(2f);
-//                    buff2 = createAndFillVertexBuffer(gl, nodeList2);
-//                    rootNodes.get(2).setBranchZOffset(4f);
-//                    buff3 = createAndFillVertexBuffer(gl, nodeList3);
-//                    lastUpdateTree = System.currentTimeMillis();
-//                    tmp = true;
-//                }
-//            }
-//
-////            rootNodes.get(0).setOverrideBranchColor(Color.PINK);
-////            rootNodes.get(1).setOverrideBranchColor(NodeQWOPGraphics.getColorFromTreeDepth(i, 0.8f));
-//
-//            i++;
-//                gl.glEnableVertexAttribArray(0);
-//                //gl.glEnableVertexAttribArray(1);
-//            //gl.glEnableVertexAttribArray(2);
-//
-//                gl.glBindBuffer(GL.GL_ARRAY_BUFFER, buff1[0]);
-////                gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
-////                gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
-//                gl.glVertexAttribPointer(0, 3, GL.GL_FLOAT, false, 6 * Buffers.SIZEOF_FLOAT, 0);
-//                gl.glColorPointer(3, GL.GL_FLOAT, 6 * Buffers.SIZEOF_FLOAT, 3 * Buffers.SIZEOF_FLOAT);
-//                gl.glDrawArrays(GL2.GL_LINES, 0, nodeList1.size() * 2);
-//                gl.glDrawArrays(GL2.GL_POINTS, nodeList1.size() * 2, nodeList1.size() * 3);
-//                // disable arrays once we're done
-//
-//                gl.glBindBuffer(GL.GL_ARRAY_BUFFER, buff2[0]);
-//                gl.glVertexAttribPointer(0, 3, GL.GL_FLOAT, false, 6 * Buffers.SIZEOF_FLOAT, 0);
-//                gl.glColorPointer(3, GL.GL_FLOAT, 6 * Buffers.SIZEOF_FLOAT, 3 * Buffers.SIZEOF_FLOAT);
-//                gl.glDrawArrays(GL2.GL_LINES, 0, nodeList2.size() * 2);
-//                gl.glDrawArrays(GL2.GL_POINTS, nodeList2.size() * 2, nodeList2.size() * 3);
-//
-//            gl.glBindBuffer(GL.GL_ARRAY_BUFFER, buff3[0]);
-//            gl.glVertexAttribPointer(0, 3, GL.GL_FLOAT, false, 6 * Buffers.SIZEOF_FLOAT, 0);
-//            gl.glColorPointer(3, GL.GL_FLOAT, 6 * Buffers.SIZEOF_FLOAT, 3 * Buffers.SIZEOF_FLOAT);
-//            gl.glDrawArrays(GL2.GL_LINES, 0, nodeList3.size() * 2);
-//            gl.glDrawArrays(GL2.GL_POINTS, nodeList3.size() * 2, nodeList3.size() * 3);
-//
-//                gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
-//                gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
-//
-//                gl.glDisableVertexAttribArray(0);
-//            //gl.glDisableVertexAttribArray(1);
-//            //gl.glDisableVertexAttribArray(2);
-//
-//        }
+
 
         /*
          * Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers
@@ -386,8 +320,9 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             //Navigating the focused node tree
             int keyCode = e.getKeyCode();
 
-            if (keyCode == KeyEvent.VK_P) // Pause graphics updates.
+            if (keyCode == KeyEvent.VK_P) { // Pause graphics updates.
                 treePause = !treePause;
+            }
 
             if (!treePause) {
                 if (e.isAltDown()) {
@@ -598,6 +533,8 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         // Reset the camera view back to initial view.
         if (e.getSource().equals(resetButton)) {
             cam = new GLCamManager(panelWidth, panelHeight);
+        } else if (e.getSource().equals(pauseButton)) {
+            treePause = !treePause;
         }
     }
 
