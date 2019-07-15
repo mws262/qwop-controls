@@ -160,6 +160,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
         // lines, then put it back in since it is annoying selecting "invisible" nodes.
         selectedNode.setOverridePointColor(Color.RED);
         selectedNode.setBranchZOffset(0.4f);
+//        selectedNode.setLineBrightnessBelow(1f);
 
         for (TabbedPaneActivator panel : tabbedPanes) {
             if (panel.isActive()) {

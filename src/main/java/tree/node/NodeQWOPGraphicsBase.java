@@ -349,8 +349,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     }
 
     public void drawOverrideLine(GL2 gl) {
-        if (overrideLineColorFloats != null || nodeLocation != null && !notDrawnForSpeed) {
-            gl.glColor3fv(overridePointColorFloats, 0);
+        if (overrideLineColorFloats != null && nodeLocation != null && getParent().nodeLocation != null && !notDrawnForSpeed) {
+            gl.glColor3fv(overrideLineColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
             gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1],
                     getParent().nodeLocation[2] + overrideZOffset);
@@ -358,7 +358,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     }
 
     public void drawOverrideLinesBelow(GL2 gl) {
-        gl.glBegin(GL2.GL_LINES);
+        gl.glBegin(GL.GL_LINES);
         recurseDownTreeInclusive(n -> n.drawOverrideLine(gl));
         gl.glEnd();
     }
@@ -374,16 +374,16 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         }
     }
 
-    public void drawOverridePoints(GL2 gl) {
-        if (overridePointColorFloats != null || nodeLocation != null && !notDrawnForSpeed) {
+    public void drawOverridePoint(GL2 gl) {
+        if (overridePointColorFloats != null && nodeLocation != null && !notDrawnForSpeed) {
             gl.glColor3fv(overridePointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
         }
     }
 
     public void drawOverridePointsBelow(GL2 gl) {
-        gl.glBegin(GL2.GL_POINTS);
-        recurseDownTreeInclusive(n -> n.drawOverridePoints(gl));
+        gl.glBegin(GL.GL_POINTS);
+        recurseDownTreeInclusive(n -> n.drawOverridePoint(gl));
         gl.glEnd();
     }
 
@@ -474,9 +474,9 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * certain sections of the tree.
      * @param brightness Value on the HSV color space to change the line brightness to.
      */
-    void setLineBrightness(float brightness) {
+    void setOverrideLineBrightness(float brightness) {
         lineBrightness = brightness;
-        setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
+        setOverrideLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
     }
 
     /**
@@ -566,7 +566,9 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Turn off all display for this node onward.
      */
+    @Deprecated
     public void turnOffBranchDisplay() {
+        // TODO needs to be updated to work with buffers.
         recurseDownTreeInclusive(n -> {
             displayLine = false;
             displayPoint = false;
@@ -580,7 +582,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      */
     public void highlightSingleRunToThisNode() {
         getRoot().setLineBrightnessBelow(0.4f); // Fade the entire tree, then go and highlight the run we care about.
-        recurseUpTreeInclusive(n -> n.setLineBrightness(lineBrightnessDefault));
+        recurseUpTreeInclusive(n -> n.setOverrideLineBrightness(lineBrightnessDefault));
     }
 
     /**
@@ -588,7 +590,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * @param brightness Value on the HSV color space to set the brightness of this branch to.
      */
     public void setLineBrightnessBelow(float brightness) {
-        recurseDownTreeInclusive(n -> n.setLineBrightness(brightness));
+        recurseDownTreeInclusive(n -> n.setOverrideLineBrightness(brightness));
     }
 
     /**
@@ -635,7 +637,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * @param newColor Color to override this branch to.
      */
     public void setOverrideBranchColor(Color newColor) {
-        recurseDownTreeExclusive(n -> n.setOverrideLineColor(newColor));
+        recurseDownTreeInclusive(n -> n.setOverrideLineColor(newColor));
     }
 
     /**
@@ -665,8 +667,6 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     @Override
     public synchronized void updateValue(float valueUpdate, IValueUpdater updater) {
         super.updateValue(valueUpdate, updater);
-//        displayLabel = true;
-//        nodeLabel = String.format("%.2f", getValue());
     }
 
     @Override

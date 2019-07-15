@@ -212,10 +212,10 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         final float ptSize = Math.min(50f / cam.getZoomFactor(), 10f); //Let the points be smaller/bigger depending on
         // zoom, but make sure to cap out the size!
 
-
         gl.glPointSize(ptSize);
         for (NodeQWOPGraphicsBase<?> node : rootNodes) {
             node.drawOverridePointsBelow(gl);
+            node.drawOverrideLinesBelow(gl);
         }
         NodeQWOPGraphicsBase.updateBuffers(gl);
         NodeQWOPGraphicsBase.drawAllBuffered(gl);
@@ -226,8 +226,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                 node.recurseDownTreeInclusive(n -> n.drawLabel(gl, glut));
             }
         }
-
-
 
         /*
          * Filter the average loop time. Lower numbers gives more weight to the lower estimate, higher numbers
