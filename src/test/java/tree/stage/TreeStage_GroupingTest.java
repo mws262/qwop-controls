@@ -3,6 +3,8 @@ package tree.stage;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+
 import static org.junit.Assert.*;
 
 public class TreeStage_GroupingTest {
@@ -20,7 +22,7 @@ public class TreeStage_GroupingTest {
 
         Assert.assertFalse(dummyStage1.isInitialized);
         Assert.assertEquals(dummyStage1, stageGrouping.getActiveStage());
-        stageGrouping.initialize(null, null);
+        stageGrouping.initialize(new ArrayList<>(), null);
         Assert.assertTrue(dummyStage1.isInitialized);
         Assert.assertFalse(dummyStage2.isInitialized);
 
