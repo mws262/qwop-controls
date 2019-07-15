@@ -148,7 +148,6 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     @Override
     public void nodeSelected(NodeQWOPGraphicsBase<?> selected) {
         if (selectedNode != null) { // Clear things from the old selected node.
-            selectedNode.displayPoint = false;
             selectedNode.setOverridePointColor(null);
             selectedNode.clearBranchLineOverrideColor();
             selectedNode.clearBranchZOffset();
@@ -159,7 +158,6 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
         selectedNode = selected;
         selectedNode.reenableIfNotDrawnForSpeed(); // If the node was previously disabled to avoid drawing too many
         // lines, then put it back in since it is annoying selecting "invisible" nodes.
-        selectedNode.displayPoint = true;
         selectedNode.setOverridePointColor(Color.RED);
         selectedNode.setBranchZOffset(0.4f);
 

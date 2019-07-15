@@ -155,42 +155,48 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * If we want to bring out a certain part of the tree so it doesn't hide under other parts, give it a small z
      * offset.
      */
-    float nodeLocationZOffset = 0.4f;
+    float overrideZOffset = 0.4f;
 
-    public int bufferIdx = -1;
-    public static int bufferFrequency = 500;
+    private static int bufferFrequency = 500;
 
     static Vector<NodeQWOPGraphicsBase<?>> unbufferedNodes = new Vector<>();
 
     static Map<Integer, List<NodeQWOPGraphicsBase<?>>> bufferMap = new HashMap<>();
 
+    /**
+     *
+     * @param gl
+     * @param nodesToBuffer
+     * @return
+     */
     private static synchronized int makeNewBuffer(GL2 gl, List<NodeQWOPGraphicsBase<?>> nodesToBuffer) {
         int [] aiVertexBufferIndices = new int [] {-1};
 
-        if(    !gl.isFunctionAvailable( "glGenBuffers" )
+        if (!gl.isFunctionAvailable( "glGenBuffers" )
                 || !gl.isFunctionAvailable( "glBindBuffer" )
                 || !gl.isFunctionAvailable( "glBufferData" )
                 || !gl.isFunctionAvailable( "glDeleteBuffers" ) ) {
             throw new RuntimeException( "Vertex buffer objects not supported." );
         }
+
         // create vertex buffer object
-        gl.glGenBuffers( 1, aiVertexBufferIndices, 0);
+        gl.glGenBuffers(1, aiVertexBufferIndices, 0);
 
         // create vertex buffer data store without initial copy
-        gl.glBindBuffer( GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0]);
-        gl.glBufferData( GL.GL_ARRAY_BUFFER,
+        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0]);
+        gl.glBufferData(GL.GL_ARRAY_BUFFER,
                 nodesToBuffer.size() * Buffers.SIZEOF_FLOAT * 9 * 2,
-                null, GL2.GL_DYNAMIC_DRAW );
+                null, GL2.GL_DYNAMIC_DRAW);
 
         // map the buffer and write vertex and color data directly into it
-        gl.glBindBuffer( GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0] );
-        ByteBuffer bytebuffer = gl.glMapBuffer( GL.GL_ARRAY_BUFFER, GL2.GL_WRITE_ONLY );
-        FloatBuffer floatbuffer = bytebuffer.order( ByteOrder.nativeOrder() ).asFloatBuffer();
+        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0]);
+        ByteBuffer bytebuffer = gl.glMapBuffer(GL.GL_ARRAY_BUFFER, GL2.GL_WRITE_ONLY);
+        FloatBuffer floatbuffer = bytebuffer.order( ByteOrder.nativeOrder()).asFloatBuffer();
 
-        for( NodeQWOPGraphicsBase<?> node : nodesToBuffer ) {
+        for(NodeQWOPGraphicsBase<?> node : nodesToBuffer) {
             node.addLineToBuffer(floatbuffer);
         }
-        for( NodeQWOPGraphicsBase<?> node : nodesToBuffer ) {
+        for(NodeQWOPGraphicsBase<?> node : nodesToBuffer) {
             node.addPointToBuffer(floatbuffer);
         }
 
@@ -215,7 +221,6 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             bufferMap.put(newBufferIdx, toBuffer);
 
             for (NodeQWOPGraphicsBase<?> node : toBuffer) {
-                node.bufferIdx = newBufferIdx;
             }
         }
     }
@@ -244,9 +249,15 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     }
 
     public static synchronized void drawAllUnbuffered(GL2 gl) {
-        gl.glBegin(GL.GL_LINES);
+        gl.glBegin(GL2.GL_LINES);
         for (int i = 0; i < unbufferedNodes.size(); i++) {
             unbufferedNodes.get(i).drawLine(gl);
+        }
+        gl.glEnd();
+
+        gl.glBegin(GL2.GL_POINTS);
+        for (int i = 0; i < unbufferedNodes.size(); i++) {
+            unbufferedNodes.get(i).drawPoint(gl);
         }
         gl.glEnd();
     }
@@ -296,7 +307,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
             edgeLength = 5.00f * (float) Math.pow(0.6947, 0.1903 * getTreeDepth()) + 1.5f;
             lineBrightness = parent.lineBrightness;
-            nodeLocationZOffset = parent.nodeLocationZOffset;
+            overrideZOffset = parent.overrideZOffset;
             calcNodePos();
             if (!notDrawnForSpeed)
                 unbufferedNodes.add(this);
@@ -305,15 +316,11 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
 
     private void addLineToBuffer(FloatBuffer floatBuffer) {
-        if (shouldLineBeDrawn()) { //
-            floatBuffer.put(nodeLocation[0]);
-            floatBuffer.put(nodeLocation[1]);
-            floatBuffer.put(nodeLocation[2] + nodeLocationZOffset);
-            floatBuffer.put(getActiveLineColor());
-            floatBuffer.put(getParent().nodeLocation[0]);
-            floatBuffer.put(getParent().nodeLocation[1]);
-            floatBuffer.put(getParent().nodeLocation[2] + getParent().nodeLocationZOffset);
-            floatBuffer.put(getParent().getActiveLineColor());
+        if (shouldLineBeDrawn()) {
+            floatBuffer.put(nodeLocation);
+            floatBuffer.put(lineColorFloats);
+            floatBuffer.put(getParent().nodeLocation);
+            floatBuffer.put(getParent().lineColorFloats);
         }
     }
 
@@ -321,15 +328,10 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
        return nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed);
     }
 
-    float[] getActiveLineColor() {
-        return (overrideLineColorFloats == null) ? lineColorFloats : overrideLineColorFloats;
-    }
 
     public void addPointToBuffer(FloatBuffer floatBuffer) {
-        if (nodeLocation != null && displayPoint && !notDrawnForSpeed && overridePointColorFloats == null) {
-            floatBuffer.put(nodeLocation[0]);
-            floatBuffer.put(nodeLocation[1]);
-            floatBuffer.put(nodeLocation[2] + nodeLocationZOffset);
+        if (nodeLocation != null && displayPoint && !notDrawnForSpeed) {
+            floatBuffer.put(nodeLocation);
             floatBuffer.put(pointColorFloats); // Override colors are not buffered.
         }
     }
@@ -337,31 +339,59 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * Draw the line connecting this node to its parent.
      * @param gl OpenGL object used for 3D plotting.
      */
-    public void drawLine(GL2 gl) {
+    private void drawLine(GL2 gl) {
         if (nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed)) { //
             // No lines for root.
-            gl.glColor3fv((overrideLineColorFloats == null) ? lineColorFloats : overrideLineColorFloats, 0);
-            gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1], getParent().nodeLocation[2] + nodeLocationZOffset);
-            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
+            gl.glColor3fv(lineColorFloats, 0);
+            gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1], getParent().nodeLocation[2]);
+            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2]);
         }
+    }
+
+    public void drawOverrideLine(GL2 gl) {
+        if (overrideLineColorFloats != null || nodeLocation != null && !notDrawnForSpeed) {
+            gl.glColor3fv(overridePointColorFloats, 0);
+            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
+            gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1],
+                    getParent().nodeLocation[2] + overrideZOffset);
+        }
+    }
+
+    public void drawOverrideLinesBelow(GL2 gl) {
+        gl.glBegin(GL2.GL_LINES);
+        recurseDownTreeInclusive(n -> n.drawOverrideLine(gl));
+        gl.glEnd();
     }
 
     /**
      * Draw the node point if enabled
      * @param gl OpenGL object used for 3D plotting.
      */
-    public void drawPoint(GL2 gl) {
+    private void drawPoint(GL2 gl) {
         if (nodeLocation != null && displayPoint && !notDrawnForSpeed) {
-            gl.glColor3fv((overridePointColorFloats == null) ? pointColorFloats : overridePointColorFloats, 0);
-            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
+            gl.glColor3fv(pointColorFloats, 0);
+            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2]);
         }
     }
 
     public void drawOverridePoints(GL2 gl) {
-        if (overridePointColorFloats != null || nodeLocation != null && displayPoint && !notDrawnForSpeed) {
+        if (overridePointColorFloats != null || nodeLocation != null && !notDrawnForSpeed) {
             gl.glColor3fv(overridePointColorFloats, 0);
-            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset);
+            gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
         }
+    }
+
+    public void drawOverridePointsBelow(GL2 gl) {
+        gl.glBegin(GL2.GL_POINTS);
+        recurseDownTreeInclusive(n -> n.drawOverridePoints(gl));
+        gl.glEnd();
+    }
+
+    /**
+     * Color the node scaled by depth in the tree. Totally for gradient pleasantness.
+     */
+    public static Color getColorFromTreeDepth(float depth, float brightness) {
+        return getColorFromScaledValue(depth/1.8f + 10, -10f, brightness);
     }
 
     /**
@@ -374,46 +404,9 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             // even if it is assigned as a object field on construction. Constructors chain in such a way that a child
             // could be added to its parent before node construction is complete.
             gl.glColor3fv(nodeLabelColor, 0);
-            gl.glRasterPos3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + nodeLocationZOffset + 0.1f);
+            gl.glRasterPos3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset + 0.1f);
             glut.glutBitmapString(GLUT.BITMAP_HELVETICA_12, nodeLabel);
         }
-    }
-
-    /**
-     * Draw all lines in the subtree below this node.
-     *
-     * @param gl OpenGL drawing object.
-     */
-    @SuppressWarnings("unused")
-    public void drawLinesBelow(GL2 gl) {
-        gl.glBegin(GL2.GL_POINTS);
-        recurseDownTreeExclusive(n->{
-            n.drawLine(gl);
-            assert getTreeDepth() < n.getTreeDepth();
-        });
-        gl.glEnd();
-    }
-
-    /**
-     * Draw all nodes in the subtree below this node.
-     *
-     * @param gl OpenGL drawing object.
-     */
-    @SuppressWarnings("unused")
-    public void drawPointsBelow(GL2 gl) {
-        recurseDownTreeInclusive(n -> n.drawPoint(gl));
-    }
-
-    public void drawOverridePointsBelow(GL2 gl) {
-        gl.glBegin(GL2.GL_POINTS);
-        recurseDownTreeInclusive(n -> n.drawOverridePoints(gl));
-        gl.glEnd();
-    }
-    /**
-     * Color the node scaled by depth in the tree. Totally for gradient pleasantness.
-     */
-    public static Color getColorFromTreeDepth(float depth, float brightness) {
-        return getColorFromScaledValue(depth/1.8f + 10, -10f, brightness);
     }
 
     /**
@@ -446,29 +439,12 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * but does cause drawing to ignore whatever the default line color is.
      * @param color Color to make the line.
      */
-    void setOverrideLineColor(Color color) {
+    public void setOverrideLineColor(Color color) {
         if (color == null) {
             overrideLineColorFloats = null;
         } else {
             overrideLineColorFloats = color.getColorComponents(null);
         }
-    }
-
-    /**
-     * Set the dot color at this node's location. This does not enable drawing if disabled.
-     * @param color Color to make this point.
-     */
-    @SuppressWarnings("unused")
-    public void setPointColor(Color color) {
-        pointColorFloats = color.getColorComponents(null);
-    }
-
-    /**
-     * Set the dot color at this node's location. This does not enable drawing if disabled.
-     * @param color Color to make this point.
-     */
-    public void setLabelColor(Color color) {
-        nodeLabelColor = color.getColorComponents(null);
     }
 
     /**
@@ -482,6 +458,14 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         } else {
             overridePointColorFloats = color.getColorComponents(null);
         }
+    }
+
+    /**
+     * Set the dot color at this node's location. This does not enable drawing if disabled.
+     * @param color Color to make this point.
+     */
+    public void setLabelColor(Color color) {
+        nodeLabelColor = color.getColorComponents(null);
     }
 
     /**
@@ -529,8 +513,6 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             } else {
                 nodeAngle = getParent().nodeAngle - sweepAngle * (childNo + 1) / 2 + angleAdj;
             }
-//            nodeAngle = getParent().nodeAngle + sweepAngle * (childNo - possibleParentBranchSlots/2f) + angleAdj;
-
         } else {
             sweepAngle = getParent().sweepAngle; //Only reduce the sweep angle if the parent one had more than one child.
             nodeAngle = getParent().nodeAngle;
@@ -618,19 +600,19 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     }
 
     /**
-     * Give this branch a nodeLocationZOffset to make it stand out.
+     * Give this branch a overrideZOffset to make it stand out.
      * @param zOffset Out-of-plane component of the node's position.
      */
     public void setBranchZOffset(float zOffset) {
-        recurseDownTreeInclusive(n -> n.nodeLocationZOffset = zOffset);
+        recurseDownTreeInclusive(n -> n.overrideZOffset = zOffset);
     }
 
     /**
-     * Give this branch a nodeLocationZOffset to make it stand out. Goes backwards towards root.
+     * Give this branch a overrideZOffset to make it stand out. Goes backwards towards root.
      * @param zOffset Out-of-plane component of the node's position.
      */
     public void setBackwardsBranchZOffset(float zOffset) {
-        recurseUpTreeInclusive(n -> n.nodeLocationZOffset = zOffset);
+        recurseUpTreeInclusive(n -> n.overrideZOffset = zOffset);
     }
 
     /**
