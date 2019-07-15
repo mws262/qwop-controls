@@ -124,7 +124,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                     descendants.add(n);
                 }
             });
-            filter.filter(descendants); // temp rm
+            filter.filter(descendants);
 
             Color runnerColor = NodeQWOPGraphicsBase.getColorFromTreeDepth(i * 10, NodeQWOPGraphicsBase.lineBrightnessDefault);
             child.setOverrideBranchColor(runnerColor); // Change the color on the tree too.
