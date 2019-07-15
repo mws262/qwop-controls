@@ -8,6 +8,7 @@ import tree.node.NodeQWOPGraphics;
 import tree.node.NodeQWOPGraphicsBase;
 import value.ValueFunction_TensorFlow;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,9 +72,9 @@ public class TreeStage_ValueFunctionUpdate extends TreeStage {
                 float percDiff = valueFunction.evaluate(n); // Temp disable percent diff for absolute diff.
 //                    float percDiff = Math.abs((valueFunction.evaluate(n) - n.getValue())/n.getValue() * 100f);
                 n.nodeLabel = String.format("%.1f, %.1f", n.getValue(), percDiff);
-                n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - n.getValue()), 20) + 20
-                        , 20,
-                        0.9f));
+                Color color = NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - n.getValue()), 20) + 20, 20, 0.9f);
+                n.setLabelColor(color);
+                //n.setOverridePointColor(color);
                 n.displayLabel = true;
             });
             new Thread(updateLabels).start();
