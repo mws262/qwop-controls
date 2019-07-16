@@ -15,7 +15,7 @@ import java.util.List;
         @JsonSubTypes.Type(value = ValueFunction_Constant.class, name = "constant"),
         @JsonSubTypes.Type(value = ValueFunction_TensorFlow.class, name = "tensorflow")
 })
-public interface IValueFunction {
+public interface IValueFunction extends AutoCloseable {
 
     /**
      * Find the child Action which is predicted to maximize value.
@@ -43,4 +43,9 @@ public interface IValueFunction {
      * @param nodes
      */
     void update(List<? extends NodeQWOPBase<?>> nodes);
+
+    IValueFunction getCopy();
+
+    @Override
+    void close();
 }

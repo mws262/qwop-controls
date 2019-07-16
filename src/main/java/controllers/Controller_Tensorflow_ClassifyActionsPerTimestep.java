@@ -96,4 +96,11 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     public IController getCopy() {
         throw new RuntimeException("Haven't implemented copy on this controller yet!");
     }
+
+
+    @Override
+    public void close() {
+        super.getSession().close();
+        super.getGraph().close();
+    }
 }

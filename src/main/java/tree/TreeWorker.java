@@ -230,6 +230,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (flagForTermination.get()) { // Permanent stop. Call terminateWorker() to trigger at next time
                         // the worker reaches IDLE.
                         workerRunning = false;
+                        sampler.close();
                         tsPerSecond = 0; // Set to 0 so plots of worker speed don't get stuck at whatever value they
                         // were at before terminating the worker.
                         break;

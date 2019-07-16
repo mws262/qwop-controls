@@ -74,4 +74,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
     public EvaluationFunction_HandTunedOnState getCopy() {
         return new EvaluationFunction_HandTunedOnState();
     }
+
+    @Override
+    public void close() {}
 }

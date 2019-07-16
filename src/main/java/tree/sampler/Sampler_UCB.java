@@ -9,7 +9,6 @@ import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 import tree.sampler.rollout.IRolloutPolicy;
 import value.updaters.IValueUpdater;
-import value.updaters.ValueUpdater_Average;
 
 /**
  * Implements upper confidence bound for trees (UCBT, UCT, UCB, depending on who you ask).
@@ -17,7 +16,7 @@ import value.updaters.ValueUpdater_Average;
  *
  * @author Matt
  */
-public class Sampler_UCB implements ISampler {
+public class Sampler_UCB implements ISampler, AutoCloseable {
 
     /**
      * Constant term on UCB exploration factor. Higher means more exploration.
@@ -213,5 +212,11 @@ public class Sampler_UCB implements ISampler {
     @JsonIgnore
     public float getC() {
         return c;
+    }
+
+    @Override
+    public void close() {
+        evaluationFunction.close();
+        rolloutPolicy.close();
     }
 }

@@ -91,4 +91,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
     public IState getComparisonState() {
         return comparisonState;
     }
+
+    @Override
+    public void close() {}
 }

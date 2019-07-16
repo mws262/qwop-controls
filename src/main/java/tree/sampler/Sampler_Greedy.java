@@ -1,14 +1,14 @@
 package tree.sampler;
 
-import java.util.ArrayList;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.action.Action;
-import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
-import tree.node.NodeQWOPExplorableBase;
+import game.action.Action;
 import tree.Utility;
+import tree.node.NodeQWOPExplorableBase;
+import tree.node.evaluator.IEvaluationFunction;
+
+import java.util.ArrayList;
 
 public class Sampler_Greedy implements ISampler {
 
@@ -225,4 +225,7 @@ public class Sampler_Greedy implements ISampler {
     public Sampler_Greedy getCopy() {
         return new Sampler_Greedy(evaluationFunction.getCopy());
     }
+
+    @Override
+    public void close() {}
 }

@@ -1,8 +1,8 @@
 package tree.node.evaluator;
 
-import java.util.Random;
-
 import tree.node.NodeQWOPBase;
+
+import java.util.Random;
 
 /**
  * This evaluation function returns a random value regardless of the given node.
@@ -32,4 +32,6 @@ public class EvaluationFunction_Random implements IEvaluationFunction {
         return new EvaluationFunction_Random();
     }
 
+    @Override
+    public void close() {}
 }

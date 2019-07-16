@@ -66,6 +66,8 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
             public String getValueString(NodeQWOPBase<?> nodeToEvaluate) { return null; }
             @Override
             public IEvaluationFunction getCopy() { return null; }
+            @Override
+            public void close() {}
         }, new Controller_Random(), maxTimestepsToSim);
 
         fakeGame.makeNewWorld();

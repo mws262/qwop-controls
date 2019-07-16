@@ -213,10 +213,10 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         // zoom, but make sure to cap out the size!
 
         gl.glPointSize(ptSize);
-        for (NodeQWOPGraphicsBase<?> node : rootNodes) {
-            node.drawOverridePointsBelow(gl);
-            node.drawOverrideLinesBelow(gl);
-        }
+//        for (NodeQWOPGraphicsBase<?> node : rootNodes) {
+//            node.drawOverridePointsBelow(gl);
+//            node.drawOverrideLinesBelow(gl);
+//        }
         NodeQWOPGraphicsBase.updateBuffers(gl);
         NodeQWOPGraphicsBase.drawAllBuffered(gl);
         NodeQWOPGraphicsBase.drawAllUnbuffered(gl);

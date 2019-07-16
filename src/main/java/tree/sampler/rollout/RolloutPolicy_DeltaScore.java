@@ -70,4 +70,10 @@ public class RolloutPolicy_DeltaScore extends RolloutPolicyBase {
        copy.failureMultiplier = failureMultiplier;
        return copy;
     }
+
+    @Override
+    public void close() {
+        evaluationFunction.close();
+        rolloutController.close();
+    }
 }

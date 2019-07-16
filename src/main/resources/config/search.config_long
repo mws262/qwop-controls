@@ -8,9 +8,9 @@ UCBExplorationMultiplier=0.2
 doStage1=true
 fileSuffix1=
 runsToGenerate = 1
-getToSteadyDepth=100
+getToSteadyDepth=1000
 fractionOfMaxWorkers1=1
-bailAfterXGames1=1000000
+bailAfterXGames1=100000000
 
 # Stage 2 toggle: turn sparse data into a single dense TFRecord file.
 doStage2=true
