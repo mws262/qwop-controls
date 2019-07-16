@@ -67,4 +67,10 @@ public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
         assert normalizedTimesteps >= 0f;
         return (float) (-0.5 * Math.tanh(kernelSteepness * (normalizedTimesteps - kernelCenter)) + 0.5);
     }
+
+    @Override
+    public void close() {
+        evaluationFunction.close();
+        rolloutController.close();
+    }
 }

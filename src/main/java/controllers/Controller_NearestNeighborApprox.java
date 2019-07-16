@@ -390,6 +390,9 @@ public class Controller_NearestNeighborApprox implements IController {
         Utility.toc();
     }
 
+    @Override
+    public void close() {}
+
     /**
      * @author matt
      */

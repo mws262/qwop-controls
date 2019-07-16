@@ -23,7 +23,7 @@ import java.util.List;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ValueFunction_TensorFlow_StateOnly.class, name = "tflow_state_only"),
 })
-public abstract class ValueFunction_TensorFlow implements IValueFunction {
+public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCloseable {
 
     /**
      * Input layer size.
@@ -257,4 +257,9 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction {
     abstract float[] assembleInputFromNode(NodeQWOPBase<?> node);
 
     abstract float[] assembleOutputFromNode(NodeQWOPBase<?> node);
+
+    @Override
+    public void close() {
+        network.close();
+    }
 }

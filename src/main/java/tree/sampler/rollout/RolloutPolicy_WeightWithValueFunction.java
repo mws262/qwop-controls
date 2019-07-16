@@ -50,4 +50,10 @@ public class RolloutPolicy_WeightWithValueFunction implements IRolloutPolicy {
     public IValueFunction getValueFunction() {
         return valueFunction;
     }
+
+    @Override
+    public void close() {
+        valueFunction.close();
+        individualRollout.close();
+    }
 }

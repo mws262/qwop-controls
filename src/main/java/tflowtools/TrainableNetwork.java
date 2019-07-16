@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  *
  * @author matt
  */
-public class TrainableNetwork {
+public class TrainableNetwork implements AutoCloseable {
 
     /**
      * Networks are not created in Java. Java calls a python script defined here to create the network.
@@ -50,6 +50,8 @@ public class TrainableNetwork {
      * For logger message output.
      */
     private static Logger logger = LogManager.getLogger(TrainableNetwork.class);
+
+    private boolean haveResourcesBeenReleased = false;
 
     /**
      * Create a new wrapper for an existing Tensorflow graph.
@@ -268,6 +270,21 @@ public class TrainableNetwork {
 
     public String getActiveCheckpoint() {
         return activeCheckpoint;
+    }
+
+    @Override
+    public void close() {
+        session.close();
+        graph.close();
+        haveResourcesBeenReleased = true;
+    }
+
+    @Override
+    public void finalize() {
+        if (!haveResourcesBeenReleased) {
+            logger.error("This objecct was garbage collected without close() having been called. This means there are" +
+                    " resources still open in the background.");
+        }
     }
 
     /**

@@ -70,9 +70,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         Preconditions.checkArgument(outputSize == 1, "Value function output for this controller should have precisely" +
                 " one output.");
 
-        assignFuturePredictors(gameTemplate);
-        this.gameTemplate = gameTemplate;
+        this.gameTemplate = gameTemplate.getCopy();
         fileName = file.getName();
+        assignFuturePredictors(this.gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
     }

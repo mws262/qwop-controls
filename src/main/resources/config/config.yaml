@@ -59,95 +59,11 @@ tree:
         qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
           30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
 searchOperations:
-#- stage:
-#    type: fixed_games
-#    numGamesToPlay: 25000
-#  sampler:
-#    type: ucb
-#    evaluationFunction:
-#      type: constant
-#      constantValue: 0
-#    rolloutPolicy:
-#      type: decaying_horizon
-#      evaluationFunction:
-#        type: distance
-#      rolloutController:
-#        type: random
-#      maxTimesteps: 150
-#      rolloutActionGenerator:
-#        type: fixed_sequence
-#        repeatedActions:
-#          - distribution:
-#              type: normal
-#              mean: 10.0
-#              standardDeviation: 2.0
-#            none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 '
-#          - distribution:
-#              type: normal
-#              mean: 25.0
-#              standardDeviation: 3.0
-#            wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
-#            31 32 33 34 '
-#          - distribution:
-#              type: normal
-#              mean: 10.0
-#              standardDeviation: 2.0
-#            none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 '
-#          - distribution:
-#              type: normal
-#              mean: 25.0
-#              standardDeviation: 3.0
-#            qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
-#            31 32 33 34 '
-#        actionExceptions:
-#          depth0:
-#            distribution:
-#              type: normal
-#              mean: 5.0
-#              standardDeviation: 1.0
-#            none: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
-#              27 28 29 30 31 32 33 34 '
-#          depth1:
-#            distribution:
-#              type: normal
-#              mean: 34.0
-#              standardDeviation: 2.0
-#            wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
-#              30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
-#          depth2:
-#            distribution:
-#              type: normal
-#              mean: 24.0
-#              standardDeviation: 2.0
-#            none: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
-#              27 28 29 30 31 32 33 34 '
-#          depth3:
-#            distribution:
-#              type: normal
-#              mean: 49.0
-#              standardDeviation: 2.0
-#            qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
-#              30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
-#    explorationConstant: 30.0
-#    explorationRandomFactor: 15.0
-#    valueUpdater:
-#      type: stdev_above
-#      stdevAbove: 1.0f
-#      # windowSize: 3
-#      # windowScoringCriterion: AVERAGE_OPTIMISTIC
-#    type: null
-#    saveInterval: 0
-#    savePath:
-#  saver:
-#    type: null
-#    saveInterval: 0
-#    savePath:
-#  repetitionCount: 0
 - stage:
     type: grouping
     treeStages:
     - type: fixed_games
-      numGamesToPlay: 10000
+      numGamesToPlay: 1000
     - type: value_update
       valueFunction:
         type: tflow_state_only
@@ -163,7 +79,7 @@ searchOperations:
         additionalNetworkArgs:
           - --learnrate
           - 1e-4
-        activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_name45
+        activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_name82
         outputSize: 1
       checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
       excludeLeaves: false
@@ -178,8 +94,24 @@ searchOperations:
       evaluationFunction:
         type: distance
       rolloutController:
-        type: random
-      maxTimesteps: 150
+        type: value_function
+        valueFunction:
+          type: tflow_state_only
+          fileName: src/main/resources/tflow_models/test.pb
+          gameTemplate:
+            type: default # delay_embedded
+#            timestepDelay: 1
+#            numDelayedStates: 2
+#            stateType: DIFFERENCES
+          hiddenLayerSizes:
+          - 128
+          - 64
+          additionalNetworkArgs:
+          - --learnrate
+          - 1e-4
+          activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_name34
+          outputSize: 1
+      maxTimesteps: 200
       rolloutActionGenerator:
         type: fixed_sequence
         repeatedActions:
@@ -203,7 +135,7 @@ searchOperations:
             mean: 20.0
             standardDeviation: 2.0
           qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-    explorationConstant: 3.0
+    explorationConstant: 1.0
     explorationRandomFactor: 2.0
     valueUpdater:
       type: top_window

@@ -220,5 +220,10 @@ public class ValueFunction_TensorFlowTest {
         public Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGameSerializable game) {
             return null;
         }
+
+        @Override
+        public IValueFunction getCopy() {
+            return null; // todo
+        }
     }
 }

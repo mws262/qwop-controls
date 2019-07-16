@@ -37,6 +37,14 @@ public class ValueFunction_Constant implements IValueFunction {
     }
 
     @Override
+    public IValueFunction getCopy() {
+        return new ValueFunction_Constant(constantValue);
+    }
+
+    @Override
+    public void close() {}
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

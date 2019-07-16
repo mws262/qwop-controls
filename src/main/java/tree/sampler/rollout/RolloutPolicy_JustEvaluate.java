@@ -28,4 +28,10 @@ public class RolloutPolicy_JustEvaluate implements IRolloutPolicy {
     public IRolloutPolicy getCopy() {
         return new RolloutPolicy_JustEvaluate(evaluationFunction);
     }
+
+
+    @Override
+    public void close() {
+        evaluationFunction.close();
+    }
 }
