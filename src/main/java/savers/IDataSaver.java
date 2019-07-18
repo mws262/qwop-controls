@@ -82,9 +82,6 @@ public interface IDataSaver {
         Date date = new Date();
         SimpleDateFormat dateFormat =
 				new SimpleDateFormat("'" + prefix + "_'" + "yyyy-MM-dd_HH-mm-ss" + "'." + className + "'");
-        String name = dateFormat.format(date);
-        System.out.println("Generated file: " + name);
-
-        return name;
+        return dateFormat.format(date);
     }
 }

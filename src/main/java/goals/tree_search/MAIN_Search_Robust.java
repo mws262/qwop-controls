@@ -50,7 +50,6 @@ public class MAIN_Search_Robust extends SearchTemplate {
             node.resetSweepAngle();
             node.setBranchZOffset(0.1f);
             float score = evaluateNode(node);
-            System.out.println(score);
             node.setBranchZOffset(-0.5f);
             node.destroyNodesBelow();
 //            node.postPruneDrawingBelow(0.4f);

@@ -1,15 +1,18 @@
 package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.GameUnified;
+import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.*;
 import game.state.IState;
 import game.state.State;
 import game.state.StateVariable;
-import org.jfree.chart.plot.XYPlot;
 import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jfree.chart.plot.XYPlot;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphicsBase;
 
@@ -77,6 +80,9 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
     private final String name;
 
+    private static Logger logger = LogManager.getLogger(PanelPlot_SingleRun.class);
+
+
     public PanelPlot_SingleRun(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numberOfPlots) {
         super(numberOfPlots);
         this.name = name;
@@ -102,7 +108,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
         node.getSequence(actionList);
         actionQueue.addSequence(actionList);
         for (Action a : actionList) {
-            System.out.println(a);
+            logger.info(a);
         }
 
         stateList.add(game.getCurrentState()); // Add initial state.

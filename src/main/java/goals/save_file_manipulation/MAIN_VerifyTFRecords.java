@@ -1,5 +1,7 @@
 package goals.save_file_manipulation;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tensorflow.example.SequenceExample;
 
 import java.io.File;
@@ -18,6 +20,8 @@ import static data.TFRecordDataParsers.loadSequencesFromTFRecord;
  */
 public class MAIN_VerifyTFRecords {
 
+    private static Logger logger = LogManager.getLogger(MAIN_VerifyTFRecords.class);
+
     public static void main(String[] args) {
 
         File saveLoc = new File("src/main/resources/saved_data/training_data");
@@ -31,28 +35,28 @@ public class MAIN_VerifyTFRecords {
                 exampleDataFiles.add(f);
             }
         }
-        System.out.println("Found " + exampleDataFiles.size() + " files to check.");
+        logger.info("Found " + exampleDataFiles.size() + " files to check.");
 
         List<File> badFiles = new ArrayList<>();
         for (File file : exampleDataFiles) {
-            System.out.print("Checking " + file.getName() + "... ");
+            logger.info("Checking " + file.getName() + "... ");
             try {
                 List<SequenceExample> data = loadSequencesFromTFRecord(file);
-                System.out.println("found " + data.size() + " sequences... ");
+                logger.info("found " + data.size() + " sequences... ");
             } catch (IOException e) {
                 badFiles.add(file);
-                System.out.println("failed.");
+                logger.warn(file.getName() + "failed");
                 continue;
             }
-            System.out.println("passed!");
+            logger.info("passed!");
         }
-        System.out.println("Summary: ");
+        logger.info("Summary: ");
         if (badFiles.isEmpty()) {
-            System.out.println("All files seem ok!");
+            logger.info("All files seem ok!");
         } else {
-            System.out.println("The following files are bad:");
+            logger.warn("The following files are bad:");
             for (File bad : badFiles) {
-                System.out.println(bad.getName());
+                logger.warn(bad.getName());
             }
         }
     }

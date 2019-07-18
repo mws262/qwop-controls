@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Action;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jblas.util.Random;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
@@ -69,6 +71,8 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
      */
     private long deadlockDelayCurrent = 0;
 
+    private static Logger logger = LogManager.getLogger(Sampler_UCB.class);
+
     /**
      * Must provide an evaluationFunction to get a numeric score for nodes after a rollout.
      * Also specify a rollout policy to use.
@@ -125,7 +129,7 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
         if (bestNodeSoFar == null) { // This worker can't get a lock on any of the children it wants. Starting back
         	// at startNode.
             if (deadlockDelayCurrent > 5000) {
-                System.out.println("UCB sampler worker got really jammed up. Terminating this one.");
+                logger.warn("UCB sampler worker got really jammed up. Terminating this one.");
                 return null;
             }
             try {
@@ -196,9 +200,8 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
     @JsonIgnore
     @Override
     public Sampler_UCB getCopy() {
-        Sampler_UCB sampler = new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy(),
+        return new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy(),
                 valueUpdater.getCopy(), explorationConstant, explorationRandomFactor);
-        return sampler;
     }
 
     public IEvaluationFunction getEvaluationFunction() {

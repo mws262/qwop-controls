@@ -10,6 +10,8 @@ import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.state.IState;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tree.Utility;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPGraphics;
@@ -64,6 +66,8 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
     private Panel mainViewPanel;
 
+    private static Logger logger = LogManager.getLogger(MAIN_Controlled.class);
+
     public static void main(String[] args) {
         MAIN_Controlled mc = new MAIN_Controlled();
         mc.setup();
@@ -78,15 +82,13 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         if (allFiles == null) throw new RuntimeException("Bad directory given: " + saveLoc.getName());
 
         List<File> exampleDataFiles = new ArrayList<>();
-        int count = 0;
         for (File f : allFiles) {
             if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
-                System.out.println("Found save file: " + f.getName());
+                logger.info("Found save file: " + f.getName());
                 //if (count < 20) {
                 exampleDataFiles.add(f);
                 //}
 
-                count++;
             }
         }
         mc.controller = new Controller_NearestNeighborApprox(exampleDataFiles);
@@ -178,7 +180,6 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
         while (true) {
             long initTime = System.currentTimeMillis();
             IState state = game.getCurrentState();
-            System.out.println(state.getCenterX());
             Action nextAction = controller.policy(new NodeQWOPExplorable(state));
             actionQueue.addAction(nextAction);
             while (!actionQueue.isEmpty()) {

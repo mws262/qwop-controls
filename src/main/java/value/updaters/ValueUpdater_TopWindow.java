@@ -34,7 +34,6 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
             children.sort(Comparator.comparing(NodeQWOPBase::getAction)); // Sort by actions. Separated first by key,
             // then by duration, ascending.
 
-
             // Separate into lists of consecutive actions.
             List<List<NodeQWOPBase<?>>> clusters = separateClustersInSortedList(children);
 

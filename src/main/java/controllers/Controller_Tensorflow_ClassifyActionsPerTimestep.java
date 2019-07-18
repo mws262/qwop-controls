@@ -2,6 +2,8 @@ package controllers;
 
 import game.action.Action;
 import game.state.State;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tflowtools.TensorflowLoader;
 import tree.node.NodeQWOPExplorableBase;
 
@@ -32,16 +34,13 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     private int prevAction = 0;
 
     /**
-     * Print out each prediction.
-     **/
-    public boolean verbose = true;
-
-    /**
      * Tries to smooth out noise by sticking with the current action if that action's predicted probability is above
      * this threshold, even if another action has a higher probability. 0 means stay with this action forever, 1
      * means immediately switch when a better action is predicted.
      */
     public float actionLatchingThreshold = 1f;
+
+    private final Logger logger = LogManager.getLogger(Controller_Tensorflow_ClassifyActionsPerTimestep.class);
 
     /**
      * Create a new TensorFlow classifier controller.
@@ -59,36 +58,33 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     @Override
     public Action policy(NodeQWOPExplorableBase<?> state) {
         List<Float> keyClassification = sisoFloatPrediction(state.getState(), inputName, outputName);
-
         float probability0 = keyClassification.get(0);
         float probability1 = keyClassification.get(1);
         float probability2 = keyClassification.get(2);
-
         Action chosenAction;
 
         // WO
         if ((probability0 > actionLatchingThreshold && prevAction == 0) || probability0 >= probability1 && probability0 >= probability2) {
             chosenAction = new Action(1, false, true, true, false);
             prevAction = 0;
-            if (verbose) System.out.println("WO, " + probability0);
+            logger.debug("WO, " + probability0);
 
             // QP
         } else if ((probability1 > actionLatchingThreshold && prevAction == 1) || probability1 >= probability0 && probability1 >= probability2) {
             chosenAction = new Action(1, true, false, false, true);
             prevAction = 1;
-            if (verbose) System.out.println("QP, " + probability1);
+            logger.debug("QP, " + probability1);
 
             // None
         } else if ((probability2 > actionLatchingThreshold && prevAction == 2) || probability2 >= probability0 && probability2 >= probability1) {
 
             chosenAction = new Action(1, false, false, false, false);
             prevAction = 2;
-            if (verbose) System.out.println("__, " + probability2);
+            logger.debug("__, " + probability2);
         } else {
             throw new IllegalStateException("TensorFlow action classifier controller did not choose anything. This " +
                     "really shouldn't be possible.");
         }
-
         return chosenAction;
     }
 

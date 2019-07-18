@@ -4,6 +4,8 @@ import controllers.Controller_NearestNeighborApprox;
 import controllers.Controller_NearestNeighborApprox.RunHolder;
 import game.GameUnified;
 import game.IGameInternal;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOPGraphicsBase;
 import ui.runner.PanelRunner;
 
@@ -32,6 +34,8 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
     private boolean doneInit = false;
 
+    private static Logger logger = LogManager.getLogger(MAIN_TFRecord_Compare.class);
+
     public static void main(String[] args) {
         MAIN_TFRecord_Compare mc = new MAIN_TFRecord_Compare();
         mc.setup();
@@ -47,7 +51,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
         List<File> exampleDataFiles = new ArrayList<>();
         for (File f : allFiles) {
             if (f.getName().contains("TFRecord") && !f.getName().contains("recovery")) {
-                System.out.println("Found save file: " + f.getName());
+                logger.info("Found save file: " + f.getName());
                     exampleDataFiles.add(f);
             }
         }

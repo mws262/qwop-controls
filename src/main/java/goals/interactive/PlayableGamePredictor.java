@@ -131,7 +131,6 @@ public class PlayableGamePredictor extends TensorflowLoader {
                 }else if(event.getKeyCode() == KeyEvent.VK_R) {
                     gp.reset();
                 }
-                System.out.println(event.getKeyCode());
             }
 
             @Override
