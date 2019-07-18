@@ -1,5 +1,6 @@
 package value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.IGameSerializable;
@@ -44,6 +45,7 @@ public interface IValueFunction extends AutoCloseable {
      */
     void update(List<? extends NodeQWOPBase<?>> nodes);
 
+    @JsonIgnore
     IValueFunction getCopy();
 
     @Override
