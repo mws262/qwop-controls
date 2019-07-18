@@ -68,4 +68,10 @@ public class RolloutPolicy_EndScore extends RolloutPolicyBase {
        copy.failureMultiplier = failureMultiplier;
        return copy;
     }
+
+    @Override
+    public void close() {
+        evaluationFunction.close();
+        rolloutController.close();
+    }
 }

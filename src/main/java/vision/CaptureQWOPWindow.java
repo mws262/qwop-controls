@@ -1,5 +1,8 @@
 package vision;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -71,12 +74,15 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
     private Rectangle screenCapRegion;
 
     private static boolean debugFrame = false;
+
+    private static Logger logger = LogManager.getLogger(CaptureQWOPWindow.class);
+
     public CaptureQWOPWindow(int monitorIdx) {
         this.monitorIdx = monitorIdx;
 
         // Figure out the size of the specified monitor.
         final GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
-        System.out.println("Found " + devices.length + " monitors.");
+        logger.info("Found " + devices.length + " monitors.");
 
         GraphicsDevice gd = devices[monitorIdx];
         monitorBounds = gd.getDefaultConfiguration().getBounds();
@@ -137,11 +143,11 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
         gameStageScaling = Math.max((topRowEndPixel - topRowStartPixel) / (double) defaultGameWidth, 0.1);
 
         if ((topRowEndPixel - topRowStartPixel) == 0) {
-            System.out.println("Game window not found. Check monitor number or move nearby browser instances.");
+            logger.warn("Game window not found. Check monitor number or move nearby browser instances.");
         } else {
-            System.out.println("Found game width of: " + (topRowEndPixel - topRowStartPixel));
-            System.out.println("Top-right game coordinate: (" + gameUpperCornerX + ", " + gameUpperCornerY + ")");
-            System.out.println("Game scaling is: " + gameStageScaling);
+            logger.info("Found game width of: " + (topRowEndPixel - topRowStartPixel));
+            logger.info("Top-right game coordinate: (" + gameUpperCornerX + ", " + gameUpperCornerY + ")");
+            logger.info("Game scaling is: " + gameStageScaling);
         }
 
         screenCapRegion = new Rectangle(gameUpperCornerX, gameUpperCornerY,
@@ -178,7 +184,7 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
         if (img != null) {
             ImageIO.write(img, "png", file);
         } else {
-            System.out.println("Warning: screenshot image acquired was not valid and was not saved.");
+            logger.warn("Screenshot image acquired was not valid and was not saved.");
         }
     }
 

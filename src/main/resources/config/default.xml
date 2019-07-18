@@ -73,8 +73,8 @@
     </stage>
     <sampler type="distribution"/>
     <saver type="null">
-      <savePath></savePath>
       <saveInterval>0</saveInterval>
+      <savePath></savePath>
     </saver>
     <repetitionCount>0</repetitionCount>
   </searchOperations>
@@ -112,7 +112,22 @@
           <evaluationFunction type="constant">
             <constantValue>10.0</constantValue>
           </evaluationFunction>
-          <rolloutController type="random"/>
+          <rolloutController type="value_function">
+            <valueFunction type="tflow_state_only">
+              <fileName>src/main/resources/tflow_models/test.pb</fileName>
+              <gameTemplate type="delay_embedded">
+                <timestepDelay>1</timestepDelay>
+                <numDelayedStates>2</numDelayedStates>
+                <stateType>DIFFERENCES</stateType>
+              </gameTemplate>
+              <hiddenLayerSizes>128</hiddenLayerSizes>
+              <hiddenLayerSizes>64</hiddenLayerSizes>
+              <additionalNetworkArgs>--learnrate</additionalNetworkArgs>
+              <additionalNetworkArgs>1e-4</additionalNetworkArgs>
+              <activeCheckpoint/>
+              <outputSize>1</outputSize>
+            </valueFunction>
+          </rolloutController>
           <maxTimesteps>200</maxTimesteps>
           <rolloutActionGenerator type="fixed_sequence">
             <repeatedActions>
@@ -152,8 +167,8 @@
       <explorationRandomFactor>1.0</explorationRandomFactor>
     </sampler>
     <saver type="null">
-      <savePath></savePath>
       <saveInterval>0</saveInterval>
+      <savePath></savePath>
     </saver>
     <repetitionCount>0</repetitionCount>
   </searchOperations>

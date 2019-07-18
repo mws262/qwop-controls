@@ -1,13 +1,15 @@
 package goals.save_file_manipulation;
 
-import game.action.Action;
 import com.google.protobuf.ByteString;
 import data.SavableDenseData;
 import data.SavableFileIO;
 import data.TFRecordWriter;
+import game.action.Action;
 import game.state.IState;
 import game.state.State;
 import game.state.StateVariable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tensorflow.example.*;
 
 import java.io.File;
@@ -28,10 +30,12 @@ public class MAIN_ConvertDenseDataToTFRecord {
     @SuppressWarnings("WeakerAccess")
     static String outFileExt = "tfrecord";
 
+    private static Logger logger = LogManager.getLogger(MAIN_ConvertDenseDataToTFRecord.class);
+
     public static void main(String[] args) {
 
         // Grab input files.
-        System.out.println("Identifying input files...");
+        logger.info("Identifying input files...");
         File inDir = new File(sourceDir);
         if (!inDir.exists()) throw new RuntimeException("Input directory does not exist here: " + inDir.getName());
 
@@ -49,23 +53,20 @@ public class MAIN_ConvertDenseDataToTFRecord {
                     inFiles.add(file);
                     megabyteCount += file.length() / 1.0e6;
                 } else {
-                    System.out.println("Ignoring file in input directory: " + file.getName());
+                    logger.warn("Ignoring file in input directory: " + file.getName());
                 }
             }
         }
 
-        System.out.println("Found " + inFiles.size() + " input files with the extension " + inFileExt + ".");
-        System.out.println("Total input size: " + Math.round(megabyteCount * 10) / 10. + " MB.");
-
-        System.out.println("done");
-
+        logger.info("Found " + inFiles.size() + " input files with the extension " + inFileExt + ".");
+        logger.info("Total input size: " + Math.round(megabyteCount * 10) / 10. + " MB.");
 
         SavableFileIO<SavableDenseData> inFileLoader = new SavableFileIO<>();
         int count = 0;
         for (File file : inFiles) {
             List<SavableDenseData> denseDat = new ArrayList<>();
             inFileLoader.loadObjectsToCollection(file, denseDat);
-            System.out.print("Beginning to package " + file.getName() + ". ");
+            logger.info("Beginning to package " + file.getName() + ". ");
             String fileOutName = file.getName().substring(0, file.getName().lastIndexOf('.')) + "." + outFileExt;
             try {
                 convertToProtobuf(denseDat, fileOutName, outDir);
@@ -73,7 +74,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
                 e.printStackTrace();
             }
             count++;
-            System.out.println("Done. " + count + "/" + inFiles.size());
+            logger.info("Done. " + count + "/" + inFiles.size());
         }
     }
 
@@ -116,7 +117,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
             int actionPad = dat.getState().length - dat.getAction().length; // Make the dimensions match for coding
             // convenience.
             if (actionPad != 1) {
-                System.out.println("Dimensions of state is not 1 more than dimension of action as expected. Ignoring " +
+                logger.warn("Dimensions of state is not 1 more than dimension of action as expected. Ignoring " +
                         "this one.");
                 continue;
             }

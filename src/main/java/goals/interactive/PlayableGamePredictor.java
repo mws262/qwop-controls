@@ -57,6 +57,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
                             .fetch(hiddenStateOutputName + ":0")
                             .run();
 
+            stateInputTensor.close();
             currentGameStateTensor = result.get(0).expect(Float.class);
             currentInternalState = result.get(1).expect(Float.class);
         } else {
@@ -81,6 +82,8 @@ public class PlayableGamePredictor extends TensorflowLoader {
                         [(int) outputShape[1]]
                         [(int) outputShape[2]])[0][0];
 
+        currentGameStateTensor.close();
+        currentInternalState.close();
         return new State(reshapedResult, false);
     }
 
@@ -100,6 +103,8 @@ public class PlayableGamePredictor extends TensorflowLoader {
     public static void main(String[] args) {
         PlayableGamePredictor gp = new PlayableGamePredictor("frozen_model9.pb", "src/main/resources/tflow_models" +
                 "/sim_models/");
+        Runtime.getRuntime().addShutdownHook(new Thread(gp::close));
+
         JFrame frame = new JFrame();
         PanelRunner_SimpleState panelRunner = new PanelRunner_SimpleState("Runner");
         panelRunner.activateTab();
@@ -126,7 +131,6 @@ public class PlayableGamePredictor extends TensorflowLoader {
                 }else if(event.getKeyCode() == KeyEvent.VK_R) {
                     gp.reset();
                 }
-                System.out.println(event.getKeyCode());
             }
 
             @Override

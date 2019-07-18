@@ -27,4 +27,7 @@ public class EvaluationFunction_Distance implements IEvaluationFunction {
     public EvaluationFunction_Distance getCopy() {
         return new EvaluationFunction_Distance();
     }
+
+    @Override
+    public void close() {}
 }

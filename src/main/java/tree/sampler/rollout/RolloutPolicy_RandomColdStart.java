@@ -12,7 +12,7 @@ import tree.node.NodeQWOPExplorableBase;
  *
  * @author matt
  */
-public class RolloutPolicy_RandomColdStart extends RolloutPolicy_DeltaScore{
+public class RolloutPolicy_RandomColdStart extends RolloutPolicy_DeltaScore {
 
     public RolloutPolicy_RandomColdStart(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction) {
         super(evaluationFunction, new Controller_Random());

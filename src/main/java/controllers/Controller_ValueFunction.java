@@ -28,10 +28,15 @@ public class Controller_ValueFunction<V extends IValueFunction> implements ICont
     @Override
     @JsonIgnore
     public IController getCopy() {
-        return new Controller_ValueFunction<>(valueFunction);
-    } // TODO doesn't duplicate underlying value function. Is this bad? I don't know yet.
+        return new Controller_ValueFunction<>(valueFunction.getCopy());
+    }
 
     public V getValueFunction() {
         return valueFunction;
+    }
+
+    @Override
+    public void close() {
+        valueFunction.close();
     }
 }

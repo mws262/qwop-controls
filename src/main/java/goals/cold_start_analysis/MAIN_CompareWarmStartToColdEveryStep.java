@@ -1,9 +1,11 @@
 package goals.cold_start_analysis;
 
-import game.action.ActionQueue;
 import game.GameUnified;
 import game.IGameInternal;
+import game.action.ActionQueue;
 import game.state.IState;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This version runs a normal sequence of game.action, but adds another cold-started runner at every timestep, and seeing
@@ -13,6 +15,8 @@ import game.state.IState;
 public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToColdBase {
     // 14 steps in the sample run. -> about 17 meters per step.
     // About 2.2 steps-worth of distance on average before failure after a cold start.
+
+    private static Logger logger = LogManager.getLogger(MAIN_CompareWarmStartToColdEveryStep.class);
 
     public static void main(String[] args) {
         new MAIN_CompareWarmStartToColdEveryStep().run();
@@ -39,7 +43,7 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
                 nextCommand = coldStartActionQueue.pollCommand();
                 coldStartGame.step(nextCommand);
                 if (coldStartGame.getFailureStatus()) {
-                    System.out.println((coldStartGame.getCurrentState().getCenterX() - initX)/17.);
+                    logger.info((coldStartGame.getCurrentState().getCenterX() - initX)/17.);
                     break;
                 }
             }

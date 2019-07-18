@@ -22,7 +22,7 @@ import tree.node.NodeQWOPBase;
         @JsonSubTypes.Type(value = EvaluationFunction_SqDistFromOther.class, name = "square_dist"),
         @JsonSubTypes.Type(value = EvaluationFunction_Velocity.class, name = "velocity")
 })
-public interface IEvaluationFunction {
+public interface IEvaluationFunction extends AutoCloseable {
 
     /**
      * Determine and return the value of a node. The methodology is determined by the implementation.
@@ -48,4 +48,7 @@ public interface IEvaluationFunction {
      */
     @JsonIgnore
     IEvaluationFunction getCopy();
+
+    @Override
+    void close();
 }

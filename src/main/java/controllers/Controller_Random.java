@@ -27,4 +27,7 @@ public class Controller_Random implements IController {
     public int hashCode() {
         return Controller_Random.class.hashCode();
     }
+
+    @Override
+    public void close() {}
 }

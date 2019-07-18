@@ -25,7 +25,7 @@ import java.awt.*;
         @JsonSubTypes.Type(value = Controller_NearestNeighborApprox.class, name = "nearest_neighbor"),
         @JsonSubTypes.Type(value = Controller_Tensorflow_ClassifyActionsPerTimestep.class, name = "classifier")
 })
-public interface IController {
+public interface IController extends AutoCloseable {
 
     /**
      * Controller maps a current state to an action to take.
@@ -37,6 +37,9 @@ public interface IController {
 
     @JsonIgnore
     IController getCopy();
+    
+    @Override
+    void close();
 
     /**
      * Optionally, if we want the controller to draw anything to see what it's doing. Defaults to doing nothing if

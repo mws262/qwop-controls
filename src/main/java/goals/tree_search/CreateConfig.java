@@ -1,6 +1,6 @@
 package goals.tree_search;
 
-import controllers.Controller_Random;
+import controllers.Controller_ValueFunction;
 import game.GameUnified;
 import game.GameUnifiedCaching;
 import game.action.ActionGenerator_FixedSequence;
@@ -14,7 +14,10 @@ import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.IRolloutPolicy;
 import tree.sampler.rollout.RolloutPolicy_DecayingHorizon;
 import tree.sampler.rollout.RolloutPolicy_Window;
-import tree.stage.*;
+import tree.stage.TreeStage;
+import tree.stage.TreeStage_FixedGames;
+import tree.stage.TreeStage_Grouping;
+import tree.stage.TreeStage_ValueFunctionUpdate;
 import ui.IUserInterface;
 import ui.UI_Full;
 import ui.histogram.PanelHistogram_LeafDepth;
@@ -41,7 +44,7 @@ public class CreateConfig {
 
     static GameUnifiedCaching game = new GameUnifiedCaching(1,2, GameUnifiedCaching.StateType.DIFFERENCES);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         // Value function setup.
         List<Integer> layerSizes = new ArrayList<>();
@@ -78,7 +81,8 @@ public class CreateConfig {
         IRolloutPolicy rollout1 = new RolloutPolicy_Window(
                 new RolloutPolicy_DecayingHorizon(
                         new EvaluationFunction_Constant(10f),
-                        new Controller_Random()));
+                        new Controller_ValueFunction<>(new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
+                                game.getCopy(), layerSizes, opts, ""))));
 
         searchOperations.add(new SearchConfiguration.SearchOperation(stagegroup,
                 new Sampler_UCB(

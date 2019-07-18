@@ -17,10 +17,13 @@ import tree.node.NodeQWOPExplorableBase;
         @JsonSubTypes.Type(value = RolloutPolicy_Window.class, name = "window")
 
 })
-public interface IRolloutPolicy {
+public interface IRolloutPolicy extends AutoCloseable {
 
     float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game);
 
     @JsonIgnore
     IRolloutPolicy getCopy();
+
+    @Override
+    void close();
 }

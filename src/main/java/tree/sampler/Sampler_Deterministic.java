@@ -92,4 +92,6 @@ public class Sampler_Deterministic implements ISampler {
         return new Sampler_Deterministic();
     }
 
+    @Override
+    public void close() {}
 }

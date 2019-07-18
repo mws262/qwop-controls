@@ -84,6 +84,10 @@ public class GamePredictor extends TensorflowLoader {
             resultStates.add(new State(reshapedResult, false));
 
         }
+        stateInputTensor.close();
+        stateResult.close();
+        internalStateResult.close(); // TODO make sure all are closed.
+
         return resultStates;
     }
 
@@ -107,6 +111,7 @@ public class GamePredictor extends TensorflowLoader {
 
     public static void main(String[] args) {
         GamePredictor gp = new GamePredictor("frozen_model.pb", "src/main/resources/tflow_models");
+        Runtime.getRuntime().addShutdownHook(new Thread(gp::close));
 
         IState initState = GameUnified.getInitialState();
         Action singleAction = new Action(1000, false, true, true, false);

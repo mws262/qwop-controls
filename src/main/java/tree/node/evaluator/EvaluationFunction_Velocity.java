@@ -26,4 +26,7 @@ public class EvaluationFunction_Velocity implements IEvaluationFunction {
     public EvaluationFunction_Velocity getCopy() {
         return new EvaluationFunction_Velocity();
     }
+
+    @Override
+    public void close() {}
 }

@@ -95,4 +95,9 @@ public class RolloutPolicy_Window implements IRolloutPolicy {
     public IRolloutPolicy getIndividualRollout() {
         return individualRollout;
     }
+
+    @Override
+    public void close() {
+        individualRollout.close();
+    }
 }

@@ -366,19 +366,6 @@ public class NodeQWOPGraphicsTest {
     }
 
     @Test
-    public void setPointColor() {
-        setupTree();
-
-        for (NodeQWOPGraphics node : allNodes) {
-            Color color = Color.CYAN;
-            float[] colorComponents = color.getColorComponents(null);
-            node.setPointColor(color);
-
-            Assert.assertArrayEquals(colorComponents, getPointColorFloats(node), 1e-8f);
-        }
-    }
-
-    @Test
     public void setOverridePointColor() {
         setupTree();
 
