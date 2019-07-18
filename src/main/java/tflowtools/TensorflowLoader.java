@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author matt
  */
-public abstract class TensorflowLoader {
+public abstract class TensorflowLoader implements AutoCloseable {
 
     /**
      * Current TensorFlow session.
@@ -64,14 +64,16 @@ public abstract class TensorflowLoader {
      */
     protected List<Float> sisoFloatPrediction(IState state, String inputName, String outputName) {
         Tensor<Float> inputTensor = Tensor.create(flattenState(state), Float.class);
-        Tensor<Float> result =
-                session.runner().feed(inputName + ":0", inputTensor)
+         List<Tensor<?>> output = session.runner().feed(inputName + ":0", inputTensor)
                         .fetch(outputName + ":0")
-                        .run().get(0).expect(Float.class);
+                        .run();
+        Tensor<Float> result = output.get(0).expect(Float.class);
         long[] outputShape = result.shape();
 
         float[] reshapedResult = result.copyTo(new float[(int) outputShape[0]][(int) outputShape[1]])[0];
 
+        inputTensor.close();
+        result.close();
         return Floats.asList(reshapedResult);
     }
 
@@ -119,5 +121,11 @@ public abstract class TensorflowLoader {
         flatState[0] = state.flattenState();
 
         return flatState;
+    }
+
+    @Override
+    public void close() {
+        session.close();
+        graph.close();
     }
 }

@@ -53,6 +53,20 @@ public class TrainableNetwork implements AutoCloseable {
 
     private boolean haveResourcesBeenReleased = false;
 
+    public static volatile int openCount;
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                if (openCount > 0) {
+                    logger.warn("Networks opened but not explicitly closed: " + openCount);
+                } else {
+                    logger.info("All networks opened were closed properly.");
+                }
+            }
+        });
+    }
+
     /**
      * Create a new wrapper for an existing Tensorflow graph.
      *
@@ -83,6 +97,13 @@ public class TrainableNetwork implements AutoCloseable {
         // about loading rather than initializing from scratch.
 
         logger.info("Created a network from a saved model file: " + graphDefinition.toString() + ".");
+        openCount++;
+
+//        Runtime.getRuntime().addShutdownHook(new Thread() {
+//            public void run() {
+//                close();
+//            }
+//        });
     }
 
     /**
@@ -98,14 +119,19 @@ public class TrainableNetwork implements AutoCloseable {
         Tensor<Float> input = Tensors.create(inputs);
         Tensor<Float> value_out = Tensors.create(desiredOutputs);
         Tensor<Float> output = null;
+        float loss = 0;
         for (int i = 0; i < steps; i++) {
-            output = session.runner().feed("input", input).feed("output_target", value_out).addTarget("train").fetch(
-                    "loss").run().get(0).expect(Float.class);
+            List<Tensor<?>> out = session.runner().feed("input", input).feed("output_target", value_out).addTarget(
+                    "train").fetch(
+                    "loss").run();
+            loss = out.get(0).expect(Float.class).floatValue();
+            out.forEach(Tensor::close);
         }
-        assert output != null;
 //        float[] outputStuff = new float[inputs.length];
 //        output.copyTo(outputStuff);
-        return output.floatValue(); // Could be problematic with softmax which doesn't spit out a single value.
+        input.close();
+        value_out.close();
+        return loss; // Could be problematic with softmax which doesn't spit out a single value.
     }
 
     /**
@@ -122,6 +148,7 @@ public class TrainableNetwork implements AutoCloseable {
 
         Tensor<String> checkpointTensor = Tensors.create(checkpointName);
         session.runner().feed("save/Const", checkpointTensor).addTarget("save/control_dependency").run();
+        checkpointTensor.close();
 
         File checkPointDirectory = new File(checkpointName).getParentFile();
         if (!checkPointDirectory.exists() && !checkPointDirectory.mkdirs()) {
@@ -157,6 +184,7 @@ public class TrainableNetwork implements AutoCloseable {
         try {
             Tensor<String> checkpointTensor = Tensors.create(checkpointName);
             session.runner().feed("save/Const", checkpointTensor).addTarget("save/restore_all").run();
+            checkpointTensor.close();
             logger.info("Loaded checkpoint from: " + checkpointName);
             activeCheckpoint = checkpointName;
         } catch (IllegalArgumentException | TensorFlowException e) {
@@ -171,12 +199,16 @@ public class TrainableNetwork implements AutoCloseable {
      */
     public float[][] evaluateInput(float[][] inputs) {
         Tensor<Float> inputTensor = Tensors.create(inputs);
-        Tensor<Float> outputTensor =
-                session.runner().feed("input", inputTensor).fetch("output").run().get(0).expect(Float.class);
+        List<Tensor<?>> result =
+                session.runner().feed("input", inputTensor).fetch("output").run();
+        Tensor<Float> outputTensor = result.get(0).expect(Float.class);
 
         long[] outputShape = outputTensor.shape();
         float[][] output = new float[(int) outputShape[0]][(int) outputShape[1]];
         outputTensor.copyTo(output);
+
+        inputTensor.close();
+        result.forEach(Tensor::close);
         return output;
     }
 
@@ -194,7 +226,7 @@ public class TrainableNetwork implements AutoCloseable {
      * Get the number of outputs from a specified operation. This is NOT the same as the dimension of the output. In
      * most cases, the number of outputs will be 1.
      * @param operationName Name of the operation to check on.
-     * @return Number of outputs returned by that operation.
+     * @return Number of outputs returned  4   by that operation.
      */
     public int getNumberOfOperationOutputs(String operationName) {
         Operation operation = graph.operation(operationName);
@@ -274,6 +306,9 @@ public class TrainableNetwork implements AutoCloseable {
 
     @Override
     public void close() {
+        if (!haveResourcesBeenReleased)
+            openCount--;
+
         session.close();
         graph.close();
         haveResourcesBeenReleased = true;
@@ -335,6 +370,7 @@ public class TrainableNetwork implements AutoCloseable {
         try {
             Process p = pb.start();
             p.waitFor(); // Make sure it has finished before moving on.
+            p.destroy(); //todo necessary?
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

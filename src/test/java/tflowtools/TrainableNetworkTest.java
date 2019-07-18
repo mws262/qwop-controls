@@ -1,5 +1,6 @@
 package tflowtools;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,6 +33,12 @@ public class TrainableNetworkTest {
             e.printStackTrace();
         }
         testNetwork.getGraphDefinitionFile().deleteOnExit(); // Will remove the unit_test_graph.pb file after running.
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        if (testNetwork != null)
+            testNetwork.close();
     }
 
     @Test
