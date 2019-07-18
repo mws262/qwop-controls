@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_ValueFunction;
 import game.GameUnified;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import javax.swing.*;
@@ -61,6 +63,8 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
      * given game.
      */
     private final JLabel badModelMsg;
+
+    private static Logger logger = LogManager.getLogger(PanelRunner_ControlledTFlow.class);
 
     /**
      * Parameters for the disturbance impulse arrow.
@@ -161,6 +165,14 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
 
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
+
+        // Close TensorFlow stuff gracefully at the end.
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (controller != null) {
+                controller.close();
+                logger.debug("Cleaned up TFlow controller.");
+            }
+        }));
     }
 
     /**
@@ -206,6 +218,10 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
             // Switch controllers to the one
             try {
                 String selectedModel = modelSelection.getSelectedItem().toString();
+                if (controller != null) {
+                    controller.close();
+                    logger.debug("Cleaned up old TFlow controller before loading a new one.");
+                }
                 controller =
                         new Controller_ValueFunction<>(
                                 new ValueFunction_TensorFlow_StateOnly(
@@ -213,6 +229,7 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
                                         game
                                 )
                         );
+                logger.debug("Loaded a new controller: " + selectedModel);
                 if (tryCheckpoint(checkpointSelection)) {
                     activateTab();
                 } else {
@@ -249,9 +266,11 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
         try {
             String checkpointName = (String) checkpointSelection.getSelectedItem();
             controller.getValueFunction().loadCheckpoint(Paths.get(checkpointLocation, checkpointName).toString());
+            logger.debug("Loaded checkpoint: " + checkpointName);
             return true;
         } catch (IOException exception) {
             badCheckpointMsg.setVisible(true);
+            logger.debug("Could not load checkpoint.");
             return false;
         }
     }

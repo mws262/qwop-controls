@@ -15,7 +15,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Preconditions;
 import game.GameUnified;
-import game.GameUnifiedCaching;
 import game.action.IActionGenerator;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
@@ -23,6 +22,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
+import tflowtools.TrainableNetwork;
 import tree.TreeWorker;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPExplorableBase;
@@ -230,6 +230,7 @@ public class SearchConfiguration implements Serializable {
             Preconditions.checkNotNull(rootNode);
             Preconditions.checkNotNull(machine);
 
+            System.out.println(TrainableNetwork.openCount);
             ArrayList<TreeWorker> treeWorkers = new ArrayList<>();
             for (int i = 0; i < machine.getRequestedThreadCount(); i++) {
                 treeWorkers.add(getTreeWorker());

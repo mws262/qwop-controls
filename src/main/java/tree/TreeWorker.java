@@ -229,10 +229,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
                     if (flagForTermination.get()) { // Permanent stop. Call terminateWorker() to trigger at next time
                         // the worker reaches IDLE.
-                        workerRunning = false;
                         sampler.close();
                         tsPerSecond = 0; // Set to 0 so plots of worker speed don't get stuck at whatever value they
                         // were at before terminating the worker.
+                        workerRunning = false;
                         break;
                     } else if (paused) { // Temporary stop. Call pauseWorker().
                         synchronized (pauseLock) {
@@ -242,7 +242,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     } else {
                         changeStatus(Status.INITIALIZE); // While running. Go immediately to making a new game.
                     }
-
                     break;
                 case INITIALIZE:
                     actionQueue.clearAll();
@@ -287,7 +286,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                             changeStatus(Status.TREE_POLICY_EXECUTING);
                         }
                     }
-
                     break;
                 case TREE_POLICY_EXECUTING:
 
@@ -302,7 +300,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         sampler.treePolicyActionDone(currentGameNode);
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
                     }
-
                     break;
                 case EXPANSION_POLICY_CHOOSING:
                     if (sampler.expansionPolicyGuard(currentGameNode)) { // Some tree.samplers keep adding nodes until
@@ -315,7 +312,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         actionQueue.addAction(targetActionToTest);
                         changeStatus(Status.EXPANSION_POLICY_EXECUTING);
                     }
-
                     break;
                 case EXPANSION_POLICY_EXECUTING:
 
@@ -334,7 +330,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         sampler.expansionPolicyActionDone(currentGameNode);
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
                     }
-
                     break;
                 case ROLLOUT_POLICY:
                     if (sampler.rolloutPolicyGuard(currentGameNode)) {

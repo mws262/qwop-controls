@@ -101,6 +101,9 @@ public class Transform_Autoencoder implements ITransform {
 
             float[][] res = result.copyTo(new float[1][outputSize]);
             transformedStates.add(res[0]);
+
+            inputTensor.close();
+            result.close();
         }
         return transformedStates;
     }
