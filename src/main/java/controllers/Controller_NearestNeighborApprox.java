@@ -10,6 +10,8 @@ import game.state.IState.ObjectName;
 import game.state.State;
 import game.state.StateVariable;
 import game.state.StateVariable.StateName;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 import tree.Utility;
@@ -113,6 +115,8 @@ public class Controller_NearestNeighborApprox implements IController {
 
     private State weights;
 
+    private static Logger logger = LogManager.getLogger(Controller_NearestNeighborApprox.class);
+
     /**
      * Create a trajectory library-type controller by providing a list of files to look through.
      *
@@ -125,7 +129,7 @@ public class Controller_NearestNeighborApprox implements IController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Wow! " + numStatesLoaded + " states were loaded!");
+        logger.debug(numStatesLoaded + " states were loaded!");
 
         float[] weightVals = new float[State.STATE_SIZE];
         Arrays.fill(weightVals, 1f);
@@ -169,7 +173,7 @@ public class Controller_NearestNeighborApprox implements IController {
                 keysWeighted[2] += multiplier * (v.keys[2] ? 1 : 0);
                 keysWeighted[3] += multiplier * (v.keys[3] ? 1 : 0);
 
-                System.out.println(
+                logger.debug(
                         k + ", \t"
                                 + v.keys[0] + "," + v.keys[1] + "," + v.keys[2] + "," + v.keys[3]);
             }
@@ -185,7 +189,7 @@ public class Controller_NearestNeighborApprox implements IController {
             chosenKeys[3] = keysWeighted[3] >= 0.5f;
 
             if (!Arrays.equals(chosenKeys, bestEntry.getValue().keys)) {
-                System.out.println("Top match overridden by voting.");
+                logger.debug("Top match overridden by voting.");
             }
         } else {
             chosenKeys = bestMatch.keys;
@@ -204,7 +208,6 @@ public class Controller_NearestNeighborApprox implements IController {
                     currentTrajectory = bestMatch.parentRun;
                     currentTrajectoryStateMatch = bestMatch;
                 } else {
-                    System.out.print("SNAP");
                     currentTrajectoryStateMatch = nextStateOnOldTraj;
                     chosenKeys = currentTrajectoryStateMatch.keys;
                 }
@@ -260,7 +263,6 @@ public class Controller_NearestNeighborApprox implements IController {
 //			}
 //			float slowError = penalizeSlowMult/Float.max(0.001f, accumulatedVel);
             cost += slowError;
-            //System.out.println("slow error: " + slowError);
         }
 
         // Also compare previous states.
@@ -279,8 +281,6 @@ public class Controller_NearestNeighborApprox implements IController {
                 }
                 count++;
             }
-            //System.out.println("currentStateError: " + currentStateError + ", oldStateError: " + oldStateError + ",
-            // futureError: " + futureSequenceSizeError);
             cost += oldStateError;
         }
         return cost;
@@ -329,7 +329,7 @@ public class Controller_NearestNeighborApprox implements IController {
             // Read from binary TFRecord to SequenceExample objects.
             List<SequenceExample> dataSeries = TFRecordDataParsers.loadSequencesFromTFRecord(singleSaveFile);
 
-            System.out.println("Read " + dataSeries.size() + " runs from file " + singleSaveFile.getName());
+            logger.info("Read " + dataSeries.size() + " runs from file " + singleSaveFile.getName());
 
             // Process into the more convenient RunHolder format.
             for (SequenceExample singleSequence : dataSeries) { // Each SequenceExample represents 1 run.
@@ -389,6 +389,9 @@ public class Controller_NearestNeighborApprox implements IController {
         }
         Utility.toc();
     }
+
+    @Override
+    public void close() {}
 
     /**
      * @author matt

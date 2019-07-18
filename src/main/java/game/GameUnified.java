@@ -8,6 +8,8 @@ import game.state.IState;
 import game.state.IState.ObjectName;
 import game.state.State;
 import game.state.StateVariable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.MassData;
 import org.jbox2d.collision.shapes.Shape;
@@ -41,6 +43,8 @@ import static game.GameConstants.*;
 })
 @SuppressWarnings("Duplicates")
 public class GameUnified implements IGameInternal, IGameSerializable {
+
+    private final Logger logger = LogManager.getLogger(GameUnified.class);
 
     public static final int STATE_SIZE = 72;
 
@@ -1184,7 +1188,7 @@ public class GameUnified implements IGameInternal, IGameSerializable {
                             (int) (scaling * ptC.y) + yOffset);
 
                 } else {
-                    System.out.println("Not found: " + newfixture.m_type.name());
+                    logger.warn("Not found: " + newfixture.m_type.name());
                 }
                 newfixture = newfixture.getNext();
             }

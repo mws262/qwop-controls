@@ -24,7 +24,7 @@ import tree.node.NodeQWOPExplorableBase;
         @JsonSubTypes.Type(value = Sampler_FixedDepth.class, name = "fixed_depth")
 
 })
-public interface ISampler {
+public interface ISampler extends AutoCloseable {
 
     /**
      * Decide a path through the existing tree to a place where a new node will be added. It is the tree policy's
@@ -74,4 +74,7 @@ public interface ISampler {
      **/
     @JsonIgnore
     ISampler getCopy();
+
+    @Override
+    void close();
 }

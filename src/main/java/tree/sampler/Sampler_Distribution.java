@@ -1,10 +1,10 @@
 package tree.sampler;
 
-import java.util.ArrayList;
-
-import game.action.Action;
 import game.IGameInternal;
+import game.action.Action;
 import tree.node.NodeQWOPExplorableBase;
+
+import java.util.ArrayList;
 
 /**
  * Purely sample according to the assigned distributions, no other heuristics.
@@ -131,4 +131,7 @@ public class Sampler_Distribution implements ISampler {
     public Sampler_Distribution getCopy() {
         return new Sampler_Distribution();
     }
+
+    @Override
+    public void close() {}
 }

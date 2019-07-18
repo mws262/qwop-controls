@@ -1,8 +1,10 @@
 package data;
 
+import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.GameUnified;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import savers.DataSaver_DenseTFRecord;
 
 import java.io.File;
@@ -50,6 +52,8 @@ public class SparseDataToDenseTFRecord {
      */
     public int trimFirst = 0;
     public int trimLast = 0;
+
+    private static Logger logger = LogManager.getLogger(SparseDataToDenseTFRecord.class);
 
     /**
      * Make a new converter for making binary TFRecord files from {@link SavableSingleGame} which were
@@ -105,7 +109,7 @@ public class SparseDataToDenseTFRecord {
         while (!actionQueue.isEmpty()) {
             game.step(actionQueue.pollCommand());
             if (game.getFailureStatus()) {
-                System.out.println("Game saver is seeing a failed state");
+                logger.warn("Game saver is seeing a failed state");
             }
         }
     }
@@ -124,7 +128,7 @@ public class SparseDataToDenseTFRecord {
             game.step(nextCommand);
             saver.reportTimestep(action, game); // Key difference
             if (game.getFailureStatus()) {
-                System.out.println("Game saver is seeing a failed state");
+                logger.warn("Game saver is seeing a failed state");
             }
         }
     }

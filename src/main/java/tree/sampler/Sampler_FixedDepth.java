@@ -168,4 +168,7 @@ public class Sampler_FixedDepth implements ISampler {
     public Sampler_FixedDepth getCopy() {
         return new Sampler_FixedDepth(horizonDepth);
     }
+
+    @Override
+    public void close() {}
 }

@@ -7,6 +7,8 @@ import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.state.IState;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
 import tree.node.NodeQWOPBase;
@@ -54,11 +56,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Is this worker idle and waiting for a new task?
      */
     private boolean paused = true;
-
-    /**
-     * Print debugging info?
-     */
-    public boolean verbose = false;
 
     /**
      * The current game instance that this FSM is using. This will now not change.
@@ -152,6 +149,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     private final List<Action> actionSequence = new ArrayList<>();
 
+    private static Logger logger = LogManager.getLogger(TreeWorker.class);
+
     private TreeWorker(ISampler sampler, IDataSaver saver) {
         workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
@@ -229,9 +228,10 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
                     if (flagForTermination.get()) { // Permanent stop. Call terminateWorker() to trigger at next time
                         // the worker reaches IDLE.
-                        workerRunning = false;
+                        sampler.close();
                         tsPerSecond = 0; // Set to 0 so plots of worker speed don't get stuck at whatever value they
                         // were at before terminating the worker.
+                        workerRunning = false;
                         break;
                     } else if (paused) { // Temporary stop. Call pauseWorker().
                         synchronized (pauseLock) {
@@ -241,7 +241,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     } else {
                         changeStatus(Status.INITIALIZE); // While running. Go immediately to making a new game.
                     }
-
                     break;
                 case INITIALIZE:
                     actionQueue.clearAll();
@@ -286,7 +285,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                             changeStatus(Status.TREE_POLICY_EXECUTING);
                         }
                     }
-
                     break;
                 case TREE_POLICY_EXECUTING:
 
@@ -301,7 +299,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         sampler.treePolicyActionDone(currentGameNode);
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
                     }
-
                     break;
                 case EXPANSION_POLICY_CHOOSING:
                     if (sampler.expansionPolicyGuard(currentGameNode)) { // Some tree.samplers keep adding nodes until
@@ -314,7 +311,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         actionQueue.addAction(targetActionToTest);
                         changeStatus(Status.EXPANSION_POLICY_EXECUTING);
                     }
-
                     break;
                 case EXPANSION_POLICY_EXECUTING:
 
@@ -333,7 +329,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
                         sampler.expansionPolicyActionDone(currentGameNode);
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
                     }
-
                     break;
                 case ROLLOUT_POLICY:
                     if (sampler.rolloutPolicyGuard(currentGameNode)) {
@@ -357,7 +352,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (rootNode.isFullyExplored()) {
                         pauseWorker();
                         changeStatus(Status.IDLE);
-                        System.out.println("Tree is fully explored, but just pausing for next stage.");
+                        logger.warn("Tree is fully explored, but just pausing for next stage.");
                     } else {
                         changeStatus(Status.IDLE);
                     }
@@ -372,9 +367,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Do not directly change the game status. Use this.
      */
     private void changeStatus(Status newStatus) {
-        if (verbose) {
-            System.out.println("Worker " + workerID + ": " + currentStatus + " --->  " + newStatus + "     game: " + workerGamesPlayed);
-        }
+        logger.debug("Worker " + workerID + ": " + currentStatus + " --->  " + newStatus + "     game: " + workerGamesPlayed);
         currentStatus = newStatus;
     }
 

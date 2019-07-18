@@ -45,4 +45,7 @@ public class EvaluationFunction_Constant implements IEvaluationFunction {
     public float getConstantValue() {
         return constantValue;
     }
+
+    @Override
+    public void close() {}
 }

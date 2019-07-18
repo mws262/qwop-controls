@@ -2,7 +2,8 @@ package data;
 
 import game.action.Action;
 import game.state.IState;
-import game.state.State;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,11 +25,13 @@ public class SavableDenseData implements Serializable {
 
     private final Action[] action;
 
+    private static Logger logger = LogManager.getLogger(SavableDenseData.class);
+
     public SavableDenseData(IState[] state, Action[] action) {
         if (state.length != action.length && state.length - action.length != 1) {
             //throw new RuntimeException("State and action data must be of the same size, or state must have 1 more
 			// element than action. State size: " + state.length + ". Action size: " + action.length);
-            System.out.println("State size: " + state.length + ". Action size: " + action.length + ". Ignoring for " +
+            logger.warn("State size: " + state.length + ". Action size: " + action.length + ". Ignoring for " +
 					"now.");
         }
         this.state = state;
@@ -36,23 +39,8 @@ public class SavableDenseData implements Serializable {
     }
 
     public SavableDenseData(ArrayList<IState> state, ArrayList<Action> action) {
-        if (state.size() != action.size() && state.size() - action.size() != 1) {
-            //throw new RuntimeException("State and action data must be of the same size, or state must have 1 more
-			// element than action. State size: " + state.size() + ". Action size: " + action.size());
-            System.out.println("State size: " + state.size() + ". Action size: " + action.size() + ". Ignoring for " +
-					"now.");
-        }
-
-        this.state = new State[state.size()];
-        this.action = new Action[action.size()];
-
-        for (int i = 0; i < state.size(); i++) {
-            this.state[i] = state.get(i);
-        }
-
-        for (int i = 0; i < action.size(); i++) {
-            this.action[i] = action.get(i);
-        }
+        this(state.toArray(new IState[0]), action.toArray(new Action[0])); // Convert to arrays and give to other
+        // constructor.
     }
 
     public IState[] getState() {

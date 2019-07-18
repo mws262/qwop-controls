@@ -1,20 +1,24 @@
 package goals.playback;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import java.util.List;
-import javax.swing.JFrame;
-
-import game.action.Action;
-import game.action.ActionQueue;
 import data.TFRecordDataParsers;
 import game.GameUnified;
 import game.IGameInternal;
-import org.tensorflow.example.SequenceExample;
-
+import game.action.Action;
+import game.action.ActionQueue;
 import game.state.State;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.tensorflow.example.SequenceExample;
 import ui.runner.PanelRunner_MultiState;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Playback runs or sections of runs saved densely in TFRecord files. This draws three things: state data drawn over
@@ -34,6 +38,8 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
      * Can also be a single TFRecord file.
      */
     private File saveLoc = new File("src/main/resources/saved_data/training_data/denseTF_2018-04-26_15-19-44.TFRecord");
+
+    private static Logger logger = LogManager.getLogger(MAIN_PlaybackSaved_TFRecord.class);
 
     public static void main(String[] args) {
         MAIN_PlaybackSaved_TFRecord mc = new MAIN_PlaybackSaved_TFRecord();
@@ -76,7 +82,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
         if (playbackFiles.isEmpty()) {
             throw new IndexOutOfBoundsException("No TFRecord files found in this directory.");
         }
-        System.out.println("Number of TFRecord files found: " + playbackFiles.size() + ".");
+        logger.info("Number of TFRecord files found: " + playbackFiles.size() + ".");
 
         Collections.shuffle(playbackFiles);
 
@@ -95,7 +101,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
 
             Objects.requireNonNull(dataSeries, "TFRecord files were not successfully loaded.");
 
-            System.out.println("Read " + dataSeries.size() + " runs from file " + tfrecordFile + ".");
+            logger.info("Read " + dataSeries.size() + " runs from file " + tfrecordFile + ".");
             Collections.shuffle(dataSeries);
 
             // Playback each sequence one at a time.
@@ -120,7 +126,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                     runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
                     runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
                     if (actionQueue.isEmpty()) {
-                        System.out.println("Warning: game.action ended before states did.");
+                        logger.warn("Game.action ended before states did.");
                     } else {
                         boolean[] actionQueueCommand = actionQueue.pollCommand();
                         gameForActionSim.step(actionQueueCommand);

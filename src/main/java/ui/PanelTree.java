@@ -1,12 +1,11 @@
 package ui;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
-import tree.node.NodeQWOPGraphicsBase;
 import tree.TreeWorker;
+import tree.node.NodeQWOPGraphicsBase;
 
 import javax.swing.*;
 import javax.vecmath.Vector3f;
@@ -92,10 +91,17 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      */
     private Set<NodeSelectionListener> nodeSelectionListeners = new HashSet<>();
 
+    private JButton pauseButton;
+
     /**
      * Button for resetting the camera view.
      */
     private JButton resetButton;
+
+    /**
+     * Enable/disable node text labels.
+     */
+    private JCheckBox labelToggleCheck;
 
     public PanelTree() {
         super();
@@ -109,12 +115,25 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         layout.setAlignment(FlowLayout.LEFT); // So the button goes to the top left corner.
         setLayout(layout);
 
+        pauseButton = new JButton("Pause drawing");
+        pauseButton.setToolTipText("Pause or resume drawing of the game tree.");
+        pauseButton.addActionListener(this);
+        pauseButton.setBackground(new Color(255, 255, 255, 100));
+        add(pauseButton);
+
         // Button for resetting the camera to default position/target.
         resetButton = new JButton("Reset camera");
         resetButton.setToolTipText("Reset the camera view back to the initial view if you're lost.");
         resetButton.addActionListener(this);
         resetButton.setBackground(new Color(255, 255, 255, 100));
         add(resetButton);
+
+        // Enable node labels.
+        labelToggleCheck = new JCheckBox("Enable text labels (slow).");
+        labelToggleCheck.setToolTipText("Enable text labels at nodes (if set). This is much slower than all other " +
+                "drawing processes.");
+        labelToggleCheck.setBackground(new Color(255, 255, 255, 60));
+        add(labelToggleCheck);
     }
 
     /**
@@ -193,22 +212,19 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         final float ptSize = Math.min(50f / cam.getZoomFactor(), 10f); //Let the points be smaller/bigger depending on
         // zoom, but make sure to cap out the size!
 
-        for (NodeQWOPGraphicsBase<?> node : rootNodes) {
-            node.recurseDownTreeInclusive( n -> {
-                n.drawLabel(gl, glut);
+        gl.glPointSize(ptSize);
+//        for (NodeQWOPGraphicsBase<?> node : rootNodes) {
+//            node.drawOverridePointsBelow(gl);
+//            node.drawOverrideLinesBelow(gl);
+//        }
+        NodeQWOPGraphicsBase.updateBuffers(gl);
+        NodeQWOPGraphicsBase.drawAllBuffered(gl);
+        NodeQWOPGraphicsBase.drawAllUnbuffered(gl);
 
-                gl.glColor3f(1f, 0.1f, 0.1f);
-                gl.glPointSize(ptSize);
-
-                gl.glBegin(GL.GL_POINTS);
-                n.drawPoint(gl); // Recurses through the whole tree.
-                gl.glEnd();
-
-                gl.glColor3f(1f, 1f, 1f);
-                gl.glBegin(GL.GL_LINES);
-                n.drawLine(gl); // Recurses through the whole tree.
-                gl.glEnd();
-            });
+        if (labelToggleCheck.isSelected()) {
+            for (NodeQWOPGraphicsBase<?> node : rootNodes) {
+                node.recurseDownTreeInclusive(n -> n.drawLabel(gl, glut));
+            }
         }
 
         /*
@@ -302,8 +318,9 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             //Navigating the focused node tree
             int keyCode = e.getKeyCode();
 
-            if (keyCode == KeyEvent.VK_P) // Pause graphics updates.
+            if (keyCode == KeyEvent.VK_P) { // Pause graphics updates.
                 treePause = !treePause;
+            }
 
             if (!treePause) {
                 if (e.isAltDown()) {
@@ -514,6 +531,52 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         // Reset the camera view back to initial view.
         if (e.getSource().equals(resetButton)) {
             cam = new GLCamManager(panelWidth, panelHeight);
+        } else if (e.getSource().equals(pauseButton)) {
+            treePause = !treePause;
         }
     }
+
+//    // Altered from: https://wadeawalker.wordpress.com/2010/10/17/tutorial-faster-rendering-with-vertex-buffer-objects/
+//    private int [] createAndFillVertexBuffer(GL2 gl2, List<NodeQWOPGraphicsBase<?>> nodeList) {
+//
+//        int [] aiNumOfVertices = new int [] {nodeList.size() * 3}; // Enough space for two vertices for
+//        // lines and one vertex for a point for each line (even if not all are used).
+//        int [] aiVertexBufferIndices = new int [] {-1};
+//
+//        // create vertex buffer object if needed
+//        if( aiVertexBufferIndices[0] == -1 ) {
+//            // check for VBO support
+//            if(    !gl2.isFunctionAvailable( "glGenBuffers" )
+//                    || !gl2.isFunctionAvailable( "glBindBuffer" )
+//                    || !gl2.isFunctionAvailable( "glBufferData" )
+//                    || !gl2.isFunctionAvailable( "glDeleteBuffers" ) ) {
+//                throw new RuntimeException( "Vertex buffer objects not supported." );
+//            }
+//
+//            gl2.glGenBuffers( 1, aiVertexBufferIndices, 0 );
+//
+//            // create vertex buffer data store without initial copy
+//            gl2.glBindBuffer( GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0] );
+//            gl2.glBufferData( GL.GL_ARRAY_BUFFER,
+//                    aiNumOfVertices[0] * 3 * Buffers.SIZEOF_FLOAT * 2,
+//                    null,
+//                    GL2.GL_DYNAMIC_DRAW );
+//        }
+//
+//        // map the buffer and write vertex and color data directly into it
+//        gl2.glBindBuffer( GL.GL_ARRAY_BUFFER, aiVertexBufferIndices[0] );
+//        ByteBuffer bytebuffer = gl2.glMapBuffer( GL.GL_ARRAY_BUFFER, GL2.GL_WRITE_ONLY );
+//        FloatBuffer floatbuffer = bytebuffer.order( ByteOrder.nativeOrder() ).asFloatBuffer();
+//
+//        for( NodeQWOPGraphicsBase<?> node : nodeList ) {
+//            node.addLineToBuffer(floatbuffer);
+//        }
+//        for( NodeQWOPGraphicsBase<?> node : nodeList ) {
+//            node.addPointToBuffer(floatbuffer);
+//        }
+//
+//        gl2.glUnmapBuffer( GL.GL_ARRAY_BUFFER );
+//
+//        return aiVertexBufferIndices;
+//    }
 }

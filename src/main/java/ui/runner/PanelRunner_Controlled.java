@@ -92,6 +92,8 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
      */
     private ControllerExecutor controllerExecutor;
 
+    private JCheckBox pauseToggle;
+
     public PanelRunner_Controlled(@JsonProperty("name") String name, G game, C controller) {
         this.name = name;
         this.controller = controller;
@@ -125,6 +127,11 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
         constraints.gridy = layoutRows - 1;
         add(resetButton, constraints);
         actionQueue.addAction(new Action(7, Action.Keys.none));
+
+        constraints.gridx = 1;
+        pauseToggle = new JCheckBox("Pause");
+        pauseToggle.setToolTipText("Pause the controlled game simulation.");
+        add(pauseToggle, constraints);
     }
 
     /**
@@ -208,23 +215,25 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
 
         @Override
         public void run() {
-            // If the queue is out of actions, then ask the controller for a new one.
-            if (actionQueue.isEmpty()) {
-                // Either make the first node since the game began, or add a child to the previous node.
-                if (node == null) {
-                    if (actionGenerator != null) {
-                        node = new NodeQWOPExplorable(game.getCurrentState(), actionGenerator);
+            if (!pauseToggle.isSelected()) {
+                // If the queue is out of actions, then ask the controller for a new one.
+                if (actionQueue.isEmpty()) {
+                    // Either make the first node since the game began, or add a child to the previous node.
+                    if (node == null) {
+                        if (actionGenerator != null) {
+                            node = new NodeQWOPExplorable(game.getCurrentState(), actionGenerator);
+                        } else {
+                            node = new NodeQWOPExplorable(game.getCurrentState());
+                        }
                     } else {
-                        node = new NodeQWOPExplorable(game.getCurrentState());
+                        node = node.addBackwardsLinkedChild(mostRecentAction, game.getCurrentState());
                     }
-                } else {
-                    node = node.addBackwardsLinkedChild(mostRecentAction, game.getCurrentState());
+                    mostRecentAction = controller.policy(node);
+                    actionQueue.addAction(mostRecentAction);
                 }
-                mostRecentAction = controller.policy(node);
-                actionQueue.addAction(mostRecentAction);
+                applyDisturbance(game);
+                game.step(actionQueue.pollCommand());
             }
-            applyDisturbance(game);
-            game.step(actionQueue.pollCommand());
         }
     }
 }

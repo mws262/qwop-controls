@@ -119,4 +119,7 @@ public class Sampler_Random implements ISampler {
     public Sampler_Random getCopy() {
         return new Sampler_Random();
     }
+
+    @Override
+    public void close() {}
 }

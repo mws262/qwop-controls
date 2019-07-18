@@ -346,10 +346,8 @@ public class FlashQWOPServer implements IGameExternal {
                                     for (IFlashStateListener listener : listenerList) {
                                         listener.stateReceived(getCurrentTimestep(), st);
                                     }
-                                    // System.out.println(stateFromFlash.toString(2));
-
                                 } else {
-                                    System.out.println(stateFromFlash.toString(2));
+                                    logger.info(stateFromFlash.toString(2));
                                 }
                             } else {
                                 if (getCurrentTimestep() == 0) {

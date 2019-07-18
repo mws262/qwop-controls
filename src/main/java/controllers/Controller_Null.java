@@ -29,4 +29,7 @@ public class Controller_Null implements IController {
     public int hashCode() {
         return Controller_Null.class.hashCode();
     }
+
+    @Override
+    public void close() {}
 }

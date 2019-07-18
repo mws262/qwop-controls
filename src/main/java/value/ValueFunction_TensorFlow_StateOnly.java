@@ -20,10 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import static game.action.Action.Keys;
 import static game.action.Action.keysToBooleans;
@@ -70,9 +67,9 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         Preconditions.checkArgument(outputSize == 1, "Value function output for this controller should have precisely" +
                 " one output.");
 
-        assignFuturePredictors(gameTemplate);
-        this.gameTemplate = gameTemplate;
+        this.gameTemplate = gameTemplate.getCopy();
         fileName = file.getName();
+        assignFuturePredictors(this.gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
     }
@@ -148,6 +145,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                     evalResults.add(eval.call());
                 }
             }
+        } catch (ExecutionException e) {
+            return new Action(1, false, false, false, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -399,5 +398,16 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             e.printStackTrace();
         }
         return valFunCopy;
+    }
+
+    @Override
+    public void close() {
+        executor.shutdown();
+        try {
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        super.close();
     }
 }

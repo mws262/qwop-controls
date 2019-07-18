@@ -66,8 +66,8 @@ searchOperations:
     type: distribution
   saver:
     type: null
-    savePath:
     saveInterval: 0
+    savePath:
   repetitionCount: 0
 - stage:
     type: grouping
@@ -107,7 +107,23 @@ searchOperations:
           type: constant
           constantValue: 10.0
         rolloutController:
-          type: random
+          type: value_function
+          valueFunction:
+            type: tflow_state_only
+            fileName: src/main/resources/tflow_models/test.pb
+            gameTemplate:
+              type: delay_embedded
+              timestepDelay: 1
+              numDelayedStates: 2
+              stateType: DIFFERENCES
+            hiddenLayerSizes:
+            - 128
+            - 64
+            additionalNetworkArgs:
+            - --learnrate
+            - 1e-4
+            activeCheckpoint: null
+            outputSize: 1
         maxTimesteps: 200
         rolloutActionGenerator:
           type: fixed_sequence
@@ -139,8 +155,8 @@ searchOperations:
     explorationRandomFactor: 1.0
   saver:
     type: null
-    savePath:
     saveInterval: 0
+    savePath:
   repetitionCount: 0
 ui:
   type: full

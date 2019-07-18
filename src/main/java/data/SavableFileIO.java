@@ -1,9 +1,14 @@
 package data;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Store and load serialized objects. Each of these savers can only handle saving and loading objects of one type.
@@ -16,7 +21,7 @@ public class SavableFileIO<T> {
     /**
      * Whether to display debugging/progress messages.
      */
-    public boolean verbose = true;
+    private static Logger logger = LogManager.getLogger(SavableFileIO.class);
 
     /**
      * Store objects to file.
@@ -30,8 +35,8 @@ public class SavableFileIO<T> {
     public void storeObjects(Collection<T> data, File saveFile, boolean append) {
 
         if (!saveFile.isFile()) {
-            if (saveFile.getParentFile().mkdirs() && verbose) {
-                System.out.println("Made parent directory(s) before storing objects.");
+            if (saveFile.getParentFile().mkdirs()) {
+                logger.debug("Made parent directory(s) before storing objects.");
             }
         }
 
@@ -65,10 +70,7 @@ public class SavableFileIO<T> {
     public void loadObjectsToCollection(File file, Collection<T> collection) {
         int counter = 0;
         try (FileInputStream fin = new FileInputStream(file); ObjectInputStream objIs = new ObjectInputStream(fin)) {
-            if (verbose) {
-                final String dir = System.getProperty("user.dir");
-                System.out.println("current directory: " + dir);
-            }
+            logger.info("current directory: " + System.getProperty("user.dir"));
 
             boolean reading = true;
             while (reading) {
@@ -84,7 +86,7 @@ public class SavableFileIO<T> {
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         }
-        if (verbose) System.out.println("Loaded " + counter + " objects from file " + file.getName() + ".");
+       logger.info("Loaded " + counter + " objects from file " + file.getName() + ".");
     }
 
     /**
@@ -99,7 +101,7 @@ public class SavableFileIO<T> {
         for (T d : data) {
             objOps.writeObject(d);
             count++;
-            if (verbose) System.out.println("Wrote games to file: " + count + "/" + data.size());
+            logger.info("Wrote games to file: " + count + "/" + data.size());
         }
         objOps.flush();
     }
@@ -154,7 +156,7 @@ public class SavableFileIO<T> {
             double bytes = file.length();
             double kilobytes = (bytes / 1024);
             double megabytes = (kilobytes / 1024);
-            System.out.println(file + " is: " + Math.round(megabytes * 100) / 100. + "Mb");
+            logger.info(file + " is: " + Math.round(megabytes * 100) / 100. + "Mb");
         }
     }
 

@@ -6,6 +6,8 @@ import data.SavableSingleGame;
 import game.IGameInternal;
 import game.action.Action;
 import game.state.IState;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOPBase;
 
 import java.io.File;
@@ -50,6 +52,8 @@ public class DataSaver_StageSelected implements IDataSaver {
      */
     private String fileLocation = "./";
 
+    private static Logger logger = LogManager.getLogger(DataSaver_StageSelected.class);
+
     @Override
     public void reportGameInitialization(IState initialState) {}
 
@@ -82,7 +86,7 @@ public class DataSaver_StageSelected implements IDataSaver {
 
         }
         saveBuffer.clear();
-        System.out.println("Saved " + targetNodes.size() + " runs sparsely to file at the end of the stage.");
+        logger.info("Saved " + targetNodes.size() + " runs sparsely to file at the end of the stage.");
     }
 
     @Override

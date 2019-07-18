@@ -1,11 +1,13 @@
 package savers;
 
-import game.action.Action;
 import com.google.protobuf.ByteString;
 import data.TFRecordWriter;
+import game.action.Action;
 import game.state.IState;
 import game.state.State;
 import game.state.StateVariable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tensorflow.example.*;
 import tree.node.NodeQWOPBase;
 
@@ -45,6 +47,8 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      * List of sets of states and game.action for individual games awaiting file write.
      */
     private ArrayList<GameContainer> gameData = new ArrayList<>();
+
+    private static Logger logger = LogManager.getLogger(DataSaver_DenseTFRecord.class);
 
     public DataSaver_DenseTFRecord() {
         id = id_max++;
@@ -138,7 +142,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
         for (GameContainer dat : gameData) {
             int actionPad = dat.states.size() - dat.actions.size(); // Make the dimensions match for coding convenience.
             if (actionPad != 1) {
-                System.out.println("Dimensions of state is not 1 more than dimension of action as expected. Ignoring " +
+                logger.warn("Dimensions of state is not 1 more than dimension of action as expected. Ignoring " +
 						"this one.");
                 continue;
             }

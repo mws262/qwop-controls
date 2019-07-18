@@ -38,7 +38,6 @@ public class SavableFileIOTest implements Serializable {
         // Combined testing of saving and loading objects.
 
         SavableFileIO<String> stringSaver = new SavableFileIO<>();
-        stringSaver.verbose = false;
 
         List<String> stringList = new ArrayList<>();
         stringList.add("a");
@@ -76,7 +75,6 @@ public class SavableFileIOTest implements Serializable {
         strListAppend.add("APPENDING!");
         SavableFileIO<String> stringSaverAppend = new SavableFileIO<>(); // Making sure it can be done with a
         // different saver object.
-        stringSaverAppend.verbose = false;
 
         stringSaverAppend.storeObjects(strListAppend, tempStringFile, true);
 
@@ -109,7 +107,6 @@ public class SavableFileIOTest implements Serializable {
 
         /* For more complicated objects. */
         SavableFileIO<TestClass> testClassSaver = new SavableFileIO<>();
-        testClassSaver.verbose = false;
 
         TestClassLower tcl1 = new TestClassLower(0.5d);
         TestClass tc1 = new TestClass(4, "qw", 0.7f, tcl1);
@@ -180,7 +177,6 @@ public class SavableFileIOTest implements Serializable {
     @Test
     public void combineFiles() {
         SavableFileIO<String> stringSaver = new SavableFileIO<>();
-        stringSaver.verbose = false;
 
         List<String> stringList1 = new ArrayList<>();
         stringList1.add("a");
