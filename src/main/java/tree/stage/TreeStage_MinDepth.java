@@ -52,7 +52,6 @@ public class TreeStage_MinDepth extends TreeStage {
                 leafList.add(n);
             }
         });
-        System.out.println(leafList.size());
 
         List<NodeQWOPBase<?>> resultList = new ArrayList<>();
 

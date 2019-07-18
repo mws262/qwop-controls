@@ -1,18 +1,19 @@
 package goals.data_visualization;
 
-import java.awt.Dimension;
+import data.SavableFileIO;
+import data.SavableSingleGame;
+import game.GameUnified;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import tree.node.NodeQWOPGraphics;
+import ui.runner.PanelRunner_Snapshot;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import javax.swing.JFrame;
-
-import data.SavableFileIO;
-import data.SavableSingleGame;
-import game.GameUnified;
-import tree.node.NodeQWOPGraphics;
-import ui.runner.PanelRunner_Snapshot;
 
 /**
  * Playback runs or sections of runs saved in SavableSingleRun files.
@@ -42,6 +43,8 @@ public class MAIN_SnapshotAll extends JFrame {
      * Location where the files to be played back are located. All SavableSingleGame files will be used.
      */
     private File saveLoc = new File("src/main/resources/saved_data/tmp_testing");
+
+    private static Logger logger = LogManager.getLogger(MAIN_SnapshotAll.class);
 
     public static void main(String[] args) {
         MAIN_SnapshotAll mc = new MAIN_SnapshotAll();
@@ -76,7 +79,7 @@ public class MAIN_SnapshotAll extends JFrame {
         }
 
         if (playbackFiles.isEmpty()) {
-            System.out.println("No files found in specified directory. Quitting.");
+            logger.warn("No files found in specified directory. Quitting.");
             return;
         }
 
@@ -94,7 +97,6 @@ public class MAIN_SnapshotAll extends JFrame {
         while (currNode.getTreeDepth() < playbackDepth && currNode.getChildCount() > 0) {
             currNode = currNode.getChildByIndex(0);
         }
-        System.out.println(currNode.countDescendants());
         snapshotPane.update(currNode);
         repaint();
     }

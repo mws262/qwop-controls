@@ -1,5 +1,8 @@
 package hardware;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -11,6 +14,8 @@ public class TimeTester {
 
     private volatile boolean donePress = false;
     private volatile boolean doneDepress = false;
+
+    private static Logger logger = LogManager.getLogger(TimeTester.class);
 
     public TimeTester() {
         JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
@@ -43,7 +48,7 @@ public class TimeTester {
 
             long endTimePress = System.currentTimeMillis();
 
-            System.out.println("milliseconds to push key down: " + (endTimePress - startTimePress));
+            logger.info("milliseconds to push key down: " + (endTimePress - startTimePress));
 
             try {
                 Thread.sleep(100);
@@ -60,7 +65,7 @@ public class TimeTester {
 
             long endTimeDepress = System.currentTimeMillis();
 
-            System.out.println("milliseconds to release key : " + (endTimeDepress - startTimeDepress));
+            logger.info("milliseconds to release key : " + (endTimeDepress - startTimeDepress));
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {

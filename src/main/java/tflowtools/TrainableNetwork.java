@@ -218,7 +218,7 @@ public class TrainableNetwork implements AutoCloseable {
     public void printGraphOperations() {
         Iterator<Operation> iter = graph.operations();
         while (iter.hasNext()) {
-            System.out.println(iter.next().name());
+            logger.info(iter.next().name());
         }
     }
 

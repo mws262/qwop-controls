@@ -3,6 +3,8 @@ package tflowtools;
 import com.google.common.primitives.Floats;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import game.state.IState;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tensorflow.*;
 
 import java.io.IOException;
@@ -29,6 +31,8 @@ public abstract class TensorflowLoader implements AutoCloseable {
      */
     private final Graph graph;
 
+    private static Logger logger = LogManager.getLogger(TensorflowLoader.class);
+
     /**
      * Load the computational graph from a .pb file and also make a new session.
      *
@@ -37,7 +41,7 @@ public abstract class TensorflowLoader implements AutoCloseable {
      */
     @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION", justification = "Null pointer exception is caught.")
     public TensorflowLoader(String pbFile, String directory) {
-        System.out.println("Tensorflow version: " + TensorFlow.version());
+        logger.debug("Tensorflow version: " + TensorFlow.version());
         byte[] graphDef = null;
         try {
             graphDef = Files.readAllBytes(Paths.get(directory, pbFile));
@@ -86,7 +90,7 @@ public abstract class TensorflowLoader implements AutoCloseable {
     public void printTensorflowGraphOperations() {
         Iterator<Operation> iter = graph.operations();
         while (iter.hasNext()) {
-            System.out.println(iter.next().name());
+            logger.info(iter.next().name());
         }
     }
 

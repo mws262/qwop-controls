@@ -7,6 +7,8 @@ import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.state.IState;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
 import tree.node.NodeQWOPBase;
@@ -54,11 +56,6 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Is this worker idle and waiting for a new task?
      */
     private boolean paused = true;
-
-    /**
-     * Print debugging info?
-     */
-    public boolean verbose = false;
 
     /**
      * The current game instance that this FSM is using. This will now not change.
@@ -151,6 +148,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
     private final Object pauseLock = new Object();
 
     private final List<Action> actionSequence = new ArrayList<>();
+
+    private static Logger logger = LogManager.getLogger(TreeWorker.class);
 
     private TreeWorker(ISampler sampler, IDataSaver saver) {
         workerID = TreeWorker.getWorkerCountAndIncrement();
@@ -353,7 +352,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     if (rootNode.isFullyExplored()) {
                         pauseWorker();
                         changeStatus(Status.IDLE);
-                        System.out.println("Tree is fully explored, but just pausing for next stage.");
+                        logger.warn("Tree is fully explored, but just pausing for next stage.");
                     } else {
                         changeStatus(Status.IDLE);
                     }
@@ -368,9 +367,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Do not directly change the game status. Use this.
      */
     private void changeStatus(Status newStatus) {
-        if (verbose) {
-            System.out.println("Worker " + workerID + ": " + currentStatus + " --->  " + newStatus + "     game: " + workerGamesPlayed);
-        }
+        logger.debug("Worker " + workerID + ": " + currentStatus + " --->  " + newStatus + "     game: " + workerGamesPlayed);
         currentStatus = newStatus;
     }
 
