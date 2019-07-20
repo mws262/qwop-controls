@@ -134,6 +134,9 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                 "drawing processes.");
         labelToggleCheck.setBackground(new Color(255, 255, 255, 60));
         add(labelToggleCheck);
+
+        PanelLogger log = new PanelLogger();
+        add(log);
     }
 
     /**
