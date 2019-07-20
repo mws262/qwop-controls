@@ -19,6 +19,7 @@ import tree.stage.TreeStage_FixedGames;
 import tree.stage.TreeStage_MaxDepth;
 import tree.stage.TreeStage_MinDepth;
 import ui.IUserInterface;
+import ui.PanelLogger;
 import ui.UI_Full;
 import ui.UI_Headless;
 import ui.histogram.PanelHistogram_LeafDepth;
@@ -316,6 +317,7 @@ public abstract class SearchTemplate {
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
         //workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 
+        fullUI.addTab(new PanelLogger());
         fullUI.addTab(runnerPanel);
         fullUI.addTab(snapshotPane);
         fullUI.addTab(comparisonPane);
