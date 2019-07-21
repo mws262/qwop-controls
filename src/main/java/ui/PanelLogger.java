@@ -19,6 +19,10 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
+
+import static ui.PanelLogger.PanelLogAppender.StyleType.*;
 
 public class PanelLogger extends JPanel implements TabbedPaneActivator {
 
@@ -54,8 +58,7 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
         scrollPane.getVerticalScrollBar().setBackground(new Color(128, 128, 128, 128));
 //        scrollPane.getVerticalScrollBar().setForeground(Color.BLUE);
 //        scrollPane.getVerticalScrollBar().setBorder(BorderFactory.createLineBorder(Color.black, 1, true));
-        scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI()
-        {
+        scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
             @Override
             protected void configureScrollBarColors() {
                 this.thumbColor = new Color(128, 128, 128, 180);
@@ -93,11 +96,11 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
         LoggerContext lc = (LoggerContext) LogManager.getContext(false);
 
         PatternLayout layout = PatternLayout.newBuilder().withConfiguration(lc.getConfiguration()).withPattern(
-                "%d{yyyy-MM-dd HH:mm:ss} [%p] %c{1} %m%n").withAlwaysWriteExceptions(true).build();
+                "%c{1} %m%n").withAlwaysWriteExceptions(true).build();
 
         PanelLogAppender appender = new PanelLogAppender(logTextArea, "placeholder",
                 ThresholdFilter.createFilter(Level.INFO,
-                Filter.Result.ACCEPT, Filter.Result.ACCEPT), layout);
+                        Filter.Result.ACCEPT, Filter.Result.ACCEPT), layout);
         appender.start();
 
         // Modifying logging configuration after initialization. See:
@@ -134,31 +137,85 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
         private StyledDocument doc;
 
 
-        private Style style1;
-        private Style style2;
+        enum StyleType {
+            WHITE, RED, BLUE, YELLOW, GREEN,
+            WHITE_BOLD, RED_BOLD, BLUE_BOLD, YELLOW_BOLD, GREEN_BOLD
+        }
 
+        Map<StyleType, Style> styles = new HashMap<>();
 
         protected PanelLogAppender(JTextPane logTextArea, String name, Filter filter, Layout layout) {
             super(name, filter, layout, false, Property.EMPTY_ARRAY);
             this.logTextArea = logTextArea;
             doc = logTextArea.getStyledDocument();
+            addStyle(WHITE, WHITE_BOLD, new Color(PanelTree.darkText[0], PanelTree.darkText[1], PanelTree.darkText[2]));
+            addStyle(RED, RED_BOLD, new Color(181, 29, 49));
+            addStyle(BLUE, BLUE_BOLD, new Color(37, 126, 173));
+            addStyle(YELLOW, YELLOW_BOLD, new Color(176, 156, 37));
+            addStyle(GREEN, GREEN_BOLD, new Color(91, 171, 124));
 
-            style1 = logTextArea.addStyle("s1", null);
-            StyleConstants.setForeground(style1, Color.red);
-            style2 = logTextArea.addStyle("s2", style1);
-            StyleConstants.setBold(style2, true);
 
         }
 
         int i = 0;
+
         @Override
         public void append(LogEvent event) {
+
+            Style style;
+            switch (event.getLevel().getStandardLevel()) {
+                case OFF:
+                    style = styles.get(WHITE);
+                    break;
+                case FATAL:
+                    style = styles.get(RED_BOLD);
+                    break;
+                case ERROR:
+                    style = styles.get(RED);
+                    break;
+                case WARN:
+                    style = styles.get(YELLOW);
+                    break;
+                case INFO:
+                    style = styles.get(WHITE);
+                    break;
+                case DEBUG:
+                    style = styles.get(GREEN);
+                    break;
+                case TRACE:
+                    style = styles.get(GREEN);
+                    break;
+                case ALL:
+                    style = styles.get(WHITE);
+                    break;
+                default:
+                    style = styles.get(WHITE);
+            }
             try {
-                doc.insertString(doc.getLength(), new String(getLayout().toByteArray(event)), (i++ % 2 == 0) ?
-                        style1 : style2);
+                doc.insertString(doc.getLength(),
+                        event.getLevel().name() + '\t',
+                        styles.get(RED_BOLD));
+
+                doc.insertString(doc.getLength(),
+                        event.getSource().getFileName().split("\\.")[0] + '\t',
+                        styles.get(GREEN_BOLD));
+
+                doc.insertString(doc.getLength(),
+                        new String(getLayout().toByteArray(event)),
+                        style);
             } catch (BadLocationException e) {
                 e.printStackTrace();
             }
         }
-    
+
+        private void addStyle(StyleType type, StyleType boldType, Color color) {
+            Style style = logTextArea.addStyle(type.name(), null);
+            StyleConstants.setForeground(style, color);
+            styles.put(type, style);
+
+            style = logTextArea.addStyle(boldType.name(), style);
+            StyleConstants.setBold(style, true);
+            styles.put(boldType, style);
+        }
+    }
 }
