@@ -77,7 +77,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
 
         // This makes it have that draggable border between the tab and the tree sections.
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panelTree, tabPane);
-        splitPane.setResizeWeight(0.85);
+        splitPane.setResizeWeight(0.72);
         pane.add(splitPane);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
