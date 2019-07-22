@@ -21,10 +21,11 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.util.List;
 import java.util.*;
 
-import static ui.PanelLogger.PanelLogAppender.StyleType.*;
+import static ui.PanelLogger.StyleType.*;
 
 public class PanelLogger extends JPanel implements TabbedPaneActivator {
 
@@ -35,6 +36,8 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
 
     private final JTextPane logTextPane;
 
+    private final JComboBox<String> classFilterSelector;
+    private final String allClassesLabel = "< all sources >";
     private static final Color logBackground = new Color(128, 128, 128, 60);
     private static final Color scrollBarBackground = new Color(155, 155, 155, 128);
     private static final Color scrollBarColor = new Color(80, 101, 127, 180);
@@ -43,6 +46,11 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
     private static final Color baseTextColor = new Color(PanelTree.darkText[0], PanelTree.darkText[1],
                                                     PanelTree.darkText[2]);
     private final PanelLogAppender appender;
+
+    enum StyleType {
+        WHITE, RED, BLUE, YELLOW, GREEN,
+        WHITE_BOLD, RED_BOLD, BLUE_BOLD, YELLOW_BOLD, GREEN_BOLD
+    }
 
     public PanelLogger() {
 
@@ -101,6 +109,12 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
         optionsPanel.setBackground(logBackground.darker());
         optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.X_AXIS));
 
+        classFilterSelector = new JComboBox<>(new String[]{allClassesLabel});
+        classFilterSelector.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED)
+                appender.rewrite();
+        });
+        optionsPanel.add(classFilterSelector);
         addLevelCheckbox("Errors", StandardLevel.ERROR, true, optionsPanel);
         addLevelCheckbox("Warnings", StandardLevel.WARN, true, optionsPanel);
         addLevelCheckbox("Info", StandardLevel.INFO, true, optionsPanel);
@@ -158,7 +172,7 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
         return "Logging";
     }
 
-    public static class PanelLogAppender extends AbstractAppender {
+    public class PanelLogAppender extends AbstractAppender {
 
         private JTextPane logTextArea;
         private StyledDocument doc;
@@ -166,10 +180,6 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
 
         private Set<StandardLevel> activeLogLevels = new ConcurrentHashSet<>();
 
-        enum StyleType {
-            WHITE, RED, BLUE, YELLOW, GREEN,
-            WHITE_BOLD, RED_BOLD, BLUE_BOLD, YELLOW_BOLD, GREEN_BOLD
-        }
 
         Map<StyleType, Style> styles = new HashMap<>();
 
@@ -287,10 +297,14 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
                 this.sourceStyle = sourceStyle;
                 this.message = message;
                 this.messageStyle = messageStyle;
+
+                if (((DefaultComboBoxModel) classFilterSelector.getModel()).getIndexOf(source) == -1) {
+                    classFilterSelector.addItem(source);
+                }
             }
 
             void writeLineIf() {
-                if (activeLogLevels.contains(level)) {
+                if (activeLogLevels.contains(level) && (source.equals(classFilterSelector.getSelectedItem()) || classFilterSelector.getSelectedItem() == allClassesLabel)) {
                     try {
                         doc.insertString(doc.getLength(), levelStr, levelStyle);
                         doc.insertString(doc.getLength(), source, sourceStyle);
