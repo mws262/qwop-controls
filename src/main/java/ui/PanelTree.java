@@ -103,6 +103,8 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      */
     private JCheckBox labelToggleCheck;
 
+    private JCheckBox logToggle;
+
     public PanelTree() {
         super();
         setFocusable(true);
@@ -111,31 +113,48 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         addMouseMotionListener(this);
         addMouseWheelListener(this);
 
-        FlowLayout layout = new FlowLayout();
-        layout.setAlignment(FlowLayout.LEFT); // So the button goes to the top left corner.
+        GridLayout layout = new GridLayout(4, 3);
         setLayout(layout);
 
+        JPanel treeButtons = new JPanel();
+        treeButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+        treeButtons.setOpaque(false);
         pauseButton = new JButton("Pause drawing");
         pauseButton.setToolTipText("Pause or resume drawing of the game tree.");
         pauseButton.addActionListener(this);
         pauseButton.setBackground(new Color(255, 255, 255, 100));
-        add(pauseButton);
+        treeButtons.add(pauseButton);
 
         // Button for resetting the camera to default position/target.
         resetButton = new JButton("Reset camera");
         resetButton.setToolTipText("Reset the camera view back to the initial view if you're lost.");
         resetButton.addActionListener(this);
         resetButton.setBackground(new Color(255, 255, 255, 100));
-        add(resetButton);
+        treeButtons.add(resetButton);
 
         // Enable node labels.
         labelToggleCheck = new JCheckBox("Enable text labels (slow).");
         labelToggleCheck.setToolTipText("Enable text labels at nodes (if set). This is much slower than all other " +
                 "drawing processes.");
         labelToggleCheck.setBackground(new Color(255, 255, 255, 60));
-        add(labelToggleCheck);
+        treeButtons.add(labelToggleCheck);
 
         PanelLogger log = new PanelLogger();
+
+        // Hide/show log panel.
+        logToggle = new JCheckBox("Hide console");
+        logToggle.setToolTipText("Temporarily hide the console panel. Uncheck to return it.");
+        logToggle.setBackground(new Color(255, 255, 255, 60));
+        logToggle.addActionListener(e -> log.setVisible(!logToggle.isSelected()));
+        treeButtons.add(logToggle);
+
+        add(treeButtons);
+        for (int i = 1; i < layout.getColumns() * layout.getRows() - 1; i++) {
+            JPanel placeholder = new JPanel();
+            placeholder.setOpaque(false);
+            add(placeholder);
+        }
+
         add(log);
     }
 
