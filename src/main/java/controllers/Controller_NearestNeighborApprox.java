@@ -4,6 +4,7 @@ import data.EvictingTreeMap;
 import data.LIFOFixedSize;
 import data.TFRecordDataParsers;
 import game.GameUnified;
+import game.IGameSerializable;
 import game.action.Action;
 import game.state.IState;
 import game.state.IState.ObjectName;
@@ -227,6 +228,11 @@ public class Controller_NearestNeighborApprox implements IController {
         currentDecision = new DecisionHolder(currentAction, currentTrajectory,
                 currentTrajectory.states.indexOf(currentTrajectoryStateMatch));
         return currentAction;
+    }
+
+    @Override
+    public Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game) {
+        return policy(state);
     }
 
     @Override

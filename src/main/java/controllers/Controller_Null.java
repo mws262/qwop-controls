@@ -1,5 +1,6 @@
 package controllers;
 
+import game.IGameSerializable;
 import game.action.Action;
 import tree.node.NodeQWOPExplorableBase;
 
@@ -13,6 +14,11 @@ public class Controller_Null implements IController {
     @Override
     public Action policy(NodeQWOPExplorableBase<?> state) {
         return new Action(1, false, false, false, false);
+    }
+
+    @Override
+    public Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game) {
+        return policy(state);
     }
 
     @Override

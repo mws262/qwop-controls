@@ -1,5 +1,6 @@
 package controllers;
 
+import game.IGameSerializable;
 import game.action.Action;
 import game.state.State;
 import org.apache.logging.log4j.LogManager;
@@ -86,6 +87,11 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
                     "really shouldn't be possible.");
         }
         return chosenAction;
+    }
+
+    @Override
+    public Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game) {
+        return policy(state);
     }
 
     @Override

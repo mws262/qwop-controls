@@ -80,6 +80,7 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
 
                             switch (windowScoringCriterion) {
                                 case WORST:
+                                    // value *= (float) effectiveWindowSize /  (float) windowSize;
                                     break;
                                 case AVERAGE_OPTIMISTIC:
                                     value /= effectiveWindowSize;

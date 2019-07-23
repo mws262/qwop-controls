@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.GameUnified;
+import game.IGameSerializable;
 import game.action.Action;
 import tree.node.NodeQWOPExplorableBase;
 
@@ -34,6 +35,15 @@ public interface IController extends AutoCloseable {
      * @return An action to take.
      */
     Action policy(NodeQWOPExplorableBase<?> state);
+
+    /**
+     * Get a control action. For some controllers, the hidden game state can be used in the policy. For this, an
+     * IGameSerializable at the current game state may be used. For some controllers, this game parameter is ignored.
+     * @param state Current visible state.
+     * @param game Game at the current configuration containing the hidden state.
+     * @return An action to take.
+     */
+    Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game);
 
     @JsonIgnore
     IController getCopy();

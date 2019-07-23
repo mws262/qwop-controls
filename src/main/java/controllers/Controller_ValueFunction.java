@@ -21,6 +21,7 @@ public class Controller_ValueFunction<V extends IValueFunction> implements ICont
         return valueFunction.getMaximizingAction(state);
     }
 
+    @Override
     public Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game) {
         return valueFunction.getMaximizingAction(state, game);
     }

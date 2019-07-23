@@ -34,8 +34,8 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private boolean doFullGameSerialization = false;
 
     // Net and execution parameters.
-    String valueNetworkName = "embeddedstate.pb";
-    String checkpointName = "embeddedstate52"; // "med67";
+    String valueNetworkName = "src/main/resources/tflow_models/tuesday.pb";
+    String checkpointName = "src/main/resources/tflow_models/checkpoints/small329"; // "med67";
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
@@ -94,7 +94,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         valueFunction = null;
         try {
             valueFunction =
-                    new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models/" + valueNetworkName), game);
+                    new ValueFunction_TensorFlow_StateOnly(new File(valueNetworkName), game);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

@@ -2,7 +2,7 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
-import game.IGameInternal;
+import game.IGameSerializable;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.action.IActionGenerator;
@@ -23,7 +23,7 @@ import java.util.TimerTask;
  * @param <C> Controller type being used. Must implement the IController interface.
  * @param <G> Game implementation used. Must implement the IGameInternal interface.
  */
-public class PanelRunner_Controlled<C extends IController, G extends IGameInternal> extends PanelRunner implements ActionListener {
+public class PanelRunner_Controlled<C extends IController, G extends IGameSerializable> extends PanelRunner implements ActionListener {
 
     /**
      * Controller being visualized.
@@ -131,6 +131,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
         constraints.gridx = 1;
         pauseToggle = new JCheckBox("Pause");
         pauseToggle.setToolTipText("Pause the controlled game simulation.");
+        pauseToggle.setOpaque(false);
         add(pauseToggle, constraints);
     }
 
@@ -228,7 +229,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameIntern
                     } else {
                         node = node.addBackwardsLinkedChild(mostRecentAction, game.getCurrentState());
                     }
-                    mostRecentAction = controller.policy(node);
+                    mostRecentAction = controller.policy(node, game);
                     actionQueue.addAction(mostRecentAction);
                 }
                 applyDisturbance(game);
