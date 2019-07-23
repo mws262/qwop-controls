@@ -1,5 +1,6 @@
 package controllers;
 
+import game.IGameSerializable;
 import game.action.Action;
 import tree.node.NodeQWOPExplorableBase;
 
@@ -11,6 +12,11 @@ public class Controller_Random implements IController {
         }else {
             return new Action(1, false, false, false, false);
         }
+    }
+
+    @Override
+    public Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game) {
+        return policy(state);
     }
 
     @Override

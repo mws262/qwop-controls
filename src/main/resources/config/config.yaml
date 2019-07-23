@@ -16,8 +16,7 @@ tree:
           type: normal
           mean: 25.0
           standardDeviation: 3.0
-        wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
-        31 32 33 34 '
+        wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 '
       - distribution:
           type: normal
           mean: 10.0
@@ -27,37 +26,32 @@ tree:
           type: normal
           mean: 25.0
           standardDeviation: 3.0
-        qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
-        31 32 33 34 '
+        qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 '
     actionExceptions:
       depth0:
         distribution:
           type: normal
           mean: 5.0
           standardDeviation: 1.0
-        none: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
-          27 28 29 30 31 32 33 34 '
+        none: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 '
       depth1:
         distribution:
           type: normal
           mean: 34.0
           standardDeviation: 2.0
-        wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
-          30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+        wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
       depth2:
         distribution:
           type: normal
           mean: 24.0
           standardDeviation: 2.0
-        none: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
-          27 28 29 30 31 32 33 34 '
+        none: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 '
       depth3:
         distribution:
           type: normal
           mean: 49.0
           standardDeviation: 2.0
-        qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
-          30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+        qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
 searchOperations:
 - stage:
     type: grouping
@@ -139,13 +133,13 @@ searchOperations:
               mean: 20.0
               standardDeviation: 5.0
             qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-    explorationConstant: 2.0
-    explorationRandomFactor: 6.0
+    explorationConstant: 1.0
+    explorationRandomFactor: 5.0
     valueUpdater:
       type: top_window
 #      stdevAbove: 1.0f
-      windowSize: 4
-      windowScoringCriterion: WORST
+      windowSize: 3
+      windowScoringCriterion: AVERAGE_OPTIMISTIC
     type: null
     saveInterval: 0
     savePath:

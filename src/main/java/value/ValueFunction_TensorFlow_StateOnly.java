@@ -102,8 +102,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     private void assignFuturePredictors(GameUnified gameTemplate) {
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
-        int min = 1;
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.none, min, 25));
+        int min = 2;
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.none, min, 10));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.qp, min, 40));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.wo, min, 40));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.q, min, 5));
@@ -253,7 +253,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          * Number of physics iterations to start this prediction with. It is useful to have this greater than default
          * to let the cold-started game "catch up" to the normal game.
          */
-        private final int initialPhysicsIterations = 22;//3 * GameConstants.physIterations;
+        private final int initialPhysicsIterations = 4 * GameConstants.physIterations;
 
         /**
          * Number of timesteps to run the game at the modified number of physics iterations before going back to

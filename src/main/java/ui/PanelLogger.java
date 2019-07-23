@@ -261,7 +261,6 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
 
         @Override
         public void append(LogEvent event) {
-
             // Decide what the text should look like based on the logging level.
             Style levelStyle;
             Style sourceStyle;

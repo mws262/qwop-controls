@@ -113,7 +113,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         addMouseMotionListener(this);
         addMouseWheelListener(this);
 
-        GridLayout layout = new GridLayout(4, 3);
+        GridLayout layout = new GridLayout(4, 2);
         setLayout(layout);
 
         JPanel treeButtons = new JPanel();
