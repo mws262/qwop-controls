@@ -39,8 +39,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * Handles distributing different predictive simulations to different threads to run simultaneously.
      */
     private ExecutorService executor;
-    private List<EvaluationResult> evalResults;
-    private List<FuturePredictor> evaluations;
+    List<EvaluationResult> evalResults;
+    List<FuturePredictor> evaluations;
 
     public final GameUnified gameTemplate;
     public final String fileName;
@@ -214,17 +214,17 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * Each one has an assigned set of keys and a minimum and maximum number of timesteps in the future to pay
      * attention to. Each time a new prediction is needed, just give a new starting state.
      */
-    private class FuturePredictor implements Callable<EvaluationResult> {
+    class FuturePredictor implements Callable<EvaluationResult> {
 
         /**
          * Game copy used to predict this future.
          */
-        private GameUnified gameLocal;
+        GameUnified gameLocal;
 
         /**
          * Initial state of this future prediction.
          */
-        private IState startingState;
+        IState startingState;
 
         private byte[] startStateFull;
         private boolean useSerializedState = false;
@@ -232,22 +232,22 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * QWOP keys pressed during this future prediction.
          */
-        private final boolean[] buttons;
+        final boolean[] buttons;
 
         /**
          * Equivalent key representation.
          */
-        private final Keys keys;
+        final Keys keys;
 
         /**
          * Minimum number of timesteps in the future which will be scored.
          */
-        private final int minHorizon;
+        final int minHorizon;
 
         /**
          * Maximum number of timesteps in the future which will be predicted.
          */
-        private final int maxHorizon;
+        final int maxHorizon;
 
         /**
          * Number of physics iterations to start this prediction with. It is useful to have this greater than default
@@ -274,7 +274,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Best result from within this prediction of the future.
          */
-        private EvaluationResult bestResult = new EvaluationResult();
+        EvaluationResult bestResult = new EvaluationResult();
 
         FuturePredictor(GameUnified gameTemplate, Keys keys, int minHorizon, int maxHorizon) {
             this.gameLocal = gameTemplate.getCopy();
