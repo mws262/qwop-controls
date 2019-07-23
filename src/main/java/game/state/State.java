@@ -314,8 +314,8 @@ public class State implements IState, Serializable {
     @Override
     public float[] flattenStateWithRescaling(LoadStateStatistics.StateStatistics stateStatistics) {
         return xOffsetSubtract(getCenterX())
-                .subtract(stateStatistics.getMin())
-                .divide(stateStatistics.getRange())
+                .subtract(stateStatistics.getMean())
+                .divide(stateStatistics.getStdev())
                 .flattenState();
     }
 
