@@ -3,7 +3,7 @@ package goals.tree_search;
 import controllers.Controller_ValueFunction;
 import game.GameUnified;
 import game.GameUnifiedCaching;
-import game.action.ActionGenerator_FixedSequence;
+import game.action.ActionGenerator_UniformNoRepeats;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import savers.DataSaver_Null;
@@ -64,7 +64,14 @@ public class CreateConfig {
 
         SearchConfiguration.Machine machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
         SearchConfiguration.Tree tree =
-                new SearchConfiguration.Tree(ActionGenerator_FixedSequence.makeExtendedGenerator(-1));
+                new SearchConfiguration.Tree(
+
+                //        ActionGenerator_FixedSequence.makeExtendedGenerator(-1)
+                ActionGenerator_UniformNoRepeats.makeDefaultGenerator()
+
+                );
+
+
         List<SearchConfiguration.SearchOperation> searchOperations = new ArrayList<>();
         IUserInterface ui = CreateConfig.setupFullUI();
 
