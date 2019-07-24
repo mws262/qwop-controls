@@ -19,10 +19,14 @@ import game.action.IActionGenerator;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.spi.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.simple.SimpleLoggerContext;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
 import tree.TreeWorker;
+import tree.Utility;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphics;
@@ -63,6 +67,8 @@ public class SearchConfiguration implements Serializable {
 
     /**
      * Defines run parameters having to do with threads, logging, etc.
+     * Add -Dlog4j.configurationFile="./src/main/resources/log4j2.xml" to VM options if logging isn't working. Or run
+     * with Maven.
      */
     public static class Machine {
 
@@ -108,7 +114,6 @@ public class SearchConfiguration implements Serializable {
             coreCount = Runtime.getRuntime().availableProcessors();
             assert coreCount > 0 && coreCount < 100;
 
-            loadLoggerConfiguration();
             Configurator.setRootLevel(Level.valueOf(logLevel));
         }
 
@@ -240,8 +245,7 @@ public class SearchConfiguration implements Serializable {
         @JsonIgnore
         public TreeWorker getTreeWorker() {
             return TreeWorker.makeStandardTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other
-            // kinds of
-            // treeworkers.
+            // kinds of treeworkers.
 //            return TreeWorker.makeCachedStateTreeWorker(sampler.getCopy(), saver.getCopy(), 1, 2,
 //                    GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
         }
@@ -265,6 +269,7 @@ public class SearchConfiguration implements Serializable {
             for (int i = 0; i <= operation.getRepetitionCount(); i++) {
                 operation.startOperation(rootNode, machine);
             }
+            operation.getSampler().close();
         }
     }
 
@@ -352,21 +357,6 @@ public class SearchConfiguration implements Serializable {
             e.printStackTrace();
         }
         return null;
-    }
-
-    /**
-     * Load the configuration for log4j.
-     */
-    public static void loadLoggerConfiguration() {
-        try {
-            File file = new File(".", File.separatorChar + "log4j.xml");
-            if (!file.exists()) {
-                file = new File("./src/main/resources/log4j.xml");
-            }
-            System.setProperty("log4j.configurationFile", file.toURI().toURL().toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
     }
 
     /**

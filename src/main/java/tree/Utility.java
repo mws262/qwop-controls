@@ -41,22 +41,28 @@ public class Utility {
      */
     private final static Random rand = new Random();
 
-    private static final Logger logger;
-    static {
-        loadLoggerConfiguration();
-        logger = LogManager.getLogger(Utility.class);
-    }
+    private static final Logger logger = LogManager.getLogger(Utility.class);
 
+    // Should happen via VM argument or automatically by Maven.
+
+    /**
+     * @deprecated Log configuration should be automatically loaded by Maven or loaded via VM argument, e.g.
+     * -Dlog4j.configurationFile="./src/main/resources/log4j2.xml"
+     */
+    @Deprecated
     public static void loadLoggerConfiguration() {
-        try {
-            File file = new File(".", File.separatorChar + "log4j.xml");
-            if (!file.exists()) {
-                file = new File("./src/main/resources/log4j.xml");
-            }
+        String existingConfig = System.getProperty("log4j.configurationFile");
+        if (existingConfig == null || existingConfig.isEmpty()) {
+            try {
+                File file = new File(".", File.separatorChar + "log4j2.xml");
+                if (!file.exists()) {
+                    file = new File("./src/main/resources/log4j2.xml");
+                }
 
-            System.setProperty("log4j.configurationFile", file.toURI().toURL().toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+                System.setProperty("log4j.configurationFile", file.toURI().toURL().toString());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

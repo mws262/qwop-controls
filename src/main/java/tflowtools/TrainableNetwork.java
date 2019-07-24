@@ -98,12 +98,6 @@ public class TrainableNetwork implements AutoCloseable {
 
         logger.info("Created a network from a saved model file: " + graphDefinition.toString() + ".");
         openCount++;
-
-//        Runtime.getRuntime().addShutdownHook(new Thread() {
-//            public void run() {
-//                close();
-//            }
-//        });
     }
 
     /**
@@ -118,7 +112,6 @@ public class TrainableNetwork implements AutoCloseable {
     public float trainingStep(float[][] inputs, float[][] desiredOutputs, int steps) {
         Tensor<Float> input = Tensors.create(inputs);
         Tensor<Float> value_out = Tensors.create(desiredOutputs);
-        Tensor<Float> output = null;
         float loss = 0;
         for (int i = 0; i < steps; i++) {
             List<Tensor<?>> out = session.runner().feed("input", input).feed("output_target", value_out).addTarget(
@@ -317,7 +310,7 @@ public class TrainableNetwork implements AutoCloseable {
     @Override
     public void finalize() {
         if (!haveResourcesBeenReleased) {
-            logger.error("This objecct was garbage collected without close() having been called. This means there are" +
+            logger.error("This object was garbage collected without close() having been called. This means there are" +
                     " resources still open in the background.");
         }
     }

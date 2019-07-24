@@ -186,6 +186,7 @@ public class SearchConfigurationTest {
 
         Assert.assertEquals(evaluationFunction.getValue(sampleNode1),
                 loaded.getValue(sampleNode1), 1e-12f);
+        evaluationFunction.close();
     }
 
     @Test
@@ -203,6 +204,7 @@ public class SearchConfigurationTest {
         Assert.assertEquals(evaluationFunction.scalingFactor, loaded.scalingFactor, 1e-12f);
 
         Assert.assertEquals(evaluationFunction.getValue(sampleNode1), loaded.getValue(sampleNode1), 1e-12f);
+        evaluationFunction.close();
     }
 
     @Test
@@ -219,6 +221,7 @@ public class SearchConfigurationTest {
         Assert.assertNotNull(loaded);
         // Ok, so technically we could get the same two random numbers....
         Assert.assertNotEquals(evaluationFunction.getValue(sampleNode1), loaded.getValue(sampleNode1), 1e-12f);
+        evaluationFunction.close();
     }
 
     @Test
@@ -234,6 +237,7 @@ public class SearchConfigurationTest {
 
         Assert.assertNotNull(loaded);
         Assert.assertEquals(evaluationFunction.getValue(sampleNode1), loaded.getValue(sampleNode1), 1e-12f);
+        evaluationFunction.close();
     }
 
     @Test
@@ -252,6 +256,7 @@ public class SearchConfigurationTest {
         Assert.assertNotNull(loaded);
         Assert.assertEquals(evaluationFunction.getValue(sampleNode1), loaded.getValue(sampleNode1), 1e-12f);
         Assert.assertEquals(evaluationFunction.getComparisonState(), loaded.getComparisonState());
+        evaluationFunction.close();
     }
 
     @Test
@@ -267,6 +272,7 @@ public class SearchConfigurationTest {
                 EvaluationFunction_Velocity.class);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(evaluationFunction.getValue(sampleNode1), loaded.getValue(sampleNode1), 1e-12f);
+        evaluationFunction.close();
     }
 
     @Test
@@ -281,6 +287,7 @@ public class SearchConfigurationTest {
         Controller_Null loaded = SearchConfiguration.deserializeYaml(file, Controller_Null.class);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(controller, loaded);
+        loaded.close();
     }
 
     @Test
@@ -295,6 +302,7 @@ public class SearchConfigurationTest {
         Controller_Random loaded = SearchConfiguration.deserializeYaml(file, Controller_Random.class);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(controller, loaded);
+        controller.close();
     }
 
     @Test
@@ -345,6 +353,7 @@ public class SearchConfigurationTest {
         Assert.assertNotNull(loaded);
         Assert.assertEquals(controller.policy(sampleNode1), loaded.policy(sampleNode1));
         Assert.assertEquals(controller.policy(sampleNode2), loaded.policy(sampleNode2));
+        controller.close();
     }
 
     @Test
@@ -359,6 +368,8 @@ public class SearchConfigurationTest {
         ValueFunction_Constant loaded = SearchConfiguration.deserializeYaml(file, ValueFunction_Constant.class);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(valFun, loaded);
+
+        valFun.close();
     }
     @Test
     public void yamlValueFunction_TensorFlow_StateOnly() throws IOException {
@@ -401,7 +412,7 @@ public class SearchConfigurationTest {
 
         Assert.assertEquals(valFun.evaluate(sampleNode1), loaded.evaluate(sampleNode1), 1e-8f);
         Assert.assertEquals(valFun.evaluate(sampleNode2), loaded.evaluate(sampleNode2), 1e-8f);
-
+        loaded.close();
 
         // Make sure that loading creates the file if it doesn't already exist.
         Assert.assertTrue(modelFile.delete());
@@ -410,6 +421,9 @@ public class SearchConfigurationTest {
         Assert.assertNotNull(loaded);
         Assert.assertEquals(modelFile.getName(), loaded.getGraphDefinitionFile().getName());
         Assert.assertTrue(loaded.getGraphDefinitionFile().exists());
+
+        valFun.close();
+        loaded.close();
     }
 
     @Test
@@ -436,6 +450,8 @@ public class SearchConfigurationTest {
         Assert.assertEquals(rollout.getRolloutController().policy(sampleNode2),
                 loaded.getRolloutController().policy(sampleNode2));
         Assert.assertEquals(rollout.rolloutActionGenerator, loaded.rolloutActionGenerator);
+        rollout.close();
+        loaded.close();
     }
 
     @Test
@@ -462,6 +478,8 @@ public class SearchConfigurationTest {
         Assert.assertEquals(rollout.getRolloutController().policy(sampleNode2),
                 loaded.getRolloutController().policy(sampleNode2));
         Assert.assertEquals(rollout.rolloutActionGenerator, loaded.rolloutActionGenerator);
+        rollout.close();
+        loaded.close();
     }
 
     @Test
@@ -480,6 +498,8 @@ public class SearchConfigurationTest {
         Assert.assertNotNull(loaded);
         Assert.assertEquals(rollout.evaluationFunction.getValue(sampleNode1),
                 loaded.evaluationFunction.getValue(sampleNode1), 1e-10);
+        rollout.close();
+        loaded.close();
     }
 
     @Test
@@ -502,6 +522,8 @@ public class SearchConfigurationTest {
         Assert.assertEquals(rollout.failureMultiplier, loaded.failureMultiplier, 1e-10f);
         Assert.assertEquals(rollout.maxTimesteps, loaded.maxTimesteps, 1e-10f);
         Assert.assertEquals(rollout.rolloutActionGenerator, loaded.rolloutActionGenerator);
+        rollout.close();
+        loaded.close();
     }
 
     @Test
@@ -526,6 +548,8 @@ public class SearchConfigurationTest {
 
         Assert.assertEquals(rollout.getValueFunction().evaluate(sampleNode2),
                 loaded.getValueFunction().evaluate(sampleNode2), 1e-10f);
+        rollout.close();
+        loaded.close();
     }
 
     @Test
@@ -548,6 +572,8 @@ public class SearchConfigurationTest {
         Assert.assertEquals(rollout.getIndividualRollout().getClass(), loaded.getIndividualRollout().getClass());
         Assert.assertEquals(rollout.getIndividualRollout().rollout(sampleNode1, new GameUnified()),
                 loaded.getIndividualRollout().rollout(sampleNode1, new GameUnified()), 1e-10);
+        rollout.close();
+        loaded.close();
     }
 
     @Test
@@ -661,6 +687,8 @@ public class SearchConfigurationTest {
 
         Sampler_Deterministic loaded = SearchConfiguration.deserializeYaml(file, Sampler_Deterministic.class);
         Assert.assertNotNull(loaded);
+        sampler.close();
+        loaded.close();
     }
 
     @Test
@@ -675,6 +703,8 @@ public class SearchConfigurationTest {
 
         Sampler_Distribution loaded = SearchConfiguration.deserializeYaml(file, Sampler_Distribution.class);
         Assert.assertNotNull(loaded);
+        sampler.close();
+        loaded.close();
     }
 
     @Test
@@ -691,6 +721,8 @@ public class SearchConfigurationTest {
         Assert.assertNotNull(loaded);
 
         Assert.assertEquals(sampler.getHorizonDepth(), loaded.getHorizonDepth());
+        sampler.close();
+        loaded.close();
     }
 
     @Test
@@ -724,6 +756,8 @@ public class SearchConfigurationTest {
         Assert.assertEquals(sampler.backwardsJump, loaded.backwardsJump);
         Assert.assertEquals(sampler.backwardsJumpMin, loaded.backwardsJumpMin);
         Assert.assertEquals(sampler.backwardsJumpFailureMultiplier, loaded.backwardsJumpFailureMultiplier, 1e-10f);
+        sampler.close();
+        loaded.close();
     }
 
     @Test
@@ -738,6 +772,8 @@ public class SearchConfigurationTest {
 
         Sampler_Random loaded = SearchConfiguration.deserializeYaml(file, Sampler_Random.class);
         Assert.assertNotNull(loaded);
+        sampler.close();
+        loaded.close();
     }
 
     @Test
@@ -761,6 +797,8 @@ public class SearchConfigurationTest {
                 loaded.getEvaluationFunction().getValue(sampleNode1), 1e-10f);
         Assert.assertEquals(sampler.getRolloutPolicy().rollout(sampleNode2, new GameUnified()),
                 sampler.getRolloutPolicy().rollout(sampleNode2, new GameUnified()), 1e-10f);
+        sampler.close();
+        loaded.close();
     }
 
     @Test
