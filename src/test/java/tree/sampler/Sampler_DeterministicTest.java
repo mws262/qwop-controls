@@ -29,7 +29,6 @@ public class Sampler_DeterministicTest {
     {
         when(unfailedState.isFailed()).thenReturn(false);
         when(failedState.isFailed()).thenReturn(true);
-        Utility.loadLoggerConfiguration();
     }
     @Test
     public void treeBuild() {

@@ -105,6 +105,8 @@ public class TrainableNetworkTest {
 
         Assert.assertArrayEquals("Old network and reloaded network should evaluate the same.", outOld[0], outNew[0],
                 0.0f);
+
+        networkForLoading.close();
     }
 
     /**

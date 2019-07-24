@@ -39,8 +39,6 @@ public class ValueFunctionControllerConsistencyTest {
 
         ActionQueue queue = new ActionQueue();
 
-        //NodeQWOPExplorable currentNode = new NodeQWOPExplorable(game.getCurrentState());
-
         while (game.getTimestepsThisGame() < timestepCheckpoint) {
             if (queue.isEmpty()) {
                 NodeQWOPExplorable currentNode = new NodeQWOPExplorable(game.getCurrentState());
@@ -50,6 +48,8 @@ public class ValueFunctionControllerConsistencyTest {
         }
         
         Assert.assertArrayEquals(flatStateDesired, game.getCurrentState().flattenState(), 1e-5f);
+
+        valFun.close();
 
     }
 

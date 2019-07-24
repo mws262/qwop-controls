@@ -58,6 +58,7 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertNotNull(valFun.stateStats.getMax());
         Assert.assertNotNull(valFun.stateStats.getStdev());
 
+        valFun.close();
         // Bigger output.
         int outputSize = 5;
         try {
@@ -86,6 +87,7 @@ public class ValueFunction_TensorFlowTest {
 
         valFun.evaluate(new NodeQWOP(null)); // Just to make sure it doesn't error out. The value is basically
 
+        valFun.close();
         // Bigger input due to delay-embedded version of the game.
         outputSize = 2;
         game = new GameUnifiedCaching(1, 3, GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
@@ -114,6 +116,7 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertEquals(outputSize, valFun.outputSize);
 
         valFun.evaluate(new NodeQWOP(null)); // Just to make sure it doesn't error out. The value is basically
+        valFun.close();
     }
 
     @Test
@@ -136,7 +139,7 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertTrue(valFun.getGraphDefinitionFile().exists());
         valFun.getGraphDefinitionFile().deleteOnExit(); // Try not to clog files up with tests.
 
-        List<File> checkpoint = null;
+        List<File> checkpoint;
         checkpoint = valFun.saveCheckpoint("src/test/resources/test_checkpoint1");
         checkpoint.forEach(File::deleteOnExit);
 
@@ -186,7 +189,9 @@ public class ValueFunction_TensorFlowTest {
 
         Assert.assertEquals(valFunLoad.evaluate(new NodeQWOP(null)),
                 valFunCheckpointConstructor.evaluate(new NodeQWOP(null)), 1e-10f);
-
+        valFun.close();
+        valFunLoad.close();
+        valFunCheckpointConstructor.close();
     }
 
     // Testing stubs.
