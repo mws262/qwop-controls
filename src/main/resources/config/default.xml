@@ -6,65 +6,35 @@
     <logLevel>INFO</logLevel>
   </machine>
   <tree>
-    <actionGenerator type="fixed_sequence">
-      <repeatedActions>
-        <distribution type="normal">
-          <mean>10.0</mean>
-          <standardDeviation>2.0</standardDeviation>
-        </distribution>
-        <none>2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 </none>
-      </repeatedActions>
-      <repeatedActions>
-        <distribution type="normal">
-          <mean>25.0</mean>
-          <standardDeviation>3.0</standardDeviation>
-        </distribution>
-        <wo>5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 </wo>
-      </repeatedActions>
-      <repeatedActions>
-        <distribution type="normal">
-          <mean>10.0</mean>
-          <standardDeviation>2.0</standardDeviation>
-        </distribution>
-        <none>2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 </none>
-      </repeatedActions>
-      <repeatedActions>
-        <distribution type="normal">
-          <mean>25.0</mean>
-          <standardDeviation>3.0</standardDeviation>
-        </distribution>
-        <qp>5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 </qp>
-      </repeatedActions>
-      <actionExceptions>
-        <depth0>
-          <distribution type="normal">
-            <mean>5.0</mean>
-            <standardDeviation>1.0</standardDeviation>
-          </distribution>
-          <none>1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 </none>
-        </depth0>
-        <depth1>
-          <distribution type="normal">
-            <mean>34.0</mean>
-            <standardDeviation>2.0</standardDeviation>
-          </distribution>
-          <wo>5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 </wo>
-        </depth1>
-        <depth2>
-          <distribution type="normal">
-            <mean>24.0</mean>
-            <standardDeviation>2.0</standardDeviation>
-          </distribution>
-          <none>1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 </none>
-        </depth2>
-        <depth3>
-          <distribution type="normal">
-            <mean>49.0</mean>
-            <standardDeviation>2.0</standardDeviation>
-          </distribution>
-          <qp>5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 </qp>
-        </depth3>
-      </actionExceptions>
+    <actionGenerator type="fixed_actions_no_repeats">
+      <allActionLists>
+        <distribution type="equal"/>
+        <none>2 3 4 5 6 7 8 9 10 11 12 13 14 </none>
+      </allActionLists>
+      <allActionLists>
+        <distribution type="equal"/>
+        <q>2 3 4 5 6 7 8 9 </q>
+      </allActionLists>
+      <allActionLists>
+        <distribution type="equal"/>
+        <qp>2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </qp>
+      </allActionLists>
+      <allActionLists>
+        <distribution type="equal"/>
+        <w>2 3 4 5 6 7 8 9 </w>
+      </allActionLists>
+      <allActionLists>
+        <distribution type="equal"/>
+        <wo>2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </wo>
+      </allActionLists>
+      <allActionLists>
+        <distribution type="equal"/>
+        <o>2 3 4 5 6 7 8 9 </o>
+      </allActionLists>
+      <allActionLists>
+        <distribution type="equal"/>
+        <p>2 3 4 5 6 7 8 9 </p>
+      </allActionLists>
     </actionGenerator>
   </tree>
   <searchOperations>
