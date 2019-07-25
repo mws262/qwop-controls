@@ -43,6 +43,12 @@ Note that all bodies are done first, and then joints afterwards.
     public static int physIterations = 5;
 
     /**
+     * Units visible to the player are the physics engine units divided by this factor. In other words, everything
+     * inside the physics world is WAY bigger than what the player is shown.
+     */
+    public static final float worldScale = 10f;
+
+    /**
      * AABB bounds.
      */
 //    public static final float aabbMinX = -100f, aabbMinY = -30f, aabbMaxX = 5000f, aabbMaxY = 80f;
