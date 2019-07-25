@@ -12,10 +12,7 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -30,7 +27,7 @@ import java.util.Objects;
  */
 public class PanelRunner_ControlledTFlow<G extends GameUnified>
         extends PanelRunner_Controlled<Controller_ValueFunction<ValueFunction_TensorFlow_StateOnly>, G>
-        implements MouseListener, MouseMotionListener {
+        implements MouseListener, MouseMotionListener, ActionListener {
 
     /**
      * Name of the directory containing all the model (.pb) files.
@@ -208,7 +205,6 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
     @Override
     public void actionPerformed(ActionEvent e) {
         // When anything is selected on the drop-down menus.
-        super.actionPerformed(e);
         badModelMsg.setVisible(false);
 
         // Model selection.

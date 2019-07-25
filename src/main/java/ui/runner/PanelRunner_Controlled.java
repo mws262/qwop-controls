@@ -2,6 +2,8 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
+import game.GameConstants;
+import game.GameUnified;
 import game.IGameSerializable;
 import game.action.Action;
 import game.action.ActionQueue;
@@ -10,11 +12,7 @@ import tree.node.NodeQWOPExplorable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Basic panel for displaying the runner under controls. Inheriting from this class is the best way to get anything
@@ -23,7 +21,7 @@ import java.util.TimerTask;
  * @param <C> Controller type being used. Must implement the IController interface.
  * @param <G> Game implementation used. Must implement the IGameInternal interface.
  */
-public class PanelRunner_Controlled<C extends IController, G extends IGameSerializable> extends PanelRunner implements ActionListener {
+public class PanelRunner_Controlled<C extends IController, G extends IGameSerializable> extends PanelRunner {
 
     /**
      * Controller being visualized.
@@ -44,11 +42,6 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
      * Action most recently returned by the controller.
      */
     private Action mostRecentAction;
-
-    /**
-     * Timer that handles updating the game and querying the controller when necessary.
-     */
-    private Timer controllerTimer;
 
     /**
      * Is this an active window? If its in a hidden tab or something, then we want to deactivate all the internal
@@ -92,7 +85,17 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
      */
     private ControllerExecutor controllerExecutor;
 
+    private static final int normalSimRate = 35;
+
     private JCheckBox pauseToggle;
+
+    private JCheckBox fastToggle;
+
+    private JLabel gameDistance;
+
+    private volatile float currentGameX = 0f;
+
+    private Thread gameThread;
 
     public PanelRunner_Controlled(@JsonProperty("name") String name, G game, C controller) {
         this.name = name;
@@ -102,7 +105,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
 
         // Reset button setup.
         resetButton = new JButton("Restart");
-        resetButton.addActionListener(this);
+        resetButton.addActionListener(e -> controllerExecutor.reset());
         resetButton.setPreferredSize(new Dimension(50, 25));
 
         // Setup the panel layout.
@@ -133,6 +136,26 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         pauseToggle.setToolTipText("Pause the controlled game simulation.");
         pauseToggle.setOpaque(false);
         add(pauseToggle, constraints);
+
+        constraints.gridx = 2;
+        fastToggle = new JCheckBox("FAST!");
+        fastToggle.setToolTipText("Simulate really fast.");
+        fastToggle.setOpaque(false);
+        fastToggle.addActionListener(e -> {
+            if (fastToggle.isSelected()) {
+                controllerExecutor.tsDelay = 0;
+            } else {
+                controllerExecutor.tsDelay = normalSimRate;
+            }
+        });
+        add(fastToggle, constraints);
+
+        gameDistance = new JLabel("");
+        gameDistance.setOpaque(false);
+        gameDistance.setFont(gameDistance.getFont().deriveFont(24f));
+        constraints.gridx = layoutColumns/2;
+        constraints.gridy = 0;
+        add(gameDistance, constraints);
     }
 
     /**
@@ -164,10 +187,10 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
     public void activateTab() {
         active = true;
         if (controller != null) {
-            controllerTimer = new Timer();
             controllerExecutor = new ControllerExecutor();
             controllerExecutor.reset();
-            controllerTimer.scheduleAtFixedRate(controllerExecutor, 0, 35);
+            gameThread = new Thread(controllerExecutor);
+            gameThread.start();
         }
     }
 
@@ -175,16 +198,12 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
     public void deactivateTab() {
         actionQueue.clearAll();
         active = false;
-        if (controllerTimer != null) {
-            controllerTimer.cancel();
-            controllerTimer.purge();
-        }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(resetButton)) {
-            controllerExecutor.reset();
+        if (gameThread != null && gameThread.isAlive()) {
+            try {
+                gameThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -200,9 +219,11 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
     /**
      * Handles advancing the game and querying the controller. Should be run on a timer.
      */
-    private class ControllerExecutor extends TimerTask {
+    private class ControllerExecutor implements Runnable {
 
         private NodeQWOPExplorable node;
+
+        int tsDelay = normalSimRate;
 
         /**
          * Reset the game.
@@ -212,28 +233,44 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
             actionQueue.clearAll();
             actionQueue.addAction(new Action(7, Action.Keys.none));
             node = null;
+            currentGameX = 0f;
+            if (fastToggle.isSelected()) {
+                tsDelay = 0;
+            }
         }
-
         @Override
         public void run() {
-            if (!pauseToggle.isSelected()) {
-                // If the queue is out of actions, then ask the controller for a new one.
-                if (actionQueue.isEmpty()) {
-                    // Either make the first node since the game began, or add a child to the previous node.
-                    if (node == null) {
-                        if (actionGenerator != null) {
-                            node = new NodeQWOPExplorable(game.getCurrentState(), actionGenerator);
+            while (active) {
+                if (!pauseToggle.isSelected() && currentGameX < 100f) {
+                    // If the queue is out of actions, then ask the controller for a new one.
+                    if (actionQueue.isEmpty()) {
+                        // Either make the first node since the game began, or add a child to the previous node.
+                        if (node == null) {
+                            if (actionGenerator != null) {
+                                node = new NodeQWOPExplorable(game.getCurrentState(), actionGenerator);
+                            } else {
+                                node = new NodeQWOPExplorable(game.getCurrentState());
+                            }
                         } else {
-                            node = new NodeQWOPExplorable(game.getCurrentState());
+                            node = node.addBackwardsLinkedChild(mostRecentAction, game.getCurrentState());
                         }
-                    } else {
-                        node = node.addBackwardsLinkedChild(mostRecentAction, game.getCurrentState());
+                        mostRecentAction = controller.policy(node, game);
+                        actionQueue.addAction(mostRecentAction);
                     }
-                    mostRecentAction = controller.policy(node, game);
-                    actionQueue.addAction(mostRecentAction);
+                    applyDisturbance(game);
+                    game.step(actionQueue.pollCommand());
+                    currentGameX = (game.getCurrentState().getCenterX() - GameUnified.getInitialState().getCenterX()) / GameConstants.worldScale;
+                    gameDistance.setText(String.format("%.1fm  %.1fs",
+                            currentGameX, game.getTimestepsThisGame() * GameConstants.timestep));
+
+                    if (tsDelay > 0) {
+                        try {
+                            Thread.sleep(tsDelay);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-                applyDisturbance(game);
-                game.step(actionQueue.pollCommand());
             }
         }
     }
