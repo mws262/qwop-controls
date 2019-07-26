@@ -29,7 +29,7 @@ public class RolloutPolicy_EndScore extends RolloutPolicyBase {
     }
 
     public RolloutPolicy_EndScore(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
-                                  @JsonProperty("getRolloutController") IController rolloutController,
+                                  @JsonProperty("rolloutController") IController rolloutController,
                                   @JsonProperty("maxTimesteps") int maxTimesteps) {
         super(evaluationFunction, maxTimesteps);
         this.rolloutController = rolloutController;
@@ -52,7 +52,8 @@ public class RolloutPolicy_EndScore extends RolloutPolicyBase {
     }
 
     @Override
-    float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode, NodeQWOPExplorableBase<?> endNode) {
+    float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
+                              NodeQWOPExplorableBase<?> endNode, int rolloutDurationTimesteps) {
         return (endNode.getState().isFailed() ? failureMultiplier : 1.0f) * accumulatedValue;
     }
 

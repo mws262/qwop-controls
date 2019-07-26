@@ -255,6 +255,7 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
      * @param checkpointSelection Menu selection to attempt to load.
      * @return Whether or not the operation succeeded.
      */
+    float change = 0f;
     private boolean tryCheckpoint(JComboBox<String> checkpointSelection) {
         if (checkpointSelection == null || checkpointSelection.getSelectedItem() == null || controller == null)
             return false;
@@ -263,6 +264,11 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
             String checkpointName = (String) checkpointSelection.getSelectedItem();
             controller.getValueFunction().loadCheckpoint(Paths.get(checkpointLocation, checkpointName).toString());
             logger.debug("Loaded checkpoint: " + checkpointName);
+//            // TODO HARDCODED QUICK TEST. DELETE.
+//            float[] biases = controller.getValueFunction().network.getLayerBiases(0);
+//            biases[0] += change;
+//            change += 1;
+//            controller.getValueFunction().network.setLayerBiases(0, biases);
             return true;
         } catch (IOException exception) {
             badCheckpointMsg.setVisible(true);

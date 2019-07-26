@@ -46,7 +46,7 @@ public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
     }
 
     float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
-                        NodeQWOPExplorableBase<?> endNode) {
+                        NodeQWOPExplorableBase<?> endNode, int rolloutDurationTimesteps) {
         return accumulatedValue;
     }
 

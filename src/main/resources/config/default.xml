@@ -78,10 +78,7 @@
         <constantValue>5.0</constantValue>
       </evaluationFunction>
       <rolloutPolicy type="window">
-        <individualRollout type="decaying_horizon">
-          <evaluationFunction type="constant">
-            <constantValue>10.0</constantValue>
-          </evaluationFunction>
+        <individualRollout type="entire_run">
           <rolloutController type="value_function">
             <valueFunction type="tflow_state_only">
               <fileName>src/main/resources/tflow_models/test.pb</fileName>
@@ -98,7 +95,9 @@
               <outputSize>1</outputSize>
             </valueFunction>
           </rolloutController>
-          <maxTimesteps>200</maxTimesteps>
+          <evaluationFunction type="constant">
+            <constantValue>0.0</constantValue>
+          </evaluationFunction>
           <rolloutActionGenerator type="fixed_sequence">
             <repeatedActions>
               <distribution type="normal">
@@ -129,6 +128,7 @@
               <qp>15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </qp>
             </repeatedActions>
           </rolloutActionGenerator>
+          <maxTimesteps>3000</maxTimesteps>
         </individualRollout>
         <selectionCriteria>BEST</selectionCriteria>
       </rolloutPolicy>

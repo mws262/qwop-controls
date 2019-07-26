@@ -1,5 +1,6 @@
 package tflowtools;
 
+import com.google.common.base.Preconditions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tensorflow.*;
@@ -39,7 +40,9 @@ public class TrainableNetwork implements AutoCloseable {
     /**
      * Loaded Tensorflow session.
      */
-    private final Session session;
+    public final Session session;
+
+    private final int[] layerSizes;
 
     /**
      * Send Python TensorFlow output to console? Tests don't like this, and it kind of clutters up stuff.
@@ -95,6 +98,8 @@ public class TrainableNetwork implements AutoCloseable {
         // Initialize
         session.runner().addTarget("init").run(); // Could be removed if it proves too slow and we only care
         // about loading rather than initializing from scratch.
+
+        layerSizes = getLayerSizes();
 
         logger.info("Created a network from a saved model file: " + graphDefinition.toString() + ".");
         openCount++;
@@ -219,7 +224,7 @@ public class TrainableNetwork implements AutoCloseable {
      * Get the number of outputs from a specified operation. This is NOT the same as the dimension of the output. In
      * most cases, the number of outputs will be 1.
      * @param operationName Name of the operation to check on.
-     * @return Number of outputs returned  4   by that operation.
+     * @return Number of outputs returned by that operation.
      */
     public int getNumberOfOperationOutputs(String operationName) {
         Operation operation = graph.operation(operationName);
@@ -283,6 +288,54 @@ public class TrainableNetwork implements AutoCloseable {
                 (int) graph.operation("fully_connected" + (count - 1) + "/weights/weight").output(0).shape().size(1);
 
         return layerSizes;
+    }
+
+
+    public float[][] getLayerWeights(int layerIndex) {
+        Preconditions.checkArgument(layerIndex < layerSizes.length - 1 && layerIndex >= 0, "Invalid layer index.",
+                layerIndex);
+
+        float[][] layer = new float[layerSizes[layerIndex]][layerSizes[layerIndex + 1]];
+        session.runner().fetch("fully_connected" + layerIndex + "/weights/Variable/read").run().get(0).copyTo(layer);
+        return layer;
+    }
+
+    public float[] getLayerBiases(int layerIndex) {
+        Preconditions.checkArgument(layerIndex < layerSizes.length - 1 && layerIndex >= 0, "Invalid layer index.",
+                layerIndex);
+        float[] layer = new float[layerSizes[layerIndex + 1]];
+        session.runner().fetch("fully_connected" + layerIndex + "/biases/Variable/read").run().get(0).copyTo(layer);
+        return layer;
+    }
+
+    public void setLayerWeights(int layerIndex, float[][] newWeights) {
+        Preconditions.checkArgument(layerIndex < layerSizes.length - 1 && layerIndex >= 0, "Invalid layer index.",
+                layerIndex);
+
+        Preconditions.checkArgument(newWeights.length == layerSizes[layerIndex], "First dimension of provided weights" +
+                " did not match the actual dimension at that index.", newWeights.length, layerSizes[layerIndex]);
+
+        Preconditions.checkArgument(newWeights.length == layerSizes[layerIndex], "First dimension of provided weights" +
+                " did not match the actual dimension at that index.", newWeights[0].length, layerSizes[layerIndex + 1]);
+
+        Tensor<Float> replacementTensor = Tensors.create(newWeights);
+        session.runner().feed("fully_connected" + layerIndex + "/weights/weight", replacementTensor).addTarget(
+                "fully_connected" + layerIndex + "/weights/Variable/Assign").run();
+
+        replacementTensor.close(); // TODO is it still in use?
+    }
+
+    public void setLayerBiases(int layerIndex, float[] newBiases) {
+        Preconditions.checkArgument(layerIndex < layerSizes.length - 1 && layerIndex >= 0, "Invalid layer index.",
+                layerIndex);
+
+        Preconditions.checkArgument(newBiases.length == layerSizes[layerIndex + 1], "Biases " +
+                " did not match the actual dimension at that index.", newBiases.length, layerSizes[layerIndex + 1]);
+
+        Tensor<Float> replacementTensor = Tensors.create(newBiases);
+        session.runner().feed("fully_connected" + layerIndex + "/biases/bias", replacementTensor).addTarget(
+                "fully_connected" + layerIndex + "/biases/Variable/Assign").run();
+        replacementTensor.close(); // TODO is it still in use?
     }
 
     /**
