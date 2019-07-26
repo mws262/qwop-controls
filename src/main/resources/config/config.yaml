@@ -98,9 +98,9 @@ searchOperations:
           - 1e-3
         activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_lots360
         outputSize: 1
-      checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_boots
+      checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_boots_entire
       excludeLeaves: false
-      updateGraphicalLabels: false
+      updateGraphicalLabels: true
   sampler:
     type: ucb
     evaluationFunction:
@@ -110,9 +110,9 @@ searchOperations:
       type: window
       selectionCriteria: AVERAGE
       individualRollout:
-        type: decaying_horizon
-        evaluationFunction:
-          type: distance
+        type: entire_run #decaying_horizon
+#        evaluationFunction:
+#          type: distance
         rolloutController:
 #           type: random
           type: value_function
@@ -132,7 +132,7 @@ searchOperations:
             - 1e-4
             activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_lots360
             outputSize: 1
-        maxTimesteps: 200
+        # maxTimesteps: 200
         rolloutActionGenerator:
           type: fixed_sequence
           repeatedActions:

@@ -49,6 +49,11 @@ Note that all bodies are done first, and then joints afterwards.
     public static final float worldScale = 10f;
 
     /**
+     * Goal distance in physics engine units.
+     */
+    public static final float goalDistance = 1000f;
+
+    /**
      * AABB bounds.
      */
 //    public static final float aabbMinX = -100f, aabbMinY = -30f, aabbMaxX = 5000f, aabbMaxY = 80f;

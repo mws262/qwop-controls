@@ -190,6 +190,22 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
     }
 
     /**
+     * Get the total number of timesteps in the actions leading all the way from root to this node. TODO: this
+     * doesn't reflect the timesteps quite right if this node is failed as the last few timesteps might not have been
+     * executed.
+     * @return Total action timesteps to this node.
+     */
+    public int getCumulativeTimesteps() {
+        int timesteps = 0;
+        N currentNode = getThis();
+        while (currentNode.getTreeDepth() > 0) {
+            timesteps += currentNode.getAction().getTimestepsTotal();
+            currentNode = currentNode.getParent();
+        }
+        return timesteps;
+    }
+
+    /**
      * Update the value of this node based on a newly discovered value, and some update rule, {@link IValueUpdater}.
      * @param valueUpdate New value information received from a rollout or further up the tree.
      * @param updater The update rule used to change the value of this node.

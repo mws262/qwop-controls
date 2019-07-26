@@ -39,7 +39,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
     /**
      * TensorFlow neural network used to predict value.
      */
-    TrainableNetwork network;
+    public TrainableNetwork network;
 
     public final String fileName;
     public final List<Integer> hiddenLayerSizes;

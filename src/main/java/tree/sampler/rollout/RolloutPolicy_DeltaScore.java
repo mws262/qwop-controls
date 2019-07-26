@@ -53,7 +53,8 @@ public class RolloutPolicy_DeltaScore extends RolloutPolicyBase {
     }
 
     @Override
-    float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode, NodeQWOPExplorableBase<?> endNode) {
+    float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
+                              NodeQWOPExplorableBase<?> endNode, int rolloutDurationTimesteps) {
         return (endNode.getState().isFailed() ? failureMultiplier : 1.0f) * accumulatedValue;
     }
 

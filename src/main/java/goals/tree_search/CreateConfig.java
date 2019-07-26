@@ -12,7 +12,7 @@ import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_Distribution;
 import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.IRolloutPolicy;
-import tree.sampler.rollout.RolloutPolicy_DecayingHorizon;
+import tree.sampler.rollout.RolloutPolicy_EntireRun;
 import tree.sampler.rollout.RolloutPolicy_Window;
 import tree.stage.TreeStage;
 import tree.stage.TreeStage_FixedGames;
@@ -61,7 +61,6 @@ public class CreateConfig {
             e.printStackTrace();
         }
 
-
         SearchConfiguration.Machine machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
         SearchConfiguration.Tree tree =
                 new SearchConfiguration.Tree(
@@ -86,8 +85,8 @@ public class CreateConfig {
         TreeStage stagegroup = new TreeStage_Grouping(new TreeStage[] {tstage1, tstage2});
 
         IRolloutPolicy rollout1 = new RolloutPolicy_Window(
-                new RolloutPolicy_DecayingHorizon(
-                        new EvaluationFunction_Constant(10f),
+                new RolloutPolicy_EntireRun( // RolloutPolicy_DecayingHorizon(
+                        //new EvaluationFunction_Constant(10f),
                         new Controller_ValueFunction<>(new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
                                 game.getCopy(), layerSizes, opts, ""))));
 

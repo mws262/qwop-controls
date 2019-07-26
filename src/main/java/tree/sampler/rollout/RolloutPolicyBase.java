@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
+import game.GameConstants;
 import game.IGameInternal;
 import game.action.*;
 import tree.node.NodeQWOPBase;
@@ -89,7 +90,8 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
         float totalScore = startScore(startNode);
 
         int timestepCounter = 0;
-        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps) {
+        // Falling, too many timesteps, reaching the finish line.
+        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps && rolloutNode.getState().getCenterX() < GameConstants.goalDistance) {
             Action childAction = getRolloutController().policy(rolloutNode);
 
             actionQueue.addAction(childAction);
@@ -107,17 +109,50 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
             rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState(), rolloutActionGenerator);
         }
         totalScore += endScore(rolloutNode);
-        return calculateFinalScore(totalScore, startNode, rolloutNode);
+        return calculateFinalScore(totalScore, startNode, rolloutNode, timestepCounter);
     }
 
+    /**
+     * Component of the score that comes from the starting node. Note that this is added to the score. If you want to
+     * subtract off an initial distance, then remember to include the minus sign in here somewhere.
+     * @param startNode Node at the beginning of the rollout.
+     * @return Component of the score that comes from the starting node.
+     */
     abstract float startScore(NodeQWOPExplorableBase<?> startNode);
 
+    /**
+     * An "integrated" part of the score. This gets called every timestep of the rollout, and the particular rollout
+     * policy may choose to add some score accordingly. This gets strictly added into the total score. If you want to
+     * normalize by time or something similar, then it needs to happen in here.
+     * @param timestepSinceRolloutStart Number of simulated timesteps in the rollout so far.
+     * @param before Node representing the runner at the previous timestep.
+     * @param after Node representing the runner at this timestep.
+     * @return A score component having to do with a single timestep.
+     */
     abstract float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?> before,
                                    NodeQWOPBase<?> after);
+
+    /**
+     * Component of the score that comes from the final node in the rollout. For all rollouts that inherit from
+     * {@link RolloutPolicyBase}, this final node is either fallen, at the finish line, or has reached max specified
+     * rollout timesteps. For any old rollout inheriting from {@link IRolloutPolicy} this may not be the case.
+     * @param endNode Terminal node in this rollout execution.
+     * @return A component of the score having to do with the final node in the rollout.
+     */
     abstract float endScore(NodeQWOPExplorableBase<?> endNode);
 
+    /**
+     * Handles any final adjustments to score that you'd like to do.
+     * @param accumulatedValue The accumulated value so far already includes (final_score - initial_score +
+     *                         accumulated_score).
+     * @param startNode Node at the start of this rollout.
+     * @param endNode Final node reached. Either is at the max timestep limit, is fallen, or has reached the finish
+     *                line.
+     * @param rolloutDurationTimesteps Number of timesteps simulated DURING the rollout.
+     * @return Final adjusted score. If you are satisfied with the accumulated value so far, then just return it.
+     */
     abstract float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
-                                       NodeQWOPExplorableBase<?> endNode);
+                                       NodeQWOPExplorableBase<?> endNode, int rolloutDurationTimesteps);
 
     public abstract IController getRolloutController();
 
