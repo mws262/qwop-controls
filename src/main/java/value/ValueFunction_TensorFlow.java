@@ -39,6 +39,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
     /**
      * TensorFlow neural network used to predict value.
      */
+    @JsonIgnore
     public TrainableNetwork network;
 
     public final String fileName;
