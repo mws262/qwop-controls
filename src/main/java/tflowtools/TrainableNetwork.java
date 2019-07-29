@@ -296,7 +296,9 @@ public class TrainableNetwork implements AutoCloseable {
                 layerIndex);
 
         float[][] layer = new float[layerSizes[layerIndex]][layerSizes[layerIndex + 1]];
-        session.runner().fetch("fully_connected" + layerIndex + "/weights/Variable/read").run().get(0).copyTo(layer);
+        Tensor<?> tensor = session.runner().fetch("fully_connected" + layerIndex + "/weights/Variable/read").run().get(0);
+        tensor.copyTo(layer);
+        tensor.close();
         return layer;
     }
 
@@ -304,7 +306,9 @@ public class TrainableNetwork implements AutoCloseable {
         Preconditions.checkArgument(layerIndex < layerSizes.length - 1 && layerIndex >= 0, "Invalid layer index.",
                 layerIndex);
         float[] layer = new float[layerSizes[layerIndex + 1]];
-        session.runner().fetch("fully_connected" + layerIndex + "/biases/Variable/read").run().get(0).copyTo(layer);
+        Tensor<?> tensor = session.runner().fetch("fully_connected" + layerIndex + "/biases/Variable/read").run().get(0);
+        tensor.copyTo(layer);
+        tensor.close();
         return layer;
     }
 
