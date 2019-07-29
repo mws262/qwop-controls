@@ -91,6 +91,8 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
 
     private JCheckBox fastToggle;
 
+    private JCheckBox serializeToggle;
+
     private JLabel gameDistance;
 
     private volatile float currentGameX = 0f;
@@ -105,7 +107,10 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
 
         // Reset button setup.
         resetButton = new JButton("Restart");
-        resetButton.addActionListener(e -> controllerExecutor.reset());
+        resetButton.addActionListener(e -> {
+            deactivateTab();
+            activateTab();
+        });
         resetButton.setPreferredSize(new Dimension(50, 25));
 
         // Setup the panel layout.
@@ -131,13 +136,13 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         add(resetButton, constraints);
         actionQueue.addAction(new Action(7, Action.Keys.none));
 
-        constraints.gridx = 1;
+        // Options checkboxes.
+        JPanel checkboxes = new JPanel();
         pauseToggle = new JCheckBox("Pause");
         pauseToggle.setToolTipText("Pause the controlled game simulation.");
         pauseToggle.setOpaque(false);
-        add(pauseToggle, constraints);
+        checkboxes.add(pauseToggle);
 
-        constraints.gridx = 2;
         fastToggle = new JCheckBox("FAST!");
         fastToggle.setToolTipText("Simulate really fast.");
         fastToggle.setOpaque(false);
@@ -148,8 +153,18 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
                 controllerExecutor.tsDelay = normalSimRate;
             }
         });
-        add(fastToggle, constraints);
+        checkboxes.add(fastToggle);
 
+        constraints.gridx = 1;
+        add(checkboxes, constraints);
+
+        serializeToggle = new JCheckBox("Serialized state");
+        serializeToggle.setToolTipText("Use the full game state, by serializing and deserializing the entire game instance" +
+                ".");
+        serializeToggle.setOpaque(false);
+        checkboxes.add(serializeToggle);
+        
+        // Distance and time indicator.
         gameDistance = new JLabel("");
         gameDistance.setOpaque(false);
         gameDistance.setFont(gameDistance.getFont().deriveFont(24f));
@@ -242,6 +257,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         public void run() {
             while (active) {
                 if (!pauseToggle.isSelected() && currentGameX < 100f) {
+                    long timeInitial = System.currentTimeMillis();
                     // If the queue is out of actions, then ask the controller for a new one.
                     if (actionQueue.isEmpty()) {
                         // Either make the first node since the game began, or add a child to the previous node.
@@ -254,7 +270,12 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
                         } else {
                             node = node.addBackwardsLinkedChild(mostRecentAction, game.getCurrentState());
                         }
-                        mostRecentAction = controller.policy(node, game);
+                        if (serializeToggle.isSelected()) {
+                            mostRecentAction = controller.policy(node, game);
+                        } else {
+                            mostRecentAction = controller.policy(node);
+                        }
+
                         actionQueue.addAction(mostRecentAction);
                     }
                     applyDisturbance(game);
@@ -265,7 +286,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
 
                     if (tsDelay > 0) {
                         try {
-                            Thread.sleep(tsDelay);
+                            Thread.sleep(Math.max(0, tsDelay - (System.currentTimeMillis() - timeInitial)));
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
