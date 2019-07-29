@@ -264,11 +264,6 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
             String checkpointName = (String) checkpointSelection.getSelectedItem();
             controller.getValueFunction().loadCheckpoint(Paths.get(checkpointLocation, checkpointName).toString());
             logger.debug("Loaded checkpoint: " + checkpointName);
-//            // TODO HARDCODED QUICK TEST. DELETE.
-//            float[] biases = controller.getValueFunction().network.getLayerBiases(0);
-//            biases[0] += change;
-//            change += 1;
-//            controller.getValueFunction().network.setLayerBiases(0, biases);
             return true;
         } catch (IOException exception) {
             badCheckpointMsg.setVisible(true);

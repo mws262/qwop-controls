@@ -104,8 +104,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         evalResults = new ArrayList<>();
         int min = 2;
         evaluations.add(new FuturePredictor(gameTemplate, Keys.none, min, 10));
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.qp, min, 40));
-        evaluations.add(new FuturePredictor(gameTemplate, Keys.wo, min, 40));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.qp, min, 35));
+        evaluations.add(new FuturePredictor(gameTemplate, Keys.wo, min, 35));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.q, min, 5));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.w, min, 5));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.o, min, 5));
