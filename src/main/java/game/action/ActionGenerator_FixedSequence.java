@@ -9,9 +9,7 @@ import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
 import tree.node.NodeQWOPExplorableBase;
@@ -247,7 +245,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> dist2 = new Distribution_Normal(25, 3f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(5, 35).toArray(), new boolean[]{false, true,
+        ActionList actionList2 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), new boolean[]{false, true,
                 true,
                 false}, dist2);
 
@@ -259,7 +257,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> dist4 = new Distribution_Normal(25, 3f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(5, 35).toArray(), new boolean[]{true, false,
+        ActionList actionList4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), new boolean[]{true, false,
                 false,
                 true}, dist4);
 
