@@ -1,14 +1,20 @@
 package tflowtools;
 
 import com.google.common.base.Preconditions;
+import data.TFRecordWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tensorflow.*;
+import org.tensorflow.framework.GraphDef;
+import org.tensorflow.framework.Summary;
+import org.tensorflow.util.Event;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,12 +53,16 @@ public class TrainableNetwork implements AutoCloseable {
     /**
      * Send Python TensorFlow output to console? Tests don't like this, and it kind of clutters up stuff.
      */
-    private static boolean tflowDebugOutput = false;
+    private static boolean tflowDebugOutput = true;
 
     /**
      * For logger message output.
      */
     private static Logger logger = LogManager.getLogger(TrainableNetwork.class);
+
+    // Tensorboard
+    public boolean useTensorboard = true;
+    private File tensorboardLogFile;
 
     private boolean haveResourcesBeenReleased = false;
 
@@ -103,6 +113,34 @@ public class TrainableNetwork implements AutoCloseable {
 
         logger.info("Created a network from a saved model file: " + graphDefinition.toString() + ".");
         openCount++;
+
+        // Tensorboard initialization, if used.
+        if (useTensorboard) {
+            // Create the log file and location. Tboard categorizes runs by directory name, so each run will get its
+            // own directory
+            SimpleDateFormat dateFormat =
+                    new SimpleDateFormat("MM-dd_HH-mm-ss");
+            try {
+                tensorboardLogFile =
+                        new File("./logs/run" + dateFormat.format(new Date()) + "/tboardlog.tfevents");
+                if ( !(tensorboardLogFile.getParentFile().mkdirs() && tensorboardLogFile.createNewFile()) ) {
+                    logger.warn(("Tensorboard logger was unable to create its log file. It might already exist."));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Write serialized graph information to the TensorBoard log. This will let it display the full
+            // visualization of the graph. Note that this will overwrite any existing file by this name, although
+            // that shouldn't happen anyway.
+            try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, false)) {
+                Event.Builder eventBuilder = Event.newBuilder();
+                eventBuilder.setGraphDef(GraphDef.parseFrom(graph.toGraphDef()).toByteString());
+                TFRecordWriter.writeToStream(eventBuilder.build().toByteArray(), os);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -114,19 +152,46 @@ public class TrainableNetwork implements AutoCloseable {
      * @param steps Number of training steps (some form of gradient descent) to use on this set of inputs.
      * @return The loss of the last step performed (smaller is better).
      */
+    int idx = 0;
     public float trainingStep(float[][] inputs, float[][] desiredOutputs, int steps) {
         Tensor<Float> input = Tensors.create(inputs);
         Tensor<Float> value_out = Tensors.create(desiredOutputs);
         float loss = 0;
         for (int i = 0; i < steps; i++) {
-            List<Tensor<?>> out = session.runner().feed("input", input).feed("output_target", value_out).addTarget(
-                    "train").fetch(
-                    "loss").run();
+
+            Session.Runner sess = session.runner()
+                    .feed("input", input)
+                    .feed("output_target", value_out)
+                    .addTarget("train")
+                    .fetch("loss");
+
+            if (useTensorboard) {
+                sess = sess.fetch("summary/summary");
+            }
+
+            List<Tensor<?>> out = sess.run();
+
             loss = out.get(0).expect(Float.class).floatValue();
+
+            if (useTensorboard) {
+                byte[] summaryMessage = out.get(1).bytesValue();
+                try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, true)) {
+                    // Need to convert the summary protobuf into an event protobuf.
+                    Summary summary = Summary.parseFrom(summaryMessage);
+
+                    Event.Builder eventBuilder = Event.newBuilder();
+                    eventBuilder.setSummary(summary);
+                    eventBuilder.setStep(idx++);
+                    eventBuilder.setWallTime(eventBuilder.getWallTime());
+                    Event event = eventBuilder.build();
+
+                    TFRecordWriter.writeToStream(event.toByteArray(), os);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             out.forEach(Tensor::close);
         }
-//        float[] outputStuff = new float[inputs.length];
-//        output.copyTo(outputStuff);
         input.close();
         value_out.close();
         return loss; // Could be problematic with softmax which doesn't spit out a single value.

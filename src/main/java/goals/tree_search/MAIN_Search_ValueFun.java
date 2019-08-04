@@ -358,6 +358,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        valueFunction.network.printGraphOperations();
 
         StringBuilder hiddenLayerString = new StringBuilder();
         for (Integer i : hiddenLayerSizes) {

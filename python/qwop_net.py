@@ -6,8 +6,8 @@ from tensorflow.python.ops import rnn, rnn_cell
 import sys
 import numpy as np
 import time
-from tabulate import tabulate
-import matplotlib.pyplot as plt
+from tensorflow.python.framework import ops
+
 #python freeze_checkpoint.py --model_dir "./logs" --output_node_names "output/internal_state_output,output/state_output"
 
 '''
@@ -283,7 +283,6 @@ config.gpu_options.force_gpu_compatible = True
 EXECUTE NET
 '''
 
-
 with tf.Session(config=config) as sess:
     # Initialize all variables.
     sess.run(tf.global_variables_initializer())
@@ -313,7 +312,7 @@ with tf.Session(config=config) as sess:
     for i in range(100000000):
         if i%print_freq == 0:
             #loss, _, summary, true_state, est_state, sca, me, decomp, ss = sess.run([loss_op, train_op, merged_summary_op, state_in, state_out, scaler_so_far, mean_so_far, decompressed_state, scaled_state], options=run_options,run_metadata = run_metadata) # est_state, true_state decompressed_state, full_state
-            loss, _, summary = sess.run([loss_op, train_op, merged_summary_op], options=run_options,run_metadata = run_metadata)
+            loss, _, summary = sess.run([loss_op, train_op, merged_summary_op], options=run_options,  run_metadata = run_metadata)
             #print np.shape(true_state)
 
             summary_writer.add_summary(summary, i)

@@ -1,5 +1,14 @@
 import argparse
+
+import tensorboard
 import tensorflow as tf
+from tensorflow.core.framework import summary_pb2
+from tensorflow.core.util import event_pb2
+from tensorflow.python.framework import ops
+from tensorflow.python.ops import summary_ops_v2
+from tensorflow.python.ops import array_ops
+from tensorflow.python.framework import constant_op
+from tensorflow.python.framework import dtypes
 
 ## Parse command line options defining the network.
 parser = argparse.ArgumentParser()
@@ -123,7 +132,6 @@ output_target = tf.placeholder(tf.float32, shape=(None, layer_sizes[-1]), name='
 
 output = sequential_layers(input, layer_sizes, "fully_connected")
 
-
 if args.activationsout == "softmax":
     loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=output_target, logits=output, name='loss')
     output = tf.nn.softmax(output, name='softmax_activation')
@@ -133,16 +141,18 @@ else:
     # loss = tf.reduce_mean(tf.square(output - output_target), name='loss')
 
 output = tf.identity(output, name='output')  # So output gets named correctly in graph definition.
-
-
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, name='optimizer')
 train_op = optimizer.minimize(loss, name='train')
 
+loss_scalar = tf.summary.scalar('loss_function', loss)
+tf.summary.histogram('output_distribution', output)
+merged_summary_op = tf.summary.merge_all(name="summary")
+
 init = tf.global_variables_initializer()
 saver_def = tf.train.Saver().as_saver_def()
-
 with open(savepath, 'wb') as f:
     f.write(tf.get_default_graph().as_graph_def().SerializeToString())
 
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+sess.close()
 
