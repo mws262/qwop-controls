@@ -14,6 +14,7 @@ src/main/resources/tflow_models/checkpoints
 *.TFRecord
 /python/venv/
 *.log
+/logs/
 *.config
 /bin/
 *.mp4

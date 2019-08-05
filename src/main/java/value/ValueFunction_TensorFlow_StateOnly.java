@@ -44,6 +44,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     public final GameUnified gameTemplate;
     public final String fileName;
+    public final boolean tensorboardLogging;
 
     /**
      * Number of threads to distribute the predictive simulations to. There are 9 predicted futures, so this is a
@@ -60,14 +61,15 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * @param file .pb file of the existing net.
      * @throws FileNotFoundException Unable to find an existing net.
      */
-    public ValueFunction_TensorFlow_StateOnly(File file, GameUnified gameTemplate) throws FileNotFoundException {
-        super(file);
+    public ValueFunction_TensorFlow_StateOnly(File file, GameUnified gameTemplate, boolean tensorboardLogging) throws FileNotFoundException {
+        super(file, tensorboardLogging);
         Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
                 "state size.", gameTemplate.getStateDimension());
         Preconditions.checkArgument(outputSize == 1, "Value function output for this controller should have precisely" +
                 " one output.");
 
         this.gameTemplate = gameTemplate.getCopy();
+        this.tensorboardLogging = tensorboardLogging;
         fileName = file.getName();
         assignFuturePredictors(this.gameTemplate);
         if (multithread)
@@ -86,11 +88,13 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                                               @JsonProperty("gameTemplate") GameUnified gameTemplate,
                                               @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                                               @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
-                                              @JsonProperty("activeCheckpoint") String checkpointFile) throws IOException {
+                                              @JsonProperty("activeCheckpoint") String checkpointFile,
+                                              @JsonProperty("tensorboardLogging") boolean tensorboardLogging) throws IOException {
         super(fileName, gameTemplate.getStateDimension(), VALUE_SIZE, hiddenLayerSizes, additionalNetworkArgs,
-                checkpointFile);
+                checkpointFile, tensorboardLogging);
         this.gameTemplate = gameTemplate;
         this.fileName = fileName;
+        this.tensorboardLogging = tensorboardLogging;
         assignFuturePredictors(gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
@@ -393,7 +397,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     public ValueFunction_TensorFlow_StateOnly getCopy() {
         ValueFunction_TensorFlow_StateOnly valFunCopy = null;
         try {
-            valFunCopy = new ValueFunction_TensorFlow_StateOnly(getGraphDefinitionFile(), gameTemplate);
+            valFunCopy = new ValueFunction_TensorFlow_StateOnly(getGraphDefinitionFile(), gameTemplate, tensorboardLogging);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

@@ -354,7 +354,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, gameTemplate, hiddenLayerSizes,
-                    extraNetworkArgs, "");
+                    extraNetworkArgs, "", true);
         } catch (IOException e) {
             e.printStackTrace();
         }

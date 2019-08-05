@@ -1,15 +1,22 @@
 package tflowtools;
 
 import com.google.common.base.Preconditions;
+import data.TFRecordWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tensorflow.*;
+import org.tensorflow.framework.GraphDef;
+import org.tensorflow.framework.Summary;
+import org.tensorflow.util.Event;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -54,15 +61,19 @@ public class TrainableNetwork implements AutoCloseable {
      */
     private static Logger logger = LogManager.getLogger(TrainableNetwork.class);
 
-    private boolean haveResourcesBeenReleased = false;
+    // Tensorboard
+    public final boolean useTensorboard;
+    private File tensorboardLogFile;
+    private int trainingStepCount = 0;
 
-    public static volatile int openCount;
+    private boolean haveResourcesBeenReleased = false;
+    public static AtomicInteger openCount = new AtomicInteger();
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-                if (openCount > 0) {
-                    logger.warn("Networks opened but not explicitly closed: " + openCount);
+                if (openCount.get() > 0) {
+                    logger.warn("Networks opened but not explicitly closed: " + openCount.get());
                 } else {
                     logger.info("All networks opened were closed properly.");
                 }
@@ -75,12 +86,13 @@ public class TrainableNetwork implements AutoCloseable {
      *
      * @param graphDefinition Graph definition file.
      */
-    public TrainableNetwork(File graphDefinition) throws FileNotFoundException {
+    public TrainableNetwork(File graphDefinition, boolean useTensorboard) throws FileNotFoundException {
 
         if (!graphDefinition.exists() || !graphDefinition.isFile())
             throw new FileNotFoundException("Unable to locate the specified model file.");
 
         this.graphDefinition = graphDefinition;
+        this.useTensorboard = useTensorboard;
 
         // Begin loading the structure of the model as defined by the graph file.
         byte[] graphDef = null;
@@ -102,7 +114,35 @@ public class TrainableNetwork implements AutoCloseable {
         layerSizes = getLayerSizes();
 
         logger.info("Created a network from a saved model file: " + graphDefinition.toString() + ".");
-        openCount++;
+        openCount.incrementAndGet();
+
+        // Tensorboard initialization, if used.
+        if (useTensorboard) {
+            // Create the log file and location. Tboard categorizes runs by directory name, so each run will get its
+            // own directory
+            SimpleDateFormat dateFormat =
+                    new SimpleDateFormat("MM-dd_HH-mm-ss");
+            try {
+                tensorboardLogFile =
+                        new File("./logs/run" + dateFormat.format(new Date()) + "/tboardlog.tfevents");
+                if ( !(tensorboardLogFile.getParentFile().mkdirs() && tensorboardLogFile.createNewFile()) ) {
+                    logger.warn(("Tensorboard logger was unable to create its log file. It might already exist."));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Write serialized graph information to the TensorBoard log. This will let it display the full
+            // visualization of the graph. Note that this will overwrite any existing file by this name, although
+            // that shouldn't happen anyway.
+            try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, false)) {
+                Event.Builder eventBuilder = Event.newBuilder();
+                eventBuilder.setGraphDef(GraphDef.parseFrom(graph.toGraphDef()).toByteString());
+                TFRecordWriter.writeToStream(eventBuilder.build().toByteArray(), os);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -119,14 +159,41 @@ public class TrainableNetwork implements AutoCloseable {
         Tensor<Float> value_out = Tensors.create(desiredOutputs);
         float loss = 0;
         for (int i = 0; i < steps; i++) {
-            List<Tensor<?>> out = session.runner().feed("input", input).feed("output_target", value_out).addTarget(
-                    "train").fetch(
-                    "loss").run();
+
+            Session.Runner sess = session.runner()
+                    .feed("input", input)
+                    .feed("output_target", value_out)
+                    .addTarget("train")
+                    .fetch("loss");
+
+            if (useTensorboard) {
+                sess = sess.fetch("summary/summary");
+            }
+
+            List<Tensor<?>> out = sess.run();
+
             loss = out.get(0).expect(Float.class).floatValue();
+
+            if (useTensorboard) {
+                byte[] summaryMessage = out.get(1).bytesValue();
+                try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, true)) {
+                    // Need to convert the summary protobuf into an event protobuf.
+                    Summary summary = Summary.parseFrom(summaryMessage);
+
+                    Event.Builder eventBuilder = Event.newBuilder();
+                    eventBuilder.setSummary(summary);
+                    eventBuilder.setStep(trainingStepCount++);
+                    eventBuilder.setWallTime(eventBuilder.getWallTime());
+                    Event event = eventBuilder.build();
+
+                    TFRecordWriter.writeToStream(event.toByteArray(), os);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             out.forEach(Tensor::close);
         }
-//        float[] outputStuff = new float[inputs.length];
-//        output.copyTo(outputStuff);
+
         input.close();
         value_out.close();
         return loss; // Could be problematic with softmax which doesn't spit out a single value.
@@ -355,9 +422,9 @@ public class TrainableNetwork implements AutoCloseable {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         if (!haveResourcesBeenReleased)
-            openCount--;
+            openCount.decrementAndGet();
 
         session.close();
         graph.close();
@@ -383,7 +450,7 @@ public class TrainableNetwork implements AutoCloseable {
      * @return A new TrainableNetwork based on the specifications.
      */
     public static TrainableNetwork makeNewNetwork(String graphFileName, List<Integer> layerSizes,
-                                                  List<String> additionalArgs) throws FileNotFoundException {
+                                                  List<String> additionalArgs, boolean tensorboardLogging) throws FileNotFoundException {
 
         for (Integer layerSize : layerSizes) {
             if (layerSize <= 0 ) {
@@ -432,10 +499,10 @@ public class TrainableNetwork implements AutoCloseable {
                     "created.");
         }
 
-        return new TrainableNetwork(graphFile);
+        return new TrainableNetwork(graphFile, tensorboardLogging);
     }
 
-    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes) throws FileNotFoundException {
-        return makeNewNetwork(graphName, layerSizes, new ArrayList<>());
+    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes, boolean tensorboardLogging) throws FileNotFoundException {
+        return makeNewNetwork(graphName, layerSizes, new ArrayList<>(), tensorboardLogging);
     }
 }

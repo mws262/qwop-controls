@@ -1,12 +1,12 @@
 package data;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.io.LittleEndianDataOutputStream;
+
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /* Simple writer to TFRecord format. This is patched together from fragments of code I've found around.
  * The biggest note: you still need to do everything in Protobuf form. This only does the writing to
@@ -51,25 +51,25 @@ public class TFRecordWriter {
 
     private static class LittleEndianEncoding {
         private static byte[] encodeLong(long input) {
-            ByteArrayOutputStream bStream = new ByteArrayOutputStream();
-            LittleEndianDataOutputStream leStream = new LittleEndianDataOutputStream(bStream);
-            try {
+            try (ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+                 LittleEndianDataOutputStream leStream = new LittleEndianDataOutputStream(bStream)) {
                 leStream.writeLong(input);
+                return bStream.toByteArray();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return bStream.toByteArray();
+            return null;
         }
 
         private static byte[] encodeInt(int input) {
-            ByteArrayOutputStream bStream = new ByteArrayOutputStream();
-            LittleEndianDataOutputStream leStream = new LittleEndianDataOutputStream(bStream);
-            try {
+            try (ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+                 LittleEndianDataOutputStream leStream = new LittleEndianDataOutputStream(bStream)) {
                 leStream.writeInt(input);
+                return bStream.toByteArray();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return bStream.toByteArray();
+            return null;
         }
     }
 }

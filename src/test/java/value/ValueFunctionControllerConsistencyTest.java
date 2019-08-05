@@ -56,7 +56,7 @@ public class ValueFunctionControllerConsistencyTest {
     class ValFunSandbox extends ValueFunction_TensorFlow_StateOnly {
 
         public ValFunSandbox(File file, GameUnified gameTemplate) throws FileNotFoundException {
-            super(file, gameTemplate);
+            super(file, gameTemplate, false);
             assignFuturePredictors(gameTemplate);
         }
 

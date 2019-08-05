@@ -199,11 +199,17 @@ public class ValueFunction_TensorFlowTest {
 
         ValFunTest(String fileName, GameUnified gameTemplate, int outputSize, List<Integer> hiddenLayerSizes,
                    List<String> additionalArgs, String checkpoint) throws IOException {
-            super(fileName, gameTemplate.getStateDimension(), outputSize, hiddenLayerSizes, additionalArgs, checkpoint);
+            super(fileName,
+                    gameTemplate.getStateDimension(),
+                    outputSize,
+                    hiddenLayerSizes,
+                    additionalArgs,
+                    checkpoint,
+                    false);
         }
 
         ValFunTest(File existingFile) throws FileNotFoundException {
-            super(existingFile);
+            super(existingFile, false);
         }
 
         @Override

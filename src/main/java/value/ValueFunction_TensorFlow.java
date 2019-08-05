@@ -45,6 +45,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
     public final String fileName;
     public final List<Integer> hiddenLayerSizes;
     public List<String> additionalNetworkArgs;
+    public final boolean tensorboardLogging;
     /**
      * Number of nodes to run through training in one shot.
      */
@@ -95,19 +96,21 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
                              @JsonProperty("outputSize") int outputSize,
                              @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                              @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
-                             @JsonProperty("activeCheckpoint") String activeCheckpoint) throws IOException {
+                             @JsonProperty("activeCheckpoint") String activeCheckpoint,
+                             @JsonProperty("tensorboardLogging") boolean tensorboardLogging)throws IOException {
         logger.info("Making a new network for the value function.");
         this.inputSize = inputSize;
         this.outputSize = outputSize;
         this.fileName = fileName;
         this.hiddenLayerSizes = hiddenLayerSizes;
+        this.tensorboardLogging = tensorboardLogging;
         // Supplement the hidden layer sizes with the input and output sizes.
         List<Integer> allLayerSizes = new ArrayList<>(hiddenLayerSizes);
         allLayerSizes.add(0, inputSize);
         allLayerSizes.add(outputSize);
         this.additionalNetworkArgs = additionalNetworkArgs;
 
-        network = TrainableNetwork.makeNewNetwork(fileName, allLayerSizes, additionalNetworkArgs);
+        network = TrainableNetwork.makeNewNetwork(fileName, allLayerSizes, additionalNetworkArgs, tensorboardLogging);
         // Load checkpoint if provided.
         if (activeCheckpoint != null && !activeCheckpoint.isEmpty()) {
             loadCheckpoint(activeCheckpoint);
@@ -119,10 +122,11 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
      * @param existingModel A .pb file referring to an existing model.
      * @throws FileNotFoundException Occurs when the specified model file is not found.
      */
-    ValueFunction_TensorFlow(File existingModel) throws FileNotFoundException {
+    ValueFunction_TensorFlow(File existingModel, boolean tensorboardLogging) throws FileNotFoundException {
         logger.info("Loading existing network for the value function.");
+        this.tensorboardLogging = tensorboardLogging;
         fileName = existingModel.getPath();
-        network = new TrainableNetwork(existingModel);
+        network = new TrainableNetwork(existingModel, tensorboardLogging);
         int[] layerSizes = network.getLayerSizes();
         hiddenLayerSizes = new ArrayList<>();
         for (int i = 1; i < layerSizes.length - 1; i++) {
@@ -139,6 +143,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
     ValueFunction_TensorFlow(TrainableNetwork network) {
         logger.info("Using provided network for the value function.");
         this.fileName = network.getGraphDefinitionFile().getPath();
+        this.tensorboardLogging = network.useTensorboard;
         int[] layerSizes = network.getLayerSizes();
         assert layerSizes.length >= 2;
         inputSize = layerSizes[0];
