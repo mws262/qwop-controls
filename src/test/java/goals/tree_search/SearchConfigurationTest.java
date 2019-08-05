@@ -338,7 +338,8 @@ public class SearchConfigurationTest {
                 game,
                 hiddenLayerSizes,
                 extraArgs,
-                "");
+                "",
+                false);
 
         List<File> files = valFun.saveCheckpoint("src/test/resources/testyamlmore");
         files.forEach(File::deleteOnExit);
@@ -391,7 +392,8 @@ public class SearchConfigurationTest {
                 game,
                 hiddenLayerSizes,
                 extraArgs,
-                "");
+                "",
+                false);
 
         List<File> files = valFun.saveCheckpoint("src/test/resources/testyaml");
         files.forEach(File::deleteOnExit);

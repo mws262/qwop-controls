@@ -55,8 +55,13 @@ public class CreateConfig {
         opts.add("--learnrate");
         opts.add("1e-4");
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
-                    game.getCopy(), layerSizes, opts, "");
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(
+                    "src/main/resources/tflow_models/test.pb",
+                    game.getCopy(),
+                    layerSizes,
+                    opts,
+                    "",
+                    true);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,8 +92,13 @@ public class CreateConfig {
         IRolloutPolicy rollout1 = new RolloutPolicy_Window(
                 new RolloutPolicy_EntireRun( // RolloutPolicy_DecayingHorizon(
                         //new EvaluationFunction_Constant(10f),
-                        new Controller_ValueFunction<>(new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models/test.pb",
-                                game.getCopy(), layerSizes, opts, ""))));
+                        new Controller_ValueFunction<>(new ValueFunction_TensorFlow_StateOnly(
+                                "src/main/resources/tflow_models/test.pb",
+                                game.getCopy(),
+                                layerSizes,
+                                opts,
+                                "",
+                                false))));
 
         searchOperations.add(new SearchConfiguration.SearchOperation(stagegroup,
                 new Sampler_UCB(

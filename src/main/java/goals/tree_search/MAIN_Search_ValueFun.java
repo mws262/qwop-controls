@@ -354,11 +354,12 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, gameTemplate, hiddenLayerSizes,
-                    extraNetworkArgs, "");
+                    extraNetworkArgs, "", true);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        valueFunction.network.printGraphOperations();
+        // valueFunction.network.printGraphOperations();
+        //TrainableNetwork.startTensorboard();
 
         StringBuilder hiddenLayerString = new StringBuilder();
         for (Integer i : hiddenLayerSizes) {
