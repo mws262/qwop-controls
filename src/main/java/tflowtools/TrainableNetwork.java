@@ -505,16 +505,4 @@ public class TrainableNetwork implements AutoCloseable {
     public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes, boolean tensorboardLogging) throws FileNotFoundException {
         return makeNewNetwork(graphName, layerSizes, new ArrayList<>(), tensorboardLogging);
     }
-
-    public static void startTensorboard() {
-        ProcessBuilder pb = new ProcessBuilder("tensorboard", "--logdir", "./logs/");
-        pb.inheritIO();
-        new Thread(() -> {
-            try {
-                pb.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).run();
-    }
 }
