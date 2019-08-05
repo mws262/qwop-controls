@@ -222,7 +222,8 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
                         new Controller_ValueFunction<>(
                                 new ValueFunction_TensorFlow_StateOnly(
                                         Paths.get(modelLocation, selectedModel).toFile(),
-                                        game
+                                        game,
+                                        false
                                 )
                         );
                 logger.debug("Loaded a new controller: " + selectedModel);
@@ -255,7 +256,6 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
      * @param checkpointSelection Menu selection to attempt to load.
      * @return Whether or not the operation succeeded.
      */
-    float change = 0f;
     private boolean tryCheckpoint(JComboBox<String> checkpointSelection) {
         if (checkpointSelection == null || checkpointSelection.getSelectedItem() == null || controller == null)
             return false;

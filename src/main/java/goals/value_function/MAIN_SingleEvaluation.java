@@ -94,7 +94,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         valueFunction = null;
         try {
             valueFunction =
-                    new ValueFunction_TensorFlow_StateOnly(new File(valueNetworkName), game);
+                    new ValueFunction_TensorFlow_StateOnly(new File(valueNetworkName), game, false);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

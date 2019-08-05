@@ -28,7 +28,7 @@ public class MAIN_ImproveValFun {
         // performance of the controller.
         ValueFunction_TensorFlow_StateOnly valFun = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models" +
                 "/test.pb", game, layerSizes, additionalArgs, "src/main/resources/tflow_models/checkpoints" +
-                "/checkpoint_lots360");
+                "/checkpoint_lots360", true);
 
         WeightScoreFunction problem = new WeightScoreFunction(valFun);
 
