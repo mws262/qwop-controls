@@ -1,5 +1,14 @@
 import argparse
+
+import tensorboard
 import tensorflow as tf
+from tensorflow.core.framework import summary_pb2
+from tensorflow.core.util import event_pb2
+from tensorflow.python.framework import ops
+from tensorflow.python.ops import summary_ops_v2
+from tensorflow.python.ops import array_ops
+from tensorflow.python.framework import constant_op
+from tensorflow.python.framework import dtypes
 
 ## Parse command line options defining the network.
 parser = argparse.ArgumentParser()
@@ -65,6 +74,24 @@ def bias_variable(shape):
     return tf.Variable(initial)
 
 
+def variable_summaries(var):
+    """
+    Attach a lot of summaries to a Tensor (for TensorBoard visualization).
+
+    :param var:
+    :return: None
+    """
+
+    with tf.name_scope('summaries'):
+        mean = tf.reduce_mean(var)
+        tf.summary.scalar('mean', mean)
+        with tf.name_scope('stddev'):
+            stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
+            tf.summary.scalar('stddev', stddev)
+            tf.summary.scalar('max', tf.reduce_max(var))
+            tf.summary.scalar('min', tf.reduce_min(var))
+            tf.summary.histogram('histogram', var)
+
 def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=activations):
     """Reusable code for making a simple neural net layer.
 
@@ -85,11 +112,15 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=activations):
         # This Variable will hold the state of the weights for the layer
         with tf.name_scope('weights'):
             weights = weight_variable([input_dim, output_dim])
+            variable_summaries(weights)
         with tf.name_scope('biases'):
             biases = bias_variable([output_dim])
+            variable_summaries(biases)
         with tf.name_scope('Wx_plus_b'):
             preactivate = tf.matmul(input_tensor, weights) + biases
+            tf.summary.histogram('pre_activations', preactivate)
         activations = act(preactivate, name='activation')
+        tf.summary.histogram('activations', activations)
         return activations
 
 
@@ -123,7 +154,6 @@ output_target = tf.placeholder(tf.float32, shape=(None, layer_sizes[-1]), name='
 
 output = sequential_layers(input, layer_sizes, "fully_connected")
 
-
 if args.activationsout == "softmax":
     loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=output_target, logits=output, name='loss')
     output = tf.nn.softmax(output, name='softmax_activation')
@@ -133,16 +163,18 @@ else:
     # loss = tf.reduce_mean(tf.square(output - output_target), name='loss')
 
 output = tf.identity(output, name='output')  # So output gets named correctly in graph definition.
-
-
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, name='optimizer')
 train_op = optimizer.minimize(loss, name='train')
 
+loss_scalar = tf.summary.scalar('loss_function', loss)
+tf.summary.histogram('output_distribution', output)
+merged_summary_op = tf.summary.merge_all(name="summary")
+
 init = tf.global_variables_initializer()
 saver_def = tf.train.Saver().as_saver_def()
-
 with open(savepath, 'wb') as f:
     f.write(tf.get_default_graph().as_graph_def().SerializeToString())
 
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+sess.close()
 

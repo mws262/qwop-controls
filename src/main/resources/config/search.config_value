@@ -27,10 +27,10 @@ rolloutWeightedWithValFun=false
 rolloutValFunWeight=0.3
 
 # Value function net configuration
-networkName=embeddedstate
-checkpointNamePrefix=embeddedstate
+networkName=./src/main/resources/tflow_models/tmp.pb
+checkpointNamePrefix=tmp
 checkpointIndex=0
-learningRate=1e-3
+learningRate=1e-5
 trainingBatchSize=500
 hiddenLayerSizes=128,64
 

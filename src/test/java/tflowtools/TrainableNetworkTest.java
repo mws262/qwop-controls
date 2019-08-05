@@ -28,7 +28,7 @@ public class TrainableNetworkTest {
         layerSizes.add(2);
 
         try {
-            testNetwork = TrainableNetwork.makeNewNetwork("unit_test_graph", layerSizes);
+            testNetwork = TrainableNetwork.makeNewNetwork("unit_test_graph", layerSizes, false);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -89,7 +89,7 @@ public class TrainableNetworkTest {
 
         TrainableNetwork networkForLoading = null;
         try {
-            networkForLoading = new TrainableNetwork(testNetwork.getGraphDefinitionFile());
+            networkForLoading = new TrainableNetwork(testNetwork.getGraphDefinitionFile(), false);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
