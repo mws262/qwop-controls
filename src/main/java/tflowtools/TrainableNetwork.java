@@ -159,7 +159,6 @@ public class TrainableNetwork implements AutoCloseable {
         Tensor<Float> value_out = Tensors.create(desiredOutputs);
         float loss = 0;
         for (int i = 0; i < steps; i++) {
-
             Session.Runner sess = session.runner()
                     .feed("input", input)
                     .feed("output_target", value_out)
@@ -169,27 +168,11 @@ public class TrainableNetwork implements AutoCloseable {
             if (useTensorboard) {
                 sess = sess.fetch("summary/summary");
             }
-
             List<Tensor<?>> out = sess.run();
-
             loss = out.get(0).expect(Float.class).floatValue();
 
             if (useTensorboard) {
-                byte[] summaryMessage = out.get(1).bytesValue();
-                try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, true)) {
-                    // Need to convert the summary protobuf into an event protobuf.
-                    Summary summary = Summary.parseFrom(summaryMessage);
-
-                    Event.Builder eventBuilder = Event.newBuilder();
-                    eventBuilder.setSummary(summary);
-                    eventBuilder.setStep(trainingStepCount++);
-                    eventBuilder.setWallTime(eventBuilder.getWallTime());
-                    Event event = eventBuilder.build();
-
-                    TFRecordWriter.writeToStream(event.toByteArray(), os);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                toTensorBoardOutput(out.get(1));
             }
             out.forEach(Tensor::close);
         }
@@ -197,6 +180,24 @@ public class TrainableNetwork implements AutoCloseable {
         input.close();
         value_out.close();
         return loss; // Could be problematic with softmax which doesn't spit out a single value.
+    }
+
+    protected void toTensorBoardOutput(Tensor<?> summaryTensor) {
+        byte[] summaryMessage = summaryTensor.bytesValue();
+        try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, true)) {
+            // Need to convert the summary protobuf into an event protobuf.
+            Summary summary = Summary.parseFrom(summaryMessage);
+
+            Event.Builder eventBuilder = Event.newBuilder();
+            eventBuilder.setSummary(summary);
+            eventBuilder.setStep(trainingStepCount++);
+            eventBuilder.setWallTime(eventBuilder.getWallTime());
+            Event event = eventBuilder.build();
+
+            TFRecordWriter.writeToStream(event.toByteArray(), os);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
