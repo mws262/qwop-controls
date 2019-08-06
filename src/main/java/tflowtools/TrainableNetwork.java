@@ -63,8 +63,8 @@ public class TrainableNetwork implements AutoCloseable {
 
     // Tensorboard
     public final boolean useTensorboard;
-    private File tensorboardLogFile;
-    private int trainingStepCount = 0;
+    public File tensorboardLogFile;
+    public int trainingStepCount = 0;
 
     private boolean haveResourcesBeenReleased = false;
     public static AtomicInteger openCount = new AtomicInteger();
@@ -452,6 +452,17 @@ public class TrainableNetwork implements AutoCloseable {
     public static TrainableNetwork makeNewNetwork(String graphFileName, List<Integer> layerSizes,
                                                   List<String> additionalArgs, boolean tensorboardLogging) throws FileNotFoundException {
 
+        return new TrainableNetwork(makeGraphFile(graphFileName, layerSizes, additionalArgs),
+                tensorboardLogging);
+    }
+
+    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes, boolean tensorboardLogging) throws FileNotFoundException {
+        return makeNewNetwork(graphName, layerSizes, new ArrayList<>(), tensorboardLogging);
+    }
+
+    public static File makeGraphFile(String graphFileName, List<Integer> layerSizes,
+                List<String> additionalArgs) throws FileNotFoundException {
+
         for (Integer layerSize : layerSizes) {
             if (layerSize <= 0 ) {
                 throw new IllegalArgumentException("No network layer sizes may be less than or equal to zero. A layer" +
@@ -499,10 +510,6 @@ public class TrainableNetwork implements AutoCloseable {
                     "created.");
         }
 
-        return new TrainableNetwork(graphFile, tensorboardLogging);
-    }
-
-    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes, boolean tensorboardLogging) throws FileNotFoundException {
-        return makeNewNetwork(graphName, layerSizes, new ArrayList<>(), tensorboardLogging);
+        return graphFile;
     }
 }
