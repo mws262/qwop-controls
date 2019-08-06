@@ -1,16 +1,23 @@
 package goals.policy_gradient;
 
+import data.LoadStateStatistics;
+import data.TFRecordWriter;
 import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.state.State;
 import org.jblas.util.Random;
+import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 import org.tensorflow.Tensors;
+import org.tensorflow.framework.Summary;
+import org.tensorflow.util.Event;
 import tflowtools.TrainableNetwork;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,18 +32,27 @@ public class PolicyNetwork extends TrainableNetwork {
     private List<Float> rewards = new ArrayList<>();
 
 
+    LoadStateStatistics.StateStatistics stateStats;
+    {
+        try {
+            stateStats = LoadStateStatistics.loadStatsFromFile();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
     List<Action> allowedActions;
+
     /**
      * Create a new wrapper for an existing Tensorflow graph.
      *
      * @param graphDefinition Graph definition file.
      */
     PolicyNetwork(File graphDefinition) throws FileNotFoundException {
-        super(graphDefinition);
+        super(graphDefinition, true);
         allowedActions = new ArrayList<>();
-        allowedActions.add(new Action(2, Action.Keys.qo));
+        allowedActions.add(new Action(5, Action.Keys.qp));
 //        allowedActions.add(new Action(2, Action.Keys.qp));
-        allowedActions.add(new Action(2, Action.Keys.none));
+        allowedActions.add(new Action(5, Action.Keys.wo));
 
                 //new ArrayList<>(ActionGenerator_UniformNoRepeats.makeDefaultGenerator().getAllPossibleActions());
     }
@@ -48,10 +64,10 @@ public class PolicyNetwork extends TrainableNetwork {
 
         // Flatten states to episode length x 72
         for (int i = 0; i < states.length; i++) {
-            flatStates[i] = states[i].flattenState(); // TODO normalize maybe.
+            flatStates[i] = states[i].flattenStateWithRescaling(stateStats);
         }
 
-        // Flatten actions to episode length x 9
+        // Flatten actions to episode length x num actions
         for (int i = 0; i < actions.length; i++) {
             oneHotActions[i][allowedActions.indexOf(actions[i])] = 1;
         }
@@ -66,12 +82,37 @@ public class PolicyNetwork extends TrainableNetwork {
              Tensor<Float> actionTensor = Tensors.create(oneHotActions);
              Tensor<Float> rewardTensor = Tensors.create(discountedRewards)) {
 
-            List<Tensor<?>> out = session.runner().feed("input", stateTensor)
+            Session.Runner sess = session.runner().feed("input", stateTensor)
                     .feed("output_target", actionTensor)
                     .feed("discounted_episode_rewards", rewardTensor)
                     .addTarget("train")
-                    .fetch("loss").run();
+                    .fetch("loss");
+
+            if (useTensorboard) {
+                sess = sess.fetch("summary/summary");
+            }
+            List<Tensor<?>> out = sess.run();
+
             loss = out.get(0).expect(Float.class).floatValue();
+
+            if (useTensorboard) {
+                byte[] summaryMessage = out.get(1).bytesValue();
+                try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, true)) {
+                    // Need to convert the summary protobuf into an event protobuf.
+                    Summary summary = Summary.parseFrom(summaryMessage);
+
+                    Event.Builder eventBuilder = Event.newBuilder();
+                    eventBuilder.setSummary(summary);
+                    eventBuilder.setStep(trainingStepCount++);
+                    eventBuilder.setWallTime(eventBuilder.getWallTime());
+                    Event event = eventBuilder.build();
+
+                    TFRecordWriter.writeToStream(event.toByteArray(), os);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
             out.forEach(Tensor::close);
         }
 
@@ -80,7 +121,7 @@ public class PolicyNetwork extends TrainableNetwork {
 
     @SuppressWarnings("Duplicates")
     public float[] evaluate(State state) {
-        float[][] input = new float[][] {state.flattenState()}; // TODO NORMALIZE?
+        float[][] input = new float[][] {state.flattenStateWithRescaling(stateStats)};
         float[][] output;
         try (Tensor<Float> stateTensor = Tensors.create(input)) {
 
@@ -121,11 +162,10 @@ public class PolicyNetwork extends TrainableNetwork {
         actions.clear();
         rewards.clear();
         State currentState = (State) GameUnified.getInitialState();
+        State prevState = (State) GameUnified.getInitialState();
 
         while (!game.getFailureStatus() && game.getTimestepsThisGame() < 3000) {
             if (actionQueue.isEmpty()) {
-
-                State prevState = currentState;
                 currentState = (State) game.getCurrentState();
                 float[] predictionDist = evaluate(currentState); // These should add to 1.
                 float[] cumDist = new float[predictionDist.length];
@@ -135,7 +175,7 @@ public class PolicyNetwork extends TrainableNetwork {
                 }
                 float selection = Random.nextFloat();
 
-                Integer bestIdx = 0;
+                int bestIdx = 0;
                 for (int i = 0; i < cumDist.length; i++) {
                     if (selection <= cumDist[i]) {
                         bestIdx = i;
@@ -147,8 +187,10 @@ public class PolicyNetwork extends TrainableNetwork {
                 Action nextAction = allowedActions.get(bestIdx);
                 states.add(currentState);
                 actions.add(nextAction);
-                rewards.add(1f);//currentState.getCenterX() - prevState.getCenterX()); // Reward is always 1 behind.
+                rewards.add(currentState.getCenterX() - prevState.getCenterX()); // Reward is always 1
+                // behind.
                 actionQueue.addAction(nextAction);
+                prevState = currentState;
             }
             game.step(actionQueue.pollCommand());
         }
@@ -166,7 +208,7 @@ public class PolicyNetwork extends TrainableNetwork {
             return; // TODO the case where the first action fails it. or with 1 stdev becomes 0.
 
         float cumulative = 0f;
-        float gamma = 0.99f;
+        float gamma = 0.95f;
         float mean = 0;
         float[] discounted = new float[rewards.size()];
         for (int i = states.size() - 1; i >= 0; i--) {
@@ -205,13 +247,13 @@ public class PolicyNetwork extends TrainableNetwork {
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(72);
         //layerSizes.add(128);
-        //layerSizes.add(32);
+        layerSizes.add(32);
         layerSizes.add(16);
         layerSizes.add(2); // TODO no hard code
 
         List<String> addedArgs = new ArrayList<>();
         addedArgs.add("-lr");
-        addedArgs.add("1e-3");
+        addedArgs.add("1e-3 ");
         PolicyNetwork net = PolicyNetwork.makeNewNetwork("src/main/resources/tflow_models/tmp.pb", layerSizes, addedArgs);
 
         for (int i = 0; i < 10000000; i++) {
