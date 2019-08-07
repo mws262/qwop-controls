@@ -301,7 +301,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
                 Runnable updateLabels = () -> graphicsRootNode.recurseDownTreeExclusive(n -> {
                     float percDiff = valueFunction.evaluate(n); // Temp disable percent diff for absolute diff.
-//                    float percDiff = Math.abs((valueFunction.evaluate(n) - n.getValue())/n.getValue() * 100f);
+//                    float percDiff = Math.abs((valueFunction.evaluateActionDistribution(n) - n.getValue())/n.getValue() * 100f);
                     n.nodeLabel = String.format("%.1f, %.1f", n.getValue(), percDiff);
                     n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - n.getValue()), 20) + 20
                             , 20,

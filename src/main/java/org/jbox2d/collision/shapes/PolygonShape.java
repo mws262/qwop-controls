@@ -399,7 +399,7 @@ public class PolygonShape extends Shape implements SupportsGenericDistance, Exte
 		// I = rho * int((x*x + y*y) * dA)
 		//
 		// We can compute these integrals by summing all the integrals
-		// for each triangle of the polygon. To evaluate the integral
+		// for each triangle of the polygon. To evaluateActionDistribution the integral
 		// for a single triangle, we make a change of variables to
 		// the (u,v) coordinates of the triangle:
 		// x = x0 + e1x * u + e2x * v

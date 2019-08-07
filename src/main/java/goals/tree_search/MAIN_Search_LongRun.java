@@ -116,7 +116,7 @@ public class MAIN_Search_LongRun extends SearchTemplate {
                         new EvaluationFunction_Distance(),
                         new Controller_Random()),
                 new ValueUpdater_Average(),
-                5f, // TODO hardcoded.
+                .6f, // TODO hardcoded.
                 1f));
     }
 }
