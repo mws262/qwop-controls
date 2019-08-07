@@ -36,7 +36,7 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
     private final IEvaluationFunction evaluationFunction;
 
     /**
-     * Policy used to evaluate the score of a tree expansion Node by doing rollout(s).
+     * Policy used to evaluateActionDistribution the score of a tree expansion Node by doing rollout(s).
      */
     private final IRolloutPolicy rolloutPolicy;
 

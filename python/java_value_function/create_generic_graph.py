@@ -1,14 +1,5 @@
 import argparse
-
-import tensorboard
 import tensorflow as tf
-from tensorflow.core.framework import summary_pb2
-from tensorflow.core.util import event_pb2
-from tensorflow.python.framework import ops
-from tensorflow.python.ops import summary_ops_v2
-from tensorflow.python.ops import array_ops
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import dtypes
 
 ## Parse command line options defining the network.
 parser = argparse.ArgumentParser()
@@ -58,8 +49,9 @@ def weight_variable(shape):
     :return: Tensor of weight variables initialized randomly.
     """
 
-    initial = tf.truncated_normal(shape, stddev=init_weight_stddev, name='weight')
-    return tf.Variable(initial)
+    initial = tf.contrib.layers.xavier_initializer() # tf.truncated_normal(shape, stddev=init_weight_stddev, name='weight')
+
+    return tf.Variable(initial(shape), name='weight')
 
 
 def bias_variable(shape):
@@ -70,8 +62,8 @@ def bias_variable(shape):
     :return: Bias tensor initialized to a constant value.
     """
 
-    initial = tf.constant(init_bias_val, shape=shape, name='bias')
-    return tf.Variable(initial)
+    initial = tf.contrib.layers.xavier_initializer() # tf.constant(init_bias_val, shape=shape, name='bias')
+    return tf.Variable(initial(shape), name='bias')
 
 
 def variable_summaries(var):
@@ -151,11 +143,13 @@ input = tf.placeholder(tf.float32, shape=(None, layer_sizes[0]), name='input')
 
 # Output target for training.
 output_target = tf.placeholder(tf.float32, shape=(None, layer_sizes[-1]), name='output_target')
-
+discounted_episode_rewards = tf.placeholder(tf.float32, [None,], name="discounted_episode_rewards")
 output = sequential_layers(input, layer_sizes, "fully_connected")
 
 if args.activationsout == "softmax":
-    loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=output_target, logits=output, name='loss')
+    # loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=output_target, logits=output, name='loss')
+    neg_log_prob = tf.nn.softmax_cross_entropy_with_logits_v2(labels=output_target, logits=output, name='log_prob')
+    loss = tf.reduce_mean(tf.multiply(neg_log_prob, discounted_episode_rewards), name='loss')
     output = tf.nn.softmax(output, name='softmax_activation')
 else:
     output = output_activations(output, name='output_activation')

@@ -54,7 +54,7 @@ public class TrainableNetwork implements AutoCloseable {
     /**
      * Send Python TensorFlow output to console? Tests don't like this, and it kind of clutters up stuff.
      */
-    private static boolean tflowDebugOutput = false;
+    private static boolean tflowDebugOutput = true;
 
     /**
      * For logger message output.
@@ -63,8 +63,8 @@ public class TrainableNetwork implements AutoCloseable {
 
     // Tensorboard
     public final boolean useTensorboard;
-    private File tensorboardLogFile;
-    private int trainingStepCount = 0;
+    public File tensorboardLogFile;
+    public int trainingStepCount = 0;
 
     private boolean haveResourcesBeenReleased = false;
     public static AtomicInteger openCount = new AtomicInteger();
@@ -154,13 +154,12 @@ public class TrainableNetwork implements AutoCloseable {
      * @param steps Number of training steps (some form of gradient descent) to use on this set of inputs.
      * @return The loss of the last step performed (smaller is better).
      */
-    public float trainingStep(float[][] inputs, float[][] desiredOutputs, int steps) {
+    public float trainingStep(Session.Runner sess, float[][] inputs, float[][] desiredOutputs, int steps) {
         Tensor<Float> input = Tensors.create(inputs);
         Tensor<Float> value_out = Tensors.create(desiredOutputs);
         float loss = 0;
         for (int i = 0; i < steps; i++) {
-
-            Session.Runner sess = session.runner()
+            sess = sess
                     .feed("input", input)
                     .feed("output_target", value_out)
                     .addTarget("train")
@@ -169,27 +168,11 @@ public class TrainableNetwork implements AutoCloseable {
             if (useTensorboard) {
                 sess = sess.fetch("summary/summary");
             }
-
             List<Tensor<?>> out = sess.run();
-
             loss = out.get(0).expect(Float.class).floatValue();
 
             if (useTensorboard) {
-                byte[] summaryMessage = out.get(1).bytesValue();
-                try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, true)) {
-                    // Need to convert the summary protobuf into an event protobuf.
-                    Summary summary = Summary.parseFrom(summaryMessage);
-
-                    Event.Builder eventBuilder = Event.newBuilder();
-                    eventBuilder.setSummary(summary);
-                    eventBuilder.setStep(trainingStepCount++);
-                    eventBuilder.setWallTime(eventBuilder.getWallTime());
-                    Event event = eventBuilder.build();
-
-                    TFRecordWriter.writeToStream(event.toByteArray(), os);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                toTensorBoardOutput(out.get(1));
             }
             out.forEach(Tensor::close);
         }
@@ -197,6 +180,28 @@ public class TrainableNetwork implements AutoCloseable {
         input.close();
         value_out.close();
         return loss; // Could be problematic with softmax which doesn't spit out a single value.
+    }
+
+    public float trainingStep(float[][] inputs, float[][] desiredOutputs, int steps) {
+        return trainingStep(session.runner(), inputs, desiredOutputs, steps);
+    }
+
+    protected void toTensorBoardOutput(Tensor<?> summaryTensor) {
+        byte[] summaryMessage = summaryTensor.bytesValue();
+        try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, true)) {
+            // Need to convert the summary protobuf into an event protobuf.
+            Summary summary = Summary.parseFrom(summaryMessage);
+
+            Event.Builder eventBuilder = Event.newBuilder();
+            eventBuilder.setSummary(summary);
+            eventBuilder.setStep(trainingStepCount++);
+            eventBuilder.setWallTime(eventBuilder.getWallTime());
+            Event event = eventBuilder.build();
+
+            TFRecordWriter.writeToStream(event.toByteArray(), os);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -328,6 +333,9 @@ public class TrainableNetwork implements AutoCloseable {
      * @return Array of the sizes of the inputs/outputs of the fully-connected layers of the net.
      */
     public int[] getLayerSizes() {
+        if (layerSizes != null) {
+            return layerSizes;
+        }
         // Collect all the operation names.
         Iterator<Operation> iter = graph.operations();
         Set<String> operationNames = new HashSet<>();
@@ -452,6 +460,17 @@ public class TrainableNetwork implements AutoCloseable {
     public static TrainableNetwork makeNewNetwork(String graphFileName, List<Integer> layerSizes,
                                                   List<String> additionalArgs, boolean tensorboardLogging) throws FileNotFoundException {
 
+        return new TrainableNetwork(makeGraphFile(graphFileName, layerSizes, additionalArgs),
+                tensorboardLogging);
+    }
+
+    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes, boolean tensorboardLogging) throws FileNotFoundException {
+        return makeNewNetwork(graphName, layerSizes, new ArrayList<>(), tensorboardLogging);
+    }
+
+    public static File makeGraphFile(String graphFileName, List<Integer> layerSizes,
+                List<String> additionalArgs) throws FileNotFoundException {
+
         for (Integer layerSize : layerSizes) {
             if (layerSize <= 0 ) {
                 throw new IllegalArgumentException("No network layer sizes may be less than or equal to zero. A layer" +
@@ -499,10 +518,6 @@ public class TrainableNetwork implements AutoCloseable {
                     "created.");
         }
 
-        return new TrainableNetwork(graphFile, tensorboardLogging);
-    }
-
-    public static TrainableNetwork makeNewNetwork(String graphName, List<Integer> layerSizes, boolean tensorboardLogging) throws FileNotFoundException {
-        return makeNewNetwork(graphName, layerSizes, new ArrayList<>(), tensorboardLogging);
+        return graphFile;
     }
 }
