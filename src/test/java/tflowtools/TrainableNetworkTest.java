@@ -103,7 +103,7 @@ public class TrainableNetworkTest {
         float[][] outOld = testNetwork.evaluateInput(inputs);
         float[][] outNew = networkForLoading.evaluateInput(inputs);
 
-        Assert.assertArrayEquals("Old network and reloaded network should evaluate the same.", outOld[0], outNew[0],
+        Assert.assertArrayEquals("Old network and reloaded network should evaluateActionDistribution the same.", outOld[0], outNew[0],
                 0.0f);
 
         networkForLoading.close();

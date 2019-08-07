@@ -1,12 +1,10 @@
 package goals.policy_gradient;
 
-import game.action.Action;
-import game.state.State;
-import org.jblas.util.Random;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class PolicyGradientCartPole {
 
@@ -18,13 +16,16 @@ public class PolicyGradientCartPole {
     private final List<Integer> actions = new ArrayList<>();
     private final List<Float> rewards = new ArrayList<>();
 
+    private final Random random = new Random();
+
     PolicyGradientCartPole(PolicyGradientNetwork net) {
         this.net = net;
-        cartPole.connect(false);
+        cartPole.connect(true);
+        random.setSeed(1);
     }
 
     public float[] evaluate(float[] state) {
-        return net.evaluate(state);
+        return net.evaluateActionDistribution(state);
     }
 
     public void playGame() {
@@ -32,29 +33,18 @@ public class PolicyGradientCartPole {
         states.clear();
         actions.clear();
         rewards.clear();
+
         int duration = 0;
         while (!cartPole.isDone()) {
             float[] currentState = toFloatArray(cartPole.getCurrentState());
-            float[] predictionDist = evaluate(currentState); // These should add to 1.
-            float[] cumDist = new float[predictionDist.length];
-            cumDist[0] = predictionDist[0];
-            for (int i = 1; i < predictionDist.length; i++) {
-                cumDist[i] = cumDist[i - 1] + predictionDist[i];
-            }
-            float selection = Random.nextFloat();
 
-            int bestIdx = 0;
-            for (int i = 0; i < cumDist.length; i++) {
-                if (selection <= cumDist[i]) {
-                    bestIdx = i;
-                    break;
-                }
-            }
-            actions.add(bestIdx);
+            int actionIdx = net.policyOnDistribution(currentState);
+            actions.add(actionIdx);
             states.add(currentState);
-            cartPole.step(bestIdx);
+            cartPole.step(actionIdx);
             duration++;
-            rewards.add((float) cartPole.getLastReward());
+            rewards.add((float) cartPole.getLastReward() -  Math.abs(currentState[0]) * 0.2f); //TODO temp put a
+            // penalty on x offset.
         }
 
         float[][] flatStates = new float[states.size()][CartPole.STATE_SIZE];
@@ -72,7 +62,7 @@ public class PolicyGradientCartPole {
         }
         float[] discounted = PolicyGradientNetwork.discountRewards(rewardsFlat, 0.95f);
 
-        float loss = net.trainingStep(flatStates, oneHotActions, discounted);
+        float loss = net.trainingStep(flatStates, oneHotActions, discounted, 1);
         System.out.println("Duration: " + duration + " Loss: " + loss);
     }
 
@@ -93,7 +83,7 @@ public class PolicyGradientCartPole {
 
         List<String> addedArgs = new ArrayList<>();
         addedArgs.add("-lr");
-        addedArgs.add("1e-2 ");
+        addedArgs.add("1e-3 ");
         addedArgs.add("-a");
         addedArgs.add("relu");
         PolicyGradientNetwork net = PolicyGradientNetwork.makeNewNetwork("src/main/resources/tflow_models/cpole.pb",

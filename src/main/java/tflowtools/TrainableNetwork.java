@@ -54,7 +54,7 @@ public class TrainableNetwork implements AutoCloseable {
     /**
      * Send Python TensorFlow output to console? Tests don't like this, and it kind of clutters up stuff.
      */
-    private static boolean tflowDebugOutput = false;
+    private static boolean tflowDebugOutput = true;
 
     /**
      * For logger message output.
@@ -154,12 +154,12 @@ public class TrainableNetwork implements AutoCloseable {
      * @param steps Number of training steps (some form of gradient descent) to use on this set of inputs.
      * @return The loss of the last step performed (smaller is better).
      */
-    public float trainingStep(float[][] inputs, float[][] desiredOutputs, int steps) {
+    public float trainingStep(Session.Runner sess, float[][] inputs, float[][] desiredOutputs, int steps) {
         Tensor<Float> input = Tensors.create(inputs);
         Tensor<Float> value_out = Tensors.create(desiredOutputs);
         float loss = 0;
         for (int i = 0; i < steps; i++) {
-            Session.Runner sess = session.runner()
+            sess = sess
                     .feed("input", input)
                     .feed("output_target", value_out)
                     .addTarget("train")
@@ -180,6 +180,10 @@ public class TrainableNetwork implements AutoCloseable {
         input.close();
         value_out.close();
         return loss; // Could be problematic with softmax which doesn't spit out a single value.
+    }
+
+    public float trainingStep(float[][] inputs, float[][] desiredOutputs, int steps) {
+        return trainingStep(session.runner(), inputs, desiredOutputs, steps);
     }
 
     protected void toTensorBoardOutput(Tensor<?> summaryTensor) {
@@ -329,6 +333,9 @@ public class TrainableNetwork implements AutoCloseable {
      * @return Array of the sizes of the inputs/outputs of the fully-connected layers of the net.
      */
     public int[] getLayerSizes() {
+        if (layerSizes != null) {
+            return layerSizes;
+        }
         // Collect all the operation names.
         Iterator<Operation> iter = graph.operations();
         Set<String> operationNames = new HashSet<>();

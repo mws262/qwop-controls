@@ -50,7 +50,8 @@ def weight_variable(shape):
     """
 
     initial = tf.contrib.layers.xavier_initializer() # tf.truncated_normal(shape, stddev=init_weight_stddev, name='weight')
-    return tf.Variable(initial, name='weight')
+
+    return tf.Variable(initial(shape), name='weight')
 
 
 def bias_variable(shape):
@@ -62,7 +63,7 @@ def bias_variable(shape):
     """
 
     initial = tf.contrib.layers.xavier_initializer() # tf.constant(init_bias_val, shape=shape, name='bias')
-    return tf.Variable(initial, name='bias')
+    return tf.Variable(initial(shape), name='bias')
 
 
 def variable_summaries(var):

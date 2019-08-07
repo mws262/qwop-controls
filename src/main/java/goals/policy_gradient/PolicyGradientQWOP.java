@@ -4,9 +4,7 @@ import data.LoadStateStatistics;
 import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.state.IState;
 import game.state.State;
-import org.jblas.util.Random;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -38,6 +36,7 @@ public class PolicyGradientQWOP {
         allowedActions = new ArrayList<>();
         allowedActions.add(new Action(1, Action.Keys.qp));
         allowedActions.add(new Action(1, Action.Keys.wo));
+        allowedActions.add(new Action(1, Action.Keys.none));
         //new ArrayList<>(ActionGenerator_UniformNoRepeats.makeDefaultGenerator().getAllPossibleActions());
     }
 
@@ -55,13 +54,9 @@ public class PolicyGradientQWOP {
             oneHotActions[i][allowedActions.indexOf(actions[i])] = 1;
         }
 
-        return net.trainingStep(flatStates, oneHotActions, discountedRewards);
+        return net.trainingStep(flatStates, oneHotActions, discountedRewards, 1);
     }
 
-    @SuppressWarnings("Duplicates")
-    public float[] evaluate(IState state) {
-        return net.evaluate(state.flattenStateWithRescaling(stateStats));
-    }
 
     public void playGame() {
         game.makeNewWorld();
@@ -76,22 +71,8 @@ public class PolicyGradientQWOP {
         while (!game.getFailureStatus() && game.getTimestepsThisGame() < 3000) {
             if (actionQueue.isEmpty()) {
                 currentState = (State) game.getCurrentState();
-                float[] predictionDist = evaluate(currentState); // These should add to 1.
-                float[] cumDist = new float[predictionDist.length];
-                cumDist[0] = predictionDist[0];
-                for (int i = 1; i < predictionDist.length; i++) {
-                    cumDist[i] = cumDist[i - 1] + predictionDist[i];
-                }
-                float selection = Random.nextFloat();
 
-                int bestIdx = 0;
-                for (int i = 0; i < cumDist.length; i++) {
-                    if (selection <= cumDist[i]) {
-                        bestIdx = i;
-                        break;
-                    }
-                }
-//                Action nextAction = new Action(1, Action.Keys.values()[bestIdx]);
+                int bestIdx = net.policyOnDistribution(currentState.flattenStateWithRescaling(stateStats));
                 Action nextAction = allowedActions.get(bestIdx);
                 states.add(currentState);
                 actions.add(nextAction);
@@ -102,11 +83,10 @@ public class PolicyGradientQWOP {
             }
             game.step(actionQueue.pollCommand());
         }
-        //rewards.add(-5f);
 
         // Figure out the discounted rewards.
-//        states.remove(states.size() - 1);
-//        actions.remove(actions.size() - 1);
+        states.remove(states.size() - 1);
+        actions.remove(actions.size() - 1);
         rewards.remove(0);
         assert states.size() == actions.size() && states.size() == rewards.size();
 
@@ -131,13 +111,13 @@ public class PolicyGradientQWOP {
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(72);
         //layerSizes.add(128);
-//        layerSizes.add(32);
+        layerSizes.add(32);
         layerSizes.add(16);
-        layerSizes.add(2); // TODO no hard code
+        layerSizes.add(3); // TODO no hard code
 
         List<String> addedArgs = new ArrayList<>();
         addedArgs.add("-lr");
-        addedArgs.add("1e-2 ");
+        addedArgs.add("1e-5 ");
         PolicyGradientNetwork net = PolicyGradientNetwork.makeNewNetwork("src/main/resources/tflow_models/tmp.pb",
                 layerSizes, addedArgs, true);
 
