@@ -4,10 +4,11 @@ import com.google.common.base.Preconditions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.deeplearning4j.gym.Client;
-import org.deeplearning4j.gym.ClientFactory;
+import org.deeplearning4j.gym.ClientUtils;
 import org.deeplearning4j.gym.StepReply;
 import org.deeplearning4j.rl4j.space.Box;
 import org.deeplearning4j.rl4j.space.DiscreteSpace;
+import org.json.JSONObject;
 
 // Info from the OpenAi side: https://github.com/openai/gym-http-api
 // Info from the Java side: https://github.com/eclipse/deeplearning4j/tree/master/gym-java-client
@@ -42,7 +43,9 @@ public class CartPole { // TODO implement one of the game interfaces.
 
     public void connect(boolean withGraphics) {
         try {
-            client = ClientFactory.build("CartPole-v0", withGraphics);
+            client = GymClientFactory.build("CartPole-v0", 1, withGraphics);
+            JSONObject body = (new JSONObject()).put("seed", 1);
+            JSONObject reply = ClientUtils.post("http://127.0.0.1:5000" + Client.ENVS_ROOT, body).getObject();
             reset();
             logger.info("Connected successfully to the Python server.");
         } catch(RuntimeException e) {
