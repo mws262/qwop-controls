@@ -93,6 +93,14 @@ public class CartPole { // TODO implement one of the game interfaces.
         return cumulativeReward;
     }
 
+    public static float[] toFloatArray(double[] in) {
+        float[] out = new float[in.length];
+        for (int i = 0; i < in.length; i++) {
+            out[i] = (float) in[i];
+        }
+        return out;
+    }
+
     // Just to test it out.
     public static void main(String[] args) {
         CartPole cartPole = new CartPole();
