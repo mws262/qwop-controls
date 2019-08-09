@@ -25,13 +25,14 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
 
 
     public float trainingStep(float[][] flatStates, float[][] oneHotActions, float[] targetQ, int steps) {
-
         Tensor<Float> targetQTensor = Tensors.create(targetQ);
-        Session.Runner sess = session.runner().feed("scalar_target", targetQTensor);
-
-        float loss = trainingStep(sess, flatStates, oneHotActions, steps);
+        float loss = 0;
+        for (int i = 0; i < steps; i++) {
+            Session.Runner sess = session.runner().feed("scalar_target", targetQTensor);
+            loss += trainingStep(sess, flatStates, oneHotActions, 1);
+        }
         targetQTensor.close();
-        return loss;
+        return loss / (float) steps;
     }
 
 

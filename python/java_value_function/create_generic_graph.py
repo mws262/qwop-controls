@@ -162,7 +162,7 @@ elif loss_selection == 'policy_gradient':
     loss = tf.reduce_mean(tf.multiply(neg_log_prob, scalar_target), name='loss')
 
 elif loss_selection == 'qlearn':
-    Q = tf.reduce_sum(tf.multiply(activated_output, output_target), name='mask_q_by_action')
+    Q = tf.reduce_sum(tf.multiply(activated_output, output_target), axis=1, name='mask_q_by_action')
     loss = tf.losses.mean_squared_error(labels=scalar_target, predictions=Q)
     loss = tf.identity(loss, name='loss')
     # loss = tf.reduce_mean(tf.square(scalar_target - Q), name='loss')
