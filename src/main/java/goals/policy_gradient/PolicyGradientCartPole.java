@@ -36,7 +36,7 @@ public class PolicyGradientCartPole {
 
         int duration = 0;
         while (!cartPole.isDone()) {
-            float[] currentState = toFloatArray(cartPole.getCurrentState());
+            float[] currentState = CartPole.toFloatArray(cartPole.getCurrentState());
 
             int actionIdx = net.policyOnDistribution(currentState);
             actions.add(actionIdx);
@@ -66,14 +66,6 @@ public class PolicyGradientCartPole {
         System.out.println("Duration: " + duration + " Loss: " + loss);
     }
 
-    private float[] toFloatArray(double[] in) {
-        float[] out = new float[in.length];
-        for (int i = 0; i < in.length; i++) {
-            out[i] = (float) in[i];
-        }
-        return out;
-    }
-
     public static void main(String[] args) throws FileNotFoundException {
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(CartPole.STATE_SIZE);
@@ -83,7 +75,7 @@ public class PolicyGradientCartPole {
 
         List<String> addedArgs = new ArrayList<>();
         addedArgs.add("-lr");
-        addedArgs.add("1e-3 ");
+        addedArgs.add("1e-2 ");
         addedArgs.add("-a");
         addedArgs.add("relu");
         PolicyGradientNetwork net = PolicyGradientNetwork.makeNewNetwork("src/main/resources/tflow_models/cpole.pb",

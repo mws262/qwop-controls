@@ -15,9 +15,12 @@ parser.add_argument('-w', '--weightstd', type=float,
 parser.add_argument('-b', '--biasinit', type=float, help='<Optional> Initialization for biases. (default = 0.1).',
                     required=False, default=0.1)
 parser.add_argument('-a', '--activations', type=str, help='<Optional> Nonlinear activation type (default leaky_relu).',
-                    required=False, default="leaky_relu", choices=['relu', 'leaky_relu', 'sigmoid', 'tanh', 'identity'])
+                    required=False, default="leaky_relu", choices=['relu', 'leaky_relu', 'elu', 'sigmoid', 'tanh', 'identity'])
 parser.add_argument('-ao', '--activationsout', type=str, help='<Optional> Output layer activation.',
-                    required=False, default="identity", choices=['relu', 'leaky_relu', 'sigmoid', 'tanh', 'identity', 'softmax'])
+                    required=False, default="identity", choices=['relu', 'leaky_relu', 'elu', 'sigmoid', 'tanh', 'identity', 'softmax'])
+parser.add_argument('-ls', '--loss', type=str, help='<Optional> Loss type.',
+                    required=False, default="huber", choices=['huber', 'mse', 'cross_entropy', 'policy_gradient', 'qlearn'])
+
 
 args = parser.parse_args()
 
@@ -25,6 +28,7 @@ args = parser.parse_args()
 activation_options = {
     "relu": tf.nn.relu,
     "leaky_relu": tf.nn.leaky_relu,
+    "elu": tf.nn.elu,
     "sigmoid": tf.nn.sigmoid,
     "tanh": tf.nn.tanh,
     "identity": tf.identity,
@@ -39,6 +43,7 @@ learning_rate = args.learnrate
 activations = activation_options.get(args.activations)
 output_activations = activation_options.get(args.activationsout)
 savepath = args.savepath
+loss_selection = args.loss
 
 
 def weight_variable(shape):
@@ -126,14 +131,13 @@ def sequential_layers(input, layer_sizes, name_prefix):
     """
     current_tensor = input
     for idx in range(len(layer_sizes) - 1):
-        if idx == range(len(layer_sizes) - 1):
+        if idx == len(layer_sizes) - 1:
             current_tensor = nn_layer(current_tensor, layer_sizes[idx], layer_sizes[idx + 1],
                                       name_prefix + str(idx),
                                       act=tf.identity)  # Note: removed last activation. This needs to be done outside this function. It was problematic with softmax activation since the loss function wants unscaled logits rather than softmaxed values.
         else:
             current_tensor = nn_layer(current_tensor, layer_sizes[idx], layer_sizes[idx + 1],
                                       name_prefix + str(idx))
-
     return current_tensor
 
 
@@ -142,21 +146,38 @@ def sequential_layers(input, layer_sizes, name_prefix):
 input = tf.placeholder(tf.float32, shape=(None, layer_sizes[0]), name='input')
 
 # Output target for training.
-output_target = tf.placeholder(tf.float32, shape=(None, layer_sizes[-1]), name='output_target')
-discounted_episode_rewards = tf.placeholder(tf.float32, [None,], name="discounted_episode_rewards")
-output = sequential_layers(input, layer_sizes, "fully_connected")
+output_target = tf.placeholder(tf.float32, shape=(None, layer_sizes[-1]), name='output_target')  # Some values, same dim as the output layer, used in figuring out the loss.
+scalar_target = tf.placeholder(tf.float32, [None, ], name="scalar_target")  # Some scalar value tied up in figuring out the loss.
 
-if args.activationsout == "softmax":
-    # loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=output_target, logits=output, name='loss')
-    neg_log_prob = tf.nn.softmax_cross_entropy_with_logits_v2(labels=output_target, logits=output, name='log_prob')
-    loss = tf.reduce_mean(tf.multiply(neg_log_prob, discounted_episode_rewards), name='loss')
-    output = tf.nn.softmax(output, name='softmax_activation')
+preactivation_output = sequential_layers(input, layer_sizes, "fully_connected")
+activated_output = output_activations(preactivation_output, name='output_activation')
+
+# Loss calculation
+if loss_selection == 'cross_entropy':
+    # Pure matching.
+    loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=output_target, logits=preactivation_output, name='loss')
+
+elif loss_selection == 'policy_gradient':
+    neg_log_prob = tf.nn.softmax_cross_entropy_with_logits_v2(labels=output_target, logits=preactivation_output, name='log_prob')
+    loss = tf.reduce_mean(tf.multiply(neg_log_prob, scalar_target), name='loss')
+
+elif loss_selection == 'qlearn':
+    Q = tf.reduce_sum(tf.multiply(activated_output, output_target), name='mask_q_by_action')
+    loss = tf.losses.mean_squared_error(labels=scalar_target, predictions=Q)
+    loss = tf.identity(loss, name='loss')
+    # loss = tf.reduce_mean(tf.square(scalar_target - Q), name='loss')
+
+elif loss_selection == 'huber':
+    loss = tf.identity(tf.losses.huber_loss(output_target, activated_output), name='loss')
+
+elif loss_selection == 'mse':
+    loss = tf.reduce_mean(tf.square(activated_output - output_target), name='loss')
+
 else:
-    output = output_activations(output, name='output_activation')
-    loss = tf.identity(tf.losses.huber_loss(output_target, output), name='loss')
-    # loss = tf.reduce_mean(tf.square(output - output_target), name='loss')
+    raise ValueError("Unknown loss type: " + loss_selection)
 
-output = tf.identity(output, name='output')  # So output gets named correctly in graph definition.
+
+output = tf.identity(activated_output, name='output')  # So output gets named correctly in graph definition.
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, name='optimizer')
 train_op = optimizer.minimize(loss, name='train')
 

@@ -51,6 +51,9 @@ public class TrainableNetwork implements AutoCloseable {
 
     private final int[] layerSizes;
 
+    public final int inputSize;
+    public final int outputSize;
+
     /**
      * Send Python TensorFlow output to console? Tests don't like this, and it kind of clutters up stuff.
      */
@@ -112,6 +115,8 @@ public class TrainableNetwork implements AutoCloseable {
         // about loading rather than initializing from scratch.
 
         layerSizes = getLayerSizes();
+        inputSize = layerSizes[0];
+        outputSize = layerSizes[layerSizes.length - 1];
 
         logger.info("Created a network from a saved model file: " + graphDefinition.toString() + ".");
         openCount.incrementAndGet();

@@ -1,16 +1,13 @@
 package goals.policy_gradient;
 
-import org.jcodec.common.Preconditions;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 import org.tensorflow.Tensors;
-import tflowtools.TrainableNetwork;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Creates a Tensorflow network that is useful for doing policy gradient training. For evaluation, state values go
@@ -26,9 +23,8 @@ import java.util.Random;
  * <a href="https://github.com/simoninithomas/Deep_reinforcement_learning_Course/blob/master/Policy%20Gradients/Cartpole/Cartpole%20REINFORCE%20Monte%20Carlo%20Policy%20Gradients.ipynb">This guide</a>
  * was used as a reference.
  */
-public class PolicyGradientNetwork extends TrainableNetwork {
+public class PolicyGradientNetwork extends SoftmaxPolicyNetwork {
 
-    final Random random = new Random(1);
 
     /**
      * Create a new network. Use the factory methods externally.
@@ -41,79 +37,17 @@ public class PolicyGradientNetwork extends TrainableNetwork {
         super(graphDefinition, useTensorboard);
     }
 
-    /**
-     * Given a state vector input, get the policy's distribution of which actions to take. For a greedy controller,
-     * just take the action with the index of the max element of the returned distribution.
-     * @param state State vector.
-     * @return
-     */
-    public float[] evaluateActionDistribution(float[] state) {
-
-        Preconditions.checkArgument(state.length == getLayerSizes()[0], "Input state should match the dimension of " +
-                "the input layer of the network.", state.length, getLayerSizes()[0]);
-
-        float[][] input = new float[][] {state};
-        float[][] output = evaluateInput(input);
-        return output[0];
-    }
-
-    /**
-     * Get the action index with the highest value on the distribution produced by evaluating the net.
-     * @param state Current state vector.
-     * @return Index of the discrete action that is most likely correct (according to the policy).
-     */
-    public int policyGreedy(float[] state) {
-        float[] distribution = evaluateActionDistribution(state);
-
-        float bestVal = -Float.MAX_VALUE;
-        int bestIdx = 0;
-        for (int i = 0; i < distribution.length; i++) {
-            if (distribution[i] > bestVal) {
-                bestVal = distribution[i];
-                bestIdx = i;
-            }
-        }
-        return bestIdx;
-    }
-
-    /**
-     * Get an action index randomly selected on the distribution returned by evaluating the policy network.
-     * @param state Current state vector.
-     * @return Index of a discrete action.
-     */
-    public int policyOnDistribution(float[] state) {
-        float[] distribution = evaluateActionDistribution(state);
-        float[] cumulativeDistribution = new float[distribution.length];
-        cumulativeDistribution[0] = distribution[0];
-        for (int i = 1; i < distribution.length - 1; i++) {
-            cumulativeDistribution[i] = cumulativeDistribution[i - 1] + distribution[i];
-        }
-        cumulativeDistribution[distribution.length - 1] = 1; // Sometimes due to roundoff, the last value ends up
-        // slightly less than 1, and I don't want this to screw up selection once every million game executions lol.
-
-        float selection = random.nextFloat();
-
-        int bestIdx = 0;
-        for (int i = 0; i < cumulativeDistribution.length; i++) {
-            if (selection <= cumulativeDistribution[i]) {
-                bestIdx = i;
-                break;
-            }
-        }
-        return bestIdx;
-    }
-
     public float trainingStep(float[][] flatStates, float[][] oneHotActions, float[] discountedRewards, int steps) {
 
         Tensor<Float> rewardTensor = Tensors.create(discountedRewards);
-        Session.Runner sess = session.runner().feed("discounted_episode_rewards", rewardTensor);
+        Session.Runner sess = session.runner().feed("scalar_target", rewardTensor);
 
         float loss = trainingStep(sess, flatStates, oneHotActions, steps);
         rewardTensor.close();
         return loss;
     }
 
-    public static float[] discountRewards(float[] rewards, float discountRate) {
+    static float[] discountRewards(float[] rewards, float discountRate) {
         float cumulative = 0f;
         float mean = 0;
         float[] discounted = new float[rewards.length];
@@ -145,8 +79,14 @@ public class PolicyGradientNetwork extends TrainableNetwork {
             throw new IllegalArgumentException("Additional network creation arguments should not include the output " +
                     "activations. These are automatically set to softmax.");
         }
+        if (additionalArgs.contains("--loss") || additionalArgs.contains("-ls")) {
+            throw new IllegalArgumentException("Additional network creation arguments should not include the loss " +
+                    "type. This is defined by being policy gradient.");
+        }
         additionalArgs.add("-ao");
         additionalArgs.add("softmax");
+        additionalArgs.add("--loss");
+        additionalArgs.add("policy_gradient");
         return new PolicyGradientNetwork(makeGraphFile(graphFileName, layerSizes, additionalArgs), useTensorboard);
     }
 
