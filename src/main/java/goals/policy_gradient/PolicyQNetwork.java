@@ -1,5 +1,7 @@
 package goals.policy_gradient;
 
+import com.google.common.primitives.Floats;
+import game.GameUnified;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 import org.tensorflow.Tensors;
@@ -7,9 +9,22 @@ import org.tensorflow.Tensors;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PolicyQNetwork extends SoftmaxPolicyNetwork {
+
+    // Parameters for picking whether to follow the policy or do something random.
+    public float exploreStart = 1.0f;
+    public float exploreStop = 0.005f;
+    public float decayRate = 1e-5f;
+    private float decayStep = 0f;
+    private float exploreProbability;
+
+    public int batchSize = 20;
+    public float gamma = 0.95f;
+
+    private final List<Timestep> timesteps = new ArrayList<>();
 
     /**
      * Create a new network. Use the factory methods externally.
@@ -23,26 +38,65 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
         super(graphDefinition, useTensorboard);
     }
 
+    /**
+     * Select an action either randomly or greedily from the policy.
+     * @param state
+     * @return
+     */
+    public int policyExplore(float[] state) {
+        float r = random.nextFloat();
+        exploreProbability = (float) (exploreStop + (exploreStart - exploreStop) * Math.exp(-decayRate * decayStep));
 
-    public float trainingStep(float[][] flatStates, float[][] oneHotActions, float[] targetQ, int steps) {
-        Tensor<Float> targetQTensor = Tensors.create(targetQ);
-        float loss = 0;
-        for (int i = 0; i < steps; i++) {
-            Session.Runner sess = session.runner().feed("scalar_target", targetQTensor);
-            loss += trainingStep(sess, flatStates, oneHotActions, 1);
+        int actionSelection;
+        if (exploreProbability > r) {
+            actionSelection = random.nextInt(outputSize);
+        } else {
+            actionSelection = policyGreedy(state);
         }
-        targetQTensor.close();
-        return loss / (float) steps;
+        return actionSelection;
     }
 
+    public void incrementDecay() {
+        decayStep++;
+    }
 
+    public void addTimestep(Timestep timestep) {
+        timesteps.add(timestep);
+    }
+
+    public float train(int iterations) {
+        // Get a random subset of all games played. People call this experience replay to be all fancy-like.
+        Collections.shuffle(timesteps);
+        List<Timestep> batch = timesteps.subList(timesteps.size() - Math.min(timesteps.size(),
+                batchSize), timesteps.size());
+
+        float[] qTarget = new float[batch.size()];
+        float[][] states = new float[batch.size()][inputSize];
+        float[][] oneHotActions = new float[batch.size()][outputSize];
+        int idx = 0;
+        for (Timestep ts : batch) {
+            if (ts.nextTs != null) {
+                qTarget[idx] = ts.reward + gamma * Floats.max(evaluateActionDistribution(ts.nextTs.state));
+            } else {
+                qTarget[idx] = ts.reward; // Only reward is from the current state since this is terminal.
+            }
+            states[idx] = ts.state;
+            oneHotActions[idx][ts.action] = 1;
+            idx++;
+        }
+
+        Tensor<Float> targetQTensor = Tensors.create(qTarget);
+        float loss = 0;
+        for (int i = 0; i < iterations; i++) {
+            Session.Runner sess = session.runner().feed("scalar_target", targetQTensor);
+            loss += trainingStep(sess, states, oneHotActions, 1);
+        }
+        targetQTensor.close();
+        return loss / (float) iterations;
+    }
 
     public static PolicyQNetwork makeNewNetwork(String graphFileName, List<Integer> layerSizes,
                                                        List<String> additionalArgs, boolean useTensorboard) throws FileNotFoundException {
-        if (additionalArgs.contains("-ao") || additionalArgs.contains("--activationsout")) {
-            throw new IllegalArgumentException("Additional network creation arguments should not include the output " +
-                    "activations. These are automatically set to softmax.");
-        }
         if (additionalArgs.contains("--loss") || additionalArgs.contains("-ls")) {
             throw new IllegalArgumentException("Additional network creation arguments should not include the loss " +
                     "type. This is defined by being policy gradient.");
@@ -54,8 +108,16 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
         return new PolicyQNetwork(makeGraphFile(graphFileName, layerSizes, additionalArgs), useTensorboard);
     }
 
-    public static PolicyQNetwork makeNewNetwork(String graphName, List<Integer> layerSizes,
-                                                       boolean useTensorboard) throws FileNotFoundException {
+    public static PolicyQNetwork makeNewNetwork(String graphName, List<Integer> layerSizes, boolean useTensorboard) throws FileNotFoundException {
         return makeNewNetwork(graphName, layerSizes, new ArrayList<>(), useTensorboard);
+    }
+
+    // Includes an intial state, an action taken from that state, a reward for the transition, and the data for the
+    // next state arrived at.
+    public static class Timestep {
+        public Timestep nextTs;
+        public float[] state;
+        public float reward;
+        public int action;
     }
 }
