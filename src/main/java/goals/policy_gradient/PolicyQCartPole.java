@@ -17,14 +17,14 @@ public class PolicyQCartPole {
 
     // Parameters for picking whether to follow the policy or do something random.
     private final float exploreStart = 1.0f;
-    private final float exploreStop = 0.01f;
+    private final float exploreStop = 0.005f;
     private final float decayRate = 1e-5f;
 
     private float decayStep = 0f;
 
-    private final int batchSize = 800;
-    private final float gamma = 1f;
-    private final List<Timestep> firstTimesteps = new ArrayList<>();
+    private final int batchSize = 20;
+    private final float gamma = 0.95f;
+    private final List<Timestep> timesteps = new ArrayList<>();
 
     PolicyQNetwork net;
     private float exploreProbability;
@@ -36,7 +36,7 @@ public class PolicyQCartPole {
     }
 
     // Returns the first ts in a game. Is a forward-linked list.
-    public Timestep playGame() {
+    public void playGame() {
         cartPole.reset();
         boolean done = false;
 
@@ -45,6 +45,8 @@ public class PolicyQCartPole {
         Timestep currentTs = firstTs;
         int total = 0;
         while (!done) {
+            timesteps.add(currentTs);
+
             currentTs.state = CartPole.toFloatArray(cartPole.getCurrentState());
             currentTs.action = predictAction(currentTs.state);
             cartPole.step(currentTs.action);
@@ -62,7 +64,6 @@ public class PolicyQCartPole {
         }
         prevTs.reward = -prevTs.reward; // TMP penalty for last ts.
         System.out.print("ts: " + total + ", ");
-        return firstTs;
     }
 
     public void justEvaluate() {
@@ -81,43 +82,29 @@ public class PolicyQCartPole {
     public void train() {
 
         // Play a new game and add it to the list.
-        Timestep firstTs = playGame();
-        firstTimesteps.add(firstTs);
+        playGame();
 
         // Get a random subset of all games played.
-        Collections.shuffle(firstTimesteps);
-        List<Timestep> batch = firstTimesteps.subList(firstTimesteps.size() - Math.min(firstTimesteps.size(),
-                batchSize), firstTimesteps.size());
-        List<Timestep> expandedBatch = new ArrayList<>();
-        for (Timestep ts : batch) {
-            expandedBatch.add(ts);
-            do {
-                ts = ts.nextTs;
-                expandedBatch.add(ts);
-            } while (ts.nextTs != null);
+        Collections.shuffle(timesteps);
+        List<Timestep> batch = timesteps.subList(timesteps.size() - Math.min(timesteps.size(),
+                batchSize), timesteps.size());
 
-        }
-
-        float[] qTarget = new float[expandedBatch.size()];
-        float[][] states = new float[expandedBatch.size()][CartPole.STATE_SIZE];
-        float[][] oneHotActions = new float[expandedBatch.size()][CartPole.ACTIONSPACE_SIZE];
+        float[] qTarget = new float[batch.size()];
+        float[][] states = new float[batch.size()][CartPole.STATE_SIZE];
+        float[][] oneHotActions = new float[batch.size()][CartPole.ACTIONSPACE_SIZE];
         int idx = 0;
         for (Timestep ts : batch) {
-            while (ts.nextTs != null) {
-                qTarget[idx] = ts.reward + gamma * Floats.max(net.evaluateActionDistribution(ts.nextTs.state)); //
-                // TODO do as one evaluation.
-                states[idx] = ts.state;
-                oneHotActions[idx][ts.action] = 1;
-                idx++;
-                ts = ts.nextTs;
+            if (ts.nextTs != null) {
+                qTarget[idx] = ts.reward + gamma * Floats.max(net.evaluateActionDistribution(ts.nextTs.state));
+            } else {
+                qTarget[idx] = ts.reward; // Only reward is from the current state since this is terminal.
             }
-            qTarget[idx] = ts.reward; // Only reward is from the current state since this is terminal.
             states[idx] = ts.state;
             oneHotActions[idx][ts.action] = 1;
             idx++;
         }
 
-        float loss = net.trainingStep(states, oneHotActions, qTarget,1);
+        float loss = net.trainingStep(states, oneHotActions, qTarget, batchSize);
         System.out.println(loss + ", " + exploreProbability);
     }
 
@@ -152,7 +139,7 @@ public class PolicyQCartPole {
     public static void main(String[] args) throws FileNotFoundException {
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(CartPole.STATE_SIZE);
-        layerSizes.add(8);
+        layerSizes.add(4);
         layerSizes.add(2);
         layerSizes.add(CartPole.ACTIONSPACE_SIZE);
 
@@ -160,12 +147,13 @@ public class PolicyQCartPole {
         addedArgs.add("-lr");
         addedArgs.add("1e-3");
         addedArgs.add("-a");
-        addedArgs.add("elu");
+        addedArgs.add("relu");
         PolicyQNetwork net = PolicyQNetwork.makeNewNetwork("src/main/resources/tflow_models/cpole.pb",
                 layerSizes, addedArgs, true);
 
         PolicyQCartPole policy = new PolicyQCartPole(net);
         for (int i = 0; i < 10000000; i++) {
+            System.out.print("epi: " + i);
             policy.train();
             if (i % 10 == 0) {
                 System.out.println("Greedy evaluation coming up!");
