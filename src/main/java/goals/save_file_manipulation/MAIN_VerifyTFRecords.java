@@ -20,7 +20,7 @@ import static data.TFRecordDataParsers.loadSequencesFromTFRecord;
  */
 public class MAIN_VerifyTFRecords {
 
-    private static Logger logger = LogManager.getLogger(MAIN_VerifyTFRecords.class);
+    private static final Logger logger = LogManager.getLogger(MAIN_VerifyTFRecords.class);
 
     public static void main(String[] args) {
 

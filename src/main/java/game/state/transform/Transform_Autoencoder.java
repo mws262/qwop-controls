@@ -48,7 +48,7 @@ public class Transform_Autoencoder implements ITransform {
      */
     private float[][] flatSt = new float[1][stateDimension];
 
-    private final Logger logger = LogManager.getLogger(Transform_Autoencoder.class);
+    private static final Logger logger = LogManager.getLogger(Transform_Autoencoder.class);
 
     public final String graphFile;
 

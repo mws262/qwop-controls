@@ -48,7 +48,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      */
     private ArrayList<GameContainer> gameData = new ArrayList<>();
 
-    private static Logger logger = LogManager.getLogger(DataSaver_DenseTFRecord.class);
+    private static final Logger logger = LogManager.getLogger(DataSaver_DenseTFRecord.class);
 
     public DataSaver_DenseTFRecord() {
         id = id_max++;
@@ -134,8 +134,10 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
         }
         File file = new File(fullFilename);
 
-        //noinspection ResultOfMethodCallIgnored
-        file.getParentFile().mkdirs();
+        if (file.getParentFile().mkdirs()) {
+            logger.debug("Directory structure created: " + file.getPath());
+        }
+
         FileOutputStream stream = new FileOutputStream(file);
 
         // Iterate through all runs in a single file.

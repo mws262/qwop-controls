@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  */
 public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
 
-    private Logger logger = LogManager.getLogger(this.getClass());
+    private static final Logger logger = LogManager.getLogger(MAIN_Search_RecoverFromSelected.class);
 
     public MAIN_Search_RecoverFromSelected() {
         super(new File("src/main/resources/config/" + "search.config_selected"));

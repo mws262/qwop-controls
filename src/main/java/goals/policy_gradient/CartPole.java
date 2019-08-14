@@ -39,7 +39,7 @@ public class CartPole { // TODO implement one of the game interfaces.
 
     private boolean isDone = false;
 
-    Logger logger = LogManager.getLogger(CartPole.class);
+    private static final Logger logger = LogManager.getLogger(CartPole.class);
 
     public void connect(boolean withGraphics) {
         try {

@@ -92,7 +92,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     /**
      * Handle logging messages.
      */
-    private Logger logger;
+    private static final Logger logger = LogManager.getLogger(MAIN_Search_ValueFun.class);
 
     private int bailAfterXGames;
     private int getToSteadyDepth;
@@ -118,7 +118,6 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     @SuppressWarnings("ConstantConditions")
     public MAIN_Search_ValueFun(File configFile) {
         super(configFile);
-        logger = LogManager.getLogger(MAIN_Search_ValueFun.class);
 
         /* Load parameters from config file. */
 //        Sampler_UCB.explorationMultiplier = Float.parseFloat(properties.getProperty("UCBExplorationMultiplier", "1"));

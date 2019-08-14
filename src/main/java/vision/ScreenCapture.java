@@ -66,7 +66,7 @@ public class ScreenCapture {
      *
      * @throws IOException Video capture is not successfully finalized to file.
      */
-    public void finalize() throws IOException {
+    public void finish() throws IOException {
         encoder.finish();
     }
 }

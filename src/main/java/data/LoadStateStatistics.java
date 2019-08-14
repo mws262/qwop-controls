@@ -37,7 +37,7 @@ public class LoadStateStatistics {
     }
 
     private static float[] readArrayFromFile(File file) throws FileNotFoundException {
-        Scanner sc = new Scanner(file);
+        Scanner sc = new Scanner(file, "utf-8");
 
         List<Float> valuesList = new ArrayList<>();
         while (sc.hasNextDouble())

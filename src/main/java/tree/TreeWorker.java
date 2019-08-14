@@ -149,7 +149,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
 
     private final List<Action> actionSequence = new ArrayList<>();
 
-    private static Logger logger = LogManager.getLogger(TreeWorker.class);
+    private static final Logger logger = LogManager.getLogger(TreeWorker.class);
 
     private TreeWorker(ISampler sampler, IDataSaver saver) {
         workerID = TreeWorker.getWorkerCountAndIncrement();

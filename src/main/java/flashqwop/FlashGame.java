@@ -54,7 +54,7 @@ public abstract class FlashGame implements IFlashStateListener {
      */
     private boolean awaitingRestart = true;
 
-    private Logger logger = LogManager.getLogger(FlashGame.class);
+    private static final Logger logger = LogManager.getLogger(FlashGame.class);
     /**
      * Create a new Flash game interface.
      *

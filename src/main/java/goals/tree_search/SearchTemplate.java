@@ -48,11 +48,7 @@ public abstract class SearchTemplate {
     /**
      * Logging to console or file.
      */
-    private static Logger logger;
-    static {
-        Utility.loadLoggerConfiguration();
-        logger = LogManager.getLogger(SearchTemplate.class);
-    }
+    private static final Logger logger = LogManager.getLogger(SearchTemplate.class);
 
     /**
      * Will look for a configuration file in this path.

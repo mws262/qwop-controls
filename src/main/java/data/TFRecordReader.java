@@ -46,7 +46,7 @@ public class TFRecordReader {
         } catch (EOFException eof) {
             return null; // return null means EOF
         }
-        Long len = fromInt64LE(lenBytes);
+        long len = fromInt64LE(lenBytes);
 
         // Verify length crc32
         if (!crcCheck) {
@@ -64,7 +64,7 @@ public class TFRecordReader {
         if (len > Integer.MAX_VALUE) {
             throw new IOException("Record size exceeds max value of int32: " + len);
         }
-        byte[] data = new byte[len.intValue()];
+        byte[] data = new byte[(int) len];
         input.readFully(data);
 
         // Verify data crc32

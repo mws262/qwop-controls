@@ -80,7 +80,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
     private final String name;
 
-    private static Logger logger = LogManager.getLogger(PanelPlot_SingleRun.class);
+    private static final Logger logger = LogManager.getLogger(PanelPlot_SingleRun.class);
 
 
     public PanelPlot_SingleRun(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numberOfPlots) {

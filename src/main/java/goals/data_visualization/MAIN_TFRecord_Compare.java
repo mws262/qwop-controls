@@ -34,7 +34,7 @@ public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 
     private boolean doneInit = false;
 
-    private static Logger logger = LogManager.getLogger(MAIN_TFRecord_Compare.class);
+    private static final Logger logger = LogManager.getLogger(MAIN_TFRecord_Compare.class);
 
     public static void main(String[] args) {
         MAIN_TFRecord_Compare mc = new MAIN_TFRecord_Compare();

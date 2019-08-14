@@ -18,7 +18,7 @@ public class KeypusherSerialConnection implements IGameCommandTarget {
 
     private OutputStream out;
 
-    private Logger logger = LogManager.getLogger(KeypusherSerialConnection.class);
+    private final static Logger logger = LogManager.getLogger(KeypusherSerialConnection.class);
 
     public KeypusherSerialConnection() {
         // Get the correct serial port.

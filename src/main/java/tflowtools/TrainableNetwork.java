@@ -63,7 +63,7 @@ public class TrainableNetwork implements AutoCloseable {
     /**
      * For logger message output.
      */
-    private static Logger logger = LogManager.getLogger(TrainableNetwork.class);
+    private static final Logger logger = LogManager.getLogger(TrainableNetwork.class);
 
     // Tensorboard
     public final boolean useTensorboard;
@@ -445,7 +445,7 @@ public class TrainableNetwork implements AutoCloseable {
     }
 
     @Override
-    public void finalize() {
+    protected void finalize() {
         if (!haveResourcesBeenReleased) {
             logger.error("This object was garbage collected without close() having been called. This means there are" +
                     " resources still open in the background.");

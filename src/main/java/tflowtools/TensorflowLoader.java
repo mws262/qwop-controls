@@ -31,7 +31,7 @@ public abstract class TensorflowLoader implements AutoCloseable {
      */
     private final Graph graph;
 
-    private static Logger logger = LogManager.getLogger(TensorflowLoader.class);
+    private static final Logger logger = LogManager.getLogger(TensorflowLoader.class);
 
     /**
      * Load the computational graph from a .pb file and also make a new session.

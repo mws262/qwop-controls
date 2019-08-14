@@ -215,7 +215,7 @@ public class Transform_PCA implements ITransform {
             int[] components = new int[durations.length];
 
             for (int i = 0; i < durations.length; i++)  {
-                components[i] = Integer.valueOf(durations[i]);
+                components[i] = Integer.parseInt(durations[i]);
             }
 
             return components;

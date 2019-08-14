@@ -31,7 +31,7 @@ import java.util.Objects;
  * @author matt
  */
 public class MAIN_Search_LongRun extends SearchTemplate {
-    private Logger logger = LogManager.getLogger(this.getClass());
+    private static final Logger logger = LogManager.getLogger(MAIN_Search_LongRun.class);
 
     public MAIN_Search_LongRun() {
         super(new File("src/main/resources/config/" + "search.config_long"));

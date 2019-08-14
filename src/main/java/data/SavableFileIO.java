@@ -21,7 +21,7 @@ public class SavableFileIO<T> {
     /**
      * Whether to display debugging/progress messages.
      */
-    private static Logger logger = LogManager.getLogger(SavableFileIO.class);
+    private static final Logger logger = LogManager.getLogger(SavableFileIO.class);
 
     /**
      * Store objects to file.

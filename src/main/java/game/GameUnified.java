@@ -44,7 +44,7 @@ import static game.GameConstants.*;
 @SuppressWarnings("Duplicates")
 public class GameUnified implements IGameInternal, IGameSerializable {
 
-    private transient final Logger logger = LogManager.getLogger(GameUnified.class);
+    private static final Logger logger = LogManager.getLogger(GameUnified.class);
 
     public static final int STATE_SIZE = 72;
 

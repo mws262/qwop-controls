@@ -73,7 +73,7 @@ public class FlashQWOPServer implements IGameExternal {
 
     private final boolean useJSONState = true;
 
-    private static Logger logger = LogManager.getLogger(FlashQWOPServer.class);
+    private static final Logger logger = LogManager.getLogger(FlashQWOPServer.class);
     /**
      * Open a socket for communicating back and forth with the real QWOP game.
      * @param port Specified port for communication. Currently real QWOP is hardcoded to use 2900.

@@ -52,7 +52,7 @@ public class DataSaver_StageSelected implements IDataSaver {
      */
     private String fileLocation = "./";
 
-    private static Logger logger = LogManager.getLogger(DataSaver_StageSelected.class);
+    private static final Logger logger = LogManager.getLogger(DataSaver_StageSelected.class);
 
     @Override
     public void reportGameInitialization(IState initialState) {}

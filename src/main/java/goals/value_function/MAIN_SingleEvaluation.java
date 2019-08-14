@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
@@ -61,7 +62,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
             o = false,
             p = false;
 
-    private Logger logger = LogManager.getLogger(MAIN_SingleEvaluation.class);
+    private static final Logger logger = LogManager.getLogger(MAIN_SingleEvaluation.class);
 
     MAIN_SingleEvaluation() {
         /* Set up screen capture, if enabled. */
@@ -69,7 +70,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
             screenCapture = new ScreenCapture(new File(Utility.generateFileName("vid","mp4")));
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
-                    screenCapture.finalize();
+                    screenCapture.finish();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -91,13 +92,13 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
 
         /* Load a value function controller. */
-        valueFunction = null;
         try {
             valueFunction =
                     new ValueFunction_TensorFlow_StateOnly(new File(valueNetworkName), game, false);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        Objects.requireNonNull(valueFunction);
         try {
             valueFunction.loadCheckpoint(checkpointName);
         } catch (IOException e) {

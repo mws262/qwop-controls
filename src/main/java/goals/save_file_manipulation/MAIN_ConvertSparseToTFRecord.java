@@ -1,11 +1,15 @@
 package goals.save_file_manipulation;
 
+import com.google.common.base.Preconditions;
+import data.SparseDataToDenseTFRecord;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import data.SparseDataToDenseTFRecord;
 
 /**
  * Take a sparsely-saved datafile (i.e. states not recorded at every timestep), and turn it into a densely-saved
@@ -15,14 +19,24 @@ import data.SparseDataToDenseTFRecord;
  */
 public class MAIN_ConvertSparseToTFRecord {
 
-    public static void main(String[] args) {
+    private static final Logger logger = LogManager.getLogger(MAIN_ConvertSparseToTFRecord.class);
 
-        File loadFile = new File("src/main/resources/saved_data/11_1_18/");
+    public static void main(String[] args) throws FileNotFoundException {
+
+        File loadFile = new File("./src/main/resources/saved_data/11_1_18/");
         File outFile = new File("./src/main/resources/saved_data/11_1_18/");
         String filterTerm = "";
 
-        //noinspection ResultOfMethodCallIgnored
-        outFile.mkdir();
+        Preconditions.checkArgument(loadFile.isDirectory());
+        Preconditions.checkArgument(outFile.isDirectory());
+
+        if (!loadFile.exists()) {
+            throw new FileNotFoundException("Could not find input file.");
+        }
+
+        if (outFile.mkdir()) {
+            logger.info("Output directory created: " + outFile.getPath());
+        }
 
         List<File> filesToConvert = new ArrayList<>();
         File[] files = loadFile.listFiles();

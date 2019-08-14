@@ -22,6 +22,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
 
@@ -312,8 +313,9 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
                     sourceStyle,
                     // This crazy regex basically makes the message part of the log entry wrap with indents matching
                     // the previous line.
-                    new String(getLayout().toByteArray(event)).replaceAll("(?m)^", "\t\t\t").replaceFirst("\t\t", ""),
-                    msgStyle);
+                    new String(getLayout().toByteArray(event), StandardCharsets.UTF_8)
+                            .replaceAll("(?m)^", "\t\t\t")
+                            .replaceFirst("\t\t", ""), msgStyle);
 
             logLines.add(line);
             line.writeLineIf(); // Only will display if not filtered out.

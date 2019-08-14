@@ -50,7 +50,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N>
      */
     final IActionGenerator actionGenerator;
 
-    private static Logger logger = LogManager.getLogger(NodeQWOPExplorableBase.class);
+    private static final Logger logger = LogManager.getLogger(NodeQWOPExplorableBase.class);
 
     /**
      * Create a new root node. It will have potential child game.action assigned to it by the specified

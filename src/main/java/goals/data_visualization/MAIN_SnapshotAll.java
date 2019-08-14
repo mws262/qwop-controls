@@ -44,7 +44,7 @@ public class MAIN_SnapshotAll extends JFrame {
      */
     private File saveLoc = new File("src/main/resources/saved_data/tmp_testing");
 
-    private static Logger logger = LogManager.getLogger(MAIN_SnapshotAll.class);
+    private static final Logger logger = LogManager.getLogger(MAIN_SnapshotAll.class);
 
     public static void main(String[] args) {
         MAIN_SnapshotAll mc = new MAIN_SnapshotAll();

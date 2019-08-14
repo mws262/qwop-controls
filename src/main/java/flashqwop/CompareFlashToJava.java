@@ -68,7 +68,6 @@ public class CompareFlashToJava extends FlashGame {
         cr.setMinimumSize(new Dimension(100,100));
         frame.pack();
         frame.setVisible(true);
-        new Thread(panelRunner);
         panelRunner.activateTab();
         initialized = true;
         restart();
