@@ -162,14 +162,13 @@ public class TrainableNetwork implements AutoCloseable {
     public float trainingStep(Session.Runner sess, float[][] inputs, float[][] desiredOutputs, int steps) {
         Tensor<Float> input = Tensors.create(inputs);
         Tensor<Float> value_out = Tensors.create(desiredOutputs);
+        sess = sess
+                .feed("input", input)
+                .feed("output_target", value_out)
+                .addTarget("train")
+                .fetch("loss");
         float loss = 0;
         for (int i = 0; i < steps; i++) {
-            sess = sess
-                    .feed("input", input)
-                    .feed("output_target", value_out)
-                    .addTarget("train")
-                    .fetch("loss");
-
             if (useTensorboard) {
                 sess = sess.fetch("summary/summary");
             }

@@ -2,6 +2,7 @@ package goals.policy_gradient;
 
 import game.GameUnified;
 import game.action.Action;
+import game.action.ActionQueue;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -11,13 +12,19 @@ public class PolicyQQWOP {
 
     private final GameUnified game = new GameUnified();
     PolicyQNetwork net;
+    List<Action> allowedActions;
+    private ActionQueue actionQueue = new ActionQueue();
 
     PolicyQQWOP(PolicyQNetwork net) {
         this.net = net;
+        allowedActions = new ArrayList<>();
+        allowedActions.add(new Action(1, Action.Keys.qp));
+        allowedActions.add(new Action(1, Action.Keys.wo));
+        allowedActions.add(new Action(1, Action.Keys.none));
     }
 
     // Returns the first ts in a game. Is a forward-linked list.
-    public void playGame() {
+    public float[] playGame() {
         game.makeNewWorld();
         boolean done = false;
 
@@ -26,12 +33,19 @@ public class PolicyQQWOP {
         PolicyQNetwork.Timestep currentTs = firstTs;
         float prevX = GameUnified.getInitialState().getCenterX();
         int total = 0;
-        while (!done) {
+        int actionIdx = 0;
+        while (!done && total < 2000) {
+
             net.addTimestep(currentTs);
 
             currentTs.state = game.getCurrentState().flattenState();
-            currentTs.action = net.policyExplore(currentTs.state);
-            game.step(Action.keysToBooleans(Action.Keys.values()[currentTs.action]));
+            if (actionQueue.isEmpty()) {
+                actionIdx = net.policyExplore(currentTs.state);
+                actionQueue.addAction(allowedActions.get(actionIdx));
+            }
+            currentTs.action = actionIdx;
+
+            game.step(actionQueue.pollCommand());
             float currX = game.getCurrentState().getCenterX();
             currentTs.reward = currX - prevX;
             prevX = currX;
@@ -46,7 +60,8 @@ public class PolicyQQWOP {
             net.incrementDecay();
             total++;
         }
-        System.out.print("ts: " + total + ", dist: " + prevX/10f);
+        return new float[] {total, prevX};
+       // System.out.print("ts: " + total + ", dist: " + prevX/10f);
     }
 
 //    public void justEvaluate() {
@@ -58,34 +73,40 @@ public class PolicyQQWOP {
 //            cartPole.step(action);
 //            ts++;
 //            System.out.print(action);
-//        }
+//        }-
 //        System.out.println("Greedy evaluation went for: " + ts);
 //    }
 
     public static void main(String[] args) throws FileNotFoundException {
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(GameUnified.STATE_SIZE);
-        layerSizes.add(80);
         layerSizes.add(20);
-        layerSizes.add(Action.Keys.values().length);
+        layerSizes.add(15);
+        layerSizes.add(3);
 
         List<String> addedArgs = new ArrayList<>();
         addedArgs.add("-lr");
-        addedArgs.add("1e-3");
+        addedArgs.add("1e-4");
         addedArgs.add("-a");
         addedArgs.add("relu");
         PolicyQNetwork net = PolicyQNetwork.makeNewNetwork("src/main/resources/tflow_models/cpole.pb",
                 layerSizes, addedArgs, true);
 
         PolicyQQWOP policy = new PolicyQQWOP(net);
+        float lossAvg = 0;
+        float tsAvg = 0;
+        float xAvg = 0;
         for (int i = 0; i < 10000000; i++) {
-            policy.playGame();
-            float loss = net.train(1);
-            System.out.println("epi: " + i + ", loss: " + loss);
-//            if (i % 10 == 0) {
-//                System.out.println("Greedy evaluation coming up!");
-////                policy.justEvaluate();
-//            }
+            float[] result = policy.playGame();
+            lossAvg += net.train(1);
+            tsAvg += result[0];
+            xAvg += result[1];
+            if (i % 20 == 0) {
+                System.out.println("epi: " + i + ", loss: " + lossAvg / 20f + ", ts: " + tsAvg / 20f + ", x: " + xAvg / 20f);
+                lossAvg = 0;
+                tsAvg = 0;
+                xAvg = 0;
+            }
         }
     }
 }
