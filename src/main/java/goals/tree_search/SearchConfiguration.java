@@ -19,14 +19,10 @@ import game.action.IActionGenerator;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.spi.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.simple.SimpleLoggerContext;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
 import tree.TreeWorker;
-import tree.Utility;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphics;
@@ -37,13 +33,11 @@ import ui.UI_Headless;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class SearchConfiguration implements Serializable {
+public class SearchConfiguration {
 
     public final Machine machine;
     public final Tree tree;

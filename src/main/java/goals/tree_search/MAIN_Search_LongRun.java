@@ -105,7 +105,7 @@ public class MAIN_Search_LongRun extends SearchTemplate {
             logger.info("Stage 2 done.");
         }
 
-        System.exit(0);
+        ui.kill();
     }
 
     @Override

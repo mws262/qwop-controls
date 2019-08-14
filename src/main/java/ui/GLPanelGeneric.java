@@ -22,7 +22,7 @@ public class GLPanelGeneric extends GLJPanel implements GLEventListener, Compone
     /**
      * GLU is the line/point graphics
      **/
-    private GLU glu;
+    private transient GLU glu;
     transient GL2 gl;
     transient GLUT glut = new GLUT();
 

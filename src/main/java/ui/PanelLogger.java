@@ -79,8 +79,7 @@ public class PanelLogger extends JPanel implements TabbedPaneActivator {
         WHITE_BOLD, RED_BOLD, BLUE_BOLD, YELLOW_BOLD, GREEN_BOLD
     }
 
-    public PanelLogger() {
-
+    PanelLogger() {
         setLayout(new BorderLayout());
         setBackground(logBackground);
 

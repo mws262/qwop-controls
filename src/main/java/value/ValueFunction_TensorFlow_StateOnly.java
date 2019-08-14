@@ -9,6 +9,7 @@ import game.GameUnified;
 import game.IGameSerializable;
 import game.action.Action;
 import game.state.IState;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOP;
@@ -44,7 +45,6 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     public final GameUnified gameTemplate;
     public final String fileName;
-    public final boolean tensorboardLogging;
 
     /**
      * Number of threads to distribute the predictive simulations to. There are 9 predicted futures, so this is a
@@ -69,7 +69,6 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 " one output.");
 
         this.gameTemplate = gameTemplate.getCopy();
-        this.tensorboardLogging = tensorboardLogging;
         fileName = file.getName();
         assignFuturePredictors(this.gameTemplate);
         if (multithread)
@@ -94,7 +93,6 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 checkpointFile, tensorboardLogging);
         this.gameTemplate = gameTemplate;
         this.fileName = fileName;
-        this.tensorboardLogging = tensorboardLogging;
         assignFuturePredictors(gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
@@ -158,9 +156,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         Objects.requireNonNull(evalResult);
 
         currentResult = evalResult;
-//        logger.info(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f \tBodyX: %3.2f",
-//                System.currentTimeMillis() - initialTime, evalResult.timestep, evalResult.keys.toString(),
-//                Math.round(evalResult.value * 100)/100f, evalResult.state.getCenterX()));
+        if (logger.getLevel().isLessSpecificThan(Level.DEBUG)) {
+            logger.debug(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f \tBodyX: %3" +
+                            ".2f",
+                    System.currentTimeMillis() - initialTime, evalResult.timestep, evalResult.keys.toString(),
+                    Math.round(evalResult.value * 100) / 100f, evalResult.state.getCenterX()));
+        }
 
         return new Action(evalResult.timestep, evalResult.keys);
     }

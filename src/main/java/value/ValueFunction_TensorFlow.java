@@ -247,8 +247,14 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
             lossSum += network.trainingStep(trainingInput, trainingOutput, trainingStepsPerBatch);
             batchCount++;
         });
-        logger.info("Update complete. Epoch: " + epochCount + ". Batches this epoch: " + batchCount + ". Average " +
-                "loss: " + (lossSum / (float) batchCount) + ". Total time elapsed: " + ((System.currentTimeMillis() - startTime)/100)/10f);
+
+        String logMsg = String.format("Update complete. Epoch: %d. Batches this epoch: %d. Average loss: %.4f. Total " +
+                        "time elapsed: %.1f sec.",
+                epochCount,
+                batchCount,
+                lossSum / (float) batchCount,
+                (System.currentTimeMillis() - startTime) * 0.001f);
+        logger.info(logMsg);
         epochCount++;
     }
 
