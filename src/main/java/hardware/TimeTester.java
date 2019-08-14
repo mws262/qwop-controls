@@ -1,5 +1,7 @@
 package hardware;
 
+import game.action.Action;
+import game.action.Action.Keys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -8,24 +10,61 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+/**
+ * For testing the round-trip latency of the solenoid keypresser robot. This opens a window that is just listening
+ * for keypresses. Then it sends serial commands to the microcontroller to press a certain key. It reports the time
+ * between sending the command and receiving the keystroke back on the computer end. It reports this time for both
+ * pressing and depressing the key. It repeats this a number of times.
+ *
+ * Experimentally, these numbers will be somewhere between 10ms and 40ms. Ideally, something like 15-20ms. Outside
+ * the broader range something is probably wrong. Even too short of keypresses might indicate strange behavior.
+ *
+ * @author matt
+ */
 public class TimeTester {
 
-    KeypusherSerialConnection serial;
+    /**
+     * For communication with the solenoid-controlling microcontroller.
+     */
+    private KeypusherSerialConnection serial;
 
+    /**
+     * Whether the commanded press action has completed.
+     */
     private volatile boolean donePress = false;
+
+    /**
+     * Whether the commanded depress action has completed.
+     */
     private volatile boolean doneDepress = false;
 
+    /**
+     * For logging the press and depress times.
+     */
     private static final Logger logger = LogManager.getLogger(TimeTester.class);
 
     public TimeTester() {
-        JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
+        // Make a window that listens for keystrokes.
+        JFrame frame = new JFrame();
+        frame.setAlwaysOnTop(true);
+        frame.setFocusable(true);
         frame.add(new JPanel());
-        frame.addKeyListener(new Listener()); // Listen for user input.
+        frame.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {}
+            @Override
+            public void keyPressed(KeyEvent e) { donePress = true; }
+            @Override
+            public void keyReleased(KeyEvent e) { doneDepress = true; }
+        }); // Listen for user input.
+
         frame.setPreferredSize(new Dimension(600, 400));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+        frame.toFront();
 
+        // Open a connection to the microcontroller and turn off all solenoids.
         try {
             serial = new KeypusherSerialConnection();
             Thread.sleep(400);
@@ -36,19 +75,47 @@ public class TimeTester {
         }
     }
 
-    public long testKeyTime(int testTimes) {
-        for (int i = 0; i < testTimes; i++) {
+    /**
+     * Test how long it takes for a keypress to occur after it has been commanded. Make sure that the window does not
+     * lose focus during the test.
+     * @param keyToTest Which key to test. Must be one and only one key (e.g. QW is invalid, so is NONE).
+     * @param testIterations Number of times to press and release the key.
+     * @return Average response time for both press and depress commands. I think it is more informative to look at
+     * the log messages, since sometimes a strange spike in times, or a big mismatch between press and depress can
+     * indicate that hardware tuning is needed.
+     */
+    public long testKeyTime(Keys keyToTest, int testIterations) {
+        boolean[] keys = new boolean[4];
+        switch (keyToTest) {
+            case q:
+                keys[0] = true;
+                break;
+            case w:
+                keys[1] = true;
+                break;
+            case o:
+                keys[2] = true;
+                break;
+            case p:
+                keys[3] = true;
+                break;
+            default:
+                throw new IllegalArgumentException("Only give a single key to press. Combinations are not supported " +
+                        "yet.");
+        }
+
+        long msSpent = 0;
+        for (int i = 0; i < testIterations; i++) {
             donePress = false;
-            serial.command(false, true, false, false);
+            serial.command(keys);
 
             long startTimePress = System.currentTimeMillis();
 
-            while (!donePress) {
-            }
+            while (!donePress) {}
 
             long endTimePress = System.currentTimeMillis();
-
-            logger.info("milliseconds to push key down: " + (endTimePress - startTimePress));
+            long pressTime = endTimePress - startTimePress;
+            logger.info("milliseconds to push key down: " + pressTime);
 
             try {
                 Thread.sleep(100);
@@ -60,10 +127,10 @@ public class TimeTester {
             serial.command(false, false, false, false);
             long startTimeDepress = System.currentTimeMillis();
 
-            while (!doneDepress) {
-            }
+            while (!doneDepress) {}
 
             long endTimeDepress = System.currentTimeMillis();
+            long depressTime = endTimeDepress - startTimeDepress;
 
             logger.info("milliseconds to release key : " + (endTimeDepress - startTimeDepress));
             try {
@@ -71,37 +138,15 @@ public class TimeTester {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            msSpent += pressTime;
+            msSpent += depressTime;
         }
-        return 0;
-    }
-
-
-    private class Listener implements KeyListener {
-
-        public Listener() {
-        }
-
-        @Override
-        public void keyTyped(KeyEvent e) {
-
-        }
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            donePress = true;
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            doneDepress = true;
-        }
+        return msSpent / (2 * testIterations); // Press and depress times are in there hence the 2.
     }
 
     public static void main(String[] args) {
         TimeTester tt = new TimeTester();
-
-
-        tt.testKeyTime(10);
+        tt.testKeyTime(Keys.q, 10); // Change out the keys here or chain tests together here.
 
         System.exit(0);
     }

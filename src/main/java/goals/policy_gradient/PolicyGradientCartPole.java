@@ -28,7 +28,7 @@ public class PolicyGradientCartPole {
         return net.evaluateActionDistribution(state);
     }
 
-    public void playGame() {
+    public boolean playGame() {
         cartPole.reset();
         states.clear();
         actions.clear();
@@ -39,9 +39,11 @@ public class PolicyGradientCartPole {
             float[] currentState = CartPole.toFloatArray(cartPole.getCurrentState());
 
             int actionIdx = net.policyOnDistribution(currentState);
+            boolean success = cartPole.step(actionIdx);
+            if (!success)
+                return success;
             actions.add(actionIdx);
             states.add(currentState);
-            cartPole.step(actionIdx);
             duration++;
             rewards.add((float) cartPole.getLastReward() -  Math.abs(currentState[0]) * 0.2f); //TODO temp put a
             // penalty on x offset.
@@ -64,6 +66,7 @@ public class PolicyGradientCartPole {
 
         float loss = net.trainingStep(flatStates, oneHotActions, discounted, 1);
         System.out.println("Duration: " + duration + " Loss: " + loss);
+        return true;
     }
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -83,7 +86,10 @@ public class PolicyGradientCartPole {
 
         PolicyGradientCartPole policy = new PolicyGradientCartPole(net);
         for (int i = 0; i < 10000000; i++) {
-            policy.playGame();
+            boolean success = policy.playGame();
+            if (!success) {
+                break;
+            }
         }
     }
 }

@@ -69,12 +69,18 @@ public class CartPole { // TODO implement one of the game interfaces.
         cumulativeReward = 0;
     }
 
-    public void step(int action) { // TODO genericize.
-        StepReply<Box> observation = client.step(action); // only 0 or 1 -- push left or right.
-        currentState = observation.getObservation().toArray();
-        isDone = observation.isDone();
-        lastReward = observation.getReward(); // 1 for survival.
-        cumulativeReward += lastReward;
+    public boolean step(int action) { // TODO genericize.
+        try {
+            StepReply<Box> observation = client.step(action); // only 0 or 1 -- push left or right.
+            currentState = observation.getObservation().toArray();
+            isDone = observation.isDone();
+            lastReward = observation.getReward(); // 1 for survival.
+            cumulativeReward += lastReward;
+            return true;
+        } catch (RuntimeException e) {
+            // Lost connection. Most likely closed on the gym server side.
+            return false;
+        }
     }
 
     public double[] getCurrentState() {
