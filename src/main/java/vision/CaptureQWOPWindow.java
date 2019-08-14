@@ -75,7 +75,7 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
 
     private static boolean debugFrame = false;
 
-    private static Logger logger = LogManager.getLogger(CaptureQWOPWindow.class);
+    private static final Logger logger = LogManager.getLogger(CaptureQWOPWindow.class);
 
     public CaptureQWOPWindow(int monitorIdx) {
         this.monitorIdx = monitorIdx;

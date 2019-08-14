@@ -66,7 +66,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 
     private Panel mainViewPanel;
 
-    private static Logger logger = LogManager.getLogger(MAIN_Controlled.class);
+    private static final Logger logger = LogManager.getLogger(MAIN_Controlled.class);
 
     public static void main(String[] args) {
         MAIN_Controlled mc = new MAIN_Controlled();
@@ -130,7 +130,7 @@ public class MAIN_Controlled extends JFrame implements Runnable, ActionListener 
 //        // Save a progress log before shutting down.
 //        if (doScreenCapture) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 //            try {
-//                screenCap.finalize();
+//                screenCap.finish();
 //            } catch (Exception e) {
 //                e.printStackTrace();
 //            }

@@ -39,7 +39,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
      */
     private File saveLoc = new File("src/main/resources/saved_data/training_data/denseTF_2018-04-26_15-19-44.TFRecord");
 
-    private static Logger logger = LogManager.getLogger(MAIN_PlaybackSaved_TFRecord.class);
+    private static final Logger logger = LogManager.getLogger(MAIN_PlaybackSaved_TFRecord.class);
 
     public static void main(String[] args) {
         MAIN_PlaybackSaved_TFRecord mc = new MAIN_PlaybackSaved_TFRecord();

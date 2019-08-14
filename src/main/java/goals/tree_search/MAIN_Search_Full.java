@@ -37,7 +37,7 @@ import java.util.Objects;
  */
 public class MAIN_Search_Full extends SearchTemplate {
 
-    private Logger logger = LogManager.getLogger(this.getClass());
+    private static final Logger logger = LogManager.getLogger(MAIN_Search_Full.class);
 
     public MAIN_Search_Full() {
         super(new File("src/main/resources/config/search.config_full"));

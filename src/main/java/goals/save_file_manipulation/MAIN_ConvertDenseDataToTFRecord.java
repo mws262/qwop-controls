@@ -30,7 +30,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
     @SuppressWarnings("WeakerAccess")
     static String outFileExt = "tfrecord";
 
-    private static Logger logger = LogManager.getLogger(MAIN_ConvertDenseDataToTFRecord.class);
+    private static final Logger logger = LogManager.getLogger(MAIN_ConvertDenseDataToTFRecord.class);
 
     public static void main(String[] args) {
 

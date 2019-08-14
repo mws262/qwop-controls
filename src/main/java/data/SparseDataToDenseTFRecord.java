@@ -53,7 +53,7 @@ public class SparseDataToDenseTFRecord {
     public int trimFirst = 0;
     public int trimLast = 0;
 
-    private static Logger logger = LogManager.getLogger(SparseDataToDenseTFRecord.class);
+    private static final Logger logger = LogManager.getLogger(SparseDataToDenseTFRecord.class);
 
     /**
      * Make a new converter for making binary TFRecord files from {@link SavableSingleGame} which were

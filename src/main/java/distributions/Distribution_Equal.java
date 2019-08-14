@@ -1,8 +1,8 @@
 package distributions;
 
-import java.util.List;
-
 import game.action.Action;
+
+import java.util.List;
 
 /**
  * Most basic action sampling distribution. This will just randomly pick one of the provided possible game.action with
@@ -27,7 +27,7 @@ public class Distribution_Equal extends Distribution<Action> {
 
     @Override
     public boolean equals(Object other) {
-        return (this.getClass() == other.getClass());
+        return other != null && this.getClass() == other.getClass();
     }
 
     @Override

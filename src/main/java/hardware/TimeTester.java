@@ -15,7 +15,7 @@ public class TimeTester {
     private volatile boolean donePress = false;
     private volatile boolean doneDepress = false;
 
-    private static Logger logger = LogManager.getLogger(TimeTester.class);
+    private static final Logger logger = LogManager.getLogger(TimeTester.class);
 
     public TimeTester() {
         JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.

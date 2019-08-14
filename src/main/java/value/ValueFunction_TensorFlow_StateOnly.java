@@ -54,7 +54,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     private EvaluationResult currentResult;
 
-    private static Logger logger = LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class);
+    private static final Logger logger = LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class);
 
     /**
      * Constructor which loads an existing value function net.

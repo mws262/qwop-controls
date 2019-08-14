@@ -80,7 +80,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
         }
     }
 
-    private static Logger logger = LogManager.getLogger(ValueFunction_TensorFlow.class);
+    private static final Logger logger = LogManager.getLogger(ValueFunction_TensorFlow.class);
 
     /**
      * Constructor which also creates a new TensorFlow model.

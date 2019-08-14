@@ -61,7 +61,7 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
      */
     private final JLabel badModelMsg;
 
-    private static Logger logger = LogManager.getLogger(PanelRunner_ControlledTFlow.class);
+    private static final Logger logger = LogManager.getLogger(PanelRunner_ControlledTFlow.class);
 
     /**
      * Parameters for the disturbance impulse arrow.

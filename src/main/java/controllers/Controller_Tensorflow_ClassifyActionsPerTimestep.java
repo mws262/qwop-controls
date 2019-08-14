@@ -41,7 +41,7 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
      */
     public float actionLatchingThreshold = 1f;
 
-    private final Logger logger = LogManager.getLogger(Controller_Tensorflow_ClassifyActionsPerTimestep.class);
+    private static final Logger logger = LogManager.getLogger(Controller_Tensorflow_ClassifyActionsPerTimestep.class);
 
     /**
      * Create a new TensorFlow classifier controller.

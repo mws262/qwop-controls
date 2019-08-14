@@ -116,7 +116,7 @@ public class Controller_NearestNeighborApprox implements IController {
 
     private State weights;
 
-    private static Logger logger = LogManager.getLogger(Controller_NearestNeighborApprox.class);
+    private static final Logger logger = LogManager.getLogger(Controller_NearestNeighborApprox.class);
 
     /**
      * Create a trajectory library-type controller by providing a list of files to look through.

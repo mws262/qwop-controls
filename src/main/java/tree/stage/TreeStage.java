@@ -43,7 +43,7 @@ public abstract class TreeStage {
      */
     protected int numWorkers;
 
-    private Logger logger = LogManager.getLogger(TreeStage.class);
+    private static final Logger logger = LogManager.getLogger(TreeStage.class);
 
     public void initialize(List<TreeWorker> treeWorkers, NodeQWOPExplorableBase<?> stageRoot) {
         numWorkers = treeWorkers.size();

@@ -25,7 +25,7 @@ public class SavableDenseData implements Serializable {
 
     private final Action[] action;
 
-    private static Logger logger = LogManager.getLogger(SavableDenseData.class);
+    private static final Logger logger = LogManager.getLogger(SavableDenseData.class);
 
     public SavableDenseData(IState[] state, Action[] action) {
         if (state.length != action.length && state.length - action.length != 1) {

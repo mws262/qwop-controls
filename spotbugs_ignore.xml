@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+	<!-- Ignore code that is built by Protobuf or is part of JBox2D. -->
+    <Match>
+         <Class name="~org.*" />
+    </Match>
+</FindBugsFilter>

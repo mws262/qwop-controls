@@ -16,7 +16,7 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
     // 14 steps in the sample run. -> about 17 meters per step.
     // About 2.2 steps-worth of distance on average before failure after a cold start.
 
-    private static Logger logger = LogManager.getLogger(MAIN_CompareWarmStartToColdEveryStep.class);
+    private static final Logger logger = LogManager.getLogger(MAIN_CompareWarmStartToColdEveryStep.class);
 
     public static void main(String[] args) {
         new MAIN_CompareWarmStartToColdEveryStep().run();

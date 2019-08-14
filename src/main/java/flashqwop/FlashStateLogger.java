@@ -14,7 +14,7 @@ public class FlashStateLogger implements IFlashStateListener {
     File logFile;
     PrintWriter writer;
 
-    Logger logger = LogManager.getLogger(FlashStateLogger.class);
+    private static final Logger logger = LogManager.getLogger(FlashStateLogger.class);
     @Override
     public void stateReceived(int timestep, IState state) {
         if (state instanceof State) {

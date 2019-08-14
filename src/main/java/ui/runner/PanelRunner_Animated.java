@@ -48,7 +48,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
      */
     private int fastForwardTimesteps = 0;
 
-    private Logger logger = LogManager.getLogger(PanelRunner_Animated.class);
+    private static final Logger logger = LogManager.getLogger(PanelRunner_Animated.class);
 
     private final String name;
 

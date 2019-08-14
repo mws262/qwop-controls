@@ -71,7 +71,7 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
      */
     private long deadlockDelayCurrent = 0;
 
-    private static Logger logger = LogManager.getLogger(Sampler_UCB.class);
+    private static final Logger logger = LogManager.getLogger(Sampler_UCB.class);
 
     /**
      * Must provide an evaluationFunction to get a numeric score for nodes after a rollout.

@@ -57,7 +57,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     };
 
-    private Logger logger = LogManager.getLogger(MAIN_FlashEvaluation.class);
+    private static final Logger logger = LogManager.getLogger(MAIN_FlashEvaluation.class);
 
     private ValueFunction_TensorFlow valueFunction = null;
 

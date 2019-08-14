@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -50,7 +51,7 @@ public class VisionDataSaver implements IFlashStateListener {
      */
     private int runCounter = 0;
 
-    Logger logger = LogManager.getLogger(VisionDataSaver.class);
+    private static final Logger logger = LogManager.getLogger(VisionDataSaver.class);
 
     /**
      * Make a new screenshot and state information saver with a specified save directory.
@@ -148,7 +149,8 @@ public class VisionDataSaver implements IFlashStateListener {
         assert !statesThisRun.isEmpty(); // TODO: will be true if the data comes before the screen updates.
 
         try {
-            Files.write(new File(runFile.getPath() + "/poses.dat").toPath(), str.toString().getBytes());
+            Files.write(new File(runFile.getPath() + "/poses.dat").toPath(),
+                    str.toString().getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
         }
