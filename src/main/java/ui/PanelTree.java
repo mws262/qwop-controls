@@ -154,7 +154,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
             placeholder.setOpaque(false);
             add(placeholder);
         }
-
         add(log);
     }
 
@@ -370,9 +369,6 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                             break;
                         case KeyEvent.VK_RIGHT:
                             cam.smoothTwist(-0.1f, 5);
-                            break;
-                        case KeyEvent.VK_ESCAPE:
-                            System.exit(0);
                             break;
                         default:
                             break;
