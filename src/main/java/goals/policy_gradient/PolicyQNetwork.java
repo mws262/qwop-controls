@@ -1,7 +1,6 @@
 package goals.policy_gradient;
 
 import com.google.common.primitives.Floats;
-import game.GameUnified;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 import org.tensorflow.Tensors;
@@ -22,7 +21,7 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
     private float exploreProbability;
 
     public int batchSize = 20;
-    public float gamma = 0.95f;
+    public float gamma = 0.99f;
 
     private final List<Timestep> timesteps = new ArrayList<>();
 
