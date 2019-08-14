@@ -6,12 +6,11 @@ function MAIN_PlayLive
 % playable game may not be what you expect.
 
 % Handle Java imports.
-eval('javaaddpath ../target/qwop-controls-1.0.jar'); % Strange issues with trying to directly call these commands. Eval seems to fix it.
-eval('javaaddpath ../jbox2d.jar');
-eval('import game.state.State game.state.StateVariable game.GameSingleThread');
+eval('javaaddpath ../target/qwop-controls-1.0-jar-with-dependencies.jar'); % Strange issues with trying to directly call these commands. Eval seems to fix it.
+eval('import game.state.State game.state.StateVariable game.GameUnified');
 
 % Make a new game (implementation in Java).
-qwopGame = game.GameSingleThread;
+qwopGame = game.GameUnified;
 
 % Create graphics objects.
 close all;
