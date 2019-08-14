@@ -57,7 +57,8 @@ public class TrainableNetwork implements AutoCloseable {
     /**
      * Send Python TensorFlow output to console? Tests don't like this, and it kind of clutters up stuff.
      */
-    private static boolean tflowDebugOutput = true;
+    private static boolean tflowDebugOutput = false; // Maven tests don't like this. They corrupt the output stream
+    // or some such nonsense.
 
     /**
      * For logger message output.
