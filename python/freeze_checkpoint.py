@@ -4,9 +4,9 @@ import tensorflow as tf
 
 # The original freeze_graph function
 # from tensorflow.python.tools.freeze_graph import freeze_graph
+# Note that I rarely freeze a graph any longer. I find loading checkpoints more convenient.
 
 dir = os.path.dirname(os.path.realpath(__file__))
-
 
 def freeze_graph(model_dir, output_node_names, blacklist_node_names, whitelist_node_names):
     """Extract the sub graph defined by the output nodes and convert

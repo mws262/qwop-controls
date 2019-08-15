@@ -1,5 +1,3 @@
-from PIL import Image
-
 import tensorflow as tf
 import numpy as np
 import os.path
@@ -14,12 +12,6 @@ PARAMETERS & SETTINGS
 
 tfrecordExtension = '.TFRecord'  # File extension for input datafiles. Datafiles must be TFRecord-encoded protobuf format.
 tfrecordPaths = ['../src/main/resources/saved_data/training_data/']  # Location of datafiles on this machine. Beware of drive mounting locations.,
-
-export_dir = './models/'
-learn_rate = 1e-3
-
-initWeightsStdev = 0.1
-initBiasVal = 0.1
 
 # All states found in the TFRECORD files
 stateKeys = ['BODY', 'HEAD', 'RTHIGH', 'LTHIGH', 'RCALF', 'LCALF',
@@ -40,7 +32,6 @@ context_features = {ckey: tf.FixedLenFeature([], tf.int64, True) for ckey in con
 FUNCTIONS IN THE NN PIPELINE
 '''
 
-
 def _parse_function(example_proto):
     # The serialized example is converted back to actual values.
     features = tf.parse_single_sequence_example(
@@ -49,9 +40,6 @@ def _parse_function(example_proto):
         sequence_features=sequence_features,
         name='parse_sequence'
     )
-    context = features[0]  # Total number of timesteps in here with key 'TIMESTEPS'
-    timesteps = context['TIMESTEPS']
-    # feats = {key: features[1][key] for key in stateKeys}  # States
     xoffsets = features[1]['BODY'][:, 0]  # Get first column.
     x_out_list = []
     for key in stateKeys:
@@ -59,16 +47,7 @@ def _parse_function(example_proto):
         x_out_list.append(tf.reshape(body_part[:, 0] - xoffsets, [-1, 1]))
         x_out_list.append(body_part[:, 1:])
 
-    statesConcat = tf.concat(x_out_list, 1, name='concat_states')
-
-    # pressedKeys = tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS'], tf.uint8), [-1, 4])
-    pressedKeyClassification = tf.cast(
-        tf.reshape(tf.decode_raw(features[1]['PRESSED_KEYS_ONE_HOT'], tf.uint8), [-1, 3]), dtype=tf.float32)
-
-    # ttt = tf.reshape(tf.decode_raw(features[1]['TIME_TO_TRANSITION'], tf.uint8),)
-    # act = tf.reshape(tf.decode_raw(features[1]['ACTIONS'], tf.uint8),(5,))
-
-    return statesConcat
+    return tf.concat(x_out_list, 1, name='concat_states')
 
 '''
 DEFINE SPECIFIC DATAFLOW
@@ -88,13 +67,12 @@ dataset = tf.data.TFRecordDataset(filenames)
 dataset = dataset.map(_parse_function)
 dataset = dataset.batch(1)
 iterator = dataset.make_initializable_iterator()
-
 next_element = iterator.get_next()
-
 
 print('%d files in queue.' % len(filename_list))
 
-do_calc = True
+
+do_calc = True # Actually do the calculations of the min/max/... or just test if the previously calculated values are valid.
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
 
@@ -103,22 +81,17 @@ with tf.Session() as sess:
 
         # Find mean of each state and min/max.
         state_sum = np.zeros(shape=[72])
-        state_min = np.zeros(shape=[72]) + 1e12
-        state_max = np.zeros(shape=[72]) - 1e12
+        state_min = np.zeros(shape=[72]) + np.inf
+        state_max = np.zeros(shape=[72]) - np.inf
         state_mean = np.zeros(shape=[72])
         state_range = np.zeros(shape=[72])
         state_stdev = np.zeros(shape=[72])
         state_count = 0
         try:
             while True:
-                # try:
                 next_state = sess.run([next_element])[0][0]
-                # except:
-                #     print("caught one")
-
                 state_sum += np.sum(next_state, axis=0)
                 state_count += np.shape(next_state)[0] - 1
-
                 state_max = np.maximum(state_max, np.amax(next_state, axis=0))
                 state_min = np.minimum(state_min, np.amin(next_state, axis=0))
         except tf.errors.OutOfRangeError:
@@ -143,17 +116,17 @@ with tf.Session() as sess:
             print(state_stdev)
             pass
 
-        # file = open("saved_normalization.info", 'w')
-        #
-        # np.savez(file, mean=state_mean, max=state_max, min=state_min, range=state_range, std=state_stdev, quantity=state_count)
-        # file.close()
+        # Zipped directory of all the stats saved right here for testing.
+        file = open("saved_normalization.info", 'w')
+        np.savez(file, mean=state_mean, max=state_max, min=state_min, range=state_range, std=state_stdev, quantity=state_count)
+        file.close()
 
+        # Saved individually for use in the main Java code.
         np.savetxt("../src/main/resources/data_stats/state_mean.txt", state_mean)
         np.savetxt("../src/main/resources/data_stats/state_max.txt", state_max)
         np.savetxt("../src/main/resources/data_stats/state_min.txt", state_min)
         np.savetxt("../src/main/resources/data_stats/state_range.txt", state_range)
         np.savetxt("../src/main/resources/data_stats/state_stdev.txt", state_stdev)
-        # np.savetxt("state_count.txt", state_count)
 
     # Test
     file = open("saved_normalization.info", 'r')
@@ -169,8 +142,7 @@ with tf.Session() as sess:
         print(np.argmin(np.amin(next_state, axis=0)))
         print(np.amax(np.amax(next_state, axis=0)))
         print(np.argmax(np.amax(next_state, axis=0)))
-        #print(next_state)
-    # file.close()
+    file.close()
 
 
 

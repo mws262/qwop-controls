@@ -12,9 +12,7 @@ from google.protobuf import descriptor_pb2
 
 _sym_db = _symbol_database.Default()
 
-
-import feature_pb2 as feature__pb2
-
+from protobuf import feature_pb2 as feature__pb2
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='example.proto',
