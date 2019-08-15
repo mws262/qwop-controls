@@ -30,7 +30,7 @@ public class TrainableNetwork implements AutoCloseable {
     /**
      * Networks are not created in Java. Java calls a python script defined here to create the network.
      */
-    public static final String pythonGraphCreatorScript = "python/java_value_function/create_generic_graph.py";
+    public static final String pythonGraphCreatorScript = "python/create_generic_graph.py";
 
     /**
      * .pb file defining the structure (but not yet weights) of the network.
@@ -522,7 +522,6 @@ public class TrainableNetwork implements AutoCloseable {
             throw new FileNotFoundException("Failed. Unable to locate the TensorFlow graph file which was supposedly " +
                     "created.");
         }
-
         return graphFile;
     }
 }

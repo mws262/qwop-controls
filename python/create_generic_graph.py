@@ -189,7 +189,3 @@ init = tf.global_variables_initializer()
 saver_def = tf.train.Saver().as_saver_def()
 with open(savepath, 'wb') as f:
     f.write(tf.get_default_graph().as_graph_def().SerializeToString())
-
-sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
-sess.close()
-
