@@ -20,8 +20,8 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
     private float decayStep = 0f;
     private float exploreProbability;
 
-    public int batchSize = 20;
-    public float gamma = 0.99f;
+    public int batchSize = 50;
+    public float gamma = 0.92f;
 
     private final List<Timestep> timesteps = new ArrayList<>();
 
