@@ -3,6 +3,7 @@ package goals.policy_gradient;
 import com.google.common.primitives.Floats;
 import goals.policy_gradient.PolicyQNetwork.Timestep;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,20 +67,21 @@ public class PolicyQCartPole {
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-        List<Integer> layerSizes = new ArrayList<>();
-        layerSizes.add(CartPole.STATE_SIZE);
-        layerSizes.add(4);
-        layerSizes.add(2);
-        layerSizes.add(CartPole.ACTIONSPACE_SIZE);
+//        List<Integer> layerSizes = new ArrayList<>();
+//        layerSizes.add(CartPole.STATE_SIZE);
+//        layerSizes.add(4);
+//        layerSizes.add(2);
+//        layerSizes.add(CartPole.ACTIONSPACE_SIZE);
+//
+//        List<String> addedArgs = new ArrayList<>();
+//        addedArgs.add("-lr");
+//        addedArgs.add("1e-3");
+//        addedArgs.add("-a");
+//        addedArgs.add("relu");
+//        PolicyQNetwork net = PolicyQNetwork.makeNewNetwork("src/main/resources/tflow_models/cpole.pb",
+//                layerSizes, addedArgs, true);
 
-        List<String> addedArgs = new ArrayList<>();
-        addedArgs.add("-lr");
-        addedArgs.add("1e-3");
-        addedArgs.add("-a");
-        addedArgs.add("relu");
-        PolicyQNetwork net = PolicyQNetwork.makeNewNetwork("src/main/resources/tflow_models/cpole.pb",
-                layerSizes, addedArgs, true);
-
+        PolicyQNetwork net = new PolicyQNetwork(new File("./src/main/resources/tflow_models/dqn.pb"), false);
         PolicyQCartPole policy = new PolicyQCartPole(net);
         for (int i = 0; i < 10000000; i++) {
             policy.playGame();
