@@ -52,7 +52,7 @@ public class TrainableNetwork implements AutoCloseable {
     private final int[] layerSizes;
 
     public final int inputSize;
-    public final int outputSize;
+    public int outputSize;
 
     /**
      * Send Python TensorFlow output to console? Tests don't like this, and it kind of clutters up stuff.
