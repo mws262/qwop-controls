@@ -1,14 +1,10 @@
-package goals.policy_gradient;
+package goals.q_learning;
 
-import com.google.common.primitives.Floats;
-import goals.policy_gradient.PolicyQNetwork.Timestep;
+import game.cartpole.CartPole;
+import goals.q_learning.PolicyQNetwork.Timestep;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
 
 // See https://github.com/simoninithomas/Deep_reinforcement_learning_Course/blob/master/Deep%20Q%20Learning/Space
 // %20Invaders/DQN%20Atari%20Space%20Invaders.ipynb
@@ -34,7 +30,7 @@ public class PolicyQCartPole {
         while (!done) {
             net.addTimestep(currentTs);
 
-            currentTs.state = CartPole.toFloatArray(cartPole.getCurrentState());
+            currentTs.state = cartPole.getCurrentState();
             currentTs.action = net.policyExplore(currentTs.state);
             cartPole.step(currentTs.action);
             currentTs.reward = (float) cartPole.getLastReward();
@@ -57,7 +53,7 @@ public class PolicyQCartPole {
         cartPole.reset();
         int ts = 0;
         while (!cartPole.isDone()) {
-            float[] state = CartPole.toFloatArray(cartPole.getCurrentState());
+            float[] state = cartPole.getCurrentState();
             int action = net.policyGreedy(state);
             cartPole.step(action);
             ts++;

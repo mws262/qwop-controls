@@ -1,7 +1,6 @@
-package goals.policy_gradient;
+package tflowtools;
 
 import com.google.common.base.Preconditions;
-import tflowtools.TrainableNetwork;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,7 +8,16 @@ import java.util.Random;
 
 public abstract class SoftmaxPolicyNetwork extends TrainableNetwork {
 
-    final Random random = new Random(1);
+    /**
+     * RNG for selecting actions on a distribution. Has a fixed seed for repeatability.
+     */
+    protected final Random random = new Random(1);
+
+    /**
+     * Constructor runs a quick test to make sure that the provided network puts out a distribution summing to 1.
+     * This is the amount of floating point error allowed in this test.
+     */
+    private final float softmaxTol = 1e-5f;
 
     /**
      * Create a new network. Use the factory methods externally.
@@ -18,8 +26,24 @@ public abstract class SoftmaxPolicyNetwork extends TrainableNetwork {
      *                       --logdir ./logs/</code> to view. May use a lot of disk space.
      * @throws FileNotFoundException Given graph definition file could not be found.
      */
-    SoftmaxPolicyNetwork(File graphDefinition, boolean useTensorboard) throws FileNotFoundException {
+    public SoftmaxPolicyNetwork(File graphDefinition, boolean useTensorboard) throws FileNotFoundException {
         super(graphDefinition, useTensorboard);
+
+        // Run a quick test to make sure that the provided graph actually puts out a real probability distribution
+        // (adds to 1).
+        float[][] testInput = new float[1][inputSize];
+        for (int i = 0; i < inputSize; i++) {
+            testInput[0][i] = i;
+        }
+        float[][] testOutput = evaluateInput(testInput);
+        float cumulativeOutput = 0;
+        for (float f : testOutput[0]) {
+            cumulativeOutput += f;
+        }
+        if (Math.abs(1 - Math.abs(cumulativeOutput)) > softmaxTol) {
+            throw new IllegalArgumentException("Given graph file, " + graphDefinition.getName() + ", did not seem to " +
+                    "put out a valid probability distribution. For a test input, the output distribution summed to " + cumulativeOutput);
+        }
     }
 
 
@@ -65,23 +89,18 @@ public abstract class SoftmaxPolicyNetwork extends TrainableNetwork {
      */
     public int policyOnDistribution(float[] state) {
         float[] distribution = evaluateActionDistribution(state);
-        float[] cumulativeDistribution = new float[distribution.length];
-        cumulativeDistribution[0] = distribution[0];
-        for (int i = 1; i < distribution.length - 1; i++) {
-            cumulativeDistribution[i] = cumulativeDistribution[i - 1] + distribution[i];
-        }
-        cumulativeDistribution[distribution.length - 1] = 1; // Sometimes due to roundoff, the last value ends up
-        // slightly less than 1, and I don't want this to screw up selection once every million game executions lol.
-
         float selection = random.nextFloat();
 
-        int bestIdx = 0;
-        for (int i = 0; i < cumulativeDistribution.length; i++) {
-            if (selection <= cumulativeDistribution[i]) {
-                bestIdx = i;
+        int selectedIndex = 0;
+        float cumulativeDistribution = 0;
+        for (int i = 0; i < distribution.length; i++) {
+            cumulativeDistribution += distribution[i];
+            if (selection <= cumulativeDistribution || i == distribution.length - 1) { // Due to floating point
+                // error, sometimes the cumulative is fractionally less than 1. Don't want to miss that case.
+                selectedIndex = i;
                 break;
             }
         }
-        return bestIdx;
+        return selectedIndex;
     }
 }

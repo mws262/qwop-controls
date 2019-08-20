@@ -1,9 +1,10 @@
-package goals.policy_gradient;
+package goals.q_learning;
 
 import com.google.common.primitives.Floats;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 import org.tensorflow.Tensors;
+import tflowtools.SoftmaxPolicyNetwork;
 
 import java.io.File;
 import java.io.FileNotFoundException;
