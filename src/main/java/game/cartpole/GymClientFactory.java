@@ -1,4 +1,4 @@
-package goals.policy_gradient;
+package game.cartpole;
 
 import org.deeplearning4j.gym.Client;
 import org.deeplearning4j.gym.ClientFactory;
@@ -15,6 +15,14 @@ import org.json.JSONObject;
 public class GymClientFactory extends ClientFactory {
 
     // Same as the version in DL4J except this allows the random seed to be set.
+
+    /**
+     * Create a new HTTP client to connect to the gym-http-api. Make sure to run gym_http_server.py first!
+     * @param envId Name of the environment, like "CartPole-v0".
+     * @param seed Random seed used by the environment, likely to generate initial conditions.
+     * @param render Display the visualizer?
+     * @return A new client connected to the gym-http-api server.
+     */
     public static <O, A, AS extends ActionSpace<A>> Client<O, A, AS> build(String envId, long seed, boolean render) {
         String url = "http://127.0.0.1:5000";
         JSONObject body = (new JSONObject()).put("env_id", envId).put("seed", seed);
@@ -29,6 +37,6 @@ public class GymClientFactory extends ClientFactory {
 
         GymObservationSpace<O> observationSpace = fetchObservationSpace(url, instanceId);
         AS actionSpace = fetchActionSpace(url, instanceId);
-        return new Client(url, envId, instanceId, observationSpace, actionSpace, render);
+        return new Client<>(url, envId, instanceId, observationSpace, actionSpace, render);
     }
 }

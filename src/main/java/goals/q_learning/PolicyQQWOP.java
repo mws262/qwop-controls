@@ -1,4 +1,4 @@
-package goals.policy_gradient;
+package goals.q_learning;
 
 import game.GameUnified;
 import game.action.Action;

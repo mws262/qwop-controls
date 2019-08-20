@@ -3,6 +3,7 @@ package goals.policy_gradient;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 import org.tensorflow.Tensors;
+import tflowtools.SoftmaxPolicyNetwork;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,7 +26,6 @@ import java.util.List;
  */
 public class PolicyGradientNetwork extends SoftmaxPolicyNetwork {
 
-
     /**
      * Create a new network. Use the factory methods externally.
      * @param graphDefinition .pb file containing the tflow model.
@@ -36,6 +36,7 @@ public class PolicyGradientNetwork extends SoftmaxPolicyNetwork {
     private PolicyGradientNetwork(File graphDefinition, boolean useTensorboard) throws FileNotFoundException {
         super(graphDefinition, useTensorboard);
     }
+
 
     public float trainingStep(float[][] flatStates, float[][] oneHotActions, float[] discountedRewards, int steps) {
 

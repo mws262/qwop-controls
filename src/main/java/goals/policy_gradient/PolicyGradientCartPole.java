@@ -1,6 +1,8 @@
 package goals.policy_gradient;
 
 
+import game.cartpole.CartPole;
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +38,7 @@ public class PolicyGradientCartPole {
 
         int duration = 0;
         while (!cartPole.isDone()) {
-            float[] currentState = CartPole.toFloatArray(cartPole.getCurrentState());
+            float[] currentState = cartPole.getCurrentState();
 
             int actionIdx = net.policyOnDistribution(currentState);
             boolean success = cartPole.step(actionIdx);
