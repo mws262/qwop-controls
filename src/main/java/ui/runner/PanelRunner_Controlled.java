@@ -7,6 +7,7 @@ import game.GameUnified;
 import game.IGameSerializable;
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import game.action.IActionGenerator;
 import tree.node.NodeQWOPExplorable;
 
@@ -134,7 +135,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         constraints.gridx = 0;
         constraints.gridy = layoutRows - 1;
         add(resetButton, constraints);
-        actionQueue.addAction(new Action(7, Action.Keys.none));
+        actionQueue.addAction(new Action(7, CommandQWOP.Keys.none));
 
         // Options checkboxes.
         JPanel checkboxes = new JPanel();
@@ -193,7 +194,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         if (game != null) {
             game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
             boolean[] mostRecentKeys = actionQueue.isEmpty() ? new boolean[]{false, false, false, false} :
-                    actionQueue.peekThisAction().peek();
+                    actionQueue.peekThisAction().peek().get();
             keyDrawer(g, mostRecentKeys[0], mostRecentKeys[1], mostRecentKeys[2], mostRecentKeys[3]);
         }
     }
@@ -246,7 +247,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         public void reset() {
             game.makeNewWorld();
             actionQueue.clearAll();
-            actionQueue.addAction(new Action(7, Action.Keys.none));
+            actionQueue.addAction(new Action(7, CommandQWOP.Keys.none));
             node = null;
             currentGameX = 0f;
             if (fastToggle.isSelected()) {

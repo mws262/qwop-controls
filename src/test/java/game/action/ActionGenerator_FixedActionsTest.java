@@ -21,11 +21,11 @@ public class ActionGenerator_FixedActionsTest {
 
     @Before
     public void setup() {
-        Action a1 = new Action(23, false, true, true, false);
-        Action a2 = new Action(24, false, false, false, false);
-        Action a3 = new Action(2, false, true, false, true);
-        Action a4 = new Action(3, false, true, false, true);
-        Action a5 = new Action(8, false, false, false, true);
+        Action a1 = new Action(23, CommandQWOP.WO);
+        Action a2 = new Action(24, CommandQWOP.NONE);
+        Action a3 = new Action(2, CommandQWOP.WP);
+        Action a4 = new Action(3, CommandQWOP.WP);
+        Action a5 = new Action(8, CommandQWOP.P);
         Action a6 = a5.getCopy(); // A duplicate!
 
         actions = new HashSet<>();
@@ -48,9 +48,9 @@ public class ActionGenerator_FixedActionsTest {
     public void getPotentialChildActionSet() {
         State st = mock(State.class);
         NodeQWOPExplorable root = new NodeQWOPExplorable(st, generator);
-        NodeQWOPExplorable n1 = root.addDoublyLinkedChild(new Action(55, false, false, false, true), st);
-        NodeQWOPExplorable n2 = n1.addDoublyLinkedChild(new Action(33, true, false, false, true), st);
-        NodeQWOPExplorable n3 = root.addDoublyLinkedChild(new Action(11, true, true, false, true), st);
+        NodeQWOPExplorable n1 = root.addDoublyLinkedChild(new Action(55, CommandQWOP.P), st);
+        NodeQWOPExplorable n2 = n1.addDoublyLinkedChild(new Action(33, CommandQWOP.QP), st);
+        NodeQWOPExplorable n3 = root.addDoublyLinkedChild(new Action(11, CommandQWOP.W), st);
 
         List<NodeQWOPExplorable> nodes = new ArrayList<>();
         nodes.add(root);

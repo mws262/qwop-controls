@@ -1,6 +1,7 @@
 package distributions;
 
 import game.action.Action;
+import game.action.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,10 +17,10 @@ public class Distribution_NormalTest {
 
     @Test
     public void randOnDistribution() {
-        Action a1 = new Action(5, false, false, false, false);
-        Action a2 = new Action(10, true, false, true, false);
-        Action a3 = new Action(4, false, false, true, true);
-        Action a4 = new Action(6, false, false, false, true);
+        Action a1 = new Action(5, CommandQWOP.NONE);
+        Action a2 = new Action(10, CommandQWOP.QO);
+        Action a3 = new Action(4, CommandQWOP.O);
+        Action a4 = new Action(6, CommandQWOP.P);
 
         List<Action> actionList = new ArrayList<>();
         actionList.add(a1);

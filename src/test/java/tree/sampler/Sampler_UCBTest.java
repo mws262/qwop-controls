@@ -48,12 +48,12 @@ public class Sampler_UCBTest {
         ActionQueue actionQueue = new ActionQueue();
 
         ActionList alist1 = new ActionList(new Distribution_Equal());
-        alist1.add(new Action(1, false, true, true, false));
-        alist1.add(new Action(2, false, false, false, false));
+        alist1.add(new Action(1, CommandQWOP.WO));
+        alist1.add(new Action(2, CommandQWOP.NONE));
         ActionList alist2 = new ActionList(new Distribution_Equal());
-        alist2.add(new Action(3, true, true, true, false));
-        alist2.add(new Action(4, true, false, false, false));
-        alist2.add(new Action(5, false, false, false, true));
+        alist2.add(new Action(3, CommandQWOP.Q));
+        alist2.add(new Action(4, CommandQWOP.W));
+        alist2.add(new Action(5, CommandQWOP.P));
 
         ActionGenerator_FixedSequence generator = new ActionGenerator_FixedSequence(new ActionList[] {alist1, alist2});
 
@@ -210,9 +210,9 @@ public class Sampler_UCBTest {
         Assert.assertTrue(n1.getUntriedActionListCopy().contains(expansionAction));
 
         ActionList actionList = new ActionList(new Distribution_Normal(5f, 0.001f));
-        actionList.add(new Action(5, false, true, true, false));
-        actionList.add(new Action(1, false, false, false, false));
-        actionList.add(new Action(10, false, false, false, false));
+        actionList.add(new Action(5, CommandQWOP.WO));
+        actionList.add(new Action(1, CommandQWOP.NONE));
+        actionList.add(new Action(10, CommandQWOP.NONE));
 
         ActionGenerator_FixedActions generator = new ActionGenerator_FixedActions(actionList);
         NodeQWOPExplorableBase<?> n2_1 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(),

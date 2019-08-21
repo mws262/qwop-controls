@@ -5,13 +5,12 @@ import game.GameUnified;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
 import game.action.ActionList;
+import game.action.CommandQWOP;
 import game.state.State;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import tree.Utility;
 import tree.node.NodeQWOPExplorable;
 import tree.node.NodeQWOPExplorableBase;
 
@@ -34,12 +33,12 @@ public class Sampler_DeterministicTest {
     public void treeBuild() {
 
         ActionList alist1 = new ActionList(new Distribution_Equal());
-        alist1.add(new Action(1, false, true, true, false));
-        alist1.add(new Action(2, false, false, false, false));
+        alist1.add(new Action(1, CommandQWOP.WO));
+        alist1.add(new Action(2, CommandQWOP.NONE));
         ActionList alist2 = new ActionList(new Distribution_Equal());
-        alist2.add(new Action(3, true, true, true, false));
-        alist2.add(new Action(4, true, false, false, false));
-        alist2.add(new Action(5, false, false, false, true));
+        alist2.add(new Action(3, CommandQWOP.QO));
+        alist2.add(new Action(4, CommandQWOP.Q));
+        alist2.add(new Action(5, CommandQWOP.P));
 
         ActionGenerator_FixedSequence generator = new ActionGenerator_FixedSequence(new ActionList[] {alist1, alist2});
 

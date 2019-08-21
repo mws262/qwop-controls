@@ -125,7 +125,7 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
             cluster.add(sequenceBegin);
             idx++;
             while (idx < nodes.size() && nodes.get(idx).getAction().getTimestepsTotal() == 1 + nodes.get(idx - 1).getAction().getTimestepsTotal()
-                    && nodes.get(idx).getAction().getKeys() == nodes.get(idx - 1).getAction().getKeys()) {
+                    && nodes.get(idx).getAction().peek() == nodes.get(idx - 1).getAction().peek()) {
 
                 cluster.add(nodes.get(idx));
                 idx++;

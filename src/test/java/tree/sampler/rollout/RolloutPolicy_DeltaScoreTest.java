@@ -4,6 +4,7 @@ import controllers.Controller_Random;
 import game.GameUnified;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
+import game.action.CommandQWOP;
 import game.action.IActionGenerator;
 import game.state.IState;
 import org.junit.Assert;
@@ -26,11 +27,11 @@ public class RolloutPolicy_DeltaScoreTest {
     private EvaluationFunction_Distance evaluator = new EvaluationFunction_Distance();
     private RolloutPolicyBase rollout = new RolloutPolicy_DeltaScore(evaluator, new Controller_Random());
 
-    private Action a1 = new Action(10, false, true, true, false);
-    private Action a2 = new Action(5, true, false, false, true);
-    private Action a3 = new Action(15, false, false, false, false);
-    private Action a4 = new Action(3, true, false, false, false);
-    private Action a5 = new Action(12, false, true, false, false);
+    private Action a1 = new Action(10, CommandQWOP.WO);
+    private Action a2 = new Action(5, CommandQWOP.QP);
+    private Action a3 = new Action(15, CommandQWOP.NONE);
+    private Action a4 = new Action(3, CommandQWOP.Q);
+    private Action a5 = new Action(12, CommandQWOP.W);
 
     private IState s1, s1_2, s1_2_3;
     private IState s1_2_4;

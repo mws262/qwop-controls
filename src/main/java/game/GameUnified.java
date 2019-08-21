@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Action;
+import game.action.Command;
+import game.action.CommandQWOP;
 import game.state.IState;
 import game.state.IState.ObjectName;
 import game.state.State;
@@ -42,7 +44,7 @@ import static game.GameConstants.*;
         @JsonSubTypes.Type(value = GameUnifiedCaching.class, name = "delay_embedded"),
 })
 @SuppressWarnings("Duplicates")
-public class GameUnified implements IGameInternal, IGameSerializable {
+public class GameUnified implements IGameSerializable<CommandQWOP> {
 
     private static final Logger logger = LogManager.getLogger(GameUnified.class);
 
@@ -653,14 +655,11 @@ public class GameUnified implements IGameInternal, IGameSerializable {
         lElbowJ.setMaxMotorTorque(0f);
     }
 
-    public void step(boolean[] command) {
-        if (command.length != 4) {
-            throw new IllegalArgumentException("Command is not the correct length. Expected 4, got: " + command.length);
-        }
-        step(command[0], command[1], command[2], command[3]);
+    @Override
+    public void step(CommandQWOP command) {
+        boolean[] keys = command.get();
+        step(keys[0], keys[1], keys[2], keys[3]);
     }
-
-
 
     /**
      * Step the game forward 1 timestep with the specified keys pressed.
@@ -1102,13 +1101,8 @@ public class GameUnified implements IGameInternal, IGameSerializable {
     }
 
     @Override
-    public void command(boolean q, boolean w, boolean o, boolean p) {
-        step(q, w, o, p);
-    }
-
-    @Override
-    public void command(boolean[] commands) {
-        step(commands);
+    public void command(CommandQWOP command) {
+        step(command);
     }
 
     @SuppressWarnings("WeakerAccess")

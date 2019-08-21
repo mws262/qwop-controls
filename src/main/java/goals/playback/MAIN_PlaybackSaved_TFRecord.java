@@ -5,6 +5,7 @@ import game.GameUnified;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import game.state.State;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,8 +87,8 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
 
         Collections.shuffle(playbackFiles);
 
-        IGameInternal gameForActionSim = new GameUnified();
-        IGameInternal gameForCommandSim = new GameUnified();
+        IGameInternal<CommandQWOP> gameForActionSim = new GameUnified();
+        IGameInternal<CommandQWOP> gameForCommandSim = new GameUnified();
 
         // Load files one at a time.
         for (File tfrecordFile : playbackFiles) {
@@ -109,7 +110,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                 // Pull the states out of the Protobuf-like structure.
                 State[] stateVars = TFRecordDataParsers.getStatesFromLoadedSequence(seq);
                 List<Action> actions = TFRecordDataParsers.getActionsFromLoadedSequence(seq);
-                boolean[][] commands = TFRecordDataParsers.getCommandSequenceFromLoadedSequence(seq);
+                CommandQWOP[] commands = TFRecordDataParsers.getCommandSequenceFromLoadedSequence(seq);
 
                 actions.remove(0);
                 actions.remove(0);
@@ -128,7 +129,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                     if (actionQueue.isEmpty()) {
                         logger.warn("Game.action ended before states did.");
                     } else {
-                        boolean[] actionQueueCommand = actionQueue.pollCommand();
+                        CommandQWOP actionQueueCommand = actionQueue.pollCommand();
                         gameForActionSim.step(actionQueueCommand);
                         gameForCommandSim.step(commands[i]);
                     }

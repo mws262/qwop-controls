@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static game.action.Action.Keys.*;
+import static game.action.CommandQWOP.Keys.*;
 
 public class ValueUpdater_TopWindowTest {
 

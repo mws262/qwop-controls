@@ -15,13 +15,13 @@ public class ActionTest {
     private int actTimesteps2 = 50;
     private int actTimesteps3 = 0;
 
-    private boolean[] keys1 = {false, true, true, false};
-    private boolean[] keys2 = {true, false, false, true};
-    private boolean[] keys3 = {false, false, false, false};
+    private CommandQWOP command1 = CommandQWOP.WO;
+    private CommandQWOP command2 = CommandQWOP.QP;
+    private CommandQWOP command3 = CommandQWOP.NONE;
 
-    private Action validAction1 = new Action(actTimesteps1, keys1[0], keys1[1], keys1[2], keys1[3]);
-    private Action validAction2 = new Action(actTimesteps2, keys2);
-    private Action validAction3 = new Action(actTimesteps3, keys3);
+    private Action validAction1 = new Action(actTimesteps1, command1);
+    private Action validAction2 = new Action(actTimesteps2, command2);
+    private Action validAction3 = new Action(actTimesteps3, command3);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
@@ -38,7 +38,7 @@ public class ActionTest {
         // Test action 1
         int ts = 0;
         while (action1Copy.hasNext()) {
-            Assert.assertArrayEquals(action1Copy.poll(), keys1);
+            Assert.assertEquals(action1Copy.poll(), command1);
             ts++;
         }
         Assert.assertEquals(ts, actTimesteps1);
@@ -46,7 +46,7 @@ public class ActionTest {
         // Test action 2
         ts = 0;
         while (action2Copy.hasNext()) {
-            Assert.assertArrayEquals(action2Copy.poll(), keys2);
+            Assert.assertEquals(action2Copy.poll(), command2);
             ts++;
         }
         Assert.assertEquals(ts, actTimesteps2);
@@ -54,7 +54,7 @@ public class ActionTest {
         // Test action 3
         ts = 0;
         while (action3Copy.hasNext()) {
-            Assert.assertArrayEquals(action3Copy.poll(), keys3);
+            Assert.assertEquals(action3Copy.poll(), command3);
             ts++;
         }
         Assert.assertEquals(ts, actTimesteps3);
@@ -93,9 +93,9 @@ public class ActionTest {
     public void peek() {
 
         // Should be able to peek the base version of an action (it's effectively a const method).
-        Assert.assertArrayEquals(validAction1.peek(), keys1);
-        Assert.assertArrayEquals(validAction2.peek(), keys2);
-        Assert.assertArrayEquals(validAction3.peek(), keys3);
+        Assert.assertEquals(validAction1.peek(), command1);
+        Assert.assertEquals(validAction2.peek(), command2);
+        Assert.assertEquals(validAction3.peek(), command3);
 
         // Must copy to get a pollable version of the action.
         Action action1Copy = validAction1.getCopy();
@@ -210,7 +210,7 @@ public class ActionTest {
         Assert.assertEquals(validAction3, action3Copy);
         Assert.assertEquals(validAction3.hashCode(), action3Copy.hashCode());
 
-        Action equivAction = new Action(actTimesteps1, keys1).getCopy();
+        Action equivAction = new Action(actTimesteps1, command1).getCopy();
         Assert.assertEquals(equivAction, action1Copy);
         Assert.assertEquals(equivAction.hashCode(), action1Copy.hashCode());
 
@@ -225,17 +225,17 @@ public class ActionTest {
 
     @Test
     public void comparing() {
-        Action a1 = new Action(5, true, false, false, true);
-        Action a2 = new Action(5, true, false, true, false);
-        Action a3 = new Action(5, true, false, true, false);
-        Action a4 = new Action(7, false, false, true, false);
-        Action a5 = new Action(50, false, false, false, false);
-        Action a6 = new Action(3, false, false, false, false);
-        Action a7 = new Action(8, true, false, true, false);
-        Action a8 = new Action(11, true, false, false, true);
-        Action a9 = new Action(12, true, false, false, false);
-        Action a10 = new Action(30, false, true, true, false);
-        Action a11 = new Action(18, false, true, true, false);
+        Action a1 = new Action(5, CommandQWOP.QP);
+        Action a2 = new Action(5, CommandQWOP.QO);
+        Action a3 = new Action(5, CommandQWOP.QO);
+        Action a4 = new Action(7, CommandQWOP.O);
+        Action a5 = new Action(50, CommandQWOP.NONE);
+        Action a6 = new Action(3, CommandQWOP.NONE);
+        Action a7 = new Action(8, CommandQWOP.QO);
+        Action a8 = new Action(11, CommandQWOP.QP);
+        Action a9 = new Action(12, CommandQWOP.Q);
+        Action a10 = new Action(30, CommandQWOP.WO);
+        Action a11 = new Action(18, CommandQWOP.WO);
         List<Action> alist = new ArrayList<>();
         alist.add(a1);
         alist.add(a2);
@@ -272,7 +272,7 @@ public class ActionTest {
 
     @Test
     public void isMutable() {
-        Action act = new Action(14, true, true, true, true);
+        Action act = new Action(14, CommandQWOP.QO);
         Assert.assertFalse(act.isMutable());
 
         Action act_copy = act.getCopy();
@@ -283,14 +283,14 @@ public class ActionTest {
     public void consolidateActions() {
         // General list of game.action with weird ordering and some zero-duration game.action.
         List<Action> actions = new ArrayList<>();
-        actions.add(new Action(4, false, false, false, false));
-        actions.add(new Action(1, false, false, false, false));
-        actions.add(new Action(0, false, false, false, false));
-        actions.add(new Action(3, true, false, false, false));
-        actions.add(new Action(0, false, false, false, false));
-        actions.add(new Action(1, true, false, false, false));
-        actions.add(new Action(5, true, false, false, false));
-        actions.add(new Action(0, true, false, false, true));
+        actions.add(new Action(4, CommandQWOP.NONE));
+        actions.add(new Action(1, CommandQWOP.NONE));
+        actions.add(new Action(0, CommandQWOP.NONE));
+        actions.add(new Action(3, CommandQWOP.Q));
+        actions.add(new Action(0, CommandQWOP.NONE));
+        actions.add(new Action(1, CommandQWOP.Q));
+        actions.add(new Action(5, CommandQWOP.Q));
+        actions.add(new Action(0, CommandQWOP.QP));
 
         List<Action> consolidatedActions = Action.consolidateActions(actions);
 
@@ -298,19 +298,19 @@ public class ActionTest {
 
         Assert.assertEquals(5, consolidatedActions.get(0).getTimestepsTotal());
         Assert.assertEquals(5, consolidatedActions.get(0).getTimestepsRemaining());
-        Assert.assertArrayEquals(consolidatedActions.get(0).peek(), new boolean[]{false, false, false, false});
+        Assert.assertEquals(consolidatedActions.get(0).peek(), CommandQWOP.NONE);
 
         Assert.assertEquals(9, consolidatedActions.get(1).getTimestepsTotal());
         Assert.assertEquals(9, consolidatedActions.get(1).getTimestepsRemaining());
-        Assert.assertArrayEquals(consolidatedActions.get(1).peek(), new boolean[]{true, false, false, false});
+        Assert.assertEquals(consolidatedActions.get(1).peek(), CommandQWOP.Q);
 
         // Make a list with a single, nonzero element.
         List<Action> singleActionList = new ArrayList<>();
-        singleActionList.add(new Action(10, true, true, true, true));
+        singleActionList.add(new Action(10, CommandQWOP.QO));
 
         List<Action> consolidatedSingleAction = Action.consolidateActions(singleActionList);
         Assert.assertEquals(10, consolidatedSingleAction.get(0).getTimestepsRemaining());
-        Assert.assertArrayEquals(consolidatedSingleAction.get(0).peek(), new boolean[]{true, true, true, true});
+        Assert.assertEquals(consolidatedSingleAction.get(0).peek(), CommandQWOP.QO);
     }
 
     @Test
@@ -319,7 +319,7 @@ public class ActionTest {
 
         // Make a list with a single, 0-duration element.
         List<Action> singleActionList = new ArrayList<>();
-        singleActionList.add(new Action(0, true, true, true, true));
+        singleActionList.add(new Action(0, CommandQWOP.QP));
         List<Action> consolidatedSingleAction = Action.consolidateActions(singleActionList);
     }
 
@@ -329,10 +329,10 @@ public class ActionTest {
 
         // Make a list with several, 0-duration element.
         List<Action> actionList = new ArrayList<>();
-        actionList.add(new Action(0, true, true, true, true));
-        actionList.add(new Action(0, true, false, true, true));
-        actionList.add(new Action(0, true, true, false, true));
-        actionList.add(new Action(0, true, true, true, false));
+        actionList.add(new Action(0, CommandQWOP.QO));
+        actionList.add(new Action(0, CommandQWOP.WP));
+        actionList.add(new Action(0, CommandQWOP.WO));
+        actionList.add(new Action(0, CommandQWOP.NONE));
 
         List<Action> consolidateActions = Action.consolidateActions(actionList);
     }
@@ -340,15 +340,15 @@ public class ActionTest {
     @Test
     public void constructorThrowsIllegalArgumentException() {
         exception.expect(IllegalArgumentException.class);
-        new Action(-1, false, false, false, false);
+        new Action(-1, CommandQWOP.NONE);
     }
 
     @Test
     public void keysToOneHot() {
         // I don't care which keys correspond to which one-hot element as long as they are unique.
         float[] sum = new float[9];
-        for (Action.Keys keys : Action.Keys.values()) {
-            float[] oneHot = Action.keysToOneHot(keys);
+        for (CommandQWOP.Keys keys : CommandQWOP.Keys.values()) {
+            float[] oneHot = CommandQWOP.keysToOneHot(keys).get();
             float individualSum = 0;
             for (int i = 0; i < sum.length; i++) {
                 sum[i] += oneHot[i];
@@ -356,41 +356,7 @@ public class ActionTest {
             }
             Assert.assertEquals(1f, individualSum, 1e-15f); // Should only be a single one in the array.
         }
-
         Assert.assertArrayEquals(new float[] {1, 1, 1, 1, 1, 1, 1, 1, 1}, sum, 1e-15f); // The array should have only
         // one of each element.
-    }
-
-    @Test
-    public void keysToBooleans() {
-        Assert.assertArrayEquals(new boolean[]{true, false, false, false}, Action.keysToBooleans(Action.Keys.q));
-        Assert.assertArrayEquals(new boolean[]{false, true, false, false}, Action.keysToBooleans(Action.Keys.w));
-        Assert.assertArrayEquals(new boolean[]{false, false, true, false}, Action.keysToBooleans(Action.Keys.o));
-        Assert.assertArrayEquals(new boolean[]{false, false, false, true}, Action.keysToBooleans(Action.Keys.p));
-        Assert.assertArrayEquals(new boolean[]{true, false, true, false}, Action.keysToBooleans(Action.Keys.qo));
-        Assert.assertArrayEquals(new boolean[]{true, false, false, true}, Action.keysToBooleans(Action.Keys.qp));
-        Assert.assertArrayEquals(new boolean[]{false, true, true, false}, Action.keysToBooleans(Action.Keys.wo));
-        Assert.assertArrayEquals(new boolean[]{false, true, false, true}, Action.keysToBooleans(Action.Keys.wp));
-        Assert.assertArrayEquals(new boolean[]{false, false, false, false}, Action.keysToBooleans(Action.Keys.none));
-    }
-
-    @Test
-    public void booleansToKeys() {
-        Assert.assertEquals(Action.Keys.q, Action.booleansToKeys(new boolean[]{true, false, false, false}));
-        Assert.assertEquals(Action.Keys.w, Action.booleansToKeys(new boolean[]{false, true, false, false}));
-        Assert.assertEquals(Action.Keys.o, Action.booleansToKeys(new boolean[]{false, false, true, false}));
-        Assert.assertEquals(Action.Keys.p, Action.booleansToKeys(new boolean[]{false, false, false, true}));
-        Assert.assertEquals(Action.Keys.qo, Action.booleansToKeys(new boolean[]{true, false, true, false}));
-        Assert.assertEquals(Action.Keys.qp, Action.booleansToKeys(new boolean[]{true, false, false, true}));
-        Assert.assertEquals(Action.Keys.wo, Action.booleansToKeys(new boolean[]{false, true, true, false}));
-        Assert.assertEquals(Action.Keys.wp, Action.booleansToKeys(new boolean[]{false, true, false, true}));
-        Assert.assertEquals(Action.Keys.none, Action.booleansToKeys(new boolean[]{false, false, false, false}));
-    }
-
-    @Test
-    public void badConstructorBooleans() {
-        exception.expect(IllegalArgumentException.class);
-        boolean[] badButtons = new boolean[]{false, true, true};
-        new Action(20, badButtons);
     }
 }

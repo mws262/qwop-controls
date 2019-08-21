@@ -3,6 +3,7 @@ package goals.cold_start_analysis;
 import game.action.ActionQueue;
 import game.GameUnified;
 import game.IGameInternal;
+import game.action.CommandQWOP;
 import game.state.IState;
 import tree.node.NodeQWOPGraphicsBase;
 
@@ -25,7 +26,8 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
     public void run() {
         ActionQueue actionQueue = ActionQueue.getSampleActions();
 
-        IGameInternal gameFullRun = new GameUnified(); // This game will run all the commands, start to finish.
+        IGameInternal<CommandQWOP> gameFullRun = new GameUnified(); // This game will run all the commands, start to
+        // finish.
         List<GameUnified> coldStartGames = new ArrayList<>();
 
         int coldStartAction = 2; // Starts the first cold start runner at this command index.
@@ -35,7 +37,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
             while (!actionQueue.isEmpty() && actionQueue.getCurrentActionIdx() < coldStartAction) {
                 runnerPanel.clearSecondaryStates(); // Clear all the visualized runners.
 
-                boolean[] nextCommand = actionQueue.pollCommand(); // Next command.
+                CommandQWOP nextCommand = actionQueue.pollCommand(); // Next command.
                 gameFullRun.step(nextCommand); // Sim the main runner and put on screen.
                 runnerPanel.setMainState(gameFullRun.getCurrentState());
 

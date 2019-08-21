@@ -7,6 +7,7 @@ import game.GameUnified;
 import game.GameUnifiedCaching;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
+import game.action.CommandQWOP;
 import game.action.IActionGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -260,7 +261,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
-                new Action(7,false,false,false,false),
+                new Action(7, CommandQWOP.NONE),
 //                new Action(49, Action.Keys.wo),
 //                new Action(2, Action.Keys.none),
 //                new Action(46, Action.Keys.qp),

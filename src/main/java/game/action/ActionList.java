@@ -84,25 +84,6 @@ public class ActionList extends ArrayList<Action> {
     }
 
     /**
-     * Get an ActionList defined by as many durations as desired, 4 keys for each, and a sampling distribution. This
-     * is equivalent to just making {@link Action game.action} and adding them with {@link ActionList#add(Object)}.
-     *
-     * @param durations Timestep durations of the game.action which will be in the returned ActionList.
-     * @param keys 2D array of QWOP keypress statuses. First dimension corresponds to the action, while the second
-     *             dimension corresponds to a QwOP key.
-     * @param dist Sampling distribution for the new ActionList.
-     * @return A new ActionList.
-     */
-    @SuppressWarnings("unused")
-    public static ActionList makeActionList(int[] durations, boolean[][] keys, Distribution<Action> dist) {
-        ActionList set = new ActionList(dist);
-        for (int i = 0; i < durations.length; i++) {
-            set.add(new Action(durations[i], keys[i]));
-        }
-        return set;
-    }
-
-    /**
      * Same but for one set of keys and multiple durations.
      *
      * @param durations Timestep duration of the game.action to be created.
@@ -110,7 +91,7 @@ public class ActionList extends ArrayList<Action> {
      * @param dist Selection distribution for sampling over the {@link ActionList}.
      * @return ActionList created with one {@link Action} per duration specified.
      */
-    public static ActionList makeActionList(int[] durations, boolean[] keys, Distribution<Action> dist) {
+    public static ActionList makeActionList(int[] durations, CommandQWOP keys, Distribution<Action> dist) {
         ActionList set = new ActionList(dist);
         for (int duration : durations) {
             set.add(new Action(duration, keys));
@@ -132,7 +113,7 @@ public class ActionList extends ArrayList<Action> {
         assert maxDuration > minDuration;
 
         ActionList set = new ActionList(distribution);
-        for (Action.Keys key : Action.Keys.values()) {
+        for (CommandQWOP.Keys key : CommandQWOP.Keys.values()) {
             for (int i = minDuration; i < maxDuration; i++) {
                 set.add(new Action(i, key));
             }
@@ -240,7 +221,7 @@ public class ActionList extends ArrayList<Action> {
                 String actionField = fieldIterator.next();
                 String durationList = alistNode.get(actionField).asText();
                 try {
-                    Action.Keys keys = Action.Keys.valueOf(actionField);
+                    CommandQWOP.Keys keys = CommandQWOP.Keys.valueOf(actionField);
                     String[] durations = durationList.split(" ");
                     for (String duration : durations) {
                         alist.add(new Action(Integer.parseInt(duration), keys));
@@ -274,15 +255,15 @@ public class ActionList extends ArrayList<Action> {
         }
         public Map<String, String> convert(ActionList alist) {
             Map<String, String> actionMap = new HashMap<>();
-            Set<Action.Keys> presentKeys = new HashSet<>();
+            Set<CommandQWOP.Keys> presentKeys = new HashSet<>();
             for (Action a : alist) {
-                presentKeys.add(a.getKeys());
+                presentKeys.add(a.peek().keys);
             }
 
-            for (Action.Keys keys : presentKeys) {
+            for (CommandQWOP.Keys keys : presentKeys) {
                 StringBuilder sb = new StringBuilder();
                 for (Action a : alist) {
-                    if (a.getKeys() == keys) {
+                    if (a.peek().keys == keys) {
                         sb.append(a.getTimestepsTotal()).append(" ");
                     }
                 }

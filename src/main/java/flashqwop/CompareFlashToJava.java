@@ -2,6 +2,7 @@ package flashqwop;
 
 import game.GameUnified;
 import game.action.Action;
+import game.action.CommandQWOP;
 import game.state.IState;
 import tree.node.NodeQWOP;
 import ui.runner.PanelRunner_MultiState;
@@ -77,7 +78,7 @@ public class CompareFlashToJava extends FlashGame {
     @Override
     public Action[] getActionSequenceFromBeginning() {
         return new Action[]{
-                new Action(5, Action.Keys.none),
+                new Action(5, CommandQWOP.Keys.none),
 //                new Action(49, Action.Keys.wo),
 //                new Action(20, Action.Keys.qp),
 //                new Action(1, Action.Keys.p),
@@ -103,7 +104,7 @@ public class CompareFlashToJava extends FlashGame {
     }
 
     @Override
-    public void reportGameStatus(IState state, boolean[] command, int timestep) {
+    public void reportGameStatus(IState state, CommandQWOP command, int timestep) {
         if (!initialized) {
             return; // This
         }

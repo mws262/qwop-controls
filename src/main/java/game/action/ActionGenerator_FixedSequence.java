@@ -140,65 +140,51 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
         /* Repeated action 1 -- no keys pressed. */
         Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionList actionList1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
-                false}, dist1);
+        ActionList actionList1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), CommandQWOP.NONE, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> dist2 = new Distribution_Normal(39f, 3f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), new boolean[]{false, true, true,
-                false}, dist2);
+        ActionList actionList2 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), CommandQWOP.WO, dist2);
 
         /* Repeated action 3 -- No keys pressed. */
         Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionList actionList3 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
-                false}, dist3);
+        ActionList actionList3 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), CommandQWOP.NONE, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> dist4 = new Distribution_Normal(39f, 3f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), new boolean[]{true, false, false,
-                true}, dist4);
+        ActionList actionList4 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), CommandQWOP.QP, dist4);
 
         ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
 
         /////// Action Exceptions for starting up. ////////
         /* Repeated action exceptions 1 -- no keys pressed. */
         Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
-        ActionList actionListE1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), new boolean[]{false, false, false,
-                false}, distE1);
+        ActionList actionListE1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), CommandQWOP.NONE, distE1);
 
         /*  Repeated action exceptions 2 -- W-O pressed */
         Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(30, 50).toArray(), new boolean[]{false,
-                true, true,
-                false}, distE2);
+        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(30, 50).toArray(), CommandQWOP.WO, distE2);
 
         /*  Repeated action exceptions 3 -- no keys pressed. */
         Distribution<Action> distE3 = new Distribution_Normal(5, 2f);
-        ActionList actionListE3 = ActionList.makeActionList(IntStream.range(1, 20).toArray(), new boolean[]{false,
-                false, false,
-                false}, distE3);
+        ActionList actionListE3 = ActionList.makeActionList(IntStream.range(1, 20).toArray(), CommandQWOP.NONE, distE3);
 
         /*  Repeated action exceptions 4 -- Q-P pressed */
         Distribution<Action> distE4 = new Distribution_Normal(25f, 2f);
-        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), new boolean[]{true,
-                false, false,
-                true}, distE4);
+        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), CommandQWOP.QP, distE4);
 
         /////// Action Exceptions for recovery. ////////
         /*  Repeated action 1 and 3 -- Nothing pressed */
         Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
-        ActionList actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(), new boolean[]{false, false,
-                false, false}, distFalseFalse);
+        ActionList actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(), CommandQWOP.NONE, distFalseFalse);
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
-        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{false, true, true,
-                false}, distWO);
+        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), CommandQWOP.WO, distWO);
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
-        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{true, false, false,
-                true}, distQP);
+        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), CommandQWOP.QP, distQP);
 
         Map<Integer, ActionList> actionExceptions = new HashMap<>();
         actionExceptions.put(0, actionListE1);
@@ -239,70 +225,51 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
 
         /* Repeated action 1 -- no keys pressed. */
         Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionList actionList1 = ActionList.makeActionList(IntStream.range(2, 25).toArray(), new boolean[]{false, false,
-                false,
-                false}, dist1);
+        ActionList actionList1 = ActionList.makeActionList(IntStream.range(2, 25).toArray(), CommandQWOP.NONE, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> dist2 = new Distribution_Normal(25, 3f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), new boolean[]{false, true,
-                true,
-                false}, dist2);
+        ActionList actionList2 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.WO, dist2);
 
-        /* Repeated action 3 -- W-O pressed */
+        /* Repeated action 3 -- NONE pressed */
         Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionList actionList3 = ActionList.makeActionList(IntStream.range(2, 25).toArray(), new boolean[]{false, false,
-                false,
-                false}, dist3);
+        ActionList actionList3 = ActionList.makeActionList(IntStream.range(2, 25).toArray(), CommandQWOP.NONE, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> dist4 = new Distribution_Normal(25, 3f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), new boolean[]{true, false,
-                false,
-                true}, dist4);
+        ActionList actionList4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.QP, dist4);
 
         ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
 
         /////// Action Exceptions for starting up. ////////
         /* Repeated action exceptions 1 -- no keys pressed. */
         Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
-        ActionList actionListE1 = ActionList.makeActionList(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
-                false,
-                false}, distE1);
+        ActionList actionListE1 = ActionList.makeActionList(IntStream.range(1, 35).toArray(), CommandQWOP.NONE, distE1);
 
         /*  Repeated action exceptions 2 -- W-O pressed */
         Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), new boolean[]{false, true,
-                true,
-                false}, distE2);
+        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.WO, distE2);
 
         /*  Repeated action exceptions 3 -- no keys pressed. */
         Distribution<Action> distE3 = new Distribution_Normal(24f, 2f);
-        ActionList actionListE3 = ActionList.makeActionList(IntStream.range(1, 35).toArray(), new boolean[]{false, false,
-                false,
-                false}, distE3);
+        ActionList actionListE3 = ActionList.makeActionList(IntStream.range(1, 35).toArray(), CommandQWOP.NONE, distE3);
 
         /*  Repeated action exceptions 4 -- Q-P pressed */
         Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
-        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), new boolean[]{true, false,
-                false,
-                true}, distE4);
+        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.QP, distE4);
 
         /////// Action Exceptions for recovery. ////////
         /*  Repeated action 1 and 3 -- Nothing pressed */
         Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
-        ActionList actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(), new boolean[]{false, false,
-                false, false}, distFalseFalse);
+        ActionList actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(), CommandQWOP.NONE, distFalseFalse);
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
-        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{false, true, true,
-                false}, distWO);
+        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), CommandQWOP.WO, distWO);
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
-        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), new boolean[]{true, false, false,
-                true}, distQP);
+        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), CommandQWOP.QP, distQP);
 
         Map<Integer, ActionList> actionExceptions = new HashMap<>();
         actionExceptions.put(0, actionListE1);

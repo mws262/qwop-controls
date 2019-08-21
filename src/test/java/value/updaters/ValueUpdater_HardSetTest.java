@@ -2,7 +2,7 @@ package value.updaters;
 
 import game.GameUnified;
 import game.action.Action;
-import game.action.Action.Keys;
+import game.action.CommandQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,9 +16,9 @@ public class ValueUpdater_HardSetTest {
         IState s = GameUnified.getInitialState();
         NodeQWOP root = new NodeQWOP(s);
 
-        Action a1 = new Action(4, Keys.q);
-        Action a2 = new Action(10, Keys.qo);
-        Action a3 = new Action(12, Keys.none);
+        Action a1 = new Action(4, CommandQWOP.Keys.q);
+        Action a2 = new Action(10, CommandQWOP.Keys.qo);
+        Action a3 = new Action(12, CommandQWOP.Keys.none);
 
         NodeQWOP n1 = root.addBackwardsLinkedChild(a1, s);
         NodeQWOP n2 = root.addBackwardsLinkedChild(a2, s);

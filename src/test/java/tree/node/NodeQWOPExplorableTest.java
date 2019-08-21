@@ -1,9 +1,6 @@
 package tree.node;
 
-import game.action.Action;
-import game.action.ActionGenerator_FixedSequence;
-import game.action.ActionList;
-import game.action.IActionGenerator;
+import game.action.*;
 import distributions.Distribution_Equal;
 import game.IGameInternal;
 import game.state.State;
@@ -88,10 +85,8 @@ public class NodeQWOPExplorableTest {
         when(game.getCurrentState()).thenReturn(unfailedState);
 
         // Set up action generator.
-        ActionList list1 = ActionList.makeActionList(new int[]{1,2,3}, new boolean[]{true, false, false, false},
-                new Distribution_Equal());
-        ActionList list2 = ActionList.makeActionList(new int[]{4,5,6}, new boolean[]{false, true, false, false},
-                new Distribution_Equal());
+        ActionList list1 = ActionList.makeActionList(new int[]{1,2,3}, CommandQWOP.Q, new Distribution_Equal());
+        ActionList list2 = ActionList.makeActionList(new int[]{4,5,6}, CommandQWOP.W, new Distribution_Equal());
 
         IActionGenerator generator = new ActionGenerator_FixedSequence(new ActionList[]{list1, list2});
         a1 = list1.get(0);
@@ -492,7 +487,7 @@ public class NodeQWOPExplorableTest {
         setupTree();
 
         // Add a node not in the untried action list.
-        NodeQWOPExplorable unexpectedNode = node2.addBackwardsLinkedChild(new Action(50, Action.Keys.wp), failedState);
+        NodeQWOPExplorable unexpectedNode = node2.addBackwardsLinkedChild(new Action(50, CommandQWOP.Keys.wp), failedState);
         Assert.assertFalse(node2.isFullyExplored()); // Shouldn't be affected by this new node.
         Assert.assertEquals(2, node2.getChildCount()); // Shouldn't affect the child count.
         Assert.assertTrue(unexpectedNode.isFullyExplored());
