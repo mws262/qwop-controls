@@ -1,7 +1,7 @@
 package hardware;
 
-import game.action.Action;
-import game.action.Action.Keys;
+import game.action.CommandQWOP.Keys;
+import game.action.CommandQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -68,7 +68,7 @@ public class TimeTester {
         try {
             serial = new KeypusherSerialConnection();
             Thread.sleep(400);
-            serial.command(false, false,false, false);
+            serial.command(CommandQWOP.NONE);
             Thread.sleep(400);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -78,36 +78,16 @@ public class TimeTester {
     /**
      * Test how long it takes for a keypress to occur after it has been commanded. Make sure that the window does not
      * lose focus during the test.
-     * @param keyToTest Which key to test. Must be one and only one key (e.g. QW is invalid, so is NONE).
      * @param testIterations Number of times to press and release the key.
      * @return Average response time for both press and depress commands. I think it is more informative to look at
      * the log messages, since sometimes a strange spike in times, or a big mismatch between press and depress can
      * indicate that hardware tuning is needed.
      */
-    public long testKeyTime(Keys keyToTest, int testIterations) {
-        boolean[] keys = new boolean[4];
-        switch (keyToTest) {
-            case q:
-                keys[0] = true;
-                break;
-            case w:
-                keys[1] = true;
-                break;
-            case o:
-                keys[2] = true;
-                break;
-            case p:
-                keys[3] = true;
-                break;
-            default:
-                throw new IllegalArgumentException("Only give a single key to press. Combinations are not supported " +
-                        "yet.");
-        }
-
+    public long testKeyTime(CommandQWOP commandToTest, int testIterations) {
         long msSpent = 0;
         for (int i = 0; i < testIterations; i++) {
             donePress = false;
-            serial.command(keys);
+            serial.command(commandToTest);
 
             long startTimePress = System.currentTimeMillis();
 
@@ -124,7 +104,7 @@ public class TimeTester {
             }
 
             doneDepress = false;
-            serial.command(false, false, false, false);
+            serial.command(CommandQWOP.NONE);
             long startTimeDepress = System.currentTimeMillis();
 
             while (!doneDepress) {}
@@ -146,7 +126,7 @@ public class TimeTester {
 
     public static void main(String[] args) {
         TimeTester tt = new TimeTester();
-        tt.testKeyTime(Keys.q, 10); // Change out the keys here or chain tests together here.
+        tt.testKeyTime(CommandQWOP.Q, 10); // Change out the keys here or chain tests together here.
 
         System.exit(0);
     }

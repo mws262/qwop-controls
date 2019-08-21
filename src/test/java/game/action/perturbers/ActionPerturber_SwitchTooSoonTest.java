@@ -2,6 +2,7 @@ package game.action.perturbers;
 
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,11 +36,11 @@ public class ActionPerturber_SwitchTooSoonTest {
         Assert.assertEquals(15, actions[3].getTimestepsTotal());
         Assert.assertEquals(16, actions[4].getTimestepsTotal());
 
-        Assert.assertTrue(Arrays.equals(actions[0].peek(), originalActions[0].peek()));
-        Assert.assertTrue(Arrays.equals(actions[1].peek(), originalActions[1].peek()));
-        Assert.assertTrue(Arrays.equals(actions[2].peek(), originalActions[2].peek()));
-        Assert.assertTrue(Arrays.equals(actions[3].peek(), originalActions[3].peek()));
-        Assert.assertTrue(Arrays.equals(actions[4].peek(), originalActions[4].peek()));
+        Assert.assertEquals(actions[0].peek(), originalActions[0].peek());
+        Assert.assertEquals(actions[1].peek(), originalActions[1].peek());
+        Assert.assertEquals(actions[2].peek(), originalActions[2].peek());
+        Assert.assertEquals(actions[3].peek(), originalActions[3].peek());
+        Assert.assertEquals(actions[4].peek(), originalActions[4].peek());
 
         // Single perturbation, too big.
         aq = makeActionQueue();
@@ -58,11 +59,11 @@ public class ActionPerturber_SwitchTooSoonTest {
         Assert.assertEquals(15, actions[3].getTimestepsTotal());
         Assert.assertEquals(16, actions[4].getTimestepsTotal());
 
-        Assert.assertTrue(Arrays.equals(actions[0].peek(), originalActions[0].peek()));
-        Assert.assertTrue(Arrays.equals(actions[1].peek(), originalActions[1].peek()));
-        Assert.assertTrue(Arrays.equals(actions[2].peek(), originalActions[2].peek()));
-        Assert.assertTrue(Arrays.equals(actions[3].peek(), originalActions[3].peek()));
-        Assert.assertTrue(Arrays.equals(actions[4].peek(), originalActions[4].peek()));
+        Assert.assertEquals(actions[0].peek(), originalActions[0].peek());
+        Assert.assertEquals(actions[1].peek(), originalActions[1].peek());
+        Assert.assertEquals(actions[2].peek(), originalActions[2].peek());
+        Assert.assertEquals(actions[3].peek(), originalActions[3].peek());
+        Assert.assertEquals(actions[4].peek(), originalActions[4].peek());
 
         // Multiple perturbations, adjacent.
         aq = makeActionQueue();
@@ -82,11 +83,11 @@ public class ActionPerturber_SwitchTooSoonTest {
         Assert.assertEquals(14, actions[3].getTimestepsTotal());
         Assert.assertEquals(22, actions[4].getTimestepsTotal());
 
-        Assert.assertTrue(Arrays.equals(actions[0].peek(), originalActions[0].peek()));
-        Assert.assertTrue(Arrays.equals(actions[1].peek(), originalActions[1].peek()));
-        Assert.assertTrue(Arrays.equals(actions[2].peek(), originalActions[2].peek()));
-        Assert.assertTrue(Arrays.equals(actions[3].peek(), originalActions[3].peek()));
-        Assert.assertTrue(Arrays.equals(actions[4].peek(), originalActions[4].peek()));
+        Assert.assertEquals(actions[0].peek(), originalActions[0].peek());
+        Assert.assertEquals(actions[1].peek(), originalActions[1].peek());
+        Assert.assertEquals(actions[2].peek(), originalActions[2].peek());
+        Assert.assertEquals(actions[3].peek(), originalActions[3].peek());
+        Assert.assertEquals(actions[4].peek(), originalActions[4].peek());
 
         // Exception cases.
         exception.expect(IllegalArgumentException.class);
@@ -101,11 +102,11 @@ public class ActionPerturber_SwitchTooSoonTest {
 
     private ActionQueue makeActionQueue() {
         ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addAction(new Action(12, false, false, true, false));
-        actionQueue.addAction(new Action(13, true, false, true, false));
-        actionQueue.addAction(new Action(14, false, false, false, true));
-        actionQueue.addAction(new Action(15, false, true, false, false));
-        actionQueue.addAction(new Action(16, true, false, true, true));
+        actionQueue.addAction(new Action(12, CommandQWOP.O));
+        actionQueue.addAction(new Action(13, CommandQWOP.QO));
+        actionQueue.addAction(new Action(14, CommandQWOP.P));
+        actionQueue.addAction(new Action(15, CommandQWOP.W));
+        actionQueue.addAction(new Action(16, CommandQWOP.WP));
         return actionQueue;
     }
 }

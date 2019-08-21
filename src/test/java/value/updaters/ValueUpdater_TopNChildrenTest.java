@@ -1,6 +1,7 @@
 package value.updaters;
 
 import game.action.Action;
+import game.action.CommandQWOP;
 import game.state.IState;
 import game.state.State;
 import org.junit.Assert;
@@ -13,11 +14,11 @@ import static org.mockito.Mockito.when;
 public class ValueUpdater_TopNChildrenTest {
 
     private IState unfailedState = mock(State.class);
-    private Action a1 = new Action(1, false, true, true, false);
-    private Action a2 = new Action(2, false, false, true, false);
-    private Action a3 = new Action(3, false, true, false, false);
-    private Action a4 = new Action(4, true, false, false, false);
-    private Action a5 = new Action(5, true, false, true, false);
+    private Action a1 = new Action(1, CommandQWOP.WO);
+    private Action a2 = new Action(2, CommandQWOP.O);
+    private Action a3 = new Action(3, CommandQWOP.W);
+    private Action a4 = new Action(4, CommandQWOP.Q);
+    private Action a5 = new Action(5, CommandQWOP.WP);
 
     @Test
     public void update() {

@@ -143,10 +143,10 @@ public class MAIN_ConvertDenseDataToTFRecord {
                 Feature.Builder keyFeat = Feature.newBuilder();
                 BytesList.Builder keyDat = BytesList.newBuilder();
                 byte[] keys = new byte[]{
-                        act.peek()[0] ? (byte) (1) : (byte) (0),
-                        act.peek()[1] ? (byte) (1) : (byte) (0),
-                        act.peek()[2] ? (byte) (1) : (byte) (0),
-                        act.peek()[3] ? (byte) (1) : (byte) (0)};
+                        act.peek().get()[0] ? (byte) (1) : (byte) (0),
+                        act.peek().get()[1] ? (byte) (1) : (byte) (0),
+                        act.peek().get()[2] ? (byte) (1) : (byte) (0),
+                        act.peek().get()[3] ? (byte) (1) : (byte) (0)};
                 keyDat.addValue(ByteString.copyFrom(keys));
                 keyFeat.setBytesList(keyDat.build());
                 keyFeatList.addFeature(keyFeat.build());
@@ -198,10 +198,10 @@ public class MAIN_ConvertDenseDataToTFRecord {
                     BytesList.Builder seqList = BytesList.newBuilder();
 
                     byte[] actionBytes = new byte[]{(byte) action,
-                            act.peek()[0] ? (byte) (1) : (byte) (0),
-                            act.peek()[1] ? (byte) (1) : (byte) (0),
-                            act.peek()[2] ? (byte) (1) : (byte) (0),
-                            act.peek()[3] ? (byte) (1) : (byte) (0)};
+                            act.peek().get()[0] ? (byte) (1) : (byte) (0),
+                            act.peek().get()[1] ? (byte) (1) : (byte) (0),
+                            act.peek().get()[2] ? (byte) (1) : (byte) (0),
+                            act.peek().get()[3] ? (byte) (1) : (byte) (0)};
 
                     seqList.addValue(ByteString.copyFrom(actionBytes));
                     sequenceFeat.setBytesList(seqList.build());

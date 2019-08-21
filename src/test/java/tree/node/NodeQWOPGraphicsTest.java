@@ -1,9 +1,6 @@
 package tree.node;
 
-import game.action.Action;
-import game.action.ActionGenerator_FixedSequence;
-import game.action.ActionList;
-import game.action.IActionGenerator;
+import game.action.*;
 import distributions.Distribution_Equal;
 import game.IGameInternal;
 import game.state.State;
@@ -89,9 +86,9 @@ public class NodeQWOPGraphicsTest {
         when(game.getCurrentState()).thenReturn(unfailedState);
 
         // Set up action generator.
-        ActionList list1 = ActionList.makeActionList(new int[]{1,2,3}, new boolean[]{true, false, false, false},
+        ActionList list1 = ActionList.makeActionList(new int[]{1,2,3}, CommandQWOP.Q,
                 new Distribution_Equal());
-        ActionList list2 = ActionList.makeActionList(new int[]{4,5,6}, new boolean[]{false, true, false, false},
+        ActionList list2 = ActionList.makeActionList(new int[]{4,5,6}, CommandQWOP.W,
                 new Distribution_Equal());
 
         IActionGenerator generator = new ActionGenerator_FixedSequence(new ActionList[]{list1, list2});

@@ -6,6 +6,7 @@ import game.GameConstants;
 import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import game.state.IState;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.InitialGuess;
@@ -103,7 +104,7 @@ public class WeightScoreFunction implements MultivariateFunction {
 
         // Evaluate it.
         ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addAction(new Action(7, Action.Keys.none));
+        actionQueue.addAction(new Action(7, CommandQWOP.Keys.none));
         game.makeNewWorld();
 
         int maxTs = 3000;

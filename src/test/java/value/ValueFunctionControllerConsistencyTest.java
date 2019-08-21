@@ -2,8 +2,8 @@ package value;
 
 import game.GameConstants;
 import game.GameUnified;
-import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
@@ -64,20 +64,20 @@ public class ValueFunctionControllerConsistencyTest {
         private void assignFuturePredictors(GameUnified gameTemplate) {
             evaluations = new ArrayList<>();
             evalResults = new ArrayList<>();
-            evaluations.add(new FuturePredictorSandbox(gameTemplate, Action.Keys.none, 1, 10));
-            evaluations.add(new FuturePredictorSandbox(gameTemplate, Action.Keys.qp, 2, 40));
-            evaluations.add(new FuturePredictorSandbox(gameTemplate, Action.Keys.wo, 2, 40));
-            evaluations.add(new FuturePredictorSandbox(gameTemplate, Action.Keys.q, 2, 5));
-            evaluations.add(new FuturePredictorSandbox(gameTemplate, Action.Keys.w, 2, 5));
-            evaluations.add(new FuturePredictorSandbox(gameTemplate, Action.Keys.o, 2, 5));
-            evaluations.add(new FuturePredictorSandbox(gameTemplate, Action.Keys.p, 2, 5));
-            evaluations.add(new FuturePredictorSandbox(gameTemplate, Action.Keys.qo, 2, 5));
-            evaluations.add(new FuturePredictorSandbox(gameTemplate, Action.Keys.wp, 2, 5));
+            evaluations.add(new FuturePredictorSandbox(gameTemplate, CommandQWOP.Keys.none, 1, 10));
+            evaluations.add(new FuturePredictorSandbox(gameTemplate, CommandQWOP.Keys.qp, 2, 40));
+            evaluations.add(new FuturePredictorSandbox(gameTemplate, CommandQWOP.Keys.wo, 2, 40));
+            evaluations.add(new FuturePredictorSandbox(gameTemplate, CommandQWOP.Keys.q, 2, 5));
+            evaluations.add(new FuturePredictorSandbox(gameTemplate, CommandQWOP.Keys.w, 2, 5));
+            evaluations.add(new FuturePredictorSandbox(gameTemplate, CommandQWOP.Keys.o, 2, 5));
+            evaluations.add(new FuturePredictorSandbox(gameTemplate, CommandQWOP.Keys.p, 2, 5));
+            evaluations.add(new FuturePredictorSandbox(gameTemplate, CommandQWOP.Keys.qo, 2, 5));
+            evaluations.add(new FuturePredictorSandbox(gameTemplate, CommandQWOP.Keys.wp, 2, 5));
         }
 
         class FuturePredictorSandbox extends FuturePredictor {
 
-            FuturePredictorSandbox(GameUnified gameTemplate, Action.Keys keys, int minHorizon, int maxHorizon) {
+            FuturePredictorSandbox(GameUnified gameTemplate, CommandQWOP.Keys keys, int minHorizon, int maxHorizon) {
                 super(gameTemplate, keys, minHorizon, maxHorizon);
             }
 
@@ -102,7 +102,7 @@ public class ValueFunctionControllerConsistencyTest {
                         gameLocal.iterations = GameConstants.physIterations;
                     }
 
-                    gameLocal.step(buttons);
+                    gameLocal.step(command);
                     IState st = gameLocal.getCurrentState();
                     NodeQWOPBase<?> nextNode = new NodeQWOP(st);
                     val1 = val2;

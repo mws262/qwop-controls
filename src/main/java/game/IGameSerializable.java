@@ -1,5 +1,7 @@
 package game;
 
+import game.action.Command;
+
 import java.io.Serializable;
 
 /**
@@ -7,7 +9,7 @@ import java.io.Serializable;
  *
  * @author matt
  */
-public interface IGameSerializable extends IGameInternal, Serializable {
+public interface IGameSerializable<C extends Command<?>> extends IGameInternal<C>, Serializable {
     byte[] getSerializedState();
     IGameInternal restoreSerializedState(byte[] fullState);
 }

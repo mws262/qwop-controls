@@ -6,6 +6,7 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameUnified;
 import game.IGameInternal;
+import game.action.CommandQWOP;
 import game.state.IState;
 import tree.node.NodeQWOPGraphicsBase;
 import ui.runner.PanelRunner_MultiState;
@@ -75,7 +76,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
         Action[] baseActions = gameList.get(0).actions;
 
         // Simulate the base game.action.
-        IGameInternal game = new GameUnified();
+        IGameInternal<CommandQWOP> game = new GameUnified();
 
         // These are the runners which will be perturbed.
         List<GameUnified> perturbedGames = new ArrayList<>();
@@ -88,7 +89,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
         // Get all runners to the perturbation location.
         while (actionQueue.getCurrentActionIdx() < perturbationLocation) {
 
-            boolean[] command = actionQueue.pollCommand();
+            CommandQWOP command = actionQueue.pollCommand();
             game.step(command);
 
             for (IGameInternal perturbedGame : perturbedGames) {
@@ -110,14 +111,14 @@ public class MAIN_PerturbationImpulse extends JFrame {
 
         int count = 0;
         while (!actionQueue.isEmpty()) {
-            boolean[] command = actionQueue.pollCommand();
+            CommandQWOP command = actionQueue.pollCommand();
             game.step(command);
             if (count % drawInterval == 0)
                 panelRunner.addSecondaryState(game.getCurrentState(), Color.BLACK);
 
             // Step perturbed runners.
             for (int i = 0; i < perturbedGames.size(); i++) {
-                IGameInternal thisGame = perturbedGames.get(i);
+                IGameInternal<CommandQWOP> thisGame = perturbedGames.get(i);
                 thisGame.step(command);
                 if (count % drawInterval == 0)
                     panelRunner.addSecondaryState(perturbedGames.get(i).getCurrentState(), NodeQWOPGraphicsBase.getColorFromScaledValue(i

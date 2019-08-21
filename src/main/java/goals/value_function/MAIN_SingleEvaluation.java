@@ -3,6 +3,7 @@ package goals.value_function;
 import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -113,7 +114,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         // Assign a "prefix" of game.action, since I'm not sure if the controller will generalize to this part of running.
         List<Action[]> alist = new ArrayList<>();
         alist.add(new Action[]{
-                new Action(7, Action.Keys.none),
+                new Action(7, CommandQWOP.Keys.none),
 //                new Action(34, Action.Keys.wo),
 //                new Action(19, Action.Keys.none),
 //                new Action(20, Action.Keys.qp),
@@ -169,11 +170,12 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                 chosenAction = valueFunction.getMaximizingAction(currentNode);
             }
 
-            boolean[] keys =  chosenAction.peek();
+            boolean[] keys =  chosenAction.peek().get();
             q = keys[0];
             w = keys[1];
             o = keys[2];
             p = keys[3];
+
             actionQueue.addAction(chosenAction);
             while (!actionQueue.isEmpty()) {
                 long currTime = System.currentTimeMillis();

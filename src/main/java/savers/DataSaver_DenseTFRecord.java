@@ -170,10 +170,10 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
                 Feature.Builder keyFeat = Feature.newBuilder();
                 BytesList.Builder keyDat = BytesList.newBuilder();
                 byte[] keys = new byte[]{
-                        act.peek()[0] ? (byte) (1) : (byte) (0),
-                        act.peek()[1] ? (byte) (1) : (byte) (0),
-                        act.peek()[2] ? (byte) (1) : (byte) (0),
-                        act.peek()[3] ? (byte) (1) : (byte) (0)};
+                        act.peek().get()[0] ? (byte) (1) : (byte) (0),
+                        act.peek().get()[1] ? (byte) (1) : (byte) (0),
+                        act.peek().get()[2] ? (byte) (1) : (byte) (0),
+                        act.peek().get()[3] ? (byte) (1) : (byte) (0)};
                 keyDat.addValue(ByteString.copyFrom(keys));
                 keyFeat.setBytesList(keyDat.build());
                 keyFeatList.addFeature(keyFeat.build());
@@ -194,9 +194,10 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
                 Feature.Builder keyCatFeat = Feature.newBuilder();
                 BytesList.Builder keyCatDat = BytesList.newBuilder();
                 byte[] keysCat = new byte[]{
-                        act.peek()[1] && act.peek()[2] ? (byte) (1) : (byte) (0), // WO
-                        act.peek()[0] && act.peek()[3] ? (byte) (1) : (byte) (0), // QP
-                        !act.peek()[1] && !act.peek()[2] && !act.peek()[0] && !act.peek()[3] ? (byte) (1) :
+                        act.peek().get()[1] && act.peek().get()[2] ? (byte) (1) : (byte) (0), // WO
+                        act.peek().get()[0] && act.peek().get()[3] ? (byte) (1) : (byte) (0), // QP
+                        !act.peek().get()[1] && !act.peek().get()[2] && !act.peek().get()[0] && !act.peek().get()[3] ?
+                                (byte) (1) :
 								(byte) (0)}; // Neither
                 keyCatDat.addValue(ByteString.copyFrom(keysCat));
                 keyCatFeat.setBytesList(keyCatDat.build());
@@ -248,10 +249,10 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
                     BytesList.Builder seqList = BytesList.newBuilder();
 
                     byte[] actionBytes = new byte[]{(byte) act.getTimestepsTotal(),
-                            act.peek()[0] ? (byte) (1) : (byte) (0),
-                            act.peek()[1] ? (byte) (1) : (byte) (0),
-                            act.peek()[2] ? (byte) (1) : (byte) (0),
-                            act.peek()[3] ? (byte) (1) : (byte) (0)};
+                            act.peek().get()[0] ? (byte) (1) : (byte) (0),
+                            act.peek().get()[1] ? (byte) (1) : (byte) (0),
+                            act.peek().get()[2] ? (byte) (1) : (byte) (0),
+                            act.peek().get()[3] ? (byte) (1) : (byte) (0)};
 
                     seqList.addValue(ByteString.copyFrom(actionBytes));
                     sequenceFeat.setBytesList(seqList.build());

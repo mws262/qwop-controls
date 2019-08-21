@@ -14,9 +14,9 @@ public class ActionGenerator_NullTest {
         IActionGenerator actionGenerator = new ActionGenerator_Null();
         State st = mock(State.class);
         NodeQWOPExplorable root = new NodeQWOPExplorable(st, actionGenerator);
-        NodeQWOPExplorable n1 = root.addDoublyLinkedChild(new Action(55, false, false, false, true), st);
-        NodeQWOPExplorable n2 = n1.addDoublyLinkedChild(new Action(33, true, false, false, true), st);
-        NodeQWOPExplorable n3 = root.addDoublyLinkedChild(new Action(11, true, true, false, true), st);
+        NodeQWOPExplorable n1 = root.addDoublyLinkedChild(new Action(55, CommandQWOP.P), st);
+        NodeQWOPExplorable n2 = n1.addDoublyLinkedChild(new Action(33, CommandQWOP.QP), st);
+        NodeQWOPExplorable n3 = root.addDoublyLinkedChild(new Action(11, CommandQWOP.Q), st);
 
         ActionList potentialChildActionSet = actionGenerator.getPotentialChildActionSet(root);
         Assert.assertEquals(0, potentialChildActionSet.size());
