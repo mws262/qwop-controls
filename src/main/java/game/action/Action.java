@@ -24,7 +24,7 @@ import java.util.Objects;
  * @see java.util.Queue
  * @see ActionList
  */
-public class Action implements Comparable<Action>, Serializable {
+public class Action<C extends Command<?>> implements Comparable<Action>, Serializable {
 
     private static final long serialVersionUID = 2L;
 
@@ -41,7 +41,7 @@ public class Action implements Comparable<Action>, Serializable {
     /**
      * Which of the QWOP keys are pressed?
      **/
-    private final CommandQWOP command;
+    private final C command;
 
     /**
      * Is this the immutable original or a derived, mutable copy. A little bit hacky, but a way of avoiding threading
@@ -54,7 +54,9 @@ public class Action implements Comparable<Action>, Serializable {
      *
      * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
      */
-    public Action(int totalTimestepsToHold, CommandQWOP command) {
+    public Action(
+            @JsonProperty("duration") int totalTimestepsToHold,
+            @JsonProperty("command") C command) {
         if (totalTimestepsToHold < 0)
             throw new IllegalArgumentException("New QWOP Action must have non-negative duration. Given: " + totalTimestepsToHold);
 
@@ -64,21 +66,9 @@ public class Action implements Comparable<Action>, Serializable {
     }
 
     /**
-     * Create an action containing the time to hold and the key combination.
-     *
-     * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
-     * @param keysPressed Keys pressed during this action.
-     */
-    @JsonCreator
-    public Action(@JsonProperty("duration") int totalTimestepsToHold,
-                  @JsonProperty("keys") CommandQWOP.Keys keysPressed) {
-        this(totalTimestepsToHold, CommandQWOP.getCommand(keysPressed));
-    }
-
-    /**
      * Return the keys for this action and decrement the timestepsRemaining.
      */
-    public CommandQWOP poll() {
+    public C poll() {
         if (!isExecutableCopy)
             throw new RuntimeException("Trying to execute the base version of the Action. Due to multi-threading, " +
                     "this REALLY screws with the counters in the action. Call getCopy for the version you should use.");
@@ -96,7 +86,7 @@ public class Action implements Comparable<Action>, Serializable {
      * @return A 4-element array containing true/false for whether each of the Q, W, O, and P keys are pressed in
      * this action.
      */
-    public CommandQWOP peek() {
+    public C peek() {
         return command;
     }
 
@@ -139,8 +129,8 @@ public class Action implements Comparable<Action>, Serializable {
     }
 
     @JsonProperty("keys")
-    public CommandQWOP.Keys getKeys() {
-        return command.keys;
+    public C getCommand() {
+        return command;
     }
 
     /**
@@ -195,15 +185,7 @@ public class Action implements Comparable<Action>, Serializable {
      */
     @Override
     public String toString() {
-        String reportString = " Keys pressed: ";
-        reportString += command.get()[0] ? "Q" : "";
-        reportString += command.get()[1] ? "W" : "";
-        reportString += command.get()[2] ? "O" : "";
-        reportString += command.get()[3] ? "P" : "";
-
-        reportString += "; Timesteps elapsed/total: " + timestepsRemaining + "/" + timestepsTotal;
-
-        return reportString;
+        return command.toString() + "; Timesteps elapsed/total: " + timestepsRemaining + "/" + timestepsTotal;
     }
 
     /**
