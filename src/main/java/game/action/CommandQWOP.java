@@ -9,13 +9,13 @@ public class CommandQWOP extends Command<boolean[]> implements Comparable<Comman
     public static final CommandQWOP
             NONE = new CommandQWOP(new boolean[]{false, false, false, false}, Keys.none),
             Q = new CommandQWOP(new boolean[]{true, false, false, false}, Keys.q),
-            W = new CommandQWOP(new boolean[]{true, false, false, false}, Keys.w),
-            O = new CommandQWOP(new boolean[]{true, false, false, false}, Keys.o),
-            P = new CommandQWOP(new boolean[]{true, false, false, false}, Keys.p),
-            QO = new CommandQWOP(new boolean[]{true, false, false, false}, Keys.qo),
-            QP = new CommandQWOP(new boolean[]{true, false, false, false}, Keys.qp),
-            WO = new CommandQWOP(new boolean[]{true, false, false, false}, Keys.wo),
-            WP = new CommandQWOP(new boolean[]{true, false, false, false}, Keys.wp);
+            W = new CommandQWOP(new boolean[]{false, true, false, false}, Keys.w),
+            O = new CommandQWOP(new boolean[]{false, false, true, false}, Keys.o),
+            P = new CommandQWOP(new boolean[]{false, false, false, true}, Keys.p),
+            QO = new CommandQWOP(new boolean[]{true, false, true, false}, Keys.qo),
+            QP = new CommandQWOP(new boolean[]{true, false, false, true}, Keys.qp),
+            WO = new CommandQWOP(new boolean[]{false, true, true, false}, Keys.wo),
+            WP = new CommandQWOP(new boolean[]{false, true, false, true}, Keys.wp);
 
     private static final Map<CommandQWOP, Keys> commandToKeys = new LinkedHashMap<>(9);
     static {

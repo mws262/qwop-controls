@@ -7,7 +7,9 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Contains the keypresses and durations for a single action. Works like an uneditable {@link java.util.Queue}. Call
@@ -53,7 +55,11 @@ public class Action implements Comparable<Action>, Serializable {
      * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
      */
     public Action(int totalTimestepsToHold, CommandQWOP command) {
+        if (totalTimestepsToHold < 0)
+            throw new IllegalArgumentException("New QWOP Action must have non-negative duration. Given: " + totalTimestepsToHold);
+
         this.timestepsTotal = totalTimestepsToHold;
+        timestepsRemaining = timestepsTotal;
         this.command = command;
     }
 
@@ -130,6 +136,11 @@ public class Action implements Comparable<Action>, Serializable {
     @JsonProperty("duration")
     public int getTimestepsTotal() {
         return timestepsTotal;
+    }
+
+    @JsonProperty("keys")
+    public CommandQWOP.Keys getKeys() {
+        return command.keys;
     }
 
     /**
@@ -274,23 +285,4 @@ public class Action implements Comparable<Action>, Serializable {
             return consolidateActions(outActions);
         }
     }
-
-//    /**
-//     * Get a one-hot, 9-element representation of a valid key combination for use in neural networks.
-//     * @param keys One of the 9 valid key combinations.
-//     * @return One-hot, 9-element representation of a key combination.
-//     */
-//    @SuppressWarnings("WeakerAccess")
-//    public static float[] keysToOneHot(CommandQWOP.Keys keys) {
-//        return CommandQWOP.labelsToOneHot.get(keys);
-//    }
-//
-//    /**
-//     * Get the boolean representation of the keys pressed from the enum label of the keys.
-//     * @param keys Keys representing the command.
-//     * @return 4-element boolean array for keys pressed (QWOP order).
-//     */
-//    public static boolean[] keysToBooleans(CommandQWOP.Keys keys) {
-//        return CommandQWOP.labelsToButtons.get(keys);
-//    }
 }
