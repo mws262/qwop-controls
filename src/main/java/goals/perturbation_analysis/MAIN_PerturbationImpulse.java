@@ -67,13 +67,13 @@ public class MAIN_PerturbationImpulse extends JFrame {
         setVisible(true);
 
         // Load a saved game.
-        List<SavableSingleGame> gameList = new ArrayList<>();
-        SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
+        List<SavableSingleGame<CommandQWOP>> gameList = new ArrayList<>();
+        SavableFileIO<SavableSingleGame<CommandQWOP>> fileIO = new SavableFileIO<>();
         fileIO.loadObjectsToCollection(new File(fileName), gameList);
 
         assert !gameList.isEmpty();
 
-        Action[] baseActions = gameList.get(0).actions;
+        Action<CommandQWOP>[] baseActions = gameList.get(0).actions;
 
         // Simulate the base game.action.
         IGameInternal<CommandQWOP> game = new GameUnified();
@@ -83,7 +83,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
         for (int i = 0; i < numPerturbedRunners; i++) {
             perturbedGames.add(new GameUnified());
         }
-        ActionQueue actionQueue = new ActionQueue();
+        ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
         actionQueue.addSequence(baseActions);
 
         // Get all runners to the perturbation location.
@@ -92,7 +92,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
             CommandQWOP command = actionQueue.pollCommand();
             game.step(command);
 
-            for (IGameInternal perturbedGame : perturbedGames) {
+            for (IGameInternal<CommandQWOP> perturbedGame : perturbedGames) {
                 perturbedGame.step(command);
             }
         }
@@ -153,7 +153,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
 
         private List<Integer[]> arrowCoords = new Vector<>();
 
-        public PanelRunner_MultiStateWithArrows(String name) {
+        PanelRunner_MultiStateWithArrows(String name) {
             super(name);
         }
 
@@ -174,7 +174,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
          * @param color          Color to outline the runner in.
          * @param arrowDirection Direction of the arrow.
          */
-        void addSecondaryStateWithArrow(IState state, Color color, float[] arrowDirection) {
+        void addSecondaryStateWithArrow(IState state, @SuppressWarnings("SameParameterValue") Color color, float[] arrowDirection) {
             super.addSecondaryState(state, color);
             Integer[] arrowCoord = new Integer[4];
             arrowCoord[0] = getOffset()[0] + (int) (state.getCenterX() * runnerScaling);

@@ -24,4 +24,8 @@ public class Command<T> implements Comparable<Command<T>> {
             return this.get().hashCode() > o.get().hashCode() ? 1 : -1;
         }
     }
+
+    public Command<T> getThis() {
+        return this;
+    }
 }

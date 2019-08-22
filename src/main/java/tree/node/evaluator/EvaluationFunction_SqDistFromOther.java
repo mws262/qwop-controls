@@ -1,6 +1,7 @@
 package tree.node.evaluator;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
 import game.state.IState;
 import game.state.StateVariable;
 import tree.node.NodeQWOPBase;
@@ -14,7 +15,7 @@ import java.util.Objects;
  *
  * @author matt
  */
-public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
+public class EvaluationFunction_SqDistFromOther<C extends Command<?>> implements IEvaluationFunction<C> {
 
     /**
      * All nodes will be compared to this one by square distance in state space.
@@ -37,7 +38,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
     }
 
     @Override
-    public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
+    public float getValue(NodeQWOPBase<?, C> nodeToEvaluate) {
         StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getAllStateVariables();
 
         float sqError = 0;
@@ -61,7 +62,7 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
     }
 
     @Override
-    public String getValueString(NodeQWOPBase<?> nodeToEvaluate) {
+    public String getValueString(NodeQWOPBase<?, C> nodeToEvaluate) {
         StateVariable[] otherStateVarList = Objects.requireNonNull(nodeToEvaluate.getState()).getAllStateVariables();
         StringBuilder valueString = new StringBuilder();
 
@@ -84,8 +85,8 @@ public class EvaluationFunction_SqDistFromOther implements IEvaluationFunction {
     }
 
     @Override
-    public EvaluationFunction_SqDistFromOther getCopy() {
-        return new EvaluationFunction_SqDistFromOther(comparisonState);
+    public EvaluationFunction_SqDistFromOther<C> getCopy() {
+        return new EvaluationFunction_SqDistFromOther<>(comparisonState);
     }
 
     public IState getComparisonState() {

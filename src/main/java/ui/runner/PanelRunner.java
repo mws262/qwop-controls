@@ -3,6 +3,7 @@ package ui.runner;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Action;
+import game.action.CommandQWOP;
 import ui.IUserInterface.TabbedPaneActivator;
 
 import javax.swing.*;
@@ -154,11 +155,11 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator,
     /**
      * Draw the game.action on the left side pane.
      */
-    protected void drawActionString(Action[] sequence, Graphics g) {
+    protected void drawActionString(Action<CommandQWOP>[] sequence, Graphics g) {
         drawActionString(g, sequence, -1);
     }
 
-    protected static void drawActionString(Graphics g, Action[] sequence, int highlightIdx) {
+    protected static void drawActionString(Graphics g, Action<CommandQWOP>[] sequence, int highlightIdx) {
 
         if (sequence.length == 0) return; // Happens when clicking root node.
 

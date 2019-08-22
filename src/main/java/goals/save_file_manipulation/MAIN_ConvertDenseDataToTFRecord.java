@@ -5,6 +5,7 @@ import data.SavableDenseData;
 import data.SavableFileIO;
 import data.TFRecordWriter;
 import game.action.Action;
+import game.action.CommandQWOP;
 import game.state.IState;
 import game.state.State;
 import game.state.StateVariable;
@@ -61,10 +62,10 @@ public class MAIN_ConvertDenseDataToTFRecord {
         logger.info("Found " + inFiles.size() + " input files with the extension " + inFileExt + ".");
         logger.info("Total input size: " + Math.round(megabyteCount * 10) / 10. + " MB.");
 
-        SavableFileIO<SavableDenseData> inFileLoader = new SavableFileIO<>();
+        SavableFileIO<SavableDenseData<CommandQWOP>> inFileLoader = new SavableFileIO<>();
         int count = 0;
         for (File file : inFiles) {
-            List<SavableDenseData> denseDat = new ArrayList<>();
+            List<SavableDenseData<CommandQWOP>> denseDat = new ArrayList<>();
             inFileLoader.loadObjectsToCollection(file, denseDat);
             logger.info("Beginning to package " + file.getName() + ". ");
             String fileOutName = file.getName().substring(0, file.getName().lastIndexOf('.')) + "." + outFileExt;
@@ -106,14 +107,15 @@ public class MAIN_ConvertDenseDataToTFRecord {
         // features.
     }
 
-    private static void convertToProtobuf(List<SavableDenseData> denseData, String fileName, String destinationPath) throws IOException {
+    private static void convertToProtobuf(List<SavableDenseData<CommandQWOP>> denseData, String fileName,
+                                          String destinationPath) throws IOException {
         File file = new File(destinationPath + fileName);
 
         file.getParentFile().mkdirs();
         FileOutputStream stream = new FileOutputStream(file);
 
         // Iterate through all runs in a single file.
-        for (SavableDenseData dat : denseData) {
+        for (SavableDenseData<CommandQWOP> dat : denseData) {
             int actionPad = dat.getState().length - dat.getAction().length; // Make the dimensions match for coding
             // convenience.
             if (actionPad != 1) {
@@ -139,7 +141,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
 
             // 1) Keys pressed at individual timestep. 0 or 1 in bytes for each key
             FeatureList.Builder keyFeatList = FeatureList.newBuilder();
-            for (Action act : dat.getAction()) {
+            for (Action<CommandQWOP> act : dat.getAction()) {
                 Feature.Builder keyFeat = Feature.newBuilder();
                 BytesList.Builder keyDat = BytesList.newBuilder();
                 byte[] keys = new byte[]{
@@ -190,7 +192,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
             // 3) Just the action sequence (shorter than number of timesteps) -- bytestrings e.g. [15, 1, 0, 0, 1]
             FeatureList.Builder actionList = FeatureList.newBuilder();
             int prevAct = -1;
-            for (Action act : dat.getAction()) {
+            for (Action<CommandQWOP> act : dat.getAction()) {
                 int action = act.getTimestepsTotal();
                 if (action != prevAct) {
                     prevAct = action;

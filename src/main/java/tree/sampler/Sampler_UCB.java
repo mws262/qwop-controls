@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Action;
+import game.action.Command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jblas.util.Random;
@@ -18,16 +19,13 @@ import value.updaters.IValueUpdater;
  *
  * @author Matt
  */
-public class Sampler_UCB implements ISampler, AutoCloseable {
+public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoCloseable {
 
     /**
      * Constant term on UCB exploration factor. Higher means more exploration.
      */
     public final float explorationConstant;
 
-    /**
-     *
-     */
     public final float explorationRandomFactor;
 
     /**
@@ -38,9 +36,9 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
     /**
      * Policy used to evaluateActionDistribution the score of a tree expansion Node by doing rollout(s).
      */
-    private final IRolloutPolicy rolloutPolicy;
+    private final IRolloutPolicy<C> rolloutPolicy;
 
-    public final IValueUpdater valueUpdater; //TopNChildren(8); // TODO make this an
+    public final IValueUpdater<C> valueUpdater; //TopNChildren(8); // TODO make this an
     // assignable
     // parameter.
 
@@ -79,8 +77,8 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
      */
     public Sampler_UCB(
             @JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
-            @JsonProperty("rolloutPolicy") IRolloutPolicy rolloutPolicy,
-            @JsonProperty("valueUpdater") IValueUpdater valueUpdater,
+            @JsonProperty("rolloutPolicy") IRolloutPolicy<C> rolloutPolicy,
+            @JsonProperty("valueUpdater") IValueUpdater<C> valueUpdater,
             @JsonProperty("explorationConstant") float explorationConstant,
             @JsonProperty("explorationRandomFactor") float explorationRandomFactor) {
         this.evaluationFunction = evaluationFunction;
@@ -94,13 +92,13 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
     /**
      * Propagate the score and visit count back up the tree.
      */
-    private void propagateScore(NodeQWOPExplorableBase<?> failureNode, float score) {
+    private void propagateScore(NodeQWOPExplorableBase<?, C> failureNode, float score) {
         // Do evaluation and propagation of scores.
         failureNode.recurseUpTreeInclusive(n -> n.updateValue(score, valueUpdater));
     }
 
     @Override
-    public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
+    public NodeQWOPExplorableBase<?, C> treePolicy(NodeQWOPExplorableBase<?, C> startNode) {
         if (startNode.getUntriedActionCount() != 0) {
             if (startNode.reserveExpansionRights()) { // We immediately expand
                 // if there's an untried action.
@@ -112,10 +110,10 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
         }
 
         double bestScoreSoFar = -Double.MAX_VALUE;
-        NodeQWOPExplorableBase<?> bestNodeSoFar = null;
+        NodeQWOPExplorableBase<?, C> bestNodeSoFar = null;
 
         // Otherwise, we go through the existing tree picking the "best."
-        for (NodeQWOPExplorableBase<?> child : startNode.getChildren()) {
+        for (NodeQWOPExplorableBase<?, C> child : startNode.getChildren()) {
 
             if (!child.isFullyExplored() && !child.isLocked() && child.getUpdateCount() > 0) {
                 float val = (child.getValue() + c * (float) Math.sqrt(2. * Math.log((double) startNode.getUpdateCount()) / (double) child.getUpdateCount()));
@@ -147,25 +145,25 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
     }
 
     @Override
-    public void treePolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
+    public void treePolicyActionDone(NodeQWOPExplorableBase<?, C> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
+    public boolean treePolicyGuard(NodeQWOPExplorableBase<?, C> currentNode) {
         return treePolicyDone; // True means ready to move on to the next.
     }
 
     @Override
-    public Action expansionPolicy(NodeQWOPExplorableBase<?> startNode) {
+    public Action<C> expansionPolicy(NodeQWOPExplorableBase<?, C> startNode) {
         if (startNode.getUntriedActionCount() == 0)
             throw new IndexOutOfBoundsException("Expansion policy received a node from which there are no new nodes to try!");
         return startNode.getUntriedActionOnDistribution();
     }
 
     @Override
-    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
+    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?, C> currentNode) {
         treePolicyDone = false;
         expansionPolicyDone = true; // We move on after adding only one node.
         if (currentNode.getState().isFailed()) { // If expansion is to failed node, no need to do rollout.
@@ -177,12 +175,12 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
     }
 
     @Override
-    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
+    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?, C> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
+    public void rolloutPolicy(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
         if (startNode.getState().isFailed())
             throw new IllegalStateException("Rollout policy received a starting node which corresponds to an already failed " +
                     "state.");
@@ -193,14 +191,14 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
     }
 
     @Override
-    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
+    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?, C> currentNode) {
         return rolloutPolicyDone;
     }
 
     @JsonIgnore
     @Override
-    public Sampler_UCB getCopy() {
-        return new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy(),
+    public Sampler_UCB<C> getCopy() {
+        return new Sampler_UCB<>(evaluationFunction.getCopy(), rolloutPolicy.getCopy(),
                 valueUpdater.getCopy(), explorationConstant, explorationRandomFactor);
     }
 

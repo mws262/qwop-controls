@@ -17,12 +17,12 @@ public class PolicyGradientQWOP {
     private final PolicyGradientNetwork net;
 
     private final GameUnified game = new GameUnified();
-    private final ActionQueue actionQueue = new ActionQueue();
+    private final ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
     private final List<State> states = new ArrayList<>();
-    private final List<Action> actions = new ArrayList<>();
+    private final List<Action<CommandQWOP>> actions = new ArrayList<>();
     private final List<Float> rewards = new ArrayList<>();
 
-    LoadStateStatistics.StateStatistics stateStats;
+    private LoadStateStatistics.StateStatistics stateStats;
     {
         try {
             stateStats = LoadStateStatistics.loadStatsFromFile();
@@ -30,18 +30,18 @@ public class PolicyGradientQWOP {
             e.printStackTrace();
         }
     }
-    List<Action> allowedActions;
+    List<Action<CommandQWOP>> allowedActions;
 
     PolicyGradientQWOP(PolicyGradientNetwork net) {
         this.net = net;
         allowedActions = new ArrayList<>();
-        allowedActions.add(new Action(1, CommandQWOP.Keys.qp));
-        allowedActions.add(new Action(1, CommandQWOP.Keys.wo));
-        allowedActions.add(new Action(1, CommandQWOP.Keys.none));
+        allowedActions.add(new Action<>(1, CommandQWOP.QP));
+        allowedActions.add(new Action<>(1, CommandQWOP.WO));
+        allowedActions.add(new Action<>(1, CommandQWOP.NONE));
         //new ArrayList<>(ActionGenerator_UniformNoRepeats.makeDefaultGenerator().getAllPossibleActions());
     }
 
-    public float trainingStep(State[] states, Action[] actions, float[] discountedRewards) {
+    public float trainingStep(State[] states, Action<CommandQWOP>[] actions, float[] discountedRewards) {
         float[][] flatStates = new float[states.length][State.STATE_SIZE];
         float[][] oneHotActions = new float[actions.length][allowedActions.size()];
 
@@ -62,7 +62,7 @@ public class PolicyGradientQWOP {
     public void playGame() {
         game.makeNewWorld();
         actionQueue.clearAll();
-        actionQueue.addAction(new Action(7, CommandQWOP.Keys.wo));
+        actionQueue.addAction(new Action<>(7, CommandQWOP.WO));
         states.clear();
         actions.clear();
         rewards.clear();
@@ -74,7 +74,7 @@ public class PolicyGradientQWOP {
                 currentState = (State) game.getCurrentState();
 
                 int bestIdx = net.policyOnDistribution(currentState.flattenStateWithRescaling(stateStats));
-                Action nextAction = allowedActions.get(bestIdx);
+                Action<CommandQWOP> nextAction = allowedActions.get(bestIdx);
                 states.add(currentState);
                 actions.add(nextAction);
                 rewards.add(currentState.getCenterX() - prevState.getCenterX()); // Reward is always 1
@@ -96,7 +96,7 @@ public class PolicyGradientQWOP {
 
 
         State[] stateArray = states.toArray(new State[0]);
-        Action[] actionArray = actions.toArray(new Action[0]);
+        Action<CommandQWOP>[] actionArray = actions.toArray(new Action[0]);
         float[] rewardsFlat = new float[rewards.size()];
         int idx = 0;
         for (Float f : rewards) {

@@ -141,4 +141,9 @@ public class CommandQWOP extends Command<boolean[]> {
                 + (get()[2] ? "O" : "")
                 + (get()[3] ? "P" : "");
     }
+
+    @Override
+    public Command<boolean[]> getThis() {
+        return this;
+    }
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Iterables;
 import data.LoadStateStatistics;
+import game.action.Command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tflowtools.TrainableNetwork;
@@ -23,7 +24,7 @@ import java.util.List;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ValueFunction_TensorFlow_StateOnly.class, name = "tflow_state_only"),
 })
-public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCloseable {
+public abstract class ValueFunction_TensorFlow<C extends Command<?>> implements IValueFunction<C>, AutoCloseable {
 
     /**
      * Input layer size.
@@ -45,7 +46,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
     public final String fileName;
     public final List<Integer> hiddenLayerSizes;
     public List<String> additionalNetworkArgs;
-    public final boolean tensorboardLogging;
+    final boolean tensorboardLogging;
     /**
      * Number of nodes to run through training in one shot.
      */
@@ -210,7 +211,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
     }
 
     @Override
-    public void update(List<? extends NodeQWOPBase<?>> nodes) {
+    public void update(List<? extends NodeQWOPBase<?, C>> nodes) {
         assert trainingBatchSize > 0;
 
         batchCount = 0;
@@ -228,7 +229,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
 
             // Iterate through the nodes in the batch.
             for (int i = 0; i < batch.size(); i++) {
-                NodeQWOPBase<?> n = batch.get(i);
+                NodeQWOPBase<?, C> n = batch.get(i);
 
                 // Don't include root node since it doesn't have a parent.
                 if (n.getParent() == null) {
@@ -259,16 +260,16 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
     }
 
     @Override
-    public float evaluate(NodeQWOPBase<?> node) {
+    public float evaluate(NodeQWOPBase<?, C> node) {
         float[][] input = new float[1][inputSize];
         input[0] = assembleInputFromNode(node);
         float[][] result = network.evaluateInput(input);
         return result[0][0];
     }
 
-    abstract float[] assembleInputFromNode(NodeQWOPBase<?> node);
+    abstract float[] assembleInputFromNode(NodeQWOPBase<?, C> node);
 
-    abstract float[] assembleOutputFromNode(NodeQWOPBase<?> node);
+    abstract float[] assembleOutputFromNode(NodeQWOPBase<?, C> node);
 
     @Override
     public void close() {

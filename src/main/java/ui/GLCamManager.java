@@ -526,9 +526,9 @@ public class GLCamManager {
      * @return Nearest node to the click ray.
      * @see GLCamManager#clickVector(int, int)
      */
-    public NodeQWOPGraphicsBase<?> nodeFromRay(Vector3f clickVec, NodeQWOPGraphicsBase<?> root) {
+    public NodeQWOPGraphicsBase<?, ?> nodeFromRay(Vector3f clickVec, NodeQWOPGraphicsBase<?, ?> root) {
         // Determine which point is closest to the clicked ray.
-        ArrayList<NodeQWOPGraphicsBase<?>> nodeList = new ArrayList<>();
+        ArrayList<NodeQWOPGraphicsBase<?, ?>> nodeList = new ArrayList<>();
         root.recurseDownTreeInclusive(nodeList::add);
         return nodeFromRay_set(clickVec, nodeList);
     }
@@ -536,13 +536,13 @@ public class GLCamManager {
     /**
      * Take a click vector, find the nearest node to this line.
      */
-    private NodeQWOPGraphicsBase<?> nodeFromRay_set(Vector3f clickVec, List<NodeQWOPGraphicsBase<?>> nodes) {
-        NodeQWOPGraphicsBase<?> closestNodeInList = null;
+    private NodeQWOPGraphicsBase<?, ?> nodeFromRay_set(Vector3f clickVec, List<NodeQWOPGraphicsBase<?, ?>> nodes) {
+        NodeQWOPGraphicsBase<?, ?> closestNodeInList = null;
         double smallestDistance = Double.MAX_VALUE;
         double tanDist;
         double normDistSq;
 
-        for (NodeQWOPGraphicsBase<?> node : nodes) {
+        for (NodeQWOPGraphicsBase<?, ?> node : nodes) {
             //Vector from eye to a vertex.
             Vector3f nodePos = new Vector3f(node.nodeLocation[0], node.nodeLocation[1], node.nodeLocation[2]);
             EyeToPoint.sub(nodePos, eyePos);
@@ -563,7 +563,7 @@ public class GLCamManager {
     /**
      * Return the closest node to a click.
      */
-    public NodeQWOPGraphicsBase<?> nodeFromClick(int mouseX, int mouseY, NodeQWOPGraphicsBase<?> root) {
+    public NodeQWOPGraphicsBase<?, ?> nodeFromClick(int mouseX, int mouseY, NodeQWOPGraphicsBase<?, ?> root) {
         clickVec = clickVector(mouseX, mouseY);
         return nodeFromRay(clickVec, root);
     }
@@ -571,7 +571,8 @@ public class GLCamManager {
     /**
      * Given a set of nodes
      */
-    public NodeQWOPGraphicsBase<?> nodeFromClick_set(int mouseX, int mouseY, List<NodeQWOPGraphicsBase<?>> snapshotLeaves) {
+    public NodeQWOPGraphicsBase<?, ?> nodeFromClick_set(int mouseX, int mouseY,
+                                                      List<NodeQWOPGraphicsBase<?, ?>> snapshotLeaves) {
         clickVec = clickVector(mouseX, mouseY);
         return nodeFromRay_set(clickVec, snapshotLeaves);
     }

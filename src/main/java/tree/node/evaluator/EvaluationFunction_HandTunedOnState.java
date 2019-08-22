@@ -1,5 +1,6 @@
 package tree.node.evaluator;
 
+import game.action.Command;
 import game.state.IState.ObjectName;
 import tree.node.NodeQWOPBase;
 
@@ -12,10 +13,10 @@ import java.util.Objects;
  * @author matt
  */
 @SuppressWarnings("unused")
-public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction {
+public class EvaluationFunction_HandTunedOnState<C extends Command<?>> implements IEvaluationFunction<C> {
 
     @Override
-    public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
+    public float getValue(NodeQWOPBase<?, C> nodeToEvaluate) {
         Objects.requireNonNull(nodeToEvaluate.getState());
 
         float value = 0.f;
@@ -27,7 +28,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
     }
 
     @Override
-    public String getValueString(NodeQWOPBase<?> nodeToEvaluate) {
+    public String getValueString(NodeQWOPBase<?, C> nodeToEvaluate) {
         Objects.requireNonNull(nodeToEvaluate.getState());
 
         String value = "";
@@ -46,7 +47,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with state angles.
      */
-    private float getAngleValue(NodeQWOPBase<?> nodeToEvaluate) {
+    private float getAngleValue(NodeQWOPBase<?, C> nodeToEvaluate) {
         return nodeToEvaluate.getState().getStateVariableFromName(ObjectName.BODY).getTh();
     }
 
@@ -56,7 +57,7 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with horizontal positions.
      */
-    private float getDistanceValue(NodeQWOPBase<?> nodeToEvaluate) {
+    private float getDistanceValue(NodeQWOPBase<?, C> nodeToEvaluate) {
         return nodeToEvaluate.getState().getCenterX();
     }
 
@@ -66,13 +67,13 @@ public class EvaluationFunction_HandTunedOnState implements IEvaluationFunction 
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with state velocities.
      */
-    private float getVelocityValue(NodeQWOPBase<?> nodeToEvaluate) {
+    private float getVelocityValue(NodeQWOPBase<?, C> nodeToEvaluate) {
         return nodeToEvaluate.getState().getStateVariableFromName(ObjectName.BODY).getDx();
     }
 
     @Override
-    public EvaluationFunction_HandTunedOnState getCopy() {
-        return new EvaluationFunction_HandTunedOnState();
+    public EvaluationFunction_HandTunedOnState<C> getCopy() {
+        return new EvaluationFunction_HandTunedOnState<>();
     }
 
     @Override

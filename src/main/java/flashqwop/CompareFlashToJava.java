@@ -22,7 +22,7 @@ public class CompareFlashToJava extends FlashGame {
     private PanelRunner_MultiState panelRunner;
     private boolean initialized;
 
-    private ValueFunction_TensorFlow valueFunction = null;
+    private ValueFunction_TensorFlow<CommandQWOP> valueFunction = null;
 
     private List<GameUnified> gameUnifiedList = new ArrayList<>();
 
@@ -76,9 +76,9 @@ public class CompareFlashToJava extends FlashGame {
     }
 
     @Override
-    public Action[] getActionSequenceFromBeginning() {
+    public Action<CommandQWOP>[] getActionSequenceFromBeginning() {
         return new Action[]{
-                new Action(5, CommandQWOP.Keys.none),
+                new Action<>(5, CommandQWOP.NONE),
 //                new Action(49, Action.Keys.wo),
 //                new Action(20, Action.Keys.qp),
 //                new Action(1, Action.Keys.p),
@@ -99,8 +99,8 @@ public class CompareFlashToJava extends FlashGame {
     }
 
     @Override
-    public Action getControlAction(IState state) {
-        return valueFunction.getMaximizingAction(new NodeQWOP(state));
+    public Action<CommandQWOP> getControlAction(IState state) {
+        return valueFunction.getMaximizingAction(new NodeQWOP<>(state));
     }
 
     @Override

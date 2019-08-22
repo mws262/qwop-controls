@@ -2,6 +2,7 @@ package game;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.CommandQWOP;
 import game.state.*;
 
 import java.util.Arrays;
@@ -27,6 +28,7 @@ public class GameUnifiedCaching extends GameUnified {
     public GameUnifiedCaching(@JsonProperty("timestepDelay") int timestepDelay,
                               @JsonProperty("numDelayedStates") int numDelayedStates,
                               @JsonProperty("stateType") StateType stateType) {
+        super.makeNewWorld();
         if (timestepDelay < 1) {
             throw new IllegalArgumentException("Timestep delay must be at least one. Was: " + timestepDelay);
         }
@@ -49,8 +51,8 @@ public class GameUnifiedCaching extends GameUnified {
     }
 
     @Override
-    public void step(boolean q, boolean w, boolean o, boolean p) {
-        super.step(q, w, o, p);
+    public void step(CommandQWOP c) {
+        super.step(c);
         cachedStates.addFirst((State)super.getCurrentState());
     }
 

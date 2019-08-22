@@ -80,8 +80,8 @@ public class TFRecordDataParsers {
      * @param sequenceFromTFRecord One sequence loaded from a TFRecord that we wish to parse into a series of Actions.
      * @return A list of game.action for the loaded run.
      */
-    public static List<Action> getActionsFromLoadedSequence(SequenceExample sequenceFromTFRecord) {
-        List<Action> actionList = new ArrayList<>();
+    public static List<Action<CommandQWOP>> getActionsFromLoadedSequence(SequenceExample sequenceFromTFRecord) {
+        List<Action<CommandQWOP>> actionList = new ArrayList<>();
         FeatureList actionFeatures = sequenceFromTFRecord.getFeatureLists().getFeatureListMap().get("ACTIONS");
 
         for (int i = 0; i < actionFeatures.getFeatureCount(); i++) {
@@ -95,7 +95,7 @@ public class TFRecordDataParsers {
             boolean O = (byte)1 == byteStringOfAction.byteAt(3);
             boolean P = (byte)1 == byteStringOfAction.byteAt(4);
 
-            actionList.add(new Action(actionLength, CommandQWOP.booleansToCommand(Q, W, O, P)));
+            actionList.add(new Action<>(actionLength, CommandQWOP.booleansToCommand(Q, W, O, P)));
         }
         return actionList;
     }

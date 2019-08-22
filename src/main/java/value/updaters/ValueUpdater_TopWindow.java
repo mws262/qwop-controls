@@ -1,15 +1,16 @@
 package value.updaters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
 import org.jcodec.common.Preconditions;
 import tree.node.NodeQWOPBase;
 
 import java.util.*;
 
 
-public class ValueUpdater_TopWindow implements IValueUpdater {
+public class ValueUpdater_TopWindow<C extends Command<?>> implements IValueUpdater<C> {
 
-    public final int windowSize;
+    private final int windowSize;
 
     public enum Criteria {
         WORST, AVERAGE_OPTIMISTIC, AVERAGE_PESSIMISTIC
@@ -24,18 +25,18 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
     }
 
     @Override
-    public float update(float valueUpdate, NodeQWOPBase<?> node) {
+    public float update(float valueUpdate, NodeQWOPBase<?, C> node) {
         if (node.getChildCount() == 0) {
             return valueUpdate;
         } else {
-            List<NodeQWOPBase<?>> children = new ArrayList<>();
+            List<NodeQWOPBase<?, C>> children = new ArrayList<>();
             node.applyToThis(n -> children.addAll(n.getChildren())); // Trick to get around type erasure.
 
             children.sort(Comparator.comparing(NodeQWOPBase::getAction)); // Sort by actions. Separated first by key,
             // then by duration, ascending.
 
             // Separate into lists of consecutive actions.
-            List<List<NodeQWOPBase<?>>> clusters = separateClustersInSortedList(children);
+            List<List<NodeQWOPBase<?, C>>> clusters = separateClustersInSortedList(children);
 
             // Find best average cluster value. Starts with clusters at least the size of the specified window and
             // moves down if none are found.
@@ -43,7 +44,7 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
             float bestValue = -Float.MAX_VALUE;
             int effectiveWindowSize = windowSize;
             while (effectiveWindowSize > 0) {
-                for (List<NodeQWOPBase<?>> cluster : clusters) {
+                for (List<NodeQWOPBase<?, C>> cluster : clusters) {
                     if (cluster.size() >= effectiveWindowSize) {
                         for (int i = 0; i <= cluster.size() - effectiveWindowSize; i++) {
                             float value;
@@ -111,17 +112,22 @@ public class ValueUpdater_TopWindow implements IValueUpdater {
                 "handle that case appropriately.");
     }
 
-    @Override
-    public IValueUpdater getCopy() {
-        return new ValueUpdater_TopWindow(windowSize);
+    @JsonProperty("windowSize")
+    public int getWindowSize() {
+        return windowSize;
     }
 
-    static List<List<NodeQWOPBase<?>>> separateClustersInSortedList(List<NodeQWOPBase<?>> nodes) {
-        List<List<NodeQWOPBase<?>>> clusters = new ArrayList<>();
+    @Override
+    public IValueUpdater<C> getCopy() {
+        return new ValueUpdater_TopWindow<>(windowSize);
+    }
+
+    static <C extends Command<?>> List<List<NodeQWOPBase<?, C>>> separateClustersInSortedList(List<NodeQWOPBase<?, C>> nodes) {
+        List<List<NodeQWOPBase<?, C>>> clusters = new ArrayList<>();
         int idx = 0;
         while (idx < nodes.size()) {
-            List<NodeQWOPBase<?>> cluster = new ArrayList<>();
-            NodeQWOPBase<?> sequenceBegin = nodes.get(idx);
+            List<NodeQWOPBase<?, C>> cluster = new ArrayList<>();
+            NodeQWOPBase<?, C> sequenceBegin = nodes.get(idx);
             cluster.add(sequenceBegin);
             idx++;
             while (idx < nodes.size() && nodes.get(idx).getAction().getTimestepsTotal() == 1 + nodes.get(idx - 1).getAction().getTimestepsTotal()

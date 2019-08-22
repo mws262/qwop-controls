@@ -4,6 +4,7 @@ import game.action.Action;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.IGameInternal;
+import game.action.Command;
 import game.state.IState;
 import tree.node.NodeQWOPBase;
 
@@ -18,7 +19,7 @@ import java.util.List;
  * @author matt
  */
 
-public class DataSaver_Sparse implements IDataSaver {
+public class DataSaver_Sparse<C extends Command<?>> implements IDataSaver<C> {
 
     /**
      * File prefix. Goes in front of date.
@@ -48,22 +49,22 @@ public class DataSaver_Sparse implements IDataSaver {
     /**
      * Handles class serialization and writing to file.
      */
-    private SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
+    private SavableFileIO<SavableSingleGame<C>> fileIO = new SavableFileIO<>();
 
     /**
      * Buffered games awaiting file write.
      */
-    private ArrayList<SavableSingleGame> saveBuffer = new ArrayList<>();
+    private ArrayList<SavableSingleGame<C>> saveBuffer = new ArrayList<>();
 
     @Override
     public void reportGameInitialization(IState initialState) {}
 
     @Override
-    public void reportTimestep(Action action, IGameInternal game) {}
+    public void reportTimestep(Action<C> action, IGameInternal<C> game) {}
 
     @Override
-    public void reportGameEnding(NodeQWOPBase<?> endNode) {
-        saveBuffer.add(new SavableSingleGame(endNode));
+    public void reportGameEnding(NodeQWOPBase<?, C> endNode) {
+        saveBuffer.add(new SavableSingleGame<>(endNode));
         gamesSinceFile++;
 
         if (saveInterval == gamesSinceFile) {
@@ -96,7 +97,7 @@ public class DataSaver_Sparse implements IDataSaver {
     }
 
     @Override
-    public void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
+    public void reportStageEnding(NodeQWOPBase<?, C> rootNode, List<NodeQWOPBase<?, C>> targetNodes) {
         // If the save buffer still has stuff in it, save!
         if (!saveBuffer.isEmpty()) {
             File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension));
@@ -108,8 +109,8 @@ public class DataSaver_Sparse implements IDataSaver {
     public void finalizeSaverData() {}
 
     @Override
-    public DataSaver_Sparse getCopy() {
-        DataSaver_Sparse newSaver = new DataSaver_Sparse();
+    public DataSaver_Sparse<C> getCopy() {
+        DataSaver_Sparse<C> newSaver = new DataSaver_Sparse<>();
         newSaver.setSaveInterval(saveInterval);
         newSaver.setSavePath(fileLocation);
         return newSaver;

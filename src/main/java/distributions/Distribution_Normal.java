@@ -2,6 +2,7 @@ package distributions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Action;
+import game.action.Command;
 
 import java.util.Comparator;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.Objects;
  * @author matt
  */
 
-public class Distribution_Normal extends Distribution<Action> {
+public class Distribution_Normal<C extends Command<?>> extends Distribution<Action<C>> {
 
     /**
      * Mean of this Gaussian distribution.
@@ -50,7 +51,7 @@ public class Distribution_Normal extends Distribution<Action> {
      * @return An {@link Action action} sampled from the input set according to this distribution.
      */
     @Override
-    public Action randOnDistribution(List<Action> set) {
+    public Action<C> randOnDistribution(List<Action<C>> set) {
         if (set.size() < 1)
             throw new IllegalArgumentException("Argument action set must have at least 1 element.");
 

@@ -25,7 +25,7 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
     }
 
     private void run() {
-        ActionQueue actionQueue = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
         IGameInternal<CommandQWOP> gameFullRun = new GameUnified();
         IGameInternal<CommandQWOP> coldStartGame = new GameUnified();
 
@@ -37,7 +37,7 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
             coldStartGame.makeNewWorld();
             IState st = gameFullRun.getCurrentState();
             coldStartGame.setState(st);
-            ActionQueue coldStartActionQueue = actionQueue.getCopyOfQueueAtExecutionPoint();
+            ActionQueue<CommandQWOP> coldStartActionQueue = actionQueue.getCopyOfQueueAtExecutionPoint();
 
             // Simulate ahead on the cold started version until failure for each timestep of the original version.
             float initX = st.getCenterX();

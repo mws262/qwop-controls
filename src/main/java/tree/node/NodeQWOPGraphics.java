@@ -1,6 +1,7 @@
 package tree.node;
 
 import game.action.Action;
+import game.action.Command;
 import game.action.IActionGenerator;
 import game.state.IState;
 
@@ -16,12 +17,12 @@ import game.state.IState;
  *
  * @author matt
  */
-public class NodeQWOPGraphics extends NodeQWOPGraphicsBase<NodeQWOPGraphics> {
+public class NodeQWOPGraphics<C extends Command<?>> extends NodeQWOPGraphicsBase<NodeQWOPGraphics<C>, C> {
 
     /**
      * @see NodeQWOPGraphicsBase#NodeQWOPGraphicsBase(IState)
      */
-    public NodeQWOPGraphics(IState rootState, IActionGenerator actionGenerator) {
+    public NodeQWOPGraphics(IState rootState, IActionGenerator<C> actionGenerator) {
         super(rootState, actionGenerator);
     }
 
@@ -35,33 +36,33 @@ public class NodeQWOPGraphics extends NodeQWOPGraphicsBase<NodeQWOPGraphics> {
     /**
      * @see NodeQWOPGraphicsBase#NodeQWOPGraphicsBase(NodeQWOPGraphicsBase, Action, IState, IActionGenerator, boolean)
      */
-    private NodeQWOPGraphics(NodeQWOPGraphics parent, Action action, IState state, IActionGenerator actionGenerator,
-                             boolean doublyLinked) {
+    private NodeQWOPGraphics(NodeQWOPGraphics<C> parent,Action<C> action, IState state,
+                             IActionGenerator<C> actionGenerator, boolean doublyLinked) {
         super(parent, action, state, actionGenerator, doublyLinked);
     }
 
     @Override
-    protected NodeQWOPGraphics getThis() {
+    protected NodeQWOPGraphics<C> getThis() {
         return this;
     }
 
     @Override
-    public NodeQWOPGraphics addDoublyLinkedChild(Action action, IState state) {
+    public NodeQWOPGraphics<C> addDoublyLinkedChild(Action<C> action, IState state) {
         return addDoublyLinkedChild(action, state, actionGenerator);
     }
 
     @Override
-    public NodeQWOPGraphics addBackwardsLinkedChild(Action action, IState state) {
+    public NodeQWOPGraphics<C> addBackwardsLinkedChild(Action<C> action, IState state) {
         return addBackwardsLinkedChild(action, state, actionGenerator);
     }
 
     @Override
-    public NodeQWOPGraphics addDoublyLinkedChild(Action action, IState state, IActionGenerator actionGenerator) {
-        return new NodeQWOPGraphics(this, action, state, actionGenerator, true);
+    public NodeQWOPGraphics<C> addDoublyLinkedChild(Action<C> action, IState state, IActionGenerator<C> actionGenerator) {
+        return new NodeQWOPGraphics<>(this, action, state, actionGenerator, true);
     }
 
     @Override
-    public NodeQWOPGraphics addBackwardsLinkedChild(Action action, IState state, IActionGenerator actionGenerator) {
-        return new NodeQWOPGraphics(this, action, state, actionGenerator, false);
+    public NodeQWOPGraphics<C> addBackwardsLinkedChild(Action<C> action, IState state, IActionGenerator<C> actionGenerator) {
+        return new NodeQWOPGraphics<>(this, action, state, actionGenerator, false);
     }
 }

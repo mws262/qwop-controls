@@ -5,10 +5,8 @@ import controllers.IController;
 import game.GameConstants;
 import game.GameUnified;
 import game.IGameSerializable;
+import game.action.*;
 import game.action.Action;
-import game.action.ActionQueue;
-import game.action.CommandQWOP;
-import game.action.IActionGenerator;
 import tree.node.NodeQWOPExplorable;
 
 import javax.swing.*;
@@ -22,12 +20,12 @@ import java.util.Arrays;
  * @param <C> Controller type being used. Must implement the IController interface.
  * @param <G> Game implementation used. Must implement the IGameInternal interface.
  */
-public class PanelRunner_Controlled<C extends IController, G extends IGameSerializable> extends PanelRunner {
+public class PanelRunner_Controlled<C extends Command<?>, CON extends IController<C>, G extends IGameSerializable<C>> extends PanelRunner {
 
     /**
      * Controller being visualized.
      */
-    C controller;
+    CON controller;
 
     /**
      * Game instance being used. Its state size should match what the controller needs.
@@ -37,12 +35,12 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
     /**
      * Actions are queued as the controller provides them.
      */
-    private ActionQueue actionQueue = new ActionQueue();
+    private ActionQueue<C> actionQueue = new ActionQueue<>();
 
     /**
      * Action most recently returned by the controller.
      */
-    private Action mostRecentAction;
+    private Action<C> mostRecentAction;
 
     /**
      * Is this an active window? If its in a hidden tab or something, then we want to deactivate all the internal
@@ -100,7 +98,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
 
     private Thread gameThread;
 
-    public PanelRunner_Controlled(@JsonProperty("name") String name, G game, C controller) {
+    public PanelRunner_Controlled(@JsonProperty("name") String name, G game, CON controller) {
         this.name = name;
         this.controller = controller;
         this.game = game;
@@ -135,7 +133,6 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         constraints.gridx = 0;
         constraints.gridy = layoutRows - 1;
         add(resetButton, constraints);
-        actionQueue.addAction(new Action(7, CommandQWOP.Keys.none));
 
         // Options checkboxes.
         JPanel checkboxes = new JPanel();
@@ -185,7 +182,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
      * Will be called before each game timestep. Override for anything specific.
      * @param game Game to apply a disturbance to.
      */
-    void applyDisturbance(G game) {}
+    private void applyDisturbance(G game) {}
 
     @Override
     public void paintComponent(Graphics g) {
@@ -193,9 +190,12 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         super.paintComponent(g);
         if (game != null) {
             game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
-            boolean[] mostRecentKeys = actionQueue.isEmpty() ? new boolean[]{false, false, false, false} :
-                    actionQueue.peekThisAction().peek().get();
-            keyDrawer(g, mostRecentKeys[0], mostRecentKeys[1], mostRecentKeys[2], mostRecentKeys[3]);
+
+            if (actionQueue.peekThisAction().peek() instanceof CommandQWOP) {
+                boolean[] mostRecentKeys = actionQueue.isEmpty() ? new boolean[]{false, false, false, false} :
+                        (boolean[]) actionQueue.peekThisAction().peek().get();
+                keyDrawer(g, mostRecentKeys[0], mostRecentKeys[1], mostRecentKeys[2], mostRecentKeys[3]);
+            }
         }
     }
 
@@ -247,7 +247,6 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         public void reset() {
             game.makeNewWorld();
             actionQueue.clearAll();
-            actionQueue.addAction(new Action(7, CommandQWOP.Keys.none));
             node = null;
             currentGameX = 0f;
             if (fastToggle.isSelected()) {

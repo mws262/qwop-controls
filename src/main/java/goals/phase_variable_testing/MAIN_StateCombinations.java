@@ -2,6 +2,7 @@ package goals.phase_variable_testing;
 
 import game.action.ActionQueue;
 import game.GameUnified;
+import game.action.CommandQWOP;
 import game.state.IState;
 import tree.node.NodeQWOPGraphicsBase;
 import ui.scatterplot.PanelPlot_Simple;
@@ -19,10 +20,6 @@ import java.util.List;
  * @author matt
  */
 public class MAIN_StateCombinations extends JFrame {
-    /**
-     * Number of outputs to plot. Needs to have a corresponding neural network .pb file!
-     */
-    int numOutputs = 1;
 
     public static void main(String[] args) {
         new MAIN_StateCombinations().run();
@@ -39,7 +36,7 @@ public class MAIN_StateCombinations extends JFrame {
 
         GameUnified game = new GameUnified();
 
-        ActionQueue actionQueue = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
 
         List<IState> stateList = new ArrayList<>();
         stateList.add(GameUnified.getInitialState());

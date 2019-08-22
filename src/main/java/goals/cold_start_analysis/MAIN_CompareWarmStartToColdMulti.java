@@ -24,7 +24,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
     }
 
     public void run() {
-        ActionQueue actionQueue = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
 
         IGameInternal<CommandQWOP> gameFullRun = new GameUnified(); // This game will run all the commands, start to
         // finish.

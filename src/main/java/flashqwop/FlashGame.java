@@ -26,7 +26,7 @@ import java.util.LinkedList;
 public abstract class FlashGame implements IFlashStateListener {
 
     private FlashQWOPServer server;
-    private ActionQueue actionQueue = new ActionQueue();
+    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
     private LinkedList<State> stateCache = new LinkedList<>();
 
     /**
@@ -88,7 +88,7 @@ public abstract class FlashGame implements IFlashStateListener {
      * {@link FlashGame} will turn to a feedback controller.
      * @return
      */
-    public abstract Action[] getActionSequenceFromBeginning();
+    public abstract Action<CommandQWOP>[] getActionSequenceFromBeginning();
 
     /**
      * This gets called whenever the current ActionQueue runs out of things to do. If you just want to run a fixed
@@ -96,7 +96,7 @@ public abstract class FlashGame implements IFlashStateListener {
      * @param state Most recent state received from the Flash game.
      * @return An Action from a feedback controller.
      */
-    public abstract Action getControlAction(IState state);
+    public abstract Action<CommandQWOP> getControlAction(IState state);
 
     /**
      * This class will handle the execution of game.action, but inheriting classes may want to listen in.
@@ -187,7 +187,7 @@ public abstract class FlashGame implements IFlashStateListener {
             } else {
                 st = state;
             }
-            Action a = getControlAction(st);
+            Action<CommandQWOP> a = getControlAction(st);
             if (a == null) {
                 return;
             }

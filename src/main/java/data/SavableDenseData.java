@@ -1,6 +1,7 @@
 package data;
 
 import game.action.Action;
+import game.action.Command;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,17 +18,17 @@ import java.util.ArrayList;
  *
  * @author matt
  */
-public class SavableDenseData implements Serializable {
+public class SavableDenseData<C extends Command<?>> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private final IState[] state;
 
-    private final Action[] action;
+    private final Action<C>[] action;
 
     private static final Logger logger = LogManager.getLogger(SavableDenseData.class);
 
-    public SavableDenseData(IState[] state, Action[] action) {
+    public SavableDenseData(IState[] state, Action<C>[] action) {
         if (state.length != action.length && state.length - action.length != 1) {
             //throw new RuntimeException("State and action data must be of the same size, or state must have 1 more
 			// element than action. State size: " + state.length + ". Action size: " + action.length);
@@ -38,7 +39,7 @@ public class SavableDenseData implements Serializable {
         this.action = action;
     }
 
-    public SavableDenseData(ArrayList<IState> state, ArrayList<Action> action) {
+    public SavableDenseData(ArrayList<IState> state, ArrayList<Action<C>> action) {
         this(state.toArray(new IState[0]), action.toArray(new Action[0])); // Convert to arrays and give to other
         // constructor.
     }
@@ -47,7 +48,7 @@ public class SavableDenseData implements Serializable {
         return state;
     }
 
-    public Action[] getAction() {
+    public Action<C>[] getAction() {
         return action;
     }
 }

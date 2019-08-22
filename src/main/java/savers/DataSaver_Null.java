@@ -2,6 +2,7 @@ package savers;
 
 import game.action.Action;
 import game.IGameInternal;
+import game.action.Command;
 import game.state.IState;
 import tree.node.NodeQWOPBase;
 
@@ -12,16 +13,16 @@ import java.util.List;
  *
  * @author Matt
  */
-public class DataSaver_Null implements IDataSaver {
+public class DataSaver_Null<C extends Command<?>> implements IDataSaver<C> {
 
     @Override
     public void reportGameInitialization(IState initialState) {}
 
     @Override
-    public void reportTimestep(Action action, IGameInternal game) {}
+    public void reportTimestep(Action<C> action, IGameInternal<C> game) {}
 
     @Override
-    public void reportGameEnding(NodeQWOPBase<?> endNode) {}
+    public void reportGameEnding(NodeQWOPBase<?, C> endNode) {}
 
     @Override
     public void setSaveInterval(int numGames) {}
@@ -40,13 +41,13 @@ public class DataSaver_Null implements IDataSaver {
     }
 
     @Override
-    public void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {}
+    public void reportStageEnding(NodeQWOPBase<?, C> rootNode, List<NodeQWOPBase<?, C>> targetNodes) {}
 
     @Override
     public void finalizeSaverData() {}
 
     @Override
-    public DataSaver_Null getCopy() {
-        return new DataSaver_Null();
+    public DataSaver_Null<C> getCopy() {
+        return new DataSaver_Null<>();
     }
 }

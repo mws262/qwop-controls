@@ -228,7 +228,7 @@ public class GameUnifiedTest {
         GameUnified gameSingle = new GameUnified();
 
         // Run through the full queue with no saving/loading
-        ActionQueue actions = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actions = ActionQueue.getSampleActions();
         while (!actions.isEmpty()) {
             gameSingle.step(actions.pollCommand());
         }

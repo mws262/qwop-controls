@@ -12,21 +12,21 @@ import java.util.Set;
  *
  * @author matt
  */
-public class ActionGenerator_FixedActions implements IActionGenerator {
+public class ActionGenerator_FixedActions<C extends Command<?>> implements IActionGenerator<C> {
 
-    private final ActionList actionList;
+    private final ActionList<C> actionList;
 
-    public ActionGenerator_FixedActions(@JsonProperty("actionList") ActionList actionList) {
+    public ActionGenerator_FixedActions(@JsonProperty("actionList") ActionList<C> actionList) {
         this.actionList = actionList;
     }
 
     @Override
-    public ActionList getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode) {
+    public ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode) {
         return actionList.getCopy();
     }
 
     @Override
-    public Set<Action> getAllPossibleActions() {
+    public Set<Action<C>> getAllPossibleActions() {
         return new HashSet<>(actionList);
     }
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.IGameInternal;
 import game.action.Action;
+import game.action.Command;
 import tree.node.NodeQWOPExplorableBase;
 
 /**
@@ -24,56 +25,56 @@ import tree.node.NodeQWOPExplorableBase;
         @JsonSubTypes.Type(value = Sampler_FixedDepth.class, name = "fixed_depth")
 
 })
-public interface ISampler extends AutoCloseable {
+public interface ISampler<C extends Command<?>> extends AutoCloseable {
 
     /**
      * Decide a path through the existing tree to a place where a new node will be added. It is the tree policy's
      * responsibility to lock the Node multithreading is used.
      **/
-    NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode);
+    NodeQWOPExplorableBase<?, C> treePolicy(NodeQWOPExplorableBase<?, C> startNode);
 
     /**
      * Lets the sampler know that the previously requested game moves have occurred and the tree FSM is ready to do
      * more stuff.
      **/
-    void treePolicyActionDone(NodeQWOPExplorableBase<?> currentNode);
+    void treePolicyActionDone(NodeQWOPExplorableBase<?, C> currentNode);
 
     /**
      * Are we ready to switch from tree policy to expansion policy?
      **/
-    boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode);
+    boolean treePolicyGuard(NodeQWOPExplorableBase<?, C> currentNode);
 
     /**
      * Strategy for adding a single node at a depth of 1 greater than the given startNode.
      **/
-    Action expansionPolicy(NodeQWOPExplorableBase<?> startNode);
+    Action<C> expansionPolicy(NodeQWOPExplorableBase<?, C> startNode);
 
     /**
      * Lets the sampler know that the previously requested game moves have occurred and the tree FSM is ready to do
      * more stuff.
      **/
-    void expansionPolicyActionDone(NodeQWOPExplorableBase<?> currentNode);
+    void expansionPolicyActionDone(NodeQWOPExplorableBase<?, C> currentNode);
 
     /**
      * Are we ready to switch from expansion policy to rollout policy?
      **/
-    boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode);
+    boolean expansionPolicyGuard(NodeQWOPExplorableBase<?, C> currentNode);
 
     /**
      * Continued expansion which is NOT added to the tree as nodes. Only used for scoring as in UCB.
      **/
-    void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGameInternal game);
+    void rolloutPolicy(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game);
 
     /**
      * Are we ready to switch from rollout policy to tree policy?
      **/
-    boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode);
+    boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?, C> currentNode);
 
     /**
      * Copy this sampler and its settings. Each worker needs an individual copy.
      **/
     @JsonIgnore
-    ISampler getCopy();
+    ISampler<C> getCopy();
 
     @Override
     void close();

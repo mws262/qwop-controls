@@ -3,6 +3,7 @@ package tree.sampler.rollout;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
+import game.action.Command;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
@@ -10,7 +11,7 @@ import tree.node.evaluator.IEvaluationFunction;
  * Rollout policy which just evaluates the node given, rather than actually doing any additional investigation.
  * Mostly useful as a sanity check.
  */
-public class RolloutPolicy_JustEvaluate implements IRolloutPolicy {
+public class RolloutPolicy_JustEvaluate<C extends Command<?>> implements IRolloutPolicy<C> {
 
     public final IEvaluationFunction evaluationFunction;
 
@@ -20,13 +21,13 @@ public class RolloutPolicy_JustEvaluate implements IRolloutPolicy {
     }
 
     @Override
-    public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
+    public float rollout(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
         return evaluationFunction.getValue(startNode);
     }
 
     @Override
-    public IRolloutPolicy getCopy() {
-        return new RolloutPolicy_JustEvaluate(evaluationFunction);
+    public IRolloutPolicy<C> getCopy() {
+        return new RolloutPolicy_JustEvaluate<>(evaluationFunction);
     }
 
 

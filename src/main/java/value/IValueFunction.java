@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.IGameSerializable;
 import game.action.Action;
+import game.action.Command;
 import tree.node.NodeQWOPBase;
 
 import java.util.List;
@@ -16,37 +17,30 @@ import java.util.List;
         @JsonSubTypes.Type(value = ValueFunction_Constant.class, name = "constant"),
         @JsonSubTypes.Type(value = ValueFunction_TensorFlow.class, name = "tensorflow")
 })
-public interface IValueFunction extends AutoCloseable {
+public interface IValueFunction<C extends Command<?>> extends AutoCloseable {
 
     /**
      * Find the child Action which is predicted to maximize value.
-     * @param currentNode
-     * @return
      */
-    Action getMaximizingAction(NodeQWOPBase<?> currentNode);
+    Action<C> getMaximizingAction(NodeQWOPBase<?, C> currentNode);
 
     /**
      * Find the child Action which is predicted to maximize value.
-     * @param currentNode
-     * @return
      */
-    Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGameSerializable game);
+    Action<C> getMaximizingAction(NodeQWOPBase<?, C> currentNode, IGameSerializable game);
 
     /**
      * Calculate the value of having gotten to the provided Node.
-     * @param currentNode
-     * @return
      */
-    float evaluate(NodeQWOPBase<?> currentNode);
+    float evaluate(NodeQWOPBase<?, C> currentNode);
 
     /**
      * Provide a list of nodes from which information will be taken to update the value function.
-     * @param nodes
      */
-    void update(List<? extends NodeQWOPBase<?>> nodes);
+    void update(List<? extends NodeQWOPBase<?, C>> nodes);
 
     @JsonIgnore
-    IValueFunction getCopy();
+    IValueFunction<C> getCopy();
 
     @Override
     void close();

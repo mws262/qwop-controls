@@ -31,9 +31,9 @@ import java.io.IOException;
 @SuppressWarnings("Duplicates")
 public class MAIN_FlashEvaluation extends FlashGame {
 
-    private boolean imageCapture = false;
-    private boolean addActionNoise = true;
-    private float noiseProbability = 0.99f;
+    private final boolean imageCapture = false;
+    private final boolean addActionNoise = true;
+    private final float noiseProbability = 0.99f;
 
 
     private VisionDataSaver visionSaver;
@@ -41,26 +41,25 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private File captureDir = new File("vision_capture");
 
     // Net and execution parameters.
-    String valueNetworkName = "small_net.pb"; // "deepnarrow_net.pb";
-    String checkpointName = "small329";//698"; //329"; // "med67";
+    private final String valueNetworkName = "small_net.pb"; // "deepnarrow_net.pb";
+    private final String checkpointName = "small329";//698"; //329"; // "med67";
 
     private static boolean hardware = true;
 
-    Action[] prefix = new Action[]{
-            new Action(7, CommandQWOP.Keys.none),
+    Action<CommandQWOP>[] prefix = new Action[]{
+            new Action<>(7, CommandQWOP.NONE),
 //            new Action(40, Action.Keys.wo),
 //            new Action(20, Action.Keys.qp),
 //            new Action(1, Action.Keys.p),
 //            new Action(19, Action.Keys.qp),
 //            new Action(3, Action.Keys.wo),
-
     };
 
     private static final Logger logger = LogManager.getLogger(MAIN_FlashEvaluation.class);
 
-    private ValueFunction_TensorFlow valueFunction = null;
+    private ValueFunction_TensorFlow<CommandQWOP> valueFunction = null;
 
-    public MAIN_FlashEvaluation() {
+    private MAIN_FlashEvaluation() {
         super(hardware); // Do hardware commands out?
 
         if (imageCapture) {
@@ -93,19 +92,19 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public Action[] getActionSequenceFromBeginning() {
+    public Action<CommandQWOP>[] getActionSequenceFromBeginning() {
         return prefix;
     }
 
     @Override
-    public Action getControlAction(IState state) {
-        Action action = valueFunction.getMaximizingAction(new NodeQWOP(state));
+    public Action<CommandQWOP> getControlAction(IState state) {
+        Action<CommandQWOP> action = valueFunction.getMaximizingAction(new NodeQWOP<>(state));
         if (addActionNoise && Random.nextFloat() < noiseProbability) {
             if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
-                action = new Action(action.getTimestepsTotal() + 1, action.peek());
+                action = new Action<>(action.getTimestepsTotal() + 1, action.peek());
                 // logger.warn("Action disturbed 1 up.");
             } else {
-                action = new Action(action.getTimestepsTotal() - 1, action.peek());
+                action = new Action<>(action.getTimestepsTotal() - 1, action.peek());
                 // logger.warn("Action disturbed 1 down.");
             }
         }

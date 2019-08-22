@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.GameUnified;
 import game.IGameSerializable;
 import game.action.Action;
+import game.action.Command;
 import tree.node.NodeQWOPExplorableBase;
 
 import java.awt.*;
@@ -26,7 +27,7 @@ import java.awt.*;
 //        @JsonSubTypes.Type(value = Controller_NearestNeighborApprox.class, name = "nearest_neighbor"),
         @JsonSubTypes.Type(value = Controller_Tensorflow_ClassifyActionsPerTimestep.class, name = "classifier")
 })
-public interface IController extends AutoCloseable {
+public interface IController<C extends Command<?>> extends AutoCloseable {
 
     /**
      * Controller maps a current state to an action to take.
@@ -34,7 +35,7 @@ public interface IController extends AutoCloseable {
      * @param state Current state.
      * @return An action to take.
      */
-    Action policy(NodeQWOPExplorableBase<?> state);
+    Action<C> policy(NodeQWOPExplorableBase<?, C> state);
 
     /**
      * Get a control action. For some controllers, the hidden game state can be used in the policy. For this, an
@@ -43,10 +44,10 @@ public interface IController extends AutoCloseable {
      * @param game Game at the current configuration containing the hidden state.
      * @return An action to take.
      */
-    Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game);
+    Action<C> policy(NodeQWOPExplorableBase<?, C> state, IGameSerializable<C> game);
 
     @JsonIgnore
-    IController getCopy();
+    IController<C> getCopy();
     
     @Override
     void close();

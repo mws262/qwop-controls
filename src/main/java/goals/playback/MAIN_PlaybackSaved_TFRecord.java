@@ -109,13 +109,13 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
             for (SequenceExample seq : dataSeries) {
                 // Pull the states out of the Protobuf-like structure.
                 State[] stateVars = TFRecordDataParsers.getStatesFromLoadedSequence(seq);
-                List<Action> actions = TFRecordDataParsers.getActionsFromLoadedSequence(seq);
+                List<Action<CommandQWOP>> actions = TFRecordDataParsers.getActionsFromLoadedSequence(seq);
                 CommandQWOP[] commands = TFRecordDataParsers.getCommandSequenceFromLoadedSequence(seq);
 
                 actions.remove(0);
                 actions.remove(0);
 
-                ActionQueue actionQueue = new ActionQueue();
+                ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
                 actionQueue.addSequence(actions);
 
                 gameForActionSim.makeNewWorld();
