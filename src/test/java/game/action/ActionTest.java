@@ -252,15 +252,15 @@ public class ActionTest {
         Collections.sort(alist);
         Assert.assertEquals(a6, alist.get(0));
         Assert.assertEquals(a5, alist.get(1));
-        Assert.assertEquals(a4, alist.get(2));
-        Assert.assertEquals(a11, alist.get(3));
-        Assert.assertEquals(a10, alist.get(4));
-        Assert.assertEquals(a9, alist.get(5));
-        Assert.assertEquals(a1, alist.get(6));
-        Assert.assertEquals(a8, alist.get(7));
-        Assert.assertEquals(a2, alist.get(8));
-        Assert.assertEquals(a2, alist.get(9));
-        Assert.assertEquals(a7, alist.get(10));
+        Assert.assertEquals(a9, alist.get(2));
+        Assert.assertEquals(a4, alist.get(3));
+        Assert.assertEquals(a2, alist.get(4));
+        Assert.assertEquals(a3, alist.get(5));
+        Assert.assertEquals(a7, alist.get(6));
+        Assert.assertEquals(a1, alist.get(7));
+        Assert.assertEquals(a8, alist.get(8));
+        Assert.assertEquals(a11, alist.get(9));
+        Assert.assertEquals(a10, alist.get(10));
     }
 
     @Test
