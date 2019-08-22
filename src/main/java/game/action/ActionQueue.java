@@ -1,5 +1,7 @@
 package game.action;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -15,28 +17,31 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @see Action
  * @see ActionList
  */
-public class ActionQueue {
+public class ActionQueue<C extends Command<C>> {
 
     /**
      * Actions are the delays between keypresses.
      */
-    private Queue<Action> actionQueue = new LinkedList<>();
+    @NotNull
+    private final Queue<Action<C>> actionQueue = new LinkedList<>();
 
     /**
      * All game.action done or queued since the last reset. Unlike the queue, things aren't removed until reset.
      */
-    private ArrayList<Action> actionListFull = new ArrayList<>();
+    @NotNull
+    private final ArrayList<Action<C>> actionListFull = new ArrayList<>();
 
     /**
      * Integer action currently in progress. If the action is 20, this will be 20 even when 15 commands have been
      * issued.
      */
-    private Action currentAction;
+    private Action<C> currentAction;
 
     /**
      * Is there anything at all queued up to execute? Includes both the currentAction and the actionQueue.
      */
-    private AtomicBoolean isEmpty = new AtomicBoolean(true);
+    @NotNull
+    private final AtomicBoolean isEmpty = new AtomicBoolean(true);
 
     /**
      * Number of commands polled from the ActionQueue during its life.
@@ -70,7 +75,7 @@ public class ActionQueue {
      *
      * @return Next QWOP keypresses as a boolean array. True is pressed, false is not pressed.
      */
-    public synchronized CommandQWOP peekCommand() {
+    public synchronized C peekCommand() {
         if (currentAction == null) throw new IndexOutOfBoundsException("No current action in the queue for us to peek" +
                 " at.");
 

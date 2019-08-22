@@ -1,10 +1,12 @@
 package game.action;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class CommandQWOP extends Command<boolean[]> implements Comparable<CommandQWOP> {
+public class CommandQWOP extends Command<boolean[]> {
 
     public static final CommandQWOP
             NONE = new CommandQWOP(new boolean[]{false, false, false, false}, Keys.none),
@@ -112,8 +114,11 @@ public class CommandQWOP extends Command<boolean[]> implements Comparable<Comman
      * for left hand, then same for right hand.
      */
     @Override
-    public int compareTo(CommandQWOP other) {
+    public int compareTo(@NotNull Command other) {
         Objects.requireNonNull(other);
+        if (!(other instanceof CommandQWOP)) {
+            throw new IllegalArgumentException("Command comparison was given a mismatched type: " + other.getClass().getName());
+        }
         for (CommandQWOP command : commandToKeys.keySet()) {
             if (this.equals(command)) {
                 if (other.equals(command)) {
@@ -126,5 +131,14 @@ public class CommandQWOP extends Command<boolean[]> implements Comparable<Comman
             }
         }
         throw new RuntimeException("Command comparison failed.");
+    }
+
+    @Override
+    public String toString() {
+        return " Keys pressed: "
+                + (get()[0] ? "Q" : "")
+                + (get()[1] ? "W" : "")
+                + (get()[2] ? "O" : "")
+                + (get()[3] ? "P" : "");
     }
 }
