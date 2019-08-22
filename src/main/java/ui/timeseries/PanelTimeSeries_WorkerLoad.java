@@ -2,6 +2,7 @@ package ui.timeseries;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
 import tree.TreeWorker;
 
 import javax.swing.*;
@@ -29,7 +30,7 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
         add(label);
     }
 
-    public void setWorkers(List<TreeWorker> workers) {
+    public void setWorkers(List<TreeWorker<?>> workers) {
         workerList.clear();
         workerList.addAll(workers);
     }

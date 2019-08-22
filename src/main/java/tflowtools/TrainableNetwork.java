@@ -109,7 +109,7 @@ public class TrainableNetwork implements AutoCloseable {
         // Put the graph together.
         graph = new Graph();
         session = new Session(graph);
-        graph.importGraphDef(graphDef);
+        graph.importGraphDef(Objects.requireNonNull(graphDef));
 
         // Initialize
         session.runner().addTarget("init").run(); // Could be removed if it proves too slow and we only care

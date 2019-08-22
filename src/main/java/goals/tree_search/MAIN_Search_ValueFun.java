@@ -5,6 +5,7 @@ import controllers.Controller_ValueFunction;
 import controllers.IController;
 import game.GameUnified;
 import game.GameUnifiedCaching;
+import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
 import game.action.CommandQWOP;
@@ -37,7 +38,7 @@ import java.util.concurrent.Executors;
 
 public class MAIN_Search_ValueFun extends SearchTemplate {
 
-    GameUnified game;
+    private GameUnified game;
 
     /**
      * Search configuration parameter file name. Do not need to include the path. TODO move more other parameters to
@@ -78,17 +79,14 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
     private boolean windowRollout; // In properties file.
 
-    RolloutPolicy_Window.Criteria windowSelectionType;
+    private RolloutPolicy_Window.Criteria windowSelectionType;
 
     private boolean rolloutWeightedWithValFun;
-
-    private float rolloutValFunWeight;
-
 
     /**
      * Network hidden layer sizes. These should not include input and output layers.
      */
-    ArrayList<Integer> hiddenLayerSizes = new ArrayList<>();
+    private ArrayList<Integer> hiddenLayerSizes = new ArrayList<>();
 
     /**
      * Handle logging messages.
@@ -116,7 +114,6 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 //        }
 //        vfunCopy.loadCheckpoint("small329");
 //    }
-    @SuppressWarnings("ConstantConditions")
     public MAIN_Search_ValueFun(File configFile) {
         super(configFile);
 
@@ -161,7 +158,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         // TODO fix these that were disabled temporarily.
         rolloutWeightedWithValFun = Boolean.parseBoolean(properties.getProperty("rolloutWeightedWithValFun", "false"));
-        rolloutValFunWeight = Float.parseFloat(properties.getProperty("rolloutValFunWeight", "0.75"));
+        float rolloutValFunWeight = Float.parseFloat(properties.getProperty("rolloutValFunWeight", "0.75"));
 
         game = (prevStates > 0 && delayTs > 0) ? new GameUnifiedCaching(delayTs, prevStates, GameUnifiedCaching.StateType.HIGHER_DIFFERENCES) :
                 new GameUnified();
@@ -172,18 +169,18 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     TreeWorker getTreeWorker() {
 
         /* Pick rollout configuration. */
-        IRolloutPolicy rollout;
-        IController rolloutController;
-        IEvaluationFunction rolloutEvaluator;
+        IRolloutPolicy<CommandQWOP> rollout;
+        IController<CommandQWOP> rolloutController;
+        IEvaluationFunction<CommandQWOP> rolloutEvaluator;
 
         switch(rolloutControllerType) {
             case RANDOM:
-                rolloutController = new Controller_Random();
+                rolloutController = new Controller_Random<>();
                 break;
             case VALUE_FUNCTION:
 //                ValueFunction_TensorFlow_StateOnly hmm = vfunCopy.getCopy();
 //                hmm.loadCheckpoint("small329");
-                rolloutController = new Controller_ValueFunction(valueFunction.getCopy()); // NOTE: this copy is
+                rolloutController = new Controller_ValueFunction<>(valueFunction.getCopy()); // NOTE: this copy is
                 // independent. I don't know if that's good or bad.
                 break;
             default:
@@ -192,10 +189,10 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         switch(rolloutEvaluatorType) {
             case DISTANCE:
-                rolloutEvaluator = new EvaluationFunction_Distance();
+                rolloutEvaluator = new EvaluationFunction_Distance<>();
                 break;
             case VELOCITY:
-                rolloutEvaluator = new EvaluationFunction_Velocity();
+                rolloutEvaluator = new EvaluationFunction_Velocity<>();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown rollout evaluator type specified: " + rolloutEvaluatorType.name());
@@ -204,13 +201,14 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         // BASIC ROLLOUT STRATEGY
         switch (rolloutType) {
             case END_SCORE:
-                rollout = new RolloutPolicy_EndScore(rolloutEvaluator, rolloutController);
+                rollout = new RolloutPolicy_EndScore<>(rolloutEvaluator, rolloutController);
                 break;
             case DELTA_SCORE:
-                rollout = new RolloutPolicy_DeltaScore(rolloutEvaluator, rolloutController);
+                rollout = new RolloutPolicy_DeltaScore<>(rolloutEvaluator, rolloutController);
                 break;
             case DECAYING_HORIZON:
-                rollout = new RolloutPolicy_DecayingHorizon(rolloutEvaluator, rolloutController, rolloutHorizonTimesteps);
+                rollout = new RolloutPolicy_DecayingHorizon<>(rolloutEvaluator, rolloutController,
+                        rolloutHorizonTimesteps);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown rollout type specified: " + rolloutType.name());
@@ -218,12 +216,13 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         // ROLLOUT ACTIONS ABOVE AND BELOW ALSO.
         if (windowRollout) {
-            RolloutPolicy_Window windowRollout = new RolloutPolicy_Window(rollout);
+            RolloutPolicy_Window<CommandQWOP> windowRollout = new RolloutPolicy_Window<>(rollout);
             windowRollout.selectionCriteria = windowSelectionType;
             rollout = windowRollout;
         }
 
-        ISampler sampler = new Sampler_UCB(new EvaluationFunction_Constant(0f), rollout, new ValueUpdater_Average(), 5
+        ISampler<CommandQWOP> sampler = new Sampler_UCB<>(new EvaluationFunction_Constant<>(0f), rollout,
+                new ValueUpdater_Average<>(), 5
                 , 1); // TODO
         // hardcoded.
 
@@ -257,19 +256,20 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         // Make new tree root and assign to GUI.
         // Assign default available game.action.
-        IActionGenerator actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);// new ActionGenerator_UniformNoRepeats();//
+        IActionGenerator<CommandQWOP> actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);// new
+        // ActionGenerator_UniformNoRepeats();//
 
-        List<Action[]> alist = new ArrayList<>();
+        List<Action<CommandQWOP>[]> alist = new ArrayList<>();
         alist.add(new Action[]{
-                new Action(7, CommandQWOP.NONE),
+                new Action<>(7, CommandQWOP.NONE),
 //                new Action(49, Action.Keys.wo),
 //                new Action(2, Action.Keys.none),
 //                new Action(46, Action.Keys.qp),
         });
 
-        NodeQWOPExplorableBase<?> rootNode = headless ?
-                new NodeQWOPExplorable(GameUnified.getInitialState(), actionGenerator) :
-                new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
+        NodeQWOPExplorableBase<?, CommandQWOP> rootNode = headless ?
+                new NodeQWOPExplorable<>(GameUnified.getInitialState(), actionGenerator) :
+                new NodeQWOPGraphics<>(GameUnified.getInitialState(), actionGenerator);
 
         NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, game);
         NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
@@ -279,11 +279,11 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         if (!headless) {
             labelUpdater = Executors.newSingleThreadExecutor();
 
-            NodeQWOPGraphics graphicsRootNode = (NodeQWOPGraphics) rootNode;
+            NodeQWOPGraphics<CommandQWOP> graphicsRootNode = (NodeQWOPGraphics<CommandQWOP>) rootNode;
             NodeQWOPGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(graphicsRootNode);
-            List<NodeQWOPGraphics> leaf = new ArrayList<>();
+            List<NodeQWOPGraphics<CommandQWOP>> leaf = new ArrayList<>();
             graphicsRootNode.getLeaves(leaf);
             assert leaf.size() == 1;
             leaf.get(0).resetSweepAngle();
@@ -297,7 +297,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
             // Update node labels if graphics are enabled.
             if (!headless) {
-                NodeQWOPGraphics graphicsRootNode = (NodeQWOPGraphics) rootNode;
+                NodeQWOPGraphics<CommandQWOP> graphicsRootNode = (NodeQWOPGraphics) rootNode;
 
                 Runnable updateLabels = () -> graphicsRootNode.recurseDownTreeExclusive(n -> {
                     float percDiff = valueFunction.evaluate(n); // Temp disable percent diff for absolute diff.
@@ -313,7 +313,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         }
     }
 
-    private void doSearchAndUpdate(NodeQWOPExplorableBase<?> rootNode, int updateIdx) {
+    private void doSearchAndUpdate(NodeQWOPExplorableBase<?, CommandQWOP> rootNode, int updateIdx) {
         TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, bailAfterXGames);
 
         // Grab some workers from the pool.
@@ -326,12 +326,10 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         tws.forEach(this::removeWorker);
 
         // Update the value function.
-        List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
-        rootNode.recurseDownTreeExclusive(n -> {
-                    //if (n.getChildCount() > 0) { // TODO TEMP EXCLUDE LEAVES
-                        nodesBelow.add(n);
-                    //}
-                });
+        List<NodeQWOPExplorableBase<?, CommandQWOP>> nodesBelow = new ArrayList<>();
+        //if (n.getChildCount() > 0) { // TODO TEMP EXCLUDE LEAVES
+//}
+        rootNode.recurseDownTreeExclusive(nodesBelow::add);
 
         Collections.shuffle(nodesBelow);
         valueFunction.update(nodesBelow);

@@ -50,22 +50,25 @@ public class NodeQWOPExplorableTest {
  */
 
     // Root node for our test tree.
-    private NodeQWOPExplorable rootNode;
+    private NodeQWOPExplorable<CommandQWOP> rootNode;
 
-    private NodeQWOPExplorable node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1, node3_2, node3_3,
+    private NodeQWOPExplorable<CommandQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1,
+            node3_2,
+            node3_3,
             node1_1_1, node1_1_2, node1_2_1, node2_2_1, node2_2_2, node2_2_3, node3_3_1, node3_3_2, node3_3_3,
             node1_2_1_2, node1_2_1_2_1, node1_2_1_2_2, node1_2_1_2_2_3;
 
 
-    private List<NodeQWOPExplorable> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
+    private List<NodeQWOPExplorable<CommandQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5,
+            nodesLvl6;
 
     // Some sample game.action (mocked).
-    private Action a1;
-    private Action a2;
-    private Action a3;
-    private Action a4;
-    private Action a5;
-    private Action a6;
+    private Action<CommandQWOP> a1;
+    private Action<CommandQWOP> a2;
+    private Action<CommandQWOP> a3;
+    private Action<CommandQWOP> a4;
+    private Action<CommandQWOP> a5;
+    private Action<CommandQWOP> a6;
 
     // Some states (mocked).
     private State initialState = mock(State.class);
@@ -85,10 +88,12 @@ public class NodeQWOPExplorableTest {
         when(game.getCurrentState()).thenReturn(unfailedState);
 
         // Set up action generator.
-        ActionList list1 = ActionList.makeActionList(new int[]{1,2,3}, CommandQWOP.Q, new Distribution_Equal());
-        ActionList list2 = ActionList.makeActionList(new int[]{4,5,6}, CommandQWOP.W, new Distribution_Equal());
+        ActionList<CommandQWOP> list1 = ActionList.makeActionList(new int[]{1,2,3}, CommandQWOP.Q,
+                new Distribution_Equal<>());
+        ActionList<CommandQWOP> list2 = ActionList.makeActionList(new int[]{4,5,6}, CommandQWOP.W,
+                new Distribution_Equal<>());
 
-        IActionGenerator generator = new ActionGenerator_FixedSequence(new ActionList[]{list1, list2});
+        IActionGenerator<CommandQWOP> generator = new ActionGenerator_FixedSequence<>(new ActionList[]{list1, list2});
         a1 = list1.get(0);
         a2 = list1.get(1);
         a3 = list1.get(2);
@@ -98,7 +103,7 @@ public class NodeQWOPExplorableTest {
         a6 = list2.get(2);
 
         // Depth 0.
-        rootNode = new NodeQWOPExplorable(initialState, generator);
+        rootNode = new NodeQWOPExplorable<>(initialState, generator);
         nodesLvl0 = new ArrayList<>();
         nodesLvl0.add(rootNode);
 
@@ -336,7 +341,7 @@ public class NodeQWOPExplorableTest {
     public void getUntriedActionListCopy() {
         setupTree();
 
-        List<Action> actions = node1_2_1_2_2.getUntriedActionListCopy();
+        List<Action<CommandQWOP>> actions = node1_2_1_2_2.getUntriedActionListCopy();
         Assert.assertEquals(node1_2_1_2_2.getUntriedActionCount(), actions.size());
         for (int i = 0; i < node1_2_1_2_2.getUntriedActionCount(); i++) {
             Assert.assertEquals(node1_2_1_2_2.getUntriedActionByIndex(i), actions.get(i));
@@ -487,7 +492,7 @@ public class NodeQWOPExplorableTest {
         setupTree();
 
         // Add a node not in the untried action list.
-        NodeQWOPExplorable unexpectedNode = node2.addBackwardsLinkedChild(new Action(50, CommandQWOP.Keys.wp), failedState);
+        NodeQWOPExplorable unexpectedNode = node2.addBackwardsLinkedChild(new Action<>(50, CommandQWOP.WP), failedState);
         Assert.assertFalse(node2.isFullyExplored()); // Shouldn't be affected by this new node.
         Assert.assertEquals(2, node2.getChildCount()); // Shouldn't affect the child count.
         Assert.assertTrue(unexpectedNode.isFullyExplored());

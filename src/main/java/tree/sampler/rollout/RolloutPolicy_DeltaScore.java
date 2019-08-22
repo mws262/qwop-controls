@@ -3,6 +3,8 @@ package tree.sampler.rollout;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
+import game.action.Command;
+import game.action.CommandQWOP;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
@@ -13,7 +15,7 @@ import tree.node.evaluator.IEvaluationFunction;
  *
  * @author matt
  */
-public class RolloutPolicy_DeltaScore extends RolloutPolicyBase {
+public class RolloutPolicy_DeltaScore<C extends Command<?>> extends RolloutPolicyBase<C> {
 
     /**
      * Reward can be reduced by a factor if failure results.
@@ -38,35 +40,35 @@ public class RolloutPolicy_DeltaScore extends RolloutPolicyBase {
     }
 
     @Override
-    float startScore(NodeQWOPExplorableBase<?> startNode) {
+    float startScore(NodeQWOPExplorableBase<?, C> startNode) {
         return -getEvaluationFunction().getValue(startNode);
     }
 
     @Override
-    float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?> before, NodeQWOPBase<?> after) {
+    float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?, C> before, NodeQWOPBase<?, C> after) {
         return 0;
     }
 
     @Override
-    float endScore(NodeQWOPExplorableBase<?> endNode) {
+    float endScore(NodeQWOPExplorableBase<?, C> endNode) {
         return getEvaluationFunction().getValue(endNode);
     }
 
     @Override
-    float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
-                              NodeQWOPExplorableBase<?> endNode, int rolloutDurationTimesteps) {
+    float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?, C> startNode,
+                              NodeQWOPExplorableBase<?, C> endNode, int rolloutDurationTimesteps) {
         return (endNode.getState().isFailed() ? failureMultiplier : 1.0f) * accumulatedValue;
     }
 
     @Override
-    public IController getRolloutController() {
+    public IController<C> getRolloutController() {
         return rolloutController;
     }
 
     @JsonIgnore
     @Override
-    public RolloutPolicy_DeltaScore getCopy() {
-       RolloutPolicy_DeltaScore copy = new RolloutPolicy_DeltaScore(getEvaluationFunction().getCopy(),
+    public RolloutPolicy_DeltaScore<C> getCopy() {
+       RolloutPolicy_DeltaScore<C> copy = new RolloutPolicy_DeltaScore<>(getEvaluationFunction().getCopy(),
                getRolloutController().getCopy(), maxTimesteps);
        copy.failureMultiplier = failureMultiplier;
        return copy;

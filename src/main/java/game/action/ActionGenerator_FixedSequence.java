@@ -3,7 +3,6 @@ package game.action;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -27,12 +26,13 @@ import java.util.stream.IntStream;
  *
  * @author matt
  */
-public class ActionGenerator_FixedSequence implements IActionGenerator {
+@SuppressWarnings("Duplicates")
+public class ActionGenerator_FixedSequence<C extends Command<?>> implements IActionGenerator<C> {
 
     /**
      * These are the possible game.action which are generated in a cycle.
      **/
-    private ActionList[] repeatedActions;
+    private ActionList<C>[] repeatedActions;
 
     /**
      * These game.action are exceptions which will override the repeated game.action. Key is the
@@ -42,7 +42,7 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
     @JsonSerialize(keyUsing = ExceptionSerializer.class) // Take care of the fact that the keys are integers, which
     // throws off XML.
     @JsonDeserialize(keyUsing = ExceptionDeserializer.class)
-    private final Map<Integer, ActionList> actionExceptions;
+    private final Map<Integer, ActionList<C>> actionExceptions;
 
     /**
      * How many game.action are in one repeated cycle.
@@ -62,8 +62,8 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
      *                         depth specified in the map, it will use the ActionList corresponding to this index
      *                         rather than the normal ActionList in the cycle.
      */
-    public ActionGenerator_FixedSequence(@JsonProperty("repeatedActions") ActionList[] repeatedActions,
-                                         @JsonProperty("actionExceptions") Map<Integer, ActionList> actionExceptions) {
+    public ActionGenerator_FixedSequence(@JsonProperty("repeatedActions") ActionList<C>[] repeatedActions,
+                                         @JsonProperty("actionExceptions") Map<Integer, ActionList<C>> actionExceptions) {
 
         if (repeatedActions.length == 0) {
             throw new IllegalArgumentException("There must be at least 1 repeated action. The array was empty.");
@@ -75,12 +75,12 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
         this.actionExceptions = actionExceptions;
     }
 
-    public ActionGenerator_FixedSequence(ActionList[] repeatedActions) {
+    public ActionGenerator_FixedSequence(ActionList<C>[] repeatedActions) {
         this(repeatedActions, null);
     }
 
     @Override
-    public ActionList getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode) {
+    public ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode) {
         int actionDepth = parentNode.getTreeDepth();
 
         // Check if this is an exception case.
@@ -92,24 +92,25 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
     }
 
     @Override
-    public Set<Action> getAllPossibleActions() {
-        Set<Action> allActions = new HashSet<>();
-        for (ActionList as : repeatedActions) {
+    public Set<Action<C>> getAllPossibleActions() {
+        Set<Action<C>> allActions = new HashSet<>();
+        for (ActionList<C> as : repeatedActions) {
             allActions.addAll(as);
         }
         if (actionExceptions != null) {
-            for (ActionList as : actionExceptions.values()) {
+            for (ActionList<C> as : actionExceptions.values()) {
                 allActions.addAll(as);
             }
         }
         return allActions;
     }
 
-    public ActionList[] getRepeatedActions() {
+    public ActionList<C>[] getRepeatedActions() {
         return repeatedActions;
     }
+
     @JsonUnwrapped
-    public Map<Integer, ActionList> getActionExceptions() {
+    public Map<Integer, ActionList<C>> getActionExceptions() {
         return actionExceptions;
     }
 
@@ -134,59 +135,65 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
      * Will assign a broader set of options for "recovery" at the specified starting depth.
      * Pass -1 to disable this.
      */
-    public static ActionGenerator_FixedSequence makeDefaultGenerator(int recoveryExceptionStart) {
+    public static ActionGenerator_FixedSequence<CommandQWOP> makeDefaultGenerator(int recoveryExceptionStart) {
         /* Space of allowed game.action to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
         /* Repeated action 1 -- no keys pressed. */
-        Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionList actionList1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), CommandQWOP.NONE, dist1);
+        Distribution<Action<CommandQWOP>> dist1 = new Distribution_Normal<>(10f, 2f);
+        ActionList<CommandQWOP> actionList1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), CommandQWOP.NONE, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> dist2 = new Distribution_Normal(39f, 3f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), CommandQWOP.WO, dist2);
+        Distribution<Action<CommandQWOP>> dist2 = new Distribution_Normal<>(39f, 3f);
+        ActionList<CommandQWOP> actionList2 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), CommandQWOP.WO, dist2);
 
         /* Repeated action 3 -- No keys pressed. */
-        Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionList actionList3 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), CommandQWOP.NONE, dist3);
+        Distribution<Action<CommandQWOP>> dist3 = new Distribution_Normal<>(10f, 2f);
+        ActionList<CommandQWOP> actionList3 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), CommandQWOP.NONE, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> dist4 = new Distribution_Normal(39f, 3f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), CommandQWOP.QP, dist4);
+        Distribution<Action<CommandQWOP>> dist4 = new Distribution_Normal<>(39f, 3f);
+        ActionList<CommandQWOP> actionList4 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), CommandQWOP.QP, dist4);
 
-        ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
+        ActionList<CommandQWOP>[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
 
         /////// Action Exceptions for starting up. ////////
         /* Repeated action exceptions 1 -- no keys pressed. */
-        Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
-        ActionList actionListE1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(), CommandQWOP.NONE, distE1);
+        Distribution<Action<CommandQWOP>> distE1 = new Distribution_Normal<>(5f, 1f);
+        ActionList<CommandQWOP> actionListE1 = ActionList.makeActionList(IntStream.range(1, 25).toArray(),
+                CommandQWOP.NONE, distE1);
 
         /*  Repeated action exceptions 2 -- W-O pressed */
-        Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(30, 50).toArray(), CommandQWOP.WO, distE2);
+        Distribution<Action<CommandQWOP>> distE2 = new Distribution_Normal<>(34f, 2f);
+        ActionList<CommandQWOP> actionListE2 = ActionList.makeActionList(IntStream.range(30, 50).toArray(),
+                CommandQWOP.WO, distE2);
 
         /*  Repeated action exceptions 3 -- no keys pressed. */
-        Distribution<Action> distE3 = new Distribution_Normal(5, 2f);
-        ActionList actionListE3 = ActionList.makeActionList(IntStream.range(1, 20).toArray(), CommandQWOP.NONE, distE3);
+        Distribution<Action<CommandQWOP>> distE3 = new Distribution_Normal<>(5, 2f);
+        ActionList<CommandQWOP> actionListE3 = ActionList.makeActionList(IntStream.range(1, 20).toArray(),
+                CommandQWOP.NONE, distE3);
 
         /*  Repeated action exceptions 4 -- Q-P pressed */
-        Distribution<Action> distE4 = new Distribution_Normal(25f, 2f);
-        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), CommandQWOP.QP, distE4);
+        Distribution<Action<CommandQWOP>> distE4 = new Distribution_Normal<>(25f, 2f);
+        ActionList<CommandQWOP> actionListE4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(),
+                CommandQWOP.QP, distE4);
 
         /////// Action Exceptions for recovery. ////////
         /*  Repeated action 1 and 3 -- Nothing pressed */
-        Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
-        ActionList actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(), CommandQWOP.NONE, distFalseFalse);
+        Distribution<Action<CommandQWOP>> distFalseFalse = new Distribution_Normal<>(10f, 2f);
+        ActionList<CommandQWOP> actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(),
+                CommandQWOP.NONE, distFalseFalse);
 
         /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
-        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), CommandQWOP.WO, distWO);
+        Distribution<Action<CommandQWOP>> distWO = new Distribution_Normal<>(39f, 3f);
+        ActionList<CommandQWOP> actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(),
+                CommandQWOP.WO, distWO);
 
         /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
-        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), CommandQWOP.QP, distQP);
+        Distribution<Action<CommandQWOP>> distQP = new Distribution_Normal<>(39f, 3f);
+        ActionList<CommandQWOP> actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), CommandQWOP.QP, distQP);
 
-        Map<Integer, ActionList> actionExceptions = new HashMap<>();
+        Map<Integer, ActionList<CommandQWOP>> actionExceptions = new HashMap<>();
         actionExceptions.put(0, actionListE1);
         actionExceptions.put(1, actionListE2);
         actionExceptions.put(2, actionListE3);
@@ -216,62 +223,72 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
             }
         }
         // Define the specific way that these allowed game.action are assigned as potential options for nodes.
-        return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
+        return new ActionGenerator_FixedSequence<>(repeatedActions, actionExceptions);
     }
 
-    public static ActionGenerator_FixedSequence makeExtendedGenerator(int recoveryExceptionStart) {
+    public static ActionGenerator_FixedSequence<CommandQWOP> makeExtendedGenerator(int recoveryExceptionStart) {
         /* Space of allowed game.action to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
         /* Repeated action 1 -- no keys pressed. */
-        Distribution<Action> dist1 = new Distribution_Normal(10f, 2f);
-        ActionList actionList1 = ActionList.makeActionList(IntStream.range(2, 25).toArray(), CommandQWOP.NONE, dist1);
+        Distribution<Action<CommandQWOP>> dist1 = new Distribution_Normal<>(10f, 2f);
+        ActionList<CommandQWOP> actionList1 = ActionList.makeActionList(IntStream.range(2, 25).toArray(),
+                CommandQWOP.NONE, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> dist2 = new Distribution_Normal(25, 3f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.WO, dist2);
+        Distribution<Action<CommandQWOP>> dist2 = new Distribution_Normal<>(25, 3f);
+        ActionList<CommandQWOP> actionList2 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.WO,
+                dist2);
 
         /* Repeated action 3 -- NONE pressed */
-        Distribution<Action> dist3 = new Distribution_Normal(10f, 2f);
-        ActionList actionList3 = ActionList.makeActionList(IntStream.range(2, 25).toArray(), CommandQWOP.NONE, dist3);
+        Distribution<Action<CommandQWOP>> dist3 = new Distribution_Normal<>(10f, 2f);
+        ActionList<CommandQWOP> actionList3 = ActionList.makeActionList(IntStream.range(2, 25).toArray(),
+                CommandQWOP.NONE, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> dist4 = new Distribution_Normal(25, 3f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.QP, dist4);
+        Distribution<Action<CommandQWOP>> dist4 = new Distribution_Normal<>(25, 3f);
+        ActionList<CommandQWOP> actionList4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.QP,
+                dist4);
 
-        ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
+        ActionList<CommandQWOP>[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
 
         /////// Action Exceptions for starting up. ////////
         /* Repeated action exceptions 1 -- no keys pressed. */
-        Distribution<Action> distE1 = new Distribution_Normal(5f, 1f);
-        ActionList actionListE1 = ActionList.makeActionList(IntStream.range(1, 35).toArray(), CommandQWOP.NONE, distE1);
+        Distribution<Action<CommandQWOP>> distE1 = new Distribution_Normal<>(5f, 1f);
+        ActionList<CommandQWOP> actionListE1 = ActionList.makeActionList(IntStream.range(1, 35).toArray(),
+                CommandQWOP.NONE, distE1);
 
         /*  Repeated action exceptions 2 -- W-O pressed */
-        Distribution<Action> distE2 = new Distribution_Normal(34f, 2f);
-        ActionList actionListE2 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.WO, distE2);
+        Distribution<Action<CommandQWOP>> distE2 = new Distribution_Normal<>(34f, 2f);
+        ActionList<CommandQWOP> actionListE2 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.WO, distE2);
 
         /*  Repeated action exceptions 3 -- no keys pressed. */
-        Distribution<Action> distE3 = new Distribution_Normal(24f, 2f);
-        ActionList actionListE3 = ActionList.makeActionList(IntStream.range(1, 35).toArray(), CommandQWOP.NONE, distE3);
+        Distribution<Action<CommandQWOP>> distE3 = new Distribution_Normal<>(24f, 2f);
+        ActionList<CommandQWOP> actionListE3 = ActionList.makeActionList(IntStream.range(1, 35).toArray(),
+                CommandQWOP.NONE, distE3);
 
         /*  Repeated action exceptions 4 -- Q-P pressed */
-        Distribution<Action> distE4 = new Distribution_Normal(49f, 2f);
-        ActionList actionListE4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.QP, distE4);
+        Distribution<Action<CommandQWOP>> distE4 = new Distribution_Normal<>(49f, 2f);
+        ActionList<CommandQWOP> actionListE4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.QP,
+                distE4);
 
         /////// Action Exceptions for recovery. ////////
         /*  Repeated action 1 and 3 -- Nothing pressed */
-        Distribution<Action> distFalseFalse = new Distribution_Normal(10f, 2f);
-        ActionList actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(), CommandQWOP.NONE, distFalseFalse);
+        Distribution<Action<CommandQWOP>> distFalseFalse = new Distribution_Normal<>(10f, 2f);
+        ActionList<CommandQWOP> actionListFalseFalse = ActionList.makeActionList(IntStream.range(1, 50).toArray(),
+                CommandQWOP.NONE, distFalseFalse);
 
         /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> distWO = new Distribution_Normal(39f, 3f);
-        ActionList actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), CommandQWOP.WO, distWO);
+        Distribution<Action<CommandQWOP>> distWO = new Distribution_Normal<>(39f, 3f);
+        ActionList<CommandQWOP> actionListWO = ActionList.makeActionList(IntStream.range(1, 70).toArray(), CommandQWOP.WO,
+                distWO);
 
         /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> distQP = new Distribution_Normal(39f, 3f);
-        ActionList actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(), CommandQWOP.QP, distQP);
+        Distribution<Action<CommandQWOP>> distQP = new Distribution_Normal<>(39f, 3f);
+        ActionList<CommandQWOP> actionListQP = ActionList.makeActionList(IntStream.range(1, 70).toArray(),
+                CommandQWOP.QP, distQP);
 
-        Map<Integer, ActionList> actionExceptions = new HashMap<>();
+        Map<Integer, ActionList<CommandQWOP>> actionExceptions = new HashMap<>();
         actionExceptions.put(0, actionListE1);
         actionExceptions.put(1, actionListE2);
         actionExceptions.put(2, actionListE3);
@@ -301,13 +318,13 @@ public class ActionGenerator_FixedSequence implements IActionGenerator {
             }
         }
         // Define the specific way that these allowed game.action are assigned as potential options for nodes.
-        return new ActionGenerator_FixedSequence(repeatedActions, actionExceptions);
+        return new ActionGenerator_FixedSequence<>(repeatedActions, actionExceptions);
     }
 
     private static class ExceptionDeserializer extends KeyDeserializer {
 
         @Override
-        public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public Object deserializeKey(String key, DeserializationContext ctxt) {
             return new Integer(key.replace("depth", ""));
         }
     }

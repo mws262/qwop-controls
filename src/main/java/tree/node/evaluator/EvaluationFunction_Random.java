@@ -1,5 +1,6 @@
 package tree.node.evaluator;
 
+import game.action.Command;
 import tree.node.NodeQWOPBase;
 
 import java.util.Random;
@@ -10,7 +11,7 @@ import java.util.Random;
  *
  * @author Matt
  */
-public class EvaluationFunction_Random implements IEvaluationFunction {
+public class EvaluationFunction_Random<C extends Command<?>> implements IEvaluationFunction<C> {
 
     /**
      * Random number generator for generating random node scores.
@@ -18,18 +19,18 @@ public class EvaluationFunction_Random implements IEvaluationFunction {
     private static final Random rand = new Random();
 
     @Override
-    public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
+    public float getValue(NodeQWOPBase<?, C> nodeToEvaluate) {
         return rand.nextFloat();
     }
 
     @Override
-    public String getValueString(NodeQWOPBase<?> nodeToEvaluate) {
+    public String getValueString(NodeQWOPBase<?, C> nodeToEvaluate) {
         return "Random score is not particularly meaningful.";
     }
 
     @Override
-    public EvaluationFunction_Random getCopy() {
-        return new EvaluationFunction_Random();
+    public EvaluationFunction_Random<C> getCopy() {
+        return new EvaluationFunction_Random<>();
     }
 
     @Override

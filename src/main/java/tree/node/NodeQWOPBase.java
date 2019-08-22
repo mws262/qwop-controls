@@ -5,6 +5,7 @@ import game.action.Action;
 import game.action.ActionQueue;
 import data.SavableSingleGame;
 import game.IGameInternal;
+import game.action.Command;
 import game.state.IState;
 import value.updaters.IValueUpdater;
 import value.updaters.ValueUpdater_HardSet;
@@ -21,12 +22,12 @@ import java.util.List;
  *            this class as an input argument, usually specify as the wildcard (?) to indicate that the class can be
  *            any inheriting implementation of this class.
  */
-public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGenericBase<N> {
+public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Command<?>> extends NodeGenericBase<N> {
 
     /**
      * Action taking the game from the state of the parent to this node's state.
      */
-    private final Action action;
+    private final Action<C> action;
 
     /**
      * State arrived at when taking this node's action from the parent node's state.
@@ -52,7 +53,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
         state = rootState;
     }
 
-    NodeQWOPBase(N parent, Action action, IState state) {
+    NodeQWOPBase(N parent, Action<C> action, IState state) {
         super(parent);
         this.action = action;
         this.state = state;
@@ -71,7 +72,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * @param state State arrived at when taking the specified action to the new node.
      * @return A new child node.
      */
-    public abstract N addDoublyLinkedChild(Action action, IState state);
+    public abstract N addDoublyLinkedChild(Action<C> action, IState state);
 
     /**
      * Make a new child. The child has a reference to the parent, but the parent does not know about the child. This
@@ -80,13 +81,13 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * @param state State arrived at when taking the specified action to the new node.
      * @return A new child node.
      */
-    public abstract N addBackwardsLinkedChild(Action action, IState state);
+    public abstract N addBackwardsLinkedChild(Action<C> action, IState state);
 
     public IState getState() { return state; }
 
-    public Action getAction() { return action; }
+    public Action<C> getAction() { return action; }
 
-    public synchronized List<Action> getSequence(List<Action> actionList) {
+    public synchronized List<Action<C>> getSequence(List<Action<C>> actionList) {
         if (getTreeDepth() <= 0)
             throw new IndexOutOfBoundsException("Cannot get a sequence at the root node, since it has no game.action " +
                     "leading up to it.");
@@ -105,13 +106,13 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      * @param game Game instance used to simulate the given game.action and generate the state information needed to make
      *            the nodes.
      */
-    public static <N extends NodeQWOPBase<?>> void makeNodesFromActionSequences(Collection<Action[]> actions, N root,
-                                                                                IGameInternal game) {
+    public static <C extends Command<?>, N extends NodeQWOPBase<?, C>> void makeNodesFromActionSequences(Collection<Action<C>[]> actions, N root,
+                                                                                IGameInternal<C> game) {
         IValueUpdater valueUpdater = new ValueUpdater_HardSet();
-        ActionQueue actQueue = new ActionQueue();
-        for (Action[] acts : actions) {
+        ActionQueue<C> actQueue = new ActionQueue<>();
+        for (Action<C>[] acts : actions) {
             game.makeNewWorld();
-            NodeQWOPBase<?> currentNode = root;
+            NodeQWOPBase<?, C> currentNode = root;
 
             if (currentNode.getUpdateCount() == 0) {
                 currentNode.updateValue(0, valueUpdater);
@@ -119,7 +120,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
 
             actQueue.clearAll();
 
-            for (Action act : acts) {
+            for (Action<C> act : acts) {
                 act = act.getCopy();
                 act.reset();
 
@@ -132,7 +133,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
                 // If there is already a node for this action, use it.
                 boolean foundExisting = false;
 
-                for (NodeQWOPBase<?> child : currentNode.getChildren()) {
+                for (NodeQWOPBase<?, C> child : currentNode.getChildren()) {
                     if (child.getAction().equals(act)) {
                         currentNode = child;
                         foundExisting = true;
@@ -157,7 +158,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
      *             game.action against simulation, so if the states don't match the game.action, it will not be detected here.
      * @param existingRootToAddTo A root node to add the new tree nodes below.
      */
-    public static synchronized <N extends NodeQWOPBase<N>> void makeNodesFromRunInfo(Collection<SavableSingleGame> runs,
+    public static synchronized <N extends NodeQWOPBase<N, C>, C extends Command<?>> void makeNodesFromRunInfo(Collection<SavableSingleGame> runs,
                                                                                      N existingRootToAddTo) {
         IValueUpdater valueUpdater = new ValueUpdater_HardSet();
         for (SavableSingleGame run : runs) { // Go through all runs, placing them in the tree.
@@ -181,7 +182,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N>> extends NodeGeneri
                 }
                 // If this action is unique at this point in the tree, we need to add a new node there.
                 if (!foundExistingMatch) {
-                    currentNode = currentNode.addDoublyLinkedChild(run.actions[i], run.states[i]);
+                    currentNode = (N) currentNode.addDoublyLinkedChild(run.actions[i], run.states[i]);
                     currentNode.updateValue(0, valueUpdater); // It needs to be updated in some way. For now, just set all
                     // to zero. If update count remains at 0, bad things happen.
                 }

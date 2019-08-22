@@ -12,16 +12,16 @@ import java.util.List;
 public class PolicyQQWOP {
 
     private final GameUnified game = new GameUnified();
-    PolicyQNetwork net;
-    List<Action> allowedActions;
-    private ActionQueue actionQueue = new ActionQueue();
+    private PolicyQNetwork net;
+    private List<Action<CommandQWOP>> allowedActions;
+    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
 
     PolicyQQWOP(PolicyQNetwork net) {
         this.net = net;
         allowedActions = new ArrayList<>();
-        allowedActions.add(new Action(1, CommandQWOP.Keys.qp));
-        allowedActions.add(new Action(1, CommandQWOP.Keys.wo));
-        allowedActions.add(new Action(1, CommandQWOP.Keys.none));
+        allowedActions.add(new Action<>(1, CommandQWOP.QP));
+        allowedActions.add(new Action<>(1, CommandQWOP.WO));
+        allowedActions.add(new Action<>(1, CommandQWOP.NONE));
     }
 
     // Returns the first ts in a game. Is a forward-linked list.

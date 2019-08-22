@@ -1,6 +1,7 @@
 package value.updaters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
 import org.jcodec.common.Preconditions;
 import tree.node.NodeQWOPBase;
 
@@ -16,7 +17,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class ValueUpdater_TopNChildren implements IValueUpdater {
+public class ValueUpdater_TopNChildren<C extends Command<?>> implements IValueUpdater<C> {
 
     /**
      * Number of children to average when updating the value estimate for a node.
@@ -30,11 +31,11 @@ public class ValueUpdater_TopNChildren implements IValueUpdater {
     }
 
     @Override
-    public float update(float valueUpdate, NodeQWOPBase<?> node) {
+    public float update(float valueUpdate, NodeQWOPBase<?, C> node) {
         if (node.getChildCount() == 0) {
             return valueUpdate;
         } else {
-            List<NodeQWOPBase<?>> children = new ArrayList<>();
+            List<NodeQWOPBase<?, C>> children = new ArrayList<>();
             node.applyToThis(n -> children.addAll(n.getChildren())); // Trick to get around type erasure.
             children.sort(Comparator.comparing(NodeQWOPBase::getValue));
             Collections.reverse(children);
@@ -51,7 +52,7 @@ public class ValueUpdater_TopNChildren implements IValueUpdater {
     }
 
     @Override
-    public IValueUpdater getCopy() {
-        return new ValueUpdater_TopNChildren(numChildrenToAvg);
+    public IValueUpdater<C> getCopy() {
+        return new ValueUpdater_TopNChildren<>(numChildrenToAvg);
     }
 }

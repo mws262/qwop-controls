@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.Objects;
  * @see java.util.Queue
  * @see ActionList
  */
-public class Action<C extends Command<?>> implements Comparable<Action>, Serializable {
+public class Action<C extends Command<?>> implements Comparable<Action<C>>, Serializable {
 
     private static final long serialVersionUID = 2L;
 
@@ -167,9 +168,9 @@ public class Action<C extends Command<?>> implements Comparable<Action>, Seriali
      * First sort by keys pressed, then by timestep durations.
      */
     @Override
-    public int compareTo(Action o) {
+    public int compareTo(@NotNull Action<C> o) {
         Objects.requireNonNull(o);
-        int commandCompare = command.compareTo(o.command);
+        int commandCompare = getCommand().getThis().compareTo(o.getCommand().getThis());
         if (commandCompare != 0) {
             return commandCompare;
         } else {
@@ -194,8 +195,8 @@ public class Action<C extends Command<?>> implements Comparable<Action>, Seriali
      * @return A poll-able copy of this Action with all timesteps of the duration remaining.
      */
     @JsonIgnore
-    public synchronized Action getCopy() {
-        Action copiedAction = new Action(timestepsTotal, command);
+    public synchronized Action<C> getCopy() {
+        Action<C> copiedAction = new Action<>(timestepsTotal, command);
         copiedAction.isExecutableCopy = true;
         return copiedAction;
     }
@@ -222,8 +223,8 @@ public class Action<C extends Command<?>> implements Comparable<Action>, Seriali
      * @throws IllegalArgumentException When trying to consolidate a list of game.action containing nothing but 0-length
      *                                  game.action.
      */
-    public static List<Action> consolidateActions(List<Action> inActions) {
-        List<Action> outActions = new ArrayList<>();
+    public static <C extends Command<?>> List<Action<C>> consolidateActions(List<Action<C>> inActions) {
+        List<Action<C>> outActions = new ArrayList<>();
 
         // Single element input.
         if (inActions.size() == 1) {
@@ -238,15 +239,15 @@ public class Action<C extends Command<?>> implements Comparable<Action>, Seriali
         int consolidations = 0;
         // Combine adjacent same button game.action.
         for (int i = 0; i < inActions.size() - 1; ) {
-            Action a1 = inActions.get(i);
-            Action a2 = inActions.get(i + 1);
+            Action<C> a1 = inActions.get(i);
+            Action<C> a2 = inActions.get(i + 1);
 
             if (a1.getTimestepsTotal() == 0) {
                 // Eliminate 0-duration game.action.
                 i++;
                 if (inActions.size() - 1 == i && a2.getTimestepsTotal() != 0) outActions.add(a2);
             } else if (a1.peek().equals(a2.peek())) {
-                outActions.add(new Action(a1.getTimestepsTotal() + a2.getTimestepsTotal(), a1.peek()));
+                outActions.add(new Action<>(a1.getTimestepsTotal() + a2.getTimestepsTotal(), a1.peek()));
                 consolidations++;
                 i += 2;
             } else {

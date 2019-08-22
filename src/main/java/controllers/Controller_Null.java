@@ -2,6 +2,7 @@ package controllers;
 
 import game.IGameSerializable;
 import game.action.Action;
+import game.action.Command;
 import game.action.CommandQWOP;
 import tree.node.NodeQWOPExplorableBase;
 
@@ -10,21 +11,21 @@ import tree.node.NodeQWOPExplorableBase;
  *
  * @author matt
  */
-public class Controller_Null implements IController {
+public class Controller_Null<C extends Command<?>> implements IController<C> {
 
     @Override
-    public Action policy(NodeQWOPExplorableBase<?> state) {
-        return new Action(1, CommandQWOP.NONE);
-    }
+    public Action<C> policy(NodeQWOPExplorableBase<?, C> state) {
+        return null;
+    } // TODO fix.
 
     @Override
-    public Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game) {
+    public Action<C> policy(NodeQWOPExplorableBase<?, C> state, IGameSerializable<C> game) {
         return policy(state);
     }
 
     @Override
-    public IController getCopy() {
-        return new Controller_Null();
+    public IController<C> getCopy() {
+        return new Controller_Null<>();
     }
 
     @Override

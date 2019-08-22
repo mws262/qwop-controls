@@ -103,8 +103,8 @@ public class WeightScoreFunction implements MultivariateFunction {
         }
 
         // Evaluate it.
-        ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addAction(new Action(7, CommandQWOP.Keys.none));
+        ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
+        actionQueue.addAction(new Action<>(7, CommandQWOP.NONE));
         game.makeNewWorld();
 
         int maxTs = 3000;

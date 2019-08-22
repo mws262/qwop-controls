@@ -3,6 +3,7 @@ package savers;
 import com.google.protobuf.ByteString;
 import data.TFRecordWriter;
 import game.action.Action;
+import game.action.CommandQWOP;
 import game.state.IState;
 import game.state.State;
 import game.state.StateVariable;
@@ -17,20 +18,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class DataSaver_DenseTFRecord extends DataSaver_Dense {
+public class DataSaver_DenseTFRecord extends DataSaver_Dense<CommandQWOP> {
 
-    static int id_max = 0;
-    int id;
+    private static int id_max = 0;
+    private int id;
     /**
      * Filename prefix. Goes in front of date.
      */
-    @SuppressWarnings("WeakerAccess")
     public final String filePrefix = "denseTF";
 
     /**
      * File extension. Do not include dot before.
      */
-    @SuppressWarnings("WeakerAccess")
     public final String fileExtension = "TFRecord";
 
     /**
@@ -60,7 +59,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      * @param endNode Not required. Null may be given.
      */
     @Override
-    public void reportGameEnding(NodeQWOPBase<?> endNode) {
+    public void reportGameEnding(NodeQWOPBase<?, CommandQWOP> endNode) {
         saveCounter++;
         gameData.add(new GameContainer(actionBuffer, stateBuffer));
 
@@ -97,9 +96,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     /**
      * Make a single feature representing the 6 state variables for a single body part at a single timestep. Append
      * to existing FeatureList for that body part.
-     * @param state
      * @param bodyPart Body part that the data is being given for. Comes from {@link State.ObjectName}.
-     * @param listToAppendTo
      */
     private static void makeFeature(IState state, State.ObjectName bodyPart, FeatureList.Builder listToAppendTo) {
         Feature.Builder feat = Feature.newBuilder();
@@ -166,7 +163,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
             // 1) a Keys pressed at individual timestep. 0 or 1 in bytes for each key
             FeatureList.Builder keyFeatList = FeatureList.newBuilder();
-            for (Action act : dat.actions) {
+            for (Action<CommandQWOP> act : dat.actions) {
                 Feature.Builder keyFeat = Feature.newBuilder();
                 BytesList.Builder keyDat = BytesList.newBuilder();
                 byte[] keys = new byte[]{
@@ -190,7 +187,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
             // 1) b Key combinations categorized, one-hot.
             FeatureList.Builder keyCatFeatList = FeatureList.newBuilder();
-            for (Action act : dat.actions) {
+            for (Action<CommandQWOP> act : dat.actions) {
                 Feature.Builder keyCatFeat = Feature.newBuilder();
                 BytesList.Builder keyCatDat = BytesList.newBuilder();
                 byte[] keysCat = new byte[]{
@@ -241,8 +238,8 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
             // 3) Just the action sequence (shorter than number of timesteps) -- bytestrings e.g. [15, 1, 0, 0, 1]
             FeatureList.Builder actionList = FeatureList.newBuilder();
-            Action prevAct = null;
-            for (Action act : dat.actions) {
+            Action<CommandQWOP> prevAct = null;
+            for (Action<CommandQWOP> act : dat.actions) {
                 if (!act.equals(prevAct)) {
                     prevAct = act;
                     Feature.Builder sequenceFeat = Feature.newBuilder();
@@ -285,10 +282,10 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      */
     private static class GameContainer {
 
-        ArrayList<Action> actions = new ArrayList<>();
+        ArrayList<Action<CommandQWOP>> actions = new ArrayList<>();
         ArrayList<IState> states = new ArrayList<>();
 
-        private GameContainer(ArrayList<Action> actions, ArrayList<IState> states) {
+        private GameContainer(ArrayList<Action<CommandQWOP>> actions, ArrayList<IState> states) {
             this.actions.addAll(actions);
             this.states.addAll(states);
         }

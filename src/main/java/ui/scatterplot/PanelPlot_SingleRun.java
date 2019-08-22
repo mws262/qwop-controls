@@ -50,7 +50,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     /**
      * Stores the qwop game.action we're going to execute.
      */
-    private ActionQueue actionQueue = new ActionQueue();
+    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
 
     /**
      * List of all the states that we got from simulating. Not just at nodes.
@@ -105,7 +105,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
         actionQueue.clearAll();
         game.makeNewWorld();
 
-        ArrayList<Action> actionList = new ArrayList<>();
+        ArrayList<Action<CommandQWOP>> actionList = new ArrayList<>();
         node.getSequence(actionList);
         actionQueue.addSequence(actionList);
         for (Action a : actionList) {

@@ -21,20 +21,20 @@ import java.util.stream.IntStream;
  *
  * @author matt
  */
-public abstract class RolloutPolicyBase implements IRolloutPolicy {
+public abstract class RolloutPolicyBase<C extends Command<?>> implements IRolloutPolicy<C> {
 
-    public final IEvaluationFunction evaluationFunction;
+    public final IEvaluationFunction<C> evaluationFunction;
 
-    public IActionGenerator rolloutActionGenerator = getRolloutActionGenerator();
+    public IActionGenerator<C> rolloutActionGenerator = getRolloutActionGenerator();
 
-    private ActionQueue actionQueue = new ActionQueue();
+    private ActionQueue<C> actionQueue = new ActionQueue<>();
 
-    private final List<Action> actionSequence = new ArrayList<>(); // Reused local list.
+    private final List<Action<C>> actionSequence = new ArrayList<>(); // Reused local list.
 
     public final int maxTimesteps;
 
     RolloutPolicyBase(
-            @JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
+            @JsonProperty("evaluationFunction") IEvaluationFunction<C> evaluationFunction,
             @JsonProperty("maxTimesteps") int maxTimesteps) {
         this.evaluationFunction = evaluationFunction;
         this.maxTimesteps = maxTimesteps;
@@ -45,7 +45,7 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
      * @param targetNode Node we want to simulate to.
      * @param game Game used for simulation. Will be reset before simulating.
      */
-    void simGameToNode(NodeQWOPBase<?> targetNode, IGameInternal game) {
+    void simGameToNode(NodeQWOPBase<?, C> targetNode, IGameInternal<C> game) {
         // Reset the game and action queue.
         game.makeNewWorld();
         actionQueue.clearAll();
@@ -63,7 +63,7 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
      * @param target Node to set the game's state to.
      * @param game Game used for simulation. Will be reset before setting the state.
      */
-    void coldStartGameToNode(NodeQWOPBase<?> target, IGameInternal game) {
+    void coldStartGameToNode(NodeQWOPBase<?, C> target, IGameInternal game) {
         // Reset the game.
         game.makeNewWorld();
         actionQueue.clearAll();
@@ -77,14 +77,14 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
      * @return The reward associated with how good this rollout was.
      */
     @Override
-    public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
+    public float rollout(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
         if (maxTimesteps < 1) {
             throw new IllegalArgumentException("Maximum timesteps for rollout must be at least one. Was: " + maxTimesteps);
         }
         assert startNode.getState().equals(game.getCurrentState());
 
         // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts.
-        NodeQWOPExplorableBase<?> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
+        NodeQWOPExplorableBase<?, C> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
                 startNode.getState(), getRolloutActionGenerator());
 
         float totalScore = startScore(startNode);
@@ -92,14 +92,14 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
         int timestepCounter = 0;
         // Falling, too many timesteps, reaching the finish line.
         while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps && rolloutNode.getState().getCenterX() < GameConstants.goalDistance) {
-            Action childAction = getRolloutController().policy(rolloutNode);
+            Action<C> childAction = getRolloutController().policy(rolloutNode);
 
             actionQueue.addAction(childAction);
 
-            NodeQWOPBase<?> intermediateNodeBefore = rolloutNode;
+            NodeQWOPBase<?, C> intermediateNodeBefore = rolloutNode;
             while (!actionQueue.isEmpty() && !game.getFailureStatus() && timestepCounter < maxTimesteps) {
                 game.step(actionQueue.pollCommand());
-                NodeQWOPBase<?> intermediateNodeAfter = intermediateNodeBefore.addBackwardsLinkedChild(childAction,
+                NodeQWOPBase<?, C> intermediateNodeAfter = intermediateNodeBefore.addBackwardsLinkedChild(childAction,
                         game.getCurrentState());
                 totalScore += accumulateScore(timestepCounter, intermediateNodeBefore, intermediateNodeAfter);
                 intermediateNodeBefore = intermediateNodeAfter;
@@ -118,7 +118,7 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
      * @param startNode Node at the beginning of the rollout.
      * @return Component of the score that comes from the starting node.
      */
-    abstract float startScore(NodeQWOPExplorableBase<?> startNode);
+    abstract float startScore(NodeQWOPExplorableBase<?, C> startNode);
 
     /**
      * An "integrated" part of the score. This gets called every timestep of the rollout, and the particular rollout
@@ -129,8 +129,8 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
      * @param after Node representing the runner at this timestep.
      * @return A score component having to do with a single timestep.
      */
-    abstract float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?> before,
-                                   NodeQWOPBase<?> after);
+    abstract float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?, C> before,
+                                   NodeQWOPBase<?, C> after);
 
     /**
      * Component of the score that comes from the final node in the rollout. For all rollouts that inherit from
@@ -139,7 +139,7 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
      * @param endNode Terminal node in this rollout execution.
      * @return A component of the score having to do with the final node in the rollout.
      */
-    abstract float endScore(NodeQWOPExplorableBase<?> endNode);
+    abstract float endScore(NodeQWOPExplorableBase<?, C> endNode);
 
     /**
      * Handles any final adjustments to score that you'd like to do.
@@ -151,40 +151,45 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
      * @param rolloutDurationTimesteps Number of timesteps simulated DURING the rollout.
      * @return Final adjusted score. If you are satisfied with the accumulated value so far, then just return it.
      */
-    abstract float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
-                                       NodeQWOPExplorableBase<?> endNode, int rolloutDurationTimesteps);
+    abstract float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?, C> startNode,
+                                       NodeQWOPExplorableBase<?, C> endNode, int rolloutDurationTimesteps);
 
-    public abstract IController getRolloutController();
+    public abstract IController<C> getRolloutController();
 
     @Override
-    public abstract RolloutPolicyBase getCopy();
+    public abstract RolloutPolicyBase<C> getCopy();
 
-    public static IActionGenerator getRolloutActionGenerator() {
+    public static IActionGenerator<CommandQWOP> getRolloutActionGenerator() {
         /* Space of allowed game.action to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
         /* Repeated action 1 -- no keys pressed. */
-        Distribution<Action> dist1 = new Distribution_Normal(12, 5f);
-        ActionList actionList1 = ActionList.makeActionList(IntStream.range(2, 20).toArray(), CommandQWOP.NONE, dist1);
+        Distribution<Action<CommandQWOP>> dist1 = new Distribution_Normal<>(12, 5f);
+        ActionList<CommandQWOP> actionList1 = ActionList.makeActionList(IntStream.range(2, 20).toArray(),
+                CommandQWOP.NONE, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
-        Distribution<Action> dist2 = new Distribution_Normal(20, 5f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), CommandQWOP.WO, dist2);
+        Distribution<Action<CommandQWOP>> dist2 = new Distribution_Normal<>(20, 5f);
+        ActionList<CommandQWOP> actionList2 = ActionList.makeActionList(IntStream.range(15, 30).toArray(),
+                CommandQWOP.WO, dist2);
 
         /* Repeated action 3 -- W-O pressed */
-        Distribution<Action> dist3 = new Distribution_Normal(12f, 5f);
-        ActionList actionList3 = ActionList.makeActionList(IntStream.range(2, 20).toArray(), CommandQWOP.NONE, dist3);
+        Distribution<Action<CommandQWOP>> dist3 = new Distribution_Normal<>(12f, 5f);
+        ActionList<CommandQWOP> actionList3 = ActionList.makeActionList(IntStream.range(2, 20).toArray(),
+                CommandQWOP.NONE, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
-        Distribution<Action> dist4 = new Distribution_Normal(20, 5f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), CommandQWOP.QP, dist4);
+        Distribution<Action<CommandQWOP>> dist4 = new Distribution_Normal<>(20, 5f);
+        ActionList<CommandQWOP> actionList4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), CommandQWOP.QP,
+                dist4);
 
-        ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
+        ActionList<CommandQWOP>[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3,
+                actionList4};
 
-        return new ActionGenerator_FixedSequence(repeatedActions);
+        return new ActionGenerator_FixedSequence<>(repeatedActions);
     }
 
-    public IEvaluationFunction getEvaluationFunction() {
+    public IEvaluationFunction<C> getEvaluationFunction() {
         return evaluationFunction;
     }
 }

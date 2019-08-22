@@ -11,5 +11,5 @@ import java.io.Serializable;
  */
 public interface IGameSerializable<C extends Command<?>> extends IGameInternal<C>, Serializable {
     byte[] getSerializedState();
-    IGameInternal restoreSerializedState(byte[] fullState);
+    IGameInternal<C> restoreSerializedState(byte[] fullState);
 }

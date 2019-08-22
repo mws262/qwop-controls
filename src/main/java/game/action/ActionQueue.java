@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @see Action
  * @see ActionList
  */
-public class ActionQueue<C extends Command<C>> {
+public class ActionQueue<C extends Command<?>> {
 
     /**
      * Actions are the delays between keypresses.
@@ -55,7 +55,7 @@ public class ActionQueue<C extends Command<C>> {
      *
      * @return Action which is currently being executed (i.e. timings and keypresses).
      */
-    public Action peekThisAction() {
+    public Action<C> peekThisAction() {
         return currentAction;
     }
 
@@ -64,7 +64,7 @@ public class ActionQueue<C extends Command<C>> {
      *
      * @return Next full action that will run (i.e. timings and keys). Returns null if no future game.action remain.
      */
-    public synchronized Action peekNextAction() {
+    public synchronized Action<C> peekNextAction() {
         if (isEmpty()) throw new IndexOutOfBoundsException("No game.action have been added to this queue. " +
                 "Cannot peek.");
         return actionQueue.peek();
@@ -97,10 +97,10 @@ public class ActionQueue<C extends Command<C>> {
      * @param action Action to add to the end of the queue as a copy. Does not influence current polling of the queue
      *               elements.
      */
-    public synchronized void addAction(Action action) {
+    public synchronized void addAction(@NotNull Action<C> action) {
         if (action.getTimestepsTotal() == 0) return; // Zero-duration game.action are tolerated, but not added to the queue.
 
-        Action localCopy = action.getCopy();
+        Action<C> localCopy = action.getCopy();
         actionQueue.add(localCopy);
         actionListFull.add(localCopy);
 
@@ -118,11 +118,11 @@ public class ActionQueue<C extends Command<C>> {
      * @param actions Array of game.action to add to the end of the queue. They are copied, and adding does not influence
      *                polling of the existing queue.
      */
-    public synchronized void addSequence(Action[] actions) {
+    public synchronized void addSequence(@NotNull Action<C>[] actions) {
         if (actions.length == 0)
             throw new IllegalArgumentException("Tried to add an empty array of game.action to a queue.");
 
-        for (Action action : actions) {
+        for (Action<C> action : actions) {
             addAction(action); // Copy happens in addAction. No need to duplicate here.
         }
     }
@@ -133,11 +133,11 @@ public class ActionQueue<C extends Command<C>> {
      * @param actions List of game.action to add to the end of the queue. They are copied, and adding does not influence
      *                polling of the existing queue.
      */
-    public synchronized void addSequence(List<Action> actions) {
+    public synchronized void addSequence(@NotNull List<Action<C>> actions) {
         if (actions.size() == 0)
             throw new IllegalArgumentException("Tried to add an empty array of game.action to a queue.");
 
-        for (Action action : actions) {
+        for (Action<C> action : actions) {
             addAction(action); // Copy happens in addAction. No need to duplicate here.
         }
     }
@@ -147,7 +147,7 @@ public class ActionQueue<C extends Command<C>> {
      *
      * @return Get the next command (QWOP true/false array) on the queue.
      */
-    public synchronized CommandQWOP pollCommand() {
+    public synchronized C pollCommand() {
         if (actionQueue.isEmpty() && !currentAction.hasNext()) {
             throw new IndexOutOfBoundsException("Tried to get a command off the queue when nothing is queued up.");
         }
@@ -162,7 +162,7 @@ public class ActionQueue<C extends Command<C>> {
         }
 
         // Get next command from the current action.
-        CommandQWOP nextCommand = currentAction.poll();
+        C nextCommand = currentAction.poll();
 
         // If this empties the queue, then mark this as empty.
         if (!currentAction.hasNext() && actionQueue.isEmpty()) {
@@ -198,7 +198,7 @@ public class ActionQueue<C extends Command<C>> {
      *
      * @return All game.action in this queue, including ones which have already been executed.
      */
-    public Action[] getActionsInCurrentRun() {
+    public Action<C>[] getActionsInCurrentRun() {
         return actionListFull.toArray(new Action[0]);
     }
 
@@ -220,7 +220,7 @@ public class ActionQueue<C extends Command<C>> {
      * remove game.action, you should use {@link ActionQueue#clearAll()}.
      */
     public void resetQueue() {
-        Action[] actions = getActionsInCurrentRun();
+        Action<C>[] actions = getActionsInCurrentRun();
         clearAll();
         this.addSequence(actions);
     }
@@ -230,8 +230,8 @@ public class ActionQueue<C extends Command<C>> {
      *
      * @return An ActionQueue with all the same game.action, but no progress in them done yet.
      */
-    public ActionQueue getCopyOfUnexecutedQueue() {
-        ActionQueue actionQueueCopy = new ActionQueue();
+    public ActionQueue<C> getCopyOfUnexecutedQueue() {
+        ActionQueue<C> actionQueueCopy = new ActionQueue<>();
         actionQueueCopy.addSequence(getActionsInCurrentRun());
         return actionQueueCopy;
     }
@@ -241,8 +241,8 @@ public class ActionQueue<C extends Command<C>> {
      *
      * @return An ActionQueue which should behave identically to the original.
      */
-    public ActionQueue getCopyOfQueueAtExecutionPoint() {
-        ActionQueue actionQueueCopy = getCopyOfUnexecutedQueue();
+    public ActionQueue<C> getCopyOfQueueAtExecutionPoint() {
+        ActionQueue<C> actionQueueCopy = getCopyOfUnexecutedQueue();
         for (int i = 0; i < commandsPolled; i++) {
             actionQueueCopy.pollCommand();
         }
@@ -267,48 +267,48 @@ public class ActionQueue<C extends Command<C>> {
      * Get some sample game.action for use in tests. This is a successful short run found by tree search.
      * @return A successful queue of game.action.
      */
-    public static ActionQueue getSampleActions() {
+    public static ActionQueue<CommandQWOP> getSampleActions() {
         // Ran MAIN_Search_LongRun to get these.
-        ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addAction(new Action(27, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(12, CommandQWOP.WO));
-        actionQueue.addAction(new Action(10, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(44, CommandQWOP.QP));
+        ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
+        actionQueue.addAction(new Action<>(27, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(12, CommandQWOP.WO));
+        actionQueue.addAction(new Action<>(10, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(44, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(16, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(18, CommandQWOP.WO));
-        actionQueue.addAction(new Action(23, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(12, CommandQWOP.QP));
+        actionQueue.addAction(new Action<>(16, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(18, CommandQWOP.WO));
+        actionQueue.addAction(new Action<>(23, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(12, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(21, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(12, CommandQWOP.WO));
-        actionQueue.addAction(new Action(17, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(13, CommandQWOP.QP));
+        actionQueue.addAction(new Action<>(21, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(12, CommandQWOP.WO));
+        actionQueue.addAction(new Action<>(17, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(13, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(13, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(10, CommandQWOP.WO));
-        actionQueue.addAction(new Action(16, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(8, CommandQWOP.QP));
+        actionQueue.addAction(new Action<>(13, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(10, CommandQWOP.WO));
+        actionQueue.addAction(new Action<>(16, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(8, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(24, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(10, CommandQWOP.WO));
-        actionQueue.addAction(new Action(23, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(10, CommandQWOP.QP));
+        actionQueue.addAction(new Action<>(24, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(10, CommandQWOP.WO));
+        actionQueue.addAction(new Action<>(23, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(10, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(24, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(34, CommandQWOP.WO));
-        actionQueue.addAction(new Action(5, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(18, CommandQWOP.QP));
+        actionQueue.addAction(new Action<>(24, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(34, CommandQWOP.WO));
+        actionQueue.addAction(new Action<>(5, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(18, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(20, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(12, CommandQWOP.WO));
-        actionQueue.addAction(new Action(3, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(8, CommandQWOP.QP));
+        actionQueue.addAction(new Action<>(20, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(12, CommandQWOP.WO));
+        actionQueue.addAction(new Action<>(3, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(8, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(11, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(9, CommandQWOP.WO));
-        actionQueue.addAction(new Action(3, CommandQWOP.NONE));
-        actionQueue.addAction(new Action(9, CommandQWOP.QP));
+        actionQueue.addAction(new Action<>(11, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(9, CommandQWOP.WO));
+        actionQueue.addAction(new Action<>(3, CommandQWOP.NONE));
+        actionQueue.addAction(new Action<>(9, CommandQWOP.QP));
 
         return actionQueue;
     }

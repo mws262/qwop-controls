@@ -1,6 +1,7 @@
 package distributions;
 
 import game.action.Action;
+import game.action.Command;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class Distribution_Equal extends Distribution<Action> {
+public class Distribution_Equal <C extends Command<?>> extends Distribution<Action<C>> {
 
     /**
      * Get a random sample from the provided set of game.action.
@@ -21,7 +22,7 @@ public class Distribution_Equal extends Distribution<Action> {
      * @return An {@link Action action} sampled from the input set according to this distribution.
      */
     @Override
-    public Action randOnDistribution(List<Action> set) {
+    public Action<C> randOnDistribution(List<Action<C>> set) {
         return randSample(set);
     }
 

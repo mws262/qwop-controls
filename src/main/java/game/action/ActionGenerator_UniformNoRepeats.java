@@ -16,23 +16,23 @@ import java.util.stream.IntStream;
  *
  * @author matt
  */
-public class ActionGenerator_UniformNoRepeats implements IActionGenerator {
+public class ActionGenerator_UniformNoRepeats<C extends Command<?>> implements IActionGenerator<C> {
 
-    private final List<ActionList> allActionLists = new ArrayList<>();
+    private final List<ActionList<C>> allActionLists = new ArrayList<>();
 
-    public ActionGenerator_UniformNoRepeats(ActionList[] actions) {
+    public ActionGenerator_UniformNoRepeats(ActionList<C>[] actions) {
         allActionLists.addAll(Arrays.asList(actions));
     }
 
     @JsonCreator
-    public ActionGenerator_UniformNoRepeats(@JsonProperty("allActionLists") Collection<ActionList> actions) {
+    public ActionGenerator_UniformNoRepeats(@JsonProperty("allActionLists") Collection<ActionList<C>> actions) {
         allActionLists.addAll(actions);
     }
 
     @Override
-    public ActionList getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode) {
-        ActionList as = new ActionList(new Distribution_Equal());
-        for (ActionList allActionList : allActionLists) {
+    public ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode) {
+        ActionList<C> as = new ActionList<>(new Distribution_Equal<>());
+        for (ActionList<C> allActionList : allActionLists) {
             if (parentNode.getTreeDepth() == 0 || !allActionList.contains(parentNode.getAction())) { // Get all
                 // except the set that the parent had.
                 as.addAll(allActionList);
@@ -43,15 +43,16 @@ public class ActionGenerator_UniformNoRepeats implements IActionGenerator {
 
     @Override
     @JsonIgnore
-    public Set<Action> getAllPossibleActions() {
-        Set<Action> allActions = new HashSet<>();
-        for (ActionList as : allActionLists) {
+    public Set<Action<C>> getAllPossibleActions() {
+        Set<Action<C>> allActions = new HashSet<>();
+        for (ActionList<C> as : allActionLists) {
             allActions.addAll(as);
         }
         return allActions;
     }
 
-    public List<ActionList> getAllActionLists() {
+    @SuppressWarnings("unused")
+    public List<ActionList<C>> getAllActionLists() {
         return allActionLists;
     }
 
@@ -68,19 +69,9 @@ public class ActionGenerator_UniformNoRepeats implements IActionGenerator {
         return Objects.hash(allActionLists);
     }
 
-    public static ActionGenerator_UniformNoRepeats makeDefaultGenerator() {
-        // All durations.
-        boolean[][] keyRange = new boolean[][]{{false, false, false, false}, // All 9 combinations.
-                {true, false, false, false},
-                {true, false, true, false},
-                {true, false, false, true},
-                {false, true, false, false},
-                {false, true, true, false},
-                {false, true, false, true},
-                {false, false, true, false},
-                {false, false, false, true}};
-        Distribution<Action> distribution = new Distribution_Equal();
-        List<ActionList> allActionLists = new ArrayList<>();
+    public static ActionGenerator_UniformNoRepeats<CommandQWOP> makeDefaultGenerator() {
+        Distribution<Action<CommandQWOP>> distribution = new Distribution_Equal<>();
+        List<ActionList<CommandQWOP>> allActionLists = new ArrayList<>();
         allActionLists.add(ActionList.makeActionList(IntStream.range(2, 15).toArray(), CommandQWOP.NONE, distribution));
         //ffff*
         allActionLists.add(ActionList.makeActionList(IntStream.range(2, 10).toArray(), CommandQWOP.Q, distribution));
@@ -102,6 +93,6 @@ public class ActionGenerator_UniformNoRepeats implements IActionGenerator {
         allActionLists.add(ActionList.makeActionList(IntStream.range(2, 10).toArray(), CommandQWOP.P, distribution));
         //ffft
 
-        return new ActionGenerator_UniformNoRepeats(allActionLists);
+        return new ActionGenerator_UniformNoRepeats<>(allActionLists);
     }
 }

@@ -5,6 +5,7 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.IGameInternal;
 import game.action.Action;
+import game.action.Command;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +21,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class DataSaver_StageSelected implements IDataSaver {
+public class DataSaver_StageSelected<C extends Command<?>> implements IDataSaver<C> {
 
     /**
      * File prefix. Goes in front of date.
@@ -40,12 +41,12 @@ public class DataSaver_StageSelected implements IDataSaver {
     /**
      * Handles class serialization and writing to file.
      */
-    private SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
+    private SavableFileIO<SavableSingleGame<C>> fileIO = new SavableFileIO<>();
 
     /**
      * Buffered games awaiting file write.
      */
-    private ArrayList<SavableSingleGame> saveBuffer = new ArrayList<>();
+    private ArrayList<SavableSingleGame<C>> saveBuffer = new ArrayList<>();
 
     /**
      * File save location.
@@ -58,22 +59,22 @@ public class DataSaver_StageSelected implements IDataSaver {
     public void reportGameInitialization(IState initialState) {}
 
     @Override
-    public void reportTimestep(Action action, IGameInternal game) {}
+    public void reportTimestep(Action<C> action, IGameInternal<C> game) {}
 
     @Override
-    public void reportGameEnding(NodeQWOPBase<?> endNode) {}
+    public void reportGameEnding(NodeQWOPBase<?, C> endNode) {}
 
     @Override
-    public void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
-        for (NodeQWOPBase<?> tar : targetNodes) {
-            saveBuffer.add(new SavableSingleGame(tar));
+    public void reportStageEnding(NodeQWOPBase<?, C> rootNode, List<NodeQWOPBase<?, C>> targetNodes) {
+        for (NodeQWOPBase<?, C> tar : targetNodes) {
+            saveBuffer.add(new SavableSingleGame<>(tar));
         }
 
         String successStatus = "";
         if (targetNodes.isEmpty()) { // If we couldn't possible achieve the objective, just save the root node run
         	// and flag as unsuccessful in the filename.
             successStatus = "_unsuccessful";
-            saveBuffer.add(new SavableSingleGame(rootNode));
+            saveBuffer.add(new SavableSingleGame<>(rootNode));
         }
 
         if (overrideFilename == null || overrideFilename.isEmpty()) {
@@ -113,8 +114,8 @@ public class DataSaver_StageSelected implements IDataSaver {
     }
 
     @Override
-    public IDataSaver getCopy() {
-        DataSaver_StageSelected newSaver = new DataSaver_StageSelected();
+    public IDataSaver<C> getCopy() {
+        DataSaver_StageSelected<C> newSaver = new DataSaver_StageSelected<>();
         newSaver.setSavePath(fileLocation);
         return newSaver;
     }

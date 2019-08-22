@@ -13,8 +13,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.List;
 
 /**
  * Pane for displaying the entire tree in OpenGL. Not part of the tabbed system.
@@ -39,12 +39,12 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     /**
      * Tree root nodes associated with this interface.
      */
-    private ArrayList<NodeQWOPGraphicsBase<?>> rootNodes = new ArrayList<>();
+    private ArrayList<NodeQWOPGraphicsBase<?, ?>> rootNodes = new ArrayList<>();
 
     /**
      * Currently selected {@link NodeQWOPGraphicsBase} on the tree.
      */
-    private NodeQWOPGraphicsBase<?> selectedNode;
+    private NodeQWOPGraphicsBase<?, ?> selectedNode;
 
     /**
      * Games played per second
@@ -187,7 +187,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      *
      * @param node Selected node that will be broadcast to listeners.
      */
-    private void selectNode(NodeQWOPGraphicsBase<?> node) {
+    private void selectNode(NodeQWOPGraphicsBase<?, ?> node) {
         selectedNode = node;
         for (NodeSelectionListener listener : nodeSelectionListeners) {
             listener.nodeSelected(node);
@@ -200,7 +200,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      * @param node A root node whose tree we want to draw. Does not literally need to be a zero-depth tree root, just
      *             some node with children we want to draw.
      */
-    public void addRootNode(NodeQWOPGraphicsBase<?> node) {
+    public void addRootNode(NodeQWOPGraphicsBase<?, ?> node) {
         rootNodes.add(node);
     }
 
@@ -243,7 +243,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         NodeQWOPGraphicsBase.drawAllUnbuffered(gl);
 
         if (labelToggleCheck.isSelected()) {
-            for (NodeQWOPGraphicsBase<?> node : rootNodes) {
+            for (NodeQWOPGraphicsBase<?, ?> node : rootNodes) {
                 node.recurseDownTreeInclusive(n -> n.drawLabel(gl, glut));
             }
         }
@@ -316,8 +316,8 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         if (!treePause && e.isControlDown()) {
 
             // Get all nodes below all roots.
-            List<NodeQWOPGraphicsBase<?>> nodesBelow = new ArrayList<>();
-            for (NodeQWOPGraphicsBase<?> node : rootNodes) {
+            List<NodeQWOPGraphicsBase<?, ?>> nodesBelow = new ArrayList<>();
+            for (NodeQWOPGraphicsBase<?, ?> node : rootNodes) {
                 node.recurseDownTreeInclusive(nodesBelow::add);
             }
             selectNode(cam.nodeFromClick_set(e.getX(), e.getY(), nodesBelow));
@@ -454,14 +454,15 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                 //This set of logicals eliminates the edge cases, then takes the proposed action as default
                 if (thisIndex == 0 && direction == -1) { //We're at the lowest index of this node and must head
                     // to a new parent node.
-                    ArrayList<NodeQWOPGraphicsBase<?>> blacklist = new ArrayList<>(); //Keep a blacklist of nodes that already
+                    ArrayList<NodeQWOPGraphicsBase<?, ?>> blacklist = new ArrayList<>(); //Keep a blacklist of nodes
+                    // that already
                     // proved to be duds.
                     blacklist.add(selectedNode);
                     nextOver(selectedNode.getParent(), blacklist, 1, direction,
                             selectedNode.getIndexAccordingToParent(), 0);
                 } else if (thisIndex == selectedNode.getSiblingCount() && direction == 1) { //We're at
                     // the highest index of this node and must head to a new parent node.
-                    ArrayList<NodeQWOPGraphicsBase<?>> blacklist = new ArrayList<>();
+                    ArrayList<NodeQWOPGraphicsBase<?, ?>> blacklist = new ArrayList<>();
                     blacklist.add(selectedNode);
                     nextOver(selectedNode.getParent(), blacklist, 1, direction,
                             selectedNode.getIndexAccordingToParent(), 0);
@@ -486,7 +487,8 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      * Take a node back a layer. Don't return to node past. Try to go back out by the deficit depth amount in the
      * +1 or -1 direction left/right -- TODO this is an old mess.
      */
-    private boolean nextOver(NodeQWOPGraphicsBase<?> current, ArrayList<NodeQWOPGraphicsBase<?>> blacklist, int deficitDepth, int direction,
+    private boolean nextOver(NodeQWOPGraphicsBase<?, ?> current, ArrayList<NodeQWOPGraphicsBase<?, ?>> blacklist,
+                             int deficitDepth, int direction,
                              int prevIndexAbove, int numTimesTried) { // numTimesTried added to prevent some really
         // deep node for causing some really huge search through the whole tree. If we don't succeed in a handful
         // of iterations, just fail quietly.

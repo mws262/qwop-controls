@@ -41,7 +41,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
-    private ActionQueue actionQueue = new ActionQueue();
+    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue();
     private ValueFunction_TensorFlow valueFunction;
 
     // Drawing parameters.
@@ -112,9 +112,9 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState());
 
         // Assign a "prefix" of game.action, since I'm not sure if the controller will generalize to this part of running.
-        List<Action[]> alist = new ArrayList<>();
+        List<Action<CommandQWOP>[]> alist = new ArrayList<>();
         alist.add(new Action[]{
-                new Action(7, CommandQWOP.Keys.none),
+                new Action<>(7, CommandQWOP.NONE),
 //                new Action(34, Action.Keys.wo),
 //                new Action(19, Action.Keys.none),
 //                new Action(20, Action.Keys.qp),
@@ -130,7 +130,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         List<NodeQWOPExplorable> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
 
-        List<Action> actionList = new ArrayList<>();
+        List<Action<CommandQWOP>> actionList = new ArrayList<>();
 
         NodeQWOPExplorable currNode = leaf.get(0);
         currNode.getSequence(actionList);
@@ -163,7 +163,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
             // falls off the
             // edge of the world.
             // Does not end on falling, as we might want to see its behavior.
-            Action chosenAction;
+            Action<CommandQWOP> chosenAction;
             if (doFullGameSerialization) {
                 chosenAction = valueFunction.getMaximizingAction(currentNode, game);
             } else {

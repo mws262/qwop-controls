@@ -5,6 +5,7 @@ import game.action.ActionQueue;
 import game.action.CommandQWOP;
 import game.state.IState;
 import game.state.State;
+import org.jetbrains.annotations.NotNull;
 import tflowtools.TensorflowLoader;
 import org.tensorflow.Tensor;
 import ui.runner.PanelRunner_SimpleState;
@@ -16,13 +17,13 @@ import java.util.List;
 
 public class GamePredictor extends TensorflowLoader {
 
-    private String stateInputName = "input/qwop_state_input";
-    private String actionInputName = "input/qwop_action_input";
+    private final String stateInputName = "input/qwop_state_input";
+    private final String actionInputName = "input/qwop_action_input";
 
-    private String internalStateInput = "rnn/full_internal_state_input";
+    private final String internalStateInput = "rnn/full_internal_state_input";
 
-    private String hiddenStateOutputName = "output/internal_state_output";
-    private String stateOutputName = "output/state_output";
+    private final String hiddenStateOutputName = "output/internal_state_output";
+    private final String stateOutputName = "output/state_output";
 
     /**
      * Load the computational graph from a .pb file and also make a new session.
@@ -30,11 +31,11 @@ public class GamePredictor extends TensorflowLoader {
      * @param pbFile    Name of the graph save file (usually *.pb), including the file extension.
      * @param directory Directory name containing the graph save file.
      */
-    public GamePredictor(String pbFile, String directory) {
+    public GamePredictor(@NotNull String pbFile, @NotNull String directory) {
         super(pbFile, directory);
     }
 
-    public List<IState> predictSimulation(IState initialState, ActionQueue actions) {
+    public List<IState> predictSimulation(IState initialState, ActionQueue<CommandQWOP> actions) {
 
         List<IState> resultStates = new ArrayList<>();
 
@@ -118,9 +119,9 @@ public class GamePredictor extends TensorflowLoader {
         Runtime.getRuntime().addShutdownHook(new Thread(gp::close));
 
         IState initState = GameUnified.getInitialState();
-        Action singleAction = new Action(1000, CommandQWOP.WO);
+        Action<CommandQWOP> singleAction = new Action<>(1000, CommandQWOP.WO);
 
-        ActionQueue actionQueue = new ActionQueue();
+        ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
         actionQueue.addAction(singleAction);
 //        ActionQueue actionQueue = CompareWarmStartToColdBase.getSampleActions();
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.IGameInternal;
 import game.action.Action;
+import game.action.Command;
 import game.state.IState;
 import tree.node.NodeQWOPBase;
 
@@ -23,7 +24,7 @@ import java.util.List;
         @JsonSubTypes.Type(value = DataSaver_StageSelected.class, name = "stage_selected")
 
 })
-public interface IDataSaver {
+public interface IDataSaver<C extends Command<?>> {
 
     /**
      * Report initial state.
@@ -37,18 +38,18 @@ public interface IDataSaver {
      * @param action Current action being run.
      * @param game Instance of the game used for simulation.
      */
-    void reportTimestep(Action action, IGameInternal game);
+    void reportTimestep(Action<C> action, IGameInternal<C> game);
 
     /**
      * Get the final game state for this run.
      */
-    void reportGameEnding(NodeQWOPBase<?> endNode);
+    void reportGameEnding(NodeQWOPBase<?, C> endNode);
 
     /**
      * Called when the end of a TreeStage is reached. TargetNodes meaning is different depending on the saver
      * implementation.
      */
-    void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes);
+    void reportStageEnding(NodeQWOPBase<?, C> rootNode, List<NodeQWOPBase<?, C>> targetNodes);
 
     /**
      * Store and dump any buffered data, often when a stage has ended but nothing specific needs to be reported.
@@ -73,7 +74,7 @@ public interface IDataSaver {
      * Get a fresh copy of this saver with the same settings.
      */
     @JsonIgnore
-    IDataSaver getCopy();
+    IDataSaver<C> getCopy();
 
     /**
      * Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]

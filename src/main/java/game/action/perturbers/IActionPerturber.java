@@ -1,6 +1,7 @@
 package game.action.perturbers;
 
 import game.action.ActionQueue;
+import game.action.Command;
 
 /**
  * Interface for adding perturbations to {@ActionQueue}. This mutation must happen before executing the queue. Future
@@ -9,7 +10,7 @@ import game.action.ActionQueue;
  *
  * @author matt
  */
-public interface IActionPerturber {
+public interface IActionPerturber<C extends Command<?>> {
 
     /**
      * Given an unperturbed {@link ActionQueue}, return a copy of this queue with mutations as defined by the
@@ -18,5 +19,5 @@ public interface IActionPerturber {
      * @param unperturbedQueue The queue to perturb. The original is unaltered, and a new altered version is returned.
      * @return
      */
-    ActionQueue perturb(ActionQueue unperturbedQueue);
+    ActionQueue<C> perturb(ActionQueue<C> unperturbedQueue);
 }

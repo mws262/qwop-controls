@@ -2,6 +2,7 @@ package game.action.perturbers;
 
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.Command;
 
 import java.util.Map;
 
@@ -9,7 +10,7 @@ import java.util.Map;
  * Perturbs {@link ActionQueue} by making some or all of the transitions between game.action happen too early. Total
  * number of timesteps should be preserved.
  */
-public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
+public class ActionPerturber_SwitchTooSoon<C extends Command<?>> implements IActionPerturber<C> {
 
     /**
      * Action indices as keys and number of timesteps to move as values. Timesteps are moved from the previous action
@@ -42,8 +43,8 @@ public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
     }
 
     @Override
-    public ActionQueue perturb(ActionQueue unperturbedQueue) {
-        Action[] allActions = unperturbedQueue.getActionsInCurrentRun();
+    public ActionQueue<C> perturb(ActionQueue<C> unperturbedQueue) {
+        Action<C>[] allActions = unperturbedQueue.getActionsInCurrentRun();
 
         for (Map.Entry<Integer, Integer> entry : perturbationIndexAndSize.entrySet()) {
             int actionIdx = entry.getKey();
@@ -53,11 +54,11 @@ public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
                         allActions[actionIdx - 1].getTimestepsTotal() - 1); // Perturbations must leave at least one
                 // command in the previous Action.
 
-                Action endedEarlyAction =
-                        new Action(allActions[actionIdx-1].getTimestepsTotal() - perturbationSize,
+                Action<C> endedEarlyAction =
+                        new Action<>(allActions[actionIdx-1].getTimestepsTotal() - perturbationSize,
                                 allActions[actionIdx - 1].peek());
-                Action tooSoonAction =
-                        new Action(allActions[actionIdx].getTimestepsTotal() + perturbationSize,
+                Action<C> tooSoonAction =
+                        new Action<>(allActions[actionIdx].getTimestepsTotal() + perturbationSize,
                                 allActions[actionIdx].peek());
 
 
@@ -65,7 +66,7 @@ public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
                 allActions[actionIdx] = tooSoonAction;
             }
         }
-        ActionQueue perturbedActionQueue = new ActionQueue();
+        ActionQueue<C> perturbedActionQueue = new ActionQueue<>();
         perturbedActionQueue.addSequence(allActions);
         return perturbedActionQueue;
     }

@@ -33,7 +33,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     /**
      * Selected node by user click/key
      */
-    private NodeQWOPGraphicsBase<?> selectedNode;
+    private NodeQWOPGraphicsBase<?, ?> selectedNode;
 
     /**
      * List of panes which can be activated, deactivated.
@@ -146,7 +146,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     }
 
     @Override
-    public void nodeSelected(NodeQWOPGraphicsBase<?> selected) {
+    public void nodeSelected(NodeQWOPGraphicsBase<?, ?> selected) {
         if (selectedNode != null) { // Clear things from the old selected node.
             selectedNode.setOverridePointColor(null);
             selectedNode.clearBranchLineOverrideColor();
@@ -181,7 +181,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     }
 
     @Override
-    public void addRootNode(NodeQWOPGraphicsBase<?> node) {
+    public void addRootNode(NodeQWOPGraphicsBase<?, ?> node) {
         panelTree.addRootNode(node);
     }
 

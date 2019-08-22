@@ -46,7 +46,7 @@ public class SparseDataToDenseTFRecord {
     /**
      * Queued {@link Action}, i.e. durations and keypresses.
      */
-    private final ActionQueue actionQueue = new ActionQueue();
+    private final ActionQueue<CommandQWOP> actionQueue = new ActionQueue();
 
     /**
      * If we don't want to save data for the first or last game.action in a sequence.
@@ -104,7 +104,7 @@ public class SparseDataToDenseTFRecord {
      *
      * @param actions Array of {@link Action game.action} to simulate without saving.
      */
-    private void simWithoutSave(Action[] actions) {
+    private void simWithoutSave(Action<CommandQWOP>[] actions) {
         actionQueue.clearAll();
         actionQueue.addSequence(actions);
         while (!actionQueue.isEmpty()) {
@@ -120,12 +120,12 @@ public class SparseDataToDenseTFRecord {
      *
      * @param actions Array of {@link Action game.action} to simulate with saving of full state data at every timestep.
      */
-    private void simWithSave(Action[] actions) {
+    private void simWithSave(Action<CommandQWOP>[] actions) {
         actionQueue.clearAll();
         actionQueue.addSequence(actions);
         while (!actionQueue.isEmpty()) {
             CommandQWOP nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-            Action action = actionQueue.peekThisAction();
+            Action<CommandQWOP> action = actionQueue.peekThisAction();
             game.step(nextCommand);
             saver.reportTimestep(action, game); // Key difference
             if (game.getFailureStatus()) {

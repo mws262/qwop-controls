@@ -1,5 +1,6 @@
 package tree.node.filter;
 
+import game.action.Command;
 import tree.node.NodeQWOPExplorableBase;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public interface INodeFilter {
      * @param node Node to apply filtering rules to.
      * @return Whether this node should be kept. True means keep. False means tree.node.filter out.
      */
-    default <N extends NodeQWOPExplorableBase<?>> boolean filter(N node){ return true; }
+    default <N extends NodeQWOPExplorableBase<?, C>, C extends Command<?>> boolean filter(N node){ return true; }
 
     /**
      * Decide which of these should be kept. Alters the list in place. Default is to call single node tree.node.filter for all
@@ -25,7 +26,7 @@ public interface INodeFilter {
      *
      * @param nodes A list of nodes to tree.node.filter. This list will be modified in place.
      */
-    default <N extends NodeQWOPExplorableBase<?>> void filter(List<N> nodes) {
+    default <N extends NodeQWOPExplorableBase<?, C>, C extends Command<?>> void filter(List<N> nodes) {
         nodes.removeIf(n -> !filter(n));
     }
 }

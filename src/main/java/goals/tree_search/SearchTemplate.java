@@ -1,6 +1,7 @@
 package goals.tree_search;
 
 import game.GameUnified;
+import game.action.CommandQWOP;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import org.apache.commons.io.FileUtils;
@@ -81,7 +82,7 @@ public abstract class SearchTemplate {
     /**
      * Keep a list of the checked out workers so they can be added to the monitor panel if it exists.
      */
-    private List<TreeWorker> activeWorkers = new ArrayList<>();
+    private List<TreeWorker<?>> activeWorkers = new ArrayList<>();
 
     /**
      * A tabbed panel for displaying how many games per second each worker is running.
@@ -139,7 +140,7 @@ public abstract class SearchTemplate {
      * @return A {@link TreeWorker} configured specifically for the tree search's application.
      *
      */
-    abstract TreeWorker getTreeWorker();
+    abstract TreeWorker<CommandQWOP> getTreeWorker();
 
     List<TreeWorker> getTreeWorkers(int numberOfWorkers) {
         List<TreeWorker> workerList = new ArrayList<>();
@@ -154,7 +155,7 @@ public abstract class SearchTemplate {
      * the {@link PanelTimeSeries_WorkerLoad}, if present.
      * @param finishedWorker A worker to terminate and stop tracking.
      */
-    void removeWorker(TreeWorker finishedWorker) {
+    void removeWorker(TreeWorker<CommandQWOP> finishedWorker) {
         finishedWorker.terminateWorker();
         activeWorkers.remove(finishedWorker);
         if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
@@ -170,7 +171,8 @@ public abstract class SearchTemplate {
      * @param fractionOfWorkers 0 to 1, proportion of workers to allot to this stage.
      * @param maxGames Maximum number of games to play before giving up.
      */
-    protected void doBasicMaxDepthStage(NodeQWOPExplorableBase<?> rootNode, String saveName, int desiredDepth,
+    protected void doBasicMaxDepthStage(NodeQWOPExplorableBase<?, CommandQWOP> rootNode, String saveName,
+                                        int desiredDepth,
                                         float fractionOfWorkers,
                                         int maxGames) {
         if (fractionOfWorkers > 1)
@@ -220,7 +222,8 @@ public abstract class SearchTemplate {
      * @param fractionOfWorkers 0 to 1, proportion of workers to allot to this stage.
      * @param maxGames Maximum number of games to play before giving up.
      */
-    protected void doBasicMinDepthStage(NodeQWOPExplorableBase<?> rootNode, String saveName, int minDepth, float fractionOfWorkers,
+    protected void doBasicMinDepthStage(NodeQWOPExplorableBase<?, CommandQWOP> rootNode, String saveName, int minDepth,
+                                        float fractionOfWorkers,
                                         int maxGames) {
         if (fractionOfWorkers > 1)
             throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
@@ -258,7 +261,7 @@ public abstract class SearchTemplate {
      * @param fractionOfWorkers Portion of max workers used by this stage.
      * @param numGames Number of games to play.
      */
-    protected void doFixedGamesToFailureStage(NodeQWOPExplorableBase<?> rootNode, String saveName,
+    protected void doFixedGamesToFailureStage(NodeQWOPExplorableBase<?, CommandQWOP> rootNode, String saveName,
                                               float fractionOfWorkers, int numGames) {
         if (fractionOfWorkers > 1)
             throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");

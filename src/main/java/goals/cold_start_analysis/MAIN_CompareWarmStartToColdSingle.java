@@ -22,7 +22,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
 
     public void run() {
         // Ran MAIN_Search_LongRun to get these.
-        ActionQueue actionQueue = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
 
         IGameInternal<CommandQWOP> gameFullRun = new GameUnified(); // This game will run all the commands, start to
         // finish.

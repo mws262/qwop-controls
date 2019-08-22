@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Action;
-import game.action.Command;
 import game.action.CommandQWOP;
 import game.state.IState;
 import game.state.IState.ObjectName;
@@ -77,6 +76,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     private Body[] allBodies;
 
     /* Joint Definitions */
+    @SuppressWarnings("FieldCanBeLocal")
     private RevoluteJointDef rHipJDef, lHipJDef, rKneeJDef, lKneeJDef, rAnkleJDef, lAnkleJDef, rShoulderJDef,
             lShoulderJDef, rElbowJDef, lElbowJDef, neckJDef;
 
@@ -378,9 +378,6 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
 
         /* World Settings */
         world = new World(worldAABB, gravity, true);
-        /**
-         * Is Box2D warmstarting used?
-         */
         world.setWarmStarting(true);
         world.setPositionCorrection(true);
         world.setContinuousPhysics(true);
@@ -824,7 +821,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
      * @param o Whether o key is down.
      * @param p Whether p key is down.
      */
-    public void holdKeysForTimesteps(int timesteps, boolean q, boolean w, boolean o, boolean p) {
+    void holdKeysForTimesteps(int timesteps, boolean q, boolean w, boolean o, boolean p) {
         for (int i = 0; i < timesteps; i++) {
             step(q,w,o,p);
         }
@@ -884,7 +881,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     }
 
     @JsonIgnore
-    public Body[] getAllBodies() {
+    private Body[] getAllBodies() {
         return allBodies;
     }
 
@@ -1113,8 +1110,8 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
         public float[] headLocAndRadius = new float[3];
     }
 
-    public void doAction(Action action) {
-        Action a = action.getCopy();
+    public void doAction(Action<CommandQWOP> action) {
+        Action<CommandQWOP> a = action.getCopy();
         while (a.hasNext()) {
             command(a.poll());
         }
@@ -1348,7 +1345,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
          * Check if the right foot is touching the ground.
          **/
         @SuppressWarnings("unused")
-        public boolean isRightFootGrounded() {
+        boolean isRightFootGrounded() {
             return rFootDown;
         }
 
@@ -1356,7 +1353,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
          * Check if the left foot is touching the ground.
          **/
         @SuppressWarnings("unused")
-        public boolean isLeftFootGrounded() {
+        boolean isLeftFootGrounded() {
             return lFootDown;
         }
     }

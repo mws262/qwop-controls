@@ -3,7 +3,6 @@ package value;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-import com.sun.istack.NotNull;
 import game.GameConstants;
 import game.GameUnified;
 import game.IGameSerializable;
@@ -13,6 +12,7 @@ import game.state.IState;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import tree.node.NodeQWOP;
 import tree.node.NodeQWOPBase;
 
@@ -26,7 +26,7 @@ import java.util.concurrent.*;
 
 import static game.action.CommandQWOP.Keys;
 
-public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
+public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow<CommandQWOP> {
 
     /**
      * Dimension of the value output.
@@ -51,8 +51,6 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * natural number to choose, assuming the computer can handle it.
      */
     private int numThreads = 9;
-
-    private EvaluationResult currentResult;
 
     private static final Logger logger = LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class);
 
@@ -118,7 +116,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action getMaximizingAction(NodeQWOPBase<?> currentNode) {
+    public Action<CommandQWOP> getMaximizingAction(NodeQWOPBase<?, CommandQWOP> currentNode) {
         // Update each of the future predictors to use the new starting states.
         evaluations.forEach(e -> e.setStartingState(currentNode.getState()));
         return runEvaluations();
@@ -126,12 +124,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGameSerializable realGame) {
+    public Action<CommandQWOP> getMaximizingAction(NodeQWOPBase<?, CommandQWOP> currentNode, IGameSerializable realGame) {
         evaluations.forEach(e -> e.setStartingState(realGame.getSerializedState()));
         return runEvaluations();
     }
 
-    private Action runEvaluations() {
+    private Action<CommandQWOP> runEvaluations() {
         long initialTime = System.currentTimeMillis();
 
         evalResults.clear(); // Remove existing results from any previous evaluations.
@@ -148,14 +146,13 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 }
             }
         } catch (ExecutionException e) {
-            return new Action(1, CommandQWOP.NONE);
+            return new Action<>(1, CommandQWOP.NONE);
         } catch (Exception e) {
             e.printStackTrace();
         }
         EvaluationResult evalResult = evalResults.stream().max(EvaluationResult::compareTo).orElse(null);
         Objects.requireNonNull(evalResult);
 
-        currentResult = evalResult;
         if (logger.getLevel().isLessSpecificThan(Level.DEBUG)) {
             logger.debug(String.format("Policy evaluated. \tTime: %3d ms \tAction: [%3d, %4s]\t\tValue: %3.2f \tBodyX: %3" +
                             ".2f",
@@ -163,16 +160,16 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                     Math.round(evalResult.value * 100) / 100f, evalResult.state.getCenterX()));
         }
 
-        return new Action(evalResult.timestep, evalResult.keys);
+        return new Action<>(evalResult.timestep, CommandQWOP.getCommand(evalResult.keys));
     }
 
     @Override
-    float[] assembleInputFromNode(NodeQWOPBase<?> node) {
+    float[] assembleInputFromNode(NodeQWOPBase<?, CommandQWOP> node) {
         return node.getState().flattenStateWithRescaling(stateStats);
     }
 
     @Override
-    float[] assembleOutputFromNode(NodeQWOPBase<?> node) {
+    float[] assembleOutputFromNode(NodeQWOPBase<?, CommandQWOP> node) {
         return new float[]{node.getValue()};
     }
 
@@ -202,7 +199,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         public IState state;
 
         @Override
-        public int compareTo(EvaluationResult o) {
+        public int compareTo(@NotNull EvaluationResult o) {
             return Float.compare(this.value, o.value);
         }
     }
@@ -289,14 +286,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             this.maxHorizon = maxHorizon;
         }
 
-        @NotNull
-        void setStartingState(IState startingState) {
+        void setStartingState(@NotNull IState startingState) {
             this.startingState = startingState;
             useSerializedState = false;
         }
 
-        @NotNull
-        void setStartingState(byte[] startingState) {
+        void setStartingState(@NotNull byte[] startingState) {
             this.startStateFull = startingState;
             useSerializedState = true;
         }
@@ -327,7 +322,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             float val2 = 0;
             float val3 = 0;
 
-            float x2 = startX;
+            float x2;
             float x3 = startX;
 
             for (int i = 1; i <= maxHorizon; i++) {
@@ -340,7 +335,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
                 gameLocal.step(command);
                 IState st = gameLocal.getCurrentState();
-                NodeQWOPBase<?> nextNode = new NodeQWOP(st);
+                NodeQWOPBase<?, CommandQWOP> nextNode = new NodeQWOP(st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);
@@ -393,7 +388,6 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         }
     }
 
-    @NotNull
     @JsonIgnore
     public ValueFunction_TensorFlow_StateOnly getCopy() {
         ValueFunction_TensorFlow_StateOnly valFunCopy = null;
