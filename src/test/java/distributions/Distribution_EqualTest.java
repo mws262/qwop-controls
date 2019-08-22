@@ -1,6 +1,7 @@
 package distributions;
 
 import game.action.Action;
+import game.action.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,11 +13,11 @@ public class Distribution_EqualTest {
     @Test
     public void randOnDistribution() {
 
-        Action a1 = new Action(10, false, false, false, false);
-        Action a2 = new Action(11, false, true, false, false);
-        Action a3 = new Action(12, false, false, true, false);
-        Action a4 = new Action(13, false, false, false, true);
-        Action a5 = new Action(14, true, false, false, false);
+        Action a1 = new Action(10, CommandQWOP.NONE);
+        Action a2 = new Action(11, CommandQWOP.W);
+        Action a3 = new Action(12, CommandQWOP.O);
+        Action a4 = new Action(13, CommandQWOP.P);
+        Action a5 = new Action(14, CommandQWOP.Q);
 
         List<Action> actList = new ArrayList<>();
         actList.add(a1);

@@ -2,6 +2,7 @@ package controllers;
 
 import game.IGameSerializable;
 import game.action.Action;
+import game.action.CommandQWOP;
 import tree.node.NodeQWOPExplorableBase;
 
 public class Controller_Random implements IController {
@@ -10,7 +11,7 @@ public class Controller_Random implements IController {
         if (state.getUntriedActionCount() > 0) {
             return state.getUntriedActionOnDistribution();
         }else {
-            return new Action(1, false, false, false, false);
+            return new Action(1, CommandQWOP.NONE);
         }
     }
 

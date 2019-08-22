@@ -1,6 +1,7 @@
 package goals.perturbation_analysis;
 
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import game.action.perturbers.ActionPerturber_SwitchTooSoon;
 import game.GameUnified;
 import game.IGameInternal;
@@ -33,14 +34,14 @@ public class MAIN_PerturbationSimple extends JFrame {
         ActionPerturber_SwitchTooSoon perturber = new ActionPerturber_SwitchTooSoon(perturbationLocations);
         ActionQueue actionQueuePerturbed = perturber.perturb(actionQueue);
 
-        IGameInternal gameUnperturbed = new GameUnified();
-        IGameInternal gamePerturbed = new GameUnified();
+        IGameInternal<CommandQWOP> gameUnperturbed = new GameUnified();
+        IGameInternal<CommandQWOP> gamePerturbed = new GameUnified();
 
         boolean reachedFirstPerturbation = false;
         while (!actionQueue.isEmpty()) {
 
-            boolean[] commandUnperturbed = actionQueue.pollCommand();
-            boolean[] commandPerturbed = actionQueuePerturbed.pollCommand();
+            CommandQWOP commandUnperturbed = actionQueue.pollCommand();
+            CommandQWOP commandPerturbed = actionQueuePerturbed.pollCommand();
 
             gameUnperturbed.step(commandUnperturbed);
             gamePerturbed.step(commandPerturbed);
@@ -51,7 +52,7 @@ public class MAIN_PerturbationSimple extends JFrame {
 
             repaint();
 
-            if (!reachedFirstPerturbation && !Arrays.equals(commandPerturbed, commandUnperturbed)) {
+            if (!reachedFirstPerturbation && !commandPerturbed.equals(commandUnperturbed)) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {

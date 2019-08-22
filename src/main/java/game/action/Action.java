@@ -7,7 +7,9 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Contains the keypresses and durations for a single action. Works like an uneditable {@link java.util.Queue}. Call
@@ -27,23 +29,6 @@ public class Action implements Comparable<Action>, Serializable {
     private static final long serialVersionUID = 2L;
 
     /**
-     * Potential key combinations.
-     */
-    public enum Keys {
-        q, w, o, p, qp, wo, qo, wp, none
-    }
-
-    /**
-     * A one-hot, 9-element array for each of the 9 valid key combinations. Kept float for neural network training.
-     */
-    private final static Map<Keys, float[]> labelsToOneHot = new HashMap<>();
-
-    /**
-     * Association between the key labels to the q, w, o, p boolean buttons pressed.
-     */
-    private final static Map<Keys, boolean[]> labelsToButtons = new HashMap<>();
-
-    /**
      * Total number of Box2d timesteps that this key combination should be held.
      **/
     private final int timestepsTotal;
@@ -56,7 +41,7 @@ public class Action implements Comparable<Action>, Serializable {
     /**
      * Which of the QWOP keys are pressed?
      **/
-    private final boolean[] keysPressed = new boolean[4];
+    private final CommandQWOP command;
 
     /**
      * Is this the immutable original or a derived, mutable copy. A little bit hacky, but a way of avoiding threading
@@ -64,58 +49,18 @@ public class Action implements Comparable<Action>, Serializable {
      **/
     private boolean isExecutableCopy = false;
 
-    static {
-        labelsToOneHot.put(Keys.q, new float[] {1, 0, 0, 0, 0, 0, 0, 0, 0});
-        labelsToOneHot.put(Keys.w, new float[] {0, 1, 0, 0, 0, 0, 0, 0, 0});
-        labelsToOneHot.put(Keys.o, new float[] {0, 0, 1, 0, 0, 0, 0, 0, 0});
-        labelsToOneHot.put(Keys.p, new float[] {0, 0, 0, 1, 0, 0, 0, 0, 0});
-        labelsToOneHot.put(Keys.qp, new float[] {0, 0, 0, 0, 1, 0, 0, 0, 0});
-        labelsToOneHot.put(Keys.wo, new float[] {0, 0, 0, 0, 0, 1, 0, 0, 0});
-        labelsToOneHot.put(Keys.qo, new float[] {0, 0, 0, 0, 0, 0, 1, 0, 0});
-        labelsToOneHot.put(Keys.wp, new float[] {0, 0, 0, 0, 0, 0, 0, 1, 0});
-        labelsToOneHot.put(Keys.none, new float[] {0, 0, 0, 0, 0, 0, 0, 0, 1});
-
-        labelsToButtons.put(Keys.q, new boolean[]{true, false, false, false});
-        labelsToButtons.put(Keys.w, new boolean[]{false, true, false, false});
-        labelsToButtons.put(Keys.o, new boolean[]{false, false, true, false});
-        labelsToButtons.put(Keys.p, new boolean[]{false, false, false, true});
-        labelsToButtons.put(Keys.qp, new boolean[]{true, false, false, true});
-        labelsToButtons.put(Keys.wo, new boolean[]{false, true, true, false});
-        labelsToButtons.put(Keys.qo, new boolean[]{true, false, true, false});
-        labelsToButtons.put(Keys.wp, new boolean[]{false, true, false, true});
-        labelsToButtons.put(Keys.none, new boolean[]{false, false, false, false});
-    }
-
     /**
      * Create an action containing the time to hold and the key combination.
      *
      * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
-     * @param keysPressed          4-element boolean array representing whether the Q, W, O, and P keys are pressed.
-     *                             True means pressed down. False means not pressed.
      */
-    public Action(int totalTimestepsToHold, boolean[] keysPressed) {
-        this(totalTimestepsToHold, validateBooleanKeys(keysPressed)[0], keysPressed[1], keysPressed[2], keysPressed[3]);
-
-    }
-
-    /**
-     * Create an action containing the time to hold and the key combination.
-     *
-     * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
-     * @param Q                    Whether the Q key is pressed during this action.
-     * @param W                    Whether the W key is pressed during this action.
-     * @param O                    Whether the O key is pressed during this action.
-     * @param P                    Whether the P key is pressed during this action.
-     */
-    public Action(int totalTimestepsToHold, boolean Q, boolean W, boolean O, boolean P) {
+    public Action(int totalTimestepsToHold, CommandQWOP command) {
         if (totalTimestepsToHold < 0)
             throw new IllegalArgumentException("New QWOP Action must have non-negative duration. Given: " + totalTimestepsToHold);
+
         this.timestepsTotal = totalTimestepsToHold;
-        keysPressed[0] = Q;
-        keysPressed[1] = W;
-        keysPressed[2] = O;
-        keysPressed[3] = P;
         timestepsRemaining = timestepsTotal;
+        this.command = command;
     }
 
     /**
@@ -126,16 +71,14 @@ public class Action implements Comparable<Action>, Serializable {
      */
     @JsonCreator
     public Action(@JsonProperty("duration") int totalTimestepsToHold,
-                  @JsonProperty("keys") Keys keysPressed) {
-        this(totalTimestepsToHold, Action.keysToBooleans(keysPressed));
+                  @JsonProperty("keys") CommandQWOP.Keys keysPressed) {
+        this(totalTimestepsToHold, CommandQWOP.getCommand(keysPressed));
     }
 
     /**
      * Return the keys for this action and decrement the timestepsRemaining.
-     *
-     * @return A 4-element array containing true/false for whether each of the Q, W, O, and P keys are pressed.
      */
-    public boolean[] poll() {
+    public CommandQWOP poll() {
         if (!isExecutableCopy)
             throw new RuntimeException("Trying to execute the base version of the Action. Due to multi-threading, " +
                     "this REALLY screws with the counters in the action. Call getCopy for the version you should use.");
@@ -144,7 +87,7 @@ public class Action implements Comparable<Action>, Serializable {
                     "to check before calling poll().");
         timestepsRemaining--;
 
-        return keysPressed;
+        return command;
     }
 
     /**
@@ -153,12 +96,8 @@ public class Action implements Comparable<Action>, Serializable {
      * @return A 4-element array containing true/false for whether each of the Q, W, O, and P keys are pressed in
      * this action.
      */
-    public boolean[] peek() {
-        return keysPressed;
-    }
-
-    public Keys getKeys() {
-        return Action.booleansToKeys(peek());
+    public CommandQWOP peek() {
+        return command;
     }
 
     /**
@@ -199,6 +138,11 @@ public class Action implements Comparable<Action>, Serializable {
         return timestepsTotal;
     }
 
+    @JsonProperty("keys")
+    public CommandQWOP.Keys getKeys() {
+        return command.keys;
+    }
+
     /**
      * Check if this action is equal to another in regards to keypresses and durations. Completely overrides default
      * equals, so when doing ArrayList checks, this will be the only way to judge. Note that the game.action do not need
@@ -216,7 +160,7 @@ public class Action implements Comparable<Action>, Serializable {
         Action otherAction = (Action) other;
 
         EqualsBuilder builder = new EqualsBuilder();
-        builder.append(keysPressed, otherAction.keysPressed);
+        builder.append(command, otherAction.command);
         builder.append(getTimestepsTotal(), otherAction.getTimestepsTotal());
         return builder.isEquals();
     }
@@ -224,20 +168,23 @@ public class Action implements Comparable<Action>, Serializable {
     @Override
     public int hashCode() {
         HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(keysPressed);
+        builder.append(command);
         builder.append(getTimestepsTotal());
         return builder.toHashCode();
     }
 
+    /**
+     * First sort by keys pressed, then by timestep durations.
+     */
     @Override
     public int compareTo(Action o) {
-        // Ranks first by keys pressed (more trues is higher). Then ranks by timesteps.
-        for (int i = 0; i < keysPressed.length; i++) {
-            if (keysPressed[i] != o.keysPressed[i]) {
-                return keysPressed[i] ? 1 : -1;
-            }
+        Objects.requireNonNull(o);
+        int commandCompare = command.compareTo(o.command);
+        if (commandCompare != 0) {
+            return commandCompare;
+        } else {
+            return Integer.compare(getTimestepsTotal(), o.getTimestepsTotal());
         }
-        return Integer.compare(getTimestepsTotal(), o.getTimestepsTotal());
     }
 
     /**
@@ -249,10 +196,10 @@ public class Action implements Comparable<Action>, Serializable {
     @Override
     public String toString() {
         String reportString = " Keys pressed: ";
-        reportString += keysPressed[0] ? "Q" : "";
-        reportString += keysPressed[1] ? "W" : "";
-        reportString += keysPressed[2] ? "O" : "";
-        reportString += keysPressed[3] ? "P" : "";
+        reportString += command.get()[0] ? "Q" : "";
+        reportString += command.get()[1] ? "W" : "";
+        reportString += command.get()[2] ? "O" : "";
+        reportString += command.get()[3] ? "P" : "";
 
         reportString += "; Timesteps elapsed/total: " + timestepsRemaining + "/" + timestepsTotal;
 
@@ -266,7 +213,7 @@ public class Action implements Comparable<Action>, Serializable {
      */
     @JsonIgnore
     public synchronized Action getCopy() {
-        Action copiedAction = new Action(timestepsTotal, keysPressed);
+        Action copiedAction = new Action(timestepsTotal, command);
         copiedAction.isExecutableCopy = true;
         return copiedAction;
     }
@@ -316,7 +263,7 @@ public class Action implements Comparable<Action>, Serializable {
                 // Eliminate 0-duration game.action.
                 i++;
                 if (inActions.size() - 1 == i && a2.getTimestepsTotal() != 0) outActions.add(a2);
-            } else if (Arrays.equals(a1.peek(), a2.peek())) {
+            } else if (a1.peek().equals(a2.peek())) {
                 outActions.add(new Action(a1.getTimestepsTotal() + a2.getTimestepsTotal(), a1.peek()));
                 consolidations++;
                 i += 2;
@@ -337,81 +284,5 @@ public class Action implements Comparable<Action>, Serializable {
         } else {
             return consolidateActions(outActions);
         }
-    }
-
-    /**
-     * Get a one-hot, 9-element representation of a valid key combination for use in neural networks.
-     * @param keys One of the 9 valid key combinations.
-     * @return One-hot, 9-element representation of a key combination.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public static float[] keysToOneHot(Keys keys) {
-        return labelsToOneHot.get(keys);
-    }
-
-    /**
-     * Get the boolean representation of the keys pressed from the enum label of the keys.
-     * @param keys Keys representing the command.
-     * @return 4-element boolean array for keys pressed (QWOP order).
-     */
-    public static boolean[] keysToBooleans(Keys keys) {
-        return labelsToButtons.get(keys);
-    }
-
-    /**
-     * Given boolean key representation, get the enum representation for that key combination.
-     * @param q Is Q pressed?
-     * @param w Is W pressed?
-     * @param o Is O pressed?
-     * @param p Is P pressed?
-     * @return The enum Keys representation of that command.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public static Keys booleansToKeys(boolean q, boolean w, boolean o, boolean p) {
-        if (q) {
-            if (o) {
-                return Keys.qo;
-            }else if (p) {
-                return Keys.qp;
-            }else {
-                return Keys.q;
-            } // QW is not valid and will just do Q anyway
-        } else if (w) {
-            if (o) {
-                return Keys.wo;
-            }else if (p) {
-                return Keys.wp;
-            } else {
-                return Keys.w;
-            }
-        } else if (o) {
-            return Keys.o;
-        } else if (p) {
-            return Keys.p;
-        } else {
-            return Keys.none;
-        }
-    }
-
-    /**
-     * See {@link Action#booleansToKeys(boolean, boolean, boolean, boolean)}.
-     * @param command 4-element boolean representation of keys pressed.
-     * @return The enum key representation of that command.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public static Keys booleansToKeys(boolean[] command) {
-        return booleansToKeys(validateBooleanKeys(command)[0], command[1], command[2], command[3]);
-    }
-
-    /**
-     * Validate the length of a boolean keypress array. Throws an {@link IllegalArgumentException} if not 4 elements.
-     * @param keys Keys pressed. Should have 4 elements.
-     * @return The exact given array.
-     */
-    private static boolean[] validateBooleanKeys(boolean[] keys) {
-        if (keys.length != 4)
-            throw new IllegalArgumentException("A QWOP action should have booleans for exactly 4 keys. Tried to " +
-                    "create one with a boolean array of size: " + keys.length);
-        return keys;
     }
 }

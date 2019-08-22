@@ -3,6 +3,7 @@ package goals.q_learning;
 import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -18,9 +19,9 @@ public class PolicyQQWOP {
     PolicyQQWOP(PolicyQNetwork net) {
         this.net = net;
         allowedActions = new ArrayList<>();
-        allowedActions.add(new Action(1, Action.Keys.qp));
-        allowedActions.add(new Action(1, Action.Keys.wo));
-        allowedActions.add(new Action(1, Action.Keys.none));
+        allowedActions.add(new Action(1, CommandQWOP.Keys.qp));
+        allowedActions.add(new Action(1, CommandQWOP.Keys.wo));
+        allowedActions.add(new Action(1, CommandQWOP.Keys.none));
     }
 
     // Returns the first ts in a game. Is a forward-linked list.

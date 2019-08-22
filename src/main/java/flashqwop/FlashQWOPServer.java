@@ -3,6 +3,7 @@ package flashqwop;
 import game.action.Action;
 import game.GameConstants;
 import game.IGameExternal;
+import game.action.CommandQWOP;
 import game.state.State;
 import game.state.StateVariable;
 import org.apache.logging.log4j.LogManager;
@@ -15,9 +16,13 @@ import java.awt.*;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static game.action.CommandQWOP.*;
 
 /**
  * Server for communicating with the hacked Flash QWOP game. This server can send out commands to press any
@@ -36,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author matt
  */
-public class FlashQWOPServer implements IGameExternal {
+public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
 
     private static URL qwopPageUrl;
     static {
@@ -70,6 +75,19 @@ public class FlashQWOPServer implements IGameExternal {
             qp = "10010\0",
             wo = "01100\0",
             wp = "01010\0";
+
+    private static final Map<CommandQWOP, String> commandToFlashString = new HashMap<>();
+    static {
+        commandToFlashString.put(NONE, none);
+        commandToFlashString.put(Q, q);
+        commandToFlashString.put(W, w);
+        commandToFlashString.put(O, o);
+        commandToFlashString.put(P, p);
+        commandToFlashString.put(QO, qo);
+        commandToFlashString.put(QP, qp);
+        commandToFlashString.put(WO, wo);
+        commandToFlashString.put(WP, wp);
+    }
 
     private final boolean useJSONState = true;
 
@@ -109,59 +127,11 @@ public class FlashQWOPServer implements IGameExternal {
     /**
      * Send a command to the real QWOP game. It will stay active until another command overrides it. Hence, timestep
      * counting needs to be done elsewhere.
-     * @param command 4 element Q, W, O, P command, with trues corresponding to pressed keys.
      */
     @Override
-    public void command(boolean[] command) {
-        assert command.length == 4;
-        command(command[0], command[1], command[2], command[3]);
-    }
-
-    /**
-     * Send a command to the real QWOP game. It will stay active until another command overrides it. Hence, timestep
-     * counting needs to be done elsewhere.
-     * @param q Whether the q key is pressed (true is pressed).
-     * @param w Whether the w key is pressed.
-     * @param o Whether the o key is pressed.
-     * @param p Whether the p key is pressed.
-     */
-    @Override
-    public void command(boolean q, boolean w, boolean o, boolean p) {
+    public void command(CommandQWOP command) {
         // Trying to avoid building new strings all the time.
-        Action.Keys keys = Action.booleansToKeys(q, w, o, p);
-        String commandString;
-        switch (keys) {
-            case q:
-                commandString = FlashQWOPServer.q;
-                break;
-            case w:
-                commandString = FlashQWOPServer.w;
-                break;
-            case o:
-                commandString = FlashQWOPServer.o;
-                break;
-            case p:
-                commandString = FlashQWOPServer.p;
-                break;
-            case qp:
-                commandString = FlashQWOPServer.qp;
-                break;
-            case wo:
-                commandString = FlashQWOPServer.wo;
-                break;
-            case qo:
-                commandString = FlashQWOPServer.qo;
-                break;
-            case wp:
-                commandString = FlashQWOPServer.wp;
-                break;
-            case none:
-                commandString = FlashQWOPServer.none;
-                break;
-            default:
-                commandString = "\0";
-        }
-        dataOutput.print(commandString);
+        dataOutput.print(commandToFlashString.get(command));
         dataOutput.flush();
     }
 
@@ -191,13 +161,13 @@ public class FlashQWOPServer implements IGameExternal {
 
             // Waits for the EXIT command
             while (true) {
-                server.command(new boolean[]{true, false, false, true});
+                server.command(QP);
                 Thread.sleep(1000);
-                server.command(new boolean[]{false, true, true, false});
+                server.command(WO);
                 Thread.sleep(1000);
                 server.sendResetSignal();
                 Thread.sleep(1000);
-                server.command(new boolean[]{false, false, false, false});
+                server.command(NONE);
                 Thread.sleep(1000);
             }
         } catch (Exception e) {

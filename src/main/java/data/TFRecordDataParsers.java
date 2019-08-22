@@ -2,6 +2,7 @@ package data;
 
 import game.action.Action;
 import com.google.protobuf.ByteString;
+import game.action.CommandQWOP;
 import game.state.State;
 import game.state.StateVariable;
 import org.tensorflow.example.FeatureList;
@@ -94,7 +95,7 @@ public class TFRecordDataParsers {
             boolean O = (byte)1 == byteStringOfAction.byteAt(3);
             boolean P = (byte)1 == byteStringOfAction.byteAt(4);
 
-            actionList.add(new Action(actionLength, Q, W, O, P));
+            actionList.add(new Action(actionLength, CommandQWOP.booleansToCommand(Q, W, O, P)));
         }
         return actionList;
     }
@@ -108,17 +109,17 @@ public class TFRecordDataParsers {
      * @return 2D boolean array containing which keys should be pressed. 1st dimension is timesteps, from start to
      * end. 2nd dimension is QWOP keypress boolean flags.
      */
-    public static boolean[][] getCommandSequenceFromLoadedSequence(SequenceExample sequenceFromTFRecord) {
+    public static CommandQWOP[] getCommandSequenceFromLoadedSequence(SequenceExample sequenceFromTFRecord) {
         FeatureList pressedKeysFeatures = sequenceFromTFRecord.getFeatureLists().getFeatureListMap().get("PRESSED_KEYS");
-        boolean[][] commandSequence = new boolean[pressedKeysFeatures.getFeatureCount()][4];
+        CommandQWOP[] commandSequence = new CommandQWOP[pressedKeysFeatures.getFeatureCount()];
 
         for (int i = 0; i < pressedKeysFeatures.getFeatureCount(); i++) {
             byte[] keyPressBytes =
                     sequenceFromTFRecord.getFeatureLists().getFeatureListMap().get("PRESSED_KEYS").getFeature(i).getBytesList().getValue(0).toByteArray();
-            commandSequence[i][0] = keyPressBytes[0] == (byte) 1;
-            commandSequence[i][1] = keyPressBytes[1] == (byte) 1;
-            commandSequence[i][2] = keyPressBytes[2] == (byte) 1;
-            commandSequence[i][3] = keyPressBytes[3] == (byte) 1;
+            commandSequence[i] = CommandQWOP.booleansToCommand(keyPressBytes[0] == (byte) 1,
+                    keyPressBytes[1] == (byte) 1,
+                    keyPressBytes[2] == (byte) 1,
+                    keyPressBytes[3] == (byte) 1);
         }
         return commandSequence;
     }

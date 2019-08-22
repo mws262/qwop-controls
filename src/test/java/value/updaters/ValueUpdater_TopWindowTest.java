@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static game.action.Action.Keys.*;
+import static game.action.CommandQWOP.Keys.*;
 
 public class ValueUpdater_TopWindowTest {
 
@@ -86,17 +86,17 @@ public class ValueUpdater_TopWindowTest {
         Assert.assertEquals(a12, lists.get(2).get(1).getAction());
         Assert.assertEquals(a13, lists.get(2).get(2).getAction());
 
-        Assert.assertEquals(6, lists.get(3).size());
-        Assert.assertEquals(a9, lists.get(3).get(0).getAction());
-        Assert.assertEquals(a7, lists.get(3).get(1).getAction());
-        Assert.assertEquals(a6, lists.get(3).get(2).getAction());
-        Assert.assertEquals(a5, lists.get(3).get(3).getAction());
-        Assert.assertEquals(a8, lists.get(3).get(4).getAction());
-        Assert.assertEquals(a10, lists.get(3).get(5).getAction());
-
         Assert.assertEquals(5, lists.size());
-        Assert.assertEquals(1, lists.get(4).size());
-        Assert.assertEquals(a4, lists.get(4).get(0).getAction());
+        Assert.assertEquals(1, lists.get(3).size());
+        Assert.assertEquals(a4, lists.get(3).get(0).getAction());
+
+        Assert.assertEquals(6, lists.get(4).size());
+        Assert.assertEquals(a9, lists.get(4).get(0).getAction());
+        Assert.assertEquals(a7, lists.get(4).get(1).getAction());
+        Assert.assertEquals(a6, lists.get(4).get(2).getAction());
+        Assert.assertEquals(a5, lists.get(4).get(3).getAction());
+        Assert.assertEquals(a8, lists.get(4).get(4).getAction());
+        Assert.assertEquals(a10, lists.get(4).get(5).getAction());
     }
 
     @Test

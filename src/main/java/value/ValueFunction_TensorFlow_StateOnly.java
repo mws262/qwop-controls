@@ -8,6 +8,7 @@ import game.GameConstants;
 import game.GameUnified;
 import game.IGameSerializable;
 import game.action.Action;
+import game.action.CommandQWOP;
 import game.state.IState;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -23,8 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 
-import static game.action.Action.Keys;
-import static game.action.Action.keysToBooleans;
+import static game.action.CommandQWOP.Keys;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow {
 
@@ -148,7 +148,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 }
             }
         } catch (ExecutionException e) {
-            return new Action(1, false, false, false, false);
+            return new Action(1, CommandQWOP.NONE);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -237,7 +237,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * QWOP keys pressed during this future prediction.
          */
-        final boolean[] buttons;
+        final CommandQWOP command;
 
         /**
          * Equivalent key representation.
@@ -284,7 +284,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         FuturePredictor(GameUnified gameTemplate, Keys keys, int minHorizon, int maxHorizon) {
             this.gameLocal = gameTemplate.getCopy();
             this.keys = keys;
-            buttons = keysToBooleans(keys);
+            command = CommandQWOP.getCommand(keys);
             this.minHorizon = minHorizon;
             this.maxHorizon = maxHorizon;
         }
@@ -338,7 +338,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
                 x2 = x3;
 
-                gameLocal.step(buttons);
+                gameLocal.step(command);
                 IState st = gameLocal.getCurrentState();
                 NodeQWOPBase<?> nextNode = new NodeQWOP(st);
                 val1 = val2;

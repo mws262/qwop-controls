@@ -2,6 +2,7 @@ package game.action.perturbers;
 
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -63,11 +64,11 @@ public class ActionPerturber_MissingTimestepsTest {
 
     private ActionQueue makeActionQueue() {
         ActionQueue actionQueue = new ActionQueue(); // 93 timesteps total.
-        actionQueue.addAction(new Action(5, true, false, true, false));
-        actionQueue.addAction(new Action(23, true, true, true, false));
-        actionQueue.addAction(new Action(4, false, false, false, true));
-        actionQueue.addAction(new Action(45, false, true, false, false));
-        actionQueue.addAction(new Action(16, true, false, true, true));
+        actionQueue.addAction(new Action(5, CommandQWOP.QO));
+        actionQueue.addAction(new Action(23, CommandQWOP.W));
+        actionQueue.addAction(new Action(4, CommandQWOP.P));
+        actionQueue.addAction(new Action(45, CommandQWOP.O));
+        actionQueue.addAction(new Action(16, CommandQWOP.Q));
         return actionQueue;
     }
 }

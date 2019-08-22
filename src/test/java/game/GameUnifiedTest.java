@@ -1,6 +1,7 @@
 package game;
 
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import game.state.IState;
 import game.state.IState.ObjectName;
 import org.junit.Assert;
@@ -71,7 +72,7 @@ public class GameUnifiedTest {
         GameUnified game2 = new GameUnified();
 
         game1.step(true, false, true, false);
-        game2.step(new boolean[]{true, false, true, false});
+        game2.step(CommandQWOP.QO);
 
         IState gameState1 = game1.getCurrentState();
         IState gameState2 = game2.getCurrentState();

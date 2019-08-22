@@ -2,6 +2,7 @@ package controllers;
 
 import game.GameUnified;
 import game.action.Action;
+import game.action.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 import tree.node.NodeQWOPExplorable;
@@ -23,9 +24,9 @@ public class Controller_NullTest {
         GameUnified game = new GameUnified();
         game.step(true, false, false, true);
         Action a3 = controller.policy(new NodeQWOPExplorable(game.getCurrentState()));
-        Assert.assertEquals(new Action(1, false, false, false, false), a1);
-        Assert.assertEquals(new Action(1, false, false, false, false), a2);
-        Assert.assertEquals(new Action(1, false, false, false, false), a3);
+        Assert.assertEquals(new Action(1, CommandQWOP.NONE), a1);
+        Assert.assertEquals(new Action(1, CommandQWOP.NONE), a2);
+        Assert.assertEquals(new Action(1, CommandQWOP.NONE), a3);
     }
 
     @Test
@@ -36,8 +37,8 @@ public class Controller_NullTest {
         GameUnified game = new GameUnified();
         game.step(true, false, false, true);
         Action a3 = controller.policy(new NodeQWOPExplorable(game.getCurrentState()));
-        Assert.assertEquals(new Action(1, false, false, false, false), a1);
-        Assert.assertEquals(new Action(1, false, false, false, false), a2);
-        Assert.assertEquals(new Action(1, false, false, false, false), a3);
+        Assert.assertEquals(new Action(1, CommandQWOP.NONE), a1);
+        Assert.assertEquals(new Action(1, CommandQWOP.NONE), a2);
+        Assert.assertEquals(new Action(1, CommandQWOP.NONE), a3);
     }
 }

@@ -3,6 +3,7 @@ package data;
 import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import savers.DataSaver_DenseTFRecord;
@@ -123,7 +124,7 @@ public class SparseDataToDenseTFRecord {
         actionQueue.clearAll();
         actionQueue.addSequence(actions);
         while (!actionQueue.isEmpty()) {
-            boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
+            CommandQWOP nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
             Action action = actionQueue.peekThisAction();
             game.step(nextCommand);
             saver.reportTimestep(action, game); // Key difference

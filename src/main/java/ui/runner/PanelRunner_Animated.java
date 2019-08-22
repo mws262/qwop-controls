@@ -6,6 +6,7 @@ import game.action.Action;
 import game.action.ActionQueue;
 import game.GameUnified;
 import game.IGameInternal;
+import game.action.CommandQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOPExplorableBase;
@@ -102,12 +103,12 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
      */
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {
-            boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-            Q = nextCommand[0];
-            W = nextCommand[1];
-            O = nextCommand[2];
-            P = nextCommand[3];
-            game.step(Q, W, O, P);
+            CommandQWOP nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
+            Q = nextCommand.get()[0];
+            W = nextCommand.get()[1];
+            O = nextCommand.get()[2];
+            P = nextCommand.get()[3];
+            game.step(nextCommand);
         }
     }
 
