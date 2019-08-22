@@ -3,6 +3,7 @@ package flashqwop;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.*;
+import game.action.CommandQWOP;
 import game.state.*;
 import hardware.KeypusherSerialConnection;
 import org.apache.logging.log4j.LogManager;
@@ -36,12 +37,12 @@ public abstract class FlashGame implements IFlashStateListener {
     /**
      * Keeps track of the most-recently sent command, so that commands only need to be sent on transitions.
      */
-    private boolean[] prevCommand = null;
+    private CommandQWOP prevCommand = null;
 
     /**
      * {@link FlashGame} will send its commands to this destination.
      */
-    private IGameCommandTarget commandTarget;
+    private IGameCommandTarget<CommandQWOP> commandTarget;
 
     /**
      * Keeps track of the number of timesteps received since the beginning of a game to make sure that we haven't
@@ -104,7 +105,7 @@ public abstract class FlashGame implements IFlashStateListener {
      *                preceding command.
      * @param timestep Timestep count at this state.
      */
-    public abstract void reportGameStatus(IState state, boolean[] command, int timestep);
+    public abstract void reportGameStatus(IState state, CommandQWOP command, int timestep);
 
     /**
      * Tell the game to reset (equivalent to 'r' on the keyboard in the real game).
@@ -137,7 +138,7 @@ public abstract class FlashGame implements IFlashStateListener {
             reportGameStatus(state, prevCommand, timestep);
 
             // Send all-keys-up command so it doesn't restart with some buttons active.
-            commandTarget.command(false, false, false, false);
+            commandTarget.command(CommandQWOP.NONE);
             if (state.getCenterX() < 1000) {
                 logger.warn("Runner fallen at " + ((int) state.getCenterX()) / 10f + " meters.");
             } else {
@@ -194,8 +195,8 @@ public abstract class FlashGame implements IFlashStateListener {
         }
 
         // Only send command when it's different from the previous.
-        boolean[] nextCommand = actionQueue.pollCommand();
-        if (!Arrays.equals(prevCommand, nextCommand)) {
+        CommandQWOP nextCommand = actionQueue.pollCommand();
+        if (!prevCommand.equals(nextCommand)) {
             commandTarget.command(nextCommand);
         }
         prevCommand = nextCommand;

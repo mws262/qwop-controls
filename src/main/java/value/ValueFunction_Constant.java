@@ -3,6 +3,7 @@ package value;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameSerializable;
 import game.action.Action;
+import game.action.CommandQWOP;
 import tree.node.NodeQWOPBase;
 
 import java.util.List;
@@ -18,12 +19,12 @@ public class ValueFunction_Constant implements IValueFunction {
 
     @Override
     public Action getMaximizingAction(NodeQWOPBase<?> currentNode) {
-        return new Action(1, false, false, false, false);
+        return new Action(1, CommandQWOP.NONE);
     }
 
     @Override
     public Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGameSerializable game) {
-        return new Action(1, false, false, false, false);
+        return new Action(1, CommandQWOP.NONE);
     }
 
     @Override

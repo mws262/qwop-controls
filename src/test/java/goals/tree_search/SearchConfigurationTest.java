@@ -88,18 +88,18 @@ public class SearchConfigurationTest {
     public void yamlAction() throws IOException {
         File file = File.createTempFile("action", "yaml");
         file.deleteOnExit();
-        Action action = new Action(52, false, true, true, false).getCopy();
+        Action action = new Action(52, CommandQWOP.WO).getCopy();
         SearchConfiguration.serializeToYaml(file, action);
         Assert.assertTrue(file.exists());
 
         Action actionLoaded = SearchConfiguration.deserializeYaml(file, Action.class);
         Assert.assertNotNull(actionLoaded);
-        Assert.assertArrayEquals(action.peek(), actionLoaded.peek());
+        Assert.assertEquals(action.peek(), actionLoaded.peek());
         Assert.assertEquals(action.getTimestepsTotal(), actionLoaded.getTimestepsTotal());
         Assert.assertEquals(action.getTimestepsRemaining(), actionLoaded.getTimestepsRemaining());
         Assert.assertFalse(actionLoaded.isMutable());
 
-        Assert.assertEquals(action.getKeys(), actionLoaded.getKeys());
+        Assert.assertEquals(action.peek().keys, actionLoaded.peek().keys);
         Assert.assertEquals(actionLoaded, actionLoaded.getCopy());
     }
 

@@ -2,6 +2,7 @@ package goals.cold_start_analysis;
 
 import game.action.ActionQueue;
 import game.*;
+import game.action.CommandQWOP;
 import game.state.IState;
 
 import java.awt.*;
@@ -23,8 +24,11 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
         // Ran MAIN_Search_LongRun to get these.
         ActionQueue actionQueue = ActionQueue.getSampleActions();
 
-        IGameInternal gameFullRun = new GameUnified(); // This game will run all the commands, start to finish.
-        IGameInternal gameColdStart = new GameUnified(); // This will start at some point in the middle of the sequence,
+        IGameInternal<CommandQWOP> gameFullRun = new GameUnified(); // This game will run all the commands, start to
+        // finish.
+        IGameInternal<CommandQWOP> gameColdStart = new GameUnified(); // This will start at some point in the middle of
+        // the
+        // sequence,
         // with a cloned state from gameFullRun, but a cold start on all the internal solvers.
 
         // Get to a certain part of the run where we want to introduce another cold start runner.
@@ -48,7 +52,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
 
         // Simulate the rest of the run with both runners.
         while (!actionQueue.isEmpty()) {
-            boolean[] nextCommand = actionQueue.pollCommand();
+            CommandQWOP nextCommand = actionQueue.pollCommand();
 
             gameFullRun.step(nextCommand);
             GameConstants.physIterations = 5;

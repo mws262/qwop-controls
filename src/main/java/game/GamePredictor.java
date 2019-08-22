@@ -2,6 +2,7 @@ package game;
 
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import game.state.IState;
 import game.state.State;
 import tflowtools.TensorflowLoader;
@@ -95,17 +96,20 @@ public class GamePredictor extends TensorflowLoader {
      * Turn an Action into a 3 element, one-hot tensor. This is explicitly for the WO, QP [NONE] key combinations.
      * Any order is allowed, but only those three key configurations.
      *
-     * @param keys Action to convert into a one-hot tensor.
      * @return 3 element float tensor with one-hot representation of the action.
      */
-    private Tensor<Float> makeActionTensor(boolean[] keys) {
+    private Tensor<Float> makeActionTensor(CommandQWOP command) {
         float[][][] oneHotAction = new float[1][1][3];
 
-        // WO
-        oneHotAction[0][0][0] = keys[1] && keys[2] ? 1f : 0f;
-        oneHotAction[0][0][1] = keys[0] && keys[3] ? 1f : 0f;
-        oneHotAction[0][0][2] = !keys[1] && !keys[2] && !keys[3] && !keys[0] ? 1f : 0f;
-
+        if (command.equals(CommandQWOP.NONE)) {
+            oneHotAction[0][0][2] = 1;
+        } else if (command.equals(CommandQWOP.WO)) {
+            oneHotAction[0][0][0] = 1;
+        } else if (command.equals(CommandQWOP.QP)) {
+            oneHotAction[0][0][1] = 1;
+        } else {
+            throw new IllegalArgumentException("Only none, QP, WO combinations allowed in this. Was given: " + command.keys.name());
+        }
         return Tensor.create(oneHotAction, Float.class);
     }
 
@@ -114,7 +118,7 @@ public class GamePredictor extends TensorflowLoader {
         Runtime.getRuntime().addShutdownHook(new Thread(gp::close));
 
         IState initState = GameUnified.getInitialState();
-        Action singleAction = new Action(1000, false, true, true, false);
+        Action singleAction = new Action(1000, CommandQWOP.WO);
 
         ActionQueue actionQueue = new ActionQueue();
         actionQueue.addAction(singleAction);

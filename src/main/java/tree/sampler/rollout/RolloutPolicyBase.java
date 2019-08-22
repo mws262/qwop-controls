@@ -165,23 +165,19 @@ public abstract class RolloutPolicyBase implements IRolloutPolicy {
 
         /* Repeated action 1 -- no keys pressed. */
         Distribution<Action> dist1 = new Distribution_Normal(12, 5f);
-        ActionList actionList1 = ActionList.makeActionList(IntStream.range(2, 20).toArray(), new boolean[]{false,
-                false, false, false}, dist1);
+        ActionList actionList1 = ActionList.makeActionList(IntStream.range(2, 20).toArray(), CommandQWOP.NONE, dist1);
 
         /*  Repeated action 2 -- W-O pressed */
         Distribution<Action> dist2 = new Distribution_Normal(20, 5f);
-        ActionList actionList2 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), new boolean[]{false, true,
-                true, false}, dist2);
+        ActionList actionList2 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), CommandQWOP.WO, dist2);
 
         /* Repeated action 3 -- W-O pressed */
         Distribution<Action> dist3 = new Distribution_Normal(12f, 5f);
-        ActionList actionList3 = ActionList.makeActionList(IntStream.range(2, 20).toArray(), new boolean[]{false,
-                false, false, false}, dist3);
+        ActionList actionList3 = ActionList.makeActionList(IntStream.range(2, 20).toArray(), CommandQWOP.NONE, dist3);
 
         /*  Repeated action 4 -- Q-P pressed */
         Distribution<Action> dist4 = new Distribution_Normal(20, 5f);
-        ActionList actionList4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), new boolean[]{true, false,
-                false, true}, dist4);
+        ActionList actionList4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), CommandQWOP.QP, dist4);
 
         ActionList[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
 

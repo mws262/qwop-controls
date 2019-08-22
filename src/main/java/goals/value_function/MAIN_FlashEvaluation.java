@@ -4,6 +4,7 @@ import game.action.Action;
 import flashqwop.FlashGame;
 import flashqwop.FlashStateLogger;
 import game.GameUnified;
+import game.action.CommandQWOP;
 import game.state.IState;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -29,9 +30,7 @@ import java.io.IOException;
  */
 @SuppressWarnings("Duplicates")
 public class MAIN_FlashEvaluation extends FlashGame {
-    static{
-        Utility.loadLoggerConfiguration();
-    }
+
     private boolean imageCapture = false;
     private boolean addActionNoise = true;
     private float noiseProbability = 0.99f;
@@ -48,7 +47,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private static boolean hardware = true;
 
     Action[] prefix = new Action[]{
-            new Action(7, Action.Keys.none),
+            new Action(7, CommandQWOP.Keys.none),
 //            new Action(40, Action.Keys.wo),
 //            new Action(20, Action.Keys.qp),
 //            new Action(1, Action.Keys.p),
@@ -114,7 +113,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public void reportGameStatus(IState state, boolean[] command, int timestep) {}
+    public void reportGameStatus(IState state, CommandQWOP command, int timestep) {}
 
     private void loadController() {
         // Load a value function controller.

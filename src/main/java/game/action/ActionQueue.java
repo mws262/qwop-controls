@@ -70,7 +70,7 @@ public class ActionQueue {
      *
      * @return Next QWOP keypresses as a boolean array. True is pressed, false is not pressed.
      */
-    public synchronized boolean[] peekCommand() {
+    public synchronized CommandQWOP peekCommand() {
         if (currentAction == null) throw new IndexOutOfBoundsException("No current action in the queue for us to peek" +
                 " at.");
 
@@ -142,7 +142,7 @@ public class ActionQueue {
      *
      * @return Get the next command (QWOP true/false array) on the queue.
      */
-    public synchronized boolean[] pollCommand() {
+    public synchronized CommandQWOP pollCommand() {
         if (actionQueue.isEmpty() && !currentAction.hasNext()) {
             throw new IndexOutOfBoundsException("Tried to get a command off the queue when nothing is queued up.");
         }
@@ -157,7 +157,7 @@ public class ActionQueue {
         }
 
         // Get next command from the current action.
-        boolean[] nextCommand = currentAction.poll();
+        CommandQWOP nextCommand = currentAction.poll();
 
         // If this empties the queue, then mark this as empty.
         if (!currentAction.hasNext() && actionQueue.isEmpty()) {
@@ -265,45 +265,45 @@ public class ActionQueue {
     public static ActionQueue getSampleActions() {
         // Ran MAIN_Search_LongRun to get these.
         ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addAction(new Action(27, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(12, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(10, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(44, new boolean[]{true, false, false, true}));
+        actionQueue.addAction(new Action(27, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(12, CommandQWOP.WO));
+        actionQueue.addAction(new Action(10, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(44, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(16, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(18, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(23, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(12, new boolean[]{true, false, false, true}));
+        actionQueue.addAction(new Action(16, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(18, CommandQWOP.WO));
+        actionQueue.addAction(new Action(23, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(12, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(21, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(12, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(17, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(13, new boolean[]{true, false, false, true}));
+        actionQueue.addAction(new Action(21, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(12, CommandQWOP.WO));
+        actionQueue.addAction(new Action(17, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(13, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(13, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(10, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(16, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(8, new boolean[]{true, false, false, true}));
+        actionQueue.addAction(new Action(13, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(10, CommandQWOP.WO));
+        actionQueue.addAction(new Action(16, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(8, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(24, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(10, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(23, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(10, new boolean[]{true, false, false, true}));
+        actionQueue.addAction(new Action(24, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(10, CommandQWOP.WO));
+        actionQueue.addAction(new Action(23, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(10, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(24, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(34, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(5, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(18, new boolean[]{true, false, false, true}));
+        actionQueue.addAction(new Action(24, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(34, CommandQWOP.WO));
+        actionQueue.addAction(new Action(5, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(18, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(20, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(12, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(3, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(8, new boolean[]{true, false, false, true}));
+        actionQueue.addAction(new Action(20, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(12, CommandQWOP.WO));
+        actionQueue.addAction(new Action(3, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(8, CommandQWOP.QP));
 
-        actionQueue.addAction(new Action(11, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(9, new boolean[]{false, true, true, false}));
-        actionQueue.addAction(new Action(3, new boolean[]{false, false, false, false}));
-        actionQueue.addAction(new Action(9, new boolean[]{true, false, false, true}));
+        actionQueue.addAction(new Action(11, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(9, CommandQWOP.WO));
+        actionQueue.addAction(new Action(3, CommandQWOP.NONE));
+        actionQueue.addAction(new Action(9, CommandQWOP.QP));
 
         return actionQueue;
     }

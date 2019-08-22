@@ -1,6 +1,7 @@
 package game;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import game.action.Command;
 import game.state.IState;
 
 import java.awt.*;
@@ -14,25 +15,12 @@ import java.awt.*;
  *
  * @author matt
  */
-public interface IGameInternal extends IGameExternal {
+public interface IGameInternal<C extends Command<?>> extends IGameExternal<C> {
 
     /** Reset the runner to its starting state. **/
     void makeNewWorld();
 
-    /**
-     * Advance the game by one timestep with the given commands.
-     * @param q Whether q is pressed on the keyboard (true is pressed down).
-     * @param w Whether w is pressed on the keyboard (true is pressed down).
-     * @param o Whether o is pressed on the keyboard (true is pressed down).
-     * @param p Whether p is pressed on the keyboard (true is pressed down).
-     */
-    void step(boolean q, boolean w, boolean o, boolean p);
-
-    /**
-     * Advance the game by one timestep with the given commands.
-     * @param commands Array of keypress commands to use while advancing the physics by one timestep.
-     */
-    void step(boolean[] commands);
+    void step(C command);
 
     void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels);
 

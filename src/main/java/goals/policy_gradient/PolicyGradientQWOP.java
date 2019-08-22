@@ -4,6 +4,7 @@ import data.LoadStateStatistics;
 import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import game.state.State;
 
 import java.io.FileNotFoundException;
@@ -34,9 +35,9 @@ public class PolicyGradientQWOP {
     PolicyGradientQWOP(PolicyGradientNetwork net) {
         this.net = net;
         allowedActions = new ArrayList<>();
-        allowedActions.add(new Action(1, Action.Keys.qp));
-        allowedActions.add(new Action(1, Action.Keys.wo));
-        allowedActions.add(new Action(1, Action.Keys.none));
+        allowedActions.add(new Action(1, CommandQWOP.Keys.qp));
+        allowedActions.add(new Action(1, CommandQWOP.Keys.wo));
+        allowedActions.add(new Action(1, CommandQWOP.Keys.none));
         //new ArrayList<>(ActionGenerator_UniformNoRepeats.makeDefaultGenerator().getAllPossibleActions());
     }
 
@@ -61,7 +62,7 @@ public class PolicyGradientQWOP {
     public void playGame() {
         game.makeNewWorld();
         actionQueue.clearAll();
-        actionQueue.addAction(new Action(7, Action.Keys.wo));
+        actionQueue.addAction(new Action(7, CommandQWOP.Keys.wo));
         states.clear();
         actions.clear();
         rewards.clear();

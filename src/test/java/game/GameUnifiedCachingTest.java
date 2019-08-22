@@ -1,6 +1,7 @@
 package game;
 
 import data.LoadStateStatistics;
+import game.action.CommandQWOP;
 import game.state.IState;
 import game.state.State;
 import game.state.StateDelayEmbedded;
@@ -46,7 +47,7 @@ public class GameUnifiedCachingTest {
         }
 
         // After 1 timestep. First positions should be updated, others should be initial positions.
-        boolean[] c = new boolean[]{false, true, true, false};
+        CommandQWOP c = CommandQWOP.WO;
         for (int i = 0; i < delay; i++) {
             gameBasic.step(c);
             gameCache.step(c);
@@ -76,7 +77,6 @@ public class GameUnifiedCachingTest {
             }
         }
         // After 2 timesteps.
-        c = new boolean[]{false, true, true, false};
         for (int i = 0; i < delay; i++) {
             gameBasic.step(c);
             gameCache.step(c);
@@ -109,7 +109,6 @@ public class GameUnifiedCachingTest {
         }
 
         // After 3 timesteps.
-        c = new boolean[]{false, true, true, false};
         for (int i = 0; i < delay; i++) {
             gameBasic.step(c);
             gameCache.step(c);
@@ -143,7 +142,6 @@ public class GameUnifiedCachingTest {
             }
         }
         // After 4 timesteps.
-        c = new boolean[]{false, true, true, false};
         for (int i = 0; i < delay; i++) {
             gameBasic.step(c);
             gameCache.step(c);
@@ -177,7 +175,6 @@ public class GameUnifiedCachingTest {
             }
         }
         // After 5 timesteps.
-        c = new boolean[]{false, true, true, false};
         for (int i = 0; i < delay; i++) {
             gameBasic.step(c);
             gameCache.step(c);

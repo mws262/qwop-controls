@@ -2,6 +2,7 @@ package hardware;
 
 import com.fazecast.jSerialComm.SerialPort;
 import game.IGameCommandTarget;
+import game.action.CommandQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,7 +15,7 @@ import java.io.OutputStream;
  *
  * @author matt
  */
-public class KeypusherSerialConnection implements IGameCommandTarget {
+public class KeypusherSerialConnection implements IGameCommandTarget<CommandQWOP> {
 
     private OutputStream out;
 
@@ -42,7 +43,7 @@ public class KeypusherSerialConnection implements IGameCommandTarget {
         arduinoPort.openPort();
         arduinoPort.setBaudRate(5000000);
         out = arduinoPort.getOutputStream();
-        command(false, false, false, false);
+        command(CommandQWOP.NONE);
         try {
             Thread.sleep(10);
         } catch (InterruptedException e) {
@@ -51,12 +52,12 @@ public class KeypusherSerialConnection implements IGameCommandTarget {
     }
 
     @Override
-    public void command(boolean[] command) {
-        command(command[0], command[1], command[2], command[3]);
-    }
+    public void command(CommandQWOP command){
+        boolean q = command.get()[0];
+        boolean w = command.get()[1];
+        boolean o = command.get()[2];
+        boolean p = command.get()[3];
 
-    @Override
-    public void command(boolean q, boolean w, boolean o, boolean p){
         // These numbers are due to the mapping of 0-8 digits to ASCII codes or something like that.
         int keyCodeOut = 48;
         if (q) {

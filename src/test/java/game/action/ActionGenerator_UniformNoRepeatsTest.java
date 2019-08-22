@@ -18,11 +18,11 @@ public class ActionGenerator_UniformNoRepeatsTest {
 
     @Before
     public void setup() {
-        Action a1 = new Action(23, false, true, true, false);
-        Action a2 = new Action(24, false, false, false, false);
-        Action a3 = new Action(2, false, true, false, true);
-        Action a4 = new Action(3, false, true, false, true);
-        Action a5 = new Action(8, false, false, false, true);
+        Action a1 = new Action(23, CommandQWOP.WO);
+        Action a2 = new Action(24, CommandQWOP.NONE);
+        Action a3 = new Action(2, CommandQWOP.WP);
+        Action a4 = new Action(3, CommandQWOP.WP);
+        Action a5 = new Action(8, CommandQWOP.QP);
         Set<Action> aset1 = new HashSet<>();
         aset1.add(a1);
         aset1.add(a2);

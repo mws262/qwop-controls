@@ -2,6 +2,7 @@ package controllers;
 
 import game.IGameSerializable;
 import game.action.Action;
+import game.action.CommandQWOP;
 import game.state.State;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,20 +67,20 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
 
         // WO
         if ((probability0 > actionLatchingThreshold && prevAction == 0) || probability0 >= probability1 && probability0 >= probability2) {
-            chosenAction = new Action(1, false, true, true, false);
+            chosenAction = new Action(1, CommandQWOP.WO);
             prevAction = 0;
             logger.debug("WO, " + probability0);
 
             // QP
         } else if ((probability1 > actionLatchingThreshold && prevAction == 1) || probability1 >= probability0 && probability1 >= probability2) {
-            chosenAction = new Action(1, true, false, false, true);
+            chosenAction = new Action(1, CommandQWOP.QP);
             prevAction = 1;
             logger.debug("QP, " + probability1);
 
             // None
         } else if ((probability2 > actionLatchingThreshold && prevAction == 2) || probability2 >= probability0 && probability2 >= probability1) {
 
-            chosenAction = new Action(1, false, false, false, false);
+            chosenAction = new Action(1, CommandQWOP.NONE);
             prevAction = 2;
             logger.debug("__, " + probability2);
         } else {

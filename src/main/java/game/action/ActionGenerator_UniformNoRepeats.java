@@ -81,23 +81,25 @@ public class ActionGenerator_UniformNoRepeats implements IActionGenerator {
                 {false, false, false, true}};
         Distribution<Action> distribution = new Distribution_Equal();
         List<ActionList> allActionLists = new ArrayList<>();
-        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 15).toArray(), keyRange[0], distribution));
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 15).toArray(), CommandQWOP.NONE, distribution));
         //ffff*
-        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 10).toArray(), keyRange[1], distribution));
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 10).toArray(), CommandQWOP.Q, distribution));
         //tfff
-        //allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), keyRange[2], distribution));
+        //allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), CommandQWOP.QO.,
+        // distribution));
         //tftf
-        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 30).toArray(), keyRange[3], distribution));
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 30).toArray(), CommandQWOP.QP, distribution));
         //tfft*
-        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 10).toArray(), keyRange[4], distribution));
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 10).toArray(), CommandQWOP.W, distribution));
         //ftff
-        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 30).toArray(), keyRange[5], distribution));
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 30).toArray(), CommandQWOP.WO, distribution));
         //fttf*
-        // allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), keyRange[6], distribution));
+        // allActionLists.add(ActionList.makeActionList(IntStream.range(2, 25).toArray(), CommandQWOP.WP,
+        // distribution));
         //ftft
-        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 10).toArray(), keyRange[7], distribution));
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 10).toArray(), CommandQWOP.O, distribution));
         //fftf
-        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 10).toArray(), keyRange[8], distribution));
+        allActionLists.add(ActionList.makeActionList(IntStream.range(2, 10).toArray(), CommandQWOP.P, distribution));
         //ffft
 
         return new ActionGenerator_UniformNoRepeats(allActionLists);

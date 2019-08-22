@@ -3,6 +3,8 @@ package goals.cold_start_analysis;
 import game.GameUnified;
 import game.IGameInternal;
 import game.action.ActionQueue;
+import game.action.Command;
+import game.action.CommandQWOP;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,12 +26,12 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
 
     private void run() {
         ActionQueue actionQueue = ActionQueue.getSampleActions();
-        IGameInternal gameFullRun = new GameUnified();
-        IGameInternal coldStartGame = new GameUnified();
+        IGameInternal<CommandQWOP> gameFullRun = new GameUnified();
+        IGameInternal<CommandQWOP> coldStartGame = new GameUnified();
 
         // Start simulating the entire "good" run on the normal game.
         while (!actionQueue.isEmpty()) {
-            boolean[] nextCommand = actionQueue.pollCommand(); // Next command.
+            CommandQWOP nextCommand = actionQueue.pollCommand(); // Next command.
             gameFullRun.step(nextCommand); // Sim the main runner and put on screen.
 
             coldStartGame.makeNewWorld();

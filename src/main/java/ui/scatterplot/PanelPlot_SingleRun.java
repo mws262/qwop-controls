@@ -5,6 +5,7 @@ import game.GameUnified;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.CommandQWOP;
 import game.state.IState;
 import game.state.State;
 import game.state.StateVariable;
@@ -38,7 +39,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     /**
      * Copy of the game used to obtain all the states along a single run by re-simulating it.
      */
-    private IGameInternal game;
+    private IGameInternal<CommandQWOP> game;
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
@@ -56,7 +57,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
      */
     private List<IState> stateList = new ArrayList<>();
     private List<float[]> transformedStates = new ArrayList<>();
-    private List<boolean[]> commandList = new ArrayList<>();
+    private List<CommandQWOP> commandList = new ArrayList<>();
 
     /**
      * How many plots to squeeze in one displayed row.
@@ -113,8 +114,8 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
         stateList.add(game.getCurrentState()); // Add initial state.
         while (!actionQueue.isEmpty()) {
-            boolean[] nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-            game.step(nextCommand[0], nextCommand[1], nextCommand[2], nextCommand[3]); // Execute timestep.
+            CommandQWOP nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
+            game.step(nextCommand); // Execute timestep.
             stateList.add(game.getCurrentState());
             commandList.add(nextCommand);
         }
@@ -145,8 +146,9 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
 
             int currCol = count + firstPlotRow * plotsPerView;
             Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
-            Float[] yData = commandList.stream().map(b -> (float) ((b[0] ? 1 : 0) + (b[1] ? 2 : 0) + (b[2] ? 4 :
-                    0) + (b[3] ? 8 : 0))).toArray(Float[]::new);
+            Float[] yData =
+                    commandList.stream().map(b -> (float) ((b.get()[0] ? 1 : 0) + (b.get()[1] ? 2 : 0) + (b.get()[2] ?
+                    4 : 0) + (b.get()[3] ? 8 : 0))).toArray(Float[]::new);
             Color[] cData =
                     IntStream.range(0, yData.length).mapToObj(i -> NodeQWOPGraphicsBase.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.getTreeDepth()), NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
