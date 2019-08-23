@@ -21,7 +21,7 @@ public class ActionGenerator_FixedActions<C extends Command<?>> implements IActi
     }
 
     @Override
-    public ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode) {
+    public ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode) {
         return actionList.getCopy();
     }
 

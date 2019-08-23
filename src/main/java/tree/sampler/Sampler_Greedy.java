@@ -17,7 +17,7 @@ public class Sampler_Greedy<C extends Command<?>> implements ISampler<C> {
     /**
      * How are individual nodes scored?
      */
-    private IEvaluationFunction evaluationFunction;
+    private IEvaluationFunction<C> evaluationFunction;
 
     /* HOW MANY SAMPLES BETWEEN JUMPS */
     /**
@@ -74,7 +74,7 @@ public class Sampler_Greedy<C extends Command<?>> implements ISampler<C> {
     private Sampler_Distribution<C> distributionSampler = new Sampler_Distribution<>();
 
     @JsonCreator
-    public Sampler_Greedy(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction) {
+    public Sampler_Greedy(@JsonProperty("evaluationFunction") IEvaluationFunction<C> evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
     }
 
@@ -105,11 +105,11 @@ public class Sampler_Greedy<C extends Command<?>> implements ISampler<C> {
     /**
      * Set a new evaluation function for this sampler. Should be hot-swappable at any point.
      */
-    public void setEvaluationFunction(IEvaluationFunction evaluationFunction) {
+    public void setEvaluationFunction(IEvaluationFunction<C> evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
     }
 
-    public IEvaluationFunction getEvaluationFunction() {
+    public IEvaluationFunction<C> getEvaluationFunction() {
         return evaluationFunction;
     }
 

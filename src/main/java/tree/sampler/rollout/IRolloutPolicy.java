@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.IGameInternal;
 import game.action.Command;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import tree.node.NodeQWOPExplorableBase;
 
 @JsonTypeInfo(
@@ -21,7 +23,7 @@ import tree.node.NodeQWOPExplorableBase;
 })
 public interface IRolloutPolicy<C extends Command<?>> extends AutoCloseable {
 
-    float rollout(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game);
+    float rollout(@NotNull NodeQWOPExplorableBase<?, C> startNode, @Nullable IGameInternal<C> game);
 
     @JsonIgnore
     IRolloutPolicy<C> getCopy();

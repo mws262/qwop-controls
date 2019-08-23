@@ -1,5 +1,6 @@
 package ui;
 
+import game.action.Command;
 import tree.Utility;
 import tree.node.NodeQWOPGraphicsBase;
 
@@ -16,7 +17,7 @@ import java.util.List;
  *
  * @author Matt
  */
-public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInterface {
+public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelectionListener<C>, IUserInterface<C> {
 
     private final JFrame frame = new JFrame();
 
@@ -33,12 +34,12 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     /**
      * Selected node by user click/key
      */
-    private NodeQWOPGraphicsBase<?, ?> selectedNode;
+    private NodeQWOPGraphicsBase<?, C> selectedNode;
 
     /**
      * List of panes which can be activated, deactivated.
      */
-    private List<TabbedPaneActivator> tabbedPanes = new ArrayList<>();
+    private List<TabbedPaneActivator<C>> tabbedPanes = new ArrayList<>();
 
     /**
      * Window width
@@ -101,7 +102,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
      *
      * @param newTab New tab to add to the existing set of tabbed panels in this frame.
      */
-    public void addTab(TabbedPaneActivator newTab) {
+    public void addTab(TabbedPaneActivator<C> newTab) {
         tabPane.addTab(newTab.getName(), (Component) newTab);
         tabbedPanes.add(newTab);
         tabPane.revalidate();
@@ -123,11 +124,11 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     }
 
 
-    public void setTabbedPanes(List<TabbedPaneActivator> tabbedPanes) {
+    public void setTabbedPanes(List<TabbedPaneActivator<C>> tabbedPanes) {
         tabbedPanes.forEach(this::addTab);
     }
 
-    public List<TabbedPaneActivator> getTabbedPanes() {
+    public List<TabbedPaneActivator<C>> getTabbedPanes() {
         return tabbedPanes;
     }
 
@@ -146,7 +147,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     }
 
     @Override
-    public void nodeSelected(NodeQWOPGraphicsBase<?, ?> selected) {
+    public void nodeSelected(NodeQWOPGraphicsBase<?, C> selected) {
         if (selectedNode != null) { // Clear things from the old selected node.
             selectedNode.setOverridePointColor(null);
             selectedNode.clearBranchLineOverrideColor();
@@ -162,7 +163,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
         selectedNode.setBranchZOffset(0.4f);
 //        selectedNode.setLineBrightnessBelow(1f);
 
-        for (TabbedPaneActivator panel : tabbedPanes) {
+        for (TabbedPaneActivator<C> panel : tabbedPanes) {
             if (panel.isActive()) {
                 panel.update(selectedNode);
             }
@@ -181,7 +182,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     }
 
     @Override
-    public void addRootNode(NodeQWOPGraphicsBase<?, ?> node) {
+    public void addRootNode(NodeQWOPGraphicsBase<?, C> node) {
         panelTree.addRootNode(node);
     }
 

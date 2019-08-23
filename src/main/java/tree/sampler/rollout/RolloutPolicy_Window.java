@@ -6,6 +6,7 @@ import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.action.Command;
+import org.jetbrains.annotations.NotNull;
 import tree.node.NodeQWOPExplorableBase;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class RolloutPolicy_Window<C extends Command<?>> implements IRolloutPolic
     }
 
     @Override
-    public float rollout(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
+    public float rollout(@NotNull NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
 
         // Need to do a rollout for the actual node we landed on.
         Action<C> middleAction = startNode.getAction();

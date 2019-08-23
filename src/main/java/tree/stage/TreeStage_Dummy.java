@@ -1,5 +1,6 @@
 package tree.stage;
 
+import game.action.Command;
 import tree.TreeWorker;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -10,14 +11,14 @@ import java.util.List;
 /**
  * Dummy tree stage that can be triggered manually.
  */
-public class TreeStage_Dummy extends TreeStage {
+public class TreeStage_Dummy<C extends Command<?>> extends TreeStage<C> {
 
     public boolean isInitialized = false;
     public boolean terminate = false;
-    public List<NodeQWOPBase<?>> results = new ArrayList<>();
+    public List<NodeQWOPBase<?, C>> results = new ArrayList<>();
 
     @Override
-    public List<NodeQWOPBase<?>> getResults() {
+    public List<NodeQWOPBase<?, C>> getResults() {
         return results;
     }
 
@@ -27,7 +28,7 @@ public class TreeStage_Dummy extends TreeStage {
     }
 
     @Override
-    public void initialize(List<TreeWorker> treeWorkers, NodeQWOPExplorableBase<?> stageRoot) {
+    public void initialize(List<TreeWorker<C>> treeWorkers, NodeQWOPExplorableBase<?, C> stageRoot) {
         isInitialized = true;
     }
 }

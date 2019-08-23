@@ -1,8 +1,9 @@
 package ui;
 
+import game.action.Command;
 import tree.node.NodeQWOPGraphicsBase;
 
-public class UI_Headless implements IUserInterface {
+public class UI_Headless<C extends Command<?>> implements IUserInterface<C> {
 
     @Override
     public void start() {}
@@ -11,7 +12,7 @@ public class UI_Headless implements IUserInterface {
     public void kill() {}
 
     @Override
-    public void addRootNode(NodeQWOPGraphicsBase<?> node) {}
+    public void addRootNode(NodeQWOPGraphicsBase<?, C> node) {}
 
     @Override
     public void clearRootNodes() {}

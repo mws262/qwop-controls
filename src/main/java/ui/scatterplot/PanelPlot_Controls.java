@@ -1,16 +1,17 @@
 package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import tree.node.filter.INodeFilter;
-import tree.node.filter.NodeFilter_Downsample;
+import game.action.Command;
 import game.state.IState;
 import game.state.State;
 import game.state.StateVariable;
-import org.jfree.chart.plot.XYPlot;
 import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
+import org.jfree.chart.plot.XYPlot;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphicsBase;
+import tree.node.filter.INodeFilter;
+import tree.node.filter.NodeFilter_Downsample;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class PanelPlot_Controls extends PanelPlot implements KeyListener {
+public class PanelPlot_Controls<C extends Command<?>> extends PanelPlot<C> implements KeyListener {
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
@@ -32,12 +33,12 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     /**
      * Filters to be applied to the node list.
      */
-    private List<INodeFilter> nodeFilters = new ArrayList<>();
+    private List<INodeFilter<C>> nodeFilters = new ArrayList<>();
 
     /**
      * Downsampler to reduce the number of nodes we're trying to process and display
      */
-    private INodeFilter plotDownsampler = new NodeFilter_Downsample(5000);
+    private INodeFilter<C> plotDownsampler = new NodeFilter_Downsample<>(5000);
 
     private List<float[]> transformedStates;
 
@@ -59,7 +60,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     /**
      * Nodes to be processed and plotted.
      */
-    private List<NodeQWOPExplorableBase<?>> nodes = new ArrayList<>();
+    private List<NodeQWOPExplorableBase<?, C>> nodes = new ArrayList<>();
 
     private final String name;
 
@@ -73,12 +74,12 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> plotNode) {
+    public void update(NodeQWOPGraphicsBase<?, C> plotNode) {
         nodes.clear();
         plotNode.recurseDownTreeExclusive(nodes::add);
 
         // Apply any added filters (may be none).
-        for (INodeFilter filter : nodeFilters) {
+        for (INodeFilter<C> filter : nodeFilters) {
             filter.filter(nodes);
         }
         plotDownsampler.filter(nodes); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.

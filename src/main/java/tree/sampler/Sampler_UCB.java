@@ -31,7 +31,7 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     /**
      * Evaluation function used to score single nodes after rollouts are done.
      */
-    private final IEvaluationFunction evaluationFunction;
+    private final IEvaluationFunction<C> evaluationFunction;
 
     /**
      * Policy used to evaluateActionDistribution the score of a tree expansion Node by doing rollout(s).
@@ -76,7 +76,7 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
      * Also specify a rollout policy to use.
      */
     public Sampler_UCB(
-            @JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
+            @JsonProperty("evaluationFunction") IEvaluationFunction<C> evaluationFunction,
             @JsonProperty("rolloutPolicy") IRolloutPolicy<C> rolloutPolicy,
             @JsonProperty("valueUpdater") IValueUpdater<C> valueUpdater,
             @JsonProperty("explorationConstant") float explorationConstant,
@@ -202,11 +202,11 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
                 valueUpdater.getCopy(), explorationConstant, explorationRandomFactor);
     }
 
-    public IEvaluationFunction getEvaluationFunction() {
+    public IEvaluationFunction<C> getEvaluationFunction() {
         return evaluationFunction;
     }
 
-    public IRolloutPolicy getRolloutPolicy() {
+    public IRolloutPolicy<C> getRolloutPolicy() {
         return rolloutPolicy;
     }
 

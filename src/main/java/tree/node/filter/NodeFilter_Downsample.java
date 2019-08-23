@@ -1,10 +1,10 @@
 package tree.node.filter;
 
-import java.util.List;
-
 import game.action.Command;
-import tree.node.NodeQWOPExplorableBase;
 import tree.Utility;
+import tree.node.NodeQWOPExplorableBase;
+
+import java.util.List;
 
 /**
  * Filter which reduces the number of nodes in a list. Usually done for visualization or computational reasons. Only
@@ -12,7 +12,7 @@ import tree.Utility;
  *
  * @author matt
  */
-public class NodeFilter_Downsample implements INodeFilter {
+public class NodeFilter_Downsample<C extends Command<?>> implements INodeFilter<C> {
 
     /**
      * Given a list, the downsampler will keep a maximum of this number of nodes.
@@ -62,7 +62,7 @@ public class NodeFilter_Downsample implements INodeFilter {
     }
 
     @Override
-    public <N extends NodeQWOPExplorableBase<?, C>, C extends Command<?>> void filter(List<N> nodes) {
+    public void filter(List<NodeQWOPExplorableBase<?, C>> nodes) {
         int numNodes = nodes.size();
         if (numNodes > maxNodesToKeep) { // If we already have <= the max number of nodes, no need to downsample.
             switch (downsamplingStrategy) {

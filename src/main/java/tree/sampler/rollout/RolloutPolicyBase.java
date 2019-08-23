@@ -7,6 +7,7 @@ import distributions.Distribution_Normal;
 import game.GameConstants;
 import game.IGameInternal;
 import game.action.*;
+import org.jetbrains.annotations.NotNull;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
@@ -25,7 +26,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
 
     public final IEvaluationFunction<C> evaluationFunction;
 
-    public IActionGenerator<C> rolloutActionGenerator = getRolloutActionGenerator();
+    public final IActionGenerator<C> rolloutActionGenerator;
 
     private ActionQueue<C> actionQueue = new ActionQueue<>();
 
@@ -34,9 +35,11 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
     public final int maxTimesteps;
 
     RolloutPolicyBase(
-            @JsonProperty("evaluationFunction") IEvaluationFunction<C> evaluationFunction,
+            @JsonProperty("evaluationFunction") @NotNull IEvaluationFunction<C> evaluationFunction,
+            @JsonProperty("rolloutActionGenerator") @NotNull IActionGenerator<C> rolloutActionGenerator,
             @JsonProperty("maxTimesteps") int maxTimesteps) {
         this.evaluationFunction = evaluationFunction;
+        this.rolloutActionGenerator = rolloutActionGenerator;
         this.maxTimesteps = maxTimesteps;
     }
 
@@ -45,7 +48,8 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param targetNode Node we want to simulate to.
      * @param game Game used for simulation. Will be reset before simulating.
      */
-    void simGameToNode(NodeQWOPBase<?, C> targetNode, IGameInternal<C> game) {
+    void simGameToNode(@NotNull NodeQWOPBase<?, C> targetNode,
+                       @NotNull IGameInternal<C> game) {
         // Reset the game and action queue.
         game.makeNewWorld();
         actionQueue.clearAll();
@@ -63,7 +67,8 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param target Node to set the game's state to.
      * @param game Game used for simulation. Will be reset before setting the state.
      */
-    void coldStartGameToNode(NodeQWOPBase<?, C> target, IGameInternal game) {
+    void coldStartGameToNode(@NotNull NodeQWOPBase<?, C> target,
+                             @NotNull IGameInternal game) {
         // Reset the game.
         game.makeNewWorld();
         actionQueue.clearAll();
@@ -77,7 +82,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @return The reward associated with how good this rollout was.
      */
     @Override
-    public float rollout(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
+    public float rollout(@NotNull NodeQWOPExplorableBase<?, C> startNode, @NotNull IGameInternal<C> game) {
         if (maxTimesteps < 1) {
             throw new IllegalArgumentException("Maximum timesteps for rollout must be at least one. Was: " + maxTimesteps);
         }
@@ -85,7 +90,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
 
         // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts.
         NodeQWOPExplorableBase<?, C> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
-                startNode.getState(), getRolloutActionGenerator());
+                startNode.getState(), rolloutActionGenerator);
 
         float totalScore = startScore(startNode);
 
@@ -159,7 +164,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
     @Override
     public abstract RolloutPolicyBase<C> getCopy();
 
-    public static IActionGenerator<CommandQWOP> getRolloutActionGenerator() {
+    public static IActionGenerator<CommandQWOP> getQWOPRolloutActionGenerator() {
         /* Space of allowed game.action to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 

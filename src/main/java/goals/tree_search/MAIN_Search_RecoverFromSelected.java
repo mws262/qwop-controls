@@ -8,6 +8,7 @@ import data.SparseDataToDenseTFRecord;
 import game.GameUnified;
 import game.IGameInternal;
 import game.action.ActionGenerator_FixedSequence;
+import game.action.CommandQWOP;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +20,7 @@ import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
 import tree.Utility;
+import tree.sampler.rollout.RolloutPolicyBase;
 import tree.sampler.rollout.RolloutPolicy_DeltaScore;
 import value.updaters.ValueUpdater_Average;
 
@@ -72,25 +74,26 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
 
         // For extending and fixing saved games from MAIN_Controlled
         // See which files need to be covered.
-        SavableFileIO<SavableActionSequence> actionSequenceLoader = new SavableFileIO<>();
+        SavableFileIO<SavableActionSequence<CommandQWOP>> actionSequenceLoader = new SavableFileIO<>();
         File[] actionFiles = getSaveLocation().listFiles();
         Arrays.sort(Objects.requireNonNull(actionFiles));
         ArrayUtils.reverse(actionFiles);
 
-        IGameInternal game = new GameUnified();
+        IGameInternal<CommandQWOP> game = new GameUnified();
 
         for (File f : actionFiles) {
             if (f.getName().contains("SavableActionSequence") && f.getName().contains("6_08")) {
                 logger.info("Processing file: " + f.getName());
-                List<SavableActionSequence> actionSeq = new ArrayList<>();
+                List<SavableActionSequence<CommandQWOP>> actionSeq = new ArrayList<>();
                 actionSequenceLoader.loadObjectsToCollection(f, actionSeq);
 
-                List<Action[]> acts = actionSeq.stream().map(SavableActionSequence::getActions).collect(Collectors.toList());
+                List<Action<CommandQWOP>[]> acts =
+                        actionSeq.stream().map(SavableActionSequence::getActions).collect(Collectors.toList());
 
                 trimStartBy = acts.get(0).length;
 
                 // Recreate the tree section.
-                NodeQWOPGraphics root = new NodeQWOPGraphics(GameUnified.getInitialState(),
+                NodeQWOPGraphics<CommandQWOP> root = new NodeQWOPGraphics<>(GameUnified.getInitialState(),
                         ActionGenerator_FixedSequence.makeDefaultGenerator(trimStartBy));
                 NodeQWOPBase.makeNodesFromActionSequences(acts, root, game);
 
@@ -99,7 +102,7 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
                 ui.clearRootNodes();
                 ui.addRootNode(root);
 
-                List<NodeQWOPGraphics> leafList = new ArrayList<>();
+                List<NodeQWOPGraphics<CommandQWOP>> leafList = new ArrayList<>();
                 root.getLeaves(leafList);
 
                 // Expand the deviated spots and find recoveries.
@@ -143,12 +146,16 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
     }
 
     @Override
-    TreeWorker getTreeWorker() {
-        ISampler sampler = new Sampler_UCB(
-                new EvaluationFunction_Constant(0f),
-                new RolloutPolicy_DeltaScore(
-                        new EvaluationFunction_Distance(),
-                        new Controller_Random()), new ValueUpdater_Average(), 5, 1); // TODO hardcoded.
+    TreeWorker<CommandQWOP> getTreeWorker() {
+        ISampler<CommandQWOP> sampler = new Sampler_UCB<>(
+                new EvaluationFunction_Constant<>(0f),
+                new RolloutPolicy_DeltaScore<>(
+                        new EvaluationFunction_Distance<>(),
+                        RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+                        new Controller_Random<>()),
+                new ValueUpdater_Average<>(),
+                5,
+                1); // TODO hardcoded.
         return TreeWorker.makeStandardTreeWorker(sampler);
     }
 }

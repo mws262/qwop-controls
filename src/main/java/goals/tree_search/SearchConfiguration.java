@@ -15,6 +15,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Preconditions;
 import game.GameUnified;
+import game.action.Command;
 import game.action.IActionGenerator;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
@@ -33,22 +34,21 @@ import ui.UI_Headless;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class SearchConfiguration {
+public class SearchConfiguration<C extends Command<?>> {
 
     public final Machine machine;
-    public final Tree tree;
-    public final List<SearchOperation> searchOperations;
+    public final Tree<C> tree;
+    public final List<SearchOperation<C>> searchOperations;
     public final IUserInterface ui;
 
-    public SearchConfiguration(@JsonProperty("machine") Machine machine,
-                               @JsonProperty("tree") Tree tree,
-                               @JsonProperty("searchOperations") List<SearchOperation> searchOperations,
-                               @JsonProperty("ui") IUserInterface ui) {
+    SearchConfiguration(@JsonProperty("machine") Machine machine,
+                        @JsonProperty("tree") Tree<C> tree,
+                        @JsonProperty("searchOperations") List<SearchOperation<C>> searchOperations,
+                        @JsonProperty("ui") IUserInterface ui) {
         Preconditions.checkNotNull(machine);
         Preconditions.checkNotNull(tree);
         Preconditions.checkNotNull(searchOperations);
@@ -65,6 +65,7 @@ public class SearchConfiguration {
      * Add -Dlog4j.configurationFile="./src/main/resources/log4j2.xml" to VM options if logging isn't working. Or run
      * with Maven.
      */
+    @SuppressWarnings("unused")
     public static class Machine {
 
         /**
@@ -139,15 +140,15 @@ public class SearchConfiguration {
     /**
      * Tree-building settings that apply to all stages.
      */
-    public static class Tree {
+    public static class Tree<C extends Command<?>> {
 
         /**
          * Action generator to be used to assign the potential child actions throughout the entire tree. This remains
          * the same regardless of the tree stage being run.
          */
-        public final IActionGenerator actionGenerator;
+        public final IActionGenerator<C> actionGenerator;
 
-        public Tree(@JsonProperty("actionGenerator") IActionGenerator actionGenerator) {
+        public Tree(@JsonProperty("actionGenerator") IActionGenerator<C> actionGenerator) {
             this.actionGenerator = actionGenerator;
         }
     }
@@ -155,23 +156,23 @@ public class SearchConfiguration {
     /**
      * Defines a single tree search operation.
      */
-    public static class SearchOperation {
+    public static class SearchOperation<C extends Command<?>> {
 
         /**
          * Stage operation. Defines the goals and stopping points of this search.
          */
         @JacksonXmlProperty(isAttribute=true)
-        private final TreeStage stage;
+        private final TreeStage<C> stage;
 
         /**
          * Defines how new nodes are added and scored.
          */
-        private final ISampler sampler;
+        private final ISampler<C> sampler;
 
         /**
          * Defines how and what data is saved at various points of the tree stage.
          */
-        private final IDataSaver saver;
+        private final IDataSaver<C> saver;
 
         /**
          * Number of consecutive times that this operation is repeated. 0 means it only runs once. 1 means that it
@@ -180,9 +181,9 @@ public class SearchConfiguration {
         private final int repetitionCount;
 
         @JsonCreator
-        SearchOperation(@JsonProperty("stage") TreeStage stage,
-                        @JsonProperty("sampler") ISampler sampler,
-                        @JsonProperty("saver") IDataSaver saver,
+        SearchOperation(@JsonProperty("stage") TreeStage<C> stage,
+                        @JsonProperty("sampler") ISampler<C> sampler,
+                        @JsonProperty("saver") IDataSaver<C> saver,
                         @JsonProperty("repetitionCount") int repetitionCount // Defaults to zero if not
                         // set in config file.
         ) {
@@ -193,26 +194,26 @@ public class SearchConfiguration {
 
             this.stage = stage;
             this.sampler = sampler;
-            this.saver = Objects.isNull(saver) ? new DataSaver_Null() : saver; // Default to no saving.
+            this.saver = Objects.isNull(saver) ? new DataSaver_Null<>() : saver; // Default to no saving.
             this.repetitionCount = repetitionCount;
         }
 
-        SearchOperation(TreeStage stage, ISampler sampler, IDataSaver saver) {
+        SearchOperation(TreeStage<C> stage, ISampler<C> sampler, IDataSaver<C> saver) {
             this.stage = stage;
             this.sampler = sampler;
             this.saver = saver;
             this.repetitionCount = 0;
         }
 
-        public TreeStage getStage() {
+        public TreeStage<C> getStage() {
             return stage;
         }
 
-        public ISampler getSampler() {
+        public ISampler<C> getSampler() {
             return sampler;
         }
 
-        public IDataSaver getSaver() {
+        public IDataSaver<C> getSaver() {
             return saver;
         }
 
@@ -225,11 +226,11 @@ public class SearchConfiguration {
          * @param rootNode Node to build from.
          * @param machine Machine details, e.g. how many cores to use.
          */
-        public void startOperation(NodeQWOPExplorableBase<?> rootNode, Machine machine) {
+        public void startOperation(NodeQWOPExplorableBase<?, C> rootNode, Machine machine) {
             Preconditions.checkNotNull(rootNode);
             Preconditions.checkNotNull(machine);
 
-            ArrayList<TreeWorker> treeWorkers = new ArrayList<>();
+            ArrayList<TreeWorker<C>> treeWorkers = new ArrayList<>();
             for (int i = 0; i < machine.getRequestedThreadCount(); i++) {
                 treeWorkers.add(getTreeWorker());
             }
@@ -238,7 +239,7 @@ public class SearchConfiguration {
         }
 
         @JsonIgnore
-        public TreeWorker getTreeWorker() {
+        public TreeWorker<C> getTreeWorker() {
             return TreeWorker.makeStandardTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other
             // kinds of treeworkers.
 //            return TreeWorker.makeCachedStateTreeWorker(sampler.getCopy(), saver.getCopy(), 1, 2,
@@ -250,17 +251,17 @@ public class SearchConfiguration {
      * Run all the operations defined in this SearchConfiguration. Tree stages will be run in the order they are listed.
      */
     public void execute() {
-        NodeQWOPExplorableBase<?> rootNode;
+        NodeQWOPExplorableBase<?, C> rootNode;
         if (ui instanceof UI_Headless) {
-            rootNode = new NodeQWOPExplorable(GameUnified.getInitialState(), tree.actionGenerator);
+            rootNode = new NodeQWOPExplorable<>(GameUnified.getInitialState(), tree.actionGenerator);
         } else {
-            NodeQWOPGraphics root = new NodeQWOPGraphics(GameUnified.getInitialState(), tree.actionGenerator);
+            NodeQWOPGraphics<C> root = new NodeQWOPGraphics<>(GameUnified.getInitialState(), tree.actionGenerator);
             ui.addRootNode(root);
             rootNode = root;
         }
         ui.start();
 
-        for (SearchOperation operation : searchOperations) {
+        for (SearchOperation<C> operation : searchOperations) {
             for (int i = 0; i <= operation.getRepetitionCount(); i++) {
                 operation.startOperation(rootNode, machine);
             }
@@ -268,7 +269,7 @@ public class SearchConfiguration {
         }
     }
 
-    public static void serializeToJson(File jsonFileOutput, Object configuration) {
+    static void serializeToJson(File jsonFileOutput, Object configuration) {
         ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
         try {
@@ -278,7 +279,7 @@ public class SearchConfiguration {
         }
     }
 
-    public static void serializeToXML(File xmlFileOutput, Object configuration) {
+    static void serializeToXML(File xmlFileOutput, Object configuration) {
         try {
             XmlMapper xmlMapper = new XmlMapper();
             xmlMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
@@ -297,7 +298,7 @@ public class SearchConfiguration {
      * @param fileOutput File to save the .yaml configuration to.
      * @param object Particular object to serialize to yaml.
      */
-    public static void serializeToYaml(File fileOutput, Object object) {
+    static void serializeToYaml(File fileOutput, Object object) {
 
         try {
             YAMLMapper objectMapper = new YAMLMapper();

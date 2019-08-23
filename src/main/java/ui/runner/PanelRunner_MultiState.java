@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import game.GameUnified;
+import game.action.CommandQWOP;
 import game.state.IState;
 import tree.Utility;
 import tree.node.NodeQWOPGraphicsBase;
@@ -71,7 +72,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> node) {
+    public void update(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
         mainState = node.getState();
     }
 

@@ -8,11 +8,11 @@ import game.action.Command;
 import tree.node.NodeQWOPExplorableBase;
 import value.IValueFunction;
 
-public class Controller_ValueFunction<C extends Command<?>> implements IController<C> {
+public class Controller_ValueFunction<C extends Command<?>, V extends IValueFunction<C>> implements IController<C> {
 
-    private final IValueFunction<C> valueFunction;
+    private final V valueFunction;
 
-    public Controller_ValueFunction(@JsonProperty("valueFunction") IValueFunction<C> valueFunction) {
+    public Controller_ValueFunction(@JsonProperty("valueFunction") V valueFunction) {
         this.valueFunction = valueFunction;
     }
 
@@ -32,7 +32,7 @@ public class Controller_ValueFunction<C extends Command<?>> implements IControll
         return new Controller_ValueFunction<>(valueFunction.getCopy());
     }
 
-    public IValueFunction<C> getValueFunction() {
+    public V getValueFunction() {
         return valueFunction;
     }
 

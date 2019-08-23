@@ -3,6 +3,7 @@ package tree.sampler.rollout;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import game.action.Command;
+import game.action.IActionGenerator;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
@@ -24,15 +25,18 @@ public class RolloutPolicy_EndScore<C extends Command<?>> extends RolloutPolicyB
 
     private static final int defaultMaxTimesteps = Integer.MAX_VALUE;
 
-    public RolloutPolicy_EndScore(IEvaluationFunction evaluationFunction, IController<C> rolloutController) {
-        super(evaluationFunction, defaultMaxTimesteps);
+    public RolloutPolicy_EndScore(IEvaluationFunction<C> evaluationFunction,
+                                  IActionGenerator<C> rolloutActionGenerator,
+                                  IController<C> rolloutController) {
+        super(evaluationFunction, rolloutActionGenerator, defaultMaxTimesteps);
         this.rolloutController = rolloutController;
     }
 
-    public RolloutPolicy_EndScore(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
+    public RolloutPolicy_EndScore(@JsonProperty("evaluationFunction") IEvaluationFunction<C> evaluationFunction,
+                                  @JsonProperty("rolloutActionGenerator") IActionGenerator<C> rolloutActionGenerator,
                                   @JsonProperty("rolloutController") IController<C> rolloutController,
                                   @JsonProperty("maxTimesteps") int maxTimesteps) {
-        super(evaluationFunction, maxTimesteps);
+        super(evaluationFunction, rolloutActionGenerator, maxTimesteps);
         this.rolloutController = rolloutController;
     }
 
@@ -66,7 +70,9 @@ public class RolloutPolicy_EndScore<C extends Command<?>> extends RolloutPolicyB
     @Override
     public RolloutPolicy_EndScore<C> getCopy() {
         RolloutPolicy_EndScore<C> copy = new RolloutPolicy_EndScore<>(getEvaluationFunction().getCopy(),
-                getRolloutController().getCopy(), maxTimesteps);
+                rolloutActionGenerator,
+                getRolloutController().getCopy(),
+                maxTimesteps);
         copy.failureMultiplier = failureMultiplier;
         return copy;
     }

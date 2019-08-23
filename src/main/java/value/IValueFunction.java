@@ -27,7 +27,7 @@ public interface IValueFunction<C extends Command<?>> extends AutoCloseable {
     /**
      * Find the child Action which is predicted to maximize value.
      */
-    Action<C> getMaximizingAction(NodeQWOPBase<?, C> currentNode, IGameSerializable game);
+    Action<C> getMaximizingAction(NodeQWOPBase<?, C> currentNode, IGameSerializable<C> game);
 
     /**
      * Calculate the value of having gotten to the provided Node.

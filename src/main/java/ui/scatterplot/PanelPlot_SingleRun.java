@@ -34,7 +34,7 @@ import java.util.stream.IntStream;
  *
  * @author matt
  */
-public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
+public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyListener {
 
     /**
      * Copy of the game used to obtain all the states along a single run by re-simulating it.
@@ -77,7 +77,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     /**
      * Node that we're plotting the game.action/states up to.
      */
-    private NodeQWOPExplorableBase<?> selectedNode;
+    private NodeQWOPExplorableBase<?, CommandQWOP> selectedNode;
 
     private final String name;
 
@@ -98,7 +98,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     /**
      * Run the simulation to collect the state info we want to plot.
      */
-    private void simRunToNode(NodeQWOPExplorableBase<?> node) {
+    private void simRunToNode(NodeQWOPExplorableBase<?, CommandQWOP> node) {
         stateList.clear();
         transformedStates.clear();
         commandList.clear();
@@ -122,7 +122,8 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> plotNode) { // Note that this is different from the other PlotPanes.
+    public void update(NodeQWOPGraphicsBase<?, CommandQWOP> plotNode) { // Note that this is different from the other
+        // PlotPanes.
         // It plots UP TO this
         // node rather than below this node.
         if (plotNode.getTreeDepth() == 0) return; // Nothing to see from root.

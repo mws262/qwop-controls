@@ -32,7 +32,7 @@ import java.awt.geom.AffineTransform;
         @JsonSubTypes.Type(value = PanelRunner_Controlled.class, name = "controlled"),
         @JsonSubTypes.Type(value = PanelRunner_ControlledTFlow.class, name = "controlled_valfun")
 })
-public abstract class PanelRunner extends JPanel implements TabbedPaneActivator, ComponentListener {
+public abstract class PanelRunner extends JPanel implements TabbedPaneActivator<CommandQWOP>, ComponentListener {
 
     /**
      * Should this panel be drawing or is it hidden.

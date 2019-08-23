@@ -77,7 +77,7 @@ public abstract class SearchTemplate {
     /**
      * Some user interface which information will be sent to.
      */
-    protected final IUserInterface ui;
+    protected final IUserInterface<CommandQWOP> ui;
 
     /**
      * Keep a list of the checked out workers so they can be added to the monitor panel if it exists.
@@ -121,7 +121,7 @@ public abstract class SearchTemplate {
 
         // UI CONFIG:
         logger.info("Full UI is " + (headless ? "not" : "") + "on.");
-        ui = (headless) ? new UI_Headless() : setupFullUI(); // Make the UI.
+        ui = (headless) ? new UI_Headless<>() : setupFullUI(); // Make the UI.
         ui.start();
 
         // Copy the config file into the save directory.
@@ -142,8 +142,8 @@ public abstract class SearchTemplate {
      */
     abstract TreeWorker<CommandQWOP> getTreeWorker();
 
-    List<TreeWorker> getTreeWorkers(int numberOfWorkers) {
-        List<TreeWorker> workerList = new ArrayList<>();
+    List<TreeWorker<CommandQWOP>> getTreeWorkers(int numberOfWorkers) {
+        List<TreeWorker<CommandQWOP>> workerList = new ArrayList<>();
         for (int i = 0; i < numberOfWorkers; i++) {
             workerList.add(getTreeWorker());
         }
@@ -195,10 +195,10 @@ public abstract class SearchTemplate {
 //                new RolloutPolicy_DecayingHorizon(new EvaluationFunction_Distance(), randomController));
         // TODO now saver and sampler are supplied when creating the workers. Make sure everything is still
         //  consistent with this.
-        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(desiredDepth, maxGames);
+        TreeStage_MaxDepth<CommandQWOP> searchMax = new TreeStage_MaxDepth<>(desiredDepth, maxGames);
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws1 = getTreeWorkers(numWorkersToUse);
+        List<TreeWorker<CommandQWOP>> tws1 = getTreeWorkers(numWorkersToUse);
 
         // Do stage search
         searchMax.initialize(tws1, rootNode);
@@ -234,13 +234,10 @@ public abstract class SearchTemplate {
         int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
         logTreeStage(stageName, saveName, rootNode.getTreeDepth(), numWorkersToUse, maxGames);
 
-
-        // TODO now saver and sampler are supplied when creating the workers. Make sure everything is still
-        //  consistent with this.
-        TreeStage searchMin = new TreeStage_MinDepth(minDepth);
+        TreeStage<CommandQWOP> searchMin = new TreeStage_MinDepth<>(minDepth);
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws2 = getTreeWorkers(numWorkersToUse);
+        List<TreeWorker<CommandQWOP>> tws2 = getTreeWorkers(numWorkersToUse);
 
         searchMin.initialize(tws2, rootNode);
 
@@ -274,10 +271,10 @@ public abstract class SearchTemplate {
 
         // TODO now saver and sampler are supplied when creating the workers. Make sure everything is still
         //  consistent with this.
-        TreeStage_FixedGames search = new TreeStage_FixedGames(numGames); // Depth to get to
+        TreeStage_FixedGames<CommandQWOP> search = new TreeStage_FixedGames<>(numGames); // Depth to get to
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws1 = getTreeWorkers(numWorkersToUse);
+        List<TreeWorker<CommandQWOP>> tws1 = getTreeWorkers(numWorkersToUse);
 
         // Do stage search
         search.initialize(tws1, rootNode);
@@ -294,15 +291,16 @@ public abstract class SearchTemplate {
      * This is the heavyweight, full UI, with tree visualization and a bunch of data visualization tabs. Includes some
      * TFlow components which are troublesome on some computers.
      */
-    public UI_Full setupFullUI() {
-        UI_Full fullUI = new UI_Full();
+    public UI_Full<CommandQWOP> setupFullUI() {
+        UI_Full<CommandQWOP> fullUI = new UI_Full<>();
 
         /* Make each UI component */
         PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed("Run Animation");
         PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot("State Viewer");
         PanelRunner_Comparison comparisonPane = new PanelRunner_Comparison("State Compare");
-        PanelPlot_States statePlotPane = new PanelPlot_States("State Plots", 6); // 6 plots per view at the bottom.
-        PanelPie_ViableFutures viableFuturesPane = new PanelPie_ViableFutures("Viable Futures");
+        PanelPlot_States<CommandQWOP> statePlotPane = new PanelPlot_States<>("State Plots", 6); // 6 plots per view at
+        // the bottom.
+        PanelPie_ViableFutures<CommandQWOP> viableFuturesPane = new PanelPie_ViableFutures<>("Viable Futures");
         PanelHistogram_LeafDepth leafDepthPane = new PanelHistogram_LeafDepth("Leaf depth distribution");
         PanelPlot_Transformed pcaPlotPane =
                 new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), "PCA Plots",6);
@@ -327,12 +325,12 @@ public abstract class SearchTemplate {
         fullUI.addTab(autoencPlotPane);
 
         PanelRunner_ControlledTFlow controllerPane
-                = new PanelRunner_ControlledTFlow<>(
+                = new PanelRunner_ControlledTFlow(
                 "Controller",
                 new GameUnified(),
                 "src/main/resources/tflow_models",
                 "src/main/resources/tflow_models/checkpoints");
-        controllerPane.actionGenerator = RolloutPolicyBase.getRolloutActionGenerator();
+        controllerPane.actionGenerator = RolloutPolicyBase.getQWOPRolloutActionGenerator();
 
         fullUI.addTab(controllerPane);
 

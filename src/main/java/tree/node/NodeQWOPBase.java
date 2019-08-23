@@ -1,10 +1,10 @@
 package tree.node;
 
 import com.google.common.util.concurrent.AtomicDouble;
-import game.action.Action;
-import game.action.ActionQueue;
 import data.SavableSingleGame;
 import game.IGameInternal;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.action.Command;
 import game.state.IState;
 import value.updaters.IValueUpdater;
@@ -108,7 +108,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Comma
      */
     public static <C extends Command<?>, N extends NodeQWOPBase<?, C>> void makeNodesFromActionSequences(Collection<Action<C>[]> actions, N root,
                                                                                 IGameInternal<C> game) {
-        IValueUpdater valueUpdater = new ValueUpdater_HardSet();
+        IValueUpdater<C> valueUpdater = new ValueUpdater_HardSet<>();
         ActionQueue<C> actQueue = new ActionQueue<>();
         for (Action<C>[] acts : actions) {
             game.makeNewWorld();
@@ -158,10 +158,10 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Comma
      *             game.action against simulation, so if the states don't match the game.action, it will not be detected here.
      * @param existingRootToAddTo A root node to add the new tree nodes below.
      */
-    public static synchronized <N extends NodeQWOPBase<N, C>, C extends Command<?>> void makeNodesFromRunInfo(Collection<SavableSingleGame> runs,
+    public static synchronized <N extends NodeQWOPBase<N, C>, C extends Command<?>> void makeNodesFromRunInfo(Collection<SavableSingleGame<C>> runs,
                                                                                      N existingRootToAddTo) {
-        IValueUpdater valueUpdater = new ValueUpdater_HardSet();
-        for (SavableSingleGame run : runs) { // Go through all runs, placing them in the tree.
+        IValueUpdater<C> valueUpdater = new ValueUpdater_HardSet<>();
+        for (SavableSingleGame<C> run : runs) { // Go through all runs, placing them in the tree.
             N currentNode = existingRootToAddTo;
 
             if (currentNode.getUpdateCount() == 0) {
@@ -182,7 +182,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Comma
                 }
                 // If this action is unique at this point in the tree, we need to add a new node there.
                 if (!foundExistingMatch) {
-                    currentNode = (N) currentNode.addDoublyLinkedChild(run.actions[i], run.states[i]);
+                    currentNode = currentNode.addDoublyLinkedChild(run.actions[i], run.states[i]);
                     currentNode.updateValue(0, valueUpdater); // It needs to be updated in some way. For now, just set all
                     // to zero. If update count remains at 0, bad things happen.
                 }
@@ -196,6 +196,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Comma
      * executed.
      * @return Total action timesteps to this node.
      */
+    @SuppressWarnings("unused")
     public int getCumulativeTimesteps() {
         int timesteps = 0;
         N currentNode = getThis();
@@ -211,7 +212,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Comma
      * @param valueUpdate New value information received from a rollout or further up the tree.
      * @param updater The update rule used to change the value of this node.
      */
-    public synchronized void updateValue(float valueUpdate, IValueUpdater updater) {
+    public synchronized void updateValue(float valueUpdate, IValueUpdater<C> updater) {
         value.set(updater.update(valueUpdate, this));
         updateCount++;
     }

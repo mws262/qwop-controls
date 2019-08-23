@@ -3,7 +3,7 @@ package ui;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import game.action.CommandQWOP;
+import game.action.Command;
 import tree.node.NodeQWOPGraphicsBase;
 import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
@@ -18,13 +18,13 @@ import ui.timeseries.PanelTimeSeries;
         @JsonSubTypes.Type(value = UI_Headless.class, name = "headless"),
         @JsonSubTypes.Type(value = UI_Full.class, name = "full"),
 })
-public interface IUserInterface {
+public interface IUserInterface<C extends Command<?>> {
 
     void start();
 
     void kill();
 
-    void addRootNode(NodeQWOPGraphicsBase<?, ?> node);
+    void addRootNode(NodeQWOPGraphicsBase<?, C> node);
 
     void clearRootNodes();
 
@@ -39,7 +39,7 @@ public interface IUserInterface {
             @JsonSubTypes.Type(value = PanelPlot.class, name = "scatterplot"),
             @JsonSubTypes.Type(value = PanelTimeSeries.class, name = "timeseries"),
     })
-    interface TabbedPaneActivator {
+    interface TabbedPaneActivator<C extends Command<?>> {
         void activateTab();
 
         void deactivateTab();
@@ -47,7 +47,7 @@ public interface IUserInterface {
         @JsonIgnore
         boolean isActive();
 
-        default void update(NodeQWOPGraphicsBase<?, ?> node) {}
+        default void update(NodeQWOPGraphicsBase<?, C> node) {}
 
         String getName();
     }
