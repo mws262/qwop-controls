@@ -178,7 +178,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     }
 
     // With no data saving.
-    public static <C extends Command<?>> TreeWorker makeStandardTreeWorker(ISampler<C> sampler) {
+    public static <C extends Command<?>> TreeWorker<C> makeStandardTreeWorker(ISampler<C> sampler) {
         return makeStandardTreeWorker(sampler, new DataSaver_Null<>());
     }
 

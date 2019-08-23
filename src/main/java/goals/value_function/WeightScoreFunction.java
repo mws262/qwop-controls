@@ -18,6 +18,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.CMAESOptimizer;
 import tflowtools.TrainableNetwork;
 import tree.node.NodeQWOPExplorable;
+import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.IOException;
@@ -34,20 +35,20 @@ public class WeightScoreFunction implements MultivariateFunction {
     private final float[][] initialWeights; // TODO generalize
 
 
-    public final CMAESOptimizer.Sigma sigma;
+    final CMAESOptimizer.Sigma sigma;
 
-    public final InitialGuess initialGuess;
+    final InitialGuess initialGuess;
 
-    public final ObjectiveFunction objectiveFunction;
+    final ObjectiveFunction objectiveFunction;
 
     public final SimpleBounds bounds;
 
-    public final MaxIter maxIter = new MaxIter(1000);
-    public final MaxEval maxEval = new MaxEval(10000);
+    final MaxIter maxIter = new MaxIter(1000);
+    final MaxEval maxEval = new MaxEval(10000);
 
     private GameUnified game = new GameUnified();
 
-    private final Controller_ValueFunction<ValueFunction_TensorFlow_StateOnly> controller;
+    private final Controller_ValueFunction<CommandQWOP, ValueFunction_TensorFlow<CommandQWOP>> controller;
 
     private final int layer = 1;
     private final boolean weights = true;
@@ -83,8 +84,8 @@ public class WeightScoreFunction implements MultivariateFunction {
         bounds = new SimpleBounds(lb, ub);
     }
 
-    double bestCostSoFar = Double.MAX_VALUE;
-    int bestIdx = 0;
+    private double bestCostSoFar = Double.MAX_VALUE;
+    private int bestIdx = 0;
     @Override
     public double value(double[] point) {
         // Set weights according to the objective function input.
@@ -111,7 +112,7 @@ public class WeightScoreFunction implements MultivariateFunction {
         while (!game.getFailureStatus() && game.getTimestepsThisGame() < maxTs && game.getCurrentState().getCenterX() < GameConstants.goalDistance) {
 
             if (actionQueue.isEmpty()) {
-                actionQueue.addAction(controller.policy(new NodeQWOPExplorable(game.getCurrentState()), game)); // Can
+                actionQueue.addAction(controller.policy(new NodeQWOPExplorable<>(game.getCurrentState()), game)); // Can
                 // change to game serialization version here.
             }
             game.step(actionQueue.pollCommand());
@@ -147,9 +148,9 @@ public class WeightScoreFunction implements MultivariateFunction {
         float[] flat = new float[weights.length * weights[0].length];
 
         int idx = 0;
-        for (int i = 0; i < weights.length; i++) {
+        for (float[] weight : weights) {
             for (int j = 0; j < weights[0].length; j++) {
-                flat[idx++] = weights[i][j];
+                flat[idx++] = weight[j];
             }
         }
         return flat;

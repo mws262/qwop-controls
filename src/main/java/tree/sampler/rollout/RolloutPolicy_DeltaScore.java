@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import game.action.Command;
-import game.action.CommandQWOP;
+import game.action.IActionGenerator;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
@@ -22,20 +22,22 @@ public class RolloutPolicy_DeltaScore<C extends Command<?>> extends RolloutPolic
      */
     public float failureMultiplier = 1.0f;
 
-    private final IController rolloutController;
+    private final IController<C> rolloutController;
 
     public static final int defaultMaxTimesteps = Integer.MAX_VALUE;
 
-   public RolloutPolicy_DeltaScore(IEvaluationFunction evaluationFunction,
-                                   IController rolloutController) {
-       super(evaluationFunction, defaultMaxTimesteps);
+   public RolloutPolicy_DeltaScore(IEvaluationFunction<C> evaluationFunction,
+                                   IActionGenerator<C> rolloutActionGenerator,
+                                   IController<C> rolloutController) {
+       super(evaluationFunction, rolloutActionGenerator, defaultMaxTimesteps);
        this.rolloutController = rolloutController;
     }
 
-    public RolloutPolicy_DeltaScore(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
-                                    @JsonProperty("getRolloutController") IController rolloutController,
+    public RolloutPolicy_DeltaScore(@JsonProperty("evaluationFunction") IEvaluationFunction<C> evaluationFunction,
+                                    @JsonProperty("rolloutActionGenerator") IActionGenerator<C> rolloutActionGenerator,
+                                    @JsonProperty("getRolloutController") IController<C> rolloutController,
                                     @JsonProperty("maxTimesteps") int maxTimesteps) {
-        super(evaluationFunction, maxTimesteps);
+        super(evaluationFunction, rolloutActionGenerator, maxTimesteps);
         this.rolloutController = rolloutController;
     }
 
@@ -69,7 +71,9 @@ public class RolloutPolicy_DeltaScore<C extends Command<?>> extends RolloutPolic
     @Override
     public RolloutPolicy_DeltaScore<C> getCopy() {
        RolloutPolicy_DeltaScore<C> copy = new RolloutPolicy_DeltaScore<>(getEvaluationFunction().getCopy(),
-               getRolloutController().getCopy(), maxTimesteps);
+               rolloutActionGenerator,
+               getRolloutController().getCopy(),
+               maxTimesteps);
        copy.failureMultiplier = failureMultiplier;
        return copy;
     }

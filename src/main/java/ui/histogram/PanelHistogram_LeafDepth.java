@@ -1,6 +1,7 @@
 package ui.histogram;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.statistics.HistogramDataset;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class PanelHistogram_LeafDepth extends PanelHistogram implements IUserInterface.TabbedPaneActivator {
+public class PanelHistogram_LeafDepth<C extends Command<?>> extends PanelHistogram implements IUserInterface.TabbedPaneActivator<C> {
 
     protected boolean active = false;
 
@@ -44,9 +45,9 @@ public class PanelHistogram_LeafDepth extends PanelHistogram implements IUserInt
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> node) {
+    public void update(NodeQWOPGraphicsBase<?, C> node) {
 
-        List<NodeQWOPExplorableBase<?>> leafList = new ArrayList<>();
+        List<NodeQWOPExplorableBase<?, ?>> leafList = new ArrayList<>();
         node.recurseDownTreeInclusive(n -> {
             if (n.getChildCount() == 0) {
                 leafList.add(n);

@@ -1,5 +1,6 @@
 package tree.stage;
 
+import game.action.Command;
 import tree.node.NodeQWOPBase;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class TreeStage_SearchForever extends TreeStage {
+public class TreeStage_SearchForever<C extends Command<?>> extends TreeStage<C> {
 
     /**
      * Tree stage which goes forever or until the root node is fully-explored.
@@ -19,8 +20,8 @@ public class TreeStage_SearchForever extends TreeStage {
     public TreeStage_SearchForever() {}
 
     @Override
-    public List<NodeQWOPBase<?>> getResults() {
-        List<NodeQWOPBase<?>> resultList = new ArrayList<>();
+    public List<NodeQWOPBase<?, C>> getResults() {
+        List<NodeQWOPBase<?, C>> resultList = new ArrayList<>();
         resultList.add(getRootNode()); // No particularly interesting results.
         return resultList;
     }

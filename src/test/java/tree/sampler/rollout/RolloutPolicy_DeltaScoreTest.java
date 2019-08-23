@@ -42,7 +42,7 @@ public class RolloutPolicy_DeltaScoreTest {
     private NodeQWOPExplorable n1_2_4;
     private NodeQWOPExplorable n2, n2_3, n2_3_5;
 
-    private IActionGenerator rolloutActionGenerator = RolloutPolicyBase.getRolloutActionGenerator();
+    private IActionGenerator rolloutActionGenerator = RolloutPolicyBase.getQWOPRolloutActionGenerator();
     private Set<Action> possibleRolloutActions;
     {
         possibleRolloutActions = rolloutActionGenerator.getAllPossibleActions();
@@ -172,7 +172,7 @@ public class RolloutPolicy_DeltaScoreTest {
 
     @Test
     public void getRolloutActionGenerator() {
-        IActionGenerator gen = RolloutPolicyBase.getRolloutActionGenerator();
+        IActionGenerator gen = RolloutPolicyBase.getQWOPRolloutActionGenerator();
         Assert.assertTrue(!gen.getAllPossibleActions().isEmpty());
     }
 

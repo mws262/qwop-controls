@@ -2,6 +2,7 @@ package tree.stage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
 import tree.TreeWorker;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class TreeStage_FixedGames extends TreeStage {
+public class TreeStage_FixedGames<C extends Command<?>> extends TreeStage<C> {
 
     /**
      * How many games were played before this stage started?
@@ -36,15 +37,15 @@ public class TreeStage_FixedGames extends TreeStage {
     }
 
     @Override
-    public void initialize(List<TreeWorker> workers, NodeQWOPExplorableBase<?> stageRoot) {
+    public void initialize(List<TreeWorker<C>> workers, NodeQWOPExplorableBase<?, C> stageRoot) {
         initialGamesPlayed = TreeWorker.getTotalGamesPlayed();
         super.initialize(workers, stageRoot);
     }
 
     @JsonIgnore
     @Override
-    public List<NodeQWOPBase<?>> getResults() {
-        List<NodeQWOPBase<?>> resultList = new ArrayList<>();
+    public List<NodeQWOPBase<?, C>> getResults() {
+        List<NodeQWOPBase<?, C>> resultList = new ArrayList<>();
         resultList.add(getRootNode()); // No particularly interesting results.
         return resultList;
     }

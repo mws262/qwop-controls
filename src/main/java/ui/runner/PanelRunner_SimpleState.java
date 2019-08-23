@@ -2,6 +2,7 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.GameUnified;
+import game.action.CommandQWOP;
 import game.state.IState;
 import tree.node.NodeQWOPGraphicsBase;
 
@@ -36,7 +37,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> node) {
+    public void update(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
         currentState = node.getState();
     }
 

@@ -42,11 +42,11 @@ import java.util.List;
 public class SearchConfigurationTest {
 
     private final IState testState1 = GameUnified.getInitialState();
-    private final NodeQWOPExplorable sampleNode1 = new NodeQWOPExplorable(testState1,
+    private final NodeQWOPExplorable<CommandQWOP> sampleNode1 = new NodeQWOPExplorable<>(testState1,
             ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
 
     private IState testState2;
-    private NodeQWOPExplorable sampleNode2;
+    private NodeQWOPExplorable<CommandQWOP> sampleNode2;
 
     @Before
     public void setup() {
@@ -55,18 +55,18 @@ public class SearchConfigurationTest {
             game.step(false, true, true, false);
         }
         testState2 = game.getCurrentState();
-        sampleNode2 = new NodeQWOPExplorable(testState2, ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
+        sampleNode2 = new NodeQWOPExplorable<>(testState2, ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
     }
 
     @Test
     public void yamlDistribution_Equal() throws IOException {
         File file = File.createTempFile("disteq", "yaml");
         file.deleteOnExit();
-        Distribution_Equal dist = new Distribution_Equal();
+        Distribution_Equal<CommandQWOP> dist = new Distribution_Equal<>();
         SearchConfiguration.serializeToYaml(file, dist);
         Assert.assertTrue(file.exists());
 
-        Distribution_Equal distLoaded = SearchConfiguration.deserializeYaml(file, Distribution_Equal.class);
+        Distribution_Equal<CommandQWOP> distLoaded = SearchConfiguration.deserializeYaml(file, Distribution_Equal.class);
         Assert.assertNotNull(distLoaded);
         Assert.assertEquals(dist, distLoaded);
     }
@@ -75,11 +75,11 @@ public class SearchConfigurationTest {
     public void yamlDistribution_Normal() throws IOException {
         File file = File.createTempFile("distnorm", "yaml");
         file.deleteOnExit();
-        Distribution_Normal dist = new Distribution_Normal(12, 3);
+        Distribution_Normal<CommandQWOP> dist = new Distribution_Normal(12, 3);
         SearchConfiguration.serializeToYaml(file, dist);
         Assert.assertTrue(file.exists());
 
-        Distribution_Normal distLoaded = SearchConfiguration.deserializeYaml(file, Distribution_Normal.class);
+        Distribution_Normal<CommandQWOP> distLoaded = SearchConfiguration.deserializeYaml(file, Distribution_Normal.class);
         Assert.assertNotNull(distLoaded);
         Assert.assertEquals(dist, distLoaded);
     }
@@ -88,7 +88,7 @@ public class SearchConfigurationTest {
     public void yamlAction() throws IOException {
         File file = File.createTempFile("action", "yaml");
         file.deleteOnExit();
-        Action action = new Action(52, CommandQWOP.WO).getCopy();
+        Action<CommandQWOP> action = new Action<>(52, CommandQWOP.WO).getCopy();
         SearchConfiguration.serializeToYaml(file, action);
         Assert.assertTrue(file.exists());
 
@@ -99,7 +99,7 @@ public class SearchConfigurationTest {
         Assert.assertEquals(action.getTimestepsRemaining(), actionLoaded.getTimestepsRemaining());
         Assert.assertFalse(actionLoaded.isMutable());
 
-        Assert.assertEquals(action.peek().keys, actionLoaded.peek().keys);
+        Assert.assertEquals(action.peek(), actionLoaded.peek());
         Assert.assertEquals(actionLoaded, actionLoaded.getCopy());
     }
 
@@ -107,7 +107,8 @@ public class SearchConfigurationTest {
     public void yamlActionList() throws IOException {
         File file = File.createTempFile("actionlist", "yaml");
         file.deleteOnExit();
-        ActionList actionList = ActionList.makeExhaustiveActionList(4, 7, new Distribution_Normal(6, 1));
+        ActionList<CommandQWOP> actionList = ActionList.makeExhaustiveQWOPActionList(4, 7,
+                new Distribution_Normal<>(6, 1));
 
         SearchConfiguration.serializeToYaml(file, actionList);
         Assert.assertTrue(file.exists());
@@ -121,8 +122,9 @@ public class SearchConfigurationTest {
     public void yamlActionGenerator_FixedActions() throws IOException{
         File file = File.createTempFile("actiongenfixed", "yaml");
         file.deleteOnExit();
-        ActionGenerator_FixedActions agen = new ActionGenerator_FixedActions(ActionList.makeExhaustiveActionList(8,
-                11, new Distribution_Equal()));
+        ActionGenerator_FixedActions<CommandQWOP> agen =
+                new ActionGenerator_FixedActions<>(ActionList.makeExhaustiveQWOPActionList(8,
+                11, new Distribution_Equal<>()));
         SearchConfiguration.serializeToYaml(file, agen);
         Assert.assertTrue(file.exists());
 
@@ -174,11 +176,11 @@ public class SearchConfigurationTest {
     public void yamlEvaluationFunction_Constant() throws IOException {
         File file = File.createTempFile("evalconst", "yaml");
         file.deleteOnExit();
-        EvaluationFunction_Constant evaluationFunction = new EvaluationFunction_Constant(4.5f);
+        EvaluationFunction_Constant<CommandQWOP> evaluationFunction = new EvaluationFunction_Constant<>(4.5f);
         SearchConfiguration.serializeToYaml(file, evaluationFunction);
         Assert.assertTrue(file.exists());
 
-        EvaluationFunction_Constant loaded = SearchConfiguration.deserializeYaml(file,
+        EvaluationFunction_Constant<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file,
                 EvaluationFunction_Constant.class);
 
         Assert.assertNotNull(loaded);
@@ -193,7 +195,7 @@ public class SearchConfigurationTest {
     public void yamlEvaluationFunction_Distance() throws IOException {
         File file = File.createTempFile("evaldist", "yaml");
         file.deleteOnExit();
-        EvaluationFunction_Distance evaluationFunction = new EvaluationFunction_Distance();
+        EvaluationFunction_Distance<CommandQWOP> evaluationFunction = new EvaluationFunction_Distance<>();
         SearchConfiguration.serializeToYaml(file, evaluationFunction);
         Assert.assertTrue(file.exists());
 
@@ -310,12 +312,13 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("controlvalue", "yaml");
         file.deleteOnExit();
         // Base case for simple value function.
-        Controller_ValueFunction controller = new Controller_ValueFunction(new ValueFunction_Constant(45f));
+        Controller_ValueFunction<CommandQWOP> controller =
+                new Controller_ValueFunction<>(new ValueFunction_Constant<>(45f, CommandQWOP.NONE));
 
         SearchConfiguration.serializeToYaml(file, controller);
         Assert.assertTrue(file.exists());
 
-        Controller_ValueFunction loaded = SearchConfiguration.deserializeYaml(file, Controller_ValueFunction.class);
+        Controller_ValueFunction<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file, Controller_ValueFunction.class);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(controller.policy(sampleNode1), loaded.policy(sampleNode1));
         Assert.assertEquals(controller.policy(sampleNode2), loaded.policy(sampleNode2));
@@ -345,7 +348,7 @@ public class SearchConfigurationTest {
         files.forEach(File::deleteOnExit);
         Assert.assertTrue(modelFile.exists());
 
-        controller = new Controller_ValueFunction(valFun);
+        controller = new Controller_ValueFunction<>(valFun);
 
         SearchConfiguration.serializeToYaml(file, controller);
         Assert.assertTrue(file.exists());
@@ -361,7 +364,7 @@ public class SearchConfigurationTest {
     public void yamlValueFunction_Constant() throws IOException {
         File file = File.createTempFile("controlrand", "yaml");
         file.deleteOnExit();
-        ValueFunction_Constant valFun = new ValueFunction_Constant(9.1f);
+        ValueFunction_Constant<CommandQWOP> valFun = new ValueFunction_Constant<>(9.1f, CommandQWOP.NONE);
 
         SearchConfiguration.serializeToYaml(file, valFun);
         Assert.assertTrue(file.exists());
@@ -403,7 +406,8 @@ public class SearchConfigurationTest {
         SearchConfiguration.serializeToYaml(file, valFun);
         Assert.assertTrue(file.exists());
 
-        ValueFunction_TensorFlow_StateOnly loaded = SearchConfiguration.deserializeYaml(file, ValueFunction_TensorFlow_StateOnly.class);
+        ValueFunction_TensorFlow_StateOnly loaded = SearchConfiguration.deserializeYaml(file,
+                ValueFunction_TensorFlow_StateOnly.class);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(valFun.gameTemplate.getStateDimension(), loaded.gameTemplate.getStateDimension());
         Assert.assertEquals(valFun.fileName, loaded.fileName);
@@ -432,15 +436,19 @@ public class SearchConfigurationTest {
     public void yamlRolloutPolicy_EndScore() throws IOException {
         File file = File.createTempFile("rolloutendscore", "yaml");
         file.deleteOnExit();
-        RolloutPolicy_EndScore rollout =
-                new RolloutPolicy_EndScore(new EvaluationFunction_Constant(3f), new Controller_Null(), 142);
+        RolloutPolicy_EndScore<CommandQWOP> rollout =
+                new RolloutPolicy_EndScore<>(
+                        new EvaluationFunction_Constant<>(3f),
+                        ActionGenerator_UniformNoRepeats.makeDefaultGenerator(),
+                        new Controller_Null<>(),
+                        142);
+
         rollout.failureMultiplier = 3.14f;
-        rollout.rolloutActionGenerator = ActionGenerator_UniformNoRepeats.makeDefaultGenerator();
 
         SearchConfiguration.serializeToYaml(file, rollout);
         Assert.assertTrue(file.exists());
 
-        RolloutPolicy_EndScore loaded = SearchConfiguration.deserializeYaml(file,
+        RolloutPolicy_EndScore<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file,
                 RolloutPolicy_EndScore.class);
 
         Assert.assertNotNull(loaded);
@@ -460,15 +468,15 @@ public class SearchConfigurationTest {
     public void yamlRolloutPolicy_DeltaScore() throws IOException {
         File file = File.createTempFile("rolloutdeltascore", "yaml");
         file.deleteOnExit();
-        RolloutPolicy_DeltaScore rollout =
-                new RolloutPolicy_DeltaScore(new EvaluationFunction_Constant(3f), new Controller_Null(), 142);
+        RolloutPolicy_DeltaScore<CommandQWOP> rollout =
+                new RolloutPolicy_DeltaScore<>(new EvaluationFunction_Constant<>(3f),
+                        ActionGenerator_UniformNoRepeats.makeDefaultGenerator(), new Controller_Null<>(), 142);
         rollout.failureMultiplier = 3.14f;
-        rollout.rolloutActionGenerator = ActionGenerator_UniformNoRepeats.makeDefaultGenerator();
 
         SearchConfiguration.serializeToYaml(file, rollout);
         Assert.assertTrue(file.exists());
 
-        RolloutPolicy_DeltaScore loaded = SearchConfiguration.deserializeYaml(file,
+        RolloutPolicy_DeltaScore<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file,
                 RolloutPolicy_DeltaScore.class);
 
         Assert.assertNotNull(loaded);
@@ -488,13 +496,13 @@ public class SearchConfigurationTest {
     public void yamlRolloutPolicy_JustEvaluate() throws IOException {
         File file = File.createTempFile("rolloutdeltascore", "yaml");
         file.deleteOnExit();
-        RolloutPolicy_JustEvaluate rollout =
-                new RolloutPolicy_JustEvaluate(new EvaluationFunction_Constant(3f));
+        RolloutPolicy_JustEvaluate<CommandQWOP> rollout =
+                new RolloutPolicy_JustEvaluate<>(new EvaluationFunction_Constant<>(3f));
 
         SearchConfiguration.serializeToYaml(file, rollout);
         Assert.assertTrue(file.exists());
 
-        RolloutPolicy_JustEvaluate loaded = SearchConfiguration.deserializeYaml(file,
+        RolloutPolicy_JustEvaluate<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file,
                 RolloutPolicy_JustEvaluate.class);
 
         Assert.assertNotNull(loaded);
@@ -508,14 +516,14 @@ public class SearchConfigurationTest {
     public void yamlRolloutPolicy_RandomColdStart() throws IOException {
         File file = File.createTempFile("rolloutdeltascore", "yaml");
         file.deleteOnExit();
-        RolloutPolicy_RandomColdStart rollout =
-                new RolloutPolicy_RandomColdStart(new EvaluationFunction_Constant(3f));
-        rollout.rolloutActionGenerator = ActionGenerator_UniformNoRepeats.makeDefaultGenerator();
+        RolloutPolicy_RandomColdStart<CommandQWOP> rollout =
+                new RolloutPolicy_RandomColdStart<>(new EvaluationFunction_Constant<>(3f),
+                        ActionGenerator_UniformNoRepeats.makeDefaultGenerator());
 
         SearchConfiguration.serializeToYaml(file, rollout);
         Assert.assertTrue(file.exists());
 
-        RolloutPolicy_RandomColdStart loaded = SearchConfiguration.deserializeYaml(file,
+        RolloutPolicy_RandomColdStart<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file,
                 RolloutPolicy_RandomColdStart.class);
 
         Assert.assertNotNull(loaded);
@@ -532,8 +540,14 @@ public class SearchConfigurationTest {
     public void yamlRolloutPolicy_WeightWithValueFunction() throws IOException {
         File file = File.createTempFile("rolloutdeltascore", "yaml");
         file.deleteOnExit();
-        RolloutPolicy_WeightWithValueFunction rollout =
-                new RolloutPolicy_WeightWithValueFunction(new RolloutPolicy_EndScore(new EvaluationFunction_Constant(2f), new Controller_Null()), new ValueFunction_Constant(3f));
+        RolloutPolicy_WeightWithValueFunction<CommandQWOP> rollout =
+                new RolloutPolicy_WeightWithValueFunction<>(
+                        new RolloutPolicy_EndScore<>(
+                                new EvaluationFunction_Constant<>(2f),
+                                RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+                                new Controller_Null<>()),
+                        new ValueFunction_Constant<>(3f, CommandQWOP.NONE));
+
         rollout.valueFunctionWeight = 0.2f;
 
         SearchConfiguration.serializeToYaml(file, rollout);
@@ -558,9 +572,13 @@ public class SearchConfigurationTest {
     public void yamlRolloutPolicy_Window() throws IOException {
         File file = File.createTempFile("rolloutdeltascore", "yaml");
         file.deleteOnExit();
-        RolloutPolicy_Window rollout =
-                new RolloutPolicy_Window(new RolloutPolicy_EndScore(new EvaluationFunction_Constant(1f),
-                        new Controller_Null()));
+        RolloutPolicy_Window<CommandQWOP> rollout =
+                new RolloutPolicy_Window<>(
+                        new RolloutPolicy_EndScore<>(
+                                new EvaluationFunction_Constant<>(
+                                        1f),
+                                RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+                                new Controller_Null<>()));
         rollout.selectionCriteria = RolloutPolicy_Window.Criteria.WORST;
 
         SearchConfiguration.serializeToYaml(file, rollout);
@@ -583,14 +601,14 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("savedensejava", "yaml");
         file.deleteOnExit();
 
-        DataSaver_DenseJava saver = new DataSaver_DenseJava();
+        DataSaver_DenseJava<CommandQWOP> saver = new DataSaver_DenseJava<>();
         saver.setSaveInterval(101);
         saver.setSavePath("stuff");
 
         SearchConfiguration.serializeToYaml(file, saver);
         Assert.assertTrue(file.exists());
 
-        DataSaver_DenseJava loaded = SearchConfiguration.deserializeYaml(file,
+        DataSaver_DenseJava<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file,
                 DataSaver_DenseJava.class);
 
         Assert.assertNotNull(loaded);
@@ -627,12 +645,12 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("savenull", "yaml");
         file.deleteOnExit();
 
-        DataSaver_Null saver = new DataSaver_Null();
+        DataSaver_Null<CommandQWOP> saver = new DataSaver_Null<>();
 
         SearchConfiguration.serializeToYaml(file, saver);
         Assert.assertTrue(file.exists());
 
-        DataSaver_Null loaded = SearchConfiguration.deserializeYaml(file, DataSaver_Null.class);
+        DataSaver_Null<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file, DataSaver_Null.class);
         Assert.assertNotNull(loaded);
     }
 
@@ -641,14 +659,14 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("savesparse", "yaml");
         file.deleteOnExit();
 
-        DataSaver_Sparse saver = new DataSaver_Sparse();
+        DataSaver_Sparse<CommandQWOP> saver = new DataSaver_Sparse<>();
         saver.setSaveInterval(10101);
         saver.setSavePath("wefsdf");
 
         SearchConfiguration.serializeToYaml(file, saver);
         Assert.assertTrue(file.exists());
 
-        DataSaver_Sparse loaded = SearchConfiguration.deserializeYaml(file, DataSaver_Sparse.class);
+        DataSaver_Sparse<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file, DataSaver_Sparse.class);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(saver.fileExtension, loaded.fileExtension);
         Assert.assertEquals(saver.filePrefix, loaded.filePrefix);
@@ -661,14 +679,14 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("savestateselect", "yaml");
         file.deleteOnExit();
 
-        DataSaver_StageSelected saver = new DataSaver_StageSelected();
+        DataSaver_StageSelected<CommandQWOP> saver = new DataSaver_StageSelected<>();
         saver.setSavePath("wefsdf");
         saver.overrideFilename = "test";
 
         SearchConfiguration.serializeToYaml(file, saver);
         Assert.assertTrue(file.exists());
 
-        DataSaver_StageSelected loaded = SearchConfiguration.deserializeYaml(file, DataSaver_StageSelected.class);
+        DataSaver_StageSelected<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file, DataSaver_StageSelected.class);
         Assert.assertNotNull(loaded);
 
         Assert.assertEquals(saver.fileExtension, loaded.fileExtension);
@@ -682,7 +700,7 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("samplerdeterministic", "yaml");
         file.deleteOnExit();
 
-        Sampler_Deterministic sampler = new Sampler_Deterministic();
+        Sampler_Deterministic<CommandQWOP> sampler = new Sampler_Deterministic<>();
 
         SearchConfiguration.serializeToYaml(file, sampler);
         Assert.assertTrue(file.exists());
@@ -698,7 +716,7 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("samplerdist", "yaml");
         file.deleteOnExit();
 
-        Sampler_Distribution sampler = new Sampler_Distribution();
+        Sampler_Distribution<CommandQWOP> sampler = new Sampler_Distribution<>();
 
         SearchConfiguration.serializeToYaml(file, sampler);
         Assert.assertTrue(file.exists());
@@ -714,12 +732,12 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("samplerfixed", "yaml");
         file.deleteOnExit();
 
-        Sampler_FixedDepth sampler = new Sampler_FixedDepth(7);
+        Sampler_FixedDepth<CommandQWOP> sampler = new Sampler_FixedDepth<>(7);
 
         SearchConfiguration.serializeToYaml(file, sampler);
         Assert.assertTrue(file.exists());
 
-        Sampler_FixedDepth loaded = SearchConfiguration.deserializeYaml(file, Sampler_FixedDepth.class);
+        Sampler_FixedDepth<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file, Sampler_FixedDepth.class);
         Assert.assertNotNull(loaded);
 
         Assert.assertEquals(sampler.getHorizonDepth(), loaded.getHorizonDepth());
@@ -732,7 +750,7 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("samplergreedy", "yaml");
         file.deleteOnExit();
 
-        Sampler_Greedy sampler = new Sampler_Greedy(new EvaluationFunction_Constant(4f));
+        Sampler_Greedy<CommandQWOP> sampler = new Sampler_Greedy<>(new EvaluationFunction_Constant<>(4f));
         sampler.samplesAt0 = 34535;
         sampler.depthN = 1211;
         sampler.samplesAtN = 9898;
@@ -745,7 +763,7 @@ public class SearchConfigurationTest {
         SearchConfiguration.serializeToYaml(file, sampler);
         Assert.assertTrue(file.exists());
 
-        Sampler_Greedy loaded = SearchConfiguration.deserializeYaml(file, Sampler_Greedy.class);
+        Sampler_Greedy<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file, Sampler_Greedy.class);
         Assert.assertNotNull(loaded);
 
         Assert.assertEquals(sampler.getEvaluationFunction().getValue(sampleNode1),
@@ -783,14 +801,18 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("samplerucb", "yaml");
         file.deleteOnExit();
 
-        Sampler_UCB sampler = new Sampler_UCB(new EvaluationFunction_Constant(1.6f),
-                new RolloutPolicy_JustEvaluate(new EvaluationFunction_Constant(9.9f)),
-                new ValueUpdater_Average(), 5, 1);
+        Sampler_UCB<CommandQWOP> sampler = new Sampler_UCB<>(
+                new EvaluationFunction_Constant<>(1.6f),
+                new RolloutPolicy_JustEvaluate<>(
+                        new EvaluationFunction_Constant<>(9.9f)),
+                new ValueUpdater_Average<>(),
+                5,
+                1);
 
         SearchConfiguration.serializeToYaml(file, sampler);
         Assert.assertTrue(file.exists());
 
-        Sampler_UCB loaded = SearchConfiguration.deserializeYaml(file, Sampler_UCB.class);
+        Sampler_UCB<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file, Sampler_UCB.class);
         Assert.assertNotNull(loaded);
 
         Assert.assertEquals(sampler.explorationConstant, loaded.explorationConstant, 1e-10f);

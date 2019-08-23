@@ -3,9 +3,11 @@ package ui.runner;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_ValueFunction;
 import game.GameUnified;
+import game.action.CommandQWOP;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import javax.swing.*;
@@ -23,11 +25,12 @@ import java.util.Objects;
 /**
  * Panel for showing the behavior of controllers based around {@link ValueFunction_TensorFlow_StateOnly}. Has GUI
  * menus for selecting which Tensorflow model to use and which checkpoint file to load.
- * @param <G> Game type being used. The dimension of the state output must match the value function's input size.
  */
-public class PanelRunner_ControlledTFlow<G extends GameUnified>
-        extends PanelRunner_Controlled<Controller_ValueFunction<ValueFunction_TensorFlow_StateOnly>, G>
-        implements MouseListener, MouseMotionListener, ActionListener {
+public class PanelRunner_ControlledTFlow
+        extends PanelRunner_Controlled<Controller_ValueFunction<CommandQWOP, ValueFunction_TensorFlow<CommandQWOP>>,
+        GameUnified> implements MouseListener,
+        MouseMotionListener,
+        ActionListener {
 
     /**
      * Name of the directory containing all the model (.pb) files.
@@ -74,7 +77,7 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
     private float disturbanceY;
 
     public PanelRunner_ControlledTFlow(@JsonProperty("name") String name,
-                                       @JsonProperty("game") G game,
+                                       @JsonProperty("game") GameUnified game,
                                        @JsonProperty("modelLocation") String modelLocation,
                                        @JsonProperty("checkpointLocation") String checkpointLocation) {
         super(name, game, null);
@@ -312,7 +315,7 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
     public void mouseMoved(MouseEvent e) {}
 
     @Override
-    void applyDisturbance(G game) {
+    void applyDisturbance(GameUnified game) {
         game.applyBodyImpulse(disturbanceX, disturbanceY);
     }
 

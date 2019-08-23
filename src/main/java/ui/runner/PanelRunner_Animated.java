@@ -189,7 +189,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> node) {
+    public void update(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
         if (node.getTreeDepth() > 0)
             simRunToNode(node);
     }

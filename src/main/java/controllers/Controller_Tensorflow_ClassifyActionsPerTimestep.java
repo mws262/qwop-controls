@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class Controller_Tensorflow_ClassifyActionsPerTimestep extends TensorflowLoader implements IController {
+public class Controller_Tensorflow_ClassifyActionsPerTimestep extends TensorflowLoader implements IController<CommandQWOP> {
 
     /**
      * Name of the input in the TensorFlow graph.
@@ -58,29 +58,29 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     }
 
     @Override
-    public Action policy(NodeQWOPExplorableBase<?> state) {
+    public Action<CommandQWOP> policy(NodeQWOPExplorableBase<?, CommandQWOP> state) {
         List<Float> keyClassification = sisoFloatPrediction(state.getState(), inputName, outputName);
         float probability0 = keyClassification.get(0);
         float probability1 = keyClassification.get(1);
         float probability2 = keyClassification.get(2);
-        Action chosenAction;
+        Action<CommandQWOP> chosenAction;
 
         // WO
         if ((probability0 > actionLatchingThreshold && prevAction == 0) || probability0 >= probability1 && probability0 >= probability2) {
-            chosenAction = new Action(1, CommandQWOP.WO);
+            chosenAction = new Action<>(1, CommandQWOP.WO);
             prevAction = 0;
             logger.debug("WO, " + probability0);
 
             // QP
         } else if ((probability1 > actionLatchingThreshold && prevAction == 1) || probability1 >= probability0 && probability1 >= probability2) {
-            chosenAction = new Action(1, CommandQWOP.QP);
+            chosenAction = new Action<>(1, CommandQWOP.QP);
             prevAction = 1;
             logger.debug("QP, " + probability1);
 
             // None
         } else if ((probability2 > actionLatchingThreshold && prevAction == 2) || probability2 >= probability0 && probability2 >= probability1) {
 
-            chosenAction = new Action(1, CommandQWOP.NONE);
+            chosenAction = new Action<>(1, CommandQWOP.NONE);
             prevAction = 2;
             logger.debug("__, " + probability2);
         } else {
@@ -91,12 +91,13 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     }
 
     @Override
-    public Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game) {
+    public Action<CommandQWOP> policy(NodeQWOPExplorableBase<?, CommandQWOP> state,
+                                     IGameSerializable<CommandQWOP> game) {
         return policy(state);
     }
 
     @Override
-    public IController getCopy() {
+    public IController<CommandQWOP> getCopy() {
         throw new RuntimeException("Haven't implemented copy on this controller yet!");
     }
 }

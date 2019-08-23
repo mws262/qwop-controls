@@ -1,5 +1,6 @@
 package tree.node.filter;
 
+import game.action.Command;
 import tree.node.NodeQWOPExplorableBase;
 
 /**
@@ -8,7 +9,7 @@ import tree.node.NodeQWOPExplorableBase;
  *
  * @author matt
  */
-public class NodeFilter_SurvivalHorizon implements INodeFilter {
+public class NodeFilter_SurvivalHorizon<C extends Command<?>> implements INodeFilter<C> {
 
     /**
      * How many tree layers beyond this node is required for it to be included by the tree.node.filter.
@@ -29,7 +30,7 @@ public class NodeFilter_SurvivalHorizon implements INodeFilter {
     }
 
     @Override
-    public boolean filter(NodeQWOPExplorableBase node) {
+    public boolean filter(NodeQWOPExplorableBase<?, C> node) {
         return node.getMaxBranchDepth() - node.getTreeDepth() >= requiredSurvivalHorizon;
     }
 

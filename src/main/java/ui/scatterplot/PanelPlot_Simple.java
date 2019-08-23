@@ -1,6 +1,7 @@
 package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
 import org.jfree.chart.plot.XYPlot;
 import tree.node.NodeQWOPGraphicsBase;
 
@@ -16,7 +17,7 @@ import java.util.Map;
  *
  * @author matt
  */
-public class PanelPlot_Simple extends PanelPlot {
+public class PanelPlot_Simple<C extends Command<?>> extends PanelPlot<C> {
 
     private final String name;
 
@@ -105,7 +106,7 @@ public class PanelPlot_Simple extends PanelPlot {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> plotNode) {}
+    public void update(NodeQWOPGraphicsBase<?, C> plotNode) {}
 
     @Override
     public void plotClicked(int plotIdx) {}

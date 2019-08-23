@@ -1,6 +1,7 @@
 package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.CommandQWOP;
 import tree.node.evaluator.EvaluationFunction_SqDistFromOther;
 import game.GameUnified;
 import game.state.IState;
@@ -21,9 +22,9 @@ public class PanelRunner_Comparison extends PanelRunner {
     /**
      * Node used for base comparison.
      */
-    private NodeQWOPExplorableBase<?> selectedNode;
+    private NodeQWOPExplorableBase<?, CommandQWOP> selectedNode;
 
-    private List<NodeQWOPExplorableBase<?>> focusNodes = new ArrayList<>();
+    private List<NodeQWOPExplorableBase<?, CommandQWOP>> focusNodes = new ArrayList<>();
     private List<IState> states = new ArrayList<>();
     private List<Stroke> strokes = new ArrayList<>();
     private List<Color> colors = new ArrayList<>();
@@ -35,8 +36,8 @@ public class PanelRunner_Comparison extends PanelRunner {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> node) {
-        NodeQWOPGraphicsBase<?> root = node.getRoot();
+    public void update(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
+        NodeQWOPGraphicsBase<?, CommandQWOP> root = node.getRoot();
         // todo
 //        if (root instanceof NodeQWOPGraphicsBase) {
 //            NodeQWOPGraphicsBase graphicsRoot = ((NodeQWOPGraphicsBase) root);
@@ -62,23 +63,24 @@ public class PanelRunner_Comparison extends PanelRunner {
         focusNodes.add(node);
 
         // Get the nearest ones, according to the provided metric.
-        EvaluationFunction_SqDistFromOther evFun = new EvaluationFunction_SqDistFromOther(selectedNode.getState());
+        EvaluationFunction_SqDistFromOther<CommandQWOP> evFun =
+                new EvaluationFunction_SqDistFromOther<>(selectedNode.getState());
 
-        Map<Float, NodeQWOPExplorableBase<?>> evaluatedNodeList = new TreeMap<>();
+        Map<Float, NodeQWOPExplorableBase<?, CommandQWOP>> evaluatedNodeList = new TreeMap<>();
 
-        List<NodeQWOPExplorableBase> allNodes = new ArrayList<>();
+        List<NodeQWOPExplorableBase<?, CommandQWOP>> allNodes = new ArrayList<>();
         node.getRoot().recurseDownTreeInclusive(allNodes::add);
 
 
-        for (NodeQWOPExplorableBase<?> n : allNodes) {
+        for (NodeQWOPExplorableBase<?, CommandQWOP> n : allNodes) {
             evaluatedNodeList.put(-evFun.getValue(n), n); // Low is better, so reverse so the lowest are at the top.
         }
 
-        Iterator<NodeQWOPExplorableBase<?>> orderedNodes = evaluatedNodeList.values().iterator();
+        Iterator<NodeQWOPExplorableBase<?, CommandQWOP>> orderedNodes = evaluatedNodeList.values().iterator();
 
         for (int i = 0; i < maxNumStatesToShow; i++) {
             if (orderedNodes.hasNext()) {
-                NodeQWOPExplorableBase<?> closeNode = orderedNodes.next();
+                NodeQWOPExplorableBase<?, CommandQWOP> closeNode = orderedNodes.next();
                 focusNodes.add(closeNode);
                 states.add(closeNode.getState());
                 strokes.add(normalStroke);

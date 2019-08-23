@@ -3,6 +3,7 @@ package goals.data_visualization;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.GameUnified;
+import game.action.CommandQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOPGraphics;
@@ -83,17 +84,17 @@ public class MAIN_SnapshotAll extends JFrame {
             return;
         }
 
-        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+        NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameUnified.getInitialState());
 
-        SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
-        List<SavableSingleGame> games = new ArrayList<>();
+        SavableFileIO<SavableSingleGame<CommandQWOP>> fileIO = new SavableFileIO<>();
+        List<SavableSingleGame<CommandQWOP>> games = new ArrayList<>();
 
         for (File f : playbackFiles) {
             fileIO.loadObjectsToCollection(f, games);
         }
 
         NodeQWOPGraphics.makeNodesFromRunInfo(games, rootNode);
-        NodeQWOPGraphics currNode = rootNode;
+        NodeQWOPGraphics<CommandQWOP> currNode = rootNode;
         while (currNode.getTreeDepth() < playbackDepth && currNode.getChildCount() > 0) {
             currNode = currNode.getChildByIndex(0);
         }

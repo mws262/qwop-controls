@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import game.action.Command;
+import game.action.IActionGenerator;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
@@ -21,14 +22,17 @@ public class RolloutPolicy_DecayingHorizon<C extends Command<?>> extends Rollout
     public final IController<C> rolloutController;
 
     public RolloutPolicy_DecayingHorizon(@JsonProperty("evaluationFunction") IEvaluationFunction<C> evaluationFunction,
+                                         @JsonProperty("rolloutActionGenerator") IActionGenerator<C> rolloutActionGenerator,
                                          @JsonProperty("rolloutController") IController<C> rolloutController,
                                          @JsonProperty("maxTimesteps") int maxTimesteps) {
-        super(evaluationFunction, maxTimesteps);
+        super(evaluationFunction, rolloutActionGenerator, maxTimesteps);
         this.rolloutController = rolloutController;
     }
 
-    public RolloutPolicy_DecayingHorizon(IEvaluationFunction<C> evaluationFunction, IController<C> rolloutController) {
-        this(evaluationFunction, rolloutController, defaultMaxTimesteps);
+    public RolloutPolicy_DecayingHorizon(IEvaluationFunction<C> evaluationFunction,
+                                         IActionGenerator<C> rolloutActionGenerator,
+                                         IController<C> rolloutController) {
+        this(evaluationFunction, rolloutActionGenerator, rolloutController, defaultMaxTimesteps);
     }
 
     float startScore(NodeQWOPExplorableBase<?, C> startNode) {
@@ -60,7 +64,9 @@ public class RolloutPolicy_DecayingHorizon<C extends Command<?>> extends Rollout
     @JsonIgnore
     @Override
     public RolloutPolicyBase<C> getCopy() {
-        return new RolloutPolicy_DecayingHorizon<>(getEvaluationFunction().getCopy(), rolloutController.getCopy(),
+        return new RolloutPolicy_DecayingHorizon<>(getEvaluationFunction().getCopy(),
+                rolloutActionGenerator,
+                rolloutController.getCopy(),
                 maxTimesteps);
     }
 

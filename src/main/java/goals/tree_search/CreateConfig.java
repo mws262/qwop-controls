@@ -1,9 +1,9 @@
 package goals.tree_search;
 
 import controllers.Controller_ValueFunction;
-import game.GameUnified;
 import game.GameUnifiedCaching;
 import game.action.ActionGenerator_UniformNoRepeats;
+import game.action.CommandQWOP;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import savers.DataSaver_Null;
@@ -12,6 +12,7 @@ import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_Distribution;
 import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.IRolloutPolicy;
+import tree.sampler.rollout.RolloutPolicyBase;
 import tree.sampler.rollout.RolloutPolicy_EntireRun;
 import tree.sampler.rollout.RolloutPolicy_Window;
 import tree.stage.TreeStage;
@@ -50,7 +51,7 @@ public class CreateConfig {
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(128);
         layerSizes.add(64);
-        ValueFunction_TensorFlow valueFunction = null;
+        ValueFunction_TensorFlow<CommandQWOP> valueFunction = null;
         List<String> opts = new ArrayList<>();
         opts.add("--learnrate");
         opts.add("1e-4");
@@ -67,31 +68,30 @@ public class CreateConfig {
         }
 
         SearchConfiguration.Machine machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
-        SearchConfiguration.Tree tree =
-                new SearchConfiguration.Tree(
-
-                //        ActionGenerator_FixedSequence.makeExtendedGenerator(-1)
-                ActionGenerator_UniformNoRepeats.makeDefaultGenerator()
-
+        SearchConfiguration.Tree<CommandQWOP> tree =
+                new SearchConfiguration.Tree<>(
+                        //        ActionGenerator_FixedSequence.makeExtendedGenerator(-1)
+                        ActionGenerator_UniformNoRepeats.makeDefaultGenerator()
                 );
 
-
-        List<SearchConfiguration.SearchOperation> searchOperations = new ArrayList<>();
+        List<SearchConfiguration.SearchOperation<CommandQWOP>> searchOperations = new ArrayList<>();
         IUserInterface ui = CreateConfig.setupFullUI();
 
-        searchOperations.add(new SearchConfiguration.SearchOperation(new TreeStage_FixedGames(80000),
-                new Sampler_Distribution(),
-                new DataSaver_Null()));
+        searchOperations.add(new SearchConfiguration.SearchOperation<>(
+                new TreeStage_FixedGames<>(80000),
+                new Sampler_Distribution<>(),
+                new DataSaver_Null<>()));
 
 
-        TreeStage tstage1 = new TreeStage_FixedGames(10000);
-        TreeStage tstage2 = new TreeStage_ValueFunctionUpdate(valueFunction, "src/main/resources" +
+        TreeStage<CommandQWOP> tstage1 = new TreeStage_FixedGames<>(10000);
+        TreeStage<CommandQWOP> tstage2 = new TreeStage_ValueFunctionUpdate<>(valueFunction, "src/main/resources" +
                 "/tflow_models/checkpoints/checkpoint_name", 1);
-        TreeStage stagegroup = new TreeStage_Grouping(new TreeStage[] {tstage1, tstage2});
+        TreeStage<CommandQWOP> stagegroup = new TreeStage_Grouping<>(new TreeStage[] {tstage1, tstage2});
 
-        IRolloutPolicy rollout1 = new RolloutPolicy_Window(
-                new RolloutPolicy_EntireRun( // RolloutPolicy_DecayingHorizon(
+        IRolloutPolicy<CommandQWOP> rollout1 = new RolloutPolicy_Window<>(
+                new RolloutPolicy_EntireRun<>( // RolloutPolicy_DecayingHorizon(
                         //new EvaluationFunction_Constant(10f),
+                        RolloutPolicyBase.getQWOPRolloutActionGenerator(),
                         new Controller_ValueFunction<>(new ValueFunction_TensorFlow_StateOnly(
                                 "src/main/resources/tflow_models/test.pb",
                                 game.getCopy(),
@@ -100,13 +100,17 @@ public class CreateConfig {
                                 "",
                                 false))));
 
-        searchOperations.add(new SearchConfiguration.SearchOperation(stagegroup,
-                new Sampler_UCB(
-                        new EvaluationFunction_Constant(5f), rollout1, new ValueUpdater_Average(), 5, 1),
-                new DataSaver_Null()));
+        searchOperations.add(new SearchConfiguration.SearchOperation<>(stagegroup,
+                new Sampler_UCB<>(
+                        new EvaluationFunction_Constant<>(5f),
+                        rollout1,
+                        new ValueUpdater_Average<>(),
+                        5,
+                        1),
+                new DataSaver_Null<>()));
 
 
-        SearchConfiguration configuration = new SearchConfiguration(machine, tree, searchOperations, ui);
+        SearchConfiguration<CommandQWOP> configuration = new SearchConfiguration<>(machine, tree, searchOperations, ui);
 
 
         SearchConfiguration.serializeToXML(new File("./src/main/resources/config/default.xml"), configuration);
@@ -146,7 +150,7 @@ public class CreateConfig {
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
 //        workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 
-        PanelRunner_ControlledTFlow<GameUnified> controlledRunnerPane = new PanelRunner_ControlledTFlow<>("ValFun " +
+        PanelRunner_ControlledTFlow controlledRunnerPane = new PanelRunner_ControlledTFlow("ValFun " +
                 "controller", game.getCopy(), "src/main/resources/tflow_models", "src/main/resources/tflow_models" +
                 "/checkpoints");
 

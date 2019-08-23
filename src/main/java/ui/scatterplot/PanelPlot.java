@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import game.action.Command;
 import org.apache.commons.lang.ArrayUtils;
 import org.jfree.chart.*;
 import org.jfree.chart.annotations.XYTextAnnotation;
@@ -35,7 +36,8 @@ import java.util.Map;
         @JsonSubTypes.Type(value = PanelPlot_SingleRun.class, name = "plot_single_run"),
         @JsonSubTypes.Type(value = PanelPlot_States.class, name = "plot_states")
 })
-public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, ChartMouseListener {
+public abstract class PanelPlot<C extends Command<?>> extends JPanel implements TabbedPaneActivator<C>,
+        ChartMouseListener {
 
     private static final long serialVersionUID = 1L;
 

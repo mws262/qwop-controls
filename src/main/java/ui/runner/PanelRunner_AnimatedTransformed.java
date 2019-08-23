@@ -1,6 +1,7 @@
 package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.CommandQWOP;
 import tree.node.filter.NodeFilter_Downsample;
 import game.GameUnified;
 import game.state.IState;
@@ -82,8 +83,8 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
     }
 
     @Override
-    public void simRunToNode(NodeQWOPExplorableBase<?> node) {
-        List<NodeQWOPExplorableBase<?>> nodeList = new ArrayList<>();
+    public void simRunToNode(NodeQWOPExplorableBase<?, CommandQWOP> node) {
+        List<NodeQWOPExplorableBase<?, ?>> nodeList = new ArrayList<>();
         node.getRoot().recurseDownTreeInclusive(nodeList::add);
 
         transformDownsampler.filter(nodeList);

@@ -1,13 +1,14 @@
 package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import tree.node.filter.NodeFilter_Downsample;
+import game.action.Command;
 import game.state.IState.ObjectName;
 import game.state.StateVariable.StateName;
 import org.jfree.chart.plot.XYPlot;
+import tree.Utility;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphicsBase;
-import tree.Utility;
+import tree.node.filter.NodeFilter_Downsample;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,17 +25,17 @@ import java.util.Map.Entry;
  *
  * @author Matt
  */
-public class PanelPlot_States extends PanelPlot implements ItemListener {
+public class PanelPlot_States<C extends Command<?>> extends PanelPlot<C> implements ItemListener {
 
     /**
      * Maximum allowed datapoints. Will downsample if above. Prevents extreme lag.
      */
-    private final NodeFilter_Downsample plotDownsampler = new NodeFilter_Downsample(5000);
+    private final NodeFilter_Downsample<C> plotDownsampler = new NodeFilter_Downsample<>(5000);
 
     /**
      * Node from which states are referenced.
      */
-    private NodeQWOPGraphicsBase<?> selectedNode;
+    private NodeQWOPGraphicsBase<?, C> selectedNode;
 
     /**
      * Which plot index has an active menu.
@@ -128,10 +129,10 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> selectedNode) {
+    public void update(NodeQWOPGraphicsBase<?, C> selectedNode) {
         this.selectedNode = selectedNode;
         // Fetching new data.
-        List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
+        List<NodeQWOPExplorableBase<?, C>> nodesBelow = new ArrayList<>();
         if (selectedNode != null) {
             selectedNode.recurseDownTreeInclusive(nodesBelow::add);
 

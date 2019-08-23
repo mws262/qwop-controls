@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Command;
+import org.jetbrains.annotations.NotNull;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
@@ -13,15 +14,15 @@ import tree.node.evaluator.IEvaluationFunction;
  */
 public class RolloutPolicy_JustEvaluate<C extends Command<?>> implements IRolloutPolicy<C> {
 
-    public final IEvaluationFunction evaluationFunction;
+    public final IEvaluationFunction<C> evaluationFunction;
 
     @JsonCreator
-    public RolloutPolicy_JustEvaluate(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction) {
+    public RolloutPolicy_JustEvaluate(@JsonProperty("evaluationFunction") IEvaluationFunction<C> evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
     }
 
     @Override
-    public float rollout(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
+    public float rollout(@NotNull NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
         return evaluationFunction.getValue(startNode);
     }
 

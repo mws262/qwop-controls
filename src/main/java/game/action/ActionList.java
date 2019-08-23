@@ -95,7 +95,7 @@ public class ActionList<C extends Command<?>> extends ArrayList<Action<C>> {
      * @return An exhaustive {@link ActionList}.
      */
     @SuppressWarnings("unused")
-    public static <C extends Command<?>> ActionList makeExhaustiveActionList(int minDuration,
+    public static <C extends Command<?>> ActionList<C> makeExhaustiveActionList(int minDuration,
                                                                              int maxDuration,
                                                                              @NotNull List<C> commands,
                                                                              @NotNull Distribution<Action<C>> distribution) {
@@ -109,6 +109,21 @@ public class ActionList<C extends Command<?>> extends ArrayList<Action<C>> {
             }
         }
         return set;
+    }
+
+    public static ActionList<CommandQWOP> makeExhaustiveQWOPActionList(int minDuration, int maxDuration,
+                                                                       Distribution<Action<CommandQWOP>> distribution) {
+        List<CommandQWOP> commands = new ArrayList<>();
+        commands.add(CommandQWOP.NONE);
+        commands.add(CommandQWOP.Q);
+        commands.add(CommandQWOP.W);
+        commands.add(CommandQWOP.O);
+        commands.add(CommandQWOP.P);
+        commands.add(CommandQWOP.QO);
+        commands.add(CommandQWOP.QP);
+        commands.add(CommandQWOP.WO);
+        commands.add(CommandQWOP.WP);
+        return makeExhaustiveActionList(minDuration, maxDuration, commands, distribution);
     }
 
     /**

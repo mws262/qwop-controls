@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author matt
  */
-public interface INodeFilter {
+public interface INodeFilter<C extends Command<?>> {
 
     /**
      * Decide if this node should be included or filtered out. If not overridden, this will default to true.
@@ -18,7 +18,7 @@ public interface INodeFilter {
      * @param node Node to apply filtering rules to.
      * @return Whether this node should be kept. True means keep. False means tree.node.filter out.
      */
-    default <N extends NodeQWOPExplorableBase<?, C>, C extends Command<?>> boolean filter(N node){ return true; }
+    default boolean filter(NodeQWOPExplorableBase<?, C> node){ return true; }
 
     /**
      * Decide which of these should be kept. Alters the list in place. Default is to call single node tree.node.filter for all
@@ -26,7 +26,7 @@ public interface INodeFilter {
      *
      * @param nodes A list of nodes to tree.node.filter. This list will be modified in place.
      */
-    default <N extends NodeQWOPExplorableBase<?, C>, C extends Command<?>> void filter(List<N> nodes) {
+    default void filter(List<NodeQWOPExplorableBase<?, C>> nodes) {
         nodes.removeIf(n -> !filter(n));
     }
 }
