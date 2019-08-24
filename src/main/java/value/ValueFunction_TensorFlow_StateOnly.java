@@ -124,7 +124,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action<CommandQWOP> getMaximizingAction(NodeQWOPBase<?, CommandQWOP> currentNode, IGameSerializable realGame) {
+    public Action<CommandQWOP> getMaximizingAction(NodeQWOPBase<?, CommandQWOP> currentNode,
+                                                   IGameSerializable<CommandQWOP> realGame) {
         evaluations.forEach(e -> e.setStartingState(realGame.getSerializedState()));
         return runEvaluations();
     }
@@ -335,7 +336,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
                 gameLocal.step(command);
                 IState st = gameLocal.getCurrentState();
-                NodeQWOPBase<?, CommandQWOP> nextNode = new NodeQWOP(st);
+                NodeQWOPBase<?, CommandQWOP> nextNode = new NodeQWOP<>(st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);

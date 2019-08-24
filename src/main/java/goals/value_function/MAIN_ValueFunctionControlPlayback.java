@@ -14,7 +14,7 @@ public class MAIN_ValueFunctionControlPlayback {
 
         JFrame jFrame = new JFrame();
 
-        PanelRunner_ControlledTFlow<GameUnified> controlPanel = new PanelRunner_ControlledTFlow<>("Controlled runner",
+        PanelRunner_ControlledTFlow controlPanel = new PanelRunner_ControlledTFlow("Controlled runner",
                 game,
                 "src/main/resources/tflow_models",
                 "src/main/resources/tflow_models/checkpoints");

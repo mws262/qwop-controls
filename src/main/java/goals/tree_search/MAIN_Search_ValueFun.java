@@ -5,7 +5,6 @@ import controllers.Controller_ValueFunction;
 import controllers.IController;
 import game.GameUnified;
 import game.GameUnifiedCaching;
-import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
 import game.action.CommandQWOP;
@@ -166,7 +165,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     }
 
     @Override
-    TreeWorker getTreeWorker() {
+    TreeWorker<CommandQWOP> getTreeWorker() {
 
         /* Pick rollout configuration. */
         IRolloutPolicy<CommandQWOP> rollout;
@@ -201,13 +200,16 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         // BASIC ROLLOUT STRATEGY
         switch (rolloutType) {
             case END_SCORE:
-                rollout = new RolloutPolicy_EndScore<>(rolloutEvaluator, rolloutController);
+                rollout = new RolloutPolicy_EndScore<>(rolloutEvaluator,
+                        RolloutPolicyBase.getQWOPRolloutActionGenerator(), rolloutController);
                 break;
             case DELTA_SCORE:
-                rollout = new RolloutPolicy_DeltaScore<>(rolloutEvaluator, rolloutController);
+                rollout = new RolloutPolicy_DeltaScore<>(rolloutEvaluator,
+                        RolloutPolicyBase.getQWOPRolloutActionGenerator(), rolloutController);
                 break;
             case DECAYING_HORIZON:
-                rollout = new RolloutPolicy_DecayingHorizon<>(rolloutEvaluator, rolloutController,
+                rollout = new RolloutPolicy_DecayingHorizon<>(rolloutEvaluator,
+                        RolloutPolicyBase.getQWOPRolloutActionGenerator(), rolloutController,
                         rolloutHorizonTimesteps);
                 break;
             default:
@@ -297,7 +299,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
             // Update node labels if graphics are enabled.
             if (!headless) {
-                NodeQWOPGraphics<CommandQWOP> graphicsRootNode = (NodeQWOPGraphics) rootNode;
+                NodeQWOPGraphics<CommandQWOP> graphicsRootNode = (NodeQWOPGraphics<CommandQWOP>) rootNode;
 
                 Runnable updateLabels = () -> graphicsRootNode.recurseDownTreeExclusive(n -> {
                     float percDiff = valueFunction.evaluate(n); // Temp disable percent diff for absolute diff.
@@ -314,10 +316,10 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     }
 
     private void doSearchAndUpdate(NodeQWOPExplorableBase<?, CommandQWOP> rootNode, int updateIdx) {
-        TreeStage_MaxDepth searchMax = new TreeStage_MaxDepth(getToSteadyDepth, bailAfterXGames);
+        TreeStage_MaxDepth<CommandQWOP> searchMax = new TreeStage_MaxDepth<>(getToSteadyDepth, bailAfterXGames);
 
         // Grab some workers from the pool.
-        List<TreeWorker> tws = getTreeWorkers(numWorkersToUse);
+        List<TreeWorker<CommandQWOP>> tws = getTreeWorkers(numWorkersToUse);
 
         // Do stage search
         searchMax.initialize(tws, rootNode);
