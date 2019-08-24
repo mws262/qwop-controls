@@ -312,13 +312,15 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("controlvalue", "yaml");
         file.deleteOnExit();
         // Base case for simple value function.
-        Controller_ValueFunction<CommandQWOP> controller =
+        Controller_ValueFunction<CommandQWOP, ValueFunction_Constant<CommandQWOP>> controller =
                 new Controller_ValueFunction<>(new ValueFunction_Constant<>(45f, CommandQWOP.NONE));
 
         SearchConfiguration.serializeToYaml(file, controller);
         Assert.assertTrue(file.exists());
 
-        Controller_ValueFunction<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file, Controller_ValueFunction.class);
+        Controller_ValueFunction<CommandQWOP, ValueFunction_Constant<CommandQWOP>> loaded =
+                SearchConfiguration.deserializeYaml(file,
+                Controller_ValueFunction.class);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(controller.policy(sampleNode1), loaded.policy(sampleNode1));
         Assert.assertEquals(controller.policy(sampleNode2), loaded.policy(sampleNode2));
@@ -348,16 +350,17 @@ public class SearchConfigurationTest {
         files.forEach(File::deleteOnExit);
         Assert.assertTrue(modelFile.exists());
 
-        controller = new Controller_ValueFunction<>(valFun);
+        Controller_ValueFunction<CommandQWOP, ValueFunction_TensorFlow_StateOnly> tflowController =
+                new Controller_ValueFunction<>(valFun);
 
-        SearchConfiguration.serializeToYaml(file, controller);
+        SearchConfiguration.serializeToYaml(file, tflowController);
         Assert.assertTrue(file.exists());
 
         loaded = SearchConfiguration.deserializeYaml(file, Controller_ValueFunction.class);
         Assert.assertNotNull(loaded);
-        Assert.assertEquals(controller.policy(sampleNode1), loaded.policy(sampleNode1));
-        Assert.assertEquals(controller.policy(sampleNode2), loaded.policy(sampleNode2));
-        controller.close();
+        Assert.assertEquals(tflowController.policy(sampleNode1), loaded.policy(sampleNode1));
+        Assert.assertEquals(tflowController.policy(sampleNode2), loaded.policy(sampleNode2));
+        tflowController.close();
     }
 
     @Test
@@ -1209,13 +1212,13 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("uiheadless", "yaml");
         file.deleteOnExit();
 
-        UI_Full ui = new UI_Full();
-        ui.addTab(new PanelPlot_States("myname", 4));
+        UI_Full<CommandQWOP> ui = new UI_Full<>();
+        ui.addTab(new PanelPlot_States<>("myname", 4));
 
         SearchConfiguration.serializeToYaml(file, ui);
         Assert.assertTrue(file.exists());
 
-        UI_Full loaded = SearchConfiguration.deserializeYaml(file, UI_Full.class);
+        UI_Full<CommandQWOP> loaded = SearchConfiguration.deserializeYaml(file, UI_Full.class);
         Assert.assertNotNull(loaded);
 
         Assert.assertEquals(1, loaded.getTabbedPanes().size());

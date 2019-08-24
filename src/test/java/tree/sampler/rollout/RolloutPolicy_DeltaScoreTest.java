@@ -24,26 +24,27 @@ public class RolloutPolicy_DeltaScoreTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
 
-    private EvaluationFunction_Distance evaluator = new EvaluationFunction_Distance();
-    private RolloutPolicyBase rollout = new RolloutPolicy_DeltaScore(evaluator, new Controller_Random());
+    private EvaluationFunction_Distance<CommandQWOP> evaluator = new EvaluationFunction_Distance<>();
+    private RolloutPolicyBase<CommandQWOP> rollout = new RolloutPolicy_DeltaScore<>(evaluator,
+            RolloutPolicyBase.getQWOPRolloutActionGenerator(), new Controller_Random<>());
 
-    private Action a1 = new Action(10, CommandQWOP.WO);
-    private Action a2 = new Action(5, CommandQWOP.QP);
-    private Action a3 = new Action(15, CommandQWOP.NONE);
-    private Action a4 = new Action(3, CommandQWOP.Q);
-    private Action a5 = new Action(12, CommandQWOP.W);
+    private Action<CommandQWOP> a1 = new Action<>(10, CommandQWOP.WO),
+            a2 = new Action<>(5, CommandQWOP.QP),
+            a3 = new Action<>(15, CommandQWOP.NONE),
+            a4 = new Action<>(3, CommandQWOP.Q),
+            a5 = new Action<>(12, CommandQWOP.W);
 
     private IState s1, s1_2, s1_2_3;
     private IState s1_2_4;
     private IState s2, s2_3, s2_3_5;
 
-    private NodeQWOPExplorable root;
-    private NodeQWOPExplorable n1, n1_2, n1_2_3;
-    private NodeQWOPExplorable n1_2_4;
-    private NodeQWOPExplorable n2, n2_3, n2_3_5;
+    private NodeQWOPExplorable<CommandQWOP> root;
+    private NodeQWOPExplorable<CommandQWOP> n1, n1_2, n1_2_3;
+    private NodeQWOPExplorable<CommandQWOP> n1_2_4;
+    private NodeQWOPExplorable<CommandQWOP> n2, n2_3, n2_3_5;
 
-    private IActionGenerator rolloutActionGenerator = RolloutPolicyBase.getQWOPRolloutActionGenerator();
-    private Set<Action> possibleRolloutActions;
+    private IActionGenerator<CommandQWOP> rolloutActionGenerator = RolloutPolicyBase.getQWOPRolloutActionGenerator();
+    private Set<Action<CommandQWOP>> possibleRolloutActions;
     {
         possibleRolloutActions = rolloutActionGenerator.getAllPossibleActions();
     }
@@ -52,7 +53,7 @@ public class RolloutPolicy_DeltaScoreTest {
     public void setup() {
         // Set up a demo tree.
         GameUnified game = new GameUnified();
-        root = new NodeQWOPExplorable(GameUnified.getInitialState(),
+        root = new NodeQWOPExplorable<>(GameUnified.getInitialState(),
                 ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
 
         // First branch.
@@ -111,7 +112,7 @@ public class RolloutPolicy_DeltaScoreTest {
         IState st1 = game.getCurrentState();
 
         game.makeNewWorld();
-        rollout.coldStartGameToNode(new NodeQWOP(st1), game);
+        rollout.coldStartGameToNode(new NodeQWOP<>(st1), game);
         IState st2 = game.getCurrentState();
 
         Assert.assertEquals(st1, st2);
@@ -172,26 +173,28 @@ public class RolloutPolicy_DeltaScoreTest {
 
     @Test
     public void getRolloutActionGenerator() {
-        IActionGenerator gen = RolloutPolicyBase.getQWOPRolloutActionGenerator();
+        IActionGenerator<CommandQWOP> gen = RolloutPolicyBase.getQWOPRolloutActionGenerator();
         Assert.assertTrue(!gen.getAllPossibleActions().isEmpty());
     }
 
     @Test
     public void rollout() {
 
-        IEvaluationFunction evalFun = new EvaluationFunction_Distance();
+        IEvaluationFunction<CommandQWOP> evalFun = new EvaluationFunction_Distance<>();
 
         for (int ts = 5; ts < 400; ts += 50) {
-            RolloutPolicy_DeltaScore rollout = new RolloutPolicy_DeltaScore(evalFun, new Controller_Random(), ts);
+            RolloutPolicy_DeltaScore<CommandQWOP> rollout = new RolloutPolicy_DeltaScore<>(evalFun,
+                    RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+                    new Controller_Random<>(), ts);
             GameUnified game = new GameUnified();
-            NodeQWOPExplorable startNode = n1_2_3;
+            NodeQWOPExplorable<CommandQWOP> startNode = n1_2_3;
             int startIterations = game.iterations;
             rollout.simGameToNode(startNode, game);
             float rolloutScore = rollout.rollout(startNode, game);
 
             Assert.assertTrue((game.iterations - startIterations) <= rollout.maxTimesteps);
             IState finalState = game.getCurrentState();
-            float expectedScore = (evalFun.getValue(new NodeQWOP(finalState)) - evalFun.getValue(startNode))
+            float expectedScore = (evalFun.getValue(new NodeQWOP<>(finalState)) - evalFun.getValue(startNode))
                     * (finalState.isFailed() ? rollout.failureMultiplier : 1.0f);
 
             Assert.assertEquals(expectedScore, rolloutScore, 1e-12f);
@@ -200,9 +203,10 @@ public class RolloutPolicy_DeltaScoreTest {
 
     @Test
     public void getCopy() {
-        IEvaluationFunction evalFun = new EvaluationFunction_Distance();
-        RolloutPolicy_DeltaScore rollout = new RolloutPolicy_DeltaScore(evalFun, new Controller_Random());
-        RolloutPolicy_DeltaScore copy = rollout.getCopy();
+        IEvaluationFunction<CommandQWOP> evalFun = new EvaluationFunction_Distance<>();
+        RolloutPolicy_DeltaScore<CommandQWOP> rollout = new RolloutPolicy_DeltaScore<>(evalFun,
+                RolloutPolicyBase.getQWOPRolloutActionGenerator(), new Controller_Random<>());
+        RolloutPolicy_DeltaScore<CommandQWOP> copy = rollout.getCopy();
 
         Assert.assertEquals(rollout.getEvaluationFunction().getValue(n1_2_3), copy.getEvaluationFunction().getValue(n1_2_3),
                 1e-12f);

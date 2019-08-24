@@ -19,9 +19,9 @@ public class ActionTest {
     private CommandQWOP command2 = CommandQWOP.QP;
     private CommandQWOP command3 = CommandQWOP.NONE;
 
-    private Action validAction1 = new Action(actTimesteps1, command1);
-    private Action validAction2 = new Action(actTimesteps2, command2);
-    private Action validAction3 = new Action(actTimesteps3, command3);
+    private Action<CommandQWOP> validAction1 = new Action<>(actTimesteps1, command1);
+    private Action<CommandQWOP> validAction2 = new Action<>(actTimesteps2, command2);
+    private Action<CommandQWOP> validAction3 = new Action<>(actTimesteps3, command3);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
@@ -199,9 +199,9 @@ public class ActionTest {
         Assert.assertEquals(validAction3.hashCode(), validAction3.hashCode());
 
         // Must copy to get a pollable version of the action.
-        Action action1Copy = validAction1.getCopy();
-        Action action2Copy = validAction2.getCopy();
-        Action action3Copy = validAction3.getCopy();
+        Action<CommandQWOP> action1Copy = validAction1.getCopy();
+        Action<CommandQWOP> action2Copy = validAction2.getCopy();
+        Action<CommandQWOP> action3Copy = validAction3.getCopy();
 
         Assert.assertEquals(validAction1, action1Copy);
         Assert.assertEquals(validAction1.hashCode(), action1Copy.hashCode());
@@ -210,7 +210,7 @@ public class ActionTest {
         Assert.assertEquals(validAction3, action3Copy);
         Assert.assertEquals(validAction3.hashCode(), action3Copy.hashCode());
 
-        Action equivAction = new Action(actTimesteps1, command1).getCopy();
+        Action<CommandQWOP> equivAction = new Action<>(actTimesteps1, command1).getCopy();
         Assert.assertEquals(equivAction, action1Copy);
         Assert.assertEquals(equivAction.hashCode(), action1Copy.hashCode());
 
@@ -225,18 +225,18 @@ public class ActionTest {
 
     @Test
     public void comparing() {
-        Action a1 = new Action(5, CommandQWOP.QP);
-        Action a2 = new Action(5, CommandQWOP.QO);
-        Action a3 = new Action(5, CommandQWOP.QO);
-        Action a4 = new Action(7, CommandQWOP.O);
-        Action a5 = new Action(50, CommandQWOP.NONE);
-        Action a6 = new Action(3, CommandQWOP.NONE);
-        Action a7 = new Action(8, CommandQWOP.QO);
-        Action a8 = new Action(11, CommandQWOP.QP);
-        Action a9 = new Action(12, CommandQWOP.Q);
-        Action a10 = new Action(30, CommandQWOP.WO);
-        Action a11 = new Action(18, CommandQWOP.WO);
-        List<Action> alist = new ArrayList<>();
+        Action<CommandQWOP> a1 = new Action<>(5, CommandQWOP.QP),
+                a2 = new Action<>(5, CommandQWOP.QO),
+                a3 = new Action<>(5, CommandQWOP.QO),
+                a4 = new Action<>(7, CommandQWOP.O),
+                a5 = new Action<>(50, CommandQWOP.NONE),
+                a6 = new Action<>(3, CommandQWOP.NONE),
+                a7 = new Action<>(8, CommandQWOP.QO),
+                a8 = new Action<>(11, CommandQWOP.QP),
+                a9 = new Action<>(12, CommandQWOP.Q),
+                a10 = new Action<>(30, CommandQWOP.WO),
+                a11 = new Action<>(18, CommandQWOP.WO);
+        List<Action<CommandQWOP>> alist = new ArrayList<>();
         alist.add(a1);
         alist.add(a2);
         alist.add(a3);
@@ -272,7 +272,7 @@ public class ActionTest {
 
     @Test
     public void isMutable() {
-        Action act = new Action(14, CommandQWOP.QO);
+        Action<CommandQWOP> act = new Action<>(14, CommandQWOP.QO);
         Assert.assertFalse(act.isMutable());
 
         Action act_copy = act.getCopy();
@@ -282,17 +282,17 @@ public class ActionTest {
     @Test
     public void consolidateActions() {
         // General list of game.action with weird ordering and some zero-duration game.action.
-        List<Action> actions = new ArrayList<>();
-        actions.add(new Action(4, CommandQWOP.NONE));
-        actions.add(new Action(1, CommandQWOP.NONE));
-        actions.add(new Action(0, CommandQWOP.NONE));
-        actions.add(new Action(3, CommandQWOP.Q));
-        actions.add(new Action(0, CommandQWOP.NONE));
-        actions.add(new Action(1, CommandQWOP.Q));
-        actions.add(new Action(5, CommandQWOP.Q));
-        actions.add(new Action(0, CommandQWOP.QP));
+        List<Action<CommandQWOP>> actions = new ArrayList<>();
+        actions.add(new Action<>(4, CommandQWOP.NONE));
+        actions.add(new Action<>(1, CommandQWOP.NONE));
+        actions.add(new Action<>(0, CommandQWOP.NONE));
+        actions.add(new Action<>(3, CommandQWOP.Q));
+        actions.add(new Action<>(0, CommandQWOP.NONE));
+        actions.add(new Action<>(1, CommandQWOP.Q));
+        actions.add(new Action<>(5, CommandQWOP.Q));
+        actions.add(new Action<>(0, CommandQWOP.QP));
 
-        List<Action> consolidatedActions = Action.consolidateActions(actions);
+        List<Action<CommandQWOP>> consolidatedActions = Action.consolidateActions(actions);
 
         Assert.assertEquals(2, consolidatedActions.size());
 
@@ -305,10 +305,10 @@ public class ActionTest {
         Assert.assertEquals(consolidatedActions.get(1).peek(), CommandQWOP.Q);
 
         // Make a list with a single, nonzero element.
-        List<Action> singleActionList = new ArrayList<>();
-        singleActionList.add(new Action(10, CommandQWOP.QO));
+        List<Action<CommandQWOP>> singleActionList = new ArrayList<>();
+        singleActionList.add(new Action<>(10, CommandQWOP.QO));
 
-        List<Action> consolidatedSingleAction = Action.consolidateActions(singleActionList);
+        List<Action<CommandQWOP>> consolidatedSingleAction = Action.consolidateActions(singleActionList);
         Assert.assertEquals(10, consolidatedSingleAction.get(0).getTimestepsRemaining());
         Assert.assertEquals(consolidatedSingleAction.get(0).peek(), CommandQWOP.QO);
     }
@@ -318,9 +318,9 @@ public class ActionTest {
         exception.expect(IllegalArgumentException.class);
 
         // Make a list with a single, 0-duration element.
-        List<Action> singleActionList = new ArrayList<>();
-        singleActionList.add(new Action(0, CommandQWOP.QP));
-        List<Action> consolidatedSingleAction = Action.consolidateActions(singleActionList);
+        List<Action<CommandQWOP>> singleActionList = new ArrayList<>();
+        singleActionList.add(new Action<>(0, CommandQWOP.QP));
+        List<Action<CommandQWOP>> consolidatedSingleAction = Action.consolidateActions(singleActionList);
     }
 
     @Test
@@ -328,19 +328,19 @@ public class ActionTest {
         exception.expect(IllegalArgumentException.class);
 
         // Make a list with several, 0-duration element.
-        List<Action> actionList = new ArrayList<>();
-        actionList.add(new Action(0, CommandQWOP.QO));
-        actionList.add(new Action(0, CommandQWOP.WP));
-        actionList.add(new Action(0, CommandQWOP.WO));
-        actionList.add(new Action(0, CommandQWOP.NONE));
+        List<Action<CommandQWOP>> actionList = new ArrayList<>();
+        actionList.add(new Action<>(0, CommandQWOP.QO));
+        actionList.add(new Action<>(0, CommandQWOP.WP));
+        actionList.add(new Action<>(0, CommandQWOP.WO));
+        actionList.add(new Action<>(0, CommandQWOP.NONE));
 
-        List<Action> consolidateActions = Action.consolidateActions(actionList);
+        List<Action<CommandQWOP>> consolidateActions = Action.consolidateActions(actionList);
     }
 
     @Test
     public void constructorThrowsIllegalArgumentException() {
         exception.expect(IllegalArgumentException.class);
-        new Action(-1, CommandQWOP.NONE);
+        new Action<>(-1, CommandQWOP.NONE);
     }
 
     @Test

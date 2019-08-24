@@ -16,7 +16,7 @@ public class Command<T> implements Comparable<Command<T>> {
     }
 
     @Override
-    public int compareTo(@NotNull Command<T> o) {
+    public int compareTo(@NotNull Command o) {
         Objects.requireNonNull(o);
         if (this.get().hashCode() == o.get().hashCode()) {
             return 0;

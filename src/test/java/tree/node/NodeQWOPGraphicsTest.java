@@ -53,27 +53,23 @@ public class NodeQWOPGraphicsTest {
  */
 
     // Root node for our test tree.
-    private NodeQWOPGraphics rootNode;
+    private NodeQWOPGraphics<CommandQWOP> rootNode;
 
-    private NodeQWOPGraphics node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1, node3_2, node3_3,
+    private NodeQWOPGraphics<CommandQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1, node3_2, node3_3,
             node1_1_1, node1_1_2, node1_2_1, node2_2_1, node2_2_2, node2_2_3, node3_3_1, node3_3_2, node3_3_3,
             node1_2_1_2, node1_2_1_2_1, node1_2_1_2_2, node1_2_1_2_2_3;
 
 
-    private List<NodeQWOPGraphics> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
+    private List<NodeQWOPGraphics<CommandQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
 
     // Some sample game.action (mocked).
-    private Action a1;
-    private Action a2;
-    private Action a3;
-    private Action a4;
-    private Action a5;
-    private Action a6;
+    private Action<CommandQWOP> a1, a2, a3, a4, a5, a6;
 
     // Some states (mocked).
-    private State initialState = mock(State.class);
-    private State unfailedState = mock(State.class);
-    private State failedState = mock(State.class);
+    private State
+            initialState = mock(State.class),
+            unfailedState = mock(State.class),
+            failedState = mock(State.class);
 
     private IGameInternal game = mock(IGameInternal.class);
     @Rule
@@ -86,12 +82,12 @@ public class NodeQWOPGraphicsTest {
         when(game.getCurrentState()).thenReturn(unfailedState);
 
         // Set up action generator.
-        ActionList list1 = ActionList.makeActionList(new int[]{1,2,3}, CommandQWOP.Q,
-                new Distribution_Equal());
-        ActionList list2 = ActionList.makeActionList(new int[]{4,5,6}, CommandQWOP.W,
-                new Distribution_Equal());
+        ActionList<CommandQWOP> list1 = ActionList.makeActionList(new int[]{1,2,3}, CommandQWOP.Q,
+                new Distribution_Equal<>());
+        ActionList<CommandQWOP> list2 = ActionList.makeActionList(new int[]{4,5,6}, CommandQWOP.W,
+                new Distribution_Equal<>());
 
-        IActionGenerator generator = new ActionGenerator_FixedSequence(new ActionList[]{list1, list2});
+        IActionGenerator<CommandQWOP> generator = new ActionGenerator_FixedSequence<>(new ActionList[]{list1, list2});
         a1 = list1.get(0);
         a2 = list1.get(1);
         a3 = list1.get(2);
@@ -101,7 +97,7 @@ public class NodeQWOPGraphicsTest {
         a6 = list2.get(2);
 
         // Depth 0.
-        rootNode = new NodeQWOPGraphics(initialState, generator);
+        rootNode = new NodeQWOPGraphics<>(initialState, generator);
         nodesLvl0 = new ArrayList<>();
         nodesLvl0.add(rootNode);
 
@@ -432,19 +428,19 @@ public class NodeQWOPGraphicsTest {
      * @param node Node to fetch from.
      * @return 3-element float array representing the line color.
      */
-    private static float[] getLineColorFloats(NodeQWOPGraphicsBase<?> node) {
+    private static float[] getLineColorFloats(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
         return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "lineColorFloats");
     }
 
-    private static float[] getOverrideLineColorFloats(NodeQWOPGraphicsBase<?> node) {
+    private static float[] getOverrideLineColorFloats(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
         return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "overrideLineColorFloats");
     }
 
-    private static float[] getPointColorFloats(NodeQWOPGraphicsBase<?> node) {
+    private static float[] getPointColorFloats(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
         return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "pointColorFloats");
     }
 
-    private static float[] getOverridePointColorFloats(NodeQWOPGraphicsBase<?> node) {
+    private static float[] getOverridePointColorFloats(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
         return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "overridePointColorFloats");
     }
 

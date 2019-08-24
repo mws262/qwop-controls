@@ -4,6 +4,7 @@ import game.GameUnified;
 import game.GameUnifiedCaching;
 import game.IGameSerializable;
 import game.action.Action;
+import game.action.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 import tree.node.NodeQWOP;
@@ -49,7 +50,7 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertEquals(game.getStateDimension(), valFun.inputSize);
         Assert.assertEquals(1, valFun.outputSize);
 
-        valFun.evaluate(new NodeQWOP(null)); // Just to make sure it doesn't error out. The value is basically
+        valFun.evaluate(new NodeQWOP<>(null)); // Just to make sure it doesn't error out. The value is basically
         // meaningless.
 
         Assert.assertNotNull(valFun.stateStats.getMean());
@@ -85,7 +86,7 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertEquals(game.getStateDimension(), valFun.inputSize);
         Assert.assertEquals(outputSize, valFun.outputSize);
 
-        valFun.evaluate(new NodeQWOP(null)); // Just to make sure it doesn't error out. The value is basically
+        valFun.evaluate(new NodeQWOP<>(null)); // Just to make sure it doesn't error out. The value is basically
 
         valFun.close();
         // Bigger input due to delay-embedded version of the game.
@@ -115,7 +116,7 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertEquals(game.getStateDimension(), valFun.inputSize);
         Assert.assertEquals(outputSize, valFun.outputSize);
 
-        valFun.evaluate(new NodeQWOP(null)); // Just to make sure it doesn't error out. The value is basically
+        valFun.evaluate(new NodeQWOP<>(null)); // Just to make sure it doesn't error out. The value is basically
         valFun.close();
     }
 
@@ -160,23 +161,23 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertEquals(valFun.inputSize, valFunLoad.inputSize);
         Assert.assertEquals(valFun.outputSize, valFunLoad.outputSize);
 
-        Assert.assertArrayEquals(valFun.assembleInputFromNode(new NodeQWOP(null)),
-                valFunLoad.assembleInputFromNode(new NodeQWOP(null)), 1e-8f);
-        Assert.assertArrayEquals(valFun.assembleOutputFromNode(new NodeQWOP(null)),
-                valFunLoad.assembleOutputFromNode(new NodeQWOP(null)), 1e-8f);
+        Assert.assertArrayEquals(valFun.assembleInputFromNode(new NodeQWOP<>(null)),
+                valFunLoad.assembleInputFromNode(new NodeQWOP<>(null)), 1e-8f);
+        Assert.assertArrayEquals(valFun.assembleOutputFromNode(new NodeQWOP<>(null)),
+                valFunLoad.assembleOutputFromNode(new NodeQWOP<>(null)), 1e-8f);
 
         // Checkpoint loading should produce the same results.
-        float oldNetEval = valFun.evaluate(new NodeQWOP(null));
-        Assert.assertNotEquals(oldNetEval, valFunLoad.evaluate(new NodeQWOP(null)), 1e-12f);
+        float oldNetEval = valFun.evaluate(new NodeQWOP<>(null));
+        Assert.assertNotEquals(oldNetEval, valFunLoad.evaluate(new NodeQWOP<>(null)), 1e-12f);
         valFunLoad.loadCheckpoint("src/test/resources/test_checkpoint1");
-        float newNetEval = valFunLoad.evaluate(new NodeQWOP(null));
+        float newNetEval = valFunLoad.evaluate(new NodeQWOP<>(null));
         Assert.assertEquals(oldNetEval, newNetEval, 1e-12f);
 
-        List<NodeQWOP> updateList = new ArrayList<>();
-        updateList.add(new NodeQWOP(null));
+        List<NodeQWOP<CommandQWOP>> updateList = new ArrayList<>();
+        updateList.add(new NodeQWOP<>(null));
         valFun.update(updateList);
-        Assert.assertNotEquals(oldNetEval, valFun.evaluate(new NodeQWOP(null))); // Should be different after update.
-        Assert.assertEquals(newNetEval, valFunLoad.evaluate(new NodeQWOP(null)), 1e-12f); // Update of one net should
+        Assert.assertNotEquals(oldNetEval, valFun.evaluate(new NodeQWOP<>(null))); // Should be different after update.
+        Assert.assertEquals(newNetEval, valFunLoad.evaluate(new NodeQWOP<>(null)), 1e-12f); // Update of one net should
         // not affect the other.
 
         ValFunTest valFunCheckpointConstructor = null;
@@ -187,15 +188,15 @@ public class ValueFunction_TensorFlowTest {
             e.printStackTrace();
         }
 
-        Assert.assertEquals(valFunLoad.evaluate(new NodeQWOP(null)),
-                valFunCheckpointConstructor.evaluate(new NodeQWOP(null)), 1e-10f);
+        Assert.assertEquals(valFunLoad.evaluate(new NodeQWOP<>(null)),
+                valFunCheckpointConstructor.evaluate(new NodeQWOP<>(null)), 1e-10f);
         valFun.close();
         valFunLoad.close();
         valFunCheckpointConstructor.close();
     }
 
     // Testing stubs.
-    class ValFunTest extends ValueFunction_TensorFlow {
+    class ValFunTest extends ValueFunction_TensorFlow<CommandQWOP> {
 
         ValFunTest(String fileName, GameUnified gameTemplate, int outputSize, List<Integer> hiddenLayerSizes,
                    List<String> additionalArgs, String checkpoint) throws IOException {
@@ -213,27 +214,28 @@ public class ValueFunction_TensorFlowTest {
         }
 
         @Override
-        float[] assembleInputFromNode(NodeQWOPBase<?> node) {
+        float[] assembleInputFromNode(NodeQWOPBase node) {
             return new float[inputSize];
         }
 
         @Override
-        float[] assembleOutputFromNode(NodeQWOPBase<?> node) {
+        float[] assembleOutputFromNode(NodeQWOPBase node) {
             return new float[outputSize];
         }
 
         @Override
-        public Action getMaximizingAction(NodeQWOPBase<?> currentNode) {
+        public Action<CommandQWOP> getMaximizingAction(NodeQWOPBase<?, CommandQWOP> currentNode) {
             return null;
         }
 
         @Override
-        public Action getMaximizingAction(NodeQWOPBase<?> currentNode, IGameSerializable game) {
+        public Action<CommandQWOP> getMaximizingAction(NodeQWOPBase<?, CommandQWOP> currentNode,
+                                                       IGameSerializable<CommandQWOP> game) {
             return null;
         }
 
         @Override
-        public IValueFunction getCopy() {
+        public IValueFunction<CommandQWOP> getCopy() {
             return null; // todo
         }
     }

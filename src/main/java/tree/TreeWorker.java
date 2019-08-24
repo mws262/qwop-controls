@@ -198,7 +198,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     }
 
     // No data saving.
-    public static <C extends Command<?>> TreeWorker makeCachedStateTreeWorker(ISampler<C> sampler,
+    public static <C extends Command<?>> TreeWorker<C> makeCachedStateTreeWorker(ISampler<C> sampler,
                                                                               int timestepDelay,
                                                                               int numDelayedStates,
                                                                               GameUnifiedCaching.StateType stateType) {

@@ -1,6 +1,5 @@
 package game.action;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -170,7 +169,7 @@ public class Action<C extends Command<?>> implements Comparable<Action<C>>, Seri
     @Override
     public int compareTo(@NotNull Action<C> o) {
         Objects.requireNonNull(o);
-        int commandCompare = getCommand().getThis().compareTo(o.getCommand().getThis());
+        int commandCompare = getCommand().compareTo(o.getCommand());
         if (commandCompare != 0) {
             return commandCompare;
         } else {

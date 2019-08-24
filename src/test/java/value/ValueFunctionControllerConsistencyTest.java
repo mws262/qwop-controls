@@ -37,11 +37,11 @@ public class ValueFunctionControllerConsistencyTest {
         ValFunSandbox valFun = new ValFunSandbox(modelFile, game);
         valFun.loadCheckpoint("src/test/resources/test_models/good_save"); // TODO change to full path.
 
-        ActionQueue queue = new ActionQueue();
+        ActionQueue<CommandQWOP> queue = new ActionQueue<>();
 
         while (game.getTimestepsThisGame() < timestepCheckpoint) {
             if (queue.isEmpty()) {
-                NodeQWOPExplorable currentNode = new NodeQWOPExplorable(game.getCurrentState());
+                NodeQWOPExplorable<CommandQWOP> currentNode = new NodeQWOPExplorable<>(game.getCurrentState());
                 queue.addAction(valFun.getMaximizingAction(currentNode));
             }
             game.step(queue.pollCommand());
@@ -104,7 +104,7 @@ public class ValueFunctionControllerConsistencyTest {
 
                     gameLocal.step(command);
                     IState st = gameLocal.getCurrentState();
-                    NodeQWOPBase<?> nextNode = new NodeQWOP(st);
+                    NodeQWOPBase<?, CommandQWOP> nextNode = new NodeQWOP<>(st);
                     val1 = val2;
                     val2 = val3;
                     val3 = evaluate(nextNode);
