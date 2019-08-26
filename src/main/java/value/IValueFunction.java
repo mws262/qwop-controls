@@ -22,11 +22,13 @@ public interface IValueFunction<C extends Command<?>> extends AutoCloseable {
     /**
      * Find the child Action which is predicted to maximize value.
      */
+    @JsonIgnore
     Action<C> getMaximizingAction(NodeQWOPBase<?, C> currentNode);
 
     /**
      * Find the child Action which is predicted to maximize value.
      */
+    @JsonIgnore
     Action<C> getMaximizingAction(NodeQWOPBase<?, C> currentNode, IGameSerializable<C> game);
 
     /**

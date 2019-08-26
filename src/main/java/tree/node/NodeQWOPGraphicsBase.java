@@ -320,12 +320,12 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N, C>,
     }
 
     private boolean shouldLineBeDrawn() {
-       return nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed);
+       return lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed);
     }
 
 
     private void addPointToBuffer(FloatBuffer floatBuffer) {
-        if (nodeLocation != null && displayPoint && !notDrawnForSpeed) {
+        if (displayPoint && !notDrawnForSpeed) {
             floatBuffer.put(nodeLocation);
             floatBuffer.put(pointColorFloats); // Override colors are not buffered.
         }
@@ -335,7 +335,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N, C>,
      * @param gl OpenGL object used for 3D plotting.
      */
     private void drawLine(GL2 gl) {
-        if (nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed)) { //
+        if (lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed)) { //
             // No lines for root.
             gl.glColor3fv(lineColorFloats, 0);
             gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1], getParent().nodeLocation[2]);
@@ -344,7 +344,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N, C>,
     }
 
     void drawOverrideLine(GL2 gl) {
-        if (overrideLineColorFloats != null && nodeLocation != null && getParent().nodeLocation != null && !notDrawnForSpeed) {
+        if (overrideLineColorFloats != null && !notDrawnForSpeed) {
             gl.glColor3fv(overrideLineColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
             gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1],
@@ -363,14 +363,14 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N, C>,
      * @param gl OpenGL object used for 3D plotting.
      */
     private void drawPoint(GL2 gl) {
-        if (nodeLocation != null && displayPoint && !notDrawnForSpeed) {
+        if (displayPoint && !notDrawnForSpeed) {
             gl.glColor3fv(pointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2]);
         }
     }
 
     public void drawOverridePoint(GL2 gl) {
-        if (overridePointColorFloats != null && nodeLocation != null && !notDrawnForSpeed) {
+        if (overridePointColorFloats != null && !notDrawnForSpeed) {
             gl.glColor3fv(overridePointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
         }

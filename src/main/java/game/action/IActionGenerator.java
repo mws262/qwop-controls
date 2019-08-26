@@ -29,6 +29,7 @@ public interface IActionGenerator<C extends Command<?>> {
      * @param parentNode Node for which we want to pick potential child game.action.
      * @return A set of game.action to try as potential children.
      */
+    @JsonIgnore
     ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode);
 
     /**

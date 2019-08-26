@@ -1,5 +1,6 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -54,6 +55,7 @@ public class Action<C extends Command<?>> implements Comparable<Action<C>>, Seri
      *
      * @param totalTimestepsToHold Number of timesteps to hold the keys associated with this Action.
      */
+    @JsonCreator
     public Action(
             @JsonProperty("duration") int totalTimestepsToHold,
             @JsonProperty("command") C command) {
@@ -128,7 +130,7 @@ public class Action<C extends Command<?>> implements Comparable<Action<C>>, Seri
         return timestepsTotal;
     }
 
-    @JsonProperty("keys")
+    @JsonProperty("command")
     public C getCommand() {
         return command;
     }

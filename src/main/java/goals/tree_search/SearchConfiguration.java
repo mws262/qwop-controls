@@ -310,6 +310,7 @@ public class SearchConfiguration<C extends Command<?>> {
 
             objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
+
             XmlStreamWriter xmlStreamWriter = new XmlStreamWriter(fileOutput);
             objectMapper.writeValue(xmlStreamWriter, object);
         } catch (IOException e) {
