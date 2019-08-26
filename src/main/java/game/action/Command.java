@@ -1,16 +1,28 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CommandQWOP.class, name = "qwop"),
+})
 public class Command<T> implements Comparable<Command<T>> {
 
     private final T commandData;
 
-    public Command(T commandData) {
+    public Command(@JsonProperty("commandData") T commandData) {
         this.commandData = commandData;
     }
 
+    @JsonProperty("commandData")
     public T get() {
         return commandData;
     }
@@ -25,6 +37,7 @@ public class Command<T> implements Comparable<Command<T>> {
         }
     }
 
+    @JsonIgnore
     public Command<T> getThis() {
         return this;
     }

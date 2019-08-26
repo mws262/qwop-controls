@@ -1,5 +1,8 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import tree.node.NodeQWOPExplorableBase;
 
@@ -16,21 +19,25 @@ public class ActionGenerator_FixedActions<C extends Command<?>> implements IActi
 
     private final ActionList<C> actionList;
 
+    @JsonCreator
     public ActionGenerator_FixedActions(@JsonProperty("actionList") ActionList<C> actionList) {
         this.actionList = actionList;
     }
 
+    @JsonIgnore
     @Override
     public ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode) {
         return actionList.getCopy();
     }
 
+    @JsonIgnore
     @Override
     public Set<Action<C>> getAllPossibleActions() {
         return new HashSet<>(actionList);
     }
 
-    public ActionList getActionList() {
+    @JsonGetter("actionList")
+    public ActionList<C> getActionList() {
         return actionList;
     }
 

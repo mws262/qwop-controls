@@ -1,5 +1,6 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -79,6 +80,7 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
         this(repeatedActions, null);
     }
 
+    @JsonIgnore
     @Override
     public ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode) {
         int actionDepth = parentNode.getTreeDepth();
@@ -91,6 +93,7 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
         return repeatedActions[actionDepth % cycleLength].getCopy();
     }
 
+    @JsonProperty
     @Override
     public Set<Action<C>> getAllPossibleActions() {
         Set<Action<C>> allActions = new HashSet<>();

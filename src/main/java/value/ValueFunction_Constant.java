@@ -1,5 +1,6 @@
 package value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameSerializable;
 import game.action.Action;
@@ -12,22 +13,28 @@ import java.util.Objects;
 
 public class ValueFunction_Constant<C extends Command<?>> implements IValueFunction<C> {
 
+    @JsonProperty("constantValue")
     public final float constantValue;
-    public final C baselineCommand;
 
-    public ValueFunction_Constant(@JsonProperty("constantValue") float constantValue, @NotNull C baselineCommand) {
+    @JsonProperty("defaultCommand")
+    public final C defaultCommand;
+
+    public ValueFunction_Constant(@JsonProperty("constantValue") float constantValue,
+                                  @JsonProperty("defaultCommand") @NotNull C defaultCommand) {
         this.constantValue = constantValue;
-        this.baselineCommand = baselineCommand;
+        this.defaultCommand = defaultCommand;
     }
 
+    @JsonIgnore
     @Override
     public Action<C> getMaximizingAction(NodeQWOPBase<?, C> currentNode) {
-        return new Action<>(1, baselineCommand);
+        return new Action<>(1, defaultCommand);
     }
 
+    @JsonIgnore
     @Override
     public Action<C> getMaximizingAction(NodeQWOPBase<?, C> currentNode, IGameSerializable<C> game) {
-        return new Action<>(1, baselineCommand);
+        return new Action<>(1, defaultCommand);
     }
 
     @Override
@@ -38,9 +45,10 @@ public class ValueFunction_Constant<C extends Command<?>> implements IValueFunct
     @Override
     public void update(List<? extends NodeQWOPBase<?, C>> nodes) {}
 
+    @JsonIgnore
     @Override
     public IValueFunction<C> getCopy() {
-        return new ValueFunction_Constant<>(constantValue, baselineCommand);
+        return new ValueFunction_Constant<>(constantValue, defaultCommand);
     }
 
     @Override
@@ -52,11 +60,11 @@ public class ValueFunction_Constant<C extends Command<?>> implements IValueFunct
         if (o == null || getClass() != o.getClass()) return false;
         ValueFunction_Constant<?> that = (ValueFunction_Constant<?>) o;
         return Float.compare(that.constantValue, constantValue) == 0 &&
-                baselineCommand.equals(that.baselineCommand);
+                defaultCommand.equals(that.defaultCommand);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(constantValue, baselineCommand);
+        return Objects.hash(constantValue, defaultCommand);
     }
 }

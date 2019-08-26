@@ -1,7 +1,10 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -68,9 +71,10 @@ public class CommandQWOP extends Command<boolean[]> {
         q, w, o, p, qp, wo, qo, wp, none
     }
 
+    @JsonProperty("keys")
     public final Keys keys;
 
-    private CommandQWOP(boolean[] commandData, Keys keys) {
+    private CommandQWOP(@JsonProperty("commandData") boolean[] commandData, @JsonProperty("keys") Keys keys) {
         super(commandData);
         this.keys = keys;
     }
@@ -135,15 +139,31 @@ public class CommandQWOP extends Command<boolean[]> {
 
     @Override
     public String toString() {
-        return " Keys pressed: "
-                + (get()[0] ? "Q" : "")
-                + (get()[1] ? "W" : "")
-                + (get()[2] ? "O" : "")
-                + (get()[3] ? "P" : "");
+        return (get()[0] ? "q" : "")
+                + (get()[1] ? "w" : "")
+                + (get()[2] ? "o" : "")
+                + (get()[3] ? "p" : "")
+                + (keys.equals(Keys.none) ? "none" : "");
     }
 
+
+
+    @JsonIgnore
     @Override
     public Command<boolean[]> getThis() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CommandQWOP that = (CommandQWOP) o;
+        return keys == that.keys && Arrays.equals(this.get(), that.get());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(keys, get());
     }
 }

@@ -1,7 +1,19 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import distributions.Distribution;
 import distributions.Distribution_Equal;
@@ -9,6 +21,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -21,8 +34,8 @@ import java.util.*;
  * @see IActionGenerator
  * @see Distribution
  */
-//@JsonSerialize(using = ActionList.ActionListSerializer.class)
-//@JsonDeserialize(using = ActionList.ActionListDeserializer.class)
+@JsonSerialize(using = ActionList.ActionListSerializer.class)
+@JsonDeserialize(using = ActionList.ActionListDeserializer.class)
 @JacksonXmlRootElement(localName = "ActionList")
 public class ActionList<C extends Command<?>> extends ArrayList<Action<C>> {
 
@@ -195,85 +208,107 @@ public class ActionList<C extends Command<?>> extends ArrayList<Action<C>> {
         return hash.toHashCode();
     }
 
+    @JsonGetter
     public Distribution<Action<C>> getSamplingDistribution() {
         return samplingDistribution;
     }
-//
-//    public static class ActionListDeserializer<C extends Command<?>> extends StdDeserializer<ActionList<C>> {
-//
-//        public ActionListDeserializer() {
-//            this(null);
-//        }
-//
-//        public ActionListDeserializer(Class<ActionList<C>> t) {
-//            super(t);
-//        }
-//
-//        @Override
-//        public ActionList<C> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-//            ObjectMapper mapper = new ObjectMapper();
-//
-//            JsonNode alistNode = p.getCodec().readTree(p);//node.get("actionList");
-//
-//            Distribution<Action<C>> dist = mapper.convertValue(alistNode.get("distribution"),
-//                    new TypeReference<Distribution<Action>>() {});
-//
-//            ActionList<C> alist = new ActionList<>(dist);
-//
-//            Iterator<String> fieldIterator = alistNode.fieldNames();
-//            while(fieldIterator.hasNext()) {
-//                String actionField = fieldIterator.next();
-//                String durationList = alistNode.get(actionField).asText();
-//                try {
-//                    C command = CommandQWOP.Keys.valueOf(actionField); // TODO
-//                    String[] durations = durationList.split(" ");
-//                    for (String duration : durations) {
-//                        alist.add(new Action<>(Integer.parseInt(duration), command));
-//                    }
-//                } catch (IllegalArgumentException ignored) {} // For any fields which are not keys.
-//            }
-//            return alist;
-//        }
-//    }
-//
-//    public static class ActionListSerializer<C extends Command<?>> extends StdSerializer<ActionList<C>> {
-//
-//        public ActionListSerializer() {
-//            this(null);
-//        }
-//
-//        public ActionListSerializer(Class<ActionList<C>> t) {
-//            super(t);
-//        }
-//
-//        @Override
-//        public void serialize(ActionList<C> value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-//
-//            Map<String, String> actions = convert(value);
-//            jgen.writeStartObject();
-//            jgen.writeObjectField("distribution", value.getSamplingDistribution());
-//            for (Map.Entry<String, String> a : actions.entrySet()) {
-//                jgen.writeStringField(a.getKey(), a.getValue());
-//            }
-//            jgen.writeEndObject();
-//        }
-//        public Map<String, String> convert(ActionList<C> alist) {
-//            Map<String, String> actionMap = new HashMap<>();
-//            Set<C> presentCommands = new HashSet<>();
-//            for (Action<C> a : alist) {
-//                presentCommands.add(a.getCommand());
-//            }
-//
-//            for (C command : presentCommands) {
-//                StringBuilder sb = new StringBuilder();
-//                for (Action<C> a : alist) {
-//                    if (a.peek().equals(command)) {
-//                        sb.append(a.getTimestepsTotal()).append(" ");
-//                    }
-//                }
-//                actionMap.put(command.toString(), sb.toString());
-//            }
-//            return actionMap;
-//        }
-//    }
+
+    // Jackson can serialize a list just fine, but when something extends a list, other fields get thrown out. This
+    // is a dumb way to handle this case because Jackson is complicated, and I don't understand enough. Instead, when
+    // serializing, I write the command type explicitly to the JSON. Then I have deserialization cases in the
+    // deserializer that need to match the toString in the command. Ugly, but it works. One advantage is that it does
+    // format actions as "actiontype : 'duration1 duration2 duration3...'. This format is much more concise than the
+    // individual serialization of each action duration separately.
+    public static class ActionListDeserializer<C extends Command<?>> extends StdDeserializer<ActionList<C>> {
+
+        // Will throw exception without.
+        @SuppressWarnings("unused")
+        public ActionListDeserializer() {
+            this(null);
+        }
+
+        public ActionListDeserializer(Class<ActionList<C>> t) {
+            super(t);
+        }
+
+        @Override
+        public ActionList<C> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            ObjectMapper mapper = new ObjectMapper();
+
+            JsonNode alistNode = p.getCodec().readTree(p);//node.get("actionList");
+
+            String type = mapper.convertValue(alistNode.get("@type"), new TypeReference<String>() {});
+            Distribution<Action<C>> dist = mapper.convertValue(alistNode.get("distribution"),
+                    new TypeReference<Distribution<Action<C>>>() {});
+
+            ActionList<C> alist = new ActionList<>(dist);
+
+            Iterator<String> fieldIterator = alistNode.fieldNames();
+            while(fieldIterator.hasNext()) {
+                String actionField = fieldIterator.next();
+                String durationList = alistNode.get(actionField).asText();
+                try {
+                    C command;
+                    switch (type) {
+                        case "CommandQWOP": // Very much a hardcoded way to do this, but I was getting fed up.
+                            command = (C) CommandQWOP.getCommand(CommandQWOP.Keys.valueOf(actionField));
+                            break;
+                        case "empty":
+                            throw new IllegalStateException("If the serialized type was empty, then there shouldn't " +
+                                    "even be a thing to iterate through. Investigate this.");
+                        default:
+                            throw new IllegalArgumentException("Tried to deserialize actions with command type: " + type + ". So far, the custom serializer hasn't been configured to deal with this. Add this case if you need it.");
+                    }
+                    String[] durations = durationList.split(" ");
+                    for (String duration : durations) {
+                        alist.add(new Action<>(Integer.parseInt(duration), command));
+                    }
+                } catch (IllegalArgumentException ignored) {} // For any fields which are not keys.
+            }
+            return alist;
+        }
+    }
+
+    public static class ActionListSerializer<C extends Command<?>> extends StdSerializer<ActionList<C>> {
+
+        public ActionListSerializer() {
+            this(null);
+        }
+
+        public ActionListSerializer(Class<ActionList<C>> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(ActionList<C> value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+
+            Map<String, String> actions = convert(value);
+            jgen.writeStartObject();
+            jgen.writeObjectField("@type", (value.size() > 0) ? value.get(0).peek().getClass().getSimpleName() :
+            "empty");
+            jgen.writeObjectField("distribution", value.getSamplingDistribution());
+            for (Map.Entry<String, String> a : actions.entrySet()) {
+                jgen.writeStringField(a.getKey(), a.getValue());
+            }
+            jgen.writeEndObject();
+        }
+        public Map<String, String> convert(ActionList<C> alist) {
+            Map<String, String> actionMap = new HashMap<>();
+            Set<C> presentCommands = new HashSet<>();
+            for (Action<C> a : alist) {
+                presentCommands.add(a.getCommand());
+            }
+
+            for (C command : presentCommands) {
+                StringBuilder sb = new StringBuilder();
+                for (Action<C> a : alist) {
+                    if (a.peek().equals(command)) {
+                        sb.append(a.getTimestepsTotal()).append(" ");
+                    }
+                }
+                actionMap.put(command.toString(), sb.toString());
+            }
+            return actionMap;
+        }
+    }
 }
