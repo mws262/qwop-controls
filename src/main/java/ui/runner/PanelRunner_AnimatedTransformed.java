@@ -2,14 +2,14 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.qwop.CommandQWOP;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
 import tree.node.filter.NodeFilter_Downsample;
 import game.qwop.GameQWOP;
 import game.state.IState;
 import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
 
 import javax.swing.*;
 import java.awt.*;
@@ -83,12 +83,12 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
     }
 
     @Override
-    public void simRunToNode(NodeQWOPExplorableBase<?, CommandQWOP> node) {
-        List<NodeQWOPExplorableBase<?, ?>> nodeList = new ArrayList<>();
+    public void simRunToNode(NodeGameExplorableBase<?, CommandQWOP> node) {
+        List<NodeGameExplorableBase<?, ?>> nodeList = new ArrayList<>();
         node.getRoot().recurseDownTreeInclusive(nodeList::add);
 
         transformDownsampler.filter(nodeList);
-        List<IState> stateList = nodeList.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
+        List<IState> stateList = nodeList.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList());
 
         for (ITransform trans : encoders) {
             trans.updateTransform(stateList);
@@ -108,7 +108,7 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
                 IState predictedState = predictedStateList.get(0);
                 GameQWOP.drawExtraRunner((Graphics2D) g, predictedState, encoders.get(i).getName(), super.runnerScaling,
                         super.xOffsetPixels + i * 100 + 150, super.yOffsetPixels,
-                        NodeQWOPGraphicsBase.getColorFromTreeDepth(i, NodeQWOPGraphicsBase.lineBrightnessDefault),
+                        NodeGameGraphicsBase.getColorFromTreeDepth(i, NodeGameGraphicsBase.lineBrightnessDefault),
                         normalStroke);
             }
             inStates.clear();

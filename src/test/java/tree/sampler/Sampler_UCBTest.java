@@ -12,8 +12,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import tree.node.NodeQWOPExplorable;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameExplorable;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.IEvaluationFunction;
 import tree.sampler.rollout.RolloutPolicy_JustEvaluate;
@@ -28,7 +28,7 @@ public class Sampler_UCBTest {
 
     private Action<CommandQWOP> a1, a1_1, a1_1_1, a2, a2_2;
     private IState s1, s1_1, s1_1_1, s2, s2_2;
-    private NodeQWOPExplorableBase<?, CommandQWOP> root, n1, n1_1, n1_1_1, n2, n2_2;
+    private NodeGameExplorableBase<?, CommandQWOP> root, n1, n1_1, n1_1_1, n2, n2_2;
 
     private IState failedState = mock(StateQWOP.class);
 
@@ -57,7 +57,7 @@ public class Sampler_UCBTest {
         alist2.add(new Action<>(5, CommandQWOP.P));
 
         ActionGenerator_FixedSequence<CommandQWOP> generator = new ActionGenerator_FixedSequence<>(alist1, alist2);
-        root = new NodeQWOPExplorable<>(GameQWOP.getInitialState(), generator);
+        root = new NodeGameExplorable<>(GameQWOP.getInitialState(), generator);
 
         // Node 1 off root.
         a1 = root.getUntriedActionByIndex(0);
@@ -127,7 +127,7 @@ public class Sampler_UCBTest {
 //        IState failedState = mock(StateQWOP.class);
 //        when(failedState.isFailed()).thenReturn(true);
 //
-//        NodeQWOPExplorableBase<?> badNode = n1_1_1.addDoublyLinkedChild(new Action(1010101, false, false, false,
+//        NodeGameExplorableBase<?> badNode = n1_1_1.addDoublyLinkedChild(new Action(1010101, false, false, false,
 //                false), failedState);
 //
 //        sampler.expansionPolicyActionDone(badNode);
@@ -148,7 +148,7 @@ public class Sampler_UCBTest {
         root.updateValue(0, valueUpdater);
         n1.updateValue(1e6f, valueUpdater);
         n2.updateValue(5f, valueUpdater);
-        NodeQWOPExplorableBase<?, CommandQWOP> treePolicyNode = sampler.treePolicy(root);
+        NodeGameExplorableBase<?, CommandQWOP> treePolicyNode = sampler.treePolicy(root);
         Assert.assertEquals(n1, treePolicyNode);
         treePolicyNode.releaseExpansionRights();
 
@@ -162,9 +162,9 @@ public class Sampler_UCBTest {
         treePolicyNode.releaseExpansionRights();
 
         // Now make node 2 not have any untried potential children. It should decide to go deeper.
-        NodeQWOPExplorableBase<?, CommandQWOP> n2_1 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(),
+        NodeGameExplorableBase<?, CommandQWOP> n2_1 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(),
                 GameQWOP.getInitialState());
-        NodeQWOPExplorableBase<?, CommandQWOP> n2_3 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(), failedState);
+        NodeGameExplorableBase<?, CommandQWOP> n2_3 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(), failedState);
         Assert.assertEquals(0, n2.getUntriedActionCount());
 
         n2_1.updateValue(0f, valueUpdater);
@@ -219,7 +219,7 @@ public class Sampler_UCBTest {
         actionList.add(new Action<>(10, CommandQWOP.NONE));
 
         ActionGenerator_FixedActions<CommandQWOP> generator = new ActionGenerator_FixedActions<>(actionList);
-        NodeQWOPExplorableBase<?, CommandQWOP> n2_1 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(),
+        NodeGameExplorableBase<?, CommandQWOP> n2_1 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(),
                 GameQWOP.getInitialState(), generator);
 
         // Based on the really narrow normal distribution, should always return this duration command.
@@ -246,7 +246,7 @@ public class Sampler_UCBTest {
 
         // If the state is failed, then reporting that the expansion policy is done will also do whatever default
         // evaluation function is added to the sampler (constant 5 in this case).
-        NodeQWOPExplorableBase<?, CommandQWOP> n2_1 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(), failedState);
+        NodeGameExplorableBase<?, CommandQWOP> n2_1 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(), failedState);
         sampler.expansionPolicyActionDone(n2_1);
         Assert.assertEquals(5f, n2_1.getValue(), 1e-8f);
     }
@@ -270,7 +270,7 @@ public class Sampler_UCBTest {
 
         // Shouldn't do a rollout on a failed node. This would be the fault of whoever calls this (i.e. TreeWorker).
         exception.expect(IllegalStateException.class);
-        NodeQWOPExplorableBase<?, CommandQWOP> failedNode = n2_2.addDoublyLinkedChild(n2_2.getUntriedActionRandom(),
+        NodeGameExplorableBase<?, CommandQWOP> failedNode = n2_2.addDoublyLinkedChild(n2_2.getUntriedActionRandom(),
                 failedState);
         sampler.rolloutPolicy(failedNode, null);
     }

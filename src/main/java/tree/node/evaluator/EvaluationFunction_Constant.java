@@ -3,7 +3,7 @@ package tree.node.evaluator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 /**
  * Scores nodes by returning a constant value no matter what node is input. Mainly useful for testing.
@@ -29,12 +29,12 @@ public class EvaluationFunction_Constant<C extends Command<?>> implements IEvalu
     }
 
     @Override
-    public float getValue(NodeQWOPBase<?, C> nodeToEvaluate) {
+    public float getValue(NodeGameBase<?, C> nodeToEvaluate) {
         return constantValue;
     }
 
     @Override
-    public String getValueString(NodeQWOPBase<?, C> nodeToEvaluate) {
+    public String getValueString(NodeGameBase<?, C> nodeToEvaluate) {
         return String.valueOf(constantValue);
     }
 

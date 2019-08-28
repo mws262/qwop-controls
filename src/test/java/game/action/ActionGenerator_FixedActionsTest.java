@@ -6,7 +6,7 @@ import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -48,18 +48,18 @@ public class ActionGenerator_FixedActionsTest {
     @Test
     public void getPotentialChildActionSet() {
         StateQWOP st = mock(StateQWOP.class);
-        NodeQWOPExplorable root = new NodeQWOPExplorable(st, generator);
-        NodeQWOPExplorable n1 = root.addDoublyLinkedChild(new Action(55, CommandQWOP.P), st);
-        NodeQWOPExplorable n2 = n1.addDoublyLinkedChild(new Action(33, CommandQWOP.QP), st);
-        NodeQWOPExplorable n3 = root.addDoublyLinkedChild(new Action(11, CommandQWOP.W), st);
+        NodeGameExplorable root = new NodeGameExplorable(st, generator);
+        NodeGameExplorable n1 = root.addDoublyLinkedChild(new Action(55, CommandQWOP.P), st);
+        NodeGameExplorable n2 = n1.addDoublyLinkedChild(new Action(33, CommandQWOP.QP), st);
+        NodeGameExplorable n3 = root.addDoublyLinkedChild(new Action(11, CommandQWOP.W), st);
 
-        List<NodeQWOPExplorable> nodes = new ArrayList<>();
+        List<NodeGameExplorable> nodes = new ArrayList<>();
         nodes.add(root);
         nodes.add(n1);
         nodes.add(n2);
         nodes.add(n3);
 
-        for (NodeQWOPExplorable n : nodes) {
+        for (NodeGameExplorable n : nodes) {
             ActionList l = generator.getPotentialChildActionSet(n);
             Assert.assertEquals(actions.size(), l.size());
             Assert.assertTrue(l.containsAll(actions));

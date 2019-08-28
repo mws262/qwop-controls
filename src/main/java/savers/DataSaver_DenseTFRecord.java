@@ -11,7 +11,7 @@ import game.state.StateVariable6D;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tensorflow.example.*;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -61,7 +61,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense<CommandQWOP> {
      * @param endNode Not required. Null may be given.
      */
     @Override
-    public void reportGameEnding(NodeQWOPBase<?, CommandQWOP> endNode) {
+    public void reportGameEnding(NodeGameBase<?, CommandQWOP> endNode) {
         saveCounter++;
         // TODO remove stupid cast.
         List<StateQWOP> states = new ArrayList<>();

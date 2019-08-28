@@ -4,7 +4,7 @@ import game.qwop.GameQWOP;
 import game.action.Action;
 import game.qwop.CommandQWOP;
 import game.state.IState;
-import tree.node.NodeQWOP;
+import tree.node.NodeGame;
 import ui.runner.PanelRunner_MultiState;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -100,7 +100,7 @@ public class CompareFlashToJava extends FlashGame {
 
     @Override
     public Action<CommandQWOP> getControlAction(IState state) {
-        return valueFunction.getMaximizingAction(new NodeQWOP<>(state));
+        return valueFunction.getMaximizingAction(new NodeGame<>(state));
     }
 
     @Override
@@ -136,7 +136,7 @@ public class CompareFlashToJava extends FlashGame {
 
 //            panelRunner.clearSecondaryStates();
 //            panelRunner.addSecondaryState(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state,
-//                    NodeQWOPGraphicsBase.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
+//                    NodeGameGraphicsBase.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
 
             panelRunner.setMainState(state);
             panelRunner.repaint();

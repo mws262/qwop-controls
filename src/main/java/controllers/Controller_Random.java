@@ -2,16 +2,16 @@ package controllers;
 
 import game.IGameSerializable;
 import game.action.*;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 public class Controller_Random<C extends Command<?>> implements IController<C> {
     @Override
-    public Action<C> policy(NodeQWOPExplorableBase<?, C> state) {
+    public Action<C> policy(NodeGameExplorableBase<?, C> state) {
         return state.getAllPossibleChildActions().getRandom();
     }
 
     @Override
-    public Action<C> policy(NodeQWOPExplorableBase<?, C> state, IGameSerializable<C> game) {
+    public Action<C> policy(NodeGameExplorableBase<?, C> state, IGameSerializable<C> game) {
         return policy(state);
     }
 

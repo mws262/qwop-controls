@@ -5,7 +5,7 @@ import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.state.IState;
 import game.state.transform.Transform_Autoencoder;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 import ui.scatterplot.PanelPlot_Simple;
 
 import javax.swing.*;
@@ -77,7 +77,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
 
         List<Color> colorList = new ArrayList<>();
         for (int i = 0; i < xDataList.size(); i++) {
-            colorList.add(NodeQWOPGraphicsBase.getColorFromTreeDepth(i, NodeQWOPGraphicsBase.lineBrightnessDefault));
+            colorList.add(NodeGameGraphicsBase.getColorFromTreeDepth(i, NodeGameGraphicsBase.lineBrightnessDefault));
         }
 
         plotPanel.setPlotData(xDataList, yDataList, colorList, "timestep idx", "autoencoder output");

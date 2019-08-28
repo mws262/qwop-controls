@@ -7,9 +7,9 @@ import game.qwop.CommandQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
-import tree.node.NodeQWOP;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGame;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,7 +41,7 @@ public class ValueFunctionControllerConsistencyTest {
 
         while (game.getTimestepsThisGame() < timestepCheckpoint) {
             if (queue.isEmpty()) {
-                NodeQWOPExplorable<CommandQWOP> currentNode = new NodeQWOPExplorable<>(game.getCurrentState());
+                NodeGameExplorable<CommandQWOP> currentNode = new NodeGameExplorable<>(game.getCurrentState());
                 queue.addAction(valFun.getMaximizingAction(currentNode));
             }
             game.step(queue.pollCommand());
@@ -104,7 +104,7 @@ public class ValueFunctionControllerConsistencyTest {
 
                     gameLocal.step(command);
                     IState st = gameLocal.getCurrentState();
-                    NodeQWOPBase<?, CommandQWOP> nextNode = new NodeQWOP<>(st);
+                    NodeGameBase<?, CommandQWOP> nextNode = new NodeGame<>(st);
                     val1 = val2;
                     val2 = val3;
                     val3 = evaluate(nextNode);

@@ -12,8 +12,8 @@
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
 //import tree.Utility;
-//import tree.node.NodeQWOPExplorable;
-//import tree.node.NodeQWOPGraphics;
+//import tree.node.NodeGameExplorable;
+//import tree.node.NodeGameGraphics;
 //import vision.ScreenCapture;
 //
 //import javax.swing.*;
@@ -47,7 +47,7 @@
 //    private File prefixSave = new File("src/main/resources/" +
 //            "saved_data/11_2_18/single_run_2018-11-08_08-41-13.SavableSingleGame");
 //
-//    private List<NodeQWOPGraphics> leafNodes = new ArrayList<>();
+//    private List<NodeGameGraphics> leafNodes = new ArrayList<>();
 //
 //    private SavableFileIO<SavableActionSequence> actionSaver = new SavableFileIO<>();
 //
@@ -140,13 +140,13 @@
 //
 //        // Recreate prefix part of this tree.
 //        SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
-//        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameQWOP.getInitialState());
+//        NodeGameGraphics rootNode = new NodeGameGraphics(GameQWOP.getInitialState());
 //        List<SavableSingleGame> glist = new ArrayList<>();
 //        fileIO.loadObjectsToCollection(prefixSave, glist);
-//        NodeQWOPExplorable.makeNodesFromRunInfo(glist, rootNode);
+//        NodeGameExplorable.makeNodesFromRunInfo(glist, rootNode);
 //        leafNodes.clear();
 //        rootNode.getLeaves(leafNodes);
-//        NodeQWOPGraphics endNode = leafNodes.get(0);
+//        NodeGameGraphics endNode = leafNodes.get(0);
 //
 //        // Back up the tree in order to skip the end of the prefix.
 //        /* Will do the loaded prefix (open loop) to this tree depth before letting the controller take over. */
@@ -179,7 +179,7 @@
 //        while (true) {
 //            long initTime = System.currentTimeMillis();
 //            IState state = game.getCurrentState();
-//            Action nextAction = controller.policy(new NodeQWOPExplorable(state));
+//            Action nextAction = controller.policy(new NodeGameExplorable(state));
 //            actionQueue.addAction(nextAction);
 //            while (!actionQueue.isEmpty()) {
 ////                game.applyBodyImpulse(rand.nextFloat() - 0.5f, rand.nextFloat() - 0.5f);

@@ -17,8 +17,8 @@
 //import org.tensorflow.example.FeatureList;
 //import org.tensorflow.example.SequenceExample;
 //import tree.Utility;
-//import tree.node.NodeQWOPExplorableBase;
-//import tree.node.NodeQWOPGraphicsBase;
+//import tree.node.NodeGameExplorableBase;
+//import tree.node.NodeGameGraphicsBase;
 //import ui.runner.PanelRunner;
 //
 //import java.awt.*;
@@ -108,7 +108,7 @@
 //    }
 //
 //    @Override
-//    public Action policy(NodeQWOPExplorableBase<?> state) {
+//    public Action policy(NodeGameExplorableBase<?> state) {
 //        // Get nearest states (determined ONLY by body theta).
 //        IState st = state.getState();
 //        float sortBy = st.getStateVariableFromName(sortByPart).getStateByName(sortBySt);
@@ -201,7 +201,7 @@
 //    }
 //
 //    @Override
-//    public Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game) {
+//    public Action policy(NodeGameExplorableBase<?> state, IGameSerializable game) {
 //        return policy(state);
 //    }
 //
@@ -466,12 +466,12 @@
 //                if ((i > startIdx && i < startIdx + viewingHorizon)) { //|| i % 10 == 0) {
 //                    GameQWOP.drawExtraRunner((Graphics2D) g, drawTraj.states.get(i).state, "", runnerScaling,
 //                            xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels,
-//                            NodeQWOPGraphicsBase.getColorFromScaledValue(i - startIdx + viewingHorizon, 2 * viewingHorizon,
+//                            NodeGameGraphicsBase.getColorFromScaledValue(i - startIdx + viewingHorizon, 2 * viewingHorizon,
 //                                    (viewingHorizon - Math.abs(i - startIdx)) / (float) viewingHorizon), PanelRunner.normalStroke);
 //                } else if (i < startIdx && i > startIdx - viewingHorizon) {
 //                    GameQWOP.drawExtraRunner((Graphics2D) g, drawTraj.states.get(i).state, "", runnerScaling,
 //                            xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels,
-//                            NodeQWOPGraphicsBase.getColorFromScaledValue(i - startIdx + viewingHorizon,
+//                            NodeGameGraphicsBase.getColorFromScaledValue(i - startIdx + viewingHorizon,
 //                                    2 * viewingHorizon,
 //                                    (viewingHorizon - Math.abs(i - startIdx)) / (float) viewingHorizon), PanelRunner.normalStroke);
 //                }

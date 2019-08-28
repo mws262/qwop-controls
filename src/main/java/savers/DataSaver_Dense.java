@@ -4,7 +4,7 @@ import game.action.Action;
 import game.IGameInternal;
 import game.action.Command;
 import game.state.IState;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +59,7 @@ public abstract class DataSaver_Dense<C extends Command<?>> implements IDataSave
     }
 
     @Override
-    public void reportStageEnding(NodeQWOPBase<?, C> rootNode, List<NodeQWOPBase<?, C>> targetNodes) {
+    public void reportStageEnding(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes) {
     }
 
     @Override

@@ -3,10 +3,10 @@ package tree.stage;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
 import tree.TreeWorker;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphics;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphics;
+import tree.node.NodeGameGraphicsBase;
 import value.ValueFunction_TensorFlow;
 
 import java.awt.*;
@@ -40,7 +40,7 @@ public class TreeStage_ValueFunctionUpdate<C extends Command<?>> extends TreeSta
     }
 
     @Override
-    public List<NodeQWOPBase<?, C>> getResults() { return null; }
+    public List<NodeGameBase<?, C>> getResults() { return null; }
 
     @Override
     public boolean checkTerminationConditions() {
@@ -48,10 +48,10 @@ public class TreeStage_ValueFunctionUpdate<C extends Command<?>> extends TreeSta
     }
 
     @Override
-    public void initialize(List<TreeWorker<C>> treeWorkers, NodeQWOPExplorableBase<?, C> stageRoot) {
+    public void initialize(List<TreeWorker<C>> treeWorkers, NodeGameExplorableBase<?, C> stageRoot) {
         isFinished = false;
         // Update the value function.
-        List<NodeQWOPExplorableBase<?, C>> nodesBelow = new ArrayList<>();
+        List<NodeGameExplorableBase<?, C>> nodesBelow = new ArrayList<>();
         stageRoot.recurseDownTreeExclusive(n -> {
             if (!excludeLeaves || n.getChildCount() > 0) { // Can include or exclude leaves.
                 nodesBelow.add(n);
@@ -67,17 +67,17 @@ public class TreeStage_ValueFunctionUpdate<C extends Command<?>> extends TreeSta
         }
         checkpointIndex++;
 
-        if (updateGraphicalLabels && stageRoot instanceof NodeQWOPGraphicsBase) {
-            NodeQWOPGraphics graphicsRootNode = (NodeQWOPGraphics) stageRoot;
+        if (updateGraphicalLabels && stageRoot instanceof NodeGameGraphicsBase) {
+            NodeGameGraphics graphicsRootNode = (NodeGameGraphics) stageRoot;
             Runnable updateLabels = () -> graphicsRootNode.recurseDownTreeExclusive(node -> {
-                if (node instanceof NodeQWOPGraphicsBase) { // TODO not sure why I need to do this. Figure out
+                if (node instanceof NodeGameGraphicsBase) { // TODO not sure why I need to do this. Figure out
                     // something less hacky.
-                    NodeQWOPGraphicsBase n = (NodeQWOPGraphicsBase) node;
+                    NodeGameGraphicsBase n = (NodeGameGraphicsBase) node;
 
                     float percDiff = valueFunction.evaluate(n); // Temp disable percent diff for absolute diff.
 //                    float percDiff = Math.abs((valueFunction.evaluateActionDistribution(n) - n.getValue())/n.getValue() * 100f);
                     n.nodeLabel = String.format("%.1f, %.1f", n.getValue(), percDiff);
-                    Color color = NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - n.getValue()), 20) + 20, 20, 0.9f);
+                    Color color = NodeGameGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - n.getValue()), 20) + 20, 20, 0.9f);
                     n.setLabelColor(color);
                     //n.setOverridePointColor(color);
                     n.displayLabel = true;

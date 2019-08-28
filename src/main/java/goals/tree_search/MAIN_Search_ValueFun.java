@@ -12,10 +12,9 @@ import game.action.IActionGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.TreeWorker;
-import tree.node.NodeQWOPExplorable;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphics;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.*;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.evaluator.EvaluationFunction_Velocity;
@@ -269,23 +268,23 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 //                new Action(46, Action.Keys.qp),
         });
 
-        NodeQWOPExplorableBase<?, CommandQWOP> rootNode = headless ?
-                new NodeQWOPExplorable<>(GameQWOP.getInitialState(), actionGenerator) :
-                new NodeQWOPGraphics<>(GameQWOP.getInitialState(), actionGenerator);
+        NodeGameExplorableBase<?, CommandQWOP> rootNode = headless ?
+                new NodeGameExplorable<>(GameQWOP.getInitialState(), actionGenerator) :
+                new NodeGameGraphics<>(GameQWOP.getInitialState(), actionGenerator);
 
-        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, game);
-        NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
+        NodeGameExplorable.makeNodesFromActionSequences(alist, rootNode, game);
+        NodeGameExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
 
 
         ExecutorService labelUpdater = null;
         if (!headless) {
             labelUpdater = Executors.newSingleThreadExecutor();
 
-            NodeQWOPGraphics<CommandQWOP> graphicsRootNode = (NodeQWOPGraphics<CommandQWOP>) rootNode;
-            NodeQWOPGraphics.pointsToDraw.clear();
+            NodeGameGraphics<CommandQWOP> graphicsRootNode = (NodeGameGraphics<CommandQWOP>) rootNode;
+            NodeGameGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(graphicsRootNode);
-            List<NodeQWOPGraphics<CommandQWOP>> leaf = new ArrayList<>();
+            List<NodeGameGraphics<CommandQWOP>> leaf = new ArrayList<>();
             graphicsRootNode.getLeaves(leaf);
             assert leaf.size() == 1;
             leaf.get(0).resetSweepAngle();
@@ -299,13 +298,13 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
             // Update node labels if graphics are enabled.
             if (!headless) {
-                NodeQWOPGraphics<CommandQWOP> graphicsRootNode = (NodeQWOPGraphics<CommandQWOP>) rootNode;
+                NodeGameGraphics<CommandQWOP> graphicsRootNode = (NodeGameGraphics<CommandQWOP>) rootNode;
 
                 Runnable updateLabels = () -> graphicsRootNode.recurseDownTreeExclusive(n -> {
                     float percDiff = valueFunction.evaluate(n); // Temp disable percent diff for absolute diff.
 //                    float percDiff = Math.abs((valueFunction.evaluateActionDistribution(n) - n.getValue())/n.getValue() * 100f);
                     n.nodeLabel = String.format("%.1f, %.1f", n.getValue(), percDiff);
-                    n.setLabelColor(NodeQWOPGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - n.getValue()), 20) + 20
+                    n.setLabelColor(NodeGameGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - n.getValue()), 20) + 20
                             , 20,
                             0.9f));
                     n.displayLabel = true;
@@ -315,7 +314,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         }
     }
 
-    private void doSearchAndUpdate(NodeQWOPExplorableBase<?, CommandQWOP> rootNode, int updateIdx) {
+    private void doSearchAndUpdate(NodeGameExplorableBase<?, CommandQWOP> rootNode, int updateIdx) {
         TreeStage_MaxDepth<CommandQWOP> searchMax = new TreeStage_MaxDepth<>(getToSteadyDepth, bailAfterXGames);
 
         // Grab some workers from the pool.
@@ -328,7 +327,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         tws.forEach(this::removeWorker);
 
         // Update the value function.
-        List<NodeQWOPExplorableBase<?, CommandQWOP>> nodesBelow = new ArrayList<>();
+        List<NodeGameExplorableBase<?, CommandQWOP>> nodesBelow = new ArrayList<>();
         //if (n.getChildCount() > 0) { // TODO TEMP EXCLUDE LEAVES
 //}
         rootNode.recurseDownTreeExclusive(nodesBelow::add);

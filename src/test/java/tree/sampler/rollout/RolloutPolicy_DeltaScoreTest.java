@@ -12,8 +12,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import tree.node.NodeQWOP;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGame;
+import tree.node.NodeGameExplorable;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.evaluator.IEvaluationFunction;
 
@@ -38,10 +38,10 @@ public class RolloutPolicy_DeltaScoreTest {
     private IState s1_2_4;
     private IState s2, s2_3, s2_3_5;
 
-    private NodeQWOPExplorable<CommandQWOP> root;
-    private NodeQWOPExplorable<CommandQWOP> n1, n1_2, n1_2_3;
-    private NodeQWOPExplorable<CommandQWOP> n1_2_4;
-    private NodeQWOPExplorable<CommandQWOP> n2, n2_3, n2_3_5;
+    private NodeGameExplorable<CommandQWOP> root;
+    private NodeGameExplorable<CommandQWOP> n1, n1_2, n1_2_3;
+    private NodeGameExplorable<CommandQWOP> n1_2_4;
+    private NodeGameExplorable<CommandQWOP> n2, n2_3, n2_3_5;
 
     private IActionGenerator<CommandQWOP> rolloutActionGenerator = RolloutPolicyBase.getQWOPRolloutActionGenerator();
     private Set<Action<CommandQWOP>> possibleRolloutActions;
@@ -53,7 +53,7 @@ public class RolloutPolicy_DeltaScoreTest {
     public void setup() {
         // Set up a demo tree.
         GameQWOP game = new GameQWOP();
-        root = new NodeQWOPExplorable<>(GameQWOP.getInitialState(),
+        root = new NodeGameExplorable<>(GameQWOP.getInitialState(),
                 ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
 
         // First branch.
@@ -112,7 +112,7 @@ public class RolloutPolicy_DeltaScoreTest {
         IState st1 = game.getCurrentState();
 
         game.resetGame();
-        rollout.coldStartGameToNode(new NodeQWOP<>(st1), game);
+        rollout.coldStartGameToNode(new NodeGame<>(st1), game);
         IState st2 = game.getCurrentState();
 
         Assert.assertEquals(st1, st2);
@@ -120,20 +120,20 @@ public class RolloutPolicy_DeltaScoreTest {
 
     @Test
     public void randomRollout() {
-//        NodeQWOPExplorableBase<?> startNode = n1_2_4;
+//        NodeGameExplorableBase<?> startNode = n1_2_4;
 //        Assert.assertFalse(n1_2_4.isFullyExplored());
 //        Assert.assertFalse(n1_2_4.getState().isFailed());
 //        int startNodeChildOptions = startNode.getUntriedActionCount();
 //        GameQWOP game = new GameQWOP();
 //
 //        // For no maximum of timesteps. Always goes until failure.
-//        Set<NodeQWOPExplorableBase<?>> rolloutResults = new HashSet<>();
+//        Set<NodeGameExplorableBase<?>> rolloutResults = new HashSet<>();
 //        for (int i = 0; i < 10; i++) {
 //            rollout.simGameToNode(startNode, game);
 //            rolloutResults.add(rollout.rollout(startNode, game));
 //        }
 //
-//        for (NodeQWOPExplorableBase<?> node : rolloutResults) {
+//        for (NodeGameExplorableBase<?> node : rolloutResults) {
 //            // Make sure that all command used in the rollout are ones that the ActionGenerator can generate.
 //            Set<Action> rolloutActions = new HashSet<>();
 //            node.recurseUpTreeInclusive(n -> {
@@ -143,7 +143,7 @@ public class RolloutPolicy_DeltaScoreTest {
 //            });
 //
 //            Assert.assertTrue(possibleRolloutActions.containsAll(rolloutActions));
-//            Assert.assertTrue(((NodeQWOPExplorable) node).isOtherNodeAncestor(n1_2_4));
+//            Assert.assertTrue(((NodeGameExplorable) node).isOtherNodeAncestor(n1_2_4));
 //            Assert.assertTrue(node.isFullyExplored());
 //            Assert.assertTrue(node.getState().isFailed());
 //
@@ -151,7 +151,7 @@ public class RolloutPolicy_DeltaScoreTest {
 //            Assert.assertEquals(startNodeChildOptions, startNode.getUntriedActionCount());
 //        }
 //
-//        for (NodeQWOPExplorableBase<?> node : rolloutResults) {
+//        for (NodeGameExplorableBase<?> node : rolloutResults) {
 //            // Make sure that all command used in the rollout are ones that the ActionGenerator can generate.
 //            Set<Action> rolloutActions = new HashSet<>();
 //            node.recurseUpTreeInclusive(n -> {
@@ -161,7 +161,7 @@ public class RolloutPolicy_DeltaScoreTest {
 //            });
 //
 //            Assert.assertTrue(possibleRolloutActions.containsAll(rolloutActions));
-//            Assert.assertTrue(((NodeQWOPExplorable) node).isOtherNodeAncestor(n1_2_4));
+//            Assert.assertTrue(((NodeGameExplorable) node).isOtherNodeAncestor(n1_2_4));
 //
 //            Assert.assertFalse(node.getState().isFailed());
 //            Assert.assertFalse(node.isFullyExplored());
@@ -187,14 +187,14 @@ public class RolloutPolicy_DeltaScoreTest {
                     RolloutPolicyBase.getQWOPRolloutActionGenerator(),
                     new Controller_Random<>(), ts);
             GameQWOP game = new GameQWOP();
-            NodeQWOPExplorable<CommandQWOP> startNode = n1_2_3;
+            NodeGameExplorable<CommandQWOP> startNode = n1_2_3;
             int startIterations = game.iterations;
             rollout.simGameToNode(startNode, game);
             float rolloutScore = rollout.rollout(startNode, game);
 
             Assert.assertTrue((game.iterations - startIterations) <= rollout.maxTimesteps);
             IState finalState = game.getCurrentState();
-            float expectedScore = (evalFun.getValue(new NodeQWOP<>(finalState)) - evalFun.getValue(startNode))
+            float expectedScore = (evalFun.getValue(new NodeGame<>(finalState)) - evalFun.getValue(startNode))
                     * (finalState.isFailed() ? rollout.failureMultiplier : 1.0f);
 
             Assert.assertEquals(expectedScore, rolloutScore, 1e-12f);

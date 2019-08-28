@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
 import tree.TreeWorker;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class TreeStage_FixedGames<C extends Command<?>> extends TreeStage<C> {
 
     /**
      * Tree stage which executes until a specific number of games has been completed or the root node becomes fully
-     * explored ({@link NodeQWOPExplorableBase#isFullyExplored()}).
+     * explored ({@link NodeGameExplorableBase#isFullyExplored()}).
      * @param numGamesToPlay Number of games to play.
      */
     public TreeStage_FixedGames(@JsonProperty("numGamesToPlay") long numGamesToPlay) {
@@ -37,15 +37,15 @@ public class TreeStage_FixedGames<C extends Command<?>> extends TreeStage<C> {
     }
 
     @Override
-    public void initialize(List<TreeWorker<C>> workers, NodeQWOPExplorableBase<?, C> stageRoot) {
+    public void initialize(List<TreeWorker<C>> workers, NodeGameExplorableBase<?, C> stageRoot) {
         initialGamesPlayed = TreeWorker.getTotalGamesPlayed();
         super.initialize(workers, stageRoot);
     }
 
     @JsonIgnore
     @Override
-    public List<NodeQWOPBase<?, C>> getResults() {
-        List<NodeQWOPBase<?, C>> resultList = new ArrayList<>();
+    public List<NodeGameBase<?, C>> getResults() {
+        List<NodeGameBase<?, C>> resultList = new ArrayList<>();
         resultList.add(getRootNode()); // No particularly interesting results.
         return resultList;
     }

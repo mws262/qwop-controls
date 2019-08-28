@@ -29,7 +29,7 @@ public class CommandCartPole extends Command<boolean[]> {
     }
 
     public static CommandCartPole getByIndex(int index) {
-        Preconditions.checkArgument(index > 0 && index < 2, "Index out of bounds.", index);
+        Preconditions.checkArgument(index >= 0 && index < 2, "Index out of bounds.", index);
         return (index == 0) ? LEFT : RIGHT;
     }
 }

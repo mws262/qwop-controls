@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Command;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 /**
- * A rule for updating the estimated value of a {@link NodeQWOPBase} given a node and an update value.
+ * A rule for updating the estimated value of a {@link NodeGameBase} given a node and an update value.
  *
  * @author matt
  */
@@ -29,7 +29,7 @@ public interface IValueUpdater<C extends Command<?>> {
      * @param node Node to calculate an updated value for.
      * @return The provided node's updated value.
      */
-    float update(float valueUpdate, NodeQWOPBase<?, C> node);
+    float update(float valueUpdate, NodeGameBase<?, C> node);
 
     @JsonIgnore
     IValueUpdater<C> getCopy();

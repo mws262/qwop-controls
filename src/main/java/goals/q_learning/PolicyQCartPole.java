@@ -5,8 +5,9 @@ import game.cartpole.CommandCartPole;
 import game.state.IState;
 import goals.q_learning.PolicyQNetwork.Timestep;
 
-import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 // See https://github.com/simoninithomas/Deep_reinforcement_learning_Course/blob/master/Deep%20Q%20Learning/Space
 // %20Invaders/DQN%20Atari%20Space%20Invaders.ipynb
@@ -66,21 +67,21 @@ public class PolicyQCartPole {
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-//        List<Integer> layerSizes = new ArrayList<>();
-//        layerSizes.add(CartPole.STATE_SIZE);
-//        layerSizes.add(4);
-//        layerSizes.add(2);
-//        layerSizes.add(CartPole.ACTIONSPACE_SIZE);
-//
-//        List<String> addedArgs = new ArrayList<>();
-//        addedArgs.add("-lr");
-//        addedArgs.add("1e-3");
-//        addedArgs.add("-a");
-//        addedArgs.add("relu");
-//        PolicyQNetwork net = PolicyQNetwork.makeNewNetwork("src/main/resources/tflow_models/cpole.pb",
-//                layerSizes, addedArgs, true);
+        List<Integer> layerSizes = new ArrayList<>();
+        layerSizes.add(CartPole.STATE_SIZE);
+        layerSizes.add(4);
+        layerSizes.add(2);
+        layerSizes.add(CartPole.ACTIONSPACE_SIZE);
 
-        PolicyQNetwork net = new PolicyQNetwork(new File("./src/main/resources/tflow_models/dqn.pb"), false);
+        List<String> addedArgs = new ArrayList<>();
+        addedArgs.add("-lr");
+        addedArgs.add("1e-3");
+        addedArgs.add("-a");
+        addedArgs.add("relu");
+        PolicyQNetwork net = PolicyQNetwork.makeNewNetwork("src/main/resources/tflow_models/cpole.pb",
+                layerSizes, addedArgs, true);
+
+//        PolicyQNetwork net = new PolicyQNetwork(new File("./src/main/resources/tflow_models/cpole.pb"), false);
         PolicyQCartPole policy = new PolicyQCartPole(net);
         net.outputSize = 2; // TMP override since there are more sets of layers than we're used to.
         for (int i = 0; i < 10000000; i++) {

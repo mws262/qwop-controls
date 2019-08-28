@@ -7,8 +7,8 @@ import game.qwop.CommandQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorable;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.evaluator.IEvaluationFunction;
@@ -22,7 +22,7 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
         RolloutPolicy_DecayingHorizon.kernelSteepness = 5;
         int maxTimestepsToSim = 200;
 
-        NodeQWOPExplorable<CommandQWOP> startNode = new NodeQWOPExplorable<>(GameQWOP.getInitialState());
+        NodeGameExplorable<CommandQWOP> startNode = new NodeGameExplorable<>(GameQWOP.getInitialState());
 
         RolloutPolicy_DecayingHorizon<CommandQWOP> rollout = new RolloutPolicy_DecayingHorizon<>(new EvaluationFunction_Constant<>(5),
                 RolloutPolicyBase.getQWOPRolloutActionGenerator(),
@@ -56,16 +56,16 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
             disp(accumulatedValue);
         */
         IGameInternal<CommandQWOP> fakeGame = new NoFailGame();
-        NodeQWOPExplorable<CommandQWOP> startNode = new NodeQWOPExplorable<>(GameQWOP.getInitialState());
+        NodeGameExplorable<CommandQWOP> startNode = new NodeGameExplorable<>(GameQWOP.getInitialState());
 
         RolloutPolicy_DecayingHorizon.kernelCenter = 0.5f;
         RolloutPolicy_DecayingHorizon.kernelSteepness = 5;
         int maxTimestepsToSim = 200;
         IEvaluationFunction<CommandQWOP> evalFun = new IEvaluationFunction<CommandQWOP>() {
             @Override
-            public float getValue(NodeQWOPBase<?, CommandQWOP> nodeToEvaluate) { return nodeToEvaluate.getTreeDepth(); }
+            public float getValue(NodeGameBase<?, CommandQWOP> nodeToEvaluate) { return nodeToEvaluate.getTreeDepth(); }
             @Override
-            public String getValueString(NodeQWOPBase<?, CommandQWOP> nodeToEvaluate) { return null; }
+            public String getValueString(NodeGameBase<?, CommandQWOP> nodeToEvaluate) { return null; }
             @Override
             public IEvaluationFunction<CommandQWOP> getCopy() { return null; }
             @Override
@@ -98,7 +98,7 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
                         maxTimestepsToSim);
 
         GameQWOP realGame = new GameQWOP();
-        NodeQWOPExplorable<CommandQWOP> startNode = new NodeQWOPExplorable<>(GameQWOP.getInitialState());
+        NodeGameExplorable<CommandQWOP> startNode = new NodeGameExplorable<>(GameQWOP.getInitialState());
 
         float startDistance = realGame.getCurrentState().getCenterX();
         float finalValue = rollout.rollout(startNode, realGame);

@@ -12,12 +12,12 @@ import game.qwop.CommandQWOP;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameGraphics;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.sampler.ISampler;
 import tree.sampler.Sampler_UCB;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
 import tree.Utility;
 import tree.sampler.rollout.RolloutPolicyBase;
@@ -93,24 +93,24 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
                 trimStartBy = acts.get(0).length;
 
                 // Recreate the tree section.
-                NodeQWOPGraphics<CommandQWOP> root = new NodeQWOPGraphics<>(GameQWOP.getInitialState(),
+                NodeGameGraphics<CommandQWOP> root = new NodeGameGraphics<>(GameQWOP.getInitialState(),
                         ActionGenerator_FixedSequence.makeDefaultGenerator(trimStartBy));
-                NodeQWOPBase.makeNodesFromActionSequences(acts, root, game);
+                NodeGameBase.makeNodesFromActionSequences(acts, root, game);
 
                 // Put it on the UI.
-                NodeQWOPGraphics.pointsToDraw.clear();
+                NodeGameGraphics.pointsToDraw.clear();
                 ui.clearRootNodes();
                 ui.addRootNode(root);
 
-                List<NodeQWOPGraphics<CommandQWOP>> leafList = new ArrayList<>();
+                List<NodeGameGraphics<CommandQWOP>> leafList = new ArrayList<>();
                 root.getLeaves(leafList);
 
                 // Expand the deviated spots and find recoveries.
                 logger.info("Starting leaf expansion.");
-                NodeQWOPGraphics previousLeaf = null;
+                NodeGameGraphics previousLeaf = null;
 
                 // Should only be 1 element in leafList now. Keeping the loop for the future however.
-                for (NodeQWOPGraphics leaf : leafList) {
+                for (NodeGameGraphics leaf : leafList) {
                     String name = filename1 + Utility.getTimestamp();
                     doBasicMaxDepthStage(leaf, name, getBackToSteadyDepth, maxWorkerFraction1, bailAfterXGames1);
 

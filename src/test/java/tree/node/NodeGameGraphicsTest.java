@@ -19,7 +19,7 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class NodeQWOPGraphicsTest {
+public class NodeGameGraphicsTest {
 /* Demo tree.
     Tree structure: 25 nodes. Max depth 6 (7 layers, including 0th).
 
@@ -54,15 +54,15 @@ public class NodeQWOPGraphicsTest {
  */
 
     // Root node for our test tree.
-    private NodeQWOPGraphics<CommandQWOP> rootNode;
+    private NodeGameGraphics<CommandQWOP> rootNode;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private NodeQWOPGraphics<CommandQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1, node3_2, node3_3,
+    private NodeGameGraphics<CommandQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1, node3_2, node3_3,
             node1_1_1, node1_1_2, node1_2_1, node2_2_1, node2_2_2, node2_2_3, node3_3_1, node3_3_2, node3_3_3,
             node1_2_1_2, node1_2_1_2_1, node1_2_1_2_2, node1_2_1_2_2_3;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private List<NodeQWOPGraphics<CommandQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
+    private List<NodeGameGraphics<CommandQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
 
     // Some sample game.command (mocked).
     @SuppressWarnings("FieldCanBeLocal")
@@ -100,7 +100,7 @@ public class NodeQWOPGraphicsTest {
         a6 = list2.get(2);
 
         // Depth 0.
-        rootNode = new NodeQWOPGraphics<>(initialState, generator);
+        rootNode = new NodeGameGraphics<>(initialState, generator);
         nodesLvl0 = new ArrayList<>();
         nodesLvl0.add(rootNode);
 
@@ -258,28 +258,28 @@ public class NodeQWOPGraphicsTest {
     @Test
     public void getColorFromTreeDepth() {
         // Should succeed for basically any value, even those which are not normally intended.
-        Color c = NodeQWOPGraphics.getColorFromTreeDepth(0, 0.6f);
+        Color c = NodeGameGraphics.getColorFromTreeDepth(0, 0.6f);
         Assert.assertNotNull(c);
-        c = NodeQWOPGraphics.getColorFromTreeDepth(-1, 1f);
+        c = NodeGameGraphics.getColorFromTreeDepth(-1, 1f);
         Assert.assertNotNull(c);
-        c = NodeQWOPGraphics.getColorFromTreeDepth(10, 10f);
+        c = NodeGameGraphics.getColorFromTreeDepth(10, 10f);
         Assert.assertNotNull(c);
     }
 
     @Test
     public void getColorFromScaledValue() {
         // Should succeed for basically any value, even those which are not normally intended.
-        Color c = NodeQWOPGraphics.getColorFromScaledValue(0, 10, 0.8f);
+        Color c = NodeGameGraphics.getColorFromScaledValue(0, 10, 0.8f);
         Assert.assertNotNull(c);
-        c = NodeQWOPGraphics.getColorFromScaledValue(0, 0, 0.8f);
+        c = NodeGameGraphics.getColorFromScaledValue(0, 0, 0.8f);
         Assert.assertNotNull(c);
-        c = NodeQWOPGraphics.getColorFromScaledValue(1, 0, 0.8f);
+        c = NodeGameGraphics.getColorFromScaledValue(1, 0, 0.8f);
         Assert.assertNotNull(c);
-        c = NodeQWOPGraphics.getColorFromScaledValue(-10, -1, 0.8f);
+        c = NodeGameGraphics.getColorFromScaledValue(-10, -1, 0.8f);
         Assert.assertNotNull(c);
-        c = NodeQWOPGraphics.getColorFromScaledValue(1, 6, 10f);
+        c = NodeGameGraphics.getColorFromScaledValue(1, 6, 10f);
         Assert.assertNotNull(c);
-        c = NodeQWOPGraphics.getColorFromScaledValue(1,1,0);
+        c = NodeGameGraphics.getColorFromScaledValue(1,1,0);
         Assert.assertNotNull(c);
     }
 
@@ -365,7 +365,7 @@ public class NodeQWOPGraphicsTest {
     public void setOverridePointColor() {
         setupTree();
 
-        for (NodeQWOPGraphics<CommandQWOP> node : allNodes) {
+        for (NodeGameGraphics<CommandQWOP> node : allNodes) {
             Color color = Color.ORANGE;
             float[] colorComponents = color.getColorComponents(null);
             node.setOverridePointColor(color);
@@ -431,21 +431,21 @@ public class NodeQWOPGraphicsTest {
      * @param node Node to fetch from.
      * @return 3-element float array representing the line color.
      */
-    private static float[] getLineColorFloats(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
-        return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "lineColorFloats");
+    private static float[] getLineColorFloats(NodeGameGraphicsBase<?, CommandQWOP> node) {
+        return (float[])getPrivateField(NodeGameGraphicsBase.class, node, "lineColorFloats");
     }
 
-    private static float[] getOverrideLineColorFloats(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
-        return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "overrideLineColorFloats");
+    private static float[] getOverrideLineColorFloats(NodeGameGraphicsBase<?, CommandQWOP> node) {
+        return (float[])getPrivateField(NodeGameGraphicsBase.class, node, "overrideLineColorFloats");
     }
 
     @SuppressWarnings("unused")
-    private static float[] getPointColorFloats(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
-        return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "pointColorFloats");
+    private static float[] getPointColorFloats(NodeGameGraphicsBase<?, CommandQWOP> node) {
+        return (float[])getPrivateField(NodeGameGraphicsBase.class, node, "pointColorFloats");
     }
 
-    private static float[] getOverridePointColorFloats(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
-        return (float[])getPrivateField(NodeQWOPGraphicsBase.class, node, "overridePointColorFloats");
+    private static float[] getOverridePointColorFloats(NodeGameGraphicsBase<?, CommandQWOP> node) {
+        return (float[])getPrivateField(NodeGameGraphicsBase.class, node, "overridePointColorFloats");
     }
 
     private static Object getPrivateField(@SuppressWarnings("SameParameterValue") Class clazz, Object object, String fieldName) {

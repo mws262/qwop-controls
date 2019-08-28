@@ -5,7 +5,7 @@ import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import tree.node.NodeQWOP;
+import tree.node.NodeGame;
 
 import static org.mockito.Mockito.mock;
 
@@ -15,15 +15,15 @@ public class EvaluationFunction_RandomTest {
     private Action a2 = mock(Action.class);
     private Action a3 = mock(Action.class);
 
-    private NodeQWOP node1;
-    private NodeQWOP node2;
-    private NodeQWOP node3;
-    private NodeQWOP node4;
+    private NodeGame node1;
+    private NodeGame node2;
+    private NodeGame node3;
+    private NodeGame node4;
 
     @Before
     public void setup() {
         StateQWOP st = mock(StateQWOP.class);
-        node1 = new NodeQWOP(st);
+        node1 = new NodeGame(st);
         node2 = node1.addDoublyLinkedChild(a1, st);
         node3 = node1.addDoublyLinkedChild(a2, st);
         node4 = node2.addDoublyLinkedChild(a3, st);

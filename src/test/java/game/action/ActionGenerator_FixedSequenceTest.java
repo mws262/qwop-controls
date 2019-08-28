@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
 
 import java.util.*;
 
@@ -96,14 +96,14 @@ public class ActionGenerator_FixedSequenceTest {
 
             ActionGenerator_FixedSequence<CommandQWOP> gen = new ActionGenerator_FixedSequence<>(singleActionList);
 
-            NodeQWOPExplorable<CommandQWOP> n0 = new NodeQWOPExplorable<>(st, gen);
-            List<NodeQWOPExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
+            NodeGameExplorable<CommandQWOP> n0 = new NodeGameExplorable<>(st, gen);
+            List<NodeGameExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
             nodes.add(n0);
             for (int i = 1; i < numNodes; i++) {
                 nodes.add(nodes.get(i - 1).addDoublyLinkedChild(act, st));
             }
 
-            for (NodeQWOPExplorable<CommandQWOP> n : nodes) {
+            for (NodeGameExplorable<CommandQWOP> n : nodes) {
                 ActionList<CommandQWOP> actionList = gen.getPotentialChildActionSet(n);
                 Assert.assertEquals(alist.size(), actionList.size());
                 Assert.assertTrue(actionList.containsAll(alist));
@@ -140,8 +140,8 @@ public class ActionGenerator_FixedSequenceTest {
                 }
                 ActionGenerator_FixedSequence<CommandQWOP> gen = new ActionGenerator_FixedSequence<>(sequence);
 
-                NodeQWOPExplorable<CommandQWOP> n0 = new NodeQWOPExplorable<>(st, gen);
-                List<NodeQWOPExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
+                NodeGameExplorable<CommandQWOP> n0 = new NodeGameExplorable<>(st, gen);
+                List<NodeGameExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
                 nodes.add(n0);
                 for (int i = 1; i < numNodes; i++) {
                     nodes.add(nodes.get(i - 1).addDoublyLinkedChild(act, st));
@@ -196,8 +196,8 @@ public class ActionGenerator_FixedSequenceTest {
                 ActionGenerator_FixedSequence<CommandQWOP> gen = new ActionGenerator_FixedSequence<>(sequence,
                         actionExceptions);
 
-                NodeQWOPExplorable<CommandQWOP> n0 = new NodeQWOPExplorable<>(st, gen);
-                List<NodeQWOPExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
+                NodeGameExplorable<CommandQWOP> n0 = new NodeGameExplorable<>(st, gen);
+                List<NodeGameExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
                 nodes.add(n0);
                 for (int i = 1; i < numNodes; i++) {
                     nodes.add(nodes.get(i - 1).addDoublyLinkedChild(act, st));

@@ -6,7 +6,7 @@ import game.qwop.CommandQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
-import tree.node.NodeQWOP;
+import tree.node.NodeGame;
 
 public class ValueUpdater_HardSetTest {
 
@@ -14,19 +14,19 @@ public class ValueUpdater_HardSetTest {
     public void update() {
 
         IState s = GameQWOP.getInitialState();
-        NodeQWOP<CommandQWOP> root = new NodeQWOP<>(s);
+        NodeGame<CommandQWOP> root = new NodeGame<>(s);
 
         Action<CommandQWOP> a1 = new Action<>(4, CommandQWOP.Q);
         Action<CommandQWOP> a2 = new Action<>(10, CommandQWOP.QO);
         Action<CommandQWOP> a3 = new Action<>(12, CommandQWOP.NONE);
 
-        NodeQWOP<CommandQWOP> n1 = root.addBackwardsLinkedChild(a1, s);
-        NodeQWOP<CommandQWOP> n2 = root.addBackwardsLinkedChild(a2, s);
-        NodeQWOP<CommandQWOP> n3 = root.addBackwardsLinkedChild(a3, s);
+        NodeGame<CommandQWOP> n1 = root.addBackwardsLinkedChild(a1, s);
+        NodeGame<CommandQWOP> n2 = root.addBackwardsLinkedChild(a2, s);
+        NodeGame<CommandQWOP> n3 = root.addBackwardsLinkedChild(a3, s);
 
-        NodeQWOP<CommandQWOP> n1_1 = n1.addDoublyLinkedChild(a1, s);
-        NodeQWOP<CommandQWOP> n1_2 = n1.addDoublyLinkedChild(a2, s);
-        NodeQWOP<CommandQWOP> n1_1_1 = n1_1.addDoublyLinkedChild(a1, s);
+        NodeGame<CommandQWOP> n1_1 = n1.addDoublyLinkedChild(a1, s);
+        NodeGame<CommandQWOP> n1_2 = n1.addDoublyLinkedChild(a2, s);
+        NodeGame<CommandQWOP> n1_1_1 = n1_1.addDoublyLinkedChild(a1, s);
 
         ValueUpdater_HardSet<CommandQWOP> updater = new ValueUpdater_HardSet<>();
 

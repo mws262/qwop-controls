@@ -4,7 +4,7 @@ import controllers.Controller_Random;
 import game.qwop.GameQWOP;
 import game.action.ActionGenerator_FixedSequence;
 import game.qwop.CommandQWOP;
-import tree.node.NodeQWOPGraphics;
+import tree.node.NodeGameGraphics;
 import tree.TreeWorker;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
@@ -29,7 +29,7 @@ public class MAIN_Search_CollectAllGameData extends SearchTemplate {
 
     private void doGames() {
 
-        NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(
+        NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(
                 GameQWOP.getInitialState(),
                 ActionGenerator_FixedSequence.makeExtendedGenerator(-1));
         ui.addRootNode(rootNode);

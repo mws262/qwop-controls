@@ -3,10 +3,10 @@ package value.updaters;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
-import tree.node.NodeQWOP;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorable;
-import tree.node.NodeQWOPGraphics;
+import tree.node.NodeGame;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorable;
+import tree.node.NodeGameGraphics;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -19,17 +19,17 @@ public class ValueUpdater_AverageTest {
         when(st.isFailed()).thenReturn(false);
 
         // Do tests for each kind of node that could use this updater.
-        NodeQWOPBase n = new NodeQWOP(st);
+        NodeGameBase n = new NodeGame(st);
         runUpdatesOnNode(n);
 
-        n = new NodeQWOPExplorable(st);
+        n = new NodeGameExplorable(st);
         runUpdatesOnNode(n);
 
-        n = new NodeQWOPGraphics(st);
+        n = new NodeGameGraphics(st);
         runUpdatesOnNode(n);
     }
 
-    private void runUpdatesOnNode(NodeQWOPBase n) {
+    private void runUpdatesOnNode(NodeGameBase n) {
         float tol = 1e-10f;
         ValueUpdater_Average valUpdater = new ValueUpdater_Average();
 

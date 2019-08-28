@@ -12,8 +12,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 import tree.sampler.ISampler;
 import ui.runner.PanelRunner;
 
@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class TreeWorker<C extends Command<?>> extends PanelRunner implements Runnable {
 
     private static final long serialVersionUID = 1L;
-    private NodeQWOPExplorableBase<?, C> expansionNode;
+    private NodeGameExplorableBase<?, C> expansionNode;
 
     public enum Status {
         IDLE, INITIALIZE, TREE_POLICY_CHOOSING, TREE_POLICY_EXECUTING, EXPANSION_POLICY_CHOOSING,
@@ -76,17 +76,17 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     /**
      * Root of tree that this FSM is operating on.
      */
-    private NodeQWOPExplorableBase<?, C> rootNode;
+    private NodeGameExplorableBase<?, C> rootNode;
 
     /**
      * Node that the game is currently operating at.
      */
-    private NodeQWOPExplorableBase<?, C> currentGameNode;
+    private NodeGameExplorableBase<?, C> currentGameNode;
 
     /**
      * Node the game is attempting to run to.
      */
-    private NodeQWOPExplorableBase<?, C> targetNodeToTest;
+    private NodeGameExplorableBase<?, C> targetNodeToTest;
 
     private Action<C> targetActionToTest;
 
@@ -218,7 +218,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
      *
      * @param rootNode Root node that this worker expands from.
      */
-    public void setRoot(NodeQWOPExplorableBase<?, C> rootNode) {
+    public void setRoot(NodeGameExplorableBase<?, C> rootNode) {
         this.rootNode = rootNode;
     }
 
@@ -440,7 +440,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     /**
      * Pause what the worker is doing. Tells its saver to do whatever it should when the stage is complete.
      */
-    public void terminateStageComplete(NodeQWOPBase<?, C> rootNode, List<NodeQWOPBase<?, C>> targetNodes) {
+    public void terminateStageComplete(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes) {
         saver.reportStageEnding(rootNode, targetNodes);
         saver.finalizeSaverData();
         terminateWorker();

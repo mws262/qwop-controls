@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Command;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 /**
  * Generic evaluation of a node based on any factors. Going with "higher-is-better" interpretation of value.
@@ -31,7 +31,7 @@ public interface IEvaluationFunction<C extends Command<?>> extends AutoCloseable
      * @param nodeToEvaluate Node to determine the value of.
      * @return Scalar value of the node, with higher being "better".
      */
-    float getValue(NodeQWOPBase<?, C> nodeToEvaluate);
+    float getValue(NodeGameBase<?, C> nodeToEvaluate);
 
     /**
      * Get a formatted string of the evaluated value of a node. Typically this will divide the value up into whatever
@@ -40,7 +40,7 @@ public interface IEvaluationFunction<C extends Command<?>> extends AutoCloseable
      * @param nodeToEvaluate Node to determine the value of.
      * @return A formatted string of calculated value components.
      */
-    String getValueString(NodeQWOPBase<?, C> nodeToEvaluate);
+    String getValueString(NodeGameBase<?, C> nodeToEvaluate);
 
     /**
      * Create a copy of this IEvaluationFunction.

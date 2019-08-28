@@ -4,7 +4,7 @@ import game.action.Action;
 import game.IGameInternal;
 import game.action.Command;
 import game.state.IState;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class DataSaver_Null<C extends Command<?>> implements IDataSaver<C> {
     public void reportTimestep(Action<C> action, IGameInternal<C> game) {}
 
     @Override
-    public void reportGameEnding(NodeQWOPBase<?, C> endNode) {}
+    public void reportGameEnding(NodeGameBase<?, C> endNode) {}
 
     @Override
     public void setSaveInterval(int numGames) {}
@@ -41,7 +41,7 @@ public class DataSaver_Null<C extends Command<?>> implements IDataSaver<C> {
     }
 
     @Override
-    public void reportStageEnding(NodeQWOPBase<?, C> rootNode, List<NodeQWOPBase<?, C>> targetNodes) {}
+    public void reportStageEnding(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes) {}
 
     @Override
     public void finalizeSaverData() {}

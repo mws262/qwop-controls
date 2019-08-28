@@ -7,8 +7,8 @@ import game.state.IState;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import tree.node.NodeQWOP;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGame;
+import tree.node.NodeGameBase;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,9 +16,9 @@ import java.util.List;
 
 public class ValueUpdater_TopWindowTest {
 
-    private List<NodeQWOPBase<?, CommandQWOP>> nlist = new ArrayList<>();
+    private List<NodeGameBase<?, CommandQWOP>> nlist = new ArrayList<>();
     private Action<CommandQWOP> a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13;
-    private NodeQWOP<CommandQWOP> root, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13;
+    private NodeGame<CommandQWOP> root, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13;
 
     @Before
     public void setup() {
@@ -37,7 +37,7 @@ public class ValueUpdater_TopWindowTest {
         a10 = new Action<>(8, CommandQWOP.WO);
         a4 = new Action<>(3, CommandQWOP.QP);
 
-         root = new NodeQWOP<>(s);
+         root = new NodeGame<>(s);
          n1 = root.addDoublyLinkedChild(a1, s);
          n2 = root.addDoublyLinkedChild(a2, s);
          n3 = root.addDoublyLinkedChild(a3, s);
@@ -69,9 +69,9 @@ public class ValueUpdater_TopWindowTest {
 
     @Test
     public void ClusterSortedNodes() {
-        nlist.sort(Comparator.comparing(NodeQWOPBase::getAction));
+        nlist.sort(Comparator.comparing(NodeGameBase::getAction));
 
-        List<List<NodeQWOPBase<?, CommandQWOP>>> lists = ValueUpdater_TopWindow.separateClustersInSortedList(nlist);
+        List<List<NodeGameBase<?, CommandQWOP>>> lists = ValueUpdater_TopWindow.separateClustersInSortedList(nlist);
 
         Assert.assertEquals(1, lists.get(0).size());
         Assert.assertEquals(a3, lists.get(0).get(0).getAction());

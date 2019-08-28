@@ -14,8 +14,8 @@ import game.state.transform.Transform_Autoencoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jfree.chart.plot.XYPlot;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -77,7 +77,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
     /**
      * Node that we're plotting the game.command/states up to.
      */
-    private NodeQWOPExplorableBase<?, CommandQWOP> selectedNode;
+    private NodeGameExplorableBase<?, CommandQWOP> selectedNode;
 
     private final String name;
 
@@ -98,7 +98,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
     /**
      * Run the simulation to collect the state info we want to plot.
      */
-    private void simRunToNode(NodeQWOPExplorableBase<?, CommandQWOP> node) {
+    private void simRunToNode(NodeGameExplorableBase<?, CommandQWOP> node) {
         stateList.clear();
         transformedStates.clear();
         commandList.clear();
@@ -122,7 +122,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?, CommandQWOP> plotNode) { // Note that this is different from the other
+    public void update(NodeGameGraphicsBase<?, CommandQWOP> plotNode) { // Note that this is different from the other
         // PlotPanes.
         // It plots UP TO this
         // node rather than below this node.
@@ -151,7 +151,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
                     commandList.stream().map(b -> (float) ((b.get()[0] ? 1 : 0) + (b.get()[1] ? 2 : 0) + (b.get()[2] ?
                     4 : 0) + (b.get()[3] ? 8 : 0))).toArray(Float[]::new);
             Color[] cData =
-                    IntStream.range(0, yData.length).mapToObj(i -> NodeQWOPGraphicsBase.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.getTreeDepth()), NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
+                    IntStream.range(0, yData.length).mapToObj(i -> NodeGameGraphicsBase.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.getTreeDepth()), NodeGameGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Command combination");
             pl.getDomainAxis().setLabel(StateQWOP.ObjectName.values()[firstPlotRow].toString() + " " +

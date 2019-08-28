@@ -10,15 +10,14 @@ import data.SparseDataToDenseTFRecord;
 import game.qwop.GameQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import tree.node.*;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.sampler.ISampler;
 import tree.sampler.Sampler_UCB;
 import tree.TreeWorker;
-import tree.node.NodeQWOP;
-import tree.node.NodeQWOPExplorable;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphics;
+import tree.node.NodeGameExplorable;
+import tree.node.NodeGameGraphics;
 import tree.sampler.rollout.RolloutPolicyBase;
 import tree.sampler.rollout.RolloutPolicy_DeltaScore;
 import value.updaters.ValueUpdater_Average;
@@ -117,9 +116,9 @@ public class MAIN_Search_Full extends SearchTemplate {
         }
 
         if (doStage1) {
-            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState(),
+            NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
                     actionGenerator);
-            NodeQWOPGraphics.pointsToDraw.clear();
+            NodeGameGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(rootNode);
 
@@ -143,10 +142,10 @@ public class MAIN_Search_Full extends SearchTemplate {
         }
         if (doStage2) {
             logger.info("Starting stage 2.");
-            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState(),
+            NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
                     actionGenerator);
 
-            NodeQWOPGraphics.pointsToDraw.clear();
+            NodeGameGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(rootNode);
 
@@ -155,9 +154,9 @@ public class MAIN_Search_Full extends SearchTemplate {
             File saveFile = new File(getSaveLocation().getPath() + "/" + filename1 +
                     ".SavableSingleGame");
             fileIO.loadObjectsToCollection(saveFile, glist);
-            NodeQWOP.makeNodesFromRunInfo(glist, rootNode);
-            NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, getToSteadyDepth - trimSteadyBy - 1);
-            NodeQWOPGraphics<CommandQWOP> currNode = rootNode;
+            NodeGame.makeNodesFromRunInfo(glist, rootNode);
+            NodeGameExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, getToSteadyDepth - trimSteadyBy - 1);
+            NodeGameGraphics<CommandQWOP> currNode = rootNode;
             while (currNode.getTreeDepth() < getToSteadyDepth - trimSteadyBy) {
                 currNode = currNode.getChildByIndex(0);
             }
@@ -194,9 +193,9 @@ public class MAIN_Search_Full extends SearchTemplate {
             }
 
             // Saver resetGame.
-            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState(),
+            NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
                     actionGenerator);
-            NodeQWOPGraphics.pointsToDraw.clear();
+            NodeGameGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(rootNode);
 
@@ -205,18 +204,18 @@ public class MAIN_Search_Full extends SearchTemplate {
             File saveFile = new File(getSaveLocation().getPath() + "/" + filename2 +
                     ".SavableSingleGame");
             fileIO.loadObjectsToCollection(saveFile, glist);
-            NodeQWOP.makeNodesFromRunInfo(glist, rootNode);
-            NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(rootNode, stage3StartDepth);
+            NodeGame.makeNodesFromRunInfo(glist, rootNode);
+            NodeGameExplorableBase.stripUncheckedActionsExceptOnLeaves(rootNode, stage3StartDepth);
 
 
-            List<NodeQWOPGraphics<CommandQWOP>> leafList = new ArrayList<>();
+            List<NodeGameGraphics<CommandQWOP>> leafList = new ArrayList<>();
             rootNode.getLeaves(leafList);
 
             int count = 0;
             int startAt = recoveryResumePoint;
-            NodeQWOPGraphics previousLeaf = null;
+            NodeGameGraphics previousLeaf = null;
 
-            for (NodeQWOPGraphics<CommandQWOP> leaf : leafList) {
+            for (NodeGameGraphics<CommandQWOP> leaf : leafList) {
                 if (count >= startAt) {
                     doBasicMaxDepthStage(leaf, "recoveries" + count + fileSuffix3, getBackToSteadyDepth, maxWorkerFraction3, bailAfterXGames3);
                 }

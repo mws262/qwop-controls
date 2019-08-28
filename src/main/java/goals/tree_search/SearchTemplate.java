@@ -9,7 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.TreeWorker;
 import tree.Utility;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_FixedDepth;
@@ -171,7 +171,7 @@ public abstract class SearchTemplate {
      * @param fractionOfWorkers 0 to 1, proportion of workers to allot to this stage.
      * @param maxGames Maximum number of games to play before giving up.
      */
-    protected void doBasicMaxDepthStage(NodeQWOPExplorableBase<?, CommandQWOP> rootNode, String saveName,
+    protected void doBasicMaxDepthStage(NodeGameExplorableBase<?, CommandQWOP> rootNode, String saveName,
                                         int desiredDepth,
                                         float fractionOfWorkers,
                                         int maxGames) {
@@ -222,7 +222,7 @@ public abstract class SearchTemplate {
      * @param fractionOfWorkers 0 to 1, proportion of workers to allot to this stage.
      * @param maxGames Maximum number of games to play before giving up.
      */
-    protected void doBasicMinDepthStage(NodeQWOPExplorableBase<?, CommandQWOP> rootNode, String saveName, int minDepth,
+    protected void doBasicMinDepthStage(NodeGameExplorableBase<?, CommandQWOP> rootNode, String saveName, int minDepth,
                                         float fractionOfWorkers,
                                         int maxGames) {
         if (fractionOfWorkers > 1)
@@ -258,7 +258,7 @@ public abstract class SearchTemplate {
      * @param fractionOfWorkers Portion of max workers used by this stage.
      * @param numGames Number of games to play.
      */
-    protected void doFixedGamesToFailureStage(NodeQWOPExplorableBase<?, CommandQWOP> rootNode, String saveName,
+    protected void doFixedGamesToFailureStage(NodeGameExplorableBase<?, CommandQWOP> rootNode, String saveName,
                                               float fractionOfWorkers, int numGames) {
         if (fractionOfWorkers > 1)
             throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");

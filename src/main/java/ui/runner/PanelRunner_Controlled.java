@@ -9,7 +9,7 @@ import game.action.Action;
 import game.action.ActionQueue;
 import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -237,7 +237,7 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
      */
     private class ControllerExecutor implements Runnable {
 
-        private NodeQWOPExplorable<CommandQWOP> node;
+        private NodeGameExplorable<CommandQWOP> node;
 
         int tsDelay = normalSimRate;
 
@@ -264,9 +264,9 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
                         // Either make the first node since the game began, or add a child to the previous node.
                         if (node == null) {
                             if (actionGenerator != null) {
-                                node = new NodeQWOPExplorable<>(game.getCurrentState(), actionGenerator);
+                                node = new NodeGameExplorable<>(game.getCurrentState(), actionGenerator);
                             } else {
-                                node = new NodeQWOPExplorable<>(game.getCurrentState());
+                                node = new NodeGameExplorable<>(game.getCurrentState());
                             }
                         } else {
                             node = node.addBackwardsLinkedChild(mostRecentAction, game.getCurrentState());

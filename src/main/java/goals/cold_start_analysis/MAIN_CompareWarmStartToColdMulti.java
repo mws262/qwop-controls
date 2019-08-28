@@ -5,7 +5,7 @@ import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.qwop.CommandQWOP;
 import game.state.IState;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -51,7 +51,7 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
                     if (st.isFailed()) {
                         coldStartGameIter.remove();
                     } else {
-                        runnerPanel.addSecondaryState(st, NodeQWOPGraphicsBase.getColorFromScaledValue(count,
+                        runnerPanel.addSecondaryState(st, NodeGameGraphicsBase.getColorFromScaledValue(count,
                                 actionQueue.getActionsInCurrentRun().length / (float) 5, 0.8f));
                         count++;
                     }

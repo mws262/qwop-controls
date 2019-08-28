@@ -3,7 +3,7 @@ package game.action;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.Set;
 
@@ -30,7 +30,7 @@ public interface IActionGenerator<C extends Command<?>> {
      * @return A set of game.command to try as potential children.
      */
     @JsonIgnore
-    ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode);
+    ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C> parentNode);
 
     /**
      * Get a set of all possible game.command which this generator could return.

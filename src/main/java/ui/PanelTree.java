@@ -5,7 +5,7 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import tree.TreeWorker;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 
 import javax.swing.*;
 import javax.vecmath.Vector3f;
@@ -39,12 +39,12 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     /**
      * Tree root nodes associated with this interface.
      */
-    private ArrayList<NodeQWOPGraphicsBase<?, ?>> rootNodes = new ArrayList<>();
+    private ArrayList<NodeGameGraphicsBase<?, ?>> rootNodes = new ArrayList<>();
 
     /**
-     * Currently selected {@link NodeQWOPGraphicsBase} on the tree.
+     * Currently selected {@link NodeGameGraphicsBase} on the tree.
      */
-    private NodeQWOPGraphicsBase<?, ?> selectedNode;
+    private NodeGameGraphicsBase<?, ?> selectedNode;
 
     /**
      * Games played per second
@@ -187,7 +187,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      *
      * @param node Selected node that will be broadcast to listeners.
      */
-    private void selectNode(NodeQWOPGraphicsBase<?, ?> node) {
+    private void selectNode(NodeGameGraphicsBase<?, ?> node) {
         selectedNode = node;
         for (NodeSelectionListener listener : nodeSelectionListeners) {
             listener.nodeSelected(node);
@@ -195,12 +195,12 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     }
 
     /**
-     * Add the root of a tree for drawing. Note that {@link NodeQWOPGraphicsBase} locations are dictated by {@link NodeQWOPGraphicsBase#nodeLocation}.
+     * Add the root of a tree for drawing. Note that {@link NodeGameGraphicsBase} locations are dictated by {@link NodeGameGraphicsBase#nodeLocation}.
      *
      * @param node A root node whose tree we want to draw. Does not literally need to be a zero-depth tree root, just
      *             some node with children we want to draw.
      */
-    public void addRootNode(NodeQWOPGraphicsBase<?, ?> node) {
+    public void addRootNode(NodeGameGraphicsBase<?, ?> node) {
         rootNodes.add(node);
     }
 
@@ -234,16 +234,16 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         // zoom, but make sure to cap out the size!
 
         gl.glPointSize(ptSize);
-//        for (NodeQWOPGraphicsBase<?> node : rootNodes) {
+//        for (NodeGameGraphicsBase<?> node : rootNodes) {
 //            node.drawOverridePointsBelow(gl);
 //            node.drawOverrideLinesBelow(gl);
 //        }
-        NodeQWOPGraphicsBase.updateBuffers(gl);
-        NodeQWOPGraphicsBase.drawAllBuffered(gl);
-        NodeQWOPGraphicsBase.drawAllUnbuffered(gl);
+        NodeGameGraphicsBase.updateBuffers(gl);
+        NodeGameGraphicsBase.drawAllBuffered(gl);
+        NodeGameGraphicsBase.drawAllUnbuffered(gl);
 
         if (labelToggleCheck.isSelected()) {
-            for (NodeQWOPGraphicsBase<?, ?> node : rootNodes) {
+            for (NodeGameGraphicsBase<?, ?> node : rootNodes) {
                 node.recurseDownTreeInclusive(n -> n.drawLabel(gl, glut));
             }
         }
@@ -316,8 +316,8 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         if (!treePause && e.isControlDown()) {
 
             // Get all nodes below all roots.
-            List<NodeQWOPGraphicsBase<?, ?>> nodesBelow = new ArrayList<>();
-            for (NodeQWOPGraphicsBase<?, ?> node : rootNodes) {
+            List<NodeGameGraphicsBase<?, ?>> nodesBelow = new ArrayList<>();
+            for (NodeGameGraphicsBase<?, ?> node : rootNodes) {
                 node.recurseDownTreeInclusive(nodesBelow::add);
             }
             selectNode(cam.nodeFromClick_set(e.getX(), e.getY(), nodesBelow));
@@ -454,7 +454,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                 //This set of logicals eliminates the edge cases, then takes the proposed command as default
                 if (thisIndex == 0 && direction == -1) { //We're at the lowest index of this node and must head
                     // to a new parent node.
-                    ArrayList<NodeQWOPGraphicsBase<?, ?>> blacklist = new ArrayList<>(); //Keep a blacklist of nodes
+                    ArrayList<NodeGameGraphicsBase<?, ?>> blacklist = new ArrayList<>(); //Keep a blacklist of nodes
                     // that already
                     // proved to be duds.
                     blacklist.add(selectedNode);
@@ -462,7 +462,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                             selectedNode.getIndexAccordingToParent(), 0);
                 } else if (thisIndex == selectedNode.getSiblingCount() && direction == 1) { //We're at
                     // the highest index of this node and must head to a new parent node.
-                    ArrayList<NodeQWOPGraphicsBase<?, ?>> blacklist = new ArrayList<>();
+                    ArrayList<NodeGameGraphicsBase<?, ?>> blacklist = new ArrayList<>();
                     blacklist.add(selectedNode);
                     nextOver(selectedNode.getParent(), blacklist, 1, direction,
                             selectedNode.getIndexAccordingToParent(), 0);
@@ -487,7 +487,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      * Take a node back a layer. Don't return to node past. Try to go back out by the deficit depth amount in the
      * +1 or -1 direction left/right -- TODO this is an old mess.
      */
-    private boolean nextOver(NodeQWOPGraphicsBase<?, ?> current, ArrayList<NodeQWOPGraphicsBase<?, ?>> blacklist,
+    private boolean nextOver(NodeGameGraphicsBase<?, ?> current, ArrayList<NodeGameGraphicsBase<?, ?>> blacklist,
                              int deficitDepth, int direction,
                              int prevIndexAbove, int numTimesTried) { // numTimesTried added to prevent some really
         // deep node for causing some really huge search through the whole tree. If we don't succeed in a handful
@@ -557,7 +557,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     }
 
 //    // Altered from: https://wadeawalker.wordpress.com/2010/10/17/tutorial-faster-rendering-with-vertex-buffer-objects/
-//    private int [] createAndFillVertexBuffer(GL2 gl2, List<NodeQWOPGraphicsBase<?>> nodeList) {
+//    private int [] createAndFillVertexBuffer(GL2 gl2, List<NodeGameGraphicsBase<?>> nodeList) {
 //
 //        int [] aiNumOfVertices = new int [] {nodeList.size() * 3}; // Enough space for two vertices for
 //        // lines and one vertex for a point for each line (even if not all are used).
@@ -588,10 +588,10 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 //        ByteBuffer bytebuffer = gl2.glMapBuffer( GL.GL_ARRAY_BUFFER, GL2.GL_WRITE_ONLY );
 //        FloatBuffer floatbuffer = bytebuffer.order( ByteOrder.nativeOrder() ).asFloatBuffer();
 //
-//        for( NodeQWOPGraphicsBase<?> node : nodeList ) {
+//        for( NodeGameGraphicsBase<?> node : nodeList ) {
 //            node.addLineToBuffer(floatbuffer);
 //        }
-//        for( NodeQWOPGraphicsBase<?> node : nodeList ) {
+//        for( NodeGameGraphicsBase<?> node : nodeList ) {
 //            node.addPointToBuffer(floatbuffer);
 //        }
 //

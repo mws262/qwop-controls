@@ -2,7 +2,7 @@ package ui;
 
 import game.action.Command;
 import tree.Utility;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -34,7 +34,7 @@ public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelect
     /**
      * Selected node by user click/key
      */
-    private NodeQWOPGraphicsBase<?, C> selectedNode;
+    private NodeGameGraphicsBase<?, C> selectedNode;
 
     /**
      * List of panes which can be activated, deactivated.
@@ -147,7 +147,7 @@ public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelect
     }
 
     @Override
-    public void nodeSelected(NodeQWOPGraphicsBase<?, C> selected) {
+    public void nodeSelected(NodeGameGraphicsBase<?, C> selected) {
         if (selectedNode != null) { // Clear things from the old selected node.
             selectedNode.setOverridePointColor(null);
             selectedNode.clearBranchLineOverrideColor();
@@ -182,7 +182,7 @@ public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelect
     }
 
     @Override
-    public void addRootNode(NodeQWOPGraphicsBase<?, C> node) {
+    public void addRootNode(NodeGameGraphicsBase<?, C> node) {
         panelTree.addRootNode(node);
     }
 

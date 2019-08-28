@@ -72,7 +72,7 @@ public class MAIN_ImproveValFun {
 //                while (!game.isFailed() && game.getTimestepsThisGame() < maxTs && game.getCurrentState().getCenterX() < QWOPConstants.goalDistance) {
 //
 //                    if (actionQueue.isEmpty()) {
-//                        actionQueue.addAction(controller.policy(new NodeQWOPExplorable(game.getCurrentState()), game)); // Can
+//                        actionQueue.addAction(controller.policy(new NodeGameExplorable(game.getCurrentState()), game)); // Can
 //                        // change to game serialization version here.
 //                    }
 //                    game.step(actionQueue.pollCommand());

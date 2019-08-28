@@ -9,7 +9,7 @@ import game.action.Command;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -62,11 +62,11 @@ public class DataSaver_StageSelected<C extends Command<?>> implements IDataSaver
     public void reportTimestep(Action<C> action, IGameInternal<C> game) {}
 
     @Override
-    public void reportGameEnding(NodeQWOPBase<?, C> endNode) {}
+    public void reportGameEnding(NodeGameBase<?, C> endNode) {}
 
     @Override
-    public void reportStageEnding(NodeQWOPBase<?, C> rootNode, List<NodeQWOPBase<?, C>> targetNodes) {
-        for (NodeQWOPBase<?, C> tar : targetNodes) {
+    public void reportStageEnding(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes) {
+        for (NodeGameBase<?, C> tar : targetNodes) {
             saveBuffer.add(new SavableSingleGame<>(tar));
         }
 

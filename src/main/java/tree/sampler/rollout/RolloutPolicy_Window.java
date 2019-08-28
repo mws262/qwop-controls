@@ -7,7 +7,7 @@ import game.action.Action;
 import game.action.ActionQueue;
 import game.action.Command;
 import org.jetbrains.annotations.NotNull;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class RolloutPolicy_Window<C extends Command<?>> implements IRolloutPolic
     }
 
     @Override
-    public float rollout(@NotNull NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
+    public float rollout(@NotNull NodeGameExplorableBase<?, C> startNode, IGameInternal<C> game) {
 
         // Need to do a rollout for the actual node we landed on.
         Action<C> middleAction = startNode.getAction();
@@ -66,7 +66,7 @@ public class RolloutPolicy_Window<C extends Command<?>> implements IRolloutPolic
                 game.step(actionQueue.pollCommand());
             }
 
-            NodeQWOPExplorableBase<?, C> windowNode =
+            NodeGameExplorableBase<?, C> windowNode =
                     startNode.getParent().addBackwardsLinkedChild(windowActions.get(i), game.getCurrentState());
             windowScores[i] = individualRollout.rollout(windowNode, game);
         }

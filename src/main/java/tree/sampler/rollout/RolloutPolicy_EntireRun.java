@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import game.action.Command;
 import game.action.IActionGenerator;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.EvaluationFunction_Constant;
 
 
@@ -33,23 +33,23 @@ public class RolloutPolicy_EntireRun<C extends Command<?>> extends RolloutPolicy
     }
 
     @Override
-    float startScore(NodeQWOPExplorableBase<?, C> startNode) {
+    float startScore(NodeGameExplorableBase<?, C> startNode) {
         return 0;
     }
 
     @Override
-    float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?, C> before, NodeQWOPBase<?, C> after) {
+    float accumulateScore(int timestepSinceRolloutStart, NodeGameBase<?, C> before, NodeGameBase<?, C> after) {
         return 0;
     }
 
     @Override
-    float endScore(NodeQWOPExplorableBase<?, C> endNode) {
+    float endScore(NodeGameExplorableBase<?, C> endNode) {
         return (endNode.getState().getCenterX()) * distanceMultiplier;
     }
 
     @Override
-    float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?, C> startNode,
-                              NodeQWOPExplorableBase<?, C> endNode, int rolloutDurationTimesteps) {
+    float calculateFinalScore(float accumulatedValue, NodeGameExplorableBase<?, C> startNode,
+                              NodeGameExplorableBase<?, C> endNode, int rolloutDurationTimesteps) {
         return accumulatedValue +
                 (endNode.getState().getCenterX() - startNode.getState().getCenterX())
                         * speedMultiplier / Math.max(rolloutDurationTimesteps, 1f);

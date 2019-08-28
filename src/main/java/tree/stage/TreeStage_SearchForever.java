@@ -1,7 +1,7 @@
 package tree.stage;
 
 import game.action.Command;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +20,8 @@ public class TreeStage_SearchForever<C extends Command<?>> extends TreeStage<C> 
     public TreeStage_SearchForever() {}
 
     @Override
-    public List<NodeQWOPBase<?, C>> getResults() {
-        List<NodeQWOPBase<?, C>> resultList = new ArrayList<>();
+    public List<NodeGameBase<?, C>> getResults() {
+        List<NodeGameBase<?, C>> resultList = new ArrayList<>();
         resultList.add(getRootNode()); // No particularly interesting results.
         return resultList;
     }

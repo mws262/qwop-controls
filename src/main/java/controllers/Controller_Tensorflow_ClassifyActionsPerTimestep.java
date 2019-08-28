@@ -7,7 +7,7 @@ import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tflowtools.TensorflowLoader;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.List;
 
@@ -58,7 +58,7 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     }
 
     @Override
-    public Action<CommandQWOP> policy(NodeQWOPExplorableBase<?, CommandQWOP> state) {
+    public Action<CommandQWOP> policy(NodeGameExplorableBase<?, CommandQWOP> state) {
         List<Float> keyClassification = sisoFloatPrediction(state.getState(), inputName, outputName);
         float probability0 = keyClassification.get(0);
         float probability1 = keyClassification.get(1);
@@ -91,8 +91,8 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     }
 
     @Override
-    public Action<CommandQWOP> policy(NodeQWOPExplorableBase<?, CommandQWOP> state,
-                                     IGameSerializable<CommandQWOP> game) {
+    public Action<CommandQWOP> policy(NodeGameExplorableBase<?, CommandQWOP> state,
+                                      IGameSerializable<CommandQWOP> game) {
         return policy(state);
     }
 

@@ -37,11 +37,12 @@ public abstract class SoftmaxPolicyNetwork extends TrainableNetwork {
 
         // Constructor runs a quick test to make sure that the provided network puts out a distribution summing to 1.
         // This is the amount of floating point error allowed in this test.
-        float softmaxTol = 1e-5f;
-        if (Math.abs(1 - Math.abs(cumulativeOutput)) > softmaxTol) {
-            throw new IllegalArgumentException("Given graph file, " + graphDefinition.getName() + ", did not seem to " +
-                    "put out a valid probability distribution. For a test input, the output distribution summed to " + cumulativeOutput);
-        }
+        // TODO doesn't apply to Q nets but is still a good test for actual softmax. Change stuff around.
+//        float softmaxTol = 1e-5f;
+//        if (Math.abs(1 - Math.abs(cumulativeOutput)) > softmaxTol) {
+//            throw new IllegalArgumentException("Given graph file, " + graphDefinition.getName() + ", did not seem to " +
+//                    "put out a valid probability distribution. For a test input, the output distribution summed to " + cumulativeOutput);
+//        }
     }
 
     /**

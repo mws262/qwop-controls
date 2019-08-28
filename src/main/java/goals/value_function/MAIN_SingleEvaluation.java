@@ -8,7 +8,7 @@ import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.Utility;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
 import ui.runner.PanelRunner;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -109,9 +109,9 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         }
     }
 
-    private NodeQWOPExplorable doPrefix() {
+    private NodeGameExplorable doPrefix() {
 
-        NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameQWOP.getInitialState());
+        NodeGameExplorable rootNode = new NodeGameExplorable(GameQWOP.getInitialState());
 
         // Assign a "prefix" of game.command, since I'm not sure if the controller will generalize to this part of running.
         List<Action<CommandQWOP>[]> alist = new ArrayList<>();
@@ -127,14 +127,14 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 //                new Action(20,true,false,false,true),
         });
 
-        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, game);
+        NodeGameExplorable.makeNodesFromActionSequences(alist, rootNode, game);
 
-        List<NodeQWOPExplorable> leaf = new ArrayList<>();
+        List<NodeGameExplorable> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
 
         List<Action<CommandQWOP>> actionList = new ArrayList<>();
 
-        NodeQWOPExplorable currNode = leaf.get(0);
+        NodeGameExplorable currNode = leaf.get(0);
         currNode.getSequence(actionList);
         actionQueue.addSequence(actionList);
 
@@ -157,7 +157,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         return currNode;
     }
 
-    private void doControlled(NodeQWOPExplorable<CommandQWOP> currentNode) {
+    private void doControlled(NodeGameExplorable<CommandQWOP> currentNode) {
 
         // Run the controller until failure.
         // TODO fix cast
@@ -262,7 +262,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
     public static void main(String[] args) {
         MAIN_SingleEvaluation controlledGame = new MAIN_SingleEvaluation();
-        NodeQWOPExplorable currentNode = controlledGame.doPrefix();
+        NodeGameExplorable currentNode = controlledGame.doPrefix();
         controlledGame.doControlled(currentNode);
     }
 }

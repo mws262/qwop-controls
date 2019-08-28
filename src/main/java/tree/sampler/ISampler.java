@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.Command;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 /**
  * Defines a strategy for sampling nodes.
@@ -31,44 +31,44 @@ public interface ISampler<C extends Command<?>> extends AutoCloseable {
      * Decide a path through the existing tree to a place where a new node will be added. It is the tree policy's
      * responsibility to lock the Node multithreading is used.
      **/
-    NodeQWOPExplorableBase<?, C> treePolicy(NodeQWOPExplorableBase<?, C> startNode);
+    NodeGameExplorableBase<?, C> treePolicy(NodeGameExplorableBase<?, C> startNode);
 
     /**
      * Lets the sampler know that the previously requested game moves have occurred and the tree FSM is ready to do
      * more stuff.
      **/
-    void treePolicyActionDone(NodeQWOPExplorableBase<?, C> currentNode);
+    void treePolicyActionDone(NodeGameExplorableBase<?, C> currentNode);
 
     /**
      * Are we ready to switch from tree policy to expansion policy?
      **/
-    boolean treePolicyGuard(NodeQWOPExplorableBase<?, C> currentNode);
+    boolean treePolicyGuard(NodeGameExplorableBase<?, C> currentNode);
 
     /**
      * Strategy for adding a single node at a depth of 1 greater than the given startNode.
      **/
-    Action<C> expansionPolicy(NodeQWOPExplorableBase<?, C> startNode);
+    Action<C> expansionPolicy(NodeGameExplorableBase<?, C> startNode);
 
     /**
      * Lets the sampler know that the previously requested game moves have occurred and the tree FSM is ready to do
      * more stuff.
      **/
-    void expansionPolicyActionDone(NodeQWOPExplorableBase<?, C> currentNode);
+    void expansionPolicyActionDone(NodeGameExplorableBase<?, C> currentNode);
 
     /**
      * Are we ready to switch from expansion policy to rollout policy?
      **/
-    boolean expansionPolicyGuard(NodeQWOPExplorableBase<?, C> currentNode);
+    boolean expansionPolicyGuard(NodeGameExplorableBase<?, C> currentNode);
 
     /**
      * Continued expansion which is NOT added to the tree as nodes. Only used for scoring as in UCB.
      **/
-    void rolloutPolicy(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game);
+    void rolloutPolicy(NodeGameExplorableBase<?, C> startNode, IGameInternal<C> game);
 
     /**
      * Are we ready to switch from rollout policy to tree policy?
      **/
-    boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?, C> currentNode);
+    boolean rolloutPolicyGuard(NodeGameExplorableBase<?, C> currentNode);
 
     /**
      * Copy this sampler and its settings. Each worker needs an individual copy.

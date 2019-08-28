@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import game.action.Command;
 import tree.TreeWorker;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +19,9 @@ public class TreeStage_Grouping<C extends Command<?>> extends TreeStage<C> {
 
     private List<TreeWorker<C>> treeWorkers;
 
-    private NodeQWOPExplorableBase<?, C> stageRoot;
+    private NodeGameExplorableBase<?, C> stageRoot;
 
-    private final List<NodeQWOPBase<?, C>> results = new ArrayList<>();
+    private final List<NodeGameBase<?, C>> results = new ArrayList<>();
 
     private boolean isFinished = false;
 
@@ -33,7 +33,7 @@ public class TreeStage_Grouping<C extends Command<?>> extends TreeStage<C> {
     }
 
     @Override
-    public void initialize(List<TreeWorker<C>> treeWorkers, NodeQWOPExplorableBase<?, C> stageRoot) {
+    public void initialize(List<TreeWorker<C>> treeWorkers, NodeGameExplorableBase<?, C> stageRoot) {
         this.treeWorkers = treeWorkers;
         this.stageRoot = stageRoot;
         results.clear();
@@ -42,7 +42,7 @@ public class TreeStage_Grouping<C extends Command<?>> extends TreeStage<C> {
         for (int i = 0; i < treeStages.length; i++) {
             activeStage = treeStages[i];
             activeStage.initialize(treeWorkers, stageRoot);
-            List<NodeQWOPBase<?, C>> results = activeStage.getResults();
+            List<NodeGameBase<?, C>> results = activeStage.getResults();
             if (results != null)
                 this.results.addAll(results); // Get the individual stage's results.
             if (i < treeStages.length - 1) {
@@ -58,7 +58,7 @@ public class TreeStage_Grouping<C extends Command<?>> extends TreeStage<C> {
 
     @Override
     @JsonIgnore
-    public List<NodeQWOPBase<?, C>> getResults() {
+    public List<NodeGameBase<?, C>> getResults() {
         return results;
     }
 
