@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Command;
 import org.jetbrains.annotations.NotNull;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 import value.IValueFunction;
 
 /**
@@ -30,7 +30,7 @@ public class RolloutPolicy_WeightWithValueFunction<C extends Command<?>> impleme
     }
 
     @Override
-    public float rollout(@NotNull NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
+    public float rollout(@NotNull NodeGameExplorableBase<?, C> startNode, IGameInternal<C> game) {
         float rolloutValue = individualRollout.rollout(startNode, game);
 
         return (1 - valueFunctionWeight) * rolloutValue + valueFunctionWeight * valueFunction.evaluate(startNode);

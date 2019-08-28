@@ -9,8 +9,8 @@ import game.action.*;
 import game.qwop.CommandQWOP;
 import game.qwop.QWOPConstants;
 import org.jetbrains.annotations.NotNull;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param targetNode Node we want to simulate to.
      * @param game Game used for simulation. Will be resetGame before simulating.
      */
-    void simGameToNode(@NotNull NodeQWOPBase<?, C> targetNode,
+    void simGameToNode(@NotNull NodeGameBase<?, C> targetNode,
                        @NotNull IGameInternal<C> game) {
         // Reset the game and command queue.
         game.resetGame();
@@ -68,7 +68,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param target Node to set the game's state to.
      * @param game Game used for simulation. Will be resetGame before setting the state.
      */
-    void coldStartGameToNode(@NotNull NodeQWOPBase<?, C> target,
+    void coldStartGameToNode(@NotNull NodeGameBase<?, C> target,
                              @NotNull IGameInternal game) {
         // Reset the game.
         game.resetGame();
@@ -83,14 +83,14 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @return The reward associated with how good this rollout was.
      */
     @Override
-    public float rollout(@NotNull NodeQWOPExplorableBase<?, C> startNode, @NotNull IGameInternal<C> game) {
+    public float rollout(@NotNull NodeGameExplorableBase<?, C> startNode, @NotNull IGameInternal<C> game) {
         if (maxTimesteps < 1) {
             throw new IllegalArgumentException("Maximum timesteps for rollout must be at least one. Was: " + maxTimesteps);
         }
         assert startNode.getState().equals(game.getCurrentState());
 
         // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts.
-        NodeQWOPExplorableBase<?, C> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
+        NodeGameExplorableBase<?, C> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
                 startNode.getState(), rolloutActionGenerator);
 
         float totalScore = startScore(startNode);
@@ -102,10 +102,10 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
 
             actionQueue.addAction(childAction);
 
-            NodeQWOPBase<?, C> intermediateNodeBefore = rolloutNode;
+            NodeGameBase<?, C> intermediateNodeBefore = rolloutNode;
             while (!actionQueue.isEmpty() && !game.isFailed() && timestepCounter < maxTimesteps) {
                 game.step(actionQueue.pollCommand());
-                NodeQWOPBase<?, C> intermediateNodeAfter = intermediateNodeBefore.addBackwardsLinkedChild(childAction,
+                NodeGameBase<?, C> intermediateNodeAfter = intermediateNodeBefore.addBackwardsLinkedChild(childAction,
                         game.getCurrentState());
                 totalScore += accumulateScore(timestepCounter, intermediateNodeBefore, intermediateNodeAfter);
                 intermediateNodeBefore = intermediateNodeAfter;
@@ -124,7 +124,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param startNode Node at the beginning of the rollout.
      * @return Component of the score that comes from the starting node.
      */
-    abstract float startScore(NodeQWOPExplorableBase<?, C> startNode);
+    abstract float startScore(NodeGameExplorableBase<?, C> startNode);
 
     /**
      * An "integrated" part of the score. This gets called every timestep of the rollout, and the particular rollout
@@ -135,8 +135,8 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param after Node representing the runner at this timestep.
      * @return A score component having to do with a single timestep.
      */
-    abstract float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?, C> before,
-                                   NodeQWOPBase<?, C> after);
+    abstract float accumulateScore(int timestepSinceRolloutStart, NodeGameBase<?, C> before,
+                                   NodeGameBase<?, C> after);
 
     /**
      * Component of the score that comes from the final node in the rollout. For all rollouts that inherit from
@@ -145,7 +145,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param endNode Terminal node in this rollout execution.
      * @return A component of the score having to do with the final node in the rollout.
      */
-    abstract float endScore(NodeQWOPExplorableBase<?, C> endNode);
+    abstract float endScore(NodeGameExplorableBase<?, C> endNode);
 
     /**
      * Handles any final adjustments to score that you'd like to do.
@@ -157,8 +157,8 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param rolloutDurationTimesteps Number of timesteps simulated DURING the rollout.
      * @return Final adjusted score. If you are satisfied with the accumulated value so far, then just return it.
      */
-    abstract float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?, C> startNode,
-                                       NodeQWOPExplorableBase<?, C> endNode, int rolloutDurationTimesteps);
+    abstract float calculateFinalScore(float accumulatedValue, NodeGameExplorableBase<?, C> startNode,
+                                       NodeGameExplorableBase<?, C> endNode, int rolloutDurationTimesteps);
 
     public abstract IController<C> getRolloutController();
 

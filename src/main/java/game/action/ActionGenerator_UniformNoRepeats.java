@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import distributions.Distribution;
 import distributions.Distribution_Equal;
 import game.qwop.CommandQWOP;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -31,7 +31,7 @@ public class ActionGenerator_UniformNoRepeats<C extends Command<?>> implements I
     }
 
     @Override
-    public ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode) {
+    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C> parentNode) {
         ActionList<C> as = new ActionList<>(new Distribution_Equal<>());
         for (ActionList<C> allActionList : allActionLists) {
             if (parentNode.getTreeDepth() == 0 || !allActionList.contains(parentNode.getAction())) { // Get all

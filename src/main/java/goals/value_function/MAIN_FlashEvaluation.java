@@ -11,7 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jblas.util.Random;
-import tree.node.NodeQWOP;
+import tree.node.NodeGame;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 import vision.VisionDataSaver;
@@ -97,7 +97,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     @Override
     public Action<CommandQWOP> getControlAction(IState state) {
-        Action<CommandQWOP> action = valueFunction.getMaximizingAction(new NodeQWOP<>(state));
+        Action<CommandQWOP> action = valueFunction.getMaximizingAction(new NodeGame<>(state));
         if (addActionNoise && Random.nextFloat() < noiseProbability) {
             if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
                 action = new Action<>(action.getTimestepsTotal() + 1, action.peek());

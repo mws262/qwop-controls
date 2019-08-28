@@ -6,7 +6,7 @@ import game.IGameSerializable;
 import game.action.Action;
 import game.action.Command;
 import org.jetbrains.annotations.NotNull;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,23 +27,23 @@ public class ValueFunction_Constant<C extends Command<?>> implements IValueFunct
 
     @JsonIgnore
     @Override
-    public Action<C> getMaximizingAction(NodeQWOPBase<?, C> currentNode) {
+    public Action<C> getMaximizingAction(NodeGameBase<?, C> currentNode) {
         return new Action<>(1, defaultCommand);
     }
 
     @JsonIgnore
     @Override
-    public Action<C> getMaximizingAction(NodeQWOPBase<?, C> currentNode, IGameSerializable<C> game) {
+    public Action<C> getMaximizingAction(NodeGameBase<?, C> currentNode, IGameSerializable<C> game) {
         return new Action<>(1, defaultCommand);
     }
 
     @Override
-    public float evaluate(NodeQWOPBase<?, C> currentNode) {
+    public float evaluate(NodeGameBase<?, C> currentNode) {
         return 0;
     }
 
     @Override
-    public void update(List<? extends NodeQWOPBase<?, C>> nodes) {}
+    public void update(List<? extends NodeGameBase<?, C>> nodes) {}
 
     @JsonIgnore
     @Override

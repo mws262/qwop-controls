@@ -8,7 +8,7 @@ import game.qwop.GameQWOP;
 import game.qwop.CommandQWOP;
 import game.state.IState;
 import tree.Utility;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 
 import java.awt.*;
 import java.util.Map;
@@ -72,7 +72,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
+    public void update(NodeGameGraphicsBase<?, CommandQWOP> node) {
         mainState = node.getState();
     }
 

@@ -1,7 +1,7 @@
 package ui;
 
 import game.action.Command;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 
 import java.util.EventListener;
 
@@ -15,5 +15,5 @@ public interface NodeSelectionListener<C extends Command<?>> extends EventListen
      * Callback for a node which has been selected (usually by a click on the tree).
      * @param node Selected node.
      */
-    void nodeSelected(NodeQWOPGraphicsBase<?, C> node);
+    void nodeSelected(NodeGameGraphicsBase<?, C> node);
 }

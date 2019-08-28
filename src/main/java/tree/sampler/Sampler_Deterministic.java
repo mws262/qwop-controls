@@ -3,7 +3,7 @@ package tree.sampler;
 import game.action.Action;
 import game.IGameInternal;
 import game.action.Command;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 /**
  * Super-simple depth-first search with NO random selection. Tries to pick the first node it finds with an untried
@@ -19,11 +19,11 @@ public class Sampler_Deterministic<C extends Command<?>> implements ISampler<C> 
     private boolean expansionPolicyDone = false;
 
     @Override
-    public NodeQWOPExplorableBase<?, C> treePolicy(NodeQWOPExplorableBase<?, C> startNode) {
+    public NodeGameExplorableBase<?, C> treePolicy(NodeGameExplorableBase<?, C> startNode) {
         if (startNode.isFullyExplored())
             throw new IllegalStateException("Trying to do tree policy on a given node at depth " + startNode.getTreeDepth() +
 					" which is already fully-explored. Whoever called this is at fault.");
-        NodeQWOPExplorableBase<?, C> currentNode = startNode;
+        NodeGameExplorableBase<?, C> currentNode = startNode;
 
             if (currentNode.isLocked()) {
                 if (currentNode.getTreeDepth() > 0) {
@@ -39,7 +39,7 @@ public class Sampler_Deterministic<C extends Command<?>> implements ISampler<C> 
                 return currentNode;
 
             // Get the first child with some untried game.command after it, or at least a not-fully-explored one.
-            for (NodeQWOPExplorableBase<?, C> child : currentNode.getChildren()) {
+            for (NodeGameExplorableBase<?, C> child : currentNode.getChildren()) {
                 if (child.getUntriedActionCount() > 0 && child.reserveExpansionRights()) {
                     return child;
                 } else if (!child.isFullyExplored()) {
@@ -50,18 +50,18 @@ public class Sampler_Deterministic<C extends Command<?>> implements ISampler<C> 
     }
 
     @Override
-    public void treePolicyActionDone(NodeQWOPExplorableBase<?, C> currentNode) {
+    public void treePolicyActionDone(NodeGameExplorableBase<?, C> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public boolean treePolicyGuard(NodeQWOPExplorableBase<?, C> currentNode) {
+    public boolean treePolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
         return treePolicyDone; // True means ready to move on to the next.
     }
 
     @Override
-    public Action<C> expansionPolicy(NodeQWOPExplorableBase<?, C> startNode) {
+    public Action<C> expansionPolicy(NodeGameExplorableBase<?, C> startNode) {
         if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
@@ -69,21 +69,21 @@ public class Sampler_Deterministic<C extends Command<?>> implements ISampler<C> 
     }
 
     @Override
-    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?, C> currentNode) {
+    public void expansionPolicyActionDone(NodeGameExplorableBase<?, C> currentNode) {
         treePolicyDone = false;
         expansionPolicyDone = currentNode.getState().isFailed();
     }
 
     @Override
-    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?, C> currentNode) {
+    public boolean expansionPolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public void rolloutPolicy(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {}
+    public void rolloutPolicy(NodeGameExplorableBase<?, C> startNode, IGameInternal<C> game) {}
 
     @Override
-    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?, C> currentNode) {
+    public boolean rolloutPolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
         // Rollout policy not in use in the random sampler.
         return true; // No rollout policy
     }

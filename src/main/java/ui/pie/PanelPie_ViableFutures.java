@@ -3,8 +3,8 @@ package ui.pie;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
 import org.jfree.data.general.DefaultPieDataset;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
 import ui.IUserInterface;
 
 public class PanelPie_ViableFutures<C extends Command<?>> extends PanelPie implements IUserInterface.TabbedPaneActivator<C> {
@@ -33,13 +33,13 @@ public class PanelPie_ViableFutures<C extends Command<?>> extends PanelPie imple
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?, C> node) {
+    public void update(NodeGameGraphicsBase<?, C> node) {
         int failCount = 0;
         int cat1 = 0;
         int cat2 = 0;
         int cat3 = 0;
         int cat4 = 0;
-        for (NodeQWOPExplorableBase<?, C> child : node.getChildren()) {
+        for (NodeGameExplorableBase<?, C> child : node.getChildren()) {
             int diffBranchDepth = child.getMaxBranchDepth() - child.getTreeDepth();
 
             if (child.getState().isFailed()) {

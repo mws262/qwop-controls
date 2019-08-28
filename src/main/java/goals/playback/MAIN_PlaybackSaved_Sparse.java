@@ -4,8 +4,8 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.qwop.GameQWOP;
 import game.qwop.CommandQWOP;
-import tree.node.NodeQWOPGraphics;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphics;
+import tree.node.NodeGameGraphicsBase;
 import ui.runner.PanelRunner_Animated;
 
 import javax.swing.*;
@@ -38,7 +38,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
     private File saveLoc = new File("src/main/resources/saved_data/11_2_18");
 
-    private List<NodeQWOPGraphics<CommandQWOP>> leafNodes = new ArrayList<>();
+    private List<NodeGameGraphics<CommandQWOP>> leafNodes = new ArrayList<>();
 
     /**
      * What point to start displaying from (to skip any prefix).
@@ -82,15 +82,15 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
         SavableFileIO<SavableSingleGame<CommandQWOP>> fileIO = new SavableFileIO<>();
         for (File f : playbackFiles) {
-            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState());
+            NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState());
 
             List<SavableSingleGame<CommandQWOP>> loadedGames = new ArrayList<>();
             fileIO.loadObjectsToCollection(f, loadedGames);
-            NodeQWOPGraphicsBase.makeNodesFromRunInfo(loadedGames, rootNode);
+            NodeGameGraphicsBase.makeNodesFromRunInfo(loadedGames, rootNode);
             leafNodes.clear();
             rootNode.getLeaves(leafNodes);
-            NodeQWOPGraphics<CommandQWOP> endNode = leafNodes.get(0);
-            NodeQWOPGraphics<CommandQWOP> startNode = endNode;
+            NodeGameGraphics<CommandQWOP> endNode = leafNodes.get(0);
+            NodeGameGraphics<CommandQWOP> startNode = endNode;
             while (startNode.getTreeDepth() > startPt) {
                 startNode = startNode.getParent();
             }

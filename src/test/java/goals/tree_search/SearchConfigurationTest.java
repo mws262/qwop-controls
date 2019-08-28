@@ -15,7 +15,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import savers.*;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
 import tree.node.evaluator.*;
 import tree.sampler.*;
 import tree.sampler.rollout.*;
@@ -43,11 +43,11 @@ import java.util.List;
 public class SearchConfigurationTest {
 
     private final IState testState1 = GameQWOP.getInitialState();
-    private final NodeQWOPExplorable<CommandQWOP> sampleNode1 = new NodeQWOPExplorable<>(testState1,
+    private final NodeGameExplorable<CommandQWOP> sampleNode1 = new NodeGameExplorable<>(testState1,
             ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
 
     private IState testState2;
-    private NodeQWOPExplorable<CommandQWOP> sampleNode2;
+    private NodeGameExplorable<CommandQWOP> sampleNode2;
 
     @Before
     public void setup() {
@@ -56,7 +56,7 @@ public class SearchConfigurationTest {
             game.step(false, true, true, false);
         }
         testState2 = game.getCurrentState();
-        sampleNode2 = new NodeQWOPExplorable<>(testState2, ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
+        sampleNode2 = new NodeGameExplorable<>(testState2, ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
     }
 
     @Test

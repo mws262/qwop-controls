@@ -5,7 +5,7 @@ import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import tree.node.NodeQWOP;
+import tree.node.NodeGame;
 
 import static org.mockito.Mockito.mock;
 
@@ -17,10 +17,10 @@ public class EvaluationFunction_SqDistFromOtherTest {
     private Action a2 = mock(Action.class);
     private Action a3 = mock(Action.class);
 
-    private NodeQWOP node1;
-    private NodeQWOP node2;
-    private NodeQWOP node3;
-    private NodeQWOP node4;
+    private NodeGame node1;
+    private NodeGame node2;
+    private NodeGame node3;
+    private NodeGame node4;
 
     @Before
     public void setup() {
@@ -38,7 +38,7 @@ public class EvaluationFunction_SqDistFromOtherTest {
         StateQWOP s2 = new StateQWOP(slist2, false);
         StateQWOP s3 = new StateQWOP(slist3, false);
 
-        node1 = new NodeQWOP(s3);
+        node1 = new NodeGame(s3);
         node2 = node1.addDoublyLinkedChild(a1, s1);
         node3 = node1.addDoublyLinkedChild(a2, s2);
         node4 = node2.addDoublyLinkedChild(a3, s3);

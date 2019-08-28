@@ -17,7 +17,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.CMAESOptimizer;
 import tflowtools.TrainableNetwork;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
@@ -112,7 +112,7 @@ public class WeightScoreFunction implements MultivariateFunction {
         while (!game.isFailed() && game.getTimestepsThisGame() < maxTs && game.getCurrentState().getCenterX() < QWOPConstants.goalDistance) {
 
             if (actionQueue.isEmpty()) {
-                actionQueue.addAction(controller.policy(new NodeQWOPExplorable<>(game.getCurrentState()), game)); // Can
+                actionQueue.addAction(controller.policy(new NodeGameExplorable<>(game.getCurrentState()), game)); // Can
                 // change to game serialization version here.
             }
             game.step(actionQueue.pollCommand());

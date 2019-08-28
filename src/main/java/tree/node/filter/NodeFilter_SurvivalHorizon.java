@@ -1,7 +1,7 @@
 package tree.node.filter;
 
 import game.action.Command;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 /**
  * Filters nodes based on survival past them to a specified horizon. For example, with a specified horizon of 5, only
@@ -30,7 +30,7 @@ public class NodeFilter_SurvivalHorizon<C extends Command<?>> implements INodeFi
     }
 
     @Override
-    public boolean filter(NodeQWOPExplorableBase<?, C> node) {
+    public boolean filter(NodeGameExplorableBase<?, C> node) {
         return node.getMaxBranchDepth() - node.getTreeDepth() >= requiredSurvivalHorizon;
     }
 

@@ -8,8 +8,8 @@ import game.state.StateVariable6D;
 import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
 import org.jfree.chart.plot.XYPlot;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
 import tree.node.filter.INodeFilter;
 import tree.node.filter.NodeFilter_Downsample;
 
@@ -60,7 +60,7 @@ public class PanelPlot_Controls<C extends Command<?>> extends PanelPlot<C> imple
     /**
      * Nodes to be processed and plotted.
      */
-    private List<NodeQWOPExplorableBase<?, C>> nodes = new ArrayList<>();
+    private List<NodeGameExplorableBase<?, C>> nodes = new ArrayList<>();
 
     private final String name;
 
@@ -74,7 +74,7 @@ public class PanelPlot_Controls<C extends Command<?>> extends PanelPlot<C> imple
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?, C> plotNode) {
+    public void update(NodeGameGraphicsBase<?, C> plotNode) {
         nodes.clear();
         plotNode.recurseDownTreeExclusive(nodes::add);
 
@@ -84,7 +84,7 @@ public class PanelPlot_Controls<C extends Command<?>> extends PanelPlot<C> imple
         }
         plotDownsampler.filter(nodes); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.
 
-        List<IState> statesBelow = nodes.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
+        List<IState> statesBelow = nodes.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList());
         // Convert from node list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
         changePlots();
@@ -105,8 +105,8 @@ public class PanelPlot_Controls<C extends Command<?>> extends PanelPlot<C> imple
             Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
             Float[] yData = nodes.stream().map(n -> (float) n.getAction().getTimestepsTotal()).toArray(Float[]::new);
             Color[] cData =
-                    nodes.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
-                            NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
+                    nodes.stream().map(n -> NodeGameGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
+                            NodeGameGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Command duration");
             pl.getDomainAxis().setLabel(StateQWOP.ObjectName.values()[firstPlotRow].toString() + " " +

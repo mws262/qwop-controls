@@ -3,7 +3,7 @@ package savers;
 import data.SavableDenseData;
 import data.SavableFileIO;
 import game.action.Command;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class DataSaver_DenseJava <C extends Command<?>> extends DataSaver_Dense<
     private final ArrayList<SavableDenseData<C>> saveBuffer = new ArrayList<>();
 
     @Override
-    public void reportGameEnding(NodeQWOPBase<?, C> endNode) {
+    public void reportGameEnding(NodeGameBase<?, C> endNode) {
         // Collect all the states and game.command into a data object.
         saveBuffer.add(new SavableDenseData<>(stateBuffer, actionBuffer));
         saveCounter++;

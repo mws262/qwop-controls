@@ -16,7 +16,7 @@ import distributions.Distribution_Normal;
 import game.qwop.CommandQWOP;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.io.IOException;
 import java.util.*;
@@ -98,7 +98,7 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
 
     @JsonIgnore
     @Override
-    public ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode) {
+    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C> parentNode) {
         int actionDepth = parentNode.getTreeDepth();
 
         // Check if this is an exception case.

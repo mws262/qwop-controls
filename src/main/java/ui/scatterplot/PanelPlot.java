@@ -16,7 +16,7 @@ import org.jfree.data.Range;
 import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 import ui.IUserInterface.TabbedPaneActivator;
 
 import javax.swing.*;
@@ -67,10 +67,10 @@ public abstract class PanelPlot<C extends Command<?>> extends JPanel implements 
     /**
      * Plotting colors for dots.
      */
-    private final Color actionColor1 = NodeQWOPGraphicsBase.getColorFromTreeDepth(0, NodeQWOPGraphicsBase.lineBrightnessDefault);
-    private final Color actionColor2 = NodeQWOPGraphicsBase.getColorFromTreeDepth(10, NodeQWOPGraphicsBase.lineBrightnessDefault);
-    private final Color actionColor3 = NodeQWOPGraphicsBase.getColorFromTreeDepth(20, NodeQWOPGraphicsBase.lineBrightnessDefault);
-    private final Color actionColor4 = NodeQWOPGraphicsBase.getColorFromTreeDepth(30, NodeQWOPGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor1 = NodeGameGraphicsBase.getColorFromTreeDepth(0, NodeGameGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor2 = NodeGameGraphicsBase.getColorFromTreeDepth(10, NodeGameGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor3 = NodeGameGraphicsBase.getColorFromTreeDepth(20, NodeGameGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor4 = NodeGameGraphicsBase.getColorFromTreeDepth(30, NodeGameGraphicsBase.lineBrightnessDefault);
 
     public PanelPlot(@JsonProperty("numberOfPlots") int numberOfPlots) {
         this.numberOfPlots = numberOfPlots;

@@ -9,8 +9,8 @@ import game.IGameInternal;
 import game.qwop.CommandQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
 
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
      * Give this panel a node to simulate and draw to. If a new node is supplied while another
      * is active, then terminate the previous and start the new one.
      */
-    public void simRunToNode(NodeQWOPExplorableBase<?, CommandQWOP> node) {
+    public void simRunToNode(NodeGameExplorableBase<?, CommandQWOP> node) {
         assert node.getTreeDepth() > 0; // Doesn't make sense to simulate to the starting configuration.
 
         fastForwardTimesteps = 0;
@@ -81,11 +81,11 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     /**
      * This version only animates the game.command between startNode and endNode. Still simulates all of course.
      */
-    public void simRunToNode(NodeQWOPExplorableBase<?, CommandQWOP> startNode,
-                             NodeQWOPExplorableBase<?, CommandQWOP> endNode) {
+    public void simRunToNode(NodeGameExplorableBase<?, CommandQWOP> startNode,
+                             NodeGameExplorableBase<?, CommandQWOP> endNode) {
         simRunToNode(endNode);
 
-        NodeQWOPExplorableBase<?, CommandQWOP> currNode = startNode;
+        NodeGameExplorableBase<?, CommandQWOP> currNode = startNode;
         while (currNode.getTreeDepth() > 0) {
             fastForwardTimesteps += currNode.getAction().getTimestepsTotal();
             currNode = currNode.getParent();
@@ -189,7 +189,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
+    public void update(NodeGameGraphicsBase<?, CommandQWOP> node) {
         if (node.getTreeDepth() > 0)
             simRunToNode(node);
     }

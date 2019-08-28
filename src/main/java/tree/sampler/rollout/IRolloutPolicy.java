@@ -7,7 +7,7 @@ import game.IGameInternal;
 import game.action.Command;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -23,7 +23,7 @@ import tree.node.NodeQWOPExplorableBase;
 })
 public interface IRolloutPolicy<C extends Command<?>> extends AutoCloseable {
 
-    float rollout(@NotNull NodeQWOPExplorableBase<?, C> startNode, @Nullable IGameInternal<C> game);
+    float rollout(@NotNull NodeGameExplorableBase<?, C> startNode, @Nullable IGameInternal<C> game);
 
     @JsonIgnore
     IRolloutPolicy<C> getCopy();

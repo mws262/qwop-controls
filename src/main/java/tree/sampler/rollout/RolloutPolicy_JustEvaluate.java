@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Command;
 import org.jetbrains.annotations.NotNull;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
 /**
@@ -22,7 +22,7 @@ public class RolloutPolicy_JustEvaluate<C extends Command<?>> implements IRollou
     }
 
     @Override
-    public float rollout(@NotNull NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
+    public float rollout(@NotNull NodeGameExplorableBase<?, C> startNode, IGameInternal<C> game) {
         return evaluationFunction.getValue(startNode);
     }
 

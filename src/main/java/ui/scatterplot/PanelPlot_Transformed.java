@@ -5,8 +5,8 @@ import game.action.Command;
 import game.state.IState;
 import game.state.transform.ITransform;
 import org.jfree.chart.plot.XYPlot;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
 import tree.node.filter.INodeFilter;
 import tree.node.filter.NodeFilter_Downsample;
 
@@ -45,7 +45,7 @@ public class PanelPlot_Transformed<C extends Command<?>> extends PanelPlot<C> im
     /**
      * Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation.
      */
-    private List<NodeQWOPExplorableBase<?, C>> nodesToTransform = new ArrayList<>();
+    private List<NodeGameExplorableBase<?, C>> nodesToTransform = new ArrayList<>();
     private List<float[]> transformedStates;
 
     /**
@@ -69,13 +69,13 @@ public class PanelPlot_Transformed<C extends Command<?>> extends PanelPlot<C> im
     }
 
     @Override
-    public synchronized void update(NodeQWOPGraphicsBase<?, C> plotNode) {
+    public synchronized void update(NodeGameGraphicsBase<?, C> plotNode) {
         // Do transform update if necessary:
         nodesToTransform.clear();
         plotNode.getRoot().recurseDownTreeInclusive(nodesToTransform::add);
         transformDownsampler.filter(nodesToTransform);
         List<IState> statesBelow =
-                nodesToTransform.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
+                nodesToTransform.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList());
         // Convert from node list to state list.
         transformer.updateTransform(statesBelow); // Update transform with all states.
 
@@ -90,7 +90,7 @@ public class PanelPlot_Transformed<C extends Command<?>> extends PanelPlot<C> im
         plotDownsampler.filter(nodesToTransform); // Reduce number of nodes to transform if necessary. Plotting is a
         // bottleneck.
 
-        statesBelow = nodesToTransform.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList()); // Convert from node
+        statesBelow = nodesToTransform.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList()); // Convert from node
         // list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
 
@@ -111,8 +111,8 @@ public class PanelPlot_Transformed<C extends Command<?>> extends PanelPlot<C> im
             Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
             Float[] yData = transformedStates.stream().map(ts -> ts[firstPlotRow]).toArray(Float[]::new);
             Color[] cData =
-                    nodesToTransform.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
-                            NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
+                    nodesToTransform.stream().map(n -> NodeGameGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
+                            NodeGameGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Component" + " " + firstPlotRow);
             pl.getDomainAxis().setLabel("Component" + " " + currCol);

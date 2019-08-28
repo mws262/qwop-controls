@@ -6,7 +6,7 @@ import data.SavableSingleGame;
 import game.IGameInternal;
 import game.action.Command;
 import game.state.IState;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ public class DataSaver_Sparse<C extends Command<?>> implements IDataSaver<C> {
     public void reportTimestep(Action<C> action, IGameInternal<C> game) {}
 
     @Override
-    public void reportGameEnding(NodeQWOPBase<?, C> endNode) {
+    public void reportGameEnding(NodeGameBase<?, C> endNode) {
         saveBuffer.add(new SavableSingleGame<>(endNode));
         gamesSinceFile++;
 
@@ -97,7 +97,7 @@ public class DataSaver_Sparse<C extends Command<?>> implements IDataSaver<C> {
     }
 
     @Override
-    public void reportStageEnding(NodeQWOPBase<?, C> rootNode, List<NodeQWOPBase<?, C>> targetNodes) {
+    public void reportStageEnding(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes) {
         // If the save buffer still has stuff in it, save!
         if (!saveBuffer.isEmpty()) {
             File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension));

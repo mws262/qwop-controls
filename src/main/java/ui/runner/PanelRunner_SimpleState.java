@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import game.qwop.GameQWOP;
 import game.qwop.CommandQWOP;
 import game.state.IState;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 
 import java.awt.*;
 
@@ -37,7 +37,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?, CommandQWOP> node) {
+    public void update(NodeGameGraphicsBase<?, CommandQWOP> node) {
         currentState = node.getState();
     }
 

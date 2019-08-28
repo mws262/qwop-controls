@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -26,7 +26,7 @@ public class ActionGenerator_FixedActions<C extends Command<?>> implements IActi
 
     @JsonIgnore
     @Override
-    public ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode) {
+    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C> parentNode) {
         return actionList.getCopy();
     }
 

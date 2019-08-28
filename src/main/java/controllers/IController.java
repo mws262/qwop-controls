@@ -7,7 +7,7 @@ import game.qwop.GameQWOP;
 import game.IGameSerializable;
 import game.action.Action;
 import game.action.Command;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.awt.*;
 
@@ -35,7 +35,7 @@ public interface IController<C extends Command<?>> extends AutoCloseable {
      * @param state Current state.
      * @return An command to take.
      */
-    Action<C> policy(NodeQWOPExplorableBase<?, C> state);
+    Action<C> policy(NodeGameExplorableBase<?, C> state);
 
     /**
      * Get a control command. For some controllers, the hidden game state can be used in the policy. For this, an
@@ -44,7 +44,7 @@ public interface IController<C extends Command<?>> extends AutoCloseable {
      * @param game Game at the current configuration containing the hidden state.
      * @return An command to take.
      */
-    Action<C> policy(NodeQWOPExplorableBase<?, C> state, IGameSerializable<C> game);
+    Action<C> policy(NodeGameExplorableBase<?, C> state, IGameSerializable<C> game);
 
     @JsonIgnore
     IController<C> getCopy();

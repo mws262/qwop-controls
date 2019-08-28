@@ -7,7 +7,7 @@ import game.IGameInternal;
 import game.action.Action;
 import game.action.Command;
 import game.state.IState;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -43,13 +43,13 @@ public interface IDataSaver<C extends Command<?>> {
     /**
      * Get the final game state for this run.
      */
-    void reportGameEnding(NodeQWOPBase<?, C> endNode);
+    void reportGameEnding(NodeGameBase<?, C> endNode);
 
     /**
      * Called when the end of a TreeStage is reached. TargetNodes meaning is different depending on the saver
      * implementation.
      */
-    void reportStageEnding(NodeQWOPBase<?, C> rootNode, List<NodeQWOPBase<?, C>> targetNodes);
+    void reportStageEnding(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes);
 
     /**
      * Store and dump any buffered data, often when a stage has ended but nothing specific needs to be reported.

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameSerializable;
 import game.action.Action;
 import game.action.Command;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 import value.IValueFunction;
 
 public class Controller_ValueFunction<C extends Command<?>, V extends IValueFunction<C>> implements IController<C> {
@@ -17,12 +17,12 @@ public class Controller_ValueFunction<C extends Command<?>, V extends IValueFunc
     }
 
     @Override
-    public Action<C> policy(NodeQWOPExplorableBase<?, C> state) {
+    public Action<C> policy(NodeGameExplorableBase<?, C> state) {
         return valueFunction.getMaximizingAction(state);
     }
 
     @Override
-    public Action<C> policy(NodeQWOPExplorableBase<?, C> state, IGameSerializable<C> game) {
+    public Action<C> policy(NodeGameExplorableBase<?, C> state, IGameSerializable<C> game) {
         return valueFunction.getMaximizingAction(state, game);
     }
 

@@ -5,9 +5,9 @@ import controllers.Controller_Random;
 import game.action.Command;
 import game.action.IActionGenerator;
 import org.jetbrains.annotations.NotNull;
+import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 import game.IGameInternal;
-import tree.node.NodeQWOPExplorableBase;
 
 /**
  * Rollout policy which does a normal random rollout followed by another one, but with the physics engine cold
@@ -23,7 +23,7 @@ public class RolloutPolicy_RandomColdStart<C extends Command<?>> extends Rollout
     }
 
     @Override
-    public float rollout(@NotNull NodeQWOPExplorableBase<?, C> startNode, @NotNull IGameInternal<C> game) {
+    public float rollout(@NotNull NodeGameExplorableBase<?, C> startNode, @NotNull IGameInternal<C> game) {
         float normalScore = super.rollout(startNode, game);
         coldStartGameToNode(startNode, game);
         float coldStartScore = super.rollout(startNode, game);

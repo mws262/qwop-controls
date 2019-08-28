@@ -11,8 +11,8 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import tree.node.NodeQWOP;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGame;
+import tree.node.NodeGameBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -116,7 +116,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action<CommandQWOP> getMaximizingAction(NodeQWOPBase<?, CommandQWOP> currentNode) {
+    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP> currentNode) {
         // Update each of the future predictors to use the new starting states.
         evaluations.forEach(e -> e.setStartingState(currentNode.getState()));
         return runEvaluations();
@@ -124,7 +124,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action<CommandQWOP> getMaximizingAction(NodeQWOPBase<?, CommandQWOP> currentNode,
+    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP> currentNode,
                                                    IGameSerializable<CommandQWOP> realGame) {
         evaluations.forEach(e -> e.setStartingState(realGame.getSerializedState()));
         return runEvaluations();
@@ -165,13 +165,13 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    float[] assembleInputFromNode(NodeQWOPBase<?, CommandQWOP> node) {
+    float[] assembleInputFromNode(NodeGameBase<?, CommandQWOP> node) {
         // TODO fix cast.
         return stateNormalizer.transform(((StateQWOP) node.getState()));
     }
 
     @Override
-    float[] assembleOutputFromNode(NodeQWOPBase<?, CommandQWOP> node) {
+    float[] assembleOutputFromNode(NodeGameBase<?, CommandQWOP> node) {
         return new float[]{node.getValue()};
     }
 
@@ -337,7 +337,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
                 gameLocal.step(command);
                 IState st = gameLocal.getCurrentState();
-                NodeQWOPBase<?, CommandQWOP> nextNode = new NodeQWOP<>(st);
+                NodeGameBase<?, CommandQWOP> nextNode = new NodeGame<>(st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);

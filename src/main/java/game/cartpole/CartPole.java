@@ -100,7 +100,6 @@ public class CartPole implements IGameInternal<CommandCartPole> { // TODO implem
             resetGame();
             logger.info("Connected successfully to the Python server.");
         } catch(RuntimeException e) {
-            e.printStackTrace();
             logger.warn("Could not connect to the cartpole Python server. Run gym_http_server.py. Attempting to " +
                     "reconnect in a few seconds.");
             try {

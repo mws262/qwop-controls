@@ -9,7 +9,7 @@ import game.action.Command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tflowtools.TrainableNetwork;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -201,7 +201,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>> implements 
     }
 
     @Override
-    public void update(List<? extends NodeQWOPBase<?, C>> nodes) {
+    public void update(List<? extends NodeGameBase<?, C>> nodes) {
         assert trainingBatchSize > 0;
 
         batchCount = 0;
@@ -219,7 +219,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>> implements 
 
             // Iterate through the nodes in the batch.
             for (int i = 0; i < batch.size(); i++) {
-                NodeQWOPBase<?, C> n = batch.get(i);
+                NodeGameBase<?, C> n = batch.get(i);
 
                 // Don't include root node since it doesn't have a parent.
                 if (n.getParent() == null) {
@@ -250,16 +250,16 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>> implements 
     }
 
     @Override
-    public float evaluate(NodeQWOPBase<?, C> node) {
+    public float evaluate(NodeGameBase<?, C> node) {
         float[][] input = new float[1][inputSize];
         input[0] = assembleInputFromNode(node);
         float[][] result = network.evaluateInput(input);
         return result[0][0];
     }
 
-    abstract float[] assembleInputFromNode(NodeQWOPBase<?, C> node);
+    abstract float[] assembleInputFromNode(NodeGameBase<?, C> node);
 
-    abstract float[] assembleOutputFromNode(NodeQWOPBase<?, C> node);
+    abstract float[] assembleOutputFromNode(NodeGameBase<?, C> node);
 
     @Override
     public void close() {

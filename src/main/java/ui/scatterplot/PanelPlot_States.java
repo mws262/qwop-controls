@@ -7,8 +7,8 @@ import game.qwop.StateQWOP;
 import game.state.StateVariable6D.StateName;
 import org.jfree.chart.plot.XYPlot;
 import tree.Utility;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
 import tree.node.filter.NodeFilter_Downsample;
 
 import javax.swing.*;
@@ -36,7 +36,7 @@ public class PanelPlot_States<C extends Command<?>> extends PanelPlot<C> impleme
     /**
      * Node from which states are referenced.
      */
-    private NodeQWOPGraphicsBase<?, C> selectedNode;
+    private NodeGameGraphicsBase<?, C> selectedNode;
 
     /**
      * Which plot index has an active menu.
@@ -130,10 +130,10 @@ public class PanelPlot_States<C extends Command<?>> extends PanelPlot<C> impleme
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?, C> selectedNode) {
+    public void update(NodeGameGraphicsBase<?, C> selectedNode) {
         this.selectedNode = selectedNode;
         // Fetching new data.
-        List<NodeQWOPExplorableBase<?, C>> nodesBelow = new ArrayList<>();
+        List<NodeGameExplorableBase<?, C>> nodesBelow = new ArrayList<>();
         if (selectedNode != null) {
             selectedNode.recurseDownTreeInclusive(nodesBelow::add);
 
@@ -153,8 +153,8 @@ public class PanelPlot_States<C extends Command<?>> extends PanelPlot<C> impleme
                 Float[] yData =
 						nodesBelow.stream().map(n -> ((StateQWOP) n.getState()).getStateVariableFromName(plotObjectsY[countDataCollect]).getStateByName(plotStatesY[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
                 Color[] cData =
-						nodesBelow.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
-                                NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
+						nodesBelow.stream().map(n -> NodeGameGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
+                                NodeGameGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
                 setPlotBoundsFromData(pl, xData, yData);
 

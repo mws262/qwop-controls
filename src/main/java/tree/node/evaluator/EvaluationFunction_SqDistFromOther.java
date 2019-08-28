@@ -3,7 +3,7 @@ package tree.node.evaluator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
 import game.state.IState;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.util.Objects;
 
@@ -37,7 +37,7 @@ public class EvaluationFunction_SqDistFromOther<C extends Command<?>> implements
     }
 
     @Override
-    public float getValue(NodeQWOPBase<?, C> nodeToEvaluate) {
+    public float getValue(NodeGameBase<?, C> nodeToEvaluate) {
         float[] otherStateVals = Objects.requireNonNull(nodeToEvaluate.getState()).flattenState();
 
         float sqError = 0;
@@ -51,7 +51,7 @@ public class EvaluationFunction_SqDistFromOther<C extends Command<?>> implements
     }
 
     @Override
-    public String getValueString(NodeQWOPBase<?, C> nodeToEvaluate) {
+    public String getValueString(NodeGameBase<?, C> nodeToEvaluate) {
         return String.valueOf(getValue(nodeToEvaluate));
     }
 

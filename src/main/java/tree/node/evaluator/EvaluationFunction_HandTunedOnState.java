@@ -3,7 +3,7 @@ package tree.node.evaluator;
 import game.action.Command;
 import game.qwop.IStateQWOP.ObjectName;
 import game.qwop.StateQWOP;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.util.Objects;
 
@@ -17,7 +17,7 @@ import java.util.Objects;
 public class EvaluationFunction_HandTunedOnState<C extends Command<?>> implements IEvaluationFunction<C> {
 
     @Override
-    public float getValue(NodeQWOPBase<?, C> nodeToEvaluate) {
+    public float getValue(NodeGameBase<?, C> nodeToEvaluate) {
         Objects.requireNonNull(nodeToEvaluate.getState());
 
         float value = 0.f;
@@ -29,7 +29,7 @@ public class EvaluationFunction_HandTunedOnState<C extends Command<?>> implement
     }
 
     @Override
-    public String getValueString(NodeQWOPBase<?, C> nodeToEvaluate) {
+    public String getValueString(NodeGameBase<?, C> nodeToEvaluate) {
         Objects.requireNonNull(nodeToEvaluate.getState());
 
         String value = "";
@@ -48,7 +48,7 @@ public class EvaluationFunction_HandTunedOnState<C extends Command<?>> implement
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with state angles.
      */
-    private float getAngleValue(NodeQWOPBase<?, C> nodeToEvaluate) {
+    private float getAngleValue(NodeGameBase<?, C> nodeToEvaluate) {
         // TODO fix cast
         return ((StateQWOP) nodeToEvaluate.getState()).getStateVariableFromName(ObjectName.BODY).getTh();
     }
@@ -59,7 +59,7 @@ public class EvaluationFunction_HandTunedOnState<C extends Command<?>> implement
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with horizontal positions.
      */
-    private float getDistanceValue(NodeQWOPBase<?, C> nodeToEvaluate) {
+    private float getDistanceValue(NodeGameBase<?, C> nodeToEvaluate) {
         return nodeToEvaluate.getState().getCenterX();
     }
 
@@ -69,7 +69,7 @@ public class EvaluationFunction_HandTunedOnState<C extends Command<?>> implement
      * @param nodeToEvaluate Node being scored.
      * @return A scalar value associated with state velocities.
      */
-    private float getVelocityValue(NodeQWOPBase<?, C> nodeToEvaluate) {
+    private float getVelocityValue(NodeGameBase<?, C> nodeToEvaluate) {
         // TODO fix cast
         return ((StateQWOP) nodeToEvaluate.getState()).getStateVariableFromName(ObjectName.BODY).getDx();
     }

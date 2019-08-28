@@ -4,7 +4,7 @@
 //import game.IGameInternal;
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
-//import tree.node.NodeQWOPGraphicsBase;
+//import tree.node.NodeGameGraphicsBase;
 //import ui.runner.PanelRunner;
 //
 //import javax.swing.*;
@@ -124,7 +124,7 @@
 //                        //if (count % 2 != 0) continue;
 //                        GameQWOP.drawExtraRunner((Graphics2D) g, rh.states.get(i).state, "",
 //                                runnerScaling, xOffsetPixels - (int) (runnerScaling * specificXOffset), yOffsetPixels,
-//                                NodeQWOPGraphicsBase.getColorFromScaledValue(2 * i, rh.states.size(),
+//                                NodeGameGraphicsBase.getColorFromScaledValue(2 * i, rh.states.size(),
 //                                        0.8f), PanelRunner.normalStroke);
 //                        if (count >= rh.actionDurations.size() - 1) break;
 //                    }

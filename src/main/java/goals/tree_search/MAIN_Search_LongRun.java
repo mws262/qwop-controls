@@ -8,10 +8,10 @@ import data.SparseDataToDenseTFRecord;
 import game.qwop.GameQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import tree.node.NodeGameGraphics;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.sampler.Sampler_UCB;
-import tree.node.NodeQWOPGraphics;
 import tree.TreeWorker;
 import tree.Utility;
 import tree.sampler.rollout.RolloutPolicyBase;
@@ -76,8 +76,8 @@ public class MAIN_Search_LongRun extends SearchTemplate {
         if (doStage1) {
             int count = 0;
             while (count < runsToGenerate) {
-                NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState(), actionGenerator);
-                NodeQWOPGraphics.pointsToDraw.clear();
+                NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(), actionGenerator);
+                NodeGameGraphics.pointsToDraw.clear();
                 ui.clearRootNodes();
                 ui.addRootNode(rootNode);
 

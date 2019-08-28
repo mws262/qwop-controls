@@ -2,7 +2,7 @@ package tree.node.filter;
 
 import org.junit.Assert;
 import org.junit.Test;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,9 +16,9 @@ public class NodeFilter_DownsampleTest {
 
     @Test
     public void filterEvenlySpaced() {
-        List<NodeQWOPExplorable> nodeList = new ArrayList<>();
+        List<NodeGameExplorable> nodeList = new ArrayList<>();
         for (int i = 0; i < 30; i++) {
-            NodeQWOPExplorable node = mock(NodeQWOPExplorable.class);
+            NodeGameExplorable node = mock(NodeGameExplorable.class);
             nodeList.add(node);
             when(node.getTreeDepth()).thenReturn(i); // Each mocked node will return a number in treeDepth of 0-19.
         }
@@ -26,7 +26,7 @@ public class NodeFilter_DownsampleTest {
         // Odd number filtered. Not a factor.
         int filterNum = 11;
         INodeFilter filter = new NodeFilter_Downsample(filterNum);
-        List<NodeQWOPExplorable> testList = new ArrayList<>(nodeList);
+        List<NodeGameExplorable> testList = new ArrayList<>(nodeList);
         filter.filter(testList);
         Assert.assertEquals(filterNum, testList.size());
         Assert.assertTrue("Ordering should be preserved.", checkMonotonic(testList));
@@ -107,9 +107,9 @@ public class NodeFilter_DownsampleTest {
 
     @Test
     public void filterRandom() {
-        List<NodeQWOPExplorable> nodeList = new ArrayList<>();
+        List<NodeGameExplorable> nodeList = new ArrayList<>();
         for (int i = 0; i < 30; i++) {
-            NodeQWOPExplorable node = mock(NodeQWOPExplorable.class);
+            NodeGameExplorable node = mock(NodeGameExplorable.class);
             nodeList.add(node);
             when(node.getTreeDepth()).thenReturn(i); // Each mocked node will return a number in treeDepth of 0-19.
         }
@@ -117,7 +117,7 @@ public class NodeFilter_DownsampleTest {
         // Odd number.
         int filterNum = 11;
         INodeFilter filter = new NodeFilter_Downsample(filterNum, NodeFilter_Downsample.Strategy.RANDOM);
-        List<NodeQWOPExplorable> testList = new ArrayList<>(nodeList);
+        List<NodeGameExplorable> testList = new ArrayList<>(nodeList);
         filter.filter(testList);
         Assert.assertEquals(filterNum, testList.size());
         Assert.assertFalse("No duplicates in filtered list.", checkForDuplicates(testList));
@@ -158,15 +158,15 @@ public class NodeFilter_DownsampleTest {
     /**
      * If true, then duplicates.
      */
-    private boolean checkForDuplicates(List<NodeQWOPExplorable> nodeList) {
-        Set<NodeQWOPExplorable> set = new HashSet<>(nodeList);
+    private boolean checkForDuplicates(List<NodeGameExplorable> nodeList) {
+        Set<NodeGameExplorable> set = new HashSet<>(nodeList);
 
         return set.size() < nodeList.size();
     }
 
-    private boolean checkMonotonic(List<NodeQWOPExplorable> nodeList) {
+    private boolean checkMonotonic(List<NodeGameExplorable> nodeList) {
         if (nodeList.size() < 2) return true;
-        NodeQWOPExplorable prevNode = nodeList.get(0);
+        NodeGameExplorable prevNode = nodeList.get(0);
         for (int i = 1; i < nodeList.size(); i++) {
             if (prevNode.getTreeDepth() > nodeList.get(i).getTreeDepth()) return false;
             prevNode = nodeList.get(i);
@@ -174,7 +174,7 @@ public class NodeFilter_DownsampleTest {
         return true;
     }
 
-    private boolean checkEvenSpacing(List<NodeQWOPExplorable> nodeList) {
+    private boolean checkEvenSpacing(List<NodeGameExplorable> nodeList) {
         if (nodeList.size() < 3) return true;
 
         int firstSpacing = nodeList.get(1).getTreeDepth() - nodeList.get(0).getTreeDepth();

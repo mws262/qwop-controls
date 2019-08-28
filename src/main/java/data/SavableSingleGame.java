@@ -3,7 +3,7 @@ package data;
 import game.action.Action;
 import game.action.Command;
 import game.state.IState;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.io.Serializable;
 
@@ -28,10 +28,10 @@ public class SavableSingleGame<C extends Command<?>> implements Serializable {
      *
      * @param terminalNode End node of the run to be saved. All states and game.command up to this point will be saved.
      */
-    public SavableSingleGame(NodeQWOPBase<?, C> terminalNode) {
+    public SavableSingleGame(NodeGameBase<?, C> terminalNode) {
         states = new IState[terminalNode.getTreeDepth()];
         actions = new Action[terminalNode.getTreeDepth()];
-        NodeQWOPBase<?, C> currentNode = terminalNode;
+        NodeGameBase<?, C> currentNode = terminalNode;
 
         while (currentNode.getTreeDepth() > 0) {
 

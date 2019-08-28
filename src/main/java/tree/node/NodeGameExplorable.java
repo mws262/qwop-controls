@@ -6,30 +6,30 @@ import game.action.IActionGenerator;
 import game.state.IState;
 
 /**
- * @see NodeQWOPExplorableBase
+ * @see NodeGameExplorableBase
  */
-public class NodeQWOPExplorable<C extends Command<?>> extends NodeQWOPExplorableBase<NodeQWOPExplorable<C>, C> {
+public class NodeGameExplorable<C extends Command<?>> extends NodeGameExplorableBase<NodeGameExplorable<C>, C> {
 
     /**
-     * @see NodeQWOPExplorableBase#NodeQWOPExplorableBase(IState)
+     * @see NodeGameExplorableBase#NodeGameExplorableBase(IState)
      */
-    public NodeQWOPExplorable(IState rootState) {
+    public NodeGameExplorable(IState rootState) {
         super(rootState);
     }
 
     /**
-     * @see NodeQWOPExplorableBase#NodeQWOPExplorableBase(IState, IActionGenerator)
+     * @see NodeGameExplorableBase#NodeGameExplorableBase(IState, IActionGenerator)
      */
-    public NodeQWOPExplorable(IState rootState,
+    public NodeGameExplorable(IState rootState,
                               IActionGenerator<C> actionGenerator) {
         super(rootState, actionGenerator);
     }
 
     /**
      *
-     * @see NodeQWOPExplorableBase#NodeQWOPExplorableBase(NodeQWOPExplorableBase, Action, IState, IActionGenerator, boolean)
+     * @see NodeGameExplorableBase#NodeGameExplorableBase(NodeGameExplorableBase, Action, IState, IActionGenerator, boolean)
      */
-    private NodeQWOPExplorable(NodeQWOPExplorable<C> parent,
+    private NodeGameExplorable(NodeGameExplorable<C> parent,
                                Action<C> action,
                                IState state,
                                IActionGenerator<C> actionGenerator,
@@ -38,33 +38,33 @@ public class NodeQWOPExplorable<C extends Command<?>> extends NodeQWOPExplorable
     }
 
     @Override
-    protected NodeQWOPExplorable<C> getThis() {
+    protected NodeGameExplorable<C> getThis() {
         return this;
     }
 
     @Override
-    public NodeQWOPExplorable<C> addDoublyLinkedChild(Action<C> action,
+    public NodeGameExplorable<C> addDoublyLinkedChild(Action<C> action,
                                                       IState state) {
         return addDoublyLinkedChild(action, state, actionGenerator);
     }
 
     @Override
-    public NodeQWOPExplorable<C> addBackwardsLinkedChild(Action<C> action,
+    public NodeGameExplorable<C> addBackwardsLinkedChild(Action<C> action,
                                                          IState state) {
         return addBackwardsLinkedChild(action, state, actionGenerator);
     }
 
     @Override
-    public NodeQWOPExplorable<C> addDoublyLinkedChild(Action<C> action,
+    public NodeGameExplorable<C> addDoublyLinkedChild(Action<C> action,
                                                       IState state,
                                                       IActionGenerator<C> actionGenerator) {
-        return new NodeQWOPExplorable<>(this, action, state, actionGenerator, true);
+        return new NodeGameExplorable<>(this, action, state, actionGenerator, true);
     }
 
     @Override
-    public NodeQWOPExplorable<C> addBackwardsLinkedChild(Action<C> action,
+    public NodeGameExplorable<C> addBackwardsLinkedChild(Action<C> action,
                                                          IState state,
                                                          IActionGenerator<C> actionGenerator) {
-        return new NodeQWOPExplorable<>(this, action, state, actionGenerator, false);
+        return new NodeGameExplorable<>(this, action, state, actionGenerator, false);
     }
 }

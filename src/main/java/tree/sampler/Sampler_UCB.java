@@ -8,7 +8,7 @@ import game.action.Command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jblas.util.Random;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 import tree.sampler.rollout.IRolloutPolicy;
 import value.updaters.IValueUpdater;
@@ -92,13 +92,13 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     /**
      * Propagate the score and visit count back up the tree.
      */
-    private void propagateScore(NodeQWOPExplorableBase<?, C> failureNode, float score) {
+    private void propagateScore(NodeGameExplorableBase<?, C> failureNode, float score) {
         // Do evaluation and propagation of scores.
         failureNode.recurseUpTreeInclusive(n -> n.updateValue(score, valueUpdater));
     }
 
     @Override
-    public NodeQWOPExplorableBase<?, C> treePolicy(NodeQWOPExplorableBase<?, C> startNode) {
+    public NodeGameExplorableBase<?, C> treePolicy(NodeGameExplorableBase<?, C> startNode) {
         if (startNode.getUntriedActionCount() != 0) {
             if (startNode.reserveExpansionRights()) { // We immediately expand
                 // if there's an untried command.
@@ -110,10 +110,10 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
         }
 
         double bestScoreSoFar = -Double.MAX_VALUE;
-        NodeQWOPExplorableBase<?, C> bestNodeSoFar = null;
+        NodeGameExplorableBase<?, C> bestNodeSoFar = null;
 
         // Otherwise, we go through the existing tree picking the "best."
-        for (NodeQWOPExplorableBase<?, C> child : startNode.getChildren()) {
+        for (NodeGameExplorableBase<?, C> child : startNode.getChildren()) {
 
             if (!child.isFullyExplored() && !child.isLocked() && child.getUpdateCount() > 0) {
                 float val = (child.getValue() + c * (float) Math.sqrt(2. * Math.log((double) startNode.getUpdateCount()) / (double) child.getUpdateCount()));
@@ -145,25 +145,25 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     }
 
     @Override
-    public void treePolicyActionDone(NodeQWOPExplorableBase<?, C> currentNode) {
+    public void treePolicyActionDone(NodeGameExplorableBase<?, C> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public boolean treePolicyGuard(NodeQWOPExplorableBase<?, C> currentNode) {
+    public boolean treePolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
         return treePolicyDone; // True means ready to move on to the next.
     }
 
     @Override
-    public Action<C> expansionPolicy(NodeQWOPExplorableBase<?, C> startNode) {
+    public Action<C> expansionPolicy(NodeGameExplorableBase<?, C> startNode) {
         if (startNode.getUntriedActionCount() == 0)
             throw new IndexOutOfBoundsException("Expansion policy received a node from which there are no new nodes to try!");
         return startNode.getUntriedActionOnDistribution();
     }
 
     @Override
-    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?, C> currentNode) {
+    public void expansionPolicyActionDone(NodeGameExplorableBase<?, C> currentNode) {
         treePolicyDone = false;
         expansionPolicyDone = true; // We move on after adding only one node.
         if (currentNode.getState().isFailed()) { // If expansion is to failed node, no need to do rollout.
@@ -175,12 +175,12 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     }
 
     @Override
-    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?, C> currentNode) {
+    public boolean expansionPolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public void rolloutPolicy(NodeQWOPExplorableBase<?, C> startNode, IGameInternal<C> game) {
+    public void rolloutPolicy(NodeGameExplorableBase<?, C> startNode, IGameInternal<C> game) {
         if (startNode.getState().isFailed())
             throw new IllegalStateException("Rollout policy received a starting node which corresponds to an already failed " +
                     "state.");
@@ -191,7 +191,7 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     }
 
     @Override
-    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?, C> currentNode) {
+    public boolean rolloutPolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
         return rolloutPolicyDone;
     }
 

@@ -24,9 +24,9 @@ import org.apache.logging.log4j.core.config.Configurator;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
 import tree.TreeWorker;
-import tree.node.NodeQWOPExplorable;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphics;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameExplorable;
+import tree.node.NodeGameGraphics;
 import tree.sampler.ISampler;
 import tree.stage.TreeStage;
 import ui.IUserInterface;
@@ -226,7 +226,7 @@ public class SearchConfiguration<C extends Command<?>> {
          * @param rootNode Node to build from.
          * @param machine Machine details, e.g. how many cores to use.
          */
-        public void startOperation(NodeQWOPExplorableBase<?, C> rootNode, Machine machine) {
+        public void startOperation(NodeGameExplorableBase<?, C> rootNode, Machine machine) {
             Preconditions.checkNotNull(rootNode);
             Preconditions.checkNotNull(machine);
 
@@ -251,11 +251,11 @@ public class SearchConfiguration<C extends Command<?>> {
      * Run all the operations defined in this SearchConfiguration. Tree stages will be run in the order they are listed.
      */
     public void execute() {
-        NodeQWOPExplorableBase<?, C> rootNode;
+        NodeGameExplorableBase<?, C> rootNode;
         if (ui instanceof UI_Headless) {
-            rootNode = new NodeQWOPExplorable<>(GameQWOP.getInitialState(), tree.actionGenerator);
+            rootNode = new NodeGameExplorable<>(GameQWOP.getInitialState(), tree.actionGenerator);
         } else {
-            NodeQWOPGraphics<C> root = new NodeQWOPGraphics<>(GameQWOP.getInitialState(), tree.actionGenerator);
+            NodeGameGraphics<C> root = new NodeGameGraphics<>(GameQWOP.getInitialState(), tree.actionGenerator);
             ui.addRootNode(root);
             rootNode = root;
         }

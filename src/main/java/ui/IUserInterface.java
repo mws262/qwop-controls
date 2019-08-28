@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Command;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
 import ui.runner.PanelRunner;
@@ -24,7 +24,7 @@ public interface IUserInterface<C extends Command<?>> {
 
     void kill();
 
-    void addRootNode(NodeQWOPGraphicsBase<?, C> node);
+    void addRootNode(NodeGameGraphicsBase<?, C> node);
 
     void clearRootNodes();
 
@@ -47,7 +47,7 @@ public interface IUserInterface<C extends Command<?>> {
         @JsonIgnore
         boolean isActive();
 
-        default void update(NodeQWOPGraphicsBase<?, C> node) {}
+        default void update(NodeGameGraphicsBase<?, C> node) {}
 
         String getName();
     }

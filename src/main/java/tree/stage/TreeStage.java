@@ -7,8 +7,8 @@ import game.action.Command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.TreeWorker;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,7 +34,7 @@ import java.util.List;
 public abstract class TreeStage<C extends Command<?>> {
 
     /** **/
-    private NodeQWOPExplorableBase<?, C> stageRoot;
+    private NodeGameExplorableBase<?, C> stageRoot;
 
     /**
      * Each stage gets its own workers to avoid contamination. Probably could combine later if necessary.
@@ -48,7 +48,7 @@ public abstract class TreeStage<C extends Command<?>> {
 
     private static final Logger logger = LogManager.getLogger(TreeStage.class);
 
-    public void initialize(List<TreeWorker<C>> treeWorkers, NodeQWOPExplorableBase<?, C> stageRoot) {
+    public void initialize(List<TreeWorker<C>> treeWorkers, NodeGameExplorableBase<?, C> stageRoot) {
         numWorkers = treeWorkers.size();
         if (numWorkers < 1)
             throw new RuntimeException("Tried to assign a tree stage an invalid number of workers: " + numWorkers);
@@ -77,7 +77,7 @@ public abstract class TreeStage<C extends Command<?>> {
      * Query the stage for its final results.
      */
     @JsonIgnore
-    public abstract List<NodeQWOPBase<?, C>> getResults();
+    public abstract List<NodeGameBase<?, C>> getResults();
 
     /**
      * Check through the tree for termination conditions.
@@ -106,7 +106,7 @@ public abstract class TreeStage<C extends Command<?>> {
      * so no set method.
      */
     @JsonIgnore
-    public NodeQWOPExplorableBase<?, C> getRootNode() {
+    public NodeGameExplorableBase<?, C> getRootNode() {
         return stageRoot;
     }
 

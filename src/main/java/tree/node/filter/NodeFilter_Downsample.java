@@ -2,7 +2,7 @@ package tree.node.filter;
 
 import game.action.Command;
 import tree.Utility;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.List;
 
@@ -62,7 +62,7 @@ public class NodeFilter_Downsample<C extends Command<?>> implements INodeFilter<
     }
 
     @Override
-    public void filter(List<NodeQWOPExplorableBase<?, C>> nodes) {
+    public void filter(List<NodeGameExplorableBase<?, C>> nodes) {
         int numNodes = nodes.size();
         if (numNodes > maxNodesToKeep) { // If we already have <= the max number of nodes, no need to downsample.
             switch (downsamplingStrategy) {

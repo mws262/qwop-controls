@@ -2,8 +2,8 @@ package tree.stage;
 
 import game.action.Command;
 import tree.TreeWorker;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +15,10 @@ public class TreeStage_Dummy<C extends Command<?>> extends TreeStage<C> {
 
     public boolean isInitialized = false;
     public boolean terminate = false;
-    public List<NodeQWOPBase<?, C>> results = new ArrayList<>();
+    public List<NodeGameBase<?, C>> results = new ArrayList<>();
 
     @Override
-    public List<NodeQWOPBase<?, C>> getResults() {
+    public List<NodeGameBase<?, C>> getResults() {
         return results;
     }
 
@@ -28,7 +28,7 @@ public class TreeStage_Dummy<C extends Command<?>> extends TreeStage<C> {
     }
 
     @Override
-    public void initialize(List<TreeWorker<C>> treeWorkers, NodeQWOPExplorableBase<?, C> stageRoot) {
+    public void initialize(List<TreeWorker<C>> treeWorkers, NodeGameExplorableBase<?, C> stageRoot) {
         isInitialized = true;
     }
 }

@@ -22,7 +22,7 @@ import java.util.List;
  *            this class as an input argument, usually specify as the wildcard (?) to indicate that the class can be
  *            any inheriting implementation of this class.
  */
-public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Command<?>> extends NodeGenericBase<N> {
+public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Command<?>> extends NodeGenericBase<N> {
 
     /**
      * Action taking the game from the state of the parent to this node's state.
@@ -42,18 +42,18 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Comma
 
     /**
      * Number of times that the value has been update (or in many cases, number of times the node has been "visited")
-     * . This is updated automatically whenever {@link NodeQWOPBase#updateValue(float, IValueUpdater)} is called.
+     * . This is updated automatically whenever {@link NodeGameBase#updateValue(float, IValueUpdater)} is called.
      */
     private int updateCount;
 
 
-    public NodeQWOPBase(IState rootState) {
+    public NodeGameBase(IState rootState) {
         super();
         action = null;
         state = rootState;
     }
 
-    NodeQWOPBase(N parent, Action<C> action, IState state) {
+    NodeGameBase(N parent, Action<C> action, IState state) {
         super(parent);
         this.action = action;
         this.state = state;
@@ -106,13 +106,13 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Comma
      * @param game Game instance used to simulate the given game.command and generate the state information needed to make
      *            the nodes.
      */
-    public static <C extends Command<?>, N extends NodeQWOPBase<?, C>> void makeNodesFromActionSequences(Collection<Action<C>[]> actions, N root,
-                                                                                IGameInternal<C> game) {
+    public static <C extends Command<?>, N extends NodeGameBase<?, C>> void makeNodesFromActionSequences(Collection<Action<C>[]> actions, N root,
+                                                                                                         IGameInternal<C> game) {
         IValueUpdater<C> valueUpdater = new ValueUpdater_HardSet<>();
         ActionQueue<C> actQueue = new ActionQueue<>();
         for (Action<C>[] acts : actions) {
             game.resetGame();
-            NodeQWOPBase<?, C> currentNode = root;
+            NodeGameBase<?, C> currentNode = root;
 
             if (currentNode.getUpdateCount() == 0) {
                 currentNode.updateValue(0, valueUpdater);
@@ -133,7 +133,7 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Comma
                 // If there is already a node for this command, use it.
                 boolean foundExisting = false;
 
-                for (NodeQWOPBase<?, C> child : currentNode.getChildren()) {
+                for (NodeGameBase<?, C> child : currentNode.getChildren()) {
                     if (child.getAction().equals(act)) {
                         currentNode = child;
                         foundExisting = true;
@@ -158,8 +158,8 @@ public abstract class NodeQWOPBase<N extends NodeQWOPBase<N, C>, C extends Comma
      *             game.command against simulation, so if the states don't match the game.command, it will not be detected here.
      * @param existingRootToAddTo A root node to add the new tree nodes below.
      */
-    public static synchronized <N extends NodeQWOPBase<N, C>, C extends Command<?>> void makeNodesFromRunInfo(Collection<SavableSingleGame<C>> runs,
-                                                                                     N existingRootToAddTo) {
+    public static synchronized <N extends NodeGameBase<N, C>, C extends Command<?>> void makeNodesFromRunInfo(Collection<SavableSingleGame<C>> runs,
+                                                                                                              N existingRootToAddTo) {
         IValueUpdater<C> valueUpdater = new ValueUpdater_HardSet<>();
         for (SavableSingleGame<C> run : runs) { // Go through all runs, placing them in the tree.
             N currentNode = existingRootToAddTo;
