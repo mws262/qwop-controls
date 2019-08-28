@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
-import game.qwop.CommandQWOP;
-import game.qwop.QWOPConstants;
 import game.IGameInternal;
 import game.action.*;
+import game.qwop.CommandQWOP;
+import game.qwop.QWOPConstants;
 import org.jetbrains.annotations.NotNull;
 import tree.node.NodeQWOPBase;
 import tree.node.NodeQWOPExplorableBase;
@@ -189,9 +189,11 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
         ActionList<CommandQWOP> actionList4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), CommandQWOP.QP,
                 dist4);
 
-        ActionList<CommandQWOP>[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3,
-                actionList4};
-
+        List<ActionList<CommandQWOP>> repeatedActions = new ArrayList<>();
+        repeatedActions.add(actionList1);
+        repeatedActions.add(actionList2);
+        repeatedActions.add(actionList3);
+        repeatedActions.add(actionList4);
         return new ActionGenerator_FixedSequence<>(repeatedActions);
     }
 

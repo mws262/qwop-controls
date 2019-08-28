@@ -60,16 +60,13 @@ public class NodeQWOPExplorableTest {
             node1_2_1_2, node1_2_1_2_1, node1_2_1_2_2, node1_2_1_2_2_3;
 
 
+    @SuppressWarnings({"FieldCanBeLocal", "MismatchedQueryAndUpdateOfCollection"})
     private List<NodeQWOPExplorable<CommandQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5,
             nodesLvl6;
 
     // Some sample game.command (mocked).
-    private Action<CommandQWOP> a1;
-    private Action<CommandQWOP> a2;
-    private Action<CommandQWOP> a3;
-    private Action<CommandQWOP> a4;
-    private Action<CommandQWOP> a5;
-    private Action<CommandQWOP> a6;
+    @SuppressWarnings("FieldCanBeLocal")
+    private Action<CommandQWOP> a1, a2, a3, a4, a5, a6;
 
     // Some states (mocked).
     private StateQWOP initialState = mock(StateQWOP.class);
@@ -94,7 +91,7 @@ public class NodeQWOPExplorableTest {
         ActionList<CommandQWOP> list2 = ActionList.makeActionList(new int[]{4,5,6}, CommandQWOP.W,
                 new Distribution_Equal<>());
 
-        IActionGenerator<CommandQWOP> generator = new ActionGenerator_FixedSequence<>(new ActionList[]{list1, list2});
+        IActionGenerator<CommandQWOP> generator = new ActionGenerator_FixedSequence<>(list1, list2);
         a1 = list1.get(0);
         a2 = list1.get(1);
         a3 = list1.get(2);
@@ -506,7 +503,8 @@ public class NodeQWOPExplorableTest {
         Assert.assertEquals(1, node2.getUntriedActionCount());
 
         // Make sure a real node can be added later which has the same command as the phantom node.
-        NodeQWOPExplorable realNode = node2.addDoublyLinkedChild(node2.getUntriedActionRandom(), failedState);
+//        NodeQWOPExplorable realNode =
+        node2.addDoublyLinkedChild(node2.getUntriedActionRandom(), failedState);
         Assert.assertEquals(0, node2.getUntriedActionCount());
         Assert.assertEquals(3, node2.getChildCount()); // Shouldn't affect the child count.
         

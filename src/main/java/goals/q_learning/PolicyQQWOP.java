@@ -17,7 +17,7 @@ public class PolicyQQWOP {
     private List<Action<CommandQWOP>> allowedActions;
     private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
 
-    PolicyQQWOP(PolicyQNetwork net) {
+    private PolicyQQWOP(PolicyQNetwork net) {
         this.net = net;
         allowedActions = new ArrayList<>();
         allowedActions.add(new Action<>(1, CommandQWOP.QP));
@@ -26,7 +26,7 @@ public class PolicyQQWOP {
     }
 
     // Returns the first ts in a game. Is a forward-linked list.
-    public float[] playGame() {
+    private float[] playGame() {
         game.resetGame();
         boolean done = false;
 

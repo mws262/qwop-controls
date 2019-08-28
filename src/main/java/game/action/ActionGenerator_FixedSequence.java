@@ -1,5 +1,6 @@
 package game.action;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -13,6 +14,8 @@ import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
 import game.qwop.CommandQWOP;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import tree.node.NodeQWOPExplorableBase;
 
 import java.io.IOException;
@@ -34,7 +37,7 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
     /**
      * These are the possible game.command which are generated in a cycle.
      **/
-    private ActionList<C>[] repeatedActions;
+    private List<ActionList<C>> repeatedActions;
 
     /**
      * These game.command are exceptions which will override the repeated game.command. Key is the
@@ -64,21 +67,33 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
      *                         depth specified in the map, it will use the ActionList corresponding to this index
      *                         rather than the normal ActionList in the cycle.
      */
-    public ActionGenerator_FixedSequence(@JsonProperty("repeatedActions") ActionList<C>[] repeatedActions,
-                                         @JsonProperty("actionExceptions") Map<Integer, ActionList<C>> actionExceptions) {
+    public ActionGenerator_FixedSequence(@NotNull @JsonProperty("repeatedActions") List<ActionList<C>> repeatedActions,
+                                         @Nullable @JsonProperty("actionExceptions") Map<Integer, ActionList<C>> actionExceptions) {
 
-        if (repeatedActions.length == 0) {
+        if (repeatedActions.size() == 0) {
             throw new IllegalArgumentException("There must be at least 1 repeated command. The array was empty.");
         }
 
-        cycleLength = repeatedActions.length;
+        cycleLength = repeatedActions.size();
 
         this.repeatedActions = repeatedActions;
         this.actionExceptions = actionExceptions;
     }
 
-    public ActionGenerator_FixedSequence(ActionList<C>[] repeatedActions) {
+    public ActionGenerator_FixedSequence(List<ActionList<C>> repeatedActions) {
         this(repeatedActions, null);
+    }
+
+
+    @SafeVarargs
+    public ActionGenerator_FixedSequence(Map<Integer, ActionList<C>> actionExceptions,
+                                         ActionList<C> ... repeatedActions) {
+        this(Arrays.asList(repeatedActions), actionExceptions);
+    }
+
+    @SafeVarargs
+    public ActionGenerator_FixedSequence(ActionList<C> ... repeatedActions) {
+        this(null, repeatedActions);
     }
 
     @JsonIgnore
@@ -91,7 +106,7 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
             return actionExceptions.get(actionDepth).getCopy();
 
         // Otherwise, pick based on cycle.
-        return repeatedActions[actionDepth % cycleLength].getCopy();
+        return repeatedActions.get(actionDepth % cycleLength).getCopy();
     }
 
     @JsonProperty
@@ -109,8 +124,9 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
         return allActions;
     }
 
-    public ActionList<C>[] getRepeatedActions() {
-        return repeatedActions;
+    @JsonGetter("repeatedActions")
+    public List<ActionList<C>> getRepeatedActions() {
+        return new ArrayList<>(repeatedActions);
     }
 
     @JsonUnwrapped
@@ -122,16 +138,15 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ActionGenerator_FixedSequence that = (ActionGenerator_FixedSequence) o;
-        return Arrays.equals(repeatedActions, that.repeatedActions) &&
+        ActionGenerator_FixedSequence<?> that = (ActionGenerator_FixedSequence<?>) o;
+        return cycleLength == that.cycleLength &&
+                repeatedActions.equals(that.repeatedActions) &&
                 Objects.equals(actionExceptions, that.actionExceptions);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(actionExceptions);
-        result = 31 * result + Arrays.hashCode(repeatedActions);
-        return result;
+        return Objects.hash(repeatedActions, actionExceptions, cycleLength);
     }
 
     /**
@@ -159,7 +174,11 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
         Distribution<Action<CommandQWOP>> dist4 = new Distribution_Normal<>(39f, 3f);
         ActionList<CommandQWOP> actionList4 = ActionList.makeActionList(IntStream.range(20, 60).toArray(), CommandQWOP.QP, dist4);
 
-        ActionList<CommandQWOP>[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
+        List<ActionList<CommandQWOP>> repeatedActions = new ArrayList<>();
+        repeatedActions.add(actionList1);
+        repeatedActions.add(actionList2);
+        repeatedActions.add(actionList3);
+        repeatedActions.add(actionList4);
 
         /////// Action Exceptions for starting up. ////////
         /* Repeated command exceptions 1 -- no keys pressed. */
@@ -254,7 +273,6 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
         ActionList<CommandQWOP> actionList4 = ActionList.makeActionList(IntStream.range(5, 45).toArray(), CommandQWOP.QP,
                 dist4);
 
-        ActionList<CommandQWOP>[] repeatedActions = new ActionList[]{actionList1, actionList2, actionList3, actionList4};
 
         /////// Action Exceptions for starting up. ////////
         /* Repeated command exceptions 1 -- no keys pressed. */
@@ -322,7 +340,8 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
             }
         }
         // Define the specific way that these allowed game.command are assigned as potential options for nodes.
-        return new ActionGenerator_FixedSequence<>(repeatedActions, actionExceptions);
+        return new ActionGenerator_FixedSequence<>(actionExceptions, actionList1, actionList2, actionList3,
+                actionList4);
     }
 
     private static class ExceptionDeserializer extends KeyDeserializer {
