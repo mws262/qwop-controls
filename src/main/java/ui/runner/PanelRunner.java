@@ -3,7 +3,7 @@ package ui.runner;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Action;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import ui.IUserInterface.TabbedPaneActivator;
 
 import javax.swing.*;
@@ -153,7 +153,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator<
     }
 
     /**
-     * Draw the game.action on the left side pane.
+     * Draw the game.command on the left side pane.
      */
     protected void drawActionString(Action<CommandQWOP>[] sequence, Graphics g) {
         drawActionString(g, sequence, -1);

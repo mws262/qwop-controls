@@ -1,7 +1,8 @@
 package tree.node.evaluator;
 
 import game.action.Command;
-import game.state.IState.ObjectName;
+import game.qwop.IStateQWOP.ObjectName;
+import game.qwop.StateQWOP;
 import tree.node.NodeQWOPBase;
 
 import java.util.Objects;
@@ -48,7 +49,8 @@ public class EvaluationFunction_HandTunedOnState<C extends Command<?>> implement
      * @return A scalar value associated with state angles.
      */
     private float getAngleValue(NodeQWOPBase<?, C> nodeToEvaluate) {
-        return nodeToEvaluate.getState().getStateVariableFromName(ObjectName.BODY).getTh();
+        // TODO fix cast
+        return ((StateQWOP) nodeToEvaluate.getState()).getStateVariableFromName(ObjectName.BODY).getTh();
     }
 
     /**
@@ -68,7 +70,8 @@ public class EvaluationFunction_HandTunedOnState<C extends Command<?>> implement
      * @return A scalar value associated with state velocities.
      */
     private float getVelocityValue(NodeQWOPBase<?, C> nodeToEvaluate) {
-        return nodeToEvaluate.getState().getStateVariableFromName(ObjectName.BODY).getDx();
+        // TODO fix cast
+        return ((StateQWOP) nodeToEvaluate.getState()).getStateVariableFromName(ObjectName.BODY).getDx();
     }
 
     @Override

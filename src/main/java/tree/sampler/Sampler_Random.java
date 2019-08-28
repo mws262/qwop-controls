@@ -48,7 +48,7 @@ public class Sampler_Random<C extends Command<?>> implements ISampler<C> {
                 }
             }
 
-            if (currentNode.getUntriedActionCount() == 0) { // No unchecked game.action means that we pick a random
+            if (currentNode.getUntriedActionCount() == 0) { // No unchecked game.command means that we pick a random
             	// not-fully-explored child.
                 // Pick random not fully explored child. Keep going.
                 int selection = Utility.randInt(0, notFullyExploredChildren - 1);

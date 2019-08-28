@@ -2,11 +2,11 @@ package goals.value_function;
 
 import com.google.common.base.Preconditions;
 import controllers.Controller_ValueFunction;
-import game.GameConstants;
-import game.GameUnified;
+import game.qwop.QWOPConstants;
+import game.qwop.GameQWOP;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.InitialGuess;
@@ -46,7 +46,7 @@ public class WeightScoreFunction implements MultivariateFunction {
     final MaxIter maxIter = new MaxIter(1000);
     final MaxEval maxEval = new MaxEval(10000);
 
-    private GameUnified game = new GameUnified();
+    private GameQWOP game = new GameQWOP();
 
     private final Controller_ValueFunction<CommandQWOP, ValueFunction_TensorFlow<CommandQWOP>> controller;
 
@@ -106,10 +106,10 @@ public class WeightScoreFunction implements MultivariateFunction {
         // Evaluate it.
         ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
         actionQueue.addAction(new Action<>(7, CommandQWOP.NONE));
-        game.makeNewWorld();
+        game.resetGame();
 
         int maxTs = 3000;
-        while (!game.getFailureStatus() && game.getTimestepsThisGame() < maxTs && game.getCurrentState().getCenterX() < GameConstants.goalDistance) {
+        while (!game.isFailed() && game.getTimestepsThisGame() < maxTs && game.getCurrentState().getCenterX() < QWOPConstants.goalDistance) {
 
             if (actionQueue.isEmpty()) {
                 actionQueue.addAction(controller.policy(new NodeQWOPExplorable<>(game.getCurrentState()), game)); // Can
@@ -118,11 +118,11 @@ public class WeightScoreFunction implements MultivariateFunction {
             game.step(actionQueue.pollCommand());
         }
         IState finalState = game.getCurrentState();
-        System.out.println("Final X: " + finalState.getCenterX() / GameConstants.worldScale + "  Time: "
-                + game.getTimestepsThisGame() * GameConstants.timestep);
+        System.out.println("Final X: " + finalState.getCenterX() / QWOPConstants.worldScale + "  Time: "
+                + game.getTimestepsThisGame() * QWOPConstants.timestep);
 
-        double val =  (GameConstants.goalDistance - Math.min(GameConstants.goalDistance,
-                finalState.getCenterX() - GameUnified.getInitialState().getCenterX())) * 10f + game.getTimestepsThisGame();
+        double val =  (QWOPConstants.goalDistance - Math.min(QWOPConstants.goalDistance,
+                finalState.getCenterX() - GameQWOP.getInitialState().getCenterX())) * 10f + game.getTimestepsThisGame();
         System.out.println(val);
 
         if (val < bestCostSoFar) {

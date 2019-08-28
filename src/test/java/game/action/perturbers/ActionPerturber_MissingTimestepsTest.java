@@ -2,7 +2,7 @@ package game.action.perturbers;
 
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 

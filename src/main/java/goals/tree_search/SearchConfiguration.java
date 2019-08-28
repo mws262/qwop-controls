@@ -14,7 +14,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Preconditions;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.action.Command;
 import game.action.IActionGenerator;
 import org.apache.commons.io.input.XmlStreamReader;
@@ -243,7 +243,7 @@ public class SearchConfiguration<C extends Command<?>> {
             return TreeWorker.makeStandardTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other
             // kinds of treeworkers.
 //            return TreeWorker.makeCachedStateTreeWorker(sampler.getCopy(), saver.getCopy(), 1, 2,
-//                    GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
+//                    GameQWOPCaching.StateType.HIGHER_DIFFERENCES);
         }
     }
 
@@ -253,9 +253,9 @@ public class SearchConfiguration<C extends Command<?>> {
     public void execute() {
         NodeQWOPExplorableBase<?, C> rootNode;
         if (ui instanceof UI_Headless) {
-            rootNode = new NodeQWOPExplorable<>(GameUnified.getInitialState(), tree.actionGenerator);
+            rootNode = new NodeQWOPExplorable<>(GameQWOP.getInitialState(), tree.actionGenerator);
         } else {
-            NodeQWOPGraphics<C> root = new NodeQWOPGraphics<>(GameUnified.getInitialState(), tree.actionGenerator);
+            NodeQWOPGraphics<C> root = new NodeQWOPGraphics<>(GameQWOP.getInitialState(), tree.actionGenerator);
             ui.addRootNode(root);
             rootNode = root;
         }

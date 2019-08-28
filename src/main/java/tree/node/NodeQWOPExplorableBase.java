@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Expands on basic QWOP data storage ({@link NodeQWOPBase}) and tree functionality ({@link NodeGenericBase}) to provide
- * basic tree exploration functions, like the concepts of untested game.action, fully-explored nodes, and branches locked
+ * basic tree exploration functions, like the concepts of untested game.command, fully-explored nodes, and branches locked
  * for exploration in a multi-threaded scenario.
  *
  * @param <N> This is essentially a recursive class parameterization. Read about f-bounded polymorphism. When using
@@ -31,7 +31,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
 
     /**
      * Are there any untried things below this node? This is not necessarily a TERMINAL node, it is simply a node
-     * past which there are no potential child game.action to try.
+     * past which there are no potential child game.command to try.
      */
     private final AtomicBoolean fullyExplored = new AtomicBoolean(false);
 
@@ -42,7 +42,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
     private final AtomicBoolean locked = new AtomicBoolean(false);
 
     /**
-     * Action generator used to make the set of untried child game.action for this node. This is used during the creation
+     * Action generator used to make the set of untried child game.command for this node. This is used during the creation
      * of this node and not again by this node. When a new child is created it will 'inherit' this generator by
      * default, unless another one is given.
      */
@@ -51,11 +51,11 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
     private static final Logger logger = LogManager.getLogger(NodeQWOPExplorableBase.class);
 
     /**
-     * Create a new root node. It will have potential child game.action assigned to it by the specified
+     * Create a new root node. It will have potential child game.command assigned to it by the specified
      * {@link IActionGenerator}.
      *
      * @param rootState {@link IState} at this root node.
-     * @param actionGenerator Used to generate untried child game.action to assign to root.
+     * @param actionGenerator Used to generate untried child game.command to assign to root.
      */
     public NodeQWOPExplorableBase(@NotNull IState rootState, @NotNull IActionGenerator<C> actionGenerator) {
         super(rootState);
@@ -80,8 +80,8 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
     }
 
     /**
-     * Create a new node given a parent node, an action which takes the game from the parent to this node, and the
-     * state at this node. The new node will be assigned potential child game.action based on the specified action
+     * Create a new node given a parent node, an command which takes the game from the parent to this node, and the
+     * state at this node. The new node will be assigned potential child game.command based on the specified command
      * generator.
      *
      * For external users, it is much preferred to use
@@ -90,8 +90,8 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
      *
      * @param parent Parent node to this newly created one. By default, the parent will not know about this node.
      * @param action Action taking the game's state from the parent node to this new node.
-     * @param state State at this new node.
-     * @param actionGenerator Assigns the potential game.action to try to this new node.
+     * @param state StateQWOP at this new node.
+     * @param actionGenerator Assigns the potential game.command to try to this new node.
      */
     NodeQWOPExplorableBase(N parent, Action<C> action, IState state, IActionGenerator<C> actionGenerator,
                            boolean doublyLinked) {
@@ -113,7 +113,7 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
 
     /**
      * Add a child node containing the {@link IState} achieved when executing the specified {@link Action}. New
-     * untried game.action will be assigned to this new child based on the rules of the provided {@link IActionGenerator}.
+     * untried game.command will be assigned to this new child based on the rules of the provided {@link IActionGenerator}.
      *
      * This is the "normal" child adder. The created child will have a reference to its parent (this), and this will
      * have the new child in its list of children.
@@ -122,8 +122,8 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
      * @see NodeQWOPExplorableBase#addDoublyLinkedChild(Action, IState, IActionGenerator)
      *
      * @param action Action which leads from this node to the child node.
-     * @param state State reached after taking the specified action from this node.
-     * @param actionGenerator Generator which provides a new set of untried game.action to the child node.
+     * @param state StateQWOP reached after taking the specified command from this node.
+     * @param actionGenerator Generator which provides a new set of untried game.command to the child node.
      * @return A newly-created child node which has references to its parent (this), and this has references to it as
      * a child.
      */
@@ -131,18 +131,18 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
 
     /**
      * Add a child node containing the {@link IState} achieved when executing the specified {@link Action}. New
-     * untried game.action will be assigned to this new child based on the rules of the provided {@link IActionGenerator}.
+     * untried game.command will be assigned to this new child based on the rules of the provided {@link IActionGenerator}.
      *
      * The newly created child will have a reference to its parent (this), but this node will not be aware of the
-     * child, nor will the child action be removed from untried child game.action (if present). This is useful for
+     * child, nor will the child command be removed from untried child game.command (if present). This is useful for
      * creating transient nodes that we don't want to become part of the tree permanently.
      *
      * @see NodeQWOPExplorableBase#addDoublyLinkedChild(Action, IState, IActionGenerator)
      * @see NodeQWOPExplorableBase#addBackwardsLinkedChild(Action, IState)
      *
      * @param action Action which leads from this node to the child node.
-     * @param state State reached after taking the specified action from this node.
-     * @param actionGenerator Generator which provides a new set of untried game.action to the child node.
+     * @param state StateQWOP reached after taking the specified command from this node.
+     * @param actionGenerator Generator which provides a new set of untried game.command to the child node.
      * @return A newly-created child node which has a reference to its parent (this), but is unknown to the parent.
      */
     public abstract N addBackwardsLinkedChild(Action<C> action, IState state, IActionGenerator<C> actionGenerator);
@@ -173,8 +173,8 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
     }
 
     /**
-     * Get the number of untried child game.action as assigned upon this node's creation by the {@link IActionGenerator}.
-     * @return The number of potential child nodes, as determined by the action generator.
+     * Get the number of untried child game.command as assigned upon this node's creation by the {@link IActionGenerator}.
+     * @return The number of potential child nodes, as determined by the command generator.
      */
     public int getUntriedActionCount() {
         if (untriedActions == null) {
@@ -185,45 +185,45 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
     }
 
     /**
-     * Get one of the assigned potential child game.action. These are assigned by this node's {@link IActionGenerator}.
-     * One way to sequentially get all the untried game.action would be to call <code>getUntriedActionByIndex(0)</code>.
+     * Get one of the assigned potential child game.command. These are assigned by this node's {@link IActionGenerator}.
+     * One way to sequentially get all the untried game.command would be to call <code>getUntriedActionByIndex(0)</code>.
      *
      * @see NodeQWOPExplorableBase#getUntriedActionRandom()
      * @see NodeQWOPExplorableBase#getUntriedActionCount() ()
      * @see NodeQWOPExplorableBase#getUntriedActionOnDistribution()
      * @see NodeQWOPExplorableBase#getUntriedActionListCopy()
      *
-     * @param idx Index of the untried action to fetch.
-     * @return An untried potential child action.
+     * @param idx Index of the untried command to fetch.
+     * @return An untried potential child command.
      */
     public Action<C> getUntriedActionByIndex(int idx) {
         return untriedActions.get(idx);
     }
 
     /**
-     * Get a random untried potential action.
+     * Get a random untried potential command.
      * @see NodeQWOPExplorableBase#getUntriedActionByIndex(int)
-     * @return An untried potential child action.
+     * @return An untried potential child command.
      */
     public Action<C> getUntriedActionRandom() {
         return untriedActions.getRandom();
     }
 
     /**
-     * Get an untried potential action based on the rules of the {@link Distribution} within the {@link ActionList}.
+     * Get an untried potential command based on the rules of the {@link Distribution} within the {@link ActionList}.
      * @see NodeQWOPExplorableBase#getUntriedActionByIndex(int)
-     * @return An untried potential child action.
+     * @return An untried potential child command.
      */
     public Action<C> getUntriedActionOnDistribution() {
         return untriedActions.sampleDistribution();
     }
 
     /**
-     * Remove untried child game.action and check for changes to the fully-explored status.
+     * Remove untried child game.command and check for changes to the fully-explored status.
      */
     void clearUntriedActions() {
         untriedActions.clear();
-        // Only mark this node as fully-explored if all child game.action are also full explored.
+        // Only mark this node as fully-explored if all child game.command are also full explored.
         for (N child: getChildren()) {
             if (!child.isFullyExplored())
                 return;
@@ -233,16 +233,16 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
     }
 
     /**
-     * Get all the remaining untried game.action assigned to this node. The game.action themselves are the originals, but the
+     * Get all the remaining untried game.command assigned to this node. The game.command themselves are the originals, but the
      * list is a copy.
-     * @return A copy of the list of untried game.action.
+     * @return A copy of the list of untried game.command.
      */
     public List<Action<C>> getUntriedActionListCopy() {
         return new ArrayList<>(untriedActions);
     }
 
     /**
-     * Ask the action generator assigned to this node to report all actions that could be assigned to children of
+     * Ask the command generator assigned to this node to report all actions that could be assigned to children of
      * this node.
      * @return A list of potential actions from the state at this node.
      */
@@ -251,9 +251,9 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
     }
 
     /**
-     * Get the action selection distribution being used by the untried action list. This distribution is used when
+     * Get the command selection distribution being used by the untried command list. This distribution is used when
      * calling {@link NodeQWOPExplorableBase#getUntriedActionOnDistribution()}
-     * @return The distribution used for untried action selection.
+     * @return The distribution used for untried command selection.
      */
     public Distribution<Action<C>> getActionDistribution() {
         return untriedActions.getSamplingDistribution();
@@ -265,26 +265,26 @@ public abstract class NodeQWOPExplorableBase<N extends NodeQWOPExplorableBase<N,
         super.addToChildList(child);
         boolean removed = untriedActions.remove(child.getAction()); // If the child being added corresponds to one of
         // the untried
-        // game.action listed, then remove it. Otherwise untried game.action remains unaffected.
+        // game.command listed, then remove it. Otherwise untried game.command remains unaffected.
         if (!removed) {
-            logger.warn("Added a doubly-linked child with an action that the parent didn't have. May be ok, but you " +
+            logger.warn("Added a doubly-linked child with an command that the parent didn't have. May be ok, but you " +
                     "should know why this is happening.");
         }
     }
 
     /**
-     * Helper for node adding from file. Clears unchecked game.action from non-leaf nodes. Only does it for nodes which
+     * Helper for node adding from file. Clears unchecked game.command from non-leaf nodes. Only does it for nodes which
      * are at less than or equal to depth maxDepth. Forces new building to happen further towards the boundaries of
      * the tree. Note that maxDepth is absolute tree depth, not relative to
      *
-     * Will not remove potential child game.action:
+     * Will not remove potential child game.command:
      * 1. Which are at leaf nodes at any depth.
      * 2. That are less than or equal to maxDepth but NOT a descendent of node.
      * 3. Nodes which are at a total tree depth greater than maxDepth.
      *
-     * @param node Starting node for stripping unchecked game.action.
-     * @param maxDepth Maximum absolute tree depth that untried game.action will be stripped from.
-     * @param <N> Type of node, inheriting from {@link NodeQWOPExplorableBase}, that this action is being applied to.
+     * @param node Starting node for stripping unchecked game.command.
+     * @param maxDepth Maximum absolute tree depth that untried game.command will be stripped from.
+     * @param <N> Type of node, inheriting from {@link NodeQWOPExplorableBase}, that this command is being applied to.
      */
     public static <N extends NodeQWOPExplorableBase<?, C>, C extends Command<?>> void stripUncheckedActionsExceptOnLeaves(N node, int maxDepth) {
         assert maxDepth >= 0;

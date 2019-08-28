@@ -5,10 +5,11 @@ import data.SavableDenseData;
 import data.SavableFileIO;
 import data.TFRecordWriter;
 import game.action.Action;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
+import game.qwop.IStateQWOP.ObjectName;
+import game.qwop.StateQWOP;
 import game.state.IState;
-import game.state.State;
-import game.state.StateVariable;
+import game.state.StateVariable6D;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tensorflow.example.*;
@@ -83,11 +84,12 @@ public class MAIN_ConvertDenseDataToTFRecord {
      * Make a single feature representing the 6 state variables for a single body part at a single timestep. Append to
      * existing FeatureList for that body part.
      **/
-    private static void makeFeature(IState.ObjectName bodyPart, IState state, FeatureList.Builder listToAppendTo) {
+    private static void makeFeature(ObjectName bodyPart, IState state, FeatureList.Builder listToAppendTo) {
         Feature.Builder feat = Feature.newBuilder();
         FloatList.Builder featVals = FloatList.newBuilder();
-        for (StateVariable.StateName stateName : StateVariable.StateName.values()) { // Iterate over all 6 state variables.
-            featVals.addValue(state.getStateVariableFromName(bodyPart).getStateByName(stateName));
+        // TODO fix cast
+        for (StateVariable6D.StateName stateName : StateVariable6D.StateName.values()) { // Iterate over all 6 state variables.
+            featVals.addValue(((StateQWOP) state).getStateVariableFromName(bodyPart).getStateByName(stateName));
         }
         feat.setFloatList(featVals.build());
         listToAppendTo.addFeature(feat.build());
@@ -97,7 +99,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
      * Make a time series for a single run of a single state variable as a FeatureList. Add to the broader list of
      * FeatureList for this run.
      **/
-    private static void makeStateFeatureList(SavableDenseData data, IState.ObjectName bodyPart,
+    private static void makeStateFeatureList(SavableDenseData data, ObjectName bodyPart,
                                              FeatureLists.Builder featLists) {
         FeatureList.Builder featList = FeatureList.newBuilder();
         for (IState st : data.getState()) { // Iterate through the timesteps in a single run.
@@ -119,25 +121,25 @@ public class MAIN_ConvertDenseDataToTFRecord {
             int actionPad = dat.getState().length - dat.getAction().length; // Make the dimensions match for coding
             // convenience.
             if (actionPad != 1) {
-                logger.warn("Dimensions of state is not 1 more than dimension of action as expected. Ignoring " +
+                logger.warn("Dimensions of state is not 1 more than dimension of command as expected. Ignoring " +
                         "this one.");
                 continue;
             }
             Example.Builder exB = Example.newBuilder();
             SequenceExample.Builder seqEx = SequenceExample.newBuilder();
-            FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & game.action) in a
+            FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & game.command) in a
             // single run.
 
             // Pack up states
-            for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body
+            for (ObjectName bodyPart : ObjectName.values()) { // Make feature lists for all the body
                 // parts and add to the overall list of feature lists.
                 makeStateFeatureList(dat, bodyPart, featLists);
             }
 
-            // Pack up game.action -- 3 different ways:
+            // Pack up game.command -- 3 different ways:
             // 1) Keys pressed at individual timestep.
             // 2) Timesteps until transition for each timestep.
-            // 3) Just the action sequence (shorter than number of timesteps)
+            // 3) Just the command sequence (shorter than number of timesteps)
 
             // 1) Keys pressed at individual timestep. 0 or 1 in bytes for each key
             FeatureList.Builder keyFeatList = FeatureList.newBuilder();
@@ -189,7 +191,7 @@ public class MAIN_ConvertDenseDataToTFRecord {
 
             featLists.putFeatureList("TIME_TO_TRANSITION", transitionTSList.build());
 
-            // 3) Just the action sequence (shorter than number of timesteps) -- bytestrings e.g. [15, 1, 0, 0, 1]
+            // 3) Just the command sequence (shorter than number of timesteps) -- bytestrings e.g. [15, 1, 0, 0, 1]
             FeatureList.Builder actionList = FeatureList.newBuilder();
             int prevAct = -1;
             for (Action<CommandQWOP> act : dat.getAction()) {

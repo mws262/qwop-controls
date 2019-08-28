@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import game.GameUnified;
-import game.action.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
 import tree.Utility;
 import tree.node.NodeQWOPGraphicsBase;
@@ -48,7 +48,7 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
 
     /**
      * Add a state to be displayed.
-     * @param state State to draw the runner at.
+     * @param state StateQWOP to draw the runner at.
      * @param color Color to draw the runner outlined with.
      */
     public void addSecondaryState(IState state, Color color) {
@@ -92,14 +92,14 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
         offset[1] = 100 + yOffsetPixels;
 
         // Draw the main state.
-        GameUnified.drawExtraRunner(g2, mainState, "", runnerScaling,
+        GameQWOP.drawExtraRunner(g2, mainState, "", runnerScaling,
                 offset[0], offset[1], mainRunnerColor, (customStroke != null) ? customStroke : boldStroke);
 
         // Draw secondary states, if any.
         for (Map.Entry<IState, Color> entry : secondaryStates.entrySet()) {
             IState st = entry.getKey();
             Color col = entry.getValue();
-            GameUnified.drawExtraRunner(g2, st, "", runnerScaling,
+            GameQWOP.drawExtraRunner(g2, st, "", runnerScaling,
                     offset[0], offset[1], col, (customStrokeExtra != null) ? customStrokeExtra : normalStroke);
         }
 

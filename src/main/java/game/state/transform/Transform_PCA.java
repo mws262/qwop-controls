@@ -11,17 +11,15 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import game.state.IState;
-import game.state.IState.ObjectName;
-import game.state.State;
-import game.state.StateVariable.StateName;
 import org.jblas.FloatMatrix;
 import org.jblas.Singular;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Transform_PCA implements ITransform {
+public class Transform_PCA<S extends IState> implements ITransform<S> {
 
     /**
      * Eigenvectors found during SVD of the conditioned states. They represent the principle directions that explain
@@ -30,19 +28,14 @@ public class Transform_PCA implements ITransform {
     private FloatMatrix eigenvectors;
 
     /**
-     * Number of state values per node as seen in the calculations.
-     */
-    private final int numStates = StateName.values().length * ObjectName.values().length;
-
-    /**
      * Averages of the states of the data given to calculate the PCA.
      */
-    private FloatMatrix stateAvgs = new FloatMatrix(1, numStates);
+    private FloatMatrix stateAvgs; // = new FloatMatrix(1, numStates);
 
     /**
      * Standard deviations of the states of the data given to calculate the PCA.
      */
-    private FloatMatrix stateSTDs = new FloatMatrix(1, numStates);
+    private FloatMatrix stateSTDs; // = new FloatMatrix(1, numStates);
 
     /**
      * PCA components used to do transforms. Usually will only be the first couple.
@@ -63,7 +56,7 @@ public class Transform_PCA implements ITransform {
     }
 
     @Override
-    public void updateTransform(List<IState> nodesToUpdateFrom) {
+    public void updateTransform(List<S> nodesToUpdateFrom) {
         // Do PCA!
         FloatMatrix dataSet = conditionData(unpackData(nodesToUpdateFrom));
         FloatMatrix[] USV = Singular.fullSVD(dataSet);
@@ -86,7 +79,7 @@ public class Transform_PCA implements ITransform {
     }
 
     @Override
-    public List<float[]> transform(List<IState> originalStates) {
+    public List<float[]> transform(List<S> originalStates) {
         FloatMatrix preppedDat = unpackData(originalStates);
         preppedDat.subiRowVector(stateAvgs);
         preppedDat.diviRowVector(stateSTDs);
@@ -97,7 +90,16 @@ public class Transform_PCA implements ITransform {
     }
 
     @Override
-    public List<IState> untransform(List<float[]> transformedStates) {
+    public float[] transform(S originalState) {
+        // This single-state transform method was added later, so I'm just going to make a list and send it over to
+        // the existing method.
+        List<S> stateList = new ArrayList<>();
+        stateList.add(originalState);
+        return transform(stateList).get(0);
+    }
+
+    @Override
+    public List<float[]> untransform(List<float[]> transformedStates) {
         FloatMatrix lowDimData = new FloatMatrix(transformedStates.size(), transformedStates.get(0).length);
         for (int i = 0; i < transformedStates.size(); i++) {
             for (int j = 0; j < transformedStates.get(0).length; j++) {
@@ -112,41 +114,22 @@ public class Transform_PCA implements ITransform {
         List<FloatMatrix> splitRowRestoredDimData = restoredDimData.rowsAsList(); // Each data point is a list entry
 		// in a FloatMatrix
 
-        // Lambda mapping the list FloatMatrix's to states's
-        return splitRowRestoredDimData.stream().map(matrix -> new State(matrix.data, false)).collect(Collectors.toList());
+        return splitRowRestoredDimData.stream().map(matrix -> matrix.data).collect(Collectors.toList());
     }
 
     @Override
-    public List<IState> compressAndDecompress(List<IState> originalStates) {
+    public List<float[]> compressAndDecompress(List<S> originalStates) {
         return untransform(transform(originalStates));
     }
 
-    /**
-     * Unpack the state data from the nodes, pulling only the stuff we want.
-     * Subtract mean, make unit variance.
-     */
-    private FloatMatrix unpackData(List<IState> states) {
+    private FloatMatrix unpackData(List<S> states) {
 
-        FloatMatrix dat = new FloatMatrix(states.size(), numStates);
+        float[][] flatStates = new float[states.size()][];
 
-        // Iterate through all nodes
         for (int i = 0; i < states.size(); i++) {
-            int colCounter = 0;
-            // Through all body parts...
-            float bodyX = states.get(i).getCenterX();
-            for (ObjectName obj : ObjectName.values()) {
-                // For each state of each body part.
-                for (StateName st : StateName.values()) {
-                    if (StateName.X == st) {
-                        dat.put(i, colCounter, states.get(i).getStateVariableFromName(obj).getStateByName(st) - bodyX);
-                    } else {
-                        dat.put(i, colCounter, states.get(i).getStateVariableFromName(obj).getStateByName(st));
-                    }
-                    colCounter++;
-                }
-            }
+            flatStates[i] = states.get(i).flattenState();
         }
-        return dat;
+        return new FloatMatrix(flatStates);
     }
 
     /**
@@ -154,6 +137,14 @@ public class Transform_PCA implements ITransform {
      * Samples are rows, variables are columns. Alters matrix dat in place.
      */
     private FloatMatrix conditionData(FloatMatrix dat) {
+
+        if (stateAvgs == null) {
+            stateAvgs = new FloatMatrix(1, dat.columns);
+        }
+        if (stateSTDs == null) {
+            stateSTDs = new FloatMatrix(1, dat.columns);
+        }
+
         for (int i = 0; i < dat.columns; i++) {
             // Calculate the mean of a column.
             float sum = 0;
@@ -198,6 +189,7 @@ public class Transform_PCA implements ITransform {
 
     public static class Deserializer extends StdDeserializer<Object> {
 
+        @SuppressWarnings("unused")
         public Deserializer() {
             this(null);
         }
@@ -224,6 +216,7 @@ public class Transform_PCA implements ITransform {
 
     public static class Serializer extends StdSerializer<Object> {
 
+        @SuppressWarnings("unused")
         public Serializer() {
             this(null);
         }

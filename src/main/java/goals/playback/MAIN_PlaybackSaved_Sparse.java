@@ -2,8 +2,8 @@ package goals.playback;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameUnified;
-import game.action.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.CommandQWOP;
 import tree.node.NodeQWOPGraphics;
 import tree.node.NodeQWOPGraphicsBase;
 import ui.runner.PanelRunner_Animated;
@@ -60,7 +60,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
         Thread runnerThread = new Thread(runnerPane);
         runnerThread.start();
 
-        setTitle("Simulate saved game.action from file");
+        setTitle("Simulate saved game.command from file");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(windowWidth, windowHeight));
         pack();
@@ -82,7 +82,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
         SavableFileIO<SavableSingleGame<CommandQWOP>> fileIO = new SavableFileIO<>();
         for (File f : playbackFiles) {
-            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameUnified.getInitialState());
+            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState());
 
             List<SavableSingleGame<CommandQWOP>> loadedGames = new ArrayList<>();
             fileIO.loadObjectsToCollection(f, loadedGames);

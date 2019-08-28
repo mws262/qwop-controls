@@ -44,7 +44,7 @@ public class DataSaver_DenseJava <C extends Command<?>> extends DataSaver_Dense<
 
     @Override
     public void reportGameEnding(NodeQWOPBase<?, C> endNode) {
-        // Collect all the states and game.action into a data object.
+        // Collect all the states and game.command into a data object.
         saveBuffer.add(new SavableDenseData<>(stateBuffer, actionBuffer));
         saveCounter++;
 

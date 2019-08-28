@@ -136,13 +136,13 @@ ui:
   - type: runner_animated_transformed
     name: Run Animation
   - type: runner_snapshot
-    name: State Viewer
+    name: StateQWOP Viewer
     numHistoryStatesDisplay: 25
   - type: runner_comparison
-    name: State Compare
+    name: StateQWOP Compare
     maxNumStatesToShow: 50
   - type: plot_states
-    name: State Plots
+    name: StateQWOP Plots
     numberOfPlots: 6
   - type: futures_pie
     name: Viable Futures

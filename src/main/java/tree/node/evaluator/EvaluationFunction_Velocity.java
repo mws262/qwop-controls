@@ -1,10 +1,10 @@
 package tree.node.evaluator;
 
 import game.action.Command;
-import game.state.IState;
+import game.qwop.StateQWOP;
 import tree.node.NodeQWOPBase;
 
-import java.util.Objects;
+import static game.qwop.IStateQWOP.ObjectName;
 
 /**
  * Evaluation of a node based strictly on torso horizontal position.
@@ -15,7 +15,8 @@ public class EvaluationFunction_Velocity<C extends Command<?>> implements IEvalu
 
     @Override
     public float getValue(NodeQWOPBase<?, C> nodeToEvaluate) {
-        return Objects.requireNonNull(nodeToEvaluate.getState()).getStateVariableFromName(IState.ObjectName.BODY).getDx();
+        // TODO fix cast
+        return ((StateQWOP) nodeToEvaluate.getState()).getStateVariableFromName(ObjectName.BODY).getDx();
     }
 
     @Override

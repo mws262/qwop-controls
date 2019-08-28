@@ -1,12 +1,17 @@
 package game.cartpole;
 
 import com.google.common.base.Preconditions;
+import game.IGameInternal;
+import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.deeplearning4j.gym.Client;
 import org.deeplearning4j.gym.StepReply;
 import org.deeplearning4j.rl4j.space.Box;
 import org.deeplearning4j.rl4j.space.DiscreteSpace;
+import org.jetbrains.annotations.NotNull;
+
+import java.awt.*;
 
 /**
  * Interface to DL4J's HTTP interface to OpenAI's HTTP interface to their Gym cart-pole environment. Used for debugging
@@ -27,19 +32,17 @@ import org.deeplearning4j.rl4j.space.DiscreteSpace;
  *
  * @author matt
  */
-public class CartPole { // TODO implement one of the game interfaces.
+public class CartPole implements IGameInternal<CommandCartPole> { // TODO implement one of the game interfaces.
 
     /**
-     * State space dimension. [cart position, cart velocity, pole angle, pole velocity at tip]
+     * StateQWOP space dimension. [cart position, cart velocity, pole angle, pole velocity at tip]
      */
-    @SuppressWarnings("WeakerAccess")
     public static final int STATE_SIZE = 4;
 
     /**
-     * Number of action choices available at every timestep. One hot encoding, [1, 0] is push left, [0, 1] is push
+     * Number of command choices available at every timestep. One hot encoding, [1, 0] is push left, [0, 1] is push
      * right.
      */
-    @SuppressWarnings("WeakerAccess")
     public static final int ACTIONSPACE_SIZE = 2;
 
     /**
@@ -54,24 +57,26 @@ public class CartPole { // TODO implement one of the game interfaces.
     private final int randomSeed = 1;
 
     /**
-     * State vector at the after the most recent action (or a reset).
+     * State when balanced perfectly upright, centered, and with no velocity.
      */
-    private float[] currentState = new float[STATE_SIZE];
+    private static final StateCartPole balancedState = new StateCartPole(0, 0, 0, 0, false);
+
+    /**
+     * StateQWOP vector at the after the most recent command (or a resetGame).
+     */
+    private StateCartPole currentState = balancedState;
 
     /**
      * Reward seen from the most recent step.
      */
-    private double lastReward;
+    private float lastReward;
 
     /**
      * Total reward seen this episode.
      */
     private double cumulativeReward;
 
-    /**
-     * Does Gym say the game is over? Either +/- 15 deg on the pole, leaves the screen, or reaches 200 timesteps.
-     */
-    private boolean isDone = false;
+    private int timestepsThisGame;
 
     /**
      * Logging. Add -Dlog4j.configurationFile="./src/main/resources/log4j2.xml" to VM options if logging isn't working.
@@ -92,7 +97,7 @@ public class CartPole { // TODO implement one of the game interfaces.
     public void connect(boolean withGraphics) {
         try {
             client = GymClientFactory.build("CartPole-v0", randomSeed, withGraphics);
-            reset();
+            resetGame();
             logger.info("Connected successfully to the Python server.");
         } catch(RuntimeException e) {
             e.printStackTrace();
@@ -119,47 +124,70 @@ public class CartPole { // TODO implement one of the game interfaces.
      * Reset the environment. Will also set the current state to be the new initial condition. Note that it picks
      * initial conditions randomly based on the seed sent to Gym.
      */
-    public void reset() {
+    public void resetGame() {
+        logger.debug("Game reset called.");
+
         Preconditions.checkArgument(client != null, "Must connect to the python http server before using this. Run " +
                 "gym_http_server.py.");
         double[] st = client.reset().toArray();
-        for (int i = 0; i < st.length; i++) {
-            currentState[i] = (float) st[i];
-        }
-        isDone = false;
+
+        currentState = new StateCartPole((float) st[0], (float) st[1], (float) st[2], (float) st[3], false);
         cumulativeReward = 0;
+        timestepsThisGame = 0;
     }
 
     /**
      * Step the game forward one physics timestep.
-     * @param action Index of the action to take. 0 is push left, 1 is push right.
      * @return Whether the step was taken successfully. Doesn't mean that the the thing didn't fall down! It just
      * means that the code executed correctly without messing up messages to the HTTP server.
      */
-    public boolean step(int action) { // TODO genericize.
-        if (isClosing)
-            return false;
+    public void step(@NotNull CommandCartPole command) {
+        if (isClosing) // If the game is being shut down, don't attempt to step again or it will probably pull the
+            // simulation window back up when the step command is sent.
+            return;
         try {
-            StepReply<Box> observation = client.step(action); // only 0 or 1 -- push left or right.
+            StepReply<Box> observation = client.step(command.equals(CommandCartPole.LEFT) ? 0 : 1); // only 0 or 1 --
+            // push left or right.
             double[] st = observation.getObservation().toArray();
-            for (int i = 0; i < st.length; i++) {
-                currentState[i] = (float) st[i];
-            }
-            isDone = observation.isDone();
-            lastReward = observation.getReward(); // 1 for survival.
+            currentState = new StateCartPole((float) st[0], (float) st[1], (float) st[2], (float) st[3],
+                    observation.isDone());
+            lastReward = (float) observation.getReward(); // 1 for survival.
             cumulativeReward += lastReward;
-            return true;
+            timestepsThisGame++;
         } catch (RuntimeException e) {
             // Lost connection. Most likely closed on the gym server side.
-            return false;
+            logger.warn("Server connection lost during a step command.");
         }
     }
 
+    @Override
+    public void command(@NotNull CommandCartPole command) {
+        step(command);
+    }
+
+    @Override
+    public int getNumberOfChoices() {
+        return ACTIONSPACE_SIZE;
+    }
+
+    @Override
+    public void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
+        // TODO
+    }
+
+    @Override
+    public void setState(IState st) {} // TODO
+
+    @Override
+    public IGameInternal<CommandCartPole> getCopy() {
+        return null;
+    }
+
     /**
-     * Get the system state as of the most recent call to {@link CartPole#step(int)}.
+     * Get the system state as of the most recent call to {@link CartPole#step(CommandCartPole)}.
      * @return 4-element array of state variables.
      */
-    public float[] getCurrentState() {
+    public IState getCurrentState() {
         return currentState;
     }
 
@@ -168,16 +196,27 @@ public class CartPole { // TODO implement one of the game interfaces.
      * exceed 200. Note that you can continue to step the game after this point, but the environment scores it as over.
      * @return Whether this game episode is over.
      */
-    public boolean isDone() {
-        return isDone;
+    @Override
+    public boolean isFailed() {
+        return currentState.isFailed();
+    }
+
+    @Override
+    public long getTimestepsThisGame() {
+        return timestepsThisGame;
+    }
+
+    @Override
+    public int getStateDimension() {
+        return STATE_SIZE;
     }
 
     /**
-     * Get the reward accrued from the most recent call to {@link CartPole#step(int)}. It's trivial for this
+     * Get the reward accrued from the most recent call to {@link CartPole#step(CommandCartPole)}. It's trivial for this
      * environment: just gets 1 for every successful, unfallen timestep.
      * @return Reward from the most recent timestep.
      */
-    public double getLastReward() {
+    public float getLastReward() {
         return lastReward;
     }
 
@@ -198,9 +237,10 @@ public class CartPole { // TODO implement one of the game interfaces.
         cartPole.connect(true);
 
         for (int i = 0; i < 100; i++) {
-            cartPole.step(0);
-            if (cartPole.isDone)
-                cartPole.reset();
+            cartPole.step(CommandCartPole.LEFT);
+            if (cartPole.isFailed())
+                cartPole.resetGame();
         }
     }
+
 }

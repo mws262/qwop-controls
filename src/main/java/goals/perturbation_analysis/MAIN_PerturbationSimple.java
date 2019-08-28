@@ -1,9 +1,9 @@
 package goals.perturbation_analysis;
 
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.action.perturbers.ActionPerturber_SwitchTooSoon;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.IGameInternal;
 import ui.runner.PanelRunner_MultiState;
 
@@ -35,8 +35,8 @@ public class MAIN_PerturbationSimple extends JFrame {
                 new ActionPerturber_SwitchTooSoon<>(perturbationLocations);
         ActionQueue<CommandQWOP> actionQueuePerturbed = perturber.perturb(actionQueue);
 
-        IGameInternal<CommandQWOP> gameUnperturbed = new GameUnified();
-        IGameInternal<CommandQWOP> gamePerturbed = new GameUnified();
+        IGameInternal<CommandQWOP> gameUnperturbed = new GameQWOP();
+        IGameInternal<CommandQWOP> gamePerturbed = new GameQWOP();
 
         boolean reachedFirstPerturbation = false;
         while (!actionQueue.isEmpty()) {

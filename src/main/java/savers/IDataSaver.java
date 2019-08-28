@@ -35,7 +35,7 @@ public interface IDataSaver<C extends Command<?>> {
      * Report intermediate nodes as they are being run. Useful for dense
      * saving of data for TFRecords or other.
      *
-     * @param action Current action being run.
+     * @param action Current command being run.
      * @param game Instance of the game used for simulation.
      */
     void reportTimestep(Action<C> action, IGameInternal<C> game);

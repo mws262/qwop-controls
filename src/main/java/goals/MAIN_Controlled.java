@@ -5,9 +5,9 @@
 //import data.SavableActionSequence;
 //import data.SavableFileIO;
 //import data.SavableSingleGame;
-//import game.GameUnified;
-//import game.action.Action;
-//import game.action.ActionQueue;
+//import game.qwop.GameQWOP;
+//import game.command.Action;
+//import game.command.ActionQueue;
 //import game.state.IState;
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
@@ -34,7 +34,7 @@
 //
 //public class MAIN_Controlled extends JFrame implements Runnable, ActionListener {
 //
-//    private GameUnified game = new GameUnified();
+//    private GameQWOP game = new GameQWOP();
 //
 //    /**
 //     * Controller to use. Defaults to Controller_Null and should usually be reassigned.
@@ -107,7 +107,7 @@
 //        graphicsThread.start(); // Makes it smoother by updating the graphics faster than the timestep updates.
 //
 //        JButton saveButton = new JButton();
-//        saveButton.setText("Save game.action");
+//        saveButton.setText("Save game.command");
 //        saveButton.addActionListener(this);
 //        saveButton.setVisible(true);
 //        saveButton.setPreferredSize(new Dimension(1000, 50));
@@ -140,7 +140,7 @@
 //
 //        // Recreate prefix part of this tree.
 //        SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
-//        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+//        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameQWOP.getInitialState());
 //        List<SavableSingleGame> glist = new ArrayList<>();
 //        fileIO.loadObjectsToCollection(prefixSave, glist);
 //        NodeQWOPExplorable.makeNodesFromRunInfo(glist, rootNode);
@@ -164,7 +164,7 @@
 //        while (!actionQueue.isEmpty()) {
 //            executeNextOnQueue();
 //            //
-//            //			if (actionQueue.peekNextAction() == null) { // Experimental -- makes the final action end
+//            //			if (actionQueue.peekNextAction() == null) { // Experimental -- makes the final command end
 //            // early so it doesn't throw it over to the controller right at a transition.
 //            //				actionQueue.pollCommand();
 //            //			}
@@ -211,7 +211,7 @@
 //    int count = 0;
 //
 //    /**
-//     * Pop the next action off the queue and execute one timestep.
+//     * Pop the next command off the queue and execute one timestep.
 //     **/
 //    private void executeNextOnQueue() {
 //        if (!actionQueue.isEmpty()) {
@@ -242,7 +242,7 @@
 //    @Override
 //    public void actionPerformed(ActionEvent e) {
 //
-//        if (e.getActionCommand().equals("Save game.action")) {
+//        if (e.getActionCommand().equals("Save game.command")) {
 //            Action[] acts = actionQueue.getActionsInCurrentRun();
 //            List<Action> actsConsolidated = Action.consolidateActions(Arrays.asList(acts));
 //

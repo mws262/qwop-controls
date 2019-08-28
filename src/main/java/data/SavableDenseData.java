@@ -10,11 +10,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Holds all the states and game.action on a TIMESTEP level for an entire game.
- * Note that a state corresponds to the action that is being held during it, not
- * the action which leads to it like in other parts of the code. Also, there may
- * be 1 more state than action. this is because we arrive at the final state
- * without needing to select an action once we get there.
+ * Holds all the states and game.command on a TIMESTEP level for an entire game.
+ * Note that a state corresponds to the command that is being held during it, not
+ * the command which leads to it like in other parts of the code. Also, there may
+ * be 1 more state than command. this is because we arrive at the final state
+ * without needing to select an command once we get there.
  *
  * @author matt
  */
@@ -30,9 +30,9 @@ public class SavableDenseData<C extends Command<?>> implements Serializable {
 
     public SavableDenseData(IState[] state, Action<C>[] action) {
         if (state.length != action.length && state.length - action.length != 1) {
-            //throw new RuntimeException("State and action data must be of the same size, or state must have 1 more
-			// element than action. State size: " + state.length + ". Action size: " + action.length);
-            logger.warn("State size: " + state.length + ". Action size: " + action.length + ". Ignoring for " +
+            //throw new RuntimeException("StateQWOP and command data must be of the same size, or state must have 1 more
+			// element than command. StateQWOP size: " + state.length + ". Action size: " + command.length);
+            logger.warn("StateQWOP size: " + state.length + ". Action size: " + action.length + ". Ignoring for " +
 					"now.");
         }
         this.state = state;

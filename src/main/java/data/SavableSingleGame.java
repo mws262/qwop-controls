@@ -8,7 +8,7 @@ import tree.node.NodeQWOPBase;
 import java.io.Serializable;
 
 /**
- * Structure to hold game.action and states in individual QWOP runs for saving to file. This holds data sparsely, meaning
+ * Structure to hold game.command and states in individual QWOP runs for saving to file. This holds data sparsely, meaning
  * that only the {@link IState} at nodes are recorded, along with the {@link Action Actions} going between
  * them. Data at every single timestep is not used, and tree relationships are not considered. This is the container
  * used by {@link savers.DataSaver_Sparse}. The mechanism of saving to file is the direct serialization of the Java
@@ -26,7 +26,7 @@ public class SavableSingleGame<C extends Command<?>> implements Serializable {
     /**
      * Make a new container for holding the sparse representation of a single run.
      *
-     * @param terminalNode End node of the run to be saved. All states and game.action up to this point will be saved.
+     * @param terminalNode End node of the run to be saved. All states and game.command up to this point will be saved.
      */
     public SavableSingleGame(NodeQWOPBase<?, C> terminalNode) {
         states = new IState[terminalNode.getTreeDepth()];

@@ -1,6 +1,7 @@
 package game.action;
 
-import game.GameUnified;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
@@ -72,7 +73,7 @@ public class ActionQueueTest {
         }
 
         actQueue.pollCommand();
-        Assert.assertNull(actQueue.peekNextAction()); // Once on the last action we should get null for the next.
+        Assert.assertNull(actQueue.peekNextAction()); // Once on the last command we should get null for the next.
 
     }
 
@@ -100,7 +101,7 @@ public class ActionQueueTest {
             actQueue.pollCommand();
         }
 
-        Assert.assertNull(actQueue.peekCommand()); // Once on the last action we should get null for the next.
+        Assert.assertNull(actQueue.peekCommand()); // Once on the last command we should get null for the next.
     }
 
     @Test
@@ -113,7 +114,7 @@ public class ActionQueueTest {
                 a3 = new Action<>(7, CommandQWOP.W),
                 a4 = new Action<>(8, CommandQWOP.O);
 
-        // Add first action and verify
+        // Add first command and verify
         actQueue.addAction(a1);
         Assert.assertFalse(actQueue.isEmpty());
 
@@ -122,7 +123,7 @@ public class ActionQueueTest {
 
         Assert.assertEquals(actQueue.pollCommand(), a1.peek());
 
-        // Second action
+        // Second command
         actQueue.addAction(a2);
         Assert.assertEquals(2, actQueue.getActionsInCurrentRun().length);
         Assert.assertEquals(4, actQueue.peekThisAction().getTimestepsRemaining());
@@ -130,18 +131,18 @@ public class ActionQueueTest {
 
         Assert.assertEquals(actQueue.pollCommand(), a1.peek());
 
-        // Third action
+        // Third command
         actQueue.addAction(a3);
         Assert.assertEquals(3, actQueue.getActionsInCurrentRun().length);
         Assert.assertEquals(3, actQueue.peekThisAction().getTimestepsRemaining());
         Assert.assertEquals(7, actQueue.getActionsInCurrentRun()[2].getTimestepsRemaining());
 
-        // Poll away the rest in this action.
+        // Poll away the rest in this command.
         Assert.assertEquals(actQueue.pollCommand(), a1.peek());
         Assert.assertEquals(actQueue.pollCommand(), a1.peek());
         Assert.assertEquals(actQueue.pollCommand(), a1.peek());
 
-        // Third action
+        // Third command
         actQueue.addAction(a4);
         Assert.assertEquals(4, actQueue.getActionsInCurrentRun().length);
         Assert.assertEquals(0, actQueue.peekThisAction().getTimestepsRemaining());
@@ -311,12 +312,12 @@ public class ActionQueueTest {
         // and false false true false.
 
         // Try simulating a game using an ActionQueue
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
 
         game.step(false, false, true, false);
         float[] s1 = game.getCurrentState().flattenState();
 
-        game.makeNewWorld();
+        game.resetGame();
         game.step(false, false, true, false);
         float[] s2 = game.getCurrentState().flattenState();
 
@@ -326,7 +327,7 @@ public class ActionQueueTest {
 
         ActionQueue<CommandQWOP> actionQueue = makeTestQueue();
 
-        game.makeNewWorld();
+        game.resetGame();
         float[] initialState1 = game.getCurrentState().flattenState();
         int counter = 0;
         while (!actionQueue.isEmpty()) {
@@ -339,7 +340,7 @@ public class ActionQueueTest {
         IState finalStateWithQueue = game.getCurrentState();
 
         // Try simulating the game by manually sending a bunch of commands.
-        game.makeNewWorld();
+        game.resetGame();
         float[] initialState2 = game.getCurrentState().flattenState();
         counter = 0;
         for (int i = 0; i < 5; i++) {
@@ -445,15 +446,15 @@ public class ActionQueueTest {
         Assert.assertEquals(26, actQueue.getTotalQueueLengthTimesteps());
 
         for (int i = 0; i < 3; i++) {
-            actQueue.pollCommand(); // Should not change even after game.action have been polled.
+            actQueue.pollCommand(); // Should not change even after game.command have been polled.
         }
         Assert.assertEquals(26, actQueue.getTotalQueueLengthTimesteps());
     }
 
     /**
-     * Generic 4-action queue for testing here.
+     * Generic 4-command queue for testing here.
      *
-     * @return Test action queue.
+     * @return Test command queue.
      */
     private ActionQueue<CommandQWOP> makeTestQueue() {
         ActionQueue<CommandQWOP> actQueue = new ActionQueue<>();

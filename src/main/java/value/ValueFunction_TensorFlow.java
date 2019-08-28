@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Iterables;
-import data.LoadStateStatistics;
 import game.action.Command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,15 +70,6 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>> implements 
      * Sum of losses during one update. Exists for logging.
      */
     private float lossSum;
-
-    LoadStateStatistics.StateStatistics stateStats;
-    {
-        try {
-            stateStats = LoadStateStatistics.loadStatsFromFile();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 
     private static final Logger logger = LogManager.getLogger(ValueFunction_TensorFlow.class);
 

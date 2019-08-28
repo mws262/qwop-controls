@@ -6,9 +6,9 @@ import game.action.Command;
 import java.util.List;
 
 /**
- * Most basic action sampling distribution. This will just randomly pick one of the provided possible game.action with
+ * Most basic command sampling distribution. This will just randomly pick one of the provided possible game.command with
  * equal probability. Note that this is not precisely the same as a uniform distribution. If the provided possible
- * game.action are heavily skewed in some way, then the outputs of this distribution will be similarly skewed since each
+ * game.command are heavily skewed in some way, then the outputs of this distribution will be similarly skewed since each
  * possible sample has equal probability.
  *
  * @author matt
@@ -16,10 +16,10 @@ import java.util.List;
 public class Distribution_Equal <C extends Command<?>> extends Distribution<Action<C>> {
 
     /**
-     * Get a random sample from the provided set of game.action.
+     * Get a random sample from the provided set of game.command.
      *
-     * @param set A List of possible game.action to sample from.
-     * @return An {@link Action action} sampled from the input set according to this distribution.
+     * @param set A List of possible game.command to sample from.
+     * @return An {@link Action command} sampled from the input set according to this distribution.
      */
     @Override
     public Action<C> randOnDistribution(List<Action<C>> set) {

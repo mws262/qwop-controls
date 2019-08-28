@@ -1,7 +1,7 @@
 package tree.node.evaluator;
 
 import game.action.Action;
-import game.state.State;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,7 +10,7 @@ import tree.node.NodeQWOP;
 import static org.mockito.Mockito.mock;
 
 public class EvaluationFunction_RandomTest {
-    // Some sample game.action (mocked).
+    // Some sample game.command (mocked).
     private Action a1 = mock(Action.class);
     private Action a2 = mock(Action.class);
     private Action a3 = mock(Action.class);
@@ -22,7 +22,7 @@ public class EvaluationFunction_RandomTest {
 
     @Before
     public void setup() {
-        State st = mock(State.class);
+        StateQWOP st = mock(StateQWOP.class);
         node1 = new NodeQWOP(st);
         node2 = node1.addDoublyLinkedChild(a1, st);
         node3 = node1.addDoublyLinkedChild(a2, st);

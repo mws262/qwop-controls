@@ -2,8 +2,8 @@ package game.state.transform;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import game.qwop.StateQWOP;
 import game.state.IState;
-import game.state.State;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tensorflow.Graph;
@@ -14,11 +14,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * Transform based around a TensorFlow neural network. The neural network takes all the values in a {@link State} and
+ * Transform based around a TensorFlow neural network. The neural network takes all the values in a {@link StateQWOP} and
  * feeds them through several layers which (usually) reduce the state to fewer numbers (e.g. 72 to 12 numbers). This
  * is the encoder. The network has layers which expand the reduced state back out to the full number of values. This
  * is the decoder.
@@ -30,7 +29,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class Transform_Autoencoder implements ITransform {
+public class Transform_Autoencoder<S extends IState> implements ITransform<S> {
     /**
      * TensorFlow session. Data can be fed into the neural network and outputs retrieved.
      */
@@ -40,13 +39,6 @@ public class Transform_Autoencoder implements ITransform {
      * Dimension that a state input is changed (usually reduced) to.
      */
     private final int outputSize;
-
-    private final int stateDimension = 72;
-
-    /**
-     * State needs to be turned into a 1x72 float array to be fed into the network.
-     */
-    private float[][] flatSt = new float[1][stateDimension];
 
     private static final Logger logger = LogManager.getLogger(Transform_Autoencoder.class);
 
@@ -78,63 +70,58 @@ public class Transform_Autoencoder implements ITransform {
     }
 
     @Override
-    public void updateTransform(List<IState> nodesToUpdateFrom) {} // Nothing is adaptive about this transform.
+    public void updateTransform(List<S> nodesToUpdateFrom) {} // Nothing is adaptive about this transform.
 
     @Override
-    public List<float[]> transform(List<IState> originalStates) {
+    public List<float[]> transform(List<S> originalStates) {
         List<float[]> transformedStates = new ArrayList<>();
 
-        for (IState st : originalStates) {
-            float[] flattenedState = st.flattenState();
-            if (flattenedState.length != this.stateDimension) {
-                flatSt[0] = Arrays.copyOf(flattenedState, stateDimension); // Will truncate state if too big. Beware!
-                logger.warn("Dimension of state input is longer than expected (" + stateDimension + "). Was " + flattenedState.length + ". Truncating down to size.");
-            } else {
-                flatSt[0] = flattenedState;
-            }
-
-            Tensor<Float> inputTensor = Tensor.create(flatSt, Float.class);
-            Tensor<Float> result =
-                    tensorflowSession.runner().feed("Squeeze:0", inputTensor)
-                            .fetch("decoder/decoder_input:0")
-                            .run().get(0).expect(Float.class);
-
-            float[][] res = result.copyTo(new float[1][outputSize]);
-            transformedStates.add(res[0]);
-
-            inputTensor.close();
-            result.close();
+        for (S st : originalStates) {
+            transformedStates.add(transform(st));
         }
         return transformedStates;
     }
 
     @Override
-    public List<IState> untransform(List<float[]> transformedStates) {
+    public float[] transform(S originalState) {
+        Tensor<Float> inputTensor = assembleNetInputFromState(originalState);
+        Tensor<Float> result =
+                tensorflowSession.runner().feed("Squeeze:0", inputTensor)
+                        .fetch("decoder/decoder_input:0")
+                        .run().get(0).expect(Float.class);
+
+        float[][] res = result.copyTo(new float[1][outputSize]);
+
+        inputTensor.close();
+        result.close();
+        return res[0];
+    }
+
+    @Override
+    public List<float[]> untransform(List<float[]> transformedStates) {
         return null; // TODO figure out how to get the correct layers in/out for this.
     }
 
     @Override
-    public List<IState> compressAndDecompress(List<IState> originalStates) {
-        List<IState> transformedStates = new ArrayList<>();
+    public List<float[]> compressAndDecompress(List<S> originalStates) {
+        List<float[]> transformedStates = new ArrayList<>();
 
-        for (IState st : originalStates) {
-            float[] flattenedState = st.flattenState();
-            if (flattenedState.length != this.stateDimension) {
-                flatSt[0] = Arrays.copyOf(flattenedState, stateDimension); // Will truncate state if too big. Beware!
-                logger.warn("Dimension of state input is longer than expected (" + stateDimension + "). Was " + flattenedState.length + ". Truncating down to size.");
-            } else {
-                flatSt[0] = flattenedState;
-            }
-            Tensor<Float> inputTensor = Tensor.create(flatSt, Float.class);
+        for (S st : originalStates) {
+            Tensor<Float> inputTensor = assembleNetInputFromState(st);
             Tensor<Float> result =
                     tensorflowSession.runner().feed("Squeeze:0", inputTensor)
                             .fetch("transform_out/Add_1:0")
                             .run().get(0).expect(Float.class);
 
-            float[][] res = result.copyTo(new float[1][72]);
-            transformedStates.add(new State(res[0], false));
+            float[][] res = result.copyTo(new float[1][st.getStateSize()]);
+            transformedStates.add(res[0]);
         }
         return transformedStates;
+    }
+
+    private Tensor<Float> assembleNetInputFromState(S st) {
+        float[][] flatState = new float[][] {st.flattenState()};
+        return Tensor.create(flatState, Float.class);
     }
 
     @Override
@@ -146,29 +133,4 @@ public class Transform_Autoencoder implements ITransform {
     public String getName() {
         return "AutoEnc " + getOutputSize();
     }
-
-    //TODO move to unit test.
-    // Example usage:
-    //	public static void goals(String[] args) {
-    //		TensorflowAutoencoder enc = new TensorflowAutoencoder();
-    //
-    //		float[][] dummy = new float[1][72];
-    //		for (int i = 0; i < dummy[0].length; i++) {
-    //			dummy[0][i] = 0.1f;
-    //		}
-    //
-    //		Tensor<Float> inputTensor = Tensor.create(dummy, Float.class);
-    //		long init = System.currentTimeMillis();
-    //		Tensor<Float> result =
-    //				enc.tensorflowSession.runner().feed("Squeeze:0", inputTensor)
-    //				.fetch("transform_out/Add_1:0")
-    //				.run().get(0).expect(Float.class);
-    //
-    //
-    //		float[][] res = result.copyTo(new float[1][72]);
-    //
-    //		for (int i = 0; i < res[0].length; i++) {
-    //			System.out.println(res[0][i]);
-    //		}
-    //	}
 }

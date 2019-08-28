@@ -2,8 +2,9 @@ package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
-import game.state.IState.ObjectName;
-import game.state.StateVariable.StateName;
+import game.qwop.IStateQWOP.ObjectName;
+import game.qwop.StateQWOP;
+import game.state.StateVariable6D.StateName;
 import org.jfree.chart.plot.XYPlot;
 import tree.Utility;
 import tree.node.NodeQWOPExplorableBase;
@@ -49,7 +50,7 @@ public class PanelPlot_States<C extends Command<?>> extends PanelPlot<C> impleme
     private final ObjectName[] plotObjectsY;
 
     /**
-     * State variables associated with each plot and axis.
+     * StateQWOP variables associated with each plot and axis.
      */
     private final StateName[] plotStatesX;
     private final StateName[] plotStatesY;
@@ -146,10 +147,11 @@ public class PanelPlot_States<C extends Command<?>> extends PanelPlot<C> impleme
                 XYPlot pl = plotAndData.getKey();
                 PlotDataset dat = plotAndData.getValue();
 
+                // TODO fix these unsafe casts.
                 Float[] xData =
-						nodesBelow.stream().map(n -> n.getState().getStateVariableFromName(plotObjectsX[countDataCollect]).getStateByName(plotStatesX[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
+						nodesBelow.stream().map(n -> ((StateQWOP) n.getState()).getStateVariableFromName(plotObjectsX[countDataCollect]).getStateByName(plotStatesX[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
                 Float[] yData =
-						nodesBelow.stream().map(n -> n.getState().getStateVariableFromName(plotObjectsY[countDataCollect]).getStateByName(plotStatesY[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
+						nodesBelow.stream().map(n -> ((StateQWOP) n.getState()).getStateVariableFromName(plotObjectsY[countDataCollect]).getStateByName(plotStatesY[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
                 Color[] cData =
 						nodesBelow.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
                                 NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);

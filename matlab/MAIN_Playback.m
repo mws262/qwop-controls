@@ -3,7 +3,7 @@
 % Handle Java imports.
 eval('javaaddpath ../target/qwop-controls-1.0-jar-with-dependencies.jar'); % Strange issues with trying to directly call these commands. Eval seems to fix it.
 eval('javaaddpath ../jbox2d.jar');
-eval('import game.state.State game.state.StateVariable game.GameSingleThread game.action.Action game.action.ActionQueue');
+eval('import game.qwop.StateQWOP game.state.StateVariable6D game.GameSingleThread game.action.Action game.action.ActionQueue');
 
 % Key combinations used.
 noKey = [false, false, false, false];

@@ -1,19 +1,18 @@
-package game;
+package game.qwop;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.action.CommandQWOP;
 import game.state.*;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 
-public class GameUnifiedCaching extends GameUnified {
+public class GameQWOPCaching extends GameQWOP {
 
     @JsonIgnore
     public final int STATE_SIZE;
 
-    private LinkedList<State> cachedStates;
+    private LinkedList<StateQWOP> cachedStates;
 
     // For delay embedding.
     public final int timestepDelay;
@@ -25,10 +24,10 @@ public class GameUnifiedCaching extends GameUnified {
 
     public final StateType stateType;
 
-    public GameUnifiedCaching(@JsonProperty("timestepDelay") int timestepDelay,
-                              @JsonProperty("numDelayedStates") int numDelayedStates,
-                              @JsonProperty("stateType") StateType stateType) {
-        super.makeNewWorld();
+    public GameQWOPCaching(@JsonProperty("timestepDelay") int timestepDelay,
+                           @JsonProperty("numDelayedStates") int numDelayedStates,
+                           @JsonProperty("stateType") StateType stateType) {
+        super.resetGame();
         if (timestepDelay < 1) {
             throw new IllegalArgumentException("Timestep delay must be at least one. Was: " + timestepDelay);
         }
@@ -40,26 +39,26 @@ public class GameUnifiedCaching extends GameUnified {
     }
 
     @Override
-    public void makeNewWorld() {
-        super.makeNewWorld();
+    public void resetGame() {
+        super.resetGame();
 
         if (cachedStates == null) {
             cachedStates = new LinkedList<>();
         }
         cachedStates.clear();
-        cachedStates.add((State)getInitialState());
+        cachedStates.add((StateQWOP)getInitialState());
     }
 
     @Override
     public void step(CommandQWOP c) {
         super.step(c);
-        cachedStates.addFirst((State)super.getCurrentState());
+        cachedStates.addFirst((StateQWOP)super.getCurrentState());
     }
 
     @Override
     public IState getCurrentState() {
 
-        State[] states = new State[numDelayedStates + 1];
+        StateQWOP[] states = new StateQWOP[numDelayedStates + 1];
         Arrays.fill(states, getInitialState());
 
         for (int i = 0; i < Integer.min(states.length, (cachedStates.size() + timestepDelay - 1) / timestepDelay); i++) {
@@ -68,11 +67,11 @@ public class GameUnifiedCaching extends GameUnified {
 
         switch (stateType) {
             case POSES:
-                return new StateDelayEmbedded_Poses(states);
+                return new StateQWOPDelayEmbedded_Poses(states);
             case DIFFERENCES:
-                return new StateDelayEmbedded_Differences(states);
+                return new StateQWOPDelayEmbedded_Differences(states);
             case HIGHER_DIFFERENCES:
-                return new StateDelayEmbedded_HigherDifferences(states);
+                return new StateQWOPDelayEmbedded_HigherDifferences(states);
             default:
                 throw new IllegalStateException("Unhandled state return type.");
         }
@@ -81,8 +80,8 @@ public class GameUnifiedCaching extends GameUnified {
     @Override
     public void setState(IState state) {
         cachedStates.clear();
-        if (state instanceof StateDelayEmbedded) {
-            StateDelayEmbedded st = (StateDelayEmbedded) state;
+        if (state instanceof StateQWOPDelayEmbedded) {
+            StateQWOPDelayEmbedded st = (StateQWOPDelayEmbedded) state;
             for (int i = st.individualStates.length - 1; i >= 0; i--) { // element zero is the newest.
                 cachedStates.add(st.individualStates[i]);
             }
@@ -98,7 +97,7 @@ public class GameUnifiedCaching extends GameUnified {
     }
 
     @Override
-    public GameUnified getCopy() {
-        return new GameUnifiedCaching(timestepDelay, numDelayedStates, stateType);
+    public GameQWOP getCopy() {
+        return new GameQWOPCaching(timestepDelay, numDelayedStates, stateType);
     }
 }

@@ -1,7 +1,7 @@
 package tree.node.evaluator;
 
 import game.action.Action;
-import game.state.State;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("Duplicates")
 public class EvaluationFunction_ConstantTest {
 
-    // Some sample game.action (mocked).
+    // Some sample game.command (mocked).
     private Action a1 = mock(Action.class);
     private Action a2 = mock(Action.class);
     private Action a3 = mock(Action.class);
@@ -35,11 +35,11 @@ public class EvaluationFunction_ConstantTest {
             slist3[i] = i * 7f;
         }
 
-        State s1 = new State(slist1, false);
-        State s2 = new State(slist2, false);
-        State s3 = new State(slist3, false);
+        StateQWOP s1 = new StateQWOP(slist1, false);
+        StateQWOP s2 = new StateQWOP(slist2, false);
+        StateQWOP s3 = new StateQWOP(slist3, false);
 
-        node1 = new NodeQWOP(mock(State.class));
+        node1 = new NodeQWOP(mock(StateQWOP.class));
         node2 = node1.addDoublyLinkedChild(a1, s1);
         node3 = node1.addDoublyLinkedChild(a2, s2);
         node4 = node2.addDoublyLinkedChild(a3, s3);

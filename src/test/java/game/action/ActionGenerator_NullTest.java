@@ -1,6 +1,7 @@
 package game.action;
 
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 import tree.node.NodeQWOPExplorable;
@@ -12,7 +13,7 @@ public class ActionGenerator_NullTest {
     @Test
     public void getPotentialChildActionSet() {
         IActionGenerator actionGenerator = new ActionGenerator_Null();
-        State st = mock(State.class);
+        StateQWOP st = mock(StateQWOP.class);
         NodeQWOPExplorable root = new NodeQWOPExplorable(st, actionGenerator);
         NodeQWOPExplorable n1 = root.addDoublyLinkedChild(new Action(55, CommandQWOP.P), st);
         NodeQWOPExplorable n2 = n1.addDoublyLinkedChild(new Action(33, CommandQWOP.QP), st);

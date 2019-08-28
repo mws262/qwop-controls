@@ -1,8 +1,8 @@
 package value.updaters;
 
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.action.Action;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,7 +22,7 @@ public class ValueUpdater_TopWindowTest {
 
     @Before
     public void setup() {
-        IState s = GameUnified.getInitialState();
+        IState s = GameQWOP.getInitialState();
         a3 = new Action<>(1, CommandQWOP.NONE);
         a1 = new Action<>(5, CommandQWOP.NONE);
         a2 = new Action<>(6, CommandQWOP.NONE);

@@ -5,10 +5,10 @@ import game.action.Action;
 import data.SavableActionSequence;
 import data.SavableFileIO;
 import data.SparseDataToDenseTFRecord;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.action.ActionGenerator_FixedSequence;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,7 +79,7 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
         Arrays.sort(Objects.requireNonNull(actionFiles));
         ArrayUtils.reverse(actionFiles);
 
-        IGameInternal<CommandQWOP> game = new GameUnified();
+        IGameInternal<CommandQWOP> game = new GameQWOP();
 
         for (File f : actionFiles) {
             if (f.getName().contains("SavableActionSequence") && f.getName().contains("6_08")) {
@@ -93,7 +93,7 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
                 trimStartBy = acts.get(0).length;
 
                 // Recreate the tree section.
-                NodeQWOPGraphics<CommandQWOP> root = new NodeQWOPGraphics<>(GameUnified.getInitialState(),
+                NodeQWOPGraphics<CommandQWOP> root = new NodeQWOPGraphics<>(GameQWOP.getInitialState(),
                         ActionGenerator_FixedSequence.makeDefaultGenerator(trimStartBy));
                 NodeQWOPBase.makeNodesFromActionSequences(acts, root, game);
 

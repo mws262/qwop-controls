@@ -3,7 +3,8 @@ package tree.node;
 import game.action.*;
 import distributions.Distribution_Equal;
 import game.IGameInternal;
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,14 +63,14 @@ public class NodeQWOPGraphicsTest {
 
     private List<NodeQWOPGraphics<CommandQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
 
-    // Some sample game.action (mocked).
+    // Some sample game.command (mocked).
     private Action<CommandQWOP> a1, a2, a3, a4, a5, a6;
 
     // Some states (mocked).
-    private State
-            initialState = mock(State.class),
-            unfailedState = mock(State.class),
-            failedState = mock(State.class);
+    private StateQWOP
+            initialState = mock(StateQWOP.class),
+            unfailedState = mock(StateQWOP.class),
+            failedState = mock(StateQWOP.class);
 
     private IGameInternal game = mock(IGameInternal.class);
     @Rule
@@ -81,7 +82,7 @@ public class NodeQWOPGraphicsTest {
         when(failedState.isFailed()).thenReturn(true);
         when(game.getCurrentState()).thenReturn(unfailedState);
 
-        // Set up action generator.
+        // Set up command generator.
         ActionList<CommandQWOP> list1 = ActionList.makeActionList(new int[]{1,2,3}, CommandQWOP.Q,
                 new Distribution_Equal<>());
         ActionList<CommandQWOP> list2 = ActionList.makeActionList(new int[]{4,5,6}, CommandQWOP.W,

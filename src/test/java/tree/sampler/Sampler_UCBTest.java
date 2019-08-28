@@ -2,10 +2,11 @@ package tree.sampler;
 
 import distributions.Distribution_Equal;
 import distributions.Distribution_Normal;
-import game.GameUnified;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
 import game.action.*;
 import game.state.IState;
-import game.state.State;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,7 +30,7 @@ public class Sampler_UCBTest {
     private IState s1, s1_1, s1_1_1, s2, s2_2;
     private NodeQWOPExplorableBase<?, CommandQWOP> root, n1, n1_1, n1_1_1, n2, n2_2;
 
-    private IState failedState = mock(State.class);
+    private IState failedState = mock(StateQWOP.class);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
@@ -44,7 +45,7 @@ public class Sampler_UCBTest {
          */
         when(failedState.isFailed()).thenReturn(true);
 
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
         ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
 
         ActionList<CommandQWOP> alist1 = new ActionList<>(new Distribution_Equal<>());
@@ -59,7 +60,7 @@ public class Sampler_UCBTest {
                 new ActionGenerator_FixedSequence<>(new ActionList[] {alist1,
                 alist2});
 
-        root = new NodeQWOPExplorable<>(GameUnified.getInitialState(), generator);
+        root = new NodeQWOPExplorable<>(GameQWOP.getInitialState(), generator);
 
         // Node 1 off root.
         a1 = root.getUntriedActionByIndex(0);
@@ -92,7 +93,7 @@ public class Sampler_UCBTest {
         n1_1_1 = n1_1.addDoublyLinkedChild(a1_1_1, s1_1_1);
 
         // Node 2 off root.
-        game.makeNewWorld();
+        game.resetGame();
         a2 = root.getUntriedActionByIndex(0);
         Assert.assertEquals(alist1.get(1), a2);
         actionQueue.addAction(a2);
@@ -126,7 +127,7 @@ public class Sampler_UCBTest {
 //        Assert.assertEquals(5f, n2_2.getValue(), 1e-12f); // Changing the evaluation function shouldn't change the
 //        // results when the rollout is doing the evaluating.
 //
-//        IState failedState = mock(State.class);
+//        IState failedState = mock(StateQWOP.class);
 //        when(failedState.isFailed()).thenReturn(true);
 //
 //        NodeQWOPExplorableBase<?> badNode = n1_1_1.addDoublyLinkedChild(new Action(1010101, false, false, false,
@@ -165,7 +166,7 @@ public class Sampler_UCBTest {
 
         // Now make node 2 not have any untried potential children. It should decide to go deeper.
         NodeQWOPExplorableBase<?, CommandQWOP> n2_1 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(),
-                GameUnified.getInitialState());
+                GameQWOP.getInitialState());
         NodeQWOPExplorableBase<?, CommandQWOP> n2_3 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(), failedState);
         Assert.assertEquals(0, n2.getUntriedActionCount());
 
@@ -222,9 +223,9 @@ public class Sampler_UCBTest {
 
         ActionGenerator_FixedActions<CommandQWOP> generator = new ActionGenerator_FixedActions<>(actionList);
         NodeQWOPExplorableBase<?, CommandQWOP> n2_1 = n2.addDoublyLinkedChild(n2.getUntriedActionRandom(),
-                GameUnified.getInitialState(), generator);
+                GameQWOP.getInitialState(), generator);
 
-        // Based on the really narrow normal distribution, should always return this duration action.
+        // Based on the really narrow normal distribution, should always return this duration command.
         for (int i = 0; i < 100; i++) {
             expansionAction = sampler.expansionPolicy(n2_1);
             Assert.assertEquals(5, expansionAction.getTimestepsTotal());

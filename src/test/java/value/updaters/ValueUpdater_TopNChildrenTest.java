@@ -1,9 +1,9 @@
 package value.updaters;
 
 import game.action.Action;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
-import game.state.State;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 import tree.node.NodeQWOPExplorable;
@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 
 public class ValueUpdater_TopNChildrenTest {
 
-    private IState unfailedState = mock(State.class);
+    private IState unfailedState = mock(StateQWOP.class);
     private Action a1 = new Action(1, CommandQWOP.WO);
     private Action a2 = new Action(2, CommandQWOP.O);
     private Action a3 = new Action(3, CommandQWOP.W);

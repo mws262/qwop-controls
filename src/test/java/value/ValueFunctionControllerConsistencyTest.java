@@ -1,9 +1,9 @@
 package value;
 
-import game.GameConstants;
-import game.GameUnified;
+import game.qwop.QWOPConstants;
+import game.qwop.GameQWOP;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,7 +31,7 @@ public class ValueFunctionControllerConsistencyTest {
 
     @Test
     public void controllerConsistency_test() throws IOException {
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
         File modelFile = new File("src/test/resources/test_models/small_net.pb");
         Assert.assertTrue(modelFile.exists());
         ValFunSandbox valFun = new ValFunSandbox(modelFile, game);
@@ -55,13 +55,13 @@ public class ValueFunctionControllerConsistencyTest {
 
     class ValFunSandbox extends ValueFunction_TensorFlow_StateOnly {
 
-        public ValFunSandbox(File file, GameUnified gameTemplate) throws FileNotFoundException {
+        public ValFunSandbox(File file, GameQWOP gameTemplate) throws FileNotFoundException {
             super(file, gameTemplate, false);
             assignFuturePredictors(gameTemplate);
         }
 
         // Overridden because these parameters are frequently messed with outside the test.
-        private void assignFuturePredictors(GameUnified gameTemplate) {
+        private void assignFuturePredictors(GameQWOP gameTemplate) {
             evaluations = new ArrayList<>();
             evalResults = new ArrayList<>();
             evaluations.add(new FuturePredictorSandbox(gameTemplate, CommandQWOP.Keys.none, 1, 10));
@@ -77,15 +77,15 @@ public class ValueFunctionControllerConsistencyTest {
 
         class FuturePredictorSandbox extends FuturePredictor {
 
-            FuturePredictorSandbox(GameUnified gameTemplate, CommandQWOP.Keys keys, int minHorizon, int maxHorizon) {
+            FuturePredictorSandbox(GameQWOP gameTemplate, CommandQWOP.Keys keys, int minHorizon, int maxHorizon) {
                 super(gameTemplate, keys, minHorizon, maxHorizon);
             }
 
             @Override
             public EvaluationResult call() {
-                gameLocal.makeNewWorld();
+                gameLocal.resetGame();
                 gameLocal.setState(startingState);
-                gameLocal.iterations = 4 * GameConstants.physIterations;
+                gameLocal.iterations = 4 * QWOPConstants.physIterations;
 
                 // Reset the game and set it to the specified starting state.
                 bestResult.value = -Float.MAX_VALUE;
@@ -99,7 +99,7 @@ public class ValueFunctionControllerConsistencyTest {
                 for (int i = 1; i <= maxHorizon; i++) {
                     // Return to the normal number of physics iterations after the first step.
                     if (i > 2) {
-                        gameLocal.iterations = GameConstants.physIterations;
+                        gameLocal.iterations = QWOPConstants.physIterations;
                     }
 
                     gameLocal.step(command);

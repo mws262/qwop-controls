@@ -38,7 +38,7 @@ public class Sampler_Deterministic<C extends Command<?>> implements ISampler<C> 
             if (currentNode.getUntriedActionCount() != 0 && currentNode.reserveExpansionRights())
                 return currentNode;
 
-            // Get the first child with some untried game.action after it, or at least a not-fully-explored one.
+            // Get the first child with some untried game.command after it, or at least a not-fully-explored one.
             for (NodeQWOPExplorableBase<?, C> child : currentNode.getChildren()) {
                 if (child.getUntriedActionCount() > 0 && child.reserveExpansionRights()) {
                     return child;
@@ -65,7 +65,7 @@ public class Sampler_Deterministic<C extends Command<?>> implements ISampler<C> 
         if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
-        return startNode.getUntriedActionByIndex(0); // Get the first available untried game.action.
+        return startNode.getUntriedActionByIndex(0); // Get the first available untried game.command.
     }
 
     @Override

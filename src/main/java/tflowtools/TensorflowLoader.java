@@ -61,7 +61,7 @@ public abstract class TensorflowLoader implements AutoCloseable {
      * Simple prediction from the model where we give a state and expect a list of floats out.
      * Only applies when a single output (could be multi-element though) is required from the graph.
      *
-     * @param state      State to feed into the computational graph.
+     * @param state      StateQWOP to feed into the computational graph.
      * @param inputName  Name of the graph input to shove the state into.
      * @param outputName Name of the graph output to fetch.
      * @return List of values returned by the specified graph output.
@@ -113,7 +113,7 @@ public abstract class TensorflowLoader implements AutoCloseable {
     }
 
     /**
-     * Make a State object into a 72-element array the way TensorFlow wants it. This method also subtracts the torso
+     * Make a StateQWOP object into a 72-element array the way TensorFlow wants it. This method also subtracts the torso
      * x-component out of all body parts.
      *
      * @param state Input state to flatten into an array.

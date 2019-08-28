@@ -3,8 +3,8 @@ package ui.scatterplot;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
 import game.state.IState;
-import game.state.State;
-import game.state.StateVariable;
+import game.qwop.StateQWOP;
+import game.state.StateVariable6D;
 import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
 import org.jfree.chart.plot.XYPlot;
@@ -109,8 +109,8 @@ public class PanelPlot_Controls<C extends Command<?>> extends PanelPlot<C> imple
                             NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Command duration");
-            pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +
-                    StateVariable.StateName.values()[count].toString());
+            pl.getDomainAxis().setLabel(StateQWOP.ObjectName.values()[firstPlotRow].toString() + " " +
+                    StateVariable6D.StateName.values()[count].toString());
 
             dat.addSeries(0, xData, yData, cData);
             setPlotBoundsFromData(pl, xData, yData);

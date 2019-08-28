@@ -1,23 +1,17 @@
 package tflowtools;
 
 import com.google.common.base.Preconditions;
+import game.state.IState;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Random;
 
 public abstract class SoftmaxPolicyNetwork extends TrainableNetwork {
-
     /**
      * RNG for selecting actions on a distribution. Has a fixed seed for repeatability.
      */
     protected final Random random = new Random(1);
-
-    /**
-     * Constructor runs a quick test to make sure that the provided network puts out a distribution summing to 1.
-     * This is the amount of floating point error allowed in this test.
-     */
-    private final float softmaxTol = 1e-5f;
 
     /**
      * Create a new network. Use the factory methods externally.
@@ -40,35 +34,37 @@ public abstract class SoftmaxPolicyNetwork extends TrainableNetwork {
         for (float f : testOutput[0]) {
             cumulativeOutput += f;
         }
+
+        // Constructor runs a quick test to make sure that the provided network puts out a distribution summing to 1.
+        // This is the amount of floating point error allowed in this test.
+        float softmaxTol = 1e-5f;
         if (Math.abs(1 - Math.abs(cumulativeOutput)) > softmaxTol) {
             throw new IllegalArgumentException("Given graph file, " + graphDefinition.getName() + ", did not seem to " +
                     "put out a valid probability distribution. For a test input, the output distribution summed to " + cumulativeOutput);
         }
     }
 
-
     /**
      * Given a state vector input, get the policy's distribution of which actions to take. For a greedy controller,
-     * just take the action with the index of the max element of the returned distribution.
-     * @param state State vector.
+     * just take the command with the index of the max element of the returned distribution.
+     * @param state StateQWOP vector.
      * @return
      */
-    public float[] evaluateActionDistribution(float[] state) {
+    public float[] evaluateActionDistribution(IState state) {
+        Preconditions.checkArgument(state.getStateSize() == getLayerSizes()[0], "Input state should match the dimension of " +
+                "the input layer of the network.", state.getStateSize(), getLayerSizes()[0]);
 
-        Preconditions.checkArgument(state.length == getLayerSizes()[0], "Input state should match the dimension of " +
-                "the input layer of the network.", state.length, getLayerSizes()[0]);
-
-        float[][] input = new float[][] {state};
+        float[][] input = new float[][] {state.flattenState()};
         float[][] output = evaluateInput(input);
         return output[0];
     }
 
     /**
-     * Get the action index with the highest value on the distribution produced by evaluating the net.
+     * Get the command index with the highest value on the distribution produced by evaluating the net.
      * @param state Current state vector.
-     * @return Index of the discrete action that is most likely correct (according to the policy).
+     * @return Index of the discrete command that is most likely correct (according to the policy).
      */
-    public int policyGreedy(float[] state) {
+    public int policyGreedy(IState state) {
         float[] distribution = evaluateActionDistribution(state);
 
         float bestVal = -Float.MAX_VALUE;
@@ -83,11 +79,11 @@ public abstract class SoftmaxPolicyNetwork extends TrainableNetwork {
     }
 
     /**
-     * Get an action index randomly selected on the distribution returned by evaluating the policy network.
+     * Get an command index randomly selected on the distribution returned by evaluating the policy network.
      * @param state Current state vector.
-     * @return Index of a discrete action.
+     * @return Index of a discrete command.
      */
-    public int policyOnDistribution(float[] state) {
+    public int policyOnDistribution(IState state) {
         float[] distribution = evaluateActionDistribution(state);
         float selection = random.nextFloat();
 

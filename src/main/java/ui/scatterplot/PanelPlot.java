@@ -148,7 +148,7 @@ public abstract class PanelPlot<C extends Command<?>> extends JPanel implements 
     }
 
     /**
-     * Add some labels for which action led to this state. Hackish.
+     * Add some labels for which command led to this state. Hackish.
      */
     public void addCommandLegend(XYPlot pl) {
         double axisDUB = pl.getDomainAxis().getUpperBound();

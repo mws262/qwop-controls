@@ -1,9 +1,9 @@
 package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import tree.node.evaluator.EvaluationFunction_SqDistFromOther;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.state.IState;
 import tree.node.NodeQWOPExplorableBase;
 import tree.node.NodeQWOPGraphicsBase;
@@ -103,7 +103,7 @@ public class PanelRunner_Comparison extends PanelRunner {
 
         if (selectedNode != null && selectedNode.getState() != null) {
             for (int i = 0; i < states.size(); i++) {
-                GameUnified.drawExtraRunner(g2, states.get(i), "", runnerScaling,
+                GameQWOP.drawExtraRunner(g2, states.get(i), "", runnerScaling,
                         xOffsetPixels + (int) (-runnerScaling * focusNodes.get(i).getState().getCenterX()), yOffsetPixels,
                         colors.get(i), strokes.get(i));
             }

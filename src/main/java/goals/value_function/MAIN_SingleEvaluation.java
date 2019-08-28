@@ -1,10 +1,10 @@
 package goals.value_function;
 
-import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
-import game.state.IState;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.Utility;
@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static game.qwop.IStateQWOP.ObjectName;
+
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
 
@@ -31,7 +33,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         Utility.loadLoggerConfiguration();
     }
 
-    GameUnified game = new GameUnified(); // new GameUnifiedCaching(1,2);
+    GameQWOP game = new GameQWOP(); // new GameQWOPCaching(1,2);
 
     private boolean doFullGameSerialization = false;
 
@@ -109,9 +111,9 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
     private NodeQWOPExplorable doPrefix() {
 
-        NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState());
+        NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameQWOP.getInitialState());
 
-        // Assign a "prefix" of game.action, since I'm not sure if the controller will generalize to this part of running.
+        // Assign a "prefix" of game.command, since I'm not sure if the controller will generalize to this part of running.
         List<Action<CommandQWOP>[]> alist = new ArrayList<>();
         alist.add(new Action[]{
                 new Action<>(7, CommandQWOP.NONE),
@@ -155,10 +157,12 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         return currNode;
     }
 
-    private void doControlled(NodeQWOPExplorable currentNode) {
+    private void doControlled(NodeQWOPExplorable<CommandQWOP> currentNode) {
 
         // Run the controller until failure.
-        while (currentNode.getState().getStateVariableFromName(IState.ObjectName.BODY).getY() < 30) { // Ends if the
+        // TODO fix cast
+        while (((StateQWOP)(currentNode.getState())).getStateVariableFromName(ObjectName.BODY).getY() < 30) { // Ends if
+            // the
             // runner
             // falls off the
             // edge of the world.

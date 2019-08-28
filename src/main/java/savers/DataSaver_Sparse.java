@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Saver for sparse game information. Basically this includes game.action
+ * Saver for sparse game information. Basically this includes game.command
  * needed to recreate a run, but not full state information at every timestep.
  *
  * @author matt

@@ -6,7 +6,7 @@ learning_rate = 1e-3
 input_size = 4
 output_size = 2
 ## Define the network
-# State input
+# StateQWOP input
 input = tf.placeholder(tf.float32, shape=(None, input_size), name='input')
 # Action target
 output_target = tf.placeholder(tf.float32, shape=(None, output_size), name='output_target')  # Some values, same dim as the output layer, used in figuring out the loss.
@@ -24,7 +24,7 @@ advantage = tflow_utility.sequential_layers(pre_split_output, (4, 4, output_size
 output = value + tf.subtract(advantage, tf.reduce_mean(advantage, axis=1, keepdims=True))
 ouput = tf.identity(output, name="output")
 
-# Mask Q by the applicable action.
+# Mask Q by the applicable command.
 Qscalar = tf.reduce_sum(output * output_target, axis=1)
 
 # TODO PER weighting

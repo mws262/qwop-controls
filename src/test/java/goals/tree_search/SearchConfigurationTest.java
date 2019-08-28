@@ -5,10 +5,11 @@ import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
 import distributions.Distribution_Equal;
 import distributions.Distribution_Normal;
-import game.GameUnified;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
 import game.action.*;
+import game.qwop.StateQWOP;
 import game.state.IState;
-import game.state.State;
 import game.state.transform.Transform_Identity;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,7 +42,7 @@ import java.util.List;
 
 public class SearchConfigurationTest {
 
-    private final IState testState1 = GameUnified.getInitialState();
+    private final IState testState1 = GameQWOP.getInitialState();
     private final NodeQWOPExplorable<CommandQWOP> sampleNode1 = new NodeQWOPExplorable<>(testState1,
             ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
 
@@ -50,7 +51,7 @@ public class SearchConfigurationTest {
 
     @Before
     public void setup() {
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
         for (int i = 0; i < 10; i++) {
             game.step(false, true, true, false);
         }
@@ -86,7 +87,7 @@ public class SearchConfigurationTest {
 
     @Test
     public void yamlAction() throws IOException {
-        File file = File.createTempFile("action", "yaml");
+        File file = File.createTempFile("command", "yaml");
         file.deleteOnExit();
         Action<CommandQWOP> action = new Action<>(52, CommandQWOP.WO).getCopy();
         SearchConfiguration.serializeToYaml(file, action);
@@ -252,7 +253,7 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("evalsqdist", "yaml");
         file.deleteOnExit();
         EvaluationFunction_SqDistFromOther<CommandQWOP> evaluationFunction =
-                new EvaluationFunction_SqDistFromOther<>(new State(new float[72], false));
+                new EvaluationFunction_SqDistFromOther<>(new StateQWOP(new float[72], false));
 
         SearchConfiguration.serializeToYaml(file, evaluationFunction);
         Assert.assertTrue(file.exists());
@@ -335,7 +336,7 @@ public class SearchConfigurationTest {
         File modelFile = File.createTempFile("valfunstatemodelcontrol", "pb");
         file.deleteOnExit();
 
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
         List<Integer> hiddenLayerSizes = new ArrayList<>();
         hiddenLayerSizes.add(2);
         hiddenLayerSizes.add(3);
@@ -391,7 +392,7 @@ public class SearchConfigurationTest {
         modelFile.deleteOnExit();
         file.deleteOnExit();
 
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
         List<Integer> hiddenLayerSizes = new ArrayList<>();
         hiddenLayerSizes.add(10);
         hiddenLayerSizes.add(3);
@@ -568,8 +569,8 @@ public class SearchConfigurationTest {
         Assert.assertNotNull(loaded);
         Assert.assertEquals(rollout.valueFunctionWeight, loaded.valueFunctionWeight, 1e-10f);
 
-        Assert.assertEquals(rollout.getIndividualRollout().rollout(sampleNode1, new GameUnified()),
-                loaded.getIndividualRollout().rollout(sampleNode1, new GameUnified()), 1e-10f);
+        Assert.assertEquals(rollout.getIndividualRollout().rollout(sampleNode1, new GameQWOP()),
+                loaded.getIndividualRollout().rollout(sampleNode1, new GameQWOP()), 1e-10f);
 
         Assert.assertEquals(rollout.getValueFunction().evaluate(sampleNode2),
                 loaded.getValueFunction().evaluate(sampleNode2), 1e-10f);
@@ -599,8 +600,8 @@ public class SearchConfigurationTest {
         Assert.assertNotNull(loaded);
         Assert.assertEquals(rollout.selectionCriteria, loaded.selectionCriteria);
         Assert.assertEquals(rollout.getIndividualRollout().getClass(), loaded.getIndividualRollout().getClass());
-        Assert.assertEquals(rollout.getIndividualRollout().rollout(sampleNode1, new GameUnified()),
-                loaded.getIndividualRollout().rollout(sampleNode1, new GameUnified()), 1e-10);
+        Assert.assertEquals(rollout.getIndividualRollout().rollout(sampleNode1, new GameQWOP()),
+                loaded.getIndividualRollout().rollout(sampleNode1, new GameQWOP()), 1e-10);
         rollout.close();
         loaded.close();
     }
@@ -829,8 +830,8 @@ public class SearchConfigurationTest {
         Assert.assertEquals(sampler.explorationRandomFactor, loaded.explorationRandomFactor, 1e-10f);
         Assert.assertEquals(sampler.getEvaluationFunction().getValue(sampleNode1),
                 loaded.getEvaluationFunction().getValue(sampleNode1), 1e-10f);
-        Assert.assertEquals(sampler.getRolloutPolicy().rollout(sampleNode2, new GameUnified()),
-                sampler.getRolloutPolicy().rollout(sampleNode2, new GameUnified()), 1e-10f);
+        Assert.assertEquals(sampler.getRolloutPolicy().rollout(sampleNode2, new GameQWOP()),
+                sampler.getRolloutPolicy().rollout(sampleNode2, new GameQWOP()), 1e-10f);
         sampler.close();
         loaded.close();
     }

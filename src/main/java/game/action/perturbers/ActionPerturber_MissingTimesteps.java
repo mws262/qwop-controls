@@ -10,7 +10,7 @@ import java.util.Map;
  * specified locations in the sequence.
  *
  * See {@link ActionPerturber_SwitchTooSoon} for an implementation which preserves the number of timesteps by moving
- * them from one action to the next.
+ * them from one command to the next.
  *
  * @author matt
  */
@@ -18,7 +18,7 @@ public class ActionPerturber_MissingTimesteps implements IActionPerturber{
 
     /**
      * Action indices as keys and number of timesteps to move as values. Timesteps are removed from the specified
-     * action without replacement anywhere else.
+     * command without replacement anywhere else.
      */
     private Map<Integer, Integer> perturbationIndexAndSize;
 

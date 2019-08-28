@@ -11,7 +11,7 @@ import game.state.IState;
  *
  * If this amount of functionality is not needed:
  * See {@link NodeQWOPExplorable} for just tree building functionality.
- * See {@link NodeQWOP} for just state and action storage.
+ * See {@link NodeQWOP} for just state and command storage.
  * See {@link NodeGeneric} for basic tree functionality without any QWOP specifics.
  *
  *

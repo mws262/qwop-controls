@@ -309,7 +309,7 @@ public class World implements Externalizable {
 		}
 		j.m_body2.m_jointList = j.m_node2;
 
-		// If the joint prevents collisions, then reset collision filtering
+		// If the joint prevents collisions, then resetGame collision filtering
 		if (!def.collideConnected) {
 			// Reset the proxies on the body with the minimum number of shapes.
 			final Body b = def.body1.m_shapeCount < def.body2.m_shapeCount ? def.body1
@@ -388,7 +388,7 @@ public class World implements Externalizable {
 		assert m_jointCount > 0;
 		--m_jointCount;
 
-		// If the joint prevents collisions, then reset collision filtering.
+		// If the joint prevents collisions, then resetGame collision filtering.
 		if (!collideConnected) {
 			// Reset the proxies on the body with the minimum number of shapes.
 			final Body b = body1.m_shapeCount < body2.m_shapeCount ? body1 : body2;

@@ -2,8 +2,8 @@ package tree.node;
 
 import game.action.Action;
 import game.IGameInternal;
-import game.action.CommandQWOP;
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,7 +62,7 @@ public class NodeQWOPTest {
 
     private List<NodeQWOP> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
 
-        // Some sample game.action (mocked).
+        // Some sample game.command (mocked).
     private Action<CommandQWOP>
                 a1 = new Action<>(10, CommandQWOP.Q),
                 a2 = new Action<>(15, CommandQWOP.W),
@@ -70,9 +70,9 @@ public class NodeQWOPTest {
                 a4 = new Action<>(20, CommandQWOP.P);
 
     // Some states (mocked).
-    private State initialState = mock(State.class);
-    private State unfailedState = mock(State.class);
-    private State failedState = mock(State.class);
+    private StateQWOP initialState = mock(StateQWOP.class);
+    private StateQWOP unfailedState = mock(StateQWOP.class);
+    private StateQWOP failedState = mock(StateQWOP.class);
 
     private IGameInternal<CommandQWOP> game = mock(IGameInternal.class);
 

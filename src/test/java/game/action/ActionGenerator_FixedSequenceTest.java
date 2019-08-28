@@ -1,7 +1,8 @@
 package game.action;
 
 import distributions.Distribution_Equal;
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,7 +20,7 @@ public class ActionGenerator_FixedSequenceTest {
     private ActionList[] allActionLists;
     private Set<Action> aset1, aset2, aset3, aset4;
 
-    private State st = mock(State.class);
+    private StateQWOP st = mock(StateQWOP.class);
     private Action act = mock(Action.class);
 
     private Action actionException = new Action(100, CommandQWOP.O);
@@ -79,7 +80,7 @@ public class ActionGenerator_FixedSequenceTest {
 
     @Test
     public void singleLengthSequence() {
-        // If only one action list is given, then the available actions will always be the same.
+        // If only one command list is given, then the available actions will always be the same.
         int numNodes = 10;
         for (ActionList alist : allActionLists) {
             ActionGenerator_FixedSequence gen = new ActionGenerator_FixedSequence(new ActionList[]{alist});
@@ -205,7 +206,7 @@ public class ActionGenerator_FixedSequenceTest {
 
                 Set<Action> allPossibleActions = gen.getAllPossibleActions();
                 Assert.assertEquals(failMsg, allActionsInSequence.size() + 1, allPossibleActions.size()); // +1 for
-                // action exception.
+                // command exception.
                 ActionList alistCopy = allActionsInSequence.getCopy();
                 alistCopy.add(actionException);
                 Assert.assertTrue(failMsg, alistCopy.containsAll(allPossibleActions));

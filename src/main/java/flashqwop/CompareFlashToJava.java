@@ -1,8 +1,8 @@
 package flashqwop;
 
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.action.Action;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
 import tree.node.NodeQWOP;
 import ui.runner.PanelRunner_MultiState;
@@ -18,18 +18,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CompareFlashToJava extends FlashGame {
-    private GameUnified gameJava = new GameUnified();
+    private GameQWOP gameJava = new GameQWOP();
     private PanelRunner_MultiState panelRunner;
     private boolean initialized;
 
     private ValueFunction_TensorFlow<CommandQWOP> valueFunction = null;
 
-    private List<GameUnified> gameUnifiedList = new ArrayList<>();
+    private List<GameQWOP> gameQWOPList = new ArrayList<>();
 
     private CompareFlashToJava() {
         loadController();
 
-        getControlAction(GameUnified.getInitialState()); // TODO make this better. The first controller evaluation ever
+        getControlAction(GameQWOP.getInitialState()); // TODO make this better. The first controller evaluation ever
         // takes 8 times longer than the rest. I don't know why. In the meantime, just do the first evaluation in a
         // non-time-critical section of the code. In the long term, the controller should be an anytime approach
         // anyway.
@@ -41,7 +41,7 @@ public class CompareFlashToJava extends FlashGame {
 //        printGameInfo();
         restart();
 
-        gameUnifiedList.add(gameJava);
+        gameQWOPList.add(gameJava);
 
         panelRunner = new PanelRunner_MultiState("Runners");
         JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
@@ -110,10 +110,10 @@ public class CompareFlashToJava extends FlashGame {
         }
 
         if (timestep == 0) {
-            gameJava.makeNewWorld();
+            gameJava.resetGame();
             gameJava.iterations = 15;
-            gameUnifiedList.clear();
-            gameUnifiedList.add(gameJava);
+            gameQWOPList.clear();
+            gameQWOPList.add(gameJava);
 
         } else {
             int tp = 0;
@@ -121,14 +121,14 @@ public class CompareFlashToJava extends FlashGame {
                     gameJava.iterations = 5;
 
 //            if (timestep % 160 == 0) {
-//                GameUnified newGame = new GameUnified();
+//                GameQWOP newGame = new GameQWOP();
 //                newGame.setState(state);
-//                gameUnifiedList.add(newGame);
+//                gameQWOPList.add(newGame);
 //            }
 //            //            gameJava.fullStatePDController(state);
 //            panelRunner.clearSecondaryStates();
 //            int idx = 0;
-//            for (GameUnified game : gameUnifiedList) {
+//            for (GameQWOP game : gameQWOPList) {
 //                game.step(command);
 //                panelRunner.addSecondaryState(game.getCurrentState(), Node.getColorFromTreeDepth(idx++));
 //
@@ -147,7 +147,7 @@ public class CompareFlashToJava extends FlashGame {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/small_net.pb"), new GameUnified(), false); // state_only.pb"));
+                    "/small_net.pb"), new GameQWOP(), false); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

@@ -1,6 +1,6 @@
 package goals.cold_start_analysis;
 
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import ui.runner.PanelRunner_MultiState;
 
 import javax.swing.*;
@@ -19,7 +19,7 @@ public abstract class CompareWarmStartToColdBase extends JFrame {
     PanelRunner_MultiState runnerPanel;
 
     CompareWarmStartToColdBase() {
-        // Vis makeNewWorld.
+        // Vis resetGame.
         runnerPanel = new PanelRunner_MultiState("Runners");
         runnerPanel.activateTab();
         getContentPane().add(runnerPanel);
@@ -36,8 +36,8 @@ public abstract class CompareWarmStartToColdBase extends JFrame {
      * @return A QWOP game which has been run for a specified number of timesteps with no control inputs.
      */
     @SuppressWarnings("SameParameterValue")
-    GameUnified getFakedWarmStart(int timesteps) {
-        GameUnified game = new GameUnified();
+    GameQWOP getFakedWarmStart(int timesteps) {
+        GameQWOP game = new GameQWOP();
         for (int i = 0; i < timesteps; i++) {
             game.step(false, false, false, false);
         }
