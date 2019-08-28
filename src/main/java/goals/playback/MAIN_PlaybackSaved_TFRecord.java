@@ -1,12 +1,12 @@
 package goals.playback;
 
 import data.TFRecordDataParsers;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tensorflow.example.SequenceExample;
@@ -87,8 +87,8 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
 
         Collections.shuffle(playbackFiles);
 
-        IGameInternal<CommandQWOP> gameForActionSim = new GameUnified();
-        IGameInternal<CommandQWOP> gameForCommandSim = new GameUnified();
+        IGameInternal<CommandQWOP> gameForActionSim = new GameQWOP();
+        IGameInternal<CommandQWOP> gameForCommandSim = new GameQWOP();
 
         // Load files one at a time.
         for (File tfrecordFile : playbackFiles) {
@@ -108,7 +108,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
             // Playback each sequence one at a time.
             for (SequenceExample seq : dataSeries) {
                 // Pull the states out of the Protobuf-like structure.
-                State[] stateVars = TFRecordDataParsers.getStatesFromLoadedSequence(seq);
+                StateQWOP[] stateVars = TFRecordDataParsers.getStatesFromLoadedSequence(seq);
                 List<Action<CommandQWOP>> actions = TFRecordDataParsers.getActionsFromLoadedSequence(seq);
                 CommandQWOP[] commands = TFRecordDataParsers.getCommandSequenceFromLoadedSequence(seq);
 
@@ -118,8 +118,8 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                 ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
                 actionQueue.addSequence(actions);
 
-                gameForActionSim.makeNewWorld();
-                gameForCommandSim.makeNewWorld();
+                gameForActionSim.resetGame();
+                gameForCommandSim.resetGame();
 
                 for (int i = 0; i < stateVars.length - 1; i++) {
                     runnerPane.clearSecondaryStates();
@@ -127,7 +127,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                     runnerPane.addSecondaryState(gameForActionSim.getCurrentState(), Color.RED);
                     runnerPane.addSecondaryState(gameForCommandSim.getCurrentState(), Color.BLUE);
                     if (actionQueue.isEmpty()) {
-                        logger.warn("Game.action ended before states did.");
+                        logger.warn("Game.command ended before states did.");
                     } else {
                         CommandQWOP actionQueueCommand = actionQueue.pollCommand();
                         gameForActionSim.step(actionQueueCommand);
@@ -135,7 +135,7 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
                     }
 //                    if (!Arrays.equals(actionQueueCommand, commands[i])) {
 //                        throw new RuntimeException("Commands taken from Action and boolean sources of the TFRecord do" +
-//                                " not match. Issue happened at action index: " + actionQueue.getCurrentActionIdx() +
+//                                " not match. Issue happened at command index: " + actionQueue.getCurrentActionIdx() +
 //                                ", and timestep: " + i + ". Queue says: " + actionQueueCommand[0] + "," +
 //                                actionQueueCommand[1] + "," + actionQueueCommand[2] + "," + actionQueueCommand[3] +
 //                                "; commands say " + commands[i][0] + ", " + commands[i][1] + ", " + commands[i][2] +

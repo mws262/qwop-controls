@@ -1,8 +1,8 @@
 package tree;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import game.GameUnified;
-import game.GameUnifiedCaching;
+import game.qwop.GameQWOP;
+import game.qwop.GameQWOPCaching;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
@@ -167,13 +167,13 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     }
 
     /**
-     * Make a worker that uses {@link GameUnified} under the hood.
+     * Make a worker that uses {@link GameQWOP} under the hood.
      * @return A brand new TreeWorker.
      */
     public static <C extends Command<?>> TreeWorker<C> makeStandardTreeWorker(ISampler<C> sampler,
                                                                               IDataSaver<C> saver) {
         TreeWorker<C> treeWorker = new TreeWorker<>(sampler, saver);
-        treeWorker.game = (IGameInternal<C>) new GameUnified(); // FIXME need a generic game here too.
+        treeWorker.game = (IGameInternal<C>) new GameQWOP(); // FIXME need a generic game here too.
         return treeWorker;
     }
 
@@ -183,16 +183,16 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     }
 
     /**
-     * Make a worker that uses {@link game.GameUnifiedCaching} under the hood.
+     * Make a worker that uses {@link GameQWOPCaching} under the hood.
      * @return A brand new TreeWorker.
      */
     public static <C extends Command<?>> TreeWorker<C> makeCachedStateTreeWorker(ISampler<C> sampler,
                                                                                  IDataSaver<C> saver,
                                                                                  int timestepDelay,
                                                                                  int numDelayedStates,
-                                                                                 GameUnifiedCaching.StateType stateType) {
+                                                                                 GameQWOPCaching.StateType stateType) {
         TreeWorker<C> treeWorker = new TreeWorker<>(sampler, saver);
-        treeWorker.game = (IGameInternal<C>) new GameUnifiedCaching(timestepDelay, numDelayedStates, stateType); //
+        treeWorker.game = (IGameInternal<C>) new GameQWOPCaching(timestepDelay, numDelayedStates, stateType); //
         // FIXME generic game
         return treeWorker;
     }
@@ -201,7 +201,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     public static <C extends Command<?>> TreeWorker<C> makeCachedStateTreeWorker(ISampler<C> sampler,
                                                                               int timestepDelay,
                                                                               int numDelayedStates,
-                                                                              GameUnifiedCaching.StateType stateType) {
+                                                                              GameQWOPCaching.StateType stateType) {
         return makeCachedStateTreeWorker(sampler, new DataSaver_Null<>(), timestepDelay, numDelayedStates, stateType);
     }
 
@@ -252,14 +252,14 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
                     break;
                 case INITIALIZE:
                     actionQueue.clearAll();
-                    game.makeNewWorld(); // Create a new game world.
-                    saver.reportGameInitialization(GameUnified.getInitialState());
+                    game.resetGame(); // Create a new game world.
+                    saver.reportGameInitialization(GameQWOP.getInitialState());
                     currentGameNode = rootNode;
                     changeStatus(Status.TREE_POLICY_CHOOSING);
 
                     break;
                 case TREE_POLICY_CHOOSING: // Picks a target leaf node within the tree to get to.
-                    if (game.getFailureStatus())
+                    if (game.isFailed())
                         throw new RuntimeException("Tree policy operates only within an existing tree. We should not " +
                                 "find failures in here.");
 
@@ -286,7 +286,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
                             actionSequence.clear();
 
                             targetNodeToTest = expansionNode;
-                            if (targetNodeToTest.getTreeDepth() != 0) { // No action sequence to add if target node
+                            if (targetNodeToTest.getTreeDepth() != 0) { // No command sequence to add if target node
                                 // is root (we're already there!).
                                 actionQueue.addSequence(targetNodeToTest.getSequence(actionSequence));
                             }
@@ -296,11 +296,11 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
                     break;
                 case TREE_POLICY_EXECUTING:
 
-                    executeNextOnQueue(); // Execute a single timestep with the game.action that have been queued.
-                    assert !game.getFailureStatus() : "Game encountered a failure while executing the tree policy. The tree " +
+                    executeNextOnQueue(); // Execute a single timestep with the game.command that have been queued.
+                    assert !game.isFailed() : "Game encountered a failure while executing the tree policy. The tree " +
                             "policy should be safe, since it's ground that's been covered before.";
 
-                    // When all game.action in queue are done, figure out what to do next.
+                    // When all game.command in queue are done, figure out what to do next.
                     if (actionQueue.isEmpty()) {
                         currentGameNode = targetNodeToTest;
                         assert currentGameNode.getUntriedActionCount() > 0;
@@ -322,11 +322,11 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
                     break;
                 case EXPANSION_POLICY_EXECUTING:
 
-                    executeNextOnQueue(); // Execute a single timestep with the game.action that have been queued.
+                    executeNextOnQueue(); // Execute a single timestep with the game.command that have been queued.
 
                     // When done, record state and go back to choosing. If failed, the sampler guards will tell us.
-                    if (actionQueue.isEmpty() || game.getFailureStatus()) {
-                        // TODO possibly update the action to what was actually possible until the runner fell.
+                    if (actionQueue.isEmpty() || game.isFailed()) {
+                        // TODO possibly update the command to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
                         assert currentGameNode.isLocked();
                         currentGameNode = currentGameNode.addDoublyLinkedChild(targetActionToTest,
@@ -380,7 +380,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     }
 
     /**
-     * Pop the next action off the queue and execute one timestep.
+     * Pop the next command off the queue and execute one timestep.
      */
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {

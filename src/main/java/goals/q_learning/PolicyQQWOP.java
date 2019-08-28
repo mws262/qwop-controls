@@ -1,17 +1,18 @@
 package goals.q_learning;
 
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PolicyQQWOP {
 
-    private final GameUnified game = new GameUnified();
+    private final GameQWOP game = new GameQWOP();
     private PolicyQNetwork net;
     private List<Action<CommandQWOP>> allowedActions;
     private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
@@ -26,31 +27,35 @@ public class PolicyQQWOP {
 
     // Returns the first ts in a game. Is a forward-linked list.
     public float[] playGame() {
-        game.makeNewWorld();
+        game.resetGame();
         boolean done = false;
 
         PolicyQNetwork.Timestep firstTs = new PolicyQNetwork.Timestep();
         PolicyQNetwork.Timestep prevTs = null;
         PolicyQNetwork.Timestep currentTs = firstTs;
-        float prevX = GameUnified.getInitialState().getCenterX();
+        float prevX = GameQWOP.getInitialState().getCenterX();
         int total = 0;
-        int actionIdx = 0;
+        float[] oneHotCommand = null;
         while (!done && total < 2000) {
 
             net.addTimestep(currentTs);
 
-            currentTs.state = game.getCurrentState().flattenState();
+            currentTs.state = game.getCurrentState();
             if (actionQueue.isEmpty()) {
-                actionIdx = net.policyExplore(currentTs.state);
+                int actionIdx = net.policyExplore(currentTs.state);
                 actionQueue.addAction(allowedActions.get(actionIdx));
+                oneHotCommand = new float[allowedActions.size()];
+                oneHotCommand[actionIdx] = 1;
             }
-            currentTs.action = actionIdx;
 
-            game.step(actionQueue.pollCommand());
+            CommandQWOP command = actionQueue.pollCommand();
+            currentTs.commandOneHot = Objects.requireNonNull(oneHotCommand);
+
+            game.step(command);
             float currX = game.getCurrentState().getCenterX();
             currentTs.reward = currX - prevX;
             prevX = currX;
-            done = game.getFailureStatus();
+            done = game.isFailed();
 
             if (prevTs != null) {
                 prevTs.nextTs = currentTs;
@@ -66,21 +71,21 @@ public class PolicyQQWOP {
     }
 
 //    public void justEvaluate() {
-//        game.reset();
+//        game.resetGame();
 //        int ts = 0;
 //        while (!cartPole.isDone()) {
 //            float[] state = CartPole.toFloatArray(cartPole.getCurrentState());
-//            int action = net.policyGreedy(state);
-//            cartPole.step(action);
+//            int command = net.policyGreedy(state);
+//            cartPole.step(command);
 //            ts++;
-//            System.out.print(action);
+//            System.out.print(command);
 //        }-
 //        System.out.println("Greedy evaluation went for: " + ts);
 //    }
 
     public static void main(String[] args) throws FileNotFoundException {
         List<Integer> layerSizes = new ArrayList<>();
-        layerSizes.add(GameUnified.STATE_SIZE);
+        layerSizes.add(GameQWOP.STATE_SIZE);
         layerSizes.add(20);
         layerSizes.add(15);
         layerSizes.add(3);

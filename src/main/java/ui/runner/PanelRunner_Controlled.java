@@ -2,12 +2,12 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
-import game.GameConstants;
-import game.GameUnified;
+import game.qwop.QWOPConstants;
+import game.qwop.GameQWOP;
 import game.IGameSerializable;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
 import tree.node.NodeQWOPExplorable;
 
@@ -61,7 +61,7 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
     public final String name;
 
     /**
-     * If the controller needs an assigned action generator for nodes, then this can be externally set. Not the best
+     * If the controller needs an assigned command generator for nodes, then this can be externally set. Not the best
      * solution, but not many controllers need this anyway.
      */
     public IActionGenerator<CommandQWOP> actionGenerator;
@@ -245,7 +245,7 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
          * Reset the game.
          */
         public void reset() {
-            game.makeNewWorld();
+            game.resetGame();
             actionQueue.clearAll();
             actionQueue.addAction(new Action<>(7, CommandQWOP.NONE));
             node = null;
@@ -281,9 +281,9 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
                     }
                     applyDisturbance(game);
                     game.step(actionQueue.pollCommand());
-                    currentGameX = (game.getCurrentState().getCenterX() - GameUnified.getInitialState().getCenterX()) / GameConstants.worldScale;
+                    currentGameX = (game.getCurrentState().getCenterX() - GameQWOP.getInitialState().getCenterX()) / QWOPConstants.worldScale;
                     gameDistance.setText(String.format("%.1fm  %.1fs",
-                            currentGameX, game.getTimestepsThisGame() * GameConstants.timestep));
+                            currentGameX, game.getTimestepsThisGame() * QWOPConstants.timestep));
 
                     if (tsDelay > 0) {
                         try {

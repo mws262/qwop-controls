@@ -3,8 +3,8 @@ package goals.value_function;
 import game.action.Action;
 import flashqwop.FlashGame;
 import flashqwop.FlashStateLogger;
-import game.GameUnified;
-import game.action.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jblas.util.Random;
 import tree.node.NodeQWOP;
-import tree.Utility;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 import vision.VisionDataSaver;
@@ -78,7 +77,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
         // warm-up iterations.
         Configurator.setLevel(LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class).getName(), Level.OFF);
         for (int i = 0; i < 50; i++) {
-            getControlAction(GameUnified.getInitialState()); // TODO make this better. The first controller evaluation ever
+            getControlAction(GameQWOP.getInitialState()); // TODO make this better. The first controller evaluation ever
         }
         Configurator.setLevel(LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class).getName(), Level.INFO);
         logger.debug("Dummy evaluations complete.");
@@ -118,7 +117,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/" + valueNetworkName), new GameUnified(), false); // state_only.pb"));
+                    "/" + valueNetworkName), new GameQWOP(), false); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

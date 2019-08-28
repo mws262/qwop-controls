@@ -1,9 +1,10 @@
 package tree.sampler;
 
 import distributions.Distribution_Equal;
-import game.GameUnified;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
 import game.action.*;
-import game.state.State;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,8 +21,8 @@ public class Sampler_DeterministicTest {
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
 
 
-    private State unfailedState = mock(State.class);
-    private State failedState = mock(State.class);
+    private StateQWOP unfailedState = mock(StateQWOP.class);
+    private StateQWOP failedState = mock(StateQWOP.class);
     {
         when(unfailedState.isFailed()).thenReturn(false);
         when(failedState.isFailed()).thenReturn(true);
@@ -43,7 +44,7 @@ public class Sampler_DeterministicTest {
         Sampler_Deterministic<CommandQWOP> sampler = new Sampler_Deterministic<>();
 
         // Tree policy from root with no other nodes just stays there.
-        NodeQWOPExplorable<CommandQWOP> root = new NodeQWOPExplorable<>(GameUnified.getInitialState(), generator);
+        NodeQWOPExplorable<CommandQWOP> root = new NodeQWOPExplorable<>(GameQWOP.getInitialState(), generator);
         Assert.assertEquals(2, root.getUntriedActionCount());
         NodeQWOPExplorableBase<?, CommandQWOP> tp1 = sampler.treePolicy(root);
         Assert.assertEquals(root, tp1);
@@ -52,7 +53,7 @@ public class Sampler_DeterministicTest {
         Assert.assertTrue(sampler.treePolicyGuard(tp1));
         Assert.assertFalse(sampler.expansionPolicyGuard(tp1));
 
-        // Expansion from root. Always gets the first action.
+        // Expansion from root. Always gets the first command.
         Action<CommandQWOP> expansionAction1 = sampler.expansionPolicy(tp1);
         Assert.assertEquals(alist1.get(0), expansionAction1);
         Assert.assertFalse(sampler.expansionPolicyGuard(tp1));

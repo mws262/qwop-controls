@@ -1,7 +1,7 @@
 package goals.phase_variable_testing;
 
 import game.action.ActionQueue;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.state.IState;
 import game.state.transform.Transform_Autoencoder;
@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Trying to see what sorts of things would work as a phase variable to indicate what part of the gait cycle we are
  * in. One logical choice is a neural network which compresses the full 72 state values to a single 1. This runs a
- * sample set of game.action through and spits out what the network says.
+ * sample set of game.command through and spits out what the network says.
  *
  * @author matt
  */
@@ -30,7 +30,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
         new MAIN_SingleVarAutoencoder().run();
     }
     public void run() {
-        // Vis makeNewWorld.
+        // Vis resetGame.
         PanelPlot_Simple plotPanel = new PanelPlot_Simple("Plot");
         plotPanel.activateTab();
         getContentPane().add(plotPanel);
@@ -39,7 +39,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
         pack();
         setVisible(true);
 
-        IGameInternal game = new GameUnified();
+        IGameInternal game = new GameQWOP();
         String modelDir = "src/main/resources/tflow_models/";
         Transform_Autoencoder autoencoder =
                 new Transform_Autoencoder(modelDir + "AutoEnc_72to" + numOutputs + "_6layer.pb",
@@ -48,7 +48,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
         ActionQueue actionQueue = ActionQueue.getSampleActions();
 
         List<IState> stateList = new ArrayList<>();
-        stateList.add(GameUnified.getInitialState());
+        stateList.add(GameQWOP.getInitialState());
         while (!actionQueue.isEmpty()) {
             game.step(actionQueue.pollCommand());
             IState st = game.getCurrentState();

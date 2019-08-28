@@ -2,8 +2,8 @@ package controllers;
 
 import game.IGameSerializable;
 import game.action.Action;
-import game.action.CommandQWOP;
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tflowtools.TensorflowLoader;
@@ -12,8 +12,8 @@ import tree.node.NodeQWOPExplorableBase;
 import java.util.List;
 
 /**
- * Neural-network-based controller which uses a {@link State state} to classify which key combination should be
- * pressed. Only uses the current state and potentially the previous action to make decisions and is limited to the QP,
+ * Neural-network-based controller which uses a {@link StateQWOP state} to classify which key combination should be
+ * pressed. Only uses the current state and potentially the previous command to make decisions and is limited to the QP,
  * WO, none/none key combinations.
  *
  * @author matt
@@ -31,14 +31,14 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     private final String outputName;
 
     /**
-     * Previous action index.
+     * Previous command index.
      */
     private int prevAction = 0;
 
     /**
-     * Tries to smooth out noise by sticking with the current action if that action's predicted probability is above
-     * this threshold, even if another action has a higher probability. 0 means stay with this action forever, 1
-     * means immediately switch when a better action is predicted.
+     * Tries to smooth out noise by sticking with the current command if that command's predicted probability is above
+     * this threshold, even if another command has a higher probability. 0 means stay with this command forever, 1
+     * means immediately switch when a better command is predicted.
      */
     public float actionLatchingThreshold = 1f;
 
@@ -84,7 +84,7 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
             prevAction = 2;
             logger.debug("__, " + probability2);
         } else {
-            throw new IllegalStateException("TensorFlow action classifier controller did not choose anything. This " +
+            throw new IllegalStateException("TensorFlow command classifier controller did not choose anything. This " +
                     "really shouldn't be possible.");
         }
         return chosenAction;

@@ -1,5 +1,6 @@
 package goals.policy_gradient;
 
+import game.IGameExternal;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 import org.tensorflow.Tensors;
@@ -12,14 +13,14 @@ import java.util.List;
 
 /**
  * Creates a Tensorflow network that is useful for doing policy gradient training. For evaluation, state values go
- * in, and a probability distribution for actions comes out (i.e. one number per discrete action; must sum to 1). For
+ * in, and a probability distribution for actions comes out (i.e. one number per discrete command; must sum to 1). For
  * training, states, one-hot actions, and discounted rewards go in.
  *
  * My intuition for this approach:
- * Basically a typical classification network. Based on state input, "classify" which action belongs with it. Except,
+ * Basically a typical classification network. Based on state input, "classify" which command belongs with it. Except,
  * when training, some of the examples are really bad. But those contain information also: what not to do. So, when
  * training, the cross-entropy loss gets scaled according to the reward. Better-than-average rewards increase the
- * chance of this state-to-action "classification" and vice-versa.
+ * chance of this state-to-command "classification" and vice-versa.
  *
  * <a href="https://github.com/simoninithomas/Deep_reinforcement_learning_Course/blob/master/Policy%20Gradients/Cartpole/Cartpole%20REINFORCE%20Monte%20Carlo%20Policy%20Gradients.ipynb">This guide</a>
  * was used as a reference.
@@ -74,8 +75,21 @@ public class PolicyGradientNetwork extends SoftmaxPolicyNetwork {
         return discounted;
     }
 
-    public static PolicyGradientNetwork makeNewNetwork(String graphFileName, List<Integer> layerSizes,
-                                                       List<String> additionalArgs, boolean useTensorboard) throws FileNotFoundException {
+    public static PolicyGradientNetwork makeNewNetwork(String graphFileName,
+                                                       IGameExternal gameTemplate,
+                                                       List<Integer> hiddenLayerSizes,
+                                                       List<String> additionalArgs,
+                                                       boolean useTensorboard) throws FileNotFoundException {
+        return makeNewNetwork(graphFileName, gameTemplate, hiddenLayerSizes, gameTemplate.getNumberOfChoices(),
+                additionalArgs, useTensorboard);
+    }
+
+    public static PolicyGradientNetwork makeNewNetwork(String graphFileName,
+                                                       IGameExternal gameTemplate,
+                                                       List<Integer> hiddenLayerSizes,
+                                                       int outputSize,
+                                                       List<String> additionalArgs,
+                                                       boolean useTensorboard) throws FileNotFoundException {
         if (additionalArgs.contains("-ao") || additionalArgs.contains("--activationsout")) {
             throw new IllegalArgumentException("Additional network creation arguments should not include the output " +
                     "activations. These are automatically set to softmax.");
@@ -88,11 +102,18 @@ public class PolicyGradientNetwork extends SoftmaxPolicyNetwork {
         additionalArgs.add("softmax");
         additionalArgs.add("--loss");
         additionalArgs.add("policy_gradient");
+
+        ArrayList<Integer> layerSizes = new ArrayList<>(hiddenLayerSizes.size() + 2);
+        layerSizes.add(gameTemplate.getStateDimension());
+        layerSizes.addAll(hiddenLayerSizes);
+        layerSizes.add(outputSize);
         return new PolicyGradientNetwork(makeGraphFile(graphFileName, layerSizes, additionalArgs), useTensorboard);
     }
 
-    public static PolicyGradientNetwork makeNewNetwork(String graphName, List<Integer> layerSizes,
+    public static PolicyGradientNetwork makeNewNetwork(String graphName,
+                                                       IGameExternal gameTemplate,
+                                                       List<Integer> hiddenLayerSizes,
                                                        boolean useTensorboard) throws FileNotFoundException {
-        return makeNewNetwork(graphName, layerSizes, new ArrayList<>(), useTensorboard);
+        return makeNewNetwork(graphName, gameTemplate, hiddenLayerSizes, new ArrayList<>(), useTensorboard);
     }
 }

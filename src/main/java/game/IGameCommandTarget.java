@@ -9,4 +9,6 @@ import game.action.Command;
  */
 public interface IGameCommandTarget<C extends Command<?>> {
     void command(C command);
+
+    int getNumberOfChoices();
 }

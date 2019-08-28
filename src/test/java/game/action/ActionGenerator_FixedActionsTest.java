@@ -1,7 +1,8 @@
 package game.action;
 
 import distributions.Distribution_Equal;
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class ActionGenerator_FixedActionsTest {
 
     @Test
     public void getPotentialChildActionSet() {
-        State st = mock(State.class);
+        StateQWOP st = mock(StateQWOP.class);
         NodeQWOPExplorable root = new NodeQWOPExplorable(st, generator);
         NodeQWOPExplorable n1 = root.addDoublyLinkedChild(new Action(55, CommandQWOP.P), st);
         NodeQWOPExplorable n2 = n1.addDoublyLinkedChild(new Action(33, CommandQWOP.QP), st);

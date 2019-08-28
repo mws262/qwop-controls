@@ -1,6 +1,7 @@
 package goals.q_learning;
 
 import com.google.common.primitives.Floats;
+import game.state.IState;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 import org.tensorflow.Tensors;
@@ -39,11 +40,11 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
     }
 
     /**
-     * Select an action either randomly or greedily from the policy.
+     * Select an command either randomly or greedily from the policy.
      * @param state
      * @return
      */
-    public int policyExplore(float[] state) {
+    int policyExplore(IState state) {
         float r = random.nextFloat();
         exploreProbability = (float) (exploreStop + (exploreStart - exploreStop) * Math.exp(-decayRate * decayStep));
 
@@ -56,15 +57,15 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
         return actionSelection;
     }
 
-    public void incrementDecay() {
+    void incrementDecay() {
         decayStep++;
     }
 
-    public void addTimestep(Timestep timestep) {
+    void addTimestep(Timestep timestep) {
         timesteps.add(timestep);
     }
 
-    public float train(int iterations) {
+    float train(int iterations) {
         // Get a random subset of all games played. People call this experience replay to be all fancy-like.
         Collections.shuffle(timesteps);
         List<Timestep> batch = timesteps.subList(timesteps.size() - Math.min(timesteps.size(),
@@ -80,8 +81,8 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
             } else {
                 qTarget[idx] = ts.reward; // Only reward is from the current state since this is terminal.
             }
-            states[idx] = ts.state;
-            oneHotActions[idx][ts.action] = 1;
+            states[idx] = ts.state.flattenState();
+            oneHotActions[idx] = ts.commandOneHot;
             idx++;
         }
 
@@ -112,12 +113,12 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
         return makeNewNetwork(graphName, layerSizes, new ArrayList<>(), useTensorboard);
     }
 
-    // Includes an intial state, an action taken from that state, a reward for the transition, and the data for the
+    // Includes an intial state, an command taken from that state, a reward for the transition, and the data for the
     // next state arrived at.
     public static class Timestep {
         public Timestep nextTs;
-        public float[] state;
+        public IState state;
         public float reward;
-        public int action;
+        public float[] commandOneHot;
     }
 }

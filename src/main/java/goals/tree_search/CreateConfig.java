@@ -1,9 +1,9 @@
 package goals.tree_search;
 
 import controllers.Controller_ValueFunction;
-import game.GameUnifiedCaching;
+import game.qwop.GameQWOPCaching;
 import game.action.ActionGenerator_UniformNoRepeats;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import savers.DataSaver_Null;
@@ -43,7 +43,7 @@ import java.util.stream.IntStream;
 
 public class CreateConfig {
 
-    static GameUnifiedCaching game = new GameUnifiedCaching(1,2, GameUnifiedCaching.StateType.DIFFERENCES);
+    static GameQWOPCaching game = new GameQWOPCaching(1,2, GameQWOPCaching.StateType.DIFFERENCES);
 
     public static void main(String[] args) throws IOException {
 
@@ -134,9 +134,9 @@ public class CreateConfig {
 
         /* Make each UI component */
         PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed("Run Animation");
-        PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot("State Viewer");
-        PanelRunner_Comparison comparisonPane = new PanelRunner_Comparison("State Compare");
-        PanelPlot_States statePlotPane = new PanelPlot_States("State Plots", 6); // 6 plots per view at the bottom.
+        PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot("StateQWOP Viewer");
+        PanelRunner_Comparison comparisonPane = new PanelRunner_Comparison("StateQWOP Compare");
+        PanelPlot_States statePlotPane = new PanelPlot_States("StateQWOP Plots", 6); // 6 plots per view at the bottom.
         PanelPie_ViableFutures viableFuturesPane = new PanelPie_ViableFutures("Viable Futures");
         PanelHistogram_LeafDepth leafDepthPane = new PanelHistogram_LeafDepth("Leaf depth distribution");
         PanelPlot_Transformed pcaPlotPane =

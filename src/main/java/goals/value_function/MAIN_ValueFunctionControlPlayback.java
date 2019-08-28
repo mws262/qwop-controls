@@ -1,6 +1,6 @@
 package goals.value_function;
 
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import ui.runner.PanelRunner_ControlledTFlow;
 
 import javax.swing.*;
@@ -8,8 +8,8 @@ import java.awt.*;
 
 public class MAIN_ValueFunctionControlPlayback {
 
-    private GameUnified game = new GameUnified(); //new GameUnifiedCaching(1,2,
-            //GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
+    private GameQWOP game = new GameQWOP(); //new GameQWOPCaching(1,2,
+            //GameQWOPCaching.StateType.HIGHER_DIFFERENCES);
     public MAIN_ValueFunctionControlPlayback() {
 
         JFrame jFrame = new JFrame();

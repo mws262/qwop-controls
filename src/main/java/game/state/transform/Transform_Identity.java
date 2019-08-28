@@ -1,8 +1,8 @@
 package game.state.transform;
 
 import game.state.IState;
-import game.state.State;
-import game.state.StateVariable;
+import game.qwop.StateQWOP;
+import game.state.StateVariable6D;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,29 +15,34 @@ import java.util.stream.Collectors;
  * @author Matt
  */
 @SuppressWarnings("unused")
-public class Transform_Identity implements ITransform {
+public class Transform_Identity<S extends IState> implements ITransform<S> {
 
     @Override
-    public void updateTransform(List<IState> nodesToUpdateFrom) {}
+    public void updateTransform(List<S> nodesToUpdateFrom) {}
 
     @Override
-    public List<float[]> transform(List<IState> originalStates) {
+    public List<float[]> transform(List<S> originalStates) {
         return originalStates.stream().map(IState::flattenState).collect(Collectors.toList());
     }
 
     @Override
-    public List<IState> untransform(List<float[]> transformedStates) {
-        return transformedStates.stream().map(f -> new State(f, false)).collect(Collectors.toList());
+    public float[] transform(S originalState) {
+        return originalState.flattenState();
     }
 
     @Override
-    public List<IState> compressAndDecompress(List<IState> originalStates) {
-        return originalStates;
+    public List<float[]> untransform(List<float[]> transformedStates) {
+        return transformedStates;
+    }
+
+    @Override
+    public List<float[]> compressAndDecompress(List<S> originalStates) {
+        return originalStates.stream().map(IState::flattenState).collect(Collectors.toList());
     }
 
     @Override
     public int getOutputSize() {
-        return State.ObjectName.values().length * StateVariable.StateName.values().length;
+        return StateQWOP.ObjectName.values().length * StateVariable6D.StateName.values().length;
     }
 
     @Override

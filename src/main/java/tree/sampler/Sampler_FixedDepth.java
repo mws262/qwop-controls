@@ -70,7 +70,7 @@ public class Sampler_FixedDepth<C extends Command<?>> implements ISampler<C> {
                 continue;
             }
 
-            // Grab the first thing we can with an untried action.
+            // Grab the first thing we can with an untried command.
             if (currentNode.getUntriedActionCount() != 0 && currentNode.reserveExpansionRights()) {
                 return currentNode;
             }

@@ -1,11 +1,13 @@
 package goals.policy_gradient;
 
-import data.LoadStateStatistics;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.StateNormalizerQWOP;
+import game.qwop.StateQWOP;
+import org.jetbrains.annotations.NotNull;
+import org.nd4j.base.Preconditions;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -16,64 +18,57 @@ public class PolicyGradientQWOP {
 
     private final PolicyGradientNetwork net;
 
-    private final GameUnified game = new GameUnified();
+    private final GameQWOP game = new GameQWOP();
     private final ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
-    private final List<State> states = new ArrayList<>();
+    private final List<StateQWOP> states = new ArrayList<>();
     private final List<Action<CommandQWOP>> actions = new ArrayList<>();
     private final List<Float> rewards = new ArrayList<>();
 
-    private LoadStateStatistics.StateStatistics stateStats;
-    {
-        try {
-            stateStats = LoadStateStatistics.loadStatsFromFile();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-    List<Action<CommandQWOP>> allowedActions;
+    private List<Action<CommandQWOP>> allowedActions;
 
-    PolicyGradientQWOP(PolicyGradientNetwork net) {
+    private StateNormalizerQWOP normalizer = new StateNormalizerQWOP(StateNormalizerQWOP.NormalizationMethod.STDEV);
+
+    private PolicyGradientQWOP(@NotNull PolicyGradientNetwork net,
+                               @NotNull List<Action<CommandQWOP>> allowedActions) {
+        Preconditions.checkArgument(allowedActions.size() == net.outputSize, "Net output size should match the number" +
+                " of allowed actions for a softmax net.", allowedActions, net.outputSize);
         this.net = net;
-        allowedActions = new ArrayList<>();
-        allowedActions.add(new Action<>(1, CommandQWOP.QP));
-        allowedActions.add(new Action<>(1, CommandQWOP.WO));
-        allowedActions.add(new Action<>(1, CommandQWOP.NONE));
+        this.allowedActions = new ArrayList<>(allowedActions);
         //new ArrayList<>(ActionGenerator_UniformNoRepeats.makeDefaultGenerator().getAllPossibleActions());
     }
 
-    public float trainingStep(State[] states, Action<CommandQWOP>[] actions, float[] discountedRewards) {
-        float[][] flatStates = new float[states.length][State.STATE_SIZE];
-        float[][] oneHotActions = new float[actions.length][allowedActions.size()];
+    public float trainingStep(StateQWOP[] states, List<Action<CommandQWOP>> actions, float[] discountedRewards) {
+        float[][] flatStates = new float[states.length][StateQWOP.STATE_SIZE];
+        float[][] oneHotActions = new float[actions.size()][allowedActions.size()];
 
         // Flatten states to episode length x 72
         for (int i = 0; i < states.length; i++) {
-            flatStates[i] = states[i].flattenStateWithRescaling(stateStats);
+            flatStates[i] = normalizer.transform(states[i]);
         }
 
         // Flatten actions to episode length x num actions
-        for (int i = 0; i < actions.length; i++) {
-            oneHotActions[i][allowedActions.indexOf(actions[i])] = 1;
+        for (int i = 0; i < actions.size(); i++) {
+            oneHotActions[i][allowedActions.indexOf(actions.get(i))] = 1;
         }
-
         return net.trainingStep(flatStates, oneHotActions, discountedRewards, 1);
     }
 
-
-    public void playGame() {
-        game.makeNewWorld();
+    private void runEpisode() {
+        game.resetGame();
         actionQueue.clearAll();
         actionQueue.addAction(new Action<>(7, CommandQWOP.WO));
         states.clear();
         actions.clear();
         rewards.clear();
-        State currentState;
-        State prevState = (State) GameUnified.getInitialState();
+        StateQWOP currentState;
+        StateQWOP prevState = (StateQWOP) GameQWOP.getInitialState();
 
-        while (!game.getFailureStatus() && game.getTimestepsThisGame() < 3000) {
+        while (!game.isFailed() && game.getTimestepsThisGame() < 3000) {
             if (actionQueue.isEmpty()) {
-                currentState = (State) game.getCurrentState();
+                currentState = (StateQWOP) game.getCurrentState();
 
-                int bestIdx = net.policyOnDistribution(currentState.flattenStateWithRescaling(stateStats));
+                int bestIdx =
+                        net.policyOnDistribution(new StateQWOP(normalizer.transform(currentState), false));
                 Action<CommandQWOP> nextAction = allowedActions.get(bestIdx);
                 states.add(currentState);
                 actions.add(nextAction);
@@ -92,39 +87,41 @@ public class PolicyGradientQWOP {
         assert states.size() == actions.size() && states.size() == rewards.size();
 
         if (states.size() < 2)
-            return; // TODO the case where the first action fails it. or with 1 stdev becomes 0.
+            return; // TODO the case where the first command fails it. or with 1 stdev becomes 0.
 
 
-        State[] stateArray = states.toArray(new State[0]);
-        Action<CommandQWOP>[] actionArray = actions.toArray(new Action[0]);
+        StateQWOP[] stateArray = states.toArray(new StateQWOP[0]);
         float[] rewardsFlat = new float[rewards.size()];
         int idx = 0;
         for (Float f : rewards) {
             rewardsFlat[idx++] = f;
         }
         float[] discounted = PolicyGradientNetwork.discountRewards(rewardsFlat, 0.99f);
-        float loss = trainingStep(stateArray, actionArray, discounted);
+        float loss = trainingStep(stateArray, actions, discounted);
         System.out.println("Distance: " + stateArray[stateArray.length - 1].getCenterX() / 10 + " Loss: " + loss);
     }
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        List<Integer> layerSizes = new ArrayList<>();
-        layerSizes.add(72);
-        //layerSizes.add(128);
-        layerSizes.add(32);
-        layerSizes.add(16);
-        layerSizes.add(3); // TODO no hard code
+        List<Action<CommandQWOP>> allowedActions = new ArrayList<>();
+        allowedActions.add(new Action<>(1, CommandQWOP.QP));
+        allowedActions.add(new Action<>(1, CommandQWOP.WO));
+        allowedActions.add(new Action<>(1, CommandQWOP.NONE));
+
+        List<Integer> hiddenLayerSizes = new ArrayList<>();
+        hiddenLayerSizes.add(32);
+        hiddenLayerSizes.add(16);
+        int numberOfOutputs = allowedActions.size();
 
         List<String> addedArgs = new ArrayList<>();
         addedArgs.add("-lr");
         addedArgs.add("1e-5 ");
         PolicyGradientNetwork net = PolicyGradientNetwork.makeNewNetwork("src/main/resources/tflow_models/tmp.pb",
-                layerSizes, addedArgs, true);
+                new GameQWOP(), hiddenLayerSizes, numberOfOutputs, addedArgs, true);
 
-        PolicyGradientQWOP policy = new PolicyGradientQWOP(net);
+        PolicyGradientQWOP policy = new PolicyGradientQWOP(net, allowedActions);
         for (int i = 0; i < 10000000; i++) {
-            policy.playGame();
+            policy.runEpisode();
         }
     }
 }

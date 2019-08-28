@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tree search which continues sampling until the root node is fully-explored. If a broad set of game.action is provided,
+ * Tree search which continues sampling until the root node is fully-explored. If a broad set of game.command is provided,
  * this will probably never occur. This is mostly useful for testing.
  *
  * @author matt

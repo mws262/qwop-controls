@@ -1,7 +1,8 @@
 package game.action;
 
 import distributions.Distribution_Equal;
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class ActionGenerator_UniformNoRepeatsTest {
     @Test
     public void getPotentialChildActionSet() {
 
-        State st = mock(State.class);
+        StateQWOP st = mock(StateQWOP.class);
         NodeQWOPExplorable<CommandQWOP> root = new NodeQWOPExplorable<>(st, generator);
         List<NodeQWOPExplorable<CommandQWOP>> depth1 = new ArrayList<>();
         List<List<NodeQWOPExplorable<CommandQWOP>>> depth2 = new ArrayList<>();
@@ -71,7 +72,7 @@ public class ActionGenerator_UniformNoRepeatsTest {
             depth2.add(subdepth2);
         }
 
-        // All action are candidates for the first layer.
+        // All command are candidates for the first layer.
         Set<Action<CommandQWOP>> allPossible = generator.getAllPossibleActions();
         Assert.assertEquals(allPossible.size(), depth1.size());
 
@@ -84,7 +85,7 @@ public class ActionGenerator_UniformNoRepeatsTest {
 
             for (NodeQWOPExplorable<CommandQWOP> n : nlist) {
                 Assert.assertNotEquals(n.getParent().getAction(), n.getAction()); // May not have the same parent
-                // action.
+                // command.
 
                 Assert.assertNotEquals(n.getParent().getAction().peek(), n.getAction().peek()); // Also may not have
                 // the same keys too.

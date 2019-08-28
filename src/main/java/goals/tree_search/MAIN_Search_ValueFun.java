@@ -3,11 +3,11 @@ package goals.tree_search;
 import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
 import controllers.IController;
-import game.GameUnified;
-import game.GameUnifiedCaching;
+import game.qwop.GameQWOP;
+import game.qwop.GameQWOPCaching;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +37,7 @@ import java.util.concurrent.Executors;
 
 public class MAIN_Search_ValueFun extends SearchTemplate {
 
-    private GameUnified game;
+    private GameQWOP game;
 
     /**
      * Search configuration parameter file name. Do not need to include the path. TODO move more other parameters to
@@ -106,7 +106,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 //            List<Integer> layers = new ArrayList<>();
 //            layers.add(128);
 //            layers.add(64);
-//            vfunCopy = new ValueFunction_TensorFlow_StateOnly("small_net", new GameUnified(), layers,
+//            vfunCopy = new ValueFunction_TensorFlow_StateOnly("small_net", new GameQWOP(), layers,
 //                    new ArrayList<>());
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
@@ -159,8 +159,8 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         rolloutWeightedWithValFun = Boolean.parseBoolean(properties.getProperty("rolloutWeightedWithValFun", "false"));
         float rolloutValFunWeight = Float.parseFloat(properties.getProperty("rolloutValFunWeight", "0.75"));
 
-        game = (prevStates > 0 && delayTs > 0) ? new GameUnifiedCaching(delayTs, prevStates, GameUnifiedCaching.StateType.HIGHER_DIFFERENCES) :
-                new GameUnified();
+        game = (prevStates > 0 && delayTs > 0) ? new GameQWOPCaching(delayTs, prevStates, GameQWOPCaching.StateType.HIGHER_DIFFERENCES) :
+                new GameQWOP();
         makeValueFunction(game);
     }
 
@@ -229,7 +229,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         // hardcoded.
 
         return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates,
-                GameUnifiedCaching.StateType.HIGHER_DIFFERENCES) :
+                GameQWOPCaching.StateType.HIGHER_DIFFERENCES) :
                 TreeWorker.makeStandardTreeWorker(sampler);
     }
 
@@ -257,7 +257,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
                 " Weighted with value function? " + rolloutWeightedWithValFun + ". As a window of 3? " + windowRollout + ".");
 
         // Make new tree root and assign to GUI.
-        // Assign default available game.action.
+        // Assign default available game.command.
         IActionGenerator<CommandQWOP> actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);// new
         // ActionGenerator_UniformNoRepeats();//
 
@@ -270,8 +270,8 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         });
 
         NodeQWOPExplorableBase<?, CommandQWOP> rootNode = headless ?
-                new NodeQWOPExplorable<>(GameUnified.getInitialState(), actionGenerator) :
-                new NodeQWOPGraphics<>(GameUnified.getInitialState(), actionGenerator);
+                new NodeQWOPExplorable<>(GameQWOP.getInitialState(), actionGenerator) :
+                new NodeQWOPGraphics<>(GameQWOP.getInitialState(), actionGenerator);
 
         NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, game);
         NodeQWOPExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
@@ -346,7 +346,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     }
 
 
-    private void makeValueFunction(GameUnified gameTemplate) {
+    private void makeValueFunction(GameQWOP gameTemplate) {
         /* Make the value function net. */
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");

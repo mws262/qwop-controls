@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import game.cartpole.CommandCartPole;
+import game.qwop.CommandQWOP;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -13,6 +15,7 @@ import java.util.Objects;
         property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = CommandQWOP.class, name = "qwop"),
+        @JsonSubTypes.Type(value = CommandCartPole.class, name = "cartpole"),
 })
 public class Command<T> implements Comparable<Command<T>> {
 
@@ -41,4 +44,5 @@ public class Command<T> implements Comparable<Command<T>> {
     public Command<T> getThis() {
         return this;
     }
+
 }

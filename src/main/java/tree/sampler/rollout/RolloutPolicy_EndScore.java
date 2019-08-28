@@ -9,7 +9,7 @@ import tree.node.NodeQWOPExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
 /**
- * Most basic rollout policy. Just randomly picks game.action until failure. This is how {@link tree.sampler.Sampler_UCB} was
+ * Most basic rollout policy. Just randomly picks game.command until failure. This is how {@link tree.sampler.Sampler_UCB} was
  * hardcoded for most of its life.
  *
  * @author matt

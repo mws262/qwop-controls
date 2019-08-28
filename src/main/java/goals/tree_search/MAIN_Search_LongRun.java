@@ -2,10 +2,10 @@ package goals.tree_search;
 
 import controllers.Controller_Random;
 import game.action.ActionGenerator_FixedSequence;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
 import data.SparseDataToDenseTFRecord;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.evaluator.EvaluationFunction_Constant;
@@ -76,7 +76,7 @@ public class MAIN_Search_LongRun extends SearchTemplate {
         if (doStage1) {
             int count = 0;
             while (count < runsToGenerate) {
-                NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameUnified.getInitialState(), actionGenerator);
+                NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState(), actionGenerator);
                 NodeQWOPGraphics.pointsToDraw.clear();
                 ui.clearRootNodes();
                 ui.addRootNode(rootNode);

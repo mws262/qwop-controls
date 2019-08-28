@@ -101,7 +101,7 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     public NodeQWOPExplorableBase<?, C> treePolicy(NodeQWOPExplorableBase<?, C> startNode) {
         if (startNode.getUntriedActionCount() != 0) {
             if (startNode.reserveExpansionRights()) { // We immediately expand
-                // if there's an untried action.
+                // if there's an untried command.
                 assert startNode.isLocked();
                 return startNode;
             } else {
@@ -141,7 +141,7 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
             deadlockDelayCurrent = 0; // Reset delay if we're successful again.
         }
 
-        return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked action.;
+        return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked command.;
     }
 
     @Override

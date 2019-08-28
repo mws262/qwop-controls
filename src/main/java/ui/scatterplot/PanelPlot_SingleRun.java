@@ -1,14 +1,14 @@
 package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
-import game.state.State;
-import game.state.StateVariable;
+import game.qwop.StateQWOP;
+import game.state.StateVariable6D;
 import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
 import org.apache.logging.log4j.LogManager;
@@ -48,7 +48,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
             "/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
     /**
-     * Stores the qwop game.action we're going to execute.
+     * Stores the qwop game.command we're going to execute.
      */
     private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
 
@@ -75,7 +75,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
     private final int numPlots;
 
     /**
-     * Node that we're plotting the game.action/states up to.
+     * Node that we're plotting the game.command/states up to.
      */
     private NodeQWOPExplorableBase<?, CommandQWOP> selectedNode;
 
@@ -87,7 +87,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
     public PanelPlot_SingleRun(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numberOfPlots) {
         super(numberOfPlots);
         this.name = name;
-        game = new GameUnified();
+        game = new GameQWOP();
 
         numPlots = transformer.getOutputSize();
         this.plotsPerView = numberOfPlots;
@@ -103,7 +103,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
         transformedStates.clear();
         commandList.clear();
         actionQueue.clearAll();
-        game.makeNewWorld();
+        game.resetGame();
 
         ArrayList<Action<CommandQWOP>> actionList = new ArrayList<>();
         node.getSequence(actionList);
@@ -154,10 +154,10 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
                     IntStream.range(0, yData.length).mapToObj(i -> NodeQWOPGraphicsBase.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.getTreeDepth()), NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Command combination");
-            pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +
-                    StateVariable.StateName.values()[count].toString());
+            pl.getDomainAxis().setLabel(StateQWOP.ObjectName.values()[firstPlotRow].toString() + " " +
+                    StateVariable6D.StateName.values()[count].toString());
 
-            dat.addSeries(0, Arrays.copyOf(xData, xData.length - 1), yData, cData); // Have more states than game.action,
+            dat.addSeries(0, Arrays.copyOf(xData, xData.length - 1), yData, cData); // Have more states than game.command,
             // so will kill the last one.
 
             setPlotBoundsFromData(pl, xData, yData);

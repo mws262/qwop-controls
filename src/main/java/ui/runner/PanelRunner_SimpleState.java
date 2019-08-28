@@ -1,8 +1,8 @@
 package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.GameUnified;
-import game.action.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
 import tree.node.NodeQWOPGraphicsBase;
 
@@ -49,7 +49,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
         if (!active || currentState == null) return;
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-        GameUnified.drawExtraRunner(g2, currentState, "", runnerScaling,
+        GameQWOP.drawExtraRunner(g2, currentState, "", runnerScaling,
 				500 - (int) (currentState.getCenterX() * runnerScaling),
                 yOffsetPixels + 100,
                 Color.BLACK,

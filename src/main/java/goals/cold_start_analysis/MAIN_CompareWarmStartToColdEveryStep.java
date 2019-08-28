@@ -1,16 +1,15 @@
 package goals.cold_start_analysis;
 
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.action.ActionQueue;
-import game.action.Command;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * This version runs a normal sequence of game.action, but adds another cold-started runner at every timestep, and seeing
+ * This version runs a normal sequence of game.command, but adds another cold-started runner at every timestep, and seeing
  * the distance travelled before failure for each.
  * @author matt
  */
@@ -26,15 +25,15 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
 
     private void run() {
         ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
-        IGameInternal<CommandQWOP> gameFullRun = new GameUnified();
-        IGameInternal<CommandQWOP> coldStartGame = new GameUnified();
+        IGameInternal<CommandQWOP> gameFullRun = new GameQWOP();
+        IGameInternal<CommandQWOP> coldStartGame = new GameQWOP();
 
         // Start simulating the entire "good" run on the normal game.
         while (!actionQueue.isEmpty()) {
             CommandQWOP nextCommand = actionQueue.pollCommand(); // Next command.
             gameFullRun.step(nextCommand); // Sim the main runner and put on screen.
 
-            coldStartGame.makeNewWorld();
+            coldStartGame.resetGame();
             IState st = gameFullRun.getCurrentState();
             coldStartGame.setState(st);
             ActionQueue<CommandQWOP> coldStartActionQueue = actionQueue.getCopyOfQueueAtExecutionPoint();
@@ -44,7 +43,7 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
             while (!coldStartActionQueue.isEmpty()) {
                 nextCommand = coldStartActionQueue.pollCommand();
                 coldStartGame.step(nextCommand);
-                if (coldStartGame.getFailureStatus()) {
+                if (coldStartGame.isFailed()) {
                     logger.info((coldStartGame.getCurrentState().getCenterX() - initX)/17.);
                     break;
                 }

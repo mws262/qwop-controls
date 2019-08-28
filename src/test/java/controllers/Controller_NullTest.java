@@ -1,8 +1,8 @@
 package controllers;
 
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.action.Action;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 import tree.node.NodeQWOPExplorable;
@@ -19,9 +19,9 @@ public class Controller_NullTest {
     @Test
     public void policy() {
         IController<CommandQWOP> controller = new Controller_Null<>(new Action<>(1, CommandQWOP.NONE));
-        Action<CommandQWOP> a1 = controller.policy(new NodeQWOPExplorable<>(GameUnified.getInitialState()));
-        Action<CommandQWOP> a2 = controller.policy(new NodeQWOPGraphics<>(GameUnified.getInitialState()));
-        GameUnified game = new GameUnified();
+        Action<CommandQWOP> a1 = controller.policy(new NodeQWOPExplorable<>(GameQWOP.getInitialState()));
+        Action<CommandQWOP> a2 = controller.policy(new NodeQWOPGraphics<>(GameQWOP.getInitialState()));
+        GameQWOP game = new GameQWOP();
         game.step(true, false, false, true);
         Action<CommandQWOP> a3 = controller.policy(new NodeQWOPExplorable<>(game.getCurrentState()));
         Assert.assertEquals(new Action<>(1, CommandQWOP.NONE), a1);
@@ -34,9 +34,9 @@ public class Controller_NullTest {
         IController<CommandQWOP> controller = new Controller_Null<>(new Action<>(1, CommandQWOP.NONE)); // Same but with copy.
         controller = controller.getCopy();
 
-        Action<CommandQWOP> a1 = controller.policy(new NodeQWOPExplorable<>(GameUnified.getInitialState()));
-        Action<CommandQWOP> a2 = controller.policy(new NodeQWOPGraphics<>(GameUnified.getInitialState()));
-        GameUnified game = new GameUnified();
+        Action<CommandQWOP> a1 = controller.policy(new NodeQWOPExplorable<>(GameQWOP.getInitialState()));
+        Action<CommandQWOP> a2 = controller.policy(new NodeQWOPGraphics<>(GameQWOP.getInitialState()));
+        GameQWOP game = new GameQWOP();
         game.step(true, false, false, true);
         Action<CommandQWOP> a3 = controller.policy(new NodeQWOPExplorable<>(game.getCurrentState()));
         Assert.assertEquals(new Action<>(1, CommandQWOP.NONE), a1);

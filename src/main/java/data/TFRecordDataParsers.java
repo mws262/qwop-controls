@@ -2,9 +2,9 @@ package data;
 
 import game.action.Action;
 import com.google.protobuf.ByteString;
-import game.action.CommandQWOP;
-import game.state.State;
-import game.state.StateVariable;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
+import game.state.StateVariable6D;
 import org.tensorflow.example.FeatureList;
 import org.tensorflow.example.SequenceExample;
 
@@ -17,7 +17,7 @@ import java.util.Map;
  * Utility methods for parsing data loaded from TFRecords filled with QWOP run data. TFRecord data can by loaded into
  * a byte array by {@link TFRecordReader}. That step is generic to all types of TFRecord information. For our case,
  * all TFRecord data is a {@link SequenceExample} of a specific form. This class has methods for loading the byte
- * arrays into {@link SequenceExample}, and methods for parsing the {@link SequenceExample} into {@link State},
+ * arrays into {@link SequenceExample}, and methods for parsing the {@link SequenceExample} into {@link StateQWOP},
  * {@link game.action.Action}, etc.
  *
  * @author matt
@@ -44,41 +44,41 @@ public class TFRecordDataParsers {
 
     /**
      * Takes a {@link SequenceExample} loaded from a TFRecord file and parses the sequence of states stored in it.
-     * This array of states contains one {@link State} per timestep for one run.
+     * This array of states contains one {@link StateQWOP} per timestep for one run.
      *
      * @param sequenceFromTFRecord One sequence loaded from a TFRecord that we wish to parse into a series of states
      * @return An array of states, one for each timestep in a run, from beginning to end.
      */
-    public static State[] getStatesFromLoadedSequence(SequenceExample sequenceFromTFRecord) {
+    public static StateQWOP[] getStatesFromLoadedSequence(SequenceExample sequenceFromTFRecord) {
         int totalTimestepsInRun = sequenceFromTFRecord.getFeatureLists().getFeatureListMap().get("BODY").getFeatureCount();
-        State[] stateVars = new State[totalTimestepsInRun];
+        StateQWOP[] stateVars = new StateQWOP[totalTimestepsInRun];
 
         for (int i = 0; i < totalTimestepsInRun; i++) {
             // Unpack each x y th... value in a given timestep. Turn them into StateVariables.
             Map<String, FeatureList> featureListMap = sequenceFromTFRecord.getFeatureLists().getFeatureListMap();
-            StateVariable[] sVarBuffer = new StateVariable[State.ObjectName.values().length];
+            StateVariable6D[] sVarBuffer = new StateVariable6D[StateQWOP.ObjectName.values().length];
             int idx = 0;
-            for (State.ObjectName bodyPart : State.ObjectName.values()) {
+            for (StateQWOP.ObjectName bodyPart : StateQWOP.ObjectName.values()) {
                 List<Float> sValList =
                         featureListMap.get(bodyPart.toString()).getFeature(i).getFloatList().getValueList();
 
-                sVarBuffer[idx] = new StateVariable(sValList);
+                sVarBuffer[idx] = new StateVariable6D(sValList);
                 idx++;
             }
 
-            // Turn the StateVariables into a single State for this timestep.
-            stateVars[i] = new State(sVarBuffer[0], sVarBuffer[1], sVarBuffer[2], sVarBuffer[3], sVarBuffer[4],
+            // Turn the StateVariables into a single StateQWOP for this timestep.
+            stateVars[i] = new StateQWOP(sVarBuffer[0], sVarBuffer[1], sVarBuffer[2], sVarBuffer[3], sVarBuffer[4],
                     sVarBuffer[5], sVarBuffer[6], sVarBuffer[7], sVarBuffer[8], sVarBuffer[9], sVarBuffer[10], sVarBuffer[11], false);
         }
         return stateVars;
     }
 
     /**
-     * Takes a {@link SequenceExample} loaded from a TFRecord file and parses the sequence of {@link Action game.action}
+     * Takes a {@link SequenceExample} loaded from a TFRecord file and parses the sequence of {@link Action game.command}
      * stored in it.
      *
      * @param sequenceFromTFRecord One sequence loaded from a TFRecord that we wish to parse into a series of Actions.
-     * @return A list of game.action for the loaded run.
+     * @return A list of game.command for the loaded run.
      */
     public static List<Action<CommandQWOP>> getActionsFromLoadedSequence(SequenceExample sequenceFromTFRecord) {
         List<Action<CommandQWOP>> actionList = new ArrayList<>();

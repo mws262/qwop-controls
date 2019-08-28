@@ -3,15 +3,15 @@
 //import data.EvictingTreeMap;
 //import data.LIFOFixedSize;
 //import data.TFRecordDataParsers;
-//import game.GameUnified;
+//import game.qwop.GameQWOP;
 //import game.IGameSerializable;
-//import game.action.Action;
-//import game.action.CommandQWOP;
+//import game.command.Action;
+//import game.qwop.CommandQWOP;
 //import game.state.IState;
 //import game.state.IState.ObjectName;
-//import game.state.State;
-//import game.state.StateVariable;
-//import game.state.StateVariable.StateName;
+//import game.qwop.StateQWOP;
+//import game.state.StateVariable6D;
+//import game.state.StateVariable6D.StateName;
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
 //import org.tensorflow.example.FeatureList;
@@ -73,7 +73,7 @@
 //    public Set<RunHolder> runs = new HashSet<>();
 //
 //    /**
-//     * Keep track of which total run that the currently selected action comes from.
+//     * Keep track of which total run that the currently selected command comes from.
 //     **/
 //    private RunHolder currentTrajectory;
 //    private StateHolder currentTrajectoryStateMatch;
@@ -84,7 +84,7 @@
 //
 //
 //
-//    private State weights;
+//    private StateQWOP weights;
 //
 //    private static final Logger logger = LogManager.getLogger(Controller_NearestNeighborApprox.class);
 //
@@ -102,9 +102,9 @@
 //        }
 //        logger.debug(numStatesLoaded + " states were loaded!");
 //
-//        float[] weightVals = new float[State.STATE_SIZE];
+//        float[] weightVals = new float[StateQWOP.STATE_SIZE];
 //        Arrays.fill(weightVals, 1f);
-//        weights = new State(weightVals, false);
+//        weights = new StateQWOP(weightVals, false);
 //    }
 //
 //    @Override
@@ -250,7 +250,7 @@
 //                IState oldState = iter.next();
 //                int idx = stateLocInSequence - count;
 //                if (idx >= 0) {
-//                    State stateFromLibrary = sh.parentRun.states.get(idx).state;
+//                    StateQWOP stateFromLibrary = sh.parentRun.states.get(idx).state;
 //                    oldStateError += (previousStatePenaltyMult / (float) count) * sqError(oldState, stateFromLibrary);
 //                } else {
 //                    oldStateError += previousStatePenaltyMult * currentStateError * 0.5f;
@@ -315,10 +315,10 @@
 //
 //                RunHolder rh = new RunHolder();
 //
-//                // Unpack the game.action as durations. TODO: turn them into full-fledged Actions
+//                // Unpack the game.command as durations. TODO: turn them into full-fledged Actions
 //                for (int i = 0; i < singleSequence.getFeatureLists().getFeatureListMap().get("ACTIONS").getFeatureCount(); i++) {
 //                    rh.actionDurations.add(Byte.toUnsignedInt(singleSequence.getFeatureLists().getFeatureListMap()
-//                            .get("ACTIONS").getFeature(i) // This is the action number
+//                            .get("ACTIONS").getFeature(i) // This is the command number
 //                            .getBytesList().getValue(0) // This only has one element lol
 //                            .byteAt(0))); // this is the [duration, q,w,o,p]
 //                }
@@ -331,23 +331,23 @@
 //
 //                    // Unpack each x y th... value in a given timestep. Turn them into StateVariables.
 //                    Map<String, FeatureList> featureListMap = singleSequence.getFeatureLists().getFeatureListMap();
-//                    StateVariable[] sVarBuffer = new StateVariable[ObjectName.values().length];
+//                    StateVariable6D[] sVarBuffer = new StateVariable6D[ObjectName.values().length];
 //
 //                    int idx = 0;
 //                    for (ObjectName bodyPart : ObjectName.values()) {
 //                        List<Float> sValList =
 //                                featureListMap.get(bodyPart.toString()).getFeature(i).getFloatList().getValueList();
 //
-//                        sVarBuffer[idx] = new StateVariable(sValList);
+//                        sVarBuffer[idx] = new StateVariable6D(sValList);
 //                        idx++;
 //                    }
 //
-//                    // Turn the StateVariables into a single State for this timestep.
-//                    State st = new State(sVarBuffer[0], sVarBuffer[1], sVarBuffer[2], sVarBuffer[3], sVarBuffer[4],
+//                    // Turn the StateVariables into a single StateQWOP for this timestep.
+//                    StateQWOP st = new StateQWOP(sVarBuffer[0], sVarBuffer[1], sVarBuffer[2], sVarBuffer[3], sVarBuffer[4],
 //                            sVarBuffer[5], sVarBuffer[6], sVarBuffer[7], sVarBuffer[8], sVarBuffer[9], sVarBuffer[10]
 //                            , sVarBuffer[11], false);
 //
-//                    // Get game.action as keypresses at the current state.
+//                    // Get game.command as keypresses at the current state.
 //                    byte[] keyPressBytes =
 //                            singleSequence.getFeatureLists().getFeatureListMap().get("PRESSED_KEYS").getFeature(i).getBytesList().getValue(0).toByteArray();
 //                    boolean[] keyPress = new boolean[4];
@@ -380,7 +380,7 @@
 //        /**
 //         * Actual physical state variables.
 //         **/
-//        public final State state;
+//        public final StateQWOP state;
 //
 //        /**
 //         * QWOP keys pressed.
@@ -392,7 +392,7 @@
 //         **/
 //        final RunHolder parentRun;
 //
-//        private StateHolder(State state, CommandQWOP command, RunHolder parentRun) {
+//        private StateHolder(StateQWOP state, CommandQWOP command, RunHolder parentRun) {
 //            this.state = state;
 //            this.command = command;
 //            this.parentRun = parentRun;
@@ -448,7 +448,7 @@
 //    }
 //
 //    @Override
-//    public void draw(Graphics g, GameUnified game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
+//    public void draw(Graphics g, GameQWOP game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
 //        if (!previousStatesLIFO.isEmpty()) {
 //            g.setColor(Color.WHITE);
 //            g.drawString(String.valueOf(previousStatesLIFO.peek().getCenterX()), 50, 50);
@@ -459,17 +459,17 @@
 //            StateHolder drawState = currentTrajectoryStateMatch;
 //            int startIdx = drawTraj.states.indexOf(drawState);
 //            float bodyX = currentTrajectoryStateMatch.state.body.getX();
-//            GameUnified.drawExtraRunner((Graphics2D) g, drawState.state, "", runnerScaling, xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels, Color.CYAN, PanelRunner.normalStroke);
+//            GameQWOP.drawExtraRunner((Graphics2D) g, drawState.state, "", runnerScaling, xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels, Color.CYAN, PanelRunner.normalStroke);
 //
 //            int viewingHorizon = 80;
 //            for (int i = 0; i < drawTraj.states.size(); i++) {
 //                if ((i > startIdx && i < startIdx + viewingHorizon)) { //|| i % 10 == 0) {
-//                    GameUnified.drawExtraRunner((Graphics2D) g, drawTraj.states.get(i).state, "", runnerScaling,
+//                    GameQWOP.drawExtraRunner((Graphics2D) g, drawTraj.states.get(i).state, "", runnerScaling,
 //                            xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels,
 //                            NodeQWOPGraphicsBase.getColorFromScaledValue(i - startIdx + viewingHorizon, 2 * viewingHorizon,
 //                                    (viewingHorizon - Math.abs(i - startIdx)) / (float) viewingHorizon), PanelRunner.normalStroke);
 //                } else if (i < startIdx && i > startIdx - viewingHorizon) {
-//                    GameUnified.drawExtraRunner((Graphics2D) g, drawTraj.states.get(i).state, "", runnerScaling,
+//                    GameQWOP.drawExtraRunner((Graphics2D) g, drawTraj.states.get(i).state, "", runnerScaling,
 //                            xOffsetPixels - (int) (runnerScaling * bodyX), yOffsetPixels,
 //                            NodeQWOPGraphicsBase.getColorFromScaledValue(i - startIdx + viewingHorizon,
 //                                    2 * viewingHorizon,

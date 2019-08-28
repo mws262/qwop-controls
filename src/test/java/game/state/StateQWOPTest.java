@@ -1,16 +1,15 @@
 package game.state;
 
-import game.GameUnified;
-import game.state.IState.ObjectName;
-import game.state.State;
-import game.state.StateVariable;
+import game.qwop.GameQWOP;
+import game.qwop.IStateQWOP.ObjectName;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class StateTest {
+public class StateQWOPTest {
 
     @Test
     public void add() {
@@ -20,10 +19,10 @@ public class StateTest {
                 0.58f, 0.52f, 0.36f, 0.86f, 0.34f, 0.46f, 0.24f, 0.77f, 0.27f, 0.53f, 0.53f, 0.87f, 0.94f, 0.05f, 0.98f, 0.63f, 0.07f, 0.21f, 0.36f, 0.43f, 0.76f, 0.92f, 0.63f, 0.96f, 0.76f, 0.53f, 0.85f, 0.82f, 0.13f, 0.76f, 0.62f, 0.40f, 0.84f, 0.04f, 0.10f, 0.95f, 0.40f, 0.53f, 0.90f, 0.34f, 0.66f, 0.73f, 0.22f, 0.56f, 0.46f, 0.61f, 0.54f, 0.52f, 0.29f, 0.88f, 0.94f, 0.81f, 0.97f, 0.52f, 0.11f, 0.65f, 0.19f, 0.86f, 0.94f, 0.10f};
         float[] expected = new float[] {1.22f, 0.77f, 0.79f, 1.27f, 0.72f, 1.32f, 0.15f, 0.94f, 1.52f, 1.04f, 1.01f,
                 0.73f, 1.33f, 1.32f, 0.70f, 1.42f, 1.20f, 1.05f, 0.75f, 1.62f, 0.95f, 0.64f, 1.03f, 0.89f, 1.38f, 0.96f, 1.02f, 1.58f, 0.25f, 0.58f, 0.57f, 0.53f, 1.19f, 1.20f, 0.73f, 1.46f, 1.00f, 0.88f, 1.41f, 1.37f, 0.55f, 1.15f, 1.00f, 0.68f, 1.02f, 0.17f, 0.12f, 1.70f, 0.90f, 1.25f, 1.66f, 0.61f, 0.85f, 0.79f, 0.65f, 1.26f, 1.44f, 1.16f, 0.58f, 1.10f, 0.57f, 1.42f, 1.38f, 0.93f, 1.35f, 1.28f, 1.03f, 1.34f, 1.16f, 0.99f, 1.59f, 0.49f};
-        State s1 = new State(f1, false);
-        State s2 = new State(f2, false);
+        StateQWOP s1 = new StateQWOP(f1, false);
+        StateQWOP s2 = new StateQWOP(f2, false);
 
-        State result = s1.add(s2);
+        StateQWOP result = s1.add(s2);
         Assert.assertArrayEquals(expected, result.flattenState(0), 1e-6f);
 
     }
@@ -40,10 +39,10 @@ public class StateTest {
                 -0.31f, -0.12f, -0.12f, 0.22f, -0.27f, -0.03f, -0.70f, 0.56f, 0.47f, -0.18f, -0.17f, -0.20f, 0.43f,
                 -0.37f, -0.88f, 0.05f, 0.37f, -0.12f, 0.36f, 0.57f, -0.05f, 0.49f, 0.75f, -0.36f, -0.46f, 0.50f, 0.49f, 0.78f, 0.40f, 0.83f, 0.67f, -0.33f, 0.58f, -0.30f, -0.21f, -0.04f, 0.66f, 0.51f, 0.67f, 0.41f, 0.72f, -0.30f, 0.10f, -0.84f, -0.44f, 0.08f, 0.35f, -0.01f, 0.14f, 0.19f, -0.03f, -0.10f, -0.21f, -0.14f, 0.08f, -0.44f, 0.05f, -0.62f, -0.02f, 0.48f, -0.46f, -0.34f};
 
-        State s1 = new State(f1, false);
-        State s2 = new State(f2, false);
+        StateQWOP s1 = new StateQWOP(f1, false);
+        StateQWOP s2 = new StateQWOP(f2, false);
 
-        State result = s1.subtract(s2);
+        StateQWOP result = s1.subtract(s2);
         Assert.assertArrayEquals(expected, result.flattenState(0), 1e-6f);
     }
 
@@ -59,10 +58,10 @@ public class StateTest {
                 0.077600f, 0.241900f, 0.344400f, 0.192200f, 0.098800f, 0.668800f, 0.780000f, 0.087400f, 0.631800f,
                 0.180000f, 0.425700f, 0.264000f, 0.252000f, 0.657000f, 0.350000f, 0.307800f, 0.262800f, 0.066500f, 0.318600f, 0.491400f, 0.058900f, 0.030100f, 0.135000f, 0.003600f, 0.437000f, 0.007600f, 0.515200f, 0.115200f, 0.000000f, 0.015600f, 0.207900f, 0.382500f, 0.124800f, 0.006800f, 0.292000f, 0.325500f, 0.374400f, 0.101200f, 0.176000f, 0.035500f, 0.028000f, 0.068400f, 0.590000f, 0.230400f, 0.453600f, 0.825600f, 0.115200f, 0.024500f, 0.066000f, 0.133400f, 0.286200f, 0.684000f, 0.189000f, 0.197800f, 0.345600f, 0.653200f, 0.003200f, 0.576000f, 0.081200f, 0.206400f, 0.228800f, 0.144300f, 0.118800f, 0.107100f, 0.173600f};
 
-                State s1 = new State(f1, false);
-        State s2 = new State(f2, false);
+                StateQWOP s1 = new StateQWOP(f1, false);
+        StateQWOP s2 = new StateQWOP(f2, false);
 
-        State result = s1.multiply(s2);
+        StateQWOP result = s1.multiply(s2);
         Assert.assertArrayEquals(expected, result.flattenState(0), 1e-6f);
     }
 
@@ -82,10 +81,10 @@ public class StateTest {
                 0.281250f, 0.5f, 17.333333f, 4.714286f, 1.888889f, 7.384615f, 68.000000f, 0.547945f, 2.657143f,
                 0.615385f, 0.522727f, 0.909091f, 14.200000f, 11.200000f, 8.444444f, 1.694915f, 4.000000f, 0.642857f, 1.116279f, 0.125000f, 0.102041f, 1.363636f, 2.521739f, 0.981481f, 1.184211f, 1.542857f, 0.934783f, 0.843750f, 0.771739f, 0.125000f, 1.111111f, 0.241379f, 1.116279f, 0.295455f, 0.948718f, 3.666667f, 0.269841f, 0.451613f};
 
-        State s1 = new State(f1, false);
-        State s2 = new State(f2, false);
+        StateQWOP s1 = new StateQWOP(f1, false);
+        StateQWOP s2 = new StateQWOP(f2, false);
 
-        State result = s1.divide(s2);
+        StateQWOP result = s1.divide(s2);
         Assert.assertArrayEquals(expected, result.flattenState(0), 1e-5f);
     }
 
@@ -93,7 +92,7 @@ public class StateTest {
     public void extractPositions() {
         float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
                 0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
-        State s = new State(f, false);
+        StateQWOP s = new StateQWOP(f, false);
 
 
         float[] fpos = s.extractPositions(0f);
@@ -120,7 +119,7 @@ public class StateTest {
     public void flattenState() {
         float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
                 0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
-        State s = new State(f, false);
+        StateQWOP s = new StateQWOP(f, false);
 
         float[] expected = new float[] {0.00f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.63f, 0.96f, 0.44f, 0.94f, 0.01f,
                 0.61f, 0.75f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.74f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.24f,
@@ -134,9 +133,9 @@ public class StateTest {
     public void xOffsetSubtract() {
         float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
                 0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
-        State s = new State(f, false);
+        StateQWOP s = new StateQWOP(f, false);
 
-        State offset = s.xOffsetSubtract(0.05f);
+        StateQWOP offset = s.xOffsetSubtract(0.05f);
         float[] fOffset = offset.flattenState(0f);
         float[] expected = new float[] {0.00f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.63f, 0.96f, 0.44f, 0.94f, 0.01f,
                 0.61f, 0.75f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.74f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.24f,
@@ -148,10 +147,10 @@ public class StateTest {
     public void getStateVariableFromName() {
         float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
                 0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
-        State s = new State(f, false);
+        StateQWOP s = new StateQWOP(f, false);
 
         int idx = 0;
-        StateVariable sv = s.getStateVariableFromName(ObjectName.BODY);
+        StateVariable6D sv = s.getStateVariableFromName(ObjectName.BODY);
         Assert.assertEquals(sv.getX(), f[idx++], 1e-12);
         Assert.assertEquals(sv.getY(), f[idx++], 1e-12);
         Assert.assertEquals(sv.getTh(), f[idx++], 1e-12);
@@ -249,7 +248,7 @@ public class StateTest {
 
         // Make sure that this order is ok too.
         idx = 0;
-        for (StateVariable sVar : s.getAllStateVariables()) {
+        for (StateVariable6D sVar : s.getAllStateVariables()) {
             Assert.assertEquals(sVar.getX(), f[idx++], 1e-12);
             Assert.assertEquals(sVar.getY(), f[idx++], 1e-12);
             Assert.assertEquals(sVar.getTh(), f[idx++], 1e-12);
@@ -263,18 +262,18 @@ public class StateTest {
     public void getCenterX() {
         float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
                 0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
-        State s = new State(f, false);
+        StateQWOP s = new StateQWOP(f, false);
         Assert.assertEquals(f[0], s.getCenterX(), 1e-12);
 
         f[0] = 100;
-        Assert.assertEquals(f[0], new State(f, false).getCenterX(), 1e-12);
+        Assert.assertEquals(f[0], new StateQWOP(f, false).getCenterX(), 1e-12);
     }
 
     @Test
     public void getStateVariableLength() {
         float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
                 0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
-        State s = new State(f, false);
+        StateQWOP s = new StateQWOP(f, false);
 
         Assert.assertEquals(12, s.getStateVariableCount());
         Assert.assertEquals(12, s.getAllStateVariables().length);
@@ -284,30 +283,30 @@ public class StateTest {
     public void getAllStateVariables() {
         float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
                 0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
-        State s = new State(f, false);
+        StateQWOP s = new StateQWOP(f, false);
 
-        StateVariable[] sv = s.getAllStateVariables();
+        StateVariable6D[] sv = s.getAllStateVariables();
 
         Assert.assertEquals(12, sv.length); // 12 body parts expected.
         Assert.assertEquals(f[0], sv[0].getX(), 1e-12f);
         Assert.assertEquals(f[2], sv[0].getTh(), 1e-12f);
         Assert.assertEquals(f[f.length - 1], sv[sv.length - 1].getDth(), 1e-12);
 
-        Assert.assertEquals(sv[1], s.getStateVariableFromName(State.ObjectName.HEAD));
+        Assert.assertEquals(sv[1], s.getStateVariableFromName(ObjectName.HEAD));
     }
 
     @Test
     public void getStateVariableCount() {
         float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
                 0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
-        State s = new State(f, false);
+        StateQWOP s = new StateQWOP(f, false);
 
         Assert.assertEquals(12, s.getStateVariableCount());
     }
 
     @Test
     public void isFailed() {
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
 
         Assert.assertFalse(game.getCurrentState().isFailed());
 
@@ -322,17 +321,17 @@ public class StateTest {
     public void testEquals() {
         float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
                 0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
-        State s1 = new State(f, false);
-        State s2 = new State(f, false);
+        StateQWOP s1 = new StateQWOP(f, false);
+        StateQWOP s2 = new StateQWOP(f, false);
 
         Assert.assertEquals(s1, s2);
 
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
 
         game.step(true, false, false, true);
         IState s3 = game.getCurrentState();
 
-        game.makeNewWorld();
+        game.resetGame();
         game.step(true, false, false, true);
         IState s4 = game.getCurrentState();
 
@@ -343,17 +342,17 @@ public class StateTest {
     public void testHashCode() {
         float[] f = new float[]{0.05f, 0.21f, 0.40f, 0.33f, 0.23f, 0.94f, 0.68f, 0.96f, 0.44f, 0.94f, 0.01f, 0.61f,
                 0.80f, 0.23f, 0.93f, 0.76f, 0.83f, 0.57f, 0.79f, 0.33f, 0.22f, 0.31f, 0.58f, 0.83f, 0.29f, 0.40f, 0.86f, 0.61f, 0.99f, 0.20f, 0.83f, 0.68f, 0.25f, 0.48f, 0.40f, 0.60f, 0.80f, 0.11f, 0.82f, 0.84f, 0.35f, 0.43f, 0.57f, 0.70f, 0.74f, 0.76f, 0.39f, 0.43f, 0.96f, 0.57f, 0.85f, 0.28f, 0.62f, 0.59f, 0.96f, 0.09f, 0.50f, 0.52f, 0.09f, 0.90f, 0.88f, 0.44f, 0.78f, 0.15f, 0.62f, 0.26f, 0.45f, 0.84f, 0.20f, 0.30f, 0.48f, 0.34f};
-        State s1 = new State(f, false);
-        State s2 = new State(f, false);
+        StateQWOP s1 = new StateQWOP(f, false);
+        StateQWOP s2 = new StateQWOP(f, false);
 
         Assert.assertEquals(s1.hashCode(), s2.hashCode());
 
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
 
         game.step(true, false, false, true);
         IState s3 = game.getCurrentState();
 
-        game.makeNewWorld();
+        game.resetGame();
         game.step(true, false, false, true);
         IState s4 = game.getCurrentState();
 

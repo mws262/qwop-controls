@@ -4,7 +4,7 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.gl2.GLUT;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.action.Action;
 import game.action.Command;
 import game.action.IActionGenerator;
@@ -258,8 +258,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N, C>,
     }
     /**
      * Create a new root node.
-     * @param rootState State of the runner at the root state. Usually {@link GameUnified#getInitialState()}.
-     * @param actionGenerator Object used to generate game.action used for potentially creating children of this node.
+     * @param rootState StateQWOP of the runner at the root state. Usually {@link GameQWOP#getInitialState()}.
+     * @param actionGenerator Object used to generate game.command used for potentially creating children of this node.
      */
     public NodeQWOPGraphicsBase(IState rootState, IActionGenerator<C> actionGenerator) {
         super(rootState, actionGenerator);
@@ -271,7 +271,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N, C>,
     /**
      * Create a new root node. This will use the default {@link IActionGenerator}. See
      * {@link NodeQWOPExplorableBase#NodeQWOPExplorableBase(IState)}.
-     * @param rootState State of the runner at the root state. Usually {@link GameUnified#getInitialState()}.
+     * @param rootState StateQWOP of the runner at the root state. Usually {@link GameQWOP#getInitialState()}.
      */
     public NodeQWOPGraphicsBase(IState rootState) {
         super(rootState);
@@ -287,9 +287,9 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N, C>,
      *
      * @param parent Parent of this node.
      * @param action Action bringing the runner from the state at the parent node to this node.
-     * @param state State reached at this node. This is a departure from previous versions in that the state MUST be
+     * @param state StateQWOP reached at this node. This is a departure from previous versions in that the state MUST be
      *              known before creating a new node.
-     * @param actionGenerator Object used to generate game.action used to potentially create children of this new node.
+     * @param actionGenerator Object used to generate game.command used to potentially create children of this new node.
      * @param doublyLinked Regardless, this node will have a reference to its parent. However, the parent may not be
      *                     aware of this node. If doubly linked, the information goes both ways. If not, then the
      *                     information only goes backwards up the tree.

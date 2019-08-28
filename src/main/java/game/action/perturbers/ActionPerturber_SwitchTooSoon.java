@@ -7,22 +7,22 @@ import game.action.Command;
 import java.util.Map;
 
 /**
- * Perturbs {@link ActionQueue} by making some or all of the transitions between game.action happen too early. Total
+ * Perturbs {@link ActionQueue} by making some or all of the transitions between game.command happen too early. Total
  * number of timesteps should be preserved.
  */
 public class ActionPerturber_SwitchTooSoon<C extends Command<?>> implements IActionPerturber<C> {
 
     /**
-     * Action indices as keys and number of timesteps to move as values. Timesteps are moved from the previous action
+     * Action indices as keys and number of timesteps to move as values. Timesteps are moved from the previous command
      * to the specified one.
      */
     private Map<Integer, Integer> perturbationIndexAndSize;
 
     /**
-     * Make a new perturber by defining which game.action should be changed and by how much.
+     * Make a new perturber by defining which game.command should be changed and by how much.
      *
-     * @param perturbationIndexAndSize Map specifying which action should be started too soon, and how early (in
-     *                                 timesteps) it should be started. Only the second action onward (indices 1+)
+     * @param perturbationIndexAndSize Map specifying which command should be started too soon, and how early (in
+     *                                 timesteps) it should be started. Only the second command onward (indices 1+)
      *                                 can be started early. "How early" are specified as positive integers.
      */
     public ActionPerturber_SwitchTooSoon(Map<Integer, Integer> perturbationIndexAndSize) {

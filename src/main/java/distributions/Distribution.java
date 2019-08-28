@@ -14,7 +14,7 @@ import static tree.Utility.randInt;
  * Framework for sampling from a discrete set on different distributions. Extend this to make specific distribution
  * types.
  *
- * @param <T> The types of objects to be sampled over, typically {@link Action game.action}.
+ * @param <T> The types of objects to be sampled over, typically {@link Action game.command}.
  */
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,

@@ -1,6 +1,8 @@
 package goals.q_learning;
 
 import game.cartpole.CartPole;
+import game.cartpole.CommandCartPole;
+import game.state.IState;
 import goals.q_learning.PolicyQNetwork.Timestep;
 
 import java.io.File;
@@ -20,7 +22,7 @@ public class PolicyQCartPole {
 
     // Returns the first ts in a game. Is a forward-linked list.
     public void playGame() {
-        cartPole.reset();
+        cartPole.resetGame();
         boolean done = false;
 
         Timestep firstTs = new Timestep();
@@ -31,10 +33,11 @@ public class PolicyQCartPole {
             net.addTimestep(currentTs);
 
             currentTs.state = cartPole.getCurrentState();
-            currentTs.action = net.policyExplore(currentTs.state);
-            cartPole.step(currentTs.action);
-            currentTs.reward = (float) cartPole.getLastReward();
-            done = cartPole.isDone();
+            CommandCartPole command = CommandCartPole.getByIndex(net.policyExplore(currentTs.state));
+            currentTs.commandOneHot = command.toOneHot();
+            cartPole.step(command);
+            currentTs.reward = cartPole.getLastReward();
+            done = cartPole.isFailed();
 
             if (prevTs != null) {
                 prevTs.nextTs = currentTs;
@@ -50,12 +53,12 @@ public class PolicyQCartPole {
     }
 
     public void justEvaluate() {
-        cartPole.reset();
+        cartPole.resetGame();
         int ts = 0;
-        while (!cartPole.isDone()) {
-            float[] state = cartPole.getCurrentState();
+        while (!cartPole.isFailed()) {
+            IState state = cartPole.getCurrentState();
             int action = net.policyGreedy(state);
-            cartPole.step(action);
+            cartPole.step(CommandCartPole.getByIndex(action));
             ts++;
             System.out.print(action);
         }

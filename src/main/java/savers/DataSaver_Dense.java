@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Saving to file with full state and action data at every timestep.
+ * Saving to file with full state and command data at every timestep.
  * Data formatting and crunching into a file is handled by inheriting
  * classes. This only covers the basic data collection from
  * Negotiator.
@@ -26,7 +26,7 @@ public abstract class DataSaver_Dense<C extends Command<?>> implements IDataSave
     final ArrayList<Action<C>> actionBuffer = new ArrayList<>();
 
     /**
-     * State buffer cleared once per game.
+     * StateQWOP buffer cleared once per game.
      */
     final ArrayList<IState> stateBuffer = new ArrayList<>();
 

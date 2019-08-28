@@ -15,7 +15,7 @@ public interface IGameStateSource {
      * Get whether the game is considered to be in a failed state.
      * @return Whether the game is failed (true is failed).
      */
-    boolean getFailureStatus();
+    boolean isFailed();
 
     /**
      * Get the number of timesteps elapsed since the beginning of this run.

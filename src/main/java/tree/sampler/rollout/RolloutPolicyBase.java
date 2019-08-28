@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
-import game.GameConstants;
+import game.qwop.CommandQWOP;
+import game.qwop.QWOPConstants;
 import game.IGameInternal;
 import game.action.*;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 /**
- * Sometimes, rollouts need to be a composite of many game.action, some which may involve multiple simulations. This
+ * Sometimes, rollouts need to be a composite of many game.command, some which may involve multiple simulations. This
  * interface allows for more complicated evaluations to be run.
  *
  * @author matt
@@ -46,12 +47,12 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
     /**
      * Run the simulation to get back to a specified node.
      * @param targetNode Node we want to simulate to.
-     * @param game Game used for simulation. Will be reset before simulating.
+     * @param game Game used for simulation. Will be resetGame before simulating.
      */
     void simGameToNode(@NotNull NodeQWOPBase<?, C> targetNode,
                        @NotNull IGameInternal<C> game) {
-        // Reset the game and action queue.
-        game.makeNewWorld();
+        // Reset the game and command queue.
+        game.resetGame();
         actionQueue.clearAll();
         targetNode.getSequence(actionSequence);
         actionQueue.addSequence(actionSequence);
@@ -65,12 +66,12 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * Force-set the state of the game to the state at a node. This is not the same thing since the warm-start states
      * will not be set.
      * @param target Node to set the game's state to.
-     * @param game Game used for simulation. Will be reset before setting the state.
+     * @param game Game used for simulation. Will be resetGame before setting the state.
      */
     void coldStartGameToNode(@NotNull NodeQWOPBase<?, C> target,
                              @NotNull IGameInternal game) {
         // Reset the game.
-        game.makeNewWorld();
+        game.resetGame();
         actionQueue.clearAll();
         game.setState(target.getState());
     }
@@ -96,13 +97,13 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
 
         int timestepCounter = 0;
         // Falling, too many timesteps, reaching the finish line.
-        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps && rolloutNode.getState().getCenterX() < GameConstants.goalDistance) {
+        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps && rolloutNode.getState().getCenterX() < QWOPConstants.goalDistance) {
             Action<C> childAction = getRolloutController().policy(rolloutNode);
 
             actionQueue.addAction(childAction);
 
             NodeQWOPBase<?, C> intermediateNodeBefore = rolloutNode;
-            while (!actionQueue.isEmpty() && !game.getFailureStatus() && timestepCounter < maxTimesteps) {
+            while (!actionQueue.isEmpty() && !game.isFailed() && timestepCounter < maxTimesteps) {
                 game.step(actionQueue.pollCommand());
                 NodeQWOPBase<?, C> intermediateNodeAfter = intermediateNodeBefore.addBackwardsLinkedChild(childAction,
                         game.getCurrentState());
@@ -165,25 +166,25 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
     public abstract RolloutPolicyBase<C> getCopy();
 
     public static IActionGenerator<CommandQWOP> getQWOPRolloutActionGenerator() {
-        /* Space of allowed game.action to sample */
+        /* Space of allowed game.command to sample */
         //Distribution<Action> uniform_dist = new Distribution_Equal();
 
-        /* Repeated action 1 -- no keys pressed. */
+        /* Repeated command 1 -- no keys pressed. */
         Distribution<Action<CommandQWOP>> dist1 = new Distribution_Normal<>(12, 5f);
         ActionList<CommandQWOP> actionList1 = ActionList.makeActionList(IntStream.range(2, 20).toArray(),
                 CommandQWOP.NONE, dist1);
 
-        /*  Repeated action 2 -- W-O pressed */
+        /*  Repeated command 2 -- W-O pressed */
         Distribution<Action<CommandQWOP>> dist2 = new Distribution_Normal<>(20, 5f);
         ActionList<CommandQWOP> actionList2 = ActionList.makeActionList(IntStream.range(15, 30).toArray(),
                 CommandQWOP.WO, dist2);
 
-        /* Repeated action 3 -- W-O pressed */
+        /* Repeated command 3 -- W-O pressed */
         Distribution<Action<CommandQWOP>> dist3 = new Distribution_Normal<>(12f, 5f);
         ActionList<CommandQWOP> actionList3 = ActionList.makeActionList(IntStream.range(2, 20).toArray(),
                 CommandQWOP.NONE, dist3);
 
-        /*  Repeated action 4 -- Q-P pressed */
+        /*  Repeated command 4 -- Q-P pressed */
         Distribution<Action<CommandQWOP>> dist4 = new Distribution_Normal<>(20, 5f);
         ActionList<CommandQWOP> actionList4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), CommandQWOP.QP,
                 dist4);

@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import distributions.Distribution;
 import distributions.Distribution_Equal;
+import game.qwop.CommandQWOP;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +26,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * An ActionList acts like an {@link java.util.ArrayList} for {@link Action game.action}, except it allows for sampling
+ * An ActionList acts like an {@link java.util.ArrayList} for {@link Action game.command}, except it allows for sampling
  * from the list on a {@link Distribution}. DOES NOT ALLOW DUPLICATES!!
  *
  * @author Matt
@@ -45,7 +46,7 @@ public class ActionList<C extends Command<?>> extends ArrayList<Action<C>> {
      * Create a new ActionList which can sample according to the rules of a {@link Distribution}. It may otherwise be
      * treated as an {@link ArrayList}.
      *
-     * @param samplingDistribution Distribution that samples of the action set will be pulled when calling
+     * @param samplingDistribution Distribution that samples of the command set will be pulled when calling
      * {@link ActionList#sampleDistribution}.
      */
     public ActionList(@JsonProperty("samplingDistribution") Distribution<Action<C>> samplingDistribution) {
@@ -66,7 +67,7 @@ public class ActionList<C extends Command<?>> extends ArrayList<Action<C>> {
     /**
      * Get a random sample from the defined distribution.
      *
-     * @return An action sampled from this ActionList according to its defined {@link Distribution}.
+     * @return An command sampled from this ActionList according to its defined {@link Distribution}.
      **/
     public Action<C> sampleDistribution() {
         return samplingDistribution.randOnDistribution(this);
@@ -87,7 +88,7 @@ public class ActionList<C extends Command<?>> extends ArrayList<Action<C>> {
     /**
      * Same but for one set of keys and multiple durations.
      *
-     * @param durations Timestep duration of the game.action to be created.
+     * @param durations Timestep duration of the game.command to be created.
      * @param dist Selection distribution for sampling over the {@link ActionList}.
      * @return ActionList created with one {@link Action} per duration specified.
      */
@@ -103,8 +104,8 @@ public class ActionList<C extends Command<?>> extends ArrayList<Action<C>> {
     /**
      * Make an {@link ActionList} containing all key combinations for all durations between the specified bounds.
      * @param minDuration Inclusive bound. Minimum {@link Action} duration to be found in the list.
-     * @param maxDuration Exclusive bound. Upper bound on durations of game.action found in this list.
-     * @param distribution Distribution for sampling game.action once this list is created.
+     * @param maxDuration Exclusive bound. Upper bound on durations of game.command found in this list.
+     * @param distribution Distribution for sampling game.command once this list is created.
      * @return An exhaustive {@link ActionList}.
      */
     @SuppressWarnings("unused")
@@ -141,7 +142,7 @@ public class ActionList<C extends Command<?>> extends ArrayList<Action<C>> {
 
     /**
      * Get an ActionList containing no elements.
-     * @return An empty list of game.action.
+     * @return An empty list of game.command.
      */
     public static <C extends Command<?>> ActionList<C> getEmptyList() {
         return new ActionList<>(new Distribution_Equal<>());
@@ -218,7 +219,7 @@ public class ActionList<C extends Command<?>> extends ArrayList<Action<C>> {
     // serializing, I write the command type explicitly to the JSON. Then I have deserialization cases in the
     // deserializer that need to match the toString in the command. Ugly, but it works. One advantage is that it does
     // format actions as "actiontype : 'duration1 duration2 duration3...'. This format is much more concise than the
-    // individual serialization of each action duration separately.
+    // individual serialization of each command duration separately.
     public static class ActionListDeserializer<C extends Command<?>> extends StdDeserializer<ActionList<C>> {
 
         // Will throw exception without.

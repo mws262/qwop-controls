@@ -2,8 +2,8 @@ package goals.data_visualization;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameUnified;
-import game.action.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.CommandQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOPGraphics;
@@ -84,7 +84,7 @@ public class MAIN_SnapshotAll extends JFrame {
             return;
         }
 
-        NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameUnified.getInitialState());
+        NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState());
 
         SavableFileIO<SavableSingleGame<CommandQWOP>> fileIO = new SavableFileIO<>();
         List<SavableSingleGame<CommandQWOP>> games = new ArrayList<>();

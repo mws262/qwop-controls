@@ -2,8 +2,8 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_ValueFunction;
-import game.GameUnified;
-import game.action.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.CommandQWOP;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +28,7 @@ import java.util.Objects;
  */
 public class PanelRunner_ControlledTFlow
         extends PanelRunner_Controlled<Controller_ValueFunction<CommandQWOP, ValueFunction_TensorFlow<CommandQWOP>>,
-        GameUnified> implements MouseListener,
+        GameQWOP> implements MouseListener,
         MouseMotionListener,
         ActionListener {
 
@@ -77,7 +77,7 @@ public class PanelRunner_ControlledTFlow
     private float disturbanceY;
 
     public PanelRunner_ControlledTFlow(@JsonProperty("name") String name,
-                                       @JsonProperty("game") GameUnified game,
+                                       @JsonProperty("game") GameQWOP game,
                                        @JsonProperty("modelLocation") String modelLocation,
                                        @JsonProperty("checkpointLocation") String checkpointLocation) {
         super(name, game, null);
@@ -315,7 +315,7 @@ public class PanelRunner_ControlledTFlow
     public void mouseMoved(MouseEvent e) {}
 
     @Override
-    void applyDisturbance(GameUnified game) {
+    void applyDisturbance(GameQWOP game) {
         game.applyBodyImpulse(disturbanceX, disturbanceY);
     }
 

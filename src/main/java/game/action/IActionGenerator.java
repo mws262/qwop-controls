@@ -24,16 +24,16 @@ import java.util.Set;
 })
 public interface IActionGenerator<C extends Command<?>> {
     /**
-     * Get an {@link ActionList} of potential game.action to explore from a newly created node as its potential children.
+     * Get an {@link ActionList} of potential game.command to explore from a newly created node as its potential children.
      *
-     * @param parentNode Node for which we want to pick potential child game.action.
-     * @return A set of game.action to try as potential children.
+     * @param parentNode Node for which we want to pick potential child game.command.
+     * @return A set of game.command to try as potential children.
      */
     @JsonIgnore
     ActionList<C> getPotentialChildActionSet(NodeQWOPExplorableBase<?, C> parentNode);
 
     /**
-     * Get a set of all possible game.action which this generator could return.
+     * Get a set of all possible game.command which this generator could return.
      * @return All possibly generated Actions.
      */
     @JsonIgnore

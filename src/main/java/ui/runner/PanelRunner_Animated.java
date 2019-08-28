@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.IGameInternal;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.NodeQWOPExplorableBase;
@@ -29,7 +29,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     protected IGameInternal<CommandQWOP> game;
 
     /**
-     * Stores the QWOP game.action we're going to execute.
+     * Stores the QWOP game.command we're going to execute.
      */
     private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
 
@@ -55,7 +55,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
     public PanelRunner_Animated(@JsonProperty("name") String name) {
         this.name = name;
-        game = new GameUnified();
+        game = new GameQWOP();
     }
 
     /**
@@ -67,7 +67,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
 
         fastForwardTimesteps = 0;
         actionQueue.clearAll();
-        game.makeNewWorld();
+        game.resetGame();
         List<Action<CommandQWOP>> actionList = new ArrayList<>();
         node.getSequence(actionList);
         actionQueue.addSequence(actionList);
@@ -79,7 +79,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     /**
-     * This version only animates the game.action between startNode and endNode. Still simulates all of course.
+     * This version only animates the game.command between startNode and endNode. Still simulates all of course.
      */
     public void simRunToNode(NodeQWOPExplorableBase<?, CommandQWOP> startNode,
                              NodeQWOPExplorableBase<?, CommandQWOP> endNode) {
@@ -93,14 +93,14 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     /**
-     * Add a single action to the end of what is already going on.
+     * Add a single command to the end of what is already going on.
      */
     public void addAction(Action<CommandQWOP> action) {
         actionQueue.addAction(action);
     }
 
     /**
-     * Pop the next action off the queue and execute one timestep.
+     * Pop the next command off the queue and execute one timestep.
      */
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {
@@ -160,7 +160,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     /**
-     * Play/pause the current visualized simulation. Flag is reset by calling again or by selecting a new node to
+     * Play/pause the current visualized simulation. Flag is resetGame by calling again or by selecting a new node to
      * visualize.
      */
     public void pauseToggle() {

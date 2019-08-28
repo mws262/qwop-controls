@@ -3,11 +3,9 @@ package value;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-import game.GameConstants;
-import game.GameUnified;
+import game.qwop.*;
 import game.IGameSerializable;
 import game.action.Action;
-import game.action.CommandQWOP;
 import game.state.IState;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -24,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 
-import static game.action.CommandQWOP.Keys;
+import static game.qwop.CommandQWOP.Keys;
 
 public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow<CommandQWOP> {
 
@@ -43,7 +41,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     List<EvaluationResult> evalResults;
     List<FuturePredictor> evaluations;
 
-    public final GameUnified gameTemplate;
+    public final GameQWOP gameTemplate;
     public final String fileName;
 
     /**
@@ -54,12 +52,14 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     private static final Logger logger = LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class);
 
+    StateNormalizerQWOP stateNormalizer = new StateNormalizerQWOP(StateNormalizerQWOP.NormalizationMethod.STDEV);
+
     /**
      * Constructor which loads an existing value function net.
      * @param file .pb file of the existing net.
      * @throws FileNotFoundException Unable to find an existing net.
      */
-    public ValueFunction_TensorFlow_StateOnly(File file, GameUnified gameTemplate, boolean tensorboardLogging) throws FileNotFoundException {
+    public ValueFunction_TensorFlow_StateOnly(File file, GameQWOP gameTemplate, boolean tensorboardLogging) throws FileNotFoundException {
         super(file, tensorboardLogging);
         Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
                 "state size.", gameTemplate.getStateDimension());
@@ -82,7 +82,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * @throws FileNotFoundException Model file was not successfully created.
      */
     public ValueFunction_TensorFlow_StateOnly(@JsonProperty("fileName") String fileName,
-                                              @JsonProperty("gameTemplate") GameUnified gameTemplate,
+                                              @JsonProperty("gameTemplate") GameQWOP gameTemplate,
                                               @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                                               @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
                                               @JsonProperty("activeCheckpoint") String checkpointFile,
@@ -99,7 +99,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     /**
      * Assign the futures that will be explored on each controller evaluation.
      */
-    private void assignFuturePredictors(GameUnified gameTemplate) {
+    private void assignFuturePredictors(GameQWOP gameTemplate) {
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
         int min = 2;
@@ -166,7 +166,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     @Override
     float[] assembleInputFromNode(NodeQWOPBase<?, CommandQWOP> node) {
-        return node.getState().flattenStateWithRescaling(stateStats);
+        // TODO fix cast.
+        return stateNormalizer.transform(((StateQWOP) node.getState()));
     }
 
     @Override
@@ -180,7 +181,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     public static class EvaluationResult implements Comparable<EvaluationResult> {
 
         /**
-         * Value after the specified action.
+         * Value after the specified command.
          */
         public float value = -Float.MAX_VALUE;
 
@@ -195,7 +196,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         public Keys keys;
 
         /**
-         * State observed from this evaluation.
+         * StateQWOP observed from this evaluation.
          */
         public IState state;
 
@@ -222,7 +223,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Game copy used to predict this future.
          */
-        GameUnified gameLocal;
+        GameQWOP gameLocal;
 
         /**
          * Initial state of this future prediction.
@@ -256,7 +257,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          * Number of physics iterations to start this prediction with. It is useful to have this greater than default
          * to let the cold-started game "catch up" to the normal game.
          */
-        private final int initialPhysicsIterations = 4 * GameConstants.physIterations;
+        private final int initialPhysicsIterations = 4 * QWOPConstants.physIterations;
 
         /**
          * Number of timesteps to run the game at the modified number of physics iterations before going back to
@@ -279,7 +280,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          */
         EvaluationResult bestResult = new EvaluationResult();
 
-        FuturePredictor(GameUnified gameTemplate, Keys keys, int minHorizon, int maxHorizon) {
+        FuturePredictor(GameQWOP gameTemplate, Keys keys, int minHorizon, int maxHorizon) {
             this.gameLocal = gameTemplate.getCopy();
             this.keys = keys;
             command = CommandQWOP.getCommand(keys);
@@ -302,22 +303,22 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
             if (useSerializedState) {
                 gameLocal = gameLocal.restoreSerializedState(startStateFull);
-                gameLocal.iterations = GameConstants.physIterations; // Don't need to 'catch up', since full game is
+                gameLocal.iterations = QWOPConstants.physIterations; // Don't need to 'catch up', since full game is
             } else {
                 if (newGameBetweenPredictions)
-                    gameLocal.makeNewWorld();
+                    gameLocal.resetGame();
 
                 gameLocal.setState(startingState);
                 gameLocal.iterations = initialPhysicsIterations; // Catch-up iterations for cold-start game to
                 // "catch-up" to warm-started game.
             }
 
-            float startX = gameLocal.getCurrentState().getStateVariableFromName(IState.ObjectName.BODY).getX();
+            float startX = gameLocal.getCurrentState().getCenterX();
 
             // Reset the game and set it to the specified starting state.
             bestResult.value = -Float.MAX_VALUE;
 
-            // Keep track of a window of three adjacent game.action. Some of the selection approaches do a
+            // Keep track of a window of three adjacent game.command. Some of the selection approaches do a
             // best-worst-case.
             float val1;
             float val2 = 0;
@@ -329,7 +330,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             for (int i = 1; i <= maxHorizon; i++) {
                 // Return to the normal number of physics iterations after the first step.
                 if (i > warmstartIterationCount) {
-                    gameLocal.iterations = GameConstants.physIterations;
+                    gameLocal.iterations = QWOPConstants.physIterations;
                 }
 
                 x2 = x3;
@@ -341,7 +342,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 val2 = val3;
                 val3 = evaluate(nextNode);
 
-                x3 = st.getStateVariableFromName(IState.ObjectName.BODY).getX();
+                x3 = st.getCenterX();
 
                 if (i == 1) {
                     // val1 = val3;

@@ -1,10 +1,10 @@
 package tree.sampler.rollout;
 
 import controllers.Controller_Random;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
 import game.state.IState;
 import org.junit.Assert;
@@ -52,8 +52,8 @@ public class RolloutPolicy_DeltaScoreTest {
     @Before
     public void setup() {
         // Set up a demo tree.
-        GameUnified game = new GameUnified();
-        root = new NodeQWOPExplorable<>(GameUnified.getInitialState(),
+        GameQWOP game = new GameQWOP();
+        root = new NodeQWOPExplorable<>(GameQWOP.getInitialState(),
                 ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
 
         // First branch.
@@ -70,7 +70,7 @@ public class RolloutPolicy_DeltaScoreTest {
         n1_2_3 = n1_2.addDoublyLinkedChild(a3, s1_2_3);
 
         // Fork off first branch.
-        game.makeNewWorld();
+        game.resetGame();
         game.doAction(a1);
         game.doAction(a2);
         game.doAction(a4);
@@ -78,7 +78,7 @@ public class RolloutPolicy_DeltaScoreTest {
         n1_2_4 = n1_2.addBackwardsLinkedChild(a4, s1_2_4);
 
         // Another branch.
-        game.makeNewWorld();
+        game.resetGame();
         game.doAction(a2);
         s2 = game.getCurrentState();
         n2 = root.addDoublyLinkedChild(a2, s2);
@@ -92,7 +92,7 @@ public class RolloutPolicy_DeltaScoreTest {
 
     @Test
     public void simGameToNode() {
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
 
         rollout.simGameToNode(n1_2_4, game);
         IState st1 = game.getCurrentState();
@@ -107,11 +107,11 @@ public class RolloutPolicy_DeltaScoreTest {
 
     @Test
     public void coldStartGameToNode() {
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
         game.step(true, false, false, true);
         IState st1 = game.getCurrentState();
 
-        game.makeNewWorld();
+        game.resetGame();
         rollout.coldStartGameToNode(new NodeQWOP<>(st1), game);
         IState st2 = game.getCurrentState();
 
@@ -124,7 +124,7 @@ public class RolloutPolicy_DeltaScoreTest {
 //        Assert.assertFalse(n1_2_4.isFullyExplored());
 //        Assert.assertFalse(n1_2_4.getState().isFailed());
 //        int startNodeChildOptions = startNode.getUntriedActionCount();
-//        GameUnified game = new GameUnified();
+//        GameQWOP game = new GameQWOP();
 //
 //        // For no maximum of timesteps. Always goes until failure.
 //        Set<NodeQWOPExplorableBase<?>> rolloutResults = new HashSet<>();
@@ -134,7 +134,7 @@ public class RolloutPolicy_DeltaScoreTest {
 //        }
 //
 //        for (NodeQWOPExplorableBase<?> node : rolloutResults) {
-//            // Make sure that all action used in the rollout are ones that the ActionGenerator can generate.
+//            // Make sure that all command used in the rollout are ones that the ActionGenerator can generate.
 //            Set<Action> rolloutActions = new HashSet<>();
 //            node.recurseUpTreeInclusive(n -> {
 //                if (n.getTreeDepth() > startNode.getTreeDepth()) {
@@ -152,7 +152,7 @@ public class RolloutPolicy_DeltaScoreTest {
 //        }
 //
 //        for (NodeQWOPExplorableBase<?> node : rolloutResults) {
-//            // Make sure that all action used in the rollout are ones that the ActionGenerator can generate.
+//            // Make sure that all command used in the rollout are ones that the ActionGenerator can generate.
 //            Set<Action> rolloutActions = new HashSet<>();
 //            node.recurseUpTreeInclusive(n -> {
 //                if (n.getTreeDepth() > startNode.getTreeDepth()) {
@@ -186,7 +186,7 @@ public class RolloutPolicy_DeltaScoreTest {
             RolloutPolicy_DeltaScore<CommandQWOP> rollout = new RolloutPolicy_DeltaScore<>(evalFun,
                     RolloutPolicyBase.getQWOPRolloutActionGenerator(),
                     new Controller_Random<>(), ts);
-            GameUnified game = new GameUnified();
+            GameQWOP game = new GameQWOP();
             NodeQWOPExplorable<CommandQWOP> startNode = n1_2_3;
             int startIterations = game.iterations;
             rollout.simGameToNode(startNode, game);

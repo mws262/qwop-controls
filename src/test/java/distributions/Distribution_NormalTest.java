@@ -1,7 +1,7 @@
 package distributions;
 
 import game.action.Action;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +31,7 @@ public class Distribution_NormalTest {
         // Distribution with 0 standard deviation should always produce the same value.
         Distribution<Action> distributionZeroStdev = new Distribution_Normal(5, 0);
 
-        // See if it finds the action with duration equalling the mean.
+        // See if it finds the command with duration equalling the mean.
         Action selectedAction = distributionZeroStdev.randOnDistribution(actionList);
         Assert.assertEquals(a1, selectedAction);
 

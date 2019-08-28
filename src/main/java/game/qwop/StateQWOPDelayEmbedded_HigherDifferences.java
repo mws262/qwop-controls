@@ -1,6 +1,4 @@
-package game.state;
-
-import data.LoadStateStatistics;
+package game.qwop;
 
 /**
  * For each additional normal state given, this will use the poses from the first, use the first two poses to to get
@@ -10,8 +8,8 @@ import data.LoadStateStatistics;
  *
  * @author matt
  */
-public class StateDelayEmbedded_HigherDifferences extends StateDelayEmbedded {
-    public StateDelayEmbedded_HigherDifferences(State[] states) {
+public class StateQWOPDelayEmbedded_HigherDifferences extends StateQWOPDelayEmbedded_Poses {
+    public StateQWOPDelayEmbedded_HigherDifferences(StateQWOP[] states) {
         super(states);
     }
 
@@ -19,12 +17,12 @@ public class StateDelayEmbedded_HigherDifferences extends StateDelayEmbedded {
     @Override
     public float[] flattenState() {
 
-        float[] flatState = new float[3 * stateVariableCount];
+        float[] flatState = new float[stateSize];
 
         // Subtract out the current body x from all other x coordinates, even the time delayed ones.
         float xOffset = individualStates[0].getCenterX();
 
-        State[] differencedStates = getDifferencedStates(individualStates);
+        StateQWOP[] differencedStates = getDifferencedStates(individualStates);
         for (int i = 0; i < individualStates.length; i++) {
             if (i > 0) {
                 xOffset = 0;
@@ -33,28 +31,28 @@ public class StateDelayEmbedded_HigherDifferences extends StateDelayEmbedded {
         }
         return flatState;
     }
+//
+//    @Override
+//    public float[] flattenStateWithRescaling(StateNormalizerQWOP.StateStatistics stateStatistics) {
+//        float[] flatState = flattenState();
+//        float xOffset = individualStates[0].getCenterX();
+//        float[] flatRescaled =
+//                individualStates[0]
+//                        .xOffsetSubtract(xOffset)
+//                        .subtract(stateStatistics.getMean())
+//                        .divide(stateStatistics.getStdev())
+//                        .extractPositions();
+//        System.arraycopy(flatRescaled, 0, flatState, 0, 36);
+//
+//        return flatState;
+//    }
 
-    @Override
-    public float[] flattenStateWithRescaling(LoadStateStatistics.StateStatistics stateStatistics) {
-        float[] flatState = flattenState();
-        float xOffset = individualStates[0].getCenterX();
-        float[] flatRescaled =
-                individualStates[0]
-                        .xOffsetSubtract(xOffset)
-                        .subtract(stateStatistics.getMean())
-                        .divide(stateStatistics.getStdev())
-                        .extractPositions();
-        System.arraycopy(flatRescaled, 0, flatState, 0, 36);
-
-        return flatState;
-    }
-
-    State[] getDifferencedStates(State[] states) {
-        State[] finalDifferences = new State[states.length];
+    private static StateQWOP[] getDifferencedStates(StateQWOP[] states) {
+        StateQWOP[] finalDifferences = new StateQWOP[states.length];
 
         finalDifferences[0] = states[0];
         for (int j = 1; j < finalDifferences.length; j++) {
-            State[] stateDiff = new State[states.length - 1];
+            StateQWOP[] stateDiff = new StateQWOP[states.length - 1];
 
             for (int i = 0; i < states.length - 1; i++) {
                 stateDiff[i] = states[i + 1].subtract(states[i]);

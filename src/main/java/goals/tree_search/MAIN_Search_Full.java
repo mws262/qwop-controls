@@ -2,12 +2,12 @@ package goals.tree_search;
 
 import controllers.Controller_Random;
 import game.action.ActionGenerator_FixedSequence;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
 import data.SavableFileIO;
 import data.SavableSingleGame;
 import data.SparseDataToDenseTFRecord;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.evaluator.EvaluationFunction_Constant;
@@ -117,7 +117,7 @@ public class MAIN_Search_Full extends SearchTemplate {
         }
 
         if (doStage1) {
-            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameUnified.getInitialState(),
+            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState(),
                     actionGenerator);
             NodeQWOPGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
@@ -143,7 +143,7 @@ public class MAIN_Search_Full extends SearchTemplate {
         }
         if (doStage2) {
             logger.info("Starting stage 2.");
-            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameUnified.getInitialState(),
+            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState(),
                     actionGenerator);
 
             NodeQWOPGraphics.pointsToDraw.clear();
@@ -193,8 +193,8 @@ public class MAIN_Search_Full extends SearchTemplate {
                 recoveryResumePoint = startIdx;
             }
 
-            // Saver makeNewWorld.
-            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameUnified.getInitialState(),
+            // Saver resetGame.
+            NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState(),
                     actionGenerator);
             NodeQWOPGraphics.pointsToDraw.clear();
             ui.clearRootNodes();

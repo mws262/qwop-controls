@@ -1,9 +1,9 @@
 package goals.tree_search;
 
 import controllers.Controller_Random;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.action.ActionGenerator_FixedSequence;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import tree.TreeWorker;
 import tree.node.NodeQWOPGraphics;
 import tree.node.evaluator.EvaluationFunction_Constant;
@@ -41,7 +41,7 @@ public class MAIN_Search_Robust extends SearchTemplate {
     }
 
     private void doGames() {
-        NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameUnified.getInitialState(),
+        NodeQWOPGraphics<CommandQWOP> rootNode = new NodeQWOPGraphics<>(GameQWOP.getInitialState(),
                 ActionGenerator_FixedSequence.makeDefaultGenerator(10));
         ui.addRootNode(rootNode);
 

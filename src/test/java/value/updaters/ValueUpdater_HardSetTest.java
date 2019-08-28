@@ -1,8 +1,8 @@
 package value.updaters;
 
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.action.Action;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,7 +13,7 @@ public class ValueUpdater_HardSetTest {
     @Test
     public void update() {
 
-        IState s = GameUnified.getInitialState();
+        IState s = GameQWOP.getInitialState();
         NodeQWOP<CommandQWOP> root = new NodeQWOP<>(s);
 
         Action<CommandQWOP> a1 = new Action<>(4, CommandQWOP.Q);

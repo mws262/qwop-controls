@@ -2,13 +2,12 @@ package game.action.perturbers;
 
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +45,7 @@ public class ActionPerturber_SwitchTooSoonTest {
         aq = makeActionQueue();
         originalActions = aq.getActionsInCurrentRun();
         perturbMap = new HashMap<>();
-        perturbMap.put(2, 13); // Can't subtract 13 from action 2, should do 12.
+        perturbMap.put(2, 13); // Can't subtract 13 from command 2, should do 12.
         actionPerturber1 = new ActionPerturber_SwitchTooSoon(perturbMap);
         queuePerturbed1 = actionPerturber1.perturb(aq);
         actions = queuePerturbed1.getActionsInCurrentRun();
@@ -69,8 +68,8 @@ public class ActionPerturber_SwitchTooSoonTest {
         aq = makeActionQueue();
         originalActions = aq.getActionsInCurrentRun();
         perturbMap = new HashMap<>();
-        perturbMap.put(3, 5); // Can't subtract 13 from action 2, should do 12.
-        perturbMap.put(4, 6); // Can't subtract 13 from action 2, should do 12.
+        perturbMap.put(3, 5); // Can't subtract 13 from command 2, should do 12.
+        perturbMap.put(4, 6); // Can't subtract 13 from command 2, should do 12.
         actionPerturber1 = new ActionPerturber_SwitchTooSoon(perturbMap);
         queuePerturbed1 = actionPerturber1.perturb(aq);
         actions = queuePerturbed1.getActionsInCurrentRun();

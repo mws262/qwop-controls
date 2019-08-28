@@ -1,10 +1,8 @@
-package game;
+package game.qwop;
 
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
 import game.state.IState;
-import game.state.State;
 import org.jetbrains.annotations.NotNull;
 import tflowtools.TensorflowLoader;
 import org.tensorflow.Tensor;
@@ -15,7 +13,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GamePredictor extends TensorflowLoader {
+public class GameQWOPPredictor extends TensorflowLoader {
 
     private final String stateInputName = "input/qwop_state_input";
     private final String actionInputName = "input/qwop_action_input";
@@ -31,7 +29,7 @@ public class GamePredictor extends TensorflowLoader {
      * @param pbFile    Name of the graph save file (usually *.pb), including the file extension.
      * @param directory Directory name containing the graph save file.
      */
-    public GamePredictor(@NotNull String pbFile, @NotNull String directory) {
+    public GameQWOPPredictor(@NotNull String pbFile, @NotNull String directory) {
         super(pbFile, directory);
     }
 
@@ -63,7 +61,7 @@ public class GamePredictor extends TensorflowLoader {
                         [(int) outputShape[1]]
                         [(int) outputShape[2]])[0][0];
 
-        resultStates.add(new State(reshapedResult, false));
+        resultStates.add(new StateQWOP(reshapedResult, false));
 
         // Second evaluation, we have an internal state to feed in.
         while (!actions.isEmpty()) {
@@ -83,7 +81,7 @@ public class GamePredictor extends TensorflowLoader {
                             [(int) outputShape[1]]
                             [(int) outputShape[2]])[0][0];
 
-            resultStates.add(new State(reshapedResult, false));
+            resultStates.add(new StateQWOP(reshapedResult, false));
 
         }
         stateInputTensor.close();
@@ -97,7 +95,7 @@ public class GamePredictor extends TensorflowLoader {
      * Turn an Action into a 3 element, one-hot tensor. This is explicitly for the WO, QP [NONE] key combinations.
      * Any order is allowed, but only those three key configurations.
      *
-     * @return 3 element float tensor with one-hot representation of the action.
+     * @return 3 element float tensor with one-hot representation of the command.
      */
     private Tensor<Float> makeActionTensor(CommandQWOP command) {
         float[][][] oneHotAction = new float[1][1][3];
@@ -115,10 +113,10 @@ public class GamePredictor extends TensorflowLoader {
     }
 
     public static void main(String[] args) {
-        GamePredictor gp = new GamePredictor("frozen_model.pb", "src/main/resources/tflow_models");
+        GameQWOPPredictor gp = new GameQWOPPredictor("frozen_model.pb", "src/main/resources/tflow_models");
         Runtime.getRuntime().addShutdownHook(new Thread(gp::close));
 
-        IState initState = GameUnified.getInitialState();
+        IState initState = GameQWOP.getInitialState();
         Action<CommandQWOP> singleAction = new Action<>(1000, CommandQWOP.WO);
 
         ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();

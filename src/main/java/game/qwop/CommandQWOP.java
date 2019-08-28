@@ -1,7 +1,8 @@
-package game.action;
+package game.qwop;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;

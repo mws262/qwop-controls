@@ -1,9 +1,9 @@
 package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import tree.node.filter.NodeFilter_Downsample;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.state.IState;
 import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
@@ -106,7 +106,7 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implem
             for (int i = 0; i < encoders.size(); i++) {
                 List<IState> predictedStateList = encoders.get(i).compressAndDecompress(inStates);
                 IState predictedState = predictedStateList.get(0);
-                GameUnified.drawExtraRunner((Graphics2D) g, predictedState, encoders.get(i).getName(), super.runnerScaling,
+                GameQWOP.drawExtraRunner((Graphics2D) g, predictedState, encoders.get(i).getName(), super.runnerScaling,
                         super.xOffsetPixels + i * 100 + 150, super.yOffsetPixels,
                         NodeQWOPGraphicsBase.getColorFromTreeDepth(i, NodeQWOPGraphicsBase.lineBrightnessDefault),
                         normalStroke);

@@ -18,7 +18,7 @@ import java.awt.*;
 public interface IGameInternal<C extends Command<?>> extends IGameExternal<C> {
 
     /** Reset the runner to its starting state. **/
-    void makeNewWorld();
+    void resetGame();
 
     void step(C command);
 
@@ -27,5 +27,5 @@ public interface IGameInternal<C extends Command<?>> extends IGameExternal<C> {
     void setState(IState st);
 
     @JsonIgnore
-    IGameInternal getCopy();
+    IGameInternal<C> getCopy();
 }

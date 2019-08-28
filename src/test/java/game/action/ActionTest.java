@@ -1,5 +1,6 @@
 package game.action;
 
+import game.qwop.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,14 +29,14 @@ public class ActionTest {
 
     @Test
     public void poll() {
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
 
         // Make sure that polling evaluates to the correct keys and continues to have next until the expected number
         // of timesteps.
-        // Test action 1
+        // Test command 1
         int ts = 0;
         while (action1Copy.hasNext()) {
             Assert.assertEquals(action1Copy.poll(), command1);
@@ -43,7 +44,7 @@ public class ActionTest {
         }
         Assert.assertEquals(ts, actTimesteps1);
 
-        // Test action 2
+        // Test command 2
         ts = 0;
         while (action2Copy.hasNext()) {
             Assert.assertEquals(action2Copy.poll(), command2);
@@ -51,7 +52,7 @@ public class ActionTest {
         }
         Assert.assertEquals(ts, actTimesteps2);
 
-        // Test action 3
+        // Test command 3
         ts = 0;
         while (action3Copy.hasNext()) {
             Assert.assertEquals(action3Copy.poll(), command3);
@@ -62,7 +63,7 @@ public class ActionTest {
 
     @Test
     public void pollRuntimeException() {
-        // Cannot poll the base copy of this action. Must copy before polling.
+        // Cannot poll the base copy of this command. Must copy before polling.
         exception.expect(RuntimeException.class);
         validAction1.poll();
     }
@@ -70,7 +71,7 @@ public class ActionTest {
     @Test
     public void pollIndexOutOfBoundsException() {
         exception.expect(IndexOutOfBoundsException.class);
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
@@ -92,17 +93,17 @@ public class ActionTest {
     @Test
     public void peek() {
 
-        // Should be able to peek the base version of an action (it's effectively a const method).
+        // Should be able to peek the base version of an command (it's effectively a const method).
         Assert.assertEquals(validAction1.peek(), command1);
         Assert.assertEquals(validAction2.peek(), command2);
         Assert.assertEquals(validAction3.peek(), command3);
 
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
 
-        // Peeking should not alter the number of timesteps remaining -- even if it is a mutable action.
+        // Peeking should not alter the number of timesteps remaining -- even if it is a mutable command.
         action1Copy.peek();
         action2Copy.peek();
         action3Copy.peek();
@@ -114,12 +115,12 @@ public class ActionTest {
 
     @Test
     public void hasNext() {
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
 
-        // If our action has greater than 0 timesteps, then initially hasNext should be true.
+        // If our command has greater than 0 timesteps, then initially hasNext should be true.
         if (action1Copy.getTimestepsTotal() > 0)
             Assert.assertTrue(action1Copy.hasNext());
         // If we drain away all the timesteps, hasNext should become false.
@@ -128,7 +129,7 @@ public class ActionTest {
         }
         Assert.assertFalse(action1Copy.hasNext());
 
-        // If our action has greater than 0 timesteps, then initially hasNext should be true.
+        // If our command has greater than 0 timesteps, then initially hasNext should be true.
         if (action2Copy.getTimestepsTotal() > 0)
             Assert.assertTrue(action2Copy.hasNext());
         // If we drain away all the timesteps, hasNext should become false.
@@ -137,7 +138,7 @@ public class ActionTest {
         }
         Assert.assertFalse(action2Copy.hasNext());
 
-        // If our action has greater than 0 timesteps, then initially hasNext should be true.
+        // If our command has greater than 0 timesteps, then initially hasNext should be true.
         if (action3Copy.getTimestepsTotal() > 0)
             Assert.assertTrue(action3Copy.hasNext());
         // If we drain away all the timesteps, hasNext should become false.
@@ -149,7 +150,7 @@ public class ActionTest {
 
     @Test
     public void reset() {
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
@@ -198,7 +199,7 @@ public class ActionTest {
         Assert.assertEquals(validAction2.hashCode(), validAction2.hashCode());
         Assert.assertEquals(validAction3.hashCode(), validAction3.hashCode());
 
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action<CommandQWOP> action1Copy = validAction1.getCopy();
         Action<CommandQWOP> action2Copy = validAction2.getCopy();
         Action<CommandQWOP> action3Copy = validAction3.getCopy();
@@ -281,7 +282,7 @@ public class ActionTest {
 
     @Test
     public void consolidateActions() {
-        // General list of game.action with weird ordering and some zero-duration game.action.
+        // General list of game.command with weird ordering and some zero-duration game.command.
         List<Action<CommandQWOP>> actions = new ArrayList<>();
         actions.add(new Action<>(4, CommandQWOP.NONE));
         actions.add(new Action<>(1, CommandQWOP.NONE));

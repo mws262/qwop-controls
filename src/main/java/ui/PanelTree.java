@@ -451,7 +451,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
 
             if (selectedNode.getTreeDepth() != 0) {
                 int thisIndex = selectedNode.getIndexAccordingToParent();
-                //This set of logicals eliminates the edge cases, then takes the proposed action as default
+                //This set of logicals eliminates the edge cases, then takes the proposed command as default
                 if (thisIndex == 0 && direction == -1) { //We're at the lowest index of this node and must head
                     // to a new parent node.
                     ArrayList<NodeQWOPGraphicsBase<?, ?>> blacklist = new ArrayList<>(); //Keep a blacklist of nodes

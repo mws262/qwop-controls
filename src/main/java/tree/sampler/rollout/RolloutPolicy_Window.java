@@ -61,7 +61,7 @@ public class RolloutPolicy_Window<C extends Command<?>> implements IRolloutPolic
                 actionQueue.addSequence(actionSequence);
             }
             actionQueue.addAction(windowActions.get(i));
-            game.makeNewWorld();
+            game.resetGame();
             while (!actionQueue.isEmpty()) {
                 game.step(actionQueue.pollCommand());
             }
