@@ -56,10 +56,7 @@ public class Sampler_UCBTest {
         alist2.add(new Action<>(4, CommandQWOP.W));
         alist2.add(new Action<>(5, CommandQWOP.P));
 
-        ActionGenerator_FixedSequence<CommandQWOP> generator =
-                new ActionGenerator_FixedSequence<>(new ActionList[] {alist1,
-                alist2});
-
+        ActionGenerator_FixedSequence<CommandQWOP> generator = new ActionGenerator_FixedSequence<>(alist1, alist2);
         root = new NodeQWOPExplorable<>(GameQWOP.getInitialState(), generator);
 
         // Node 1 off root.

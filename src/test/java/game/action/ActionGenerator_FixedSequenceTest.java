@@ -16,25 +16,29 @@ import static org.mockito.Mockito.mock;
 
 public class ActionGenerator_FixedSequenceTest {
 
-    private ActionList alist1, alist2, alist3, alist4;
-    private ActionList[] allActionLists;
-    private Set<Action> aset1, aset2, aset3, aset4;
+    private ActionList<CommandQWOP> alist1, alist2, alist3, alist4;
+    private List<ActionList<CommandQWOP>> allActionLists;
+
+    @SuppressWarnings("FieldCanBeLocal")
+    private Set<Action<CommandQWOP>> aset1, aset2, aset3, aset4;
 
     private StateQWOP st = mock(StateQWOP.class);
-    private Action act = mock(Action.class);
 
-    private Action actionException = new Action(100, CommandQWOP.O);
+    @SuppressWarnings("unchecked")
+    private Action<CommandQWOP> act = mock(Action.class);
+
+    private Action<CommandQWOP> actionException = new Action<>(100, CommandQWOP.O);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
 
     @Before
     public void setup() {
-        Action a1 = new Action(23, CommandQWOP.WO);
-        Action a2 = new Action(24, CommandQWOP.NONE);
-        Action a3 = new Action(2, CommandQWOP.WP);
-        Action a4 = new Action(3, CommandQWOP.WP);
-        Action a5 = new Action(8, CommandQWOP.P);
+        Action<CommandQWOP> a1 = new Action<>(23, CommandQWOP.WO);
+        Action<CommandQWOP> a2 = new Action<>(24, CommandQWOP.NONE);
+        Action<CommandQWOP> a3 = new Action<>(2, CommandQWOP.WP);
+        Action<CommandQWOP> a4 = new Action<>(3, CommandQWOP.WP);
+        Action<CommandQWOP> a5 = new Action<>(8, CommandQWOP.P);
         aset1 = new HashSet<>();
         aset1.add(a1);
         aset1.add(a2);
@@ -51,19 +55,23 @@ public class ActionGenerator_FixedSequenceTest {
         aset4.add(a3);
         aset4.add(a5);
 
-        alist1 = new ActionList(new Distribution_Equal());
+        alist1 = new ActionList<>(new Distribution_Equal<>());
         alist1.addAll(aset1);
 
-        alist2 = new ActionList(new Distribution_Equal());
+        alist2 = new ActionList<>(new Distribution_Equal<>());
         alist2.addAll(aset2);
 
-        alist3 = new ActionList(new Distribution_Equal());
+        alist3 = new ActionList<>(new Distribution_Equal<>());
         alist3.addAll(aset3);
 
-        alist4 = new ActionList(new Distribution_Equal());
+        alist4 = new ActionList<>(new Distribution_Equal<>());
         alist4.addAll(aset4);
 
-        allActionLists = new ActionList[] {alist1, alist2, alist3, alist4};
+        allActionLists = new ArrayList<>();
+        allActionLists.add(alist1);
+        allActionLists.add(alist2);
+        allActionLists.add(alist3);
+        allActionLists.add(alist4);
     }
 
     @Test
@@ -82,22 +90,26 @@ public class ActionGenerator_FixedSequenceTest {
     public void singleLengthSequence() {
         // If only one command list is given, then the available actions will always be the same.
         int numNodes = 10;
-        for (ActionList alist : allActionLists) {
-            ActionGenerator_FixedSequence gen = new ActionGenerator_FixedSequence(new ActionList[]{alist});
+        for (ActionList<CommandQWOP> alist : allActionLists) {
+            List<ActionList<CommandQWOP>> singleActionList = new ArrayList<>();
+            singleActionList.add(alist);
 
-            NodeQWOPExplorable n0 = new NodeQWOPExplorable(st, gen);
-            NodeQWOPExplorable[] nodes = new NodeQWOPExplorable[numNodes];
-            nodes[0] = n0;
+            ActionGenerator_FixedSequence<CommandQWOP> gen = new ActionGenerator_FixedSequence<>(singleActionList);
+
+            NodeQWOPExplorable<CommandQWOP> n0 = new NodeQWOPExplorable<>(st, gen);
+            List<NodeQWOPExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
+            nodes.add(n0);
             for (int i = 1; i < numNodes; i++) {
-                nodes[i] = nodes[i - 1].addDoublyLinkedChild(act, st);
+                nodes.add(nodes.get(i - 1).addDoublyLinkedChild(act, st));
             }
-            for (NodeQWOPExplorable n : nodes) {
-                ActionList actionList = gen.getPotentialChildActionSet(n);
+
+            for (NodeQWOPExplorable<CommandQWOP> n : nodes) {
+                ActionList<CommandQWOP> actionList = gen.getPotentialChildActionSet(n);
                 Assert.assertEquals(alist.size(), actionList.size());
                 Assert.assertTrue(actionList.containsAll(alist));
                 Assert.assertEquals(alist, actionList);
             }
-            Set<Action> allPossibleActions = gen.getAllPossibleActions();
+            Set<Action<CommandQWOP>> allPossibleActions = gen.getAllPossibleActions();
             Assert.assertEquals(alist.size(), allPossibleActions.size());
             Assert.assertTrue(allPossibleActions.containsAll(alist));
         }
@@ -105,45 +117,45 @@ public class ActionGenerator_FixedSequenceTest {
 
     @Test
     public void multiLengthSequence() {
-        List<ActionList[]> sequences = new ArrayList<>();
+        List<List<ActionList<CommandQWOP>>> sequences = new ArrayList<>();
 
-        sequences.add(new ActionList[] {alist1});
-        sequences.add(new ActionList[] {alist2}); // Include some single-length sequences too for good measure.
-        sequences.add(new ActionList[] {alist3, alist4});
-        sequences.add(new ActionList[] {alist1, alist1});
-        sequences.add(new ActionList[] {alist2, alist3, alist4});
-        sequences.add(new ActionList[] {alist4, alist4, alist1});
-        sequences.add(new ActionList[] {alist1, alist2, alist3, alist4});
-        sequences.add(new ActionList[] {alist1, alist1, alist1, alist1}); // Stupid, but valid!
-        sequences.add(new ActionList[] {alist1, alist3, alist4, alist2, alist3});
-        sequences.add(new ActionList[] {alist1, alist3, alist4, alist2, alist3, alist1, alist4, alist3, alist2,
-                alist3, alist1});
+        sequences.add(makeActionListList(alist1));
+        sequences.add(makeActionListList(alist2)); // Include some single-length sequences too for good measure.
+        sequences.add(makeActionListList(alist3, alist4));
+        sequences.add(makeActionListList(alist1, alist1));
+        sequences.add(makeActionListList(alist2, alist3, alist4));
+        sequences.add(makeActionListList(alist4, alist4, alist1));
+        sequences.add(makeActionListList(alist1, alist2, alist3, alist4));
+        sequences.add(makeActionListList(alist1, alist1, alist1, alist1)); // Stupid, but valid!
+        sequences.add(makeActionListList(alist1, alist3, alist4, alist2, alist3));
+        sequences.add(makeActionListList(alist1, alist3, alist4, alist2, alist3, alist1, alist4, alist3, alist2,
+                alist3, alist1));
 
-        for (ActionList[] sequence : sequences) {
+        for (List<ActionList<CommandQWOP>> sequence : sequences) {
             for (int numNodes = 1; numNodes < 20; numNodes++) { // Do for varying depth number of nodes.
-                String failMsg = "Sequence length: " + sequence.length + " Number of nodes: " + numNodes;
-                ActionList allActionsInSequence = new ActionList(new Distribution_Equal());
-                for (ActionList a : sequence) {
+                String failMsg = "Sequence length: " + sequence.size() + " Number of nodes: " + numNodes;
+                ActionList<CommandQWOP> allActionsInSequence = new ActionList<>(new Distribution_Equal<>());
+                for (ActionList<CommandQWOP> a : sequence) {
                     allActionsInSequence.addAll(a);
                 }
-                ActionGenerator_FixedSequence gen = new ActionGenerator_FixedSequence(sequence);
+                ActionGenerator_FixedSequence<CommandQWOP> gen = new ActionGenerator_FixedSequence<>(sequence);
 
-                NodeQWOPExplorable n0 = new NodeQWOPExplorable(st, gen);
-                NodeQWOPExplorable[] nodes = new NodeQWOPExplorable[numNodes];
-                nodes[0] = n0;
+                NodeQWOPExplorable<CommandQWOP> n0 = new NodeQWOPExplorable<>(st, gen);
+                List<NodeQWOPExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
+                nodes.add(n0);
                 for (int i = 1; i < numNodes; i++) {
-                    nodes[i] = nodes[i - 1].addDoublyLinkedChild(act, st);
+                    nodes.add(nodes.get(i - 1).addDoublyLinkedChild(act, st));
                 }
 
                 for (int i = 0; i < numNodes; i++) {
-                    ActionList expectedActionList = sequence[i % sequence.length];
-                    ActionList actualActionList = gen.getPotentialChildActionSet(nodes[i]);
+                    ActionList<CommandQWOP> expectedActionList = sequence.get(i % sequence.size());
+                    ActionList<CommandQWOP> actualActionList = gen.getPotentialChildActionSet(nodes.get(i));
                     Assert.assertEquals(failMsg, expectedActionList.size(), actualActionList.size());
                     Assert.assertTrue(failMsg, expectedActionList.containsAll(actualActionList));
                     Assert.assertEquals(failMsg, expectedActionList, actualActionList);
                 }
 
-                Set<Action> allPossibleActions = gen.getAllPossibleActions();
+                Set<Action<CommandQWOP>> allPossibleActions = gen.getAllPossibleActions();
                 Assert.assertEquals(failMsg, allActionsInSequence.size(), allPossibleActions.size());
                 Assert.assertTrue(failMsg, allActionsInSequence.containsAll(allPossibleActions));
             }
@@ -153,61 +165,61 @@ public class ActionGenerator_FixedSequenceTest {
     @Test
     public void multiLengthActionExceptions() {
 
-        Map<Integer, ActionList> actionExceptions = new HashMap<>();
-        ActionList actionListException = new ActionList(new Distribution_Equal());
+        Map<Integer, ActionList<CommandQWOP>> actionExceptions = new HashMap<>();
+        ActionList<CommandQWOP> actionListException = new ActionList<>(new Distribution_Equal<>());
         actionListException.add(actionException);
         actionExceptions.put(3, actionListException);
         actionExceptions.put(5, actionListException);
 
 
-        List<ActionList[]> sequences = new ArrayList<>();
+        List<List<ActionList<CommandQWOP>>> sequences = new ArrayList<>();
 
-        sequences.add(new ActionList[] {alist1});
-        sequences.add(new ActionList[] {alist2}); // Include some single-length sequences too for good measure.
-        sequences.add(new ActionList[] {alist3, alist4});
-        sequences.add(new ActionList[] {alist1, alist1});
-        sequences.add(new ActionList[] {alist2, alist3, alist4});
-        sequences.add(new ActionList[] {alist4, alist4, alist1});
-        sequences.add(new ActionList[] {alist1, alist2, alist3, alist4});
-        sequences.add(new ActionList[] {alist1, alist1, alist1, alist1}); // Stupid, but valid!
-        sequences.add(new ActionList[] {alist1, alist3, alist4, alist2, alist3});
-        sequences.add(new ActionList[] {alist1, alist3, alist4, alist2, alist3, alist1, alist4, alist3, alist2,
-                alist3, alist1});
+        sequences.add(makeActionListList(alist1));
+        sequences.add(makeActionListList(alist2)); // Include some single-length sequences too for good measure.
+        sequences.add(makeActionListList(alist3, alist4));
+        sequences.add(makeActionListList(alist1, alist1));
+        sequences.add(makeActionListList(alist2, alist3, alist4));
+        sequences.add(makeActionListList(alist4, alist4, alist1));
+        sequences.add(makeActionListList(alist1, alist2, alist3, alist4));
+        sequences.add(makeActionListList(alist1, alist1, alist1, alist1)); // Stupid, but valid!
+        sequences.add(makeActionListList(alist1, alist3, alist4, alist2, alist3));
+        sequences.add(makeActionListList(alist1, alist3, alist4, alist2, alist3, alist1, alist4, alist3, alist2,
+                alist3, alist1));
 
-        for (ActionList[] sequence : sequences) {
+        for (List<ActionList<CommandQWOP>> sequence : sequences) {
             for (int numNodes = 1; numNodes < 20; numNodes++) { // Do for varying depth number of nodes.
-                String failMsg = "Sequence length: " + sequence.length + " Number of nodes: " + numNodes;
-                ActionList allActionsInSequence = new ActionList(new Distribution_Equal());
-                for (ActionList a : sequence) {
+                String failMsg = "Sequence length: " + sequence.size() + " Number of nodes: " + numNodes;
+                ActionList<CommandQWOP> allActionsInSequence = new ActionList<>(new Distribution_Equal<>());
+                for (ActionList<CommandQWOP> a : sequence) {
                     allActionsInSequence.addAll(a);
                 }
-                ActionGenerator_FixedSequence gen = new ActionGenerator_FixedSequence(sequence, actionExceptions);
+                ActionGenerator_FixedSequence<CommandQWOP> gen = new ActionGenerator_FixedSequence<>(sequence,
+                        actionExceptions);
 
-                NodeQWOPExplorable n0 = new NodeQWOPExplorable(st, gen);
-                NodeQWOPExplorable[] nodes = new NodeQWOPExplorable[numNodes];
-                nodes[0] = n0;
+                NodeQWOPExplorable<CommandQWOP> n0 = new NodeQWOPExplorable<>(st, gen);
+                List<NodeQWOPExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
+                nodes.add(n0);
                 for (int i = 1; i < numNodes; i++) {
-                    nodes[i] = nodes[i - 1].addDoublyLinkedChild(act, st);
+                    nodes.add(nodes.get(i - 1).addDoublyLinkedChild(act, st));
                 }
-
                 for (int i = 0; i < numNodes; i++) {
                     if (i == 3 || i == 5) {
-                        ActionList actualActionList = gen.getPotentialChildActionSet(nodes[i]);
+                        ActionList actualActionList = gen.getPotentialChildActionSet(nodes.get(i));
                         Assert.assertEquals(1, actualActionList.size());
                         Assert.assertEquals(actionException, actualActionList.get(0));
                     } else {
-                        ActionList expectedActionList = sequence[i % sequence.length];
-                        ActionList actualActionList = gen.getPotentialChildActionSet(nodes[i]);
+                        ActionList<CommandQWOP> expectedActionList = sequence.get(i % sequence.size());
+                        ActionList<CommandQWOP> actualActionList = gen.getPotentialChildActionSet(nodes.get(i));
                         Assert.assertEquals(failMsg, expectedActionList.size(), actualActionList.size());
                         Assert.assertTrue(failMsg, expectedActionList.containsAll(actualActionList));
                         Assert.assertEquals(failMsg, expectedActionList, actualActionList);
                     }
                 }
 
-                Set<Action> allPossibleActions = gen.getAllPossibleActions();
+                Set<Action<CommandQWOP>> allPossibleActions = gen.getAllPossibleActions();
                 Assert.assertEquals(failMsg, allActionsInSequence.size() + 1, allPossibleActions.size()); // +1 for
                 // command exception.
-                ActionList alistCopy = allActionsInSequence.getCopy();
+                ActionList<CommandQWOP> alistCopy = allActionsInSequence.getCopy();
                 alistCopy.add(actionException);
                 Assert.assertTrue(failMsg, alistCopy.containsAll(allPossibleActions));
             }
@@ -217,6 +229,14 @@ public class ActionGenerator_FixedSequenceTest {
     @Test
     public void badConstructor() {
         exception.expect(IllegalArgumentException.class);
-        ActionGenerator_FixedSequence gen = new ActionGenerator_FixedSequence(new ActionList[]{});
+        new ActionGenerator_FixedSequence<>(new ArrayList<>());
+    }
+
+    // Just for convenience.
+    @SafeVarargs
+    private static List<ActionList<CommandQWOP>> makeActionListList(ActionList<CommandQWOP>... individualLists) {
+        List<ActionList<CommandQWOP>> l = new ArrayList<>();
+        Collections.addAll(l, individualLists);
+        return l;
     }
 }

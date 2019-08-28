@@ -38,8 +38,7 @@ public class Sampler_DeterministicTest {
         alist2.add(new Action<>(4, CommandQWOP.Q));
         alist2.add(new Action<>(5, CommandQWOP.P));
 
-        ActionGenerator_FixedSequence<CommandQWOP> generator = new ActionGenerator_FixedSequence<>
-        (new ActionList[] {alist1, alist2});
+        ActionGenerator_FixedSequence<CommandQWOP> generator = new ActionGenerator_FixedSequence<>(alist1, alist2);
 
         Sampler_Deterministic<CommandQWOP> sampler = new Sampler_Deterministic<>();
 
