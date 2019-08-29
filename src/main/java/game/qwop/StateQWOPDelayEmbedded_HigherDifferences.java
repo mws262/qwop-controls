@@ -1,5 +1,11 @@
 package game.qwop;
 
+import game.state.transform.ITransform;
+
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * For each additional normal state given, this will use the poses from the first, use the first two poses to to get
  * a first difference, use the first three to get a third difference, and so on.
@@ -31,21 +37,6 @@ public class StateQWOPDelayEmbedded_HigherDifferences extends StateQWOPDelayEmbe
         }
         return flatState;
     }
-//
-//    @Override
-//    public float[] flattenStateWithRescaling(StateNormalizerQWOP.StateStatistics stateStatistics) {
-//        float[] flatState = flattenState();
-//        float xOffset = individualStates[0].getCenterX();
-//        float[] flatRescaled =
-//                individualStates[0]
-//                        .xOffsetSubtract(xOffset)
-//                        .subtract(stateStatistics.getMean())
-//                        .divide(stateStatistics.getStdev())
-//                        .extractPositions();
-//        System.arraycopy(flatRescaled, 0, flatState, 0, 36);
-//
-//        return flatState;
-//    }
 
     private static StateQWOP[] getDifferencedStates(StateQWOP[] states) {
         StateQWOP[] finalDifferences = new StateQWOP[states.length];
@@ -63,4 +54,76 @@ public class StateQWOPDelayEmbedded_HigherDifferences extends StateQWOPDelayEmbe
         return finalDifferences;
     }
 
+    public static class Normalizer implements ITransform<StateQWOPDelayEmbedded_HigherDifferences> {
+
+        public enum NormalizationMethod {
+            STDEV, RANGE
+        }
+
+        private NormalizationMethod normType;
+
+        private StatisticsQWOP stateStats = new StatisticsQWOP();
+
+        public Normalizer(NormalizationMethod normalizationMethod) throws FileNotFoundException {
+            normType = normalizationMethod;
+        }
+
+        @Override
+        public void updateTransform(List<StateQWOPDelayEmbedded_HigherDifferences> statesToUpdateFrom) {}
+
+        @Override
+        public List<float[]> transform(List<StateQWOPDelayEmbedded_HigherDifferences> originalStates) {
+            List<float[]> transformedStates = new ArrayList<>(originalStates.size());
+            for (StateQWOPDelayEmbedded_HigherDifferences st : originalStates) {
+                transformedStates.add(transform(st));
+            }
+            return transformedStates;
+        }
+
+        @Override
+        public float[] transform(StateQWOPDelayEmbedded_HigherDifferences originalState) {
+            float[] flatState = originalState.flattenState();
+
+            // Just normalize the newest state. Others are made into higher differences, and I'm going to leave them
+            // alone until I have a more reasonable way to scale them. The Differences one will normalize velocity,
+            // but I didn't do that here.
+            float xOffset = originalState.getCenterX();
+            float[] flatRescaled =
+                    originalState.getIndividualStates()[0]
+                            .xOffsetSubtract(xOffset)
+                            .subtract(
+                                    normType == NormalizationMethod.STDEV ?
+                                    stateStats.getMean()
+                                    : stateStats.getMin())
+                            .divide(normType == NormalizationMethod.STDEV ?
+                                    stateStats.getStdev()
+                                    : stateStats.getRange())
+                            .extractPositions();
+            System.arraycopy(flatRescaled, 0, flatState, 0, 36);
+
+            return flatState;
+        }
+        @Override
+        public List<float[]> untransform(List<float[]> transformedStates) {
+            // TODO
+            throw new RuntimeException("Not implemented yet.");
+        }
+
+        @Override
+        public List<float[]> compressAndDecompress(List<StateQWOPDelayEmbedded_HigherDifferences> originalStates) {
+            // TODO
+            throw new RuntimeException("Not implemented yet.");
+        }
+
+        @Override
+        public int getOutputSize() {
+            // It's not nailed down anywhere here. Can vary. Figure it out later TODO
+            throw new RuntimeException("Not implemented yet.");
+        }
+
+        @Override
+        public String getName() {
+            return "StatePoseNormalizer";
+        }
+    }
 }

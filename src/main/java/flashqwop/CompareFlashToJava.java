@@ -24,7 +24,7 @@ public class CompareFlashToJava extends FlashGame {
     private PanelRunner_MultiState panelRunner;
     private boolean initialized;
 
-    private ValueFunction_TensorFlow<CommandQWOP, StateQWOP> valueFunction = null;
+    private ValueFunction_TensorFlow<CommandQWOP, IStateQWOP> valueFunction = null;
 
     private List<GameQWOP> gameQWOPList = new ArrayList<>();
 
@@ -101,12 +101,12 @@ public class CompareFlashToJava extends FlashGame {
     }
 
     @Override
-    public Action<CommandQWOP> getControlAction(StateQWOP state) {
+    public Action<CommandQWOP> getControlAction(IStateQWOP state) {
         return valueFunction.getMaximizingAction(new NodeGame<>(state));
     }
 
     @Override
-    public void reportGameStatus(StateQWOP state, CommandQWOP command, int timestep) {
+    public void reportGameStatus(IStateQWOP state, CommandQWOP command, int timestep) {
         if (!initialized) {
             return; // This
         }

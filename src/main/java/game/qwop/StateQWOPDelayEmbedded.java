@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 public abstract class StateQWOPDelayEmbedded implements IStateQWOP {
 
-    StateQWOP[] individualStates;
+    final StateQWOP[] individualStates;
 
     final int stateVariableCount;
 
@@ -21,6 +21,10 @@ public abstract class StateQWOPDelayEmbedded implements IStateQWOP {
         individualStates = Arrays.copyOf(states, states.length);
         // Configurations variables (3), number of individual States making up this composite, number of body parts.
         stateVariableCount = individualStates.length * individualStates[0].getStateVariableCount();
+    }
+
+    public StateQWOP[] getIndividualStates() {
+        return individualStates;
     }
 
     @Override

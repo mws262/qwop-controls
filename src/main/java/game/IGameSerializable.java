@@ -16,4 +16,7 @@ public interface IGameSerializable<C extends Command<?>, S extends IState> exten
     IGameSerializable<C, S> restoreSerializedState(byte[] fullState);
 
     IGameSerializable<C, S> getCopy();
+
+    // Probably not be used by non-qwop games.
+    default void setPhysicsIterations(int iterations) {}
 }
