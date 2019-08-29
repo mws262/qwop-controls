@@ -2,34 +2,37 @@ package game.qwop;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.IGameInternal;
-import game.state.*;
+import game.IGameSerializable;
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameInternal<CommandQWOP, S> {
+public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameSerializable<CommandQWOP, S> {
 
     @JsonIgnore
     public final int STATE_SIZE;
 
-    private LinkedList<S> cachedStates;
-
-    // For delay embedding.
-    public final int timestepDelay;
-    public final int numDelayedStates;
-
     public enum StateType {
         POSES, DIFFERENCES, HIGHER_DIFFERENCES
     }
+    // Caches normal states to then assemble the delay-embedded ones.
+    private LinkedList<StateQWOP> cachedStates;
 
+    // For delay embedding.
+    @JsonProperty("timestepDelay")
+    public final int timestepDelay;
+    @JsonProperty("numDelayedStates")
+    public final int numDelayedStates;
+    @JsonProperty("stateType")
     public final StateType stateType;
 
-    private GameQWOP game = new GameQWOP();
+    private GameQWOP game;
 
     public GameQWOPCaching(@JsonProperty("timestepDelay") int timestepDelay,
                            @JsonProperty("numDelayedStates") int numDelayedStates,
                            @JsonProperty("stateType") StateType stateType) {
+        game = new GameQWOP();
         game.resetGame();
         if (timestepDelay < 1) {
             throw new IllegalArgumentException("Timestep delay must be at least one. Was: " + timestepDelay);
@@ -41,6 +44,12 @@ public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameI
         this.stateType = stateType;
     }
 
+    // Only for internal use when restoring serialized states.
+    private GameQWOPCaching(int timestepDelay, int numDelayedStates, StateType stateType, GameQWOP restoredGame) {
+        this(timestepDelay, numDelayedStates, stateType);
+        this.game = restoredGame;
+    }
+
     @Override
     public void resetGame() {
         game.resetGame();
@@ -49,7 +58,7 @@ public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameI
             cachedStates = new LinkedList<>();
         }
         cachedStates.clear();
-        cachedStates.add(game.getInitialState());
+        cachedStates.add(GameQWOP.getInitialState());
     }
 
     @Override
@@ -59,25 +68,51 @@ public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameI
     }
 
     @Override
+    public void command(CommandQWOP command) {
+        step(command);
+    }
+
+    @Override
+    public int getNumberOfChoices() {
+        return game.getNumberOfChoices();
+    }
+
+    @Override
+    public void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {
+        game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
+    }
+
+    @Override
     public S getCurrentState() {
 
         StateQWOP[] states = new StateQWOP[numDelayedStates + 1];
-        Arrays.fill(states, getInitialState());
+        Arrays.fill(states, GameQWOP.getInitialState());
 
         for (int i = 0; i < Integer.min(states.length, (cachedStates.size() + timestepDelay - 1) / timestepDelay); i++) {
             states[i] = cachedStates.get(timestepDelay * i);
         }
 
+        // TODO fix this gross below
         switch (stateType) {
             case POSES:
-                return new StateQWOPDelayEmbedded_Poses(states);
+                return (S) new StateQWOPDelayEmbedded_Poses(states);
             case DIFFERENCES:
-                return new StateQWOPDelayEmbedded_Differences(states);
+                return (S) new StateQWOPDelayEmbedded_Differences(states);
             case HIGHER_DIFFERENCES:
-                return new StateQWOPDelayEmbedded_HigherDifferences(states);
+                return (S) new StateQWOPDelayEmbedded_HigherDifferences(states);
             default:
                 throw new IllegalStateException("Unhandled state return type.");
         }
+    }
+
+    @Override
+    public boolean isFailed() {
+        return game.isFailed();
+    }
+
+    @Override
+    public long getTimestepsThisGame() {
+        return game.getTimestepsThisGame();
     }
 
     @Override
@@ -92,6 +127,17 @@ public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameI
     @Override
     public int getStateDimension() {
         return STATE_SIZE;
+    }
+
+    @Override
+    public byte[] getSerializedState() {
+        return game.getSerializedState();
+    }
+
+    @Override
+    public IGameSerializable<CommandQWOP, S> restoreSerializedState(byte[] fullState) {
+        return new GameQWOPCaching<>(timestepDelay, numDelayedStates, stateType,
+                game.restoreSerializedState(fullState));
     }
 
     @Override

@@ -2,7 +2,9 @@ package game.action.perturbers;
 
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.Command;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,7 +16,7 @@ import java.util.Map;
  *
  * @author matt
  */
-public class ActionPerturber_MissingTimesteps implements IActionPerturber{
+public class ActionPerturber_MissingTimesteps<C extends Command<?>> implements IActionPerturber<C> {
 
     /**
      * Action indices as keys and number of timesteps to move as values. Timesteps are removed from the specified
@@ -39,21 +41,23 @@ public class ActionPerturber_MissingTimesteps implements IActionPerturber{
     }
 
     @Override
-    public ActionQueue perturb(ActionQueue unperturbedQueue) {
-        Action[] allActions = unperturbedQueue.getActionsInCurrentRun();
+    public ActionQueue<C> perturb(ActionQueue<C> unperturbedQueue) {
+        List<Action<C>> allActions = unperturbedQueue.getActionsInCurrentRun();
 
         for (Map.Entry<Integer, Integer> entry : perturbationIndexAndSize.entrySet()) {
             int actionIdx = entry.getKey();
-            if (actionIdx < allActions.length) {
-                int durationReduction = Integer.min(allActions[actionIdx].getTimestepsTotal() - 1,
+            if (actionIdx < allActions.size()) {
+                int durationReduction = Integer.min(allActions.get(actionIdx).getTimestepsTotal() - 1,
                         entry.getValue()); // Must leave at least 1 element.
-                Action replacementAction = new Action(allActions[actionIdx].getTimestepsTotal() - durationReduction,
-                        allActions[actionIdx].peek());
-                allActions[actionIdx] = replacementAction;
+                Action<C> replacementAction =
+                        new Action<>(allActions.get(actionIdx).getTimestepsTotal() - durationReduction,
+                        allActions.get(actionIdx).peek());
+
+                allActions.set(actionIdx, replacementAction);
             }
         }
 
-        ActionQueue perturbedActionQueue = new ActionQueue();
+        ActionQueue<C> perturbedActionQueue = new ActionQueue<>();
         perturbedActionQueue.addSequence(allActions);
         return perturbedActionQueue;
     }
