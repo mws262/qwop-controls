@@ -55,7 +55,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     private static final Logger logger = LogManager.getLogger(MAIN_FlashEvaluation.class);
 
-    private ValueFunction_TensorFlow<CommandQWOP, IStateQWOP> valueFunction = null;
+    private ValueFunction_TensorFlow<CommandQWOP, StateQWOP> valueFunction = null;
 
     private MAIN_FlashEvaluation() {
         super(hardware); // Do hardware commands out?
@@ -102,7 +102,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public Action<CommandQWOP> getControlAction(IStateQWOP state) {
+    public Action<CommandQWOP> getControlAction(StateQWOP state) {
         Action<CommandQWOP> action = valueFunction.getMaximizingAction(new NodeGame<>(state));
         if (addActionNoise && Random.nextFloat() < noiseProbability) {
             if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
@@ -117,13 +117,18 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public void reportGameStatus(IStateQWOP state, CommandQWOP command, int timestep) {}
+    public void reportGameStatus(StateQWOP state, CommandQWOP command, int timestep) {}
 
     private void loadController() {
         // Load a value function controller.
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/" + valueNetworkName), new GameQWOP(), false); // state_only.pb"));
+            valueFunction = new ValueFunction_TensorFlow_StateOnly<>(
+                    new File("src/main/resources/tflow_models/" + valueNetworkName),
+                    new GameQWOP(),
+                    new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+                    false);
+
+            // .pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

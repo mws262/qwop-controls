@@ -224,9 +224,10 @@ public class PanelRunner_ControlledTFlow
                 }
                 controller =
                         new Controller_ValueFunction<>(
-                                new ValueFunction_TensorFlow_StateOnly(
+                                new ValueFunction_TensorFlow_StateOnly<>(
                                         Paths.get(modelLocation, selectedModel).toFile(),
                                         game,
+                                        new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
                                         false
                                 )
                         );

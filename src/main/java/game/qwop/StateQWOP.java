@@ -160,6 +160,11 @@ public class StateQWOP implements IStateQWOP, Serializable {
         return stateVariables.length;
     }
 
+    @Override
+    public StateQWOP getPositionCoordinates() {
+        return this; // Doesn't get transformed away from what we want anyway.
+    }
+
     @JsonIgnore
     @Override
     public float getCenterX() {

@@ -1,6 +1,7 @@
 package goals.value_function;
 
 import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.CMAESOptimizer;
@@ -13,8 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MAIN_ImproveValFun {
-
-
     public MAIN_ImproveValFun() throws IOException {
 
         GameQWOP game = new GameQWOP();
@@ -26,8 +25,13 @@ public class MAIN_ImproveValFun {
         additionalArgs.add("--loss");
         additionalArgs.add("target_only"); // Loss has nothing to do with the network output in this case. Just the
         // performance of the controller.
-        ValueFunction_TensorFlow_StateOnly valFun = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models" +
-                "/test.pb", game, layerSizes, additionalArgs, "src/main/resources/tflow_models/checkpoints" +
+        ValueFunction_TensorFlow_StateOnly<StateQWOP> valFun = new ValueFunction_TensorFlow_StateOnly<>(
+                "src/main/resources/tflow_models/test.pb",
+                game,
+                new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+                layerSizes,
+                additionalArgs,
+                "src/main/resources/tflow_models/checkpoints" +
                 "/checkpoint_lots360", true);
 
         WeightScoreFunction problem = new WeightScoreFunction(valFun);

@@ -66,11 +66,11 @@ public class PolicyGradientQWOP {
         actions.clear();
         rewards.clear();
         StateQWOP currentState;
-        StateQWOP prevState = (StateQWOP) GameQWOP.getInitialState();
+        StateQWOP prevState = GameQWOP.getInitialState();
 
         while (!game.isFailed() && game.getTimestepsThisGame() < 3000) {
             if (actionQueue.isEmpty()) {
-                currentState = (StateQWOP) game.getCurrentState();
+                currentState = game.getCurrentState();
 
                 int bestIdx =
                         net.policyOnDistribution(new StateQWOP(normalizer.transform(currentState), false));

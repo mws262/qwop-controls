@@ -4,8 +4,7 @@ import game.qwop.GameQWOP;
 import game.action.Action;
 import game.qwop.CommandQWOP;
 import game.qwop.IStateQWOP;
-import game.qwop.StateQWOP;
-import game.state.IState;
+import game.state.transform.Transform_Identity;
 import tree.node.NodeGame;
 import ui.runner.PanelRunner_MultiState;
 import value.ValueFunction_TensorFlow;
@@ -113,14 +112,14 @@ public class CompareFlashToJava extends FlashGame {
 
         if (timestep == 0) {
             gameJava.resetGame();
-            gameJava.iterations = 15;
+            gameJava.setPhysicsIterations(15);
             gameQWOPList.clear();
             gameQWOPList.add(gameJava);
 
         } else {
             int tp = 0;
             if (timestep < tp + 5 && timestep > tp)
-                    gameJava.iterations = 5;
+                    gameJava.setPhysicsIterations(5);
 
 //            if (timestep % 160 == 0) {
 //                GameQWOP newGame = new GameQWOP();
@@ -140,7 +139,7 @@ public class CompareFlashToJava extends FlashGame {
 //            panelRunner.addSecondaryState(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state,
 //                    NodeGameGraphicsBase.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
 
-            panelRunner.setMainState(state);
+            panelRunner.setMainState(state.getPositionCoordinates());
             panelRunner.repaint();
         }
     }
@@ -148,8 +147,9 @@ public class CompareFlashToJava extends FlashGame {
     private void loadController() {
         // Load a value function controller.
         try {
+            // TODO
             valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/small_net.pb"), new GameQWOP(), false); // state_only.pb"));
+                    "/small_net.pb"), new GameQWOP(),  new Transform_Identity<>(),false); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

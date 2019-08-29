@@ -3,6 +3,8 @@ package goals.tree_search;
 import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
 import controllers.IController;
+import game.IGameSerializable;
+import game.action.Command;
 import game.qwop.GameQWOP;
 import game.qwop.GameQWOPCaching;
 import game.action.Action;
@@ -10,6 +12,7 @@ import game.action.ActionGenerator_FixedSequence;
 import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
 import game.qwop.StateQWOP;
+import game.state.transform.ITransform;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.TreeWorker;
@@ -28,6 +31,7 @@ import value.ValueFunction_TensorFlow_StateOnly;
 import value.updaters.ValueUpdater_Average;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,7 +100,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     private int getToSteadyDepth;
     private int numWorkersToUse;
 
-    private ValueFunction_TensorFlow_StateOnly valueFunction;
+    private ValueFunction_TensorFlow_StateOnly<StateQWOP> valueFunction;
 
     private int prevStates = 0;
     private int delayTs = 1;
@@ -159,9 +163,16 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         rolloutWeightedWithValFun = Boolean.parseBoolean(properties.getProperty("rolloutWeightedWithValFun", "false"));
         float rolloutValFunWeight = Float.parseFloat(properties.getProperty("rolloutValFunWeight", "0.75"));
 
-        game = (prevStates > 0 && delayTs > 0) ? new GameQWOPCaching(delayTs, prevStates, GameQWOPCaching.StateType.HIGHER_DIFFERENCES) :
-                new GameQWOP();
-        makeValueFunction(game);
+        // TODO bring back delay embedding.
+//        game = (prevStates > 0 && delayTs > 0) ? new GameQWOPCaching<>(delayTs, prevStates,
+//                GameQWOPCaching.StateType.HIGHER_DIFFERENCES) :
+//                new GameQWOP();
+        game = new GameQWOP();
+        try {
+            makeValueFunction(game, new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -228,9 +239,11 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
                 , 1); // TODO
         // hardcoded.
 
-        return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates,
-                GameQWOPCaching.StateType.HIGHER_DIFFERENCES) :
-                TreeWorker.makeStandardQWOPTreeWorker(sampler);
+        // TODO genericize
+//        return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates,
+//                GameQWOPCaching.StateType.HIGHER_DIFFERENCES) :
+//                TreeWorker.makeStandardQWOPTreeWorker(sampler);
+        return TreeWorker.makeStandardQWOPTreeWorker(sampler);
     }
 
     public static void main(String[] args) {
@@ -346,14 +359,16 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     }
 
 
-    private void makeValueFunction(GameQWOP gameTemplate) {
+    private void makeValueFunction(IGameSerializable<CommandQWOP, StateQWOP> gameTemplate,
+                                   ITransform<StateQWOP> normalizer) {
         /* Make the value function net. */
         List<String> extraNetworkArgs = new ArrayList<>();
         extraNetworkArgs.add("--learnrate");
         extraNetworkArgs.add(learningRate);
 
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(networkName, gameTemplate, hiddenLayerSizes,
+            valueFunction = new ValueFunction_TensorFlow_StateOnly<>(networkName, gameTemplate,
+                    normalizer, hiddenLayerSizes,
                     extraNetworkArgs, "", true);
         } catch (IOException e) {
             e.printStackTrace();

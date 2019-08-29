@@ -151,10 +151,11 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
 
     private static final Logger logger = LogManager.getLogger(TreeWorker.class);
 
-    private TreeWorker(ISampler<C, S> sampler, IDataSaver<C, S> saver) {
+    public TreeWorker(IGameInternal<C, S> game, ISampler<C, S> sampler, IDataSaver<C, S> saver) {
         workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
 
+        this.game = game;
         this.sampler = sampler;
         this.saver = saver;
         lastTsTimeMs = System.currentTimeMillis();
@@ -172,9 +173,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     public static TreeWorker<CommandQWOP, StateQWOP> makeStandardQWOPTreeWorker(ISampler<CommandQWOP,
             StateQWOP> sampler, IDataSaver<CommandQWOP, StateQWOP> saver) {
 
-        TreeWorker<CommandQWOP, StateQWOP> treeWorker = new TreeWorker<>(sampler, saver);
-        treeWorker.game = new GameQWOP();
-        return treeWorker;
+        return new TreeWorker<>(new GameQWOP(), sampler, saver);
     }
 
     // With no data saving.
@@ -186,17 +185,18 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
      * Make a worker that uses {@link GameQWOPCaching} under the hood.
      * @return A brand new TreeWorker.
      */
+    @SuppressWarnings("WeakerAccess")
     public static <S extends StateQWOPDelayEmbedded> TreeWorker<CommandQWOP, S> makeCachedStateTreeWorker(ISampler<CommandQWOP, S> sampler,
-                                                                                 IDataSaver<CommandQWOP, S> saver,
-                                                                                 int timestepDelay,
-                                                                                 int numDelayedStates,
-                                                                                 GameQWOPCaching.StateType stateType) {
-        TreeWorker<CommandQWOP, S> treeWorker = new TreeWorker<>(sampler, saver);
-        treeWorker.game = new GameQWOPCaching<>(timestepDelay, numDelayedStates, stateType);
-        return treeWorker;
+                                                                                                          IDataSaver<CommandQWOP, S> saver,
+                                                                                                          int timestepDelay,
+                                                                                                          int numDelayedStates,
+                                                                                                          GameQWOPCaching.StateType stateType) {
+        return new TreeWorker<>(new GameQWOPCaching<>(timestepDelay,
+                numDelayedStates, stateType), sampler, saver);
     }
 
     // No data saving.
+    @SuppressWarnings("unused")
     public static <S extends StateQWOPDelayEmbedded> TreeWorker<CommandQWOP, S>
                                                         makeCachedStateTreeWorker(ISampler<CommandQWOP, S> sampler,
                                                                                   int timestepDelay,
@@ -207,9 +207,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
 
     @JsonIgnore
     public TreeWorker<C, S> getCopy() {
-        TreeWorker<C, S> treeWorker = new TreeWorker<>(sampler.getCopy(), saver.getCopy());
-        treeWorker.game = game.getCopy(); // FIXME generic game
-        return treeWorker;
+        return new TreeWorker<>(game.getCopy(), sampler.getCopy(), saver.getCopy());
     }
 
     /**
