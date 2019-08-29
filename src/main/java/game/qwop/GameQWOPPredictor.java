@@ -2,10 +2,9 @@ package game.qwop;
 
 import game.action.Action;
 import game.action.ActionQueue;
-import game.state.IState;
 import org.jetbrains.annotations.NotNull;
-import tflowtools.TensorflowLoader;
 import org.tensorflow.Tensor;
+import tflowtools.TensorflowLoader;
 import ui.runner.PanelRunner_SimpleState;
 
 import javax.swing.*;
@@ -14,14 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GameQWOPPredictor extends TensorflowLoader {
-
-    private final String stateInputName = "input/qwop_state_input";
-    private final String actionInputName = "input/qwop_action_input";
-
-    private final String internalStateInput = "rnn/full_internal_state_input";
-
-    private final String hiddenStateOutputName = "output/internal_state_output";
-    private final String stateOutputName = "output/state_output";
 
     /**
      * Load the computational graph from a .pb file and also make a new session.
@@ -33,9 +24,13 @@ public class GameQWOPPredictor extends TensorflowLoader {
         super(pbFile, directory);
     }
 
-    public List<IState> predictSimulation(IState initialState, ActionQueue<CommandQWOP> actions) {
+    public List<StateQWOP> predictSimulation(StateQWOP initialState, ActionQueue<CommandQWOP> actions) {
+        String stateInputName = "input/qwop_state_input";
+        String actionInputName = "input/qwop_action_input";
+        String hiddenStateOutputName = "output/internal_state_output";
+        String stateOutputName = "output/state_output";
 
-        List<IState> resultStates = new ArrayList<>();
+        List<StateQWOP> resultStates = new ArrayList<>();
 
         float[][][] stateIn = new float[1][][]; // Awkward singleton dimensions: [sample no (1), timesteps (1), state
         // vals (72)]
@@ -65,6 +60,7 @@ public class GameQWOPPredictor extends TensorflowLoader {
 
         // Second evaluation, we have an internal state to feed in.
         while (!actions.isEmpty()) {
+            String internalStateInput = "rnn/full_internal_state_input";
             result =
                     getSession().runner().feed(stateInputName + ":0", stateResult)
                             .feed(actionInputName + ":0", makeActionTensor(actions.pollCommand()))
@@ -116,14 +112,14 @@ public class GameQWOPPredictor extends TensorflowLoader {
         GameQWOPPredictor gp = new GameQWOPPredictor("frozen_model.pb", "src/main/resources/tflow_models");
         Runtime.getRuntime().addShutdownHook(new Thread(gp::close));
 
-        IState initState = GameQWOP.getInitialState();
+        StateQWOP initState = GameQWOP.getInitialState();
         Action<CommandQWOP> singleAction = new Action<>(1000, CommandQWOP.WO);
 
         ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
         actionQueue.addAction(singleAction);
 //        ActionQueue actionQueue = CompareWarmStartToColdBase.getSampleActions();
 
-        List<IState> states = gp.predictSimulation(initState, actionQueue);
+        List<StateQWOP> states = gp.predictSimulation(initState, actionQueue);
 
         JFrame frame = new JFrame();
         PanelRunner_SimpleState panelRunner = new PanelRunner_SimpleState("Runner");
@@ -135,7 +131,7 @@ public class GameQWOPPredictor extends TensorflowLoader {
         frame.setVisible(true);
 
 
-        for (IState st : states) {
+        for (StateQWOP st : states) {
             panelRunner.updateState(st);
             panelRunner.repaint();
 

@@ -2,14 +2,14 @@ package game;
 
 import game.state.IState;
 
-public interface IGameStateSource {
+public interface IGameStateSource<S extends IState> {
 
     /**
      * Get the runner's state.
      *
      * @return {@link IState} of the runner at the current timestep.
      */
-    IState getCurrentState();
+    S getCurrentState();
 
     /**
      * Get whether the game is considered to be in a failed state.

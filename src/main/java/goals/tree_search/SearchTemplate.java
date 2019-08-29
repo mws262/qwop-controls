@@ -2,6 +2,7 @@ package goals.tree_search;
 
 import game.qwop.GameQWOP;
 import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import org.apache.commons.io.FileUtils;
@@ -77,17 +78,17 @@ public abstract class SearchTemplate {
     /**
      * Some user interface which information will be sent to.
      */
-    protected final IUserInterface<CommandQWOP> ui;
+    protected final IUserInterface<CommandQWOP, StateQWOP> ui;
 
     /**
      * Keep a list of the checked out workers so they can be added to the monitor panel if it exists.
      */
-    private List<TreeWorker<?>> activeWorkers = new ArrayList<>();
+    private List<TreeWorker<CommandQWOP, StateQWOP>> activeWorkers = new ArrayList<>();
 
     /**
      * A tabbed panel for displaying how many games per second each worker is running.
      */
-    private PanelTimeSeries_WorkerLoad workerMonitorPanel;
+    private PanelTimeSeries_WorkerLoad<CommandQWOP, StateQWOP> workerMonitorPanel;
 
     /**
      * Maximum number of workers any stage can recruit.
@@ -140,10 +141,10 @@ public abstract class SearchTemplate {
      * @return A {@link TreeWorker} configured specifically for the tree search's application.
      *
      */
-    abstract TreeWorker<CommandQWOP> getTreeWorker();
+    abstract TreeWorker<CommandQWOP, StateQWOP> getTreeWorker();
 
-    List<TreeWorker<CommandQWOP>> getTreeWorkers(int numberOfWorkers) {
-        List<TreeWorker<CommandQWOP>> workerList = new ArrayList<>();
+    List<TreeWorker<CommandQWOP, StateQWOP>> getTreeWorkers(int numberOfWorkers) {
+        List<TreeWorker<CommandQWOP, StateQWOP>> workerList = new ArrayList<>();
         for (int i = 0; i < numberOfWorkers; i++) {
             workerList.add(getTreeWorker());
         }
@@ -155,7 +156,7 @@ public abstract class SearchTemplate {
      * the {@link PanelTimeSeries_WorkerLoad}, if present.
      * @param finishedWorker A worker to terminate and stop tracking.
      */
-    void removeWorker(TreeWorker<CommandQWOP> finishedWorker) {
+    void removeWorker(TreeWorker<CommandQWOP, StateQWOP> finishedWorker) {
         finishedWorker.terminateWorker();
         activeWorkers.remove(finishedWorker);
         if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
@@ -171,7 +172,7 @@ public abstract class SearchTemplate {
      * @param fractionOfWorkers 0 to 1, proportion of workers to allot to this stage.
      * @param maxGames Maximum number of games to play before giving up.
      */
-    protected void doBasicMaxDepthStage(NodeGameExplorableBase<?, CommandQWOP> rootNode, String saveName,
+    protected void doBasicMaxDepthStage(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> rootNode, String saveName,
                                         int desiredDepth,
                                         float fractionOfWorkers,
                                         int maxGames) {
@@ -195,10 +196,10 @@ public abstract class SearchTemplate {
 //                new RolloutPolicy_DecayingHorizon(new EvaluationFunction_Distance(), randomController));
         // TODO now saver and sampler are supplied when creating the workers. Make sure everything is still
         //  consistent with this.
-        TreeStage_MaxDepth<CommandQWOP> searchMax = new TreeStage_MaxDepth<>(desiredDepth, maxGames);
+        TreeStage_MaxDepth<CommandQWOP, StateQWOP> searchMax = new TreeStage_MaxDepth<>(desiredDepth, maxGames);
 
         // Grab some workers from the pool.
-        List<TreeWorker<CommandQWOP>> tws1 = getTreeWorkers(numWorkersToUse);
+        List<TreeWorker<CommandQWOP, StateQWOP>> tws1 = getTreeWorkers(numWorkersToUse);
 
         // Do stage search
         searchMax.initialize(tws1, rootNode);
@@ -222,7 +223,8 @@ public abstract class SearchTemplate {
      * @param fractionOfWorkers 0 to 1, proportion of workers to allot to this stage.
      * @param maxGames Maximum number of games to play before giving up.
      */
-    protected void doBasicMinDepthStage(NodeGameExplorableBase<?, CommandQWOP> rootNode, String saveName, int minDepth,
+    protected void doBasicMinDepthStage(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> rootNode, String saveName,
+                                        int minDepth,
                                         float fractionOfWorkers,
                                         int maxGames) {
         if (fractionOfWorkers > 1)
@@ -234,10 +236,10 @@ public abstract class SearchTemplate {
         int numWorkersToUse = (int) Math.max(1, fractionOfWorkers * maxWorkers);
         logTreeStage(stageName, saveName, rootNode.getTreeDepth(), numWorkersToUse, maxGames);
 
-        TreeStage<CommandQWOP> searchMin = new TreeStage_MinDepth<>(minDepth);
+        TreeStage<CommandQWOP, StateQWOP> searchMin = new TreeStage_MinDepth<>(minDepth);
 
         // Grab some workers from the pool.
-        List<TreeWorker<CommandQWOP>> tws2 = getTreeWorkers(numWorkersToUse);
+        List<TreeWorker<CommandQWOP, StateQWOP>> tws2 = getTreeWorkers(numWorkersToUse);
 
         searchMin.initialize(tws2, rootNode);
 
@@ -258,7 +260,7 @@ public abstract class SearchTemplate {
      * @param fractionOfWorkers Portion of max workers used by this stage.
      * @param numGames Number of games to play.
      */
-    protected void doFixedGamesToFailureStage(NodeGameExplorableBase<?, CommandQWOP> rootNode, String saveName,
+    protected void doFixedGamesToFailureStage(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> rootNode, String saveName,
                                               float fractionOfWorkers, int numGames) {
         if (fractionOfWorkers > 1)
             throw new RuntimeException("Cannot request more than 100% (i.e. fraction of 1) workers available.");
@@ -271,10 +273,10 @@ public abstract class SearchTemplate {
 
         // TODO now saver and sampler are supplied when creating the workers. Make sure everything is still
         //  consistent with this.
-        TreeStage_FixedGames<CommandQWOP> search = new TreeStage_FixedGames<>(numGames); // Depth to get to
+        TreeStage_FixedGames<CommandQWOP, StateQWOP> search = new TreeStage_FixedGames<>(numGames); // Depth to get to
 
         // Grab some workers from the pool.
-        List<TreeWorker<CommandQWOP>> tws1 = getTreeWorkers(numWorkersToUse);
+        List<TreeWorker<CommandQWOP, StateQWOP>> tws1 = getTreeWorkers(numWorkersToUse);
 
         // Do stage search
         search.initialize(tws1, rootNode);
@@ -291,25 +293,30 @@ public abstract class SearchTemplate {
      * This is the heavyweight, full UI, with tree visualization and a bunch of data visualization tabs. Includes some
      * TFlow components which are troublesome on some computers.
      */
-    public UI_Full<CommandQWOP> setupFullUI() {
-        UI_Full<CommandQWOP> fullUI = new UI_Full<>();
+    private UI_Full<CommandQWOP, StateQWOP> setupFullUI() {
+        UI_Full<CommandQWOP, StateQWOP> fullUI = new UI_Full<>();
 
         /* Make each UI component */
         PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed("Run Animation");
         PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot("StateQWOP Viewer");
         PanelRunner_Comparison comparisonPane = new PanelRunner_Comparison("StateQWOP Compare");
-        PanelPlot_States<CommandQWOP> statePlotPane = new PanelPlot_States<>("StateQWOP Plots", 6); // 6 plots per view at
-        // the bottom.
-        PanelPie_ViableFutures<CommandQWOP> viableFuturesPane = new PanelPie_ViableFutures<>("Viable Futures");
-        PanelHistogram_LeafDepth leafDepthPane = new PanelHistogram_LeafDepth("Leaf depth distribution");
-        PanelPlot_Transformed pcaPlotPane =
-                new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), "PCA Plots",6);
-        PanelPlot_Controls controlsPlotPane = new PanelPlot_Controls("Controls Plots", 6); // 6 plots per view at the
+        PanelPlot_States<CommandQWOP, StateQWOP> statePlotPane = new PanelPlot_States<>("StateQWOP Plots", 6);
+        // 6 plots per view at the bottom.
+
+        PanelPie_ViableFutures<CommandQWOP, StateQWOP> viableFuturesPane = new PanelPie_ViableFutures<>("Viable Futures");
+        PanelHistogram_LeafDepth<CommandQWOP, StateQWOP> leafDepthPane = new PanelHistogram_LeafDepth<>("Leaf depth " +
+                "distribution");
+        PanelPlot_Transformed<CommandQWOP, StateQWOP> pcaPlotPane =
+                new PanelPlot_Transformed<>(new Transform_PCA<>(IntStream.range(0, 72).toArray()), "PCA Plots",6);
+        PanelPlot_Controls<CommandQWOP, StateQWOP> controlsPlotPane = new PanelPlot_Controls<>("Controls Plots", 6);
+        // 6
+        // plots per
+        // view at the
         // bottom.
-        PanelPlot_Transformed autoencPlotPane =
-                new PanelPlot_Transformed(new Transform_Autoencoder("src/main/resources/tflow_models" +
+        PanelPlot_Transformed<CommandQWOP, StateQWOP> autoencPlotPane =
+                new PanelPlot_Transformed<>(new Transform_Autoencoder<>("src/main/resources/tflow_models" +
                         "/AutoEnc_72to12_6layer.pb", 12), "Autoenc Plots", 6);
-        autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon(1));
+        autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon<>(1));
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
         //workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 
@@ -336,14 +343,6 @@ public abstract class SearchTemplate {
 
         fullUI.start();
         //fullUI.addTab(workerMonitorPanel);
-
-//        Thread runnerPanelThread = new Thread(runnerPanel); // All components with a copy of the GameThreadSafe should
-//        // have their own threads.
-//        runnerPanelThread.start();
-
-//        Thread monitorThread = new Thread(workerMonitorPanel);
-//        monitorThread.start();
-
 
         logger.info("GUI: Running in full graphics mode.");
         return fullUI;

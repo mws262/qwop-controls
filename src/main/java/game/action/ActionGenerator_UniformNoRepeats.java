@@ -31,7 +31,7 @@ public class ActionGenerator_UniformNoRepeats<C extends Command<?>> implements I
     }
 
     @Override
-    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C> parentNode) {
+    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C, ?> parentNode) {
         ActionList<C> as = new ActionList<>(new Distribution_Equal<>());
         for (ActionList<C> allActionList : allActionLists) {
             if (parentNode.getTreeDepth() == 0 || !allActionList.contains(parentNode.getAction())) { // Get all

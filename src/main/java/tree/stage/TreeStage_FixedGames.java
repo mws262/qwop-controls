@@ -3,6 +3,7 @@ package tree.stage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
+import game.state.IState;
 import tree.TreeWorker;
 import tree.node.NodeGameBase;
 import tree.node.NodeGameExplorableBase;
@@ -15,7 +16,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class TreeStage_FixedGames<C extends Command<?>> extends TreeStage<C> {
+public class TreeStage_FixedGames<C extends Command<?>, S extends IState> extends TreeStage<C, S> {
 
     /**
      * How many games were played before this stage started?
@@ -37,15 +38,15 @@ public class TreeStage_FixedGames<C extends Command<?>> extends TreeStage<C> {
     }
 
     @Override
-    public void initialize(List<TreeWorker<C>> workers, NodeGameExplorableBase<?, C> stageRoot) {
+    public void initialize(List<TreeWorker<C, S>> workers, NodeGameExplorableBase<?, C, S> stageRoot) {
         initialGamesPlayed = TreeWorker.getTotalGamesPlayed();
         super.initialize(workers, stageRoot);
     }
 
     @JsonIgnore
     @Override
-    public List<NodeGameBase<?, C>> getResults() {
-        List<NodeGameBase<?, C>> resultList = new ArrayList<>();
+    public List<NodeGameBase<?, C, S>> getResults() {
+        List<NodeGameBase<?, C, S>> resultList = new ArrayList<>();
         resultList.add(getRootNode()); // No particularly interesting results.
         return resultList;
     }

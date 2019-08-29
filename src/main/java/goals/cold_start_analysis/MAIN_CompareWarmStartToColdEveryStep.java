@@ -1,10 +1,10 @@
 package goals.cold_start_analysis;
 
-import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.action.ActionQueue;
 import game.qwop.CommandQWOP;
-import game.state.IState;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,8 +25,8 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
 
     private void run() {
         ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
-        IGameInternal<CommandQWOP> gameFullRun = new GameQWOP();
-        IGameInternal<CommandQWOP> coldStartGame = new GameQWOP();
+        IGameInternal<CommandQWOP, StateQWOP> gameFullRun = new GameQWOP();
+        IGameInternal<CommandQWOP, StateQWOP> coldStartGame = new GameQWOP();
 
         // Start simulating the entire "good" run on the normal game.
         while (!actionQueue.isEmpty()) {
@@ -34,7 +34,7 @@ public class MAIN_CompareWarmStartToColdEveryStep extends CompareWarmStartToCold
             gameFullRun.step(nextCommand); // Sim the main runner and put on screen.
 
             coldStartGame.resetGame();
-            IState st = gameFullRun.getCurrentState();
+            StateQWOP st = gameFullRun.getCurrentState();
             coldStartGame.setState(st);
             ActionQueue<CommandQWOP> coldStartActionQueue = actionQueue.getCopyOfQueueAtExecutionPoint();
 

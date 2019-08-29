@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.Command;
+import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jblas.util.Random;
@@ -19,7 +20,7 @@ import value.updaters.IValueUpdater;
  *
  * @author Matt
  */
-public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoCloseable {
+public class Sampler_UCB<C extends Command<?>, S extends IState> implements ISampler<C, S>, AutoCloseable {
 
     /**
      * Constant term on UCB exploration factor. Higher means more exploration.
@@ -31,14 +32,14 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     /**
      * Evaluation function used to score single nodes after rollouts are done.
      */
-    private final IEvaluationFunction<C> evaluationFunction;
+    private final IEvaluationFunction<C, S> evaluationFunction;
 
     /**
      * Policy used to evaluateActionDistribution the score of a tree expansion Node by doing rollout(s).
      */
-    private final IRolloutPolicy<C> rolloutPolicy;
+    private final IRolloutPolicy<C, S> rolloutPolicy;
 
-    public final IValueUpdater<C> valueUpdater; //TopNChildren(8); // TODO make this an
+    private final IValueUpdater<C, S> valueUpdater; //TopNChildren(8); // TODO make this an
     // assignable
     // parameter.
 
@@ -76,9 +77,9 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
      * Also specify a rollout policy to use.
      */
     public Sampler_UCB(
-            @JsonProperty("evaluationFunction") IEvaluationFunction<C> evaluationFunction,
-            @JsonProperty("rolloutPolicy") IRolloutPolicy<C> rolloutPolicy,
-            @JsonProperty("valueUpdater") IValueUpdater<C> valueUpdater,
+            @JsonProperty("evaluationFunction") IEvaluationFunction<C, S> evaluationFunction,
+            @JsonProperty("rolloutPolicy") IRolloutPolicy<C, S> rolloutPolicy,
+            @JsonProperty("valueUpdater") IValueUpdater<C, S> valueUpdater,
             @JsonProperty("explorationConstant") float explorationConstant,
             @JsonProperty("explorationRandomFactor") float explorationRandomFactor) {
         this.evaluationFunction = evaluationFunction;
@@ -92,13 +93,13 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     /**
      * Propagate the score and visit count back up the tree.
      */
-    private void propagateScore(NodeGameExplorableBase<?, C> failureNode, float score) {
+    private void propagateScore(NodeGameExplorableBase<?, C, S> failureNode, float score) {
         // Do evaluation and propagation of scores.
         failureNode.recurseUpTreeInclusive(n -> n.updateValue(score, valueUpdater));
     }
 
     @Override
-    public NodeGameExplorableBase<?, C> treePolicy(NodeGameExplorableBase<?, C> startNode) {
+    public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
         if (startNode.getUntriedActionCount() != 0) {
             if (startNode.reserveExpansionRights()) { // We immediately expand
                 // if there's an untried command.
@@ -110,10 +111,10 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
         }
 
         double bestScoreSoFar = -Double.MAX_VALUE;
-        NodeGameExplorableBase<?, C> bestNodeSoFar = null;
+        NodeGameExplorableBase<?, C, S> bestNodeSoFar = null;
 
         // Otherwise, we go through the existing tree picking the "best."
-        for (NodeGameExplorableBase<?, C> child : startNode.getChildren()) {
+        for (NodeGameExplorableBase<?, C, S> child : startNode.getChildren()) {
 
             if (!child.isFullyExplored() && !child.isLocked() && child.getUpdateCount() > 0) {
                 float val = (child.getValue() + c * (float) Math.sqrt(2. * Math.log((double) startNode.getUpdateCount()) / (double) child.getUpdateCount()));
@@ -145,25 +146,25 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     }
 
     @Override
-    public void treePolicyActionDone(NodeGameExplorableBase<?, C> currentNode) {
+    public void treePolicyActionDone(NodeGameExplorableBase<?, C, S> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public boolean treePolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
+    public boolean treePolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return treePolicyDone; // True means ready to move on to the next.
     }
 
     @Override
-    public Action<C> expansionPolicy(NodeGameExplorableBase<?, C> startNode) {
+    public Action<C> expansionPolicy(NodeGameExplorableBase<?, C, S> startNode) {
         if (startNode.getUntriedActionCount() == 0)
             throw new IndexOutOfBoundsException("Expansion policy received a node from which there are no new nodes to try!");
         return startNode.getUntriedActionOnDistribution();
     }
 
     @Override
-    public void expansionPolicyActionDone(NodeGameExplorableBase<?, C> currentNode) {
+    public void expansionPolicyActionDone(NodeGameExplorableBase<?, C, S> currentNode) {
         treePolicyDone = false;
         expansionPolicyDone = true; // We move on after adding only one node.
         if (currentNode.getState().isFailed()) { // If expansion is to failed node, no need to do rollout.
@@ -175,12 +176,12 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     }
 
     @Override
-    public boolean expansionPolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
+    public boolean expansionPolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public void rolloutPolicy(NodeGameExplorableBase<?, C> startNode, IGameInternal<C> game) {
+    public void rolloutPolicy(NodeGameExplorableBase<?, C, S> startNode, IGameInternal<C, S> game) {
         if (startNode.getState().isFailed())
             throw new IllegalStateException("Rollout policy received a starting node which corresponds to an already failed " +
                     "state.");
@@ -191,22 +192,22 @@ public class Sampler_UCB<C extends Command<?>> implements ISampler<C>, AutoClose
     }
 
     @Override
-    public boolean rolloutPolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
+    public boolean rolloutPolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return rolloutPolicyDone;
     }
 
     @JsonIgnore
     @Override
-    public Sampler_UCB<C> getCopy() {
+    public Sampler_UCB<C, S> getCopy() {
         return new Sampler_UCB<>(evaluationFunction.getCopy(), rolloutPolicy.getCopy(),
                 valueUpdater.getCopy(), explorationConstant, explorationRandomFactor);
     }
 
-    public IEvaluationFunction<C> getEvaluationFunction() {
+    public IEvaluationFunction<C, S> getEvaluationFunction() {
         return evaluationFunction;
     }
 
-    public IRolloutPolicy<C> getRolloutPolicy() {
+    public IRolloutPolicy<C, S> getRolloutPolicy() {
         return rolloutPolicy;
     }
 

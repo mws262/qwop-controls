@@ -1,6 +1,7 @@
 package tree.stage;
 
 import game.action.Command;
+import game.state.IState;
 import tree.TreeWorker;
 import tree.node.NodeGameBase;
 import tree.node.NodeGameExplorableBase;
@@ -16,9 +17,9 @@ import java.util.List;
  *
  * @author matt
  */
-public class TreeStage_MinDepth<C extends Command<?>> extends TreeStage<C> {
+public class TreeStage_MinDepth<C extends Command<?>, S extends IState> extends TreeStage<C, S> {
 
-    private List<NodeGameExplorableBase<?, C>> leafList = new LinkedList<>();
+    private List<NodeGameExplorableBase<?, C, S>> leafList = new LinkedList<>();
 
     /**
      * Minimum relative depth (relative to given root) that we want to achieve.
@@ -40,13 +41,13 @@ public class TreeStage_MinDepth<C extends Command<?>> extends TreeStage<C> {
     }
 
     @Override
-    public void initialize(List<TreeWorker<C>> workers, NodeGameExplorableBase<?, C> stageRoot) {
+    public void initialize(List<TreeWorker<C, S>> workers, NodeGameExplorableBase<?, C, S> stageRoot) {
         minEffectiveDepth = minDepth + stageRoot.getTreeDepth();
         super.initialize(workers, stageRoot);
     }
 
     @Override
-    public List<NodeGameBase<?, C>> getResults() {
+    public List<NodeGameBase<?, C, S>> getResults() {
         leafList.clear();
         getRootNode().recurseDownTreeInclusive(n -> {
             if (n.getChildCount() == 0) {
@@ -54,13 +55,13 @@ public class TreeStage_MinDepth<C extends Command<?>> extends TreeStage<C> {
             }
         });
 
-        List<NodeGameBase<?, C>> resultList = new ArrayList<>();
+        List<NodeGameBase<?, C, S>> resultList = new ArrayList<>();
 
-        for (NodeGameBase<?, C> n : leafList) {
+        for (NodeGameBase<?, C, S> n : leafList) {
             if (n.getTreeDepth() == minEffectiveDepth) {
                 resultList.add(n);
             } else if (n.getTreeDepth() > minEffectiveDepth) {
-                NodeGameBase<?, C> atDepth = n;
+                NodeGameBase<?, C, S> atDepth = n;
                 while (atDepth.getTreeDepth() > minEffectiveDepth) {
                     atDepth = atDepth.getParent();
                 }
@@ -72,7 +73,7 @@ public class TreeStage_MinDepth<C extends Command<?>> extends TreeStage<C> {
 
     @Override
     public boolean checkTerminationConditions() {
-        NodeGameExplorableBase<?, C> rootNode = getRootNode();
+        NodeGameExplorableBase<?, C, S> rootNode = getRootNode();
         if (rootNode.isFullyExplored()) return true;
         if (!areWorkersRunning()) return true;
 
@@ -86,12 +87,12 @@ public class TreeStage_MinDepth<C extends Command<?>> extends TreeStage<C> {
         // If no leaves, then we haven't gotten far enough for sure.
         if (leafList.isEmpty()) return false;
 
-        for (NodeGameExplorableBase<?, C> n : leafList) {
+        for (NodeGameExplorableBase<?, C, S> n : leafList) {
             // We find a leaf which is not deep enough and not failed.
             if (n.getTreeDepth() < minEffectiveDepth && !n.getState().isFailed()) {
                 return false;
             } else {
-                NodeGameExplorableBase<?, C> currNode = n;
+                NodeGameExplorableBase<?, C, S> currNode = n;
                 // Get back from the leaf to the horizon we wish to achieve.
                 while (currNode.getTreeDepth() > minEffectiveDepth) {
                     currNode = currNode.getParent();

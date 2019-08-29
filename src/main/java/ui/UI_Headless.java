@@ -1,9 +1,10 @@
 package ui;
 
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameGraphicsBase;
 
-public class UI_Headless<C extends Command<?>> implements IUserInterface<C> {
+public class UI_Headless<C extends Command<?>, S extends IState> implements IUserInterface<C, S> {
 
     @Override
     public void start() {}
@@ -12,7 +13,7 @@ public class UI_Headless<C extends Command<?>> implements IUserInterface<C> {
     public void kill() {}
 
     @Override
-    public void addRootNode(NodeGameGraphicsBase<?, C> node) {}
+    public void addRootNode(NodeGameGraphicsBase<?, C, S> node) {}
 
     @Override
     public void clearRootNodes() {}

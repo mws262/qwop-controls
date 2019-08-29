@@ -1,13 +1,13 @@
 package goals.perturbation_analysis;
 
-import game.action.Action;
-import game.action.ActionQueue;
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.qwop.GameQWOP;
 import game.IGameInternal;
+import game.action.Action;
+import game.action.ActionQueue;
 import game.qwop.CommandQWOP;
-import game.state.IState;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import tree.node.NodeGameGraphicsBase;
 import ui.runner.PanelRunner_MultiState;
 
@@ -67,16 +67,16 @@ public class MAIN_PerturbationImpulse extends JFrame {
         setVisible(true);
 
         // Load a saved game.
-        List<SavableSingleGame<CommandQWOP>> gameList = new ArrayList<>();
-        SavableFileIO<SavableSingleGame<CommandQWOP>> fileIO = new SavableFileIO<>();
+        List<SavableSingleGame<CommandQWOP, StateQWOP>> gameList = new ArrayList<>();
+        SavableFileIO<SavableSingleGame<CommandQWOP, StateQWOP>> fileIO = new SavableFileIO<>();
         fileIO.loadObjectsToCollection(new File(fileName), gameList);
 
         assert !gameList.isEmpty();
 
-        Action<CommandQWOP>[] baseActions = gameList.get(0).actions;
+        List<Action<CommandQWOP>> baseActions = gameList.get(0).actions;
 
         // Simulate the base game.command.
-        IGameInternal<CommandQWOP> game = new GameQWOP();
+        IGameInternal<CommandQWOP, StateQWOP> game = new GameQWOP();
 
         // These are the runners which will be perturbed.
         List<GameQWOP> perturbedGames = new ArrayList<>();
@@ -92,7 +92,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
             CommandQWOP command = actionQueue.pollCommand();
             game.step(command);
 
-            for (IGameInternal<CommandQWOP> perturbedGame : perturbedGames) {
+            for (IGameInternal<CommandQWOP, StateQWOP> perturbedGame : perturbedGames) {
                 perturbedGame.step(command);
             }
         }
@@ -118,7 +118,7 @@ public class MAIN_PerturbationImpulse extends JFrame {
 
             // Step perturbed runners.
             for (int i = 0; i < perturbedGames.size(); i++) {
-                IGameInternal<CommandQWOP> thisGame = perturbedGames.get(i);
+                IGameInternal<CommandQWOP, StateQWOP> thisGame = perturbedGames.get(i);
                 thisGame.step(command);
                 if (count % drawInterval == 0)
                     panelRunner.addSecondaryState(perturbedGames.get(i).getCurrentState(), NodeGameGraphicsBase.getColorFromScaledValue(i
@@ -167,14 +167,15 @@ public class MAIN_PerturbationImpulse extends JFrame {
         }
 
         /**
-         * Add a secondary state to draw. Same as {@link PanelRunner_MultiState#addSecondaryState(IState, Color)}
+         * Add a secondary state to draw. Same as {@link PanelRunner_MultiState#addSecondaryState(StateQWOP, Color)}
          * except with an arrow drawn from the runner center.
          *
          * @param state          StateQWOP to add to drawing list.
          * @param color          Color to outline the runner in.
          * @param arrowDirection Direction of the arrow.
          */
-        void addSecondaryStateWithArrow(IState state, @SuppressWarnings("SameParameterValue") Color color, float[] arrowDirection) {
+        void addSecondaryStateWithArrow(StateQWOP state, @SuppressWarnings("SameParameterValue") Color color,
+                                        float[] arrowDirection) {
             super.addSecondaryState(state, color);
             Integer[] arrowCoord = new Integer[4];
             arrowCoord[0] = getOffset()[0] + (int) (state.getCenterX() * runnerScaling);

@@ -7,6 +7,7 @@ import game.action.ActionQueue;
 import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.NodeGameExplorableBase;
@@ -26,7 +27,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     /**
      * This panel's copy of the game it uses to run games for visualization.
      */
-    protected IGameInternal<CommandQWOP> game;
+    protected IGameInternal<CommandQWOP, StateQWOP> game;
 
     /**
      * Stores the QWOP game.command we're going to execute.
@@ -62,7 +63,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
      * Give this panel a node to simulate and draw to. If a new node is supplied while another
      * is active, then terminate the previous and start the new one.
      */
-    public void simRunToNode(NodeGameExplorableBase<?, CommandQWOP> node) {
+    public void simRunToNode(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> node) {
         assert node.getTreeDepth() > 0; // Doesn't make sense to simulate to the starting configuration.
 
         fastForwardTimesteps = 0;
@@ -81,11 +82,11 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     /**
      * This version only animates the game.command between startNode and endNode. Still simulates all of course.
      */
-    public void simRunToNode(NodeGameExplorableBase<?, CommandQWOP> startNode,
-                             NodeGameExplorableBase<?, CommandQWOP> endNode) {
+    public void simRunToNode(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> startNode,
+                             NodeGameExplorableBase<?, CommandQWOP, StateQWOP> endNode) {
         simRunToNode(endNode);
 
-        NodeGameExplorableBase<?, CommandQWOP> currNode = startNode;
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> currNode = startNode;
         while (currNode.getTreeDepth() > 0) {
             fastForwardTimesteps += currNode.getAction().getTimestepsTotal();
             currNode = currNode.getParent();
@@ -189,7 +190,7 @@ public class PanelRunner_Animated extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(NodeGameGraphicsBase<?, CommandQWOP> node) {
+    public void update(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> node) {
         if (node.getTreeDepth() > 0)
             simRunToNode(node);
     }

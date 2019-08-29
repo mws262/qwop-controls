@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class Controller_Tensorflow_ClassifyActionsPerTimestep extends TensorflowLoader implements IController<CommandQWOP> {
+public class Controller_Tensorflow_ClassifyActionsPerTimestep extends TensorflowLoader implements IController<CommandQWOP, StateQWOP> {
 
     /**
      * Name of the input in the TensorFlow graph.
@@ -58,7 +58,7 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     }
 
     @Override
-    public Action<CommandQWOP> policy(NodeGameExplorableBase<?, CommandQWOP> state) {
+    public Action<CommandQWOP> policy(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> state) {
         List<Float> keyClassification = sisoFloatPrediction(state.getState(), inputName, outputName);
         float probability0 = keyClassification.get(0);
         float probability1 = keyClassification.get(1);
@@ -91,13 +91,13 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
     }
 
     @Override
-    public Action<CommandQWOP> policy(NodeGameExplorableBase<?, CommandQWOP> state,
-                                      IGameSerializable<CommandQWOP> game) {
+    public Action<CommandQWOP> policy(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> state,
+                                      IGameSerializable<CommandQWOP, StateQWOP> game) {
         return policy(state);
     }
 
     @Override
-    public IController<CommandQWOP> getCopy() {
+    public IController<CommandQWOP, StateQWOP> getCopy() {
         throw new RuntimeException("Haven't implemented copy on this controller yet!");
     }
 }

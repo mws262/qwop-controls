@@ -9,6 +9,7 @@ import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
 import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.TreeWorker;
@@ -164,12 +165,12 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
     }
 
     @Override
-    TreeWorker<CommandQWOP> getTreeWorker() {
+    TreeWorker<CommandQWOP, StateQWOP> getTreeWorker() {
 
         /* Pick rollout configuration. */
-        IRolloutPolicy<CommandQWOP> rollout;
-        IController<CommandQWOP> rolloutController;
-        IEvaluationFunction<CommandQWOP> rolloutEvaluator;
+        IRolloutPolicy<CommandQWOP, StateQWOP> rollout;
+        IController<CommandQWOP, StateQWOP> rolloutController;
+        IEvaluationFunction<CommandQWOP, StateQWOP> rolloutEvaluator;
 
         switch(rolloutControllerType) {
             case RANDOM:
@@ -217,19 +218,19 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
         // ROLLOUT ACTIONS ABOVE AND BELOW ALSO.
         if (windowRollout) {
-            RolloutPolicy_Window<CommandQWOP> windowRollout = new RolloutPolicy_Window<>(rollout);
+            RolloutPolicy_Window<CommandQWOP, StateQWOP> windowRollout = new RolloutPolicy_Window<>(rollout);
             windowRollout.selectionCriteria = windowSelectionType;
             rollout = windowRollout;
         }
 
-        ISampler<CommandQWOP> sampler = new Sampler_UCB<>(new EvaluationFunction_Constant<>(0f), rollout,
+        ISampler<CommandQWOP, StateQWOP> sampler = new Sampler_UCB<>(new EvaluationFunction_Constant<>(0f), rollout,
                 new ValueUpdater_Average<>(), 5
                 , 1); // TODO
         // hardcoded.
 
         return (prevStates > 0 && delayTs > 0) ? TreeWorker.makeCachedStateTreeWorker(sampler, delayTs, prevStates,
                 GameQWOPCaching.StateType.HIGHER_DIFFERENCES) :
-                TreeWorker.makeStandardTreeWorker(sampler);
+                TreeWorker.makeStandardQWOPTreeWorker(sampler);
     }
 
     public static void main(String[] args) {
@@ -260,31 +261,29 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         IActionGenerator<CommandQWOP> actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);// new
         // ActionGenerator_UniformNoRepeats();//
 
-        List<Action<CommandQWOP>[]> alist = new ArrayList<>();
-        alist.add(new Action[]{
-                new Action<>(7, CommandQWOP.NONE),
-//                new Action(49, Action.Keys.wo),
-//                new Action(2, Action.Keys.none),
-//                new Action(46, Action.Keys.qp),
-        });
+        List<List<Action<CommandQWOP>>> allTreeActions = new ArrayList<>();
+        List<Action<CommandQWOP>> singleRunActions = new ArrayList<>();
+        singleRunActions.add(new Action<>(7, CommandQWOP.NONE));
+        allTreeActions.add(singleRunActions);
 
-        NodeGameExplorableBase<?, CommandQWOP> rootNode = headless ?
+
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> rootNode = headless ?
                 new NodeGameExplorable<>(GameQWOP.getInitialState(), actionGenerator) :
                 new NodeGameGraphics<>(GameQWOP.getInitialState(), actionGenerator);
 
-        NodeGameExplorable.makeNodesFromActionSequences(alist, rootNode, game);
-        NodeGameExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, alist.get(0).length - 1);
+        NodeGameExplorable.makeNodesFromActionSequences(allTreeActions, rootNode, game);
+        NodeGameExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, allTreeActions.get(0).size() - 1);
 
 
         ExecutorService labelUpdater = null;
         if (!headless) {
             labelUpdater = Executors.newSingleThreadExecutor();
 
-            NodeGameGraphics<CommandQWOP> graphicsRootNode = (NodeGameGraphics<CommandQWOP>) rootNode;
+            NodeGameGraphics<CommandQWOP, StateQWOP> graphicsRootNode = (NodeGameGraphics<CommandQWOP, StateQWOP>) rootNode;
             NodeGameGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(graphicsRootNode);
-            List<NodeGameGraphics<CommandQWOP>> leaf = new ArrayList<>();
+            List<NodeGameGraphics<CommandQWOP, StateQWOP>> leaf = new ArrayList<>();
             graphicsRootNode.getLeaves(leaf);
             assert leaf.size() == 1;
             leaf.get(0).resetSweepAngle();
@@ -298,7 +297,8 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
             // Update node labels if graphics are enabled.
             if (!headless) {
-                NodeGameGraphics<CommandQWOP> graphicsRootNode = (NodeGameGraphics<CommandQWOP>) rootNode;
+                NodeGameGraphics<CommandQWOP, StateQWOP> graphicsRootNode =
+                        (NodeGameGraphics<CommandQWOP, StateQWOP>) rootNode;
 
                 Runnable updateLabels = () -> graphicsRootNode.recurseDownTreeExclusive(n -> {
                     float percDiff = valueFunction.evaluate(n); // Temp disable percent diff for absolute diff.
@@ -314,11 +314,12 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         }
     }
 
-    private void doSearchAndUpdate(NodeGameExplorableBase<?, CommandQWOP> rootNode, int updateIdx) {
-        TreeStage_MaxDepth<CommandQWOP> searchMax = new TreeStage_MaxDepth<>(getToSteadyDepth, bailAfterXGames);
+    private void doSearchAndUpdate(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> rootNode, int updateIdx) {
+        TreeStage_MaxDepth<CommandQWOP, StateQWOP> searchMax = new TreeStage_MaxDepth<>(getToSteadyDepth,
+                bailAfterXGames);
 
         // Grab some workers from the pool.
-        List<TreeWorker<CommandQWOP>> tws = getTreeWorkers(numWorkersToUse);
+        List<TreeWorker<CommandQWOP, StateQWOP>> tws = getTreeWorkers(numWorkersToUse);
 
         // Do stage search
         searchMax.initialize(tws, rootNode);
@@ -327,7 +328,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         tws.forEach(this::removeWorker);
 
         // Update the value function.
-        List<NodeGameExplorableBase<?, CommandQWOP>> nodesBelow = new ArrayList<>();
+        List<NodeGameExplorableBase<?, CommandQWOP, StateQWOP>> nodesBelow = new ArrayList<>();
         //if (n.getChildCount() > 0) { // TODO TEMP EXCLUDE LEAVES
 //}
         rootNode.recurseDownTreeExclusive(nodesBelow::add);

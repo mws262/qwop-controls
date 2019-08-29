@@ -1,19 +1,17 @@
 package flashqwop;
 
+import game.IGameCommandTarget;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.*;
-import game.qwop.CommandQWOP;
-import game.qwop.GameQWOP;
-import game.qwop.StateQWOP;
-import game.qwop.StateQWOPDelayEmbedded_HigherDifferences;
-import game.state.*;
+import game.qwop.*;
+import game.state.StateVariable6D;
 import hardware.KeypusherSerialConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Makes it easier to feed Actions to the Flash game. With my game implementations, the caller requests the game to
@@ -81,6 +79,7 @@ public abstract class FlashGame implements IFlashStateListener {
     /**
      * Default to software commands out.
      */
+    @SuppressWarnings("WeakerAccess")
     public FlashGame() {
         this(false);
     }
@@ -91,7 +90,7 @@ public abstract class FlashGame implements IFlashStateListener {
      * {@link FlashGame} will turn to a feedback controller.
      * @return
      */
-    public abstract Action<CommandQWOP>[] getActionSequenceFromBeginning();
+    public abstract List<Action<CommandQWOP>> getActionSequenceFromBeginning();
 
     /**
      * This gets called whenever the current ActionQueue runs out of things to do. If you just want to run a fixed
@@ -99,7 +98,7 @@ public abstract class FlashGame implements IFlashStateListener {
      * @param state Most recent state received from the Flash game.
      * @return An Action from a feedback controller.
      */
-    public abstract Action<CommandQWOP> getControlAction(IState state);
+    public abstract Action<CommandQWOP> getControlAction(IStateQWOP state);
 
     /**
      * This class will handle the execution of game.command, but inheriting classes may want to listen in.
@@ -108,7 +107,7 @@ public abstract class FlashGame implements IFlashStateListener {
      *                preceding command.
      * @param timestep Timestep count at this state.
      */
-    public abstract void reportGameStatus(IState state, CommandQWOP command, int timestep);
+    public abstract void reportGameStatus(IStateQWOP state, CommandQWOP command, int timestep);
 
     /**
      * Tell the game to resetGame (equivalent to 'r' on the keyboard in the real game).

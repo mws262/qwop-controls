@@ -2,17 +2,18 @@ package game.qwop;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.IGameInternal;
 import game.state.*;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 
-public class GameQWOPCaching extends GameQWOP {
+public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameInternal<CommandQWOP, S> {
 
     @JsonIgnore
     public final int STATE_SIZE;
 
-    private LinkedList<StateQWOP> cachedStates;
+    private LinkedList<S> cachedStates;
 
     // For delay embedding.
     public final int timestepDelay;
@@ -24,10 +25,12 @@ public class GameQWOPCaching extends GameQWOP {
 
     public final StateType stateType;
 
+    private GameQWOP game = new GameQWOP();
+
     public GameQWOPCaching(@JsonProperty("timestepDelay") int timestepDelay,
                            @JsonProperty("numDelayedStates") int numDelayedStates,
                            @JsonProperty("stateType") StateType stateType) {
-        super.resetGame();
+        game.resetGame();
         if (timestepDelay < 1) {
             throw new IllegalArgumentException("Timestep delay must be at least one. Was: " + timestepDelay);
         }
@@ -40,23 +43,23 @@ public class GameQWOPCaching extends GameQWOP {
 
     @Override
     public void resetGame() {
-        super.resetGame();
+        game.resetGame();
 
         if (cachedStates == null) {
             cachedStates = new LinkedList<>();
         }
         cachedStates.clear();
-        cachedStates.add((StateQWOP)getInitialState());
+        cachedStates.add(game.getInitialState());
     }
 
     @Override
     public void step(CommandQWOP c) {
-        super.step(c);
-        cachedStates.addFirst((StateQWOP)super.getCurrentState());
+        game.step(c);
+        cachedStates.addFirst(game.getCurrentState());
     }
 
     @Override
-    public IState getCurrentState() {
+    public S getCurrentState() {
 
         StateQWOP[] states = new StateQWOP[numDelayedStates + 1];
         Arrays.fill(states, getInitialState());
@@ -78,17 +81,12 @@ public class GameQWOPCaching extends GameQWOP {
     }
 
     @Override
-    public void setState(IState state) {
+    public void setState(S state) {
         cachedStates.clear();
-        if (state instanceof StateQWOPDelayEmbedded) {
-            StateQWOPDelayEmbedded st = (StateQWOPDelayEmbedded) state;
-            for (int i = st.individualStates.length - 1; i >= 0; i--) { // element zero is the newest.
-                cachedStates.add(st.individualStates[i]);
-            }
-            super.setState(st.individualStates[0]);
-        } else {
-            super.setState(state);
+        for (int i = state.individualStates.length - 1; i >= 0; i--) { // element zero is the newest.
+            cachedStates.add(state.individualStates[i]);
         }
+        game.setState(state.individualStates[0]);
     }
 
     @Override
@@ -97,7 +95,7 @@ public class GameQWOPCaching extends GameQWOP {
     }
 
     @Override
-    public GameQWOP getCopy() {
-        return new GameQWOPCaching(timestepDelay, numDelayedStates, stateType);
+    public GameQWOPCaching<S> getCopy() {
+        return new GameQWOPCaching<>(timestepDelay, numDelayedStates, stateType);
     }
 }

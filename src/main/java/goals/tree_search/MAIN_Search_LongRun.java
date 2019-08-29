@@ -6,6 +6,7 @@ import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
 import data.SparseDataToDenseTFRecord;
 import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.NodeGameGraphics;
@@ -76,7 +77,8 @@ public class MAIN_Search_LongRun extends SearchTemplate {
         if (doStage1) {
             int count = 0;
             while (count < runsToGenerate) {
-                NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(), actionGenerator);
+                NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
+                        actionGenerator);
                 NodeGameGraphics.pointsToDraw.clear();
                 ui.clearRootNodes();
                 ui.addRootNode(rootNode);
@@ -111,8 +113,8 @@ public class MAIN_Search_LongRun extends SearchTemplate {
     }
 
     @Override
-    TreeWorker<CommandQWOP> getTreeWorker() {
-        return TreeWorker.makeStandardTreeWorker(
+    TreeWorker<CommandQWOP, StateQWOP> getTreeWorker() {
+        return TreeWorker.makeStandardQWOPTreeWorker(
                 new Sampler_UCB<>(
                         new EvaluationFunction_Constant<>(0f),
                         new RolloutPolicy_DeltaScore<>(

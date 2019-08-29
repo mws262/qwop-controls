@@ -98,7 +98,7 @@ public class ActionGenerator_FixedSequence<C extends Command<?>> implements IAct
 
     @JsonIgnore
     @Override
-    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C> parentNode) {
+    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C, ?> parentNode) {
         int actionDepth = parentNode.getTreeDepth();
 
         // Check if this is an exception case.

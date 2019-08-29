@@ -3,6 +3,7 @@ package tree.sampler;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameExplorableBase;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
  *
  * @author Matt
  */
-public class Sampler_Distribution<C extends Command<?>> implements ISampler<C> {
+public class Sampler_Distribution<C extends Command<?>, S extends IState> implements ISampler<C, S> {
 
     private boolean treePolicyDone = false;
     private boolean expansionPolicyDone = false;
@@ -21,12 +22,12 @@ public class Sampler_Distribution<C extends Command<?>> implements ISampler<C> {
     }
 
     @Override
-    public NodeGameExplorableBase<?, C> treePolicy(NodeGameExplorableBase<?, C> startNode) {
+    public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
         /* Normal random sampling now, but using distribution to decide when to switch to expand policy. */
         if (startNode.isFullyExplored())
             throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. " +
 					"Whoever called this is at fault.");
-        NodeGameExplorableBase<?, C> currentNode = startNode;
+        NodeGameExplorableBase<?, C, S> currentNode = startNode;
 
         while (true) {
             if (currentNode.isFullyExplored())
@@ -35,9 +36,9 @@ public class Sampler_Distribution<C extends Command<?>> implements ISampler<C> {
             if (currentNode.isLocked()) currentNode = currentNode.getRoot();
 
             // Count the number of available children to go to next.
-            ArrayList<NodeGameExplorableBase<?, C>> notFullyExploredChildren = new ArrayList<>();
+            ArrayList<NodeGameExplorableBase<?, C, S>> notFullyExploredChildren = new ArrayList<>();
             ArrayList<Action<C>> notFullyExploredActions = new ArrayList<>();
-            for (NodeGameExplorableBase<?, C> child : currentNode.getChildren()) {
+            for (NodeGameExplorableBase<?, C, S> child : currentNode.getChildren()) {
                 if (!child.isFullyExplored()) {
                     notFullyExploredChildren.add(child);
                     notFullyExploredActions.add(child.getAction());
@@ -91,7 +92,7 @@ public class Sampler_Distribution<C extends Command<?>> implements ISampler<C> {
     }
 
     @Override
-    public Action<C> expansionPolicy(NodeGameExplorableBase<?, C> startNode) {
+    public Action<C> expansionPolicy(NodeGameExplorableBase<?, C, S> startNode) {
         if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
@@ -99,37 +100,37 @@ public class Sampler_Distribution<C extends Command<?>> implements ISampler<C> {
     }
 
     @Override
-    public void rolloutPolicy(NodeGameExplorableBase<?, C> startNode, IGameInternal<C> game) {}
+    public void rolloutPolicy(NodeGameExplorableBase<?, C, S> startNode, IGameInternal<C, S> game) {}
 
     @Override
-    public boolean treePolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
+    public boolean treePolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return treePolicyDone; // True means ready to move on to the next.
     }
 
     @Override
-    public boolean expansionPolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
+    public boolean expansionPolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public boolean rolloutPolicyGuard(NodeGameExplorableBase<?, C> currentNode) {
+    public boolean rolloutPolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return true; // No rollout policy
     }
 
     @Override
-    public void treePolicyActionDone(NodeGameExplorableBase<?, C> currentNode) {
+    public void treePolicyActionDone(NodeGameExplorableBase<?, C, S> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public void expansionPolicyActionDone(NodeGameExplorableBase<?, C> currentNode) {
+    public void expansionPolicyActionDone(NodeGameExplorableBase<?, C, S> currentNode) {
         treePolicyDone = false;
         expansionPolicyDone = currentNode.getState().isFailed();
     }
 
     @Override
-    public Sampler_Distribution<C> getCopy() {
+    public Sampler_Distribution<C, S> getCopy() {
         return new Sampler_Distribution<>();
     }
 

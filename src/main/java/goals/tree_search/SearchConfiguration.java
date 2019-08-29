@@ -17,6 +17,7 @@ import com.google.common.base.Preconditions;
 import game.qwop.GameQWOP;
 import game.action.Command;
 import game.action.IActionGenerator;
+import game.state.IState;
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.logging.log4j.Level;
@@ -38,16 +39,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class SearchConfiguration<C extends Command<?>> {
+public class SearchConfiguration<C extends Command<?>, S extends IState> {
 
     public final Machine machine;
     public final Tree<C> tree;
-    public final List<SearchOperation<C>> searchOperations;
-    public final IUserInterface ui;
+    public final List<SearchOperation<C, S>> searchOperations;
+    public final IUserInterface<C, S> ui;
 
     SearchConfiguration(@JsonProperty("machine") Machine machine,
                         @JsonProperty("tree") Tree<C> tree,
-                        @JsonProperty("searchOperations") List<SearchOperation<C>> searchOperations,
+                        @JsonProperty("searchOperations") List<SearchOperation<C, S>> searchOperations,
                         @JsonProperty("ui") IUserInterface ui) {
         Preconditions.checkNotNull(machine);
         Preconditions.checkNotNull(tree);
@@ -156,23 +157,23 @@ public class SearchConfiguration<C extends Command<?>> {
     /**
      * Defines a single tree search operation.
      */
-    public static class SearchOperation<C extends Command<?>> {
+    public static class SearchOperation<C extends Command<?>, S extends IState> {
 
         /**
          * Stage operation. Defines the goals and stopping points of this search.
          */
         @JacksonXmlProperty(isAttribute=true)
-        private final TreeStage<C> stage;
+        private final TreeStage<C, S> stage;
 
         /**
          * Defines how new nodes are added and scored.
          */
-        private final ISampler<C> sampler;
+        private final ISampler<C, S> sampler;
 
         /**
          * Defines how and what data is saved at various points of the tree stage.
          */
-        private final IDataSaver<C> saver;
+        private final IDataSaver<C, S> saver;
 
         /**
          * Number of consecutive times that this operation is repeated. 0 means it only runs once. 1 means that it
@@ -181,9 +182,9 @@ public class SearchConfiguration<C extends Command<?>> {
         private final int repetitionCount;
 
         @JsonCreator
-        SearchOperation(@JsonProperty("stage") TreeStage<C> stage,
-                        @JsonProperty("sampler") ISampler<C> sampler,
-                        @JsonProperty("saver") IDataSaver<C> saver,
+        SearchOperation(@JsonProperty("stage") TreeStage<C, S> stage,
+                        @JsonProperty("sampler") ISampler<C, S> sampler,
+                        @JsonProperty("saver") IDataSaver<C, S> saver,
                         @JsonProperty("repetitionCount") int repetitionCount // Defaults to zero if not
                         // set in config file.
         ) {
@@ -198,22 +199,22 @@ public class SearchConfiguration<C extends Command<?>> {
             this.repetitionCount = repetitionCount;
         }
 
-        SearchOperation(TreeStage<C> stage, ISampler<C> sampler, IDataSaver<C> saver) {
+        SearchOperation(TreeStage<C, S> stage, ISampler<C, S> sampler, IDataSaver<C, S> saver) {
             this.stage = stage;
             this.sampler = sampler;
             this.saver = saver;
             this.repetitionCount = 0;
         }
 
-        public TreeStage<C> getStage() {
+        public TreeStage<C, S> getStage() {
             return stage;
         }
 
-        public ISampler<C> getSampler() {
+        public ISampler<C, S> getSampler() {
             return sampler;
         }
 
-        public IDataSaver<C> getSaver() {
+        public IDataSaver<C, S> getSaver() {
             return saver;
         }
 
@@ -226,11 +227,11 @@ public class SearchConfiguration<C extends Command<?>> {
          * @param rootNode Node to build from.
          * @param machine Machine details, e.g. how many cores to use.
          */
-        public void startOperation(NodeGameExplorableBase<?, C> rootNode, Machine machine) {
+        public void startOperation(NodeGameExplorableBase<?, C, S> rootNode, Machine machine) {
             Preconditions.checkNotNull(rootNode);
             Preconditions.checkNotNull(machine);
 
-            ArrayList<TreeWorker<C>> treeWorkers = new ArrayList<>();
+            ArrayList<TreeWorker<C, S>> treeWorkers = new ArrayList<>();
             for (int i = 0; i < machine.getRequestedThreadCount(); i++) {
                 treeWorkers.add(getTreeWorker());
             }
@@ -239,8 +240,8 @@ public class SearchConfiguration<C extends Command<?>> {
         }
 
         @JsonIgnore
-        public TreeWorker<C> getTreeWorker() {
-            return TreeWorker.makeStandardTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other
+        public TreeWorker<C, S> getTreeWorker() {
+            return TreeWorker.makeStandardQWOPTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other
             // kinds of treeworkers.
 //            return TreeWorker.makeCachedStateTreeWorker(sampler.getCopy(), saver.getCopy(), 1, 2,
 //                    GameQWOPCaching.StateType.HIGHER_DIFFERENCES);
@@ -251,17 +252,17 @@ public class SearchConfiguration<C extends Command<?>> {
      * Run all the operations defined in this SearchConfiguration. Tree stages will be run in the order they are listed.
      */
     public void execute() {
-        NodeGameExplorableBase<?, C> rootNode;
+        NodeGameExplorableBase<?, C, S> rootNode;
         if (ui instanceof UI_Headless) {
             rootNode = new NodeGameExplorable<>(GameQWOP.getInitialState(), tree.actionGenerator);
         } else {
-            NodeGameGraphics<C> root = new NodeGameGraphics<>(GameQWOP.getInitialState(), tree.actionGenerator);
+            NodeGameGraphics<C, S> root = new NodeGameGraphics<>(GameQWOP.getInitialState(), tree.actionGenerator);
             ui.addRootNode(root);
             rootNode = root;
         }
         ui.start();
 
-        for (SearchOperation<C> operation : searchOperations) {
+        for (SearchOperation<C, S> operation : searchOperations) {
             for (int i = 0; i <= operation.getRepetitionCount(); i++) {
                 operation.startOperation(rootNode, machine);
             }

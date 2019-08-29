@@ -18,7 +18,7 @@ import java.util.List;
  * @author matt
  */
 
-public abstract class DataSaver_Dense<C extends Command<?>> implements IDataSaver<C> {
+public abstract class DataSaver_Dense<C extends Command<?>, S extends IState> implements IDataSaver<C, S> {
 
     /**
      * Action buffer cleared once per game.
@@ -53,13 +53,13 @@ public abstract class DataSaver_Dense<C extends Command<?>> implements IDataSave
     }
 
     @Override
-    public void reportTimestep(Action<C> action, IGameInternal<C> game) {
+    public void reportTimestep(Action<C> action, IGameInternal<C, S> game) {
         stateBuffer.add(game.getCurrentState());
         actionBuffer.add(action);
     }
 
     @Override
-    public void reportStageEnding(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes) {
+    public void reportStageEnding(NodeGameBase<?, C, S> rootNode, List<NodeGameBase<?, C, S>> targetNodes) {
     }
 
     @Override
@@ -83,5 +83,5 @@ public abstract class DataSaver_Dense<C extends Command<?>> implements IDataSave
     }
 
     @Override
-    public abstract DataSaver_Dense<C> getCopy();
+    public abstract DataSaver_Dense<C, S> getCopy();
 }

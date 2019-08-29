@@ -4,6 +4,7 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.qwop.GameQWOP;
 import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.NodeGameGraphics;
@@ -84,17 +85,17 @@ public class MAIN_SnapshotAll extends JFrame {
             return;
         }
 
-        NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState());
+        NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState());
 
-        SavableFileIO<SavableSingleGame<CommandQWOP>> fileIO = new SavableFileIO<>();
-        List<SavableSingleGame<CommandQWOP>> games = new ArrayList<>();
+        SavableFileIO<SavableSingleGame<CommandQWOP, StateQWOP>> fileIO = new SavableFileIO<>();
+        List<SavableSingleGame<CommandQWOP, StateQWOP>> games = new ArrayList<>();
 
         for (File f : playbackFiles) {
             fileIO.loadObjectsToCollection(f, games);
         }
 
         NodeGameGraphics.makeNodesFromRunInfo(games, rootNode);
-        NodeGameGraphics<CommandQWOP> currNode = rootNode;
+        NodeGameGraphics<CommandQWOP, StateQWOP> currNode = rootNode;
         while (currNode.getTreeDepth() < playbackDepth && currNode.getChildCount() > 0) {
             currNode = currNode.getChildByIndex(0);
         }

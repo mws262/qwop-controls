@@ -30,7 +30,7 @@ public interface IActionGenerator<C extends Command<?>> {
      * @return A set of game.command to try as potential children.
      */
     @JsonIgnore
-    ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C> parentNode);
+    ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C, ?> parentNode);
 
     /**
      * Get a set of all possible game.command which this generator could return.

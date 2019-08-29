@@ -87,8 +87,8 @@ public class MAIN_PlaybackSaved_TFRecord extends JFrame {
 
         Collections.shuffle(playbackFiles);
 
-        IGameInternal<CommandQWOP> gameForActionSim = new GameQWOP();
-        IGameInternal<CommandQWOP> gameForCommandSim = new GameQWOP();
+        IGameInternal<CommandQWOP, StateQWOP> gameForActionSim = new GameQWOP();
+        IGameInternal<CommandQWOP, StateQWOP> gameForCommandSim = new GameQWOP();
 
         // Load files one at a time.
         for (File tfrecordFile : playbackFiles) {

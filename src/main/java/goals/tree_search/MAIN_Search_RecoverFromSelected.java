@@ -9,6 +9,7 @@ import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.action.ActionGenerator_FixedSequence;
 import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,7 +80,7 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
         Arrays.sort(Objects.requireNonNull(actionFiles));
         ArrayUtils.reverse(actionFiles);
 
-        IGameInternal<CommandQWOP> game = new GameQWOP();
+        IGameInternal<CommandQWOP, StateQWOP> game = new GameQWOP();
 
         for (File f : actionFiles) {
             if (f.getName().contains("SavableActionSequence") && f.getName().contains("6_08")) {
@@ -87,13 +88,13 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
                 List<SavableActionSequence<CommandQWOP>> actionSeq = new ArrayList<>();
                 actionSequenceLoader.loadObjectsToCollection(f, actionSeq);
 
-                List<Action<CommandQWOP>[]> acts =
+                List<List<Action<CommandQWOP>>> acts =
                         actionSeq.stream().map(SavableActionSequence::getActions).collect(Collectors.toList());
 
-                trimStartBy = acts.get(0).length;
+                trimStartBy = acts.get(0).size();
 
                 // Recreate the tree section.
-                NodeGameGraphics<CommandQWOP> root = new NodeGameGraphics<>(GameQWOP.getInitialState(),
+                NodeGameGraphics<CommandQWOP, StateQWOP> root = new NodeGameGraphics<>(GameQWOP.getInitialState(),
                         ActionGenerator_FixedSequence.makeDefaultGenerator(trimStartBy));
                 NodeGameBase.makeNodesFromActionSequences(acts, root, game);
 
@@ -102,7 +103,7 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
                 ui.clearRootNodes();
                 ui.addRootNode(root);
 
-                List<NodeGameGraphics<CommandQWOP>> leafList = new ArrayList<>();
+                List<NodeGameGraphics<CommandQWOP, StateQWOP>> leafList = new ArrayList<>();
                 root.getLeaves(leafList);
 
                 // Expand the deviated spots and find recoveries.
@@ -110,7 +111,7 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
                 NodeGameGraphics previousLeaf = null;
 
                 // Should only be 1 element in leafList now. Keeping the loop for the future however.
-                for (NodeGameGraphics leaf : leafList) {
+                for (NodeGameGraphics<CommandQWOP, StateQWOP> leaf : leafList) {
                     String name = filename1 + Utility.getTimestamp();
                     doBasicMaxDepthStage(leaf, name, getBackToSteadyDepth, maxWorkerFraction1, bailAfterXGames1);
 
@@ -146,8 +147,8 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
     }
 
     @Override
-    TreeWorker<CommandQWOP> getTreeWorker() {
-        ISampler<CommandQWOP> sampler = new Sampler_UCB<>(
+    TreeWorker<CommandQWOP, StateQWOP> getTreeWorker() {
+        ISampler<CommandQWOP, StateQWOP> sampler = new Sampler_UCB<>(
                 new EvaluationFunction_Constant<>(0f),
                 new RolloutPolicy_DeltaScore<>(
                         new EvaluationFunction_Distance<>(),
@@ -156,6 +157,6 @@ public class MAIN_Search_RecoverFromSelected extends SearchTemplate {
                 new ValueUpdater_Average<>(),
                 5,
                 1); // TODO hardcoded.
-        return TreeWorker.makeStandardTreeWorker(sampler);
+        return TreeWorker.makeStandardQWOPTreeWorker(sampler);
     }
 }

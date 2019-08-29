@@ -1,9 +1,9 @@
 package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.qwop.GameQWOP;
 import game.qwop.CommandQWOP;
-import game.state.IState;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import tree.node.NodeGameGraphicsBase;
 
 import java.awt.*;
@@ -19,7 +19,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     /**
      * Current state being displayed.
      */
-    private IState currentState;
+    private StateQWOP currentState;
 
     private Thread thread;
 
@@ -32,12 +32,12 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     /**
      * Update the state to be displayed.
      */
-    public void updateState(IState state) {
+    public void updateState(StateQWOP state) {
         currentState = state;
     }
 
     @Override
-    public void update(NodeGameGraphicsBase<?, CommandQWOP> node) {
+    public void update(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> node) {
         currentState = node.getState();
     }
 

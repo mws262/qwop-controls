@@ -1,6 +1,7 @@
 package tree.node.filter;
 
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameExplorableBase;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
  *
  * @author matt
  */
-public interface INodeFilter<C extends Command<?>> {
+public interface INodeFilter<C extends Command<?>, S extends IState> {
 
     /**
      * Decide if this node should be included or filtered out. If not overridden, this will default to true.
@@ -18,7 +19,7 @@ public interface INodeFilter<C extends Command<?>> {
      * @param node Node to apply filtering rules to.
      * @return Whether this node should be kept. True means keep. False means tree.node.filter out.
      */
-    default boolean filter(NodeGameExplorableBase<?, C> node){ return true; }
+    default boolean filter(NodeGameExplorableBase<?, C, S> node){ return true; }
 
     /**
      * Decide which of these should be kept. Alters the list in place. Default is to call single node tree.node.filter for all
@@ -26,7 +27,7 @@ public interface INodeFilter<C extends Command<?>> {
      *
      * @param nodes A list of nodes to tree.node.filter. This list will be modified in place.
      */
-    default void filter(List<NodeGameExplorableBase<?, C>> nodes) {
+    default void filter(List<NodeGameExplorableBase<?, C, S>> nodes) {
         nodes.removeIf(n -> !filter(n));
     }
 }

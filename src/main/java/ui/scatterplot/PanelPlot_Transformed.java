@@ -19,23 +19,23 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class PanelPlot_Transformed<C extends Command<?>> extends PanelPlot<C> implements KeyListener {
+public class PanelPlot_Transformed<C extends Command<?>, S extends IState> extends PanelPlot<C, S> implements KeyListener {
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
      */
-    public final ITransform transformer;
+    public final ITransform<S> transformer;
 
     /**
      * Filters to be applied to the node list.
      */
-    private List<INodeFilter<C>> nodeFilters = new ArrayList<>();
+    private List<INodeFilter<C, S>> nodeFilters = new ArrayList<>();
 
     /**
      * Downsampler to reduce the number of nodes we're trying to process and display
      */
-    private NodeFilter_Downsample<C> plotDownsampler = new NodeFilter_Downsample<>(5000);
-    private NodeFilter_Downsample<C> transformDownsampler = new NodeFilter_Downsample<>(2000);
+    private NodeFilter_Downsample<C, S> plotDownsampler = new NodeFilter_Downsample<>(5000);
+    private NodeFilter_Downsample<C, S> transformDownsampler = new NodeFilter_Downsample<>(2000);
 
     /**
      * How many plots to squeeze in one displayed row.
@@ -45,7 +45,7 @@ public class PanelPlot_Transformed<C extends Command<?>> extends PanelPlot<C> im
     /**
      * Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation.
      */
-    private List<NodeGameExplorableBase<?, C>> nodesToTransform = new ArrayList<>();
+    private List<NodeGameExplorableBase<?, C, S>> nodesToTransform = new ArrayList<>();
     private List<float[]> transformedStates;
 
     /**
@@ -56,7 +56,7 @@ public class PanelPlot_Transformed<C extends Command<?>> extends PanelPlot<C> im
 
     private final String name;
 
-    public PanelPlot_Transformed(@JsonProperty("transformer") ITransform transformer,
+    public PanelPlot_Transformed(@JsonProperty("transformer") ITransform<S> transformer,
                                  @JsonProperty("name") String name,
                                  @JsonProperty("plotsPerView") int plotsPerView) {
         super(plotsPerView);
@@ -69,12 +69,12 @@ public class PanelPlot_Transformed<C extends Command<?>> extends PanelPlot<C> im
     }
 
     @Override
-    public synchronized void update(NodeGameGraphicsBase<?, C> plotNode) {
+    public synchronized void update(NodeGameGraphicsBase<?, C, S> plotNode) {
         // Do transform update if necessary:
         nodesToTransform.clear();
         plotNode.getRoot().recurseDownTreeInclusive(nodesToTransform::add);
         transformDownsampler.filter(nodesToTransform);
-        List<IState> statesBelow =
+        List<S> statesBelow =
                 nodesToTransform.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList());
         // Convert from node list to state list.
         transformer.updateTransform(statesBelow); // Update transform with all states.
@@ -84,7 +84,7 @@ public class PanelPlot_Transformed<C extends Command<?>> extends PanelPlot<C> im
         plotNode.recurseDownTreeInclusive(nodesToTransform::add);
 
         // Apply any added filters (may be none).
-        for (INodeFilter<C> filter : nodeFilters) {
+        for (INodeFilter<C, S> filter : nodeFilters) {
             filter.filter(nodesToTransform);
         }
         plotDownsampler.filter(nodesToTransform); // Reduce number of nodes to transform if necessary. Plotting is a
@@ -127,7 +127,7 @@ public class PanelPlot_Transformed<C extends Command<?>> extends PanelPlot<C> im
     /**
      * Add a tree.node.filter to be applied to the list of nodes to be plotted.
      */
-    public void addFilter(INodeFilter<C> filter) {
+    public void addFilter(INodeFilter<C, S> filter) {
         nodeFilters.add(filter);
     }
 

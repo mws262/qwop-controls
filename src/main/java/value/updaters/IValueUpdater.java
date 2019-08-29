@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameBase;
 
 /**
@@ -21,7 +22,7 @@ import tree.node.NodeGameBase;
         @JsonSubTypes.Type(value = ValueUpdater_TopNChildren.class, name = "top_children"),
         @JsonSubTypes.Type(value = ValueUpdater_TopWindow.class, name = "top_window")
 })
-public interface IValueUpdater<C extends Command<?>> {
+public interface IValueUpdater<C extends Command<?>, S extends IState> {
 
     /**
      * Provide an updated value for a node.
@@ -29,8 +30,8 @@ public interface IValueUpdater<C extends Command<?>> {
      * @param node Node to calculate an updated value for.
      * @return The provided node's updated value.
      */
-    float update(float valueUpdate, NodeGameBase<?, C> node);
+    float update(float valueUpdate, NodeGameBase<?, C, S> node);
 
     @JsonIgnore
-    IValueUpdater<C> getCopy();
+    IValueUpdater<C, S> getCopy();
 }

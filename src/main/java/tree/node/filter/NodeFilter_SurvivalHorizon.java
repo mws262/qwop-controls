@@ -1,6 +1,7 @@
 package tree.node.filter;
 
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameExplorableBase;
 
 /**
@@ -9,7 +10,7 @@ import tree.node.NodeGameExplorableBase;
  *
  * @author matt
  */
-public class NodeFilter_SurvivalHorizon<C extends Command<?>> implements INodeFilter<C> {
+public class NodeFilter_SurvivalHorizon<C extends Command<?>, S extends IState> implements INodeFilter<C, S> {
 
     /**
      * How many tree layers beyond this node is required for it to be included by the tree.node.filter.
@@ -30,7 +31,7 @@ public class NodeFilter_SurvivalHorizon<C extends Command<?>> implements INodeFi
     }
 
     @Override
-    public boolean filter(NodeGameExplorableBase<?, C> node) {
+    public boolean filter(NodeGameExplorableBase<?, C, S> node) {
         return node.getMaxBranchDepth() - node.getTreeDepth() >= requiredSurvivalHorizon;
     }
 

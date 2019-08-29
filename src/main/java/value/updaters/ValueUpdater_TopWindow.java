@@ -2,13 +2,14 @@ package value.updaters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
+import game.state.IState;
 import org.jcodec.common.Preconditions;
 import tree.node.NodeGameBase;
 
 import java.util.*;
 
 
-public class ValueUpdater_TopWindow<C extends Command<?>> implements IValueUpdater<C> {
+public class ValueUpdater_TopWindow<C extends Command<?>, S extends IState> implements IValueUpdater<C, S> {
 
     private final int windowSize;
 
@@ -25,18 +26,18 @@ public class ValueUpdater_TopWindow<C extends Command<?>> implements IValueUpdat
     }
 
     @Override
-    public float update(float valueUpdate, NodeGameBase<?, C> node) {
+    public float update(float valueUpdate, NodeGameBase<?, C, S> node) {
         if (node.getChildCount() == 0) {
             return valueUpdate;
         } else {
-            List<NodeGameBase<?, C>> children = new ArrayList<>();
+            List<NodeGameBase<?, C, S>> children = new ArrayList<>();
             node.applyToThis(n -> children.addAll(n.getChildren())); // Trick to get around type erasure.
 
             children.sort(Comparator.comparing(NodeGameBase::getAction)); // Sort by actions. Separated first by key,
             // then by duration, ascending.
 
             // Separate into lists of consecutive actions.
-            List<List<NodeGameBase<?, C>>> clusters = separateClustersInSortedList(children);
+            List<List<NodeGameBase<?, C, S>>> clusters = separateClustersInSortedList(children);
 
             // Find best average cluster value. Starts with clusters at least the size of the specified window and
             // moves down if none are found.
@@ -44,7 +45,7 @@ public class ValueUpdater_TopWindow<C extends Command<?>> implements IValueUpdat
             float bestValue = -Float.MAX_VALUE;
             int effectiveWindowSize = windowSize;
             while (effectiveWindowSize > 0) {
-                for (List<NodeGameBase<?, C>> cluster : clusters) {
+                for (List<NodeGameBase<?, C, S>> cluster : clusters) {
                     if (cluster.size() >= effectiveWindowSize) {
                         for (int i = 0; i <= cluster.size() - effectiveWindowSize; i++) {
                             float value;
@@ -118,16 +119,16 @@ public class ValueUpdater_TopWindow<C extends Command<?>> implements IValueUpdat
     }
 
     @Override
-    public IValueUpdater<C> getCopy() {
+    public IValueUpdater<C, S> getCopy() {
         return new ValueUpdater_TopWindow<>(windowSize);
     }
 
-    static <C extends Command<?>> List<List<NodeGameBase<?, C>>> separateClustersInSortedList(List<NodeGameBase<?, C>> nodes) {
-        List<List<NodeGameBase<?, C>>> clusters = new ArrayList<>();
+    static <C extends Command<?>, S extends IState> List<List<NodeGameBase<?, C, S>>> separateClustersInSortedList(List<NodeGameBase<?, C, S>> nodes) {
+        List<List<NodeGameBase<?, C, S>>> clusters = new ArrayList<>();
         int idx = 0;
         while (idx < nodes.size()) {
-            List<NodeGameBase<?, C>> cluster = new ArrayList<>();
-            NodeGameBase<?, C> sequenceBegin = nodes.get(idx);
+            List<NodeGameBase<?, C, S>> cluster = new ArrayList<>();
+            NodeGameBase<?, C, S> sequenceBegin = nodes.get(idx);
             cluster.add(sequenceBegin);
             idx++;
             while (idx < nodes.size() && nodes.get(idx).getAction().getTimestepsTotal() == 1 + nodes.get(idx - 1).getAction().getTimestepsTotal()

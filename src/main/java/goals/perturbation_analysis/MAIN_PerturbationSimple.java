@@ -5,6 +5,7 @@ import game.qwop.CommandQWOP;
 import game.action.perturbers.ActionPerturber_SwitchTooSoon;
 import game.qwop.GameQWOP;
 import game.IGameInternal;
+import game.qwop.StateQWOP;
 import ui.runner.PanelRunner_MultiState;
 
 import javax.swing.*;
@@ -35,8 +36,8 @@ public class MAIN_PerturbationSimple extends JFrame {
                 new ActionPerturber_SwitchTooSoon<>(perturbationLocations);
         ActionQueue<CommandQWOP> actionQueuePerturbed = perturber.perturb(actionQueue);
 
-        IGameInternal<CommandQWOP> gameUnperturbed = new GameQWOP();
-        IGameInternal<CommandQWOP> gamePerturbed = new GameQWOP();
+        IGameInternal<CommandQWOP, StateQWOP> gameUnperturbed = new GameQWOP();
+        IGameInternal<CommandQWOP, StateQWOP> gamePerturbed = new GameQWOP();
 
         boolean reachedFirstPerturbation = false;
         while (!actionQueue.isEmpty()) {

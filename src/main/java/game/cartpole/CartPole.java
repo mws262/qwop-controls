@@ -2,7 +2,6 @@ package game.cartpole;
 
 import com.google.common.base.Preconditions;
 import game.IGameInternal;
-import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.deeplearning4j.gym.Client;
@@ -28,11 +27,12 @@ import java.awt.*;
  *     probably the Python version. Other errors are probably library dependencies.</li>
  * </ol>
  *
- * @see: <a href="https://github.com/eclipse/deeplearning4j/tree/master/gym-java-client">DL4J HTTP client Github</a>.
+ * @see <a href="https://github.com/eclipse/deeplearning4j/tree/master/gym-java-client">DL4J HTTP client Github</a>.
  *
  * @author matt
  */
-public class CartPole implements IGameInternal<CommandCartPole> { // TODO implement one of the game interfaces.
+public class CartPole implements IGameInternal<CommandCartPole, StateCartPole> { // TODO implement one of the game
+    // interfaces.
 
     /**
      * StateQWOP space dimension. [cart position, cart velocity, pole angle, pole velocity at tip]
@@ -49,12 +49,6 @@ public class CartPole implements IGameInternal<CommandCartPole> { // TODO implem
      * Handles connection to the game server. All incoming and outgoing information must pass through this.
      */
     private Client<Box, Integer, DiscreteSpace> client;
-
-    /**
-     * Random seed used by the cartpole environment to pick initial conditions. It's nice to have this set to have
-     * deterministic training if needed.
-     */
-    private final int randomSeed = 1;
 
     /**
      * State when balanced perfectly upright, centered, and with no velocity.
@@ -96,6 +90,11 @@ public class CartPole implements IGameInternal<CommandCartPole> { // TODO implem
      */
     public void connect(boolean withGraphics) {
         try {
+            /*
+             * Random seed used by the cartpole environment to pick initial conditions. It's nice to have this set to have
+             * deterministic training if needed.
+             */
+            int randomSeed = 1;
             client = GymClientFactory.build("CartPole-v0", randomSeed, withGraphics);
             resetGame();
             logger.info("Connected successfully to the Python server.");
@@ -137,8 +136,6 @@ public class CartPole implements IGameInternal<CommandCartPole> { // TODO implem
 
     /**
      * Step the game forward one physics timestep.
-     * @return Whether the step was taken successfully. Doesn't mean that the the thing didn't fall down! It just
-     * means that the code executed correctly without messing up messages to the HTTP server.
      */
     public void step(@NotNull CommandCartPole command) {
         if (isClosing) // If the game is being shut down, don't attempt to step again or it will probably pull the
@@ -175,10 +172,10 @@ public class CartPole implements IGameInternal<CommandCartPole> { // TODO implem
     }
 
     @Override
-    public void setState(IState st) {} // TODO
+    public void setState(StateCartPole st) {} // TODO
 
     @Override
-    public IGameInternal<CommandCartPole> getCopy() {
+    public IGameInternal<CommandCartPole, StateCartPole> getCopy() {
         return null;
     }
 
@@ -186,7 +183,7 @@ public class CartPole implements IGameInternal<CommandCartPole> { // TODO implem
      * Get the system state as of the most recent call to {@link CartPole#step(CommandCartPole)}.
      * @return 4-element array of state variables.
      */
-    public IState getCurrentState() {
+    public StateCartPole getCurrentState() {
         return currentState;
     }
 
@@ -224,6 +221,7 @@ public class CartPole implements IGameInternal<CommandCartPole> { // TODO implem
      * episode.
      * @return Total reward accumulated over the course of the current episode.
      */
+    @SuppressWarnings("unused")
     public double getCumulativeReward() {
         return cumulativeReward;
     }

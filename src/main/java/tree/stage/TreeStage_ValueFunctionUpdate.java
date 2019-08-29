@@ -2,6 +2,7 @@ package tree.stage;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
+import game.state.IState;
 import tree.TreeWorker;
 import tree.node.NodeGameBase;
 import tree.node.NodeGameExplorableBase;
@@ -15,9 +16,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TreeStage_ValueFunctionUpdate<C extends Command<?>> extends TreeStage<C> {
+public class TreeStage_ValueFunctionUpdate<C extends Command<?>, S extends IState> extends TreeStage<C, S> {
 
-    public final ValueFunction_TensorFlow<C> valueFunction;
+    public final ValueFunction_TensorFlow<C, S> valueFunction;
 
     public boolean excludeLeaves = false;
     public boolean updateGraphicalLabels = true;
@@ -27,7 +28,7 @@ public class TreeStage_ValueFunctionUpdate<C extends Command<?>> extends TreeSta
 
     private boolean isFinished = true;
 
-    public TreeStage_ValueFunctionUpdate(@JsonProperty("valueFunction") ValueFunction_TensorFlow<C> valueFunction,
+    public TreeStage_ValueFunctionUpdate(@JsonProperty("valueFunction") ValueFunction_TensorFlow<C, S> valueFunction,
                                          @JsonProperty("checkpointName") String checkpointName,
                                          @JsonProperty("checkpointIndex") int checkpointIndex) {
         this.valueFunction = valueFunction;
@@ -40,7 +41,7 @@ public class TreeStage_ValueFunctionUpdate<C extends Command<?>> extends TreeSta
     }
 
     @Override
-    public List<NodeGameBase<?, C>> getResults() { return null; }
+    public List<NodeGameBase<?, C, S>> getResults() { return null; }
 
     @Override
     public boolean checkTerminationConditions() {
@@ -48,10 +49,10 @@ public class TreeStage_ValueFunctionUpdate<C extends Command<?>> extends TreeSta
     }
 
     @Override
-    public void initialize(List<TreeWorker<C>> treeWorkers, NodeGameExplorableBase<?, C> stageRoot) {
+    public void initialize(List<TreeWorker<C, S>> treeWorkers, NodeGameExplorableBase<?, C, S> stageRoot) {
         isFinished = false;
         // Update the value function.
-        List<NodeGameExplorableBase<?, C>> nodesBelow = new ArrayList<>();
+        List<NodeGameExplorableBase<?, C, S>> nodesBelow = new ArrayList<>();
         stageRoot.recurseDownTreeExclusive(n -> {
             if (!excludeLeaves || n.getChildCount() > 0) { // Can include or exclude leaves.
                 nodesBelow.add(n);
@@ -68,19 +69,20 @@ public class TreeStage_ValueFunctionUpdate<C extends Command<?>> extends TreeSta
         checkpointIndex++;
 
         if (updateGraphicalLabels && stageRoot instanceof NodeGameGraphicsBase) {
-            NodeGameGraphics graphicsRootNode = (NodeGameGraphics) stageRoot;
+            NodeGameGraphics<C, S> graphicsRootNode = (NodeGameGraphics<C, S>) stageRoot;
             Runnable updateLabels = () -> graphicsRootNode.recurseDownTreeExclusive(node -> {
-                if (node instanceof NodeGameGraphicsBase) { // TODO not sure why I need to do this. Figure out
-                    // something less hacky.
-                    NodeGameGraphicsBase n = (NodeGameGraphicsBase) node;
+                if (node != null) {
+//                if (node instanceof NodeGameGraphicsBase) { // TODO not sure why I need to do this. Figure out
+//                    // something less hacky.
+//                    NodeGameGraphicsBase n = (NodeGameGraphicsBase) node;
 
-                    float percDiff = valueFunction.evaluate(n); // Temp disable percent diff for absolute diff.
+                    float percDiff = valueFunction.evaluate(node); // Temp disable percent diff for absolute diff.
 //                    float percDiff = Math.abs((valueFunction.evaluateActionDistribution(n) - n.getValue())/n.getValue() * 100f);
-                    n.nodeLabel = String.format("%.1f, %.1f", n.getValue(), percDiff);
-                    Color color = NodeGameGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - n.getValue()), 20) + 20, 20, 0.9f);
-                    n.setLabelColor(color);
+                    node.nodeLabel = String.format("%.1f, %.1f", node.getValue(), percDiff);
+                    Color color = NodeGameGraphicsBase.getColorFromScaledValue(-Math.min(Math.abs(percDiff - node.getValue()), 20) + 20, 20, 0.9f);
+                    node.setLabelColor(color);
                     //n.setOverridePointColor(color);
-                    n.displayLabel = true;
+                    node.displayLabel = true;
                 }
             });
             new Thread(updateLabels).start();

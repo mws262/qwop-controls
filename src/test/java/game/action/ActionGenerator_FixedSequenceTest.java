@@ -96,14 +96,14 @@ public class ActionGenerator_FixedSequenceTest {
 
             ActionGenerator_FixedSequence<CommandQWOP> gen = new ActionGenerator_FixedSequence<>(singleActionList);
 
-            NodeGameExplorable<CommandQWOP> n0 = new NodeGameExplorable<>(st, gen);
-            List<NodeGameExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
+            NodeGameExplorable<CommandQWOP, StateQWOP> n0 = new NodeGameExplorable<>(st, gen);
+            List<NodeGameExplorable<CommandQWOP, StateQWOP>> nodes = new ArrayList<>(numNodes);
             nodes.add(n0);
             for (int i = 1; i < numNodes; i++) {
                 nodes.add(nodes.get(i - 1).addDoublyLinkedChild(act, st));
             }
 
-            for (NodeGameExplorable<CommandQWOP> n : nodes) {
+            for (NodeGameExplorable<CommandQWOP, StateQWOP> n : nodes) {
                 ActionList<CommandQWOP> actionList = gen.getPotentialChildActionSet(n);
                 Assert.assertEquals(alist.size(), actionList.size());
                 Assert.assertTrue(actionList.containsAll(alist));
@@ -140,8 +140,8 @@ public class ActionGenerator_FixedSequenceTest {
                 }
                 ActionGenerator_FixedSequence<CommandQWOP> gen = new ActionGenerator_FixedSequence<>(sequence);
 
-                NodeGameExplorable<CommandQWOP> n0 = new NodeGameExplorable<>(st, gen);
-                List<NodeGameExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
+                NodeGameExplorable<CommandQWOP, StateQWOP> n0 = new NodeGameExplorable<>(st, gen);
+                List<NodeGameExplorable<CommandQWOP, StateQWOP>> nodes = new ArrayList<>(numNodes);
                 nodes.add(n0);
                 for (int i = 1; i < numNodes; i++) {
                     nodes.add(nodes.get(i - 1).addDoublyLinkedChild(act, st));
@@ -196,8 +196,8 @@ public class ActionGenerator_FixedSequenceTest {
                 ActionGenerator_FixedSequence<CommandQWOP> gen = new ActionGenerator_FixedSequence<>(sequence,
                         actionExceptions);
 
-                NodeGameExplorable<CommandQWOP> n0 = new NodeGameExplorable<>(st, gen);
-                List<NodeGameExplorable<CommandQWOP>> nodes = new ArrayList<>(numNodes);
+                NodeGameExplorable<CommandQWOP, StateQWOP> n0 = new NodeGameExplorable<>(st, gen);
+                List<NodeGameExplorable<CommandQWOP, StateQWOP>> nodes = new ArrayList<>(numNodes);
                 nodes.add(n0);
                 for (int i = 1; i < numNodes; i++) {
                     nodes.add(nodes.get(i - 1).addDoublyLinkedChild(act, st));

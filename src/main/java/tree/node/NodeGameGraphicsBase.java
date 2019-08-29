@@ -4,12 +4,11 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.gl2.GLUT;
-import game.qwop.GameQWOP;
 import game.action.Action;
 import game.action.Command;
 import game.action.IActionGenerator;
+import game.qwop.GameQWOP;
 import game.state.IState;
-import value.updaters.IValueUpdater;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
@@ -35,7 +34,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author matt
  */
-public abstract class NodeGameGraphicsBase<N extends NodeGameGraphicsBase<N, C>, C extends Command<?>> extends NodeGameExplorableBase<N, C> {
+public abstract class NodeGameGraphicsBase
+        <N extends NodeGameGraphicsBase<N, C, S>, C extends Command<?>, S extends IState>
+        extends NodeGameExplorableBase<N, C, S> {
 
     /* Node visibility flags
     Note that by default lines are drawn, but points are not. Overriding the line or point color will not make it
@@ -57,7 +58,6 @@ public abstract class NodeGameGraphicsBase<N extends NodeGameGraphicsBase<N, C>,
     /**
      * Enables a text label over this node, if one is assigned.
      */
-    @SuppressWarnings("WeakerAccess")
     public boolean displayLabel = false;
 
     /**
@@ -263,7 +263,7 @@ public abstract class NodeGameGraphicsBase<N extends NodeGameGraphicsBase<N, C>,
      * @param rootState StateQWOP of the runner at the root state. Usually {@link GameQWOP#getInitialState()}.
      * @param actionGenerator Object used to generate game.command used for potentially creating children of this node.
      */
-    public NodeGameGraphicsBase(IState rootState, IActionGenerator<C> actionGenerator) {
+    public NodeGameGraphicsBase(S rootState, IActionGenerator<C> actionGenerator) {
         super(rootState, actionGenerator);
         setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
         if (!notDrawnForSpeed)
@@ -275,7 +275,7 @@ public abstract class NodeGameGraphicsBase<N extends NodeGameGraphicsBase<N, C>,
      * {@link NodeGameExplorableBase#NodeGameExplorableBase(IState)}.
      * @param rootState StateQWOP of the runner at the root state. Usually {@link GameQWOP#getInitialState()}.
      */
-    public NodeGameGraphicsBase(IState rootState) {
+    public NodeGameGraphicsBase(S rootState) {
         super(rootState);
         if (!notDrawnForSpeed)
             unbufferedNodes.add(this);
@@ -296,7 +296,7 @@ public abstract class NodeGameGraphicsBase<N extends NodeGameGraphicsBase<N, C>,
      *                     aware of this node. If doubly linked, the information goes both ways. If not, then the
      *                     information only goes backwards up the tree.
      */
-    NodeGameGraphicsBase(N parent, Action<C> action, IState state, IActionGenerator<C> actionGenerator,
+    NodeGameGraphicsBase(N parent, Action<C> action, S state, IActionGenerator<C> actionGenerator,
                          boolean doublyLinked) {
         super(parent, action, state, actionGenerator, doublyLinked);
 
@@ -659,11 +659,6 @@ public abstract class NodeGameGraphicsBase<N extends NodeGameGraphicsBase<N, C>,
     @SuppressWarnings("unused")
     public void clearBackwardsBranchLineOverrideColor() {
         setBackwardsBranchOverrideColor(null);
-    }
-
-    @Override
-    public synchronized void updateValue(float valueUpdate, IValueUpdater updater) {
-        super.updateValue(valueUpdate, updater);
     }
 
     @Override

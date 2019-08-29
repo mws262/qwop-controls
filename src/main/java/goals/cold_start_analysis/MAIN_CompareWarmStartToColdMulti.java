@@ -1,10 +1,10 @@
 package goals.cold_start_analysis;
 
-import game.action.ActionQueue;
-import game.qwop.GameQWOP;
 import game.IGameInternal;
+import game.action.ActionQueue;
 import game.qwop.CommandQWOP;
-import game.state.IState;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import tree.node.NodeGameGraphicsBase;
 
 import java.util.ArrayList;
@@ -26,7 +26,8 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
     public void run() {
         ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
 
-        IGameInternal<CommandQWOP> gameFullRun = new GameQWOP(); // This game will run all the commands, start to
+        IGameInternal<CommandQWOP, StateQWOP> gameFullRun = new GameQWOP(); // This game will run all the commands,
+        // start to
         // finish.
         List<GameQWOP> coldStartGames = new ArrayList<>();
 
@@ -47,12 +48,12 @@ public class MAIN_CompareWarmStartToColdMulti extends CompareWarmStartToColdBase
                 while (coldStartGameIter.hasNext()) {
                     GameQWOP gm = coldStartGameIter.next();
                     gm.step(nextCommand);
-                    IState st = gm.getCurrentState();
+                    StateQWOP st = gm.getCurrentState();
                     if (st.isFailed()) {
                         coldStartGameIter.remove();
                     } else {
                         runnerPanel.addSecondaryState(st, NodeGameGraphicsBase.getColorFromScaledValue(count,
-                                actionQueue.getActionsInCurrentRun().length / (float) 5, 0.8f));
+                                actionQueue.getActionsInCurrentRun().size() / (float) 5, 0.8f));
                         count++;
                     }
                 }

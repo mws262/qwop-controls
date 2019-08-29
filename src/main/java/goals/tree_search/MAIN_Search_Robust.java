@@ -1,9 +1,10 @@
 package goals.tree_search;
 
 import controllers.Controller_Random;
-import game.qwop.GameQWOP;
 import game.action.ActionGenerator_FixedSequence;
 import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import tree.TreeWorker;
 import tree.node.NodeGameGraphics;
 import tree.node.evaluator.EvaluationFunction_Constant;
@@ -31,8 +32,8 @@ public class MAIN_Search_Robust extends SearchTemplate {
     }
 
     @Override
-    TreeWorker<CommandQWOP> getTreeWorker() {
-        return TreeWorker.makeStandardTreeWorker(new Sampler_UCB<>(
+    TreeWorker<CommandQWOP, StateQWOP> getTreeWorker() {
+        return TreeWorker.makeStandardQWOPTreeWorker(new Sampler_UCB<>(
                 new EvaluationFunction_Constant<>(0f),
                 new RolloutPolicy_DeltaScore<>(
                         new EvaluationFunction_Distance<>(),
@@ -41,15 +42,15 @@ public class MAIN_Search_Robust extends SearchTemplate {
     }
 
     private void doGames() {
-        NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
+        NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
                 ActionGenerator_FixedSequence.makeDefaultGenerator(10));
         ui.addRootNode(rootNode);
 
         doBasicMinDepthStage(rootNode, "testDev0.tmp", 1, 1, 10000);
-        List<NodeGameGraphics<CommandQWOP>> leaves = new ArrayList<>();
+        List<NodeGameGraphics<CommandQWOP, StateQWOP>> leaves = new ArrayList<>();
         rootNode.getLeaves(leaves);
 
-        for (NodeGameGraphics<CommandQWOP> node : leaves) {
+        for (NodeGameGraphics<CommandQWOP, StateQWOP> node : leaves) {
             node.resetSweepAngle();
             node.setBranchZOffset(0.1f);
             float score = evaluateNode(node);
@@ -59,18 +60,18 @@ public class MAIN_Search_Robust extends SearchTemplate {
         }
     }
 
-    private float evaluateNode(NodeGameGraphics<CommandQWOP> node) {
+    private float evaluateNode(NodeGameGraphics<CommandQWOP, StateQWOP> node) {
 
         // Step 1: Expand all children to depth 1.
         doBasicMinDepthStage(node, "testDev1.tmp", 1, 1, 10000);
 
         // Step 2: Expand all children. If distance travelled after > threshold and # games played < threshold,
         // "recoverable" child node, otherwise "unrecoverable".
-        List<NodeGameGraphics<CommandQWOP>> leavesToExpand = new ArrayList<>();
+        List<NodeGameGraphics<CommandQWOP, StateQWOP>> leavesToExpand = new ArrayList<>();
         node.getLeaves(leavesToExpand);
 
         int successfulExpansionDepth = 0;
-        for (NodeGameGraphics<CommandQWOP> currentLeaf : leavesToExpand) {
+        for (NodeGameGraphics<CommandQWOP, StateQWOP> currentLeaf : leavesToExpand) {
             if (!currentLeaf.getState().isFailed()) {
                 currentLeaf.setBranchZOffset(0.2f);
                 doBasicMaxDepthStage(currentLeaf, "testDev2.tmp", 100, 1f, 15000);

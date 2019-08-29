@@ -11,7 +11,7 @@ public class ActionGenerator_Null<C extends Command<?>> implements IActionGenera
     private Set<Action<C>> nullActionSet = new HashSet<>();
 
     @Override
-    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C> parentNode) {
+    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C, ?> parentNode) {
         return nullActionList;
     }
 

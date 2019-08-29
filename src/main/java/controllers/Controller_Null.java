@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameSerializable;
 import game.action.Action;
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameExplorableBase;
 
 import java.util.Objects;
@@ -13,7 +14,7 @@ import java.util.Objects;
  *
  * @author matt
  */
-public class Controller_Null<C extends Command<?>> implements IController<C> {
+public class Controller_Null<C extends Command<?>, S extends IState> implements IController<C, S> {
 
     @JsonProperty("nullCommand")
     public final Action<C> nullAction;
@@ -23,17 +24,17 @@ public class Controller_Null<C extends Command<?>> implements IController<C> {
     }
 
     @Override
-    public Action<C> policy(NodeGameExplorableBase<?, C> state) {
+    public Action<C> policy(NodeGameExplorableBase<?, C, S> state) {
         return nullAction;
     }
 
     @Override
-    public Action<C> policy(NodeGameExplorableBase<?, C> state, IGameSerializable<C> game) {
+    public Action<C> policy(NodeGameExplorableBase<?, C, S> state, IGameSerializable<C, S> game) {
         return policy(state);
     }
 
     @Override
-    public IController<C> getCopy() {
+    public IController<C, S> getCopy() {
         return new Controller_Null<>(nullAction);
     }
 
@@ -41,7 +42,7 @@ public class Controller_Null<C extends Command<?>> implements IController<C> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Controller_Null<?> that = (Controller_Null<?>) o;
+        Controller_Null<?, ?> that = (Controller_Null<?, ?>) o;
         return Objects.equals(nullAction, that.nullAction);
     }
 

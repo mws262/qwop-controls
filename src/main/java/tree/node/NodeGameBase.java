@@ -22,7 +22,7 @@ import java.util.List;
  *            this class as an input argument, usually specify as the wildcard (?) to indicate that the class can be
  *            any inheriting implementation of this class.
  */
-public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Command<?>> extends NodeGenericBase<N> {
+public abstract class NodeGameBase<N extends NodeGameBase<N, C, S>, C extends Command<?>, S extends IState> extends NodeGenericBase<N> {
 
     /**
      * Action taking the game from the state of the parent to this node's state.
@@ -32,7 +32,7 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Comma
     /**
      * StateQWOP arrived at when taking this node's command from the parent node's state.
      */
-    private final IState state;
+    private final S state;
 
     /**
      * A value associated with this node. This will depend greatly on the update strategy used.
@@ -47,13 +47,13 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Comma
     private int updateCount;
 
 
-    public NodeGameBase(IState rootState) {
+    public NodeGameBase(S rootState) {
         super();
         action = null;
         state = rootState;
     }
 
-    NodeGameBase(N parent, Action<C> action, IState state) {
+    NodeGameBase(N parent, Action<C> action, S state) {
         super(parent);
         this.action = action;
         this.state = state;
@@ -72,7 +72,7 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Comma
      * @param state StateQWOP arrived at when taking the specified command to the new node.
      * @return A new child node.
      */
-    public abstract N addDoublyLinkedChild(Action<C> action, IState state);
+    public abstract N addDoublyLinkedChild(Action<C> action, S state);
 
     /**
      * Make a new child. The child has a reference to the parent, but the parent does not know about the child. This
@@ -81,9 +81,9 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Comma
      * @param state StateQWOP arrived at when taking the specified command to the new node.
      * @return A new child node.
      */
-    public abstract N addBackwardsLinkedChild(Action<C> action, IState state);
+    public abstract N addBackwardsLinkedChild(Action<C> action, S state);
 
-    public IState getState() { return state; }
+    public S getState() { return state; }
 
     public Action<C> getAction() { return action; }
 
@@ -106,13 +106,13 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Comma
      * @param game Game instance used to simulate the given game.command and generate the state information needed to make
      *            the nodes.
      */
-    public static <C extends Command<?>, N extends NodeGameBase<?, C>> void makeNodesFromActionSequences(Collection<Action<C>[]> actions, N root,
-                                                                                                         IGameInternal<C> game) {
-        IValueUpdater<C> valueUpdater = new ValueUpdater_HardSet<>();
+    public static <C extends Command<?>, S extends IState, N extends NodeGameBase<?, C, S>> void makeNodesFromActionSequences(Collection<List<Action<C>>> actions, N root,
+                                                                                                         IGameInternal<C, S> game) {
+        IValueUpdater<C, S> valueUpdater = new ValueUpdater_HardSet<>();
         ActionQueue<C> actQueue = new ActionQueue<>();
-        for (Action<C>[] acts : actions) {
+        for (List<Action<C>> acts : actions) {
             game.resetGame();
-            NodeGameBase<?, C> currentNode = root;
+            NodeGameBase<?, C, S> currentNode = root;
 
             if (currentNode.getUpdateCount() == 0) {
                 currentNode.updateValue(0, valueUpdater);
@@ -133,7 +133,7 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Comma
                 // If there is already a node for this command, use it.
                 boolean foundExisting = false;
 
-                for (NodeGameBase<?, C> child : currentNode.getChildren()) {
+                for (NodeGameBase<?, C, S> child : currentNode.getChildren()) {
                     if (child.getAction().equals(act)) {
                         currentNode = child;
                         foundExisting = true;
@@ -158,22 +158,23 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Comma
      *             game.command against simulation, so if the states don't match the game.command, it will not be detected here.
      * @param existingRootToAddTo A root node to add the new tree nodes below.
      */
-    public static synchronized <N extends NodeGameBase<N, C>, C extends Command<?>> void makeNodesFromRunInfo(Collection<SavableSingleGame<C>> runs,
+    public static synchronized <N extends NodeGameBase<N, C, S>, C extends Command<?>, S extends IState> void makeNodesFromRunInfo(Collection<SavableSingleGame<C, S>> runs,
                                                                                                               N existingRootToAddTo) {
-        IValueUpdater<C> valueUpdater = new ValueUpdater_HardSet<>();
-        for (SavableSingleGame<C> run : runs) { // Go through all runs, placing them in the tree.
+        IValueUpdater<C, S> valueUpdater = new ValueUpdater_HardSet<>();
+        for (SavableSingleGame<C, S> run : runs) { // Go through all runs, placing them in the tree.
             N currentNode = existingRootToAddTo;
 
             if (currentNode.getUpdateCount() == 0) {
                 currentNode.updateValue(0, valueUpdater);
             }
 
-            for (int i = 0; i < run.actions.length; i++) { // Iterate through individual game.command of this run,
+            for (int i = 0; i < run.actions.size(); i++) { // Iterate through individual game.command of this run,
                 // travelling down the tree in the process.
 
                 boolean foundExistingMatch = false;
                 for (N child : currentNode.getChildren()) { // Look at each child of the currently investigated node.
-                    if (child.getAction() == run.actions[i]) { // If there is already a node for the command we are trying
+                    if (child.getAction() == run.actions.get(i)) { // If there is already a node for the command we are
+                        // trying
                         // to place, just use it.
                         currentNode = child;
                         foundExistingMatch = true;
@@ -182,7 +183,7 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Comma
                 }
                 // If this command is unique at this point in the tree, we need to add a new node there.
                 if (!foundExistingMatch) {
-                    currentNode = currentNode.addDoublyLinkedChild(run.actions[i], run.states[i]);
+                    currentNode = currentNode.addDoublyLinkedChild(run.actions.get(i), run.states.get(i));
                     currentNode.updateValue(0, valueUpdater); // It needs to be updated in some way. For now, just set all
                     // to zero. If update count remains at 0, bad things happen.
                 }
@@ -212,7 +213,7 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C>, C extends Comma
      * @param valueUpdate New value information received from a rollout or further up the tree.
      * @param updater The update rule used to change the value of this node.
      */
-    public synchronized void updateValue(float valueUpdate, IValueUpdater<C> updater) {
+    public synchronized void updateValue(float valueUpdate, IValueUpdater<C, S> updater) {
         value.set(updater.update(valueUpdate, this));
         updateCount++;
     }

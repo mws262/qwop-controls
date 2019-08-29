@@ -1,6 +1,7 @@
 package tree.node.filter;
 
 import game.action.Command;
+import game.state.IState;
 import tree.Utility;
 import tree.node.NodeGameExplorableBase;
 
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class NodeFilter_Downsample<C extends Command<?>> implements INodeFilter<C> {
+public class NodeFilter_Downsample<C extends Command<?>, S extends IState> implements INodeFilter<C, S> {
 
     /**
      * Given a list, the downsampler will keep a maximum of this number of nodes.
@@ -62,7 +63,7 @@ public class NodeFilter_Downsample<C extends Command<?>> implements INodeFilter<
     }
 
     @Override
-    public void filter(List<NodeGameExplorableBase<?, C>> nodes) {
+    public void filter(List<NodeGameExplorableBase<?, C, S>> nodes) {
         int numNodes = nodes.size();
         if (numNodes > maxNodesToKeep) { // If we already have <= the max number of nodes, no need to downsample.
             switch (downsamplingStrategy) {

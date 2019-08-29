@@ -1,6 +1,7 @@
 package tree.stage;
 
 import game.action.Command;
+import game.state.IState;
 import tree.TreeWorker;
 import tree.node.NodeGameBase;
 import tree.node.NodeGameExplorableBase;
@@ -11,14 +12,15 @@ import java.util.List;
 /**
  * Dummy tree stage that can be triggered manually.
  */
-public class TreeStage_Dummy<C extends Command<?>> extends TreeStage<C> {
+@SuppressWarnings("unused")
+public class TreeStage_Dummy<C extends Command<?>, S extends IState> extends TreeStage<C, S> {
 
     public boolean isInitialized = false;
     public boolean terminate = false;
-    public List<NodeGameBase<?, C>> results = new ArrayList<>();
+    public List<NodeGameBase<?, C, S>> results = new ArrayList<>();
 
     @Override
-    public List<NodeGameBase<?, C>> getResults() {
+    public List<NodeGameBase<?, C, S>> getResults() {
         return results;
     }
 
@@ -28,7 +30,7 @@ public class TreeStage_Dummy<C extends Command<?>> extends TreeStage<C> {
     }
 
     @Override
-    public void initialize(List<TreeWorker<C>> treeWorkers, NodeGameExplorableBase<?, C> stageRoot) {
+    public void initialize(List<TreeWorker<C, S>> treeWorkers, NodeGameExplorableBase<?, C, S> stageRoot) {
         isInitialized = true;
     }
 }

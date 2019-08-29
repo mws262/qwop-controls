@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_ValueFunction;
 import game.qwop.GameQWOP;
 import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,19 +28,19 @@ import java.util.Objects;
  * menus for selecting which Tensorflow model to use and which checkpoint file to load.
  */
 public class PanelRunner_ControlledTFlow
-        extends PanelRunner_Controlled<Controller_ValueFunction<CommandQWOP, ValueFunction_TensorFlow<CommandQWOP>>,
-        GameQWOP> implements MouseListener,
-        MouseMotionListener,
-        ActionListener {
+        extends PanelRunner_Controlled<Controller_ValueFunction<CommandQWOP, StateQWOP, ValueFunction_TensorFlow<CommandQWOP, StateQWOP>>, GameQWOP>
+        implements MouseListener, MouseMotionListener, ActionListener {
 
     /**
      * Name of the directory containing all the model (.pb) files.
      */
+    @JsonProperty("modelLocation")
     public final String modelLocation;
 
     /**
      * Name of the directory containing all the checkpoint files.
      */
+    @JsonProperty("checkpointLocation")
     public final String checkpointLocation;
 
     /**

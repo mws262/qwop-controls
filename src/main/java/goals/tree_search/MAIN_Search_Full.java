@@ -8,6 +8,7 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import data.SparseDataToDenseTFRecord;
 import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.*;
@@ -116,7 +117,7 @@ public class MAIN_Search_Full extends SearchTemplate {
         }
 
         if (doStage1) {
-            NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
+            NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
                     actionGenerator);
             NodeGameGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
@@ -142,21 +143,21 @@ public class MAIN_Search_Full extends SearchTemplate {
         }
         if (doStage2) {
             logger.info("Starting stage 2.");
-            NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
+            NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
                     actionGenerator);
 
             NodeGameGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(rootNode);
 
-            SavableFileIO<SavableSingleGame<CommandQWOP>> fileIO = new SavableFileIO<>();
-            List<SavableSingleGame<CommandQWOP>> glist = new ArrayList<>();
+            SavableFileIO<SavableSingleGame<CommandQWOP, StateQWOP>> fileIO = new SavableFileIO<>();
+            List<SavableSingleGame<CommandQWOP, StateQWOP>> glist = new ArrayList<>();
             File saveFile = new File(getSaveLocation().getPath() + "/" + filename1 +
                     ".SavableSingleGame");
             fileIO.loadObjectsToCollection(saveFile, glist);
             NodeGame.makeNodesFromRunInfo(glist, rootNode);
             NodeGameExplorable.stripUncheckedActionsExceptOnLeaves(rootNode, getToSteadyDepth - trimSteadyBy - 1);
-            NodeGameGraphics<CommandQWOP> currNode = rootNode;
+            NodeGameGraphics<CommandQWOP, StateQWOP> currNode = rootNode;
             while (currNode.getTreeDepth() < getToSteadyDepth - trimSteadyBy) {
                 currNode = currNode.getChildByIndex(0);
             }
@@ -193,14 +194,14 @@ public class MAIN_Search_Full extends SearchTemplate {
             }
 
             // Saver resetGame.
-            NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
+            NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
                     actionGenerator);
             NodeGameGraphics.pointsToDraw.clear();
             ui.clearRootNodes();
             ui.addRootNode(rootNode);
 
-            SavableFileIO<SavableSingleGame<CommandQWOP>> fileIO = new SavableFileIO<>();
-            List<SavableSingleGame<CommandQWOP>> glist = new ArrayList<>();
+            SavableFileIO<SavableSingleGame<CommandQWOP, StateQWOP>> fileIO = new SavableFileIO<>();
+            List<SavableSingleGame<CommandQWOP, StateQWOP>> glist = new ArrayList<>();
             File saveFile = new File(getSaveLocation().getPath() + "/" + filename2 +
                     ".SavableSingleGame");
             fileIO.loadObjectsToCollection(saveFile, glist);
@@ -208,14 +209,14 @@ public class MAIN_Search_Full extends SearchTemplate {
             NodeGameExplorableBase.stripUncheckedActionsExceptOnLeaves(rootNode, stage3StartDepth);
 
 
-            List<NodeGameGraphics<CommandQWOP>> leafList = new ArrayList<>();
+            List<NodeGameGraphics<CommandQWOP, StateQWOP>> leafList = new ArrayList<>();
             rootNode.getLeaves(leafList);
 
             int count = 0;
             int startAt = recoveryResumePoint;
             NodeGameGraphics previousLeaf = null;
 
-            for (NodeGameGraphics<CommandQWOP> leaf : leafList) {
+            for (NodeGameGraphics<CommandQWOP, StateQWOP> leaf : leafList) {
                 if (count >= startAt) {
                     doBasicMaxDepthStage(leaf, "recoveries" + count + fileSuffix3, getBackToSteadyDepth, maxWorkerFraction3, bailAfterXGames3);
                 }
@@ -252,14 +253,14 @@ public class MAIN_Search_Full extends SearchTemplate {
     }
 
     @Override
-    TreeWorker<CommandQWOP> getTreeWorker() {
-        ISampler<CommandQWOP> sampler = new Sampler_UCB<>(
+    TreeWorker<CommandQWOP, StateQWOP> getTreeWorker() {
+        ISampler<CommandQWOP, StateQWOP> sampler = new Sampler_UCB<>(
                 new EvaluationFunction_Constant<>(0f),
                 new RolloutPolicy_DeltaScore<>(
                         new EvaluationFunction_Distance<>(),
                         RolloutPolicyBase.getQWOPRolloutActionGenerator(),
                         new Controller_Random<>()),
                 new ValueUpdater_Average<>(), 5, 1); // TODO hardcoded.
-        return TreeWorker.makeStandardTreeWorker(sampler);
+        return TreeWorker.makeStandardQWOPTreeWorker(sampler);
     }
 }

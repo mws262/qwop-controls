@@ -1,6 +1,7 @@
 package ui;
 
 import game.action.Command;
+import game.state.IState;
 import tree.Utility;
 import tree.node.NodeGameGraphicsBase;
 
@@ -17,7 +18,8 @@ import java.util.List;
  *
  * @author Matt
  */
-public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelectionListener<C>, IUserInterface<C> {
+public class UI_Full<C extends Command<?>, S extends IState> implements ChangeListener, NodeSelectionListener<C, S>,
+        IUserInterface<C, S> {
 
     private final JFrame frame = new JFrame();
 
@@ -34,12 +36,12 @@ public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelect
     /**
      * Selected node by user click/key
      */
-    private NodeGameGraphicsBase<?, C> selectedNode;
+    private NodeGameGraphicsBase<?, C, S> selectedNode;
 
     /**
      * List of panes which can be activated, deactivated.
      */
-    private List<TabbedPaneActivator<C>> tabbedPanes = new ArrayList<>();
+    private List<TabbedPaneActivator<C, S>> tabbedPanes = new ArrayList<>();
 
     /**
      * Window width
@@ -51,15 +53,6 @@ public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelect
      */
     public static int windowHeight = 1000;
 
-    /**
-     * Attempted frame rate
-     */
-    private int targetFramesPerSecond = 25;
-
-    /**
-     * Usable milliseconds per frame
-     */
-    private long millisecondsPerFrame = (long) (1f / targetFramesPerSecond * 1000f);
     private Timer redrawTimer;
 
     public UI_Full() {
@@ -102,7 +95,7 @@ public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelect
      *
      * @param newTab New tab to add to the existing set of tabbed panels in this frame.
      */
-    public void addTab(TabbedPaneActivator<C> newTab) {
+    public void addTab(TabbedPaneActivator<C, S> newTab) {
         tabPane.addTab(newTab.getName(), (Component) newTab);
         tabbedPanes.add(newTab);
         tabPane.revalidate();
@@ -124,11 +117,11 @@ public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelect
     }
 
 
-    public void setTabbedPanes(List<TabbedPaneActivator<C>> tabbedPanes) {
+    public void setTabbedPanes(List<TabbedPaneActivator<C, S>> tabbedPanes) {
         tabbedPanes.forEach(this::addTab);
     }
 
-    public List<TabbedPaneActivator<C>> getTabbedPanes() {
+    public List<TabbedPaneActivator<C, S>> getTabbedPanes() {
         return tabbedPanes;
     }
 
@@ -147,7 +140,7 @@ public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelect
     }
 
     @Override
-    public void nodeSelected(NodeGameGraphicsBase<?, C> selected) {
+    public void nodeSelected(NodeGameGraphicsBase<?, C, S> selected) {
         if (selectedNode != null) { // Clear things from the old selected node.
             selectedNode.setOverridePointColor(null);
             selectedNode.clearBranchLineOverrideColor();
@@ -163,7 +156,7 @@ public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelect
         selectedNode.setBranchZOffset(0.4f);
 //        selectedNode.setLineBrightnessBelow(1f);
 
-        for (TabbedPaneActivator<C> panel : tabbedPanes) {
+        for (TabbedPaneActivator<C, S> panel : tabbedPanes) {
             if (panel.isActive()) {
                 panel.update(selectedNode);
             }
@@ -182,7 +175,7 @@ public class UI_Full<C extends Command<?>> implements ChangeListener, NodeSelect
     }
 
     @Override
-    public void addRootNode(NodeGameGraphicsBase<?, C> node) {
+    public void addRootNode(NodeGameGraphicsBase<?, C, S> node) {
         panelTree.addRootNode(node);
     }
 

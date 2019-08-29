@@ -24,12 +24,12 @@ import java.util.List;
         @JsonSubTypes.Type(value = DataSaver_StageSelected.class, name = "stage_selected")
 
 })
-public interface IDataSaver<C extends Command<?>> {
+public interface IDataSaver<C extends Command<?>, S extends IState> {
 
     /**
      * Report initial state.
      */
-    void reportGameInitialization(IState initialState);
+    void reportGameInitialization(S initialState);
 
     /**
      * Report intermediate nodes as they are being run. Useful for dense
@@ -38,18 +38,18 @@ public interface IDataSaver<C extends Command<?>> {
      * @param action Current command being run.
      * @param game Instance of the game used for simulation.
      */
-    void reportTimestep(Action<C> action, IGameInternal<C> game);
+    void reportTimestep(Action<C> action, IGameInternal<C, S> game);
 
     /**
      * Get the final game state for this run.
      */
-    void reportGameEnding(NodeGameBase<?, C> endNode);
+    void reportGameEnding(NodeGameBase<?, C, S> endNode);
 
     /**
      * Called when the end of a TreeStage is reached. TargetNodes meaning is different depending on the saver
      * implementation.
      */
-    void reportStageEnding(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes);
+    void reportStageEnding(NodeGameBase<?, C, S> rootNode, List<NodeGameBase<?, C, S>> targetNodes);
 
     /**
      * Store and dump any buffered data, often when a stage has ended but nothing specific needs to be reported.
@@ -74,7 +74,7 @@ public interface IDataSaver<C extends Command<?>> {
      * Get a fresh copy of this saver with the same settings.
      */
     @JsonIgnore
-    IDataSaver<C> getCopy();
+    IDataSaver<C, S> getCopy();
 
     /**
      * Generate a filename. Format is: [prefix]_YYYY-MM-DD_HH-mm-ss.[class name]

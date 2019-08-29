@@ -2,6 +2,7 @@ package value.updaters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
+import game.state.IState;
 import org.jcodec.common.Preconditions;
 import tree.node.NodeGameBase;
 
@@ -17,7 +18,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class ValueUpdater_TopNChildren<C extends Command<?>> implements IValueUpdater<C> {
+public class ValueUpdater_TopNChildren<C extends Command<?>, S extends IState> implements IValueUpdater<C, S> {
 
     /**
      * Number of children to average when updating the value estimate for a node.
@@ -31,11 +32,11 @@ public class ValueUpdater_TopNChildren<C extends Command<?>> implements IValueUp
     }
 
     @Override
-    public float update(float valueUpdate, NodeGameBase<?, C> node) {
+    public float update(float valueUpdate, NodeGameBase<?, C, S> node) {
         if (node.getChildCount() == 0) {
             return valueUpdate;
         } else {
-            List<NodeGameBase<?, C>> children = new ArrayList<>();
+            List<NodeGameBase<?, C, S>> children = new ArrayList<>();
             node.applyToThis(n -> children.addAll(n.getChildren())); // Trick to get around type erasure.
             children.sort(Comparator.comparing(NodeGameBase::getValue));
             Collections.reverse(children);
@@ -52,7 +53,7 @@ public class ValueUpdater_TopNChildren<C extends Command<?>> implements IValueUp
     }
 
     @Override
-    public IValueUpdater<C> getCopy() {
+    public IValueUpdater<C, S> getCopy() {
         return new ValueUpdater_TopNChildren<>(numChildrenToAvg);
     }
 }

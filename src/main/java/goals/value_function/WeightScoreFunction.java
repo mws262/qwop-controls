@@ -7,6 +7,7 @@ import game.qwop.GameQWOP;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import game.state.IState;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.InitialGuess;
@@ -27,8 +28,6 @@ public class WeightScoreFunction implements MultivariateFunction {
 
     public static final GoalType goal = GoalType.MINIMIZE;
 
-    private final ValueFunction_TensorFlow_StateOnly valFun;
-
     private final TrainableNetwork network;
 
     private final float[] initialBiases; // TODO generalize
@@ -48,12 +47,11 @@ public class WeightScoreFunction implements MultivariateFunction {
 
     private GameQWOP game = new GameQWOP();
 
-    private final Controller_ValueFunction<CommandQWOP, ValueFunction_TensorFlow<CommandQWOP>> controller;
+    private final Controller_ValueFunction<CommandQWOP, StateQWOP, ValueFunction_TensorFlow<CommandQWOP, StateQWOP>> controller;
 
     private final int layer = 1;
     private final boolean weights = true;
     WeightScoreFunction(ValueFunction_TensorFlow_StateOnly valFun) {
-        this.valFun = valFun;
         this.network = valFun.network;
         initialBiases = network.getLayerBiases(layer); // TODO generalize to other parameters.
         initialWeights = network.getLayerWeights(layer);
