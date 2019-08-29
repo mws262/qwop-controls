@@ -50,6 +50,10 @@ public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameS
         this.game = restoredGame;
     }
 
+    public void setPhysicsIterations(int iterations) {
+        game.setPhysicsIterations(iterations);
+    }
+
     @Override
     public void resetGame() {
         game.resetGame();

@@ -95,7 +95,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP, StateQWOP> {
      * Open a socket for communicating back and forth with the real QWOP game.
      * @param port Specified port for communication. Currently real QWOP is hardcoded to use 2900.
      */
-    public FlashQWOPServer(int port) {
+    FlashQWOPServer(int port) {
         if (!doesServerExist())
             logger.error("QWOP local server does not exist. Run the shell script local_server_launch.sh; then reload " +
                     "localhost:8000/index.html");
@@ -119,7 +119,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP, StateQWOP> {
      * Open a socket for communicating back and forth with the real QWOP game. This will use the default port for
      * communication (2900).
      */
-    public FlashQWOPServer() {
+    FlashQWOPServer() {
         this(2900);
     }
 
@@ -139,7 +139,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP, StateQWOP> {
         return commandToFlashString.size();
     }
 
-    public void sendInfoRequest() {
+    void sendInfoRequest() {
         String commandString = "getinfo";
         dataOutput.print(commandString);
         dataOutput.flush();
@@ -149,7 +149,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP, StateQWOP> {
     /**
      * Send a signal to real QWOP to resetGame the game immediately.
      */
-    public void sendResetSignal() {
+    void sendResetSignal() {
         String commandString = "00001\0";
         dataOutput.println(commandString);
         dataOutput.flush();
@@ -466,13 +466,13 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP, StateQWOP> {
          * any physics stepping has occurred.
          * @return Most recent timestep received from the game.
          */
-        public int getCurrentTimestep() {
+        int getCurrentTimestep() {
             return currentTimestep.get();
         }
 
         /**
          * Get whether the most-recently obtained state is failed, according to the Flash game.
-         * @return
+         * @return Whether the most recent state is considered fallen (true == fallen).
          */
         public boolean getFailureStatus() {
             return fallen.get();
@@ -491,7 +491,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP, StateQWOP> {
          * Any listeners will receive the updated state when it comes in from the real QWOP game.
          * @param listener A listener for the real QWOP state.
          */
-        public void addStateListener(IFlashStateListener listener) {
+        void addStateListener(IFlashStateListener listener) {
             listenerList.add(listener);
         }
     }

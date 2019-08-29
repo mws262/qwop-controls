@@ -1,7 +1,15 @@
 package game.qwop;
 
+import game.state.transform.ITransform;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * An agglomeration of time delayed
+ */
 public class StateQWOPDelayEmbedded_Differences extends StateQWOPDelayEmbedded_Poses {
 
     public StateQWOPDelayEmbedded_Differences(@NotNull StateQWOP[] states) {
@@ -11,8 +19,6 @@ public class StateQWOPDelayEmbedded_Differences extends StateQWOPDelayEmbedded_P
     @SuppressWarnings("Duplicates")
     @Override
     public float[] flattenState() {
-
-
         float[] flatState = new float[stateSize];
 
         float xOffset = individualStates[0].getCenterX();
@@ -43,34 +49,97 @@ public class StateQWOPDelayEmbedded_Differences extends StateQWOPDelayEmbedded_P
         return finalDifferences;
     }
 
-    //    @Override
-//    public float[] flattenStateWithRescaling(StateNormalizerQWOP.StateStatistics stateStatistics) {
-//        float[] flatState = flattenState();
-//        float xOffset = individualStates[0].getCenterX();
-//
-//        float[] flatRescaled = null;
-//        for (int i = 0; i < individualStates.length; i++) {
-//            if (i > 0) {
-//                flatRescaled = individualStates[i]
-//                                .multiply(1f/ QWOPConstants.timestep) // Make the difference like a finite difference
-//                        // velocity.
-//                                .subtract(stateStatistics.getMean().swapPosAndVel()) // Swaps are because we want to
-//                        // use the velocity normalization on a finite difference that is in the position slots of a
-//                        // StateQWOP.
-//                                .divide(stateStatistics.getStdev().swapPosAndVel())
-//                                .extractPositions();
-//            } else {
-//                flatRescaled =
-//                        individualStates[i]
-//                                .xOffsetSubtract(xOffset)
-//                                .subtract(stateStatistics.getMean())
-//                                .divide(stateStatistics.getStdev())
-//                                .extractPositions();
-//            }
-//            System.arraycopy(flatRescaled, 0, flatState, 36 * i, 36);
-//        }
-//
-//        return flatState;
-//    }
+    public static class Normalizer implements ITransform<StateQWOPDelayEmbedded_Differences> {
 
+        public enum NormalizationMethod {
+            STDEV, RANGE
+        }
+
+        private NormalizationMethod normType;
+
+        private StatisticsQWOP stateStats = new StatisticsQWOP();
+
+        public Normalizer(NormalizationMethod normalizationMethod) throws FileNotFoundException {
+            normType = normalizationMethod;
+        }
+
+        @Override
+        public void updateTransform(List<StateQWOPDelayEmbedded_Differences> statesToUpdateFrom) {}
+
+        @Override
+        public List<float[]> transform(List<StateQWOPDelayEmbedded_Differences> originalStates) {
+            List<float[]> transformedStates = new ArrayList<>(originalStates.size());
+            for (StateQWOPDelayEmbedded_Differences st : originalStates) {
+                transformedStates.add(transform(st));
+            }
+            return transformedStates;
+        }
+
+        @Override
+        public float[] transform(StateQWOPDelayEmbedded_Differences originalState) {
+            float xOffset = originalState.getCenterX();
+
+            StateQWOP[] individualStates = getDifferencedStates(originalState.getIndividualStates());
+            float[] flatRescaled;
+            float[] fullFlatRescaled = new float[originalState.stateSize];
+            for (int i = 0; i < individualStates.length; i++) {
+                if (i > 0) {
+                    flatRescaled = individualStates[i]
+                            // TODO update so this works better if the states are spaced out by more than 1 timestep.
+                            .multiply(1f/ QWOPConstants.timestep) // Make the difference like a finite difference
+                            // velocity.
+                            .subtract(
+                                    normType == NormalizationMethod.STDEV ?
+                                    stateStats.getMean().swapPosAndVel()
+                                    : stateStats.getMin().swapPosAndVel()) // Swaps are because we want to
+                            // use the velocity normalization on a finite difference that is in the position slots of a
+                            // StateQWOP.
+                            .divide(
+                                    normType == NormalizationMethod.STDEV ?
+                                    stateStats.getStdev().swapPosAndVel()
+                                    : stateStats.getRange())
+                            .extractPositions();
+                } else {
+                    flatRescaled =
+                            individualStates[i]
+                                    .xOffsetSubtract(xOffset)
+                                    .subtract(
+                                            normType == NormalizationMethod.STDEV ?
+                                                    stateStats.getMean()
+                                                    : stateStats.getMin()
+                                    )
+                                    .divide(
+                                            normType == NormalizationMethod.RANGE ?
+                                            stateStats.getStdev()
+                                            : stateStats.getRange())
+                                    .extractPositions();
+                }
+                System.arraycopy(flatRescaled, 0, fullFlatRescaled, 36 * i, 36);
+            }
+            return fullFlatRescaled;
+        }
+
+        @Override
+        public List<float[]> untransform(List<float[]> transformedStates) {
+            // TODO
+            throw new RuntimeException("Not implemented yet.");
+        }
+
+        @Override
+        public List<float[]> compressAndDecompress(List<StateQWOPDelayEmbedded_Differences> originalStates) {
+            // TODO
+            throw new RuntimeException("Not implemented yet.");
+        }
+
+        @Override
+        public int getOutputSize() {
+            // It's not nailed down anywhere here. Can vary. Figure it out later TODO
+            throw new RuntimeException("Not implemented yet.");
+        }
+
+        @Override
+        public String getName() {
+            return "StateDiffNormalizer";
+        }
+    }
 }

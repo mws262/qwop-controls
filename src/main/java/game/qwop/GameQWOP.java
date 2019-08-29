@@ -178,7 +178,7 @@ public class GameQWOP implements IGameSerializable<CommandQWOP, StateQWOP> {
      * Number of constraint-solving steps.
      */
     @JsonIgnore
-    public int iterations = physIterations;
+    private int iterations = physIterations;
 
     /** Listens for collisions between any body part and the ground. **/
     private CollisionListener collisionListener = new CollisionListener();
@@ -1008,7 +1008,6 @@ public class GameQWOP implements IGameSerializable<CommandQWOP, StateQWOP> {
         torsoBody.applyTorque(cwTorque);
     }
 
-
 //    public void fullStatePDController(StateQWOP targetState) {
 //        StateQWOP currentState = getCurrentState();
 //        pdForce(targetState.body, currentState.body, torsoBody);
@@ -1125,6 +1124,10 @@ public class GameQWOP implements IGameSerializable<CommandQWOP, StateQWOP> {
         while (a.hasNext()) {
             command(a.poll());
         }
+    }
+
+    public void setPhysicsIterations(int iterations) {
+        this.iterations = iterations;
     }
 
     /**

@@ -4,7 +4,6 @@ import game.qwop.GameQWOP;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.qwop.CommandQWOP;
-import game.qwop.StateNormalizerQWOP;
 import game.qwop.StateQWOP;
 import org.jetbrains.annotations.NotNull;
 import org.nd4j.base.Preconditions;
@@ -26,7 +25,7 @@ public class PolicyGradientQWOP {
 
     private List<Action<CommandQWOP>> allowedActions;
 
-    private StateNormalizerQWOP normalizer = new StateNormalizerQWOP(StateNormalizerQWOP.NormalizationMethod.STDEV);
+    private StateQWOP.Normalizer normalizer;
 
     private PolicyGradientQWOP(@NotNull PolicyGradientNetwork net,
                                @NotNull List<Action<CommandQWOP>> allowedActions) {
@@ -34,6 +33,12 @@ public class PolicyGradientQWOP {
                 " of allowed actions for a softmax net.", allowedActions, net.outputSize);
         this.net = net;
         this.allowedActions = new ArrayList<>(allowedActions);
+
+        try {
+            normalizer = new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         //new ArrayList<>(ActionGenerator_UniformNoRepeats.makeDefaultGenerator().getAllPossibleActions());
     }
 

@@ -3,11 +3,11 @@ package value;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-import game.IGameInternal;
 import game.qwop.*;
 import game.IGameSerializable;
 import game.action.Action;
 import game.state.IState;
+import game.state.transform.ITransform;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,7 +25,7 @@ import java.util.concurrent.*;
 
 import static game.qwop.CommandQWOP.Keys;
 
-public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow<CommandQWOP, IStateQWOP> {
+public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends ValueFunction_TensorFlow<CommandQWOP, S> {
 
     /**
      * Dimension of the value output.
@@ -42,7 +42,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     List<EvaluationResult> evalResults;
     List<FuturePredictor> evaluations;
 
-    public final IGameSerializable<CommandQWOP, IStateQWOP> gameTemplate;
+    public final IGameSerializable<CommandQWOP, S> gameTemplate;
     public final String fileName;
 
     /**
@@ -53,14 +53,16 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     private static final Logger logger = LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class);
 
-    private StateNormalizerQWOP stateNormalizer = new StateNormalizerQWOP(StateNormalizerQWOP.NormalizationMethod.STDEV);
+    private ITransform<S> stateNormalizer;
 
     /**
      * Constructor which loads an existing value function net.
      * @param file .pb file of the existing net.
      * @throws FileNotFoundException Unable to find an existing net.
      */
-    public ValueFunction_TensorFlow_StateOnly(File file, IGameSerializable<CommandQWOP, IStateQWOP> gameTemplate,
+    public ValueFunction_TensorFlow_StateOnly(File file,
+                                              IGameSerializable<CommandQWOP, S> gameTemplate,
+                                              ITransform<S> stateNormalizer,
                                               boolean tensorboardLogging) throws FileNotFoundException {
         super(file, tensorboardLogging);
         Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
@@ -69,6 +71,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 " one output.");
 
         this.gameTemplate = gameTemplate.getCopy();
+        this.stateNormalizer = stateNormalizer;
         fileName = file.getName();
         assignFuturePredictors(this.gameTemplate);
         if (multithread)
@@ -84,7 +87,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * @throws FileNotFoundException Model file was not successfully created.
      */
     public ValueFunction_TensorFlow_StateOnly(@JsonProperty("fileName") String fileName,
-                                              @JsonProperty("gameTemplate") IGameSerializable<CommandQWOP, IStateQWOP> gameTemplate,
+                                              @JsonProperty("gameTemplate") IGameSerializable<CommandQWOP, S> gameTemplate,
+                                              @JsonProperty("stateNormalizer") ITransform<S> stateNormalizer,
                                               @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                                               @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
                                               @JsonProperty("activeCheckpoint") String checkpointFile,
@@ -92,6 +96,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         super(fileName, gameTemplate.getStateDimension(), VALUE_SIZE, hiddenLayerSizes, additionalNetworkArgs,
                 checkpointFile, tensorboardLogging);
         this.gameTemplate = gameTemplate;
+        this.stateNormalizer = stateNormalizer;
         this.fileName = fileName;
         assignFuturePredictors(gameTemplate);
         if (multithread)
@@ -101,7 +106,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     /**
      * Assign the futures that will be explored on each controller evaluation.
      */
-    private void assignFuturePredictors(IGameSerializable<CommandQWOP, IStateQWOP> gameTemplate) {
+    private void assignFuturePredictors(IGameSerializable<CommandQWOP, S> gameTemplate) {
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
         int min = 2;
@@ -118,7 +123,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, IStateQWOP> currentNode) {
+    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, S> currentNode) {
         // Update each of the future predictors to use the new starting states.
         evaluations.forEach(e -> e.setStartingState(currentNode.getState()));
         return runEvaluations();
@@ -126,8 +131,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, IStateQWOP> currentNode,
-                                                   IGameSerializable<CommandQWOP, IStateQWOP> realGame) {
+    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, S> currentNode,
+                                                   IGameSerializable<CommandQWOP, S> realGame) {
         evaluations.forEach(e -> e.setStartingState(realGame.getSerializedState()));
         return runEvaluations();
     }
@@ -167,12 +172,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    float[] assembleInputFromNode(NodeGameBase<?, CommandQWOP, IStateQWOP> node) {
+    float[] assembleInputFromNode(NodeGameBase<?, CommandQWOP, S> node) {
         return stateNormalizer.transform(node.getState());
     }
 
     @Override
-    float[] assembleOutputFromNode(NodeGameBase<?, CommandQWOP, IStateQWOP> node) {
+    float[] assembleOutputFromNode(NodeGameBase<?, CommandQWOP, S> node) {
         return new float[]{node.getValue()};
     }
 
@@ -224,12 +229,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Game copy used to predict this future.
          */
-        IGameSerializable<CommandQWOP, IStateQWOP> gameLocal;
+        IGameSerializable<CommandQWOP, S> gameLocal;
 
         /**
-         * Initial state of this future prediction.
+         * Initial state of this future prediction.``
          */
-        IStateQWOP startingState;
+        S startingState;
 
         private byte[] startStateFull;
         private boolean useSerializedState = false;
@@ -281,7 +286,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          */
         EvaluationResult bestResult = new EvaluationResult();
 
-        FuturePredictor(IGameSerializable<CommandQWOP, IStateQWOP> gameTemplate, Keys keys, int minHorizon, int maxHorizon) {
+        FuturePredictor(IGameSerializable<CommandQWOP, S> gameTemplate, Keys keys, int minHorizon,
+                        int maxHorizon) {
             this.gameLocal = gameTemplate.getCopy();
             this.keys = keys;
             command = CommandQWOP.getCommand(keys);
@@ -289,7 +295,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             this.maxHorizon = maxHorizon;
         }
 
-        void setStartingState(@NotNull IStateQWOP startingState) {
+        void setStartingState(@NotNull S startingState) {
             this.startingState = startingState;
             useSerializedState = false;
         }
@@ -304,13 +310,14 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
             if (useSerializedState) {
                 gameLocal = gameLocal.restoreSerializedState(startStateFull);
-                gameLocal.iterations = QWOPConstants.physIterations; // Don't need to 'catch up', since full game is
+                gameLocal.setPhysicsIterations(QWOPConstants.physIterations); // Don't need to 'catch up', since
+                // full game is
             } else {
                 if (newGameBetweenPredictions)
                     gameLocal.resetGame();
 
                 gameLocal.setState(startingState);
-                gameLocal.iterations = initialPhysicsIterations; // Catch-up iterations for cold-start game to
+                gameLocal.setPhysicsIterations(initialPhysicsIterations); // Catch-up iterations for cold-start game to
                 // "catch-up" to warm-started game.
             }
 
@@ -331,14 +338,14 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             for (int i = 1; i <= maxHorizon; i++) {
                 // Return to the normal number of physics iterations after the first step.
                 if (i > warmstartIterationCount) {
-                    gameLocal.iterations = QWOPConstants.physIterations;
+                    gameLocal.setPhysicsIterations(QWOPConstants.physIterations);
                 }
 
                 x2 = x3;
 
                 gameLocal.step(command);
-                IStateQWOP st = gameLocal.getCurrentState();
-                NodeGameBase<?, CommandQWOP, IStateQWOP> nextNode = new NodeGame<>(st);
+                S st = gameLocal.getCurrentState();
+                NodeGameBase<?, CommandQWOP, S> nextNode = new NodeGame<>(st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);
@@ -392,10 +399,14 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @JsonIgnore
-    public ValueFunction_TensorFlow_StateOnly getCopy() {
-        ValueFunction_TensorFlow_StateOnly valFunCopy = null;
+    public ValueFunction_TensorFlow_StateOnly<S> getCopy() {
+        ValueFunction_TensorFlow_StateOnly<S> valFunCopy = null;
         try {
-            valFunCopy = new ValueFunction_TensorFlow_StateOnly(getGraphDefinitionFile(), gameTemplate, tensorboardLogging);
+            valFunCopy = new ValueFunction_TensorFlow_StateOnly<>(
+                    getGraphDefinitionFile(),
+                    gameTemplate,
+                    stateNormalizer,
+                    tensorboardLogging);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

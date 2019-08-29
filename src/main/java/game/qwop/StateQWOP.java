@@ -3,11 +3,17 @@ package game.qwop;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
+import game.state.IState;
 import game.state.StateVariable6D;
+import game.state.transform.ITransform;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Container class for holding the configurations and velocities of the entire runner at a single instance in time.
@@ -471,6 +477,96 @@ public class StateQWOP implements IStateQWOP, Serializable {
 
         hashCodeBuilder.append(failedState);
         return hashCodeBuilder.toHashCode();
+    }
+
+    public static class Normalizer implements ITransform<StateQWOP> {
+
+        public enum NormalizationMethod {
+            STDEV, RANGE
+        }
+
+        private NormalizationMethod normType;
+
+        private StatisticsQWOP stateStats = new StatisticsQWOP();
+
+        public Normalizer(NormalizationMethod normalizationMethod) throws FileNotFoundException {
+            normType = normalizationMethod;
+        }
+
+        @Override
+        public void updateTransform(List<StateQWOP> statesToUpdateFrom) {} // May want to add later.
+
+        @Override
+        public List<float[]> transform(List<StateQWOP> originalStates) {
+            List<float[]> tformedVals = new ArrayList<>(originalStates.size());
+            for (StateQWOP s : originalStates) {
+                tformedVals.add(transform(s));
+            }
+            return tformedVals;
+        }
+
+        @Override
+        public float[] transform(StateQWOP originalState) {
+
+            switch(normType) {
+                case STDEV:
+                    return originalState.xOffsetSubtract(originalState.getCenterX())
+                            .subtract(stateStats.getMean())
+                            .divide(stateStats.getStdev())
+                            .flattenState();
+                case RANGE:
+                    return originalState.xOffsetSubtract(originalState.getCenterX())
+                            .subtract(stateStats.getMin())
+                            .divide(stateStats.getRange())
+                            .flattenState();
+                default:
+                    throw new IllegalStateException("Unhandled state normalization case: " + normType.toString());
+            }
+
+        }
+
+        @Override
+        public List<float[]> untransform(List<float[]> transformedStates) {
+            List<float[]> untransformedStates = new ArrayList<>(transformedStates.size());
+
+            switch(normType) {
+                case STDEV:
+                    for (float[] tformed : transformedStates) {
+                        float[] utformed = new float[tformed.length];
+                        for (int i = 0; i < tformed.length; i++) {
+                            utformed[i] = tformed[i] * stateStats.stdevArray[i] + stateStats.meanArray[i];
+                        }
+                        untransformedStates.add(utformed);
+                    }
+                    return untransformedStates;
+                case RANGE:
+                    for (float[] tformed : transformedStates) {
+                        float[] utformed = new float[tformed.length];
+                        for (int i = 0; i < tformed.length; i++) {
+                            utformed[i] = tformed[i] * stateStats.rangeArray[i] + stateStats.minArray[i];
+                        }
+                        untransformedStates.add(utformed);
+                    }
+                    return untransformedStates;
+                default:
+                    throw new IllegalStateException("Unhandled state normalization case: " + normType.toString());
+            }
+        }
+
+        @Override
+        public List<float[]> compressAndDecompress(List<StateQWOP> originalStates) {
+            return originalStates.stream().map(IState::flattenState).collect(Collectors.toList());
+        }
+
+        @Override
+        public int getOutputSize() {
+            return StateQWOP.STATE_SIZE;
+        }
+
+        @Override
+        public String getName() {
+            return "QWOPNormalizer";
+        }
     }
 }
 

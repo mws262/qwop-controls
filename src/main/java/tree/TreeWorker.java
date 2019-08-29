@@ -197,10 +197,11 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     }
 
     // No data saving.
-    public static <S extends StateQWOPDelayEmbedded> TreeWorker<CommandQWOP, S> makeCachedStateTreeWorker(ISampler<CommandQWOP, S> sampler,
-                                                                                                          int timestepDelay,
-                                                                                                          int numDelayedStates,
-                                                                                                          GameQWOPCaching.StateType stateType) {
+    public static <S extends StateQWOPDelayEmbedded> TreeWorker<CommandQWOP, S>
+                                                        makeCachedStateTreeWorker(ISampler<CommandQWOP, S> sampler,
+                                                                                  int timestepDelay,
+                                                                                  int numDelayedStates,
+                                                                                  GameQWOPCaching.StateType stateType) {
         return makeCachedStateTreeWorker(sampler, new DataSaver_Null<>(), timestepDelay, numDelayedStates, stateType);
     }
 
