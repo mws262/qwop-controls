@@ -4,6 +4,7 @@ import data.SavableFileIO;
 import data.SavableSingleGame;
 import game.qwop.GameQWOP;
 import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import tree.node.NodeGameGraphics;
 import tree.node.NodeGameGraphicsBase;
 import ui.runner.PanelRunner_Animated;
@@ -38,7 +39,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
     private File saveLoc = new File("src/main/resources/saved_data/11_2_18");
 
-    private List<NodeGameGraphics<CommandQWOP>> leafNodes = new ArrayList<>();
+    private List<NodeGameGraphics<CommandQWOP, StateQWOP>> leafNodes = new ArrayList<>();
 
     /**
      * What point to start displaying from (to skip any prefix).
@@ -80,17 +81,17 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
         }
         Collections.shuffle(playbackFiles);
 
-        SavableFileIO<SavableSingleGame<CommandQWOP>> fileIO = new SavableFileIO<>();
+        SavableFileIO<SavableSingleGame<CommandQWOP, StateQWOP>> fileIO = new SavableFileIO<>();
         for (File f : playbackFiles) {
-            NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState());
+            NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState());
 
-            List<SavableSingleGame<CommandQWOP>> loadedGames = new ArrayList<>();
+            List<SavableSingleGame<CommandQWOP, StateQWOP>> loadedGames = new ArrayList<>();
             fileIO.loadObjectsToCollection(f, loadedGames);
             NodeGameGraphicsBase.makeNodesFromRunInfo(loadedGames, rootNode);
             leafNodes.clear();
             rootNode.getLeaves(leafNodes);
-            NodeGameGraphics<CommandQWOP> endNode = leafNodes.get(0);
-            NodeGameGraphics<CommandQWOP> startNode = endNode;
+            NodeGameGraphics<CommandQWOP, StateQWOP> endNode = leafNodes.get(0);
+            NodeGameGraphics<CommandQWOP, StateQWOP> startNode = endNode;
             while (startNode.getTreeDepth() > startPt) {
                 startNode = startNode.getParent();
             }

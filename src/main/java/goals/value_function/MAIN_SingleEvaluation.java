@@ -109,14 +109,16 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         }
     }
 
-    private NodeGameExplorable doPrefix() {
+    private NodeGameExplorable<CommandQWOP, StateQWOP> doPrefix() {
 
-        NodeGameExplorable rootNode = new NodeGameExplorable(GameQWOP.getInitialState());
+        NodeGameExplorable<CommandQWOP, StateQWOP> rootNode = new NodeGameExplorable(GameQWOP.getInitialState());
 
         // Assign a "prefix" of game.command, since I'm not sure if the controller will generalize to this part of running.
-        List<Action<CommandQWOP>[]> alist = new ArrayList<>();
-        alist.add(new Action[]{
-                new Action<>(7, CommandQWOP.NONE),
+        List<List<Action<CommandQWOP>>> aListList = new ArrayList<>();
+        List<Action<CommandQWOP>> aList = new ArrayList<>();
+        aList.add(new Action<>(7, CommandQWOP.NONE));
+        aListList.add(aList);
+
 //                new Action(34, Action.Keys.wo),
 //                new Action(19, Action.Keys.none),
 //                new Action(20, Action.Keys.qp),
@@ -125,11 +127,10 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 //                new Action(27,false,true,true,false),
 //                 new Action(8,false,false,false,false),
 //                new Action(20,true,false,false,true),
-        });
 
-        NodeGameExplorable.makeNodesFromActionSequences(alist, rootNode, game);
+        NodeGameExplorable.makeNodesFromActionSequences(aListList, rootNode, game);
 
-        List<NodeGameExplorable> leaf = new ArrayList<>();
+        List<NodeGameExplorable<CommandQWOP, StateQWOP>> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
 
         List<Action<CommandQWOP>> actionList = new ArrayList<>();
@@ -157,7 +158,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         return currNode;
     }
 
-    private void doControlled(NodeGameExplorable<CommandQWOP> currentNode) {
+    private void doControlled(NodeGameExplorable<CommandQWOP, StateQWOP> currentNode) {
 
         // Run the controller until failure.
         // TODO fix cast

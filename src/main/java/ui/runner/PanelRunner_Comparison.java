@@ -2,11 +2,11 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import tree.node.NodeGameExplorableBase;
 import tree.node.NodeGameGraphicsBase;
 import tree.node.evaluator.EvaluationFunction_SqDistFromOther;
-import game.qwop.GameQWOP;
-import game.state.IState;
 
 import java.awt.*;
 import java.util.List;
@@ -22,10 +22,10 @@ public class PanelRunner_Comparison extends PanelRunner {
     /**
      * Node used for base comparison.
      */
-    private NodeGameExplorableBase<?, CommandQWOP> selectedNode;
+    private NodeGameExplorableBase<?, CommandQWOP, StateQWOP> selectedNode;
 
-    private List<NodeGameExplorableBase<?, CommandQWOP>> focusNodes = new ArrayList<>();
-    private List<IState> states = new ArrayList<>();
+    private List<NodeGameExplorableBase<?, CommandQWOP, StateQWOP>> focusNodes = new ArrayList<>();
+    private List<StateQWOP> states = new ArrayList<>();
     private List<Stroke> strokes = new ArrayList<>();
     private List<Color> colors = new ArrayList<>();
 
@@ -36,8 +36,8 @@ public class PanelRunner_Comparison extends PanelRunner {
     }
 
     @Override
-    public void update(NodeGameGraphicsBase<?, CommandQWOP> node) {
-        NodeGameGraphicsBase<?, CommandQWOP> root = node.getRoot();
+    public void update(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> node) {
+        //NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> root = node.getRoot();
         // todo
 //        if (root instanceof NodeGameGraphicsBase) {
 //            NodeGameGraphicsBase graphicsRoot = ((NodeGameGraphicsBase) root);
@@ -54,7 +54,7 @@ public class PanelRunner_Comparison extends PanelRunner {
         // TODO
 //        selectedNode.overrideNodeColor = Color.PINK; // Restore its red color
 //        selectedNode.displayPoint = true;
-        IState nodeState = selectedNode.getState();
+        StateQWOP nodeState = selectedNode.getState();
 
         // Make the sequence centered around the selected node state.
         states.add(nodeState);
@@ -63,24 +63,24 @@ public class PanelRunner_Comparison extends PanelRunner {
         focusNodes.add(node);
 
         // Get the nearest ones, according to the provided metric.
-        EvaluationFunction_SqDistFromOther<CommandQWOP> evFun =
+        EvaluationFunction_SqDistFromOther<CommandQWOP, StateQWOP> evFun =
                 new EvaluationFunction_SqDistFromOther<>(selectedNode.getState());
 
-        Map<Float, NodeGameExplorableBase<?, CommandQWOP>> evaluatedNodeList = new TreeMap<>();
+        Map<Float, NodeGameExplorableBase<?, CommandQWOP, StateQWOP>> evaluatedNodeList = new TreeMap<>();
 
-        List<NodeGameExplorableBase<?, CommandQWOP>> allNodes = new ArrayList<>();
+        List<NodeGameExplorableBase<?, CommandQWOP, StateQWOP>> allNodes = new ArrayList<>();
         node.getRoot().recurseDownTreeInclusive(allNodes::add);
 
 
-        for (NodeGameExplorableBase<?, CommandQWOP> n : allNodes) {
+        for (NodeGameExplorableBase<?, CommandQWOP, StateQWOP> n : allNodes) {
             evaluatedNodeList.put(-evFun.getValue(n), n); // Low is better, so reverse so the lowest are at the top.
         }
 
-        Iterator<NodeGameExplorableBase<?, CommandQWOP>> orderedNodes = evaluatedNodeList.values().iterator();
+        Iterator<NodeGameExplorableBase<?, CommandQWOP, StateQWOP>> orderedNodes = evaluatedNodeList.values().iterator();
 
         for (int i = 0; i < maxNumStatesToShow; i++) {
             if (orderedNodes.hasNext()) {
-                NodeGameExplorableBase<?, CommandQWOP> closeNode = orderedNodes.next();
+                NodeGameExplorableBase<?, CommandQWOP, StateQWOP> closeNode = orderedNodes.next();
                 focusNodes.add(closeNode);
                 states.add(closeNode.getState());
                 strokes.add(normalStroke);

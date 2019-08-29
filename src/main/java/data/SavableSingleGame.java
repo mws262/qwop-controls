@@ -6,6 +6,9 @@ import game.state.IState;
 import tree.node.NodeGameBase;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Structure to hold game.command and states in individual QWOP runs for saving to file. This holds data sparsely, meaning
@@ -16,29 +19,29 @@ import java.io.Serializable;
  *
  * @author matt
  */
-public class SavableSingleGame<C extends Command<?>> implements Serializable {
+public class SavableSingleGame<C extends Command<?>, S extends IState> implements Serializable {
 
     private static final long serialVersionUID = 2L;
 
-    public Action<C>[] actions;
-    public IState[] states;
+    public List<Action<C>> actions;
+    public List<S> states;
 
     /**
      * Make a new container for holding the sparse representation of a single run.
      *
      * @param terminalNode End node of the run to be saved. All states and game.command up to this point will be saved.
      */
-    public SavableSingleGame(NodeGameBase<?, C> terminalNode) {
-        states = new IState[terminalNode.getTreeDepth()];
-        actions = new Action[terminalNode.getTreeDepth()];
-        NodeGameBase<?, C> currentNode = terminalNode;
+    public SavableSingleGame(NodeGameBase<?, C, S> terminalNode) {
 
-        while (currentNode.getTreeDepth() > 0) {
+        actions = new ArrayList<>(terminalNode.getTreeDepth());
+        states = new ArrayList<>(terminalNode.getTreeDepth());
 
-            actions[currentNode.getTreeDepth() - 1] = currentNode.getAction();
-            states[currentNode.getTreeDepth() - 1] = currentNode.getState();
+        terminalNode.recurseUpTreeInclusiveNoRoot(n -> {
+            actions.add(n.getAction());
+            states.add(n.getState());
+        });
 
-            currentNode = currentNode.getParent();
-        }
+        Collections.reverse(actions);
+        Collections.reverse(states);
     }
 }

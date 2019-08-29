@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class DataSaver_StageSelected<C extends Command<?>> implements IDataSaver<C> {
+public class DataSaver_StageSelected<C extends Command<?>, S extends IState> implements IDataSaver<C, S> {
 
     /**
      * File prefix. Goes in front of date.
@@ -41,12 +41,12 @@ public class DataSaver_StageSelected<C extends Command<?>> implements IDataSaver
     /**
      * Handles class serialization and writing to file.
      */
-    private SavableFileIO<SavableSingleGame<C>> fileIO = new SavableFileIO<>();
+    private SavableFileIO<SavableSingleGame<C, S>> fileIO = new SavableFileIO<>();
 
     /**
      * Buffered games awaiting file write.
      */
-    private ArrayList<SavableSingleGame<C>> saveBuffer = new ArrayList<>();
+    private ArrayList<SavableSingleGame<C, S>> saveBuffer = new ArrayList<>();
 
     /**
      * File save location.
@@ -59,14 +59,14 @@ public class DataSaver_StageSelected<C extends Command<?>> implements IDataSaver
     public void reportGameInitialization(IState initialState) {}
 
     @Override
-    public void reportTimestep(Action<C> action, IGameInternal<C> game) {}
+    public void reportTimestep(Action<C> action, IGameInternal<C, S> game) {}
 
     @Override
-    public void reportGameEnding(NodeGameBase<?, C> endNode) {}
+    public void reportGameEnding(NodeGameBase<?, C, S> endNode) {}
 
     @Override
-    public void reportStageEnding(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes) {
-        for (NodeGameBase<?, C> tar : targetNodes) {
+    public void reportStageEnding(NodeGameBase<?, C, S> rootNode, List<NodeGameBase<?, C, S>> targetNodes) {
+        for (NodeGameBase<?, C, S> tar : targetNodes) {
             saveBuffer.add(new SavableSingleGame<>(tar));
         }
 
@@ -114,8 +114,8 @@ public class DataSaver_StageSelected<C extends Command<?>> implements IDataSaver
     }
 
     @Override
-    public IDataSaver<C> getCopy() {
-        DataSaver_StageSelected<C> newSaver = new DataSaver_StageSelected<>();
+    public IDataSaver<C, S> getCopy() {
+        DataSaver_StageSelected<C, S> newSaver = new DataSaver_StageSelected<>();
         newSaver.setSavePath(fileLocation);
         return newSaver;
     }

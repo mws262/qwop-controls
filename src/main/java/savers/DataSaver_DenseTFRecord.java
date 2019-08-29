@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class DataSaver_DenseTFRecord extends DataSaver_Dense<CommandQWOP> {
+public class DataSaver_DenseTFRecord extends DataSaver_Dense<CommandQWOP, StateQWOP> {
 
     private static int id_max = 0;
     private int id;
@@ -61,7 +61,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense<CommandQWOP> {
      * @param endNode Not required. Null may be given.
      */
     @Override
-    public void reportGameEnding(NodeGameBase<?, CommandQWOP> endNode) {
+    public void reportGameEnding(NodeGameBase<?, CommandQWOP, StateQWOP> endNode) {
         saveCounter++;
         // TODO remove stupid cast.
         List<StateQWOP> states = new ArrayList<>();

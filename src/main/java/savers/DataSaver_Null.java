@@ -13,16 +13,16 @@ import java.util.List;
  *
  * @author Matt
  */
-public class DataSaver_Null<C extends Command<?>> implements IDataSaver<C> {
+public class DataSaver_Null<C extends Command<?>, S extends IState> implements IDataSaver<C, S> {
 
     @Override
-    public void reportGameInitialization(IState initialState) {}
+    public void reportGameInitialization(S initialState) {}
 
     @Override
-    public void reportTimestep(Action<C> action, IGameInternal<C> game) {}
+    public void reportTimestep(Action<C> action, IGameInternal<C, S> game) {}
 
     @Override
-    public void reportGameEnding(NodeGameBase<?, C> endNode) {}
+    public void reportGameEnding(NodeGameBase<?, C, S> endNode) {}
 
     @Override
     public void setSaveInterval(int numGames) {}
@@ -41,13 +41,13 @@ public class DataSaver_Null<C extends Command<?>> implements IDataSaver<C> {
     }
 
     @Override
-    public void reportStageEnding(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes) {}
+    public void reportStageEnding(NodeGameBase<?, C, S> rootNode, List<NodeGameBase<?, C, S>> targetNodes) {}
 
     @Override
     public void finalizeSaverData() {}
 
     @Override
-    public DataSaver_Null<C> getCopy() {
+    public DataSaver_Null<C, S> getCopy() {
         return new DataSaver_Null<>();
     }
 }

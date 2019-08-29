@@ -526,9 +526,9 @@ public class GLCamManager {
      * @return Nearest node to the click ray.
      * @see GLCamManager#clickVector(int, int)
      */
-    public NodeGameGraphicsBase<?, ?> nodeFromRay(Vector3f clickVec, NodeGameGraphicsBase<?, ?> root) {
+    public NodeGameGraphicsBase<?, ?, ?> nodeFromRay(Vector3f clickVec, NodeGameGraphicsBase<?, ?, ?> root) {
         // Determine which point is closest to the clicked ray.
-        ArrayList<NodeGameGraphicsBase<?, ?>> nodeList = new ArrayList<>();
+        ArrayList<NodeGameGraphicsBase<?, ?, ?>> nodeList = new ArrayList<>();
         root.recurseDownTreeInclusive(nodeList::add);
         return nodeFromRay_set(clickVec, nodeList);
     }
@@ -536,13 +536,14 @@ public class GLCamManager {
     /**
      * Take a click vector, find the nearest node to this line.
      */
-    private NodeGameGraphicsBase<?, ?> nodeFromRay_set(Vector3f clickVec, List<NodeGameGraphicsBase<?, ?>> nodes) {
-        NodeGameGraphicsBase<?, ?> closestNodeInList = null;
+    private NodeGameGraphicsBase<?, ?, ?> nodeFromRay_set(Vector3f clickVec,
+                                                          List<NodeGameGraphicsBase<?, ?, ?>> nodes) {
+        NodeGameGraphicsBase<?, ?, ?> closestNodeInList = null;
         double smallestDistance = Double.MAX_VALUE;
         double tanDist;
         double normDistSq;
 
-        for (NodeGameGraphicsBase<?, ?> node : nodes) {
+        for (NodeGameGraphicsBase<?, ?, ?> node : nodes) {
             //Vector from eye to a vertex.
             Vector3f nodePos = new Vector3f(node.nodeLocation[0], node.nodeLocation[1], node.nodeLocation[2]);
             EyeToPoint.sub(nodePos, eyePos);
@@ -563,7 +564,7 @@ public class GLCamManager {
     /**
      * Return the closest node to a click.
      */
-    public NodeGameGraphicsBase<?, ?> nodeFromClick(int mouseX, int mouseY, NodeGameGraphicsBase<?, ?> root) {
+    public NodeGameGraphicsBase<?, ?, ?> nodeFromClick(int mouseX, int mouseY, NodeGameGraphicsBase<?, ?, ?> root) {
         clickVec = clickVector(mouseX, mouseY);
         return nodeFromRay(clickVec, root);
     }
@@ -571,8 +572,8 @@ public class GLCamManager {
     /**
      * Given a set of nodes
      */
-    public NodeGameGraphicsBase<?, ?> nodeFromClick_set(int mouseX, int mouseY,
-                                                        List<NodeGameGraphicsBase<?, ?>> snapshotLeaves) {
+    public NodeGameGraphicsBase<?, ?, ?> nodeFromClick_set(int mouseX, int mouseY,
+                                                        List<NodeGameGraphicsBase<?, ?, ?>> snapshotLeaves) {
         clickVec = clickVector(mouseX, mouseY);
         return nodeFromRay_set(clickVec, snapshotLeaves);
     }

@@ -40,7 +40,7 @@ import static game.qwop.CommandQWOP.*;
  *
  * @author matt
  */
-public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
+public class FlashQWOPServer implements IGameExternal<CommandQWOP, StateQWOP> {
 
     private static URL qwopPageUrl;
     static {
@@ -182,7 +182,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
     /**
      * Get the most-recently-received StateQWOP from the Flash game. This is useful for one-off scenarios, but regular
      * consumers should add themselves as {@link IFlashStateListener} for immediate updates.
-     * @return
+     * @return Current game state.
      */
     @Override
     public StateQWOP getCurrentState() {
@@ -213,7 +213,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
     }
 
 
-    public static boolean doesServerExist() {
+    private static boolean doesServerExist() {
         try {
             HttpURLConnection huc = (HttpURLConnection) qwopPageUrl.openConnection();
             huc.setRequestMethod("HEAD");
@@ -302,7 +302,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
         public void run() {
             while (true) {
                 try {
-                    StateQWOP st = null;
+                    StateQWOP st;
                     if (useJSONState) { // JSON state corresponds to socket.swf
                         if (reader.ready()) {
                             //long initialTime = System.currentTimeMillis();

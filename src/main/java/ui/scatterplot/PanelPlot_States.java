@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
 import game.qwop.IStateQWOP.ObjectName;
 import game.qwop.StateQWOP;
+import game.state.IState;
 import game.state.StateVariable6D.StateName;
 import org.jfree.chart.plot.XYPlot;
 import tree.Utility;
@@ -26,17 +27,17 @@ import java.util.Map.Entry;
  *
  * @author Matt
  */
-public class PanelPlot_States<C extends Command<?>> extends PanelPlot<C> implements ItemListener {
+public class PanelPlot_States<C extends Command<?>, S extends IState> extends PanelPlot<C, S> implements ItemListener {
 
     /**
      * Maximum allowed datapoints. Will downsample if above. Prevents extreme lag.
      */
-    private final NodeFilter_Downsample<C> plotDownsampler = new NodeFilter_Downsample<>(5000);
+    private final NodeFilter_Downsample<C, S> plotDownsampler = new NodeFilter_Downsample<>(5000);
 
     /**
      * Node from which states are referenced.
      */
-    private NodeGameGraphicsBase<?, C> selectedNode;
+    private NodeGameGraphicsBase<?, C, S> selectedNode;
 
     /**
      * Which plot index has an active menu.
@@ -130,10 +131,10 @@ public class PanelPlot_States<C extends Command<?>> extends PanelPlot<C> impleme
     }
 
     @Override
-    public void update(NodeGameGraphicsBase<?, C> selectedNode) {
+    public void update(NodeGameGraphicsBase<?, C, S> selectedNode) {
         this.selectedNode = selectedNode;
         // Fetching new data.
-        List<NodeGameExplorableBase<?, C>> nodesBelow = new ArrayList<>();
+        List<NodeGameExplorableBase<?, C, S>> nodesBelow = new ArrayList<>();
         if (selectedNode != null) {
             selectedNode.recurseDownTreeInclusive(nodesBelow::add);
 

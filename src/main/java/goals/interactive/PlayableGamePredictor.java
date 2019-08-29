@@ -41,7 +41,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
         currentInternalState = null;
     }
 
-    public IState advance(boolean[] keys) {
+    public StateQWOP advance(boolean[] keys) {
 
         if (currentInternalState == null) { // First timestep we don't supply an internal state.
 

@@ -21,7 +21,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *            any inheriting implementation of this class.
  *
  */
-public abstract class NodeGameExplorableBase<N extends NodeGameExplorableBase<N, C>, C extends Command<?>> extends NodeGameBase<N, C> {
+public abstract class NodeGameExplorableBase<
+        N extends NodeGameExplorableBase<N, C, S>,
+        C extends Command<?>,
+        S extends IState> extends NodeGameBase<N, C, S> {
 
     /**
      * Actions which could be executed from this node's state to make new children. These are assigned at the
@@ -57,7 +60,7 @@ public abstract class NodeGameExplorableBase<N extends NodeGameExplorableBase<N,
      * @param rootState {@link IState} at this root node.
      * @param actionGenerator Used to generate untried child game.command to assign to root.
      */
-    public NodeGameExplorableBase(@NotNull IState rootState, @NotNull IActionGenerator<C> actionGenerator) {
+    public NodeGameExplorableBase(@NotNull S rootState, @NotNull IActionGenerator<C> actionGenerator) {
         super(rootState);
         this.actionGenerator = actionGenerator;
         if (rootState.isFailed()) {
@@ -75,7 +78,7 @@ public abstract class NodeGameExplorableBase<N extends NodeGameExplorableBase<N,
      *
      * @param rootState {@link IState} at this root node.
      */
-    public NodeGameExplorableBase(@NotNull IState rootState) {
+    public NodeGameExplorableBase(@NotNull S rootState) {
         this(rootState, new ActionGenerator_Null<>());
     }
 
@@ -93,7 +96,7 @@ public abstract class NodeGameExplorableBase<N extends NodeGameExplorableBase<N,
      * @param state StateQWOP at this new node.
      * @param actionGenerator Assigns the potential game.command to try to this new node.
      */
-    NodeGameExplorableBase(N parent, Action<C> action, IState state, IActionGenerator<C> actionGenerator,
+    NodeGameExplorableBase(N parent, Action<C> action, S state, IActionGenerator<C> actionGenerator,
                            boolean doublyLinked) {
         super(parent, action, state);
         this.actionGenerator = actionGenerator;
@@ -127,7 +130,7 @@ public abstract class NodeGameExplorableBase<N extends NodeGameExplorableBase<N,
      * @return A newly-created child node which has references to its parent (this), and this has references to it as
      * a child.
      */
-    public abstract N addDoublyLinkedChild(Action<C> action, IState state, IActionGenerator<C> actionGenerator);
+    public abstract N addDoublyLinkedChild(Action<C> action, S state, IActionGenerator<C> actionGenerator);
 
     /**
      * Add a child node containing the {@link IState} achieved when executing the specified {@link Action}. New
@@ -145,7 +148,7 @@ public abstract class NodeGameExplorableBase<N extends NodeGameExplorableBase<N,
      * @param actionGenerator Generator which provides a new set of untried game.command to the child node.
      * @return A newly-created child node which has a reference to its parent (this), but is unknown to the parent.
      */
-    public abstract N addBackwardsLinkedChild(Action<C> action, IState state, IActionGenerator<C> actionGenerator);
+    public abstract N addBackwardsLinkedChild(Action<C> action, S state, IActionGenerator<C> actionGenerator);
 
     /**
      * Get whether this node is marked as being fully-explored. This will occur if all potential descendents are also
@@ -286,7 +289,7 @@ public abstract class NodeGameExplorableBase<N extends NodeGameExplorableBase<N,
      * @param maxDepth Maximum absolute tree depth that untried game.command will be stripped from.
      * @param <N> Type of node, inheriting from {@link NodeGameExplorableBase}, that this command is being applied to.
      */
-    public static <N extends NodeGameExplorableBase<?, C>, C extends Command<?>> void stripUncheckedActionsExceptOnLeaves(N node, int maxDepth) {
+    public static <N extends NodeGameExplorableBase<?, C, S>, C extends Command<?>, S extends IState> void stripUncheckedActionsExceptOnLeaves(N node, int maxDepth) {
         assert maxDepth >= 0;
         node.recurseDownTreeInclusive(n -> {
             if (n.getUntriedActionCount() != 0 && n.getTreeDepth() <= maxDepth && n.getChildCount() != 0)

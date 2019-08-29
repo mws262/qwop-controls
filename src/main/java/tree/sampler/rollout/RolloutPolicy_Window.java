@@ -6,6 +6,7 @@ import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.action.Command;
+import game.state.IState;
 import org.jetbrains.annotations.NotNull;
 import tree.node.NodeGameExplorableBase;
 
@@ -21,10 +22,10 @@ import java.util.List;
  *
  * @author matt
  */
-public class RolloutPolicy_Window<C extends Command<?>> implements IRolloutPolicy<C> {
+public class RolloutPolicy_Window<C extends Command<?>, S extends IState> implements IRolloutPolicy<C, S> {
 
     @JsonProperty
-    private final IRolloutPolicy<C> individualRollout;
+    private final IRolloutPolicy<C, S> individualRollout;
 
     private ActionQueue<C> actionQueue = new ActionQueue<>();
     private final List<Action<C>> actionSequence = new ArrayList<>(); // Reused local list.
@@ -35,12 +36,12 @@ public class RolloutPolicy_Window<C extends Command<?>> implements IRolloutPolic
 
     public Criteria selectionCriteria = Criteria.BEST;
 
-    public RolloutPolicy_Window(@JsonProperty("individualRollout") IRolloutPolicy<C> individualRollout) {
+    public RolloutPolicy_Window(@JsonProperty("individualRollout") IRolloutPolicy<C, S> individualRollout) {
         this.individualRollout = individualRollout;
     }
 
     @Override
-    public float rollout(@NotNull NodeGameExplorableBase<?, C> startNode, IGameInternal<C> game) {
+    public float rollout(@NotNull NodeGameExplorableBase<?, C, S> startNode, IGameInternal<C, S> game) {
 
         // Need to do a rollout for the actual node we landed on.
         Action<C> middleAction = startNode.getAction();
@@ -66,7 +67,7 @@ public class RolloutPolicy_Window<C extends Command<?>> implements IRolloutPolic
                 game.step(actionQueue.pollCommand());
             }
 
-            NodeGameExplorableBase<?, C> windowNode =
+            NodeGameExplorableBase<?, C, S> windowNode =
                     startNode.getParent().addBackwardsLinkedChild(windowActions.get(i), game.getCurrentState());
             windowScores[i] = individualRollout.rollout(windowNode, game);
         }
@@ -89,11 +90,11 @@ public class RolloutPolicy_Window<C extends Command<?>> implements IRolloutPolic
     }
 
     @Override
-    public IRolloutPolicy<C> getCopy() {
+    public IRolloutPolicy<C, S> getCopy() {
         return new RolloutPolicy_Window<>(individualRollout.getCopy());
     }
 
-    public IRolloutPolicy<C> getIndividualRollout() {
+    public IRolloutPolicy<C, S> getIndividualRollout() {
         return individualRollout;
     }
 

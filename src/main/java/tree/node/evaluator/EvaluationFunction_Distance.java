@@ -1,6 +1,7 @@
 package tree.node.evaluator;
 
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameBase;
 
 import java.util.Objects;
@@ -10,22 +11,22 @@ import java.util.Objects;
  *
  * @author Matt
  */
-public class EvaluationFunction_Distance<C extends Command<?>> implements IEvaluationFunction<C> {
+public class EvaluationFunction_Distance<C extends Command<?>, S extends IState> implements IEvaluationFunction<C, S> {
 
     public float scalingFactor = 1f;
 
     @Override
-    public float getValue(NodeGameBase<?, C> nodeToEvaluate) {
+    public float getValue(NodeGameBase<?, C, S> nodeToEvaluate) {
         return Objects.requireNonNull(nodeToEvaluate.getState()).getCenterX() * scalingFactor;
     }
 
     @Override
-    public String getValueString(NodeGameBase<?, C> nodeToEvaluate) {
+    public String getValueString(NodeGameBase<?, C, S> nodeToEvaluate) {
         return String.valueOf(getValue(nodeToEvaluate));
     }
 
     @Override
-    public EvaluationFunction_Distance<C> getCopy() {
+    public EvaluationFunction_Distance<C, S> getCopy() {
         return new EvaluationFunction_Distance<>();
     }
 

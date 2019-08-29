@@ -22,23 +22,23 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class PanelPlot_Controls<C extends Command<?>> extends PanelPlot<C> implements KeyListener {
+public class PanelPlot_Controls<C extends Command<?>, S extends IState> extends PanelPlot<C, S> implements KeyListener {
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
      */
-    private ITransform transformer = new Transform_Autoencoder("src/main/resources/tflow_models" +
+    private ITransform<S> transformer = new Transform_Autoencoder<>("src/main/resources/tflow_models" +
 			"/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
     /**
      * Filters to be applied to the node list.
      */
-    private List<INodeFilter<C>> nodeFilters = new ArrayList<>();
+    private List<INodeFilter<C, S>> nodeFilters = new ArrayList<>();
 
     /**
      * Downsampler to reduce the number of nodes we're trying to process and display
      */
-    private INodeFilter<C> plotDownsampler = new NodeFilter_Downsample<>(5000);
+    private INodeFilter<C, S> plotDownsampler = new NodeFilter_Downsample<>(5000);
 
     private List<float[]> transformedStates;
 
@@ -60,7 +60,7 @@ public class PanelPlot_Controls<C extends Command<?>> extends PanelPlot<C> imple
     /**
      * Nodes to be processed and plotted.
      */
-    private List<NodeGameExplorableBase<?, C>> nodes = new ArrayList<>();
+    private List<NodeGameExplorableBase<?, C, S>> nodes = new ArrayList<>();
 
     private final String name;
 
@@ -74,17 +74,17 @@ public class PanelPlot_Controls<C extends Command<?>> extends PanelPlot<C> imple
     }
 
     @Override
-    public void update(NodeGameGraphicsBase<?, C> plotNode) {
+    public void update(NodeGameGraphicsBase<?, C, S> plotNode) {
         nodes.clear();
         plotNode.recurseDownTreeExclusive(nodes::add);
 
         // Apply any added filters (may be none).
-        for (INodeFilter<C> filter : nodeFilters) {
+        for (INodeFilter<C, S> filter : nodeFilters) {
             filter.filter(nodes);
         }
         plotDownsampler.filter(nodes); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.
 
-        List<IState> statesBelow = nodes.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList());
+        List<S> statesBelow = nodes.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList());
         // Convert from node list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
         changePlots();

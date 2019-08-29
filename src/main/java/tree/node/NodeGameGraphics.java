@@ -17,52 +17,55 @@ import game.state.IState;
  *
  * @author matt
  */
-public class NodeGameGraphics<C extends Command<?>> extends NodeGameGraphicsBase<NodeGameGraphics<C>, C> {
+public class NodeGameGraphics<C extends Command<?>, S extends IState>
+        extends NodeGameGraphicsBase<NodeGameGraphics<C, S>, C, S> {
 
     /**
      * @see NodeGameGraphicsBase#NodeGameGraphicsBase(IState)
      */
-    public NodeGameGraphics(IState rootState, IActionGenerator<C> actionGenerator) {
+    public NodeGameGraphics(S rootState, IActionGenerator<C> actionGenerator) {
         super(rootState, actionGenerator);
     }
 
     /**
      * @see NodeGameGraphicsBase#NodeGameGraphicsBase(IState, IActionGenerator)
      */
-    public NodeGameGraphics(IState rootState) {
+    public NodeGameGraphics(S rootState) {
         super(rootState);
     }
 
     /**
      * @see NodeGameGraphicsBase#NodeGameGraphicsBase(NodeGameGraphicsBase, Action, IState, IActionGenerator, boolean)
      */
-    private NodeGameGraphics(NodeGameGraphics<C> parent, Action<C> action, IState state,
+    private NodeGameGraphics(NodeGameGraphics<C, S> parent, Action<C> action, S state,
                              IActionGenerator<C> actionGenerator, boolean doublyLinked) {
         super(parent, action, state, actionGenerator, doublyLinked);
     }
 
     @Override
-    protected NodeGameGraphics<C> getThis() {
+    protected NodeGameGraphics<C, S> getThis() {
         return this;
     }
 
     @Override
-    public NodeGameGraphics<C> addDoublyLinkedChild(Action<C> action, IState state) {
+    public NodeGameGraphics<C, S> addDoublyLinkedChild(Action<C> action, S state) {
         return addDoublyLinkedChild(action, state, actionGenerator);
     }
 
     @Override
-    public NodeGameGraphics<C> addBackwardsLinkedChild(Action<C> action, IState state) {
+    public NodeGameGraphics<C, S> addBackwardsLinkedChild(Action<C> action, S state) {
         return addBackwardsLinkedChild(action, state, actionGenerator);
     }
 
     @Override
-    public NodeGameGraphics<C> addDoublyLinkedChild(Action<C> action, IState state, IActionGenerator<C> actionGenerator) {
+    public NodeGameGraphics<C, S> addDoublyLinkedChild(Action<C> action, S state,
+                                                     IActionGenerator<C> actionGenerator) {
         return new NodeGameGraphics<>(this, action, state, actionGenerator, true);
     }
 
     @Override
-    public NodeGameGraphics<C> addBackwardsLinkedChild(Action<C> action, IState state, IActionGenerator<C> actionGenerator) {
+    public NodeGameGraphics<C, S> addBackwardsLinkedChild(Action<C> action, S state,
+                                                        IActionGenerator<C> actionGenerator) {
         return new NodeGameGraphics<>(this, action, state, actionGenerator, false);
     }
 }

@@ -1,12 +1,14 @@
 package tree;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import game.qwop.CommandQWOP;
 import game.qwop.GameQWOP;
 import game.qwop.GameQWOPCaching;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.action.Command;
+import game.qwop.StateQWOP;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,10 +35,10 @@ import java.util.concurrent.atomic.LongAdder;
  * @author matt
  */
 
-public class TreeWorker<C extends Command<?>> extends PanelRunner implements Runnable {
+public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRunner implements Runnable {
 
     private static final long serialVersionUID = 1L;
-    private NodeGameExplorableBase<?, C> expansionNode;
+    private NodeGameExplorableBase<?, C, S> expansionNode;
 
     public enum Status {
         IDLE, INITIALIZE, TREE_POLICY_CHOOSING, TREE_POLICY_EXECUTING, EXPANSION_POLICY_CHOOSING,
@@ -61,32 +63,32 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     /**
      * The current game instance that this FSM is using. This will now not change.
      */
-    private IGameInternal<C> game;
+    private IGameInternal<C, S> game;
 
     /**
      * Strategy for sampling new nodes. Defaults to random sampling.
      */
-    private final ISampler<C> sampler;
+    private final ISampler<C, S> sampler;
 
     /**
      * How data is saved. Defaults to no saving.
      */
-    private final IDataSaver<C> saver;
+    private final IDataSaver<C, S> saver;
 
     /**
      * Root of tree that this FSM is operating on.
      */
-    private NodeGameExplorableBase<?, C> rootNode;
+    private NodeGameExplorableBase<?, C, S> rootNode;
 
     /**
      * Node that the game is currently operating at.
      */
-    private NodeGameExplorableBase<?, C> currentGameNode;
+    private NodeGameExplorableBase<?, C, S> currentGameNode;
 
     /**
      * Node the game is attempting to run to.
      */
-    private NodeGameExplorableBase<?, C> targetNodeToTest;
+    private NodeGameExplorableBase<?, C, S> targetNodeToTest;
 
     private Action<C> targetActionToTest;
 
@@ -152,7 +154,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
 
     private static final Logger logger = LogManager.getLogger(TreeWorker.class);
 
-    private TreeWorker(ISampler<C> sampler, IDataSaver<C> saver) {
+    private TreeWorker(ISampler<C, S> sampler, IDataSaver<C, S> saver) {
         workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
 
@@ -170,35 +172,36 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
      * Make a worker that uses {@link GameQWOP} under the hood.
      * @return A brand new TreeWorker.
      */
-    public static <C extends Command<?>> TreeWorker<C> makeStandardTreeWorker(ISampler<C> sampler,
-                                                                              IDataSaver<C> saver) {
-        TreeWorker<C> treeWorker = new TreeWorker<>(sampler, saver);
-        treeWorker.game = (IGameInternal<C>) new GameQWOP(); // FIXME need a generic game here too.
+    public static TreeWorker<CommandQWOP, StateQWOP> makeStandardQWOPTreeWorker(ISampler<CommandQWOP,
+            StateQWOP> sampler, IDataSaver<CommandQWOP, StateQWOP> saver) {
+
+        TreeWorker<CommandQWOP, StateQWOP> treeWorker = new TreeWorker<>(sampler, saver);
+        treeWorker.game = new GameQWOP();
         return treeWorker;
     }
 
     // With no data saving.
-    public static <C extends Command<?>> TreeWorker<C> makeStandardTreeWorker(ISampler<C> sampler) {
-        return makeStandardTreeWorker(sampler, new DataSaver_Null<>());
+    public static TreeWorker<CommandQWOP, StateQWOP> makeStandardQWOPTreeWorker(ISampler<CommandQWOP, StateQWOP> sampler) {
+        return makeStandardQWOPTreeWorker(sampler, new DataSaver_Null<>());
     }
 
     /**
      * Make a worker that uses {@link GameQWOPCaching} under the hood.
      * @return A brand new TreeWorker.
      */
-    public static <C extends Command<?>> TreeWorker<C> makeCachedStateTreeWorker(ISampler<C> sampler,
-                                                                                 IDataSaver<C> saver,
+    public static <S extends StateQWOP> TreeWorker<CommandQWOP, S> makeCachedStateTreeWorker(ISampler<CommandQWOP, S> sampler,
+                                                                                 IDataSaver<CommandQWOP, S> saver,
                                                                                  int timestepDelay,
                                                                                  int numDelayedStates,
                                                                                  GameQWOPCaching.StateType stateType) {
-        TreeWorker<C> treeWorker = new TreeWorker<>(sampler, saver);
-        treeWorker.game = (IGameInternal<C>) new GameQWOPCaching(timestepDelay, numDelayedStates, stateType); //
+        TreeWorker<CommandQWOP, S> treeWorker = new TreeWorker<>(sampler, saver);
+        treeWorker.game = new GameQWOPCaching(timestepDelay, numDelayedStates, stateType); //
         // FIXME generic game
         return treeWorker;
     }
 
     // No data saving.
-    public static <C extends Command<?>> TreeWorker<C> makeCachedStateTreeWorker(ISampler<C> sampler,
+    public static <C extends Command<?>, S extends IState> TreeWorker<C, S> makeCachedStateTreeWorker(ISampler<C, S> sampler,
                                                                               int timestepDelay,
                                                                               int numDelayedStates,
                                                                               GameQWOPCaching.StateType stateType) {
@@ -206,8 +209,8 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     }
 
     @JsonIgnore
-    public TreeWorker<C> getCopy() {
-        TreeWorker<C> treeWorker = new TreeWorker<>(sampler.getCopy(), saver.getCopy());
+    public TreeWorker<C, S> getCopy() {
+        TreeWorker<C, S> treeWorker = new TreeWorker<>(sampler.getCopy(), saver.getCopy());
         treeWorker.game = game.getCopy(); // FIXME generic game
         return treeWorker;
     }
@@ -218,7 +221,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
      *
      * @param rootNode Root node that this worker expands from.
      */
-    public void setRoot(NodeGameExplorableBase<?, C> rootNode) {
+    public void setRoot(NodeGameExplorableBase<?, C, S> rootNode) {
         this.rootNode = rootNode;
     }
 
@@ -385,7 +388,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {
             game.step(actionQueue.pollCommand());
-            Action action = actionQueue.peekThisAction();
+            Action<C> action = actionQueue.peekThisAction();
             saver.reportTimestep(action, game);
             workerStepsSimulated++;
             tsPerSecondUpdateCounter++;
@@ -440,7 +443,7 @@ public class TreeWorker<C extends Command<?>> extends PanelRunner implements Run
     /**
      * Pause what the worker is doing. Tells its saver to do whatever it should when the stage is complete.
      */
-    public void terminateStageComplete(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes) {
+    public void terminateStageComplete(NodeGameBase<?, C, S> rootNode, List<NodeGameBase<?, C, S>> targetNodes) {
         saver.reportStageEnding(rootNode, targetNodes);
         saver.finalizeSaverData();
         terminateWorker();

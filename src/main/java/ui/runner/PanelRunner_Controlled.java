@@ -2,13 +2,14 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
-import game.qwop.QWOPConstants;
-import game.qwop.GameQWOP;
 import game.IGameSerializable;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.QWOPConstants;
+import game.qwop.StateQWOP;
 import tree.node.NodeGameExplorable;
 
 import javax.swing.*;
@@ -22,7 +23,8 @@ import java.util.Arrays;
  * @param <C> Controller type being used. Must implement the IController interface.
  * @param <G> Game implementation used. Must implement the IGameInternal interface.
  */
-public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extends IGameSerializable<CommandQWOP>> extends PanelRunner {
+public class PanelRunner_Controlled<C extends IController<CommandQWOP, StateQWOP>,
+        G extends IGameSerializable<CommandQWOP, StateQWOP>> extends PanelRunner {
 
     /**
      * Controller being visualized.
@@ -51,11 +53,6 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
     private boolean active = false;
 
     /**
-     * Button for resetting the runner to the initial configuration.
-     */
-    private JButton resetButton;
-
-    /**
      * Name of this panel. Used when inserted as a tab.
      */
     public final String name;
@@ -70,11 +67,6 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
      * Number of layout row slots for the layout manager.
      */
     final int layoutRows = 25;
-
-    /**
-     * Number of layout column slots for the layout manager.
-     */
-    final int layoutColumns = 15;
 
     /**
      * Constraints for the layout manager.
@@ -100,14 +92,14 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
 
     private Thread gameThread;
 
-    public PanelRunner_Controlled(@JsonProperty("name") String name, G game, C controller) {
+    PanelRunner_Controlled(@JsonProperty("name") String name, G game, C controller) {
         this.name = name;
         this.controller = controller;
         this.game = game;
         this.setName(name);
 
-        // Reset button setup.
-        resetButton = new JButton("Restart");
+        // Button for resetting the runner to the initial configuration.
+        JButton resetButton = new JButton("Restart");
         resetButton.addActionListener(e -> {
             deactivateTab();
             activateTab();
@@ -116,6 +108,9 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
 
         // Setup the panel layout.
         GridBagLayout layout = new GridBagLayout();
+
+        // Number of layout column slots for the layout manager.
+        int layoutColumns = 15;
         layout.columnWeights = new double[layoutColumns];
         layout.rowWeights = new double[layoutRows];
         Arrays.fill(layout.columnWeights, 1);
@@ -169,7 +164,7 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
         gameDistance = new JLabel("");
         gameDistance.setOpaque(false);
         gameDistance.setFont(gameDistance.getFont().deriveFont(24f));
-        constraints.gridx = layoutColumns/2;
+        constraints.gridx = layoutColumns /2;
         constraints.gridy = 0;
         add(gameDistance, constraints);
     }
@@ -237,7 +232,7 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP>, G extend
      */
     private class ControllerExecutor implements Runnable {
 
-        private NodeGameExplorable<CommandQWOP> node;
+        private NodeGameExplorable<CommandQWOP, StateQWOP> node;
 
         int tsDelay = normalSimRate;
 

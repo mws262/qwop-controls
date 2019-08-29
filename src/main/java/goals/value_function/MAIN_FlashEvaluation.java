@@ -1,10 +1,12 @@
 package goals.value_function;
 
-import game.action.Action;
 import flashqwop.FlashGame;
 import flashqwop.FlashStateLogger;
-import game.qwop.GameQWOP;
+import game.action.Action;
 import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.IStateQWOP;
+import game.qwop.StateQWOP;
 import game.state.IState;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +21,8 @@ import vision.VisionDataSaver;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Note: with many JVM garbage collectors, the control evaluation time has large spikes. Should use ZGC or Shenandoah
@@ -45,21 +49,23 @@ public class MAIN_FlashEvaluation extends FlashGame {
 
     private static boolean hardware = true;
 
-    Action<CommandQWOP>[] prefix = new Action[]{
-            new Action<>(7, CommandQWOP.NONE),
-//            new Action(40, Action.Keys.wo),
-//            new Action(20, Action.Keys.qp),
-//            new Action(1, Action.Keys.p),
-//            new Action(19, Action.Keys.qp),
-//            new Action(3, Action.Keys.wo),
-    };
+
+    private final List<Action<CommandQWOP>> prefix = new ArrayList<>();
+
 
     private static final Logger logger = LogManager.getLogger(MAIN_FlashEvaluation.class);
 
-    private ValueFunction_TensorFlow<CommandQWOP> valueFunction = null;
+    private ValueFunction_TensorFlow<CommandQWOP, IStateQWOP> valueFunction = null;
 
     private MAIN_FlashEvaluation() {
         super(hardware); // Do hardware commands out?
+
+        prefix.add(new Action<>(7, CommandQWOP.NONE));
+        //            new Action(40, Action.Keys.wo),
+        //            new Action(20, Action.Keys.qp),
+        //            new Action(1, Action.Keys.p),
+        //            new Action(19, Action.Keys.qp),
+        //            new Action(3, Action.Keys.wo),
 
         if (imageCapture) {
             visionSaver = new VisionDataSaver(captureDir, gameMonitorIndex);
@@ -91,12 +97,12 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public Action<CommandQWOP>[] getActionSequenceFromBeginning() {
+    public List<Action<CommandQWOP>> getActionSequenceFromBeginning() {
         return prefix;
     }
 
     @Override
-    public Action<CommandQWOP> getControlAction(IState state) {
+    public Action<CommandQWOP> getControlAction(IStateQWOP state) {
         Action<CommandQWOP> action = valueFunction.getMaximizingAction(new NodeGame<>(state));
         if (addActionNoise && Random.nextFloat() < noiseProbability) {
             if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
@@ -111,7 +117,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public void reportGameStatus(IState state, CommandQWOP command, int timestep) {}
+    public void reportGameStatus(IStateQWOP state, CommandQWOP command, int timestep) {}
 
     private void loadController() {
         // Load a value function controller.

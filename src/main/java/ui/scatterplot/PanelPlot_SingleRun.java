@@ -1,12 +1,11 @@
 package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.qwop.CommandQWOP;
-import game.state.IState;
+import game.qwop.GameQWOP;
 import game.qwop.StateQWOP;
 import game.state.StateVariable6D;
 import game.state.transform.ITransform;
@@ -34,17 +33,17 @@ import java.util.stream.IntStream;
  *
  * @author matt
  */
-public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyListener {
+public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP, StateQWOP> implements KeyListener {
 
     /**
      * Copy of the game used to obtain all the states along a single run by re-simulating it.
      */
-    private IGameInternal<CommandQWOP> game;
+    private IGameInternal<CommandQWOP, StateQWOP> game;
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
      */
-    private ITransform transformer = new Transform_Autoencoder("src/main/resources/tflow_models" +
+    private ITransform<StateQWOP> transformer = new Transform_Autoencoder<>("src/main/resources/tflow_models" +
             "/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
     /**
@@ -55,7 +54,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
     /**
      * List of all the states that we got from simulating. Not just at nodes.
      */
-    private List<IState> stateList = new ArrayList<>();
+    private List<StateQWOP> stateList = new ArrayList<>();
     private List<float[]> transformedStates = new ArrayList<>();
     private List<CommandQWOP> commandList = new ArrayList<>();
 
@@ -77,7 +76,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
     /**
      * Node that we're plotting the game.command/states up to.
      */
-    private NodeGameExplorableBase<?, CommandQWOP> selectedNode;
+    private NodeGameExplorableBase<?, CommandQWOP, StateQWOP> selectedNode;
 
     private final String name;
 
@@ -98,7 +97,7 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
     /**
      * Run the simulation to collect the state info we want to plot.
      */
-    private void simRunToNode(NodeGameExplorableBase<?, CommandQWOP> node) {
+    private void simRunToNode(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> node) {
         stateList.clear();
         transformedStates.clear();
         commandList.clear();
@@ -122,7 +121,8 @@ public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP> implements KeyLi
     }
 
     @Override
-    public void update(NodeGameGraphicsBase<?, CommandQWOP> plotNode) { // Note that this is different from the other
+    public void update(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> plotNode) { // Note that this is different from
+        // the other
         // PlotPanes.
         // It plots UP TO this
         // node rather than below this node.

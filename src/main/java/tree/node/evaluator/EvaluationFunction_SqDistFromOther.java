@@ -14,7 +14,7 @@ import java.util.Objects;
  *
  * @author matt
  */
-public class EvaluationFunction_SqDistFromOther<C extends Command<?>> implements IEvaluationFunction<C> {
+public class EvaluationFunction_SqDistFromOther<C extends Command<?>, S extends IState> implements IEvaluationFunction<C, S> {
 
     /**
      * All nodes will be compared to this one by square distance in state space.
@@ -37,7 +37,7 @@ public class EvaluationFunction_SqDistFromOther<C extends Command<?>> implements
     }
 
     @Override
-    public float getValue(NodeGameBase<?, C> nodeToEvaluate) {
+    public float getValue(NodeGameBase<?, C, S> nodeToEvaluate) {
         float[] otherStateVals = Objects.requireNonNull(nodeToEvaluate.getState()).flattenState();
 
         float sqError = 0;
@@ -46,17 +46,16 @@ public class EvaluationFunction_SqDistFromOther<C extends Command<?>> implements
             sqError += diff * diff;
         }
 
-
         return -sqError; // Negative error, so higher is better.
     }
 
     @Override
-    public String getValueString(NodeGameBase<?, C> nodeToEvaluate) {
+    public String getValueString(NodeGameBase<?, C, S> nodeToEvaluate) {
         return String.valueOf(getValue(nodeToEvaluate));
     }
 
     @Override
-    public EvaluationFunction_SqDistFromOther<C> getCopy() {
+    public EvaluationFunction_SqDistFromOther<C, S> getCopy() {
         return new EvaluationFunction_SqDistFromOther<>(comparisonState);
     }
 

@@ -1,6 +1,7 @@
 package tree.stage;
 
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameBase;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class TreeStage_SearchForever<C extends Command<?>> extends TreeStage<C> {
+public class TreeStage_SearchForever<C extends Command<?>, S extends IState> extends TreeStage<C, S> {
 
     /**
      * Tree stage which goes forever or until the root node is fully-explored.
@@ -20,8 +21,8 @@ public class TreeStage_SearchForever<C extends Command<?>> extends TreeStage<C> 
     public TreeStage_SearchForever() {}
 
     @Override
-    public List<NodeGameBase<?, C>> getResults() {
-        List<NodeGameBase<?, C>> resultList = new ArrayList<>();
+    public List<NodeGameBase<?, C, S>> getResults() {
+        List<NodeGameBase<?, C, S>> resultList = new ArrayList<>();
         resultList.add(getRootNode()); // No particularly interesting results.
         return resultList;
     }

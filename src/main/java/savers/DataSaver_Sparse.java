@@ -19,7 +19,7 @@ import java.util.List;
  * @author matt
  */
 
-public class DataSaver_Sparse<C extends Command<?>> implements IDataSaver<C> {
+public class DataSaver_Sparse<C extends Command<?>, S extends IState> implements IDataSaver<C, S> {
 
     /**
      * File prefix. Goes in front of date.
@@ -49,21 +49,21 @@ public class DataSaver_Sparse<C extends Command<?>> implements IDataSaver<C> {
     /**
      * Handles class serialization and writing to file.
      */
-    private SavableFileIO<SavableSingleGame<C>> fileIO = new SavableFileIO<>();
+    private SavableFileIO<SavableSingleGame<C, S>> fileIO = new SavableFileIO<>();
 
     /**
      * Buffered games awaiting file write.
      */
-    private ArrayList<SavableSingleGame<C>> saveBuffer = new ArrayList<>();
+    private ArrayList<SavableSingleGame<C, S>> saveBuffer = new ArrayList<>();
 
     @Override
     public void reportGameInitialization(IState initialState) {}
 
     @Override
-    public void reportTimestep(Action<C> action, IGameInternal<C> game) {}
+    public void reportTimestep(Action<C> action, IGameInternal<C, S> game) {}
 
     @Override
-    public void reportGameEnding(NodeGameBase<?, C> endNode) {
+    public void reportGameEnding(NodeGameBase<?, C, S> endNode) {
         saveBuffer.add(new SavableSingleGame<>(endNode));
         gamesSinceFile++;
 
@@ -97,7 +97,7 @@ public class DataSaver_Sparse<C extends Command<?>> implements IDataSaver<C> {
     }
 
     @Override
-    public void reportStageEnding(NodeGameBase<?, C> rootNode, List<NodeGameBase<?, C>> targetNodes) {
+    public void reportStageEnding(NodeGameBase<?, C, S> rootNode, List<NodeGameBase<?, C, S>> targetNodes) {
         // If the save buffer still has stuff in it, save!
         if (!saveBuffer.isEmpty()) {
             File saveFile = new File(fileLocation + IDataSaver.generateFileName(filePrefix, fileExtension));
@@ -109,8 +109,8 @@ public class DataSaver_Sparse<C extends Command<?>> implements IDataSaver<C> {
     public void finalizeSaverData() {}
 
     @Override
-    public DataSaver_Sparse<C> getCopy() {
-        DataSaver_Sparse<C> newSaver = new DataSaver_Sparse<>();
+    public DataSaver_Sparse<C, S> getCopy() {
+        DataSaver_Sparse<C, S> newSaver = new DataSaver_Sparse<>();
         newSaver.setSaveInterval(saveInterval);
         newSaver.setSavePath(fileLocation);
         return newSaver;

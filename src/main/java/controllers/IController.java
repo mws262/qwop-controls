@@ -3,10 +3,11 @@ package controllers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import game.qwop.GameQWOP;
+import game.IGameInternal;
 import game.IGameSerializable;
 import game.action.Action;
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameExplorableBase;
 
 import java.awt.*;
@@ -27,7 +28,7 @@ import java.awt.*;
 //        @JsonSubTypes.Type(value = Controller_NearestNeighborApprox.class, name = "nearest_neighbor"),
         @JsonSubTypes.Type(value = Controller_Tensorflow_ClassifyActionsPerTimestep.class, name = "classifier")
 })
-public interface IController<C extends Command<?>> extends AutoCloseable {
+public interface IController<C extends Command<?>, S extends IState> extends AutoCloseable {
 
     /**
      * Controller maps a current state to an command to take.
@@ -35,7 +36,7 @@ public interface IController<C extends Command<?>> extends AutoCloseable {
      * @param state Current state.
      * @return An command to take.
      */
-    Action<C> policy(NodeGameExplorableBase<?, C> state);
+    Action<C> policy(NodeGameExplorableBase<?, C, S> state);
 
     /**
      * Get a control command. For some controllers, the hidden game state can be used in the policy. For this, an
@@ -44,10 +45,10 @@ public interface IController<C extends Command<?>> extends AutoCloseable {
      * @param game Game at the current configuration containing the hidden state.
      * @return An command to take.
      */
-    Action<C> policy(NodeGameExplorableBase<?, C> state, IGameSerializable<C> game);
+    Action<C> policy(NodeGameExplorableBase<?, C, S> state, IGameSerializable<C, S> game);
 
     @JsonIgnore
-    IController<C> getCopy();
+    IController<C, S> getCopy();
     
     @Override
     void close();
@@ -60,5 +61,6 @@ public interface IController<C extends Command<?>> extends AutoCloseable {
      * @param xOffsetPixels Horizontal pixel offset from scaled world coordinates.
      * @param runnerScaling Scaling from world coordinates to window pixel coordinates.
      **/
-    default void draw(Graphics g, GameQWOP game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {}
+    default void draw(Graphics g, IGameInternal<C, S> game, float runnerScaling, int xOffsetPixels,
+                      int yOffsetPixels) {}
 }

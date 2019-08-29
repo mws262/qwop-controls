@@ -15,7 +15,7 @@ import java.awt.*;
  *
  * @author matt
  */
-public interface IGameInternal<C extends Command<?>> extends IGameExternal<C> {
+public interface IGameInternal<C extends Command<?>, S extends IState> extends IGameExternal<C, S> {
 
     /** Reset the runner to its starting state. **/
     void resetGame();
@@ -24,8 +24,8 @@ public interface IGameInternal<C extends Command<?>> extends IGameExternal<C> {
 
     void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels);
 
-    void setState(IState st);
+    void setState(S st);
 
     @JsonIgnore
-    IGameInternal<C> getCopy();
+    IGameInternal<C, S> getCopy();
 }

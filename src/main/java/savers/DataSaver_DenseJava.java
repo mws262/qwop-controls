@@ -3,6 +3,7 @@ package savers;
 import data.SavableDenseData;
 import data.SavableFileIO;
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameBase;
 
 import java.io.File;
@@ -15,7 +16,7 @@ import java.util.ArrayList;
  *
  * @author matt
  */
-public class DataSaver_DenseJava <C extends Command<?>> extends DataSaver_Dense<C> {
+public class DataSaver_DenseJava <C extends Command<?>, S extends IState> extends DataSaver_Dense<C, S> {
 
     /**
      * File prefix. Goes in front of date.
@@ -43,7 +44,7 @@ public class DataSaver_DenseJava <C extends Command<?>> extends DataSaver_Dense<
     private final ArrayList<SavableDenseData<C>> saveBuffer = new ArrayList<>();
 
     @Override
-    public void reportGameEnding(NodeGameBase<?, C> endNode) {
+    public void reportGameEnding(NodeGameBase<?, C, S> endNode) {
         // Collect all the states and game.command into a data object.
         saveBuffer.add(new SavableDenseData<>(stateBuffer, actionBuffer));
         saveCounter++;
@@ -69,8 +70,8 @@ public class DataSaver_DenseJava <C extends Command<?>> extends DataSaver_Dense<
     }
 
     @Override
-    public DataSaver_DenseJava<C> getCopy() {
-        DataSaver_DenseJava<C> newSaver = new DataSaver_DenseJava<>();
+    public DataSaver_DenseJava<C, S> getCopy() {
+        DataSaver_DenseJava<C, S> newSaver = new DataSaver_DenseJava<>();
         newSaver.setSaveInterval(getSaveInterval());
         newSaver.setSavePath(fileLocation);
         return newSaver;

@@ -26,7 +26,7 @@ public class ActionGenerator_FixedActions<C extends Command<?>> implements IActi
 
     @JsonIgnore
     @Override
-    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C> parentNode) {
+    public ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C, ?> parentNode) {
         return actionList.getCopy();
     }
 

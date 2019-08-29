@@ -1,6 +1,7 @@
 package tree.sampler.rollout;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 import controllers.IController;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
@@ -8,6 +9,7 @@ import game.IGameInternal;
 import game.action.*;
 import game.qwop.CommandQWOP;
 import game.qwop.QWOPConstants;
+import game.state.IState;
 import org.jetbrains.annotations.NotNull;
 import tree.node.NodeGameBase;
 import tree.node.NodeGameExplorableBase;
@@ -23,9 +25,9 @@ import java.util.stream.IntStream;
  *
  * @author matt
  */
-public abstract class RolloutPolicyBase<C extends Command<?>> implements IRolloutPolicy<C> {
+public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> implements IRolloutPolicy<C, S> {
 
-    public final IEvaluationFunction<C> evaluationFunction;
+    public final IEvaluationFunction<C, S> evaluationFunction;
 
     public final IActionGenerator<C> rolloutActionGenerator;
 
@@ -36,7 +38,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
     public final int maxTimesteps;
 
     RolloutPolicyBase(
-            @JsonProperty("evaluationFunction") @NotNull IEvaluationFunction<C> evaluationFunction,
+            @JsonProperty("evaluationFunction") @NotNull IEvaluationFunction<C, S> evaluationFunction,
             @JsonProperty("rolloutActionGenerator") @NotNull IActionGenerator<C> rolloutActionGenerator,
             @JsonProperty("maxTimesteps") int maxTimesteps) {
         this.evaluationFunction = evaluationFunction;
@@ -49,8 +51,8 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param targetNode Node we want to simulate to.
      * @param game Game used for simulation. Will be resetGame before simulating.
      */
-    void simGameToNode(@NotNull NodeGameBase<?, C> targetNode,
-                       @NotNull IGameInternal<C> game) {
+    void simGameToNode(@NotNull NodeGameBase<?, C, S> targetNode,
+                       @NotNull IGameInternal<C, S> game) {
         // Reset the game and command queue.
         game.resetGame();
         actionQueue.clearAll();
@@ -68,8 +70,8 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param target Node to set the game's state to.
      * @param game Game used for simulation. Will be resetGame before setting the state.
      */
-    void coldStartGameToNode(@NotNull NodeGameBase<?, C> target,
-                             @NotNull IGameInternal game) {
+    void coldStartGameToNode(@NotNull NodeGameBase<?, C, S> target,
+                             @NotNull IGameInternal<C, S> game) {
         // Reset the game.
         game.resetGame();
         actionQueue.clearAll();
@@ -83,14 +85,16 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @return The reward associated with how good this rollout was.
      */
     @Override
-    public float rollout(@NotNull NodeGameExplorableBase<?, C> startNode, @NotNull IGameInternal<C> game) {
+    public float rollout(@NotNull NodeGameExplorableBase<?, C, S> startNode, IGameInternal<C, S> game) {
+        Preconditions.checkNotNull(game);
+
         if (maxTimesteps < 1) {
             throw new IllegalArgumentException("Maximum timesteps for rollout must be at least one. Was: " + maxTimesteps);
         }
         assert startNode.getState().equals(game.getCurrentState());
 
         // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts.
-        NodeGameExplorableBase<?, C> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
+        NodeGameExplorableBase<?, C, S> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
                 startNode.getState(), rolloutActionGenerator);
 
         float totalScore = startScore(startNode);
@@ -102,10 +106,11 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
 
             actionQueue.addAction(childAction);
 
-            NodeGameBase<?, C> intermediateNodeBefore = rolloutNode;
+            NodeGameBase<?, C, S> intermediateNodeBefore = rolloutNode;
             while (!actionQueue.isEmpty() && !game.isFailed() && timestepCounter < maxTimesteps) {
                 game.step(actionQueue.pollCommand());
-                NodeGameBase<?, C> intermediateNodeAfter = intermediateNodeBefore.addBackwardsLinkedChild(childAction,
+                NodeGameBase<?, C, S> intermediateNodeAfter =
+                        intermediateNodeBefore.addBackwardsLinkedChild(childAction,
                         game.getCurrentState());
                 totalScore += accumulateScore(timestepCounter, intermediateNodeBefore, intermediateNodeAfter);
                 intermediateNodeBefore = intermediateNodeAfter;
@@ -124,7 +129,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param startNode Node at the beginning of the rollout.
      * @return Component of the score that comes from the starting node.
      */
-    abstract float startScore(NodeGameExplorableBase<?, C> startNode);
+    abstract float startScore(NodeGameExplorableBase<?, C, S> startNode);
 
     /**
      * An "integrated" part of the score. This gets called every timestep of the rollout, and the particular rollout
@@ -135,8 +140,8 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param after Node representing the runner at this timestep.
      * @return A score component having to do with a single timestep.
      */
-    abstract float accumulateScore(int timestepSinceRolloutStart, NodeGameBase<?, C> before,
-                                   NodeGameBase<?, C> after);
+    abstract float accumulateScore(int timestepSinceRolloutStart, NodeGameBase<?, C, S> before,
+                                   NodeGameBase<?, C, S> after);
 
     /**
      * Component of the score that comes from the final node in the rollout. For all rollouts that inherit from
@@ -145,7 +150,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param endNode Terminal node in this rollout execution.
      * @return A component of the score having to do with the final node in the rollout.
      */
-    abstract float endScore(NodeGameExplorableBase<?, C> endNode);
+    abstract float endScore(NodeGameExplorableBase<?, C, S> endNode);
 
     /**
      * Handles any final adjustments to score that you'd like to do.
@@ -157,13 +162,13 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
      * @param rolloutDurationTimesteps Number of timesteps simulated DURING the rollout.
      * @return Final adjusted score. If you are satisfied with the accumulated value so far, then just return it.
      */
-    abstract float calculateFinalScore(float accumulatedValue, NodeGameExplorableBase<?, C> startNode,
-                                       NodeGameExplorableBase<?, C> endNode, int rolloutDurationTimesteps);
+    abstract float calculateFinalScore(float accumulatedValue, NodeGameExplorableBase<?, C, S> startNode,
+                                       NodeGameExplorableBase<?, C, S> endNode, int rolloutDurationTimesteps);
 
-    public abstract IController<C> getRolloutController();
+    public abstract IController<C, S> getRolloutController();
 
     @Override
-    public abstract RolloutPolicyBase<C> getCopy();
+    public abstract RolloutPolicyBase<C, S> getCopy();
 
     public static IActionGenerator<CommandQWOP> getQWOPRolloutActionGenerator() {
         /* Space of allowed game.command to sample */
@@ -189,15 +194,10 @@ public abstract class RolloutPolicyBase<C extends Command<?>> implements IRollou
         ActionList<CommandQWOP> actionList4 = ActionList.makeActionList(IntStream.range(15, 30).toArray(), CommandQWOP.QP,
                 dist4);
 
-        List<ActionList<CommandQWOP>> repeatedActions = new ArrayList<>();
-        repeatedActions.add(actionList1);
-        repeatedActions.add(actionList2);
-        repeatedActions.add(actionList3);
-        repeatedActions.add(actionList4);
-        return new ActionGenerator_FixedSequence<>(repeatedActions);
+        return new ActionGenerator_FixedSequence<>(actionList1, actionList2, actionList3, actionList4);
     }
 
-    public IEvaluationFunction<C> getEvaluationFunction() {
+    public IEvaluationFunction<C, S> getEvaluationFunction() {
         return evaluationFunction;
     }
 }

@@ -4,6 +4,7 @@ import controllers.Controller_ValueFunction;
 import game.qwop.GameQWOPCaching;
 import game.action.ActionGenerator_UniformNoRepeats;
 import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import savers.DataSaver_Null;
@@ -51,7 +52,7 @@ public class CreateConfig {
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(128);
         layerSizes.add(64);
-        ValueFunction_TensorFlow<CommandQWOP> valueFunction = null;
+        ValueFunction_TensorFlow<CommandQWOP, StateQWOP> valueFunction = null;
         List<String> opts = new ArrayList<>();
         opts.add("--learnrate");
         opts.add("1e-4");
@@ -74,7 +75,7 @@ public class CreateConfig {
                         ActionGenerator_UniformNoRepeats.makeDefaultGenerator()
                 );
 
-        List<SearchConfiguration.SearchOperation<CommandQWOP>> searchOperations = new ArrayList<>();
+        List<SearchConfiguration.SearchOperation<CommandQWOP, StateQWOP>> searchOperations = new ArrayList<>();
         IUserInterface ui = CreateConfig.setupFullUI();
 
         searchOperations.add(new SearchConfiguration.SearchOperation<>(
@@ -83,12 +84,12 @@ public class CreateConfig {
                 new DataSaver_Null<>()));
 
 
-        TreeStage<CommandQWOP> tstage1 = new TreeStage_FixedGames<>(10000);
-        TreeStage<CommandQWOP> tstage2 = new TreeStage_ValueFunctionUpdate<>(valueFunction, "src/main/resources" +
-                "/tflow_models/checkpoints/checkpoint_name", 1);
-        TreeStage<CommandQWOP> stagegroup = new TreeStage_Grouping<>(new TreeStage[] {tstage1, tstage2});
+        TreeStage<CommandQWOP, StateQWOP> tstage1 = new TreeStage_FixedGames<>(10000);
+        TreeStage<CommandQWOP, StateQWOP> tstage2 = new TreeStage_ValueFunctionUpdate<>(valueFunction, "src/main" +
+                "/resources/tflow_models/checkpoints/checkpoint_name", 1);
+        TreeStage<CommandQWOP, StateQWOP> stagegroup = new TreeStage_Grouping<>(new TreeStage[] {tstage1, tstage2});
 
-        IRolloutPolicy<CommandQWOP> rollout1 = new RolloutPolicy_Window<>(
+        IRolloutPolicy<CommandQWOP, StateQWOP> rollout1 = new RolloutPolicy_Window<>(
                 new RolloutPolicy_EntireRun<>( // RolloutPolicy_DecayingHorizon(
                         //new EvaluationFunction_Constant(10f),
                         RolloutPolicyBase.getQWOPRolloutActionGenerator(),
@@ -110,7 +111,8 @@ public class CreateConfig {
                 new DataSaver_Null<>()));
 
 
-        SearchConfiguration<CommandQWOP> configuration = new SearchConfiguration<>(machine, tree, searchOperations, ui);
+        SearchConfiguration<CommandQWOP, StateQWOP> configuration = new SearchConfiguration<>(machine, tree,
+                searchOperations, ui);
 
 
         SearchConfiguration.serializeToXML(new File("./src/main/resources/config/default.xml"), configuration);
@@ -140,13 +142,13 @@ public class CreateConfig {
         PanelPie_ViableFutures viableFuturesPane = new PanelPie_ViableFutures("Viable Futures");
         PanelHistogram_LeafDepth leafDepthPane = new PanelHistogram_LeafDepth("Leaf depth distribution");
         PanelPlot_Transformed pcaPlotPane =
-                new PanelPlot_Transformed(new Transform_PCA(IntStream.range(0, 72).toArray()), "PCA Plots",6);
+                new PanelPlot_Transformed<>(new Transform_PCA<>(IntStream.range(0, 72).toArray()), "PCA Plots",6);
         PanelPlot_Controls controlsPlotPane = new PanelPlot_Controls("Controls Plots", 6); // 6 plots per view at the
         // bottom.
         PanelPlot_Transformed autoencPlotPane =
-                new PanelPlot_Transformed(new Transform_Autoencoder("src/main/resources/tflow_models" +
+                new PanelPlot_Transformed<>(new Transform_Autoencoder<>("src/main/resources/tflow_models" +
                         "/AutoEnc_72to12_6layer.pb", 12), "Autoenc Plots", 6);
-        autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon(1));
+        autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon<>(1));
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
 //        workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 

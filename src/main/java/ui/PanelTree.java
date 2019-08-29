@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.util.awt.TextRenderer;
+import game.action.Command;
+import game.state.IState;
 import tree.TreeWorker;
 import tree.node.NodeGameGraphicsBase;
 
@@ -13,15 +15,17 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Pane for displaying the entire tree in OpenGL. Not part of the tabbed system.
  *
  * @author Matt
  */
-public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPaneActivator, GLEventListener, MouseListener,
+public class PanelTree<C extends Command<?>, S extends IState> extends GLPanelGeneric implements IUserInterface.TabbedPaneActivator<C, S>,
+        GLEventListener,
+        MouseListener,
         MouseMotionListener, MouseWheelListener, KeyListener, ActionListener {
 
     /**
@@ -39,12 +43,12 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     /**
      * Tree root nodes associated with this interface.
      */
-    private ArrayList<NodeGameGraphicsBase<?, ?>> rootNodes = new ArrayList<>();
+    private ArrayList<NodeGameGraphicsBase<?, C, S>> rootNodes = new ArrayList<>();
 
     /**
      * Currently selected {@link NodeGameGraphicsBase} on the tree.
      */
-    private NodeGameGraphicsBase<?, ?> selectedNode;
+    private NodeGameGraphicsBase<?, C, S> selectedNode;
 
     /**
      * Games played per second
@@ -89,7 +93,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
     /**
      * Keep track of observers who are listening for selection of nodes on the tree. May not contain duplicates.
      */
-    private Set<NodeSelectionListener> nodeSelectionListeners = new HashSet<>();
+    private Set<NodeSelectionListener<C, S>> nodeSelectionListeners = new HashSet<>();
 
     private JButton pauseButton;
 
@@ -163,7 +167,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      *
      * @param listener {@link NodeSelectionListener} to add to the tree visualizer.
      */
-    void addNodeSelectionListener(NodeSelectionListener listener) {
+    void addNodeSelectionListener(NodeSelectionListener<C, S> listener) {
         if (nodeSelectionListeners.contains(listener))
             throw new IllegalArgumentException("The tree panel already has this listener assigned!");
         nodeSelectionListeners.add(listener);
@@ -187,9 +191,9 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      *
      * @param node Selected node that will be broadcast to listeners.
      */
-    private void selectNode(NodeGameGraphicsBase<?, ?> node) {
+    private void selectNode(NodeGameGraphicsBase<?, C, S> node) {
         selectedNode = node;
-        for (NodeSelectionListener listener : nodeSelectionListeners) {
+        for (NodeSelectionListener<C, S> listener : nodeSelectionListeners) {
             listener.nodeSelected(node);
         }
     }
@@ -200,7 +204,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      * @param node A root node whose tree we want to draw. Does not literally need to be a zero-depth tree root, just
      *             some node with children we want to draw.
      */
-    public void addRootNode(NodeGameGraphicsBase<?, ?> node) {
+    public void addRootNode(NodeGameGraphicsBase<?, C, S> node) {
         rootNodes.add(node);
     }
 
@@ -243,7 +247,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         NodeGameGraphicsBase.drawAllUnbuffered(gl);
 
         if (labelToggleCheck.isSelected()) {
-            for (NodeGameGraphicsBase<?, ?> node : rootNodes) {
+            for (NodeGameGraphicsBase<?, C, S> node : rootNodes) {
                 node.recurseDownTreeInclusive(n -> n.drawLabel(gl, glut));
             }
         }
@@ -316,11 +320,13 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
         if (!treePause && e.isControlDown()) {
 
             // Get all nodes below all roots.
-            List<NodeGameGraphicsBase<?, ?>> nodesBelow = new ArrayList<>();
-            for (NodeGameGraphicsBase<?, ?> node : rootNodes) {
+            List<NodeGameGraphicsBase<?, ?, ?>> nodesBelow = new ArrayList<>();
+            for (NodeGameGraphicsBase<?, ?, ?> node : rootNodes) {
                 node.recurseDownTreeInclusive(nodesBelow::add);
             }
-            selectNode(cam.nodeFromClick_set(e.getX(), e.getY(), nodesBelow));
+            // Should be a safe cast. I don't want to make GLCamManager have generic parameters if not necessary.
+            //noinspection unchecked
+            selectNode((NodeGameGraphicsBase<?, C, S>) cam.nodeFromClick_set(e.getX(), e.getY(), nodesBelow));
         }
     }
 
@@ -454,7 +460,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                 //This set of logicals eliminates the edge cases, then takes the proposed command as default
                 if (thisIndex == 0 && direction == -1) { //We're at the lowest index of this node and must head
                     // to a new parent node.
-                    ArrayList<NodeGameGraphicsBase<?, ?>> blacklist = new ArrayList<>(); //Keep a blacklist of nodes
+                    ArrayList<NodeGameGraphicsBase<?, C, S>> blacklist = new ArrayList<>(); //Keep a blacklist of nodes
                     // that already
                     // proved to be duds.
                     blacklist.add(selectedNode);
@@ -462,7 +468,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
                             selectedNode.getIndexAccordingToParent(), 0);
                 } else if (thisIndex == selectedNode.getSiblingCount() && direction == 1) { //We're at
                     // the highest index of this node and must head to a new parent node.
-                    ArrayList<NodeGameGraphicsBase<?, ?>> blacklist = new ArrayList<>();
+                    ArrayList<NodeGameGraphicsBase<?, C, S>> blacklist = new ArrayList<>();
                     blacklist.add(selectedNode);
                     nextOver(selectedNode.getParent(), blacklist, 1, direction,
                             selectedNode.getIndexAccordingToParent(), 0);
@@ -487,7 +493,7 @@ public class PanelTree extends GLPanelGeneric implements IUserInterface.TabbedPa
      * Take a node back a layer. Don't return to node past. Try to go back out by the deficit depth amount in the
      * +1 or -1 direction left/right -- TODO this is an old mess.
      */
-    private boolean nextOver(NodeGameGraphicsBase<?, ?> current, ArrayList<NodeGameGraphicsBase<?, ?>> blacklist,
+    private boolean nextOver(NodeGameGraphicsBase<?, C, S> current, ArrayList<NodeGameGraphicsBase<?, C, S>> blacklist,
                              int deficitDepth, int direction,
                              int prevIndexAbove, int numTimesTried) { // numTimesTried added to prevent some really
         // deep node for causing some really huge search through the whole tree. If we don't succeed in a handful

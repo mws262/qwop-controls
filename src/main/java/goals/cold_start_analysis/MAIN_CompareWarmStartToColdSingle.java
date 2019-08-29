@@ -1,11 +1,11 @@
 package goals.cold_start_analysis;
 
+import game.IGameInternal;
 import game.action.ActionQueue;
-import game.*;
 import game.qwop.CommandQWOP;
-import game.qwop.QWOPConstants;
 import game.qwop.GameQWOP;
-import game.state.IState;
+import game.qwop.QWOPConstants;
+import game.qwop.StateQWOP;
 
 import java.awt.*;
 
@@ -26,9 +26,10 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
         // Ran MAIN_Search_LongRun to get these.
         ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
 
-        IGameInternal<CommandQWOP> gameFullRun = new GameQWOP(); // This game will run all the commands, start to
-        // finish.
-        IGameInternal<CommandQWOP> gameColdStart = new GameQWOP(); // This will start at some point in the middle of
+        IGameInternal<CommandQWOP, StateQWOP> gameFullRun = new GameQWOP(); // This game will run all the commands,
+        // start to finish.
+        IGameInternal<CommandQWOP, StateQWOP> gameColdStart = new GameQWOP(); // This will start at some point in the
+        // middle of
         // the
         // sequence,
         // with a cloned state from gameFullRun, but a cold start on all the internal solvers.
@@ -40,7 +41,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
         while (actionQueue.getCurrentActionIdx() < coldStartAction) {
             gameFullRun.step(actionQueue.pollCommand());
         }
-        IState coldStartState = gameFullRun.getCurrentState();
+        StateQWOP coldStartState = gameFullRun.getCurrentState();
         gameColdStart.setState(coldStartState);
 
         runnerPanel.setMainState(gameFullRun.getCurrentState());

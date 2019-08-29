@@ -1,6 +1,7 @@
 package value.updaters;
 
 import game.action.Command;
+import game.state.IState;
 import tree.node.NodeGameBase;
 
 /**
@@ -9,15 +10,15 @@ import tree.node.NodeGameBase;
  *
  * @author matt
  */
-public class ValueUpdater_Average<C extends Command<?>> implements IValueUpdater<C> {
+public class ValueUpdater_Average<C extends Command<?>, S extends IState> implements IValueUpdater<C, S> {
 
     @Override
-    public float update(float valueUpdate, NodeGameBase<?, C> node) {
+    public float update(float valueUpdate, NodeGameBase<?, C, S> node) {
         return (node.getValue() * node.getUpdateCount() + valueUpdate) / (node.getUpdateCount() + 1);
     }
 
     @Override
-    public IValueUpdater<C> getCopy() {
+    public IValueUpdater<C, S> getCopy() {
         return new ValueUpdater_Average<>();
     }
 }

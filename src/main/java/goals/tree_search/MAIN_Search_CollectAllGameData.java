@@ -4,6 +4,7 @@ import controllers.Controller_Random;
 import game.qwop.GameQWOP;
 import game.action.ActionGenerator_FixedSequence;
 import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import tree.node.NodeGameGraphics;
 import tree.TreeWorker;
 import tree.node.evaluator.EvaluationFunction_Constant;
@@ -29,7 +30,7 @@ public class MAIN_Search_CollectAllGameData extends SearchTemplate {
 
     private void doGames() {
 
-        NodeGameGraphics<CommandQWOP> rootNode = new NodeGameGraphics<>(
+        NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(
                 GameQWOP.getInitialState(),
                 ActionGenerator_FixedSequence.makeExtendedGenerator(-1));
         ui.addRootNode(rootNode);
@@ -38,8 +39,8 @@ public class MAIN_Search_CollectAllGameData extends SearchTemplate {
     }
 
     @Override
-    TreeWorker<CommandQWOP> getTreeWorker() {
-        return TreeWorker.makeStandardTreeWorker(new Sampler_UCB<>(
+    TreeWorker<CommandQWOP, StateQWOP> getTreeWorker() {
+        return TreeWorker.makeStandardQWOPTreeWorker(new Sampler_UCB<>(
                 new EvaluationFunction_Constant<>(0f),
                 new RolloutPolicy_DeltaScore<>(
                         new EvaluationFunction_Distance<>(),

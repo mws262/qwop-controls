@@ -7,7 +7,6 @@ import game.qwop.CommandQWOP;
 import game.qwop.GameQWOP;
 import game.qwop.IStateQWOP.ObjectName;
 import game.qwop.StateQWOP;
-import game.state.IState;
 import tree.node.NodeGameExplorableBase;
 import tree.node.NodeGameGraphicsBase;
 import tree.node.filter.INodeFilter;
@@ -29,26 +28,26 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     /**
      * The node that is the current focus of this panel.
      */
-    private NodeGameGraphicsBase<?, CommandQWOP> snapshotNode;
+    private NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> snapshotNode;
 
     /**
      * Filter to keep from drawing too many and killing the graphics speed.
      */
-    private INodeFilter filter = new NodeFilter_Downsample(50);
+    private INodeFilter<CommandQWOP, StateQWOP> filter = new NodeFilter_Downsample<>(50);
 
     /**
      * Potentially, a future node selected by hovering over its runner to display a specific sequence of game.command in
      * all the displayed futures.
      */
-    private NodeGameGraphicsBase<?, CommandQWOP> highlightedFutureMousedOver;
+    private NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> highlightedFutureMousedOver;
 
     /**
      * Externally selected version to be highlighted. Mostly just commanded by selecting tree nodes instead.
      */
-    private NodeGameGraphicsBase<?, CommandQWOP> highlightedFutureExternal;
+    private NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> highlightedFutureExternal;
 
-    private List<NodeGameGraphicsBase<?, CommandQWOP>> focusLeaves = new ArrayList<>();
-    private List<IState> states = new ArrayList<>();
+    private List<NodeGameGraphicsBase<?, CommandQWOP, StateQWOP>> focusLeaves = new ArrayList<>();
+    private List<StateQWOP> states = new ArrayList<>();
     private List<Stroke> strokes = new ArrayList<>();
     private List<Color> colors = new ArrayList<>();
 
@@ -91,7 +90,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
      * Assign a selected node for the snapshot pane to display.
      */
     @Override
-    public void update(NodeGameGraphicsBase<?, CommandQWOP> node) {
+    public void update(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> node) {
         states.clear();
         focusLeaves.clear();
         strokes.clear();
@@ -106,7 +105,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         focusLeaves.add(node);
 
         /* History nodes */
-        NodeGameGraphicsBase<?, CommandQWOP> historyNode = snapshotNode;
+        NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> historyNode = snapshotNode;
         for (int i = 0; i < numHistoryStatesDisplay; i++) {
             if (historyNode.getTreeDepth() > 0) {
                 historyNode = historyNode.getParent();
@@ -118,9 +117,9 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
         }
 
         /* Future leaf nodes */
-        List<NodeGameGraphicsBase<?, CommandQWOP>> descendants = new ArrayList<>();
+        List<NodeGameGraphicsBase<?, CommandQWOP, StateQWOP>> descendants = new ArrayList<>();
         for (int i = 0; i < snapshotNode.getChildCount(); i++) {
-            NodeGameGraphicsBase<?, CommandQWOP> child = snapshotNode.getChildByIndex(i);
+            NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> child = snapshotNode.getChildByIndex(i);
 
             child.recurseDownTreeInclusive(n->{
                 if (n.getChildCount() == 0) {
@@ -133,7 +132,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             child.setOverrideBranchColor(runnerColor); // Change the color on the tree too.
 
 
-            for (NodeGameGraphicsBase<?, CommandQWOP> descendant : descendants) {
+            for (NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> descendant : descendants) {
                 focusLeaves.add(descendant);
                 states.add(descendant.getState());
                 strokes.add(normalStroke);
@@ -162,8 +161,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 // Check body first
                 for (int i = 0; i < focusLeaves.size(); i++) {
                     float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().getCenterX(),
-                            // TODO fix cast
-                            ((StateQWOP) focusLeaves.get(i).getState()).getStateVariableFromName(ObjectName.BODY).getY());
+                            focusLeaves.get(i).getState().getStateVariableFromName(ObjectName.BODY).getY());
                     if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                         bestSoFar = distSq;
                         bestIdx = i;
@@ -173,8 +171,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 if (bestIdx < 0) { // Only goes to this if we didn't find a near-enough torso.
                     for (int i = 0; i < focusLeaves.size(); i++) {
                         float distSq = getDistFromMouseSq(focusLeaves.get(i).getState().getCenterX(),
-                                // TODO fix cast
-                                ((StateQWOP) focusLeaves.get(i).getState()).getStateVariableFromName(ObjectName.HEAD).getY());
+                                focusLeaves.get(i).getState().getStateVariableFromName(ObjectName.HEAD).getY());
                         if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                             bestSoFar = distSq;
                             bestIdx = i;
@@ -185,16 +182,15 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 if (bestIdx < 0) { // Only goes to this if we didn't find a near-enough torso OR head.
                     for (int i = 0; i < focusLeaves.size(); i++) {
                         float distSq =
-                                getDistFromMouseSq(((StateQWOP) focusLeaves.get(i).getState()).getStateVariableFromName(ObjectName.LFOOT).getX(),
-                                        ((StateQWOP) focusLeaves.get(i).getState()).getStateVariableFromName(ObjectName.LFOOT).getY());
+                                getDistFromMouseSq(focusLeaves.get(i).getState().getStateVariableFromName(ObjectName.LFOOT).getX(),
+                                        focusLeaves.get(i).getState().getStateVariableFromName(ObjectName.LFOOT).getY());
                         if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                             bestSoFar = distSq;
                             bestIdx = i;
                         }
-                        // TODO fix cast
                         distSq =
-                                getDistFromMouseSq(((StateQWOP) focusLeaves.get(i).getState()).getStateVariableFromName(ObjectName.RFOOT).getX(),
-                                        ((StateQWOP) focusLeaves.get(i).getState()).getStateVariableFromName(ObjectName.RFOOT).getY());
+                                getDistFromMouseSq(focusLeaves.get(i).getState().getStateVariableFromName(ObjectName.RFOOT).getX(),
+                                        focusLeaves.get(i).getState().getStateVariableFromName(ObjectName.RFOOT).getY());
                         if (distSq < bestSoFar && distSq < figureSelectThreshSq) {
                             bestSoFar = distSq;
                             bestIdx = i;
@@ -216,7 +212,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             // TODO reintroduce this with new nodes.
             // Change things if one runner is selected.
             if (mouseIsIn && bestIdx >= 0) {
-                NodeGameGraphicsBase<?, CommandQWOP> newHighlightNode = focusLeaves.get(bestIdx);
+                NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> newHighlightNode = focusLeaves.get(bestIdx);
                 changeFocusedFuture(g2, highlightedFutureMousedOver, newHighlightNode);
                 highlightedFutureMousedOver = newHighlightNode;
 
@@ -237,7 +233,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
             if (snapshotNode.getTreeDepth() > 0) {
                 List<Action<CommandQWOP>> actionList = new ArrayList<>();
                 snapshotNode.getSequence(actionList);
-                drawActionString(actionList.toArray(new Action[0]), g);
+                drawActionString(actionList, g);
             }
         }
     }
@@ -245,8 +241,8 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
     /**
      * Change highlighting on both the tree and the snapshot when selections change.
      */
-    private void changeFocusedFuture(Graphics2D g2, NodeGameGraphicsBase<?, CommandQWOP> oldFuture,
-                                     NodeGameGraphicsBase<?, CommandQWOP> newFuture) {
+    private void changeFocusedFuture(Graphics2D g2, NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> oldFuture,
+                                     NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> newFuture) {
 
         // TODO
         // Clear out highlights from the old node.
@@ -270,7 +266,7 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
                 GameQWOP.drawExtraRunner(g2, states.get(idx), "", runnerScaling, xOffsetPixels - specificXOffset,
                         yOffsetPixels, colors.get(idx).darker(), boldStroke);
 
-                NodeGameExplorableBase<?, CommandQWOP> currentNode = newFuture;
+                NodeGameExplorableBase<?, CommandQWOP, StateQWOP> currentNode = newFuture;
 
                 // Also draw parent nodes back the the selected one to view the run that leads to the highlighted
                 // failure.
@@ -306,14 +302,14 @@ public class PanelRunner_Snapshot extends PanelRunner implements MouseListener, 
      * Get the list of leave nodes (failure states) that we're displaying in the snapshot pane.
      */
     @JsonIgnore
-    public List<NodeGameGraphicsBase<?, CommandQWOP>> getDisplayedLeaves() {
+    public List<NodeGameGraphicsBase<?, CommandQWOP, StateQWOP>> getDisplayedLeaves() {
         return focusLeaves;
     }
 
     /**
      * Focus a single future leaf
      */
-    public void giveSelectedFuture(NodeGameGraphicsBase<?, CommandQWOP> queuedFutureLeaf) {
+    public void giveSelectedFuture(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> queuedFutureLeaf) {
         this.highlightedFutureExternal = queuedFutureLeaf;
     }
 

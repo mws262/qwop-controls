@@ -3,6 +3,8 @@ package flashqwop;
 import game.qwop.GameQWOP;
 import game.action.Action;
 import game.qwop.CommandQWOP;
+import game.qwop.IStateQWOP;
+import game.qwop.StateQWOP;
 import game.state.IState;
 import tree.node.NodeGame;
 import ui.runner.PanelRunner_MultiState;
@@ -22,7 +24,7 @@ public class CompareFlashToJava extends FlashGame {
     private PanelRunner_MultiState panelRunner;
     private boolean initialized;
 
-    private ValueFunction_TensorFlow<CommandQWOP> valueFunction = null;
+    private ValueFunction_TensorFlow<CommandQWOP, StateQWOP> valueFunction = null;
 
     private List<GameQWOP> gameQWOPList = new ArrayList<>();
 
@@ -76,9 +78,10 @@ public class CompareFlashToJava extends FlashGame {
     }
 
     @Override
-    public Action<CommandQWOP>[] getActionSequenceFromBeginning() {
-        return new Action[]{
-                new Action<>(5, CommandQWOP.NONE),
+    public List<Action<CommandQWOP>> getActionSequenceFromBeginning() {
+        List<Action<CommandQWOP>> commandList = new ArrayList<>();
+        commandList.add(new Action<>(5, CommandQWOP.NONE));
+        return commandList;
 //                new Action(49, Action.Keys.wo),
 //                new Action(20, Action.Keys.qp),
 //                new Action(1, Action.Keys.p),
@@ -95,16 +98,15 @@ public class CompareFlashToJava extends FlashGame {
 //                new Action(4, Action.Keys.p),
 //                new Action(7, Action.Keys.none),
 //                new Action(1, Action.Keys.p)
-        };
     }
 
     @Override
-    public Action<CommandQWOP> getControlAction(IState state) {
+    public Action<CommandQWOP> getControlAction(StateQWOP state) {
         return valueFunction.getMaximizingAction(new NodeGame<>(state));
     }
 
     @Override
-    public void reportGameStatus(IState state, CommandQWOP command, int timestep) {
+    public void reportGameStatus(StateQWOP state, CommandQWOP command, int timestep) {
         if (!initialized) {
             return; // This
         }

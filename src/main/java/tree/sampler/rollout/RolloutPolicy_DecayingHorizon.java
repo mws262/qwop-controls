@@ -5,11 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
 import game.action.Command;
 import game.action.IActionGenerator;
+import game.state.IState;
 import tree.node.NodeGameBase;
 import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
-public class RolloutPolicy_DecayingHorizon<C extends Command<?>> extends RolloutPolicyBase<C> {
+public class RolloutPolicy_DecayingHorizon<C extends Command<?>, S extends IState> extends RolloutPolicyBase<C, S> {
 
     // Decaying horizon kernel parameters.
     // Kernel is an s-curve meant to be evaluated from 0 to 1 and producing values from 0 to 1.
@@ -19,51 +20,51 @@ public class RolloutPolicy_DecayingHorizon<C extends Command<?>> extends Rollout
 
     public static final int defaultMaxTimesteps = 200;
 
-    public final IController<C> rolloutController;
+    public final IController<C, S> rolloutController;
 
-    public RolloutPolicy_DecayingHorizon(@JsonProperty("evaluationFunction") IEvaluationFunction<C> evaluationFunction,
+    public RolloutPolicy_DecayingHorizon(@JsonProperty("evaluationFunction") IEvaluationFunction<C, S> evaluationFunction,
                                          @JsonProperty("rolloutActionGenerator") IActionGenerator<C> rolloutActionGenerator,
-                                         @JsonProperty("rolloutController") IController<C> rolloutController,
+                                         @JsonProperty("rolloutController") IController<C, S> rolloutController,
                                          @JsonProperty("maxTimesteps") int maxTimesteps) {
         super(evaluationFunction, rolloutActionGenerator, maxTimesteps);
         this.rolloutController = rolloutController;
     }
 
-    public RolloutPolicy_DecayingHorizon(IEvaluationFunction<C> evaluationFunction,
+    public RolloutPolicy_DecayingHorizon(IEvaluationFunction<C, S> evaluationFunction,
                                          IActionGenerator<C> rolloutActionGenerator,
-                                         IController<C> rolloutController) {
+                                         IController<C, S> rolloutController) {
         this(evaluationFunction, rolloutActionGenerator, rolloutController, defaultMaxTimesteps);
     }
 
-    float startScore(NodeGameExplorableBase<?, C> startNode) {
+    float startScore(NodeGameExplorableBase<?, C, S> startNode) {
         return 0; // -evaluationFunction.getValue(startNode);
     }
 
-    float accumulateScore(int timestepSinceRolloutStart, NodeGameBase<?, C> before, NodeGameBase<?, C> after) {
+    float accumulateScore(int timestepSinceRolloutStart, NodeGameBase<?, C, S> before, NodeGameBase<?, C, S> after) {
         float multiplier = getKernelMultiplier(
                 timestepSinceRolloutStart / (float) (maxTimesteps - 1));
 
         return multiplier * (getEvaluationFunction().getValue(after) - getEvaluationFunction().getValue(before));
     }
 
-    float endScore(NodeGameExplorableBase<?, C> endNode) {
+    float endScore(NodeGameExplorableBase<?, C, S> endNode) {
         return 0; // evaluationFunction.getValue(endNode);
     }
 
-    float calculateFinalScore(float accumulatedValue, NodeGameExplorableBase<?, C> startNode,
-                              NodeGameExplorableBase<?, C> endNode, int rolloutDurationTimesteps) {
+    float calculateFinalScore(float accumulatedValue, NodeGameExplorableBase<?, C, S> startNode,
+                              NodeGameExplorableBase<?, C, S> endNode, int rolloutDurationTimesteps) {
         return accumulatedValue;
     }
 
     @Override
     @JsonIgnore
-    public IController<C> getRolloutController() {
+    public IController<C, S> getRolloutController() {
         return rolloutController;
     }
 
     @JsonIgnore
     @Override
-    public RolloutPolicyBase<C> getCopy() {
+    public RolloutPolicyBase<C, S> getCopy() {
         return new RolloutPolicy_DecayingHorizon<>(getEvaluationFunction().getCopy(),
                 rolloutActionGenerator,
                 rolloutController.getCopy(),

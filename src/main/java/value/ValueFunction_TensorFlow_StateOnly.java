@@ -24,7 +24,7 @@ import java.util.concurrent.*;
 
 import static game.qwop.CommandQWOP.Keys;
 
-public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow<CommandQWOP> {
+public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow<CommandQWOP, StateQWOP> {
 
     /**
      * Dimension of the value output.
@@ -52,7 +52,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
 
     private static final Logger logger = LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class);
 
-    StateNormalizerQWOP stateNormalizer = new StateNormalizerQWOP(StateNormalizerQWOP.NormalizationMethod.STDEV);
+    private StateNormalizerQWOP stateNormalizer = new StateNormalizerQWOP(StateNormalizerQWOP.NormalizationMethod.STDEV);
 
     /**
      * Constructor which loads an existing value function net.
@@ -116,7 +116,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP> currentNode) {
+    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, StateQWOP> currentNode) {
         // Update each of the future predictors to use the new starting states.
         evaluations.forEach(e -> e.setStartingState(currentNode.getState()));
         return runEvaluations();
@@ -124,8 +124,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP> currentNode,
-                                                   IGameSerializable<CommandQWOP> realGame) {
+    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, StateQWOP> currentNode,
+                                                   IGameSerializable<CommandQWOP, StateQWOP> realGame) {
         evaluations.forEach(e -> e.setStartingState(realGame.getSerializedState()));
         return runEvaluations();
     }
@@ -165,13 +165,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    float[] assembleInputFromNode(NodeGameBase<?, CommandQWOP> node) {
-        // TODO fix cast.
-        return stateNormalizer.transform(((StateQWOP) node.getState()));
+    float[] assembleInputFromNode(NodeGameBase<?, CommandQWOP, StateQWOP> node) {
+        return stateNormalizer.transform(node.getState());
     }
 
     @Override
-    float[] assembleOutputFromNode(NodeGameBase<?, CommandQWOP> node) {
+    float[] assembleOutputFromNode(NodeGameBase<?, CommandQWOP, StateQWOP> node) {
         return new float[]{node.getValue()};
     }
 
@@ -228,7 +227,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Initial state of this future prediction.
          */
-        IState startingState;
+        StateQWOP startingState;
 
         private byte[] startStateFull;
         private boolean useSerializedState = false;
@@ -288,7 +287,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             this.maxHorizon = maxHorizon;
         }
 
-        void setStartingState(@NotNull IState startingState) {
+        void setStartingState(@NotNull StateQWOP startingState) {
             this.startingState = startingState;
             useSerializedState = false;
         }
@@ -336,8 +335,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 x2 = x3;
 
                 gameLocal.step(command);
-                IState st = gameLocal.getCurrentState();
-                NodeGameBase<?, CommandQWOP> nextNode = new NodeGame<>(st);
+                StateQWOP st = gameLocal.getCurrentState();
+                NodeGameBase<?, CommandQWOP, StateQWOP> nextNode = new NodeGame<>(st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);

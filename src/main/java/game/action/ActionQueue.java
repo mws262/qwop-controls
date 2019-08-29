@@ -199,8 +199,8 @@ public class ActionQueue<C extends Command<?>> {
      *
      * @return All game.command in this queue, including ones which have already been executed.
      */
-    public Action<C>[] getActionsInCurrentRun() {
-        return actionListFull.toArray(new Action[0]);
+    public List<Action<C>> getActionsInCurrentRun() {
+        return new ArrayList<>(actionListFull);
     }
 
     /**
@@ -221,7 +221,7 @@ public class ActionQueue<C extends Command<?>> {
      * remove game.command, you should use {@link ActionQueue#clearAll()}.
      */
     public void resetQueue() {
-        Action<C>[] actions = getActionsInCurrentRun();
+        List<Action<C>> actions = getActionsInCurrentRun();
         clearAll();
         this.addSequence(actions);
     }

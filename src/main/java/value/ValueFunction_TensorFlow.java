@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Iterables;
 import game.action.Command;
+import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tflowtools.TrainableNetwork;
@@ -23,7 +24,8 @@ import java.util.List;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ValueFunction_TensorFlow_StateOnly.class, name = "tflow_state_only"),
 })
-public abstract class ValueFunction_TensorFlow<C extends Command<?>> implements IValueFunction<C>, AutoCloseable {
+public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends IState> implements IValueFunction<C, S>,
+        AutoCloseable {
 
     /**
      * Input layer size.
@@ -131,6 +133,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>> implements 
      * Existing network. It will not be validated. Mostly for use when copying.
      * @param network Existing value network.
      */
+    @SuppressWarnings("unused")
     ValueFunction_TensorFlow(TrainableNetwork network) {
         logger.info("Using provided network for the value function.");
         this.fileName = network.getGraphDefinitionFile().getPath();
@@ -201,7 +204,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>> implements 
     }
 
     @Override
-    public void update(List<? extends NodeGameBase<?, C>> nodes) {
+    public void update(List<? extends NodeGameBase<?, C, S>> nodes) {
         assert trainingBatchSize > 0;
 
         batchCount = 0;
@@ -219,7 +222,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>> implements 
 
             // Iterate through the nodes in the batch.
             for (int i = 0; i < batch.size(); i++) {
-                NodeGameBase<?, C> n = batch.get(i);
+                NodeGameBase<?, C, S> n = batch.get(i);
 
                 // Don't include root node since it doesn't have a parent.
                 if (n.getParent() == null) {
@@ -250,16 +253,16 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>> implements 
     }
 
     @Override
-    public float evaluate(NodeGameBase<?, C> node) {
+    public float evaluate(NodeGameBase<?, C, S> node) {
         float[][] input = new float[1][inputSize];
         input[0] = assembleInputFromNode(node);
         float[][] result = network.evaluateInput(input);
         return result[0][0];
     }
 
-    abstract float[] assembleInputFromNode(NodeGameBase<?, C> node);
+    abstract float[] assembleInputFromNode(NodeGameBase<?, C, S> node);
 
-    abstract float[] assembleOutputFromNode(NodeGameBase<?, C> node);
+    abstract float[] assembleOutputFromNode(NodeGameBase<?, C, S> node);
 
     @Override
     public void close() {
