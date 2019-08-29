@@ -64,4 +64,9 @@ public abstract class StateQWOPDelayEmbedded implements IStateQWOP {
     public int getStateVariableCount() {
         return stateVariableCount;
     }
+
+    @Override
+    public StateQWOP getPositionCoordinates() {
+        return getIndividualStates()[0];
+    }
 }

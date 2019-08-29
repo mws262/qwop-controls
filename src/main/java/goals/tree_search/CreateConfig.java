@@ -1,10 +1,8 @@
 package goals.tree_search;
 
 import controllers.Controller_ValueFunction;
-import game.qwop.GameQWOPCaching;
+import game.qwop.*;
 import game.action.ActionGenerator_UniformNoRepeats;
-import game.qwop.CommandQWOP;
-import game.qwop.StateQWOP;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import savers.DataSaver_Null;
@@ -44,7 +42,8 @@ import java.util.stream.IntStream;
 
 public class CreateConfig {
 
-    static GameQWOPCaching game = new GameQWOPCaching(1,2, GameQWOPCaching.StateType.DIFFERENCES);
+    static GameQWOPCaching<StateQWOPDelayEmbedded_Differences> game
+            = new GameQWOPCaching<>(1,2, GameQWOPCaching.StateType.DIFFERENCES);
 
     public static void main(String[] args) throws IOException {
 
@@ -52,14 +51,16 @@ public class CreateConfig {
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(128);
         layerSizes.add(64);
-        ValueFunction_TensorFlow<CommandQWOP, StateQWOP> valueFunction = null;
+        ValueFunction_TensorFlow<CommandQWOP, StateQWOPDelayEmbedded_Differences> valueFunction = null;
         List<String> opts = new ArrayList<>();
         opts.add("--learnrate");
         opts.add("1e-4");
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(
+            valueFunction = new ValueFunction_TensorFlow_StateOnly<>(
                     "src/main/resources/tflow_models/test.pb",
                     game.getCopy(),
+                    new StateQWOPDelayEmbedded_Differences.Normalizer(
+                            StateQWOPDelayEmbedded_Differences.Normalizer.NormalizationMethod.STDEV),
                     layerSizes,
                     opts,
                     "",
@@ -68,40 +69,57 @@ public class CreateConfig {
             e.printStackTrace();
         }
 
-        SearchConfiguration.Machine machine = new SearchConfiguration.Machine(0.7f, 1, 32, "INFO");
+        SearchConfiguration.Machine machine = new SearchConfiguration.Machine(0.7f,
+                1, 32, "INFO");
+
         SearchConfiguration.Tree<CommandQWOP> tree =
                 new SearchConfiguration.Tree<>(
                         //        ActionGenerator_FixedSequence.makeExtendedGenerator(-1)
                         ActionGenerator_UniformNoRepeats.makeDefaultGenerator()
                 );
 
-        List<SearchConfiguration.SearchOperation<CommandQWOP, StateQWOP>> searchOperations = new ArrayList<>();
-        IUserInterface ui = CreateConfig.setupFullUI();
+        List<SearchConfiguration.SearchOperation<CommandQWOP, StateQWOPDelayEmbedded_Differences,
+                GameQWOPCaching<StateQWOPDelayEmbedded_Differences>>> searchOperations = new ArrayList<>();
+
+        IUserInterface<CommandQWOP, StateQWOP> ui = CreateConfig.setupFullUI(new GameQWOP());
 
         searchOperations.add(new SearchConfiguration.SearchOperation<>(
                 new TreeStage_FixedGames<>(80000),
+                game.getCopy(),
                 new Sampler_Distribution<>(),
                 new DataSaver_Null<>()));
 
 
-        TreeStage<CommandQWOP, StateQWOP> tstage1 = new TreeStage_FixedGames<>(10000);
-        TreeStage<CommandQWOP, StateQWOP> tstage2 = new TreeStage_ValueFunctionUpdate<>(valueFunction, "src/main" +
+        TreeStage<CommandQWOP, StateQWOPDelayEmbedded_Differences> tstage1
+                = new TreeStage_FixedGames<>(10000);
+        TreeStage<CommandQWOP, StateQWOPDelayEmbedded_Differences> tstage2
+                = new TreeStage_ValueFunctionUpdate<>(valueFunction, "src/main" +
                 "/resources/tflow_models/checkpoints/checkpoint_name", 1);
-        TreeStage<CommandQWOP, StateQWOP> stagegroup = new TreeStage_Grouping<>(new TreeStage[] {tstage1, tstage2});
 
-        IRolloutPolicy<CommandQWOP, StateQWOP> rollout1 = new RolloutPolicy_Window<>(
+        List<TreeStage<CommandQWOP, StateQWOPDelayEmbedded_Differences>> stageList = new ArrayList<>();
+        stageList.add(tstage1);
+        stageList.add(tstage2);
+        TreeStage<CommandQWOP, StateQWOPDelayEmbedded_Differences> stagegroup = new TreeStage_Grouping<>(stageList);
+
+
+
+        IRolloutPolicy<CommandQWOP, StateQWOPDelayEmbedded_Differences> rollout1 = new RolloutPolicy_Window<>(
                 new RolloutPolicy_EntireRun<>( // RolloutPolicy_DecayingHorizon(
                         //new EvaluationFunction_Constant(10f),
                         RolloutPolicyBase.getQWOPRolloutActionGenerator(),
-                        new Controller_ValueFunction<>(new ValueFunction_TensorFlow_StateOnly(
+                        new Controller_ValueFunction<>(new ValueFunction_TensorFlow_StateOnly<>(
                                 "src/main/resources/tflow_models/test.pb",
                                 game.getCopy(),
+                                new StateQWOPDelayEmbedded_Differences
+                                        .Normalizer(StateQWOPDelayEmbedded_Differences
+                                        .Normalizer.NormalizationMethod.STDEV),
                                 layerSizes,
                                 opts,
                                 "",
                                 false))));
 
         searchOperations.add(new SearchConfiguration.SearchOperation<>(stagegroup,
+                game,
                 new Sampler_UCB<>(
                         new EvaluationFunction_Constant<>(5f),
                         rollout1,
@@ -111,8 +129,10 @@ public class CreateConfig {
                 new DataSaver_Null<>()));
 
 
-        SearchConfiguration<CommandQWOP, StateQWOP> configuration = new SearchConfiguration<>(machine, tree,
-                searchOperations, ui);
+        SearchConfiguration<CommandQWOP,
+                StateQWOPDelayEmbedded_Differences,
+                GameQWOPCaching<StateQWOPDelayEmbedded_Differences>> configuration
+                = new SearchConfiguration<>(machine, game.getCopy(), tree, searchOperations, null); // TODO fix UI
 
 
         SearchConfiguration.serializeToXML(new File("./src/main/resources/config/default.xml"), configuration);
@@ -131,8 +151,8 @@ public class CreateConfig {
      * TFlow components which are troublesome on some computers.
      */
     @SuppressWarnings("Duplicates")
-    public static UI_Full setupFullUI() {
-        UI_Full fullUI = new UI_Full();
+    public static UI_Full<CommandQWOP, StateQWOP> setupFullUI(GameQWOP game) {
+        UI_Full<CommandQWOP, StateQWOP> fullUI = new UI_Full<>();
 
         /* Make each UI component */
         PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed("Run Animation");

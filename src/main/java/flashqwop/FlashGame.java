@@ -98,7 +98,7 @@ public abstract class FlashGame implements IFlashStateListener {
      * @param state Most recent state received from the Flash game.
      * @return An Action from a feedback controller.
      */
-    public abstract Action<CommandQWOP> getControlAction(IStateQWOP state);
+    public abstract Action<CommandQWOP> getControlAction(StateQWOP state);
 
     /**
      * This class will handle the execution of game.command, but inheriting classes may want to listen in.
@@ -107,7 +107,7 @@ public abstract class FlashGame implements IFlashStateListener {
      *                preceding command.
      * @param timestep Timestep count at this state.
      */
-    public abstract void reportGameStatus(IStateQWOP state, CommandQWOP command, int timestep);
+    public abstract void reportGameStatus(StateQWOP state, CommandQWOP command, int timestep);
 
     /**
      * Tell the game to resetGame (equivalent to 'r' on the keyboard in the real game).
@@ -166,17 +166,17 @@ public abstract class FlashGame implements IFlashStateListener {
         stateCache.add(state);
 
         // TODO don't hardcode this.
-        int numDelayedStates = 2;
-        int timestepDelay = 5;
-        StateQWOP[] states = new StateQWOP[numDelayedStates + 1];
-        Arrays.fill(states, GameQWOP.getInitialState());
-
-        for (int i = 0; i < Integer.min(states.length, (stateCache.size() + timestepDelay - 1) / timestepDelay); i++) {
-            states[i] = stateCache.get(timestepDelay * i);
-        }
-
-        reportGameStatus(new StateQWOPDelayEmbedded_HigherDifferences(states), prevCommand, timestep);
-
+//        int numDelayedStates = 2;
+//        int timestepDelay = 5;
+//        StateQWOP[] states = new StateQWOP[numDelayedStates + 1];
+//        Arrays.fill(states, GameQWOP.getInitialState());
+//
+//        for (int i = 0; i < Integer.min(states.length, (stateCache.size() + timestepDelay - 1) / timestepDelay); i++) {
+//            states[i] = stateCache.get(timestepDelay * i);
+//        }
+//
+//        reportGameStatus(new StateQWOPDelayEmbedded_HigherDifferences(states), prevCommand, timestep);
+        reportGameStatus(state, prevCommand, timestep);
         assert timestep == timestepsTracked; // Have we lost any timesteps?
         long timeBeforeController = System.currentTimeMillis();
 

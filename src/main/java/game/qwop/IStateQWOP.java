@@ -16,4 +16,6 @@ public interface IStateQWOP extends IState {
     StateVariable6D[] getAllStateVariables();
 
     int getStateVariableCount();
+
+    StateQWOP getPositionCoordinates();
 }

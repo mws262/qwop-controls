@@ -14,6 +14,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Preconditions;
+import game.IGameInternal;
 import game.qwop.GameQWOP;
 import game.action.Command;
 import game.action.IActionGenerator;
@@ -39,23 +40,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class SearchConfiguration<C extends Command<?>, S extends IState> {
+public class SearchConfiguration<C extends Command<?>, S extends IState, G extends IGameInternal<C, S>> {
 
     public final Machine machine;
+
     public final Tree<C> tree;
-    public final List<SearchOperation<C, S>> searchOperations;
+    public final List<SearchOperation<C, S, G>> searchOperations;
     public final IUserInterface<C, S> ui;
+    private final G game;
 
     SearchConfiguration(@JsonProperty("machine") Machine machine,
+                        @JsonProperty("game") G game,
                         @JsonProperty("tree") Tree<C> tree,
-                        @JsonProperty("searchOperations") List<SearchOperation<C, S>> searchOperations,
-                        @JsonProperty("ui") IUserInterface ui) {
+                        @JsonProperty("searchOperations") List<SearchOperation<C, S, G>> searchOperations,
+                        @JsonProperty("ui") IUserInterface<C, S> ui) {
         Preconditions.checkNotNull(machine);
         Preconditions.checkNotNull(tree);
         Preconditions.checkNotNull(searchOperations);
         Preconditions.checkNotNull(ui);
 
         this.machine = machine;
+        this.game = game;
         this.tree = tree;
         this.searchOperations = searchOperations;
         this.ui = ui;
@@ -149,7 +154,8 @@ public class SearchConfiguration<C extends Command<?>, S extends IState> {
          */
         public final IActionGenerator<C> actionGenerator;
 
-        public Tree(@JsonProperty("actionGenerator") IActionGenerator<C> actionGenerator) {
+        public Tree(
+                @JsonProperty("actionGenerator") IActionGenerator<C> actionGenerator) {
             this.actionGenerator = actionGenerator;
         }
     }
@@ -157,7 +163,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState> {
     /**
      * Defines a single tree search operation.
      */
-    public static class SearchOperation<C extends Command<?>, S extends IState> {
+    public static class SearchOperation<C extends Command<?>, S extends IState, G extends IGameInternal<C, S>> {
 
         /**
          * Stage operation. Defines the goals and stopping points of this search.
@@ -165,6 +171,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState> {
         @JacksonXmlProperty(isAttribute=true)
         private final TreeStage<C, S> stage;
 
+        private final G game;
         /**
          * Defines how new nodes are added and scored.
          */
@@ -181,8 +188,10 @@ public class SearchConfiguration<C extends Command<?>, S extends IState> {
          */
         private final int repetitionCount;
 
+
         @JsonCreator
         SearchOperation(@JsonProperty("stage") TreeStage<C, S> stage,
+                        @JsonProperty("game") G game,
                         @JsonProperty("sampler") ISampler<C, S> sampler,
                         @JsonProperty("saver") IDataSaver<C, S> saver,
                         @JsonProperty("repetitionCount") int repetitionCount // Defaults to zero if not
@@ -194,16 +203,17 @@ public class SearchConfiguration<C extends Command<?>, S extends IState> {
             Preconditions.checkNotNull(sampler);
 
             this.stage = stage;
+            this.game = game;
             this.sampler = sampler;
             this.saver = Objects.isNull(saver) ? new DataSaver_Null<>() : saver; // Default to no saving.
             this.repetitionCount = repetitionCount;
         }
 
-        SearchOperation(TreeStage<C, S> stage, ISampler<C, S> sampler, IDataSaver<C, S> saver) {
-            this.stage = stage;
-            this.sampler = sampler;
-            this.saver = saver;
-            this.repetitionCount = 0;
+        SearchOperation(TreeStage<C, S> stage,
+                        G game,
+                        ISampler<C, S> sampler,
+                        IDataSaver<C, S> saver) {
+            this(stage, game, sampler, saver, 0);
         }
 
         public TreeStage<C, S> getStage() {
@@ -218,7 +228,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState> {
             return saver;
         }
 
-        public int getRepetitionCount() {
+        int getRepetitionCount() {
             return repetitionCount;
         }
 
@@ -227,7 +237,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState> {
          * @param rootNode Node to build from.
          * @param machine Machine details, e.g. how many cores to use.
          */
-        public void startOperation(NodeGameExplorableBase<?, C, S> rootNode, Machine machine) {
+        void startOperation(NodeGameExplorableBase<?, C, S> rootNode, Machine machine) {
             Preconditions.checkNotNull(rootNode);
             Preconditions.checkNotNull(machine);
 
@@ -240,11 +250,8 @@ public class SearchConfiguration<C extends Command<?>, S extends IState> {
         }
 
         @JsonIgnore
-        public TreeWorker<C, S> getTreeWorker() {
-            return TreeWorker.makeStandardQWOPTreeWorker(sampler.getCopy(), saver.getCopy()); // TODO handle other
-            // kinds of treeworkers.
-//            return TreeWorker.makeCachedStateTreeWorker(sampler.getCopy(), saver.getCopy(), 1, 2,
-//                    GameQWOPCaching.StateType.HIGHER_DIFFERENCES);
+        TreeWorker<C, S> getTreeWorker() {
+            return new TreeWorker<>(game.getCopy(), sampler.getCopy(), saver.getCopy());
         }
     }
 
@@ -253,16 +260,17 @@ public class SearchConfiguration<C extends Command<?>, S extends IState> {
      */
     public void execute() {
         NodeGameExplorableBase<?, C, S> rootNode;
+        game.resetGame();
         if (ui instanceof UI_Headless) {
-            rootNode = new NodeGameExplorable<>(GameQWOP.getInitialState(), tree.actionGenerator);
+            rootNode = new NodeGameExplorable<>(game.getCurrentState(), tree.actionGenerator);
         } else {
-            NodeGameGraphics<C, S> root = new NodeGameGraphics<>(GameQWOP.getInitialState(), tree.actionGenerator);
+            NodeGameGraphics<C, S> root = new NodeGameGraphics<>(game.getCurrentState(), tree.actionGenerator);
             ui.addRootNode(root);
             rootNode = root;
         }
         ui.start();
 
-        for (SearchOperation<C, S> operation : searchOperations) {
+        for (SearchOperation<C, S, G> operation : searchOperations) {
             for (int i = 0; i <= operation.getRepetitionCount(); i++) {
                 operation.startOperation(rootNode, machine);
             }

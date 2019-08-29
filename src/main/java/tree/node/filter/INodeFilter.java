@@ -27,7 +27,7 @@ public interface INodeFilter<C extends Command<?>, S extends IState> {
      *
      * @param nodes A list of nodes to tree.node.filter. This list will be modified in place.
      */
-    default void filter(List<NodeGameExplorableBase<?, C, S>> nodes) {
+    default void filter(List<? extends NodeGameExplorableBase<?, C, S>> nodes) {
         nodes.removeIf(n -> !filter(n));
     }
 }

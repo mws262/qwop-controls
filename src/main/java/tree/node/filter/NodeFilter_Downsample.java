@@ -63,19 +63,17 @@ public class NodeFilter_Downsample<C extends Command<?>, S extends IState> imple
     }
 
     @Override
-    public void filter(List<NodeGameExplorableBase<?, C, S>> nodes) {
+    public void filter(List<? extends NodeGameExplorableBase<?, C, S>> nodes) {
         int numNodes = nodes.size();
         if (numNodes > maxNodesToKeep) { // If we already have <= the max number of nodes, no need to downsample.
             switch (downsamplingStrategy) {
                 case EVENLY_SPACED:
                     float ratio = numNodes / (float) maxNodesToKeep;
-                    for (int i = 0; i < maxNodesToKeep; i++) {
-                        nodes.set(i, nodes.get((int) (ratio * i))); // Reassign the ith element with the spaced out
-						// one later in the arraylist.
-                    }
 
-                    for (int i = numNodes; i > maxNodesToKeep; i--) {
-                        nodes.remove(i - 1);
+                    if (ratio > 1) {
+                        for (float i = 0; i < nodes.size(); i += ratio) {
+                            nodes.remove((int) i);
+                        }
                     }
                     break;
 
