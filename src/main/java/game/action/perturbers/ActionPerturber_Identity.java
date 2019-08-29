@@ -1,15 +1,16 @@
 package game.action.perturbers;
 
 import game.action.ActionQueue;
+import game.action.Command;
 
 /**
  * Placeholder {@link IActionPerturber} which just copies the input {@link game.action.ActionQueue}.
  *
  * @author matt
  */
-public class ActionPerturber_Identity implements IActionPerturber {
+public class ActionPerturber_Identity<C extends Command<?>> implements IActionPerturber<C> {
     @Override
-    public ActionQueue perturb(ActionQueue unperturbedQueue) {
+    public ActionQueue<C> perturb(ActionQueue<C> unperturbedQueue) {
         return unperturbedQueue.getCopyOfUnexecutedQueue();
     }
 }

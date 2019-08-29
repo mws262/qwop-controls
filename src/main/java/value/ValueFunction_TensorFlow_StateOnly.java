@@ -3,6 +3,7 @@ package value;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
+import game.IGameInternal;
 import game.qwop.*;
 import game.IGameSerializable;
 import game.action.Action;
@@ -24,7 +25,7 @@ import java.util.concurrent.*;
 
 import static game.qwop.CommandQWOP.Keys;
 
-public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow<CommandQWOP, StateQWOP> {
+public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow<CommandQWOP, IStateQWOP> {
 
     /**
      * Dimension of the value output.
@@ -41,7 +42,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     List<EvaluationResult> evalResults;
     List<FuturePredictor> evaluations;
 
-    public final GameQWOP gameTemplate;
+    public final IGameSerializable<CommandQWOP, IStateQWOP> gameTemplate;
     public final String fileName;
 
     /**
@@ -59,7 +60,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * @param file .pb file of the existing net.
      * @throws FileNotFoundException Unable to find an existing net.
      */
-    public ValueFunction_TensorFlow_StateOnly(File file, GameQWOP gameTemplate, boolean tensorboardLogging) throws FileNotFoundException {
+    public ValueFunction_TensorFlow_StateOnly(File file, IGameSerializable<CommandQWOP, IStateQWOP> gameTemplate,
+                                              boolean tensorboardLogging) throws FileNotFoundException {
         super(file, tensorboardLogging);
         Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
                 "state size.", gameTemplate.getStateDimension());
@@ -82,7 +84,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
      * @throws FileNotFoundException Model file was not successfully created.
      */
     public ValueFunction_TensorFlow_StateOnly(@JsonProperty("fileName") String fileName,
-                                              @JsonProperty("gameTemplate") GameQWOP gameTemplate,
+                                              @JsonProperty("gameTemplate") IGameSerializable<CommandQWOP, IStateQWOP> gameTemplate,
                                               @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                                               @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
                                               @JsonProperty("activeCheckpoint") String checkpointFile,
@@ -99,7 +101,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     /**
      * Assign the futures that will be explored on each controller evaluation.
      */
-    private void assignFuturePredictors(GameQWOP gameTemplate) {
+    private void assignFuturePredictors(IGameSerializable<CommandQWOP, IStateQWOP> gameTemplate) {
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
         int min = 2;
@@ -116,7 +118,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, StateQWOP> currentNode) {
+    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, IStateQWOP> currentNode) {
         // Update each of the future predictors to use the new starting states.
         evaluations.forEach(e -> e.setStartingState(currentNode.getState()));
         return runEvaluations();
@@ -124,8 +126,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, StateQWOP> currentNode,
-                                                   IGameSerializable<CommandQWOP, StateQWOP> realGame) {
+    public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, IStateQWOP> currentNode,
+                                                   IGameSerializable<CommandQWOP, IStateQWOP> realGame) {
         evaluations.forEach(e -> e.setStartingState(realGame.getSerializedState()));
         return runEvaluations();
     }
@@ -165,12 +167,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
     }
 
     @Override
-    float[] assembleInputFromNode(NodeGameBase<?, CommandQWOP, StateQWOP> node) {
+    float[] assembleInputFromNode(NodeGameBase<?, CommandQWOP, IStateQWOP> node) {
         return stateNormalizer.transform(node.getState());
     }
 
     @Override
-    float[] assembleOutputFromNode(NodeGameBase<?, CommandQWOP, StateQWOP> node) {
+    float[] assembleOutputFromNode(NodeGameBase<?, CommandQWOP, IStateQWOP> node) {
         return new float[]{node.getValue()};
     }
 
@@ -222,12 +224,12 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
         /**
          * Game copy used to predict this future.
          */
-        GameQWOP gameLocal;
+        IGameSerializable<CommandQWOP, IStateQWOP> gameLocal;
 
         /**
          * Initial state of this future prediction.
          */
-        StateQWOP startingState;
+        IStateQWOP startingState;
 
         private byte[] startStateFull;
         private boolean useSerializedState = false;
@@ -279,7 +281,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
          */
         EvaluationResult bestResult = new EvaluationResult();
 
-        FuturePredictor(GameQWOP gameTemplate, Keys keys, int minHorizon, int maxHorizon) {
+        FuturePredictor(IGameSerializable<CommandQWOP, IStateQWOP> gameTemplate, Keys keys, int minHorizon, int maxHorizon) {
             this.gameLocal = gameTemplate.getCopy();
             this.keys = keys;
             command = CommandQWOP.getCommand(keys);
@@ -287,7 +289,7 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
             this.maxHorizon = maxHorizon;
         }
 
-        void setStartingState(@NotNull StateQWOP startingState) {
+        void setStartingState(@NotNull IStateQWOP startingState) {
             this.startingState = startingState;
             useSerializedState = false;
         }
@@ -335,8 +337,8 @@ public class ValueFunction_TensorFlow_StateOnly extends ValueFunction_TensorFlow
                 x2 = x3;
 
                 gameLocal.step(command);
-                StateQWOP st = gameLocal.getCurrentState();
-                NodeGameBase<?, CommandQWOP, StateQWOP> nextNode = new NodeGame<>(st);
+                IStateQWOP st = gameLocal.getCurrentState();
+                NodeGameBase<?, CommandQWOP, IStateQWOP> nextNode = new NodeGame<>(st);
                 val1 = val2;
                 val2 = val3;
                 val3 = evaluate(nextNode);
