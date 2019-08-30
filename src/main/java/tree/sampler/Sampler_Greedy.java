@@ -115,7 +115,7 @@ public class Sampler_Greedy<C extends Command<?>, S extends IState> implements I
     }
 
     @Override
-    public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<? extends NodeGameExplorableBase, C, S> startNode) {
+    public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
         // Decide what to do with the given start node.
         if (currentRoot == null) {
             chooseNewRoot(startNode);

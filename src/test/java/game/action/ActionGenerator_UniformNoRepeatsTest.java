@@ -15,7 +15,7 @@ import static org.mockito.Mockito.mock;
 public class ActionGenerator_UniformNoRepeatsTest {
 
     private IActionGenerator<CommandQWOP> generator;
-    private ActionList<CommandQWOP>[] actionLists;
+    private List<ActionList<CommandQWOP>> actionLists;
 
     @Before
     public void setup() {
@@ -45,8 +45,11 @@ public class ActionGenerator_UniformNoRepeatsTest {
         ActionList<CommandQWOP> alist3 = new ActionList<>(new Distribution_Equal<>());
         alist3.addAll(aset3);
 
-        actionLists = new ActionList[]{alist1, alist2, alist3};
 
+        actionLists = new ArrayList<>();
+        actionLists.add(alist1);
+        actionLists.add(alist2);
+        actionLists.add(alist3);
         generator = new ActionGenerator_UniformNoRepeats<>(actionLists);
 
     }
@@ -55,17 +58,17 @@ public class ActionGenerator_UniformNoRepeatsTest {
     public void getPotentialChildActionSet() {
 
         StateQWOP st = mock(StateQWOP.class);
-        NodeGameExplorable<CommandQWOP> root = new NodeGameExplorable<>(st, generator);
-        List<NodeGameExplorable<CommandQWOP>> depth1 = new ArrayList<>();
-        List<List<NodeGameExplorable<CommandQWOP>>> depth2 = new ArrayList<>();
+        NodeGameExplorable<CommandQWOP, StateQWOP> root = new NodeGameExplorable<>(st, generator);
+        List<NodeGameExplorable<CommandQWOP, StateQWOP>> depth1 = new ArrayList<>();
+        List<List<NodeGameExplorable<CommandQWOP, StateQWOP>>> depth2 = new ArrayList<>();
 
         // Add all possible nodes to depth 2.
         while (root.getUntriedActionCount() > 0) {
             depth1.add(root.addDoublyLinkedChild(root.getUntriedActionRandom(), st));
         }
 
-        for (NodeGameExplorable<CommandQWOP> n : depth1) {
-            List<NodeGameExplorable<CommandQWOP>> subdepth2 = new ArrayList<>();
+        for (NodeGameExplorable<CommandQWOP, StateQWOP> n : depth1) {
+            List<NodeGameExplorable<CommandQWOP, StateQWOP>> subdepth2 = new ArrayList<>();
             while (n.getUntriedActionCount() > 0) {
                 subdepth2.add(n.addDoublyLinkedChild(n.getUntriedActionRandom(), st));
             }
@@ -80,10 +83,10 @@ public class ActionGenerator_UniformNoRepeatsTest {
         depth1.forEach(n -> actionsDepth1.add(n.getAction()));
         Assert.assertTrue(actionsDepth1.containsAll(allPossible));
 
-        for (List<NodeGameExplorable<CommandQWOP>> nlist : depth2) {
+        for (List<NodeGameExplorable<CommandQWOP, StateQWOP>> nlist : depth2) {
             Assert.assertTrue(nlist.size() < allPossible.size());
 
-            for (NodeGameExplorable<CommandQWOP> n : nlist) {
+            for (NodeGameExplorable<CommandQWOP, StateQWOP> n : nlist) {
                 Assert.assertNotEquals(n.getParent().getAction(), n.getAction()); // May not have the same parent
                 // command.
 

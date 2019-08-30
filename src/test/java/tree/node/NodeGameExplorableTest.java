@@ -51,9 +51,9 @@ public class NodeGameExplorableTest {
  */
 
     // Root node for our test tree.
-    private NodeGameExplorable<CommandQWOP> rootNode;
+    private NodeGameExplorable<CommandQWOP, StateQWOP> rootNode;
 
-    private NodeGameExplorable<CommandQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1,
+    private NodeGameExplorable<CommandQWOP, StateQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1,
             node3_2,
             node3_3,
             node1_1_1, node1_1_2, node1_2_1, node2_2_1, node2_2_2, node2_2_3, node3_3_1, node3_3_2, node3_3_3,
@@ -61,7 +61,7 @@ public class NodeGameExplorableTest {
 
 
     @SuppressWarnings({"FieldCanBeLocal", "MismatchedQueryAndUpdateOfCollection"})
-    private List<NodeGameExplorable<CommandQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5,
+    private List<NodeGameExplorable<CommandQWOP, StateQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5,
             nodesLvl6;
 
     // Some sample game.command (mocked).
@@ -482,7 +482,7 @@ public class NodeGameExplorableTest {
 
     @Test
     public void getThis() {
-        NodeGameExplorable node = new NodeGameExplorable(initialState);
+        NodeGameExplorable<CommandQWOP, StateQWOP> node = new NodeGameExplorable<>(initialState);
         Assert.assertEquals(node, node.getThis());
     }
     @Test

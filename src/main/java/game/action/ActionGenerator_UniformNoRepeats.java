@@ -21,8 +21,13 @@ public class ActionGenerator_UniformNoRepeats<C extends Command<?>> implements I
 
     private final List<ActionList<C>> allActionLists = new ArrayList<>();
 
-    public ActionGenerator_UniformNoRepeats(ActionList<C>[] actions) {
+    @SafeVarargs
+    public ActionGenerator_UniformNoRepeats(ActionList<C> ... actions) {
         allActionLists.addAll(Arrays.asList(actions));
+    }
+
+    public ActionGenerator_UniformNoRepeats(List<ActionList<C>> actionLists) {
+        allActionLists.addAll(actionLists);
     }
 
     @JsonCreator

@@ -1,22 +1,27 @@
 package data;
 
-import game.qwop.StateNormalizerQWOP;
 import game.qwop.StateQWOP;
+import game.qwop.StatisticsQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 
-public class StateNormalizerQWOPTest {
+// TODO make ones for the other types of normalizers.
+public class StatisticsQWOPTest {
 
     @Test
     public void checkStateStats() {
         // Sanity check for loaded state statistics and to make sure that no errors occur. This is based not just on
         // the code in the class, but also the text files containing the stats.
 
-        StateNormalizerQWOP normalizer = new StateNormalizerQWOP(StateNormalizerQWOP.NormalizationMethod.STDEV);
-        StateNormalizerQWOP.StateStatistics stateStats = normalizer.getStateStats();
-
+        StatisticsQWOP stateStats = null;
+        try {
+            stateStats = new StatisticsQWOP();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         Assert.assertNotNull(stateStats);
 

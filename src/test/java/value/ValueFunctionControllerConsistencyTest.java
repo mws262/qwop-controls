@@ -1,10 +1,10 @@
 package value;
 
-import game.qwop.QWOPConstants;
-import game.qwop.GameQWOP;
 import game.action.ActionQueue;
 import game.qwop.CommandQWOP;
-import game.state.IState;
+import game.qwop.GameQWOP;
+import game.qwop.QWOPConstants;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 import tree.node.NodeGame;
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 
 public class ValueFunctionControllerConsistencyTest {
 
-    private final int timestepCheckpoint = 500;
     private final float[] flatStateDesired = {0.0f, -2.2574735f, -0.22032446f, 8.491266f, -0.4776165f, 0.41031206f,
             -0.82696533f, -6.168619f, -0.14093362f, 10.665741f, -1.110998f, 1.3264679f, 0.33296204f, 2.0762799f,
             -0.019159568f, 12.896204f, -0.8064831f, -2.227094f, 2.3029327f, 0.055687245f, -1.390076f, 7.7789645f, 5.206331f,
@@ -39,24 +38,22 @@ public class ValueFunctionControllerConsistencyTest {
 
         ActionQueue<CommandQWOP> queue = new ActionQueue<>();
 
+        int timestepCheckpoint = 500;
         while (game.getTimestepsThisGame() < timestepCheckpoint) {
             if (queue.isEmpty()) {
-                NodeGameExplorable<CommandQWOP> currentNode = new NodeGameExplorable<>(game.getCurrentState());
+                NodeGameExplorable<CommandQWOP, StateQWOP> currentNode = new NodeGameExplorable<>(game.getCurrentState());
                 queue.addAction(valFun.getMaximizingAction(currentNode));
             }
             game.step(queue.pollCommand());
         }
-        
         Assert.assertArrayEquals(flatStateDesired, game.getCurrentState().flattenState(), 1e-5f);
-
         valFun.close();
-
     }
 
-    class ValFunSandbox extends ValueFunction_TensorFlow_StateOnly {
+    class ValFunSandbox extends ValueFunction_TensorFlow_StateOnly<StateQWOP> {
 
-        public ValFunSandbox(File file, GameQWOP gameTemplate) throws FileNotFoundException {
-            super(file, gameTemplate, false);
+        ValFunSandbox(File file, GameQWOP gameTemplate) throws FileNotFoundException {
+            super(file, gameTemplate, new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV), false);
             assignFuturePredictors(gameTemplate);
         }
 
@@ -85,7 +82,7 @@ public class ValueFunctionControllerConsistencyTest {
             public EvaluationResult call() {
                 gameLocal.resetGame();
                 gameLocal.setState(startingState);
-                gameLocal.iterations = 4 * QWOPConstants.physIterations;
+                gameLocal.setPhysicsIterations(4 * QWOPConstants.physIterations);
 
                 // Reset the game and set it to the specified starting state.
                 bestResult.value = -Float.MAX_VALUE;
@@ -99,12 +96,12 @@ public class ValueFunctionControllerConsistencyTest {
                 for (int i = 1; i <= maxHorizon; i++) {
                     // Return to the normal number of physics iterations after the first step.
                     if (i > 2) {
-                        gameLocal.iterations = QWOPConstants.physIterations;
+                        gameLocal.setPhysicsIterations(QWOPConstants.physIterations);
                     }
 
                     gameLocal.step(command);
-                    IState st = gameLocal.getCurrentState();
-                    NodeGameBase<?, CommandQWOP> nextNode = new NodeGame<>(st);
+                    StateQWOP st = gameLocal.getCurrentState();
+                    NodeGameBase<?, CommandQWOP, StateQWOP> nextNode = new NodeGame<>(st);
                     val1 = val2;
                     val2 = val3;
                     val3 = evaluate(nextNode);
