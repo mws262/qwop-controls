@@ -3,13 +3,14 @@ package flashqwop;
 import game.IGameCommandTarget;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.qwop.*;
+import game.qwop.CommandQWOP;
+import game.qwop.IStateQWOP;
+import game.qwop.StateQWOP;
 import game.state.StateVariable6D;
 import hardware.KeypusherSerialConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -98,7 +99,7 @@ public abstract class FlashGame implements IFlashStateListener {
      * @param state Most recent state received from the Flash game.
      * @return An Action from a feedback controller.
      */
-    public abstract Action<CommandQWOP> getControlAction(StateQWOP state);
+    public abstract Action<CommandQWOP> getControlAction(IStateQWOP state);
 
     /**
      * This class will handle the execution of game.command, but inheriting classes may want to listen in.
@@ -107,7 +108,7 @@ public abstract class FlashGame implements IFlashStateListener {
      *                preceding command.
      * @param timestep Timestep count at this state.
      */
-    public abstract void reportGameStatus(StateQWOP state, CommandQWOP command, int timestep);
+    public abstract void reportGameStatus(IStateQWOP state, CommandQWOP command, int timestep);
 
     /**
      * Tell the game to resetGame (equivalent to 'r' on the keyboard in the real game).

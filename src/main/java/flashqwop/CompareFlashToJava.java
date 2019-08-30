@@ -1,9 +1,11 @@
 package flashqwop;
 
-import game.qwop.GameQWOP;
+import game.IGameSerializable;
 import game.action.Action;
 import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
 import game.qwop.IStateQWOP;
+import game.qwop.StateQWOP;
 import game.state.transform.Transform_Identity;
 import tree.node.NodeGame;
 import ui.runner.PanelRunner_MultiState;
@@ -147,9 +149,14 @@ public class CompareFlashToJava extends FlashGame {
     private void loadController() {
         // Load a value function controller.
         try {
-            // TODO
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/small_net.pb"), new GameQWOP(),  new Transform_Identity<>(),false); // state_only.pb"));
+            // TODO not type safe
+            IGameSerializable<CommandQWOP, StateQWOP> game =  new GameQWOP();
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(
+                    new File("src/main/resources/tflow_models" +
+                    "/small_net.pb"),
+                    game,
+                    new Transform_Identity<>(),
+                    false); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

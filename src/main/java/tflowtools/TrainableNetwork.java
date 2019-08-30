@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import data.TFRecordWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.tensorflow.*;
 import org.tensorflow.framework.GraphDef;
 import org.tensorflow.framework.Summary;
@@ -74,15 +75,13 @@ public class TrainableNetwork implements AutoCloseable {
     public static AtomicInteger openCount = new AtomicInteger();
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                if (openCount.get() > 0) {
-                    logger.warn("Networks opened but not explicitly closed: " + openCount.get());
-                } else {
-                    logger.info("All networks opened were closed properly.");
-                }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (openCount.get() > 0) {
+                logger.warn("Networks opened but not explicitly closed: " + openCount.get());
+            } else {
+                logger.info("All networks opened were closed properly.");
             }
-        });
+        }));
     }
 
     /**
@@ -90,8 +89,8 @@ public class TrainableNetwork implements AutoCloseable {
      *
      * @param graphDefinition Graph definition file.
      */
-    public TrainableNetwork(File graphDefinition, boolean useTensorboard) throws FileNotFoundException {
-
+    public TrainableNetwork(@NotNull File graphDefinition, boolean useTensorboard) throws FileNotFoundException {
+        Objects.requireNonNull(graphDefinition);
         if (!graphDefinition.exists() || !graphDefinition.isFile())
             throw new FileNotFoundException("Unable to locate the specified model file.");
 
@@ -191,7 +190,7 @@ public class TrainableNetwork implements AutoCloseable {
         return trainingStep(session.runner(), inputs, desiredOutputs, steps);
     }
 
-    protected void toTensorBoardOutput(Tensor<?> summaryTensor) {
+    protected void toTensorBoardOutput(@NotNull  Tensor<?> summaryTensor) {
         byte[] summaryMessage = summaryTensor.bytesValue();
         try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, true)) {
             // Need to convert the summary protobuf into an event protobuf.
@@ -216,7 +215,7 @@ public class TrainableNetwork implements AutoCloseable {
      * doing strict checking on the number of files. If you suspect that some other source is adding similarly-named
      * files, check this.
      */
-    public List<File> saveCheckpoint(String checkpointName) throws IOException {
+    public List<File> saveCheckpoint(@NotNull String checkpointName) throws IOException {
         if (checkpointName == null || checkpointName.isEmpty()) {
             throw new IllegalArgumentException("Back checkpoint save name given. Was: " + checkpointName);
         }
@@ -251,7 +250,7 @@ public class TrainableNetwork implements AutoCloseable {
      * Load a checkpoint file. Must match the graph loaded. Name does not need to include path or file extension.
      * @param checkpointName Name of the checkpoint to load.
      */
-    public void loadCheckpoint(String checkpointName) throws IOException {
+    public void loadCheckpoint(@NotNull String checkpointName) throws IOException {
         if (checkpointName == null || checkpointName.isEmpty()) {
             throw new IllegalArgumentException("Back checkpoint load name given. Was: " + checkpointName);
         }
@@ -272,13 +271,32 @@ public class TrainableNetwork implements AutoCloseable {
      * @param inputs One or more inputs to feed in. For a single example, the first dimension should be 1.
      * @return The evaluated values of the inputs.
      */
-    public float[][] evaluateInput(float[][] inputs) {
+    public float[][] evaluateInput(@NotNull float[][] inputs) {
+        Preconditions.checkNotNull(inputs);
+        Preconditions.checkArgument(inputs.length > 0, "Input to evaluate must have at least 1 example (the first " +
+                "dimension).");
+        for (float[] example : inputs) {
+            Preconditions.checkArgument(example.length == inputSize, "Example input should match the input dimension" +
+                    ".", inputSize, example.length);
+
+        }
+
         Tensor<Float> inputTensor = Tensors.create(inputs);
         List<Tensor<?>> result =
                 session.runner().feed("input", inputTensor).fetch("output").run();
         Tensor<Float> outputTensor = result.get(0).expect(Float.class);
 
         long[] outputShape = outputTensor.shape();
+
+        // Double check output dimensions. It's a little paranoid, but hey.
+        if (outputShape[0] != inputs.length) {
+            throw new IllegalStateException("Output number of results (" + outputShape[0] + ") does not match the " +
+                    "number of input examples (" + inputs.length + ").");
+        } else if (outputShape[1] != outputSize) {
+            throw new IllegalStateException("Individual example dimension does not match defined. Should be: " + outputSize + ". Was: " + outputShape[1]);
+        }
+
+
         float[][] output = new float[(int) outputShape[0]][(int) outputShape[1]];
         outputTensor.copyTo(output);
 
@@ -303,11 +321,11 @@ public class TrainableNetwork implements AutoCloseable {
      * @param operationName Name of the operation to check on.
      * @return Number of outputs returned by that operation.
      */
-    public int getNumberOfOperationOutputs(String operationName) {
+    public int getNumberOfOperationOutputs(@NotNull String operationName) {
         Operation operation = graph.operation(operationName);
 
         Objects.requireNonNull(operation, "Tried to retrieve the number of outputs for an operation which does not " +
-                "exist in the graph.");
+                "exist in the graph. Name was: " + operationName);
         return operation.numOutputs();
     }
 
@@ -318,14 +336,13 @@ public class TrainableNetwork implements AutoCloseable {
      * @param outputIdx Index of the output of the operation to examine (usually 0). Not the same as shape!
      * @return An array of sizes of the dimensions of the output.
      */
-    public int[] getShapeOfOperationOutput(String operationName, int outputIdx) {
+    public int[] getShapeOfOperationOutput(@NotNull String operationName, int outputIdx) {
         if (outputIdx + 1 > getNumberOfOperationOutputs(operationName)) {
             throw new IndexOutOfBoundsException("Tried to retrieve the shape of an output index which exceeds the " +
                     "number of outputs.");
         }
 
         Shape outputShape = graph.operation(operationName).output(outputIdx).shape();
-
         int[] outputDimensions = new int[outputShape.numDimensions()];
         for (int i = 0; i < outputShape.numDimensions(); i++) {
             outputDimensions[i] = (int) outputShape.size(i);

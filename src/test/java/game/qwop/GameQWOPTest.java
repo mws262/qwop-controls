@@ -94,7 +94,7 @@ public class GameQWOPTest {
 
         game1.holdKeysForTimesteps(10, true, false, true, false);
 
-        IState gameState1 = game1.getCurrentState();
+        StateQWOP gameState1 = game1.getCurrentState();
         game2.setState(gameState1);
         float[] gameState2f = game2.getCurrentState().flattenState();
         float[] gameState1f = gameState1.flattenState();

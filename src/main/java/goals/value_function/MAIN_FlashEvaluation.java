@@ -7,7 +7,6 @@ import game.qwop.CommandQWOP;
 import game.qwop.GameQWOP;
 import game.qwop.IStateQWOP;
 import game.qwop.StateQWOP;
-import game.state.IState;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -102,8 +101,8 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public Action<CommandQWOP> getControlAction(StateQWOP state) {
-        Action<CommandQWOP> action = valueFunction.getMaximizingAction(new NodeGame<>(state));
+    public Action<CommandQWOP> getControlAction(IStateQWOP state) {// TODO unsafe
+        Action<CommandQWOP> action = valueFunction.getMaximizingAction(new NodeGame(state));
         if (addActionNoise && Random.nextFloat() < noiseProbability) {
             if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
                 action = new Action<>(action.getTimestepsTotal() + 1, action.peek());
@@ -117,7 +116,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public void reportGameStatus(StateQWOP state, CommandQWOP command, int timestep) {}
+    public void reportGameStatus(IStateQWOP state, CommandQWOP command, int timestep) {}
 
     private void loadController() {
         // Load a value function controller.

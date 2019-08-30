@@ -113,20 +113,20 @@ public class ActionQueue<C extends Command<?>> {
         isEmpty.set(false);
     }
 
-    /**
-     * Add a sequence of game.command. All added game.command are copied.
-     *
-     * @param actions Array of game.command to add to the end of the queue. They are copied, and adding does not influence
-     *                polling of the existing queue.
-     */
-    public synchronized void addSequence(@NotNull Action<C>[] actions) {
-        if (actions.length == 0)
-            throw new IllegalArgumentException("Tried to add an empty array of game.command to a queue.");
-
-        for (Action<C> action : actions) {
-            addAction(action); // Copy happens in addAction. No need to duplicate here.
-        }
-    }
+//    /**
+//     * Add a sequence of game.command. All added game.command are copied.
+//     *
+//     * @param actions Array of game.command to add to the end of the queue. They are copied, and adding does not influence
+//     *                polling of the existing queue.
+//     */
+//    public synchronized void addSequence(@NotNull Action<C>[] actions) {
+//        if (actions.length == 0)
+//            throw new IllegalArgumentException("Tried to add an empty array of game.command to a queue.");
+//
+//        for (Action<C> action : actions) {
+//            addAction(action); // Copy happens in addAction. No need to duplicate here.
+//        }
+//    }
 
     /**
      * Add a sequence of game.command. All added game.command are copied.
@@ -139,6 +139,16 @@ public class ActionQueue<C extends Command<?>> {
             throw new IllegalArgumentException("Tried to add an empty array of game.command to a queue.");
 
         for (Action<C> action : actions) {
+            addAction(action); // Copy happens in addAction. No need to duplicate here.
+        }
+    }
+
+    @SafeVarargs
+    public final synchronized void addSequence(Action<C>... actionsInOrder) {
+        if (actionsInOrder.length == 0)
+            throw new IllegalArgumentException("Tried to add an empty array of game.command to a queue.");
+
+        for (Action<C> action : actionsInOrder) {
             addAction(action); // Copy happens in addAction. No need to duplicate here.
         }
     }

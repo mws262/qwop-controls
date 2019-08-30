@@ -1,9 +1,9 @@
 package value.updaters;
 
-import game.qwop.GameQWOP;
 import game.action.Action;
 import game.qwop.CommandQWOP;
-import game.state.IState;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,13 +16,13 @@ import java.util.List;
 
 public class ValueUpdater_TopWindowTest {
 
-    private List<NodeGameBase<?, CommandQWOP>> nlist = new ArrayList<>();
+    private List<NodeGameBase<?, CommandQWOP, StateQWOP>> nlist = new ArrayList<>();
     private Action<CommandQWOP> a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13;
-    private NodeGame<CommandQWOP> root, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13;
+    private NodeGame<CommandQWOP, StateQWOP> root, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13;
 
     @Before
     public void setup() {
-        IState s = GameQWOP.getInitialState();
+        StateQWOP s = GameQWOP.getInitialState();
         a3 = new Action<>(1, CommandQWOP.NONE);
         a1 = new Action<>(5, CommandQWOP.NONE);
         a2 = new Action<>(6, CommandQWOP.NONE);
@@ -71,7 +71,7 @@ public class ValueUpdater_TopWindowTest {
     public void ClusterSortedNodes() {
         nlist.sort(Comparator.comparing(NodeGameBase::getAction));
 
-        List<List<NodeGameBase<?, CommandQWOP>>> lists = ValueUpdater_TopWindow.separateClustersInSortedList(nlist);
+        List<List<NodeGameBase<?, CommandQWOP, StateQWOP>>> lists = ValueUpdater_TopWindow.separateClustersInSortedList(nlist);
 
         Assert.assertEquals(1, lists.get(0).size());
         Assert.assertEquals(a3, lists.get(0).get(0).getAction());
@@ -101,7 +101,7 @@ public class ValueUpdater_TopWindowTest {
     @Test
     public void WorstCaseWindow() {
         // Try for various window sizes.
-        ValueUpdater_TopWindow<CommandQWOP> updater = new ValueUpdater_TopWindow<>(1);
+        ValueUpdater_TopWindow<CommandQWOP, StateQWOP> updater = new ValueUpdater_TopWindow<>(1);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.WORST;
 
         n1.updateValue(8, updater);
@@ -184,7 +184,7 @@ public class ValueUpdater_TopWindowTest {
     @Test
     public void AverageWindow() {
         // Try for various window sizes.
-        ValueUpdater_TopWindow<CommandQWOP> updater = new ValueUpdater_TopWindow<>(1);
+        ValueUpdater_TopWindow<CommandQWOP, StateQWOP> updater = new ValueUpdater_TopWindow<>(1);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_OPTIMISTIC;
 
         n1.updateValue(8, updater);

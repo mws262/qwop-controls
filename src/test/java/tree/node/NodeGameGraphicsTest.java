@@ -54,15 +54,15 @@ public class NodeGameGraphicsTest {
  */
 
     // Root node for our test tree.
-    private NodeGameGraphics<CommandQWOP> rootNode;
+    private NodeGameGraphics<CommandQWOP, StateQWOP> rootNode;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private NodeGameGraphics<CommandQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1, node3_2, node3_3,
+    private NodeGameGraphics<CommandQWOP, StateQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1, node3_2, node3_3,
             node1_1_1, node1_1_2, node1_2_1, node2_2_1, node2_2_2, node2_2_3, node3_3_1, node3_3_2, node3_3_3,
             node1_2_1_2, node1_2_1_2_1, node1_2_1_2_2, node1_2_1_2_2_3;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private List<NodeGameGraphics<CommandQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
+    private List<NodeGameGraphics<CommandQWOP, StateQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
 
     // Some sample game.command (mocked).
     @SuppressWarnings("FieldCanBeLocal")
@@ -365,7 +365,7 @@ public class NodeGameGraphicsTest {
     public void setOverridePointColor() {
         setupTree();
 
-        for (NodeGameGraphics<CommandQWOP> node : allNodes) {
+        for (NodeGameGraphics<CommandQWOP, StateQWOP> node : allNodes) {
             Color color = Color.ORANGE;
             float[] colorComponents = color.getColorComponents(null);
             node.setOverridePointColor(color);
@@ -431,20 +431,20 @@ public class NodeGameGraphicsTest {
      * @param node Node to fetch from.
      * @return 3-element float array representing the line color.
      */
-    private static float[] getLineColorFloats(NodeGameGraphicsBase<?, CommandQWOP> node) {
+    private static float[] getLineColorFloats(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> node) {
         return (float[])getPrivateField(NodeGameGraphicsBase.class, node, "lineColorFloats");
     }
 
-    private static float[] getOverrideLineColorFloats(NodeGameGraphicsBase<?, CommandQWOP> node) {
+    private static float[] getOverrideLineColorFloats(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> node) {
         return (float[])getPrivateField(NodeGameGraphicsBase.class, node, "overrideLineColorFloats");
     }
 
     @SuppressWarnings("unused")
-    private static float[] getPointColorFloats(NodeGameGraphicsBase<?, CommandQWOP> node) {
+    private static float[] getPointColorFloats(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> node) {
         return (float[])getPrivateField(NodeGameGraphicsBase.class, node, "pointColorFloats");
     }
 
-    private static float[] getOverridePointColorFloats(NodeGameGraphicsBase<?, CommandQWOP> node) {
+    private static float[] getOverridePointColorFloats(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> node) {
         return (float[])getPrivateField(NodeGameGraphicsBase.class, node, "overridePointColorFloats");
     }
 

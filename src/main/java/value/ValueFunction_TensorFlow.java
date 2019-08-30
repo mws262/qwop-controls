@@ -9,6 +9,7 @@ import game.action.Command;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import tflowtools.TrainableNetwork;
 import tree.node.NodeGameBase;
 
@@ -253,7 +254,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends I
     }
 
     @Override
-    public float evaluate(NodeGameBase<?, C, S> node) {
+    public float evaluate(@NotNull NodeGameBase<?, C, S> node) {
         float[][] input = new float[1][inputSize];
         input[0] = assembleInputFromNode(node);
         float[][] result = network.evaluateInput(input);

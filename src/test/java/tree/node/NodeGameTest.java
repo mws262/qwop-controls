@@ -1,7 +1,7 @@
 package tree.node;
 
-import game.action.Action;
 import game.IGameInternal;
+import game.action.Action;
 import game.qwop.CommandQWOP;
 import game.qwop.StateQWOP;
 import org.junit.Assert;
@@ -53,9 +53,9 @@ public class NodeGameTest {
  */
 
     // Root node for our test tree.
-    private NodeGame<CommandQWOP> rootNode;
+    private NodeGame<CommandQWOP, StateQWOP> rootNode;
 
-    private NodeGame<CommandQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node1_4, node2_1, node2_2, node3_1, node3_2, node3_3,
+    private NodeGame<CommandQWOP, StateQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node1_4, node2_1, node2_2, node3_1, node3_2, node3_3,
             node1_1_1, node1_1_2, node1_2_1, node2_2_1, node2_2_2, node2_2_3, node3_3_1, node3_3_2, node3_3_3,
             node3_3_4, node1_2_1_2, node1_2_1_2_1, node1_2_1_2_2, node1_2_1_2_2_4;
 
@@ -74,7 +74,7 @@ public class NodeGameTest {
     private StateQWOP unfailedState = mock(StateQWOP.class);
     private StateQWOP failedState = mock(StateQWOP.class);
 
-    private IGameInternal<CommandQWOP> game = mock(IGameInternal.class);
+    private IGameInternal<CommandQWOP, StateQWOP> game = mock(IGameInternal.class);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
@@ -279,13 +279,33 @@ public class NodeGameTest {
 
     @Test
     public void makeNodesFromActionSequences() {
-        NodeGame<CommandQWOP> root = new NodeGame<>(initialState);
-        List<Action<CommandQWOP>[]> sequences = new ArrayList<>();
-        sequences.add(new Action[]{a1,a1,a1,a1}); // 4 new nodes.
-        sequences.add(new Action[]{a2,a1}); // 2 new nodes
-        sequences.add(new Action[]{a2,a1,a4}); // 1 new node.
-        sequences.add(new Action[]{a4,a2,a3,a1}); // 4 new nodes.
-        sequences.add(new Action[]{a2,a1}); // 0 new nodes.
+        NodeGame<CommandQWOP, StateQWOP> root = new NodeGame<>(initialState);
+        List<List<Action<CommandQWOP>>> sequences = new ArrayList<>();
+        List<Action<CommandQWOP>> l1 = new ArrayList<>();
+        l1.add(a1);
+        l1.add(a1);
+        l1.add(a1);
+        l1.add(a1);
+        sequences.add(l1); // 4 new nodes.
+        List<Action<CommandQWOP>> l2 = new ArrayList<>();
+        l2.add(a2);
+        l2.add(a1);
+        sequences.add(l2); // 2 new nodes
+        List<Action<CommandQWOP>> l3 = new ArrayList<>();
+        l3.add(a2);
+        l3.add(a1);
+        l3.add(a4);
+        sequences.add(l3); // 1 new node.
+        List<Action<CommandQWOP>> l4 = new ArrayList<>();
+        l4.add(a4);
+        l4.add(a2);
+        l4.add(a3);
+        l4.add(a1);
+        sequences.add(l4); // 4 new nodes.
+        List<Action<CommandQWOP>> l5 = new ArrayList<>();
+        l5.add(a2);
+        l5.add(a1);
+        sequences.add(l5); // 0 new nodes.
 
         NodeGame.makeNodesFromActionSequences(sequences, root, game);
         Assert.assertEquals(11, root.countDescendants());
@@ -302,10 +322,10 @@ public class NodeGameTest {
 
     @Test
     public void updateValue() {
-        IValueUpdater<CommandQWOP> updater = mock(IValueUpdater.class);
+        IValueUpdater<CommandQWOP, StateQWOP> updater = mock(IValueUpdater.class);
         when(updater.update(any(Float.class), any(NodeGame.class))).thenReturn(10f);
 
-        NodeGame<CommandQWOP> root = new NodeGame<>(initialState);
+        NodeGame<CommandQWOP, StateQWOP> root = new NodeGame<>(initialState);
         Assert.assertEquals(0f, root.getValue(), 1e-12f);
         Assert.assertEquals(0, root.getUpdateCount());
         root.updateValue(0f, updater);
@@ -318,7 +338,7 @@ public class NodeGameTest {
 
     @Test
     public void addDoublyAndBackwardsLinkedNodes() {
-        NodeGame<CommandQWOP> root = new NodeGame<>(initialState),
+        NodeGame<CommandQWOP, StateQWOP> root = new NodeGame<>(initialState),
                 dChild1 = root.addDoublyLinkedChild(a1, unfailedState),
                 bChild2 = root.addBackwardsLinkedChild(a2, unfailedState),
                 bChild1_1 = dChild1.addBackwardsLinkedChild(a1, unfailedState),
@@ -342,7 +362,7 @@ public class NodeGameTest {
 
     @Test
     public void getThis() {
-        NodeGame<CommandQWOP> node = new NodeGame<>(initialState);
+        NodeGame<CommandQWOP, StateQWOP> node = new NodeGame<>(initialState);
         Assert.assertEquals(node, node.getThis());
     }
 }

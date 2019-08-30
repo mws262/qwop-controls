@@ -1,10 +1,9 @@
 package value;
 
-import game.qwop.GameQWOP;
-import game.qwop.GameQWOPCaching;
+import game.IGameInternal;
 import game.IGameSerializable;
 import game.action.Action;
-import game.qwop.CommandQWOP;
+import game.qwop.*;
 import org.junit.Assert;
 import org.junit.Test;
 import tree.node.NodeGame;
@@ -20,14 +19,14 @@ public class ValueFunction_TensorFlowTest {
 
     @Test
     public void constructor1() {
-        GameQWOP game = new GameQWOP();
+        IGameInternal<CommandQWOP, StateQWOP> game = new GameQWOP();
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(10);
         layerSizes.add(4);
 
-        ValFunTest valFun = null;
+        ValFunTest<StateQWOP> valFun = null;
         try {
-            valFun = new ValFunTest("src/test/resources/test_net", game, 1, layerSizes, new ArrayList<>(), "");
+            valFun = new ValFunTest<>("src/test/resources/test_net", game, 1, layerSizes, new ArrayList<>(), "");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -63,7 +62,7 @@ public class ValueFunction_TensorFlowTest {
         // Bigger output.
         int outputSize = 5;
         try {
-            valFun = new ValFunTest("src/test/resources/test_net2", game, outputSize, layerSizes, new ArrayList<>(), "");
+            valFun = new ValFunTest<>("src/test/resources/test_net2", game, outputSize, layerSizes, new ArrayList<>(), "");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -90,21 +89,27 @@ public class ValueFunction_TensorFlowTest {
 
         valFun.close();
         // Bigger input due to delay-embedded version of the game.
+        ValFunTest<StateQWOPDelayEmbedded_HigherDifferences> diffValFun = null;
         outputSize = 2;
-        game = new GameQWOPCaching(1, 3, GameQWOPCaching.StateType.HIGHER_DIFFERENCES);
+        GameQWOPCaching<StateQWOPDelayEmbedded_HigherDifferences> diffGame = new GameQWOPCaching<>(1, 3,
+                GameQWOPCaching.StateType.HIGHER_DIFFERENCES);
         try {
-            valFun = new ValFunTest("src/test/resources/test_net3", game, outputSize, layerSizes, new ArrayList<>(), "");
+            diffValFun = new ValFunTest<>("src/test/resources/test_net3",
+                    diffGame,
+                    outputSize,
+                    layerSizes,
+                    new ArrayList<>(), "");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Assert.assertNotNull(valFun);
-        Assert.assertTrue(valFun.getGraphDefinitionFile().exists());
-        valFun.getGraphDefinitionFile().deleteOnExit(); // Try not to clog files up with tests.
+        Assert.assertNotNull(diffValFun);
+        Assert.assertTrue(diffValFun.getGraphDefinitionFile().exists());
+        diffValFun.getGraphDefinitionFile().deleteOnExit(); // Try not to clog files up with tests.
 
-        Assert.assertTrue(valFun.getGraphDefinitionFile().getPath().contains("src/test/resources/test_net3"));
+        Assert.assertTrue(diffValFun.getGraphDefinitionFile().getPath().contains("src/test/resources/test_net3"));
 
-        actualLayerSizes = valFun.network.getLayerSizes();
+        actualLayerSizes = diffValFun.network.getLayerSizes();
 
         // Input + output + hidden layers.
         Assert.assertEquals(4, actualLayerSizes.length);
@@ -113,17 +118,17 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertEquals(layerSizes.get(1).intValue(), actualLayerSizes[2]);
         Assert.assertEquals(outputSize, actualLayerSizes[3]);
 
-        Assert.assertEquals(game.getStateDimension(), valFun.inputSize);
+        Assert.assertEquals(diffGame.getStateDimension(), valFun.inputSize);
         Assert.assertEquals(outputSize, valFun.outputSize);
 
-        valFun.evaluate(new NodeGame<>(null)); // Just to make sure it doesn't error out. The value is basically
-        valFun.close();
+        diffValFun.evaluate(new NodeGame<>(null)); // Just to make sure it doesn't error out. The value is basically
+        diffValFun.close();
     }
 
     @Test
     public void constructor2() throws IOException {
         // Constructor 1 to create from scratch.
-        ValFunTest valFun = null;
+        ValFunTest<StateQWOP> valFun = null;
         GameQWOP game = new GameQWOP();
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(10);
@@ -131,7 +136,8 @@ public class ValueFunction_TensorFlowTest {
 
         int outputSize = 1;
         try {
-            valFun = new ValFunTest("src/test/resources/test_net4", game, outputSize, layerSizes, new ArrayList<>(), "");
+            valFun = new ValFunTest<>("src/test/resources/test_net4", game, outputSize, layerSizes, new ArrayList<>(),
+                    "");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -147,13 +153,14 @@ public class ValueFunction_TensorFlowTest {
         File netFile = valFun.getGraphDefinitionFile();
 
         // Load existing graph with constructor 2.
-        ValFunTest valFunLoad = null;
+        ValFunTest<StateQWOP> valFunLoad = null;
         try {
-            valFunLoad = new ValFunTest(netFile);
+            valFunLoad = new ValFunTest<>(netFile);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
+        //noinspection ConstantConditions
         Assert.assertNotNull(valFunLoad.getGraphDefinitionFile());
 
         // Input/output sizes should still match.
@@ -173,16 +180,16 @@ public class ValueFunction_TensorFlowTest {
         float newNetEval = valFunLoad.evaluate(new NodeGame<>(null));
         Assert.assertEquals(oldNetEval, newNetEval, 1e-12f);
 
-        List<NodeGame<CommandQWOP>> updateList = new ArrayList<>();
+        List<NodeGame<CommandQWOP, StateQWOP>> updateList = new ArrayList<>();
         updateList.add(new NodeGame<>(null));
         valFun.update(updateList);
         Assert.assertNotEquals(oldNetEval, valFun.evaluate(new NodeGame<>(null))); // Should be different after update.
         Assert.assertEquals(newNetEval, valFunLoad.evaluate(new NodeGame<>(null)), 1e-12f); // Update of one net should
         // not affect the other.
 
-        ValFunTest valFunCheckpointConstructor = null;
+        ValFunTest<StateQWOP> valFunCheckpointConstructor = null;
         try {
-            valFunCheckpointConstructor = new ValFunTest("src/test/resources/test_net4", game, outputSize, layerSizes,
+            valFunCheckpointConstructor = new ValFunTest<>("src/test/resources/test_net4", game, outputSize, layerSizes,
                     new ArrayList<>(), "src/test/resources/test_checkpoint1");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -196,9 +203,10 @@ public class ValueFunction_TensorFlowTest {
     }
 
     // Testing stubs.
-    class ValFunTest extends ValueFunction_TensorFlow<CommandQWOP> {
+    class ValFunTest<S extends IStateQWOP> extends ValueFunction_TensorFlow<CommandQWOP, S> {
 
-        ValFunTest(String fileName, GameQWOP gameTemplate, int outputSize, List<Integer> hiddenLayerSizes,
+        ValFunTest(String fileName, IGameInternal<CommandQWOP, S> gameTemplate, int outputSize,
+                   List<Integer> hiddenLayerSizes,
                    List<String> additionalArgs, String checkpoint) throws IOException {
             super(fileName,
                     gameTemplate.getStateDimension(),
@@ -224,18 +232,18 @@ public class ValueFunction_TensorFlowTest {
         }
 
         @Override
-        public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP> currentNode) {
+        public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, S> currentNode) {
             return null;
         }
 
         @Override
-        public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP> currentNode,
-                                                       IGameSerializable<CommandQWOP> game) {
+        public Action<CommandQWOP> getMaximizingAction(NodeGameBase<?, CommandQWOP, S> currentNode,
+                                                       IGameSerializable<CommandQWOP, S> game) {
             return null;
         }
 
         @Override
-        public IValueFunction<CommandQWOP> getCopy() {
+        public IValueFunction<CommandQWOP, S> getCopy() {
             return null; // todo
         }
     }
