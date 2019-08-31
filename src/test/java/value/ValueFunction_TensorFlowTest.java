@@ -113,13 +113,13 @@ public class ValueFunction_TensorFlowTest {
 
         // Input + output + hidden layers.
         Assert.assertEquals(4, actualLayerSizes.length);
-        Assert.assertEquals(game.getStateDimension(), actualLayerSizes[0]);
+        Assert.assertEquals(diffGame.getStateDimension(), actualLayerSizes[0]);
         Assert.assertEquals(layerSizes.get(0).intValue(), actualLayerSizes[1]);
         Assert.assertEquals(layerSizes.get(1).intValue(), actualLayerSizes[2]);
         Assert.assertEquals(outputSize, actualLayerSizes[3]);
 
-        Assert.assertEquals(diffGame.getStateDimension(), valFun.inputSize);
-        Assert.assertEquals(outputSize, valFun.outputSize);
+        Assert.assertEquals(diffGame.getStateDimension(), diffValFun.inputSize);
+        Assert.assertEquals(outputSize, diffValFun.outputSize);
 
         diffValFun.evaluate(new NodeGame<>(null)); // Just to make sure it doesn't error out. The value is basically
         diffValFun.close();

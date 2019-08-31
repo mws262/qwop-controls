@@ -1,5 +1,7 @@
 package game.qwop;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
@@ -24,8 +26,8 @@ import java.util.stream.Collectors;
 public class StateQWOP implements IStateQWOP, Serializable {
 
     public static final int STATE_SIZE = 72;
+    @SuppressWarnings("WeakerAccess")
     public static final int STATEVARIABLE_COUNT = 12;
-
     private static final long serialVersionUID = 2L;
 
     /**
@@ -103,6 +105,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
      * @param llarmS   StateQWOP of the left lower arm.
      * @param isFailed Whether this state represents a fallen runner.
      */
+    @JsonCreator
     public StateQWOP(@JsonProperty("body") StateVariable6D bodyS,
                      @JsonProperty("head") StateVariable6D headS,
                      @JsonProperty("rthigh") StateVariable6D rthighS,
@@ -329,11 +332,13 @@ public class StateQWOP implements IStateQWOP, Serializable {
      *
      * @return Runner "fallen" status. True means failed. False means not failed.
      */
+    @JsonGetter("failed")
     @Override
     public synchronized boolean isFailed() {
         return failedState;
     }
 
+    @JsonIgnore
     @Override
     public int getStateSize() {
         return STATE_SIZE;
@@ -344,6 +349,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
      * {@link StateQWOP#flattenState()} uses.
      * @return String containing all the state values on a line.
      */
+    @JsonIgnore
     public String toFlatString() {
         float[] states = flattenState();
         StringBuilder sb = new StringBuilder();
@@ -391,6 +397,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
     }
 
     // Scalar multiplication.
+    @SuppressWarnings("WeakerAccess")
     public StateQWOP multiply(float multiplier) {
         StateVariable6D[] resultStates = new StateVariable6D[stateVariables.length];
         StateVariable6D svMultiplier = new StateVariable6D(multiplier, multiplier, multiplier, multiplier, multiplier, multiplier);
@@ -415,6 +422,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
         return extractPositions(0f);
     }
 
+    @SuppressWarnings("unused")
     public float[] extractVelocities() {
         float[] vflat = new float[STATE_SIZE/2];
         int idx = 0;
@@ -490,12 +498,14 @@ public class StateQWOP implements IStateQWOP, Serializable {
             STDEV, RANGE
         }
 
-        private NormalizationMethod normType;
+        @JsonProperty("normalizationMethod")
+        public final NormalizationMethod normalizationMethod;
 
         private StatisticsQWOP stateStats = new StatisticsQWOP();
 
-        public Normalizer(NormalizationMethod normalizationMethod) throws FileNotFoundException {
-            normType = normalizationMethod;
+        @JsonCreator
+        public Normalizer(@JsonProperty("normalizationMethod") NormalizationMethod normalizationMethod) throws FileNotFoundException {
+            this.normalizationMethod = normalizationMethod;
         }
 
         @Override
@@ -513,7 +523,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
         @Override
         public float[] transform(StateQWOP originalState) {
 
-            switch(normType) {
+            switch(normalizationMethod) {
                 case STDEV:
                     return originalState.xOffsetSubtract(originalState.getCenterX())
                             .subtract(stateStats.getMean())
@@ -525,7 +535,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
                             .divide(stateStats.getRange())
                             .flattenState();
                 default:
-                    throw new IllegalStateException("Unhandled state normalization case: " + normType.toString());
+                    throw new IllegalStateException("Unhandled state normalization case: " + normalizationMethod.toString());
             }
 
         }
@@ -534,7 +544,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
         public List<float[]> untransform(List<float[]> transformedStates) {
             List<float[]> untransformedStates = new ArrayList<>(transformedStates.size());
 
-            switch(normType) {
+            switch(normalizationMethod) {
                 case STDEV:
                     for (float[] tformed : transformedStates) {
                         float[] utformed = new float[tformed.length];
@@ -554,7 +564,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
                     }
                     return untransformedStates;
                 default:
-                    throw new IllegalStateException("Unhandled state normalization case: " + normType.toString());
+                    throw new IllegalStateException("Unhandled state normalization case: " + normalizationMethod.toString());
             }
         }
 

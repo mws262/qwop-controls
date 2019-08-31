@@ -2,6 +2,10 @@ package game.state.transform;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import game.qwop.StateQWOP;
+import game.qwop.StateQWOPDelayEmbedded_Differences;
+import game.qwop.StateQWOPDelayEmbedded_HigherDifferences;
+import game.qwop.StateQWOPDelayEmbedded_Poses;
 import game.state.IState;
 
 import java.util.List;
@@ -17,7 +21,12 @@ import java.util.List;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Transform_Autoencoder.class, name = "autoencoder"),
         @JsonSubTypes.Type(value = Transform_PCA.class, name = "pca"),
-        @JsonSubTypes.Type(value = Transform_Identity.class, name = "identity")
+        @JsonSubTypes.Type(value = Transform_Identity.class, name = "identity"),
+        @JsonSubTypes.Type(value = StateQWOP.Normalizer.class, name = "normalizer_stateqwop"),
+        @JsonSubTypes.Type(value = StateQWOPDelayEmbedded_Differences.Normalizer.class, name = "normalizer_qwopdiffs"),
+        @JsonSubTypes.Type(value = StateQWOPDelayEmbedded_Poses.Normalizer.class, name = "normalizer_qwopposes"),
+        @JsonSubTypes.Type(value = StateQWOPDelayEmbedded_HigherDifferences.Normalizer.class, name =
+                "normalizer_qwophigherdiffs")
 })
 public interface ITransform<S extends IState> {
 

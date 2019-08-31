@@ -32,6 +32,7 @@ public interface IEvaluationFunction<C extends Command<?>, S extends IState> ext
      * @param nodeToEvaluate Node to determine the value of.
      * @return Scalar value of the node, with higher being "better".
      */
+    @JsonIgnore
     float getValue(NodeGameBase<?, C, S> nodeToEvaluate);
 
     /**
@@ -41,6 +42,7 @@ public interface IEvaluationFunction<C extends Command<?>, S extends IState> ext
      * @param nodeToEvaluate Node to determine the value of.
      * @return A formatted string of calculated value components.
      */
+    @JsonIgnore
     String getValueString(NodeGameBase<?, C, S> nodeToEvaluate);
 
     /**

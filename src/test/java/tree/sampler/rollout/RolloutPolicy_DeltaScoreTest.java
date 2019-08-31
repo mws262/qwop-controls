@@ -189,8 +189,8 @@ public class RolloutPolicy_DeltaScoreTest {
                     new Controller_Random<>(), ts);
             GameQWOP game = new GameQWOP();
             NodeGameExplorable<CommandQWOP, StateQWOP> startNode = n1_2_3;
-            long startTs = game.getTimestepsThisGame();
             rollout.simGameToNode(startNode, game);
+            long startTs = game.getTimestepsThisGame();
             float rolloutScore = rollout.rollout(startNode, game);
 
             Assert.assertTrue((game.getTimestepsThisGame() - startTs) <= rollout.maxTimesteps);

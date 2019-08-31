@@ -1,6 +1,10 @@
 package game;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Command;
+import game.qwop.GameQWOP;
+import game.qwop.GameQWOPCaching;
 import game.state.IState;
 
 import java.io.Serializable;
@@ -10,6 +14,14 @@ import java.io.Serializable;
  *
  * @author matt
  */
+
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = GameQWOP.class, name = "qwop"),
+        @JsonSubTypes.Type(value = GameQWOPCaching.class, name = "qwop_caching"),
+})
 public interface IGameSerializable<C extends Command<?>, S extends IState> extends IGameInternal<C, S>, Serializable {
     byte[] getSerializedState();
 

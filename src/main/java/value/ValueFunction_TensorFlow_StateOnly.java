@@ -53,7 +53,7 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
 
     private static final Logger logger = LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class);
 
-    private ITransform<S> stateNormalizer;
+    public final ITransform<S> stateNormalizer;
 
     /**
      * Constructor which loads an existing value function net.

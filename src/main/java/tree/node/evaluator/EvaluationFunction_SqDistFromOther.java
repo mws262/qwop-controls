@@ -1,5 +1,8 @@
 package tree.node.evaluator;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
 import game.state.IState;
@@ -19,7 +22,7 @@ public class EvaluationFunction_SqDistFromOther<C extends Command<?>, S extends 
     /**
      * All nodes will be compared to this one by square distance in state space.
      */
-    private final IState comparisonState;
+    private final S comparisonState;
 
     /**
      * StateQWOP list associated with the target node. Stored to avoid fetching multiple times.
@@ -31,11 +34,13 @@ public class EvaluationFunction_SqDistFromOther<C extends Command<?>, S extends 
      *
      * @param comparisonState StateQWOP all others will be compared to.
      */
-    public EvaluationFunction_SqDistFromOther(@JsonProperty("comparisonState") IState comparisonState) {
+    @JsonCreator
+    public EvaluationFunction_SqDistFromOther(@JsonProperty("comparisonState") S comparisonState) {
         this.comparisonState = comparisonState;
         baseStateVars = comparisonState.flattenState();
     }
 
+    @JsonIgnore
     @Override
     public float getValue(NodeGameBase<?, C, S> nodeToEvaluate) {
         float[] otherStateVals = Objects.requireNonNull(nodeToEvaluate.getState()).flattenState();
@@ -49,17 +54,20 @@ public class EvaluationFunction_SqDistFromOther<C extends Command<?>, S extends 
         return -sqError; // Negative error, so higher is better.
     }
 
+    @JsonIgnore
     @Override
     public String getValueString(NodeGameBase<?, C, S> nodeToEvaluate) {
         return String.valueOf(getValue(nodeToEvaluate));
     }
 
+    @JsonIgnore
     @Override
     public EvaluationFunction_SqDistFromOther<C, S> getCopy() {
         return new EvaluationFunction_SqDistFromOther<>(comparisonState);
     }
 
-    public IState getComparisonState() {
+    @JsonGetter("comparisonState")
+    public S getComparisonState() {
         return comparisonState;
     }
 
