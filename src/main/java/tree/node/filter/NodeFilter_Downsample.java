@@ -5,6 +5,7 @@ import game.state.IState;
 import tree.Utility;
 import tree.node.NodeGameExplorableBase;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -64,6 +65,10 @@ public class NodeFilter_Downsample<C extends Command<?>, S extends IState> imple
 
     @Override
     public void filter(List<? extends NodeGameExplorableBase<?, C, S>> nodes) {
+        if (maxNodesToKeep == 0) {
+            nodes.clear();
+            return;
+        }
         int numNodes = nodes.size();
         if (numNodes > maxNodesToKeep) { // If we already have <= the max number of nodes, no need to downsample.
             switch (downsamplingStrategy) {
@@ -71,23 +76,30 @@ public class NodeFilter_Downsample<C extends Command<?>, S extends IState> imple
                     float ratio = numNodes / (float) maxNodesToKeep;
 
                     if (ratio > 1) {
-                        for (float i = 0; i < nodes.size(); i += ratio) {
-                            nodes.remove((int) i);
+                        Iterator<? extends NodeGameExplorableBase<?, C, S>> iter = nodes.iterator();
+                        int count = 0;
+                        float keepCount = Float.MIN_VALUE;
+                        while (iter.hasNext()) {
+                            iter.next();
+                            if (Math.ceil(keepCount) == count) {
+                                keepCount += ratio;
+                            } else {
+                                iter.remove();
+                            }
+                            count++;
                         }
                     }
                     break;
-
                 case RANDOM:
                     while (nodes.size() > maxNodesToKeep) {
                         int idxToRemove = Utility.randInt(0, nodes.size() - 1);
                         nodes.remove(idxToRemove);
                     }
                     break;
-
                 default:
                     throw new IllegalStateException("Unknown downsampling strategy.");
             }
-            assert nodes.size() <= maxNodesToKeep;
+            assert nodes.size() <= maxNodesToKeep : nodes.size() + " exceeds limit of " + maxNodesToKeep;
         }
     }
 }
