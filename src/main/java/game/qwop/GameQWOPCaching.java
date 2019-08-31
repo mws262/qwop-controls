@@ -33,7 +33,7 @@ public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameS
                            @JsonProperty("numDelayedStates") int numDelayedStates,
                            @JsonProperty("stateType") StateType stateType) {
         game = new GameQWOP();
-        game.resetGame();
+        resetGame();
         if (timestepDelay < 1) {
             throw new IllegalArgumentException("Timestep delay must be at least one. Was: " + timestepDelay);
         }
