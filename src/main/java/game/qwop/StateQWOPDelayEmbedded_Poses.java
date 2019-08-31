@@ -1,5 +1,6 @@
 package game.qwop;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.state.transform.ITransform;
 
 import java.io.FileNotFoundException;
@@ -41,12 +42,13 @@ public class StateQWOPDelayEmbedded_Poses extends StateQWOPDelayEmbedded {
             STDEV, RANGE
         }
 
-        private NormalizationMethod normType;
+        @JsonProperty("normalizationMethod")
+        public final NormalizationMethod normalizationMethod;
 
         private StatisticsQWOP stateStats = new StatisticsQWOP();
 
-        public Normalizer(NormalizationMethod normalizationMethod) throws FileNotFoundException {
-            normType = normalizationMethod;
+        public Normalizer(@JsonProperty("normalizationMethod") NormalizationMethod normalizationMethod) throws FileNotFoundException {
+            this.normalizationMethod = normalizationMethod;
         }
 
         @Override
@@ -73,12 +75,12 @@ public class StateQWOPDelayEmbedded_Poses extends StateQWOPDelayEmbedded {
                         individualStates[i]
                                 .xOffsetSubtract(xOffset)
                                 .subtract(
-                                        normType == NormalizationMethod.STDEV ?
+                                        normalizationMethod == NormalizationMethod.STDEV ?
                                                 stateStats.getMean()
                                                 : stateStats.getMin()
                                 )
                                 .divide(
-                                        normType == NormalizationMethod.RANGE ?
+                                        normalizationMethod == NormalizationMethod.RANGE ?
                                                 stateStats.getStdev()
                                                 : stateStats.getRange())
                                 .extractPositions();

@@ -31,7 +31,6 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends I
     /**
      * Input layer size.
      */
-    @JsonIgnore
     public final int inputSize;
 
     /**
@@ -86,7 +85,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends I
      * @throws FileNotFoundException Occurs when the file is not created successfully.
      */
     ValueFunction_TensorFlow(@JsonProperty("fileName") String fileName,
-                             int inputSize,
+                             @JsonProperty("inputSize") int inputSize,
                              @JsonProperty("outputSize") int outputSize,
                              @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                              @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,

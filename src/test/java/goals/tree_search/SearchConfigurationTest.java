@@ -59,6 +59,19 @@ public class SearchConfigurationTest {
     }
 
     @Test
+    public void yamlStateQWOP() throws IOException {
+        File file = File.createTempFile("stateqwop", "yaml");
+        file.deleteOnExit();
+        StateQWOP st = new StateQWOP(new float[72], false);
+        SearchConfiguration.serializeToYaml(file, st);
+        Assert.assertTrue(file.exists());
+
+        StateQWOP stLoaded = SearchConfiguration.deserializeYaml(file, StateQWOP.class);
+        Assert.assertNotNull(stLoaded);
+        Assert.assertEquals(st, stLoaded);
+    }
+
+    @Test
     public void yamlDistribution_Equal() throws IOException {
         File file = File.createTempFile("disteq", "yaml");
         file.deleteOnExit();

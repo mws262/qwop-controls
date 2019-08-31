@@ -1,5 +1,6 @@
 package game.qwop;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.state.transform.ITransform;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,12 +56,13 @@ public class StateQWOPDelayEmbedded_Differences extends StateQWOPDelayEmbedded_P
             STDEV, RANGE
         }
 
-        private NormalizationMethod normType;
+        @JsonProperty("normalizationMethod")
+        public final NormalizationMethod normalizationMethod;
 
         private StatisticsQWOP stateStats = new StatisticsQWOP();
 
-        public Normalizer(NormalizationMethod normalizationMethod) throws FileNotFoundException {
-            normType = normalizationMethod;
+        public Normalizer(@JsonProperty("normalizationMethod") NormalizationMethod normalizationMethod) throws FileNotFoundException {
+            this.normalizationMethod = normalizationMethod;
         }
 
         @Override
@@ -89,13 +91,13 @@ public class StateQWOPDelayEmbedded_Differences extends StateQWOPDelayEmbedded_P
                             .multiply(1f/ QWOPConstants.timestep) // Make the difference like a finite difference
                             // velocity.
                             .subtract(
-                                    normType == NormalizationMethod.STDEV ?
+                                    normalizationMethod == NormalizationMethod.STDEV ?
                                     stateStats.getMean().swapPosAndVel()
                                     : stateStats.getMin().swapPosAndVel()) // Swaps are because we want to
                             // use the velocity normalization on a finite difference that is in the position slots of a
                             // StateQWOP.
                             .divide(
-                                    normType == NormalizationMethod.STDEV ?
+                                    normalizationMethod == NormalizationMethod.STDEV ?
                                     stateStats.getStdev().swapPosAndVel()
                                     : stateStats.getRange())
                             .extractPositions();
@@ -104,12 +106,12 @@ public class StateQWOPDelayEmbedded_Differences extends StateQWOPDelayEmbedded_P
                             individualStates[i]
                                     .xOffsetSubtract(xOffset)
                                     .subtract(
-                                            normType == NormalizationMethod.STDEV ?
+                                            normalizationMethod == NormalizationMethod.STDEV ?
                                                     stateStats.getMean()
                                                     : stateStats.getMin()
                                     )
                                     .divide(
-                                            normType == NormalizationMethod.RANGE ?
+                                            normalizationMethod == NormalizationMethod.RANGE ?
                                             stateStats.getStdev()
                                             : stateStats.getRange())
                                     .extractPositions();
