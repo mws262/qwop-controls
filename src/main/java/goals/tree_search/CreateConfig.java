@@ -1,8 +1,10 @@
 package goals.tree_search;
 
 import controllers.Controller_ValueFunction;
-import game.qwop.*;
+import game.IGameSerializable;
 import game.action.ActionGenerator_UniformNoRepeats;
+import game.qwop.*;
+import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import savers.DataSaver_Null;
@@ -35,6 +37,7 @@ import value.ValueFunction_TensorFlow_StateOnly;
 import value.updaters.ValueUpdater_Average;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +47,17 @@ public class CreateConfig {
 
     static GameQWOPCaching<StateQWOPDelayEmbedded_Differences> game
             = new GameQWOPCaching<>(1,2, GameQWOPCaching.StateType.DIFFERENCES);
+
+    static ITransform<StateQWOPDelayEmbedded_Differences> stateNormalizer;
+
+    static {
+        try {
+            stateNormalizer = new StateQWOPDelayEmbedded_Differences.Normalizer(
+                    StateQWOPDelayEmbedded_Differences.Normalizer.NormalizationMethod.STDEV);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) throws IOException {
 
@@ -59,8 +73,7 @@ public class CreateConfig {
             valueFunction = new ValueFunction_TensorFlow_StateOnly<>(
                     "src/main/resources/tflow_models/test.pb",
                     game.getCopy(),
-                    new StateQWOPDelayEmbedded_Differences.Normalizer(
-                            StateQWOPDelayEmbedded_Differences.Normalizer.NormalizationMethod.STDEV),
+                    stateNormalizer,
                     layerSizes,
                     opts,
                     "",
@@ -81,7 +94,8 @@ public class CreateConfig {
         List<SearchConfiguration.SearchOperation<CommandQWOP, StateQWOPDelayEmbedded_Differences,
                 GameQWOPCaching<StateQWOPDelayEmbedded_Differences>>> searchOperations = new ArrayList<>();
 
-        IUserInterface<CommandQWOP, StateQWOP> ui = CreateConfig.setupFullUI(new GameQWOP());
+        IUserInterface<CommandQWOP, StateQWOPDelayEmbedded_Differences> ui
+                = CreateConfig.setupFullUI(game.getCopy(), stateNormalizer);
 
         searchOperations.add(new SearchConfiguration.SearchOperation<>(
                 new TreeStage_FixedGames<>(80000),
@@ -129,14 +143,12 @@ public class CreateConfig {
                 new DataSaver_Null<>()));
 
 
-        SearchConfiguration<CommandQWOP,
-                StateQWOPDelayEmbedded_Differences,
-                GameQWOPCaching<StateQWOPDelayEmbedded_Differences>> configuration
-                = new SearchConfiguration<>(machine, game.getCopy(), tree, searchOperations, null); // TODO fix UI
+        SearchConfiguration<CommandQWOP, StateQWOPDelayEmbedded_Differences, GameQWOPCaching<StateQWOPDelayEmbedded_Differences>> configuration
+                = new SearchConfiguration<>(machine, game.getCopy(), tree, searchOperations, ui); // TODO fix UI
 
 
-        SearchConfiguration.serializeToXML(new File("./src/main/resources/config/default.xml"), configuration);
-        SearchConfiguration.serializeToJson(new File("./src/main/resources/config/default.json"), configuration);
+//        SearchConfiguration.serializeToXML(new File("./src/main/resources/config/default.xml"), configuration);
+//        SearchConfiguration.serializeToJson(new File("./src/main/resources/config/default.json"), configuration);
         SearchConfiguration.serializeToYaml(new File("./src/main/resources/config/default.yaml"), configuration);
         // configuration.searchOperations.add(configuration.searchOperations.get(0));
 //        serializeToXML(new File("./src/main/resources/config/config.xml"), configuration);
@@ -151,39 +163,47 @@ public class CreateConfig {
      * TFlow components which are troublesome on some computers.
      */
     @SuppressWarnings("Duplicates")
-    public static UI_Full<CommandQWOP, StateQWOP> setupFullUI(GameQWOP game) {
-        UI_Full<CommandQWOP, StateQWOP> fullUI = new UI_Full<>();
+    private static <S extends IStateQWOP> UI_Full<CommandQWOP, S> setupFullUI(IGameSerializable<CommandQWOP, S> game,
+                                                                              ITransform<S> stateNormalizer) {
+        UI_Full<CommandQWOP, S> fullUI = new UI_Full<>();
 
         /* Make each UI component */
         PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed("Run Animation");
-        PanelRunner_Snapshot snapshotPane = new PanelRunner_Snapshot("StateQWOP Viewer");
-        PanelRunner_Comparison comparisonPane = new PanelRunner_Comparison("StateQWOP Compare");
-        PanelPlot_States statePlotPane = new PanelPlot_States("StateQWOP Plots", 6); // 6 plots per view at the bottom.
-        PanelPie_ViableFutures viableFuturesPane = new PanelPie_ViableFutures("Viable Futures");
-        PanelHistogram_LeafDepth leafDepthPane = new PanelHistogram_LeafDepth("Leaf depth distribution");
-        PanelPlot_Transformed pcaPlotPane =
+        PanelRunner_Snapshot<S> snapshotPane = new PanelRunner_Snapshot<>("StateQWOP Viewer");
+        PanelRunner_Comparison<S> comparisonPane = new PanelRunner_Comparison<>("StateQWOP Compare");
+        PanelPlot_States<CommandQWOP, S> statePlotPane = new PanelPlot_States<>("StateQWOP Plots", 6); // 6
+        // plots per view at
+        // the bottom.
+        PanelPie_ViableFutures<CommandQWOP, S> viableFuturesPane = new PanelPie_ViableFutures<>("Viable " +
+                "Futures");
+        PanelHistogram_LeafDepth<CommandQWOP, S> leafDepthPane = new PanelHistogram_LeafDepth<>("Leaf depth " +
+                "distribution");
+        PanelPlot_Transformed<CommandQWOP, S> pcaPlotPane =
                 new PanelPlot_Transformed<>(new Transform_PCA<>(IntStream.range(0, 72).toArray()), "PCA Plots",6);
-        PanelPlot_Controls controlsPlotPane = new PanelPlot_Controls("Controls Plots", 6); // 6 plots per view at the
-        // bottom.
-        PanelPlot_Transformed autoencPlotPane =
+        PanelPlot_Controls<CommandQWOP, S> controlsPlotPane = new PanelPlot_Controls<>("Controls Plots", 6);
+        // 6 plots per view at the bottom.
+        PanelPlot_Transformed<CommandQWOP, S> autoencPlotPane =
                 new PanelPlot_Transformed<>(new Transform_Autoencoder<>("src/main/resources/tflow_models" +
                         "/AutoEnc_72to12_6layer.pb", 12), "Autoenc Plots", 6);
         autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon<>(1));
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
 //        workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
 
-        PanelRunner_ControlledTFlow controlledRunnerPane = new PanelRunner_ControlledTFlow("ValFun " +
-                "controller", game.getCopy(), "src/main/resources/tflow_models", "src/main/resources/tflow_models" +
-                "/checkpoints");
+        PanelRunner_ControlledTFlow<S> controlledRunnerPane = new PanelRunner_ControlledTFlow<>(
+                "ValFun controller",
+                game.getCopy(),
+                stateNormalizer,
+                "src/main/resources/tflow_models",
+                "src/main/resources/tflow_models/checkpoints");
 
-        fullUI.addTab(runnerPanel);
+//        fullUI.addTab(runnerPanel); // TODO
         fullUI.addTab(snapshotPane);
         fullUI.addTab(comparisonPane);
         fullUI.addTab(statePlotPane);
         fullUI.addTab(viableFuturesPane);
         fullUI.addTab(leafDepthPane);
         fullUI.addTab(controlsPlotPane);
-        fullUI.addTab(singleRunPlotPane);
+//        fullUI.addTab(singleRunPlotPane); // TODO
         fullUI.addTab(pcaPlotPane);
         fullUI.addTab(autoencPlotPane);
         fullUI.addTab(controlledRunnerPane);

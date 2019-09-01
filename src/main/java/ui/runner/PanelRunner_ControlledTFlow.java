@@ -2,9 +2,12 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_ValueFunction;
-import game.qwop.GameQWOP;
+import game.IGameSerializable;
 import game.qwop.CommandQWOP;
-import game.qwop.StateQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.GameQWOPCaching;
+import game.qwop.IStateQWOP;
+import game.state.transform.ITransform;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,8 +30,9 @@ import java.util.Objects;
  * Panel for showing the behavior of controllers based around {@link ValueFunction_TensorFlow_StateOnly}. Has GUI
  * menus for selecting which Tensorflow model to use and which checkpoint file to load.
  */
-public class PanelRunner_ControlledTFlow
-        extends PanelRunner_Controlled<Controller_ValueFunction<CommandQWOP, StateQWOP, ValueFunction_TensorFlow<CommandQWOP, StateQWOP>>, GameQWOP>
+public class PanelRunner_ControlledTFlow<S extends IStateQWOP>
+        extends PanelRunner_Controlled<Controller_ValueFunction<CommandQWOP, S,
+        ValueFunction_TensorFlow<CommandQWOP, S>>, S, IGameSerializable<CommandQWOP, S>>
         implements MouseListener, MouseMotionListener, ActionListener {
 
     /**
@@ -43,6 +47,8 @@ public class PanelRunner_ControlledTFlow
     @JsonProperty("checkpointLocation")
     public final String checkpointLocation;
 
+    @JsonProperty("stateNormalizer")
+    private final ITransform<S> stateNormalizer;
     /**
      * Drop-down menu for selecting Tensorflow model.
      */
@@ -78,13 +84,15 @@ public class PanelRunner_ControlledTFlow
     private float disturbanceY;
 
     public PanelRunner_ControlledTFlow(@JsonProperty("name") String name,
-                                       @JsonProperty("game") GameQWOP game,
+                                       @JsonProperty("game") IGameSerializable<CommandQWOP, S> game,
+                                       @JsonProperty("stateNormalizer") ITransform<S> stateNormalizer,
                                        @JsonProperty("modelLocation") String modelLocation,
                                        @JsonProperty("checkpointLocation") String checkpointLocation) {
         super(name, game, null);
 
         this.modelLocation = modelLocation;
         this.checkpointLocation = checkpointLocation;
+        this.stateNormalizer = stateNormalizer;
 
         // Selecting the TFlow model.
         JLabel modelLabel = new JLabel("Model");
@@ -227,7 +235,7 @@ public class PanelRunner_ControlledTFlow
                                 new ValueFunction_TensorFlow_StateOnly<>(
                                         Paths.get(modelLocation, selectedModel).toFile(),
                                         game,
-                                        new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+                                        stateNormalizer,
                                         false
                                 )
                         );
@@ -317,8 +325,13 @@ public class PanelRunner_ControlledTFlow
     public void mouseMoved(MouseEvent e) {}
 
     @Override
-    void applyDisturbance(GameQWOP game) {
-        game.applyBodyImpulse(disturbanceX, disturbanceY);
+    void applyDisturbance(IGameSerializable<CommandQWOP, S> game) {
+        // TODO other game types.
+        if (game instanceof GameQWOP) {
+            ((GameQWOP) game).applyBodyImpulse(disturbanceX, disturbanceY);
+        } else if (game instanceof GameQWOPCaching) {
+            ((GameQWOPCaching) game).applyBodyImpulse(disturbanceX, disturbanceY);
+        }
     }
 
     /**

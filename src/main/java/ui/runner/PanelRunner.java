@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Action;
 import game.qwop.CommandQWOP;
-import game.qwop.StateQWOP;
+import game.qwop.IStateQWOP;
 import ui.IUserInterface.TabbedPaneActivator;
 
 import javax.swing.*;
@@ -34,8 +34,8 @@ import java.util.List;
         @JsonSubTypes.Type(value = PanelRunner_Controlled.class, name = "controlled"),
         @JsonSubTypes.Type(value = PanelRunner_ControlledTFlow.class, name = "controlled_valfun")
 })
-public abstract class PanelRunner extends JPanel implements TabbedPaneActivator<CommandQWOP, StateQWOP>,
-        ComponentListener {
+public abstract class PanelRunner<S extends IStateQWOP> extends JPanel implements TabbedPaneActivator<CommandQWOP,
+        S>, ComponentListener {
 
     /**
      * Should this panel be drawing or is it hidden.

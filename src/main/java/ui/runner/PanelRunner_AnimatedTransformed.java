@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  *
  * @author matt
  */
-public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated implements ActionListener {
+public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated<StateQWOP> implements ActionListener {
 
     /**
      * Some {@link ITransform} require an initial calculation before working. This flag records whether this

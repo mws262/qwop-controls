@@ -3,6 +3,7 @@ package ui.runner;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.qwop.CommandQWOP;
 import game.qwop.GameQWOP;
+import game.qwop.IStateQWOP;
 import game.qwop.StateQWOP;
 import tree.node.NodeGameGraphicsBase;
 
@@ -14,12 +15,12 @@ import java.awt.*;
  *
  * @author matt
  */
-public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
+public class PanelRunner_SimpleState<S extends IStateQWOP> extends PanelRunner<S> implements Runnable {
 
     /**
      * Current state being displayed.
      */
-    private StateQWOP currentState;
+    private IStateQWOP currentState;
 
     private Thread thread;
 
@@ -37,7 +38,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
     }
 
     @Override
-    public void update(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> node) {
+    public void update(NodeGameGraphicsBase<?, CommandQWOP, S> node) {
         currentState = node.getState();
     }
 
@@ -49,7 +50,7 @@ public class PanelRunner_SimpleState extends PanelRunner implements Runnable {
         if (!active || currentState == null) return;
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-        GameQWOP.drawExtraRunner(g2, currentState, "", runnerScaling,
+        GameQWOP.drawExtraRunner(g2, currentState.getPositionCoordinates(), "", runnerScaling,
 				500 - (int) (currentState.getCenterX() * runnerScaling),
                 yOffsetPixels + 100,
                 Color.BLACK,
