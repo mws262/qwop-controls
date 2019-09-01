@@ -331,12 +331,18 @@ public abstract class SearchTemplate {
         fullUI.addTab(pcaPlotPane);
         fullUI.addTab(autoencPlotPane);
 
-        PanelRunner_ControlledTFlow controllerPane
-                = new PanelRunner_ControlledTFlow(
-                "Controller",
-                new GameQWOP(),
-                "src/main/resources/tflow_models",
-                "src/main/resources/tflow_models/checkpoints");
+        PanelRunner_ControlledTFlow<StateQWOP> controllerPane = null;
+        try {
+            controllerPane = new PanelRunner_ControlledTFlow<>(
+            "Controller",
+            new GameQWOP(),
+            new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+            "src/main/resources/tflow_models",
+            "src/main/resources/tflow_models/checkpoints");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        assert controllerPane != null;
         controllerPane.actionGenerator = RolloutPolicyBase.getQWOPRolloutActionGenerator();
 
         fullUI.addTab(controllerPane);

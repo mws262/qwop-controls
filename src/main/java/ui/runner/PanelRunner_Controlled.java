@@ -6,10 +6,7 @@ import game.IGameSerializable;
 import game.action.Action;
 import game.action.ActionQueue;
 import game.action.IActionGenerator;
-import game.qwop.CommandQWOP;
-import game.qwop.GameQWOP;
-import game.qwop.QWOPConstants;
-import game.qwop.StateQWOP;
+import game.qwop.*;
 import tree.node.NodeGameExplorable;
 
 import javax.swing.*;
@@ -23,8 +20,8 @@ import java.util.Arrays;
  * @param <C> Controller type being used. Must implement the IController interface.
  * @param <G> Game implementation used. Must implement the IGameInternal interface.
  */
-public class PanelRunner_Controlled<C extends IController<CommandQWOP, StateQWOP>,
-        G extends IGameSerializable<CommandQWOP, StateQWOP>> extends PanelRunner {
+public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S extends IStateQWOP,
+        G extends IGameSerializable<CommandQWOP, S>> extends PanelRunner<S> {
 
     /**
      * Controller being visualized.
@@ -232,7 +229,7 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, StateQWOP
      */
     private class ControllerExecutor implements Runnable {
 
-        private NodeGameExplorable<CommandQWOP, StateQWOP> node;
+        private NodeGameExplorable<CommandQWOP, S> node;
 
         int tsDelay = normalSimRate;
 

@@ -109,6 +109,10 @@ public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameS
         }
     }
 
+    public void applyBodyImpulse(float xComp, float yComp) {
+        game.applyBodyImpulse(xComp, yComp);
+    }
+
     @Override
     public boolean isFailed() {
         return game.isFailed();

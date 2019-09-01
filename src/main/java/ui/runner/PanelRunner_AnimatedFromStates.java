@@ -3,13 +3,13 @@ package ui.runner;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.qwop.GameQWOP;
-import game.IGameInternal;
+import game.qwop.IStateQWOP;
 import game.qwop.StateQWOP;
 
 import java.awt.*;
 import java.util.Queue;
 
-public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runnable {
+public class PanelRunner_AnimatedFromStates<S extends IStateQWOP> extends PanelRunner<S> implements Runnable {
 
     /**
      * Is the current simulation paused?
@@ -19,7 +19,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     /**
      * This panel's copy of the game it uses to run games for visualization.
      */
-    protected IGameInternal game;
+    protected GameQWOP game;
 
     private Thread thread;
 

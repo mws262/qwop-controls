@@ -14,15 +14,15 @@ import java.util.List;
 public class PolicyQCartPole {
 
     private final CartPole cartPole = new CartPole();
-    PolicyQNetwork net;
+    private PolicyQNetwork net;
 
-    PolicyQCartPole(PolicyQNetwork net) {
+    private PolicyQCartPole(PolicyQNetwork net) {
         this.net = net;
         cartPole.connect(true);
     }
 
     // Returns the first ts in a game. Is a forward-linked list.
-    public void playGame() {
+    private void playGame() {
         cartPole.resetGame();
         boolean done = false;
 
@@ -53,7 +53,7 @@ public class PolicyQCartPole {
         System.out.print("ts: " + total + ", ");
     }
 
-    public void justEvaluate() {
+    private void justEvaluate() {
         cartPole.resetGame();
         int ts = 0;
         while (!cartPole.isFailed()) {
