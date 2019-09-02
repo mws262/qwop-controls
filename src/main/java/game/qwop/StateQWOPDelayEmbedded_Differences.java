@@ -1,5 +1,6 @@
 package game.qwop;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.state.transform.ITransform;
 import org.jetbrains.annotations.NotNull;
@@ -61,6 +62,7 @@ public class StateQWOPDelayEmbedded_Differences extends StateQWOPDelayEmbedded_P
 
         private StatisticsQWOP stateStats = new StatisticsQWOP();
 
+        @JsonCreator
         public Normalizer(@JsonProperty("normalizationMethod") NormalizationMethod normalizationMethod) throws FileNotFoundException {
             this.normalizationMethod = normalizationMethod;
         }

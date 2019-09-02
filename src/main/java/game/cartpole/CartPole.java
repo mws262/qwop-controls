@@ -1,5 +1,6 @@
 package game.cartpole;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import game.IGameInternal;
 import org.apache.logging.log4j.LogManager;
@@ -31,8 +32,7 @@ import java.awt.*;
  *
  * @author matt
  */
-public class CartPole implements IGameInternal<CommandCartPole, StateCartPole> { // TODO implement one of the game
-    // interfaces.
+public class CartPole implements IGameInternal<CommandCartPole, StateCartPole> {
 
     /**
      * StateQWOP space dimension. [cart position, cart velocity, pole angle, pole velocity at tip]
@@ -161,6 +161,7 @@ public class CartPole implements IGameInternal<CommandCartPole, StateCartPole> {
         step(command);
     }
 
+    @JsonIgnore
     @Override
     public int getNumberOfChoices() {
         return ACTIONSPACE_SIZE;
@@ -171,9 +172,11 @@ public class CartPole implements IGameInternal<CommandCartPole, StateCartPole> {
         // TODO
     }
 
+    @JsonIgnore
     @Override
     public void setState(StateCartPole st) {} // TODO
 
+    @JsonIgnore
     @Override
     public IGameInternal<CommandCartPole, StateCartPole> getCopy() {
         return null;
@@ -183,6 +186,7 @@ public class CartPole implements IGameInternal<CommandCartPole, StateCartPole> {
      * Get the system state as of the most recent call to {@link CartPole#step(CommandCartPole)}.
      * @return 4-element array of state variables.
      */
+    @JsonIgnore
     public StateCartPole getCurrentState() {
         return currentState;
     }
@@ -192,16 +196,19 @@ public class CartPole implements IGameInternal<CommandCartPole, StateCartPole> {
      * exceed 200. Note that you can continue to step the game after this point, but the environment scores it as over.
      * @return Whether this game episode is over.
      */
+    @JsonIgnore
     @Override
     public boolean isFailed() {
         return currentState.isFailed();
     }
 
+    @JsonIgnore
     @Override
     public long getTimestepsThisGame() {
         return timestepsThisGame;
     }
 
+    @JsonIgnore
     @Override
     public int getStateDimension() {
         return STATE_SIZE;
@@ -212,6 +219,7 @@ public class CartPole implements IGameInternal<CommandCartPole, StateCartPole> {
      * environment: just gets 1 for every successful, unfallen timestep.
      * @return Reward from the most recent timestep.
      */
+    @JsonIgnore
     public float getLastReward() {
         return lastReward;
     }
@@ -222,6 +230,7 @@ public class CartPole implements IGameInternal<CommandCartPole, StateCartPole> {
      * @return Total reward accumulated over the course of the current episode.
      */
     @SuppressWarnings("unused")
+    @JsonIgnore
     public double getCumulativeReward() {
         return cumulativeReward;
     }

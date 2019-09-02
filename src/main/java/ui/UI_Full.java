@@ -26,7 +26,7 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
     /**
      * Individual pane for the tree.
      */
-    private PanelTree panelTree;
+    private PanelTree<C, S> panelTree;
 
     /**
      * Pane for the tabbed side of the interface.
@@ -66,7 +66,7 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
         tabPane.addChangeListener(this);
 
         /* Tree pane */
-        panelTree = new PanelTree();
+        panelTree = new PanelTree<>();
         panelTree.addNodeSelectionListener(this); // Add this UI as a listener for selections of nodes on the tree.
 
         // This makes it have that draggable border between the tab and the tree sections.
@@ -95,7 +95,7 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
      *
      * @param newTab New tab to add to the existing set of tabbed panels in this frame.
      */
-    public void addTab(TabbedPaneActivator<C, S> newTab) {
+    public synchronized void addTab(TabbedPaneActivator<C, S> newTab) {
         tabPane.addTab(newTab.getName(), (Component) newTab);
         tabbedPanes.add(newTab);
         tabPane.revalidate();
@@ -106,7 +106,7 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
      *
      * @param tabToRemove Tab to be removed from the set. Throws if the tab is not part of the group.
      */
-    public void removeTab(TabbedPaneActivator tabToRemove) {
+    public synchronized void removeTab(TabbedPaneActivator tabToRemove) {
         if (tabbedPanes.contains(tabToRemove))
             tabbedPanes.remove(tabToRemove);
         else
@@ -114,11 +114,6 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
 
         //Make sure the currently active tab is actually being updated.
         tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
-    }
-
-
-    public void setTabbedPanes(List<TabbedPaneActivator<C, S>> tabbedPanes) {
-        tabbedPanes.forEach(this::addTab);
     }
 
     public List<TabbedPaneActivator<C, S>> getTabbedPanes() {
