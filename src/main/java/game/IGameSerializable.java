@@ -1,5 +1,6 @@
 package game;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Command;
@@ -23,10 +24,13 @@ import java.io.Serializable;
         @JsonSubTypes.Type(value = GameQWOPCaching.class, name = "qwop_caching"),
 })
 public interface IGameSerializable<C extends Command<?>, S extends IState> extends IGameInternal<C, S>, Serializable {
+
+    @JsonIgnore
     byte[] getSerializedState();
 
     IGameSerializable<C, S> restoreSerializedState(byte[] fullState);
 
+    @JsonIgnore
     IGameSerializable<C, S> getCopy();
 
     // Probably not be used by non-qwop games.

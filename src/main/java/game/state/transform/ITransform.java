@@ -1,5 +1,6 @@
 package game.state.transform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.qwop.StateQWOP;
@@ -72,6 +73,7 @@ public interface ITransform<S extends IState> {
      * @return Number of floats that each {@link IState} will be transformed into when calling
      * {@link ITransform#transform(List)}.
      */
+    @JsonIgnore
     int getOutputSize();
 
     /**
@@ -79,5 +81,6 @@ public interface ITransform<S extends IState> {
      *
      * @return The name of this transform.
      */
+    @JsonIgnore
     String getName();
 }

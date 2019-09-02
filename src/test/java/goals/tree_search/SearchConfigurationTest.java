@@ -6,9 +6,10 @@ import controllers.Controller_ValueFunction;
 import distributions.Distribution_Equal;
 import distributions.Distribution_Normal;
 import game.action.*;
-import game.qwop.CommandQWOP;
-import game.qwop.GameQWOP;
-import game.qwop.StateQWOP;
+import game.cartpole.CartPole;
+import game.cartpole.CommandCartPole;
+import game.qwop.*;
+import game.state.transform.ITransform;
 import game.state.transform.Transform_Identity;
 import org.junit.Assert;
 import org.junit.Before;
@@ -851,6 +852,105 @@ public class SearchConfigurationTest {
     }
 
     @Test
+    public void yamlTransform_Identity() throws IOException {
+        File file = File.createTempFile("tformidentity", "yaml");
+        file.deleteOnExit();
+        ITransform<StateQWOP> identityTform = new Transform_Identity<>();
+        SearchConfiguration.serializeToYaml(file, identityTform);
+        Assert.assertTrue(file.exists());
+
+        ITransform<StateQWOP> loaded = SearchConfiguration.deserializeYaml(file, Transform_Identity.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertTrue(loaded instanceof Transform_Identity);
+        Assert.assertEquals(identityTform.getName(), loaded.getName());
+        Assert.assertEquals(identityTform.getOutputSize(), loaded.getOutputSize());
+        Assert.assertArrayEquals(identityTform.transform(GameQWOP.getInitialState()),
+                loaded.transform(GameQWOP.getInitialState()), 1e-12f);
+    }
+
+    @Test
+    public void yamlTransform_StateQWOP_Normalizer() throws IOException {
+        File file = File.createTempFile("tformstateqwopnormalizer", "yaml");
+        file.deleteOnExit();
+        ITransform<StateQWOP> tform = new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV);
+        SearchConfiguration.serializeToYaml(file, tform);
+        Assert.assertTrue(file.exists());
+
+        ITransform<StateQWOP> loaded = SearchConfiguration.deserializeYaml(file, StateQWOP.Normalizer.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertTrue(loaded instanceof StateQWOP.Normalizer);
+        Assert.assertEquals(tform.getName(), loaded.getName());
+        Assert.assertEquals(tform.getOutputSize(), loaded.getOutputSize());
+        Assert.assertArrayEquals(tform.transform(GameQWOP.getInitialState()),
+                loaded.transform(GameQWOP.getInitialState()), 1e-12f);
+    }
+
+    @Test
+    public void yamlTransform_StateQWOPDiff_Normalizer() throws IOException {
+        File file = File.createTempFile("tformstateqwopnormalizerdiff", "yaml");
+        file.deleteOnExit();
+        ITransform<StateQWOPDelayEmbedded_Differences> tform =
+                new StateQWOPDelayEmbedded_Differences.Normalizer(StateQWOPDelayEmbedded_Differences.Normalizer.NormalizationMethod.STDEV);
+        SearchConfiguration.serializeToYaml(file, tform);
+        Assert.assertTrue(file.exists());
+
+        ITransform<StateQWOPDelayEmbedded_Differences> loaded = SearchConfiguration.deserializeYaml(file, StateQWOPDelayEmbedded_Differences.Normalizer.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertTrue(loaded instanceof StateQWOPDelayEmbedded_Differences.Normalizer);
+        Assert.assertEquals(tform.getName(), loaded.getName());
+        StateQWOPDelayEmbedded_Differences testSt =
+                new StateQWOPDelayEmbedded_Differences(new StateQWOP[] {GameQWOP.getInitialState(), GameQWOP.getInitialState()});
+        Assert.assertArrayEquals(tform.transform(testSt),
+                loaded.transform(testSt), 1e-12f);
+    }
+
+    @Test
+    public void yamlTransform_StateQWOPPoses_Normalizer() throws IOException {
+        File file = File.createTempFile("tformstateqwopnormalizerposes", "yaml");
+        file.deleteOnExit();
+        ITransform<StateQWOPDelayEmbedded_Poses> tform =
+                new StateQWOPDelayEmbedded_Poses.Normalizer(StateQWOPDelayEmbedded_Poses.Normalizer.NormalizationMethod.STDEV);
+
+        SearchConfiguration.serializeToYaml(file, tform);
+        Assert.assertTrue(file.exists());
+
+        ITransform<StateQWOPDelayEmbedded_Poses> loaded = SearchConfiguration.deserializeYaml(file, StateQWOPDelayEmbedded_Poses.Normalizer.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertTrue(loaded instanceof StateQWOPDelayEmbedded_Poses.Normalizer);
+        Assert.assertEquals(tform.getName(), loaded.getName());
+        StateQWOPDelayEmbedded_Differences testSt =
+                new StateQWOPDelayEmbedded_Differences(new StateQWOP[] {GameQWOP.getInitialState(), GameQWOP.getInitialState()});
+        Assert.assertArrayEquals(tform.transform(testSt),
+                loaded.transform(testSt), 1e-12f);
+    }
+
+    @Test
+    public void yamlTransform_StateQWOPHighDiff_Normalizer() throws IOException {
+        File file = File.createTempFile("tformstateqwopnormalizerhighdiff", "yaml");
+        file.deleteOnExit();
+        ITransform<StateQWOPDelayEmbedded_HigherDifferences> tform =
+                new StateQWOPDelayEmbedded_HigherDifferences.Normalizer(StateQWOPDelayEmbedded_HigherDifferences.Normalizer.NormalizationMethod.STDEV);
+
+        SearchConfiguration.serializeToYaml(file, tform);
+        Assert.assertTrue(file.exists());
+
+        ITransform<StateQWOPDelayEmbedded_HigherDifferences> loaded = SearchConfiguration.deserializeYaml(file, StateQWOPDelayEmbedded_HigherDifferences.Normalizer.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertTrue(loaded instanceof StateQWOPDelayEmbedded_HigherDifferences.Normalizer);
+        Assert.assertEquals(tform.getName(), loaded.getName());
+        StateQWOPDelayEmbedded_HigherDifferences testSt =
+                new StateQWOPDelayEmbedded_HigherDifferences(new StateQWOP[] {GameQWOP.getInitialState(),
+                        GameQWOP.getInitialState(), GameQWOP.getInitialState(), GameQWOP.getInitialState()});
+        Assert.assertArrayEquals(tform.transform(testSt),
+                loaded.transform(testSt), 1e-12f);
+    }
+
+    @Test
     public void yamlHistogram_LeafDepth() throws IOException {
         File file = File.createTempFile("histodepth", "yaml");
         file.deleteOnExit();
@@ -1308,5 +1408,42 @@ public class SearchConfigurationTest {
                 ValueUpdater_TopNChildren.class);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(valUpdater.numChildrenToAvg, loaded.numChildrenToAvg);
+    }
+
+    @Test
+    public void yamlCartPole() throws IOException {
+        File file = File.createTempFile("cartpole", "yaml");
+        file.deleteOnExit();
+
+        CartPole game = new CartPole();
+        SearchConfiguration.serializeToYaml(file, game);
+        Assert.assertTrue(file.exists());
+
+        CartPole loaded = SearchConfiguration.deserializeYaml(file, CartPole.class);
+        Assert.assertNotNull(loaded);
+    }
+
+    @Test
+    public void yamlCommandCartPole() throws IOException {
+        File file = File.createTempFile("cartpolecommand", "yaml");
+        file.deleteOnExit();
+
+        CommandCartPole left = CommandCartPole.LEFT;
+        SearchConfiguration.serializeToJson(file, left);
+        Assert.assertTrue(file.exists());
+
+        CommandCartPole loaded = SearchConfiguration.deserializeYaml(file, CommandCartPole.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertArrayEquals(left.toOneHot(), loaded.toOneHot(), 1e-12f);
+
+        CommandCartPole right = CommandCartPole.LEFT;
+        SearchConfiguration.serializeToJson(file, right);
+        Assert.assertTrue(file.exists());
+
+        loaded = SearchConfiguration.deserializeYaml(file, CommandCartPole.class);
+        Assert.assertNotNull(loaded);
+
+        Assert.assertArrayEquals(right.toOneHot(), loaded.toOneHot(), 1e-12f);
     }
 }
