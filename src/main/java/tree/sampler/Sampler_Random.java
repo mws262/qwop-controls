@@ -18,6 +18,37 @@ public class Sampler_Random<C extends Command<?>, S extends IState> implements I
     private boolean treePolicyDone = false;
     private boolean expansionPolicyDone = false;
 
+
+//    @Override
+//    public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
+//        if (startNode.isFullyExplored())
+//            throw new IllegalStateException("Tree policy should not be invoked at a fully-explored node.");
+//
+//        // Count the number of available children to go to next.
+//        int candidateChildren = 0;
+//        for (NodeGameExplorableBase<?, C, S> child : startNode.getChildren()) {
+//            if (!child.isFullyExplored() && !child.isLocked()) candidateChildren++;
+//        }
+//        int candidateExpansions = startNode.getUntriedActionCount();
+//
+//        int selection = Utility.randInt(0, candidateChildren + candidateExpansions - 1);
+//
+//        if (selection < candidateChildren) {
+//            return treePolicy(startNode
+//                    .getChildren()
+//                    .stream()
+//                    .filter(c -> !c.isLocked() && !c.isFullyExplored())
+//                    .findAny()
+//                    .get());
+//        } else {
+//            if (startNode.reserveExpansionRights()) {
+//                return startNode;
+//            } else {
+//                throw new IllegalStateException("Should not be here.");
+//            }
+//        }
+//    }
+
     @Override
     public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
         if (startNode.isFullyExplored()) {
@@ -70,7 +101,7 @@ public class Sampler_Random<C extends Command<?>, S extends IState> implements I
                 // Make a new node or pick a not fully explored child.
                 if (selection > notFullyExploredChildren) {
                     if (currentNode.reserveExpansionRights()) {
-                        if (currentNode.getState() != null && currentNode.getState().isFailed())
+                        if (currentNode.getState().isFailed())
                             throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
                         return currentNode;
                     }

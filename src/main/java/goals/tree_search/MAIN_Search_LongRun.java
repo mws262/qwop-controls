@@ -9,9 +9,11 @@ import game.qwop.GameQWOP;
 import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import savers.DataSaver_Null;
 import tree.node.NodeGameGraphics;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
+import tree.sampler.Sampler_Random;
 import tree.sampler.Sampler_UCB;
 import tree.TreeWorker;
 import tree.Utility;
@@ -114,15 +116,16 @@ public class MAIN_Search_LongRun extends SearchTemplate {
 
     @Override
     TreeWorker<CommandQWOP, StateQWOP> getTreeWorker() {
-        return TreeWorker.makeStandardQWOPTreeWorker(
-                new Sampler_UCB<>(
-                        new EvaluationFunction_Constant<>(0f),
-                        new RolloutPolicy_DeltaScore<>(
-                                new EvaluationFunction_Distance<>(),
-                                RolloutPolicyBase.getQWOPRolloutActionGenerator(),
-                                new Controller_Random<>()),
-                new ValueUpdater_Average<>(),
-                .6f, // TODO hardcoded.
-                1f));
+        return new TreeWorker<>(new GameQWOP(), new Sampler_Random<>(), new DataSaver_Null<>());
+//        return TreeWorker.makeStandardQWOPTreeWorker(
+//                new Sampler_UCB<>(
+//                        new EvaluationFunction_Constant<>(0f),
+//                        new RolloutPolicy_DeltaScore<>(
+//                                new EvaluationFunction_Distance<>(),
+//                                RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+//                                new Controller_Random<>()),
+//                new ValueUpdater_Average<>(),
+//                .6f, // TODO hardcoded.
+//                1f));
     }
 }

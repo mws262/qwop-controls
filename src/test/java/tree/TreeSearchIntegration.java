@@ -12,17 +12,18 @@ import game.qwop.StateQWOP;
 import game.state.IState;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
+import savers.DataSaver_Null;
+import tree.node.NodeGameExplorable;
 import tree.node.evaluator.*;
 import tree.sampler.*;
 import tree.sampler.rollout.*;
+import tree.stage.*;
 import value.IValueFunction;
 import value.ValueFunction_Constant;
 import value.updaters.*;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Queue;
+import javax.swing.plaf.nimbus.State;
+import java.util.*;
 
 public class TreeSearchIntegration {
 
@@ -39,13 +40,75 @@ public class TreeSearchIntegration {
 
         SamplerPicker<CommandQWOP, StateQWOP> samplerQWOP = new SamplerPicker<>(sqDistState, nullAction, alist1,
                 alist2);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 20; i++) {
             ISampler<CommandQWOP, StateQWOP> current = samplerQWOP.getCurrent();
+            TreeWorker<CommandQWOP, StateQWOP> tw = new TreeWorker<>(new GameQWOP(), current, new DataSaver_Null<>());
+            TreeStage<CommandQWOP, StateQWOP> ts = new TreeStage_FixedGames<>(10);
+
+            ActionList<CommandQWOP> al = new ActionList<>(new Distribution_Equal<>());
+            al.add(new Action<>(10, CommandQWOP.QP));
+            al.add(new Action<>(40, CommandQWOP.WP));
+
+            NodeGameExplorable<CommandQWOP, StateQWOP> root = new NodeGameExplorable<>(GameQWOP.getInitialState(), new ActionGenerator_FixedActions<>(al));
+            List<TreeWorker<CommandQWOP, StateQWOP>> worker = new ArrayList<>();
+            worker.add(tw);
+            ts.initialize(worker, root);
             System.out.println("Did a thing!");
             advancePickers(samplerQWOP);
+        }
+    }
 
+    public static class TreeStagePicker<C extends Command<?>, S extends IState> implements Picker<TreeStage<C, S>> {
+
+        private int idx = 0;
+
+        @Override
+        public TreeStage<C, S> getCurrent() {
+
+            TreeStage<C, S> selection;
+
+            switch (idx) {
+                case 0:
+                    selection = new TreeStage_Dummy<>();
+                    break;
+                case 1:
+                    selection = new TreeStage_FixedGames<>(5);
+                    break;
+                case 2:
+                    selection = new TreeStage_MaxDepth<>(3, 10);
+                    break;
+                case 3:
+                    selection = new TreeStage_MinDepth<>(2);
+                    break;
+                case 4:
+                    selection = new TreeStage_SearchForever<>();
+                    break;
+//                case 5: // TODO
+//                    selection = new TreeStage_ValueFunctionUpdate<>();
+//                    break;
+//                case 6:
+//                    selection = new TreeStage_Grouping<>();
+//                    break;
+                default:
+                    throw new IndexOutOfBoundsException("bad here.");
+            }
+            return selection;
         }
 
+        @Override
+        public void advance() {
+            idx++;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return idx < 4;
+        }
+
+        @Override
+        public void reset() {
+            idx = 0;
+        }
     }
 
     /**
@@ -90,6 +153,7 @@ public class TreeSearchIntegration {
                     if (advancePickers(evaluationFunctionPicker)) {
                         idx++;
                     }
+                    break;
                 case 5:
                     selection = new Sampler_UCB<>(evaluationFunctionPicker.getCurrent(), rolloutPolicyPicker.getCurrent(),
                             valueUpdaterPicker.getCurrent(), 1, 1);
@@ -97,6 +161,7 @@ public class TreeSearchIntegration {
                     if (advancePickers(valueUpdaterPicker, rolloutPolicyPicker, evaluationFunctionPicker)) {
                         idx++;
                     }
+                    break;
                 default:
                     throw new IllegalStateException("Out of samplers.");
             }
@@ -143,26 +208,21 @@ public class TreeSearchIntegration {
             switch(idx) {
                 case 0:
                     selection = new EvaluationFunction_Constant<>(5f);
-                    idx++;
                     break;
                 case 1:
                     selection = new EvaluationFunction_Distance<>();
-                    idx++;
                     break;
                 case 2:
                     selection = new EvaluationFunction_Random<>();
-                    idx++;
                     break;
                 case 3:
                     selection = new EvaluationFunction_HandTunedOnState<>();
                     break;
                 case 4:
                     selection = new EvaluationFunction_SqDistFromOther<>(sqDistState);
-                    idx++;
                     break;
                 case 5:
                     selection = new EvaluationFunction_Velocity<>();
-                    idx++;
                     break;
                 default:
                     throw new IllegalStateException("index out of bounds.");
@@ -176,7 +236,7 @@ public class TreeSearchIntegration {
         }
 
         public boolean hasNext() {
-            return idx < 6;
+            return idx < 4;
         }
 
         public void reset() {
@@ -324,7 +384,7 @@ public class TreeSearchIntegration {
 
         @Override
         public boolean hasNext() {
-            return idx < 5;
+            return idx < 4;
         }
 
         @Override
@@ -355,11 +415,11 @@ public class TreeSearchIntegration {
             IActionGenerator<C> selection;
             switch(idx) {
                 case 0:
-                    selection = new ActionGenerator_Null<>();
+                    selection = new ActionGenerator_UniformNoRepeats<>(alist1, alist2);
                     idx++;
                     break;
                 case 1:
-                    selection = new ActionGenerator_UniformNoRepeats<>(alist1, alist2);
+                    selection = new ActionGenerator_Null<>();
                     idx++;
                     break;
                 case 2:
