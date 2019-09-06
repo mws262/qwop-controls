@@ -1,11 +1,13 @@
 package tree.sampler;
 
-import game.action.Action;
 import game.IGameInternal;
+import game.action.Action;
 import game.action.Command;
 import game.state.IState;
-import tree.node.NodeGameExplorableBase;
 import tree.Utility;
+import tree.node.NodeGameExplorableBase;
+
+import java.util.stream.IntStream;
 
 /**
  * Dumb sampler, either for filling a space or testing purposes.
@@ -17,98 +19,137 @@ public class Sampler_Random<C extends Command<?>, S extends IState> implements I
 
     private boolean treePolicyDone = false;
     private boolean expansionPolicyDone = false;
-
-
-//    @Override
-//    public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
-//        if (startNode.isFullyExplored())
-//            throw new IllegalStateException("Tree policy should not be invoked at a fully-explored node.");
-//
-//        // Count the number of available children to go to next.
-//        int candidateChildren = 0;
-//        for (NodeGameExplorableBase<?, C, S> child : startNode.getChildren()) {
-//            if (!child.isFullyExplored() && !child.isLocked()) candidateChildren++;
-//        }
-//        int candidateExpansions = startNode.getUntriedActionCount();
-//
-//        int selection = Utility.randInt(0, candidateChildren + candidateExpansions - 1);
-//
-//        if (selection < candidateChildren) {
-//            return treePolicy(startNode
-//                    .getChildren()
-//                    .stream()
-//                    .filter(c -> !c.isLocked() && !c.isFullyExplored())
-//                    .findAny()
-//                    .get());
-//        } else {
-//            if (startNode.reserveExpansionRights()) {
-//                return startNode;
-//            } else {
-//                throw new IllegalStateException("Should not be here.");
-//            }
-//        }
-//    }
+    private int deadlockDelayCurrent = 0;
 
     @Override
     public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
-        if (startNode.isFullyExplored()) {
-            throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. " +
-					"Whoever called this is at fault.");
-        }
-        NodeGameExplorableBase<?, C, S> currentNode = startNode;
-
-        while (true) {
-            if (currentNode.isFullyExplored())
-                currentNode = startNode; // Just start over for now. I don't think it's a big enough problem to
-			// stress over.
-
-            // Count the number of available children to go to next.
-            int notFullyExploredChildren = 0;
-            for (NodeGameExplorableBase<?, C, S> child : currentNode.getChildren()) {
-                if (!child.isFullyExplored() && !child.isLocked()) notFullyExploredChildren++;
-            }
-
-            if (notFullyExploredChildren == 0 && currentNode.getUntriedActionCount() == 0) {
-                currentNode = startNode;
-                continue; // TODO: investigate this error further.
-            }
-
-            if (notFullyExploredChildren == 0) {
-                if (currentNode.reserveExpansionRights()) {
-                    // We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
-                    return currentNode;
-                }
-            }
-
-            if (currentNode.getUntriedActionCount() == 0) { // No unchecked game.command means that we pick a random
-            	// not-fully-explored child.
-                // Pick random not fully explored child. Keep going.
-                int selection = Utility.randInt(0, notFullyExploredChildren - 1);
-                int count = 0;
-                for (NodeGameExplorableBase<?, C, S> child : currentNode.getChildren()) {
-                    if (!child.isFullyExplored() && !child.isLocked()) {
-                        if (count == selection) {
-                            currentNode = child;
-                            break;
-                        } else {
-                            count++;
-                        }
-                    }
-                }
+        // First nodes at root can be handled a little differently to make sure duplicate actions aren't added.
+        if (startNode.getTreeDepth() == 0 && (startNode.getChildCount() == 0 || startNode.isLocked())) {
+            if (startNode.reserveExpansionRights()) {
+                return startNode;
             } else {
-                // Probability decides.
-                int selection = Utility.randInt(1, notFullyExploredChildren + currentNode.getUntriedActionCount());
-                // Make a new node or pick a not fully explored child.
-                if (selection > notFullyExploredChildren) {
-                    if (currentNode.reserveExpansionRights()) {
-                        if (currentNode.getState().isFailed())
-                            throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
-                        return currentNode;
-                    }
+                deadlockDelay();
+                return treePolicy(startNode);
+            }
+        }
+
+        NodeGameExplorableBase<?, C, S> n = startNode;
+        while (n.getTreeDepth() > 0 && (n.isLocked() || n.isFullyExplored())) {
+            n = n.getParent();
+        }
+
+        // Count the number of available children to go to next.
+        int candidateChildren =
+                (int) startNode
+                        .getChildren()
+                        .stream()
+                        .filter(c -> !c.isLocked() && !c.isFullyExplored())
+                        .count();
+
+        // Use weighted probability to decide whether to go deeper down existing nodes or expand right here.
+        int candidateExpansions = startNode.getUntriedActionCount();
+        if (candidateChildren + candidateExpansions == 0) {
+            deadlockDelay();
+            return treePolicy(startNode); // No options here. Another worker may have beaten us to it.
+        }
+        int selection = Utility.randInt(0, candidateChildren + candidateExpansions - 1);
+
+        if (selection < candidateChildren) { // Go deeper.
+            int[] elementOrder = IntStream.range(0, startNode.getChildCount()).toArray();
+            Utility.shuffleIntArray(elementOrder);
+
+            for (int idx : elementOrder) { // Go through children in random order and get the first one that meets
+                // criteria. If another worker gets to these first, then we have to go back up the tree and try again.
+                NodeGameExplorableBase<?, C, S> child = startNode.getChildByIndex(idx);
+                if (!child.isLocked() && !child.isFullyExplored()) {
+                    return treePolicy(child);
                 }
             }
+        } else { // Expand here.
+            if (startNode.reserveExpansionRights()) {
+                resetDeadlockDelay();
+                return startNode;
+            }
+        }
+
+        // Some other worker snagged our options, so we call again, potentially backing up the tree until we find a
+        // node that is open.
+        deadlockDelay();
+        return treePolicy(startNode);
+    }
+
+    private void deadlockDelay() {
+        try {
+            Thread.sleep(deadlockDelayCurrent);
+            deadlockDelayCurrent = deadlockDelayCurrent * 2 + 1;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
+    private void resetDeadlockDelay() {
+        deadlockDelayCurrent = 0;
+    }
+//
+//    @Override
+//    public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
+//        if (startNode.isFullyExplored()) {
+//            throw new RuntimeException("Trying to do tree policy on a given node which is already fully-explored. " +
+//					"Whoever called this is at fault.");
+//        }
+//        NodeGameExplorableBase<?, C, S> currentNode = startNode;
+//
+//        while (true) {
+//            if (currentNode.isFullyExplored())
+//                currentNode = startNode; // Just start over for now. I don't think it's a big enough problem to
+//			// stress over.
+//
+//            // Count the number of available children to go to next.
+//            int notFullyExploredChildren = 0;
+//            for (NodeGameExplorableBase<?, C, S> child : currentNode.getChildren()) {
+//                if (!child.isFullyExplored() && !child.isLocked()) notFullyExploredChildren++;
+//            }
+//
+//            if (notFullyExploredChildren == 0 && currentNode.getUntriedActionCount() == 0) {
+//                currentNode = startNode;
+//                continue; // TODO: investigate this error further.
+//            }
+//
+//            if (notFullyExploredChildren == 0) {
+//                if (currentNode.reserveExpansionRights()) {
+//                    // We got to a place we'd like to expand. Stop tree policy, hand over to expansion policy.
+//                    return currentNode;
+//                }
+//            }
+//
+//            if (currentNode.getUntriedActionCount() == 0) { // No unchecked game.command means that we pick a random
+//            	// not-fully-explored child.
+//                // Pick random not fully explored child. Keep going.
+//                int selection = Utility.randInt(0, notFullyExploredChildren - 1);
+//                int count = 0;
+//                for (NodeGameExplorableBase<?, C, S> child : currentNode.getChildren()) {
+//                    if (!child.isFullyExplored() && !child.isLocked()) {
+//                        if (count == selection) {
+//                            currentNode = child;
+//                            break;
+//                        } else {
+//                            count++;
+//                        }
+//                    }
+//                }
+//            } else {
+//                // Probability decides.
+//                int selection = Utility.randInt(1, notFullyExploredChildren + currentNode.getUntriedActionCount());
+//                // Make a new node or pick a not fully explored child.
+//                if (selection > notFullyExploredChildren) {
+//                    if (currentNode.reserveExpansionRights()) {
+//                        if (currentNode.getState().isFailed())
+//                            throw new RuntimeException("Sampler tried to return a failed state for its tree policy.");
+//                        return currentNode;
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     @Override
     public Action<C> expansionPolicy(NodeGameExplorableBase<?, C, S> startNode) {
@@ -145,6 +186,10 @@ public class Sampler_Random<C extends Command<?>, S extends IState> implements I
     @Override
     public void expansionPolicyActionDone(NodeGameExplorableBase<?, C, S> currentNode) {
         treePolicyDone = false;
+//        if (!currentNode.getState().isFailed()) {
+//            boolean reserved = currentNode.reserveExpansionRights();
+//            assert reserved;
+//        }
         expansionPolicyDone = currentNode.getState().isFailed();
     }
 

@@ -13,7 +13,7 @@ fractionOfMaxWorkers1=1
 bailAfterXGames1=100000000
 
 # Stage 2 toggle: turn sparse data into a single dense TFRecord file.
-doStage2=true
+doStage2=false
 trimEndBy=0
 
 
