@@ -754,24 +754,6 @@ public class SearchConfigurationTest {
     }
 
     @Test
-    public void yamlSampler_FixedDepth() throws IOException {
-        File file = File.createTempFile("samplerfixed", "yaml");
-        file.deleteOnExit();
-
-        Sampler_FixedDepth<CommandQWOP, StateQWOP> sampler = new Sampler_FixedDepth<>(7);
-
-        SearchConfiguration.serializeToYaml(file, sampler);
-        Assert.assertTrue(file.exists());
-
-        Sampler_FixedDepth<CommandQWOP, StateQWOP> loaded = SearchConfiguration.deserializeYaml(file, Sampler_FixedDepth.class);
-        Assert.assertNotNull(loaded);
-
-        Assert.assertEquals(sampler.getHorizonDepth(), loaded.getHorizonDepth());
-        sampler.close();
-        loaded.close();
-    }
-
-    @Test
     public void yamlSampler_Greedy() throws IOException {
         File file = File.createTempFile("samplergreedy", "yaml");
         file.deleteOnExit();

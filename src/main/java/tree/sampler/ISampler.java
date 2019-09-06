@@ -23,8 +23,6 @@ import tree.node.NodeGameExplorableBase;
         @JsonSubTypes.Type(value = Sampler_UCB.class, name = "ucb"),
         @JsonSubTypes.Type(value = Sampler_Deterministic.class, name = "deterministic"),
         @JsonSubTypes.Type(value = Sampler_Distribution.class, name = "distribution"),
-        @JsonSubTypes.Type(value = Sampler_FixedDepth.class, name = "fixed_depth")
-
 })
 public interface ISampler<C extends Command<?>, S extends IState> extends AutoCloseable {
 
