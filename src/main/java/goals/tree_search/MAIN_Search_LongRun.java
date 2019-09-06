@@ -114,7 +114,7 @@ public class MAIN_Search_LongRun extends SearchTemplate {
 
     @Override
     TreeWorker<CommandQWOP, StateQWOP> getTreeWorker() {
-//        return new TreeWorker<>(new GameQWOP(), new Sampler_Random<>(), new DataSaver_Null<>());
+//        return new TreeWorker<>(new GameQWOP(), new Sampler_FixedDepth<>(3), new DataSaver_Null<>());
         return TreeWorker.makeStandardQWOPTreeWorker(
                 new Sampler_UCB<>(
                         new EvaluationFunction_Constant<>(0f),

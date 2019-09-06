@@ -22,7 +22,6 @@ import value.IValueFunction;
 import value.ValueFunction_Constant;
 import value.updaters.*;
 
-import javax.swing.plaf.nimbus.State;
 import java.util.*;
 
 public class TreeSearchIntegration {
@@ -134,29 +133,33 @@ public class TreeSearchIntegration {
             switch (idx) {
                 case 0:
                     selection = new Sampler_Random<>();
+                    System.out.println("Sampler_Random");
                     idx++;
                     break;
                 case 1:
                     selection = new Sampler_Deterministic<>();
+                    System.out.println("Sampler_Deterministic");
+
                     idx++;
                     break;
                 case 2:
                     selection = new Sampler_Distribution<>();
+                    System.out.println("Sampler_Distribution");
+
                     idx++;
                     break;
                 case 3:
-                    selection = new Sampler_FixedDepth<>(3);
-                    idx++;
-                    break;
-                case 4:
                     selection = new Sampler_Greedy<>(evaluationFunctionPicker.getCurrent());
+                    System.out.println("Sampler_Greedy");
+
                     if (advancePickers(evaluationFunctionPicker)) {
                         idx++;
                     }
                     break;
-                case 5:
+                case 4:
                     selection = new Sampler_UCB<>(evaluationFunctionPicker.getCurrent(), rolloutPolicyPicker.getCurrent(),
                             valueUpdaterPicker.getCurrent(), 1, 1);
+                    System.out.println("Sampler_UCB");
 
                     if (advancePickers(valueUpdaterPicker, rolloutPolicyPicker, evaluationFunctionPicker)) {
                         idx++;
@@ -180,7 +183,7 @@ public class TreeSearchIntegration {
         }
 
         public boolean hasNext() {
-            return idx < 6;
+            return idx < 5;
         }
 
         public void reset() {

@@ -13,7 +13,6 @@ import tree.Utility;
 import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.filter.NodeFilter_SurvivalHorizon;
-import tree.sampler.Sampler_FixedDepth;
 import tree.sampler.Sampler_UCB;
 import tree.sampler.rollout.RolloutPolicyBase;
 import tree.stage.TreeStage;
