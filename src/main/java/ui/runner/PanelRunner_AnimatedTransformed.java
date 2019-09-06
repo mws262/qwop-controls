@@ -84,16 +84,18 @@ public class PanelRunner_AnimatedTransformed extends PanelRunner_Animated<StateQ
 
     @Override
     public void simRunToNode(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> node) {
-        List<NodeGameExplorableBase<?, CommandQWOP, StateQWOP>> nodeList = new ArrayList<>();
-        node.getRoot().recurseDownTreeInclusive(nodeList::add);
+        if (enableTransformedRunners.isSelected()) {
+            List<NodeGameExplorableBase<?, CommandQWOP, StateQWOP>> nodeList = new ArrayList<>();
+            node.getRoot().recurseDownTreeInclusive(nodeList::add);
 
-        transformDownsampler.filter(nodeList);
-        List<StateQWOP> stateList = nodeList.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList());
+            transformDownsampler.filter(nodeList);
+            List<StateQWOP> stateList = nodeList.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList());
 
-        for (ITransform<StateQWOP> trans : encoders) {
-            trans.updateTransform(stateList);
+            for (ITransform<StateQWOP> trans : encoders) {
+                trans.updateTransform(stateList);
+            }
+            transformsInitialized = true;
         }
-        transformsInitialized = true;
         super.simRunToNode(node);
     }
 

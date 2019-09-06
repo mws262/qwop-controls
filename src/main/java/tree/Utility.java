@@ -224,14 +224,22 @@ public class Utility {
     }
 
     // Implementing Fisher–Yates shuffle
-    public static void shuffleArray(Object[] ar)
-    {
-        // If running on Java 6 or older, use `new Random()` on RHS here
-        for (int i = ar.length - 1; i > 0; i--)
-        {
+    public static <T> void shuffleArray(T[] ar) {
+        for (int i = ar.length - 1; i > 0; i--) {
             int index = rand.nextInt(i + 1);
             // Simple swap
-            Object a = ar[index];
+            T a = ar[index];
+            ar[index] = ar[i];
+            ar[i] = a;
+        }
+    }
+
+    // Exists because the generic version doesn't like primitive types.
+    public static void shuffleIntArray(int[] ar) {
+        for (int i = ar.length - 1; i > 0; i--) {
+            int index = rand.nextInt(i + 1);
+            // Simple swap
+            int a = ar[index];
             ar[index] = ar[i];
             ar[i] = a;
         }

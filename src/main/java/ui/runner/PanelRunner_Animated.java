@@ -33,7 +33,7 @@ public class PanelRunner_Animated<S extends IStateQWOP> extends PanelRunner<S> i
     /**
      * Stores the QWOP game.command we're going to execute.
      */
-    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
+    private final ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
 
     private Thread thread;
 
@@ -105,6 +105,7 @@ public class PanelRunner_Animated<S extends IStateQWOP> extends PanelRunner<S> i
      * Pop the next command off the queue and execute one timestep.
      */
     private void executeNextOnQueue() {
+        synchronized (actionQueue) {
         if (!actionQueue.isEmpty()) {
             CommandQWOP nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
             Q = nextCommand.get()[0];
@@ -112,6 +113,7 @@ public class PanelRunner_Animated<S extends IStateQWOP> extends PanelRunner<S> i
             O = nextCommand.get()[2];
             P = nextCommand.get()[3];
             game.step(nextCommand);
+        }
         }
     }
 

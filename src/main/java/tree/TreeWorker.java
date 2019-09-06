@@ -271,7 +271,6 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
 //                        Objects.requireNonNull(expansionNode, "This could be a sign of improperly shutting down " +
 //                                "workers at the end of search stages.");
 
-
                         if (expansionNode == null) { // May happen with some tree.samplers when the stage finishes.
                             changeStatus(Status.IDLE);
                         } else {
@@ -326,11 +325,9 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
                     if (actionQueue.isEmpty() || game.isFailed()) {
                         // TODO possibly update the command to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
-                        assert currentGameNode.isLocked();
+//                        assert currentGameNode.isLocked();
                         currentGameNode = currentGameNode.addDoublyLinkedChild(targetActionToTest,
                                 game.getCurrentState());
-                        //currentGameNode.setLock(true); // Don't need to propagate since the first expansion node is
-                        // already locked.
 
                         sampler.expansionPolicyActionDone(currentGameNode);
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
