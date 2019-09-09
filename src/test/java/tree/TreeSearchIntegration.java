@@ -5,6 +5,7 @@ import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
 import controllers.IController;
 import distributions.Distribution_Equal;
+import game.IGameInternal;
 import game.action.*;
 import game.qwop.CommandQWOP;
 import game.qwop.GameQWOP;
@@ -37,23 +38,39 @@ public class TreeSearchIntegration {
         ActionList<CommandQWOP> alist2 = ActionList.makeActionList(new int[] {5, 6, 7, 8}, CommandQWOP.P,
                 new Distribution_Equal<>()); // TODO also make distributions be Pickers
 
-        SamplerPicker<CommandQWOP, StateQWOP> samplerQWOP = new SamplerPicker<>(sqDistState, nullAction, alist1,
+        AllCombinedPicker<CommandQWOP, StateQWOP> combined = new AllCombinedPicker<>(sqDistState, nullAction, alist1,
                 alist2);
         for (int i = 0; i < 20; i++) {
-            ISampler<CommandQWOP, StateQWOP> current = samplerQWOP.getCurrent();
-            TreeWorker<CommandQWOP, StateQWOP> tw = new TreeWorker<>(new GameQWOP(), current, new DataSaver_Null<>());
-            TreeStage<CommandQWOP, StateQWOP> ts = new TreeStage_FixedGames<>(10);
+            combined.go(new GameQWOP());
+        }
+    }
 
-            ActionList<CommandQWOP> al = new ActionList<>(new Distribution_Equal<>());
-            al.add(new Action<>(10, CommandQWOP.QP));
-            al.add(new Action<>(40, CommandQWOP.WP));
+    public static class AllCombinedPicker<C extends Command<?>, S extends IState> {
+        private TreeStagePicker<C, S> treeStagePicker = new TreeStagePicker<>();
+        private SamplerPicker<C, S> samplerPicker;
+        private ActionGeneratorPicker<C> actionGeneratorPicker;
 
-            NodeGameExplorable<CommandQWOP, StateQWOP> root = new NodeGameExplorable<>(GameQWOP.getInitialState(), new ActionGenerator_FixedActions<>(al));
-            List<TreeWorker<CommandQWOP, StateQWOP>> worker = new ArrayList<>();
-            worker.add(tw);
-            ts.initialize(worker, root);
+        private S rootState;
+
+        public AllCombinedPicker(S rootState, Action<C> nullAction, ActionList<C> alist1, ActionList<C> alist2) {
+            samplerPicker = new SamplerPicker<>(rootState, nullAction, alist1, alist2);
+            actionGeneratorPicker = new ActionGeneratorPicker<>(alist1, alist2);
+            this.rootState = rootState;
+        }
+
+        private void go(IGameInternal<C, S> game) {
+            TreeStage<C, S> treeStage = treeStagePicker.getCurrent();
+            ISampler<C, S> sampler = samplerPicker.getCurrent();
+            IActionGenerator<C> actionGenerator = actionGeneratorPicker.getCurrent();
+
+            NodeGameExplorable<C, S> root = new NodeGameExplorable<>(rootState, actionGenerator);
+
+            TreeWorker<C, S> treeWorker = new TreeWorker<>(game, sampler, new DataSaver_Null<>());
+            List<TreeWorker<C, S>> worker = new ArrayList<>();
+            worker.add(treeWorker);
+            treeStage.initialize(worker, root);
             System.out.println("Did a thing!");
-            advancePickers(samplerQWOP);
+            advancePickers(treeStagePicker, samplerPicker, actionGeneratorPicker);
         }
     }
 
@@ -419,22 +436,19 @@ public class TreeSearchIntegration {
             switch(idx) {
                 case 0:
                     selection = new ActionGenerator_UniformNoRepeats<>(alist1, alist2);
-                    idx++;
                     break;
+//                case 1:
+//                    selection = new ActionGenerator_Null<>();
+//                    idx++;
+//                    break;
                 case 1:
-                    selection = new ActionGenerator_Null<>();
-                    idx++;
+                    selection = new ActionGenerator_FixedActions<>(alist1);
                     break;
                 case 2:
-                    selection = new ActionGenerator_FixedActions<>(alist1);
-                    idx++;
-                    break;
-                case 3:
                     selection = new ActionGenerator_FixedSequence<>(alist1, alist2);
-                    idx++;
                     break;
                 default:
-                    throw new IndexOutOfBoundsException("Bad here.");
+                    throw new IndexOutOfBoundsException("Bad here. " + idx);
             }
             return selection;
         }
@@ -446,7 +460,7 @@ public class TreeSearchIntegration {
 
         @Override
         public boolean hasNext() {
-            return idx < 4;
+            return idx < 2;
         }
 
         @Override
