@@ -37,6 +37,7 @@ public interface IGameInternal<C extends Command<?>, S extends IState> extends I
 
     void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels);
 
+    @JsonIgnore
     void setState(S st);
 
     @JsonIgnore

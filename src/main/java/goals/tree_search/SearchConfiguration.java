@@ -368,7 +368,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
     /**
      * Prevent the serialization of certain library classes.
      */
-    private static class IgnoreInheritedIntrospector extends JacksonAnnotationIntrospector {
+    public static class IgnoreInheritedIntrospector extends JacksonAnnotationIntrospector {
         @Override
         public boolean hasIgnoreMarker(final AnnotatedMember m) {
             // System.out.println(m.getDeclaringClass());

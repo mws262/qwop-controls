@@ -7,12 +7,14 @@ import game.action.Action;
 import game.action.ActionQueue;
 import game.action.Command;
 import game.state.IState;
+import org.jetbrains.annotations.NotNull;
 import value.updaters.IValueUpdater;
 import value.updaters.ValueUpdater_HardSet;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Most basic QWOP node. Mainly just a linked container for states, game.command, and an estimated value of the node..
@@ -47,14 +49,16 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C, S>, C extends Co
     private int updateCount;
 
 
-    public NodeGameBase(S rootState) {
+    public NodeGameBase(@NotNull S rootState) {
         super();
         action = null;
         state = rootState;
     }
 
-    NodeGameBase(N parent, Action<C> action, S state) {
+    NodeGameBase(@NotNull N parent, @NotNull Action<C> action, @NotNull S state) {
         super(parent);
+        Objects.requireNonNull(action);
+        Objects.requireNonNull(state);
         this.action = action;
         this.state = state;
         // Check to make sure this node isn't already there in the parent's nodes.

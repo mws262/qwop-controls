@@ -177,7 +177,6 @@ public class GameQWOP implements IGameSerializable<CommandQWOP, StateQWOP> {
     /**
      * Number of constraint-solving steps.
      */
-    @JsonIgnore
     private int iterations = physIterations;
 
     /** Listens for collisions between any body part and the ground. **/
@@ -196,10 +195,8 @@ public class GameQWOP implements IGameSerializable<CommandQWOP, StateQWOP> {
      */
     private static FSTConfiguration fstConfiguration = FSTConfiguration.createDefaultConfiguration();
 
-    //private Random rand = new Random();
     public GameQWOP() {
         resetGame();
-        //rand.setSeed(55555);
     }
 
     /*
@@ -868,6 +865,7 @@ public class GameQWOP implements IGameSerializable<CommandQWOP, StateQWOP> {
     /**
      * Get a new StateVariable6D for a given body.
      */
+    @JsonIgnore
     private StateVariable6D getCurrentBodyState(Body body) {
         Vec2 pos = body.getPosition();
         float x = pos.x;

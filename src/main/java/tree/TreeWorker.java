@@ -1,6 +1,9 @@
 package tree;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import game.qwop.*;
 import game.IGameInternal;
 import game.action.Action;
@@ -92,6 +95,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     /**
      * Queued commands, IE QWOP key presses
      */
+    @JsonIgnore
     public ActionQueue<C> actionQueue = new ActionQueue<>();
 
     /**
@@ -134,6 +138,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
      */
     private double tsPerSecond = 0;
 
+    @JsonIgnore
     public final String workerName;
     private final int workerID;
 
@@ -151,7 +156,10 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
 
     private static final Logger logger = LogManager.getLogger(TreeWorker.class);
 
-    public TreeWorker(IGameInternal<C, S> game, ISampler<C, S> sampler, IDataSaver<C, S> saver) {
+    @JsonCreator
+    public TreeWorker(@JsonProperty("game") IGameInternal<C, S> game,
+                      @JsonProperty("sampler") ISampler<C, S> sampler,
+                      @JsonProperty("saver") IDataSaver<C, S> saver) {
         workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
 
@@ -216,6 +224,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
      *
      * @param rootNode Root node that this worker expands from.
      */
+    @JsonIgnore
     public void setRoot(NodeGameExplorableBase<?, C, S> rootNode) {
         this.rootNode = rootNode;
     }
@@ -263,6 +272,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
 
                     if (sampler.treePolicyGuard(currentGameNode)) { // Sampler tells us when we're done with the tree
                         // policy.
+                        assert !currentGameNode.isFullyExplored() && currentGameNode.getUntriedActionCount() > 0;
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 
                     } else {
@@ -272,7 +282,8 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
 //                                "workers at the end of search stages.");
 
                         if (expansionNode == null) { // May happen with some tree.samplers when the stage finishes.
-                            changeStatus(Status.IDLE);
+                            throw new NullPointerException("Tree policy should not return a null node.");
+                            // changeStatus(Status.IDLE);
                         } else {
                             assert !expansionNode.getState().isFailed() : "Tree policy picked a node with a failed state." +
                                     " This is bad behavior.";
@@ -399,6 +410,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     /**
      * Get the state of the runner.
      */
+    @JsonIgnore
     public IState getGameState() {
         return game.getCurrentState();
     }
@@ -406,6 +418,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     /**
      * How many physics timesteps has this particular worker simulated?
      */
+    @JsonIgnore
     public long getWorkerStepsSimulated() {
         return workerStepsSimulated;
     }
@@ -452,6 +465,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     /**
      * Check if this runner is done or not.
      */
+    @JsonIgnore
     public synchronized boolean isRunning() {
         return workerRunning;
     }
@@ -459,6 +473,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     /**
      * Get the running average of timesteps simulated per second of realtime.
      */
+    @JsonIgnore
     public double getTsPerSecond() {
         return tsPerSecond;
     }
@@ -480,6 +495,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     /**
      * Get the number of games played by all workers, total.
      */
+    @JsonIgnore
     public static long getTotalGamesPlayed() {
         return totalGamesPlayed.longValue();
     }
@@ -487,6 +503,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     /**
      * Get the number of games played by all workers, total.
      */
+    @JsonIgnore
     public static long getTotalTimestepsSimulated() {
         return totalStepsSimulated.longValue();
     }
@@ -495,6 +512,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
      * Get the total number of workers created so far.
      * @return Total number of workers created so far this run.
      */
+    @JsonIgnore
     public static int getTotalWorkerCount() {
         return workerCount.get();
     }
@@ -503,12 +521,14 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
      * Get the total number of workers created so far and increment the counter.
      * @return Total number of workers created (before incrementation).
      */
+    @JsonIgnore
     private static int getWorkerCountAndIncrement() {
         return workerCount.getAndIncrement();
     }
     /**
      * Color the node scaled by depth in the tree. Skip the brightness argument for default value.
      */
+    @JsonIgnore
     public static Color getColorFromWorkerID(int ID) {
         float brightness = 0.85f;
         float colorOffset = 0f;
@@ -540,6 +560,21 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     public void deactivateTab() {
         active = false;
     } // Not really applicable.
+
+    @JsonGetter
+    public IGameInternal<C, S> getGame() {
+        return game;
+    }
+
+    @JsonGetter
+    public ISampler<C, S> getSampler() {
+        return sampler;
+    }
+
+    @JsonGetter
+    public IDataSaver<C, S> getSaver() {
+        return saver;
+    }
 }
 
 
