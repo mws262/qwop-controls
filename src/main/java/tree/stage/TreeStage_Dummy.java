@@ -1,5 +1,6 @@
 package tree.stage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import game.action.Command;
 import game.state.IState;
 import tree.TreeWorker;
@@ -15,8 +16,12 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class TreeStage_Dummy<C extends Command<?>, S extends IState> extends TreeStage<C, S> {
 
+    @JsonIgnore
     public boolean isInitialized = false;
+
+    @JsonIgnore
     public boolean terminate = false;
+
     public List<NodeGameBase<?, C, S>> results = new ArrayList<>();
 
     @Override

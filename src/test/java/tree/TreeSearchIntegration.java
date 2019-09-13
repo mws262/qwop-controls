@@ -1,5 +1,10 @@
 package tree;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import controllers.Controller_Null;
 import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
@@ -11,7 +16,10 @@ import game.qwop.CommandQWOP;
 import game.qwop.GameQWOP;
 import game.qwop.StateQWOP;
 import game.state.IState;
+import goals.tree_search.SearchConfiguration;
+import org.apache.commons.io.output.XmlStreamWriter;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Assert;
 import org.junit.Test;
 import savers.DataSaver_Null;
 import tree.node.NodeGameExplorable;
@@ -23,6 +31,7 @@ import value.IValueFunction;
 import value.ValueFunction_Constant;
 import value.updaters.*;
 
+import java.io.IOException;
 import java.util.*;
 
 public class TreeSearchIntegration {
@@ -33,15 +42,15 @@ public class TreeSearchIntegration {
         StateQWOP sqDistState = GameQWOP.getInitialState();
         Action<CommandQWOP> nullAction = new Action<>(3, CommandQWOP.QP);
 
-        ActionList<CommandQWOP> alist1 = ActionList.makeActionList(new int[] {1, 2, 3, 4}, CommandQWOP.O,
+        ActionList<CommandQWOP> alist1 = ActionList.makeActionList(new int[] {40, 50, 60, 20}, CommandQWOP.O,
                 new Distribution_Equal<>()); // TODO also make distributions be Pickers
-        ActionList<CommandQWOP> alist2 = ActionList.makeActionList(new int[] {5, 6, 7, 8}, CommandQWOP.P,
+        ActionList<CommandQWOP> alist2 = ActionList.makeActionList(new int[] {18, 22, 26, 30}, CommandQWOP.P,
                 new Distribution_Equal<>()); // TODO also make distributions be Pickers
 
         AllCombinedPicker<CommandQWOP, StateQWOP> combined = new AllCombinedPicker<>(sqDistState, nullAction, alist1,
                 alist2);
-        for (int i = 0; i < 20; i++) {
-            combined.go(new GameQWOP());
+        while (combined.hasNext()) {
+            combined.tryNext(new GameQWOP());
         }
     }
 
@@ -58,19 +67,49 @@ public class TreeSearchIntegration {
             this.rootState = rootState;
         }
 
-        private void go(IGameInternal<C, S> game) {
-            TreeStage<C, S> treeStage = treeStagePicker.getCurrent();
-            ISampler<C, S> sampler = samplerPicker.getCurrent();
-            IActionGenerator<C> actionGenerator = actionGeneratorPicker.getCurrent();
+        private void tryNext(IGameInternal<C, S> game) {
+            TreeStage<C, S> treeStage = null;
+            TreeWorker<C, S> treeWorker = null;
+            try {
+                treeStage = treeStagePicker.getCurrent();
+                ISampler<C, S> sampler = samplerPicker.getCurrent();
+                IActionGenerator<C> actionGenerator = actionGeneratorPicker.getCurrent();
 
-            NodeGameExplorable<C, S> root = new NodeGameExplorable<>(rootState, actionGenerator);
+                NodeGameExplorable<C, S> root = new NodeGameExplorable<>(rootState, actionGenerator);
 
-            TreeWorker<C, S> treeWorker = new TreeWorker<>(game, sampler, new DataSaver_Null<>());
-            List<TreeWorker<C, S>> worker = new ArrayList<>();
-            worker.add(treeWorker);
-            treeStage.initialize(worker, root);
-            System.out.println("Did a thing!");
-            advancePickers(treeStagePicker, samplerPicker, actionGeneratorPicker);
+                treeWorker = new TreeWorker<>(game, sampler, new DataSaver_Null<>());
+                List<TreeWorker<C, S>> worker = new ArrayList<>();
+                worker.add(treeWorker);
+
+                treeStage.initialize(worker, root);
+                advancePickers(treeStagePicker, samplerPicker, actionGeneratorPicker);
+            } catch (Exception e) {
+
+                try {
+                    YAMLMapper objectMapper = new YAMLMapper();
+                    objectMapper.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
+                    objectMapper.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
+                    objectMapper.enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
+                    objectMapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
+                    objectMapper.disable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+
+                    objectMapper.setAnnotationIntrospector(new SearchConfiguration.IgnoreInheritedIntrospector());
+                    objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
+
+                    String selection = objectMapper.writeValueAsString(treeStage);
+                    System.out.println(selection);
+                    selection = objectMapper.writeValueAsString(treeWorker);
+                    System.out.println(selection);
+                } catch (IOException ioExcept) {
+                    // ioExcept.printStackTrace();
+                }
+
+                Assert.fail("Some kind of ");
+            }
+        }
+
+        public boolean hasNext() {
+            return samplerPicker.hasNext() || actionGeneratorPicker.hasNext() || treeStagePicker.hasNext();
         }
     }
 
@@ -85,19 +124,24 @@ public class TreeSearchIntegration {
 
             switch (idx) {
                 case 0:
+                    System.out.println("TreeStage_Dummy");
+
                     selection = new TreeStage_Dummy<>();
                     break;
                 case 1:
+                    System.out.println("TreeStage_FixedGames");
+
                     selection = new TreeStage_FixedGames<>(5);
                     break;
                 case 2:
+                    System.out.println("TreeStage_MaxDepth");
+
                     selection = new TreeStage_MaxDepth<>(3, 10);
                     break;
                 case 3:
+                    System.out.println("TreeStage_MinDepth");
+
                     selection = new TreeStage_MinDepth<>(2);
-                    break;
-                case 4:
-                    selection = new TreeStage_SearchForever<>();
                     break;
 //                case 5: // TODO
 //                    selection = new TreeStage_ValueFunctionUpdate<>();
@@ -118,7 +162,7 @@ public class TreeSearchIntegration {
 
         @Override
         public boolean hasNext() {
-            return idx < 4;
+            return idx < 3;
         }
 
         @Override
@@ -191,7 +235,7 @@ public class TreeSearchIntegration {
 
         @Override
         public ISampler<C, S> getCurrent() {
-            return samplerCurrent;
+            return samplerCurrent.getCopy();
         }
 
         @Override
@@ -282,18 +326,21 @@ public class TreeSearchIntegration {
         }
 
         private IRolloutPolicy<C, S> getNext() {
-            System.out.println("Getting a rolloutpolicy!");
 
             IRolloutPolicy<C, S> selection;
 
             switch(idx) {
                 case 0:
+                    System.out.println("rollout policy eval");
+
                     selection = new RolloutPolicy_JustEvaluate<>(evaluationFunctionPicker.getCurrent());
                     if (advancePickers(evaluationFunctionPicker)) {
                         idx++;
                     }
                     break;
                 case 1:
+                    System.out.println("rollout policy end score");
+
                     selection = new RolloutPolicy_EndScore<>(evaluationFunctionPicker.getCurrent(), actionGeneratorPicker.getCurrent(),
                             controllerPicker.getCurrent());
                     if (advancePickers(controllerPicker, actionGeneratorPicker, evaluationFunctionPicker)) {
@@ -301,6 +348,8 @@ public class TreeSearchIntegration {
                     }
                     break;
                 case 2:
+                    System.out.println("rollout policy decaying horizon");
+
                     selection = new RolloutPolicy_DecayingHorizon<>(evaluationFunctionPicker.getCurrent(),
                             actionGeneratorPicker.getCurrent(), controllerPicker.getCurrent(), 25);
                     if (advancePickers(controllerPicker, actionGeneratorPicker, evaluationFunctionPicker)) {
@@ -308,6 +357,8 @@ public class TreeSearchIntegration {
                     }
                     break;
                 case 3:
+                    System.out.println("rollout policy delta score");
+
                     selection = new RolloutPolicy_DeltaScore<>(evaluationFunctionPicker.getCurrent(),
                             actionGeneratorPicker.getCurrent(), controllerPicker.getCurrent());
                     if (advancePickers(actionGeneratorPicker, evaluationFunctionPicker)) {
@@ -315,12 +366,16 @@ public class TreeSearchIntegration {
                     }
                     break;
                 case 4:
+                    System.out.println("rollout policy entire run");
+
                     selection = new RolloutPolicy_EntireRun<>(actionGeneratorPicker.getCurrent(), controllerPicker.getCurrent());
                     if (advancePickers(controllerPicker, actionGeneratorPicker)) {
                         idx++;
                     }
                     break;
                 case 5:
+                    System.out.println("rollout policy random cold start");
+
                     selection = new RolloutPolicy_RandomColdStart<>(evaluationFunctionPicker.getCurrent(),
                             actionGeneratorPicker.getCurrent());
                     if (advancePickers(controllerPicker, actionGeneratorPicker)) {
@@ -344,7 +399,7 @@ public class TreeSearchIntegration {
             if (rolloutPolicyCurrent == null) {
                 rolloutPolicyCurrent = getNext();
             }
-            return rolloutPolicyCurrent;
+            return rolloutPolicyCurrent.getCopy();
         }
 
         @Override
@@ -372,23 +427,32 @@ public class TreeSearchIntegration {
 
         @Override
         public IValueUpdater<C, S> getCurrent() {
-            System.out.println("Getting a valueUpdater!");
 
             IValueUpdater<C, S> selection;
             switch (idx) {
                 case 0:
+                    System.out.println("value updater avg");
+
                     selection = new ValueUpdater_Average<>();
                     break;
                 case 1:
+                    System.out.println("value updater hard set");
+
                     selection = new ValueUpdater_HardSet<>();
                     break;
                 case 2:
+                    System.out.println("value updater top n");
+
                     selection = new ValueUpdater_TopNChildren<>(3);
                     break;
                 case 3:
+                    System.out.println("value updater top window");
+
                     selection = new ValueUpdater_TopWindow<>(3);
                     break;
                 case 4:
+                    System.out.println("value updater stdev");
+
                     selection = new ValueUpdater_StdDev<>(1);
                     break;
                 default:
@@ -430,11 +494,11 @@ public class TreeSearchIntegration {
 
         @Override
         public IActionGenerator<C> getCurrent() {
-            System.out.println("Getting an action generator!");
-
             IActionGenerator<C> selection;
             switch(idx) {
                 case 0:
+                    System.out.println("agen no repeats");
+
                     selection = new ActionGenerator_UniformNoRepeats<>(alist1, alist2);
                     break;
 //                case 1:
@@ -442,9 +506,13 @@ public class TreeSearchIntegration {
 //                    idx++;
 //                    break;
                 case 1:
+                    System.out.println("agen fixed");
+
                     selection = new ActionGenerator_FixedActions<>(alist1);
                     break;
                 case 2:
+                    System.out.println("agen fixed sequence");
+
                     selection = new ActionGenerator_FixedSequence<>(alist1, alist2);
                     break;
                 default:
@@ -486,17 +554,22 @@ public class TreeSearchIntegration {
 
         @Override
         public IController<C, S> getCurrent() {
-            System.out.println("Getting a controller!");
 
             IController<C, S> selection;
             switch(idx) {
                 case 0:
+                    System.out.println("Controller null");
+
                     selection = new Controller_Null<>(nullAction);
                     break;
                 case 1:
+                    System.out.println("Controller random");
+
                     selection = new Controller_Random<>();
                     break;
                 case 2:
+                    System.out.println("Controller value function");
+
                     selection = new Controller_ValueFunction<>(valueFunctionPicker.getCurrent());
                     if (advancePickers(valueFunctionPicker)) {
                         idx++;
@@ -515,7 +588,7 @@ public class TreeSearchIntegration {
 
         @Override
         public boolean hasNext() {
-            return idx < 3;
+            return idx < 2;
         }
 
         @Override
@@ -543,7 +616,7 @@ public class TreeSearchIntegration {
 
             switch(idx) {
                 case 0:
-                    return constValFun;
+                    return constValFun.getCopy();
                 default:
                     throw new IndexOutOfBoundsException("Bad here.");
             }
@@ -558,7 +631,7 @@ public class TreeSearchIntegration {
 
         @Override
         public boolean hasNext() {
-            return idx < 1;
+            return idx < 0;
         }
 
         @Override
