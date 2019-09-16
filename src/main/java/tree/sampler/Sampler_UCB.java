@@ -20,7 +20,7 @@ import value.updaters.IValueUpdater;
  *
  * @author Matt
  */
-public class Sampler_UCB<C extends Command<?>, S extends IState> implements ISampler<C, S>, AutoCloseable {
+public class Sampler_UCB<C extends Command<?>, S extends IState> extends Sampler_DeadlockDelay<C, S> implements AutoCloseable {
 
     /**
      * Constant term on UCB exploration factor. Higher means more exploration.
@@ -63,13 +63,6 @@ public class Sampler_UCB<C extends Command<?>, S extends IState> implements ISam
      */
     private boolean rolloutPolicyDone = false;
 
-    /**
-     * Individual workers can deadlock rarely. This causes overflow errors when the tree policy is recursively called.
-     * Solution here is to wait a short period of time, doubling it until the worker is successful again. This happens
-     * maybe 1 in 5k games or so near the beginning only, so it's not worth finding something more elegant.
-     */
-    private long deadlockDelayCurrent = 0;
-
     private static final Logger logger = LogManager.getLogger(Sampler_UCB.class);
 
     /**
@@ -100,13 +93,31 @@ public class Sampler_UCB<C extends Command<?>, S extends IState> implements ISam
 
     @Override
     public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
-        if (startNode.getUntriedActionCount() != 0) {
+
+        if (startNode.getTreeDepth() == 0 && (startNode.getChildCount() == 0 || startNode.isLocked())) {
+            if (startNode.reserveExpansionRights()) {
+                resetDeadlockDelay();
+                return startNode;
+            } else {
+                deadlockDelay();
+                return treePolicy(startNode);
+            }
+        }
+
+        if (startNode.getUntriedActionCount() > 0) {
             if (startNode.reserveExpansionRights()) { // We immediately expand
                 // if there's an untried command.
                 assert startNode.isLocked();
+                resetDeadlockDelay();
                 return startNode;
             } else {
-                return null;
+                if (startNode.getTreeDepth() > 0) {
+                    return treePolicy(startNode.getParent()); // TODO this could cause it to back up beyond the point
+                    // we want to expand. Just keep that in mind.
+                } else {
+                    deadlockDelay();
+                    return treePolicy(startNode);
+                }
             }
         }
 
@@ -125,24 +136,15 @@ public class Sampler_UCB<C extends Command<?>, S extends IState> implements ISam
                 }
             }
         }
+
         if (bestNodeSoFar == null) { // This worker can't get a lock on any of the children it wants. Starting back
-        	// at startNode.
-            if (deadlockDelayCurrent > 5000) {
-                logger.warn("UCB sampler worker got really jammed up. Terminating this one.");
-                return null;
-            }
-            try {
-                Thread.sleep(deadlockDelayCurrent);
-                deadlockDelayCurrent = deadlockDelayCurrent * 2 + 1;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        	deadlockDelay();
             bestNodeSoFar = startNode;
         } else {
-            deadlockDelayCurrent = 0; // Reset delay if we're successful again.
+            resetDeadlockDelay();
         }
 
-        return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked command.;
+        return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked command.
     }
 
     @Override
@@ -209,6 +211,10 @@ public class Sampler_UCB<C extends Command<?>, S extends IState> implements ISam
 
     public IRolloutPolicy<C, S> getRolloutPolicy() {
         return rolloutPolicy;
+    }
+
+    public IValueUpdater<C, S> getValueUpdater() {
+        return valueUpdater;
     }
 
     @JsonIgnore

@@ -3,6 +3,11 @@ machine:
   coreMinimum: 1
   coreMaximum: 32
   logLevel: INFO
+game:
+  type: delay_embedded
+  timestepDelay: 1
+  numDelayedStates: 2
+  stateType: DIFFERENCES
 tree:
   actionGenerator:
     type: fixed_actions_no_repeats
@@ -41,12 +46,17 @@ searchOperations:
 - stage:
     type: fixed_games
     numGamesToPlay: 80000
+  game:
+    type: delay_embedded
+    timestepDelay: 1
+    numDelayedStates: 2
+    stateType: DIFFERENCES
   sampler:
     type: distribution
   saver:
     type: null
-    saveInterval: 0
     savePath:
+    saveInterval: 0
 - stage:
     type: grouping
     treeStages:
@@ -76,6 +86,11 @@ searchOperations:
       checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
       excludeLeaves: false
       updateGraphicalLabels: true
+  game:
+    type: delay_embedded
+    timestepDelay: 1
+    numDelayedStates: 2
+    stateType: DIFFERENCES
   sampler:
     type: ucb
     evaluationFunction:
@@ -139,12 +154,14 @@ searchOperations:
           constantValue: 0.0
         maxTimesteps: 3000
       selectionCriteria: BEST
+    valueUpdater:
+      type: average
     explorationConstant: 5.0
     explorationRandomFactor: 1.0
   saver:
     type: null
-    saveInterval: 0
     savePath:
+    saveInterval: 0
 ui:
   type: full
   tabbedPanes:
