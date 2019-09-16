@@ -55,9 +55,8 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C, S>, C extends Co
         state = rootState;
     }
 
-    NodeGameBase(@NotNull N parent, @NotNull Action<C> action, @NotNull S state) {
+    NodeGameBase(@NotNull N parent, Action<C> action, @NotNull S state) {
         super(parent);
-        Objects.requireNonNull(action);
         Objects.requireNonNull(state);
         this.action = action;
         this.state = state;

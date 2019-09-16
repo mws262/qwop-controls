@@ -1,7 +1,6 @@
 package tree;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -17,10 +16,8 @@ import game.qwop.GameQWOP;
 import game.qwop.StateQWOP;
 import game.state.IState;
 import goals.tree_search.SearchConfiguration;
-import org.apache.commons.io.output.XmlStreamWriter;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
-import org.junit.Test;
 import savers.DataSaver_Null;
 import tree.node.NodeGameExplorable;
 import tree.node.evaluator.*;
@@ -34,9 +31,15 @@ import value.updaters.*;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Testing combinatorics of lots of samplers, updaters, rollouts...
+ *
+ * This really is just to look for errors in a combination to ensure compatibility, not to test for logical
+ * inconsistencies. Unfortunately it takes forever to run. May need to leave it out until it gets faster.
+ */
 public class TreeSearchIntegration {
 
-    @Test
+    // TODO this is disabled for now because it takes forever. Trim it down.
     public void searchIntegration() {
 
         StateQWOP sqDistState = GameQWOP.getInitialState();
@@ -83,7 +86,8 @@ public class TreeSearchIntegration {
 
                 treeStage.initialize(worker, root);
                 advancePickers(treeStagePicker, samplerPicker, actionGeneratorPicker);
-            } catch (Exception e) {
+            } catch (Exception e) { // TODO this doesn't catch exceptions in the worker thread. That makes this
+                // logging sort of useless.
 
                 try {
                     YAMLMapper objectMapper = new YAMLMapper();
