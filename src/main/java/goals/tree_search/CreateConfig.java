@@ -158,6 +158,7 @@ public class CreateConfig {
         configuration = SearchConfiguration.deserializeYaml(new File("./src/main/resources/config/default.yaml"),
                 SearchConfiguration.class);
     }
+
     /**
      * This is the heavyweight, full UI, with tree visualization and a bunch of data visualization tabs. Includes some
      * TFlow components which are troublesome on some computers.

@@ -15,11 +15,10 @@ import java.util.stream.IntStream;
  *
  * @author Matt
  */
-public class Sampler_Random<C extends Command<?>, S extends IState> implements ISampler<C, S> {
+public class Sampler_Random<C extends Command<?>, S extends IState> extends Sampler_DeadlockDelay<C, S> {
 
     private boolean treePolicyDone = false;
     private boolean expansionPolicyDone = false;
-    private int deadlockDelayCurrent = 0;
 
     @Override
     public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
@@ -78,17 +77,6 @@ public class Sampler_Random<C extends Command<?>, S extends IState> implements I
         return treePolicy(startNode);
     }
 
-    private void deadlockDelay() {
-        try {
-            Thread.sleep(deadlockDelayCurrent);
-            deadlockDelayCurrent = deadlockDelayCurrent * 2 + 1;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-    private void resetDeadlockDelay() {
-        deadlockDelayCurrent = 0;
-    }
 
     @Override
     public Action<C> expansionPolicy(NodeGameExplorableBase<?, C, S> startNode) {

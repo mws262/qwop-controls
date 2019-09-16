@@ -1,7 +1,11 @@
 package ui;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import game.action.Command;
 import game.state.IState;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.codehaus.jackson.annotate.JsonSetter;
 import tree.Utility;
 import tree.node.NodeGameGraphicsBase;
 
@@ -31,7 +35,7 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
     /**
      * Pane for the tabbed side of the interface.
      */
-    private JTabbedPane tabPane;
+    private final JTabbedPane tabPane;
 
     /**
      * Selected node by user click/key
@@ -42,6 +46,8 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
      * List of panes which can be activated, deactivated.
      */
     private List<TabbedPaneActivator<C, S>> tabbedPanes = new ArrayList<>();
+
+    private final Logger logger = LogManager.getLogger(UI_Full.class);
 
     /**
      * Window width
@@ -85,9 +91,6 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
         frame.setIconImage(img);
 
         frame.pack();
-        frame.setVisible(true);
-
-        Utility.showOnScreen(frame, 0, false); // Choose the monitor to display on, filling that monitor.
     }
 
     /**
@@ -96,9 +99,9 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
      * @param newTab New tab to add to the existing set of tabbed panels in this frame.
      */
     public synchronized void addTab(TabbedPaneActivator<C, S> newTab) {
-        tabPane.addTab(newTab.getName(), (Component) newTab);
-        tabbedPanes.add(newTab);
-        tabPane.revalidate();
+            tabPane.addTab(newTab.getName(), (Component) newTab);
+            tabbedPanes.add(newTab);
+            tabPane.revalidate();
     }
 
     /**
@@ -116,15 +119,38 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
         tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
     }
 
-    public List<TabbedPaneActivator<C, S>> getTabbedPanes() {
+    @JsonSetter
+    public synchronized void setTabbedPanes(List<TabbedPaneActivator<C, S>> tabs) {
+        for (TabbedPaneActivator<C, S> tab : tabs) {
+            addTab(tab);
+        }
+    }
+
+    @JsonGetter
+    public synchronized List<TabbedPaneActivator<C, S>> getTabbedPanes() {
         return tabbedPanes;
     }
 
     @Override
     public void start() {
+//        int selectedTab = tabPane.getSelectedIndex();
+//        if (selectedTab >= 0 && selectedTab < tabbedPanes.size()) {// -1 if none selected.
+//            tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+//        } else {
+//            if (!tabbedPanes.isEmpty()) {
+//            }
+//            logger.warn("Launched full UI with no tab selected by default.");
+//        }
+
+        if (!tabbedPanes.isEmpty()) {
+            tabPane.setSelectedIndex(0);
+            tabbedPanes.get(0).activateTab(); // Just activate the first tab. Forget the other nonsense.
+        }
+        frame.setVisible(true);
+        Utility.showOnScreen(frame, 0, false); // Choose the monitor to display on, filling that monitor.
+
         redrawTimer = new Timer(35, e -> frame.repaint());
         redrawTimer.start();
-        tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
     }
 
     @Override
@@ -159,13 +185,16 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
     }
 
     @Override
-    public void stateChanged(ChangeEvent e) {
+    public synchronized void stateChanged(ChangeEvent e) {
         if (!tabbedPanes.isEmpty()) {
             for (TabbedPaneActivator p : tabbedPanes) {
                 p.deactivateTab();
             }
             nodeSelected(null);
-            tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+            int selected = tabPane.getSelectedIndex();
+            if (selected >= 0 && selected < tabbedPanes.size()) {
+                tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+            }
         }
     }
 

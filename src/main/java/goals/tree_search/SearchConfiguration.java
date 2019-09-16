@@ -15,7 +15,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Preconditions;
 import game.IGameInternal;
-import game.qwop.GameQWOP;
 import game.action.Command;
 import game.action.IActionGenerator;
 import game.state.IState;
@@ -26,8 +25,8 @@ import org.apache.logging.log4j.core.config.Configurator;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
 import tree.TreeWorker;
-import tree.node.NodeGameExplorableBase;
 import tree.node.NodeGameExplorable;
+import tree.node.NodeGameExplorableBase;
 import tree.node.NodeGameGraphics;
 import tree.sampler.ISampler;
 import tree.stage.TreeStage;
@@ -47,7 +46,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
     public final Tree<C> tree;
     public final List<SearchOperation<C, S, G>> searchOperations;
     public final IUserInterface<C, S> ui;
-    private final G game;
+    public final G game;
 
     SearchConfiguration(@JsonProperty("machine") Machine machine,
                         @JsonProperty("game") G game,
@@ -55,6 +54,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
                         @JsonProperty("searchOperations") List<SearchOperation<C, S, G>> searchOperations,
                         @JsonProperty("ui") IUserInterface<C, S> ui) {
         Preconditions.checkNotNull(machine);
+        Preconditions.checkNotNull(game);
         Preconditions.checkNotNull(tree);
         Preconditions.checkNotNull(searchOperations);
         Preconditions.checkNotNull(ui);
@@ -228,6 +228,10 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
             return saver;
         }
 
+        public G getGame() {
+            return game;
+        }
+
         int getRepetitionCount() {
             return repetitionCount;
         }
@@ -382,7 +386,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
     }
 
     public static void main(String[] args) {
-        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/config.yaml"),
+        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/default.yaml"),
                 SearchConfiguration.class);
         Objects.requireNonNull(config).execute();
     }
