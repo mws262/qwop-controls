@@ -3,6 +3,7 @@ package tree.node;
 import game.IGameInternal;
 import game.action.Action;
 import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
 import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -307,7 +308,7 @@ public class NodeGameTest {
         l5.add(a1);
         sequences.add(l5); // 0 new nodes.
 
-        NodeGame.makeNodesFromActionSequences(sequences, root, game);
+        NodeGame.makeNodesFromActionSequences(sequences, root, new GameQWOP());
         Assert.assertEquals(11, root.countDescendants());
         Assert.assertEquals(3, root.getChildCount());
         Assert.assertEquals(4, root.getMaxBranchDepth());
