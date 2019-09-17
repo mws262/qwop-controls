@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -18,7 +17,6 @@ import game.IGameInternal;
 import game.action.Command;
 import game.action.IActionGenerator;
 import game.state.IState;
-import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -292,18 +290,6 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
         }
     }
 
-    static void serializeToXML(File xmlFileOutput, Object configuration) {
-        try {
-            XmlMapper xmlMapper = new XmlMapper();
-            xmlMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
-            xmlMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
-            XmlStreamWriter xmlStreamWriter = new XmlStreamWriter(xmlFileOutput);
-            xmlMapper.writeValue(xmlStreamWriter, configuration);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * Attempt to serialize the provided object to a .yaml file. Can be applied to any object, but various
      * annotations may help make only the correct things save in the yaml.
@@ -329,19 +315,6 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static SearchConfiguration deserializeXML(File xmlFileInput) {
-        try {
-            XmlStreamReader xmlStreamReader = new XmlStreamReader(xmlFileInput);
-            XmlMapper xmlMapper = new XmlMapper();
-            xmlMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
-            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            return xmlMapper.readValue(xmlStreamReader, SearchConfiguration.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     /**

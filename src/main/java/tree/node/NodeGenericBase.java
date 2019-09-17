@@ -93,7 +93,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
      *
      * @return The actual list of children of this node.
      */
-    public List<N> getChildren() {
+    public synchronized List<N> getChildren() {
         return children;
     }
 
@@ -103,7 +103,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
      * Usually want to do something else.
      * @param node Child node to remove.
      */
-    public void removeFromChildren(N node) {
+    public synchronized void removeFromChildren(N node) {
         children.remove(node);
     }
 

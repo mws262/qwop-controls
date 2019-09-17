@@ -1,21 +1,22 @@
 package goals.tree_search;
 
+import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
 import game.IGameSerializable;
 import game.action.ActionGenerator_UniformNoRepeats;
-import game.qwop.*;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOPCaching;
+import game.qwop.IStateQWOP;
+import game.qwop.StateQWOPDelayEmbedded_Differences;
 import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
 import game.state.transform.Transform_PCA;
 import savers.DataSaver_Null;
 import tree.node.evaluator.EvaluationFunction_Constant;
+import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.filter.NodeFilter_SurvivalHorizon;
-import tree.sampler.Sampler_Distribution;
 import tree.sampler.Sampler_UCB;
-import tree.sampler.rollout.IRolloutPolicy;
-import tree.sampler.rollout.RolloutPolicyBase;
-import tree.sampler.rollout.RolloutPolicy_EntireRun;
-import tree.sampler.rollout.RolloutPolicy_Window;
+import tree.sampler.rollout.*;
 import tree.stage.TreeStage;
 import tree.stage.TreeStage_FixedGames;
 import tree.stage.TreeStage_Grouping;
@@ -100,7 +101,14 @@ public class CreateConfig {
         searchOperations.add(new SearchConfiguration.SearchOperation<>(
                 new TreeStage_FixedGames<>(80000),
                 game.getCopy(),
-                new Sampler_Distribution<>(),
+                new Sampler_UCB<>(new EvaluationFunction_Distance<>(),
+                        new RolloutPolicy_DecayingHorizon<>(
+                                new EvaluationFunction_Distance<>(),
+                                RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+                                new Controller_Random<>()),
+                        new ValueUpdater_Average<>(),
+                        5f,
+                        10f),
                 new DataSaver_Null<>()));
 
 
@@ -197,7 +205,7 @@ public class CreateConfig {
                 "src/main/resources/tflow_models",
                 "src/main/resources/tflow_models/checkpoints");
 
-//        fullUI.addTab(runnerPanel); // TODO
+        fullUI.addTab((IUserInterface.TabbedPaneActivator<CommandQWOP, S>) runnerPanel); // TODO
         fullUI.addTab(snapshotPane);
         fullUI.addTab(comparisonPane);
         fullUI.addTab(statePlotPane);
