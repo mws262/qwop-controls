@@ -26,9 +26,9 @@ public class Sampler_Distribution<C extends Command<?>, S extends IState> extend
     @Override
     public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
 
-        if (startNode.isFullyExplored())
-            throw new IllegalStateException("Trying to do tree policy on a given node which is already fully-explored. " +
-                    "Whoever called this is at fault.");
+//        if (startNode.isFullyExplored())
+//            throw new IllegalStateException("Trying to do tree policy on a given node which is already fully-explored. " +
+//                    "Whoever called this is at fault.");
 
         if (startNode.getTreeDepth() == 0 && (startNode.getChildCount() == 0 || startNode.isLocked())) {
             if (startNode.reserveExpansionRights()) {
@@ -37,6 +37,10 @@ public class Sampler_Distribution<C extends Command<?>, S extends IState> extend
                 deadlockDelay();
                 return treePolicy(startNode);
             }
+        }
+        if (startNode.getTreeDepth() > 0 && (startNode.isLocked() ||startNode.isFullyExplored())) {
+            deadlockDelay();
+            return treePolicy(startNode.getParent());
         }
 
         if (startNode.isLocked()) {

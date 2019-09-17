@@ -55,8 +55,8 @@ searchOperations:
     type: distribution
   saver:
     type: null
-    savePath:
     saveInterval: 0
+    savePath:
 - stage:
     type: grouping
     treeStages:
@@ -160,11 +160,13 @@ searchOperations:
     explorationRandomFactor: 1.0
   saver:
     type: null
-    savePath:
     saveInterval: 0
+    savePath:
 ui:
   type: full
   tabbedPanes:
+  - type: runner_animated_transformed
+    name: Run Animation
   - type: runner_snapshot
     name: StateQWOP Viewer
     numHistoryStatesDisplay: 25
