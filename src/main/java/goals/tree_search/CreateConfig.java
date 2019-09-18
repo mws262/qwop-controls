@@ -1,7 +1,6 @@
 package goals.tree_search;
 
 import controllers.Controller_Random;
-import controllers.Controller_ValueFunction;
 import game.IGameSerializable;
 import game.action.ActionGenerator_UniformNoRepeats;
 import game.qwop.CommandQWOP;
@@ -16,7 +15,10 @@ import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.filter.NodeFilter_SurvivalHorizon;
 import tree.sampler.Sampler_UCB;
-import tree.sampler.rollout.*;
+import tree.sampler.rollout.IRolloutPolicy;
+import tree.sampler.rollout.RolloutPolicyBase;
+import tree.sampler.rollout.RolloutPolicy_DecayingHorizon;
+import tree.sampler.rollout.RolloutPolicy_Window;
 import tree.stage.TreeStage;
 import tree.stage.TreeStage_FixedGames;
 import tree.stage.TreeStage_Grouping;
@@ -126,19 +128,24 @@ public class CreateConfig {
 
 
         IRolloutPolicy<CommandQWOP, StateQWOPDelayEmbedded_Differences> rollout1 = new RolloutPolicy_Window<>(
-                new RolloutPolicy_EntireRun<>( // RolloutPolicy_DecayingHorizon(
-                        //new EvaluationFunction_Constant(10f),
+//                new RolloutPolicy_EntireRun<>( // RolloutPolicy_DecayingHorizon(
+//                        //new EvaluationFunction_Constant(10f),
+//                        RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+//                        new Controller_ValueFunction<>(new ValueFunction_TensorFlow_StateOnly<>(
+//                                "src/main/resources/tflow_models/test.pb",
+//                                game.getCopy(),
+//                                new StateQWOPDelayEmbedded_Differences
+//                                        .Normalizer(StateQWOPDelayEmbedded_Differences
+//                                        .Normalizer.NormalizationMethod.STDEV),
+//                                layerSizes,
+//                                opts,
+//                                "",
+//                                false)))
+                new RolloutPolicy_DecayingHorizon<>(
+                        new EvaluationFunction_Distance<>(),
                         RolloutPolicyBase.getQWOPRolloutActionGenerator(),
-                        new Controller_ValueFunction<>(new ValueFunction_TensorFlow_StateOnly<>(
-                                "src/main/resources/tflow_models/test.pb",
-                                game.getCopy(),
-                                new StateQWOPDelayEmbedded_Differences
-                                        .Normalizer(StateQWOPDelayEmbedded_Differences
-                                        .Normalizer.NormalizationMethod.STDEV),
-                                layerSizes,
-                                opts,
-                                "",
-                                false))));
+                        new Controller_Random<>())
+        );
 
         searchOperations.add(new SearchConfiguration.SearchOperation<>(stagegroup,
                 game,
@@ -148,7 +155,7 @@ public class CreateConfig {
                         new ValueUpdater_Average<>(),
                         5,
                         1),
-                new DataSaver_Null<>()));
+                new DataSaver_Null<>(), 5));
 
 
         SearchConfiguration<CommandQWOP, StateQWOPDelayEmbedded_Differences, GameQWOPCaching<StateQWOPDelayEmbedded_Differences>> configuration

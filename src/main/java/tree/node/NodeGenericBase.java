@@ -4,7 +4,7 @@ import tree.Utility;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 /**
@@ -32,7 +32,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     /**
      * Child nodes. Not fixed size any more.
      */
-    private final List<N> children = new Vector<>();
+    private final List<N> children = new CopyOnWriteArrayList<>();
 
     /**
      * Depth of this node in the tree. Root node is 0; its children are 1, etc.

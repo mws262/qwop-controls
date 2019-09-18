@@ -1,6 +1,7 @@
 package goals.tree_search;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
@@ -230,6 +231,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
             return game;
         }
 
+        @JsonGetter
         int getRepetitionCount() {
             return repetitionCount;
         }
