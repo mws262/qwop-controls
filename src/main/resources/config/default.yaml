@@ -7,7 +7,7 @@ game:
   type: delay_embedded
   timestepDelay: 1
   numDelayedStates: 2
-  stateType: DIFFERENCES
+  stateType: HIGHER_DIFFERENCES
 tree:
   actionGenerator:
     type: fixed_actions_no_repeats
@@ -45,18 +45,61 @@ tree:
 searchOperations:
 - stage:
     type: fixed_games
-    numGamesToPlay: 80000
+    numGamesToPlay: 150000
   game:
     type: delay_embedded
     timestepDelay: 1
     numDelayedStates: 2
-    stateType: DIFFERENCES
+    stateType: HIGHER_DIFFERENCES
   sampler:
-    type: distribution
+    type: ucb
+    evaluationFunction:
+      type: distance
+      scalingFactor: 1.0
+    rolloutPolicy:
+      type: decaying_horizon
+      evaluationFunction:
+        type: distance
+        scalingFactor: 1.0
+      rolloutActionGenerator:
+        type: fixed_sequence
+        repeatedActions:
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 12.0
+            standardDeviation: 5.0
+          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 20.0
+            standardDeviation: 5.0
+          wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 12.0
+            standardDeviation: 5.0
+          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 20.0
+            standardDeviation: 5.0
+          qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+      rolloutController:
+        type: random
+      maxTimesteps: 200
+    valueUpdater:
+      type: average
+    explorationConstant: 20.0
+    explorationRandomFactor: 10.0
   saver:
     type: null
     saveInterval: 0
     savePath:
+  repetitionCount: 0
 - stage:
     type: grouping
     treeStages:
@@ -70,9 +113,9 @@ searchOperations:
           type: delay_embedded
           timestepDelay: 1
           numDelayedStates: 2
-          stateType: DIFFERENCES
+          stateType: HIGHER_DIFFERENCES
         stateNormalizer:
-          type: normalizer_qwopdiffs
+          type: normalizer_qwophigherdiffs
           normalizationMethod: STDEV
         hiddenLayerSizes:
         - 128
@@ -90,7 +133,7 @@ searchOperations:
     type: delay_embedded
     timestepDelay: 1
     numDelayedStates: 2
-    stateType: DIFFERENCES
+    stateType: HIGHER_DIFFERENCES
   sampler:
     type: ucb
     evaluationFunction:
@@ -99,7 +142,10 @@ searchOperations:
     rolloutPolicy:
       type: window
       individualRollout:
-        type: entire_run
+        type: decaying_horizon
+        evaluationFunction:
+          type: distance
+          scalingFactor: 1.0
         rolloutActionGenerator:
           type: fixed_sequence
           repeatedActions:
@@ -128,40 +174,18 @@ searchOperations:
               standardDeviation: 5.0
             qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
         rolloutController:
-          type: value_function
-          valueFunction:
-            type: tflow_state_only
-            fileName: src/main/resources/tflow_models/test.pb
-            gameTemplate:
-              type: delay_embedded
-              timestepDelay: 1
-              numDelayedStates: 2
-              stateType: DIFFERENCES
-            stateNormalizer:
-              type: normalizer_qwopdiffs
-              normalizationMethod: STDEV
-            hiddenLayerSizes:
-            - 128
-            - 64
-            additionalNetworkArgs:
-            - --learnrate
-            - 1e-4
-            activeCheckpoint: null
-            inputSize: 108
-            outputSize: 1
-        evaluationFunction:
-          type: constant
-          constantValue: 0.0
-        maxTimesteps: 3000
+          type: random
+        maxTimesteps: 200
       selectionCriteria: BEST
     valueUpdater:
       type: average
-    explorationConstant: 5.0
+    explorationConstant: 0.4
     explorationRandomFactor: 1.0
   saver:
     type: null
     saveInterval: 0
     savePath:
+  repetitionCount: 10000
 ui:
   type: full
   tabbedPanes:
@@ -207,9 +231,9 @@ ui:
       type: delay_embedded
       timestepDelay: 1
       numDelayedStates: 2
-      stateType: DIFFERENCES
+      stateType: HIGHER_DIFFERENCES
     stateNormalizer:
-      type: normalizer_qwopdiffs
+      type: normalizer_qwophigherdiffs
       normalizationMethod: STDEV
     modelLocation: src/main/resources/tflow_models
     checkpointLocation: src/main/resources/tflow_models/checkpoints

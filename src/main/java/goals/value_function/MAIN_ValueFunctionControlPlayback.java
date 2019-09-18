@@ -1,7 +1,7 @@
 package goals.value_function;
 
-import game.qwop.GameQWOP;
-import game.qwop.StateQWOP;
+import game.qwop.GameQWOPCaching;
+import game.qwop.StateQWOPDelayEmbedded_Differences;
 import game.state.transform.ITransform;
 import ui.runner.PanelRunner_ControlledTFlow;
 
@@ -12,22 +12,32 @@ import java.io.FileNotFoundException;
 public class MAIN_ValueFunctionControlPlayback {
 
     //GameQWOPCaching.StateType.HIGHER_DIFFERENCES);
-            private MAIN_ValueFunctionControlPlayback() {
+    private MAIN_ValueFunctionControlPlayback() {
 
         JFrame jFrame = new JFrame();
 
-        ITransform<StateQWOP> stateNormalizer = null;
+//        ITransform<StateQWOP> stateNormalizer = null;
+//        try {
+//            stateNormalizer = new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+
+        // TODO have a sensible way of substituting out game types.
+        //new GameQWOPCaching(1,2,
+//                GameQWOP game = new GameQWOP();
+        GameQWOPCaching<StateQWOPDelayEmbedded_Differences> game
+                = new GameQWOPCaching<>(1,2, GameQWOPCaching.StateType.DIFFERENCES);
+        ITransform<StateQWOPDelayEmbedded_Differences> stateNormalizer = null;
         try {
-            stateNormalizer = new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV);
+            stateNormalizer = new StateQWOPDelayEmbedded_Differences.Normalizer(StateQWOPDelayEmbedded_Differences.Normalizer.NormalizationMethod.STDEV);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-                //new GameQWOPCaching(1,2,
-                GameQWOP game = new GameQWOP();
-                PanelRunner_ControlledTFlow<StateQWOP> controlPanel = new PanelRunner_ControlledTFlow<>(
+        PanelRunner_ControlledTFlow<StateQWOPDelayEmbedded_Differences> controlPanel = new PanelRunner_ControlledTFlow<>(
                 "Controlled runner",
-                        game,
+                game,
                 stateNormalizer,
                 "src/main/resources/tflow_models",
                 "src/main/resources/tflow_models/checkpoints");

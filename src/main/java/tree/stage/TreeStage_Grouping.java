@@ -32,6 +32,7 @@ public class TreeStage_Grouping<C extends Command<?>, S extends IState> extends 
 
     @Override
     public void initialize(List<TreeWorker<C, S>> treeWorkers, NodeGameExplorableBase<?, C, S> stageRoot) {
+        isFinished = false;
         results.clear();
 
         // TODO: test behavior now.
