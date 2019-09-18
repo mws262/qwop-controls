@@ -1,14 +1,16 @@
 package goals.cold_start_analysis;
 
+import game.IGameInternal;
 import game.action.ActionQueue;
-import game.*;
-import game.action.CommandQWOP;
-import game.state.IState;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.QWOPConstants;
+import game.qwop.StateQWOP;
 
 import java.awt.*;
 
 /**
- * Take a known sequence of reasonable game.action, simulate for some number of game.action, and introduce a second runner,
+ * Take a known sequence of reasonable game.command, simulate for some number of game.command, and introduce a second runner,
  * with a cloned state, but a cold start of the Box2D internal solvers. Simulate both together for the rest of the
  * run with identical input commands.
  *
@@ -22,23 +24,24 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
 
     public void run() {
         // Ran MAIN_Search_LongRun to get these.
-        ActionQueue actionQueue = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
 
-        IGameInternal<CommandQWOP> gameFullRun = new GameUnified(); // This game will run all the commands, start to
-        // finish.
-        IGameInternal<CommandQWOP> gameColdStart = new GameUnified(); // This will start at some point in the middle of
+        IGameInternal<CommandQWOP, StateQWOP> gameFullRun = new GameQWOP(); // This game will run all the commands,
+        // start to finish.
+        IGameInternal<CommandQWOP, StateQWOP> gameColdStart = new GameQWOP(); // This will start at some point in the
+        // middle of
         // the
         // sequence,
         // with a cloned state from gameFullRun, but a cold start on all the internal solvers.
 
         // Get to a certain part of the run where we want to introduce another cold start runner.
 
-        // Decide at which action to introduce a cold-started runner.
+        // Decide at which command to introduce a cold-started runner.
         int coldStartAction = 14;
         while (actionQueue.getCurrentActionIdx() < coldStartAction) {
             gameFullRun.step(actionQueue.pollCommand());
         }
-        IState coldStartState = gameFullRun.getCurrentState();
+        StateQWOP coldStartState = gameFullRun.getCurrentState();
         gameColdStart.setState(coldStartState);
 
         runnerPanel.setMainState(gameFullRun.getCurrentState());
@@ -55,9 +58,9 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
             CommandQWOP nextCommand = actionQueue.pollCommand();
 
             gameFullRun.step(nextCommand);
-            GameConstants.physIterations = 5;
+            QWOPConstants.physIterations = 5;
             gameColdStart.step(nextCommand);
-            GameConstants.physIterations = 5;
+            QWOPConstants.physIterations = 5;
 
             runnerPanel.clearSecondaryStates();
             runnerPanel.setMainState(gameFullRun.getCurrentState());

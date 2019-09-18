@@ -3,11 +3,14 @@ package tree.sampler.rollout;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import game.action.Command;
+import game.action.IActionGenerator;
+import game.state.IState;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
-public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
+public class RolloutPolicy_DecayingHorizon<C extends Command<?>, S extends IState> extends RolloutPolicyBase<C, S> {
 
     // Decaying horizon kernel parameters.
     // Kernel is an s-curve meant to be evaluated from 0 to 1 and producing values from 0 to 1.
@@ -17,49 +20,55 @@ public class RolloutPolicy_DecayingHorizon extends RolloutPolicyBase {
 
     public static final int defaultMaxTimesteps = 200;
 
-    public final IController rolloutController;
+    public final IController<C, S> rolloutController;
 
-    public RolloutPolicy_DecayingHorizon(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
-                                         @JsonProperty("rolloutController") IController rolloutController,
+    public RolloutPolicy_DecayingHorizon(@JsonProperty("evaluationFunction") IEvaluationFunction<C, S> evaluationFunction,
+                                         @JsonProperty("rolloutActionGenerator") IActionGenerator<C> rolloutActionGenerator,
+                                         @JsonProperty("rolloutController") IController<C, S> rolloutController,
                                          @JsonProperty("maxTimesteps") int maxTimesteps) {
-        super(evaluationFunction, maxTimesteps);
+        super(evaluationFunction, rolloutActionGenerator, maxTimesteps);
         this.rolloutController = rolloutController;
     }
 
-    public RolloutPolicy_DecayingHorizon(IEvaluationFunction evaluationFunction, IController rolloutController) {
-        this(evaluationFunction, rolloutController, defaultMaxTimesteps);
+    public RolloutPolicy_DecayingHorizon(IEvaluationFunction<C, S> evaluationFunction,
+                                         IActionGenerator<C> rolloutActionGenerator,
+                                         IController<C, S> rolloutController) {
+        this(evaluationFunction, rolloutActionGenerator, rolloutController, defaultMaxTimesteps);
     }
 
-    float startScore(NodeQWOPExplorableBase<?> startNode) {
+    float startScore(NodeGameExplorableBase<?, C, S> startNode) {
         return 0; // -evaluationFunction.getValue(startNode);
     }
 
-    float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?> before, NodeQWOPBase<?> after) {
+    float accumulateScore(int timestepSinceRolloutStart, NodeGameBase<?, C, S> before, NodeGameBase<?, C, S> after) {
         float multiplier = getKernelMultiplier(
                 timestepSinceRolloutStart / (float) (maxTimesteps - 1));
 
         return multiplier * (getEvaluationFunction().getValue(after) - getEvaluationFunction().getValue(before));
     }
 
-    float endScore(NodeQWOPExplorableBase<?> endNode) {
+    float endScore(NodeGameExplorableBase<?, C, S> endNode) {
         return 0; // evaluationFunction.getValue(endNode);
     }
 
-    float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
-                        NodeQWOPExplorableBase<?> endNode, int rolloutDurationTimesteps) {
+    float calculateFinalScore(float accumulatedValue, NodeGameExplorableBase<?, C, S> startNode,
+                              NodeGameExplorableBase<?, C, S> endNode, int rolloutDurationTimesteps) {
         return accumulatedValue;
     }
 
     @Override
     @JsonIgnore
-    public IController getRolloutController() {
+    public IController<C, S> getRolloutController() {
         return rolloutController;
     }
 
     @JsonIgnore
     @Override
-    public RolloutPolicyBase getCopy() {
-        return new RolloutPolicy_DecayingHorizon(getEvaluationFunction().getCopy(), rolloutController.getCopy(), maxTimesteps);
+    public RolloutPolicyBase<C, S> getCopy() {
+        return new RolloutPolicy_DecayingHorizon<>(getEvaluationFunction().getCopy(),
+                rolloutActionGenerator,
+                rolloutController.getCopy(),
+                maxTimesteps);
     }
 
     float getKernelMultiplier(float normalizedTimesteps) {

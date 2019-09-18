@@ -1,5 +1,6 @@
 package game;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import game.action.Command;
 
 /**
@@ -9,4 +10,7 @@ import game.action.Command;
  */
 public interface IGameCommandTarget<C extends Command<?>> {
     void command(C command);
+
+    @JsonIgnore
+    int getNumberOfChoices();
 }

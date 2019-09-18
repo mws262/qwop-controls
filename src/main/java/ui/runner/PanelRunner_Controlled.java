@@ -2,14 +2,12 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
-import game.GameConstants;
-import game.GameUnified;
 import game.IGameSerializable;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
 import game.action.IActionGenerator;
-import tree.node.NodeQWOPExplorable;
+import game.qwop.*;
+import tree.node.NodeGameExplorable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +20,8 @@ import java.util.Arrays;
  * @param <C> Controller type being used. Must implement the IController interface.
  * @param <G> Game implementation used. Must implement the IGameInternal interface.
  */
-public class PanelRunner_Controlled<C extends IController, G extends IGameSerializable> extends PanelRunner {
+public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S extends IStateQWOP,
+        G extends IGameSerializable<CommandQWOP, S>> extends PanelRunner<S> {
 
     /**
      * Controller being visualized.
@@ -37,12 +36,12 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
     /**
      * Actions are queued as the controller provides them.
      */
-    private ActionQueue actionQueue = new ActionQueue();
+    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
 
     /**
      * Action most recently returned by the controller.
      */
-    private Action mostRecentAction;
+    private Action<CommandQWOP> mostRecentAction;
 
     /**
      * Is this an active window? If its in a hidden tab or something, then we want to deactivate all the internal
@@ -51,30 +50,20 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
     private boolean active = false;
 
     /**
-     * Button for resetting the runner to the initial configuration.
-     */
-    private JButton resetButton;
-
-    /**
      * Name of this panel. Used when inserted as a tab.
      */
     public final String name;
 
     /**
-     * If the controller needs an assigned action generator for nodes, then this can be externally set. Not the best
+     * If the controller needs an assigned command generator for nodes, then this can be externally set. Not the best
      * solution, but not many controllers need this anyway.
      */
-    public IActionGenerator actionGenerator;
+    public IActionGenerator<CommandQWOP> actionGenerator;
 
     /**
      * Number of layout row slots for the layout manager.
      */
     final int layoutRows = 25;
-
-    /**
-     * Number of layout column slots for the layout manager.
-     */
-    final int layoutColumns = 15;
 
     /**
      * Constraints for the layout manager.
@@ -100,14 +89,14 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
 
     private Thread gameThread;
 
-    public PanelRunner_Controlled(@JsonProperty("name") String name, G game, C controller) {
+    PanelRunner_Controlled(@JsonProperty("name") String name, G game, C controller) {
         this.name = name;
         this.controller = controller;
         this.game = game;
         this.setName(name);
 
-        // Reset button setup.
-        resetButton = new JButton("Restart");
+        // Button for resetting the runner to the initial configuration.
+        JButton resetButton = new JButton("Restart");
         resetButton.addActionListener(e -> {
             deactivateTab();
             activateTab();
@@ -116,6 +105,9 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
 
         // Setup the panel layout.
         GridBagLayout layout = new GridBagLayout();
+
+        // Number of layout column slots for the layout manager.
+        int layoutColumns = 15;
         layout.columnWeights = new double[layoutColumns];
         layout.rowWeights = new double[layoutRows];
         Arrays.fill(layout.columnWeights, 1);
@@ -135,7 +127,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         constraints.gridx = 0;
         constraints.gridy = layoutRows - 1;
         add(resetButton, constraints);
-        actionQueue.addAction(new Action(7, CommandQWOP.Keys.none));
+        actionQueue.addAction(new Action<>(7, CommandQWOP.NONE));
 
         // Options checkboxes.
         JPanel checkboxes = new JPanel();
@@ -169,7 +161,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
         gameDistance = new JLabel("");
         gameDistance.setOpaque(false);
         gameDistance.setFont(gameDistance.getFont().deriveFont(24f));
-        constraints.gridx = layoutColumns/2;
+        constraints.gridx = layoutColumns /2;
         constraints.gridy = 0;
         add(gameDistance, constraints);
     }
@@ -237,7 +229,7 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
      */
     private class ControllerExecutor implements Runnable {
 
-        private NodeQWOPExplorable node;
+        private NodeGameExplorable<CommandQWOP, S> node;
 
         int tsDelay = normalSimRate;
 
@@ -245,9 +237,9 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
          * Reset the game.
          */
         public void reset() {
-            game.makeNewWorld();
+            game.resetGame();
             actionQueue.clearAll();
-            actionQueue.addAction(new Action(7, CommandQWOP.Keys.none));
+            actionQueue.addAction(new Action<>(7, CommandQWOP.NONE));
             node = null;
             currentGameX = 0f;
             if (fastToggle.isSelected()) {
@@ -264,9 +256,9 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
                         // Either make the first node since the game began, or add a child to the previous node.
                         if (node == null) {
                             if (actionGenerator != null) {
-                                node = new NodeQWOPExplorable(game.getCurrentState(), actionGenerator);
+                                node = new NodeGameExplorable<>(game.getCurrentState(), actionGenerator);
                             } else {
-                                node = new NodeQWOPExplorable(game.getCurrentState());
+                                node = new NodeGameExplorable<>(game.getCurrentState());
                             }
                         } else {
                             node = node.addBackwardsLinkedChild(mostRecentAction, game.getCurrentState());
@@ -281,9 +273,9 @@ public class PanelRunner_Controlled<C extends IController, G extends IGameSerial
                     }
                     applyDisturbance(game);
                     game.step(actionQueue.pollCommand());
-                    currentGameX = (game.getCurrentState().getCenterX() - GameUnified.getInitialState().getCenterX()) / GameConstants.worldScale;
+                    currentGameX = (game.getCurrentState().getCenterX() - GameQWOP.getInitialState().getCenterX()) / QWOPConstants.worldScale;
                     gameDistance.setText(String.format("%.1fm  %.1fs",
-                            currentGameX, game.getTimestepsThisGame() * GameConstants.timestep));
+                            currentGameX, game.getTimestepsThisGame() * QWOPConstants.timestep));
 
                     if (tsDelay > 0) {
                         try {

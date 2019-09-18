@@ -1,13 +1,15 @@
 package tree.sampler.rollout;
 
 import controllers.Controller_Random;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.IGameInternal;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorable;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.evaluator.IEvaluationFunction;
@@ -16,15 +18,16 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
 
     @Test
     public void rolloutConstantValue() {
-        IGameInternal fakeGame = new NoFailGame();
+        IGameInternal<CommandQWOP, StateQWOP> fakeGame = new NoFailGame();
         RolloutPolicy_DecayingHorizon.kernelCenter = 0.5f;
         RolloutPolicy_DecayingHorizon.kernelSteepness = 5;
         int maxTimestepsToSim = 200;
 
-        NodeQWOPExplorable startNode = new NodeQWOPExplorable(GameUnified.getInitialState());
+        NodeGameExplorable<CommandQWOP, StateQWOP> startNode = new NodeGameExplorable<>(GameQWOP.getInitialState());
 
-        RolloutPolicy_DecayingHorizon rollout = new RolloutPolicy_DecayingHorizon(new EvaluationFunction_Constant(5),
-                new Controller_Random(), maxTimestepsToSim);
+        RolloutPolicy_DecayingHorizon<CommandQWOP, StateQWOP> rollout = new RolloutPolicy_DecayingHorizon<>(new EvaluationFunction_Constant<>(5),
+                RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+                new Controller_Random<>(), maxTimestepsToSim);
         long initialGameSteps = fakeGame.getTimestepsThisGame();
         float result = rollout.rollout(startNode, fakeGame);
         Assert.assertEquals(maxTimestepsToSim, fakeGame.getTimestepsThisGame() - initialGameSteps);
@@ -53,24 +56,27 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
             end
             disp(accumulatedValue);
         */
-        IGameInternal fakeGame = new NoFailGame();
-        NodeQWOPExplorable startNode = new NodeQWOPExplorable(GameUnified.getInitialState());
+        IGameInternal<CommandQWOP, StateQWOP> fakeGame = new NoFailGame();
+        NodeGameExplorable<CommandQWOP, StateQWOP> startNode = new NodeGameExplorable<>(GameQWOP.getInitialState());
 
         RolloutPolicy_DecayingHorizon.kernelCenter = 0.5f;
         RolloutPolicy_DecayingHorizon.kernelSteepness = 5;
         int maxTimestepsToSim = 200;
-        RolloutPolicy_DecayingHorizon rollout = new RolloutPolicy_DecayingHorizon(new IEvaluationFunction() {
+        IEvaluationFunction<CommandQWOP, StateQWOP> evalFun = new IEvaluationFunction<CommandQWOP, StateQWOP>() {
             @Override
-            public float getValue(NodeQWOPBase<?> nodeToEvaluate) { return nodeToEvaluate.getTreeDepth(); }
+            public float getValue(NodeGameBase<?, CommandQWOP, StateQWOP> nodeToEvaluate) { return nodeToEvaluate.getTreeDepth(); }
             @Override
-            public String getValueString(NodeQWOPBase<?> nodeToEvaluate) { return null; }
+            public String getValueString(NodeGameBase<?, CommandQWOP, StateQWOP> nodeToEvaluate) { return null; }
             @Override
-            public IEvaluationFunction getCopy() { return null; }
+            public IEvaluationFunction<CommandQWOP, StateQWOP> getCopy() { return null; }
             @Override
             public void close() {}
-        }, new Controller_Random(), maxTimestepsToSim);
+        };
+        RolloutPolicy_DecayingHorizon<CommandQWOP, StateQWOP> rollout =
+                new RolloutPolicy_DecayingHorizon<>(evalFun, RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+                        new Controller_Random<>(), maxTimestepsToSim);
 
-        fakeGame.makeNewWorld();
+        fakeGame.resetGame();
         float result = rollout.rollout(startNode, fakeGame);
 
         Assert.assertEquals(100f, result, 1e-4f); // Value calculated with MATLAB script.
@@ -85,11 +91,15 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
         int maxTimestepsToSim = 200;
 
         // should result in essentially an identity function for small inputs.
-        RolloutPolicy_DecayingHorizon rollout =
-                new RolloutPolicy_DecayingHorizon(new EvaluationFunction_Distance(), new Controller_Random(), maxTimestepsToSim);
+        RolloutPolicy_DecayingHorizon<CommandQWOP, StateQWOP> rollout =
+                new RolloutPolicy_DecayingHorizon<>(
+                        new EvaluationFunction_Distance<>(),
+                        RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+                        new Controller_Random<>(),
+                        maxTimestepsToSim);
 
-        GameUnified realGame = new GameUnified();
-        NodeQWOPExplorable startNode = new NodeQWOPExplorable(GameUnified.getInitialState());
+        GameQWOP realGame = new GameQWOP();
+        NodeGameExplorable<CommandQWOP, StateQWOP> startNode = new NodeGameExplorable<>(GameQWOP.getInitialState());
 
         float startDistance = realGame.getCurrentState().getCenterX();
         float finalValue = rollout.rollout(startNode, realGame);
@@ -111,8 +121,11 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
     public void getKernelMultiplier() {
         RolloutPolicy_DecayingHorizon.kernelCenter = 0.83f;
         RolloutPolicy_DecayingHorizon.kernelSteepness = 1.82f;
-        RolloutPolicy_DecayingHorizon rollout =
-                new RolloutPolicy_DecayingHorizon(new EvaluationFunction_Constant(1f), new Controller_Random());
+        RolloutPolicy_DecayingHorizon<CommandQWOP, StateQWOP> rollout =
+                new RolloutPolicy_DecayingHorizon<>(
+                        new EvaluationFunction_Constant<>(1f),
+                        RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+                        new Controller_Random<>());
 
         // Spot checks in MATLAB.
         Assert.assertEquals(0.953522734991563f, rollout.getKernelMultiplier(0f), 1e-8f);
@@ -121,26 +134,26 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
     }
 
     // Fake version of the game which only returns one state.
-    private static class NoFailGame extends GameUnified {
+    private static class NoFailGame extends GameQWOP {
         @Override
-        public boolean getFailureStatus() {
+        public boolean isFailed() {
             return false;
         }
     }
 
     // Save the state half-way through for one of the tests.
-    private static class CacheHalfwayPoint extends GameUnified {
+    private static class CacheHalfwayPoint extends GameQWOP {
 
         private boolean canFail;
         private int totalTs;
         IState halfwayCachedState;
-        public CacheHalfwayPoint(boolean canFail, int totalTs) {
+        CacheHalfwayPoint(boolean canFail, int totalTs) {
             this.totalTs = totalTs;
             this.canFail = canFail;
         }
 
         @Override
-        public IState getCurrentState() {
+        public StateQWOP getCurrentState() {
             if (getTimestepsThisGame() == (totalTs / 2)) {
                 halfwayCachedState = super.getCurrentState();
             }
@@ -148,9 +161,9 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
         }
 
         @Override
-        public boolean getFailureStatus() {
+        public boolean isFailed() {
             if (canFail) {
-                return super.getFailureStatus();
+                return super.isFailed();
             } else {
                 return false;
             }

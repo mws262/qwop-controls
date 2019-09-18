@@ -2,11 +2,12 @@ package goals.value_function;
 
 import com.google.common.base.Preconditions;
 import controllers.Controller_ValueFunction;
-import game.GameConstants;
-import game.GameUnified;
+import game.qwop.QWOPConstants;
+import game.qwop.GameQWOP;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import game.state.IState;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.InitialGuess;
@@ -17,7 +18,8 @@ import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.CMAESOptimizer;
 import tflowtools.TrainableNetwork;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
+import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import java.io.IOException;
@@ -26,33 +28,30 @@ public class WeightScoreFunction implements MultivariateFunction {
 
     public static final GoalType goal = GoalType.MINIMIZE;
 
-    private final ValueFunction_TensorFlow_StateOnly valFun;
-
     private final TrainableNetwork network;
 
     private final float[] initialBiases; // TODO generalize
     private final float[][] initialWeights; // TODO generalize
 
 
-    public final CMAESOptimizer.Sigma sigma;
+    final CMAESOptimizer.Sigma sigma;
 
-    public final InitialGuess initialGuess;
+    final InitialGuess initialGuess;
 
-    public final ObjectiveFunction objectiveFunction;
+    final ObjectiveFunction objectiveFunction;
 
     public final SimpleBounds bounds;
 
-    public final MaxIter maxIter = new MaxIter(1000);
-    public final MaxEval maxEval = new MaxEval(10000);
+    final MaxIter maxIter = new MaxIter(1000);
+    final MaxEval maxEval = new MaxEval(10000);
 
-    private GameUnified game = new GameUnified();
+    private GameQWOP game = new GameQWOP();
 
-    private final Controller_ValueFunction<ValueFunction_TensorFlow_StateOnly> controller;
+    private final Controller_ValueFunction<CommandQWOP, StateQWOP, ValueFunction_TensorFlow<CommandQWOP, StateQWOP>> controller;
 
     private final int layer = 1;
     private final boolean weights = true;
     WeightScoreFunction(ValueFunction_TensorFlow_StateOnly valFun) {
-        this.valFun = valFun;
         this.network = valFun.network;
         initialBiases = network.getLayerBiases(layer); // TODO generalize to other parameters.
         initialWeights = network.getLayerWeights(layer);
@@ -83,8 +82,8 @@ public class WeightScoreFunction implements MultivariateFunction {
         bounds = new SimpleBounds(lb, ub);
     }
 
-    double bestCostSoFar = Double.MAX_VALUE;
-    int bestIdx = 0;
+    private double bestCostSoFar = Double.MAX_VALUE;
+    private int bestIdx = 0;
     @Override
     public double value(double[] point) {
         // Set weights according to the objective function input.
@@ -103,25 +102,25 @@ public class WeightScoreFunction implements MultivariateFunction {
         }
 
         // Evaluate it.
-        ActionQueue actionQueue = new ActionQueue();
-        actionQueue.addAction(new Action(7, CommandQWOP.Keys.none));
-        game.makeNewWorld();
+        ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
+        actionQueue.addAction(new Action<>(7, CommandQWOP.NONE));
+        game.resetGame();
 
         int maxTs = 3000;
-        while (!game.getFailureStatus() && game.getTimestepsThisGame() < maxTs && game.getCurrentState().getCenterX() < GameConstants.goalDistance) {
+        while (!game.isFailed() && game.getTimestepsThisGame() < maxTs && game.getCurrentState().getCenterX() < QWOPConstants.goalDistance) {
 
             if (actionQueue.isEmpty()) {
-                actionQueue.addAction(controller.policy(new NodeQWOPExplorable(game.getCurrentState()), game)); // Can
+                actionQueue.addAction(controller.policy(new NodeGameExplorable<>(game.getCurrentState()), game)); // Can
                 // change to game serialization version here.
             }
             game.step(actionQueue.pollCommand());
         }
         IState finalState = game.getCurrentState();
-        System.out.println("Final X: " + finalState.getCenterX() / GameConstants.worldScale + "  Time: "
-                + game.getTimestepsThisGame() * GameConstants.timestep);
+        System.out.println("Final X: " + finalState.getCenterX() / QWOPConstants.worldScale + "  Time: "
+                + game.getTimestepsThisGame() * QWOPConstants.timestep);
 
-        double val =  (GameConstants.goalDistance - Math.min(GameConstants.goalDistance,
-                finalState.getCenterX() - GameUnified.getInitialState().getCenterX())) * 10f + game.getTimestepsThisGame();
+        double val =  (QWOPConstants.goalDistance - Math.min(QWOPConstants.goalDistance,
+                finalState.getCenterX() - GameQWOP.getInitialState().getCenterX())) * 10f + game.getTimestepsThisGame();
         System.out.println(val);
 
         if (val < bestCostSoFar) {
@@ -147,9 +146,9 @@ public class WeightScoreFunction implements MultivariateFunction {
         float[] flat = new float[weights.length * weights[0].length];
 
         int idx = 0;
-        for (int i = 0; i < weights.length; i++) {
+        for (float[] weight : weights) {
             for (int j = 0; j < weights[0].length; j++) {
-                flat[idx++] = weights[i][j];
+                flat[idx++] = weight[j];
             }
         }
         return flat;

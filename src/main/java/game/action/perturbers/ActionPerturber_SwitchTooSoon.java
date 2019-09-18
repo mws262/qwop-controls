@@ -2,26 +2,28 @@ package game.action.perturbers;
 
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.Command;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * Perturbs {@link ActionQueue} by making some or all of the transitions between game.action happen too early. Total
+ * Perturbs {@link ActionQueue} by making some or all of the transitions between game.command happen too early. Total
  * number of timesteps should be preserved.
  */
-public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
+public class ActionPerturber_SwitchTooSoon<C extends Command<?>> implements IActionPerturber<C> {
 
     /**
-     * Action indices as keys and number of timesteps to move as values. Timesteps are moved from the previous action
+     * Action indices as keys and number of timesteps to move as values. Timesteps are moved from the previous command
      * to the specified one.
      */
     private Map<Integer, Integer> perturbationIndexAndSize;
 
     /**
-     * Make a new perturber by defining which game.action should be changed and by how much.
+     * Make a new perturber by defining which game.command should be changed and by how much.
      *
-     * @param perturbationIndexAndSize Map specifying which action should be started too soon, and how early (in
-     *                                 timesteps) it should be started. Only the second action onward (indices 1+)
+     * @param perturbationIndexAndSize Map specifying which command should be started too soon, and how early (in
+     *                                 timesteps) it should be started. Only the second command onward (indices 1+)
      *                                 can be started early. "How early" are specified as positive integers.
      */
     public ActionPerturber_SwitchTooSoon(Map<Integer, Integer> perturbationIndexAndSize) {
@@ -42,30 +44,30 @@ public class ActionPerturber_SwitchTooSoon implements IActionPerturber {
     }
 
     @Override
-    public ActionQueue perturb(ActionQueue unperturbedQueue) {
-        Action[] allActions = unperturbedQueue.getActionsInCurrentRun();
+    public ActionQueue<C> perturb(ActionQueue<C> unperturbedQueue) {
+        List<Action<C>> allActions = unperturbedQueue.getActionsInCurrentRun();
 
         for (Map.Entry<Integer, Integer> entry : perturbationIndexAndSize.entrySet()) {
             int actionIdx = entry.getKey();
-            if (actionIdx < allActions.length) {
+            if (actionIdx < allActions.size()) {
 
                 int perturbationSize = Integer.min(entry.getValue(),
-                        allActions[actionIdx - 1].getTimestepsTotal() - 1); // Perturbations must leave at least one
+                        allActions.get(actionIdx - 1).getTimestepsTotal() - 1); // Perturbations must leave at least one
                 // command in the previous Action.
 
-                Action endedEarlyAction =
-                        new Action(allActions[actionIdx-1].getTimestepsTotal() - perturbationSize,
-                                allActions[actionIdx - 1].peek());
-                Action tooSoonAction =
-                        new Action(allActions[actionIdx].getTimestepsTotal() + perturbationSize,
-                                allActions[actionIdx].peek());
+                Action<C> endedEarlyAction =
+                        new Action<>(allActions.get(actionIdx-1).getTimestepsTotal() - perturbationSize,
+                                allActions.get(actionIdx - 1).peek());
+                Action<C> tooSoonAction =
+                        new Action<>(allActions.get(actionIdx).getTimestepsTotal() + perturbationSize,
+                                allActions.get(actionIdx).peek());
 
 
-                allActions[actionIdx - 1] = endedEarlyAction;
-                allActions[actionIdx] = tooSoonAction;
+                allActions.set(actionIdx - 1, endedEarlyAction);
+                allActions.set(actionIdx, tooSoonAction);
             }
         }
-        ActionQueue perturbedActionQueue = new ActionQueue();
+        ActionQueue<C> perturbedActionQueue = new ActionQueue<>();
         perturbedActionQueue.addSequence(allActions);
         return perturbedActionQueue;
     }

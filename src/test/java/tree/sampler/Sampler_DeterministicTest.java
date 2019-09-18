@@ -1,18 +1,16 @@
 package tree.sampler;
 
 import distributions.Distribution_Equal;
-import game.GameUnified;
-import game.action.Action;
-import game.action.ActionGenerator_FixedSequence;
-import game.action.ActionList;
-import game.action.CommandQWOP;
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.action.*;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import tree.node.NodeQWOPExplorable;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameExplorable;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -23,8 +21,8 @@ public class Sampler_DeterministicTest {
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
 
 
-    private State unfailedState = mock(State.class);
-    private State failedState = mock(State.class);
+    private StateQWOP unfailedState = mock(StateQWOP.class);
+    private StateQWOP failedState = mock(StateQWOP.class);
     {
         when(unfailedState.isFailed()).thenReturn(false);
         when(failedState.isFailed()).thenReturn(true);
@@ -32,42 +30,43 @@ public class Sampler_DeterministicTest {
     @Test
     public void treeBuild() {
 
-        ActionList alist1 = new ActionList(new Distribution_Equal());
-        alist1.add(new Action(1, CommandQWOP.WO));
-        alist1.add(new Action(2, CommandQWOP.NONE));
-        ActionList alist2 = new ActionList(new Distribution_Equal());
-        alist2.add(new Action(3, CommandQWOP.QO));
-        alist2.add(new Action(4, CommandQWOP.Q));
-        alist2.add(new Action(5, CommandQWOP.P));
+        ActionList<CommandQWOP> alist1 = new ActionList<>(new Distribution_Equal<>());
+        alist1.add(new Action<>(1, CommandQWOP.WO));
+        alist1.add(new Action<>(2, CommandQWOP.NONE));
+        ActionList<CommandQWOP> alist2 = new ActionList<>(new Distribution_Equal<>());
+        alist2.add(new Action<>(3, CommandQWOP.QO));
+        alist2.add(new Action<>(4, CommandQWOP.Q));
+        alist2.add(new Action<>(5, CommandQWOP.P));
 
-        ActionGenerator_FixedSequence generator = new ActionGenerator_FixedSequence(new ActionList[] {alist1, alist2});
+        ActionGenerator_FixedSequence<CommandQWOP> generator = new ActionGenerator_FixedSequence<>(alist1, alist2);
 
-        Sampler_Deterministic sampler = new Sampler_Deterministic();
+        Sampler_Deterministic<CommandQWOP, StateQWOP> sampler = new Sampler_Deterministic<>();
 
         // Tree policy from root with no other nodes just stays there.
-        NodeQWOPExplorable root = new NodeQWOPExplorable(GameUnified.getInitialState(), generator);
+        NodeGameExplorable<CommandQWOP, StateQWOP> root = new NodeGameExplorable<>(GameQWOP.getInitialState(), generator);
         Assert.assertEquals(2, root.getUntriedActionCount());
-        NodeQWOPExplorableBase<?> tp1 = sampler.treePolicy(root);
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> tp1 = sampler.treePolicy(root);
         Assert.assertEquals(root, tp1);
 
         sampler.treePolicyActionDone(tp1);
         Assert.assertTrue(sampler.treePolicyGuard(tp1));
         Assert.assertFalse(sampler.expansionPolicyGuard(tp1));
 
-        // Expansion from root. Always gets the first action.
-        Action expansionAction1 = sampler.expansionPolicy(tp1);
+        // Expansion from root. Always gets the first command.
+        Action<CommandQWOP> expansionAction1 = sampler.expansionPolicy(tp1);
         Assert.assertEquals(alist1.get(0), expansionAction1);
         Assert.assertFalse(sampler.expansionPolicyGuard(tp1));
 
-        NodeQWOPExplorableBase<?> expansionNode1 = tp1.addDoublyLinkedChild(expansionAction1, unfailedState);
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> expansionNode1 = tp1.addDoublyLinkedChild(expansionAction1, unfailedState);
         Assert.assertFalse(expansionNode1.isFullyExplored());
         sampler.expansionPolicyActionDone(expansionNode1);
         Assert.assertFalse(sampler.expansionPolicyGuard(expansionNode1));
 
         // Depth 2 expansion, gets failed state.
-        Action expansionAction2 = sampler.expansionPolicy(expansionNode1);
+        Action<CommandQWOP> expansionAction2 = sampler.expansionPolicy(expansionNode1);
         Assert.assertEquals(alist2.get(0), expansionAction2);
-        NodeQWOPExplorableBase<?> expansionNode2 = expansionNode1.addDoublyLinkedChild(expansionAction2, failedState);
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> expansionNode2 = expansionNode1.addDoublyLinkedChild(expansionAction2,
+                failedState);
         sampler.expansionPolicyActionDone(expansionNode2);
         Assert.assertTrue(expansionNode2.isFullyExplored());
         Assert.assertTrue(sampler.expansionPolicyGuard(expansionNode2));
@@ -79,15 +78,15 @@ public class Sampler_DeterministicTest {
         root.releaseExpansionRights();
 
         // Second sampling from root. Should expand from root again.
-        NodeQWOPExplorableBase<?> tp2 = sampler.treePolicy(root);
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> tp2 = sampler.treePolicy(root);
         Assert.assertEquals(root, tp2);
         sampler.treePolicyActionDone(tp1);
         Assert.assertTrue(sampler.treePolicyGuard(tp1));
         Assert.assertFalse(sampler.expansionPolicyGuard(tp1));
 
-        Action expansionAction3 = sampler.expansionPolicy(root);
+        Action<CommandQWOP> expansionAction3 = sampler.expansionPolicy(root);
         Assert.assertEquals(alist1.get(1), expansionAction3);
-        NodeQWOPExplorableBase<?> expansionNode3 = root.addDoublyLinkedChild(expansionAction3, failedState);
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> expansionNode3 = root.addDoublyLinkedChild(expansionAction3, failedState);
         sampler.expansionPolicyActionDone(expansionNode3);
         Assert.assertTrue(expansionNode3.isFullyExplored());
         Assert.assertTrue(sampler.expansionPolicyGuard(expansionNode3));
@@ -97,16 +96,16 @@ public class Sampler_DeterministicTest {
         Assert.assertFalse(root.isLocked());
 
         // Another failed node, this time should be added at depth 2.
-        NodeQWOPExplorableBase<?> tp3 = sampler.treePolicy(root);
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> tp3 = sampler.treePolicy(root);
         Assert.assertEquals(expansionNode1, tp3);
         sampler.treePolicyActionDone(tp3);
         Assert.assertTrue(sampler.treePolicyGuard(tp3));
         Assert.assertFalse(sampler.expansionPolicyGuard(tp3));
         Assert.assertTrue(root.isLocked());
         Assert.assertTrue(expansionNode1.isLocked());
-        Action expansionAction4 = sampler.expansionPolicy(tp3);
+        Action<CommandQWOP> expansionAction4 = sampler.expansionPolicy(tp3);
         Assert.assertEquals(alist2.get(1), expansionAction4);
-        NodeQWOPExplorableBase<?> expansionNode4 = tp3.addDoublyLinkedChild(expansionAction4, failedState);
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> expansionNode4 = tp3.addDoublyLinkedChild(expansionAction4, failedState);
         Assert.assertTrue(expansionNode4.isFullyExplored());
         sampler.expansionPolicyActionDone(expansionNode4);
         Assert.assertTrue(sampler.expansionPolicyGuard(expansionNode4));
@@ -119,7 +118,7 @@ public class Sampler_DeterministicTest {
 
         // Add the last fully-explored node. Should cause the full tree to become fully-explored.
         Assert.assertFalse(sampler.treePolicyGuard(root));
-        NodeQWOPExplorableBase<?> tp4 = sampler.treePolicy(root);
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> tp4 = sampler.treePolicy(root);
         Assert.assertEquals(expansionNode1, tp4);
         Assert.assertTrue(tp4.isLocked());
         Assert.assertTrue(root.isLocked());
@@ -128,8 +127,8 @@ public class Sampler_DeterministicTest {
         sampler.treePolicyActionDone(tp4);
         Assert.assertTrue(sampler.treePolicyGuard(tp4));
         Assert.assertFalse(sampler.expansionPolicyGuard(tp4));
-        Action expansionAction5 = sampler.expansionPolicy(tp4);
-        NodeQWOPExplorableBase<?> expansionNode5 = tp4.addDoublyLinkedChild(expansionAction5, failedState);
+        Action<CommandQWOP> expansionAction5 = sampler.expansionPolicy(tp4);
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> expansionNode5 = tp4.addDoublyLinkedChild(expansionAction5, failedState);
         Assert.assertFalse(sampler.expansionPolicyGuard(expansionNode5));
         sampler.expansionPolicyActionDone(expansionNode5);
         Assert.assertTrue(sampler.expansionPolicyGuard(expansionNode5));

@@ -1,9 +1,11 @@
 package tree.stage;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
+import game.state.IState;
 import tree.TreeWorker;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -14,8 +16,9 @@ import java.util.List;
  *
  * @author matt
  */
-public class TreeStage_MaxDepth extends TreeStage {
-    private List<NodeQWOPExplorableBase<?>> leafList = new LinkedList<>();
+public class TreeStage_MaxDepth<C extends Command<?>, S extends IState> extends TreeStage<C, S> {
+
+    private List<NodeGameExplorableBase<?, C, S>> leafList = new LinkedList<>();
 
     /**
      * Max relative depth (i.e. specified relative to the given root node).
@@ -36,11 +39,12 @@ public class TreeStage_MaxDepth extends TreeStage {
      * Alternate termination condition: We played more than this number of games without getting to the desired max
      * depth.
      */
+    @JsonProperty("maxGames")
     public final int maxGames;
 
     /**
      * Tree stage which searches until a certain tree depth is achieved anywhere on the tree, the root node becomes
-     * fully-explored ({@link NodeQWOPExplorableBase#isFullyExplored()}), or some maximum number of games threshold is
+     * fully-explored ({@link NodeGameExplorableBase#isFullyExplored()}), or some maximum number of games threshold is
      * met.
      * @param maxDepth Depth to search until.
      */
@@ -51,15 +55,15 @@ public class TreeStage_MaxDepth extends TreeStage {
     }
 
     @Override
-    public void initialize(List<TreeWorker> treeWorkers, NodeQWOPExplorableBase<?> stageRoot) {
+    public void initialize(List<TreeWorker<C, S>> treeWorkers, NodeGameExplorableBase<?, C, S> stageRoot) {
         maxEffectiveDepth = maxDepth + stageRoot.getTreeDepth();
         gamesPlayedAtStageStart = TreeWorker.getTotalGamesPlayed();
         super.initialize(treeWorkers, stageRoot);
     }
 
     @Override
-    public List<NodeQWOPBase<?>> getResults() {
-        List<NodeQWOPBase<?>> resultList = new ArrayList<>();
+    public List<NodeGameBase<?, C, S>> getResults() {
+        List<NodeGameBase<?, C, S>> resultList = new ArrayList<>();
         leafList.clear();
         getRootNode().applyToLeavesBelow(leafList::add);
 
@@ -68,12 +72,12 @@ public class TreeStage_MaxDepth extends TreeStage {
 
         assert leafList.size() > 1;
 
-        for (NodeQWOPBase<?> n : leafList) {
+        for (NodeGameBase<?, C, S> n : leafList) {
             if (n.getTreeDepth() == maxEffectiveDepth) {
                 resultList.add(n);
                 return resultList;
             } else if (n.getTreeDepth() > maxEffectiveDepth) {
-                NodeQWOPBase<?> atDepth = n;
+                NodeGameBase<?, C, S> atDepth = n;
                 while (atDepth.getTreeDepth() > maxEffectiveDepth) {
                     atDepth = atDepth.getParent();
                 }
@@ -86,7 +90,7 @@ public class TreeStage_MaxDepth extends TreeStage {
 
     @Override
     public boolean checkTerminationConditions() {
-        NodeQWOPExplorableBase<?> rootNode = getRootNode();
+        NodeGameExplorableBase<?, C, S> rootNode = getRootNode();
         // Also terminate if it's been too long and we haven't found anything.
         return rootNode.isFullyExplored() || rootNode.getMaxBranchDepth() >= maxEffectiveDepth ||
                 (TreeWorker.getTotalGamesPlayed() - gamesPlayedAtStageStart) > maxGames;

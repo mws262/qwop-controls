@@ -5,11 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Iterables;
-import data.LoadStateStatistics;
+import game.action.Command;
+import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import tflowtools.TrainableNetwork;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,12 +25,12 @@ import java.util.List;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ValueFunction_TensorFlow_StateOnly.class, name = "tflow_state_only"),
 })
-public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCloseable {
+public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends IState> implements IValueFunction<C, S>,
+        AutoCloseable {
 
     /**
      * Input layer size.
      */
-    @JsonIgnore
     public final int inputSize;
 
     /**
@@ -45,7 +47,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
     public final String fileName;
     public final List<Integer> hiddenLayerSizes;
     public List<String> additionalNetworkArgs;
-    public final boolean tensorboardLogging;
+    final boolean tensorboardLogging;
     /**
      * Number of nodes to run through training in one shot.
      */
@@ -71,15 +73,6 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
      */
     private float lossSum;
 
-    LoadStateStatistics.StateStatistics stateStats;
-    {
-        try {
-            stateStats = LoadStateStatistics.loadStatsFromFile();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
     private static final Logger logger = LogManager.getLogger(ValueFunction_TensorFlow.class);
 
     /**
@@ -92,7 +85,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
      * @throws FileNotFoundException Occurs when the file is not created successfully.
      */
     ValueFunction_TensorFlow(@JsonProperty("fileName") String fileName,
-                             int inputSize,
+                             @JsonProperty("inputSize") int inputSize,
                              @JsonProperty("outputSize") int outputSize,
                              @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                              @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
@@ -140,6 +133,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
      * Existing network. It will not be validated. Mostly for use when copying.
      * @param network Existing value network.
      */
+    @SuppressWarnings("unused")
     ValueFunction_TensorFlow(TrainableNetwork network) {
         logger.info("Using provided network for the value function.");
         this.fileName = network.getGraphDefinitionFile().getPath();
@@ -210,7 +204,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
     }
 
     @Override
-    public void update(List<? extends NodeQWOPBase<?>> nodes) {
+    public void update(List<? extends NodeGameBase<?, C, S>> nodes) {
         assert trainingBatchSize > 0;
 
         batchCount = 0;
@@ -228,7 +222,7 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
 
             // Iterate through the nodes in the batch.
             for (int i = 0; i < batch.size(); i++) {
-                NodeQWOPBase<?> n = batch.get(i);
+                NodeGameBase<?, C, S> n = batch.get(i);
 
                 // Don't include root node since it doesn't have a parent.
                 if (n.getParent() == null) {
@@ -259,16 +253,16 @@ public abstract class ValueFunction_TensorFlow implements IValueFunction, AutoCl
     }
 
     @Override
-    public float evaluate(NodeQWOPBase<?> node) {
+    public float evaluate(@NotNull NodeGameBase<?, C, S> node) {
         float[][] input = new float[1][inputSize];
         input[0] = assembleInputFromNode(node);
         float[][] result = network.evaluateInput(input);
         return result[0][0];
     }
 
-    abstract float[] assembleInputFromNode(NodeQWOPBase<?> node);
+    abstract float[] assembleInputFromNode(NodeGameBase<?, C, S> node);
 
-    abstract float[] assembleOutputFromNode(NodeQWOPBase<?> node);
+    abstract float[] assembleOutputFromNode(NodeGameBase<?, C, S> node);
 
     @Override
     public void close() {

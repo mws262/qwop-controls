@@ -1,18 +1,21 @@
 package goals.tree_search;
 
 import controllers.Controller_Random;
+import data.SparseDataToDenseTFRecord;
 import game.action.ActionGenerator_FixedSequence;
 import game.action.IActionGenerator;
-import data.SparseDataToDenseTFRecord;
-import game.GameUnified;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import tree.TreeWorker;
+import tree.Utility;
+import tree.node.NodeGameGraphics;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.sampler.Sampler_UCB;
-import tree.node.NodeQWOPGraphics;
-import tree.TreeWorker;
-import tree.Utility;
+import tree.sampler.rollout.RolloutPolicyBase;
 import tree.sampler.rollout.RolloutPolicy_DeltaScore;
 import value.updaters.ValueUpdater_Average;
 
@@ -66,7 +69,7 @@ public class MAIN_Search_LongRun extends SearchTemplate {
 
         ///////////////////////////////////////////////////////////
 
-        IActionGenerator actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);
+        IActionGenerator<CommandQWOP> actionGenerator = ActionGenerator_FixedSequence.makeExtendedGenerator(-1);
 
         // This stage generates the nominal gait. Roughly gets us to steady-state. Saves this 1 run to a file.
         // Check if we actually need to do stage 1.
@@ -74,8 +77,9 @@ public class MAIN_Search_LongRun extends SearchTemplate {
         if (doStage1) {
             int count = 0;
             while (count < runsToGenerate) {
-                NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState(), actionGenerator);
-                NodeQWOPGraphics.pointsToDraw.clear();
+                NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState(),
+                        actionGenerator);
+                NodeGameGraphics.pointsToDraw.clear();
                 ui.clearRootNodes();
                 ui.addRootNode(rootNode);
 
@@ -109,13 +113,16 @@ public class MAIN_Search_LongRun extends SearchTemplate {
     }
 
     @Override
-    TreeWorker getTreeWorker() {
-        return TreeWorker.makeStandardTreeWorker(new Sampler_UCB(
-                new EvaluationFunction_Constant(0f),
-                new RolloutPolicy_DeltaScore(
-                        new EvaluationFunction_Distance(),
-                        new Controller_Random()),
-                new ValueUpdater_Average(),
+    TreeWorker<CommandQWOP, StateQWOP> getTreeWorker() {
+//        return new TreeWorker<>(new GameQWOP(), new Sampler_FixedDepth<>(3), new DataSaver_Null<>());
+        return TreeWorker.makeStandardQWOPTreeWorker(
+                new Sampler_UCB<>(
+                        new EvaluationFunction_Constant<>(0f),
+                        new RolloutPolicy_DeltaScore<>(
+                                new EvaluationFunction_Distance<>(),
+                                RolloutPolicyBase.getQWOPRolloutActionGenerator(),
+                                new Controller_Random<>()),
+                new ValueUpdater_Average<>(),
                 .6f, // TODO hardcoded.
                 1f));
     }

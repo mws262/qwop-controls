@@ -1,34 +1,34 @@
 package value.updaters;
 
-import game.GameUnified;
 import game.action.Action;
-import game.action.CommandQWOP;
-import game.state.IState;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Test;
-import tree.node.NodeQWOP;
+import tree.node.NodeGame;
 
 public class ValueUpdater_HardSetTest {
 
     @Test
     public void update() {
 
-        IState s = GameUnified.getInitialState();
-        NodeQWOP root = new NodeQWOP(s);
+        StateQWOP s = GameQWOP.getInitialState();
+        NodeGame<CommandQWOP, StateQWOP> root = new NodeGame<>(s);
 
-        Action a1 = new Action(4, CommandQWOP.Keys.q);
-        Action a2 = new Action(10, CommandQWOP.Keys.qo);
-        Action a3 = new Action(12, CommandQWOP.Keys.none);
+        Action<CommandQWOP> a1 = new Action<>(4, CommandQWOP.Q);
+        Action<CommandQWOP> a2 = new Action<>(10, CommandQWOP.QO);
+        Action<CommandQWOP> a3 = new Action<>(12, CommandQWOP.NONE);
 
-        NodeQWOP n1 = root.addBackwardsLinkedChild(a1, s);
-        NodeQWOP n2 = root.addBackwardsLinkedChild(a2, s);
-        NodeQWOP n3 = root.addBackwardsLinkedChild(a3, s);
+        NodeGame<CommandQWOP, StateQWOP> n1 = root.addBackwardsLinkedChild(a1, s);
+        NodeGame<CommandQWOP, StateQWOP> n2 = root.addBackwardsLinkedChild(a2, s);
+        NodeGame<CommandQWOP, StateQWOP> n3 = root.addBackwardsLinkedChild(a3, s);
 
-        NodeQWOP n1_1 = n1.addDoublyLinkedChild(a1, s);
-        NodeQWOP n1_2 = n1.addDoublyLinkedChild(a2, s);
-        NodeQWOP n1_1_1 = n1_1.addDoublyLinkedChild(a1, s);
+        NodeGame<CommandQWOP, StateQWOP> n1_1 = n1.addDoublyLinkedChild(a1, s);
+        NodeGame<CommandQWOP, StateQWOP> n1_2 = n1.addDoublyLinkedChild(a2, s);
+        NodeGame<CommandQWOP, StateQWOP> n1_1_1 = n1_1.addDoublyLinkedChild(a1, s);
 
-        ValueUpdater_HardSet updater = new ValueUpdater_HardSet();
+        ValueUpdater_HardSet<CommandQWOP, StateQWOP> updater = new ValueUpdater_HardSet<>();
 
         n1.updateValue(3, updater);
         n2.updateValue(4, updater);

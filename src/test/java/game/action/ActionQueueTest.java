@@ -1,22 +1,25 @@
 package game.action;
 
-import game.GameUnified;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
 import game.state.IState;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ActionQueueTest {
 
     @Test
     public void peekThisAction() {
-        ActionQueue actQueue = new ActionQueue();
-        Action a1 = new Action(5, CommandQWOP.NONE);
-        Action a2 = new Action(6, CommandQWOP.Q);
-        Action a3 = new Action(7, CommandQWOP.NONE);
-        Action a4 = new Action(8, CommandQWOP.NONE);
+        ActionQueue<CommandQWOP> actQueue = new ActionQueue<>();
+        Action<CommandQWOP> a1 = new Action<>(5, CommandQWOP.NONE),
+                a2 = new Action<>(6, CommandQWOP.Q),
+                a3 = new Action<>(7, CommandQWOP.NONE),
+                a4 = new Action<>(8, CommandQWOP.NONE);
 
-        Action[] acts = new Action[]{a1, a2, a3, a4};
-        actQueue.addSequence(acts);
+        actQueue.addSequence(a1, a2, a3, a4);
 
         Assert.assertEquals(actQueue.peekThisAction(), a1);
 
@@ -45,14 +48,13 @@ public class ActionQueueTest {
 
     @Test
     public void peekNextAction() {
-        ActionQueue actQueue = new ActionQueue();
-        Action a1 = new Action(5, CommandQWOP.NONE);
-        Action a2 = new Action(6, CommandQWOP.Q);
-        Action a3 = new Action(7, CommandQWOP.NONE);
-        Action a4 = new Action(8, CommandQWOP.NONE);
+        ActionQueue<CommandQWOP> actQueue = new ActionQueue<>();
+        Action<CommandQWOP> a1 = new Action<>(5, CommandQWOP.NONE),
+                a2 = new Action<>(6, CommandQWOP.Q),
+                a3 = new Action<>(7, CommandQWOP.NONE),
+                a4 = new Action<>(8, CommandQWOP.NONE);
 
-        Action[] acts = new Action[]{a1, a2, a3, a4};
-        actQueue.addSequence(acts);
+        actQueue.addSequence(a1, a2, a3, a4);
 
         Assert.assertEquals(actQueue.peekNextAction(), a2);
 
@@ -72,13 +74,13 @@ public class ActionQueueTest {
         }
 
         actQueue.pollCommand();
-        Assert.assertNull(actQueue.peekNextAction()); // Once on the last action we should get null for the next.
+        Assert.assertNull(actQueue.peekNextAction()); // Once on the last command we should get null for the next.
 
     }
 
     @Test
     public void peekCommand() {
-        ActionQueue actQueue = makeTestQueue();
+        ActionQueue<CommandQWOP> actQueue = makeTestQueue();
 
         for (int i = 0; i < 5; i++) {
             Assert.assertArrayEquals(new boolean[]{false, false, false, false}, actQueue.peekCommand().get());
@@ -100,68 +102,66 @@ public class ActionQueueTest {
             actQueue.pollCommand();
         }
 
-        Assert.assertNull(actQueue.peekCommand()); // Once on the last action we should get null for the next.
+        Assert.assertNull(actQueue.peekCommand()); // Once on the last command we should get null for the next.
     }
 
     @Test
     public void addAction() {
-        ActionQueue actQueue = new ActionQueue();
+        ActionQueue<CommandQWOP> actQueue = new ActionQueue<>();
         Assert.assertTrue(actQueue.isEmpty());
 
-        Action a1 = new Action(5, CommandQWOP.NONE);
-        Action a2 = new Action(6, CommandQWOP.Q);
-        Action a3 = new Action(7, CommandQWOP.W);
-        Action a4 = new Action(8, CommandQWOP.O);
+        Action<CommandQWOP> a1 = new Action<>(5, CommandQWOP.NONE),
+                a2 = new Action<>(6, CommandQWOP.Q),
+                a3 = new Action<>(7, CommandQWOP.W),
+                a4 = new Action<>(8, CommandQWOP.O);
 
-        // Add first action and verify
+        // Add first command and verify
         actQueue.addAction(a1);
         Assert.assertFalse(actQueue.isEmpty());
 
-        Assert.assertEquals(1, actQueue.getActionsInCurrentRun().length);
+        Assert.assertEquals(1, actQueue.getActionsInCurrentRun().size());
         Assert.assertEquals(5, actQueue.peekThisAction().getTimestepsRemaining());
 
         Assert.assertEquals(actQueue.pollCommand(), a1.peek());
 
-        // Second action
+        // Second command
         actQueue.addAction(a2);
-        Assert.assertEquals(2, actQueue.getActionsInCurrentRun().length);
+        Assert.assertEquals(2, actQueue.getActionsInCurrentRun().size());
         Assert.assertEquals(4, actQueue.peekThisAction().getTimestepsRemaining());
-        Assert.assertEquals(6, actQueue.getActionsInCurrentRun()[1].getTimestepsRemaining());
+        Assert.assertEquals(6, actQueue.getActionsInCurrentRun().get(1).getTimestepsRemaining());
 
         Assert.assertEquals(actQueue.pollCommand(), a1.peek());
 
-        // Third action
+        // Third command
         actQueue.addAction(a3);
-        Assert.assertEquals(3, actQueue.getActionsInCurrentRun().length);
+        Assert.assertEquals(3, actQueue.getActionsInCurrentRun().size());
         Assert.assertEquals(3, actQueue.peekThisAction().getTimestepsRemaining());
-        Assert.assertEquals(7, actQueue.getActionsInCurrentRun()[2].getTimestepsRemaining());
+        Assert.assertEquals(7, actQueue.getActionsInCurrentRun().get(2).getTimestepsRemaining());
 
-        // Poll away the rest in this action.
+        // Poll away the rest in this command.
         Assert.assertEquals(actQueue.pollCommand(), a1.peek());
         Assert.assertEquals(actQueue.pollCommand(), a1.peek());
         Assert.assertEquals(actQueue.pollCommand(), a1.peek());
 
-        // Third action
+        // Third command
         actQueue.addAction(a4);
-        Assert.assertEquals(4, actQueue.getActionsInCurrentRun().length);
+        Assert.assertEquals(4, actQueue.getActionsInCurrentRun().size());
         Assert.assertEquals(0, actQueue.peekThisAction().getTimestepsRemaining());
-        Assert.assertEquals(8, actQueue.getActionsInCurrentRun()[3].getTimestepsRemaining());
+        Assert.assertEquals(8, actQueue.getActionsInCurrentRun().get(3).getTimestepsRemaining());
 
         Assert.assertEquals(actQueue.pollCommand(), a2.peek());
     }
 
     @Test
     public void addSequence() {
-        ActionQueue actQueue = new ActionQueue();
-        Action a1 = new Action(5, CommandQWOP.NONE);
-        Action a2 = new Action(6, CommandQWOP.Q);
-        Action a3 = new Action(7, CommandQWOP.W);
-        Action a4 = new Action(8, CommandQWOP.O);
+        ActionQueue<CommandQWOP> actQueue = new ActionQueue<>();
+        Action<CommandQWOP> a1 = new Action<>(5, CommandQWOP.NONE),
+                a2 = new Action<>(6, CommandQWOP.Q),
+                a3 = new Action<>(7, CommandQWOP.W),
+                a4 = new Action<>(8, CommandQWOP.O);
 
-        Action[] acts = new Action[]{a1, a2, a3, a4};
-
-        actQueue.addSequence(acts);
-        Assert.assertEquals(4, actQueue.getActionsInCurrentRun().length);
+        actQueue.addSequence(a1, a2, a3, a4);
+        Assert.assertEquals(4, actQueue.getActionsInCurrentRun().size());
 
         // Make sure that as we poll the added sequence we get out what we put in.
         for (int i = 0; i < a1.getTimestepsTotal(); i++) {
@@ -188,21 +188,18 @@ public class ActionQueueTest {
 
     @Test
     public void pollCommand() {
-        ActionQueue actQueue = new ActionQueue();
-        Action a1 = new Action(5, CommandQWOP.NONE);
-        Action a2 = new Action(6, CommandQWOP.Q);
-        Action a3 = new Action(7, CommandQWOP.W);
-        Action a4 = new Action(8, CommandQWOP.O);
+        ActionQueue<CommandQWOP> actQueue = new ActionQueue<>();
+        Action<CommandQWOP> a1 = new Action<>(5, CommandQWOP.NONE),
+                a2 = new Action<>(6, CommandQWOP.Q),
+                a3 = new Action<>(7, CommandQWOP.W),
+                a4 = new Action<>(8, CommandQWOP.O);
 
         Assert.assertEquals(5, a1.getTimestepsTotal());
         Assert.assertEquals(6, a2.getTimestepsTotal());
         Assert.assertEquals(7, a3.getTimestepsTotal());
         Assert.assertEquals(8, a4.getTimestepsTotal());
 
-
-        Action[] acts = new Action[]{a1, a2, a3, a4};
-
-        actQueue.addSequence(acts);
+        actQueue.addSequence(a1, a2, a3, a4);
 
         // Make sure that as we poll the added sequence we get out what we put in.
         for (int i = 0; i < a1.getTimestepsTotal(); i++) {
@@ -234,21 +231,21 @@ public class ActionQueueTest {
 
         actQueue.clearAll();
         Assert.assertTrue(actQueue.isEmpty());
-        Assert.assertEquals(0, actQueue.getActionsInCurrentRun().length);
+        Assert.assertEquals(0, actQueue.getActionsInCurrentRun().size());
     }
 
     @Test
     public void isEmpty() {
-        ActionQueue actQueue = new ActionQueue();
+        ActionQueue<CommandQWOP> actQueue = new ActionQueue<>();
         // Should be empty before adding anything.
         Assert.assertTrue(actQueue.isEmpty());
-        Assert.assertEquals(0, actQueue.getActionsInCurrentRun().length);
+        Assert.assertEquals(0, actQueue.getActionsInCurrentRun().size());
 
         // Should not be empty after adding.
-        Action a1 = new Action(5, CommandQWOP.NONE);
+        Action<CommandQWOP> a1 = new Action<>(5, CommandQWOP.NONE);
         actQueue.addAction(a1);
         Assert.assertFalse(actQueue.isEmpty());
-        Assert.assertEquals(1, actQueue.getActionsInCurrentRun().length);
+        Assert.assertEquals(1, actQueue.getActionsInCurrentRun().size());
 
         // Drain the queue.
         for (int i = 0; i < 5; i++) {
@@ -265,16 +262,20 @@ public class ActionQueueTest {
 
     @Test
     public void getActionsInCurrentRun() {
-        ActionQueue actQueue = new ActionQueue();
-        Action a1 = new Action(5, CommandQWOP.NONE);
-        Action a2 = new Action(6, CommandQWOP.Q);
-        Action a3 = new Action(7, CommandQWOP.W);
-        Action a4 = new Action(8, CommandQWOP.O);
+        ActionQueue<CommandQWOP> actQueue = new ActionQueue<>();
+        Action<CommandQWOP> a1 = new Action<>(5, CommandQWOP.NONE),
+                a2 = new Action<>(6, CommandQWOP.Q),
+                a3 = new Action<>(7, CommandQWOP.W),
+                a4 = new Action<>(8, CommandQWOP.O);
 
-        Action[] acts = new Action[]{a1, a2, a3, a4};
-        actQueue.addSequence(acts);
-        Action[] retrievedActions = actQueue.getActionsInCurrentRun();
-        Assert.assertArrayEquals(acts, retrievedActions);
+        List<Action<CommandQWOP>> acts = new ArrayList<>();
+        acts.add(a1);
+        acts.add(a2);
+        acts.add(a3);
+        acts.add(a4);
+        actQueue.addSequence(a1, a2, a3, a4);
+        List<Action<CommandQWOP>> retrievedActions = actQueue.getActionsInCurrentRun();
+        Assert.assertEquals(acts, retrievedActions);
     }
 
     @Test
@@ -311,12 +312,12 @@ public class ActionQueueTest {
         // and false false true false.
 
         // Try simulating a game using an ActionQueue
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
 
         game.step(false, false, true, false);
         float[] s1 = game.getCurrentState().flattenState();
 
-        game.makeNewWorld();
+        game.resetGame();
         game.step(false, false, true, false);
         float[] s2 = game.getCurrentState().flattenState();
 
@@ -324,9 +325,9 @@ public class ActionQueueTest {
             Assert.assertEquals(s1[i], s2[i], 1e-10);
         }
 
-        ActionQueue actionQueue = makeTestQueue();
+        ActionQueue<CommandQWOP> actionQueue = makeTestQueue();
 
-        game.makeNewWorld();
+        game.resetGame();
         float[] initialState1 = game.getCurrentState().flattenState();
         int counter = 0;
         while (!actionQueue.isEmpty()) {
@@ -339,7 +340,7 @@ public class ActionQueueTest {
         IState finalStateWithQueue = game.getCurrentState();
 
         // Try simulating the game by manually sending a bunch of commands.
-        game.makeNewWorld();
+        game.resetGame();
         float[] initialState2 = game.getCurrentState().flattenState();
         counter = 0;
         for (int i = 0; i < 5; i++) {
@@ -380,8 +381,8 @@ public class ActionQueueTest {
 
     @Test
     public void getCopyOfUnexecutedQueue() {
-        ActionQueue baseTestQueue = makeTestQueue();
-        ActionQueue copyTestQueue = baseTestQueue.getCopyOfUnexecutedQueue();
+        ActionQueue<CommandQWOP> baseTestQueue = makeTestQueue();
+        ActionQueue<CommandQWOP> copyTestQueue = baseTestQueue.getCopyOfUnexecutedQueue();
 
         // Both copy and original are started at the same point.
         while (!baseTestQueue.isEmpty()) {
@@ -390,7 +391,7 @@ public class ActionQueueTest {
             Assert.assertEquals(baseCommand, testCommand);
         }
         Assert.assertTrue(copyTestQueue.isEmpty());
-        baseTestQueue.addAction(new Action(34, CommandQWOP.NONE));
+        baseTestQueue.addAction(new Action<>(34, CommandQWOP.NONE));
         Assert.assertTrue(copyTestQueue.isEmpty());
 
         // Give the original a head start and make sure that the copy starts at the beginning.
@@ -409,8 +410,8 @@ public class ActionQueueTest {
 
     @Test
     public void getCopyOfQueueAtExecutionPoint() {
-        ActionQueue baseTestQueue = makeTestQueue();
-        ActionQueue copyTestQueue = baseTestQueue.getCopyOfUnexecutedQueue();
+        ActionQueue<CommandQWOP> baseTestQueue = makeTestQueue();
+        ActionQueue<CommandQWOP> copyTestQueue = baseTestQueue.getCopyOfUnexecutedQueue();
 
         // Both copy and original are started at the beginning (trivial case).
         while (!baseTestQueue.isEmpty()) {
@@ -419,7 +420,7 @@ public class ActionQueueTest {
             Assert.assertEquals(baseCommand, testCommand);
         }
         Assert.assertTrue(copyTestQueue.isEmpty());
-        baseTestQueue.addAction(new Action(34, CommandQWOP.NONE));
+        baseTestQueue.addAction(new Action<>(34, CommandQWOP.NONE));
         Assert.assertTrue(copyTestQueue.isEmpty());
 
         // Original makes some progress before making a copy.
@@ -435,7 +436,7 @@ public class ActionQueueTest {
             Assert.assertEquals(baseCommand, testCommand);
         }
         Assert.assertTrue(copyTestQueue.isEmpty());
-        baseTestQueue.addAction(new Action(34, CommandQWOP.NONE));
+        baseTestQueue.addAction(new Action<>(34, CommandQWOP.NONE));
         Assert.assertTrue(copyTestQueue.isEmpty());
     }
 
@@ -445,25 +446,24 @@ public class ActionQueueTest {
         Assert.assertEquals(26, actQueue.getTotalQueueLengthTimesteps());
 
         for (int i = 0; i < 3; i++) {
-            actQueue.pollCommand(); // Should not change even after game.action have been polled.
+            actQueue.pollCommand(); // Should not change even after game.command have been polled.
         }
         Assert.assertEquals(26, actQueue.getTotalQueueLengthTimesteps());
     }
 
     /**
-     * Generic 4-action queue for testing here.
+     * Generic 4-command queue for testing here.
      *
-     * @return Test action queue.
+     * @return Test command queue.
      */
-    private ActionQueue makeTestQueue() {
-        ActionQueue actQueue = new ActionQueue();
-        Action a1 = new Action(5, CommandQWOP.NONE);
-        Action a2 = new Action(6, CommandQWOP.Q);
-        Action a3 = new Action(7, CommandQWOP.W);
-        Action a4 = new Action(8, CommandQWOP.O);
+    private ActionQueue<CommandQWOP> makeTestQueue() {
+        ActionQueue<CommandQWOP> actQueue = new ActionQueue<>();
+        Action<CommandQWOP> a1 = new Action<>(5, CommandQWOP.NONE),
+                a2 = new Action<>(6, CommandQWOP.Q),
+                a3 = new Action<>(7, CommandQWOP.W),
+                a4 = new Action<>(8, CommandQWOP.O);
 
-        Action[] acts = new Action[]{a1, a2, a3, a4};
-        actQueue.addSequence(acts);
+        actQueue.addSequence(a1, a2, a3, a4);
         return actQueue;
     }
 }

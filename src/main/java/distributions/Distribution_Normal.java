@@ -2,6 +2,7 @@ package distributions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Action;
+import game.action.Command;
 
 import java.util.Comparator;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.Objects;
  * @author matt
  */
 
-public class Distribution_Normal extends Distribution<Action> {
+public class Distribution_Normal<C extends Command<?>> extends Distribution<Action<C>> {
 
     /**
      * Mean of this Gaussian distribution.
@@ -42,20 +43,20 @@ public class Distribution_Normal extends Distribution<Action> {
     }
 
     /**
-     * Get an action based on duration sampled from a normal distribution with mean and standardDeviation. This
-     * method will choose the nearest duration action to whatever value is sampled from the continuous Gaussian
+     * Get an command based on duration sampled from a normal distribution with mean and standardDeviation. This
+     * method will choose the nearest duration command to whatever value is sampled from the continuous Gaussian
      * distribution.
      *
-     * @param set A list of game.action to sample from.
-     * @return An {@link Action action} sampled from the input set according to this distribution.
+     * @param set A list of game.command to sample from.
+     * @return An {@link Action command} sampled from the input set according to this distribution.
      */
     @Override
-    public Action randOnDistribution(List<Action> set) {
+    public Action<C> randOnDistribution(List<Action<C>> set) {
         if (set.size() < 1)
-            throw new IllegalArgumentException("Argument action set must have at least 1 element.");
+            throw new IllegalArgumentException("Argument command set must have at least 1 element.");
 
         double r = rand.nextGaussian(); // Gets a new value on bell curve. 0 mean, 1 stddev.
-        double rScaled = r * standardDeviation + mean; // Scale to our possible action range.
+        double rScaled = r * standardDeviation + mean; // Scale to our possible command range.
 
         final Comparator<Action> comp = Comparator.comparingDouble(p -> Math.abs(p.getTimestepsTotal() - rScaled));
 

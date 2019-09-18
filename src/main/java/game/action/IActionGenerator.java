@@ -3,7 +3,7 @@ package game.action;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.Set;
 
@@ -22,19 +22,20 @@ import java.util.Set;
         @JsonSubTypes.Type(value = ActionGenerator_UniformNoRepeats.class, name = "fixed_actions_no_repeats"),
         @JsonSubTypes.Type(value = ActionGenerator_Null.class, name = "null"),
 })
-public interface IActionGenerator {
+public interface IActionGenerator<C extends Command<?>> {
     /**
-     * Get an {@link ActionList} of potential game.action to explore from a newly created node as its potential children.
+     * Get an {@link ActionList} of potential game.command to explore from a newly created node as its potential children.
      *
-     * @param parentNode Node for which we want to pick potential child game.action.
-     * @return A set of game.action to try as potential children.
+     * @param parentNode Node for which we want to pick potential child game.command.
+     * @return A set of game.command to try as potential children.
      */
-    ActionList getPotentialChildActionSet(NodeQWOPExplorableBase<?> parentNode);
+    @JsonIgnore
+    ActionList<C> getPotentialChildActionSet(NodeGameExplorableBase<?, C, ?> parentNode);
 
     /**
-     * Get a set of all possible game.action which this generator could return.
+     * Get a set of all possible game.command which this generator could return.
      * @return All possibly generated Actions.
      */
     @JsonIgnore
-    Set<Action> getAllPossibleActions();
+    Set<Action<C>> getAllPossibleActions();
 }

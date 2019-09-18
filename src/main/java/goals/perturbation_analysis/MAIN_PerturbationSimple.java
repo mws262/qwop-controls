@@ -1,17 +1,18 @@
 package goals.perturbation_analysis;
 
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.action.perturbers.ActionPerturber_SwitchTooSoon;
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.IGameInternal;
+import game.qwop.StateQWOP;
 import ui.runner.PanelRunner_MultiState;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
 // See how states diverge -- maybe trunk state
 public class MAIN_PerturbationSimple extends JFrame {
 
@@ -28,14 +29,15 @@ public class MAIN_PerturbationSimple extends JFrame {
         pack();
         setVisible(true);
 
-        ActionQueue actionQueue = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
         Map<Integer, Integer> perturbationLocations = new HashMap<>();
         perturbationLocations.put(22, 1);
-        ActionPerturber_SwitchTooSoon perturber = new ActionPerturber_SwitchTooSoon(perturbationLocations);
-        ActionQueue actionQueuePerturbed = perturber.perturb(actionQueue);
+        ActionPerturber_SwitchTooSoon<CommandQWOP> perturber =
+                new ActionPerturber_SwitchTooSoon<>(perturbationLocations);
+        ActionQueue<CommandQWOP> actionQueuePerturbed = perturber.perturb(actionQueue);
 
-        IGameInternal<CommandQWOP> gameUnperturbed = new GameUnified();
-        IGameInternal<CommandQWOP> gamePerturbed = new GameUnified();
+        IGameInternal<CommandQWOP, StateQWOP> gameUnperturbed = new GameQWOP();
+        IGameInternal<CommandQWOP, StateQWOP> gamePerturbed = new GameQWOP();
 
         boolean reachedFirstPerturbation = false;
         while (!actionQueue.isEmpty()) {

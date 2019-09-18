@@ -1,18 +1,21 @@
 package tree;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import game.GameUnified;
-import game.GameUnifiedCaching;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import game.qwop.*;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
+import game.action.Command;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import savers.DataSaver_Null;
 import savers.IDataSaver;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 import tree.sampler.ISampler;
 import ui.runner.PanelRunner;
 
@@ -32,10 +35,10 @@ import java.util.concurrent.atomic.LongAdder;
  * @author matt
  */
 
-public class TreeWorker extends PanelRunner implements Runnable {
+public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRunner implements Runnable {
 
     private static final long serialVersionUID = 1L;
-    private NodeQWOPExplorableBase<?> expansionNode;
+    private NodeGameExplorableBase<?, C, S> expansionNode;
 
     public enum Status {
         IDLE, INITIALIZE, TREE_POLICY_CHOOSING, TREE_POLICY_EXECUTING, EXPANSION_POLICY_CHOOSING,
@@ -60,39 +63,40 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * The current game instance that this FSM is using. This will now not change.
      */
-    private IGameInternal game;
+    private IGameInternal<C, S> game;
 
     /**
      * Strategy for sampling new nodes. Defaults to random sampling.
      */
-    private final ISampler sampler;
+    private final ISampler<C, S> sampler;
 
     /**
      * How data is saved. Defaults to no saving.
      */
-    private final IDataSaver saver;
+    private final IDataSaver<C, S> saver;
 
     /**
      * Root of tree that this FSM is operating on.
      */
-    private NodeQWOPExplorableBase<?> rootNode;
+    private NodeGameExplorableBase<?, C, S> rootNode;
 
     /**
      * Node that the game is currently operating at.
      */
-    private NodeQWOPExplorableBase<?> currentGameNode;
+    private NodeGameExplorableBase<?, C, S> currentGameNode;
 
     /**
      * Node the game is attempting to run to.
      */
-    private NodeQWOPExplorableBase<?> targetNodeToTest;
+    private NodeGameExplorableBase<?, C, S> targetNodeToTest;
 
-    private Action targetActionToTest;
+    private Action<C> targetActionToTest;
 
     /**
      * Queued commands, IE QWOP key presses
      */
-    public ActionQueue actionQueue = new ActionQueue();
+    @JsonIgnore
+    public ActionQueue<C> actionQueue = new ActionQueue<>();
 
     /**
      * Current status of this FSM
@@ -134,6 +138,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      */
     private double tsPerSecond = 0;
 
+    @JsonIgnore
     public final String workerName;
     private final int workerID;
 
@@ -147,14 +152,18 @@ public class TreeWorker extends PanelRunner implements Runnable {
      */
     private final Object pauseLock = new Object();
 
-    private final List<Action> actionSequence = new ArrayList<>();
+    private final List<Action<C>> actionSequence = new ArrayList<>();
 
     private static final Logger logger = LogManager.getLogger(TreeWorker.class);
 
-    private TreeWorker(ISampler sampler, IDataSaver saver) {
+    @JsonCreator
+    public TreeWorker(@JsonProperty("game") IGameInternal<C, S> game,
+                      @JsonProperty("sampler") ISampler<C, S> sampler,
+                      @JsonProperty("saver") IDataSaver<C, S> saver) {
         workerID = TreeWorker.getWorkerCountAndIncrement();
         workerName = "worker" + workerID;
 
+        this.game = game;
         this.sampler = sampler;
         this.saver = saver;
         lastTsTimeMs = System.currentTimeMillis();
@@ -166,42 +175,47 @@ public class TreeWorker extends PanelRunner implements Runnable {
     }
 
     /**
-     * Make a worker that uses {@link GameUnified} under the hood.
+     * Make a worker that uses {@link GameQWOP} under the hood.
      * @return A brand new TreeWorker.
      */
-    public static TreeWorker makeStandardTreeWorker(ISampler sampler, IDataSaver saver) {
-        TreeWorker treeWorker = new TreeWorker(sampler, saver);
-        treeWorker.game = new GameUnified();
-        return treeWorker;
+    public static TreeWorker<CommandQWOP, StateQWOP> makeStandardQWOPTreeWorker(ISampler<CommandQWOP,
+            StateQWOP> sampler, IDataSaver<CommandQWOP, StateQWOP> saver) {
+
+        return new TreeWorker<>(new GameQWOP(), sampler, saver);
     }
 
     // With no data saving.
-    public static TreeWorker makeStandardTreeWorker(ISampler sampler) {
-        return makeStandardTreeWorker(sampler, new DataSaver_Null());
+    public static TreeWorker<CommandQWOP, StateQWOP> makeStandardQWOPTreeWorker(ISampler<CommandQWOP, StateQWOP> sampler) {
+        return makeStandardQWOPTreeWorker(sampler, new DataSaver_Null<>());
     }
 
     /**
-     * Make a worker that uses {@link game.GameUnifiedCaching} under the hood.
+     * Make a worker that uses {@link GameQWOPCaching} under the hood.
      * @return A brand new TreeWorker.
      */
-    public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, IDataSaver saver, int timestepDelay,
-                                                       int numDelayedStates, GameUnifiedCaching.StateType stateType) {
-        TreeWorker treeWorker = new TreeWorker(sampler, saver);
-        treeWorker.game = new GameUnifiedCaching(timestepDelay, numDelayedStates, stateType);
-        return treeWorker;
+    @SuppressWarnings("WeakerAccess")
+    public static <S extends StateQWOPDelayEmbedded> TreeWorker<CommandQWOP, S> makeCachedStateTreeWorker(ISampler<CommandQWOP, S> sampler,
+                                                                                                          IDataSaver<CommandQWOP, S> saver,
+                                                                                                          int timestepDelay,
+                                                                                                          int numDelayedStates,
+                                                                                                          GameQWOPCaching.StateType stateType) {
+        return new TreeWorker<>(new GameQWOPCaching<>(timestepDelay,
+                numDelayedStates, stateType), sampler, saver);
     }
 
     // No data saving.
-    public static TreeWorker makeCachedStateTreeWorker(ISampler sampler, int timestepDelay, int numDelayedStates,
-                                                       GameUnifiedCaching.StateType stateType) {
-        return makeCachedStateTreeWorker(sampler, new DataSaver_Null(), timestepDelay, numDelayedStates, stateType);
+    @SuppressWarnings("unused")
+    public static <S extends StateQWOPDelayEmbedded> TreeWorker<CommandQWOP, S>
+                                                        makeCachedStateTreeWorker(ISampler<CommandQWOP, S> sampler,
+                                                                                  int timestepDelay,
+                                                                                  int numDelayedStates,
+                                                                                  GameQWOPCaching.StateType stateType) {
+        return makeCachedStateTreeWorker(sampler, new DataSaver_Null<>(), timestepDelay, numDelayedStates, stateType);
     }
 
     @JsonIgnore
-    public TreeWorker getCopy() {
-        TreeWorker treeWorker = new TreeWorker(sampler.getCopy(), saver.getCopy());
-        treeWorker.game = game.getCopy();
-        return treeWorker;
+    public TreeWorker<C, S> getCopy() {
+        return new TreeWorker<>(game.getCopy(), sampler.getCopy(), saver.getCopy());
     }
 
     /**
@@ -210,7 +224,8 @@ public class TreeWorker extends PanelRunner implements Runnable {
      *
      * @param rootNode Root node that this worker expands from.
      */
-    public void setRoot(NodeQWOPExplorableBase<?> rootNode) {
+    @JsonIgnore
+    public void setRoot(NodeGameExplorableBase<?, C, S> rootNode) {
         this.rootNode = rootNode;
     }
 
@@ -244,19 +259,20 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case INITIALIZE:
                     actionQueue.clearAll();
-                    game.makeNewWorld(); // Create a new game world.
-                    saver.reportGameInitialization(GameUnified.getInitialState());
+                    game.resetGame(); // Create a new game world.
+                    saver.reportGameInitialization(game.getCurrentState());
                     currentGameNode = rootNode;
                     changeStatus(Status.TREE_POLICY_CHOOSING);
 
                     break;
                 case TREE_POLICY_CHOOSING: // Picks a target leaf node within the tree to get to.
-                    if (game.getFailureStatus())
+                    if (game.isFailed())
                         throw new RuntimeException("Tree policy operates only within an existing tree. We should not " +
                                 "find failures in here.");
 
                     if (sampler.treePolicyGuard(currentGameNode)) { // Sampler tells us when we're done with the tree
                         // policy.
+                        assert !currentGameNode.isFullyExplored() && currentGameNode.getUntriedActionCount() > 0;
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
 
                     } else {
@@ -265,9 +281,9 @@ public class TreeWorker extends PanelRunner implements Runnable {
 //                        Objects.requireNonNull(expansionNode, "This could be a sign of improperly shutting down " +
 //                                "workers at the end of search stages.");
 
-
                         if (expansionNode == null) { // May happen with some tree.samplers when the stage finishes.
-                            changeStatus(Status.IDLE);
+                            throw new NullPointerException("Tree policy should not return a null node.");
+                            // changeStatus(Status.IDLE);
                         } else {
                             assert !expansionNode.getState().isFailed() : "Tree policy picked a node with a failed state." +
                                     " This is bad behavior.";
@@ -278,7 +294,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
                             actionSequence.clear();
 
                             targetNodeToTest = expansionNode;
-                            if (targetNodeToTest.getTreeDepth() != 0) { // No action sequence to add if target node
+                            if (targetNodeToTest.getTreeDepth() != 0) { // No command sequence to add if target node
                                 // is root (we're already there!).
                                 actionQueue.addSequence(targetNodeToTest.getSequence(actionSequence));
                             }
@@ -288,11 +304,11 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case TREE_POLICY_EXECUTING:
 
-                    executeNextOnQueue(); // Execute a single timestep with the game.action that have been queued.
-                    assert !game.getFailureStatus() : "Game encountered a failure while executing the tree policy. The tree " +
+                    executeNextOnQueue(); // Execute a single timestep with the game.command that have been queued.
+                    assert !game.isFailed() : "Game encountered a failure while executing the tree policy. The tree " +
                             "policy should be safe, since it's ground that's been covered before.";
 
-                    // When all game.action in queue are done, figure out what to do next.
+                    // When all game.command in queue are done, figure out what to do next.
                     if (actionQueue.isEmpty()) {
                         currentGameNode = targetNodeToTest;
                         assert currentGameNode.getUntriedActionCount() > 0;
@@ -314,17 +330,15 @@ public class TreeWorker extends PanelRunner implements Runnable {
                     break;
                 case EXPANSION_POLICY_EXECUTING:
 
-                    executeNextOnQueue(); // Execute a single timestep with the game.action that have been queued.
+                    executeNextOnQueue(); // Execute a single timestep with the game.command that have been queued.
 
                     // When done, record state and go back to choosing. If failed, the sampler guards will tell us.
-                    if (actionQueue.isEmpty() || game.getFailureStatus()) {
-                        // TODO possibly update the action to what was actually possible until the runner fell.
+                    if (actionQueue.isEmpty() || game.isFailed()) {
+                        // TODO possibly update the command to what was actually possible until the runner fell.
                         // Subtract out the extra timesteps that weren't possible due to failure.
-                        assert currentGameNode.isLocked();
+//                        assert currentGameNode.isLocked();
                         currentGameNode = currentGameNode.addDoublyLinkedChild(targetActionToTest,
                                 game.getCurrentState());
-                        //currentGameNode.setLock(true); // Don't need to propagate since the first expansion node is
-                        // already locked.
 
                         sampler.expansionPolicyActionDone(currentGameNode);
                         changeStatus(Status.EXPANSION_POLICY_CHOOSING);
@@ -372,12 +386,12 @@ public class TreeWorker extends PanelRunner implements Runnable {
     }
 
     /**
-     * Pop the next action off the queue and execute one timestep.
+     * Pop the next command off the queue and execute one timestep.
      */
     private void executeNextOnQueue() {
         if (!actionQueue.isEmpty()) {
             game.step(actionQueue.pollCommand());
-            Action action = actionQueue.peekThisAction();
+            Action<C> action = actionQueue.peekThisAction();
             saver.reportTimestep(action, game);
             workerStepsSimulated++;
             tsPerSecondUpdateCounter++;
@@ -396,6 +410,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Get the state of the runner.
      */
+    @JsonIgnore
     public IState getGameState() {
         return game.getCurrentState();
     }
@@ -403,6 +418,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * How many physics timesteps has this particular worker simulated?
      */
+    @JsonIgnore
     public long getWorkerStepsSimulated() {
         return workerStepsSimulated;
     }
@@ -432,7 +448,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Pause what the worker is doing. Tells its saver to do whatever it should when the stage is complete.
      */
-    public void terminateStageComplete(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
+    public void terminateStageComplete(NodeGameBase<?, C, S> rootNode, List<NodeGameBase<?, C, S>> targetNodes) {
         saver.reportStageEnding(rootNode, targetNodes);
         saver.finalizeSaverData();
         terminateWorker();
@@ -449,6 +465,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Check if this runner is done or not.
      */
+    @JsonIgnore
     public synchronized boolean isRunning() {
         return workerRunning;
     }
@@ -456,6 +473,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Get the running average of timesteps simulated per second of realtime.
      */
+    @JsonIgnore
     public double getTsPerSecond() {
         return tsPerSecond;
     }
@@ -477,6 +495,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Get the number of games played by all workers, total.
      */
+    @JsonIgnore
     public static long getTotalGamesPlayed() {
         return totalGamesPlayed.longValue();
     }
@@ -484,6 +503,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
     /**
      * Get the number of games played by all workers, total.
      */
+    @JsonIgnore
     public static long getTotalTimestepsSimulated() {
         return totalStepsSimulated.longValue();
     }
@@ -492,6 +512,7 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Get the total number of workers created so far.
      * @return Total number of workers created so far this run.
      */
+    @JsonIgnore
     public static int getTotalWorkerCount() {
         return workerCount.get();
     }
@@ -500,12 +521,14 @@ public class TreeWorker extends PanelRunner implements Runnable {
      * Get the total number of workers created so far and increment the counter.
      * @return Total number of workers created (before incrementation).
      */
+    @JsonIgnore
     private static int getWorkerCountAndIncrement() {
         return workerCount.getAndIncrement();
     }
     /**
      * Color the node scaled by depth in the tree. Skip the brightness argument for default value.
      */
+    @JsonIgnore
     public static Color getColorFromWorkerID(int ID) {
         float brightness = 0.85f;
         float colorOffset = 0f;
@@ -537,6 +560,21 @@ public class TreeWorker extends PanelRunner implements Runnable {
     public void deactivateTab() {
         active = false;
     } // Not really applicable.
+
+    @JsonGetter
+    public IGameInternal<C, S> getGame() {
+        return game;
+    }
+
+    @JsonGetter
+    public ISampler<C, S> getSampler() {
+        return sampler;
+    }
+
+    @JsonGetter
+    public IDataSaver<C, S> getSaver() {
+        return saver;
+    }
 }
 
 

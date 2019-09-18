@@ -1,11 +1,10 @@
 package flashqwop;
 
-import game.action.Action;
-import game.GameConstants;
+import game.qwop.QWOPConstants;
 import game.IGameExternal;
-import game.action.CommandQWOP;
-import game.state.State;
-import game.state.StateVariable;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
+import game.state.StateVariable6D;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -22,11 +21,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static game.action.CommandQWOP.*;
+import static game.qwop.CommandQWOP.*;
 
 /**
  * Server for communicating with the hacked Flash QWOP game. This server can send out commands to press any
- * combination of Q, W, O, and P keys as well as a command to reset the game. The server will receive 72-dim state
+ * combination of Q, W, O, and P keys as well as a command to resetGame the game. The server will receive 72-dim state
  * info from the game at every timestep (x, y, theta & velocities for 12 links). {@link IFlashStateListener} may add
  * themselves to receive immediate updates as new state information comes in.
  *
@@ -41,7 +40,7 @@ import static game.action.CommandQWOP.*;
  *
  * @author matt
  */
-public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
+public class FlashQWOPServer implements IGameExternal<CommandQWOP, StateQWOP> {
 
     private static URL qwopPageUrl;
     static {
@@ -63,7 +62,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
     private DataReceiver dataInput;
 
     /**
-     * Cods for each action to send to the Flash game over the socket.
+     * Cods for each command to send to the Flash game over the socket.
      */
     private static final String
             none = "00000\0",
@@ -96,7 +95,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
      * Open a socket for communicating back and forth with the real QWOP game.
      * @param port Specified port for communication. Currently real QWOP is hardcoded to use 2900.
      */
-    public FlashQWOPServer(int port) {
+    FlashQWOPServer(int port) {
         if (!doesServerExist())
             logger.error("QWOP local server does not exist. Run the shell script local_server_launch.sh; then reload " +
                     "localhost:8000/index.html");
@@ -120,7 +119,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
      * Open a socket for communicating back and forth with the real QWOP game. This will use the default port for
      * communication (2900).
      */
-    public FlashQWOPServer() {
+    FlashQWOPServer() {
         this(2900);
     }
 
@@ -135,7 +134,12 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
         dataOutput.flush();
     }
 
-    public void sendInfoRequest() {
+    @Override
+    public int getNumberOfChoices() {
+        return commandToFlashString.size();
+    }
+
+    void sendInfoRequest() {
         String commandString = "getinfo";
         dataOutput.print(commandString);
         dataOutput.flush();
@@ -143,13 +147,13 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
     }
 
     /**
-     * Send a signal to real QWOP to reset the game immediately.
+     * Send a signal to real QWOP to resetGame the game immediately.
      */
-    public void sendResetSignal() {
+    void sendResetSignal() {
         String commandString = "00001\0";
         dataOutput.println(commandString);
         dataOutput.flush();
-        logger.debug("Sent reset request.");
+        logger.debug("Sent resetGame request.");
     }
 
     /**
@@ -176,17 +180,17 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
     }
 
     /**
-     * Get the most-recently-received State from the Flash game. This is useful for one-off scenarios, but regular
+     * Get the most-recently-received StateQWOP from the Flash game. This is useful for one-off scenarios, but regular
      * consumers should add themselves as {@link IFlashStateListener} for immediate updates.
-     * @return
+     * @return Current game state.
      */
     @Override
-    public State getCurrentState() {
+    public StateQWOP getCurrentState() {
         return dataInput.getCurrentState();
     }
 
     @Override
-    public boolean getFailureStatus() {
+    public boolean isFailed() {
         return dataInput.getFailureStatus();
     }
 
@@ -209,7 +213,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
     }
 
 
-    public static boolean doesServerExist() {
+    private static boolean doesServerExist() {
         try {
             HttpURLConnection huc = (HttpURLConnection) qwopPageUrl.openConnection();
             huc.setRequestMethod("HEAD");
@@ -240,7 +244,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
     }
 
     /**
-     * State data input receiver for the Flash QWOP game. This should run on a separate thread to keep the state
+     * StateQWOP data input receiver for the Flash QWOP game. This should run on a separate thread to keep the state
      * updated in real time.
      */
     private class DataReceiver implements Runnable {
@@ -263,7 +267,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
         /**
          * Most recent state received.
          */
-        private volatile State currentState;
+        private volatile StateQWOP currentState;
 
         /**
          * List of listeners who will receive state updates as they come in.
@@ -298,7 +302,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
         public void run() {
             while (true) {
                 try {
-                    State st = null;
+                    StateQWOP st;
                     if (useJSONState) { // JSON state corresponds to socket.swf
                         if (reader.ready()) {
                             //long initialTime = System.currentTimeMillis();
@@ -357,7 +361,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
             }
         }
 
-        private State convertStringToState(String stateString) {
+        private StateQWOP convertStringToState(String stateString) {
             String[] strArray = stateString.split(",");
             currentTimestep.set(Integer.parseInt(strArray[0]));
             boolean isFallen = Boolean.parseBoolean(strArray[1]);
@@ -367,93 +371,93 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
             for (int i = 0; i < stateVals.length; i++) {
                 stateVals[i] = Float.parseFloat(strArray[i + 2]);
             }
-            stateVals[2] += GameConstants.torsoAngAdj;
-            stateVals[8] += GameConstants.headAngAdj;
-            stateVals[14] += GameConstants.rThighAngAdj;
-            stateVals[20] += GameConstants.lThighAngAdj;
-            stateVals[26] += GameConstants.rCalfAngAdj;
-            stateVals[32] += GameConstants.lCalfAngAdj;
+            stateVals[2] += QWOPConstants.torsoAngAdj;
+            stateVals[8] += QWOPConstants.headAngAdj;
+            stateVals[14] += QWOPConstants.rThighAngAdj;
+            stateVals[20] += QWOPConstants.lThighAngAdj;
+            stateVals[26] += QWOPConstants.rCalfAngAdj;
+            stateVals[32] += QWOPConstants.lCalfAngAdj;
 
-            stateVals[50] += GameConstants.rUArmAngAdj;
-            stateVals[56] += GameConstants.lUArmAngAdj;
-            stateVals[62] += GameConstants.rLArmAngAdj;
-            stateVals[68] += GameConstants.lLArmAngAdj;
-            return new State(stateVals, isFallen);
+            stateVals[50] += QWOPConstants.rUArmAngAdj;
+            stateVals[56] += QWOPConstants.lUArmAngAdj;
+            stateVals[62] += QWOPConstants.rLArmAngAdj;
+            stateVals[68] += QWOPConstants.lLArmAngAdj;
+            return new StateQWOP(stateVals, isFallen);
         }
 
         /**
          * JSON formatted data will come in from the real QWOP game. This will extract it, add in the angle offsets,
          * and return a state
          * @param stateFromFlash The JSON structure coming in over the XMLSocket.
-         * @return A State compatible with all others throughout this project.
+         * @return A StateQWOP compatible with all others throughout this project.
          */
-        private State convertJSONToState(JSONObject stateFromFlash) {
+        private StateQWOP convertJSONToState(JSONObject stateFromFlash) {
 
             currentTimestep.set(stateFromFlash.getInt("timestep"));
             boolean isFallen = stateFromFlash.getBoolean("fallen");
             fallen.set(isFallen);
 
             JSONObject bodyMap = ((JSONObject)stateFromFlash.get("torso"));
-            StateVariable torso = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-                    bodyMap.getFloat("th") + GameConstants.torsoAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
+            StateVariable6D torso = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+                    bodyMap.getFloat("th") + QWOPConstants.torsoAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("head"));
-            StateVariable head = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-                    bodyMap.getFloat("th") + GameConstants.headAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
+            StateVariable6D head = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+                    bodyMap.getFloat("th") + QWOPConstants.headAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("rthigh"));
-            StateVariable rthigh = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-                    bodyMap.getFloat("th") + GameConstants.rThighAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
+            StateVariable6D rthigh = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+                    bodyMap.getFloat("th") + QWOPConstants.rThighAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("lthigh"));
-            StateVariable lthigh = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-                    bodyMap.getFloat("th") + GameConstants.lThighAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
+            StateVariable6D lthigh = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+                    bodyMap.getFloat("th") + QWOPConstants.lThighAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("rcalf"));
-            StateVariable rcalf = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-                    bodyMap.getFloat("th") + GameConstants.rCalfAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
+            StateVariable6D rcalf = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+                    bodyMap.getFloat("th") + QWOPConstants.rCalfAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("lcalf"));
-            StateVariable lcalf = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-                    bodyMap.getFloat("th") + GameConstants.lCalfAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
+            StateVariable6D lcalf = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+                    bodyMap.getFloat("th") + QWOPConstants.lCalfAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("rfoot"));
-            StateVariable rfoot = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+            StateVariable6D rfoot = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
                     bodyMap.getFloat("th"), bodyMap.getFloat("dx"), bodyMap.getFloat("dy"), // No angle adjustment?
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("lfoot"));
-            StateVariable lfoot = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+            StateVariable6D lfoot = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
                     bodyMap.getFloat("th"), bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("ruarm"));
-            StateVariable ruarm = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-                    bodyMap.getFloat("th") + GameConstants.rUArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
+            StateVariable6D ruarm = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+                    bodyMap.getFloat("th") + QWOPConstants.rUArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("luarm"));
-            StateVariable luarm = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-                    bodyMap.getFloat("th") + GameConstants.lUArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
+            StateVariable6D luarm = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+                    bodyMap.getFloat("th") + QWOPConstants.lUArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("rlarm"));
-            StateVariable rlarm = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-                    bodyMap.getFloat("th") + GameConstants.rLArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
+            StateVariable6D rlarm = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+                    bodyMap.getFloat("th") + QWOPConstants.rLArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
             bodyMap = ((JSONObject)stateFromFlash.get("llarm"));
-            StateVariable llarm = new StateVariable(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
-                    bodyMap.getFloat("th") + GameConstants.lLArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
+            StateVariable6D llarm = new StateVariable6D(bodyMap.getFloat("x"), bodyMap.getFloat("y"),
+                    bodyMap.getFloat("th") + QWOPConstants.lLArmAngAdj, bodyMap.getFloat("dx"), bodyMap.getFloat("dy"),
                     bodyMap.getFloat("dth"));
 
-            return new State(torso, head, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm,
+            return new StateQWOP(torso, head, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm,
                     isFallen);
         }
 
@@ -462,24 +466,24 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
          * any physics stepping has occurred.
          * @return Most recent timestep received from the game.
          */
-        public int getCurrentTimestep() {
+        int getCurrentTimestep() {
             return currentTimestep.get();
         }
 
         /**
          * Get whether the most-recently obtained state is failed, according to the Flash game.
-         * @return
+         * @return Whether the most recent state is considered fallen (true == fallen).
          */
         public boolean getFailureStatus() {
             return fallen.get();
         }
 
         /**
-         * Get the most-recently received State. This is good for one-off situations, but the listener approach
+         * Get the most-recently received StateQWOP. This is good for one-off situations, but the listener approach
          * should be preferred for immediate updates.
-         * @return The most recent State received from the Flash game.
+         * @return The most recent StateQWOP received from the Flash game.
          */
-        public State getCurrentState() {
+        public StateQWOP getCurrentState() {
             return currentState;
         }
 
@@ -487,7 +491,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP> {
          * Any listeners will receive the updated state when it comes in from the real QWOP game.
          * @param listener A listener for the real QWOP state.
          */
-        public void addStateListener(IFlashStateListener listener) {
+        void addStateListener(IFlashStateListener listener) {
             listenerList.add(listener);
         }
     }

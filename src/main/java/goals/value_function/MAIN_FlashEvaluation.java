@@ -1,18 +1,18 @@
 package goals.value_function;
 
-import game.action.Action;
 import flashqwop.FlashGame;
 import flashqwop.FlashStateLogger;
-import game.GameUnified;
-import game.action.CommandQWOP;
-import game.state.IState;
+import game.action.Action;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.IStateQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jblas.util.Random;
-import tree.node.NodeQWOP;
-import tree.Utility;
+import tree.node.NodeGame;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 import vision.VisionDataSaver;
@@ -20,6 +20,8 @@ import vision.VisionDataSaver;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Note: with many JVM garbage collectors, the control evaluation time has large spikes. Should use ZGC or Shenandoah
@@ -31,9 +33,9 @@ import java.io.IOException;
 @SuppressWarnings("Duplicates")
 public class MAIN_FlashEvaluation extends FlashGame {
 
-    private boolean imageCapture = false;
-    private boolean addActionNoise = true;
-    private float noiseProbability = 0.99f;
+    private final boolean imageCapture = false;
+    private final boolean addActionNoise = true;
+    private final float noiseProbability = 0.99f;
 
 
     private VisionDataSaver visionSaver;
@@ -41,27 +43,28 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private File captureDir = new File("vision_capture");
 
     // Net and execution parameters.
-    String valueNetworkName = "small_net.pb"; // "deepnarrow_net.pb";
-    String checkpointName = "small329";//698"; //329"; // "med67";
+    private final String valueNetworkName = "small_net.pb"; // "deepnarrow_net.pb";
+    private final String checkpointName = "small329";//698"; //329"; // "med67";
 
     private static boolean hardware = true;
 
-    Action[] prefix = new Action[]{
-            new Action(7, CommandQWOP.Keys.none),
-//            new Action(40, Action.Keys.wo),
-//            new Action(20, Action.Keys.qp),
-//            new Action(1, Action.Keys.p),
-//            new Action(19, Action.Keys.qp),
-//            new Action(3, Action.Keys.wo),
 
-    };
+    private final List<Action<CommandQWOP>> prefix = new ArrayList<>();
+
 
     private static final Logger logger = LogManager.getLogger(MAIN_FlashEvaluation.class);
 
-    private ValueFunction_TensorFlow valueFunction = null;
+    private ValueFunction_TensorFlow<CommandQWOP, StateQWOP> valueFunction = null;
 
-    public MAIN_FlashEvaluation() {
+    private MAIN_FlashEvaluation() {
         super(hardware); // Do hardware commands out?
+
+        prefix.add(new Action<>(7, CommandQWOP.NONE));
+        //            new Action(40, Action.Keys.wo),
+        //            new Action(20, Action.Keys.qp),
+        //            new Action(1, Action.Keys.p),
+        //            new Action(19, Action.Keys.qp),
+        //            new Action(3, Action.Keys.wo),
 
         if (imageCapture) {
             visionSaver = new VisionDataSaver(captureDir, gameMonitorIndex);
@@ -79,7 +82,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
         // warm-up iterations.
         Configurator.setLevel(LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class).getName(), Level.OFF);
         for (int i = 0; i < 50; i++) {
-            getControlAction(GameUnified.getInitialState()); // TODO make this better. The first controller evaluation ever
+            getControlAction(GameQWOP.getInitialState()); // TODO make this better. The first controller evaluation ever
         }
         Configurator.setLevel(LogManager.getLogger(ValueFunction_TensorFlow_StateOnly.class).getName(), Level.INFO);
         logger.debug("Dummy evaluations complete.");
@@ -93,19 +96,19 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public Action[] getActionSequenceFromBeginning() {
+    public List<Action<CommandQWOP>> getActionSequenceFromBeginning() {
         return prefix;
     }
 
     @Override
-    public Action getControlAction(IState state) {
-        Action action = valueFunction.getMaximizingAction(new NodeQWOP(state));
+    public Action<CommandQWOP> getControlAction(IStateQWOP state) {// TODO unsafe
+        Action<CommandQWOP> action = valueFunction.getMaximizingAction(new NodeGame(state));
         if (addActionNoise && Random.nextFloat() < noiseProbability) {
             if (action.getTimestepsTotal() < 2 || Random.nextFloat() > 0.5f) {
-                action = new Action(action.getTimestepsTotal() + 1, action.peek());
+                action = new Action<>(action.getTimestepsTotal() + 1, action.peek());
                 // logger.warn("Action disturbed 1 up.");
             } else {
-                action = new Action(action.getTimestepsTotal() - 1, action.peek());
+                action = new Action<>(action.getTimestepsTotal() - 1, action.peek());
                 // logger.warn("Action disturbed 1 down.");
             }
         }
@@ -113,13 +116,18 @@ public class MAIN_FlashEvaluation extends FlashGame {
     }
 
     @Override
-    public void reportGameStatus(IState state, CommandQWOP command, int timestep) {}
+    public void reportGameStatus(IStateQWOP state, CommandQWOP command, int timestep) {}
 
     private void loadController() {
         // Load a value function controller.
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/" + valueNetworkName), new GameUnified(), false); // state_only.pb"));
+            valueFunction = new ValueFunction_TensorFlow_StateOnly<>(
+                    new File("src/main/resources/tflow_models/" + valueNetworkName),
+                    new GameQWOP(),
+                    new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+                    false);
+
+            // .pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

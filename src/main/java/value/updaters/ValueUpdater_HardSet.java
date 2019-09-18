@@ -1,6 +1,8 @@
 package value.updaters;
 
-import tree.node.NodeQWOPBase;
+import game.action.Command;
+import game.state.IState;
+import tree.node.NodeGameBase;
 
 /**
  * Node value estimator which just replaces the existing estimate with the newly-provided value. Mostly useful as a
@@ -8,15 +10,15 @@ import tree.node.NodeQWOPBase;
  *
  * @author matt
  */
-public class ValueUpdater_HardSet implements IValueUpdater {
+public class ValueUpdater_HardSet<C extends Command<?>, S extends IState> implements IValueUpdater<C, S> {
 
     @Override
-    public float update(float valueUpdate, NodeQWOPBase<?> node) {
+    public float update(float valueUpdate, NodeGameBase<?, C, S> node) {
         return valueUpdate;
     }
 
     @Override
-    public IValueUpdater getCopy() {
-        return new ValueUpdater_HardSet();
+    public IValueUpdater<C, S> getCopy() {
+        return new ValueUpdater_HardSet<>();
     }
 }

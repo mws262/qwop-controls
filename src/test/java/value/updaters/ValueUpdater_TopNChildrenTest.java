@@ -1,19 +1,19 @@
 package value.updaters;
 
 import game.action.Action;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import game.state.IState;
-import game.state.State;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Test;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ValueUpdater_TopNChildrenTest {
 
-    private IState unfailedState = mock(State.class);
+    private IState unfailedState = mock(StateQWOP.class);
     private Action a1 = new Action(1, CommandQWOP.WO);
     private Action a2 = new Action(2, CommandQWOP.O);
     private Action a3 = new Action(3, CommandQWOP.W);
@@ -24,15 +24,15 @@ public class ValueUpdater_TopNChildrenTest {
     public void update() {
         when(unfailedState.isFailed()).thenReturn(false);
 
-        NodeQWOPExplorable root = new NodeQWOPExplorable(unfailedState);
-        NodeQWOPExplorable n1 = root.addDoublyLinkedChild(a1, unfailedState);
-        NodeQWOPExplorable n2 = root.addDoublyLinkedChild(a2, unfailedState);
-        NodeQWOPExplorable n3 = root.addDoublyLinkedChild(a3, unfailedState);
-        NodeQWOPExplorable n4 = root.addDoublyLinkedChild(a4, unfailedState);
-        NodeQWOPExplorable n5 = root.addDoublyLinkedChild(a5, unfailedState);
+        NodeGameExplorable root = new NodeGameExplorable(unfailedState);
+        NodeGameExplorable n1 = root.addDoublyLinkedChild(a1, unfailedState);
+        NodeGameExplorable n2 = root.addDoublyLinkedChild(a2, unfailedState);
+        NodeGameExplorable n3 = root.addDoublyLinkedChild(a3, unfailedState);
+        NodeGameExplorable n4 = root.addDoublyLinkedChild(a4, unfailedState);
+        NodeGameExplorable n5 = root.addDoublyLinkedChild(a5, unfailedState);
 
-        NodeQWOPExplorable n1_1 = n1.addDoublyLinkedChild(a1, unfailedState);
-        NodeQWOPExplorable n1_2 = n1.addDoublyLinkedChild(a2, unfailedState);
+        NodeGameExplorable n1_1 = n1.addDoublyLinkedChild(a1, unfailedState);
+        NodeGameExplorable n1_2 = n1.addDoublyLinkedChild(a2, unfailedState);
 
         // Size 1.
         ValueUpdater_TopNChildren updater = new ValueUpdater_TopNChildren(1);

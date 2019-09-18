@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import game.action.Command;
+import game.state.IState;
 import org.apache.commons.lang.ArrayUtils;
 import org.jfree.chart.*;
 import org.jfree.chart.annotations.XYTextAnnotation;
@@ -15,7 +17,7 @@ import org.jfree.data.Range;
 import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 import ui.IUserInterface.TabbedPaneActivator;
 
 import javax.swing.*;
@@ -35,7 +37,8 @@ import java.util.Map;
         @JsonSubTypes.Type(value = PanelPlot_SingleRun.class, name = "plot_single_run"),
         @JsonSubTypes.Type(value = PanelPlot_States.class, name = "plot_states")
 })
-public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, ChartMouseListener {
+public abstract class PanelPlot<C extends Command<?>, S extends IState> extends JPanel implements TabbedPaneActivator<C, S>,
+        ChartMouseListener {
 
     private static final long serialVersionUID = 1L;
 
@@ -65,10 +68,10 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     /**
      * Plotting colors for dots.
      */
-    private final Color actionColor1 = NodeQWOPGraphicsBase.getColorFromTreeDepth(0, NodeQWOPGraphicsBase.lineBrightnessDefault);
-    private final Color actionColor2 = NodeQWOPGraphicsBase.getColorFromTreeDepth(10, NodeQWOPGraphicsBase.lineBrightnessDefault);
-    private final Color actionColor3 = NodeQWOPGraphicsBase.getColorFromTreeDepth(20, NodeQWOPGraphicsBase.lineBrightnessDefault);
-    private final Color actionColor4 = NodeQWOPGraphicsBase.getColorFromTreeDepth(30, NodeQWOPGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor1 = NodeGameGraphicsBase.getColorFromTreeDepth(0, NodeGameGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor2 = NodeGameGraphicsBase.getColorFromTreeDepth(10, NodeGameGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor3 = NodeGameGraphicsBase.getColorFromTreeDepth(20, NodeGameGraphicsBase.lineBrightnessDefault);
+    private final Color actionColor4 = NodeGameGraphicsBase.getColorFromTreeDepth(30, NodeGameGraphicsBase.lineBrightnessDefault);
 
     public PanelPlot(@JsonProperty("numberOfPlots") int numberOfPlots) {
         this.numberOfPlots = numberOfPlots;
@@ -146,7 +149,7 @@ public abstract class PanelPlot extends JPanel implements TabbedPaneActivator, C
     }
 
     /**
-     * Add some labels for which action led to this state. Hackish.
+     * Add some labels for which command led to this state. Hackish.
      */
     public void addCommandLegend(XYPlot pl) {
         double axisDUB = pl.getDomainAxis().getUpperBound();

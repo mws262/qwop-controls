@@ -1,5 +1,6 @@
 package game.action;
 
+import game.qwop.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,23 +20,23 @@ public class ActionTest {
     private CommandQWOP command2 = CommandQWOP.QP;
     private CommandQWOP command3 = CommandQWOP.NONE;
 
-    private Action validAction1 = new Action(actTimesteps1, command1);
-    private Action validAction2 = new Action(actTimesteps2, command2);
-    private Action validAction3 = new Action(actTimesteps3, command3);
+    private Action<CommandQWOP> validAction1 = new Action<>(actTimesteps1, command1);
+    private Action<CommandQWOP> validAction2 = new Action<>(actTimesteps2, command2);
+    private Action<CommandQWOP> validAction3 = new Action<>(actTimesteps3, command3);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
 
     @Test
     public void poll() {
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
 
         // Make sure that polling evaluates to the correct keys and continues to have next until the expected number
         // of timesteps.
-        // Test action 1
+        // Test command 1
         int ts = 0;
         while (action1Copy.hasNext()) {
             Assert.assertEquals(action1Copy.poll(), command1);
@@ -43,7 +44,7 @@ public class ActionTest {
         }
         Assert.assertEquals(ts, actTimesteps1);
 
-        // Test action 2
+        // Test command 2
         ts = 0;
         while (action2Copy.hasNext()) {
             Assert.assertEquals(action2Copy.poll(), command2);
@@ -51,7 +52,7 @@ public class ActionTest {
         }
         Assert.assertEquals(ts, actTimesteps2);
 
-        // Test action 3
+        // Test command 3
         ts = 0;
         while (action3Copy.hasNext()) {
             Assert.assertEquals(action3Copy.poll(), command3);
@@ -62,7 +63,7 @@ public class ActionTest {
 
     @Test
     public void pollRuntimeException() {
-        // Cannot poll the base copy of this action. Must copy before polling.
+        // Cannot poll the base copy of this command. Must copy before polling.
         exception.expect(RuntimeException.class);
         validAction1.poll();
     }
@@ -70,7 +71,7 @@ public class ActionTest {
     @Test
     public void pollIndexOutOfBoundsException() {
         exception.expect(IndexOutOfBoundsException.class);
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
@@ -92,17 +93,17 @@ public class ActionTest {
     @Test
     public void peek() {
 
-        // Should be able to peek the base version of an action (it's effectively a const method).
+        // Should be able to peek the base version of an command (it's effectively a const method).
         Assert.assertEquals(validAction1.peek(), command1);
         Assert.assertEquals(validAction2.peek(), command2);
         Assert.assertEquals(validAction3.peek(), command3);
 
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
 
-        // Peeking should not alter the number of timesteps remaining -- even if it is a mutable action.
+        // Peeking should not alter the number of timesteps remaining -- even if it is a mutable command.
         action1Copy.peek();
         action2Copy.peek();
         action3Copy.peek();
@@ -114,12 +115,12 @@ public class ActionTest {
 
     @Test
     public void hasNext() {
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
 
-        // If our action has greater than 0 timesteps, then initially hasNext should be true.
+        // If our command has greater than 0 timesteps, then initially hasNext should be true.
         if (action1Copy.getTimestepsTotal() > 0)
             Assert.assertTrue(action1Copy.hasNext());
         // If we drain away all the timesteps, hasNext should become false.
@@ -128,7 +129,7 @@ public class ActionTest {
         }
         Assert.assertFalse(action1Copy.hasNext());
 
-        // If our action has greater than 0 timesteps, then initially hasNext should be true.
+        // If our command has greater than 0 timesteps, then initially hasNext should be true.
         if (action2Copy.getTimestepsTotal() > 0)
             Assert.assertTrue(action2Copy.hasNext());
         // If we drain away all the timesteps, hasNext should become false.
@@ -137,7 +138,7 @@ public class ActionTest {
         }
         Assert.assertFalse(action2Copy.hasNext());
 
-        // If our action has greater than 0 timesteps, then initially hasNext should be true.
+        // If our command has greater than 0 timesteps, then initially hasNext should be true.
         if (action3Copy.getTimestepsTotal() > 0)
             Assert.assertTrue(action3Copy.hasNext());
         // If we drain away all the timesteps, hasNext should become false.
@@ -149,7 +150,7 @@ public class ActionTest {
 
     @Test
     public void reset() {
-        // Must copy to get a pollable version of the action.
+        // Must copy to get a pollable version of the command.
         Action action1Copy = validAction1.getCopy();
         Action action2Copy = validAction2.getCopy();
         Action action3Copy = validAction3.getCopy();
@@ -198,10 +199,10 @@ public class ActionTest {
         Assert.assertEquals(validAction2.hashCode(), validAction2.hashCode());
         Assert.assertEquals(validAction3.hashCode(), validAction3.hashCode());
 
-        // Must copy to get a pollable version of the action.
-        Action action1Copy = validAction1.getCopy();
-        Action action2Copy = validAction2.getCopy();
-        Action action3Copy = validAction3.getCopy();
+        // Must copy to get a pollable version of the command.
+        Action<CommandQWOP> action1Copy = validAction1.getCopy();
+        Action<CommandQWOP> action2Copy = validAction2.getCopy();
+        Action<CommandQWOP> action3Copy = validAction3.getCopy();
 
         Assert.assertEquals(validAction1, action1Copy);
         Assert.assertEquals(validAction1.hashCode(), action1Copy.hashCode());
@@ -210,7 +211,7 @@ public class ActionTest {
         Assert.assertEquals(validAction3, action3Copy);
         Assert.assertEquals(validAction3.hashCode(), action3Copy.hashCode());
 
-        Action equivAction = new Action(actTimesteps1, command1).getCopy();
+        Action<CommandQWOP> equivAction = new Action<>(actTimesteps1, command1).getCopy();
         Assert.assertEquals(equivAction, action1Copy);
         Assert.assertEquals(equivAction.hashCode(), action1Copy.hashCode());
 
@@ -225,18 +226,18 @@ public class ActionTest {
 
     @Test
     public void comparing() {
-        Action a1 = new Action(5, CommandQWOP.QP);
-        Action a2 = new Action(5, CommandQWOP.QO);
-        Action a3 = new Action(5, CommandQWOP.QO);
-        Action a4 = new Action(7, CommandQWOP.O);
-        Action a5 = new Action(50, CommandQWOP.NONE);
-        Action a6 = new Action(3, CommandQWOP.NONE);
-        Action a7 = new Action(8, CommandQWOP.QO);
-        Action a8 = new Action(11, CommandQWOP.QP);
-        Action a9 = new Action(12, CommandQWOP.Q);
-        Action a10 = new Action(30, CommandQWOP.WO);
-        Action a11 = new Action(18, CommandQWOP.WO);
-        List<Action> alist = new ArrayList<>();
+        Action<CommandQWOP> a1 = new Action<>(5, CommandQWOP.QP),
+                a2 = new Action<>(5, CommandQWOP.QO),
+                a3 = new Action<>(5, CommandQWOP.QO),
+                a4 = new Action<>(7, CommandQWOP.O),
+                a5 = new Action<>(50, CommandQWOP.NONE),
+                a6 = new Action<>(3, CommandQWOP.NONE),
+                a7 = new Action<>(8, CommandQWOP.QO),
+                a8 = new Action<>(11, CommandQWOP.QP),
+                a9 = new Action<>(12, CommandQWOP.Q),
+                a10 = new Action<>(30, CommandQWOP.WO),
+                a11 = new Action<>(18, CommandQWOP.WO);
+        List<Action<CommandQWOP>> alist = new ArrayList<>();
         alist.add(a1);
         alist.add(a2);
         alist.add(a3);
@@ -272,7 +273,7 @@ public class ActionTest {
 
     @Test
     public void isMutable() {
-        Action act = new Action(14, CommandQWOP.QO);
+        Action<CommandQWOP> act = new Action<>(14, CommandQWOP.QO);
         Assert.assertFalse(act.isMutable());
 
         Action act_copy = act.getCopy();
@@ -281,18 +282,18 @@ public class ActionTest {
 
     @Test
     public void consolidateActions() {
-        // General list of game.action with weird ordering and some zero-duration game.action.
-        List<Action> actions = new ArrayList<>();
-        actions.add(new Action(4, CommandQWOP.NONE));
-        actions.add(new Action(1, CommandQWOP.NONE));
-        actions.add(new Action(0, CommandQWOP.NONE));
-        actions.add(new Action(3, CommandQWOP.Q));
-        actions.add(new Action(0, CommandQWOP.NONE));
-        actions.add(new Action(1, CommandQWOP.Q));
-        actions.add(new Action(5, CommandQWOP.Q));
-        actions.add(new Action(0, CommandQWOP.QP));
+        // General list of game.command with weird ordering and some zero-duration game.command.
+        List<Action<CommandQWOP>> actions = new ArrayList<>();
+        actions.add(new Action<>(4, CommandQWOP.NONE));
+        actions.add(new Action<>(1, CommandQWOP.NONE));
+        actions.add(new Action<>(0, CommandQWOP.NONE));
+        actions.add(new Action<>(3, CommandQWOP.Q));
+        actions.add(new Action<>(0, CommandQWOP.NONE));
+        actions.add(new Action<>(1, CommandQWOP.Q));
+        actions.add(new Action<>(5, CommandQWOP.Q));
+        actions.add(new Action<>(0, CommandQWOP.QP));
 
-        List<Action> consolidatedActions = Action.consolidateActions(actions);
+        List<Action<CommandQWOP>> consolidatedActions = Action.consolidateActions(actions);
 
         Assert.assertEquals(2, consolidatedActions.size());
 
@@ -305,10 +306,10 @@ public class ActionTest {
         Assert.assertEquals(consolidatedActions.get(1).peek(), CommandQWOP.Q);
 
         // Make a list with a single, nonzero element.
-        List<Action> singleActionList = new ArrayList<>();
-        singleActionList.add(new Action(10, CommandQWOP.QO));
+        List<Action<CommandQWOP>> singleActionList = new ArrayList<>();
+        singleActionList.add(new Action<>(10, CommandQWOP.QO));
 
-        List<Action> consolidatedSingleAction = Action.consolidateActions(singleActionList);
+        List<Action<CommandQWOP>> consolidatedSingleAction = Action.consolidateActions(singleActionList);
         Assert.assertEquals(10, consolidatedSingleAction.get(0).getTimestepsRemaining());
         Assert.assertEquals(consolidatedSingleAction.get(0).peek(), CommandQWOP.QO);
     }
@@ -318,9 +319,9 @@ public class ActionTest {
         exception.expect(IllegalArgumentException.class);
 
         // Make a list with a single, 0-duration element.
-        List<Action> singleActionList = new ArrayList<>();
-        singleActionList.add(new Action(0, CommandQWOP.QP));
-        List<Action> consolidatedSingleAction = Action.consolidateActions(singleActionList);
+        List<Action<CommandQWOP>> singleActionList = new ArrayList<>();
+        singleActionList.add(new Action<>(0, CommandQWOP.QP));
+        List<Action<CommandQWOP>> consolidatedSingleAction = Action.consolidateActions(singleActionList);
     }
 
     @Test
@@ -328,19 +329,19 @@ public class ActionTest {
         exception.expect(IllegalArgumentException.class);
 
         // Make a list with several, 0-duration element.
-        List<Action> actionList = new ArrayList<>();
-        actionList.add(new Action(0, CommandQWOP.QO));
-        actionList.add(new Action(0, CommandQWOP.WP));
-        actionList.add(new Action(0, CommandQWOP.WO));
-        actionList.add(new Action(0, CommandQWOP.NONE));
+        List<Action<CommandQWOP>> actionList = new ArrayList<>();
+        actionList.add(new Action<>(0, CommandQWOP.QO));
+        actionList.add(new Action<>(0, CommandQWOP.WP));
+        actionList.add(new Action<>(0, CommandQWOP.WO));
+        actionList.add(new Action<>(0, CommandQWOP.NONE));
 
-        List<Action> consolidateActions = Action.consolidateActions(actionList);
+        List<Action<CommandQWOP>> consolidateActions = Action.consolidateActions(actionList);
     }
 
     @Test
     public void constructorThrowsIllegalArgumentException() {
         exception.expect(IllegalArgumentException.class);
-        new Action(-1, CommandQWOP.NONE);
+        new Action<>(-1, CommandQWOP.NONE);
     }
 
     @Test

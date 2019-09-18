@@ -1,13 +1,16 @@
 package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import tree.node.filter.NodeFilter_Downsample;
-import game.state.IState.ObjectName;
-import game.state.StateVariable.StateName;
+import game.action.Command;
+import game.qwop.IStateQWOP.ObjectName;
+import game.qwop.StateQWOP;
+import game.state.IState;
+import game.state.StateVariable6D.StateName;
 import org.jfree.chart.plot.XYPlot;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
 import tree.Utility;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
+import tree.node.filter.NodeFilter_Downsample;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,17 +27,17 @@ import java.util.Map.Entry;
  *
  * @author Matt
  */
-public class PanelPlot_States extends PanelPlot implements ItemListener {
+public class PanelPlot_States<C extends Command<?>, S extends IState> extends PanelPlot<C, S> implements ItemListener {
 
     /**
      * Maximum allowed datapoints. Will downsample if above. Prevents extreme lag.
      */
-    private final NodeFilter_Downsample plotDownsampler = new NodeFilter_Downsample(5000);
+    private final NodeFilter_Downsample<C, S> plotDownsampler = new NodeFilter_Downsample<>(5000);
 
     /**
      * Node from which states are referenced.
      */
-    private NodeQWOPGraphicsBase<?> selectedNode;
+    private NodeGameGraphicsBase<?, C, S> selectedNode;
 
     /**
      * Which plot index has an active menu.
@@ -48,7 +51,7 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     private final ObjectName[] plotObjectsY;
 
     /**
-     * State variables associated with each plot and axis.
+     * StateQWOP variables associated with each plot and axis.
      */
     private final StateName[] plotStatesX;
     private final StateName[] plotStatesY;
@@ -128,10 +131,10 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> selectedNode) {
+    public void update(NodeGameGraphicsBase<?, C, S> selectedNode) {
         this.selectedNode = selectedNode;
         // Fetching new data.
-        List<NodeQWOPExplorableBase<?>> nodesBelow = new ArrayList<>();
+        List<NodeGameExplorableBase<?, C, S>> nodesBelow = new ArrayList<>();
         if (selectedNode != null) {
             selectedNode.recurseDownTreeInclusive(nodesBelow::add);
 
@@ -145,13 +148,14 @@ public class PanelPlot_States extends PanelPlot implements ItemListener {
                 XYPlot pl = plotAndData.getKey();
                 PlotDataset dat = plotAndData.getValue();
 
+                // TODO fix these unsafe casts.
                 Float[] xData =
-						nodesBelow.stream().map(n -> n.getState().getStateVariableFromName(plotObjectsX[countDataCollect]).getStateByName(plotStatesX[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
+						nodesBelow.stream().map(n -> ((StateQWOP) n.getState()).getStateVariableFromName(plotObjectsX[countDataCollect]).getStateByName(plotStatesX[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
                 Float[] yData =
-						nodesBelow.stream().map(n -> n.getState().getStateVariableFromName(plotObjectsY[countDataCollect]).getStateByName(plotStatesY[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
+						nodesBelow.stream().map(n -> ((StateQWOP) n.getState()).getStateVariableFromName(plotObjectsY[countDataCollect]).getStateByName(plotStatesY[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
                 Color[] cData =
-						nodesBelow.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
-                                NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
+						nodesBelow.stream().map(n -> NodeGameGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
+                                NodeGameGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
                 setPlotBoundsFromData(pl, xData, yData);
 

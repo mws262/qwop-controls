@@ -2,7 +2,8 @@ package hardware;
 
 import com.fazecast.jSerialComm.SerialPort;
 import game.IGameCommandTarget;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -88,5 +89,10 @@ public class KeypusherSerialConnection implements IGameCommandTarget<CommandQWOP
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public int getNumberOfChoices() {
+        return GameQWOP.ACTIONSPACE_SIZE;
     }
 }

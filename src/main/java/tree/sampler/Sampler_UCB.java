@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Action;
+import game.action.Command;
+import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jblas.util.Random;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 import tree.sampler.rollout.IRolloutPolicy;
 import value.updaters.IValueUpdater;
@@ -18,29 +20,26 @@ import value.updaters.IValueUpdater;
  *
  * @author Matt
  */
-public class Sampler_UCB implements ISampler, AutoCloseable {
+public class Sampler_UCB<C extends Command<?>, S extends IState> extends Sampler_DeadlockDelay<C, S> implements AutoCloseable {
 
     /**
      * Constant term on UCB exploration factor. Higher means more exploration.
      */
     public final float explorationConstant;
 
-    /**
-     *
-     */
     public final float explorationRandomFactor;
 
     /**
      * Evaluation function used to score single nodes after rollouts are done.
      */
-    private final IEvaluationFunction evaluationFunction;
+    private final IEvaluationFunction<C, S> evaluationFunction;
 
     /**
      * Policy used to evaluateActionDistribution the score of a tree expansion Node by doing rollout(s).
      */
-    private final IRolloutPolicy rolloutPolicy;
+    private final IRolloutPolicy<C, S> rolloutPolicy;
 
-    public final IValueUpdater valueUpdater; //TopNChildren(8); // TODO make this an
+    private final IValueUpdater<C, S> valueUpdater; //TopNChildren(8); // TODO make this an
     // assignable
     // parameter.
 
@@ -64,13 +63,6 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
      */
     private boolean rolloutPolicyDone = false;
 
-    /**
-     * Individual workers can deadlock rarely. This causes overflow errors when the tree policy is recursively called.
-     * Solution here is to wait a short period of time, doubling it until the worker is successful again. This happens
-     * maybe 1 in 5k games or so near the beginning only, so it's not worth finding something more elegant.
-     */
-    private long deadlockDelayCurrent = 0;
-
     private static final Logger logger = LogManager.getLogger(Sampler_UCB.class);
 
     /**
@@ -78,9 +70,9 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
      * Also specify a rollout policy to use.
      */
     public Sampler_UCB(
-            @JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction,
-            @JsonProperty("rolloutPolicy") IRolloutPolicy rolloutPolicy,
-            @JsonProperty("valueUpdater") IValueUpdater valueUpdater,
+            @JsonProperty("evaluationFunction") IEvaluationFunction<C, S> evaluationFunction,
+            @JsonProperty("rolloutPolicy") IRolloutPolicy<C, S> rolloutPolicy,
+            @JsonProperty("valueUpdater") IValueUpdater<C, S> valueUpdater,
             @JsonProperty("explorationConstant") float explorationConstant,
             @JsonProperty("explorationRandomFactor") float explorationRandomFactor) {
         this.evaluationFunction = evaluationFunction;
@@ -94,28 +86,46 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
     /**
      * Propagate the score and visit count back up the tree.
      */
-    private void propagateScore(NodeQWOPExplorableBase<?> failureNode, float score) {
+    private void propagateScore(NodeGameExplorableBase<?, C, S> failureNode, float score) {
         // Do evaluation and propagation of scores.
         failureNode.recurseUpTreeInclusive(n -> n.updateValue(score, valueUpdater));
     }
 
     @Override
-    public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
-        if (startNode.getUntriedActionCount() != 0) {
-            if (startNode.reserveExpansionRights()) { // We immediately expand
-                // if there's an untried action.
-                assert startNode.isLocked();
+    public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
+
+        if (startNode.getTreeDepth() == 0 && (startNode.getChildCount() == 0 || startNode.isLocked())) {
+            if (startNode.reserveExpansionRights()) {
+                resetDeadlockDelay();
                 return startNode;
             } else {
-                return null;
+                deadlockDelay();
+                return treePolicy(startNode);
+            }
+        }
+
+        if (startNode.getUntriedActionCount() > 0) {
+            if (startNode.reserveExpansionRights()) { // We immediately expand
+                // if there's an untried command.
+                assert startNode.isLocked();
+                resetDeadlockDelay();
+                return startNode;
+            } else {
+                if (startNode.getTreeDepth() > 0) {
+                    return treePolicy(startNode.getParent()); // TODO this could cause it to back up beyond the point
+                    // we want to expand. Just keep that in mind.
+                } else {
+                    deadlockDelay();
+                    return treePolicy(startNode);
+                }
             }
         }
 
         double bestScoreSoFar = -Double.MAX_VALUE;
-        NodeQWOPExplorableBase<?> bestNodeSoFar = null;
+        NodeGameExplorableBase<?, C, S> bestNodeSoFar = null;
 
         // Otherwise, we go through the existing tree picking the "best."
-        for (NodeQWOPExplorableBase<?> child : startNode.getChildren()) {
+        for (NodeGameExplorableBase<?, C, S> child : startNode.getChildren()) {
 
             if (!child.isFullyExplored() && !child.isLocked() && child.getUpdateCount() > 0) {
                 float val = (child.getValue() + c * (float) Math.sqrt(2. * Math.log((double) startNode.getUpdateCount()) / (double) child.getUpdateCount()));
@@ -126,46 +136,37 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
                 }
             }
         }
+
         if (bestNodeSoFar == null) { // This worker can't get a lock on any of the children it wants. Starting back
-        	// at startNode.
-            if (deadlockDelayCurrent > 5000) {
-                logger.warn("UCB sampler worker got really jammed up. Terminating this one.");
-                return null;
-            }
-            try {
-                Thread.sleep(deadlockDelayCurrent);
-                deadlockDelayCurrent = deadlockDelayCurrent * 2 + 1;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        	deadlockDelay();
             bestNodeSoFar = startNode;
         } else {
-            deadlockDelayCurrent = 0; // Reset delay if we're successful again.
+            resetDeadlockDelay();
         }
 
-        return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked action.;
+        return treePolicy(bestNodeSoFar); // Recurse until we reach a node with an unchecked command.
     }
 
     @Override
-    public void treePolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
+    public void treePolicyActionDone(NodeGameExplorableBase<?, C, S> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
+    public boolean treePolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return treePolicyDone; // True means ready to move on to the next.
     }
 
     @Override
-    public Action expansionPolicy(NodeQWOPExplorableBase<?> startNode) {
+    public Action<C> expansionPolicy(NodeGameExplorableBase<?, C, S> startNode) {
         if (startNode.getUntriedActionCount() == 0)
             throw new IndexOutOfBoundsException("Expansion policy received a node from which there are no new nodes to try!");
         return startNode.getUntriedActionOnDistribution();
     }
 
     @Override
-    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
+    public void expansionPolicyActionDone(NodeGameExplorableBase<?, C, S> currentNode) {
         treePolicyDone = false;
         expansionPolicyDone = true; // We move on after adding only one node.
         if (currentNode.getState().isFailed()) { // If expansion is to failed node, no need to do rollout.
@@ -177,12 +178,12 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
     }
 
     @Override
-    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
+    public boolean expansionPolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
+    public void rolloutPolicy(NodeGameExplorableBase<?, C, S> startNode, IGameInternal<C, S> game) {
         if (startNode.getState().isFailed())
             throw new IllegalStateException("Rollout policy received a starting node which corresponds to an already failed " +
                     "state.");
@@ -193,23 +194,27 @@ public class Sampler_UCB implements ISampler, AutoCloseable {
     }
 
     @Override
-    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
+    public boolean rolloutPolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return rolloutPolicyDone;
     }
 
     @JsonIgnore
     @Override
-    public Sampler_UCB getCopy() {
-        return new Sampler_UCB(evaluationFunction.getCopy(), rolloutPolicy.getCopy(),
+    public Sampler_UCB<C, S> getCopy() {
+        return new Sampler_UCB<>(evaluationFunction.getCopy(), rolloutPolicy.getCopy(),
                 valueUpdater.getCopy(), explorationConstant, explorationRandomFactor);
     }
 
-    public IEvaluationFunction getEvaluationFunction() {
+    public IEvaluationFunction<C, S> getEvaluationFunction() {
         return evaluationFunction;
     }
 
-    public IRolloutPolicy getRolloutPolicy() {
+    public IRolloutPolicy<C, S> getRolloutPolicy() {
         return rolloutPolicy;
+    }
+
+    public IValueUpdater<C, S> getValueUpdater() {
+        return valueUpdater;
     }
 
     @JsonIgnore

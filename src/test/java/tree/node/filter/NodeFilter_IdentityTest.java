@@ -3,7 +3,7 @@ package tree.node.filter;
 import org.jcodec.common.Assert;
 import org.junit.Test;
 import org.mockito.Mock;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,11 +11,11 @@ import java.util.List;
 public class NodeFilter_IdentityTest {
 
     @Mock
-    NodeQWOPExplorable testNode;
+    NodeGameExplorable testNode;
 
     @Test
     public void filter() {
-        List<NodeQWOPExplorable> listOfNodes = Arrays.asList(testNode, testNode, testNode);
+        List<NodeGameExplorable> listOfNodes = Arrays.asList(testNode, testNode, testNode);
 
         INodeFilter filter = new NodeFilter_Identity();
 
@@ -27,7 +27,7 @@ public class NodeFilter_IdentityTest {
         filter.filter(listOfNodes);
         Assert.assertEquals(originalSize, listOfNodes.size());
 
-        NodeQWOPExplorable badNode = null;
-        Assert.assertTrue(filter.filter((NodeQWOPExplorable) null)); // Should still allow even null.
+        NodeGameExplorable badNode = null;
+        Assert.assertTrue(filter.filter((NodeGameExplorable) null)); // Should still allow even null.
     }
 }

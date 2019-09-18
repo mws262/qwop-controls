@@ -1,14 +1,14 @@
 package goals.value_function;
 
-import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
-import game.state.IState;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.Utility;
-import tree.node.NodeQWOPExplorable;
+import tree.node.NodeGameExplorable;
 import ui.runner.PanelRunner;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static game.qwop.IStateQWOP.ObjectName;
+
 @SuppressWarnings("ALL")
 public class MAIN_SingleEvaluation extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
 
@@ -31,7 +33,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         Utility.loadLoggerConfiguration();
     }
 
-    GameUnified game = new GameUnified(); // new GameUnifiedCaching(1,2);
+    GameQWOP game = new GameQWOP(); // new GameQWOPCaching(1,2);
 
     private boolean doFullGameSerialization = false;
 
@@ -41,7 +43,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
     private boolean doScreenCapture = false;
 
     // Game and controller fields.
-    private ActionQueue actionQueue = new ActionQueue();
+    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue();
     private ValueFunction_TensorFlow valueFunction;
 
     // Drawing parameters.
@@ -95,7 +97,11 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         /* Load a value function controller. */
         try {
             valueFunction =
-                    new ValueFunction_TensorFlow_StateOnly(new File(valueNetworkName), game, false);
+                    new ValueFunction_TensorFlow_StateOnly(
+                            new File(valueNetworkName),
+                            game,
+                            new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+                            false);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -107,14 +113,16 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         }
     }
 
-    private NodeQWOPExplorable doPrefix() {
+    private NodeGameExplorable<CommandQWOP, StateQWOP> doPrefix() {
 
-        NodeQWOPExplorable rootNode = new NodeQWOPExplorable(GameUnified.getInitialState());
+        NodeGameExplorable<CommandQWOP, StateQWOP> rootNode = new NodeGameExplorable(GameQWOP.getInitialState());
 
-        // Assign a "prefix" of game.action, since I'm not sure if the controller will generalize to this part of running.
-        List<Action[]> alist = new ArrayList<>();
-        alist.add(new Action[]{
-                new Action(7, CommandQWOP.Keys.none),
+        // Assign a "prefix" of game.command, since I'm not sure if the controller will generalize to this part of running.
+        List<List<Action<CommandQWOP>>> aListList = new ArrayList<>();
+        List<Action<CommandQWOP>> aList = new ArrayList<>();
+        aList.add(new Action<>(7, CommandQWOP.NONE));
+        aListList.add(aList);
+
 //                new Action(34, Action.Keys.wo),
 //                new Action(19, Action.Keys.none),
 //                new Action(20, Action.Keys.qp),
@@ -123,16 +131,15 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 //                new Action(27,false,true,true,false),
 //                 new Action(8,false,false,false,false),
 //                new Action(20,true,false,false,true),
-        });
 
-        NodeQWOPExplorable.makeNodesFromActionSequences(alist, rootNode, game);
+        NodeGameExplorable.makeNodesFromActionSequences(aListList, rootNode, game);
 
-        List<NodeQWOPExplorable> leaf = new ArrayList<>();
+        List<NodeGameExplorable<CommandQWOP, StateQWOP>> leaf = new ArrayList<>();
         rootNode.getLeaves(leaf);
 
-        List<Action> actionList = new ArrayList<>();
+        List<Action<CommandQWOP>> actionList = new ArrayList<>();
 
-        NodeQWOPExplorable currNode = leaf.get(0);
+        NodeGameExplorable currNode = leaf.get(0);
         currNode.getSequence(actionList);
         actionQueue.addSequence(actionList);
 
@@ -155,15 +162,17 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         return currNode;
     }
 
-    private void doControlled(NodeQWOPExplorable currentNode) {
+    private void doControlled(NodeGameExplorable<CommandQWOP, StateQWOP> currentNode) {
 
         // Run the controller until failure.
-        while (currentNode.getState().getStateVariableFromName(IState.ObjectName.BODY).getY() < 30) { // Ends if the
+        // TODO fix cast
+        while (((StateQWOP)(currentNode.getState())).getStateVariableFromName(ObjectName.BODY).getY() < 30) { // Ends if
+            // the
             // runner
             // falls off the
             // edge of the world.
             // Does not end on falling, as we might want to see its behavior.
-            Action chosenAction;
+            Action<CommandQWOP> chosenAction;
             if (doFullGameSerialization) {
                 chosenAction = valueFunction.getMaximizingAction(currentNode, game);
             } else {
@@ -258,7 +267,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
 
     public static void main(String[] args) {
         MAIN_SingleEvaluation controlledGame = new MAIN_SingleEvaluation();
-        NodeQWOPExplorable currentNode = controlledGame.doPrefix();
+        NodeGameExplorable currentNode = controlledGame.doPrefix();
         controlledGame.doControlled(currentNode);
     }
 }

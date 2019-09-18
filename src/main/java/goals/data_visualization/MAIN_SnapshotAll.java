@@ -2,10 +2,12 @@ package goals.data_visualization;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameUnified;
+import game.qwop.GameQWOP;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import tree.node.NodeQWOPGraphics;
+import tree.node.NodeGameGraphics;
 import ui.runner.PanelRunner_Snapshot;
 
 import javax.swing.*;
@@ -83,17 +85,17 @@ public class MAIN_SnapshotAll extends JFrame {
             return;
         }
 
-        NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+        NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState());
 
-        SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
-        List<SavableSingleGame> games = new ArrayList<>();
+        SavableFileIO<SavableSingleGame<CommandQWOP, StateQWOP>> fileIO = new SavableFileIO<>();
+        List<SavableSingleGame<CommandQWOP, StateQWOP>> games = new ArrayList<>();
 
         for (File f : playbackFiles) {
             fileIO.loadObjectsToCollection(f, games);
         }
 
-        NodeQWOPGraphics.makeNodesFromRunInfo(games, rootNode);
-        NodeQWOPGraphics currNode = rootNode;
+        NodeGameGraphics.makeNodesFromRunInfo(games, rootNode);
+        NodeGameGraphics<CommandQWOP, StateQWOP> currNode = rootNode;
         while (currNode.getTreeDepth() < playbackDepth && currNode.getChildCount() > 0) {
             currNode = currNode.getChildByIndex(0);
         }

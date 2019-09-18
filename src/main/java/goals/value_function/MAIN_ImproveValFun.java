@@ -1,6 +1,7 @@
 package goals.value_function;
 
-import game.GameUnified;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.CMAESOptimizer;
@@ -13,11 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MAIN_ImproveValFun {
-
-
     public MAIN_ImproveValFun() throws IOException {
 
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
         List<Integer> layerSizes = new ArrayList<>();
         layerSizes.add(128);
         layerSizes.add(32);
@@ -26,8 +25,13 @@ public class MAIN_ImproveValFun {
         additionalArgs.add("--loss");
         additionalArgs.add("target_only"); // Loss has nothing to do with the network output in this case. Just the
         // performance of the controller.
-        ValueFunction_TensorFlow_StateOnly valFun = new ValueFunction_TensorFlow_StateOnly("src/main/resources/tflow_models" +
-                "/test.pb", game, layerSizes, additionalArgs, "src/main/resources/tflow_models/checkpoints" +
+        ValueFunction_TensorFlow_StateOnly<StateQWOP> valFun = new ValueFunction_TensorFlow_StateOnly<>(
+                "src/main/resources/tflow_models/test.pb",
+                game,
+                new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+                layerSizes,
+                additionalArgs,
+                "src/main/resources/tflow_models/checkpoints" +
                 "/checkpoint_lots360", true);
 
         WeightScoreFunction problem = new WeightScoreFunction(valFun);
@@ -66,20 +70,20 @@ public class MAIN_ImproveValFun {
 //            for (int j = 0; j < 5; j++) {
 //                ActionQueue actionQueue = new ActionQueue();
 //                actionQueue.addAction(new Action(7, Action.Keys.none));
-//                game.makeNewWorld();
+//                game.resetGame();
 //
 //                int maxTs = 3000;
-//                while (!game.getFailureStatus() && game.getTimestepsThisGame() < maxTs && game.getCurrentState().getCenterX() < GameConstants.goalDistance) {
+//                while (!game.isFailed() && game.getTimestepsThisGame() < maxTs && game.getCurrentState().getCenterX() < QWOPConstants.goalDistance) {
 //
 //                    if (actionQueue.isEmpty()) {
-//                        actionQueue.addAction(controller.policy(new NodeQWOPExplorable(game.getCurrentState()), game)); // Can
+//                        actionQueue.addAction(controller.policy(new NodeGameExplorable(game.getCurrentState()), game)); // Can
 //                        // change to game serialization version here.
 //                    }
 //                    game.step(actionQueue.pollCommand());
 //                }
 //                IState finalState = game.getCurrentState();
-//                System.out.println("Final X: " + finalState.getCenterX() / GameConstants.worldScale + "  Time: "
-//                        + game.getTimestepsThisGame() * GameConstants.timestep);
+//                System.out.println("Final X: " + finalState.getCenterX() / QWOPConstants.worldScale + "  Time: "
+//                        + game.getTimestepsThisGame() * QWOPConstants.timestep);
 //
 //                if (j == 0) {
 //                    baseline = game.getTimestepsThisGame();
@@ -93,8 +97,8 @@ public class MAIN_ImproveValFun {
 //                    break;
 //                }
 ////            float loss =
-////                    (GameConstants.goalDistance - (finalState.getCenterX() - GameUnified.getInitialState().getCenterX())) * 1f // Distance term should dominate.
-////                            - (finalState.getCenterX() - GameUnified.getInitialState().getCenterX()) / (game.getTimestepsThisGame() * GameConstants.timestep) * 0.1f; //
+////                    (QWOPConstants.goalDistance - (finalState.getCenterX() - GameQWOP.getInitialState().getCenterX())) * 1f // Distance term should dominate.
+////                            - (finalState.getCenterX() - GameQWOP.getInitialState().getCenterX()) / (game.getTimestepsThisGame() * QWOPConstants.timestep) * 0.1f; //
 ////            System.out.println(loss);
 //
 ////            layer1biases[12] -= 0.1f;

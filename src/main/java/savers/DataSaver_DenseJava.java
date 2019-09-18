@@ -2,7 +2,9 @@ package savers;
 
 import data.SavableDenseData;
 import data.SavableFileIO;
-import tree.node.NodeQWOPBase;
+import game.action.Command;
+import game.state.IState;
+import tree.node.NodeGameBase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,18 +16,16 @@ import java.util.ArrayList;
  *
  * @author matt
  */
-public class DataSaver_DenseJava extends DataSaver_Dense {
+public class DataSaver_DenseJava <C extends Command<?>, S extends IState> extends DataSaver_Dense<C, S> {
 
     /**
      * File prefix. Goes in front of date.
      */
-    @SuppressWarnings("WeakerAccess")
     public static final String filePrefix = "qwop_dense_java";
 
     /**
      * Do not include dot before.
      */
-    @SuppressWarnings("WeakerAccess")
     public static final String fileExtension = "SavableDenseData";
 
     /**
@@ -36,17 +36,17 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
     /**
      * Handles class serialization and writing to file.
      */
-    private final SavableFileIO<SavableDenseData> fileIO = new SavableFileIO<>();
+    private final SavableFileIO<SavableDenseData<C>> fileIO = new SavableFileIO<>();
 
     /**
      * Buffered games waiting to be written to file.
      */
-    private final ArrayList<SavableDenseData> saveBuffer = new ArrayList<>();
+    private final ArrayList<SavableDenseData<C>> saveBuffer = new ArrayList<>();
 
     @Override
-    public void reportGameEnding(NodeQWOPBase<?> endNode) {
-        // Collect all the states and game.action into a data object.
-        saveBuffer.add(new SavableDenseData(stateBuffer, actionBuffer));
+    public void reportGameEnding(NodeGameBase<?, C, S> endNode) {
+        // Collect all the states and game.command into a data object.
+        saveBuffer.add(new SavableDenseData<>(stateBuffer, actionBuffer));
         saveCounter++;
 
         if (getSaveInterval() == saveCounter) {
@@ -70,8 +70,8 @@ public class DataSaver_DenseJava extends DataSaver_Dense {
     }
 
     @Override
-    public DataSaver_DenseJava getCopy() {
-        DataSaver_DenseJava newSaver = new DataSaver_DenseJava();
+    public DataSaver_DenseJava<C, S> getCopy() {
+        DataSaver_DenseJava<C, S> newSaver = new DataSaver_DenseJava<>();
         newSaver.setSaveInterval(getSaveInterval());
         newSaver.setSavePath(fileLocation);
         return newSaver;

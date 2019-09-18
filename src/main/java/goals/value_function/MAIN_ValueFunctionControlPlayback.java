@@ -1,21 +1,44 @@
 package goals.value_function;
 
-import game.GameUnified;
+import game.qwop.GameQWOPCaching;
+import game.qwop.StateQWOPDelayEmbedded_Differences;
+import game.state.transform.ITransform;
 import ui.runner.PanelRunner_ControlledTFlow;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.FileNotFoundException;
 
 public class MAIN_ValueFunctionControlPlayback {
 
-    private GameUnified game = new GameUnified(); //new GameUnifiedCaching(1,2,
-            //GameUnifiedCaching.StateType.HIGHER_DIFFERENCES);
-    public MAIN_ValueFunctionControlPlayback() {
+    //GameQWOPCaching.StateType.HIGHER_DIFFERENCES);
+    private MAIN_ValueFunctionControlPlayback() {
 
         JFrame jFrame = new JFrame();
 
-        PanelRunner_ControlledTFlow<GameUnified> controlPanel = new PanelRunner_ControlledTFlow<>("Controlled runner",
+//        ITransform<StateQWOP> stateNormalizer = null;
+//        try {
+//            stateNormalizer = new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+
+        // TODO have a sensible way of substituting out game types.
+        //new GameQWOPCaching(1,2,
+//                GameQWOP game = new GameQWOP();
+        GameQWOPCaching<StateQWOPDelayEmbedded_Differences> game
+                = new GameQWOPCaching<>(1,2, GameQWOPCaching.StateType.DIFFERENCES);
+        ITransform<StateQWOPDelayEmbedded_Differences> stateNormalizer = null;
+        try {
+            stateNormalizer = new StateQWOPDelayEmbedded_Differences.Normalizer(StateQWOPDelayEmbedded_Differences.Normalizer.NormalizationMethod.STDEV);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        PanelRunner_ControlledTFlow<StateQWOPDelayEmbedded_Differences> controlPanel = new PanelRunner_ControlledTFlow<>(
+                "Controlled runner",
                 game,
+                stateNormalizer,
                 "src/main/resources/tflow_models",
                 "src/main/resources/tflow_models/checkpoints");
 

@@ -2,14 +2,14 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.GameUnified;
-import game.IGameInternal;
-import game.state.State;
+import game.qwop.GameQWOP;
+import game.qwop.IStateQWOP;
+import game.qwop.StateQWOP;
 
 import java.awt.*;
 import java.util.Queue;
 
-public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runnable {
+public class PanelRunner_AnimatedFromStates<S extends IStateQWOP> extends PanelRunner<S> implements Runnable {
 
     /**
      * Is the current simulation paused?
@@ -19,29 +19,29 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     /**
      * This panel's copy of the game it uses to run games for visualization.
      */
-    protected IGameInternal game;
+    protected GameQWOP game;
 
     private Thread thread;
 
     /**
      * States to animate through.
      */
-    private Queue<State> states;
+    private Queue<StateQWOP> states;
 
     /**
      * Current state being displayed.
      */
-    private State currState;
+    private StateQWOP currState;
 
     private final String name;
 
     public PanelRunner_AnimatedFromStates(@JsonProperty("name") String name) {
         this.name = name;
-        game = new GameUnified();
-        game.makeNewWorld();
+        game = new GameQWOP();
+        game.resetGame();
     }
 
-    public void simRun(Queue<State> states) {
+    public void simRun(Queue<StateQWOP> states) {
         this.states = states;
         active = true;
     }
@@ -55,11 +55,11 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
         super.paintComponent(g);
         if (game != null && currState != null) {
 
-            GameUnified.drawExtraRunner((Graphics2D) g, currState, "", runnerScaling,
+            GameQWOP.drawExtraRunner((Graphics2D) g, currState, "", runnerScaling,
                     (int) (xOffsetPixels - currState.body.getX() * runnerScaling), yOffsetPixels, Color.BLACK,
                     normalStroke);
 
-            // No game.action being displayed, so just draw the keys.
+            // No game.command being displayed, so just draw the keys.
             keyDrawer(g, false, false, false, false);
 
             //This draws the "road" markings to show that the ground is moving relative to the dude.
@@ -93,7 +93,7 @@ public class PanelRunner_AnimatedFromStates extends PanelRunner implements Runna
     }
 
     /**
-     * Play/pause the current visualized simulation. Flag is reset by calling again or by selecting a new node to
+     * Play/pause the current visualized simulation. Flag is resetGame by calling again or by selecting a new node to
      * visualize.
      */
     public void pauseToggle() {

@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import game.GameUnified;
-import game.state.IState;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.IStateQWOP;
 import tree.Utility;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 
 import java.awt.*;
 import java.util.Map;
@@ -17,19 +18,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * An slightly more fully-featured version of {@link PanelRunner_SimpleState}. Allows drawing of multiple states.
  * @author matt
  */
-public class PanelRunner_MultiState extends PanelRunner implements Runnable {
+public class PanelRunner_MultiState<S extends IStateQWOP> extends PanelRunner<S> implements Runnable {
 
     /**
      * Main state to draw. It will provide the x-reference position.
      */
-    private IState mainState;
+    private S mainState;
 
     private Thread thread;
 
     /**
      * Additional states to draw, and their colors. x-coordinate will be relative to the mainState.
      */
-    private Map<IState, Color> secondaryStates = new ConcurrentHashMap<>();
+    private Map<IStateQWOP, Color> secondaryStates = new ConcurrentHashMap<>();
 
     @JsonSerialize(using = Utility.ColorSerializer.class)
     @JsonDeserialize(using = Utility.ColorDeserializer.class)
@@ -47,10 +48,10 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
 
     /**
      * Add a state to be displayed.
-     * @param state State to draw the runner at.
+     * @param state StateQWOP to draw the runner at.
      * @param color Color to draw the runner outlined with.
      */
-    public void addSecondaryState(IState state, Color color) {
+    public void addSecondaryState(S state, Color color) {
         secondaryStates.put(state, color);
     }
 
@@ -66,12 +67,12 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
      * states drawn.
      * @param state Main runner state to be drawn.
      */
-    public void setMainState(IState state) {
+    public void setMainState(S state) {
         mainState = state;
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> node) {
+    public void update(NodeGameGraphicsBase<?, CommandQWOP, S> node) {
         mainState = node.getState();
     }
 
@@ -91,14 +92,14 @@ public class PanelRunner_MultiState extends PanelRunner implements Runnable {
         offset[1] = 100 + yOffsetPixels;
 
         // Draw the main state.
-        GameUnified.drawExtraRunner(g2, mainState, "", runnerScaling,
+        GameQWOP.drawExtraRunner(g2, mainState.getPositionCoordinates(), "", runnerScaling,
                 offset[0], offset[1], mainRunnerColor, (customStroke != null) ? customStroke : boldStroke);
 
         // Draw secondary states, if any.
-        for (Map.Entry<IState, Color> entry : secondaryStates.entrySet()) {
-            IState st = entry.getKey();
+        for (Map.Entry<IStateQWOP, Color> entry : secondaryStates.entrySet()) {
+            IStateQWOP st = entry.getKey();
             Color col = entry.getValue();
-            GameUnified.drawExtraRunner(g2, st, "", runnerScaling,
+            GameQWOP.drawExtraRunner(g2, st.getPositionCoordinates(), "", runnerScaling,
                     offset[0], offset[1], col, (customStrokeExtra != null) ? customStrokeExtra : normalStroke);
         }
 

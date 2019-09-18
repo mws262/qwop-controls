@@ -1,7 +1,7 @@
 package distributions;
 
 import game.action.Action;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ public class Distribution_EqualTest {
 
         List<Action> trackList = new ArrayList<>(actList);
 
-        // Make sure that all of the game.action in the set eventually show up.
+        // Make sure that all of the game.command in the set eventually show up.
         int count = 5000;
         while (count > 0 && !trackList.isEmpty()){
             Action act = distribution.randOnDistribution(actList);

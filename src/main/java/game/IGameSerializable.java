@@ -1,6 +1,12 @@
 package game;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Command;
+import game.qwop.GameQWOP;
+import game.qwop.GameQWOPCaching;
+import game.state.IState;
 
 import java.io.Serializable;
 
@@ -9,7 +15,24 @@ import java.io.Serializable;
  *
  * @author matt
  */
-public interface IGameSerializable<C extends Command<?>> extends IGameInternal<C>, Serializable {
+
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = GameQWOP.class, name = "qwop"),
+        @JsonSubTypes.Type(value = GameQWOPCaching.class, name = "qwop_caching"),
+})
+public interface IGameSerializable<C extends Command<?>, S extends IState> extends IGameInternal<C, S>, Serializable {
+
+    @JsonIgnore
     byte[] getSerializedState();
-    IGameInternal restoreSerializedState(byte[] fullState);
+
+    IGameSerializable<C, S> restoreSerializedState(byte[] fullState);
+
+    @JsonIgnore
+    IGameSerializable<C, S> getCopy();
+
+    // Probably not be used by non-qwop games.
+    default void setPhysicsIterations(int iterations) {}
 }

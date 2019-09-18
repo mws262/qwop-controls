@@ -1,24 +1,33 @@
-package game.state;
+package game.qwop;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import data.LoadStateStatistics;
 import game.IGameInternal;
+import game.state.IState;
+import game.state.StateVariable6D;
+import game.state.transform.ITransform;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Container class for holding the configurations and velocities of the entire runner at a single instance in time.
- * Has x, y, th, dx, dy, dth for 12 bodies, meaning that one State represents 72 state values.
+ * Has x, y, th, dx, dy, dth for 12 bodies, meaning that one StateQWOP represents 72 state values.
  *
  * @author matt
  */
-public class State implements IState, Serializable {
+public class StateQWOP implements IStateQWOP, Serializable {
 
     public static final int STATE_SIZE = 72;
-
+    @SuppressWarnings("WeakerAccess")
+    public static final int STATEVARIABLE_COUNT = 12;
     private static final long serialVersionUID = 2L;
 
     /**
@@ -29,12 +38,12 @@ public class State implements IState, Serializable {
     /**
      * Objects which hold the x, y, theta, dx, dy, dtheta values for all body parts.
      */
-    public final StateVariable body, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm, head;
+    public final StateVariable6D body, rthigh, lthigh, rcalf, lcalf, rfoot, lfoot, ruarm, luarm, rlarm, llarm, head;
 
     /**
-     * Array holding a StateVariable for each body part.
+     * Array holding a StateVariable6D for each body part.
      */
-    private final StateVariable[] stateVariables;
+    private final StateVariable6D[] stateVariables;
 
     /**
      * Make new state from list of ordered numbers. Most useful for interacting with neural network stuff. Number
@@ -44,35 +53,35 @@ public class State implements IState, Serializable {
      *                  {@link game.state.transform.Transform_Autoencoder order}.
      * @param isFailed  Whether this state represents a fallen runner.
      */
-    public State(float[] stateVars, boolean isFailed) {
+    public StateQWOP(float[] stateVars, boolean isFailed) {
         if (stateVars.length != STATE_SIZE) {
-            throw new IndexOutOfBoundsException("Given array is not the correct size for creating a State. Given size" +
+            throw new IndexOutOfBoundsException("Given array is not the correct size for creating a StateQWOP. Given size" +
                     " was: " + stateVars.length);
         }
-        body = new StateVariable(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
-        head = new StateVariable(stateVars[6], stateVars[7], stateVars[8], stateVars[9], stateVars[10], stateVars[11]);
-        rthigh = new StateVariable(stateVars[12], stateVars[13], stateVars[14], stateVars[15], stateVars[16],
+        body = new StateVariable6D(stateVars[0], stateVars[1], stateVars[2], stateVars[3], stateVars[4], stateVars[5]);
+        head = new StateVariable6D(stateVars[6], stateVars[7], stateVars[8], stateVars[9], stateVars[10], stateVars[11]);
+        rthigh = new StateVariable6D(stateVars[12], stateVars[13], stateVars[14], stateVars[15], stateVars[16],
                 stateVars[17]);
-        lthigh = new StateVariable(stateVars[18], stateVars[19], stateVars[20], stateVars[21], stateVars[22],
+        lthigh = new StateVariable6D(stateVars[18], stateVars[19], stateVars[20], stateVars[21], stateVars[22],
                 stateVars[23]);
-        rcalf = new StateVariable(stateVars[24], stateVars[25], stateVars[26], stateVars[27], stateVars[28],
+        rcalf = new StateVariable6D(stateVars[24], stateVars[25], stateVars[26], stateVars[27], stateVars[28],
                 stateVars[29]);
-        lcalf = new StateVariable(stateVars[30], stateVars[31], stateVars[32], stateVars[33], stateVars[34],
+        lcalf = new StateVariable6D(stateVars[30], stateVars[31], stateVars[32], stateVars[33], stateVars[34],
                 stateVars[35]);
-        rfoot = new StateVariable(stateVars[36], stateVars[37], stateVars[38], stateVars[39], stateVars[40],
+        rfoot = new StateVariable6D(stateVars[36], stateVars[37], stateVars[38], stateVars[39], stateVars[40],
                 stateVars[41]);
-        lfoot = new StateVariable(stateVars[42], stateVars[43], stateVars[44], stateVars[45], stateVars[46],
+        lfoot = new StateVariable6D(stateVars[42], stateVars[43], stateVars[44], stateVars[45], stateVars[46],
                 stateVars[47]);
-        ruarm = new StateVariable(stateVars[48], stateVars[49], stateVars[50], stateVars[51], stateVars[52],
+        ruarm = new StateVariable6D(stateVars[48], stateVars[49], stateVars[50], stateVars[51], stateVars[52],
                 stateVars[53]);
-        luarm = new StateVariable(stateVars[54], stateVars[55], stateVars[56], stateVars[57], stateVars[58],
+        luarm = new StateVariable6D(stateVars[54], stateVars[55], stateVars[56], stateVars[57], stateVars[58],
                 stateVars[59]);
-        rlarm = new StateVariable(stateVars[60], stateVars[61], stateVars[62], stateVars[63], stateVars[64],
+        rlarm = new StateVariable6D(stateVars[60], stateVars[61], stateVars[62], stateVars[63], stateVars[64],
                 stateVars[65]);
-        llarm = new StateVariable(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70],
+        llarm = new StateVariable6D(stateVars[66], stateVars[67], stateVars[68], stateVars[69], stateVars[70],
                 stateVars[71]);
 
-        stateVariables = new StateVariable[]{body, head, rthigh, lthigh, rcalf, lcalf,
+        stateVariables = new StateVariable6D[]{body, head, rthigh, lthigh, rcalf, lcalf,
                 rfoot, lfoot, ruarm, luarm, rlarm, llarm};
 
         failedState = isFailed;
@@ -80,35 +89,36 @@ public class State implements IState, Serializable {
 
     /**
      * Make new state from a list of StateVariables. This is now the default way that the GameThreadSafe does it. To make
-     * a new State from an existing game, the best bet is to call {@link IGameInternal#getCurrentState()}.
+     * a new StateQWOP from an existing game, the best bet is to call {@link IGameInternal#getCurrentState()}.
      *
-     * @param bodyS    State of the torso.
-     * @param headS    State of the head.
-     * @param rthighS  State of the right thigh.
-     * @param lthighS  State of the left thigh.
-     * @param rcalfS   State of the right shank.
-     * @param lcalfS   State of the left shank.
-     * @param rfootS   State of the right foot.
-     * @param lfootS   State of the left foot.
-     * @param ruarmS   State of the right upper arm.
-     * @param luarmS   State of the left upper arm.
-     * @param rlarmS   State of the right lower arm.
-     * @param llarmS   State of the left lower arm.
+     * @param bodyS    StateQWOP of the torso.
+     * @param headS    StateQWOP of the head.
+     * @param rthighS  StateQWOP of the right thigh.
+     * @param lthighS  StateQWOP of the left thigh.
+     * @param rcalfS   StateQWOP of the right shank.
+     * @param lcalfS   StateQWOP of the left shank.
+     * @param rfootS   StateQWOP of the right foot.
+     * @param lfootS   StateQWOP of the left foot.
+     * @param ruarmS   StateQWOP of the right upper arm.
+     * @param luarmS   StateQWOP of the left upper arm.
+     * @param rlarmS   StateQWOP of the right lower arm.
+     * @param llarmS   StateQWOP of the left lower arm.
      * @param isFailed Whether this state represents a fallen runner.
      */
-    public State(@JsonProperty("body") StateVariable bodyS,
-                 @JsonProperty("head") StateVariable headS,
-                 @JsonProperty("rthigh") StateVariable rthighS,
-                 @JsonProperty("lthigh") StateVariable lthighS,
-                 @JsonProperty("rcalf") StateVariable rcalfS,
-                 @JsonProperty("lcalf") StateVariable lcalfS,
-                 @JsonProperty("rfoot") StateVariable rfootS,
-                 @JsonProperty("lfoot") StateVariable lfootS,
-                 @JsonProperty("ruarm") StateVariable ruarmS,
-                 @JsonProperty("luarm") StateVariable luarmS,
-                 @JsonProperty("rlarm") StateVariable rlarmS,
-                 @JsonProperty("llarm") StateVariable llarmS,
-                 @JsonProperty("failed") boolean isFailed) {
+    @JsonCreator
+    public StateQWOP(@JsonProperty("body") StateVariable6D bodyS,
+                     @JsonProperty("head") StateVariable6D headS,
+                     @JsonProperty("rthigh") StateVariable6D rthighS,
+                     @JsonProperty("lthigh") StateVariable6D lthighS,
+                     @JsonProperty("rcalf") StateVariable6D rcalfS,
+                     @JsonProperty("lcalf") StateVariable6D lcalfS,
+                     @JsonProperty("rfoot") StateVariable6D rfootS,
+                     @JsonProperty("lfoot") StateVariable6D lfootS,
+                     @JsonProperty("ruarm") StateVariable6D ruarmS,
+                     @JsonProperty("luarm") StateVariable6D luarmS,
+                     @JsonProperty("rlarm") StateVariable6D rlarmS,
+                     @JsonProperty("llarm") StateVariable6D llarmS,
+                     @JsonProperty("failed") boolean isFailed) {
         body = bodyS;
         head = headS;
         rthigh = rthighS;
@@ -123,15 +133,15 @@ public class State implements IState, Serializable {
         llarm = llarmS;
         failedState = isFailed;
 
-        stateVariables = new StateVariable[]{body, head, rthigh, lthigh, rcalf, lcalf,
+        stateVariables = new StateVariable6D[]{body, head, rthigh, lthigh, rcalf, lcalf,
                 rfoot, lfoot, ruarm, luarm, rlarm, llarm};
     }
 
-    public State(StateVariable[] stateVariables, boolean isFailed) {
+    public StateQWOP(StateVariable6D[] stateVariables, boolean isFailed) {
         this(stateVariables[0], stateVariables[1], stateVariables[2], stateVariables[3], stateVariables[4],
                 stateVariables[5] ,stateVariables[6], stateVariables[7], stateVariables[8], stateVariables[9],
                 stateVariables[10], stateVariables[11], isFailed);
-        if (stateVariables.length != 12) {
+        if (stateVariables.length != STATEVARIABLE_COUNT) {
             throw new IndexOutOfBoundsException("Incorrect number of state variables given: " + stateVariables.length);
         }
     }
@@ -139,11 +149,11 @@ public class State implements IState, Serializable {
     /**
      * Get the whole array of state variables.
      *
-     * @return Array containing a {@link StateVariable StateVariable} for each runner link.
+     * @return Array containing a {@link StateVariable6D StateVariable6D} for each runner link.
      */
     @JsonIgnore
     @Override
-    public StateVariable[] getAllStateVariables() {
+    public StateVariable6D[] getAllStateVariables() {
         return stateVariables;
     }
 
@@ -153,6 +163,11 @@ public class State implements IState, Serializable {
         return stateVariables.length;
     }
 
+    @Override
+    public StateQWOP getPositionCoordinates() {
+        return this; // Doesn't get transformed away from what we want anyway.
+    }
+
     @JsonIgnore
     @Override
     public float getCenterX() {
@@ -160,8 +175,8 @@ public class State implements IState, Serializable {
     }
 
     @Override
-    public StateVariable getStateVariableFromName(ObjectName obj) {
-        StateVariable st;
+    public StateVariable6D getStateVariableFromName(ObjectName obj) {
+        StateVariable6D st;
         switch (obj) {
             case BODY:
                 st = body;
@@ -211,7 +226,7 @@ public class State implements IState, Serializable {
     }
 
     // with arbitrary x offset
-    float[] flattenState(float bodyX) {
+    public float[] flattenState(float bodyX) {
         float[] flatState = new float[STATE_SIZE];
         // Body
         flatState[0] = body.getX() - bodyX;
@@ -311,29 +326,30 @@ public class State implements IState, Serializable {
 
         return flatState;
     }
-    @Override
-    public float[] flattenStateWithRescaling(LoadStateStatistics.StateStatistics stateStatistics) {
-        return xOffsetSubtract(getCenterX())
-                .subtract(stateStatistics.getMean())
-                .divide(stateStatistics.getStdev())
-                .flattenState();
-    }
 
     /**
      * Get whether this state represents a failed runner configuration.
      *
      * @return Runner "fallen" status. True means failed. False means not failed.
      */
+    @JsonGetter("failed")
     @Override
     public synchronized boolean isFailed() {
         return failedState;
     }
 
+    @JsonIgnore
+    @Override
+    public int getStateSize() {
+        return STATE_SIZE;
+    }
+
     /**
      * Get a tab-separated list of the states in String form. This takes the same order that
-     * {@link State#flattenState()} uses.
+     * {@link StateQWOP#flattenState()} uses.
      * @return String containing all the state values on a line.
      */
+    @JsonIgnore
     public String toFlatString() {
         float[] states = flattenState();
         StringBuilder sb = new StringBuilder();
@@ -344,56 +360,57 @@ public class State implements IState, Serializable {
     }
 
     // TODO ALL BELOW ARE INEFFICIENT.
-    public State add(State s) {
-        StateVariable[] otherStateVars = s.getAllStateVariables();
-        StateVariable[] resultStates = new StateVariable[stateVariables.length];
+    public StateQWOP add(StateQWOP s) {
+        StateVariable6D[] otherStateVars = s.getAllStateVariables();
+        StateVariable6D[] resultStates = new StateVariable6D[stateVariables.length];
         for (int i = 0; i < stateVariables.length; i++) {
             resultStates[i] = stateVariables[i].add(otherStateVars[i]);
         }
-        return new State(resultStates, this.failedState || s.failedState);
+        return new StateQWOP(resultStates, this.failedState || s.failedState);
     }
 
-    public State subtract(State s) {
-        StateVariable[] otherStateVars = s.getAllStateVariables();
-        StateVariable[] resultStates = new StateVariable[stateVariables.length];
+    public StateQWOP subtract(StateQWOP s) {
+        StateVariable6D[] otherStateVars = s.getAllStateVariables();
+        StateVariable6D[] resultStates = new StateVariable6D[stateVariables.length];
         for (int i = 0; i < stateVariables.length; i++) {
             resultStates[i] = stateVariables[i].subtract(otherStateVars[i]);
         }
-        return new State(resultStates, this.failedState || s.failedState);
+        return new StateQWOP(resultStates, this.failedState || s.failedState);
     }
 
-    public State multiply(State s) {
-        StateVariable[] otherStateVars = s.getAllStateVariables();
-        StateVariable[] resultStates = new StateVariable[stateVariables.length];
+    public StateQWOP multiply(StateQWOP s) {
+        StateVariable6D[] otherStateVars = s.getAllStateVariables();
+        StateVariable6D[] resultStates = new StateVariable6D[stateVariables.length];
         for (int i = 0; i < stateVariables.length; i++) {
             resultStates[i] = stateVariables[i].multiply(otherStateVars[i]);
         }
-        return new State(resultStates, this.failedState || s.failedState);
+        return new StateQWOP(resultStates, this.failedState || s.failedState);
     }
 
-    public State divide(State s) {
-        StateVariable[] otherStateVars = s.getAllStateVariables();
-        StateVariable[] resultStates = new StateVariable[stateVariables.length];
+    public StateQWOP divide(StateQWOP s) {
+        StateVariable6D[] otherStateVars = s.getAllStateVariables();
+        StateVariable6D[] resultStates = new StateVariable6D[stateVariables.length];
         for (int i = 0; i < stateVariables.length; i++) {
             resultStates[i] = stateVariables[i].divide(otherStateVars[i]);
         }
-        return new State(resultStates, this.failedState || s.failedState);
+        return new StateQWOP(resultStates, this.failedState || s.failedState);
     }
 
     // Scalar multiplication.
-    public State multiply(float multiplier) {
-        StateVariable[] resultStates = new StateVariable[stateVariables.length];
-        StateVariable svMultiplier = new StateVariable(multiplier, multiplier, multiplier, multiplier, multiplier, multiplier);
+    @SuppressWarnings("WeakerAccess")
+    public StateQWOP multiply(float multiplier) {
+        StateVariable6D[] resultStates = new StateVariable6D[stateVariables.length];
+        StateVariable6D svMultiplier = new StateVariable6D(multiplier, multiplier, multiplier, multiplier, multiplier, multiplier);
         for (int i = 0; i < stateVariables.length; i++) {
             resultStates[i] = stateVariables[i].multiply(svMultiplier);
         }
-        return new State(resultStates, this.failedState);
+        return new StateQWOP(resultStates, this.failedState);
     }
 
     public float[] extractPositions(float xOffset) {
         float[] sflat = new float[STATE_SIZE/2];
         int idx = 0;
-        for (StateVariable sVar : stateVariables) {
+        for (StateVariable6D sVar : stateVariables) {
             sflat[idx++] = sVar.getX() - xOffset;
             sflat[idx++] = sVar.getY();
             sflat[idx++] = sVar.getTh();
@@ -405,10 +422,11 @@ public class State implements IState, Serializable {
         return extractPositions(0f);
     }
 
+    @SuppressWarnings("unused")
     public float[] extractVelocities() {
         float[] vflat = new float[STATE_SIZE/2];
         int idx = 0;
-        for (StateVariable sVar : stateVariables) {
+        for (StateVariable6D sVar : stateVariables) {
             vflat[idx++] = sVar.getDx();
             vflat[idx++] = sVar.getDy();
             vflat[idx++] = sVar.getDth();
@@ -416,10 +434,10 @@ public class State implements IState, Serializable {
         return vflat;
     }
 
-    public State swapPosAndVel() {
+    public StateQWOP swapPosAndVel() {
         float[] flat = new float[STATE_SIZE];
         int idx = 0;
-        for (StateVariable sVar : stateVariables) {
+        for (StateVariable6D sVar : stateVariables) {
             flat[idx++] = sVar.getDx();
             flat[idx++] = sVar.getDy();
             flat[idx++] = sVar.getDth();
@@ -427,13 +445,13 @@ public class State implements IState, Serializable {
             flat[idx++] = sVar.getY();
             flat[idx++] = sVar.getTh();
         }
-        return new State(flat, isFailed());
+        return new StateQWOP(flat, isFailed());
     }
 
-    public State xOffsetSubtract(float xOffset) {
+    public StateQWOP xOffsetSubtract(float xOffset) {
         float[] sflat = new float[STATE_SIZE];
         int idx = 0;
-        for (StateVariable sVar : stateVariables) {
+        for (StateVariable6D sVar : stateVariables) {
             sflat[idx++] = sVar.getX() - xOffset;
             sflat[idx++] = sVar.getY();
             sflat[idx++] = sVar.getTh();
@@ -441,7 +459,7 @@ public class State implements IState, Serializable {
             sflat[idx++] = sVar.getDy();
             sflat[idx++] = sVar.getDth();
         }
-        return new State(sflat, isFailed());
+        return new StateQWOP(sflat, isFailed());
     }
 
     @Override
@@ -449,11 +467,11 @@ public class State implements IState, Serializable {
         if (obj == null || (obj.getClass() != this.getClass())) {
             return false;
         }
-        State other = (State) obj;
+        StateQWOP other = (StateQWOP) obj;
 
         EqualsBuilder equalsBuilder = new EqualsBuilder();
-        StateVariable[] stThis = this.getAllStateVariables();
-        StateVariable[] stOther = other.getAllStateVariables();
+        StateVariable6D[] stThis = this.getAllStateVariables();
+        StateVariable6D[] stOther = other.getAllStateVariables();
 
         for (int i = 0; i < stThis.length; i++) {
             equalsBuilder.append(stThis[i], stOther[i]);
@@ -466,12 +484,104 @@ public class State implements IState, Serializable {
     @Override
     public int hashCode() {
         HashCodeBuilder hashCodeBuilder = new HashCodeBuilder();
-        for (StateVariable sv : stateVariables) {
+        for (StateVariable6D sv : stateVariables) {
             hashCodeBuilder.append(sv);
         }
 
         hashCodeBuilder.append(failedState);
         return hashCodeBuilder.toHashCode();
+    }
+
+    public static class Normalizer implements ITransform<StateQWOP> {
+
+        public enum NormalizationMethod {
+            STDEV, RANGE
+        }
+
+        @JsonProperty("normalizationMethod")
+        public final NormalizationMethod normalizationMethod;
+
+        private StatisticsQWOP stateStats = new StatisticsQWOP();
+
+        @JsonCreator
+        public Normalizer(@JsonProperty("normalizationMethod") NormalizationMethod normalizationMethod) throws FileNotFoundException {
+            this.normalizationMethod = normalizationMethod;
+        }
+
+        @Override
+        public void updateTransform(List<StateQWOP> statesToUpdateFrom) {} // May want to add later.
+
+        @Override
+        public List<float[]> transform(List<StateQWOP> originalStates) {
+            List<float[]> tformedVals = new ArrayList<>(originalStates.size());
+            for (StateQWOP s : originalStates) {
+                tformedVals.add(transform(s));
+            }
+            return tformedVals;
+        }
+
+        @Override
+        public float[] transform(StateQWOP originalState) {
+
+            switch(normalizationMethod) {
+                case STDEV:
+                    return originalState.xOffsetSubtract(originalState.getCenterX())
+                            .subtract(stateStats.getMean())
+                            .divide(stateStats.getStdev())
+                            .flattenState();
+                case RANGE:
+                    return originalState.xOffsetSubtract(originalState.getCenterX())
+                            .subtract(stateStats.getMin())
+                            .divide(stateStats.getRange())
+                            .flattenState();
+                default:
+                    throw new IllegalStateException("Unhandled state normalization case: " + normalizationMethod.toString());
+            }
+
+        }
+
+        @Override
+        public List<float[]> untransform(List<float[]> transformedStates) {
+            List<float[]> untransformedStates = new ArrayList<>(transformedStates.size());
+
+            switch(normalizationMethod) {
+                case STDEV:
+                    for (float[] tformed : transformedStates) {
+                        float[] utformed = new float[tformed.length];
+                        for (int i = 0; i < tformed.length; i++) {
+                            utformed[i] = tformed[i] * stateStats.stdevArray[i] + stateStats.meanArray[i];
+                        }
+                        untransformedStates.add(utformed);
+                    }
+                    return untransformedStates;
+                case RANGE:
+                    for (float[] tformed : transformedStates) {
+                        float[] utformed = new float[tformed.length];
+                        for (int i = 0; i < tformed.length; i++) {
+                            utformed[i] = tformed[i] * stateStats.rangeArray[i] + stateStats.minArray[i];
+                        }
+                        untransformedStates.add(utformed);
+                    }
+                    return untransformedStates;
+                default:
+                    throw new IllegalStateException("Unhandled state normalization case: " + normalizationMethod.toString());
+            }
+        }
+
+        @Override
+        public List<float[]> compressAndDecompress(List<StateQWOP> originalStates) {
+            return originalStates.stream().map(IState::flattenState).collect(Collectors.toList());
+        }
+
+        @Override
+        public int getOutputSize() {
+            return StateQWOP.STATE_SIZE;
+        }
+
+        @Override
+        public String getName() {
+            return "QWOPNormalizer";
+        }
     }
 }
 

@@ -1,9 +1,12 @@
 package tree.node.filter;
 
-import java.util.List;
-
-import tree.node.NodeQWOPExplorableBase;
+import game.action.Command;
+import game.state.IState;
 import tree.Utility;
+import tree.node.NodeGameExplorableBase;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Filter which reduces the number of nodes in a list. Usually done for visualization or computational reasons. Only
@@ -11,7 +14,7 @@ import tree.Utility;
  *
  * @author matt
  */
-public class NodeFilter_Downsample implements INodeFilter {
+public class NodeFilter_Downsample<C extends Command<?>, S extends IState> implements INodeFilter<C, S> {
 
     /**
      * Given a list, the downsampler will keep a maximum of this number of nodes.
@@ -61,33 +64,42 @@ public class NodeFilter_Downsample implements INodeFilter {
     }
 
     @Override
-    public <N extends NodeQWOPExplorableBase<?>> void filter(List<N> nodes) {
+    public void filter(List<? extends NodeGameExplorableBase<?, C, S>> nodes) {
+        if (maxNodesToKeep == 0) {
+            nodes.clear();
+            return;
+        }
         int numNodes = nodes.size();
         if (numNodes > maxNodesToKeep) { // If we already have <= the max number of nodes, no need to downsample.
             switch (downsamplingStrategy) {
                 case EVENLY_SPACED:
                     float ratio = numNodes / (float) maxNodesToKeep;
-                    for (int i = 0; i < maxNodesToKeep; i++) {
-                        nodes.set(i, nodes.get((int) (ratio * i))); // Reassign the ith element with the spaced out
-						// one later in the arraylist.
-                    }
 
-                    for (int i = numNodes; i > maxNodesToKeep; i--) {
-                        nodes.remove(i - 1);
+                    if (ratio > 1) {
+                        Iterator<? extends NodeGameExplorableBase<?, C, S>> iter = nodes.iterator();
+                        int count = 0;
+                        float keepCount = Float.MIN_VALUE;
+                        while (iter.hasNext()) {
+                            iter.next();
+                            if (Math.ceil(keepCount) == count) {
+                                keepCount += ratio;
+                            } else {
+                                iter.remove();
+                            }
+                            count++;
+                        }
                     }
                     break;
-
                 case RANDOM:
                     while (nodes.size() > maxNodesToKeep) {
                         int idxToRemove = Utility.randInt(0, nodes.size() - 1);
                         nodes.remove(idxToRemove);
                     }
                     break;
-
                 default:
                     throw new IllegalStateException("Unknown downsampling strategy.");
             }
-            assert nodes.size() <= maxNodesToKeep;
+            assert nodes.size() <= maxNodesToKeep : nodes.size() + " exceeds limit of " + maxNodesToKeep;
         }
     }
 }

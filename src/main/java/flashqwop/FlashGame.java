@@ -1,16 +1,18 @@
 package flashqwop;
 
+import game.IGameCommandTarget;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.*;
-import game.action.CommandQWOP;
-import game.state.*;
+import game.qwop.CommandQWOP;
+import game.qwop.IStateQWOP;
+import game.qwop.StateQWOP;
+import game.state.StateVariable6D;
 import hardware.KeypusherSerialConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Makes it easier to feed Actions to the Flash game. With my game implementations, the caller requests the game to
@@ -18,7 +20,7 @@ import java.util.LinkedList;
  * up. Hence this interface is a little different.
  *
  * This effectively extends the functionality of {@link FlashQWOPServer}. It provides the ability to send commands
- * and receive {@link State states}, but does not help with getting specific game.action executed or timed correctly.
+ * and receive {@link StateQWOP states}, but does not help with getting specific game.command executed or timed correctly.
  *
  * @author matt
  *
@@ -26,8 +28,8 @@ import java.util.LinkedList;
 public abstract class FlashGame implements IFlashStateListener {
 
     private FlashQWOPServer server;
-    private ActionQueue actionQueue = new ActionQueue();
-    private LinkedList<State> stateCache = new LinkedList<>();
+    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
+    private LinkedList<StateQWOP> stateCache = new LinkedList<>();
 
     /**
      * Using velocity estimation or use the "cheating" exact result.
@@ -78,17 +80,18 @@ public abstract class FlashGame implements IFlashStateListener {
     /**
      * Default to software commands out.
      */
+    @SuppressWarnings("WeakerAccess")
     public FlashGame() {
         this(false);
     }
 
     /**
-     * These Actions will be executed first, from the very beginning of the run after a reset. If you just want to
-     * run a single, known sequence, this is the way to go. After these added game.action are consumed, then
+     * These Actions will be executed first, from the very beginning of the run after a resetGame. If you just want to
+     * run a single, known sequence, this is the way to go. After these added game.command are consumed, then
      * {@link FlashGame} will turn to a feedback controller.
      * @return
      */
-    public abstract Action[] getActionSequenceFromBeginning();
+    public abstract List<Action<CommandQWOP>> getActionSequenceFromBeginning();
 
     /**
      * This gets called whenever the current ActionQueue runs out of things to do. If you just want to run a fixed
@@ -96,19 +99,19 @@ public abstract class FlashGame implements IFlashStateListener {
      * @param state Most recent state received from the Flash game.
      * @return An Action from a feedback controller.
      */
-    public abstract Action getControlAction(IState state);
+    public abstract Action<CommandQWOP> getControlAction(IStateQWOP state);
 
     /**
-     * This class will handle the execution of game.action, but inheriting classes may want to listen in.
+     * This class will handle the execution of game.command, but inheriting classes may want to listen in.
      * @param state Most-recent state received from the Flash game.
      * @param command Command WHICH LEAD TO THIS STATE. This will be null for for the first state, since it has no
      *                preceding command.
      * @param timestep Timestep count at this state.
      */
-    public abstract void reportGameStatus(IState state, CommandQWOP command, int timestep);
+    public abstract void reportGameStatus(IStateQWOP state, CommandQWOP command, int timestep);
 
     /**
-     * Tell the game to reset (equivalent to 'r' on the keyboard in the real game).
+     * Tell the game to resetGame (equivalent to 'r' on the keyboard in the real game).
      */
     public synchronized void restart() {
         server.sendResetSignal();
@@ -119,10 +122,10 @@ public abstract class FlashGame implements IFlashStateListener {
         server.sendInfoRequest();
     }
 
-    private IState previousState;
+    private StateQWOP previousState;
     @Override
-    public synchronized void stateReceived(int timestep, IState state) {
-        // New run has started. Add the sequence of game.action from the beginning.
+    public synchronized void stateReceived(int timestep, StateQWOP state) {
+        // New run has started. Add the sequence of game.command from the beginning.
         if (timestep == 0) {
             logger.debug("Zero timestep from Flash game.");
             actionQueue.clearAll();
@@ -161,33 +164,33 @@ public abstract class FlashGame implements IFlashStateListener {
             return;
         }
 
-        stateCache.add((State)state);
+        stateCache.add(state);
 
         // TODO don't hardcode this.
-        int numDelayedStates = 2;
-        int timestepDelay = 5;
-        State[] states = new State[numDelayedStates + 1];
-        Arrays.fill(states, GameUnified.getInitialState());
-
-        for (int i = 0; i < Integer.min(states.length, (stateCache.size() + timestepDelay - 1) / timestepDelay); i++) {
-            states[i] = stateCache.get(timestepDelay * i);
-        }
-
-        reportGameStatus(new StateDelayEmbedded_HigherDifferences(states), prevCommand, timestep);
-
+//        int numDelayedStates = 2;
+//        int timestepDelay = 5;
+//        StateQWOP[] states = new StateQWOP[numDelayedStates + 1];
+//        Arrays.fill(states, GameQWOP.getInitialState());
+//
+//        for (int i = 0; i < Integer.min(states.length, (stateCache.size() + timestepDelay - 1) / timestepDelay); i++) {
+//            states[i] = stateCache.get(timestepDelay * i);
+//        }
+//
+//        reportGameStatus(new StateQWOPDelayEmbedded_HigherDifferences(states), prevCommand, timestep);
+        reportGameStatus(state, prevCommand, timestep);
         assert timestep == timestepsTracked; // Have we lost any timesteps?
         long timeBeforeController = System.currentTimeMillis();
 
         // Get a new Action if one is required.
         if (actionQueue.isEmpty()) {
             // TESTING FINITE DIFFERENCE STUFF TEMP
-            IState st;
+            StateQWOP st;
             if (velocityEstimation) {
                 st = doFiniteDifferenceVelocityTransformation(previousState, state);
             } else {
                 st = state;
             }
-            Action a = getControlAction(st);
+            Action<CommandQWOP> a = getControlAction(st);
             if (a == null) {
                 return;
             }
@@ -214,18 +217,18 @@ public abstract class FlashGame implements IFlashStateListener {
     /**
      * Pretend that states don't include velocity and estimate the velocity using finite differences.
      */
-    private static IState doFiniteDifferenceVelocityTransformation(IState statePrev, IState stateCurrent) {
-        StateVariable[] svCurrent = stateCurrent.getAllStateVariables();
-        StateVariable[] svPrev = statePrev.getAllStateVariables();
+    private static StateQWOP doFiniteDifferenceVelocityTransformation(StateQWOP statePrev, StateQWOP stateCurrent) {
+        StateVariable6D[] svCurrent = stateCurrent.getAllStateVariables();
+        StateVariable6D[] svPrev = statePrev.getAllStateVariables();
 
-        StateVariable[] svOut = new StateVariable[svCurrent.length];
+        StateVariable6D[] svOut = new StateVariable6D[svCurrent.length];
         for (int i = 0; i < svCurrent.length; i++) {
-            svOut[i] = new StateVariable(svCurrent[i].getX(), svCurrent[i].getY(), svCurrent[i].getTh(),
+            svOut[i] = new StateVariable6D(svCurrent[i].getX(), svCurrent[i].getY(), svCurrent[i].getTh(),
                     (svCurrent[i].getX() - svPrev[i].getX())/0.04f,
                     (svCurrent[i].getY() - svPrev[i].getY())/0.04f,
                     (svCurrent[i].getTh() - svPrev[i].getTh())/0.04f);
         }
-        return new State(svOut[0], svOut[1], svOut[2], svOut[3], svOut[4], svOut[5], svOut[6], svOut[7], svOut[8],
+        return new StateQWOP(svOut[0], svOut[1], svOut[2], svOut[3], svOut[4], svOut[5], svOut[6], svOut[7], svOut[8],
                 svOut[9], svOut[10], svOut[11], false);
     }
 

@@ -1,33 +1,35 @@
 package data;
 
-import game.state.State;
+import game.qwop.StateQWOP;
+import game.qwop.StatisticsQWOP;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 
-public class LoadStateStatisticsTest {
+// TODO make ones for the other types of normalizers.
+public class StatisticsQWOPTest {
 
     @Test
     public void checkStateStats() {
         // Sanity check for loaded state statistics and to make sure that no errors occur. This is based not just on
         // the code in the class, but also the text files containing the stats.
 
-        LoadStateStatistics.StateStatistics stateStats = null;
+        StatisticsQWOP stateStats = null;
         try {
-            stateStats = LoadStateStatistics.loadStatsFromFile();
+            stateStats = new StatisticsQWOP();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
         Assert.assertNotNull(stateStats);
 
-        State mean = stateStats.getMean();
-        State range = stateStats.getRange();
-        State min = stateStats.getMin();
-        State max = stateStats.getMax();
-        State stdev = stateStats.getStdev();
+        StateQWOP mean = stateStats.getMean();
+        StateQWOP range = stateStats.getRange();
+        StateQWOP min = stateStats.getMin();
+        StateQWOP max = stateStats.getMax();
+        StateQWOP stdev = stateStats.getStdev();
 
         Assert.assertEquals(0f, mean.getCenterX(), 1e-12f); // Should have body x subtracted off.
         Assert.assertEquals(0f, range.getCenterX(), 1e-12f); // Should have body x subtracted off.

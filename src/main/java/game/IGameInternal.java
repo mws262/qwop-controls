@@ -1,7 +1,12 @@
 package game;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Command;
+import game.cartpole.CartPole;
+import game.qwop.GameQWOP;
+import game.qwop.GameQWOPCaching;
 import game.state.IState;
 
 import java.awt.*;
@@ -15,17 +20,26 @@ import java.awt.*;
  *
  * @author matt
  */
-public interface IGameInternal<C extends Command<?>> extends IGameExternal<C> {
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = GameQWOP.class, name = "qwop"),
+        @JsonSubTypes.Type(value = GameQWOPCaching.class, name = "qwop_caching"),
+        @JsonSubTypes.Type(value = CartPole.class, name = "cartpole"),
+})
+public interface IGameInternal<C extends Command<?>, S extends IState> extends IGameExternal<C, S> {
 
     /** Reset the runner to its starting state. **/
-    void makeNewWorld();
+    void resetGame();
 
     void step(C command);
 
     void draw(Graphics g, float runnerScaling, int xOffsetPixels, int yOffsetPixels);
 
-    void setState(IState st);
+    @JsonIgnore
+    void setState(S st);
 
     @JsonIgnore
-    IGameInternal getCopy();
+    IGameInternal<C, S> getCopy();
 }

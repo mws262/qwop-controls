@@ -3,10 +3,12 @@ package value.updaters;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import tree.node.NodeQWOPBase;
+import game.action.Command;
+import game.state.IState;
+import tree.node.NodeGameBase;
 
 /**
- * A rule for updating the estimated value of a {@link NodeQWOPBase} given a node and an update value.
+ * A rule for updating the estimated value of a {@link NodeGameBase} given a node and an update value.
  *
  * @author matt
  */
@@ -20,7 +22,7 @@ import tree.node.NodeQWOPBase;
         @JsonSubTypes.Type(value = ValueUpdater_TopNChildren.class, name = "top_children"),
         @JsonSubTypes.Type(value = ValueUpdater_TopWindow.class, name = "top_window")
 })
-public interface IValueUpdater {
+public interface IValueUpdater<C extends Command<?>, S extends IState> {
 
     /**
      * Provide an updated value for a node.
@@ -28,8 +30,8 @@ public interface IValueUpdater {
      * @param node Node to calculate an updated value for.
      * @return The provided node's updated value.
      */
-    float update(float valueUpdate, NodeQWOPBase<?> node);
+    float update(float valueUpdate, NodeGameBase<?, C, S> node);
 
     @JsonIgnore
-    IValueUpdater getCopy();
+    IValueUpdater<C, S> getCopy();
 }

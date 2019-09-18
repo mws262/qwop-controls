@@ -1,6 +1,8 @@
 package value.updaters;
 
-import tree.node.NodeQWOPBase;
+import game.action.Command;
+import game.state.IState;
+import tree.node.NodeGameBase;
 
 /**
  * Node value estimate update rule. The value is always estimated to be the average of all update value seen. This is
@@ -8,15 +10,15 @@ import tree.node.NodeQWOPBase;
  *
  * @author matt
  */
-public class ValueUpdater_Average implements IValueUpdater {
+public class ValueUpdater_Average<C extends Command<?>, S extends IState> implements IValueUpdater<C, S> {
 
     @Override
-    public float update(float valueUpdate, NodeQWOPBase<?> node) {
+    public float update(float valueUpdate, NodeGameBase<?, C, S> node) {
         return (node.getValue() * node.getUpdateCount() + valueUpdate) / (node.getUpdateCount() + 1);
     }
 
     @Override
-    public IValueUpdater getCopy() {
-        return new ValueUpdater_Average();
+    public IValueUpdater<C, S> getCopy() {
+        return new ValueUpdater_Average<>();
     }
 }

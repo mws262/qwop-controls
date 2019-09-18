@@ -4,11 +4,11 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.util.gl2.GLUT;
-import game.GameUnified;
 import game.action.Action;
+import game.action.Command;
 import game.action.IActionGenerator;
+import game.qwop.GameQWOP;
 import game.state.IState;
-import value.updaters.IValueUpdater;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
@@ -20,13 +20,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Explorable QWOP node which provides no additional functionality beyond drawing capabilities. If you don't need this,
- * use {@link NodeQWOPExplorableBase} for memory efficiency.
+ * use {@link NodeGameExplorableBase} for memory efficiency.
  *
- * To make one of these, use {@link NodeQWOPGraphics}, which is the concrete implementation.
+ * To make one of these, use {@link NodeGameGraphics}, which is the concrete implementation.
  *
  * See {@link NodeGenericBase} for an explanation of the ridiculous generics. It's not as bad as it looks.
- * See {@link NodeQWOPBase} for the version which can only contain basic QWOP information necessary to recreate a run.
- * See {@link NodeQWOPExplorableBase} for the version which can keep track of how tree exploration is occurring.
+ * See {@link NodeGameBase} for the version which can only contain basic QWOP information necessary to recreate a run.
+ * See {@link NodeGameExplorableBase} for the version which can keep track of how tree exploration is occurring.
  *
  * @param <N> This is essentially a recursive class parameterization. Read about f-bounded polymorphism. When using
  *           this class as an input argument, usually specify as the wildcard (?) to indicate that the class can be
@@ -34,7 +34,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author matt
  */
-public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> extends NodeQWOPExplorableBase<N> {
+public abstract class NodeGameGraphicsBase
+        <N extends NodeGameGraphicsBase<N, C, S>, C extends Command<?>, S extends IState>
+        extends NodeGameExplorableBase<N, C, S> {
 
     /* Node visibility flags
     Note that by default lines are drawn, but points are not. Overriding the line or point color will not make it
@@ -56,7 +58,6 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Enables a text label over this node, if one is assigned.
      */
-    @SuppressWarnings("WeakerAccess")
     public boolean displayLabel = false;
 
     /**
@@ -95,7 +96,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Set of points which should be drawn if limitDrawing is true. Points which are very close may be filtered out.
      */
-    public static final Set<NodeQWOPGraphicsBase> pointsToDraw = ConcurrentHashMap.newKeySet(10000);
+    public static final Set<NodeGameGraphicsBase> pointsToDraw = ConcurrentHashMap.newKeySet(10000);
 
 
     /**
@@ -157,26 +158,21 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      */
     float overrideZOffset = 0.4f;
 
+    @SuppressWarnings("FieldCanBeLocal")
     private static int bufferFrequency = 500;
 
-    static Vector<NodeQWOPGraphicsBase<?>> unbufferedNodes = new Vector<>();
+    private static final Vector<NodeGameGraphicsBase> unbufferedNodes = new Vector<>();
 
-    static Map<Integer, List<NodeQWOPGraphicsBase<?>>> bufferMap = new HashMap<>();
+    private static Map<Integer, List<NodeGameGraphicsBase>> bufferMap = new HashMap<>();
 
-    /**
-     *
-     * @param gl
-     * @param nodesToBuffer
-     * @return
-     */
-    private static synchronized int makeNewBuffer(GL2 gl, List<NodeQWOPGraphicsBase<?>> nodesToBuffer) {
+    private static synchronized int makeNewBuffer(GL2 gl, List<NodeGameGraphicsBase> nodesToBuffer) {
         int [] aiVertexBufferIndices = new int [] {-1};
 
-        if (!gl.isFunctionAvailable( "glGenBuffers" )
-                || !gl.isFunctionAvailable( "glBindBuffer" )
-                || !gl.isFunctionAvailable( "glBufferData" )
-                || !gl.isFunctionAvailable( "glDeleteBuffers" ) ) {
-            throw new RuntimeException( "Vertex buffer objects not supported." );
+        if (!gl.isFunctionAvailable("glGenBuffers")
+                || !gl.isFunctionAvailable("glBindBuffer")
+                || !gl.isFunctionAvailable("glBufferData")
+                || !gl.isFunctionAvailable("glDeleteBuffers")) {
+            throw new RuntimeException("Vertex buffer objects not supported.");
         }
 
         // create vertex buffer object
@@ -193,10 +189,10 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         ByteBuffer bytebuffer = gl.glMapBuffer(GL.GL_ARRAY_BUFFER, GL2.GL_WRITE_ONLY);
         FloatBuffer floatbuffer = bytebuffer.order( ByteOrder.nativeOrder()).asFloatBuffer();
 
-        for(NodeQWOPGraphicsBase<?> node : nodesToBuffer) {
+        for(NodeGameGraphicsBase node : nodesToBuffer) {
             node.addLineToBuffer(floatbuffer);
         }
-        for(NodeQWOPGraphicsBase<?> node : nodesToBuffer) {
+        for(NodeGameGraphicsBase node : nodesToBuffer) {
             node.addPointToBuffer(floatbuffer);
         }
 
@@ -209,7 +205,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
         if (unbufferedNodes.size() > bufferFrequency) {
 
-            List<NodeQWOPGraphicsBase<?>> toBuffer = new ArrayList<>(unbufferedNodes);
+            List<NodeGameGraphicsBase> toBuffer = new ArrayList<>(unbufferedNodes);
             toBuffer.removeIf(n -> !n.shouldLineBeDrawn());
             unbufferedNodes.clear();
 
@@ -220,8 +216,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             int newBufferIdx = makeNewBuffer(gl, toBuffer);
             bufferMap.put(newBufferIdx, toBuffer);
 
-            for (NodeQWOPGraphicsBase<?> node : toBuffer) {
-            }
+//            for (NodeGameGraphicsBase node : toBuffer) {}
         }
     }
 
@@ -231,7 +226,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
         gl.glEnableVertexAttribArray(0);
 
-        for (Map.Entry<Integer, List<NodeQWOPGraphicsBase<?>>> bufferEntry : bufferMap.entrySet()) {
+        for (Map.Entry<Integer, List<NodeGameGraphicsBase>> bufferEntry : bufferMap.entrySet()) {
             gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferEntry.getKey());
             gl.glVertexAttribPointer(0, 3, GL.GL_FLOAT, false, 6 * Buffers.SIZEOF_FLOAT, 0);
             gl.glColorPointer(3, GL.GL_FLOAT, 6 * Buffers.SIZEOF_FLOAT, 3 * Buffers.SIZEOF_FLOAT);
@@ -248,25 +243,27 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
     }
 
-    public static synchronized void drawAllUnbuffered(GL2 gl) {
-        gl.glBegin(GL2.GL_LINES);
-        for (int i = 0; i < unbufferedNodes.size(); i++) {
-            unbufferedNodes.get(i).drawLine(gl);
-        }
-        gl.glEnd();
+    public static void drawAllUnbuffered(GL2 gl) {
+        synchronized (unbufferedNodes) {
+            gl.glBegin(GL2.GL_LINES);
+            for (NodeGameGraphicsBase unbufferedNode : unbufferedNodes) {
+                unbufferedNode.drawLine(gl);
+            }
+            gl.glEnd();
 
-        gl.glBegin(GL2.GL_POINTS);
-        for (int i = 0; i < unbufferedNodes.size(); i++) {
-            unbufferedNodes.get(i).drawPoint(gl);
+            gl.glBegin(GL2.GL_POINTS);
+            for (NodeGameGraphicsBase unbufferedNode : unbufferedNodes) {
+                unbufferedNode.drawPoint(gl);
+            }
+            gl.glEnd();
         }
-        gl.glEnd();
     }
     /**
      * Create a new root node.
-     * @param rootState State of the runner at the root state. Usually {@link GameUnified#getInitialState()}.
-     * @param actionGenerator Object used to generate game.action used for potentially creating children of this node.
+     * @param rootState StateQWOP of the runner at the root state. Usually {@link GameQWOP#getInitialState()}.
+     * @param actionGenerator Object used to generate game.command used for potentially creating children of this node.
      */
-    public NodeQWOPGraphicsBase(IState rootState, IActionGenerator actionGenerator) {
+    public NodeGameGraphicsBase(S rootState, IActionGenerator<C> actionGenerator) {
         super(rootState, actionGenerator);
         setLineColor(getColorFromTreeDepth(getTreeDepth(), lineBrightness));
         if (!notDrawnForSpeed)
@@ -275,10 +272,10 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
     /**
      * Create a new root node. This will use the default {@link IActionGenerator}. See
-     * {@link NodeQWOPExplorableBase#NodeQWOPExplorableBase(IState)}.
-     * @param rootState State of the runner at the root state. Usually {@link GameUnified#getInitialState()}.
+     * {@link NodeGameExplorableBase#NodeGameExplorableBase(IState)}.
+     * @param rootState StateQWOP of the runner at the root state. Usually {@link GameQWOP#getInitialState()}.
      */
-    public NodeQWOPGraphicsBase(IState rootState) {
+    public NodeGameGraphicsBase(S rootState) {
         super(rootState);
         if (!notDrawnForSpeed)
             unbufferedNodes.add(this);
@@ -287,19 +284,19 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     /**
      * Create a new node with all the color and position information used for drawing the tree. The rest of the
      * project, outside the package, should NOT be using this constructor. Rather, something like
-     * {@link NodeQWOPGraphicsBase#addDoublyLinkedChild(Action, IState)} or
-     * {@link NodeQWOPGraphicsBase#addBackwardsLinkedChild(Action, IState)} should be used.
+     * {@link NodeGameGraphicsBase#addDoublyLinkedChild(Action, IState)} or
+     * {@link NodeGameGraphicsBase#addBackwardsLinkedChild(Action, IState)} should be used.
      *
      * @param parent Parent of this node.
      * @param action Action bringing the runner from the state at the parent node to this node.
-     * @param state State reached at this node. This is a departure from previous versions in that the state MUST be
+     * @param state StateQWOP reached at this node. This is a departure from previous versions in that the state MUST be
      *              known before creating a new node.
-     * @param actionGenerator Object used to generate game.action used to potentially create children of this new node.
+     * @param actionGenerator Object used to generate game.command used to potentially create children of this new node.
      * @param doublyLinked Regardless, this node will have a reference to its parent. However, the parent may not be
      *                     aware of this node. If doubly linked, the information goes both ways. If not, then the
      *                     information only goes backwards up the tree.
      */
-    NodeQWOPGraphicsBase(N parent, Action action, IState state, IActionGenerator actionGenerator,
+    NodeGameGraphicsBase(N parent, Action<C> action, S state, IActionGenerator<C> actionGenerator,
                          boolean doublyLinked) {
         super(parent, action, state, actionGenerator, doublyLinked);
 
@@ -325,12 +322,12 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     }
 
     private boolean shouldLineBeDrawn() {
-       return nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed);
+       return lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed);
     }
 
 
-    public void addPointToBuffer(FloatBuffer floatBuffer) {
-        if (nodeLocation != null && displayPoint && !notDrawnForSpeed) {
+    private void addPointToBuffer(FloatBuffer floatBuffer) {
+        if (displayPoint && !notDrawnForSpeed) {
             floatBuffer.put(nodeLocation);
             floatBuffer.put(pointColorFloats); // Override colors are not buffered.
         }
@@ -340,7 +337,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * @param gl OpenGL object used for 3D plotting.
      */
     private void drawLine(GL2 gl) {
-        if (nodeLocation != null && lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed)) { //
+        if (lineColorFloats != null && ((getTreeDepth() > 0) && displayLine && !notDrawnForSpeed)) { //
             // No lines for root.
             gl.glColor3fv(lineColorFloats, 0);
             gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1], getParent().nodeLocation[2]);
@@ -348,8 +345,8 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
         }
     }
 
-    public void drawOverrideLine(GL2 gl) {
-        if (overrideLineColorFloats != null && nodeLocation != null && getParent().nodeLocation != null && !notDrawnForSpeed) {
+    void drawOverrideLine(GL2 gl) {
+        if (overrideLineColorFloats != null && !notDrawnForSpeed) {
             gl.glColor3fv(overrideLineColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
             gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1],
@@ -368,14 +365,14 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
      * @param gl OpenGL object used for 3D plotting.
      */
     private void drawPoint(GL2 gl) {
-        if (nodeLocation != null && displayPoint && !notDrawnForSpeed) {
+        if (displayPoint && !notDrawnForSpeed) {
             gl.glColor3fv(pointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2]);
         }
     }
 
     public void drawOverridePoint(GL2 gl) {
-        if (overridePointColorFloats != null && nodeLocation != null && !notDrawnForSpeed) {
+        if (overridePointColorFloats != null && !notDrawnForSpeed) {
             gl.glColor3fv(overridePointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
         }
@@ -481,7 +478,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
 
     /**
      * Figure out where to place this node based on the spacing of its ancestors. This method also decides whether or
-     * not to even draw this point if {@link NodeQWOPGraphicsBase#limitDrawing} is enabled.
+     * not to even draw this point if {@link NodeGameGraphicsBase#limitDrawing} is enabled.
      */
     private void calcNodePos() {
         // Angle of this current node -- parent node's angle - half the total sweep + some increment so that all will
@@ -527,7 +524,7 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
             float xDiff;
             float yDiff;
             float zDiff;
-            for (NodeQWOPGraphicsBase n : pointsToDraw) {
+            for (NodeGameGraphicsBase n : pointsToDraw) {
                 if (n.getTreeDepth() != getTreeDepth()) { // Trying this as a speedup approach for the filtering.
                     // It's rarer for nodes of a different depth to get too close to others.
                     continue;
@@ -662,11 +659,6 @@ public abstract class NodeQWOPGraphicsBase<N extends NodeQWOPGraphicsBase<N>> ex
     @SuppressWarnings("unused")
     public void clearBackwardsBranchLineOverrideColor() {
         setBackwardsBranchOverrideColor(null);
-    }
-
-    @Override
-    public synchronized void updateValue(float valueUpdate, IValueUpdater updater) {
-        super.updateValue(valueUpdate, updater);
     }
 
     @Override

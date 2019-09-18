@@ -1,10 +1,13 @@
 package flashqwop;
 
-import game.GameUnified;
+import game.IGameSerializable;
 import game.action.Action;
-import game.action.CommandQWOP;
-import game.state.IState;
-import tree.node.NodeQWOP;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.IStateQWOP;
+import game.qwop.StateQWOP;
+import game.state.transform.Transform_Identity;
+import tree.node.NodeGame;
 import ui.runner.PanelRunner_MultiState;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
@@ -18,18 +21,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CompareFlashToJava extends FlashGame {
-    private GameUnified gameJava = new GameUnified();
+    private GameQWOP gameJava = new GameQWOP();
     private PanelRunner_MultiState panelRunner;
     private boolean initialized;
 
-    private ValueFunction_TensorFlow valueFunction = null;
+    private ValueFunction_TensorFlow<CommandQWOP, IStateQWOP> valueFunction = null;
 
-    private List<GameUnified> gameUnifiedList = new ArrayList<>();
+    private List<GameQWOP> gameQWOPList = new ArrayList<>();
 
     private CompareFlashToJava() {
         loadController();
 
-        getControlAction(GameUnified.getInitialState()); // TODO make this better. The first controller evaluation ever
+        getControlAction(GameQWOP.getInitialState()); // TODO make this better. The first controller evaluation ever
         // takes 8 times longer than the rest. I don't know why. In the meantime, just do the first evaluation in a
         // non-time-critical section of the code. In the long term, the controller should be an anytime approach
         // anyway.
@@ -41,7 +44,7 @@ public class CompareFlashToJava extends FlashGame {
 //        printGameInfo();
         restart();
 
-        gameUnifiedList.add(gameJava);
+        gameQWOPList.add(gameJava);
 
         panelRunner = new PanelRunner_MultiState("Runners");
         JFrame frame = new JFrame(); // New frame to hold and manage the QWOP JPanel.
@@ -76,9 +79,10 @@ public class CompareFlashToJava extends FlashGame {
     }
 
     @Override
-    public Action[] getActionSequenceFromBeginning() {
-        return new Action[]{
-                new Action(5, CommandQWOP.Keys.none),
+    public List<Action<CommandQWOP>> getActionSequenceFromBeginning() {
+        List<Action<CommandQWOP>> commandList = new ArrayList<>();
+        commandList.add(new Action<>(5, CommandQWOP.NONE));
+        return commandList;
 //                new Action(49, Action.Keys.wo),
 //                new Action(20, Action.Keys.qp),
 //                new Action(1, Action.Keys.p),
@@ -95,40 +99,39 @@ public class CompareFlashToJava extends FlashGame {
 //                new Action(4, Action.Keys.p),
 //                new Action(7, Action.Keys.none),
 //                new Action(1, Action.Keys.p)
-        };
     }
 
     @Override
-    public Action getControlAction(IState state) {
-        return valueFunction.getMaximizingAction(new NodeQWOP(state));
+    public Action<CommandQWOP> getControlAction(IStateQWOP state) {
+        return valueFunction.getMaximizingAction(new NodeGame<>(state));
     }
 
     @Override
-    public void reportGameStatus(IState state, CommandQWOP command, int timestep) {
+    public void reportGameStatus(IStateQWOP state, CommandQWOP command, int timestep) {
         if (!initialized) {
             return; // This
         }
 
         if (timestep == 0) {
-            gameJava.makeNewWorld();
-            gameJava.iterations = 15;
-            gameUnifiedList.clear();
-            gameUnifiedList.add(gameJava);
+            gameJava.resetGame();
+            gameJava.setPhysicsIterations(15);
+            gameQWOPList.clear();
+            gameQWOPList.add(gameJava);
 
         } else {
             int tp = 0;
             if (timestep < tp + 5 && timestep > tp)
-                    gameJava.iterations = 5;
+                    gameJava.setPhysicsIterations(5);
 
 //            if (timestep % 160 == 0) {
-//                GameUnified newGame = new GameUnified();
+//                GameQWOP newGame = new GameQWOP();
 //                newGame.setState(state);
-//                gameUnifiedList.add(newGame);
+//                gameQWOPList.add(newGame);
 //            }
 //            //            gameJava.fullStatePDController(state);
 //            panelRunner.clearSecondaryStates();
 //            int idx = 0;
-//            for (GameUnified game : gameUnifiedList) {
+//            for (GameQWOP game : gameQWOPList) {
 //                game.step(command);
 //                panelRunner.addSecondaryState(game.getCurrentState(), Node.getColorFromTreeDepth(idx++));
 //
@@ -136,9 +139,9 @@ public class CompareFlashToJava extends FlashGame {
 
 //            panelRunner.clearSecondaryStates();
 //            panelRunner.addSecondaryState(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.state,
-//                    NodeQWOPGraphicsBase.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
+//                    NodeGameGraphicsBase.getColorFromScaledValue(((ValueFunction_TensorFlow_StateOnly) valueFunction).currentResult.value, 40f, 0.65f));
 
-            panelRunner.setMainState(state);
+            panelRunner.setMainState(state.getPositionCoordinates());
             panelRunner.repaint();
         }
     }
@@ -146,8 +149,14 @@ public class CompareFlashToJava extends FlashGame {
     private void loadController() {
         // Load a value function controller.
         try {
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(new File("src/main/resources/tflow_models" +
-                    "/small_net.pb"), new GameUnified(), false); // state_only.pb"));
+            // TODO not type safe
+            IGameSerializable<CommandQWOP, StateQWOP> game =  new GameQWOP();
+            valueFunction = new ValueFunction_TensorFlow_StateOnly(
+                    new File("src/main/resources/tflow_models" +
+                    "/small_net.pb"),
+                    game,
+                    new Transform_Identity<>(),
+                    false); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

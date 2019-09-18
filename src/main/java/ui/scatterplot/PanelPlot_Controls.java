@@ -1,16 +1,17 @@
 package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import tree.node.filter.INodeFilter;
-import tree.node.filter.NodeFilter_Downsample;
+import game.action.Command;
 import game.state.IState;
-import game.state.State;
-import game.state.StateVariable;
-import org.jfree.chart.plot.XYPlot;
+import game.qwop.StateQWOP;
+import game.state.StateVariable6D;
 import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
+import org.jfree.chart.plot.XYPlot;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
+import tree.node.filter.INodeFilter;
+import tree.node.filter.NodeFilter_Downsample;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -21,23 +22,23 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class PanelPlot_Controls extends PanelPlot implements KeyListener {
+public class PanelPlot_Controls<C extends Command<?>, S extends IState> extends PanelPlot<C, S> implements KeyListener {
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
      */
-    private ITransform transformer = new Transform_Autoencoder("src/main/resources/tflow_models" +
+    private ITransform<S> transformer = new Transform_Autoencoder<>("src/main/resources/tflow_models" +
 			"/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
     /**
      * Filters to be applied to the node list.
      */
-    private List<INodeFilter> nodeFilters = new ArrayList<>();
+    private List<INodeFilter<C, S>> nodeFilters = new ArrayList<>();
 
     /**
      * Downsampler to reduce the number of nodes we're trying to process and display
      */
-    private INodeFilter plotDownsampler = new NodeFilter_Downsample(5000);
+    private INodeFilter<C, S> plotDownsampler = new NodeFilter_Downsample<>(5000);
 
     private List<float[]> transformedStates;
 
@@ -59,7 +60,7 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     /**
      * Nodes to be processed and plotted.
      */
-    private List<NodeQWOPExplorableBase<?>> nodes = new ArrayList<>();
+    private List<NodeGameExplorableBase<?, C, S>> nodes = new ArrayList<>();
 
     private final String name;
 
@@ -73,17 +74,17 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> plotNode) {
+    public void update(NodeGameGraphicsBase<?, C, S> plotNode) {
         nodes.clear();
         plotNode.recurseDownTreeExclusive(nodes::add);
 
         // Apply any added filters (may be none).
-        for (INodeFilter filter : nodeFilters) {
+        for (INodeFilter<C, S> filter : nodeFilters) {
             filter.filter(nodes);
         }
         plotDownsampler.filter(nodes); // Reduce number of nodes to transform if necessary. Plotting is a bottleneck.
 
-        List<IState> statesBelow = nodes.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
+        List<S> statesBelow = nodes.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList());
         // Convert from node list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
         changePlots();
@@ -104,12 +105,12 @@ public class PanelPlot_Controls extends PanelPlot implements KeyListener {
             Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
             Float[] yData = nodes.stream().map(n -> (float) n.getAction().getTimestepsTotal()).toArray(Float[]::new);
             Color[] cData =
-                    nodes.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
-                            NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
+                    nodes.stream().map(n -> NodeGameGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
+                            NodeGameGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Command duration");
-            pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +
-                    StateVariable.StateName.values()[count].toString());
+            pl.getDomainAxis().setLabel(StateQWOP.ObjectName.values()[firstPlotRow].toString() + " " +
+                    StateVariable6D.StateName.values()[count].toString());
 
             dat.addSeries(0, xData, yData, cData);
             setPlotBoundsFromData(pl, xData, yData);

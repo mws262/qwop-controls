@@ -3,7 +3,9 @@ package tree.node.evaluator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import tree.node.NodeQWOPBase;
+import game.action.Command;
+import game.state.IState;
+import tree.node.NodeGameBase;
 
 /**
  * Generic evaluation of a node based on any factors. Going with "higher-is-better" interpretation of value.
@@ -22,7 +24,7 @@ import tree.node.NodeQWOPBase;
         @JsonSubTypes.Type(value = EvaluationFunction_SqDistFromOther.class, name = "square_dist"),
         @JsonSubTypes.Type(value = EvaluationFunction_Velocity.class, name = "velocity")
 })
-public interface IEvaluationFunction extends AutoCloseable {
+public interface IEvaluationFunction<C extends Command<?>, S extends IState> extends AutoCloseable {
 
     /**
      * Determine and return the value of a node. The methodology is determined by the implementation.
@@ -30,7 +32,8 @@ public interface IEvaluationFunction extends AutoCloseable {
      * @param nodeToEvaluate Node to determine the value of.
      * @return Scalar value of the node, with higher being "better".
      */
-    float getValue(NodeQWOPBase<?> nodeToEvaluate);
+    @JsonIgnore
+    float getValue(NodeGameBase<?, C, S> nodeToEvaluate);
 
     /**
      * Get a formatted string of the evaluated value of a node. Typically this will divide the value up into whatever
@@ -39,7 +42,8 @@ public interface IEvaluationFunction extends AutoCloseable {
      * @param nodeToEvaluate Node to determine the value of.
      * @return A formatted string of calculated value components.
      */
-    String getValueString(NodeQWOPBase<?> nodeToEvaluate);
+    @JsonIgnore
+    String getValueString(NodeGameBase<?, C, S> nodeToEvaluate);
 
     /**
      * Create a copy of this IEvaluationFunction.
@@ -47,7 +51,7 @@ public interface IEvaluationFunction extends AutoCloseable {
      * @return A copy of this object.
      */
     @JsonIgnore
-    IEvaluationFunction getCopy();
+    IEvaluationFunction<C, S> getCopy();
 
     @Override
     void close();

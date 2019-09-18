@@ -1,13 +1,14 @@
 package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
+import game.state.IState;
+import game.state.transform.ITransform;
+import org.jfree.chart.plot.XYPlot;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
 import tree.node.filter.INodeFilter;
 import tree.node.filter.NodeFilter_Downsample;
-import game.state.IState;
-import org.jfree.chart.plot.XYPlot;
-import game.state.transform.ITransform;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -18,23 +19,23 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
+public class PanelPlot_Transformed<C extends Command<?>, S extends IState> extends PanelPlot<C, S> implements KeyListener {
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
      */
-    public final ITransform transformer;
+    public final ITransform<S> transformer;
 
     /**
      * Filters to be applied to the node list.
      */
-    private List<INodeFilter> nodeFilters = new ArrayList<>();
+    private List<INodeFilter<C, S>> nodeFilters = new ArrayList<>();
 
     /**
      * Downsampler to reduce the number of nodes we're trying to process and display
      */
-    private NodeFilter_Downsample plotDownsampler = new NodeFilter_Downsample(5000);
-    private NodeFilter_Downsample transformDownsampler = new NodeFilter_Downsample(2000);
+    private NodeFilter_Downsample<C, S> plotDownsampler = new NodeFilter_Downsample<>(5000);
+    private NodeFilter_Downsample<C, S> transformDownsampler = new NodeFilter_Downsample<>(2000);
 
     /**
      * How many plots to squeeze in one displayed row.
@@ -44,7 +45,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     /**
      * Keep track of the last transformed states and their nodes for graphical updates that don't need recalculation.
      */
-    private List<NodeQWOPExplorableBase<?>> nodesToTransform = new ArrayList<>();
+    private List<NodeGameExplorableBase<?, C, S>> nodesToTransform = new ArrayList<>();
     private List<float[]> transformedStates;
 
     /**
@@ -55,7 +56,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
 
     private final String name;
 
-    public PanelPlot_Transformed(@JsonProperty("transformer") ITransform transformer,
+    public PanelPlot_Transformed(@JsonProperty("transformer") ITransform<S> transformer,
                                  @JsonProperty("name") String name,
                                  @JsonProperty("plotsPerView") int plotsPerView) {
         super(plotsPerView);
@@ -68,13 +69,13 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public synchronized void update(NodeQWOPGraphicsBase<?> plotNode) {
+    public synchronized void update(NodeGameGraphicsBase<?, C, S> plotNode) {
         // Do transform update if necessary:
         nodesToTransform.clear();
         plotNode.getRoot().recurseDownTreeInclusive(nodesToTransform::add);
         transformDownsampler.filter(nodesToTransform);
-        List<IState> statesBelow =
-                nodesToTransform.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList());
+        List<S> statesBelow =
+                nodesToTransform.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList());
         // Convert from node list to state list.
         transformer.updateTransform(statesBelow); // Update transform with all states.
 
@@ -83,13 +84,13 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
         plotNode.recurseDownTreeInclusive(nodesToTransform::add);
 
         // Apply any added filters (may be none).
-        for (INodeFilter filter : nodeFilters) {
+        for (INodeFilter<C, S> filter : nodeFilters) {
             filter.filter(nodesToTransform);
         }
         plotDownsampler.filter(nodesToTransform); // Reduce number of nodes to transform if necessary. Plotting is a
         // bottleneck.
 
-        statesBelow = nodesToTransform.stream().map(NodeQWOPExplorableBase::getState).collect(Collectors.toList()); // Convert from node
+        statesBelow = nodesToTransform.stream().map(NodeGameExplorableBase::getState).collect(Collectors.toList()); // Convert from node
         // list to state list.
         transformedStates = transformer.transform(statesBelow); // Dimensionally reduced states
 
@@ -110,8 +111,8 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
             Float[] xData = transformedStates.stream().map(ts -> ts[currCol]).toArray(Float[]::new);
             Float[] yData = transformedStates.stream().map(ts -> ts[firstPlotRow]).toArray(Float[]::new);
             Color[] cData =
-                    nodesToTransform.stream().map(n -> NodeQWOPGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
-                            NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
+                    nodesToTransform.stream().map(n -> NodeGameGraphicsBase.getColorFromTreeDepth(n.getTreeDepth(),
+                            NodeGameGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Component" + " " + firstPlotRow);
             pl.getDomainAxis().setLabel("Component" + " " + currCol);
@@ -126,7 +127,7 @@ public class PanelPlot_Transformed extends PanelPlot implements KeyListener {
     /**
      * Add a tree.node.filter to be applied to the list of nodes to be plotted.
      */
-    public void addFilter(INodeFilter filter) {
+    public void addFilter(INodeFilter<C, S> filter) {
         nodeFilters.add(filter);
     }
 

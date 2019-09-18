@@ -1,6 +1,6 @@
-package game;
+package game.qwop;
 
-public class GameConstants {
+public class QWOPConstants {
 /*
 Best I can tell, the order everything is added to the world is this.
 Note that all bodies are done first, and then joints afterwards.

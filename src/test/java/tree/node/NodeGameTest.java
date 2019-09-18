@@ -1,9 +1,10 @@
 package tree.node;
 
-import game.action.Action;
 import game.IGameInternal;
-import game.action.CommandQWOP;
-import game.state.State;
+import game.action.Action;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,7 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class NodeQWOPTest {
+public class NodeGameTest {
     /* Demo tree.
     Tree structure: 27 nodes. Max depth 6 (7 layers, including 0th).
 
@@ -53,27 +54,28 @@ public class NodeQWOPTest {
  */
 
     // Root node for our test tree.
-    private NodeQWOP rootNode;
+    private NodeGame<CommandQWOP, StateQWOP> rootNode;
 
-    private NodeQWOP node1, node2, node3, node1_1, node1_2, node1_3, node1_4, node2_1, node2_2, node3_1, node3_2, node3_3,
+    private NodeGame<CommandQWOP, StateQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node1_4, node2_1, node2_2, node3_1, node3_2, node3_3,
             node1_1_1, node1_1_2, node1_2_1, node2_2_1, node2_2_2, node2_2_3, node3_3_1, node3_3_2, node3_3_3,
             node3_3_4, node1_2_1_2, node1_2_1_2_1, node1_2_1_2_2, node1_2_1_2_2_4;
 
 
-    private List<NodeQWOP> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
+    private List<NodeGame> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
 
-        // Some sample game.action (mocked).
-    private Action a1 = new Action(10, CommandQWOP.Keys.q);
-    private Action a2 = new Action(15, CommandQWOP.Keys.w);
-    private Action a3 = new Action(12, CommandQWOP.Keys.o);
-    private Action a4 = new Action(20, CommandQWOP.Keys.p);
+        // Some sample game.command (mocked).
+    private Action<CommandQWOP>
+                a1 = new Action<>(10, CommandQWOP.Q),
+                a2 = new Action<>(15, CommandQWOP.W),
+                a3 = new Action<>(12, CommandQWOP.O),
+                a4 = new Action<>(20, CommandQWOP.P);
 
     // Some states (mocked).
-    private State initialState = mock(State.class);
-    private State unfailedState = mock(State.class);
-    private State failedState = mock(State.class);
+    private StateQWOP initialState = mock(StateQWOP.class);
+    private StateQWOP unfailedState = mock(StateQWOP.class);
+    private StateQWOP failedState = mock(StateQWOP.class);
 
-    private IGameInternal game = mock(IGameInternal.class);
+    private IGameInternal<CommandQWOP, StateQWOP> game = mock(IGameInternal.class);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
@@ -87,7 +89,7 @@ public class NodeQWOPTest {
         when(game.getCurrentState()).thenReturn(unfailedState);
 
         // Depth 0.
-        rootNode = new NodeQWOP(initialState);
+        rootNode = new NodeGame<>(initialState);
         nodesLvl0 = new ArrayList<>();
         nodesLvl0.add(rootNode);
 
@@ -249,7 +251,7 @@ public class NodeQWOPTest {
     @Test
     public void getSequence() {
         setupTree();
-        List<Action> actionList = new ArrayList<>();
+        List<Action<CommandQWOP>> actionList = new ArrayList<>();
 
         node1_2_1_2_2_4.getSequence(actionList);
         Assert.assertEquals(6, actionList.size());
@@ -278,15 +280,35 @@ public class NodeQWOPTest {
 
     @Test
     public void makeNodesFromActionSequences() {
-        NodeQWOP root = new NodeQWOP(initialState);
-        List<Action[]> sequences = new ArrayList<>();
-        sequences.add(new Action[]{a1,a1,a1,a1}); // 4 new nodes.
-        sequences.add(new Action[]{a2,a1}); // 2 new nodes
-        sequences.add(new Action[]{a2,a1,a4}); // 1 new node.
-        sequences.add(new Action[]{a4,a2,a3,a1}); // 4 new nodes.
-        sequences.add(new Action[]{a2,a1}); // 0 new nodes.
+        NodeGame<CommandQWOP, StateQWOP> root = new NodeGame<>(initialState);
+        List<List<Action<CommandQWOP>>> sequences = new ArrayList<>();
+        List<Action<CommandQWOP>> l1 = new ArrayList<>();
+        l1.add(a1);
+        l1.add(a1);
+        l1.add(a1);
+        l1.add(a1);
+        sequences.add(l1); // 4 new nodes.
+        List<Action<CommandQWOP>> l2 = new ArrayList<>();
+        l2.add(a2);
+        l2.add(a1);
+        sequences.add(l2); // 2 new nodes
+        List<Action<CommandQWOP>> l3 = new ArrayList<>();
+        l3.add(a2);
+        l3.add(a1);
+        l3.add(a4);
+        sequences.add(l3); // 1 new node.
+        List<Action<CommandQWOP>> l4 = new ArrayList<>();
+        l4.add(a4);
+        l4.add(a2);
+        l4.add(a3);
+        l4.add(a1);
+        sequences.add(l4); // 4 new nodes.
+        List<Action<CommandQWOP>> l5 = new ArrayList<>();
+        l5.add(a2);
+        l5.add(a1);
+        sequences.add(l5); // 0 new nodes.
 
-        NodeQWOP.makeNodesFromActionSequences(sequences, root, game);
+        NodeGame.makeNodesFromActionSequences(sequences, root, new GameQWOP());
         Assert.assertEquals(11, root.countDescendants());
         Assert.assertEquals(3, root.getChildCount());
         Assert.assertEquals(4, root.getMaxBranchDepth());
@@ -301,10 +323,10 @@ public class NodeQWOPTest {
 
     @Test
     public void updateValue() {
-        IValueUpdater updater = mock(IValueUpdater.class);
-        when(updater.update(any(Float.class), any(NodeQWOP.class))).thenReturn(10f);
+        IValueUpdater<CommandQWOP, StateQWOP> updater = mock(IValueUpdater.class);
+        when(updater.update(any(Float.class), any(NodeGame.class))).thenReturn(10f);
 
-        NodeQWOP root = new NodeQWOP(initialState);
+        NodeGame<CommandQWOP, StateQWOP> root = new NodeGame<>(initialState);
         Assert.assertEquals(0f, root.getValue(), 1e-12f);
         Assert.assertEquals(0, root.getUpdateCount());
         root.updateValue(0f, updater);
@@ -317,15 +339,15 @@ public class NodeQWOPTest {
 
     @Test
     public void addDoublyAndBackwardsLinkedNodes() {
-        NodeQWOP root = new NodeQWOP(initialState);
-        NodeQWOP dChild1 = root.addDoublyLinkedChild(a1, unfailedState);
-        NodeQWOP bChild2 = root.addBackwardsLinkedChild(a2, unfailedState);
-        NodeQWOP bChild1_1 = dChild1.addBackwardsLinkedChild(a1, unfailedState);
-        NodeQWOP dChild2_1 = bChild2.addDoublyLinkedChild(a1, unfailedState);
-        NodeQWOP dChild3 = root.addDoublyLinkedChild(a3, unfailedState);
-        NodeQWOP dChild3_1 = dChild3.addDoublyLinkedChild(a1, unfailedState);
-        NodeQWOP dChild3_2 = dChild3.addDoublyLinkedChild(a2, unfailedState);
-        NodeQWOP dChild3_1_1 = dChild3_1.addBackwardsLinkedChild(a1, unfailedState);
+        NodeGame<CommandQWOP, StateQWOP> root = new NodeGame<>(initialState),
+                dChild1 = root.addDoublyLinkedChild(a1, unfailedState),
+                bChild2 = root.addBackwardsLinkedChild(a2, unfailedState),
+                bChild1_1 = dChild1.addBackwardsLinkedChild(a1, unfailedState),
+                dChild2_1 = bChild2.addDoublyLinkedChild(a1, unfailedState),
+                dChild3 = root.addDoublyLinkedChild(a3, unfailedState),
+                dChild3_1 = dChild3.addDoublyLinkedChild(a1, unfailedState),
+                dChild3_2 = dChild3.addDoublyLinkedChild(a2, unfailedState),
+                dChild3_1_1 = dChild3_1.addBackwardsLinkedChild(a1, unfailedState);
 
         Assert.assertEquals(4, root.countDescendants());
         Assert.assertEquals(0, dChild1.countDescendants());
@@ -341,7 +363,7 @@ public class NodeQWOPTest {
 
     @Test
     public void getThis() {
-        NodeQWOP node = new NodeQWOP(initialState);
+        NodeGame<CommandQWOP, StateQWOP> node = new NodeGame<>(initialState);
         Assert.assertEquals(node, node.getThis());
     }
 }

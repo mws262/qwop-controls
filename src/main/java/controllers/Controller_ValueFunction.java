@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameSerializable;
 import game.action.Action;
-import tree.node.NodeQWOPExplorableBase;
+import game.action.Command;
+import game.state.IState;
+import tree.node.NodeGameExplorableBase;
 import value.IValueFunction;
 
-public class Controller_ValueFunction<V extends IValueFunction> implements IController {
+public class Controller_ValueFunction<C extends Command<?>, S extends IState, V extends IValueFunction<C, S>> implements IController<C, S> {
 
     private final V valueFunction;
 
@@ -16,19 +18,18 @@ public class Controller_ValueFunction<V extends IValueFunction> implements ICont
     }
 
     @Override
-    public Action policy(NodeQWOPExplorableBase<?> state) {
-        //        return new Action(Math.max(1, Math.min(a.getTimestepsTotal(), 8)), a.peek());
+    public Action<C> policy(NodeGameExplorableBase<?, C, S> state) {
         return valueFunction.getMaximizingAction(state);
     }
 
     @Override
-    public Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game) {
+    public Action<C> policy(NodeGameExplorableBase<?, C, S> state, IGameSerializable<C, S> game) {
         return valueFunction.getMaximizingAction(state, game);
     }
 
     @Override
     @JsonIgnore
-    public IController getCopy() {
+    public IController<C, S> getCopy() {
         return new Controller_ValueFunction<>(valueFunction.getCopy());
     }
 
