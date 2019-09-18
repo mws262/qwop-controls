@@ -1,43 +1,34 @@
 package game.state;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import data.LoadStateStatistics;
+import game.cartpole.StateCartPole;
+import game.qwop.*;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = State.class, name = "state_standard"),
-        @JsonSubTypes.Type(value = StateDelayEmbedded.class, name = "state_delay_embedded"),
-        @JsonSubTypes.Type(value = StateDelayEmbedded_Poses.class, name = "delay_embedded_poses"),
-        @JsonSubTypes.Type(value = StateDelayEmbedded_Differences.class, name = "delay_differences"),
-        @JsonSubTypes.Type(value = StateDelayEmbedded_HigherDifferences.class, name = "delay_higher_differences")
+        @JsonSubTypes.Type(value = StateQWOP.class, name = "state_standard"),
+        @JsonSubTypes.Type(value = StateQWOPDelayEmbedded.class, name = "state_delay_embedded"),
+        @JsonSubTypes.Type(value = StateQWOPDelayEmbedded_Poses.class, name = "delay_embedded_poses"),
+        @JsonSubTypes.Type(value = StateQWOPDelayEmbedded_Differences.class, name = "delay_differences"),
+        @JsonSubTypes.Type(value = StateQWOPDelayEmbedded_HigherDifferences.class, name = "delay_higher_differences"),
+        @JsonSubTypes.Type(value = StateCartPole.class, name = "cartpole")
 })
 public interface IState {
-
-    /**
-     * Name of each body part.
-     */
-    enum ObjectName {
-        BODY, HEAD, RTHIGH, LTHIGH, RCALF, LCALF, RFOOT, LFOOT, RUARM, LUARM, RLARM, LLARM
-    }
 
     /**
      * Turn the state into an array of floats with body x subtracted from all x coordinates.
      **/
     float[] flattenState();
 
-    float[] flattenStateWithRescaling(LoadStateStatistics.StateStatistics stateStatistics);
-
-    StateVariable getStateVariableFromName(ObjectName obj);
-
-    StateVariable[] getAllStateVariables();
-
+    @JsonIgnore
     float getCenterX();
 
     boolean isFailed();
 
-    int getStateVariableCount();
-
+    @JsonIgnore
+    int getStateSize();
 }

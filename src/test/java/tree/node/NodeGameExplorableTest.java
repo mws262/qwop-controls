@@ -3,7 +3,8 @@ package tree.node;
 import game.action.*;
 import distributions.Distribution_Equal;
 import game.IGameInternal;
-import game.state.State;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,7 +16,7 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class NodeQWOPExplorableTest {
+public class NodeGameExplorableTest {
  /* Demo tree.
     Tree structure: 25 nodes. Max depth 6 (7 layers, including 0th).
 
@@ -50,27 +51,27 @@ public class NodeQWOPExplorableTest {
  */
 
     // Root node for our test tree.
-    private NodeQWOPExplorable rootNode;
+    private NodeGameExplorable<CommandQWOP, StateQWOP> rootNode;
 
-    private NodeQWOPExplorable node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1, node3_2, node3_3,
+    private NodeGameExplorable<CommandQWOP, StateQWOP> node1, node2, node3, node1_1, node1_2, node1_3, node2_1, node2_2, node3_1,
+            node3_2,
+            node3_3,
             node1_1_1, node1_1_2, node1_2_1, node2_2_1, node2_2_2, node2_2_3, node3_3_1, node3_3_2, node3_3_3,
             node1_2_1_2, node1_2_1_2_1, node1_2_1_2_2, node1_2_1_2_2_3;
 
 
-    private List<NodeQWOPExplorable> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5, nodesLvl6;
+    @SuppressWarnings({"FieldCanBeLocal", "MismatchedQueryAndUpdateOfCollection"})
+    private List<NodeGameExplorable<CommandQWOP, StateQWOP>> allNodes, nodesLvl0, nodesLvl1, nodesLvl2, nodesLvl3, nodesLvl4, nodesLvl5,
+            nodesLvl6;
 
-    // Some sample game.action (mocked).
-    private Action a1;
-    private Action a2;
-    private Action a3;
-    private Action a4;
-    private Action a5;
-    private Action a6;
+    // Some sample game.command (mocked).
+    @SuppressWarnings("FieldCanBeLocal")
+    private Action<CommandQWOP> a1, a2, a3, a4, a5, a6;
 
     // Some states (mocked).
-    private State initialState = mock(State.class);
-    private State unfailedState = mock(State.class);
-    private State failedState = mock(State.class);
+    private StateQWOP initialState = mock(StateQWOP.class);
+    private StateQWOP unfailedState = mock(StateQWOP.class);
+    private StateQWOP failedState = mock(StateQWOP.class);
 
     private IGameInternal game = mock(IGameInternal.class);
 
@@ -84,11 +85,13 @@ public class NodeQWOPExplorableTest {
         when(failedState.isFailed()).thenReturn(true);
         when(game.getCurrentState()).thenReturn(unfailedState);
 
-        // Set up action generator.
-        ActionList list1 = ActionList.makeActionList(new int[]{1,2,3}, CommandQWOP.Q, new Distribution_Equal());
-        ActionList list2 = ActionList.makeActionList(new int[]{4,5,6}, CommandQWOP.W, new Distribution_Equal());
+        // Set up command generator.
+        ActionList<CommandQWOP> list1 = ActionList.makeActionList(new int[]{1,2,3}, CommandQWOP.Q,
+                new Distribution_Equal<>());
+        ActionList<CommandQWOP> list2 = ActionList.makeActionList(new int[]{4,5,6}, CommandQWOP.W,
+                new Distribution_Equal<>());
 
-        IActionGenerator generator = new ActionGenerator_FixedSequence(new ActionList[]{list1, list2});
+        IActionGenerator<CommandQWOP> generator = new ActionGenerator_FixedSequence<>(list1, list2);
         a1 = list1.get(0);
         a2 = list1.get(1);
         a3 = list1.get(2);
@@ -98,7 +101,7 @@ public class NodeQWOPExplorableTest {
         a6 = list2.get(2);
 
         // Depth 0.
-        rootNode = new NodeQWOPExplorable(initialState, generator);
+        rootNode = new NodeGameExplorable<>(initialState, generator);
         nodesLvl0 = new ArrayList<>();
         nodesLvl0.add(rootNode);
 
@@ -208,7 +211,7 @@ public class NodeQWOPExplorableTest {
         Assert.assertTrue(node3_3_2.isFullyExplored());
         Assert.assertTrue(node3_3_3.isFullyExplored());
 
-        // Node which has all failed children and no untried game.action should be fully-explored.
+        // Node which has all failed children and no untried game.command should be fully-explored.
         Assert.assertEquals(3, node3_3.getChildCount());
         Assert.assertEquals(0, node3_3.getUntriedActionCount());
         Assert.assertTrue(node3_3.isFullyExplored());
@@ -218,7 +221,7 @@ public class NodeQWOPExplorableTest {
         Assert.assertFalse(node1_2_1_2.isFullyExplored());
         Assert.assertFalse(node3.isFullyExplored());
 
-        // Add all failed child game.action to a node should make it fully explored and cause correct propagation up the
+        // Add all failed child game.command to a node should make it fully explored and cause correct propagation up the
         // tree.
         Assert.assertFalse(node2_2.isFullyExplored());
         Assert.assertFalse(node2_2_1.isFullyExplored());
@@ -309,7 +312,7 @@ public class NodeQWOPExplorableTest {
             }
         }
 
-        Assert.assertTrue("Random action selection failed to come up with all possible game.action within " + timeout +
+        Assert.assertTrue("Random command selection failed to come up with all possible game.command within " + timeout +
                 "tries. This is incredibly unlikely to be random chance.", counter < 9999);
     }
 
@@ -336,7 +339,7 @@ public class NodeQWOPExplorableTest {
     public void getUntriedActionListCopy() {
         setupTree();
 
-        List<Action> actions = node1_2_1_2_2.getUntriedActionListCopy();
+        List<Action<CommandQWOP>> actions = node1_2_1_2_2.getUntriedActionListCopy();
         Assert.assertEquals(node1_2_1_2_2.getUntriedActionCount(), actions.size());
         for (int i = 0; i < node1_2_1_2_2.getUntriedActionCount(); i++) {
             Assert.assertEquals(node1_2_1_2_2.getUntriedActionByIndex(i), actions.get(i));
@@ -359,8 +362,8 @@ public class NodeQWOPExplorableTest {
     @Test
     public void stripUncheckedActionsExceptOnLeaves() {
         setupTree();
-        // Clear to way beyond. Only leaves should have unchecked game.action now.
-        NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1_2, 10);
+        // Clear to way beyond. Only leaves should have unchecked game.command now.
+        NodeGameExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1_2, 10);
         Assert.assertEquals(0, node1_2_1_2.getUntriedActionCount());
         Assert.assertEquals(0, node1_2_1_2_1.getUntriedActionCount()); // Already failed.
         Assert.assertEquals(0, node1_2_1_2_2.getUntriedActionCount());
@@ -373,7 +376,7 @@ public class NodeQWOPExplorableTest {
 
         // Clear just to the node we're calling it on. Only it should be affected.
         setupTree();
-        NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1_2, 4);
+        NodeGameExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1_2, 4);
         Assert.assertEquals(0, node1_2_1_2.getUntriedActionCount());
         Assert.assertEquals(0, node1_2_1_2_1.getUntriedActionCount()); // Already failed.
         Assert.assertEquals(2, node1_2_1_2_2.getUntriedActionCount());
@@ -386,7 +389,7 @@ public class NodeQWOPExplorableTest {
 
         // Call with 1 less depth than the node we're calling it on. Nothing should be affected!
         setupTree();
-        NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1_2, 3);
+        NodeGameExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1_2, 3);
         Assert.assertEquals(1, node1_2_1_2.getUntriedActionCount());
         Assert.assertEquals(0, node1_2_1_2_1.getUntriedActionCount()); // Already failed.
         Assert.assertEquals(2, node1_2_1_2_2.getUntriedActionCount());
@@ -399,7 +402,7 @@ public class NodeQWOPExplorableTest {
 
         // Call with a depth in between so that some, but not all get cleared.
         setupTree();
-        NodeQWOPExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1, 4);
+        NodeGameExplorableBase.stripUncheckedActionsExceptOnLeaves(node1_2_1, 4);
         Assert.assertEquals(0, node1_2_1_2.getUntriedActionCount());
         Assert.assertEquals(0, node1_2_1_2_1.getUntriedActionCount()); // Already failed.
         Assert.assertEquals(2, node1_2_1_2_2.getUntriedActionCount());
@@ -479,33 +482,34 @@ public class NodeQWOPExplorableTest {
 
     @Test
     public void getThis() {
-        NodeQWOPExplorable node = new NodeQWOPExplorable(initialState);
+        NodeGameExplorable<CommandQWOP, StateQWOP> node = new NodeGameExplorable<>(initialState);
         Assert.assertEquals(node, node.getThis());
     }
     @Test
     public void addBackwardsLinkedChild() {
         setupTree();
 
-        // Add a node not in the untried action list.
-        NodeQWOPExplorable unexpectedNode = node2.addBackwardsLinkedChild(new Action(50, CommandQWOP.Keys.wp), failedState);
+        // Add a node not in the untried command list.
+        NodeGameExplorable unexpectedNode = node2.addBackwardsLinkedChild(new Action<>(50, CommandQWOP.WP), failedState);
         Assert.assertFalse(node2.isFullyExplored()); // Shouldn't be affected by this new node.
         Assert.assertEquals(2, node2.getChildCount()); // Shouldn't affect the child count.
         Assert.assertTrue(unexpectedNode.isFullyExplored());
 
-        // Add a node from within the untried action list.
-        NodeQWOPExplorable phantomNode = node2.addBackwardsLinkedChild(node2.getUntriedActionRandom(), failedState);
+        // Add a node from within the untried command list.
+        NodeGameExplorable phantomNode = node2.addBackwardsLinkedChild(node2.getUntriedActionRandom(), failedState);
         Assert.assertFalse(node2.isFullyExplored()); // Shouldn't be affected by this new node.
         Assert.assertEquals(2, node2.getChildCount()); // Shouldn't affect the child count.
         Assert.assertTrue(phantomNode.isFullyExplored());
         Assert.assertEquals(1, node2.getUntriedActionCount());
 
-        // Make sure a real node can be added later which has the same action as the phantom node.
-        NodeQWOPExplorable realNode = node2.addDoublyLinkedChild(node2.getUntriedActionRandom(), failedState);
+        // Make sure a real node can be added later which has the same command as the phantom node.
+//        NodeGameExplorable realNode =
+        node2.addDoublyLinkedChild(node2.getUntriedActionRandom(), failedState);
         Assert.assertEquals(0, node2.getUntriedActionCount());
         Assert.assertEquals(3, node2.getChildCount()); // Shouldn't affect the child count.
         
         exception.expect(IllegalArgumentException.class);
-        node2.addBackwardsLinkedChild(a4, unfailedState); // Still shouldn't be able to add duplicate game.action, even
+        node2.addBackwardsLinkedChild(a4, unfailedState); // Still shouldn't be able to add duplicate game.command, even
         // if it is only backwards linked.
     }
 }

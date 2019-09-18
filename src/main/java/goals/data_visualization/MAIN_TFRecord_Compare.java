@@ -1,10 +1,10 @@
 //package goals.data_visualization;
 //
-//import game.GameUnified;
+//import game.qwop.GameQWOP;
 //import game.IGameInternal;
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
-//import tree.node.NodeQWOPGraphicsBase;
+//import tree.node.NodeGameGraphicsBase;
 //import ui.runner.PanelRunner;
 //
 //import javax.swing.*;
@@ -23,7 +23,7 @@
 //
 //public class MAIN_TFRecord_Compare extends JFrame implements Runnable {
 //
-//    private IGameInternal game = new GameUnified();
+//    private IGameInternal game = new GameQWOP();
 //
 //    private Controller_NearestNeighborApprox justForLoading;
 //
@@ -122,9 +122,9 @@
 //                        count++;
 //
 //                        //if (count % 2 != 0) continue;
-//                        GameUnified.drawExtraRunner((Graphics2D) g, rh.states.get(i).state, "",
+//                        GameQWOP.drawExtraRunner((Graphics2D) g, rh.states.get(i).state, "",
 //                                runnerScaling, xOffsetPixels - (int) (runnerScaling * specificXOffset), yOffsetPixels,
-//                                NodeQWOPGraphicsBase.getColorFromScaledValue(2 * i, rh.states.size(),
+//                                NodeGameGraphicsBase.getColorFromScaledValue(2 * i, rh.states.size(),
 //                                        0.8f), PanelRunner.normalStroke);
 //                        if (count >= rh.actionDurations.size() - 1) break;
 //                    }
@@ -132,7 +132,7 @@
 //                for (RunHolder rh2 : toDraw) {
 //                    int killThis = rh2.actionDurations.get(0) + rh2.actionDurations.get(1);
 //                    float specificXOffset = rh2.states.get(killThis).state.body.getX();
-//                    GameUnified.drawExtraRunner((Graphics2D) g, rh2.states.get(killThis).state, "",
+//                    GameQWOP.drawExtraRunner((Graphics2D) g, rh2.states.get(killThis).state, "",
 //                            runnerScaling, xOffsetPixels - (int) (runnerScaling * specificXOffset), yOffsetPixels,
 //                            Color.BLACK, PanelRunner.boldStroke);
 //                }

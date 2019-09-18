@@ -5,7 +5,10 @@ import com.google.common.primitives.Floats;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
-import tree.node.NodeQWOPExplorableBase;
+import game.action.Command;
+import game.state.IState;
+import org.jetbrains.annotations.NotNull;
+import tree.node.NodeGameExplorableBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +22,13 @@ import java.util.List;
  *
  * @author matt
  */
-public class RolloutPolicy_Window implements IRolloutPolicy {
+public class RolloutPolicy_Window<C extends Command<?>, S extends IState> implements IRolloutPolicy<C, S> {
 
     @JsonProperty
-    private final IRolloutPolicy individualRollout;
+    private final IRolloutPolicy<C, S> individualRollout;
 
-    private ActionQueue actionQueue = new ActionQueue();
-    private final List<Action> actionSequence = new ArrayList<>(); // Reused local list.
+    private ActionQueue<C> actionQueue = new ActionQueue<>();
+    private final List<Action<C>> actionSequence = new ArrayList<>(); // Reused local list.
 
     public enum Criteria {
         WORST, BEST, AVERAGE,
@@ -33,22 +36,22 @@ public class RolloutPolicy_Window implements IRolloutPolicy {
 
     public Criteria selectionCriteria = Criteria.BEST;
 
-    public RolloutPolicy_Window(@JsonProperty("individualRollout") IRolloutPolicy individualRollout) {
+    public RolloutPolicy_Window(@JsonProperty("individualRollout") IRolloutPolicy<C, S> individualRollout) {
         this.individualRollout = individualRollout;
     }
 
     @Override
-    public float rollout(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
+    public float rollout(@NotNull NodeGameExplorableBase<?, C, S> startNode, IGameInternal<C, S> game) {
 
         // Need to do a rollout for the actual node we landed on.
-        Action middleAction = startNode.getAction();
+        Action<C> middleAction = startNode.getAction();
         float scoreMid = individualRollout.rollout(startNode, game);
 
         // Pick valid actions above and below -- TODO generalize this to larger windows also.
-        List<Action> windowActions = new ArrayList<>();
-        windowActions.add(new Action(middleAction.getTimestepsTotal() + 1, middleAction.peek()));
+        List<Action<C>> windowActions = new ArrayList<>();
+        windowActions.add(new Action<>(middleAction.getTimestepsTotal() + 1, middleAction.peek()));
         if (middleAction.getTimestepsTotal() > 1) {
-            windowActions.add(new Action(middleAction.getTimestepsTotal() - 1, middleAction.peek()));
+            windowActions.add(new Action<>(middleAction.getTimestepsTotal() - 1, middleAction.peek()));
         }
 
         float[] windowScores = new float[windowActions.size()];
@@ -59,18 +62,17 @@ public class RolloutPolicy_Window implements IRolloutPolicy {
                 actionQueue.addSequence(actionSequence);
             }
             actionQueue.addAction(windowActions.get(i));
-            game.makeNewWorld();
+            game.resetGame();
             while (!actionQueue.isEmpty()) {
                 game.step(actionQueue.pollCommand());
             }
 
-            NodeQWOPExplorableBase<?> windowNode = startNode.getParent().addBackwardsLinkedChild(windowActions.get(i),
-                    game.getCurrentState());
+            NodeGameExplorableBase<?, C, S> windowNode =
+                    startNode.getParent().addBackwardsLinkedChild(windowActions.get(i), game.getCurrentState());
             windowScores[i] = individualRollout.rollout(windowNode, game);
         }
 
         switch(selectionCriteria) {
-
             case WORST:
                 return Float.min(scoreMid, Floats.min(windowScores));
             case BEST:
@@ -88,11 +90,11 @@ public class RolloutPolicy_Window implements IRolloutPolicy {
     }
 
     @Override
-    public IRolloutPolicy getCopy() {
-        return new RolloutPolicy_Window(individualRollout.getCopy());
+    public IRolloutPolicy<C, S> getCopy() {
+        return new RolloutPolicy_Window<>(individualRollout.getCopy());
     }
 
-    public IRolloutPolicy getIndividualRollout() {
+    public IRolloutPolicy<C, S> getIndividualRollout() {
         return individualRollout;
     }
 

@@ -2,7 +2,9 @@ package tree.node.evaluator;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import tree.node.NodeQWOPBase;
+import game.action.Command;
+import game.state.IState;
+import tree.node.NodeGameBase;
 
 /**
  * Scores nodes by returning a constant value no matter what node is input. Mainly useful for testing.
@@ -10,7 +12,7 @@ import tree.node.NodeQWOPBase;
  * @author matt
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class EvaluationFunction_Constant implements IEvaluationFunction {
+public class EvaluationFunction_Constant<C extends Command<?>, S extends IState> implements IEvaluationFunction<C, S> {
 
     /**
      * Constant node value which will be returned for any input.
@@ -28,18 +30,18 @@ public class EvaluationFunction_Constant implements IEvaluationFunction {
     }
 
     @Override
-    public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
+    public float getValue(NodeGameBase<?, C, S> nodeToEvaluate) {
         return constantValue;
     }
 
     @Override
-    public String getValueString(NodeQWOPBase<?> nodeToEvaluate) {
+    public String getValueString(NodeGameBase<?, C, S> nodeToEvaluate) {
         return String.valueOf(constantValue);
     }
 
     @Override
-    public IEvaluationFunction getCopy() {
-        return new EvaluationFunction_Constant(constantValue);
+    public IEvaluationFunction<C, S> getCopy() {
+        return new EvaluationFunction_Constant<>(constantValue);
     }
 
     public float getConstantValue() {

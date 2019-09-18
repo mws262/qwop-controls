@@ -3,13 +3,17 @@ package tree.stage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import game.action.Command;
+import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.TreeWorker;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * If we want to switch and change between different tree stage goals.
@@ -28,15 +32,15 @@ import java.util.*;
         @JsonSubTypes.Type(value = TreeStage_ValueFunctionUpdate.class, name = "value_update")
 
 })
-public abstract class TreeStage {
+public abstract class TreeStage<C extends Command<?>, S extends IState> {
 
     /** **/
-    private NodeQWOPExplorableBase<?> stageRoot;
+    private NodeGameExplorableBase<?, C, S> stageRoot;
 
     /**
      * Each stage gets its own workers to avoid contamination. Probably could combine later if necessary.
      */
-    private final List<TreeWorker> workers = new ArrayList<>();
+    private final List<TreeWorker<C, S>> workers = new ArrayList<>();
 
     /**
      * Number of TreeWorkers to be used.
@@ -45,7 +49,7 @@ public abstract class TreeStage {
 
     private static final Logger logger = LogManager.getLogger(TreeStage.class);
 
-    public void initialize(List<TreeWorker> treeWorkers, NodeQWOPExplorableBase<?> stageRoot) {
+    public void initialize(List<TreeWorker<C, S>> treeWorkers, NodeGameExplorableBase<?, C, S> stageRoot) {
         numWorkers = treeWorkers.size();
         if (numWorkers < 1)
             throw new RuntimeException("Tried to assign a tree stage an invalid number of workers: " + numWorkers);
@@ -54,7 +58,7 @@ public abstract class TreeStage {
         workers.addAll(treeWorkers);
         this.stageRoot = stageRoot;
 
-        for (TreeWorker tw : treeWorkers) {
+        for (TreeWorker<C, S> tw : treeWorkers) {
             tw.setRoot(stageRoot);
             tw.startWorker();
         }
@@ -74,7 +78,7 @@ public abstract class TreeStage {
      * Query the stage for its final results.
      */
     @JsonIgnore
-    public abstract List<NodeQWOPBase<?>> getResults();
+    public abstract List<NodeGameBase<?, C, S>> getResults();
 
     /**
      * Check through the tree for termination conditions.
@@ -86,7 +90,7 @@ public abstract class TreeStage {
      */
     public boolean areWorkersRunning() {
         synchronized (workers) {
-            Iterator<TreeWorker> iterator = workers.iterator();
+            Iterator<TreeWorker<C, S>> iterator = workers.iterator();
             if (!iterator.hasNext())
                 return true; // It's stupid if the termination condition gets caught before any threads have a chance to get going.
             while (iterator.hasNext()) {
@@ -103,7 +107,7 @@ public abstract class TreeStage {
      * so no set method.
      */
     @JsonIgnore
-    public NodeQWOPExplorableBase<?> getRootNode() {
+    public NodeGameExplorableBase<?, C, S> getRootNode() {
         return stageRoot;
     }
 

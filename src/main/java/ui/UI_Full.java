@@ -1,7 +1,13 @@
 package ui;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import game.action.Command;
+import game.state.IState;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.codehaus.jackson.annotate.JsonSetter;
 import tree.Utility;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameGraphicsBase;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -16,29 +22,32 @@ import java.util.List;
  *
  * @author Matt
  */
-public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInterface {
+public class UI_Full<C extends Command<?>, S extends IState> implements ChangeListener, NodeSelectionListener<C, S>,
+        IUserInterface<C, S> {
 
     private final JFrame frame = new JFrame();
 
     /**
      * Individual pane for the tree.
      */
-    private PanelTree panelTree;
+    private PanelTree<C, S> panelTree;
 
     /**
      * Pane for the tabbed side of the interface.
      */
-    private JTabbedPane tabPane;
+    private final JTabbedPane tabPane;
 
     /**
      * Selected node by user click/key
      */
-    private NodeQWOPGraphicsBase<?> selectedNode;
+    private NodeGameGraphicsBase<?, C, S> selectedNode;
 
     /**
      * List of panes which can be activated, deactivated.
      */
-    private List<TabbedPaneActivator> tabbedPanes = new ArrayList<>();
+    private List<TabbedPaneActivator<C, S>> tabbedPanes = new ArrayList<>();
+
+    private final Logger logger = LogManager.getLogger(UI_Full.class);
 
     /**
      * Window width
@@ -50,15 +59,6 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
      */
     public static int windowHeight = 1000;
 
-    /**
-     * Attempted frame rate
-     */
-    private int targetFramesPerSecond = 25;
-
-    /**
-     * Usable milliseconds per frame
-     */
-    private long millisecondsPerFrame = (long) (1f / targetFramesPerSecond * 1000f);
     private Timer redrawTimer;
 
     public UI_Full() {
@@ -72,7 +72,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
         tabPane.addChangeListener(this);
 
         /* Tree pane */
-        panelTree = new PanelTree();
+        panelTree = new PanelTree<>();
         panelTree.addNodeSelectionListener(this); // Add this UI as a listener for selections of nodes on the tree.
 
         // This makes it have that draggable border between the tab and the tree sections.
@@ -91,9 +91,6 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
         frame.setIconImage(img);
 
         frame.pack();
-        frame.setVisible(true);
-
-        Utility.showOnScreen(frame, 0, false); // Choose the monitor to display on, filling that monitor.
     }
 
     /**
@@ -101,10 +98,10 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
      *
      * @param newTab New tab to add to the existing set of tabbed panels in this frame.
      */
-    public void addTab(TabbedPaneActivator newTab) {
-        tabPane.addTab(newTab.getName(), (Component) newTab);
-        tabbedPanes.add(newTab);
-        tabPane.revalidate();
+    public synchronized void addTab(TabbedPaneActivator<C, S> newTab) {
+            tabPane.addTab(newTab.getName(), (Component) newTab);
+            tabbedPanes.add(newTab);
+            tabPane.revalidate();
     }
 
     /**
@@ -112,7 +109,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
      *
      * @param tabToRemove Tab to be removed from the set. Throws if the tab is not part of the group.
      */
-    public void removeTab(TabbedPaneActivator tabToRemove) {
+    public synchronized void removeTab(TabbedPaneActivator tabToRemove) {
         if (tabbedPanes.contains(tabToRemove))
             tabbedPanes.remove(tabToRemove);
         else
@@ -122,20 +119,38 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
         tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
     }
 
-
-    public void setTabbedPanes(List<TabbedPaneActivator> tabbedPanes) {
-        tabbedPanes.forEach(this::addTab);
+    @JsonSetter
+    public synchronized void setTabbedPanes(List<TabbedPaneActivator<C, S>> tabs) {
+        for (TabbedPaneActivator<C, S> tab : tabs) {
+            addTab(tab);
+        }
     }
 
-    public List<TabbedPaneActivator> getTabbedPanes() {
+    @JsonGetter
+    public synchronized List<TabbedPaneActivator<C, S>> getTabbedPanes() {
         return tabbedPanes;
     }
 
     @Override
     public void start() {
+//        int selectedTab = tabPane.getSelectedIndex();
+//        if (selectedTab >= 0 && selectedTab < tabbedPanes.size()) {// -1 if none selected.
+//            tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+//        } else {
+//            if (!tabbedPanes.isEmpty()) {
+//            }
+//            logger.warn("Launched full UI with no tab selected by default.");
+//        }
+
+        if (!tabbedPanes.isEmpty()) {
+            tabPane.setSelectedIndex(0);
+            tabbedPanes.get(0).activateTab(); // Just activate the first tab. Forget the other nonsense.
+        }
+        frame.setVisible(true);
+        Utility.showOnScreen(frame, 0, false); // Choose the monitor to display on, filling that monitor.
+
         redrawTimer = new Timer(35, e -> frame.repaint());
         redrawTimer.start();
-        tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
     }
 
     @Override
@@ -146,7 +161,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     }
 
     @Override
-    public void nodeSelected(NodeQWOPGraphicsBase<?> selected) {
+    public void nodeSelected(NodeGameGraphicsBase<?, C, S> selected) {
         if (selectedNode != null) { // Clear things from the old selected node.
             selectedNode.setOverridePointColor(null);
             selectedNode.clearBranchLineOverrideColor();
@@ -162,7 +177,7 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
         selectedNode.setBranchZOffset(0.4f);
 //        selectedNode.setLineBrightnessBelow(1f);
 
-        for (TabbedPaneActivator panel : tabbedPanes) {
+        for (TabbedPaneActivator<C, S> panel : tabbedPanes) {
             if (panel.isActive()) {
                 panel.update(selectedNode);
             }
@@ -170,18 +185,21 @@ public class UI_Full implements ChangeListener, NodeSelectionListener, IUserInte
     }
 
     @Override
-    public void stateChanged(ChangeEvent e) {
+    public synchronized void stateChanged(ChangeEvent e) {
         if (!tabbedPanes.isEmpty()) {
             for (TabbedPaneActivator p : tabbedPanes) {
                 p.deactivateTab();
             }
             nodeSelected(null);
-            tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+            int selected = tabPane.getSelectedIndex();
+            if (selected >= 0 && selected < tabbedPanes.size()) {
+                tabbedPanes.get(tabPane.getSelectedIndex()).activateTab();
+            }
         }
     }
 
     @Override
-    public void addRootNode(NodeQWOPGraphicsBase<?> node) {
+    public void addRootNode(NodeGameGraphicsBase<?, C, S> node) {
         panelTree.addRootNode(node);
     }
 

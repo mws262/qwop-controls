@@ -3,39 +3,98 @@ machine:
   coreMinimum: 1
   coreMaximum: 32
   logLevel: INFO
+game:
+  type: delay_embedded
+  timestepDelay: 1
+  numDelayedStates: 2
+  stateType: HIGHER_DIFFERENCES
 tree:
   actionGenerator:
     type: fixed_actions_no_repeats
     allActionLists:
-    - distribution:
+    - '@type': CommandQWOP
+      distribution:
         type: equal
       none: '2 3 4 5 6 7 8 9 10 11 12 13 14 '
-    - distribution:
+    - '@type': CommandQWOP
+      distribution:
         type: equal
       q: '2 3 4 5 6 7 8 9 '
-    - distribution:
+    - '@type': CommandQWOP
+      distribution:
         type: equal
       qp: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28
         29 '
-    - distribution:
+    - '@type': CommandQWOP
+      distribution:
         type: equal
       w: '2 3 4 5 6 7 8 9 '
-    - distribution:
+    - '@type': CommandQWOP
+      distribution:
         type: equal
       wo: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28
         29 '
-    - distribution:
+    - '@type': CommandQWOP
+      distribution:
         type: equal
       o: '2 3 4 5 6 7 8 9 '
-    - distribution:
+    - '@type': CommandQWOP
+      distribution:
         type: equal
       p: '2 3 4 5 6 7 8 9 '
 searchOperations:
 - stage:
     type: fixed_games
-    numGamesToPlay: 80000
+    numGamesToPlay: 150000
+  game:
+    type: delay_embedded
+    timestepDelay: 1
+    numDelayedStates: 2
+    stateType: HIGHER_DIFFERENCES
   sampler:
-    type: distribution
+    type: ucb
+    evaluationFunction:
+      type: distance
+      scalingFactor: 1.0
+    rolloutPolicy:
+      type: decaying_horizon
+      evaluationFunction:
+        type: distance
+        scalingFactor: 1.0
+      rolloutActionGenerator:
+        type: fixed_sequence
+        repeatedActions:
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 12.0
+            standardDeviation: 5.0
+          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 20.0
+            standardDeviation: 5.0
+          wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 12.0
+            standardDeviation: 5.0
+          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 20.0
+            standardDeviation: 5.0
+          qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+      rolloutController:
+        type: random
+      maxTimesteps: 200
+    valueUpdater:
+      type: average
+    explorationConstant: 20.0
+    explorationRandomFactor: 10.0
   saver:
     type: null
     saveInterval: 0
@@ -54,7 +113,10 @@ searchOperations:
           type: delay_embedded
           timestepDelay: 1
           numDelayedStates: 2
-          stateType: DIFFERENCES
+          stateType: HIGHER_DIFFERENCES
+        stateNormalizer:
+          type: normalizer_qwophigherdiffs
+          normalizationMethod: STDEV
         hiddenLayerSizes:
         - 128
         - 64
@@ -62,10 +124,16 @@ searchOperations:
         - --learnrate
         - 1e-4
         activeCheckpoint: null
+        inputSize: 108
         outputSize: 1
       checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
       excludeLeaves: false
       updateGraphicalLabels: true
+  game:
+    type: delay_embedded
+    timestepDelay: 1
+    numDelayedStates: 2
+    stateType: HIGHER_DIFFERENCES
   sampler:
     type: ucb
     evaluationFunction:
@@ -74,75 +142,63 @@ searchOperations:
     rolloutPolicy:
       type: window
       individualRollout:
-        type: entire_run
-        rolloutController:
-          type: value_function
-          valueFunction:
-            type: tflow_state_only
-            fileName: src/main/resources/tflow_models/test.pb
-            gameTemplate:
-              type: delay_embedded
-              timestepDelay: 1
-              numDelayedStates: 2
-              stateType: DIFFERENCES
-            hiddenLayerSizes:
-            - 128
-            - 64
-            additionalNetworkArgs:
-            - --learnrate
-            - 1e-4
-            activeCheckpoint: null
-            outputSize: 1
+        type: decaying_horizon
         evaluationFunction:
-          type: constant
-          constantValue: 0.0
+          type: distance
+          scalingFactor: 1.0
         rolloutActionGenerator:
           type: fixed_sequence
           repeatedActions:
-          - distribution:
+          - '@type': CommandQWOP
+            distribution:
               type: normal
               mean: 12.0
               standardDeviation: 5.0
             none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
-          - distribution:
+          - '@type': CommandQWOP
+            distribution:
               type: normal
               mean: 20.0
               standardDeviation: 5.0
             wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-          - distribution:
+          - '@type': CommandQWOP
+            distribution:
               type: normal
               mean: 12.0
               standardDeviation: 5.0
             none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
-          - distribution:
+          - '@type': CommandQWOP
+            distribution:
               type: normal
               mean: 20.0
               standardDeviation: 5.0
             qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-        maxTimesteps: 3000
+        rolloutController:
+          type: random
+        maxTimesteps: 200
       selectionCriteria: BEST
     valueUpdater:
       type: average
-    explorationConstant: 5.0
+    explorationConstant: 0.4
     explorationRandomFactor: 1.0
   saver:
     type: null
     saveInterval: 0
     savePath:
-  repetitionCount: 0
+  repetitionCount: 10000
 ui:
   type: full
   tabbedPanes:
   - type: runner_animated_transformed
     name: Run Animation
   - type: runner_snapshot
-    name: State Viewer
+    name: StateQWOP Viewer
     numHistoryStatesDisplay: 25
   - type: runner_comparison
-    name: State Compare
+    name: StateQWOP Compare
     maxNumStatesToShow: 50
   - type: plot_states
-    name: State Plots
+    name: StateQWOP Plots
     numberOfPlots: 6
   - type: futures_pie
     name: Viable Futures
@@ -150,9 +206,6 @@ ui:
     name: Leaf depth distribution
   - type: plot_controls
     name: Controls Plots
-    numberOfPlots: 6
-  - type: plot_single_run
-    name: Single Run Plots
     numberOfPlots: 6
   - type: plot_transformed
     transformer:
@@ -162,8 +215,6 @@ ui:
           20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43
           44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67
           68 69 70 71 '
-      outputSize: 72
-      name: PCA 72
     name: PCA Plots
     plotsPerView: 6
     numberOfPlots: 6
@@ -171,8 +222,6 @@ ui:
     transformer:
       type: autoencoder
       graphFile: src/main/resources/tflow_models/AutoEnc_72to12_6layer.pb
-      outputSize: 12
-      name: AutoEnc 12
     name: Autoenc Plots
     plotsPerView: 6
     numberOfPlots: 6
@@ -182,7 +231,10 @@ ui:
       type: delay_embedded
       timestepDelay: 1
       numDelayedStates: 2
-      stateType: DIFFERENCES
+      stateType: HIGHER_DIFFERENCES
+    stateNormalizer:
+      type: normalizer_qwophigherdiffs
+      normalizationMethod: STDEV
     modelLocation: src/main/resources/tflow_models
     checkpointLocation: src/main/resources/tflow_models/checkpoints
     actionGenerator: null

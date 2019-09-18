@@ -1,15 +1,12 @@
-package game;
+package game.qwop;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import game.IGameSerializable;
 import game.action.Action;
-import game.action.Command;
-import game.action.CommandQWOP;
-import game.state.IState;
-import game.state.IState.ObjectName;
-import game.state.State;
-import game.state.StateVariable;
+import game.qwop.IStateQWOP.ObjectName;
+import game.state.StateVariable6D;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jbox2d.collision.AABB;
@@ -31,7 +28,7 @@ import org.nustaq.serialization.FSTConfiguration;
 import java.awt.*;
 import java.io.Serializable;
 
-import static game.GameConstants.*;
+import static game.qwop.QWOPConstants.*;
 
 /**
  * @author matt
@@ -40,15 +37,18 @@ import static game.GameConstants.*;
         use = JsonTypeInfo.Id.NAME,
         property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = GameUnified.class, name = "default"),
-        @JsonSubTypes.Type(value = GameUnifiedCaching.class, name = "delay_embedded"),
+        @JsonSubTypes.Type(value = GameQWOP.class, name = "default"),
+        @JsonSubTypes.Type(value = GameQWOPCaching.class, name = "delay_embedded"),
 })
 @SuppressWarnings("Duplicates")
-public class GameUnified implements IGameSerializable<CommandQWOP> {
+public class GameQWOP implements IGameSerializable<CommandQWOP, StateQWOP> {
 
-    private static final Logger logger = LogManager.getLogger(GameUnified.class);
+    private static final Logger logger = LogManager.getLogger(GameQWOP.class);
 
     public static final int STATE_SIZE = 72;
+
+    public static final int ACTIONSPACE_SIZE = 9; // Not counting the non-unique combinations of qwop that would make
+    // it 16.
 
     /**
      * Keep track of sim stats since beginning of execution.
@@ -77,6 +77,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     private Body[] allBodies;
 
     /* Joint Definitions */
+    @SuppressWarnings("FieldCanBeLocal")
     private RevoluteJointDef rHipJDef, lHipJDef, rKneeJDef, lKneeJDef, rAnkleJDef, lAnkleJDef, rShoulderJDef,
             lShoulderJDef, rElbowJDef, lElbowJDef, neckJDef;
 
@@ -168,7 +169,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     /**
      * Initial runner state.
      **/
-    private static final IState initState;
+    private static final StateQWOP initState;
 
     /** Can turn off feet (just leg stumps) for trying stuff out. **/
     private static boolean noFeet = false;
@@ -176,8 +177,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     /**
      * Number of constraint-solving steps.
      */
-    @JsonIgnore
-    public int iterations = physIterations;
+    private int iterations = physIterations;
 
     /** Listens for collisions between any body part and the ground. **/
     private CollisionListener collisionListener = new CollisionListener();
@@ -195,10 +195,8 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
      */
     private static FSTConfiguration fstConfiguration = FSTConfiguration.createDefaultConfiguration();
 
-    //private Random rand = new Random();
-    public GameUnified() {
-        makeNewWorld();
-        //rand.setSeed(55555);
+    public GameQWOP() {
+        resetGame();
     }
 
     /*
@@ -368,19 +366,16 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
         rLArmDef.massData = rLArmMassData;
         lLArmDef.massData = lLArmMassData;
 
-        initState = new GameUnified().getCurrentState();
+        initState = new GameQWOP().getCurrentState();
     }
 
-    public void makeNewWorld() {
+    public void resetGame() {
 
         isFailed = false;
         timestepsSimulated = 0;
 
         /* World Settings */
         world = new World(worldAABB, gravity, true);
-        /**
-         * Is Box2D warmstarting used?
-         */
         world.setWarmStarting(true);
         world.setPositionCorrection(true);
         world.setContinuousPhysics(true);
@@ -816,7 +811,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     }
 
     /**
-     * Simple convenience method for calling {@link GameUnified#step(boolean, boolean, boolean, boolean)} but for
+     * Simple convenience method for calling {@link GameQWOP#step(boolean, boolean, boolean, boolean)} but for
      * multiple timesteps.
      * @param timesteps Number of timesteps to simulate ahead while holding these keys.
      * @param q Whether q key is down.
@@ -824,7 +819,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
      * @param o Whether o key is down.
      * @param p Whether p key is down.
      */
-    public void holdKeysForTimesteps(int timesteps, boolean q, boolean w, boolean o, boolean p) {
+    void holdKeysForTimesteps(int timesteps, boolean q, boolean w, boolean o, boolean p) {
         for (int i = 0; i < timesteps; i++) {
             step(q,w,o,p);
         }
@@ -842,7 +837,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
      * QWOP initial condition. Good way to give the root node a state.
      **/
     @JsonIgnore
-    public static IState getInitialState() {
+    public static StateQWOP getInitialState() {
         return initState;
     }
 
@@ -850,27 +845,28 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
      * Get the current full state of the runner.
      */
     @JsonIgnore
-    public synchronized IState getCurrentState() {
-        return new State(
+    public synchronized StateQWOP getCurrentState() {
+        return new StateQWOP(
                 getCurrentBodyState(torsoBody),
                 getCurrentBodyState(headBody),
                 getCurrentBodyState(rThighBody),
                 getCurrentBodyState(lThighBody),
                 getCurrentBodyState(rCalfBody),
                 getCurrentBodyState(lCalfBody),
-                noFeet ? new StateVariable(0, 0, 0, 0, 0, 0) : getCurrentBodyState(rFootBody),
-                noFeet ? new StateVariable(0, 0, 0, 0, 0, 0) : getCurrentBodyState(lFootBody),
+                noFeet ? new StateVariable6D(0, 0, 0, 0, 0, 0) : getCurrentBodyState(rFootBody),
+                noFeet ? new StateVariable6D(0, 0, 0, 0, 0, 0) : getCurrentBodyState(lFootBody),
                 getCurrentBodyState(rUArmBody),
                 getCurrentBodyState(lUArmBody),
                 getCurrentBodyState(rLArmBody),
                 getCurrentBodyState(lLArmBody),
-                getFailureStatus());
+                isFailed());
     }
 
     /**
-     * Get a new StateVariable for a given body.
+     * Get a new StateVariable6D for a given body.
      */
-    private StateVariable getCurrentBodyState(Body body) {
+    @JsonIgnore
+    private StateVariable6D getCurrentBodyState(Body body) {
         Vec2 pos = body.getPosition();
         float x = pos.x;
         float y = pos.y;
@@ -880,11 +876,11 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
         float dx = vel.x;
         float dy = vel.y;
         float dth = body.getAngularVelocity();
-        return new StateVariable(x, y, th, dx, dy, dth);
+        return new StateVariable6D(x, y, th, dx, dy, dth);
     }
 
     @JsonIgnore
-    public Body[] getAllBodies() {
+    private Body[] getAllBodies() {
         return allBodies;
     }
 
@@ -892,13 +888,14 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     // Avoid new allocations for what amounts to a temporary variable.
     private final Vec2 setPos = new Vec2();
     private final Vec2 setLinVel = new Vec2();
+
     /**
-     * Set an individual body to a specified {@link StateVariable}. This sets both positions and velocities.
+     * Set an individual body to a specified {@link StateVariable6D}. This sets both positions and velocities.
      *
      * @param body          Body to set the state of.
      * @param stateVariable Full state to assign to that body.
      */
-    private void setBodyToStateVariable(Body body, StateVariable stateVariable) {
+    private void setBodyToStateVariable(Body body, StateVariable6D stateVariable) {
         setPos.x = stateVariable.getX();
         setPos.y = stateVariable.getY();
         setLinVel.x = stateVariable.getDx();
@@ -908,7 +905,8 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
         body.setAngularVelocity(stateVariable.getDth());
     }
 
-    public void setState(IState state) {
+    @Override
+    public void setState(StateQWOP state) {
         isFailed = false;
         setBodyToStateVariable(rFootBody, state.getStateVariableFromName(ObjectName.RFOOT));
         setBodyToStateVariable(lFootBody, state.getStateVariableFromName(ObjectName.LFOOT));
@@ -930,15 +928,15 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     }
 
     @JsonIgnore
-    public GameUnified getCopy() {
-        return new GameUnified();
+    public GameQWOP getCopy() {
+        return new GameQWOP();
     }
 
     /**
      * Is this state in failure?
      **/
     @JsonIgnore
-    public boolean getFailureStatus() {
+    public boolean isFailed() {
         return isFailed;
     }
 
@@ -1008,9 +1006,8 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
         torsoBody.applyTorque(cwTorque);
     }
 
-
-//    public void fullStatePDController(State targetState) {
-//        State currentState = getCurrentState();
+//    public void fullStatePDController(StateQWOP targetState) {
+//        StateQWOP currentState = getCurrentState();
 //        pdForce(targetState.body, currentState.body, torsoBody);
 //        pdTorque(targetState.body, currentState.body, torsoBody);
 //
@@ -1048,7 +1045,8 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
 //        pdTorque(targetState.llarm, currentState.llarm, torsoBody);
 //    }
 
-    private void pdForce(StateVariable targetSV, StateVariable currentSV, Body b) {
+    @SuppressWarnings("unused")
+    private void pdForce(StateVariable6D targetSV, StateVariable6D currentSV, Body b) {
         float kp = 10;
         float kd = kp/10;
 
@@ -1057,7 +1055,8 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
                 b.getWorldCenter());
     }
 
-    private void pdTorque(StateVariable targetSV, StateVariable currentSV, Body b) {
+    @SuppressWarnings("unused")
+    private void pdTorque(StateVariable6D targetSV, StateVariable6D currentSV, Body b) {
         float kp = 10f;
         float kd = kp/10f;
         b.applyTorque(kp * (targetSV.getTh() - currentSV.getTh()) +
@@ -1105,6 +1104,11 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
         step(command);
     }
 
+    @Override
+    public int getNumberOfChoices() {
+        return ACTIONSPACE_SIZE;
+    }
+
     @SuppressWarnings("WeakerAccess")
     static class VertHolder {
         public float torsoX;
@@ -1113,11 +1117,15 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
         public float[] headLocAndRadius = new float[3];
     }
 
-    public void doAction(Action action) {
-        Action a = action.getCopy();
+    public void doAction(Action<CommandQWOP> action) {
+        Action<CommandQWOP> a = action.getCopy();
         while (a.hasNext()) {
             command(a.poll());
         }
+    }
+
+    public void setPhysicsIterations(int iterations) {
+        this.iterations = iterations;
     }
 
     /**
@@ -1201,7 +1209,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     /**
      * Draw the runner at a specified set of transforms..
      **/
-    public static void drawExtraRunner(Graphics2D g, IState state, String label, float scaling, int xOffset,
+    public static void drawExtraRunner(Graphics2D g, StateQWOP state, String label, float scaling, int xOffset,
                                        int yOffset, Color drawColor, Stroke stroke) {
 
         XForm[] transforms = getXForms(state);
@@ -1246,10 +1254,11 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     }
 
     /**
-     * Get the transform associated with this State. Note that these transforms can ONLY be used with this instance
+     * Get the transform associated with this StateQWOP. Note that these transforms can ONLY be used with this instance
      * of GameThreadSafe.
      */
-    public static XForm[] getXForms(IState st) {
+    public static XForm[] getXForms(StateQWOP st) {
+
         XForm[] transforms = new XForm[13];
         transforms[0] = getXForm(st.getStateVariableFromName(ObjectName.BODY));
         transforms[1] = getXForm(st.getStateVariableFromName(ObjectName.HEAD));
@@ -1263,8 +1272,8 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
         transforms[9] = getXForm(st.getStateVariableFromName(ObjectName.LUARM));
         transforms[10] = getXForm(st.getStateVariableFromName(ObjectName.RLARM));
         transforms[11] = getXForm(st.getStateVariableFromName(ObjectName.LLARM));
-        transforms[12] = getXForm(new StateVariable(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
-        // Offset by 20 because its now a box.
+        transforms[12] = getXForm(new StateVariable6D(0, trackPosY, 0, 0, 0, 0)); // Hardcoded for track.
+        // Offset by 20 because it's a box.
         return transforms;
     }
 
@@ -1272,7 +1281,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
      * Get the transform associated with this body's state variables. Note that these transforms can ONLY be used
      * with this instance of GameThreadSafe.
      */
-    public static XForm getXForm(StateVariable sv) {
+    public static XForm getXForm(StateVariable6D sv) {
         XForm xf = new XForm();
         xf.position.x = sv.getX();
         xf.position.y = sv.getY();
@@ -1348,7 +1357,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
          * Check if the right foot is touching the ground.
          **/
         @SuppressWarnings("unused")
-        public boolean isRightFootGrounded() {
+        boolean isRightFootGrounded() {
             return rFootDown;
         }
 
@@ -1356,7 +1365,7 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
          * Check if the left foot is touching the ground.
          **/
         @SuppressWarnings("unused")
-        public boolean isLeftFootGrounded() {
+        boolean isLeftFootGrounded() {
             return lFootDown;
         }
     }
@@ -1368,8 +1377,8 @@ public class GameUnified implements IGameSerializable<CommandQWOP> {
     }
 
     @Override
-    public GameUnified restoreSerializedState(byte[] fullState) {
-        GameUnified gameRestored = (GameUnified) fstConfiguration.asObject(fullState);
+    public GameQWOP restoreSerializedState(byte[] fullState) {
+        GameQWOP gameRestored = (GameQWOP) fstConfiguration.asObject(fullState);
         // Replace all the relevant game fields which have been loaded.
         assert gameRestored != null;
         return gameRestored;

@@ -1,6 +1,7 @@
 package game;
 
 import game.action.Command;
+import game.state.IState;
 
 /**
  * An external game must both be able to receive commands and provide a state. However, its timing and state might
@@ -8,4 +9,5 @@ import game.action.Command;
  *
  * @author matt
  */
-public interface IGameExternal<C extends Command<?>> extends IGameCommandTarget<C>, IGameStateSource {}
+public interface IGameExternal<C extends Command<?>, S extends IState> extends IGameCommandTarget<C>,
+        IGameStateSource<S> {}

@@ -1,21 +1,23 @@
 package data;
 
-import java.io.Serializable;
-
 import game.action.Action;
+import game.action.Command;
 
-public class SavableActionSequence implements Serializable {
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+public class SavableActionSequence<C extends Command<?>> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Action[] actions;
+    private List<Action<C>> actions;
 
-    public SavableActionSequence(Action[] actions) {
-        this.actions = actions;
+    public SavableActionSequence(List<Action<C>> actions) {
+        new ArrayList<>(actions);
     }
 
-    public Action[] getActions() {
+    public List<Action<C>> getActions() {
         return actions;
     }
-
 }

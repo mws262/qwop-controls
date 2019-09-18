@@ -17,13 +17,13 @@ tfrecordPaths = ['../src/main/resources/saved_data/training_data/']  # Location 
 stateKeys = ['BODY', 'HEAD', 'RTHIGH', 'LTHIGH', 'RCALF', 'LCALF',
              'RFOOT', 'LFOOT', 'RUARM', 'LUARM', 'RLARM', 'LLARM']
 
-# Various action parameterizations put in the TFRECORD files
+# Various command parameterizations put in the TFRECORD files
 actionKeys = ['PRESSED_KEYS', 'PRESSED_KEYS_ONE_HOT', 'TIME_TO_TRANSITION', 'ACTIONS']
 
 # Various information pertaining to the ENTIRE run, but not recorded at every timestep
 contextKeys = ['TIMESTEPS']
 
-# Tensorflow placeholders for for sequence and action features as defined by the stateKeys and actionKeys above.
+# Tensorflow placeholders for for sequence and command features as defined by the stateKeys and actionKeys above.
 sequence_features = {skey: tf.FixedLenSequenceFeature([6], tf.float32, True) for skey in stateKeys}
 sequence_features.update({akey: tf.FixedLenSequenceFeature([], tf.string, True) for akey in actionKeys})
 context_features = {ckey: tf.FixedLenFeature([], tf.int64, True) for ckey in contextKeys}

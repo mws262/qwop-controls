@@ -3,16 +3,18 @@ package controllers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import game.GameUnified;
+import game.IGameInternal;
 import game.IGameSerializable;
 import game.action.Action;
-import tree.node.NodeQWOPExplorableBase;
+import game.action.Command;
+import game.state.IState;
+import tree.node.NodeGameExplorableBase;
 
 import java.awt.*;
 
 /**
- * Interface for defining general QWOP controllers. Follows the typical state to action mapping. If an implementation
- * of an IController wants to use a history of states or game.action, it should store these locally itself.
+ * Interface for defining general QWOP controllers. Follows the typical state to command mapping. If an implementation
+ * of an IController wants to use a history of states or game.command, it should store these locally itself.
  *
  * @author matt
  */
@@ -26,27 +28,27 @@ import java.awt.*;
 //        @JsonSubTypes.Type(value = Controller_NearestNeighborApprox.class, name = "nearest_neighbor"),
         @JsonSubTypes.Type(value = Controller_Tensorflow_ClassifyActionsPerTimestep.class, name = "classifier")
 })
-public interface IController extends AutoCloseable {
+public interface IController<C extends Command<?>, S extends IState> extends AutoCloseable {
 
     /**
-     * Controller maps a current state to an action to take.
+     * Controller maps a current state to an command to take.
      *
      * @param state Current state.
-     * @return An action to take.
+     * @return An command to take.
      */
-    Action policy(NodeQWOPExplorableBase<?> state);
+    Action<C> policy(NodeGameExplorableBase<?, C, S> state);
 
     /**
-     * Get a control action. For some controllers, the hidden game state can be used in the policy. For this, an
+     * Get a control command. For some controllers, the hidden game state can be used in the policy. For this, an
      * IGameSerializable at the current game state may be used. For some controllers, this game parameter is ignored.
      * @param state Current visible state.
      * @param game Game at the current configuration containing the hidden state.
-     * @return An action to take.
+     * @return An command to take.
      */
-    Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game);
+    Action<C> policy(NodeGameExplorableBase<?, C, S> state, IGameSerializable<C, S> game);
 
     @JsonIgnore
-    IController getCopy();
+    IController<C, S> getCopy();
     
     @Override
     void close();
@@ -59,5 +61,6 @@ public interface IController extends AutoCloseable {
      * @param xOffsetPixels Horizontal pixel offset from scaled world coordinates.
      * @param runnerScaling Scaling from world coordinates to window pixel coordinates.
      **/
-    default void draw(Graphics g, GameUnified game, float runnerScaling, int xOffsetPixels, int yOffsetPixels) {}
+    default void draw(Graphics g, IGameInternal<C, S> game, float runnerScaling, int xOffsetPixels,
+                      int yOffsetPixels) {}
 }

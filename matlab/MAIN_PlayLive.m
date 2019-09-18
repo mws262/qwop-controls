@@ -7,10 +7,10 @@ function MAIN_PlayLive
 
 % Handle Java imports.
 eval('javaaddpath ../target/qwop-controls-1.0-jar-with-dependencies.jar'); % Strange issues with trying to directly call these commands. Eval seems to fix it.
-eval('import game.state.State game.state.StateVariable game.GameUnified');
+eval('import game.qwop.StateQWOP game.state.StateVariable6D game.qwop.GameQWOP');
 
 % Make a new game (implementation in Java).
-qwopGame = game.GameUnified;
+qwopGame = game.qwop.GameQWOP;
 
 % Create graphics objects.
 close all;

@@ -1,28 +1,24 @@
 package controllers;
 
 import game.IGameSerializable;
-import game.action.Action;
-import game.action.CommandQWOP;
-import tree.node.NodeQWOPExplorableBase;
+import game.action.*;
+import game.state.IState;
+import tree.node.NodeGameExplorableBase;
 
-public class Controller_Random implements IController {
+public class Controller_Random<C extends Command<?>, S extends IState> implements IController<C, S> {
     @Override
-    public Action policy(NodeQWOPExplorableBase<?> state) {
-        if (state.getUntriedActionCount() > 0) {
-            return state.getUntriedActionOnDistribution();
-        }else {
-            return new Action(1, CommandQWOP.NONE);
-        }
+    public Action<C> policy(NodeGameExplorableBase<?, C, S> state) {
+        return state.getAllPossibleChildActions().getRandom();
     }
 
     @Override
-    public Action policy(NodeQWOPExplorableBase<?> state, IGameSerializable game) {
+    public Action<C> policy(NodeGameExplorableBase<?, C, S> state, IGameSerializable<C, S> game) {
         return policy(state);
     }
 
     @Override
-    public IController getCopy() {
-        return new Controller_Random();
+    public IController<C, S> getCopy() {
+        return new Controller_Random<>();
     }
 
     @Override

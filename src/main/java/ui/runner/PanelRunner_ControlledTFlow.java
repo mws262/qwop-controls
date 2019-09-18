@@ -2,10 +2,16 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_ValueFunction;
-import game.GameUnified;
+import game.IGameSerializable;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.GameQWOPCaching;
+import game.qwop.IStateQWOP;
+import game.state.transform.ITransform;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import javax.swing.*;
@@ -23,22 +29,26 @@ import java.util.Objects;
 /**
  * Panel for showing the behavior of controllers based around {@link ValueFunction_TensorFlow_StateOnly}. Has GUI
  * menus for selecting which Tensorflow model to use and which checkpoint file to load.
- * @param <G> Game type being used. The dimension of the state output must match the value function's input size.
  */
-public class PanelRunner_ControlledTFlow<G extends GameUnified>
-        extends PanelRunner_Controlled<Controller_ValueFunction<ValueFunction_TensorFlow_StateOnly>, G>
+public class PanelRunner_ControlledTFlow<S extends IStateQWOP>
+        extends PanelRunner_Controlled<Controller_ValueFunction<CommandQWOP, S,
+        ValueFunction_TensorFlow<CommandQWOP, S>>, S, IGameSerializable<CommandQWOP, S>>
         implements MouseListener, MouseMotionListener, ActionListener {
 
     /**
      * Name of the directory containing all the model (.pb) files.
      */
+    @JsonProperty("modelLocation")
     public final String modelLocation;
 
     /**
      * Name of the directory containing all the checkpoint files.
      */
+    @JsonProperty("checkpointLocation")
     public final String checkpointLocation;
 
+    @JsonProperty("stateNormalizer")
+    private final ITransform<S> stateNormalizer;
     /**
      * Drop-down menu for selecting Tensorflow model.
      */
@@ -74,13 +84,15 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
     private float disturbanceY;
 
     public PanelRunner_ControlledTFlow(@JsonProperty("name") String name,
-                                       @JsonProperty("game") G game,
+                                       @JsonProperty("game") IGameSerializable<CommandQWOP, S> game,
+                                       @JsonProperty("stateNormalizer") ITransform<S> stateNormalizer,
                                        @JsonProperty("modelLocation") String modelLocation,
                                        @JsonProperty("checkpointLocation") String checkpointLocation) {
         super(name, game, null);
 
         this.modelLocation = modelLocation;
         this.checkpointLocation = checkpointLocation;
+        this.stateNormalizer = stateNormalizer;
 
         // Selecting the TFlow model.
         JLabel modelLabel = new JLabel("Model");
@@ -220,9 +232,10 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
                 }
                 controller =
                         new Controller_ValueFunction<>(
-                                new ValueFunction_TensorFlow_StateOnly(
+                                new ValueFunction_TensorFlow_StateOnly<>(
                                         Paths.get(modelLocation, selectedModel).toFile(),
                                         game,
+                                        stateNormalizer,
                                         false
                                 )
                         );
@@ -312,8 +325,13 @@ public class PanelRunner_ControlledTFlow<G extends GameUnified>
     public void mouseMoved(MouseEvent e) {}
 
     @Override
-    void applyDisturbance(G game) {
-        game.applyBodyImpulse(disturbanceX, disturbanceY);
+    void applyDisturbance(IGameSerializable<CommandQWOP, S> game) {
+        // TODO other game types.
+        if (game instanceof GameQWOP) {
+            ((GameQWOP) game).applyBodyImpulse(disturbanceX, disturbanceY);
+        } else if (game instanceof GameQWOPCaching) {
+            ((GameQWOPCaching) game).applyBodyImpulse(disturbanceX, disturbanceY);
+        }
     }
 
     /**

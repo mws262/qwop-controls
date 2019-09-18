@@ -1,8 +1,8 @@
 package goals.interactive;
 
-import game.GameUnified;
+import game.qwop.GameQWOP;
 import game.state.IState;
-import game.state.State;
+import game.qwop.StateQWOP;
 import org.tensorflow.Tensor;
 import tflowtools.TensorflowLoader;
 import ui.runner.PanelRunner_SimpleState;
@@ -24,7 +24,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
     private Tensor<Float> currentGameStateTensor;
     private Tensor<Float> currentInternalState;
 
-    private IState currentGameState =  GameUnified.getInitialState();
+    private IState currentGameState =  GameQWOP.getInitialState();
 
     /**
      * Load the computational graph from a .pb file and also make a new session.
@@ -41,7 +41,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
         currentInternalState = null;
     }
 
-    public IState advance(boolean[] keys) {
+    public StateQWOP advance(boolean[] keys) {
 
         if (currentInternalState == null) { // First timestep we don't supply an internal state.
 
@@ -75,7 +75,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
 
         }
 
-        // Convert the game state tensor into a State object.
+        // Convert the game state tensor into a StateQWOP object.
         long[] outputShape = currentGameStateTensor.shape();
         float[] reshapedResult =
                 currentGameStateTensor.copyTo(new float[(int) outputShape[0]]
@@ -84,7 +84,7 @@ public class PlayableGamePredictor extends TensorflowLoader {
 
         currentGameStateTensor.close();
         currentInternalState.close();
-        return new State(reshapedResult, false);
+        return new StateQWOP(reshapedResult, false);
     }
 
     private Tensor<Float> makeActionTensor(boolean[] keys) {

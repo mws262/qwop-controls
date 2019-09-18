@@ -3,34 +3,35 @@ package savers;
 import com.google.protobuf.ByteString;
 import data.TFRecordWriter;
 import game.action.Action;
+import game.qwop.CommandQWOP;
+import game.qwop.IStateQWOP.ObjectName;
+import game.qwop.StateQWOP;
 import game.state.IState;
-import game.state.State;
-import game.state.StateVariable;
+import game.state.StateVariable6D;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tensorflow.example.*;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
-public class DataSaver_DenseTFRecord extends DataSaver_Dense {
+public class DataSaver_DenseTFRecord extends DataSaver_Dense<CommandQWOP, StateQWOP> {
 
-    static int id_max = 0;
-    int id;
+    private static int id_max = 0;
+    private int id;
     /**
      * Filename prefix. Goes in front of date.
      */
-    @SuppressWarnings("WeakerAccess")
     public final String filePrefix = "denseTF";
 
     /**
      * File extension. Do not include dot before.
      */
-    @SuppressWarnings("WeakerAccess")
     public final String fileExtension = "TFRecord";
 
     /**
@@ -44,7 +45,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     private int saveCounter = 0;
 
     /**
-     * List of sets of states and game.action for individual games awaiting file write.
+     * List of sets of states and game.command for individual games awaiting file write.
      */
     private ArrayList<GameContainer> gameData = new ArrayList<>();
 
@@ -60,9 +61,14 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      * @param endNode Not required. Null may be given.
      */
     @Override
-    public void reportGameEnding(NodeQWOPBase<?> endNode) {
+    public void reportGameEnding(NodeGameBase<?, CommandQWOP, StateQWOP> endNode) {
         saveCounter++;
-        gameData.add(new GameContainer(actionBuffer, stateBuffer));
+        // TODO remove stupid cast.
+        List<StateQWOP> states = new ArrayList<>();
+        for (IState st : stateBuffer) {
+            states.add((StateQWOP) st);
+        }
+        gameData.add(new GameContainer(actionBuffer, states));
 
         if (getSaveInterval() == saveCounter) {
             toFile();
@@ -97,14 +103,12 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     /**
      * Make a single feature representing the 6 state variables for a single body part at a single timestep. Append
      * to existing FeatureList for that body part.
-     * @param state
-     * @param bodyPart Body part that the data is being given for. Comes from {@link State.ObjectName}.
-     * @param listToAppendTo
+     * @param bodyPart Body part that the data is being given for. Comes from {@link ObjectName}.
      */
-    private static void makeFeature(IState state, State.ObjectName bodyPart, FeatureList.Builder listToAppendTo) {
+    private static void makeFeature(StateQWOP state, ObjectName bodyPart, FeatureList.Builder listToAppendTo) {
         Feature.Builder feat = Feature.newBuilder();
         FloatList.Builder featVals = FloatList.newBuilder();
-        for (StateVariable.StateName stateName : StateVariable.StateName.values()) { // Iterate over all 6 state variables.
+        for (StateVariable6D.StateName stateName : StateVariable6D.StateName.values()) { // Iterate over all 6 state variables.
             featVals.addValue(state.getStateVariableFromName(bodyPart).getStateByName(stateName));
         }
         feat.setFloatList(featVals.build());
@@ -115,10 +119,10 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
      * Make a time series for a single run of a single state variable as a
      * FeatureList. Add to the broader list of FeatureList for this run.
      */
-    private static void makeStateFeatureList(ArrayList<IState> states, State.ObjectName bodyPart,
+    private static void makeStateFeatureList(ArrayList<StateQWOP> states, ObjectName bodyPart,
 											 FeatureLists.Builder featLists) {
         FeatureList.Builder featList = FeatureList.newBuilder();
-        for (IState st : states) { // Iterate through the timesteps in a single run.
+        for (StateQWOP st : states) { // Iterate through the timesteps in a single run.
             makeFeature(st, bodyPart, featList);
         }
         featLists.putFeatureList(bodyPart.toString(), featList.build()); // Add this feature to the broader list of
@@ -144,29 +148,29 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
         for (GameContainer dat : gameData) {
             int actionPad = dat.states.size() - dat.actions.size(); // Make the dimensions match for coding convenience.
             if (actionPad != 1) {
-                logger.warn("Dimensions of state is not 1 more than dimension of action as expected. Ignoring " +
+                logger.warn("Dimensions of state is not 1 more than dimension of command as expected. Ignoring " +
 						"this one.");
                 continue;
             }
             SequenceExample.Builder seqEx = SequenceExample.newBuilder();
-            FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & game.action) in a
+            FeatureLists.Builder featLists = FeatureLists.newBuilder(); // All features (states & game.command) in a
 			// single run.
 
             // Pack up states
-            for (State.ObjectName bodyPart : State.ObjectName.values()) { // Make feature lists for all the body
+            for (ObjectName bodyPart : ObjectName.values()) { // Make feature lists for all the body
             	// parts and add to the overall list of feature lists.
                 makeStateFeatureList(dat.states, bodyPart, featLists);
             }
 
-            // Pack up game.action -- 3 different ways:
+            // Pack up game.command -- 3 different ways:
             // 1) a Keys pressed at individual timestep.
             // 1) b Key categories pressed at individual timestep i.e. WO, QP, __ are three categories, labeled one hot.
             // 2) Timesteps until transition for each timestep.
-            // 3) Just the action sequence (shorter than number of timesteps)
+            // 3) Just the command sequence (shorter than number of timesteps)
 
             // 1) a Keys pressed at individual timestep. 0 or 1 in bytes for each key
             FeatureList.Builder keyFeatList = FeatureList.newBuilder();
-            for (Action act : dat.actions) {
+            for (Action<CommandQWOP> act : dat.actions) {
                 Feature.Builder keyFeat = Feature.newBuilder();
                 BytesList.Builder keyDat = BytesList.newBuilder();
                 byte[] keys = new byte[]{
@@ -190,7 +194,7 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
             // 1) b Key combinations categorized, one-hot.
             FeatureList.Builder keyCatFeatList = FeatureList.newBuilder();
-            for (Action act : dat.actions) {
+            for (Action<CommandQWOP> act : dat.actions) {
                 Feature.Builder keyCatFeat = Feature.newBuilder();
                 BytesList.Builder keyCatDat = BytesList.newBuilder();
                 byte[] keysCat = new byte[]{
@@ -239,10 +243,10 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
 
             featLists.putFeatureList("TIME_TO_TRANSITION", transitionTSList.build());
 
-            // 3) Just the action sequence (shorter than number of timesteps) -- bytestrings e.g. [15, 1, 0, 0, 1]
+            // 3) Just the command sequence (shorter than number of timesteps) -- bytestrings e.g. [15, 1, 0, 0, 1]
             FeatureList.Builder actionList = FeatureList.newBuilder();
-            Action prevAct = null;
-            for (Action act : dat.actions) {
+            Action<CommandQWOP> prevAct = null;
+            for (Action<CommandQWOP> act : dat.actions) {
                 if (!act.equals(prevAct)) {
                     prevAct = act;
                     Feature.Builder sequenceFeat = Feature.newBuilder();
@@ -278,17 +282,17 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense {
     }
 
     /**
-     * Just a holder for the states and game.action of individual games.
+     * Just a holder for the states and game.command of individual games.
      * Just so we can add these combinations to another list.
      *
      * @author matt
      */
     private static class GameContainer {
 
-        ArrayList<Action> actions = new ArrayList<>();
-        ArrayList<IState> states = new ArrayList<>();
+        ArrayList<Action<CommandQWOP>> actions = new ArrayList<>();
+        ArrayList<StateQWOP> states = new ArrayList<>();
 
-        private GameContainer(ArrayList<Action> actions, ArrayList<IState> states) {
+        private GameContainer(List<Action<CommandQWOP>> actions, List<StateQWOP> states) {
             this.actions.addAll(actions);
             this.states.addAll(states);
         }

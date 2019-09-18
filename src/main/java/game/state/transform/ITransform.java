@@ -1,8 +1,12 @@
 package game.state.transform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import controllers.*;
+import game.qwop.StateQWOP;
+import game.qwop.StateQWOPDelayEmbedded_Differences;
+import game.qwop.StateQWOPDelayEmbedded_HigherDifferences;
+import game.qwop.StateQWOPDelayEmbedded_Poses;
 import game.state.IState;
 
 import java.util.List;
@@ -18,16 +22,21 @@ import java.util.List;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Transform_Autoencoder.class, name = "autoencoder"),
         @JsonSubTypes.Type(value = Transform_PCA.class, name = "pca"),
-        @JsonSubTypes.Type(value = Transform_Identity.class, name = "identity")
+        @JsonSubTypes.Type(value = Transform_Identity.class, name = "identity"),
+        @JsonSubTypes.Type(value = StateQWOP.Normalizer.class, name = "normalizer_stateqwop"),
+        @JsonSubTypes.Type(value = StateQWOPDelayEmbedded_Differences.Normalizer.class, name = "normalizer_qwopdiffs"),
+        @JsonSubTypes.Type(value = StateQWOPDelayEmbedded_Poses.Normalizer.class, name = "normalizer_qwopposes"),
+        @JsonSubTypes.Type(value = StateQWOPDelayEmbedded_HigherDifferences.Normalizer.class, name =
+                "normalizer_qwophigherdiffs")
 })
-public interface ITransform {
+public interface ITransform<S extends IState> {
 
     /**
      * Update any necessary transform calculations. Not used by all types of transforms.
      *
      * @param statesToUpdateFrom The transform is updated using the data in this list.
      */
-    void updateTransform(List<IState> statesToUpdateFrom);
+    void updateTransform(List<S> statesToUpdateFrom);
 
     /**
      * Transform states into arrays of numbers. Potentially, this is state reduction by means of an
@@ -36,7 +45,9 @@ public interface ITransform {
      * @param originalStates List of states to transform.
      * @return A list of float arrays containing the transformed versions of each of the states in the input list.
      */
-    List<float[]> transform(List<IState> originalStates);
+    List<float[]> transform(List<S> originalStates);
+
+    float[] transform(S originalState);
 
     /**
      * Reverse a transform, if possible. In other words, take an array of numbers and turn it into a state.
@@ -44,7 +55,7 @@ public interface ITransform {
      * @param transformedStates List of float arrays containing transformed representations of states.
      * @return List of states constructed by untransforming the input values.
      */
-    List<IState> untransform(List<float[]> transformedStates);
+    List<float[]> untransform(List<float[]> transformedStates);
 
     /**
      * Transform and then untransform a list of states. This can be useful to see what kinds of properties are
@@ -53,7 +64,7 @@ public interface ITransform {
      * @param originalStates A list of states to transform/untransform.
      * @return A list of states resulting from transforming and then untransforming an original list of states.
      */
-    List<IState> compressAndDecompress(List<IState> originalStates);
+    List<float[]> compressAndDecompress(List<S> originalStates);
 
     /**
      * Find out the number of floats used to represent each state after transformation. For model reduction, this
@@ -62,6 +73,7 @@ public interface ITransform {
      * @return Number of floats that each {@link IState} will be transformed into when calling
      * {@link ITransform#transform(List)}.
      */
+    @JsonIgnore
     int getOutputSize();
 
     /**
@@ -69,5 +81,6 @@ public interface ITransform {
      *
      * @return The name of this transform.
      */
+    @JsonIgnore
     String getName();
 }

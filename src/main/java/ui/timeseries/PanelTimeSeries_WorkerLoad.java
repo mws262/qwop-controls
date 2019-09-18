@@ -2,6 +2,8 @@ package ui.timeseries;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import game.action.Command;
+import game.state.IState;
 import tree.TreeWorker;
 
 import javax.swing.*;
@@ -9,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runnable {
+public class PanelTimeSeries_WorkerLoad<C extends Command<?>, S extends IState> extends PanelTimeSeries implements Runnable {
 
     private static final long serialVersionUID = 1L;
 
-    private List<TreeWorker> workerList = new ArrayList<>();
+    private List<TreeWorker<C, S>> workerList = new ArrayList<>();
 
     private final String name;
 
@@ -29,7 +31,7 @@ public class PanelTimeSeries_WorkerLoad extends PanelTimeSeries implements Runna
         add(label);
     }
 
-    public void setWorkers(List<TreeWorker> workers) {
+    public void setWorkers(List<TreeWorker<C, S>> workers) {
         workerList.clear();
         workerList.addAll(workers);
     }

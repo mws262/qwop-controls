@@ -1,21 +1,20 @@
 package ui.scatterplot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import game.GameUnified;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
-import game.state.IState;
-import game.state.State;
-import game.state.StateVariable;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
+import game.state.StateVariable6D;
 import game.state.transform.ITransform;
 import game.state.transform.Transform_Autoencoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jfree.chart.plot.XYPlot;
-import tree.node.NodeQWOPExplorableBase;
-import tree.node.NodeQWOPGraphicsBase;
+import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphicsBase;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -34,28 +33,28 @@ import java.util.stream.IntStream;
  *
  * @author matt
  */
-public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
+public class PanelPlot_SingleRun extends PanelPlot<CommandQWOP, StateQWOP> implements KeyListener {
 
     /**
      * Copy of the game used to obtain all the states along a single run by re-simulating it.
      */
-    private IGameInternal<CommandQWOP> game;
+    private IGameInternal<CommandQWOP, StateQWOP> game;
 
     /**
      * Transformer to use to transform normal states into reduced coordinates.
      */
-    private ITransform transformer = new Transform_Autoencoder("src/main/resources/tflow_models" +
+    private ITransform<StateQWOP> transformer = new Transform_Autoencoder<>("src/main/resources/tflow_models" +
             "/AutoEnc_72to8_6layer.pb", 8);//new Transform_Identity();
 
     /**
-     * Stores the qwop game.action we're going to execute.
+     * Stores the qwop game.command we're going to execute.
      */
-    private ActionQueue actionQueue = new ActionQueue();
+    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
 
     /**
      * List of all the states that we got from simulating. Not just at nodes.
      */
-    private List<IState> stateList = new ArrayList<>();
+    private List<StateQWOP> stateList = new ArrayList<>();
     private List<float[]> transformedStates = new ArrayList<>();
     private List<CommandQWOP> commandList = new ArrayList<>();
 
@@ -75,9 +74,9 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     private final int numPlots;
 
     /**
-     * Node that we're plotting the game.action/states up to.
+     * Node that we're plotting the game.command/states up to.
      */
-    private NodeQWOPExplorableBase<?> selectedNode;
+    private NodeGameExplorableBase<?, CommandQWOP, StateQWOP> selectedNode;
 
     private final String name;
 
@@ -87,7 +86,7 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     public PanelPlot_SingleRun(@JsonProperty("name") String name, @JsonProperty("numberOfPlots") int numberOfPlots) {
         super(numberOfPlots);
         this.name = name;
-        game = new GameUnified();
+        game = new GameQWOP();
 
         numPlots = transformer.getOutputSize();
         this.plotsPerView = numberOfPlots;
@@ -98,14 +97,14 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     /**
      * Run the simulation to collect the state info we want to plot.
      */
-    private void simRunToNode(NodeQWOPExplorableBase<?> node) {
+    private void simRunToNode(NodeGameExplorableBase<?, CommandQWOP, StateQWOP> node) {
         stateList.clear();
         transformedStates.clear();
         commandList.clear();
         actionQueue.clearAll();
-        game.makeNewWorld();
+        game.resetGame();
 
-        ArrayList<Action> actionList = new ArrayList<>();
+        ArrayList<Action<CommandQWOP>> actionList = new ArrayList<>();
         node.getSequence(actionList);
         actionQueue.addSequence(actionList);
         for (Action a : actionList) {
@@ -122,7 +121,9 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
     }
 
     @Override
-    public void update(NodeQWOPGraphicsBase<?> plotNode) { // Note that this is different from the other PlotPanes.
+    public void update(NodeGameGraphicsBase<?, CommandQWOP, StateQWOP> plotNode) { // Note that this is different from
+        // the other
+        // PlotPanes.
         // It plots UP TO this
         // node rather than below this node.
         if (plotNode.getTreeDepth() == 0) return; // Nothing to see from root.
@@ -150,13 +151,13 @@ public class PanelPlot_SingleRun extends PanelPlot implements KeyListener {
                     commandList.stream().map(b -> (float) ((b.get()[0] ? 1 : 0) + (b.get()[1] ? 2 : 0) + (b.get()[2] ?
                     4 : 0) + (b.get()[3] ? 8 : 0))).toArray(Float[]::new);
             Color[] cData =
-                    IntStream.range(0, yData.length).mapToObj(i -> NodeQWOPGraphicsBase.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.getTreeDepth()), NodeQWOPGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
+                    IntStream.range(0, yData.length).mapToObj(i -> NodeGameGraphicsBase.getColorFromTreeDepth((int) (i / (float) xData.length * (float) selectedNode.getTreeDepth()), NodeGameGraphicsBase.lineBrightnessDefault)).toArray(Color[]::new);
 
             pl.getRangeAxis().setLabel("Command combination");
-            pl.getDomainAxis().setLabel(State.ObjectName.values()[firstPlotRow].toString() + " " +
-                    StateVariable.StateName.values()[count].toString());
+            pl.getDomainAxis().setLabel(StateQWOP.ObjectName.values()[firstPlotRow].toString() + " " +
+                    StateVariable6D.StateName.values()[count].toString());
 
-            dat.addSeries(0, Arrays.copyOf(xData, xData.length - 1), yData, cData); // Have more states than game.action,
+            dat.addSeries(0, Arrays.copyOf(xData, xData.length - 1), yData, cData); // Have more states than game.command,
             // so will kill the last one.
 
             setPlotBoundsFromData(pl, xData, yData);

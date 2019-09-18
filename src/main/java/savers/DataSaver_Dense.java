@@ -2,14 +2,15 @@ package savers;
 
 import game.action.Action;
 import game.IGameInternal;
+import game.action.Command;
 import game.state.IState;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGameBase;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Saving to file with full state and action data at every timestep.
+ * Saving to file with full state and command data at every timestep.
  * Data formatting and crunching into a file is handled by inheriting
  * classes. This only covers the basic data collection from
  * Negotiator.
@@ -17,14 +18,15 @@ import java.util.List;
  * @author matt
  */
 
-public abstract class DataSaver_Dense implements IDataSaver {
+public abstract class DataSaver_Dense<C extends Command<?>, S extends IState> implements IDataSaver<C, S> {
 
     /**
      * Action buffer cleared once per game.
      */
-    final ArrayList<Action> actionBuffer = new ArrayList<>();
+    final ArrayList<Action<C>> actionBuffer = new ArrayList<>();
+
     /**
-     * State buffer cleared once per game.
+     * StateQWOP buffer cleared once per game.
      */
     final ArrayList<IState> stateBuffer = new ArrayList<>();
 
@@ -51,13 +53,13 @@ public abstract class DataSaver_Dense implements IDataSaver {
     }
 
     @Override
-    public void reportTimestep(Action action, IGameInternal game) {
+    public void reportTimestep(Action<C> action, IGameInternal<C, S> game) {
         stateBuffer.add(game.getCurrentState());
         actionBuffer.add(action);
     }
 
     @Override
-    public void reportStageEnding(NodeQWOPBase<?> rootNode, List<NodeQWOPBase<?>> targetNodes) {
+    public void reportStageEnding(NodeGameBase<?, C, S> rootNode, List<NodeGameBase<?, C, S>> targetNodes) {
     }
 
     @Override
@@ -81,5 +83,5 @@ public abstract class DataSaver_Dense implements IDataSaver {
     }
 
     @Override
-    public abstract DataSaver_Dense getCopy();
+    public abstract DataSaver_Dense<C, S> getCopy();
 }

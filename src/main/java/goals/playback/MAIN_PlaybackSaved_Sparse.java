@@ -2,9 +2,11 @@ package goals.playback;
 
 import data.SavableFileIO;
 import data.SavableSingleGame;
-import game.GameUnified;
-import tree.node.NodeQWOPGraphics;
-import tree.node.NodeQWOPGraphicsBase;
+import game.qwop.GameQWOP;
+import game.qwop.CommandQWOP;
+import game.qwop.StateQWOP;
+import tree.node.NodeGameGraphics;
+import tree.node.NodeGameGraphicsBase;
 import ui.runner.PanelRunner_Animated;
 
 import javax.swing.*;
@@ -37,7 +39,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
 
     private File saveLoc = new File("src/main/resources/saved_data/11_2_18");
 
-    private List<NodeQWOPGraphics> leafNodes = new ArrayList<>();
+    private List<NodeGameGraphics<CommandQWOP, StateQWOP>> leafNodes = new ArrayList<>();
 
     /**
      * What point to start displaying from (to skip any prefix).
@@ -59,7 +61,7 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
         Thread runnerThread = new Thread(runnerPane);
         runnerThread.start();
 
-        setTitle("Simulate saved game.action from file");
+        setTitle("Simulate saved game.command from file");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(windowWidth, windowHeight));
         pack();
@@ -79,17 +81,17 @@ public class MAIN_PlaybackSaved_Sparse extends JFrame {
         }
         Collections.shuffle(playbackFiles);
 
-        SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
+        SavableFileIO<SavableSingleGame<CommandQWOP, StateQWOP>> fileIO = new SavableFileIO<>();
         for (File f : playbackFiles) {
-            NodeQWOPGraphics rootNode = new NodeQWOPGraphics(GameUnified.getInitialState());
+            NodeGameGraphics<CommandQWOP, StateQWOP> rootNode = new NodeGameGraphics<>(GameQWOP.getInitialState());
 
-            List<SavableSingleGame> loadedGames = new ArrayList<>();
+            List<SavableSingleGame<CommandQWOP, StateQWOP>> loadedGames = new ArrayList<>();
             fileIO.loadObjectsToCollection(f, loadedGames);
-            NodeQWOPGraphicsBase.makeNodesFromRunInfo(loadedGames, rootNode);
+            NodeGameGraphicsBase.makeNodesFromRunInfo(loadedGames, rootNode);
             leafNodes.clear();
             rootNode.getLeaves(leafNodes);
-            NodeQWOPGraphics endNode = leafNodes.get(0);
-            NodeQWOPGraphics startNode = endNode;
+            NodeGameGraphics<CommandQWOP, StateQWOP> endNode = leafNodes.get(0);
+            NodeGameGraphics<CommandQWOP, StateQWOP> startNode = endNode;
             while (startNode.getTreeDepth() > startPt) {
                 startNode = startNode.getParent();
             }

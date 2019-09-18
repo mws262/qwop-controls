@@ -1,44 +1,43 @@
 package value.updaters;
 
-import game.GameUnified;
 import game.action.Action;
-import game.state.IState;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import tree.node.NodeQWOP;
-import tree.node.NodeQWOPBase;
+import tree.node.NodeGame;
+import tree.node.NodeGameBase;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static game.action.CommandQWOP.Keys.*;
-
 public class ValueUpdater_TopWindowTest {
 
-    private List<NodeQWOPBase<?>> nlist = new ArrayList<>();
-    private Action a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13;
-    private NodeQWOP root, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13;
+    private List<NodeGameBase<?, CommandQWOP, StateQWOP>> nlist = new ArrayList<>();
+    private Action<CommandQWOP> a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13;
+    private NodeGame<CommandQWOP, StateQWOP> root, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13;
 
     @Before
     public void setup() {
-        IState s = GameUnified.getInitialState();
-        a3 = new Action(1, none);
-        a1 = new Action(5, none);
-        a2 = new Action(6, none);
-        a11 = new Action(8, none);
-        a12 = new Action(9, none);
-        a13 = new Action(10, none);
-        a9 = new Action(3, wo);
-        a7 = new Action(4, wo);
-        a6 = new Action(5, wo);
-        a5 = new Action(6, wo);
-        a8 = new Action(7, wo);
-        a10 = new Action(8, wo);
-        a4 = new Action(3, qp);
+        StateQWOP s = GameQWOP.getInitialState();
+        a3 = new Action<>(1, CommandQWOP.NONE);
+        a1 = new Action<>(5, CommandQWOP.NONE);
+        a2 = new Action<>(6, CommandQWOP.NONE);
+        a11 = new Action<>(8, CommandQWOP.NONE);
+        a12 = new Action<>(9, CommandQWOP.NONE);
+        a13 = new Action<>(10, CommandQWOP.NONE);
+        a9 = new Action<>(3, CommandQWOP.WO);
+        a7 = new Action<>(4, CommandQWOP.WO);
+        a6 = new Action<>(5, CommandQWOP.WO);
+        a5 = new Action<>(6, CommandQWOP.WO);
+        a8 = new Action<>(7, CommandQWOP.WO);
+        a10 = new Action<>(8, CommandQWOP.WO);
+        a4 = new Action<>(3, CommandQWOP.QP);
 
-         root = new NodeQWOP(s);
+         root = new NodeGame<>(s);
          n1 = root.addDoublyLinkedChild(a1, s);
          n2 = root.addDoublyLinkedChild(a2, s);
          n3 = root.addDoublyLinkedChild(a3, s);
@@ -70,9 +69,9 @@ public class ValueUpdater_TopWindowTest {
 
     @Test
     public void ClusterSortedNodes() {
-        nlist.sort(Comparator.comparing(NodeQWOPBase::getAction));
+        nlist.sort(Comparator.comparing(NodeGameBase::getAction));
 
-        List<List<NodeQWOPBase<?>>> lists = ValueUpdater_TopWindow.separateClustersInSortedList(nlist);
+        List<List<NodeGameBase<?, CommandQWOP, StateQWOP>>> lists = ValueUpdater_TopWindow.separateClustersInSortedList(nlist);
 
         Assert.assertEquals(1, lists.get(0).size());
         Assert.assertEquals(a3, lists.get(0).get(0).getAction());
@@ -102,7 +101,7 @@ public class ValueUpdater_TopWindowTest {
     @Test
     public void WorstCaseWindow() {
         // Try for various window sizes.
-        ValueUpdater_TopWindow updater = new ValueUpdater_TopWindow(1);
+        ValueUpdater_TopWindow<CommandQWOP, StateQWOP> updater = new ValueUpdater_TopWindow<>(1);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.WORST;
 
         n1.updateValue(8, updater);
@@ -138,7 +137,7 @@ public class ValueUpdater_TopWindowTest {
         root.updateValue(0, updater);
         Assert.assertEquals(20, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(2);
+        updater = new ValueUpdater_TopWindow<>(2);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.WORST;
         root.updateValue(0, updater);
         Assert.assertEquals(11, root.getValue(), 1e-10f);
@@ -147,7 +146,7 @@ public class ValueUpdater_TopWindowTest {
         root.updateValue(0, updater);
         Assert.assertEquals(8, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(3);
+        updater = new ValueUpdater_TopWindow<>(3);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.WORST;
         root.updateValue(0, updater);
         Assert.assertEquals(0, root.getValue(), 1e-10f);
@@ -155,29 +154,29 @@ public class ValueUpdater_TopWindowTest {
         root.updateValue(0, updater);
         Assert.assertEquals(2, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(4);
+        updater = new ValueUpdater_TopWindow<>(4);
         root.updateValue(0, updater);
         Assert.assertEquals(-1, root.getValue(), 1e-10f);
         n8.updateValue(6, updater);
         root.updateValue(0, updater);
         Assert.assertEquals(0, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(5);
+        updater = new ValueUpdater_TopWindow<>(5);
         root.updateValue(0, updater);
         Assert.assertEquals(0, root.getValue(), 1e-10f);
         n5.updateValue(1, updater);
         root.updateValue(0, updater);
         Assert.assertEquals(1, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(6);
+        updater = new ValueUpdater_TopWindow<>(6);
         root.updateValue(0, updater);
         Assert.assertEquals(-1, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(7);
+        updater = new ValueUpdater_TopWindow<>(7);
         root.updateValue(0, updater);
         Assert.assertEquals(-1, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(8);
+        updater = new ValueUpdater_TopWindow<>(8);
         root.updateValue(0, updater);
         Assert.assertEquals(-1, root.getValue(), 1e-10f);
     }
@@ -185,7 +184,7 @@ public class ValueUpdater_TopWindowTest {
     @Test
     public void AverageWindow() {
         // Try for various window sizes.
-        ValueUpdater_TopWindow updater = new ValueUpdater_TopWindow(1);
+        ValueUpdater_TopWindow<CommandQWOP, StateQWOP> updater = new ValueUpdater_TopWindow<>(1);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_OPTIMISTIC;
 
         n1.updateValue(8, updater);
@@ -221,7 +220,7 @@ public class ValueUpdater_TopWindowTest {
         root.updateValue(0f, updater);
         Assert.assertEquals(20f, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(2);
+        updater = new ValueUpdater_TopWindow<>(2);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_OPTIMISTIC;
         root.updateValue(0f, updater);
         Assert.assertEquals(13f, root.getValue(), 1e-10f);
@@ -230,7 +229,7 @@ public class ValueUpdater_TopWindowTest {
         root.updateValue(0f, updater);
         Assert.assertEquals(9f, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(3);
+        updater = new ValueUpdater_TopWindow<>(3);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_OPTIMISTIC;
         root.updateValue(0f, updater);
         Assert.assertEquals(15f/3f, root.getValue(), 1e-10f);
@@ -238,7 +237,7 @@ public class ValueUpdater_TopWindowTest {
         root.updateValue(0f, updater);
         Assert.assertEquals(17f/3f, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(4);
+        updater = new ValueUpdater_TopWindow<>(4);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_OPTIMISTIC;
         root.updateValue(0f, updater);
         Assert.assertEquals(4f, root.getValue(), 1e-10f);
@@ -246,7 +245,7 @@ public class ValueUpdater_TopWindowTest {
         root.updateValue(0f, updater);
         Assert.assertEquals(6f, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(5);
+        updater = new ValueUpdater_TopWindow<>(5);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_OPTIMISTIC;
         root.updateValue(0f, updater);
         Assert.assertEquals(7f, root.getValue(), 1e-10f);
@@ -254,27 +253,27 @@ public class ValueUpdater_TopWindowTest {
         root.updateValue(0, updater);
         Assert.assertEquals(41f/5f, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(6);
+        updater = new ValueUpdater_TopWindow<>(6);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_OPTIMISTIC;
         root.updateValue(0, updater);
         Assert.assertEquals(55f/6f, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(7);
+        updater = new ValueUpdater_TopWindow<>(7);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_OPTIMISTIC;
         root.updateValue(0, updater);
         Assert.assertEquals(55f/6f, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(7);
+        updater = new ValueUpdater_TopWindow<>(7);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_PESSIMISTIC;
         root.updateValue(0, updater);
         Assert.assertEquals(55f/7f, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(8);
+        updater = new ValueUpdater_TopWindow<>(8);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_OPTIMISTIC;
         root.updateValue(0, updater);
         Assert.assertEquals(55f/6f, root.getValue(), 1e-10f);
 
-        updater = new ValueUpdater_TopWindow(8);
+        updater = new ValueUpdater_TopWindow<>(8);
         updater.windowScoringCriterion = ValueUpdater_TopWindow.Criteria.AVERAGE_PESSIMISTIC;
         root.updateValue(0, updater);
         Assert.assertEquals(55f/8f, root.getValue(), 1e-10f);

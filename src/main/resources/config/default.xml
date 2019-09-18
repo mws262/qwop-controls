@@ -8,30 +8,37 @@
   <tree>
     <actionGenerator type="fixed_actions_no_repeats">
       <allActionLists>
+        <@type>CommandQWOP</@type>
         <distribution type="equal"/>
         <none>2 3 4 5 6 7 8 9 10 11 12 13 14 </none>
       </allActionLists>
       <allActionLists>
+        <@type>CommandQWOP</@type>
         <distribution type="equal"/>
         <q>2 3 4 5 6 7 8 9 </q>
       </allActionLists>
       <allActionLists>
+        <@type>CommandQWOP</@type>
         <distribution type="equal"/>
         <qp>2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </qp>
       </allActionLists>
       <allActionLists>
+        <@type>CommandQWOP</@type>
         <distribution type="equal"/>
         <w>2 3 4 5 6 7 8 9 </w>
       </allActionLists>
       <allActionLists>
+        <@type>CommandQWOP</@type>
         <distribution type="equal"/>
         <wo>2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </wo>
       </allActionLists>
       <allActionLists>
+        <@type>CommandQWOP</@type>
         <distribution type="equal"/>
         <o>2 3 4 5 6 7 8 9 </o>
       </allActionLists>
       <allActionLists>
+        <@type>CommandQWOP</@type>
         <distribution type="equal"/>
         <p>2 3 4 5 6 7 8 9 </p>
       </allActionLists>
@@ -46,7 +53,6 @@
       <saveInterval>0</saveInterval>
       <savePath></savePath>
     </saver>
-    <repetitionCount>0</repetitionCount>
   </searchOperations>
   <searchOperations>
     <stage type="grouping">
@@ -60,150 +66,594 @@
             <timestepDelay>1</timestepDelay>
             <numDelayedStates>2</numDelayedStates>
             <stateType>DIFFERENCES</stateType>
+            <serializedState>AAESZ2FtZS5xd29wLkdhbWVRV09QAAUA/RABAAEXb3JnLmpib3gyZC5jb21tb24uWEZvcm39/cRv
+dz+FUYM+/YVRg77Eb3c/AP0pXHlAUri1wAAAARdvcmcuamJveDJkLmNvbW1vbi5Td2VlcLYThT62
+E4U+AACAP/0pXHlAUri1wP0pXHlAUri1wP0AAAAAAAAAAAAAARZvcmcuamJveDJkLmNvbW1vbi5W
+ZWMyAAAAAAAAAAAAAAAAAP/rAwAAAAAAAAAAAAAAAAABGW9yZy5qYm94MmQuZHluYW1pY3MuV29y
+bGQAAAEfb3JnLmpib3gyZC5jb2xsaXNpb24uQnJvYWRQaGFzZQABIG9yZy5qYm94MmQuY29sbGlz
+aW9uLlBhaXJNYW5hZ2VyGwAb+YDnAPsAJFtMb3JnLmpib3gyZC5jb2xsaXNpb24uQnVmZmVyZWRQ
+YWlyO4CAAAABIW9yZy5qYm94MmQuY29sbGlzaW9uLkJ1ZmZlcmVkUGFpcgUGAAD/8AMBBQAA//AD
+AAUAAP/wAwUJAAD/8AMEBQAA//ADBQgAAP/wAwUKAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMA
+AAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAA
+AAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAA
+AP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA
+//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/
+8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/w
+AwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//AD
+AAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMA
+AAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAA
+AAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAA
+AP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA
+//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/
+8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/w
+AwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//AD
+AAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMAAAAA//ADAAAAAP/wAwAAAAD/8AMA
+AAAA//ADAAAAAP/wAwAAAAD/8AMAAAAAASJvcmcuamJveDJkLmR5bmFtaWNzLkNvbnRhY3RNYW5h
+Z2Vy+YDKAPsAHFtMb3JnLmpib3gyZC5jb2xsaXNpb24uUGFpcjuAgAAAARlvcmcuamJveDJkLmNv
+bGxpc2lvbi5QYWlyBAAKBAABKG9yZy5qYm94MmQuZHluYW1pY3MuY29udGFjdHMuTnVsbENvbnRh
+Y3QAAAAAAAAAAAAAAAAAAP///f////8A/f////8A////AAAA//MDgf///38BBQT5gGgFAAD/8wOB
+////fwQJBPmAaAUAAP/zA4H///9/BQgE+YBoBQAA//MDgf///38ABgT5gGgFAAD/8wOB////fwQI
+BPmAaAUAAP/zA4H///9/BgoE+YBoBQAA//MDgf///38GCQT5gGgFAAD/8wOB////fwgJBPmAaAUA
+AP/zA4H///9/AgQE+YBoBQAA//MDgf///38HCwT5gGgFAAD/8wOB////fwIDBPmAaAUAAP/zA4H/
+//9/AwcE+YBoBQAA//MDgf///38ABQT5gGgFAAD/8wMXAggE+YBoBQAA//MDgf///38CBwT5gGgF
+AAD/8wOB////fwcIBPmAaAUAAP/zA4H///9/BQoE+YBoBQAA//MDgf///38FCQT5gGgFAAD/8wOB
+////fwUGBPmAaAUAAP/zA4H///9/BAUE+YBoBQAA//MDgf///38BCgT5gGgFAAD/8wMKAAEE+YBo
+BQAA//MDgf///38JCgT5gGgFAAD/8wMLBAcE+YBoBQAA//MDgf///38DDAQAAShvcmcuamJveDJk
+LmR5bmFtaWNzLmNvbnRhY3RzLlBvbHlDb250YWN0ccScP83MTD4AAAAAAAAAEAEAAR1vcmcuamJv
+eDJkLmNvbGxpc2lvbi5NYW5pZm9sZAD7ACVbTG9yZy5qYm94MmQuY29sbGlzaW9uLk1hbmlmb2xk
+UG9pbnQ7AgABIm9yZy5qYm94MmQuY29sbGlzaW9uLk1hbmlmb2xkUG9pbnQAAAAAAAAAAAAAAAD9
+AP0AAAAA+YADCAAA/QAAAAAAAAAA/QAAAAAAAAAAAAD/+AMAAAAAAAAAAAAAAAD9AP0AAAAA+YAz
+CAAA/QAAAAAAAAAA/QAAAAAAAAAAAP0AAAAAAAAAAAD9/wD/9QNxxJw/zcxMPgAAAAAAAAAQAQD/
+9gMA+//3AwIA//gDAAAAAAAAAAAAAAAA/QD9AAAAAPmAjggAAP0AAAAAAAAAAP0AAAAAAAAAAAAA
+//gDAAAAAAAAAAAAAAAA/QD9AAAAAPmAvggAAP0AAAAAAAAAAP0AAAAAAAAAAAD9AAAAAAAAAAAA
+/fmATAf//f0QAAD/6QP9/QAAgD8AAAAA/QAAAIAAAIA/AP0AAPDBBUBJQQAA/+oDAAAAAAAAAAAA
+AIA//QAA8MEFQElB/QAA8MEFQElB/QAAAAAAAAAAAAD/6wMAAAAAAAAAAAAAAAAA/+sDAAAAAAAA
+AAAAAAAA+YDKAP8AARhvcmcuamJveDJkLmR5bmFtaWNzLkJvZHkQAQD/6QP9/VRuOz9CXy4//UJf
+Lr9Ubjs/AP0Urne/Urj4QAAA/+oDTvQ/P070Pz8AAIA//RSud79SuPhA/RSud79SuPhA/QAAAAAA
+AAAAAAD/6wMAAAAAAAAAAAAAAAAA/+sDAAAAAAAAAAAAAAAA+YDKAPmA7wj5GAABKG9yZy5qYm94
+MmQuY29sbGlzaW9uLnNoYXBlcy5Qb2x5Z29uU2hhcGX6ASVvcmcuamJveDJkLmNvbGxpc2lvbi5z
+aGFwZXMuU2hhcGVUeXBlAv/5gGUJAEq8PwAAQEAAAMA/AAAAAAsAAR9vcmcuamJveDJkLmNvbGxp
+c2lvbi5GaWx0ZXJEYXRhAf+B//8AAAAAAP/rAwAAAAAAAAAAAAEYb3JnLmpib3gyZC5jb2xsaXNp
+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
+AAD9AP0AAAAA+YDCKgAA/QAAAAAAAAAA/QAAAAAAAAAAAAD/+AMAAAAAAAAAAAAAAAD9AP0AAAAA
++YDyKgAA/QAAAAAAAAAA/QAAAAAAAAAAAP0AAAAAAAAAAAD5gIgH+YBEIfmAaij9AAAAAAAAAAD/
+AAAA//MDgf///38LDAT5gF8IAAD/8wMcgf///3+B////fwD/AAD/8wMdgf///3+B////fwD/AAD/
+8wMegf///3+B////fwD/AAD/8wMfgf///3+B////fwD/AAD/8wMggf///3+B////fwD/AAD/8wMh
+gf///3+B////fwD/AAD/8wMigf///3+B////fwD/AAD/8wMjgf///3+B////fwD/AAD/8wMkgf//
+/3+B////fwD/AAD/8wMlgf///3+B////fwD/AAD/8wMmgf///3+B////fwD/AAD/8wMngf///3+B
+////fwD/AAD/8wMogf///3+B////fwD/AAD/8wMpgf///3+B////fwD/AAD/8wMqgf///3+B////
+fwD/AAD/8wMrgf///3+B////fwD/AAD/8wMsgf///3+B////fwD/AAD/8wMtgf///3+B////fwD/
+AAD/8wMugf///3+B////fwD/AAD/8wMvgf///3+B////fwD/AAD/8wMwgf///3+B////fwD/AAD/
+8wMxgf///3+B////fwD/AAD/8wMygf///3+B////fwD/AAD/8wMzgf///3+B////fwD/AAD/8wM0
+gf///3+B////fwD/AAD/8wM1gf///3+B////fwD/AAD/8wM2gf///3+B////fwD/AAD/8wM3gf//
+/3+B////fwD/AAD/8wM4gf///3+B////fwD/AAD/8wM5gf///3+B////fwD/AAD/8wM6gf///3+B
+////fwD/AAD/8wM7gf///3+B////fwD/AAD/8wM8gf///3+B////fwD/AAD/8wM9gf///3+B////
+fwD/AAD/8wM+gf///3+B////fwD/AAD/8wM/gf///3+B////fwD/AAD/8wNAgf///3+B////fwD/
+AAD/8wNBgf///3+B////fwD/AAD/8wNCgf///3+B////fwD/AAD/8wNDgf///3+B////fwD/AAD/
+8wNEgf///3+B////fwD/AAD/8wNFgf///3+B////fwD/AAD/8wNGgf///3+B////fwD/AAD/8wNH
+gf///3+B////fwD/AAD/8wNIgf///3+B////fwD/AAD/8wNJgf///3+B////fwD/AAD/8wNKgf//
+/3+B////fwD/AAD/8wNLgf///3+B////fwD/AAD/8wNMgf///3+B////fwD/AAD/8wNNgf///3+B
+////fwD/AAD/8wNOgf///3+B////fwD/AAD/8wNPgf///3+B////fwD/AAD/8wNQgf///3+B////
+fwD/AAD/8wNRgf///3+B////fwD/AAD/8wNSgf///3+B////fwD/AAD/8wNTgf///3+B////fwD/
+AAD/8wNUgf///3+B////fwD/AAD/8wNVgf///3+B////fwD/AAD/8wNWgf///3+B////fwD/AAD/
+8wNXgf///3+B////fwD/AAD/8wNYgf///3+B////fwD/AAD/8wNZgf///3+B////fwD/AAD/8wNa
+gf///3+B////fwD/AAD/8wNbgf///3+B////fwD/AAD/8wNcgf///3+B////fwD/AAD/8wNdgf//
+/3+B////fwD/AAD/8wNegf///3+B////fwD/AAD/8wNfgf///3+B////fwD/AAD/8wNggf///3+B
+////fwD/AAD/8wNhgf///3+B////fwD/AAD/8wNigf///3+B////fwD/AAD/8wNjgf///3+B////
+fwD/AAD/8wNkgf///3+B////fwD/AAD/8wNlgf///3+B////fwD/AAD/8wNmgf///3+B////fwD/
+AAD/8wNngf///3+B////fwD/AAD/8wNogf///3+B////fwD/AAD/8wNpgf///3+B////fwD/AAD/
+8wNqgf///3+B////fwD/AAD/8wNrgf///3+B////fwD/AAD/8wNsgf///3+B////fwD/AAD/8wNt
+gf///3+B////fwD/AAD/8wNugf///3+B////fwD/AAD/8wNvgf///3+B////fwD/AAD/8wNwgf//
+/3+B////fwD/AAD/8wNxgf///3+B////fwD/AAD/8wNygf///3+B////fwD/AAD/8wNzgf///3+B
+////fwD/AAD/8wN0gf///3+B////fwD/AAD/8wN1gf///3+B////fwD/AAD/8wN2gf///3+B////
+fwD/AAD/8wN3gf///3+B////fwD/AAD/8wN4gf///3+B////fwD/AAD/8wN5gf///3+B////fwD/
+AAD/8wN6gf///3+B////fwD/AAD/8wN7gf///3+B////fwD/AAD/8wN8gf///3+B////fwD/AAD/
+8wN9gf///3+B////fwD/AAD/8wN+gf///3+B////fwD/AAD/8wN/gf///3+B////fwD/AAD/8wOB
+////f4H///9/gf///38A/wD7KoCAAP///3////9/////f////3////9/////f////3////9/////
+fwYAAAAHAAAA////fwEAAAD///9/////f////38aAAAA////f////38DAAAAEgAAAP///3////9/
+////f////3////9/BQAAAP///3////9/////f////3////9/////f////38YAAAA////f////3//
+//9/////f////3////9/////f////3////9/////f////3////9/////fwgAAAD///9/////f///
+/3////9/////f////38AAAAA////f////3////9/////f////3////9/GQAAAP///3////9/EwAA
+AP///3////9/EQAAAP///3////9/////f////3////9/////f////3////9/////f////3////9/
+////fw4AAAD///9/////fxYAAAD///9/////f////3////9/FAAAAP///38NAAAA////fwIAAAD/
+//9/////f////3////9/////f////3////9/////f////3////9/////fwkAAAD///9/////f///
+/3////9/FQAAAP///38PAAAA////fwwAAAD///9/////fxAAAAD///9/////f////3////9/////
+f////3////9/////f////3////9/APsAHVtMb3JnLmpib3gyZC5jb2xsaXNpb24uUHJveHk7EAAB
+Gm9yZy5qYm94MmQuY29sbGlzaW9uLlByb3h5AiP5gCYS+yoCDgAAAAQAAAD7KgIWAAAACQAAAAAA
+/wQEAiP5gAof+yoCEwAAAAMAAAD7KgIYAAAACAAAAAAA/wQEASP5gCcg+yoCCwAAAA4AAAD7KgIR
+AAAAFQAAAAAA/wQEASP5gEQh+yoCDAAAABMAAAD7KgIVAAAAFwAAAAAA/wQEAiP5gJYi+yoCCAAA
+AAoAAAD7KgISAAAAEAAAAAAA/wQEAB35gLMj+yoCBQAAAAEAAAD7KgIUAAAADQAAAAAA/wQEAiP5
+gNAk+yoCAwAAAAIAAAD7KgIQAAAABwAAAAAA/wQEASP5gC4n+yoCAgAAAA8AAAD7KgINAAAAFAAA
+AAAA/wQEAiP5gA0m+yoCBgAAAAsAAAD7KgIPAAAAEQAAAAAA/wQEAiP5gCgN+yoCBAAAAAUAAAD7
+KgIKAAAADAAAAAAA/wQEAiMA//oD+v/7AwL/+RgTWVZAAACAP83MTD4AAAAACgD//AMB/4H//wAA
+AAAA/+sDAAAAAAAAAAAA//0D/f0AAIA/AAAAAP0AAACAAACAPwD9AAAAAAAAAAD9rkcJQK5HKUAA
++//+AwQA/+sDrkcJwK5HKcAA/+sDrkcJQK5HKcAA/+sDrkcJQK5HKUAA/+sDrkcJwK5HKUD7//4D
+BAD/6wMAAAAAAACAvwD/6wMAAIA/AAAAgAD/6wMAAAAAAACAPwD/6wMAAIC/AAAAgPv//gMEAP/r
+A1K4BsBSuCbAAP/rA1K4BkBSuCbAAP/rA1K4BkBSuCZAAP/rA1K4BsBSuCZABPsqAgkAAAAAAAAA
++yoCFwAAAAYAAAAAAP8EBAEj+YD6CfsqAgEAAAASAAAA+yoCBwAAABgAAAAAAP8EBAEj+YBqKPsq
+AgAAAAAWAAAA+yoCGQAAABkAAAAAAP8EBIH///9/AP/7KgIOAAAAAAAAAPsqAgAAAAAAAAAAAAD/
+BASB////fwD/+yoCDwAAAAAAAAD7KgIAAAAAAAAAAAAA/wQEgf///38A//sqAv///38AAAAA+yoC
+AAAAAAAAAAAADfsAHltbTG9yZy5qYm94MmQuY29sbGlzaW9uLkJvdW5kOwIAHVtMb3JnLmpib3gy
+ZC5jb2xsaXNpb24uQm91bmQ7IAABGm9yZy5qYm94MmQuY29sbGlzaW9uLkJvdW5kDAEAAAD/BwQL
+AoFgJY4YAAD/BwQHA4HArY8YAAD/BwQGBIHAyZcYAAD/BwQJBYEAYJgYAAD/BwQFBoEAIZ0YAAD/
+BwQIB4GgdaAYAAD/BwQLBoHBvKAYAAD/BwQEB4Hg+aEYAAD/BwQKCIFAwKQYAAD/BwQJB4FhUacY
+AAD/BwQCCIFAPKsYAAD/BwQDCYEgPawYAAD/BwQHCIEheKwYAAD/BwQACYEgaK4YAAD/BwQICIHh
+ha8YAAD/BwQGB4HB+LEYAAD/BwQCBoFBerUYAAD/BwQEBYFB3LgYAAD/BwQBBoEAKb0YAAD/BwQF
+BYFhxb0YAAD/BwQDBIHBQb4YAAD/BwQAA4HBEcUYAAD/BwQKAoEhbscYAAD/BwQBAYFBQsgYAAD/
+BwQMAIGBG7kxAAD/BwQAAAAAAP8HBAAAAAAA/wcEAAAAAAD/BwQAAAAAAP8HBAAAAAAA/wcEAAAA
+AP8GBCAA/wcECgGBAP0TOQAA/wcEBQKBwAcXPwAA/wcEBgOBAEy1PwAA/wcEAQSBgJY3QAAA/wcE
+AAWBgMi5QAAA/wcECQaBgPqeQgAA/wcECgWBAYxwRAAA/wcEBgSBgTVaRQAA/wcEAQOBgbLgRgAA
+/wcEAAKBAcTpRgAA/wcEBAOBANokRwAA/wcECASBgBHWRwAA/wcECQOBATgaSwAA/wcEBQKBgbMm
+TAAA/wcEAgOBgG+kTgAA/wcEBwSBAG7NTgAA/wcEBAOBAU0MUQAA/wcECAKBAV3CUQAA/wcECwOB
+gFa3VAAA/wcEAwSBgO9iVgAA/wcEBwOBAcspVwAA/wcEAgKBgQfXVwAA/wcEDAOBgJhuWQAA/wcE
+AwKBAdSGWQAA/wcECwGBAaT+WQAA/wcEDACBAY7aZgAA/wcEAAAAAAD/BwQAAAAAAP8HBAAAAAAA
+/wcEAAAAAAD/BwQAAAAAAP8HBAAAAAD7KhAGAAAAAQAAAAAAAAAJAAAABAAAAAgAAAAKAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGW9yZy5qYm94MmQuY29sbGlzaW9u
+LkFBQkL9AAB6xAAAIML9AECDRQAA8EEAAP/rAzSmyUihDupLDST5gP0E+YDvCPmAXwj5gF8VDgIL
+AP/rAwAAAAAAACBBAfmAkREBAQEAAShvcmcuamJveDJkLmR5bmFtaWNzLkRlZmF1bHRDb250YWN0
+RmlsdGVyAAABJGdhbWUucXdvcC5HYW1lUVdPUCRDb2xsaXNpb25MaXN0ZW5lcgD5AAAAAAAA+YBl
+CfmAqgz5gPM1AfmAkxX/hI21QNd0r0AAAAAAAAAAAAAAAAD5gB0Q+YChD/mAmRD5gCUP+YAVEfmA
+vQv5gGUJ+YCqDPmAMgz5gDAO+YCpDvmA7wj7ABtbTG9yZy5qYm94MmQuZHluYW1pY3MuQm9keTsM
++YC9C/mAHRD5gDIM+YAlD/mAqQ75gDAO+YAVEfmAqgz5gJkQ+YBlCfmAoQ/5GPmAszv5gH8U+YCK
+E/mAuxP5gLAU+YAyE/mAXxX5gE4U+YDhFPmA7BP5gB0U+YAqFf1AAAAAvwAA+kQAAAAAyEfwvQAA
+AD/5gKEP+YAdEPr/AQQB//3AiCC/uhCIvf2862k+RcoaQAD9YM3MzL0AAAAAAAAgQZKNhb8AAAA/
++YCZEPmAFRH6/wEEAf/9AIlXOtDKoj/9MIgzvdrzzT8A/WAAAMC/AIC7RQAAAACILUI/AAAAP/mA
+JQ/5gKkO+v8BBAH//UCV9zweVMK//bN4tT5l9whAAP1gzczMvwCAO0UAAAAA/C3EvgAAAAD5gB0Q
++YAlD/r/AQQB//3E9mQ+sdEAwP3gee48250CQAD9YAAAAMAAAHpEAAAAAE3Gnz8AAAAA+YAVEfmA
+qQ76/wEEAf/94GQ+vb2hib/9PuPAPg6P+78A/WAAAAC/AAB6RAAAAADMYRA+AAAAAPkY+YCpDvr/
+AQQB//0A4qC6K2KRP/2ANS+9zmM3wAD9QAAAAL8AAPpEAAAAAADvED0AAAA/+YBlCfmAvQv6/wEE
+Af/9vCJHv5qCVb79aP8jPkxQEEAA/WDNzMy9AAAAAAAAIEGUYKw/AAAAP/mAqgz5gDAO+v8BBAH/
+/QBV0Tqc/uS//QC1cDxTYrA/AP1gZmamvwCAu0UAAAAAXDH0PjMzMz/5gDIM+YCpDvr/AQQB//3j
+n3W+W80FwP34+uC+9x4NQAD9YGZmpr8AgDtFAAAAAJ55XL+amZk++YC9C/mAMgz6/wEEAf/96CQm
+PrAE+r/9Lrh1vpSUBkAA/WAAAAC/AAB6RAAAAABYZTS/AADAP/mAMA75gKkO+v8BBAH//WACXjzY
+n5m//UrXj7/WJPe/AP0AAAAAAAAAAP0AAAAAAAAAAPmAygAA</serializedState>
+            <currentState type="delay_differences">
+              <individualStates type="state_standard">
+                <body>
+                  <x>2.525</x>
+                  <y>-1.92625</y>
+                  <th>0.40091407</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </body>
+                <head>
+                  <x>3.89625</x>
+                  <y>-5.67875</y>
+                  <th>0.259916</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </head>
+                <rthigh>
+                  <x>1.65875</x>
+                  <y>1.99875</y>
+                  <th>-0.07602501</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rthigh>
+                <lthigh>
+                  <x>2.52</x>
+                  <y>1.615</y>
+                  <th>-0.35759318</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </lthigh>
+                <rcalf>
+                  <x>0.085</x>
+                  <y>5.38125</y>
+                  <th>0.7852057</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rcalf>
+                <lcalf>
+                  <x>2.98625</x>
+                  <y>5.5225</y>
+                  <th>0.025570154</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </lcalf>
+                <rfoot>
+                  <x>-0.9675</x>
+                  <y>7.7725</y>
+                  <th>0.74982154</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rfoot>
+                <lfoot>
+                  <x>3.7625</x>
+                  <y>8.10125</y>
+                  <th>0.14289457</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </lfoot>
+                <ruarm>
+                  <x>1.165</x>
+                  <y>-3.61625</y>
+                  <th>1.1055855</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </ruarm>
+                <luarm>
+                  <x>4.475</x>
+                  <y>-2.91125</y>
+                  <th>-0.8473251</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </luarm>
+                <rlarm>
+                  <x>0.36625</x>
+                  <y>-1.2475</y>
+                  <th>-0.24111187</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rlarm>
+                <llarm>
+                  <x>5.89875</x>
+                  <y>-3.06</y>
+                  <th>0.1960578</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </llarm>
+                <failed>false</failed>
+              </individualStates>
+              <individualStates type="state_standard">
+                <body>
+                  <x>2.525</x>
+                  <y>-1.92625</y>
+                  <th>0.40091407</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </body>
+                <head>
+                  <x>3.89625</x>
+                  <y>-5.67875</y>
+                  <th>0.259916</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </head>
+                <rthigh>
+                  <x>1.65875</x>
+                  <y>1.99875</y>
+                  <th>-0.07602501</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rthigh>
+                <lthigh>
+                  <x>2.52</x>
+                  <y>1.615</y>
+                  <th>-0.35759318</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </lthigh>
+                <rcalf>
+                  <x>0.085</x>
+                  <y>5.38125</y>
+                  <th>0.7852057</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rcalf>
+                <lcalf>
+                  <x>2.98625</x>
+                  <y>5.5225</y>
+                  <th>0.025570154</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </lcalf>
+                <rfoot>
+                  <x>-0.9675</x>
+                  <y>7.7725</y>
+                  <th>0.74982154</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rfoot>
+                <lfoot>
+                  <x>3.7625</x>
+                  <y>8.10125</y>
+                  <th>0.14289457</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </lfoot>
+                <ruarm>
+                  <x>1.165</x>
+                  <y>-3.61625</y>
+                  <th>1.1055855</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </ruarm>
+                <luarm>
+                  <x>4.475</x>
+                  <y>-2.91125</y>
+                  <th>-0.8473251</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </luarm>
+                <rlarm>
+                  <x>0.36625</x>
+                  <y>-1.2475</y>
+                  <th>-0.24111187</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rlarm>
+                <llarm>
+                  <x>5.89875</x>
+                  <y>-3.06</y>
+                  <th>0.1960578</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </llarm>
+                <failed>false</failed>
+              </individualStates>
+              <individualStates type="state_standard">
+                <body>
+                  <x>2.525</x>
+                  <y>-1.92625</y>
+                  <th>0.40091407</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </body>
+                <head>
+                  <x>3.89625</x>
+                  <y>-5.67875</y>
+                  <th>0.259916</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </head>
+                <rthigh>
+                  <x>1.65875</x>
+                  <y>1.99875</y>
+                  <th>-0.07602501</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rthigh>
+                <lthigh>
+                  <x>2.52</x>
+                  <y>1.615</y>
+                  <th>-0.35759318</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </lthigh>
+                <rcalf>
+                  <x>0.085</x>
+                  <y>5.38125</y>
+                  <th>0.7852057</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rcalf>
+                <lcalf>
+                  <x>2.98625</x>
+                  <y>5.5225</y>
+                  <th>0.025570154</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </lcalf>
+                <rfoot>
+                  <x>-0.9675</x>
+                  <y>7.7725</y>
+                  <th>0.74982154</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rfoot>
+                <lfoot>
+                  <x>3.7625</x>
+                  <y>8.10125</y>
+                  <th>0.14289457</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </lfoot>
+                <ruarm>
+                  <x>1.165</x>
+                  <y>-3.61625</y>
+                  <th>1.1055855</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </ruarm>
+                <luarm>
+                  <x>4.475</x>
+                  <y>-2.91125</y>
+                  <th>-0.8473251</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </luarm>
+                <rlarm>
+                  <x>0.36625</x>
+                  <y>-1.2475</y>
+                  <th>-0.24111187</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </rlarm>
+                <llarm>
+                  <x>5.89875</x>
+                  <y>-3.06</y>
+                  <th>0.1960578</th>
+                  <dx>0.0</dx>
+                  <dy>0.0</dy>
+                  <dth>0.0</dth>
+                </llarm>
+                <failed>false</failed>
+              </individualStates>
+              <failed>false</failed>
+            </currentState>
+            <numberOfChoices>9</numberOfChoices>
+            <failed>false</failed>
+            <timestepsThisGame>0</timestepsThisGame>
+            <stateDimension>108</stateDimension>
           </gameTemplate>
-          <hiddenLayerSizes>128</hiddenLayerSizes>
-          <hiddenLayerSizes>64</hiddenLayerSizes>
-          <additionalNetworkArgs>--learnrate</additionalNetworkArgs>
-          <additionalNetworkArgs>1e-4</additionalNetworkArgs>
-          <activeCheckpoint/>
-          <outputSize>1</outputSize>
-        </valueFunction>
-        <checkpointName>src/main/resources/tflow_models/checkpoints/checkpoint_name</checkpointName>
-        <excludeLeaves>false</excludeLeaves>
-        <updateGraphicalLabels>true</updateGraphicalLabels>
-      </treeStages>
-    </stage>
-    <sampler type="ucb">
-      <evaluationFunction type="constant">
-        <constantValue>5.0</constantValue>
-      </evaluationFunction>
-      <rolloutPolicy type="window">
-        <individualRollout type="entire_run">
-          <rolloutController type="value_function">
-            <valueFunction type="tflow_state_only">
-              <fileName>src/main/resources/tflow_models/test.pb</fileName>
-              <gameTemplate type="delay_embedded">
-                <timestepDelay>1</timestepDelay>
-                <numDelayedStates>2</numDelayedStates>
-                <stateType>DIFFERENCES</stateType>
-              </gameTemplate>
-              <hiddenLayerSizes>128</hiddenLayerSizes>
-              <hiddenLayerSizes>64</hiddenLayerSizes>
-              <additionalNetworkArgs>--learnrate</additionalNetworkArgs>
-              <additionalNetworkArgs>1e-4</additionalNetworkArgs>
-              <activeCheckpoint/>
-              <outputSize>1</outputSize>
-            </valueFunction>
-          </rolloutController>
-          <evaluationFunction type="constant">
-            <constantValue>0.0</constantValue>
-          </evaluationFunction>
-          <rolloutActionGenerator type="fixed_sequence">
-            <repeatedActions>
-              <distribution type="normal">
-                <mean>12.0</mean>
-                <standardDeviation>5.0</standardDeviation>
-              </distribution>
-              <none>2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 </none>
-            </repeatedActions>
-            <repeatedActions>
-              <distribution type="normal">
-                <mean>20.0</mean>
-                <standardDeviation>5.0</standardDeviation>
-              </distribution>
-              <wo>15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </wo>
-            </repeatedActions>
-            <repeatedActions>
-              <distribution type="normal">
-                <mean>12.0</mean>
-                <standardDeviation>5.0</standardDeviation>
-              </distribution>
-              <none>2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 </none>
-            </repeatedActions>
-            <repeatedActions>
-              <distribution type="normal">
-                <mean>20.0</mean>
-                <standardDeviation>5.0</standardDeviation>
-              </distribution>
-              <qp>15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 </qp>
-            </repeatedActions>
-          </rolloutActionGenerator>
-          <maxTimesteps>3000</maxTimesteps>
-        </individualRollout>
-        <selectionCriteria>BEST</selectionCriteria>
-      </rolloutPolicy>
-      <valueUpdater type="average"/>
-      <explorationConstant>5.0</explorationConstant>
-      <explorationRandomFactor>1.0</explorationRandomFactor>
-    </sampler>
-    <saver type="null">
-      <saveInterval>0</saveInterval>
-      <savePath></savePath>
-    </saver>
-    <repetitionCount>0</repetitionCount>
-  </searchOperations>
-  <ui type="full">
-    <tabbedPanes type="runner_animated_transformed">
-      <name>Run Animation</name>
-    </tabbedPanes>
-    <tabbedPanes type="runner_snapshot">
-      <name>State Viewer</name>
-      <numHistoryStatesDisplay>25</numHistoryStatesDisplay>
-    </tabbedPanes>
-    <tabbedPanes type="runner_comparison">
-      <name>State Compare</name>
-      <maxNumStatesToShow>50</maxNumStatesToShow>
-    </tabbedPanes>
-    <tabbedPanes type="plot_states">
-      <name>State Plots</name>
-      <numberOfPlots>6</numberOfPlots>
-    </tabbedPanes>
-    <tabbedPanes type="futures_pie">
-      <name>Viable Futures</name>
-    </tabbedPanes>
-    <tabbedPanes type="depth_histogram">
-      <name>Leaf depth distribution</name>
-    </tabbedPanes>
-    <tabbedPanes type="plot_controls">
-      <name>Controls Plots</name>
-      <numberOfPlots>6</numberOfPlots>
-    </tabbedPanes>
-    <tabbedPanes type="plot_single_run">
-      <name>Single Run Plots</name>
-      <numberOfPlots>6</numberOfPlots>
-    </tabbedPanes>
-    <tabbedPanes type="plot_transformed">
-      <transformer type="pca">
-        <transformPCAComponents>
-          <transformPCAComponents>0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 </transformPCAComponents>
-        </transformPCAComponents>
-        <outputSize>72</outputSize>
-        <name>PCA 72</name>
-      </transformer>
-      <name>PCA Plots</name>
-      <plotsPerView>6</plotsPerView>
-      <numberOfPlots>6</numberOfPlots>
-    </tabbedPanes>
-    <tabbedPanes type="plot_transformed">
-      <transformer type="autoencoder">
-        <graphFile>src/main/resources/tflow_models/AutoEnc_72to12_6layer.pb</graphFile>
-        <outputSize>12</outputSize>
-        <name>AutoEnc 12</name>
-      </transformer>
-      <name>Autoenc Plots</name>
-      <plotsPerView>6</plotsPerView>
-      <numberOfPlots>6</numberOfPlots>
-    </tabbedPanes>
-    <tabbedPanes type="controlled_valfun">
-      <name>ValFun controller</name>
-      <game type="delay_embedded">
-        <timestepDelay>1</timestepDelay>
-        <numDelayedStates>2</numDelayedStates>
-        <stateType>DIFFERENCES</stateType>
-      </game>
-      <modelLocation>src/main/resources/tflow_models</modelLocation>
-      <checkpointLocation>src/main/resources/tflow_models/checkpoints</checkpointLocation>
-      <actionGenerator/>
-    </tabbedPanes>
-  </ui>
-</SearchConfiguration>
+          <stateNormalizer type="normalizer_qwopdiffs">
+            <normalizationMethod>STDEV</normalizationMethod></stateNormalizer></valueFunction></treeStages></stage></searchOperations></SearchConfiguration>

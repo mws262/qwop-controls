@@ -1,30 +1,29 @@
 package tree.node.evaluator;
 
+import game.action.Command;
 import game.state.IState;
-import tree.node.NodeQWOPBase;
-
-import java.util.Objects;
+import tree.node.NodeGameBase;
 
 /**
  * Evaluation of a node based strictly on torso horizontal position.
  *
  * @author Matt
  */
-public class EvaluationFunction_Velocity implements IEvaluationFunction {
+public class EvaluationFunction_Velocity<C extends Command<?>, S extends IState> implements IEvaluationFunction<C, S> {
 
     @Override
-    public float getValue(NodeQWOPBase<?> nodeToEvaluate) {
-        return Objects.requireNonNull(nodeToEvaluate.getState()).getStateVariableFromName(IState.ObjectName.BODY).getDx();
+    public float getValue(NodeGameBase<?, C, S> nodeToEvaluate) {
+        return nodeToEvaluate.getState().getCenterX();
     }
 
     @Override
-    public String getValueString(NodeQWOPBase<?> nodeToEvaluate) {
+    public String getValueString(NodeGameBase<?, C, S> nodeToEvaluate) {
         return String.valueOf(getValue(nodeToEvaluate));
     }
 
     @Override
-    public EvaluationFunction_Velocity getCopy() {
-        return new EvaluationFunction_Velocity();
+    public EvaluationFunction_Velocity<C, S> getCopy() {
+        return new EvaluationFunction_Velocity<>();
     }
 
     @Override

@@ -3,6 +3,8 @@ package ui.runner;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Action;
+import game.qwop.CommandQWOP;
+import game.qwop.IStateQWOP;
 import ui.IUserInterface.TabbedPaneActivator;
 
 import javax.swing.*;
@@ -10,6 +12,7 @@ import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.geom.AffineTransform;
+import java.util.List;
 
 /**
  * Snapshot viewers of the runner and animations of the runner share a lot of features and dimensions.
@@ -31,7 +34,8 @@ import java.awt.geom.AffineTransform;
         @JsonSubTypes.Type(value = PanelRunner_Controlled.class, name = "controlled"),
         @JsonSubTypes.Type(value = PanelRunner_ControlledTFlow.class, name = "controlled_valfun")
 })
-public abstract class PanelRunner extends JPanel implements TabbedPaneActivator, ComponentListener {
+public abstract class PanelRunner<S extends IStateQWOP> extends JPanel implements TabbedPaneActivator<CommandQWOP,
+        S>, ComponentListener {
 
     /**
      * Should this panel be drawing or is it hidden.
@@ -73,7 +77,6 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator,
      */
     transient public float runnerScaling = 10f;
 
-    private final int startX = -45;
     private final int startY = yOffsetPixels - 85;
     private float keyScaling;
 
@@ -82,6 +85,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator,
     }
 
     protected void keyDrawer(Graphics g, boolean q, boolean w, boolean o, boolean p) {
+        int startX = -45;
         keyDrawer(g, q, w, o, p, startX, startY, 30, (int) keyScaling);
     }
 
@@ -108,9 +112,12 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator,
                 (size + wOffset) / 10, (size + wOffset) / 10);
 
         /* Parameters for placing the "keys" graphically. */
-        g2.drawRoundRect(xOffset + size * 6 - oOffset / 2 + offsetBetweenPairs, yOffset - oOffset / 2, size + oOffset,
+        int off1 = xOffset + size * 6 - oOffset / 2 + offsetBetweenPairs;
+        int off2 = xOffset + size * 8 - pOffset / 2 + offsetBetweenPairs;
+
+        g2.drawRoundRect(off1, yOffset - oOffset / 2, size + oOffset,
                 size + oOffset, (size + oOffset) / 10, (size + oOffset) / 10);
-        g2.drawRoundRect(xOffset + size * 8 - pOffset / 2 + offsetBetweenPairs, yOffset - pOffset / 2, size + pOffset,
+        g2.drawRoundRect(off2, yOffset - pOffset / 2, size + pOffset,
                 size + pOffset, (size + pOffset) / 10, (size + pOffset) / 10);
 
         g2.setColor(Color.LIGHT_GRAY);
@@ -118,9 +125,9 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator,
                 (size + qOffset) / 10, (size + qOffset) / 10);
         g2.fillRoundRect(xOffset + size * 4 - wOffset / 2, yOffset - wOffset / 2, size + wOffset, size + wOffset,
                 (size + wOffset) / 10, (size + wOffset) / 10);
-        g2.fillRoundRect(xOffset + size * 6 - oOffset / 2 + offsetBetweenPairs, yOffset - oOffset / 2, size + oOffset,
+        g2.fillRoundRect(off1, yOffset - oOffset / 2, size + oOffset,
                 size + oOffset, (size + oOffset) / 10, (size + oOffset) / 10);
-        g2.fillRoundRect(xOffset + size * 8 - pOffset / 2 + offsetBetweenPairs, yOffset - pOffset / 2, size + pOffset,
+        g2.fillRoundRect(off2, yOffset - pOffset / 2, size + pOffset,
                 size + pOffset, (size + pOffset) / 10, (size + pOffset) / 10);
 
         g2.setColor(Color.BLACK);
@@ -152,15 +159,15 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator,
     }
 
     /**
-     * Draw the game.action on the left side pane.
+     * Draw the game.command on the left side pane.
      */
-    protected void drawActionString(Action[] sequence, Graphics g) {
+    protected void drawActionString(List<Action<CommandQWOP>> sequence, Graphics g) {
         drawActionString(g, sequence, -1);
     }
 
-    protected static void drawActionString(Graphics g, Action[] sequence, int highlightIdx) {
+    protected static void drawActionString(Graphics g, List<Action<CommandQWOP>> sequence, int highlightIdx) {
 
-        if (sequence.length == 0) return; // Happens when clicking root node.
+        if (sequence.size() == 0) return; // Happens when clicking root node.
 
         g.setFont(smallFont);
         g.setColor(Color.DARK_GRAY);
@@ -169,7 +176,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator,
         int lineNum = 1;
         int vertTextAnchor = 60;
         do {
-            String line = sequence[currIdx].getTimestepsTotal() + ",";
+            String line = sequence.get(currIdx).getTimestepsTotal() + ",";
 
             if (currIdx == highlightIdx) {
                 g.setColor(Color.GREEN);
@@ -184,7 +191,7 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator,
             currIdx++;
             lineNum = currIdx / 4 + 1;
 
-        } while (currIdx < sequence.length);
+        } while (currIdx < sequence.size());
 
         // Draw the little keys above the column.
         Graphics2D g2 = (Graphics2D) g;
@@ -232,22 +239,15 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator,
         arrowPolygon.addPoint((int) (450 - thickness),(int) (-3 * thickness /2f));
         arrowPolygon.addPoint((int) (450 - thickness), (int) (-thickness /2f));
         arrowPolygon.addPoint(-600, (int) (-thickness /2f));
-
         Point midPoint = midpoint(fromPt, toPt);
 
         double rotate = Math.atan2(toPt.y - fromPt.y, toPt.x - fromPt.x);
-
-        AffineTransform transform = new AffineTransform();
-        transform.translate(midPoint.x, midPoint.y);
-        double ptDistance = fromPt.distance(toPt);
-        double scale = ptDistance / 1200.0; // 12 because it's the length of the arrow polygon.
-        transform.scale(scale, scale);
-        transform.rotate(rotate);
-
-        return transform.createTransformedShape(arrowPolygon);
+        return makeArrowTForm(midPoint.x, midPoint.y, fromPt.distance(toPt) / 1200.0, rotate)
+                .createTransformedShape(arrowPolygon);
     }
 
 
+    @SuppressWarnings("unused")
     public static Shape createArrowShape(float angle, float length, Point toPt, float thickness) {
         Polygon arrowPolygon = new Polygon();
 
@@ -260,21 +260,20 @@ public abstract class PanelRunner extends JPanel implements TabbedPaneActivator,
         arrowPolygon.addPoint((int) (-150 - thickness),(int) (-3 * thickness /2f));
         arrowPolygon.addPoint((int) (-150 - thickness), (int) (-thickness /2f));
         arrowPolygon.addPoint(-1200, (int) (-thickness /2f));
-
-//        Point midPoint = new Point((int) (toPt.x  + Math.cos(length)), (int) (toPt.y + Math.sin(length)));
-
-        AffineTransform transform = new AffineTransform();
-        transform.translate(toPt.x, toPt.y);
-        double scale = length / 1200.0; // 12 because it's the length of the arrow polygon.
-        transform.scale(scale, scale);
-        transform.rotate(angle);
-
-        return transform.createTransformedShape(arrowPolygon);
+        return makeArrowTForm(toPt.x, toPt.y, length / 1200.0, angle).createTransformedShape(arrowPolygon);
     }
 
     private static Point midpoint(Point p1, Point p2) {
         return new Point((int)((p1.x + p2.x)/2.0),
                 (int)((p1.y + p2.y)/2.0));
+    }
+
+    private static AffineTransform makeArrowTForm(double x, double y, double scale, double angle) {
+        AffineTransform transform = new AffineTransform();
+        transform.translate(x, y);
+        transform.scale(scale, scale);
+        transform.rotate(angle);
+        return transform;
     }
 
     @Override

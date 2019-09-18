@@ -93,7 +93,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
      *
      * @return The actual list of children of this node.
      */
-    public List<N> getChildren() {
+    public synchronized List<N> getChildren() {
         return children;
     }
 
@@ -103,7 +103,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
      * Usually want to do something else.
      * @param node Child node to remove.
      */
-    public void removeFromChildren(N node) {
+    public synchronized void removeFromChildren(N node) {
         children.remove(node);
     }
 
@@ -313,7 +313,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     }
 
     /**
-     * Do some lambda action to all of the leaf nodes (i.e. those with no children) below or at this node.
+     * Do some lambda command to all of the leaf nodes (i.e. those with no children) below or at this node.
      * @param operation Lambda to apply just to leaf nodes below this node.
      */
     @SuppressWarnings("WeakerAccess")
@@ -326,7 +326,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     }
 
     /**
-     * Do some lambda action to this node only. This can be a good way of getting around type erasure problems. For
+     * Do some lambda command to this node only. This can be a good way of getting around type erasure problems. For
      * example, getChildren() could be done:
      *
      * <code>List<NodeGenericBase<?>> list = new ArrayList<>();
@@ -342,7 +342,7 @@ public abstract class NodeGenericBase<N extends NodeGenericBase<N>> {
     }
 
     /**
-     * Do some lambda action to the children of this node. This can be a good way of getting around type erasure problems.
+     * Do some lambda command to the children of this node. This can be a good way of getting around type erasure problems.
      * @param operation A lambda to apply to the children of this node.
      */
     public void applyToChildren(Consumer<N> operation) {

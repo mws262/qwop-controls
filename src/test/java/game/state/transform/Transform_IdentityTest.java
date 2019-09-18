@@ -1,7 +1,7 @@
 package game.state.transform;
 
+import game.qwop.StateQWOP;
 import game.state.IState;
-import game.state.State;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,9 +24,9 @@ public class Transform_IdentityTest {
             s3[i] = i * 3f;
         }
 
-        State state1 = new State(s1, false);
-        State state2 = new State(s2, false);
-        State state3 = new State(s3, false);
+        StateQWOP state1 = new StateQWOP(s1, false);
+        StateQWOP state2 = new StateQWOP(s2, false);
+        StateQWOP state3 = new StateQWOP(s3, false);
 
         List<IState> slist = new ArrayList<>();
         slist.add(state1);
@@ -43,11 +43,11 @@ public class Transform_IdentityTest {
     @Test
     public void untransform() {
 
-        ITransform tform = new Transform_Identity();
+        ITransform<StateQWOP> tform = new Transform_Identity<>();
 
-        float[] s1 = new float[72];
-        float[] s2 = new float[72];
-        float[] s3 = new float[72];
+        float[] s1 = new float[StateQWOP.STATE_SIZE];
+        float[] s2 = new float[StateQWOP.STATE_SIZE];
+        float[] s3 = new float[StateQWOP.STATE_SIZE];
 
         for (int i = 0; i < s1.length; i++) {
             s1[i] = i;
@@ -58,8 +58,8 @@ public class Transform_IdentityTest {
         // Single state
         List<float[]> slist = new ArrayList<>();
         slist.add(s1);
-        List<IState> tformState = tform.untransform(slist);
-        float[] state_values = tformState.get(0).flattenState();
+        List<float[]> tformState = tform.untransform(slist);
+        float[] state_values = tformState.get(0);
 
         Assert.assertArrayEquals(s1, state_values, 1e-10f);
 
@@ -69,27 +69,27 @@ public class Transform_IdentityTest {
         slist.add(s2);
         slist.add(s3);
 
-        List<IState> tformStateMulti = tform.untransform(slist);
+        List<float[]> tformStateMulti = tform.untransform(slist);
         Assert.assertEquals(3, tformStateMulti.size());
-        Assert.assertArrayEquals(s1, tformStateMulti.get(0).flattenState(),1e-10f);
-        Assert.assertArrayEquals(s2, tformStateMulti.get(1).flattenState(),1e-10f);
-        Assert.assertArrayEquals(s3, tformStateMulti.get(2).flattenState(),1e-10f);
+        Assert.assertArrayEquals(s1, tformStateMulti.get(0),1e-10f);
+        Assert.assertArrayEquals(s2, tformStateMulti.get(1),1e-10f);
+        Assert.assertArrayEquals(s3, tformStateMulti.get(2),1e-10f);
     }
 
     @Test
     public void compressAndDecompress() {
-        State st1 = new State(new float[72], false);
-        State st2 = new State(new float[72], false);
+        StateQWOP st1 = new StateQWOP(new float[72], false);
+        StateQWOP st2 = new StateQWOP(new float[72], false);
 
-        List<IState> slist = new ArrayList<>();
+        List<StateQWOP> slist = new ArrayList<>();
         slist.add(st1);
         slist.add(st2);
 
-        ITransform tform = new Transform_Identity();
-        List<IState> slistReturn = tform.compressAndDecompress(slist);
+        ITransform<StateQWOP> tform = new Transform_Identity<>();
+        List<float[]> slistReturn = tform.compressAndDecompress(slist);
         Assert.assertEquals(2, slistReturn.size());
-        Assert.assertEquals(slist.get(0), slistReturn.get(0));
-        Assert.assertEquals(slist.get(1), slistReturn.get(1));
+        Assert.assertArrayEquals(slist.get(0).flattenState(), slistReturn.get(0), 1e-12f);
+        Assert.assertArrayEquals(slist.get(1).flattenState(), slistReturn.get(1), 1e-12f);
 
     }
 

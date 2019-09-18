@@ -1,9 +1,11 @@
 package goals.phase_variable_testing;
 
 import game.action.ActionQueue;
-import game.GameUnified;
-import game.state.IState;
-import tree.node.NodeQWOPGraphicsBase;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.IStateQWOP.ObjectName;
+import game.qwop.StateQWOP;
+import tree.node.NodeGameGraphicsBase;
 import ui.scatterplot.PanelPlot_Simple;
 
 import javax.swing.*;
@@ -14,21 +16,17 @@ import java.util.List;
 /**
  * Trying to see what sorts of things would work as a phase variable to indicate what part of the gait cycle we are
  * in. One logical choice is a neural network which compresses the full 72 state values to a single 1. This runs a
- * sample set of game.action through and spits out what the network says.
+ * sample set of game.command through and spits out what the network says.
  *
  * @author matt
  */
 public class MAIN_StateCombinations extends JFrame {
-    /**
-     * Number of outputs to plot. Needs to have a corresponding neural network .pb file!
-     */
-    int numOutputs = 1;
 
     public static void main(String[] args) {
         new MAIN_StateCombinations().run();
     }
     public void run() {
-        // Vis makeNewWorld.
+        // Vis resetGame.
         PanelPlot_Simple plotPanel = new PanelPlot_Simple("Runner");
         plotPanel.activateTab();
         getContentPane().add(plotPanel);
@@ -37,15 +35,15 @@ public class MAIN_StateCombinations extends JFrame {
         pack();
         setVisible(true);
 
-        GameUnified game = new GameUnified();
+        GameQWOP game = new GameQWOP();
 
-        ActionQueue actionQueue = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
 
-        List<IState> stateList = new ArrayList<>();
-        stateList.add(GameUnified.getInitialState());
+        List<StateQWOP> stateList = new ArrayList<>();
+        stateList.add((StateQWOP) GameQWOP.getInitialState());
         while (!actionQueue.isEmpty()) {
             game.step(actionQueue.pollCommand());
-            IState st = game.getCurrentState();
+            StateQWOP st = (StateQWOP) game.getCurrentState();
             stateList.add(st);
         }
 
@@ -62,14 +60,14 @@ public class MAIN_StateCombinations extends JFrame {
         float[] stVals = new float[stateList.size()];
         for (int i = 0; i < stateList.size(); i++) {
             stVals[i] =
-                    stateList.get(i).getStateVariableFromName(IState.ObjectName.RTHIGH).getTh() - stateList.get(i).getStateVariableFromName(IState.ObjectName.LTHIGH).getTh(); // Pick data out here.
+                    stateList.get(i).getStateVariableFromName(ObjectName.RTHIGH).getTh() - stateList.get(i).getStateVariableFromName(ObjectName.LTHIGH).getTh(); // Pick data out here.
         }
         yDataList.add(stVals);
 
 
         List<Color> colorList = new ArrayList<>();
         for (int i = 0; i < xDataList.size(); i++) {
-            colorList.add(NodeQWOPGraphicsBase.getColorFromTreeDepth(i, NodeQWOPGraphicsBase.lineBrightnessDefault));
+            colorList.add(NodeGameGraphicsBase.getColorFromTreeDepth(i, NodeGameGraphicsBase.lineBrightnessDefault));
         }
 
         plotPanel.setPlotData(xDataList, yDataList, colorList, "timestep idx", "state value");

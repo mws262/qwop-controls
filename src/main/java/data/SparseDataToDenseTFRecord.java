@@ -1,16 +1,16 @@
 package data;
 
-import game.GameUnified;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import savers.DataSaver_DenseTFRecord;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,9 +29,9 @@ import java.util.List;
 public class SparseDataToDenseTFRecord {
 
     /**
-     * Interface to the game and Box2D physics for simulation game.action.
+     * Interface to the game and Box2D physics for simulation game.command.
      */
-    private final GameUnified game = new GameUnified();
+    private final GameQWOP game = new GameQWOP();
 
     /**
      * Saver that this converted will use. Uses a dense saver (every timestep saved) most likely.
@@ -41,15 +41,15 @@ public class SparseDataToDenseTFRecord {
     /**
      * Saving and loading of Java objects.
      */
-    private final SavableFileIO<SavableSingleGame> fileIO = new SavableFileIO<>();
+    private final SavableFileIO<SavableSingleGame<CommandQWOP, StateQWOP>> fileIO = new SavableFileIO<>();
 
     /**
      * Queued {@link Action}, i.e. durations and keypresses.
      */
-    private final ActionQueue actionQueue = new ActionQueue();
+    private final ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
 
     /**
-     * If we don't want to save data for the first or last game.action in a sequence.
+     * If we don't want to save data for the first or last game.command in a sequence.
      */
     public int trimFirst = 0;
     public int trimLast = 0;
@@ -68,7 +68,7 @@ public class SparseDataToDenseTFRecord {
     }
 
     /**
-     * Given files containing sparsely saved information (i.e. just at game.action transitions, not at every timestep),
+     * Given files containing sparsely saved information (i.e. just at game.command transitions, not at every timestep),
      * convert to densely saved data by re-simulating.
      * @param files Files containing sparsely saved run data, {@link SavableSingleGame}.
      * @param saveBulk Whether to
@@ -78,9 +78,9 @@ public class SparseDataToDenseTFRecord {
         if (saveBulk) {
             saver.setSaveInterval(-1);
             for (File file : files) {
-                List<SavableSingleGame> sparseGames = new ArrayList<>();
+                List<SavableSingleGame<CommandQWOP, StateQWOP>> sparseGames = new ArrayList<>();
                 fileIO.loadObjectsToCollection(file, sparseGames);
-                for (SavableSingleGame singleGame : sparseGames) {
+                for (SavableSingleGame<CommandQWOP, StateQWOP> singleGame : sparseGames) {
                     sim(singleGame);
                 }
             }
@@ -88,9 +88,9 @@ public class SparseDataToDenseTFRecord {
         } else {
             saver.setSaveInterval(1);
             for (File file : files) {
-                List<SavableSingleGame> sparseGames = new ArrayList<>();
+                List<SavableSingleGame<CommandQWOP, StateQWOP>> sparseGames = new ArrayList<>();
                 fileIO.loadObjectsToCollection(file, sparseGames);
-                for (SavableSingleGame singleGame : sparseGames) {
+                for (SavableSingleGame<CommandQWOP, StateQWOP> singleGame : sparseGames) {
                     saver.filenameOverride = file.getName().split("\\.(?=[^.]+$)")[0];
                     sim(singleGame);
                 }
@@ -100,35 +100,35 @@ public class SparseDataToDenseTFRecord {
     }
 
     /**
-     * Simulate some game.action without saving. Useful when some beginning game.action are being trimmed from the data.
+     * Simulate some game.command without saving. Useful when some beginning game.command are being trimmed from the data.
      *
-     * @param actions Array of {@link Action game.action} to simulate without saving.
+     * @param actions Array of {@link Action game.command} to simulate without saving.
      */
-    private void simWithoutSave(Action[] actions) {
+    private void simWithoutSave(List<Action<CommandQWOP>> actions) {
         actionQueue.clearAll();
         actionQueue.addSequence(actions);
         while (!actionQueue.isEmpty()) {
             game.step(actionQueue.pollCommand());
-            if (game.getFailureStatus()) {
+            if (game.isFailed()) {
                 logger.warn("Game saver is seeing a failed state");
             }
         }
     }
 
     /**
-     * Simulate game.action with data stored at every timestep.
+     * Simulate game.command with data stored at every timestep.
      *
-     * @param actions Array of {@link Action game.action} to simulate with saving of full state data at every timestep.
+     * @param actions Array of {@link Action game.command} to simulate with saving of full state data at every timestep.
      */
-    private void simWithSave(Action[] actions) {
+    private void simWithSave(List<Action<CommandQWOP>> actions) {
         actionQueue.clearAll();
         actionQueue.addSequence(actions);
         while (!actionQueue.isEmpty()) {
             CommandQWOP nextCommand = actionQueue.pollCommand(); // Get and remove the next keypresses
-            Action action = actionQueue.peekThisAction();
+            Action<CommandQWOP> action = actionQueue.peekThisAction();
             game.step(nextCommand);
             saver.reportTimestep(action, game); // Key difference
-            if (game.getFailureStatus()) {
+            if (game.isFailed()) {
                 logger.warn("Game saver is seeing a failed state");
             }
         }
@@ -140,29 +140,29 @@ public class SparseDataToDenseTFRecord {
      *
      * @param singleGame Sparsely-saved data to re-simulate and convert.
      */
-    private void sim(SavableSingleGame singleGame) {
+    private void sim(SavableSingleGame<CommandQWOP, StateQWOP> singleGame) {
         actionQueue.clearAll();
-        Action[] gameActions = singleGame.actions;
+        List<Action<CommandQWOP>> gameActions = singleGame.actions;
 
-        if (trimLast + trimFirst > gameActions.length) {
-            throw new IndexOutOfBoundsException("Number of trimmed game.action (beginning + end) exceeds the total number" +
-                    " of game.action in the run.");
+        if (trimLast + trimFirst > gameActions.size()) {
+            throw new IndexOutOfBoundsException("Number of trimmed game.command (beginning + end) exceeds the total number" +
+                    " of game.command in the run.");
         }
 
-        // Divide the game.action up into ones which shouldn't be saved at the beginning, ones which should be saved in
+        // Divide the game.command up into ones which shouldn't be saved at the beginning, ones which should be saved in
         // the middle, and ones which shouldn't be saved at the end.
-        Action[] noSaveActions1 = Arrays.copyOfRange(gameActions, 0, trimFirst);
-        Action[] saveActions = Arrays.copyOfRange(gameActions, trimFirst, gameActions.length - trimLast);
-        Action[] noSaveActions2 = Arrays.copyOfRange(gameActions, gameActions.length - trimLast, gameActions.length);
+        List<Action<CommandQWOP>> noSaveActions1 = gameActions.subList(0, trimFirst);
+        List<Action<CommandQWOP>> saveActions = gameActions.subList(trimFirst, gameActions.size() - trimLast);
+        List<Action<CommandQWOP>> noSaveActions2 = gameActions.subList(gameActions.size() - trimLast, gameActions.size());
 
-        // Total number of game.action should be preserved by trimming.
-        assert noSaveActions1.length + saveActions.length + noSaveActions2.length == gameActions.length;
+        // Total number of game.command should be preserved by trimming.
+        assert noSaveActions1.size() + saveActions.size() + noSaveActions2.size() == gameActions.size();
 
-        game.makeNewWorld();
-        if (noSaveActions1.length > 0) simWithoutSave(noSaveActions1);
+        game.resetGame();
+        if (noSaveActions1.size() > 0) simWithoutSave(noSaveActions1);
         saver.reportGameInitialization(game.getCurrentState()); // Wait to initialize until the ignored section is done.
         simWithSave(saveActions);
-        // No need to simulate the unsaved game.action at the end.
+        // No need to simulate the unsaved game.command at the end.
 
         saver.reportGameEnding(null);
     }

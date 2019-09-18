@@ -173,7 +173,7 @@ public class SavableFileIO<T> {
 
         @Override
         protected void writeStreamHeader() throws IOException {
-            // do not write a header, but reset:
+            // do not write a header, but resetGame:
             // this line added after another question
             // showed a problem with the original
             reset();

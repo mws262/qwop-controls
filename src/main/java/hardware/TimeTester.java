@@ -1,7 +1,6 @@
 package hardware;
 
-import game.action.CommandQWOP.Keys;
-import game.action.CommandQWOP;
+import game.qwop.CommandQWOP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,12 +28,12 @@ public class TimeTester {
     private KeypusherSerialConnection serial;
 
     /**
-     * Whether the commanded press action has completed.
+     * Whether the commanded press command has completed.
      */
     private volatile boolean donePress = false;
 
     /**
-     * Whether the commanded depress action has completed.
+     * Whether the commanded depress command has completed.
      */
     private volatile boolean doneDepress = false;
 

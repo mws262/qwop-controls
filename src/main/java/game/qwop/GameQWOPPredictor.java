@@ -1,12 +1,10 @@
-package game;
+package game.qwop;
 
 import game.action.Action;
 import game.action.ActionQueue;
-import game.action.CommandQWOP;
-import game.state.IState;
-import game.state.State;
-import tflowtools.TensorflowLoader;
+import org.jetbrains.annotations.NotNull;
 import org.tensorflow.Tensor;
+import tflowtools.TensorflowLoader;
 import ui.runner.PanelRunner_SimpleState;
 
 import javax.swing.*;
@@ -14,15 +12,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GamePredictor extends TensorflowLoader {
-
-    private String stateInputName = "input/qwop_state_input";
-    private String actionInputName = "input/qwop_action_input";
-
-    private String internalStateInput = "rnn/full_internal_state_input";
-
-    private String hiddenStateOutputName = "output/internal_state_output";
-    private String stateOutputName = "output/state_output";
+public class GameQWOPPredictor extends TensorflowLoader {
 
     /**
      * Load the computational graph from a .pb file and also make a new session.
@@ -30,13 +20,17 @@ public class GamePredictor extends TensorflowLoader {
      * @param pbFile    Name of the graph save file (usually *.pb), including the file extension.
      * @param directory Directory name containing the graph save file.
      */
-    public GamePredictor(String pbFile, String directory) {
+    public GameQWOPPredictor(@NotNull String pbFile, @NotNull String directory) {
         super(pbFile, directory);
     }
 
-    public List<IState> predictSimulation(IState initialState, ActionQueue actions) {
+    public List<StateQWOP> predictSimulation(StateQWOP initialState, ActionQueue<CommandQWOP> actions) {
+        String stateInputName = "input/qwop_state_input";
+        String actionInputName = "input/qwop_action_input";
+        String hiddenStateOutputName = "output/internal_state_output";
+        String stateOutputName = "output/state_output";
 
-        List<IState> resultStates = new ArrayList<>();
+        List<StateQWOP> resultStates = new ArrayList<>();
 
         float[][][] stateIn = new float[1][][]; // Awkward singleton dimensions: [sample no (1), timesteps (1), state
         // vals (72)]
@@ -62,10 +56,11 @@ public class GamePredictor extends TensorflowLoader {
                         [(int) outputShape[1]]
                         [(int) outputShape[2]])[0][0];
 
-        resultStates.add(new State(reshapedResult, false));
+        resultStates.add(new StateQWOP(reshapedResult, false));
 
         // Second evaluation, we have an internal state to feed in.
         while (!actions.isEmpty()) {
+            String internalStateInput = "rnn/full_internal_state_input";
             result =
                     getSession().runner().feed(stateInputName + ":0", stateResult)
                             .feed(actionInputName + ":0", makeActionTensor(actions.pollCommand()))
@@ -82,7 +77,7 @@ public class GamePredictor extends TensorflowLoader {
                             [(int) outputShape[1]]
                             [(int) outputShape[2]])[0][0];
 
-            resultStates.add(new State(reshapedResult, false));
+            resultStates.add(new StateQWOP(reshapedResult, false));
 
         }
         stateInputTensor.close();
@@ -96,7 +91,7 @@ public class GamePredictor extends TensorflowLoader {
      * Turn an Action into a 3 element, one-hot tensor. This is explicitly for the WO, QP [NONE] key combinations.
      * Any order is allowed, but only those three key configurations.
      *
-     * @return 3 element float tensor with one-hot representation of the action.
+     * @return 3 element float tensor with one-hot representation of the command.
      */
     private Tensor<Float> makeActionTensor(CommandQWOP command) {
         float[][][] oneHotAction = new float[1][1][3];
@@ -114,17 +109,17 @@ public class GamePredictor extends TensorflowLoader {
     }
 
     public static void main(String[] args) {
-        GamePredictor gp = new GamePredictor("frozen_model.pb", "src/main/resources/tflow_models");
+        GameQWOPPredictor gp = new GameQWOPPredictor("frozen_model.pb", "src/main/resources/tflow_models");
         Runtime.getRuntime().addShutdownHook(new Thread(gp::close));
 
-        IState initState = GameUnified.getInitialState();
-        Action singleAction = new Action(1000, CommandQWOP.WO);
+        StateQWOP initState = GameQWOP.getInitialState();
+        Action<CommandQWOP> singleAction = new Action<>(1000, CommandQWOP.WO);
 
-        ActionQueue actionQueue = new ActionQueue();
+        ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
         actionQueue.addAction(singleAction);
 //        ActionQueue actionQueue = CompareWarmStartToColdBase.getSampleActions();
 
-        List<IState> states = gp.predictSimulation(initState, actionQueue);
+        List<StateQWOP> states = gp.predictSimulation(initState, actionQueue);
 
         JFrame frame = new JFrame();
         PanelRunner_SimpleState panelRunner = new PanelRunner_SimpleState("Runner");
@@ -136,7 +131,7 @@ public class GamePredictor extends TensorflowLoader {
         frame.setVisible(true);
 
 
-        for (IState st : states) {
+        for (StateQWOP st : states) {
             panelRunner.updateState(st);
             panelRunner.repaint();
 

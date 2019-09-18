@@ -1,8 +1,8 @@
 package vision;
 
 import flashqwop.IFlashStateListener;
+import game.qwop.StateQWOP;
 import game.state.IState;
-import game.state.State;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,7 +42,7 @@ public class VisionDataSaver implements IFlashStateListener {
     private CaptureQWOPWindow windowCapturer;
 
     /**
-     * Keeps track of when a game has failed previously and is waiting for a reset to occur.
+     * Keeps track of when a game has failed previously and is waiting for a resetGame to occur.
      */
     private boolean resetPending = true;
 
@@ -73,13 +73,13 @@ public class VisionDataSaver implements IFlashStateListener {
     }
 
     @Override
-    public void stateReceived(int timestep, IState state) {
+    public void stateReceived(int timestep, StateQWOP state) {
         /*
          * Four important cases:
          * 1. Timestep is 0, i.e. beginning of new game. Need to clear caches and make new directories.
          * 2. General case: unfailed, "middle" timestep. Take a picture and record state info.
          * 3. Game has just failed. Save state information to file.
-         * 4. Game is still failed, waiting for a reset to occur. Do nothing.
+         * 4. Game is still failed, waiting for a resetGame to occur. Do nothing.
          */
 
         // TODO: There's some amount of ambiguity over whether the game state is sent before or after the frame is
@@ -90,11 +90,11 @@ public class VisionDataSaver implements IFlashStateListener {
             resetPending = true;
         }
 
-        // 1. Flash game reset has just occurred.
+        // 1. Flash game resetGame has just occurred.
         if (timestep == 0) {
             resetForNextRun();
             resetPending = false;
-        } else if (resetPending) { // 4. Waiting for the game to reset. Do nothing.
+        } else if (resetPending) { // 4. Waiting for the game to resetGame. Do nothing.
             return;
         }
 
@@ -159,12 +159,12 @@ public class VisionDataSaver implements IFlashStateListener {
     /**
      * Format the state portion of one line of the data log file. This differs from other state representations in
      * the project in that all the position coordinates come before the velocities.
-     * @param state State to format.
+     * @param state StateQWOP to format.
      * @return One-line String representing the state info.
      */
     private String formatState(IState state) {
-        if (state instanceof State) {
-            State s = (State) state;
+        if (state instanceof StateQWOP) {
+            StateQWOP s = (StateQWOP) state;
             float bodyX = s.body.getX();
             return bodyX + "\t" + s.body.getY() + "\t" + s.body.getTh() + "\t"
                     + (s.head.getX() - bodyX) + "\t" + s.head.getY() + "\t" + s.head.getTh() + "\t"
@@ -192,7 +192,7 @@ public class VisionDataSaver implements IFlashStateListener {
                     + s.rlarm.getDx() + "\t" + s.rlarm.getDy() + "\t" + s.rlarm.getDth() + "\t"
                     + s.llarm.getDx() + "\t" + s.llarm.getDy() + "\t" + s.llarm.getDth() + "\t";
         } else {
-            logger.warn("State type passed in is currently not supported. Returning a blank string.");
+            logger.warn("StateQWOP type passed in is currently not supported. Returning a blank string.");
             return "";
         }
     }

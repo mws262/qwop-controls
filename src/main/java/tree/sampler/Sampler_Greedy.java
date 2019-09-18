@@ -4,19 +4,21 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Action;
+import game.action.Command;
+import game.state.IState;
 import tree.Utility;
-import tree.node.NodeQWOPExplorableBase;
+import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
 import java.util.ArrayList;
 
-public class Sampler_Greedy implements ISampler {
+public class Sampler_Greedy<C extends Command<?>, S extends IState> implements ISampler<C, S> {
 
     /* NODE EVALUATION */
     /**
      * How are individual nodes scored?
      */
-    private IEvaluationFunction evaluationFunction;
+    private IEvaluationFunction<C, S> evaluationFunction;
 
     /* HOW MANY SAMPLES BETWEEN JUMPS */
     /**
@@ -55,7 +57,7 @@ public class Sampler_Greedy implements ISampler {
     /**
      * Current node from which all sampling is done further down the tree among its descendants.
      */
-    private NodeQWOPExplorableBase<?> currentRoot;
+    private NodeGameExplorableBase<?, C, S> currentRoot;
 
     /**
      * Number of samples being taken from this node before going deeper into the tree.
@@ -70,10 +72,10 @@ public class Sampler_Greedy implements ISampler {
     /**
      * Some random sampling features used.
      */
-    private Sampler_Distribution distributionSampler = new Sampler_Distribution();
+    private Sampler_Distribution<C, S> distributionSampler = new Sampler_Distribution<>();
 
     @JsonCreator
-    public Sampler_Greedy(@JsonProperty("evaluationFunction") IEvaluationFunction evaluationFunction) {
+    public Sampler_Greedy(@JsonProperty("evaluationFunction") IEvaluationFunction<C, S> evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
     }
 
@@ -95,7 +97,7 @@ public class Sampler_Greedy implements ISampler {
     /**
      * We've changed the node we're sampling from. Reset the appropriate stuff.
      */
-    private void chooseNewRoot(NodeQWOPExplorableBase<?> newRoot) {
+    private void chooseNewRoot(NodeGameExplorableBase<?, C, S> newRoot) {
         currentRoot = newRoot;
         totalSamplesToTakeAtThisNode = numSamplesAtDepth(currentRoot.getTreeDepth());
         samplesSoFarAtThisNode = 0;
@@ -104,26 +106,26 @@ public class Sampler_Greedy implements ISampler {
     /**
      * Set a new evaluation function for this sampler. Should be hot-swappable at any point.
      */
-    public void setEvaluationFunction(IEvaluationFunction evaluationFunction) {
+    public void setEvaluationFunction(IEvaluationFunction<C, S> evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
     }
 
-    public IEvaluationFunction getEvaluationFunction() {
+    public IEvaluationFunction<C, S> getEvaluationFunction() {
         return evaluationFunction;
     }
 
     @Override
-    public NodeQWOPExplorableBase<?> treePolicy(NodeQWOPExplorableBase<?> startNode) {
+    public NodeGameExplorableBase<?, C, S> treePolicy(NodeGameExplorableBase<?, C, S> startNode) {
         // Decide what to do with the given start node.
         if (currentRoot == null) {
             chooseNewRoot(startNode);
             // TODO find a way to avoid an unchecked cast
-        } else if (((NodeQWOPExplorableBase) startNode).isOtherNodeAncestor(currentRoot)) { // If currentRoot is the
+        } else if (((NodeGameExplorableBase) startNode).isOtherNodeAncestor(currentRoot)) { // If currentRoot is the
             // ancestor of startNode,
         	// switch to startNode.
             chooseNewRoot(startNode);
             // TODO find a way to avoid an unchecked cast
-        } else if (!startNode.equals(currentRoot) && !((NodeQWOPExplorableBase)currentRoot).isOtherNodeAncestor(startNode)) { // If current
+        } else if (!startNode.equals(currentRoot) && !((NodeGameExplorableBase)currentRoot).isOtherNodeAncestor(startNode)) { // If current
         	// root is not the ancestor, and start node is NOT the ancestor, they are parallel in some way, and
 			// startnode wins.
             chooseNewRoot(startNode);
@@ -132,7 +134,7 @@ public class Sampler_Greedy implements ISampler {
         // Current node fully exhausted, we need to back the root up.
         if (currentRoot.isFullyExplored()) {
             int count = 0;
-            NodeQWOPExplorableBase<?> movingNode = currentRoot;
+            NodeGameExplorableBase<?, C, S> movingNode = currentRoot;
             while (movingNode.getTreeDepth() > 0 && (movingNode.isFullyExplored() || count < backwardsJump)) {
                 movingNode = movingNode.getParent();
                 count++;
@@ -145,18 +147,18 @@ public class Sampler_Greedy implements ISampler {
     }
 
     @Override
-    public void treePolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
+    public void treePolicyActionDone(NodeGameExplorableBase<?, C, S> currentNode) {
         treePolicyDone = true; // Enable transition to next through the guard.
         expansionPolicyDone = false; // Prevent transition before it's done via the guard.
     }
 
     @Override
-    public boolean treePolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
+    public boolean treePolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return treePolicyDone;
     }
 
     @Override
-    public Action expansionPolicy(NodeQWOPExplorableBase<?> startNode) {
+    public Action<C> expansionPolicy(NodeGameExplorableBase<?, C, S> startNode) {
         if (startNode.getUntriedActionCount() == 0)
             throw new RuntimeException("Expansion policy received a node from which there are no new nodes to try!");
 
@@ -164,7 +166,7 @@ public class Sampler_Greedy implements ISampler {
     }
 
     @Override
-    public void expansionPolicyActionDone(NodeQWOPExplorableBase<?> currentNode) {
+    public void expansionPolicyActionDone(NodeGameExplorableBase<?, C, S> currentNode) {
         treePolicyDone = false;
         if (currentNode.getState().isFailed()) {
             expansionPolicyDone = true;
@@ -175,7 +177,7 @@ public class Sampler_Greedy implements ISampler {
             //Sampled enough. Go deeper.
             if (samplesSoFarAtThisNode >= totalSamplesToTakeAtThisNode) {
                 // Pick the best leaf
-                ArrayList<NodeQWOPExplorableBase<?>> leaves = new ArrayList<>();
+                ArrayList<NodeGameExplorableBase<?, C, S>> leaves = new ArrayList<>();
 
                 currentRoot.recurseDownTreeInclusive(n -> {
                     if (n.getChildCount() == 0) {
@@ -183,9 +185,9 @@ public class Sampler_Greedy implements ISampler {
                     }
                 });
                 //float rootX = currentRoot.state.body.x;
-                NodeQWOPExplorableBase<?> bestNode = currentRoot;
+                NodeGameExplorableBase<?, C, S> bestNode = currentRoot;
                 float bestScore = -Float.MAX_VALUE;
-                for (NodeQWOPExplorableBase<?> leaf : leaves) {
+                for (NodeGameExplorableBase<?, C, S> leaf : leaves) {
                     float score = evaluationFunction.getValue(leaf);
                     if (score > bestScore) {
                         bestScore = score;
@@ -206,24 +208,24 @@ public class Sampler_Greedy implements ISampler {
     }
 
     @Override
-    public boolean expansionPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
+    public boolean expansionPolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         return expansionPolicyDone;
     }
 
     @Override
-    public void rolloutPolicy(NodeQWOPExplorableBase<?> startNode, IGameInternal game) {
+    public void rolloutPolicy(NodeGameExplorableBase<?, C, S> startNode, IGameInternal<C, S> game) {
         // No rollout policy.
     }
 
     @Override
-    public boolean rolloutPolicyGuard(NodeQWOPExplorableBase<?> currentNode) {
+    public boolean rolloutPolicyGuard(NodeGameExplorableBase<?, C, S> currentNode) {
         // Rollout policy not in use in the random sampler.
         return true;
     }
 
     @Override
-    public Sampler_Greedy getCopy() {
-        return new Sampler_Greedy(evaluationFunction.getCopy());
+    public Sampler_Greedy<C, S> getCopy() {
+        return new Sampler_Greedy<>(evaluationFunction.getCopy());
     }
 
     @Override

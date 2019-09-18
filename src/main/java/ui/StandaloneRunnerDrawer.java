@@ -1,6 +1,6 @@
 package ui;
 
-import game.state.State;
+import game.qwop.StateQWOP;
 import ui.runner.PanelRunner_SimpleState;
 
 import javax.swing.*;
@@ -18,7 +18,7 @@ public class StandaloneRunnerDrawer extends JFrame implements Runnable {
      * Make a new drawer which will have its own window and just display a single runner at a single pose.
      * @param state The state to draw the runner at.
      */
-    public StandaloneRunnerDrawer(State state) {
+    public StandaloneRunnerDrawer(StateQWOP state) {
         PanelRunner_SimpleState panel = new PanelRunner_SimpleState("Runner");
         panel.activateTab();
         getContentPane().add(panel);

@@ -3,8 +3,11 @@ package tree.sampler.rollout;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.IController;
-import tree.node.NodeQWOPBase;
-import tree.node.NodeQWOPExplorableBase;
+import game.action.Command;
+import game.action.IActionGenerator;
+import game.state.IState;
+import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.EvaluationFunction_Constant;
 
 
@@ -14,51 +17,54 @@ import tree.node.evaluator.EvaluationFunction_Constant;
  *
  * @author matt
  */
-public class RolloutPolicy_EntireRun extends RolloutPolicyBase {
+public class RolloutPolicy_EntireRun<C extends Command<?>, S extends IState> extends RolloutPolicyBase<C, S> {
 
     private static final float distanceMultiplier = 0.5f;
     private static final float speedMultiplier = distanceMultiplier / 10f;
     private static final int maxTimesteps = 3000; // 2 minutes. This limit shouldn't be met, but I don't want the
     // game to get stuck infinitely either.
 
-    private final IController rolloutController;
+    private final IController<C, S> rolloutController;
 
-    public RolloutPolicy_EntireRun(@JsonProperty("rolloutController") IController rolloutController) {
-        super(new EvaluationFunction_Constant(0f), maxTimesteps);
+    public RolloutPolicy_EntireRun(
+            @JsonProperty("rolloutActionGenerator") IActionGenerator<C> rolloutActionGenerator,
+            @JsonProperty("rolloutController") IController<C, S> rolloutController) {
+        super(new EvaluationFunction_Constant<>(0f), rolloutActionGenerator, maxTimesteps);
         this.rolloutController = rolloutController;
     }
 
     @Override
-    float startScore(NodeQWOPExplorableBase<?> startNode) {
+    float startScore(NodeGameExplorableBase<?, C, S> startNode) {
         return 0;
     }
 
     @Override
-    float accumulateScore(int timestepSinceRolloutStart, NodeQWOPBase<?> before, NodeQWOPBase<?> after) {
+    float accumulateScore(int timestepSinceRolloutStart, NodeGameBase<?, C, S> before, NodeGameBase<?, C, S> after) {
         return 0;
     }
 
     @Override
-    float endScore(NodeQWOPExplorableBase<?> endNode) {
+    float endScore(NodeGameExplorableBase<?, C, S> endNode) {
         return (endNode.getState().getCenterX()) * distanceMultiplier;
     }
 
     @Override
-    float calculateFinalScore(float accumulatedValue, NodeQWOPExplorableBase<?> startNode,
-                              NodeQWOPExplorableBase<?> endNode, int rolloutDurationTimesteps) {
+    float calculateFinalScore(float accumulatedValue, NodeGameExplorableBase<?, C, S> startNode,
+                              NodeGameExplorableBase<?, C, S> endNode, int rolloutDurationTimesteps) {
         return accumulatedValue +
-                (endNode.getState().getCenterX() - startNode.getState().getCenterX()) * speedMultiplier / Math.max(rolloutDurationTimesteps, 1f);
+                (endNode.getState().getCenterX() - startNode.getState().getCenterX())
+                        * speedMultiplier / Math.max(rolloutDurationTimesteps, 1f);
     }
 
     @Override
-    public IController getRolloutController() {
+    public IController<C, S> getRolloutController() {
         return rolloutController;
     }
 
     @JsonIgnore
     @Override
-    public RolloutPolicyBase getCopy() {
-        return new RolloutPolicy_EntireRun(rolloutController.getCopy());
+    public RolloutPolicyBase<C, S> getCopy() {
+        return new RolloutPolicy_EntireRun<>(rolloutActionGenerator, rolloutController.getCopy());
     }
 
     @Override

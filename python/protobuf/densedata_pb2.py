@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='densedata.proto',
   package='data',
   syntax='proto2',
-  serialized_pb=_b('\n\x0f\x64\x65nsedata.proto\x12\x04\x64\x61ta\"\xc1\x08\n\x07\x44\x61taSet\x12*\n\tdenseData\x18\x01 \x03(\x0b\x32\x17.data.DataSet.DenseData\x1a\x89\x08\n\tDenseData\x12,\n\x05state\x18\x01 \x03(\x0b\x32\x1d.data.DataSet.DenseData.State\x12.\n\x06\x61\x63tion\x18\x02 \x03(\x0b\x32\x1e.data.DataSet.DenseData.Action\x1a\xaf\x06\n\x05State\x12\x39\n\x04\x62ody\x18\x01 \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12;\n\x06rthigh\x18\x02 \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12;\n\x06lthigh\x18\x03 \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12:\n\x05rcalf\x18\x04 \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12:\n\x05lcalf\x18\x05 \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12:\n\x05rfoot\x18\x06 \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12:\n\x05lfoot\x18\x07 \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12:\n\x05ruarm\x18\x08 \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12:\n\x05luarm\x18\t \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12:\n\x05rlarm\x18\n \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12:\n\x05llarm\x18\x0b \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x12\x39\n\x04head\x18\x0c \x02(\x0b\x32+.data.DataSet.DenseData.State.StateVariable\x1aV\n\rStateVariable\x12\t\n\x01x\x18\x01 \x02(\x02\x12\t\n\x01y\x18\x02 \x02(\x02\x12\n\n\x02th\x18\x03 \x02(\x02\x12\n\n\x02\x64x\x18\x04 \x02(\x02\x12\n\n\x02\x64y\x18\x05 \x02(\x02\x12\x0b\n\x03\x64th\x18\x06 \x02(\x02\x1al\n\x06\x41\x63tion\x12\t\n\x01Q\x18\x01 \x02(\x08\x12\t\n\x01W\x18\x02 \x02(\x08\x12\t\n\x01O\x18\x03 \x02(\x08\x12\t\n\x01P\x18\x04 \x02(\x08\x12\x17\n\x0f\x61\x63tionTimesteps\x18\x05 \x01(\x05\x12\x1d\n\x15\x63urrentActionTimestep\x18\x06 \x01(\x05\x42\x17\n\x04\x64\x61taB\x0f\x44\x65nseDataProtos')
+  serialized_pb=_b('\n\x0f\x64\x65nsedata.proto\x12\x04\x64\x61ta\"\xc1\x08\n\x07\x44\x61taSet\x12*\n\tdenseData\x18\x01 \x03(\x0b\x32\x17.data.DataSet.DenseData\x1a\x89\x08\n\tDenseData\x12,\n\x05state\x18\x01 \x03(\x0b\x32\x1d.data.DataSet.DenseData.StateQWOP\x12.\n\x06\x61\x63tion\x18\x02 \x03(\x0b\x32\x1e.data.DataSet.DenseData.Action\x1a\xaf\x06\n\x05State\x12\x39\n\x04\x62ody\x18\x01 \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12;\n\x06rthigh\x18\x02 \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12;\n\x06lthigh\x18\x03 \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12:\n\x05rcalf\x18\x04 \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12:\n\x05lcalf\x18\x05 \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12:\n\x05rfoot\x18\x06 \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12:\n\x05lfoot\x18\x07 \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12:\n\x05ruarm\x18\x08 \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12:\n\x05luarm\x18\t \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12:\n\x05rlarm\x18\n \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12:\n\x05llarm\x18\x0b \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x12\x39\n\x04head\x18\x0c \x02(\x0b\x32+.data.DataSet.DenseData.StateQWOP.StateVariable6D\x1aV\n\rStateVariable6D\x12\t\n\x01x\x18\x01 \x02(\x02\x12\t\n\x01y\x18\x02 \x02(\x02\x12\n\n\x02th\x18\x03 \x02(\x02\x12\n\n\x02\x64x\x18\x04 \x02(\x02\x12\n\n\x02\x64y\x18\x05 \x02(\x02\x12\x0b\n\x03\x64th\x18\x06 \x02(\x02\x1al\n\x06\x41\x63tion\x12\t\n\x01Q\x18\x01 \x02(\x08\x12\t\n\x01W\x18\x02 \x02(\x08\x12\t\n\x01O\x18\x03 \x02(\x08\x12\t\n\x01P\x18\x04 \x02(\x08\x12\x17\n\x0f\x61\x63tionTimesteps\x18\x05 \x01(\x05\x12\x1d\n\x15\x63urrentActionTimestep\x18\x06 \x01(\x05\x42\x17\n\x04\x64\x61taB\x0f\x44\x65nseDataProtos')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -27,49 +27,49 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 _DATASET_DENSEDATA_STATE_STATEVARIABLE = _descriptor.Descriptor(
-  name='StateVariable',
-  full_name='data.DataSet.DenseData.State.StateVariable',
+  name='StateVariable6D',
+  full_name='data.DataSet.DenseData.StateQWOP.StateVariable6D',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='x', full_name='data.DataSet.DenseData.State.StateVariable.x', index=0,
+      name='x', full_name='data.DataSet.DenseData.StateQWOP.StateVariable6D.x', index=0,
       number=1, type=2, cpp_type=6, label=2,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='y', full_name='data.DataSet.DenseData.State.StateVariable.y', index=1,
+      name='y', full_name='data.DataSet.DenseData.StateQWOP.StateVariable6D.y', index=1,
       number=2, type=2, cpp_type=6, label=2,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='th', full_name='data.DataSet.DenseData.State.StateVariable.th', index=2,
+      name='th', full_name='data.DataSet.DenseData.StateQWOP.StateVariable6D.th', index=2,
       number=3, type=2, cpp_type=6, label=2,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='dx', full_name='data.DataSet.DenseData.State.StateVariable.dx', index=3,
+      name='dx', full_name='data.DataSet.DenseData.StateQWOP.StateVariable6D.dx', index=3,
       number=4, type=2, cpp_type=6, label=2,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='dy', full_name='data.DataSet.DenseData.State.StateVariable.dy', index=4,
+      name='dy', full_name='data.DataSet.DenseData.StateQWOP.StateVariable6D.dy', index=4,
       number=5, type=2, cpp_type=6, label=2,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='dth', full_name='data.DataSet.DenseData.State.StateVariable.dth', index=5,
+      name='dth', full_name='data.DataSet.DenseData.StateQWOP.StateVariable6D.dth', index=5,
       number=6, type=2, cpp_type=6, label=2,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -92,91 +92,91 @@ _DATASET_DENSEDATA_STATE_STATEVARIABLE = _descriptor.Descriptor(
 )
 
 _DATASET_DENSEDATA_STATE = _descriptor.Descriptor(
-  name='State',
-  full_name='data.DataSet.DenseData.State',
+  name='StateQWOP',
+  full_name='data.DataSet.DenseData.StateQWOP',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='body', full_name='data.DataSet.DenseData.State.body', index=0,
+      name='body', full_name='data.DataSet.DenseData.StateQWOP.body', index=0,
       number=1, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='rthigh', full_name='data.DataSet.DenseData.State.rthigh', index=1,
+      name='rthigh', full_name='data.DataSet.DenseData.StateQWOP.rthigh', index=1,
       number=2, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='lthigh', full_name='data.DataSet.DenseData.State.lthigh', index=2,
+      name='lthigh', full_name='data.DataSet.DenseData.StateQWOP.lthigh', index=2,
       number=3, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='rcalf', full_name='data.DataSet.DenseData.State.rcalf', index=3,
+      name='rcalf', full_name='data.DataSet.DenseData.StateQWOP.rcalf', index=3,
       number=4, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='lcalf', full_name='data.DataSet.DenseData.State.lcalf', index=4,
+      name='lcalf', full_name='data.DataSet.DenseData.StateQWOP.lcalf', index=4,
       number=5, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='rfoot', full_name='data.DataSet.DenseData.State.rfoot', index=5,
+      name='rfoot', full_name='data.DataSet.DenseData.StateQWOP.rfoot', index=5,
       number=6, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='lfoot', full_name='data.DataSet.DenseData.State.lfoot', index=6,
+      name='lfoot', full_name='data.DataSet.DenseData.StateQWOP.lfoot', index=6,
       number=7, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='ruarm', full_name='data.DataSet.DenseData.State.ruarm', index=7,
+      name='ruarm', full_name='data.DataSet.DenseData.StateQWOP.ruarm', index=7,
       number=8, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='luarm', full_name='data.DataSet.DenseData.State.luarm', index=8,
+      name='luarm', full_name='data.DataSet.DenseData.StateQWOP.luarm', index=8,
       number=9, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='rlarm', full_name='data.DataSet.DenseData.State.rlarm', index=9,
+      name='rlarm', full_name='data.DataSet.DenseData.StateQWOP.rlarm', index=9,
       number=10, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='llarm', full_name='data.DataSet.DenseData.State.llarm', index=10,
+      name='llarm', full_name='data.DataSet.DenseData.StateQWOP.llarm', index=10,
       number=11, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='head', full_name='data.DataSet.DenseData.State.head', index=11,
+      name='head', full_name='data.DataSet.DenseData.StateQWOP.head', index=11,
       number=12, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -278,7 +278,7 @@ _DATASET_DENSEDATA = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='action', full_name='data.DataSet.DenseData.action', index=1,
+      name='command', full_name='data.DataSet.DenseData.command', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -346,7 +346,7 @@ _DATASET_DENSEDATA_STATE.fields_by_name['head'].message_type = _DATASET_DENSEDAT
 _DATASET_DENSEDATA_STATE.containing_type = _DATASET_DENSEDATA
 _DATASET_DENSEDATA_ACTION.containing_type = _DATASET_DENSEDATA
 _DATASET_DENSEDATA.fields_by_name['state'].message_type = _DATASET_DENSEDATA_STATE
-_DATASET_DENSEDATA.fields_by_name['action'].message_type = _DATASET_DENSEDATA_ACTION
+_DATASET_DENSEDATA.fields_by_name['command'].message_type = _DATASET_DENSEDATA_ACTION
 _DATASET_DENSEDATA.containing_type = _DATASET
 _DATASET.fields_by_name['denseData'].message_type = _DATASET_DENSEDATA
 DESCRIPTOR.message_types_by_name['DataSet'] = _DATASET
@@ -355,17 +355,17 @@ DataSet = _reflection.GeneratedProtocolMessageType('DataSet', (_message.Message,
 
   DenseData = _reflection.GeneratedProtocolMessageType('DenseData', (_message.Message,), dict(
 
-    State = _reflection.GeneratedProtocolMessageType('State', (_message.Message,), dict(
+    State = _reflection.GeneratedProtocolMessageType('StateQWOP', (_message.Message,), dict(
 
-      StateVariable = _reflection.GeneratedProtocolMessageType('StateVariable', (_message.Message,), dict(
+      StateVariable = _reflection.GeneratedProtocolMessageType('StateVariable6D', (_message.Message,), dict(
         DESCRIPTOR = _DATASET_DENSEDATA_STATE_STATEVARIABLE,
         __module__ = 'densedata_pb2'
-        # @@protoc_insertion_point(class_scope:data.DataSet.DenseData.State.StateVariable)
+        # @@protoc_insertion_point(class_scope:data.DataSet.DenseData.StateQWOP.StateVariable6D)
         ))
       ,
       DESCRIPTOR = _DATASET_DENSEDATA_STATE,
       __module__ = 'densedata_pb2'
-      # @@protoc_insertion_point(class_scope:data.DataSet.DenseData.State)
+      # @@protoc_insertion_point(class_scope:data.DataSet.DenseData.StateQWOP)
       ))
     ,
 
