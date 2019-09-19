@@ -19,6 +19,8 @@ public class PolicyGradientCartPole {
     private final List<CommandCartPole> commands = new ArrayList<>();
     private final List<Float> rewards = new ArrayList<>();
 
+    private final float dropoutKeep = 1f;
+
     private PolicyGradientCartPole(PolicyGradientNetwork net) {
         this.net = net;
         cartPole.connect(true);
@@ -60,7 +62,7 @@ public class PolicyGradientCartPole {
         }
         float[] discounted = PolicyGradientNetwork.discountRewards(rewardsFlat, 0.95f);
 
-        float loss = net.trainingStep(flatStates, oneHotActions, discounted, 1);
+        float loss = net.trainingStep(flatStates, oneHotActions, discounted, dropoutKeep, 1);
         System.out.println("Duration: " + duration + " Loss: " + loss);
     }
 

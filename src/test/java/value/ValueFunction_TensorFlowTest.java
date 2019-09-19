@@ -214,11 +214,12 @@ public class ValueFunction_TensorFlowTest {
                     hiddenLayerSizes,
                     additionalArgs,
                     checkpoint,
+                    1f,
                     false);
         }
 
         ValFunTest(File existingFile) throws FileNotFoundException {
-            super(existingFile, false);
+            super(existingFile, 1f, false);
         }
 
         @Override

@@ -76,6 +76,12 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends I
     private static final Logger logger = LogManager.getLogger(ValueFunction_TensorFlow.class);
 
     /**
+     * Probability of keeping a hidden layer output during training (dropout).
+     */
+    @JsonProperty
+    public final float keepProbability;
+
+    /**
      * Constructor which also creates a new TensorFlow model.
      * @param fileName Name of the file to be created.
      * @param inputSize Defines the input dimension of the net.
@@ -90,12 +96,14 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends I
                              @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                              @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
                              @JsonProperty("activeCheckpoint") String activeCheckpoint,
+                             @JsonProperty("keepProbability") float keepProbability,
                              @JsonProperty("tensorboardLogging") boolean tensorboardLogging)throws IOException {
         logger.info("Making a new network for the value function.");
         this.inputSize = inputSize;
         this.outputSize = outputSize;
         this.fileName = fileName;
         this.hiddenLayerSizes = hiddenLayerSizes;
+        this.keepProbability = keepProbability;
         this.tensorboardLogging = tensorboardLogging;
         // Supplement the hidden layer sizes with the input and output sizes.
         List<Integer> allLayerSizes = new ArrayList<>(hiddenLayerSizes);
@@ -115,7 +123,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends I
      * @param existingModel A .pb file referring to an existing model.
      * @throws FileNotFoundException Occurs when the specified model file is not found.
      */
-    ValueFunction_TensorFlow(File existingModel, boolean tensorboardLogging) throws FileNotFoundException {
+    ValueFunction_TensorFlow(File existingModel, float keepProbability, boolean tensorboardLogging) throws FileNotFoundException {
         logger.info("Loading existing network for the value function.");
         this.tensorboardLogging = tensorboardLogging;
         fileName = existingModel.getPath();
@@ -127,6 +135,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends I
         }
         inputSize = layerSizes[0];
         outputSize = layerSizes[layerSizes.length - 1];
+        this.keepProbability = keepProbability;
     }
 
     /**
@@ -134,7 +143,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends I
      * @param network Existing value network.
      */
     @SuppressWarnings("unused")
-    ValueFunction_TensorFlow(TrainableNetwork network) {
+    ValueFunction_TensorFlow(TrainableNetwork network, float keepProbability) {
         logger.info("Using provided network for the value function.");
         this.fileName = network.getGraphDefinitionFile().getPath();
         this.tensorboardLogging = network.useTensorboard;
@@ -147,6 +156,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends I
             hiddenLayerSizes.add(layerSizes[i]);
         }
         this.network = network;
+        this.keepProbability = keepProbability;
     }
 
     /**
@@ -238,7 +248,7 @@ public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends I
                 trainingInput[i] = input;
                 trainingOutput[i] = output;
             }
-            lossSum += network.trainingStep(trainingInput, trainingOutput, trainingStepsPerBatch);
+            lossSum += network.trainingStep(trainingInput, trainingOutput, keepProbability, trainingStepsPerBatch);
             batchCount++;
         });
 

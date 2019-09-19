@@ -20,7 +20,9 @@ public class TreeStage_ValueFunctionUpdate<C extends Command<?>, S extends IStat
 
     public final ValueFunction_TensorFlow<C, S> valueFunction;
 
+    @JsonProperty
     public boolean excludeLeaves = false;
+
     public boolean updateGraphicalLabels = true;
 
     private int checkpointIndex;

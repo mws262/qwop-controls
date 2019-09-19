@@ -27,6 +27,8 @@ public class PolicyGradientQWOP {
 
     private StateQWOP.Normalizer normalizer;
 
+    private final float dropoutKeep = 1f;
+
     private PolicyGradientQWOP(@NotNull PolicyGradientNetwork net,
                                @NotNull List<Action<CommandQWOP>> allowedActions) {
         Preconditions.checkArgument(allowedActions.size() == net.outputSize, "Net output size should match the number" +
@@ -55,7 +57,7 @@ public class PolicyGradientQWOP {
         for (int i = 0; i < actions.size(); i++) {
             oneHotActions[i][allowedActions.indexOf(actions.get(i))] = 1;
         }
-        return net.trainingStep(flatStates, oneHotActions, discountedRewards, 1);
+        return net.trainingStep(flatStates, oneHotActions, discountedRewards, dropoutKeep, 1);
     }
 
     private void runEpisode() {

@@ -9,7 +9,6 @@ import game.qwop.StateQWOP;
 import game.state.transform.Transform_Identity;
 import tree.node.NodeGame;
 import ui.runner.PanelRunner_MultiState;
-import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 
 import javax.swing.*;
@@ -25,7 +24,7 @@ public class CompareFlashToJava extends FlashGame {
     private PanelRunner_MultiState panelRunner;
     private boolean initialized;
 
-    private ValueFunction_TensorFlow<CommandQWOP, IStateQWOP> valueFunction = null;
+    private ValueFunction_TensorFlow_StateOnly valueFunction = null;
 
     private List<GameQWOP> gameQWOPList = new ArrayList<>();
 
@@ -151,11 +150,12 @@ public class CompareFlashToJava extends FlashGame {
         try {
             // TODO not type safe
             IGameSerializable<CommandQWOP, StateQWOP> game =  new GameQWOP();
-            valueFunction = new ValueFunction_TensorFlow_StateOnly(
+            valueFunction = new ValueFunction_TensorFlow_StateOnly<>(
                     new File("src/main/resources/tflow_models" +
                     "/small_net.pb"),
                     game,
                     new Transform_Identity<>(),
+                    1f,
                     false); // state_only.pb"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();

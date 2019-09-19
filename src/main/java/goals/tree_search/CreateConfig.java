@@ -2,7 +2,7 @@ package goals.tree_search;
 
 import controllers.Controller_Random;
 import game.IGameSerializable;
-import game.action.ActionGenerator_UniformNoRepeats;
+import game.action.ActionGenerator_FixedSequence;
 import game.qwop.CommandQWOP;
 import game.qwop.GameQWOPCaching;
 import game.qwop.IStateQWOP;
@@ -72,6 +72,7 @@ public class CreateConfig {
         List<String> opts = new ArrayList<>();
         opts.add("--learnrate");
         opts.add("1e-4");
+        float keepProb = 0.9f;
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly<>(
                     "src/main/resources/tflow_models/test.pb",
@@ -80,6 +81,7 @@ public class CreateConfig {
                     layerSizes,
                     opts,
                     "",
+                    keepProb,
                     true);
         } catch (IOException e) {
             e.printStackTrace();
@@ -90,8 +92,8 @@ public class CreateConfig {
 
         SearchConfiguration.Tree<CommandQWOP> tree =
                 new SearchConfiguration.Tree<>(
-                        //        ActionGenerator_FixedSequence.makeExtendedGenerator(-1)
-                        ActionGenerator_UniformNoRepeats.makeDefaultGenerator()
+                                ActionGenerator_FixedSequence.makeExtendedGenerator(-1)
+//                        ActionGenerator_UniformNoRepeats.makeDefaultGenerator()
                 );
 
         List<SearchConfiguration.SearchOperation<CommandQWOP, StateQWOPDelayEmbedded_Differences,

@@ -102,9 +102,10 @@ public class PolicyQQWOP {
         float lossAvg = 0;
         float tsAvg = 0;
         float xAvg = 0;
+        float dropoutKeep = 0.9f;
         for (int i = 0; i < 10000000; i++) {
             float[] result = policy.playGame();
-            lossAvg += net.train(1);
+            lossAvg += net.train(1, dropoutKeep);
             tsAvg += result[0];
             xAvg += result[1];
             if (i % 20 == 0) {

@@ -4,20 +4,19 @@ import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
 import controllers.IController;
 import game.IGameSerializable;
-import game.action.Command;
-import game.qwop.GameQWOP;
-import game.qwop.GameQWOPCaching;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
-import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
 import game.qwop.StateQWOP;
 import game.state.transform.ITransform;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.TreeWorker;
-import tree.node.*;
+import tree.node.NodeGameExplorable;
 import tree.node.NodeGameExplorableBase;
+import tree.node.NodeGameGraphics;
 import tree.node.NodeGameGraphicsBase;
 import tree.node.evaluator.EvaluationFunction_Constant;
 import tree.node.evaluator.EvaluationFunction_Distance;
@@ -104,6 +103,8 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
 
     private int prevStates = 0;
     private int delayTs = 1;
+
+    private float trainingDropoutKeepRate = 0.9f;
 //    ValueFunction_TensorFlow_StateOnly vfunCopy = null;
 //    {
 //        try {
@@ -369,7 +370,7 @@ public class MAIN_Search_ValueFun extends SearchTemplate {
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly<>(networkName, gameTemplate,
                     normalizer, hiddenLayerSizes,
-                    extraNetworkArgs, "", true);
+                    extraNetworkArgs, "", trainingDropoutKeepRate, true);
         } catch (IOException e) {
             e.printStackTrace();
         }
