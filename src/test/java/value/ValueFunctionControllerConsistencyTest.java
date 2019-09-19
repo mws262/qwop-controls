@@ -53,7 +53,8 @@ public class ValueFunctionControllerConsistencyTest {
     class ValFunSandbox extends ValueFunction_TensorFlow_StateOnly<StateQWOP> {
 
         ValFunSandbox(File file, GameQWOP gameTemplate) throws FileNotFoundException {
-            super(file, gameTemplate, new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV), false);
+            super(file, gameTemplate, new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV), 1f,
+                    false);
             assignFuturePredictors(gameTemplate);
         }
 

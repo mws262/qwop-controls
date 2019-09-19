@@ -125,6 +125,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
                     new File("src/main/resources/tflow_models/" + valueNetworkName),
                     new GameQWOP(),
                     new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+                    1f,
                     false);
 
             // .pb"));

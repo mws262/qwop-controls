@@ -236,6 +236,7 @@ public class PanelRunner_ControlledTFlow<S extends IStateQWOP>
                                         Paths.get(modelLocation, selectedModel).toFile(),
                                         game,
                                         stateNormalizer,
+                                        1f, // No dropout for this evaluation.
                                         false
                                 )
                         );

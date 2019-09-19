@@ -364,6 +364,7 @@ public class SearchConfigurationTest {
                 hiddenLayerSizes,
                 extraArgs,
                 "",
+                1f,
                 false);
 
         List<File> files = valFun.saveCheckpoint("src/test/resources/testyamlmore");
@@ -421,6 +422,7 @@ public class SearchConfigurationTest {
                 hiddenLayerSizes,
                 extraArgs,
                 "",
+                1f,
                 false);
 
         List<File> files = valFun.saveCheckpoint("src/test/resources/testyaml");

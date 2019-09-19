@@ -65,7 +65,7 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
         timesteps.add(timestep);
     }
 
-    float train(int iterations) {
+    float train(int iterations, float keepProbability) {
         // Get a random subset of all games played. People call this experience replay to be all fancy-like.
         Collections.shuffle(timesteps);
         List<Timestep> batch = timesteps.subList(timesteps.size() - Math.min(timesteps.size(),
@@ -90,7 +90,7 @@ public class PolicyQNetwork extends SoftmaxPolicyNetwork {
         float loss = 0;
         for (int i = 0; i < iterations; i++) {
             Session.Runner sess = session.runner().feed("scalar_target", targetQTensor);
-            loss += trainingStep(sess, states, oneHotActions, 1);
+            loss += trainingStep(sess, states, oneHotActions, keepProbability, 1);
         }
         targetQTensor.close();
         return loss / (float) iterations;

@@ -39,12 +39,13 @@ public class PolicyGradientNetwork extends SoftmaxPolicyNetwork {
     }
 
 
-    public float trainingStep(float[][] flatStates, float[][] oneHotActions, float[] discountedRewards, int steps) {
+    public float trainingStep(float[][] flatStates, float[][] oneHotActions, float[] discountedRewards,
+                              float keepProbability, int steps) {
 
         Tensor<Float> rewardTensor = Tensors.create(discountedRewards);
         Session.Runner sess = session.runner().feed("scalar_target", rewardTensor);
 
-        float loss = trainingStep(sess, flatStates, oneHotActions, steps);
+        float loss = trainingStep(sess, flatStates, oneHotActions, keepProbability, steps);
         rewardTensor.close();
         return loss;
     }

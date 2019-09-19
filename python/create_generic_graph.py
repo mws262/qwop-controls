@@ -89,7 +89,7 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act):
         return activations
 
 
-def sequential_layers(input, layer_sizes, name_prefix, activations, final_activation=tf.identity):
+def sequential_layers(input, layer_sizes, name_prefix, activations, keep_probability, final_activation=tf.identity):
     """ Create a series of fully-connected layers.
     """
     current_tensor = input
@@ -101,6 +101,8 @@ def sequential_layers(input, layer_sizes, name_prefix, activations, final_activa
         else:
             current_tensor = nn_layer(current_tensor, layer_sizes[idx], layer_sizes[idx + 1],
                                       name_prefix + str(idx), activations)
+            if idx != 0:
+                current_tensor = tf.nn.dropout(current_tensor, keep_probability, name='dropout')
     return current_tensor
 
 
@@ -145,11 +147,13 @@ if __name__ == "__main__":
     # Input to network.
     input = tf.placeholder(tf.float32, shape=(None, layer_sizes[0]), name='input')
 
+    keep_probability = tf.placeholder_with_default(1.0, shape=(), name='keep_probability_dropout')
+
     # Output target for training.
     output_target = tf.placeholder(tf.float32, shape=(None, layer_sizes[-1]), name='output_target')  # Some values, same dim as the output layer, used in figuring out the loss.
     scalar_target = tf.placeholder(tf.float32, [None, ], name="scalar_target")  # Some scalar value tied up in figuring out the loss.
 
-    preactivation_output = sequential_layers(input, layer_sizes, "fully_connected", activations)
+    preactivation_output = sequential_layers(input, layer_sizes, "fully_connected", activations, keep_probability)
     activated_output = output_activations(preactivation_output, name='output_activation')
 
     # Loss calculation

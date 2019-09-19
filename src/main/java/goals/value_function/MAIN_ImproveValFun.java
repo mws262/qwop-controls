@@ -25,6 +25,7 @@ public class MAIN_ImproveValFun {
         additionalArgs.add("--loss");
         additionalArgs.add("target_only"); // Loss has nothing to do with the network output in this case. Just the
         // performance of the controller.
+        float keepProb = 0.9f;
         ValueFunction_TensorFlow_StateOnly<StateQWOP> valFun = new ValueFunction_TensorFlow_StateOnly<>(
                 "src/main/resources/tflow_models/test.pb",
                 game,
@@ -32,7 +33,9 @@ public class MAIN_ImproveValFun {
                 layerSizes,
                 additionalArgs,
                 "src/main/resources/tflow_models/checkpoints" +
-                "/checkpoint_lots360", true);
+                "/checkpoint_lots360",
+                keepProb,
+                true);
 
         WeightScoreFunction problem = new WeightScoreFunction(valFun);
 

@@ -7,7 +7,7 @@ game:
   type: delay_embedded
   timestepDelay: 1
   numDelayedStates: 2
-  stateType: DIFFERENCES
+  stateType: HIGHER_DIFFERENCES
 tree:
   actionGenerator:
     type: fixed_sequence
@@ -74,17 +74,17 @@ tree:
 searchOperations:
 - stage:
     type: fixed_games
-    numGamesToPlay: 80000
+    numGamesToPlay: 150000
   game:
     type: delay_embedded
     timestepDelay: 1
     numDelayedStates: 2
-    stateType: DIFFERENCES
+    stateType: HIGHER_DIFFERENCES
   sampler:
     type: ucb
     evaluationFunction:
-      type: distance
-      scalingFactor: 1.0
+      type: constant
+      scalingFactor: 0.0
     rolloutPolicy:
       type: decaying_horizon
       evaluationFunction:
@@ -122,7 +122,7 @@ searchOperations:
       maxTimesteps: 200
     valueUpdater:
       type: average
-    explorationConstant: 5.0
+    explorationConstant: 20.0
     explorationRandomFactor: 10.0
   saver:
     type: null
@@ -133,7 +133,7 @@ searchOperations:
     type: grouping
     treeStages:
     - type: fixed_games
-      numGamesToPlay: 10000
+      numGamesToPlay: 20000
     - type: value_update
       valueFunction:
         type: tflow_state_only
@@ -142,18 +142,18 @@ searchOperations:
           type: delay_embedded
           timestepDelay: 1
           numDelayedStates: 2
-          stateType: DIFFERENCES
+          stateType: HIGHER_DIFFERENCES
         stateNormalizer:
-          type: normalizer_qwopdiffs
+          type: normalizer_qwophigherdiffs
           normalizationMethod: STDEV
         hiddenLayerSizes:
-        - 128
-        - 64
+        - 72
+        - 36
         additionalNetworkArgs:
         - --learnrate
-        - 1e-4
+        - 1e-3
         activeCheckpoint: null
-        keepProbability: 0.9
+        keepProbability: 0.95
         inputSize: 108
         outputSize: 1
       checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
@@ -163,12 +163,12 @@ searchOperations:
     type: delay_embedded
     timestepDelay: 1
     numDelayedStates: 2
-    stateType: DIFFERENCES
+    stateType: HIGHER_DIFFERENCES
   sampler:
     type: ucb
     evaluationFunction:
       type: constant
-      constantValue: 5.0
+      constantValue: 0.0
     rolloutPolicy:
       type: window
       individualRollout:
@@ -209,13 +209,13 @@ searchOperations:
       selectionCriteria: BEST
     valueUpdater:
       type: average
-    explorationConstant: 5.0
-    explorationRandomFactor: 1.0
+    explorationConstant: 1.0
+    explorationRandomFactor: 4.0
   saver:
     type: null
     saveInterval: 0
     savePath:
-  repetitionCount: 5
+  repetitionCount: 10000
 ui:
   type: full
   tabbedPanes:
@@ -261,9 +261,9 @@ ui:
       type: delay_embedded
       timestepDelay: 1
       numDelayedStates: 2
-      stateType: DIFFERENCES
+      stateType: HIGHER_DIFFERENCES
     stateNormalizer:
-      type: normalizer_qwopdiffs
+      type: normalizer_qwophigherdiffs
       normalizationMethod: STDEV
     modelLocation: src/main/resources/tflow_models
     checkpointLocation: src/main/resources/tflow_models/checkpoints

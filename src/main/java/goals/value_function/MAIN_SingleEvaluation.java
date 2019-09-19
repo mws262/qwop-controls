@@ -101,6 +101,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                             new File(valueNetworkName),
                             game,
                             new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+                            1f,
                             false);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

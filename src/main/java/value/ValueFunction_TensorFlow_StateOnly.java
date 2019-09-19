@@ -63,8 +63,9 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
     public ValueFunction_TensorFlow_StateOnly(File file,
                                               IGameSerializable<CommandQWOP, S> gameTemplate,
                                               ITransform<S> stateNormalizer,
+                                              float keepProbability,
                                               boolean tensorboardLogging) throws FileNotFoundException {
-        super(file, tensorboardLogging);
+        super(file, keepProbability, tensorboardLogging);
         Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
                 "state size.", gameTemplate.getStateDimension());
         Preconditions.checkArgument(outputSize == 1, "Value function output for this controller should have precisely" +
@@ -92,9 +93,10 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
                                               @JsonProperty("hiddenLayerSizes") List<Integer> hiddenLayerSizes,
                                               @JsonProperty("additionalNetworkArgs") List<String> additionalNetworkArgs,
                                               @JsonProperty("activeCheckpoint") String checkpointFile,
+                                              @JsonProperty("keepProbability") float keepProbability,
                                               @JsonProperty("tensorboardLogging") boolean tensorboardLogging) throws IOException {
         super(fileName, gameTemplate.getStateDimension(), VALUE_SIZE, hiddenLayerSizes, additionalNetworkArgs,
-                checkpointFile, tensorboardLogging);
+                checkpointFile, keepProbability, tensorboardLogging);
         this.gameTemplate = gameTemplate;
         this.stateNormalizer = stateNormalizer;
         this.fileName = fileName;
@@ -406,6 +408,7 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
                     getGraphDefinitionFile(),
                     gameTemplate,
                     stateNormalizer,
+                    keepProbability,
                     tensorboardLogging);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

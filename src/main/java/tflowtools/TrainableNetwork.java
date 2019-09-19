@@ -159,11 +159,14 @@ public class TrainableNetwork implements AutoCloseable {
      * @param steps Number of training steps (some form of gradient descent) to use on this set of inputs.
      * @return The loss of the last step performed (smaller is better).
      */
-    public float trainingStep(Session.Runner sess, float[][] inputs, float[][] desiredOutputs, int steps) {
+    public float trainingStep(Session.Runner sess, float[][] inputs, float[][] desiredOutputs, float keepProbability,
+                              int steps) {
         Tensor<Float> input = Tensors.create(inputs);
         Tensor<Float> value_out = Tensors.create(desiredOutputs);
+        Tensor<Float> keep_probability = Tensors.create(keepProbability);
         sess = sess
                 .feed("input", input)
+                .feed("keep_probability_dropout", keep_probability)
                 .feed("output_target", value_out)
                 .addTarget("train")
                 .fetch("loss");
@@ -182,15 +185,16 @@ public class TrainableNetwork implements AutoCloseable {
         }
 
         input.close();
+        keep_probability.close();
         value_out.close();
         return loss; // Could be problematic with softmax which doesn't spit out a single value.
     }
 
-    public float trainingStep(float[][] inputs, float[][] desiredOutputs, int steps) {
-        return trainingStep(session.runner(), inputs, desiredOutputs, steps);
+    public float trainingStep(float[][] inputs, float[][] desiredOutputs, float keepProbability, int steps) {
+        return trainingStep(session.runner(), inputs, desiredOutputs, keepProbability, steps);
     }
 
-    protected void toTensorBoardOutput(@NotNull  Tensor<?> summaryTensor) {
+    protected void toTensorBoardOutput(@NotNull Tensor<?> summaryTensor) {
         byte[] summaryMessage = summaryTensor.bytesValue();
         try (FileOutputStream os = new FileOutputStream(tensorboardLogFile, true)) {
             // Need to convert the summary protobuf into an event protobuf.

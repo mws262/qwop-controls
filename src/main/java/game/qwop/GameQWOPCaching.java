@@ -3,6 +3,7 @@ package game.qwop;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameSerializable;
+import org.nustaq.serialization.FSTConfiguration;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -28,6 +29,11 @@ public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameS
     public final StateType stateType;
 
     private GameQWOP game;
+
+    /**
+     * For faster serialization.
+     */
+    private static FSTConfiguration fstConfiguration = FSTConfiguration.createDefaultConfiguration();
 
     public GameQWOPCaching(@JsonProperty("timestepDelay") int timestepDelay,
                            @JsonProperty("numDelayedStates") int numDelayedStates,
@@ -139,13 +145,19 @@ public class GameQWOPCaching<S extends StateQWOPDelayEmbedded> implements IGameS
 
     @Override
     public byte[] getSerializedState() {
-        return game.getSerializedState();
+        // TODO should include cached states somehow.
+//        return game.getSerializedState();
+
+        return fstConfiguration.asByteArray(this);
     }
 
     @Override
     public IGameSerializable<CommandQWOP, S> restoreSerializedState(byte[] fullState) {
-        return new GameQWOPCaching<>(timestepDelay, numDelayedStates, stateType,
-                game.restoreSerializedState(fullState));
+//        return new GameQWOPCaching<>(timestepDelay, numDelayedStates, stateType,
+//                game.restoreSerializedState(fullState));
+        GameQWOPCaching<S> gameRestored = (GameQWOPCaching<S>) fstConfiguration.asObject(fullState);
+        assert gameRestored != null;
+        return gameRestored;
     }
 
     @Override

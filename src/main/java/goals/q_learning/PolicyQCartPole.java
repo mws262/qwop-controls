@@ -83,10 +83,11 @@ public class PolicyQCartPole {
 
 //        PolicyQNetwork net = new PolicyQNetwork(new File("./src/main/resources/tflow_models/cpole.pb"), false);
         PolicyQCartPole policy = new PolicyQCartPole(net);
+        float dropoutKeep = 0.9f;
         net.outputSize = 2; // TMP override since there are more sets of layers than we're used to.
         for (int i = 0; i < 10000000; i++) {
             policy.playGame();
-            float loss = net.train(1);
+            float loss = net.train(1, dropoutKeep);
             System.out.println("epi: " + i + ", loss: " + loss);
             if (i % 10 == 0) {
                 System.out.println("Greedy evaluation coming up!");
