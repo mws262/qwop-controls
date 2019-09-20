@@ -27,6 +27,9 @@ public interface IState {
     @JsonIgnore
     float getCenterX();
 
+    @JsonIgnore
+    float getCenterDx();
+
     boolean isFailed();
 
     @JsonIgnore

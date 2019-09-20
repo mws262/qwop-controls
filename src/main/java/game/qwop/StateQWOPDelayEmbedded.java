@@ -51,6 +51,11 @@ public abstract class StateQWOPDelayEmbedded implements IStateQWOP {
         return individualStates[0].getCenterX();
     }
 
+    @Override
+    public float getCenterDx() {
+        return individualStates[0].getCenterDx();
+    }
+
     /**
      * Failure status of the newest state snapshot contained.
      * @return Does the most recent state snapshot indicate that the runner has fallen?
