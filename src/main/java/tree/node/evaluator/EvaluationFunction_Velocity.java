@@ -11,9 +11,11 @@ import tree.node.NodeGameBase;
  */
 public class EvaluationFunction_Velocity<C extends Command<?>, S extends IState> implements IEvaluationFunction<C, S> {
 
+    public float scalingFactor = 1f;
+
     @Override
     public float getValue(NodeGameBase<?, C, S> nodeToEvaluate) {
-        return nodeToEvaluate.getState().getCenterX();
+        return nodeToEvaluate.getState().getCenterDx() * scalingFactor;
     }
 
     @Override

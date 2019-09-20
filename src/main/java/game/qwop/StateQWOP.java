@@ -175,6 +175,11 @@ public class StateQWOP implements IStateQWOP, Serializable {
     }
 
     @Override
+    public float getCenterDx() {
+        return body.getDx();
+    }
+
+    @Override
     public StateVariable6D getStateVariableFromName(ObjectName obj) {
         StateVariable6D st;
         switch (obj) {

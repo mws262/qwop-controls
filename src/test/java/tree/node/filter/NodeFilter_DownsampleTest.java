@@ -31,6 +31,12 @@ public class NodeFilter_DownsampleTest {
         public float getCenterX() {
             return 0;
         }
+
+        @Override
+        public float getCenterDx() {
+            return 0;
+        }
+
         @Override
         public boolean isFailed() {
             return false;

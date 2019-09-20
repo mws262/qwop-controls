@@ -39,6 +39,11 @@ public class StateCartPole implements IState {
     }
 
     @Override
+    public float getCenterDx() {
+        return stateValues[1];
+    }
+
+    @Override
     public boolean isFailed() {
         return isFailed;
     }
