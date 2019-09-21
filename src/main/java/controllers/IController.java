@@ -23,10 +23,10 @@ import java.awt.*;
         property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Controller_Random.class, name = "random"),
-        @JsonSubTypes.Type(value = Controller_Null.class, name = "null"),
+        @JsonSubTypes.Type(value = Controller_Constant.class, name = "null"),
         @JsonSubTypes.Type(value = Controller_ValueFunction.class, name = "value_function"),
 //        @JsonSubTypes.Type(value = Controller_NearestNeighborApprox.class, name = "nearest_neighbor"),
-        @JsonSubTypes.Type(value = Controller_Tensorflow_ClassifyActionsPerTimestep.class, name = "classifier")
+        @JsonSubTypes.Type(value = Controller_ClassifyPerTimestep.class, name = "classifier")
 })
 public interface IController<C extends Command<?>, S extends IState> extends AutoCloseable {
 

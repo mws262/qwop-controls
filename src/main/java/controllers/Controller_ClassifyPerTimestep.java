@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @author matt
  */
-public class Controller_Tensorflow_ClassifyActionsPerTimestep extends TensorflowLoader implements IController<CommandQWOP, StateQWOP> {
+public class Controller_ClassifyPerTimestep extends TensorflowLoader implements IController<CommandQWOP, StateQWOP> {
 
     /**
      * Name of the input in the TensorFlow graph.
@@ -42,7 +42,7 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
      */
     public float actionLatchingThreshold = 1f;
 
-    private static final Logger logger = LogManager.getLogger(Controller_Tensorflow_ClassifyActionsPerTimestep.class);
+    private static final Logger logger = LogManager.getLogger(Controller_ClassifyPerTimestep.class);
 
     /**
      * Create a new TensorFlow classifier controller.
@@ -50,8 +50,8 @@ public class Controller_Tensorflow_ClassifyActionsPerTimestep extends Tensorflow
      * @param pbFile    Name of the TensorFlow graph file (usually *.pb), with file extension.
      * @param directory Name of the directory containing the saved graph file.
      */
-    public Controller_Tensorflow_ClassifyActionsPerTimestep(String pbFile, String directory, String graphInputName,
-                                                            String graphOutputName) {
+    public Controller_ClassifyPerTimestep(String pbFile, String directory, String graphInputName,
+                                          String graphOutputName) {
         super(pbFile, directory);
         this.inputName = graphInputName;
         this.outputName = graphOutputName;

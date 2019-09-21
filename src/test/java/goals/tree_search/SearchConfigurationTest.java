@@ -1,6 +1,6 @@
 package goals.tree_search;
 
-import controllers.Controller_Null;
+import controllers.Controller_Constant;
 import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
 import distributions.Distribution_Equal;
@@ -300,12 +300,12 @@ public class SearchConfigurationTest {
     public void yamlController_Null() throws IOException {
         File file = File.createTempFile("controlnull", "yaml");
         file.deleteOnExit();
-        Controller_Null<CommandQWOP, StateQWOP> controller = new Controller_Null<>(new Action<>(1, CommandQWOP.NONE));
+        Controller_Constant<CommandQWOP, StateQWOP> controller = new Controller_Constant<>(new Action<>(1, CommandQWOP.NONE));
 
         SearchConfiguration.serializeToYaml(file, controller);
         Assert.assertTrue(file.exists());
 
-        Controller_Null<CommandQWOP, StateQWOP> loaded = SearchConfiguration.deserializeYaml(file, Controller_Null.class);
+        Controller_Constant<CommandQWOP, StateQWOP> loaded = SearchConfiguration.deserializeYaml(file, Controller_Constant.class);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(controller, loaded);
         loaded.close();
@@ -467,7 +467,7 @@ public class SearchConfigurationTest {
                 new RolloutPolicy_EndScore<>(
                         new EvaluationFunction_Constant<>(3f),
                         ActionGenerator_UniformNoRepeats.makeDefaultGenerator(),
-                        new Controller_Null<>(new Action<>(1, CommandQWOP.NONE)),
+                        new Controller_Constant<>(new Action<>(1, CommandQWOP.NONE)),
                         142);
 
         rollout.failureMultiplier = 3.14f;
@@ -497,7 +497,7 @@ public class SearchConfigurationTest {
         file.deleteOnExit();
         RolloutPolicy_DeltaScore<CommandQWOP, StateQWOP> rollout =
                 new RolloutPolicy_DeltaScore<>(new EvaluationFunction_Constant<>(3f),
-                        ActionGenerator_UniformNoRepeats.makeDefaultGenerator(), new Controller_Null<>(new Action<>(1, CommandQWOP.NONE)), 142);
+                        ActionGenerator_UniformNoRepeats.makeDefaultGenerator(), new Controller_Constant<>(new Action<>(1, CommandQWOP.NONE)), 142);
         rollout.failureMultiplier = 3.14f;
 
         SearchConfiguration.serializeToYaml(file, rollout);
@@ -572,7 +572,7 @@ public class SearchConfigurationTest {
                         new RolloutPolicy_EndScore<>(
                                 new EvaluationFunction_Constant<>(2f),
                                 RolloutPolicyBase.getQWOPRolloutActionGenerator(),
-                                new Controller_Null<>(new Action<>(1, CommandQWOP.NONE))),
+                                new Controller_Constant<>(new Action<>(1, CommandQWOP.NONE))),
                         new ValueFunction_Constant<>(3f, CommandQWOP.NONE));
 
         rollout.valueFunctionWeight = 0.2f;
@@ -605,7 +605,7 @@ public class SearchConfigurationTest {
                                 new EvaluationFunction_Constant<>(
                                         1f),
                                 RolloutPolicyBase.getQWOPRolloutActionGenerator(),
-                                new Controller_Null<>(new Action<>(1, CommandQWOP.NONE))));
+                                new Controller_Constant<>(new Action<>(1, CommandQWOP.NONE))));
         rollout.selectionCriteria = RolloutPolicy_Window.Criteria.WORST;
 
         SearchConfiguration.serializeToYaml(file, rollout);

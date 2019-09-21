@@ -12,6 +12,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO implement a game interface.
 public class GameQWOPPredictor extends TensorflowLoader {
 
     /**

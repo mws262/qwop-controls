@@ -1,6 +1,6 @@
 //package goals;
 //
-//import controllers.Controller_Null;
+//import controllers.Controller_Constant;
 //import controllers.IController;
 //import data.SavableActionSequence;
 //import data.SavableFileIO;
@@ -37,9 +37,9 @@
 //    private GameQWOP game = new GameQWOP();
 //
 //    /**
-//     * Controller to use. Defaults to Controller_Null and should usually be reassigned.
+//     * Controller to use. Defaults to Controller_Constant and should usually be reassigned.
 //     */
-//    private IController controller = new Controller_Null();
+//    private IController controller = new Controller_Constant();
 //
 //    /**
 //     * Place to load any 'prefix' run data in the form of a SavableSingleGame
@@ -71,7 +71,7 @@
 //        MAIN_Controlled mc = new MAIN_Controlled();
 //        mc.setup();
 ////         CONTROLLER -- Neural net picks keys.
-////        mc.controller = new Controller_Tensorflow_ClassifyActionsPerTimestep(
+////        mc.controller = new Controller_ClassifyPerTimestep(
 ////                "inference.pb", "src/main/resources/tflow_models", "tfrecord_input/split", "softmax/Softmax");
 //
 //        // CONTROLLER -- Approximate nearest neighbor.
