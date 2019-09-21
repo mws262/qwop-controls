@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import controllers.Controller_Null;
+import controllers.Controller_Constant;
 import controllers.Controller_Random;
 import controllers.Controller_ValueFunction;
 import controllers.IController;
@@ -564,7 +564,7 @@ public class TreeSearchIntegration {
                 case 0:
                     System.out.println("Controller null");
 
-                    selection = new Controller_Null<>(nullAction);
+                    selection = new Controller_Constant<>(nullAction);
                     break;
                 case 1:
                     System.out.println("Controller random");

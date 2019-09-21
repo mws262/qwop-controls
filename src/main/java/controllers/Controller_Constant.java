@@ -14,18 +14,18 @@ import java.util.Objects;
  *
  * @author matt
  */
-public class Controller_Null<C extends Command<?>, S extends IState> implements IController<C, S> {
+public class Controller_Constant<C extends Command<?>, S extends IState> implements IController<C, S> {
 
-    @JsonProperty("nullCommand")
-    public final Action<C> nullAction;
+    @JsonProperty("constantAction")
+    public final Action<C> constantAction;
 
-    public Controller_Null(@JsonProperty("nullCommand") Action<C> nullAction) {
-        this.nullAction = nullAction;
+    public Controller_Constant(@JsonProperty("constantAction") Action<C> constantAction) {
+        this.constantAction = constantAction;
     }
 
     @Override
     public Action<C> policy(NodeGameExplorableBase<?, C, S> state) {
-        return nullAction;
+        return constantAction;
     }
 
     @Override
@@ -35,20 +35,20 @@ public class Controller_Null<C extends Command<?>, S extends IState> implements 
 
     @Override
     public IController<C, S> getCopy() {
-        return new Controller_Null<>(nullAction);
+        return new Controller_Constant<>(constantAction);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Controller_Null<?, ?> that = (Controller_Null<?, ?>) o;
-        return Objects.equals(nullAction, that.nullAction);
+        Controller_Constant<?, ?> that = (Controller_Constant<?, ?>) o;
+        return Objects.equals(constantAction, that.constantAction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nullAction);
+        return Objects.hash(constantAction);
     }
 
     @Override
