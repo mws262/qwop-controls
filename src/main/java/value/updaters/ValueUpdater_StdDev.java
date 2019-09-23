@@ -40,13 +40,14 @@ public class ValueUpdater_StdDev<C extends Command<?>, S extends IState> impleme
             }
             mean /= (float) children.size();
 
-            // Calculate the standard deviation.
             float stdev = 0f;
-            for (NodeGameBase<?, C, S> child : children) {
-                stdev += (child.getValue() - mean) * (child.getValue() - mean);
+            if (stdevAbove != 0) {
+                // Calculate the standard deviation.
+                for (NodeGameBase<?, C, S> child : children) {
+                    stdev += (child.getValue() - mean) * (child.getValue() - mean);
+                }
+                stdev = (float) Math.sqrt(stdev / (float) children.size());
             }
-            stdev = (float) Math.sqrt(stdev / (float) children.size());
-
             return mean + stdev * stdevAbove;
 
         } else {
