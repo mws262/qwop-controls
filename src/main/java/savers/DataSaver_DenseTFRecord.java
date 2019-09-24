@@ -63,7 +63,6 @@ public class DataSaver_DenseTFRecord extends DataSaver_Dense<CommandQWOP, StateQ
     @Override
     public void reportGameEnding(NodeGameBase<?, CommandQWOP, StateQWOP> endNode) {
         saveCounter++;
-        // TODO remove stupid cast.
         List<StateQWOP> states = new ArrayList<>();
         for (IState st : stateBuffer) {
             states.add((StateQWOP) st);
