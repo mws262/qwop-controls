@@ -1,0 +1,1 @@
+![Alt text](../../../../../diagrams/game_inputs.svg)
