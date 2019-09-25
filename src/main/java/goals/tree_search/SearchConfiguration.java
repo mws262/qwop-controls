@@ -63,6 +63,8 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
         this.tree = tree;
         this.searchOperations = searchOperations;
         this.ui = ui;
+
+        searchOperations.forEach(s -> s.setUI(ui));
     }
 
     /**
@@ -187,6 +189,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
          */
         private final int repetitionCount;
 
+        private IUserInterface<C, S> ui;
 
         @JsonCreator
         SearchOperation(@JsonProperty("stage") TreeStage<C, S> stage,
@@ -245,17 +248,25 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
             Preconditions.checkNotNull(rootNode);
             Preconditions.checkNotNull(machine);
 
-            ArrayList<TreeWorker<C, S>> treeWorkers = new ArrayList<>();
+            List<TreeWorker<C, S>> treeWorkers = new ArrayList<>();
             for (int i = 0; i < machine.getRequestedThreadCount(); i++) {
                 treeWorkers.add(getTreeWorker());
             }
 
+            if (ui != null) {
+                ui.setActiveWorkers(treeWorkers);
+            }
             stage.initialize(treeWorkers, rootNode);
         }
 
         @JsonIgnore
         TreeWorker<C, S> getTreeWorker() {
             return new TreeWorker<>(game.getCopy(), sampler.getCopy(), saver.getCopy());
+        }
+
+        @JsonIgnore
+        void setUI(IUserInterface<C, S> ui) {
+            this.ui = ui;
         }
     }
 
