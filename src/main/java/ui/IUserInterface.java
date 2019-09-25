@@ -5,12 +5,15 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import game.action.Command;
 import game.state.IState;
+import tree.TreeWorker;
 import tree.node.NodeGameGraphicsBase;
 import ui.histogram.PanelHistogram_LeafDepth;
 import ui.pie.PanelPie_ViableFutures;
 import ui.runner.PanelRunner;
 import ui.scatterplot.PanelPlot;
 import ui.timeseries.PanelTimeSeries;
+
+import java.util.List;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -28,6 +31,8 @@ public interface IUserInterface<C extends Command<?>, S extends IState> {
     void addRootNode(NodeGameGraphicsBase<?, C, S> node);
 
     void clearRootNodes();
+
+    void setActiveWorkers(List<TreeWorker<C, S>> workers);
 
     @JsonTypeInfo(
             use = JsonTypeInfo.Id.NAME,

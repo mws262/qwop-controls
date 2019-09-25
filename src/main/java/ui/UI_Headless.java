@@ -2,7 +2,10 @@ package ui;
 
 import game.action.Command;
 import game.state.IState;
+import tree.TreeWorker;
 import tree.node.NodeGameGraphicsBase;
+
+import java.util.List;
 
 public class UI_Headless<C extends Command<?>, S extends IState> implements IUserInterface<C, S> {
 
@@ -18,4 +21,6 @@ public class UI_Headless<C extends Command<?>, S extends IState> implements IUse
     @Override
     public void clearRootNodes() {}
 
+    @Override
+    public void setActiveWorkers(List<TreeWorker<C, S>> treeWorkers) {}
 }

@@ -1,6 +1,7 @@
 package goals.value_function;
 
 import game.qwop.GameQWOPCaching;
+import game.qwop.StateQWOPDelayEmbedded_Differences;
 import game.qwop.StateQWOPDelayEmbedded_HigherDifferences;
 import game.state.transform.ITransform;
 import ui.runner.PanelRunner_ControlledTFlow;
@@ -26,17 +27,17 @@ public class MAIN_ValueFunctionControlPlayback {
         // TODO have a sensible way of substituting out game types.
         //new GameQWOPCaching(1,2,
 //                GameQWOP game = new GameQWOP();
-        GameQWOPCaching<StateQWOPDelayEmbedded_HigherDifferences> game
-                = new GameQWOPCaching<>(1,2, GameQWOPCaching.StateType.HIGHER_DIFFERENCES);
-        ITransform<StateQWOPDelayEmbedded_HigherDifferences> stateNormalizer = null;
+        GameQWOPCaching<StateQWOPDelayEmbedded_Differences> game
+                = new GameQWOPCaching<>(1,1, GameQWOPCaching.StateType.DIFFERENCES);
+        ITransform<StateQWOPDelayEmbedded_Differences> stateNormalizer = null;
         try {
             stateNormalizer =
-                    new StateQWOPDelayEmbedded_HigherDifferences.Normalizer(StateQWOPDelayEmbedded_HigherDifferences.Normalizer.NormalizationMethod.STDEV);
+                    new StateQWOPDelayEmbedded_Differences.Normalizer(StateQWOPDelayEmbedded_Differences.Normalizer.NormalizationMethod.RANGE);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        PanelRunner_ControlledTFlow<StateQWOPDelayEmbedded_HigherDifferences> controlPanel = new PanelRunner_ControlledTFlow<>(
+        PanelRunner_ControlledTFlow<StateQWOPDelayEmbedded_Differences> controlPanel = new PanelRunner_ControlledTFlow<>(
                 "Controlled runner",
                 game,
                 stateNormalizer,

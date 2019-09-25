@@ -293,7 +293,7 @@ public abstract class SearchTemplate {
      * TFlow components which are troublesome on some computers.
      */
     private UI_Full<CommandQWOP, StateQWOP> setupFullUI() {
-        UI_Full<CommandQWOP, StateQWOP> fullUI = new UI_Full<>();
+        UI_Full<CommandQWOP, StateQWOP> fullUI = new UI_Full<>(maxWorkers);
 
         /* Make each UI component */
         PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed("Run Animation");

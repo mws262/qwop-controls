@@ -183,7 +183,7 @@ public class CreateConfig {
     @SuppressWarnings("Duplicates")
     private static <S extends IStateQWOP> UI_Full<CommandQWOP, S> setupFullUI(IGameSerializable<CommandQWOP, S> game,
                                                                               ITransform<S> stateNormalizer) {
-        UI_Full<CommandQWOP, S> fullUI = new UI_Full<>();
+        UI_Full<CommandQWOP, S> fullUI = new UI_Full<>(8);
 
         /* Make each UI component */
         PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed("Run Animation");
