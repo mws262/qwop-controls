@@ -35,6 +35,7 @@ import ui.scatterplot.PanelPlot_Controls;
 import ui.scatterplot.PanelPlot_SingleRun;
 import ui.scatterplot.PanelPlot_States;
 import ui.scatterplot.PanelPlot_Transformed;
+import ui.timeseries.PanelTimeSeries_WorkerLoad;
 import value.ValueFunction_TensorFlow;
 import value.ValueFunction_TensorFlow_StateOnly;
 import value.updaters.ValueUpdater_Average;
@@ -100,7 +101,8 @@ public class CreateConfig {
                 GameQWOPCaching<StateQWOPDelayEmbedded_Differences>>> searchOperations = new ArrayList<>();
 
         IUserInterface<CommandQWOP, StateQWOPDelayEmbedded_Differences> ui
-                = CreateConfig.setupFullUI(game.getCopy(), stateNormalizer);
+                = CreateConfig.setupFullUI(game.getCopy(), stateNormalizer,
+                (int)(0.7f * Runtime.getRuntime().availableProcessors()));
 
         searchOperations.add(new SearchConfiguration.SearchOperation<>(
                 new TreeStage_FixedGames<>(80000),
@@ -182,8 +184,9 @@ public class CreateConfig {
      */
     @SuppressWarnings("Duplicates")
     private static <S extends IStateQWOP> UI_Full<CommandQWOP, S> setupFullUI(IGameSerializable<CommandQWOP, S> game,
-                                                                              ITransform<S> stateNormalizer) {
-        UI_Full<CommandQWOP, S> fullUI = new UI_Full<>(8);
+                                                                              ITransform<S> stateNormalizer,
+                                                                              int maxWorkers) {
+        UI_Full<CommandQWOP, S> fullUI = new UI_Full<>();
 
         /* Make each UI component */
         PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed("Run Animation");
@@ -205,7 +208,8 @@ public class CreateConfig {
                         "/AutoEnc_72to12_6layer.pb", 12), "Autoenc Plots", 6);
         autoencPlotPane.addFilter(new NodeFilter_SurvivalHorizon<>(1));
         PanelPlot_SingleRun singleRunPlotPane = new PanelPlot_SingleRun("Single Run Plots", 6);
-//        workerMonitorPanel = new PanelTimeSeries_WorkerLoad("Worker status", maxWorkers);
+        PanelTimeSeries_WorkerLoad<CommandQWOP, S> workerMonitorPanel = new PanelTimeSeries_WorkerLoad<>("Worker status",
+                maxWorkers);
 
         PanelRunner_ControlledTFlow<S> controlledRunnerPane = new PanelRunner_ControlledTFlow<>(
                 "ValFun controller",
@@ -214,6 +218,7 @@ public class CreateConfig {
                 "src/main/resources/tflow_models",
                 "src/main/resources/tflow_models/checkpoints");
 
+        fullUI.addTab(workerMonitorPanel);
         fullUI.addTab((IUserInterface.TabbedPaneActivator<CommandQWOP, S>) runnerPanel); // TODO
         fullUI.addTab(snapshotPane);
         fullUI.addTab(comparisonPane);

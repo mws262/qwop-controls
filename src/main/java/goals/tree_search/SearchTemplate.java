@@ -85,11 +85,6 @@ public abstract class SearchTemplate {
     private List<TreeWorker<CommandQWOP, StateQWOP>> activeWorkers = new ArrayList<>();
 
     /**
-     * A tabbed panel for displaying how many games per second each worker is running.
-     */
-    private PanelTimeSeries_WorkerLoad<CommandQWOP, StateQWOP> workerMonitorPanel;
-
-    /**
      * Maximum number of workers any stage can recruit.
      */
     final int maxWorkers;
@@ -158,7 +153,7 @@ public abstract class SearchTemplate {
     void removeWorker(TreeWorker<CommandQWOP, StateQWOP> finishedWorker) {
         finishedWorker.terminateWorker();
         activeWorkers.remove(finishedWorker);
-        if (workerMonitorPanel != null) workerMonitorPanel.setWorkers(activeWorkers);
+        ui.setActiveWorkers(activeWorkers);
     }
 
     /**
@@ -214,7 +209,7 @@ public abstract class SearchTemplate {
 
     /**
      * Setup and perform a {@link TreeStage_MinDepth} search. Tries to get ALL branches to a minimum depth (if
-     * possible). Uses {@link Sampler_FixedDepth}
+     * possible).
      *
      * @param rootNode Tree root node.
      * @param saveName Name of the file to save stage data to. This is sparse.
@@ -293,7 +288,7 @@ public abstract class SearchTemplate {
      * TFlow components which are troublesome on some computers.
      */
     private UI_Full<CommandQWOP, StateQWOP> setupFullUI() {
-        UI_Full<CommandQWOP, StateQWOP> fullUI = new UI_Full<>(maxWorkers);
+        UI_Full<CommandQWOP, StateQWOP> fullUI = new UI_Full<>();
 
         /* Make each UI component */
         PanelRunner_AnimatedTransformed runnerPanel = new PanelRunner_AnimatedTransformed("Run Animation");

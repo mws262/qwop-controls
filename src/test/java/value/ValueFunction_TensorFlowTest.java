@@ -49,7 +49,7 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertEquals(game.getStateDimension(), valFun.inputSize);
         Assert.assertEquals(1, valFun.outputSize);
 
-        valFun.evaluate(new NodeGame<>(null)); // Just to make sure it doesn't error out. The value is basically
+        valFun.evaluate(new NodeGame<>(GameQWOP.getInitialState())); // Just to make sure it doesn't error out. The value is basically
         // meaningless.
 
 //        Assert.assertNotNull(valFun.stateStats.getMean());
@@ -85,7 +85,7 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertEquals(game.getStateDimension(), valFun.inputSize);
         Assert.assertEquals(outputSize, valFun.outputSize);
 
-        valFun.evaluate(new NodeGame<>(null)); // Just to make sure it doesn't error out. The value is basically
+        valFun.evaluate(new NodeGame<>(GameQWOP.getInitialState())); // Just to make sure it doesn't error out. The value is basically
 
         valFun.close();
         // Bigger input due to delay-embedded version of the game.
@@ -121,7 +121,8 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertEquals(diffGame.getStateDimension(), diffValFun.inputSize);
         Assert.assertEquals(outputSize, diffValFun.outputSize);
 
-        diffValFun.evaluate(new NodeGame<>(null)); // Just to make sure it doesn't error out. The value is basically
+        diffValFun.evaluate(new NodeGame<>(diffGame.getCurrentState())); // Just to make sure it doesn't error out. The value is
+        // basically
         diffValFun.close();
     }
 
@@ -168,23 +169,23 @@ public class ValueFunction_TensorFlowTest {
         Assert.assertEquals(valFun.inputSize, valFunLoad.inputSize);
         Assert.assertEquals(valFun.outputSize, valFunLoad.outputSize);
 
-        Assert.assertArrayEquals(valFun.assembleInputFromNode(new NodeGame<>(null)),
-                valFunLoad.assembleInputFromNode(new NodeGame<>(null)), 1e-8f);
-        Assert.assertArrayEquals(valFun.assembleOutputFromNode(new NodeGame<>(null)),
-                valFunLoad.assembleOutputFromNode(new NodeGame<>(null)), 1e-8f);
+        Assert.assertArrayEquals(valFun.assembleInputFromNode(new NodeGame<>(GameQWOP.getInitialState())),
+                valFunLoad.assembleInputFromNode(new NodeGame<>(GameQWOP.getInitialState())), 1e-8f);
+        Assert.assertArrayEquals(valFun.assembleOutputFromNode(new NodeGame<>(GameQWOP.getInitialState())),
+                valFunLoad.assembleOutputFromNode(new NodeGame<>(GameQWOP.getInitialState())), 1e-8f);
 
         // Checkpoint loading should produce the same results.
-        float oldNetEval = valFun.evaluate(new NodeGame<>(null));
-        Assert.assertNotEquals(oldNetEval, valFunLoad.evaluate(new NodeGame<>(null)), 1e-12f);
+        float oldNetEval = valFun.evaluate(new NodeGame<>(GameQWOP.getInitialState()));
+        Assert.assertNotEquals(oldNetEval, valFunLoad.evaluate(new NodeGame<>(GameQWOP.getInitialState())), 1e-12f);
         valFunLoad.loadCheckpoint("src/test/resources/test_checkpoint1");
-        float newNetEval = valFunLoad.evaluate(new NodeGame<>(null));
+        float newNetEval = valFunLoad.evaluate(new NodeGame<>(GameQWOP.getInitialState()));
         Assert.assertEquals(oldNetEval, newNetEval, 1e-12f);
 
         List<NodeGame<CommandQWOP, StateQWOP>> updateList = new ArrayList<>();
-        updateList.add(new NodeGame<>(null));
+        updateList.add(new NodeGame<>(GameQWOP.getInitialState()));
         valFun.update(updateList);
-        Assert.assertNotEquals(oldNetEval, valFun.evaluate(new NodeGame<>(null))); // Should be different after update.
-        Assert.assertEquals(newNetEval, valFunLoad.evaluate(new NodeGame<>(null)), 1e-12f); // Update of one net should
+        Assert.assertNotEquals(oldNetEval, valFun.evaluate(new NodeGame<>(GameQWOP.getInitialState()))); // Should be different after update.
+        Assert.assertEquals(newNetEval, valFunLoad.evaluate(new NodeGame<>(GameQWOP.getInitialState())), 1e-12f); // Update of one net should
         // not affect the other.
 
         ValFunTest<StateQWOP> valFunCheckpointConstructor = null;
@@ -195,8 +196,8 @@ public class ValueFunction_TensorFlowTest {
             e.printStackTrace();
         }
 
-        Assert.assertEquals(valFunLoad.evaluate(new NodeGame<>(null)),
-                valFunCheckpointConstructor.evaluate(new NodeGame<>(null)), 1e-10f);
+        Assert.assertEquals(valFunLoad.evaluate(new NodeGame<>(GameQWOP.getInitialState())),
+                valFunCheckpointConstructor.evaluate(new NodeGame<>(GameQWOP.getInitialState())), 1e-10f);
         valFun.close();
         valFunLoad.close();
         valFunCheckpointConstructor.close();
