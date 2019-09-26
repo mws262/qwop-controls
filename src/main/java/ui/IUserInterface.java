@@ -12,6 +12,7 @@ import ui.pie.PanelPie_ViableFutures;
 import ui.runner.PanelRunner;
 import ui.scatterplot.PanelPlot;
 import ui.timeseries.PanelTimeSeries;
+import ui.timeseries.PanelTimeSeries_WorkerLoad;
 
 import java.util.List;
 
@@ -44,6 +45,7 @@ public interface IUserInterface<C extends Command<?>, S extends IState> {
             @JsonSubTypes.Type(value = PanelRunner.class, name = "runner"),
             @JsonSubTypes.Type(value = PanelPlot.class, name = "scatterplot"),
             @JsonSubTypes.Type(value = PanelTimeSeries.class, name = "timeseries"),
+            @JsonSubTypes.Type(value = PanelTimeSeries_WorkerLoad.class, name = "workerload"),
     })
     interface TabbedPaneActivator<C extends Command<?>, S extends IState> {
         void activateTab();

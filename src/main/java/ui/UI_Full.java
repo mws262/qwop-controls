@@ -1,7 +1,6 @@
 package ui;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
@@ -50,8 +49,6 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
      */
     private List<TabbedPaneActivator<C, S>> tabbedPanes = new ArrayList<>();
 
-    private final PanelTimeSeries_WorkerLoad<C, S> workerPanel;
-
     private final Logger logger = LogManager.getLogger(UI_Full.class);
 
     /**
@@ -66,10 +63,7 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
 
     private Timer redrawTimer;
 
-    public final int maxWorkersToMonitor;
-
-    public UI_Full(@JsonProperty("maxWorkersToMonitor") int maxWorkersToMonitor) {
-        this.maxWorkersToMonitor = maxWorkersToMonitor;
+    public UI_Full() {
         Container pane = frame.getContentPane();
 
         /* Tabbed panes */
@@ -99,8 +93,6 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
         frame.setIconImage(img);
 
         frame.pack();
-        workerPanel = new PanelTimeSeries_WorkerLoad<>("Worker Load", maxWorkersToMonitor);
-        addTab(workerPanel);
     }
 
     /**
@@ -220,6 +212,10 @@ public class UI_Full<C extends Command<?>, S extends IState> implements ChangeLi
 
     @Override
     public void setActiveWorkers(List<TreeWorker<C, S>> treeWorkers) {
-        workerPanel.setWorkers(treeWorkers);
+        for (TabbedPaneActivator<C, S> tab : tabbedPanes) {
+            if (tab instanceof PanelTimeSeries_WorkerLoad) {
+                ((PanelTimeSeries_WorkerLoad) tab).setWorkers(treeWorkers);
+            }
+        }
     }
 }

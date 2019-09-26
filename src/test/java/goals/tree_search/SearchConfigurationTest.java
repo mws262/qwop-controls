@@ -1320,7 +1320,7 @@ public class SearchConfigurationTest {
         File file = File.createTempFile("uiheadless", "yaml");
         file.deleteOnExit();
 
-        UI_Full<CommandQWOP, StateQWOP> ui = new UI_Full<>(4);
+        UI_Full<CommandQWOP, StateQWOP> ui = new UI_Full<>();
         ui.addTab(new PanelPlot_States<>("myname", 4));
 
         SearchConfiguration.serializeToYaml(file, ui);
