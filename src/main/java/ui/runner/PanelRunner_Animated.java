@@ -5,15 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.ActionQueue;
-import game.qwop.CommandQWOP;
-import game.qwop.GameQWOP;
-import game.qwop.IStateQWOP;
-import game.qwop.StateQWOP;
+import game.qwop.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tree.node.NodeGameExplorableBase;
 import tree.node.NodeGameGraphicsBase;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,9 +53,18 @@ public class PanelRunner_Animated<S extends IStateQWOP> extends PanelRunner<S> i
 
     private final String name;
 
+    private JLabel gameDistance;
+
     public PanelRunner_Animated(@JsonProperty("name") String name) {
         this.name = name;
         game = new GameQWOP();
+
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        gameDistance = new JLabel("dfgdfgdfgdggdfgd");
+        gameDistance.setOpaque(false);
+        gameDistance.setFont(gameDistance.getFont().deriveFont(24f));
+        add(gameDistance);
+
     }
 
     /**
@@ -137,6 +144,7 @@ public class PanelRunner_Animated<S extends IStateQWOP> extends PanelRunner<S> i
         if (game != null) {
             game.draw(g, runnerScaling, xOffsetPixels, yOffsetPixels);
             keyDrawer(g, Q, W, O, P);
+            updateDistanceLabel(g, game);
             if (!actionQueue.isEmpty())
                 drawActionString(g, actionQueue.getActionsInCurrentRun(), actionQueue.getCurrentActionIdx());
         }
