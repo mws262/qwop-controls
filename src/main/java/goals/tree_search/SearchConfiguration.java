@@ -372,7 +372,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
     }
 
     public static void main(String[] args) {
-        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/config.yaml"),
+        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/simpl_search.yaml"),
                 SearchConfiguration.class);
         Objects.requireNonNull(config).execute();
     }

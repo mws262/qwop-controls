@@ -83,8 +83,6 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
 
     private JCheckBox serializeToggle;
 
-    private JLabel gameDistance;
-
     private volatile float currentGameX = 0f;
 
     private Thread gameThread;
@@ -156,14 +154,6 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
                 ".");
         serializeToggle.setOpaque(false);
         checkboxes.add(serializeToggle);
-        
-        // Distance and time indicator.
-        gameDistance = new JLabel("");
-        gameDistance.setOpaque(false);
-        gameDistance.setFont(gameDistance.getFont().deriveFont(24f));
-        constraints.gridx = layoutColumns /2;
-        constraints.gridy = 0;
-        add(gameDistance, constraints);
     }
 
     /**
@@ -188,6 +178,7 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
             boolean[] mostRecentKeys = actionQueue.isEmpty() ? new boolean[]{false, false, false, false} :
                     actionQueue.peekThisAction().peek().get();
             keyDrawer(g, mostRecentKeys[0], mostRecentKeys[1], mostRecentKeys[2], mostRecentKeys[3]);
+            updateDistanceLabel(g, game);
         }
     }
 
@@ -273,9 +264,6 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
                     }
                     applyDisturbance(game);
                     game.step(actionQueue.pollCommand());
-                    currentGameX = (game.getCurrentState().getCenterX() - GameQWOP.getInitialState().getCenterX()) / QWOPConstants.worldScale;
-                    gameDistance.setText(String.format("%.1fm  %.1fs",
-                            currentGameX, game.getTimestepsThisGame() * QWOPConstants.timestep));
 
                     if (tsDelay > 0) {
                         try {
