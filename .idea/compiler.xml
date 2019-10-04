@@ -12,7 +12,9 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="qwop-controls" target="1.8" />
-      <module name="QWOP_SaveLoad" target="11" />
     </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
   </component>
 </project>

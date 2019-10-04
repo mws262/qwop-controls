@@ -18,7 +18,6 @@ import value.ValueFunction_TensorFlow_StateOnly;
 import vision.VisionDataSaver;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,15 +124,11 @@ public class MAIN_FlashEvaluation extends FlashGame {
                     new File("src/main/resources/tflow_models/" + valueNetworkName),
                     new GameQWOP(),
                     new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+                    checkpointName,
                     1f,
                     false);
 
             // .pb"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            valueFunction.loadCheckpoint(checkpointName);//"small329"); // "small289"); // _after439");//273");//chk_after1");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -129,6 +129,7 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
 
         // Options checkboxes.
         JPanel checkboxes = new JPanel();
+        checkboxes.setOpaque(false);
         pauseToggle = new JCheckBox("Pause");
         pauseToggle.setToolTipText("Pause the controlled game simulation.");
         pauseToggle.setOpaque(false);

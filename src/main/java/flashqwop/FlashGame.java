@@ -28,7 +28,7 @@ import java.util.List;
 public abstract class FlashGame implements IFlashStateListener {
 
     private FlashQWOPServer server;
-    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
+    protected ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
     private LinkedList<StateQWOP> stateCache = new LinkedList<>();
 
     /**
