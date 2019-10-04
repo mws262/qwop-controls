@@ -14,7 +14,6 @@ import value.ValueFunction_TensorFlow_StateOnly;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -155,13 +154,9 @@ public class CompareFlashToJava extends FlashGame {
                     "/small_net.pb"),
                     game,
                     new Transform_Identity<>(),
+                    "src/main/resources/tflow_models/checkpoints/small289",
                     1f,
                     false); // state_only.pb"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            valueFunction.loadCheckpoint("small289"); // _after439");//273");//chk_after1");
         } catch (IOException e) {
             e.printStackTrace();
         }

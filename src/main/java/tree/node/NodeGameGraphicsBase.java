@@ -165,6 +165,19 @@ public abstract class NodeGameGraphicsBase
 
     private static Map<Integer, List<NodeGameGraphicsBase>> bufferMap = new HashMap<>();
 
+
+    @Override
+    public synchronized boolean reserveExpansionRights() {
+        setOverridePointColor(Color.PINK);
+        return super.reserveExpansionRights();
+    }
+
+    @Override
+    public synchronized void releaseExpansionRights() {
+        setOverridePointColor(null);
+        super.releaseExpansionRights();
+    }
+
     private static synchronized int makeNewBuffer(GL2 gl, List<NodeGameGraphicsBase> nodesToBuffer) {
         int [] aiVertexBufferIndices = new int [] {-1};
 
@@ -346,7 +359,7 @@ public abstract class NodeGameGraphicsBase
     }
 
     void drawOverrideLine(GL2 gl) {
-        if (overrideLineColorFloats != null && !notDrawnForSpeed) {
+        if (overrideLineColorFloats != null) {
             gl.glColor3fv(overrideLineColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
             gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1],
@@ -372,7 +385,7 @@ public abstract class NodeGameGraphicsBase
     }
 
     public void drawOverridePoint(GL2 gl) {
-        if (overridePointColorFloats != null && !notDrawnForSpeed) {
+        if (overridePointColorFloats != null) {
             gl.glColor3fv(overridePointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
         }

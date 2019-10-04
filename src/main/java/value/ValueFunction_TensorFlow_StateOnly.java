@@ -1,11 +1,14 @@
 package value;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-import game.qwop.*;
 import game.IGameSerializable;
 import game.action.Action;
+import game.qwop.CommandQWOP;
+import game.qwop.IStateQWOP;
+import game.qwop.QWOPConstants;
 import game.state.IState;
 import game.state.transform.ITransform;
 import org.apache.logging.log4j.Level;
@@ -44,6 +47,7 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
 
     public final IGameSerializable<CommandQWOP, S> gameTemplate;
     public final String fileName;
+    public final File modelFile;
 
     /**
      * Number of threads to distribute the predictive simulations to. There are 9 predicted futures, so this is a
@@ -60,20 +64,27 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
      * @param file .pb file of the existing net.
      * @throws FileNotFoundException Unable to find an existing net.
      */
-    public ValueFunction_TensorFlow_StateOnly(File file,
-                                              IGameSerializable<CommandQWOP, S> gameTemplate,
-                                              ITransform<S> stateNormalizer,
-                                              float keepProbability,
-                                              boolean tensorboardLogging) throws FileNotFoundException {
+    // See https://stackoverflow.com/questions/15931082/how-to-deserialize-a-class-with-overloaded-constructors-using-jsoncreator
+    // for weird Jackson constructor overloading rules.
+    @JsonCreator
+    public ValueFunction_TensorFlow_StateOnly(@JsonProperty("modelFile") File file,
+                                              @JsonProperty("gameTemplate") IGameSerializable<CommandQWOP, S> gameTemplate,
+                                              @JsonProperty("stateNormalizer") ITransform<S> stateNormalizer,
+                                              @JsonProperty("activeCheckpoint") String checkpointFile,
+                                              @JsonProperty("keepProbability") float keepProbability,
+                                              @JsonProperty("tensorboardLogging") boolean tensorboardLogging) throws IOException {
         super(file, keepProbability, tensorboardLogging);
         Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
                 "state size.", gameTemplate.getStateDimension());
         Preconditions.checkArgument(outputSize == 1, "Value function output for this controller should have precisely" +
                 " one output.");
-
+        this.modelFile = file;
         this.gameTemplate = gameTemplate.getCopy();
         this.stateNormalizer = stateNormalizer;
         fileName = file.getName();
+        if (checkpointFile != null && !checkpointFile.isEmpty()) {
+            loadCheckpoint(checkpointFile);
+        }
         assignFuturePredictors(this.gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
@@ -87,6 +98,7 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
      * @param additionalNetworkArgs Additional arguments to pass to the network creation script.
      * @throws FileNotFoundException Model file was not successfully created.
      */
+    @JsonCreator
     public ValueFunction_TensorFlow_StateOnly(@JsonProperty("fileName") String fileName,
                                               @JsonProperty("gameTemplate") IGameSerializable<CommandQWOP, S> gameTemplate,
                                               @JsonProperty("stateNormalizer") ITransform<S> stateNormalizer,
@@ -97,6 +109,7 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
                                               @JsonProperty("tensorboardLogging") boolean tensorboardLogging) throws IOException {
         super(fileName, gameTemplate.getStateDimension(), VALUE_SIZE, hiddenLayerSizes, additionalNetworkArgs,
                 checkpointFile, keepProbability, tensorboardLogging);
+        this.modelFile = getGraphDefinitionFile();
         this.gameTemplate = gameTemplate;
         this.stateNormalizer = stateNormalizer;
         this.fileName = fileName;
@@ -111,7 +124,7 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
     private void assignFuturePredictors(IGameSerializable<CommandQWOP, S> gameTemplate) {
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
-        int min = 2;
+        int min = 1;
         evaluations.add(new FuturePredictor(gameTemplate, Keys.none, min, 10));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.qp, min, 35));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.wo, min, 35));
@@ -408,9 +421,10 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
                     getGraphDefinitionFile(),
                     gameTemplate,
                     stateNormalizer,
+                    getActiveCheckpoint(),
                     keepProbability,
                     tensorboardLogging);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return valFunCopy;

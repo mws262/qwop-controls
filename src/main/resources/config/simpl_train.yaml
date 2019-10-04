@@ -1,0 +1,222 @@
+machine:
+  coreFraction: 0.7
+  coreMinimum: 1
+  coreMaximum: 32
+  logLevel: INFO
+game:
+  type: default #delay_embedded
+  # timestepDelay: 1
+  # numDelayedStates: 1
+  # stateType: DIFFERENCES
+tree:
+  actionGenerator:
+    type: fixed_sequence
+    repeatedActions:
+    - '@type': CommandQWOP
+      distribution:
+        type: normal
+        mean: 10.0
+        standardDeviation: 2.0
+      none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 '
+    - '@type': CommandQWOP
+      distribution:
+        type: normal
+        mean: 25.0
+        standardDeviation: 3.0
+      wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+        31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+    - '@type': CommandQWOP
+      distribution:
+        type: normal
+        mean: 10.0
+        standardDeviation: 2.0
+      none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 '
+    - '@type': CommandQWOP
+      distribution:
+        type: normal
+        mean: 25.0
+        standardDeviation: 3.0
+      qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+        31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+    actionExceptions:
+      depth0:
+        '@type': CommandQWOP
+        distribution:
+          type: normal
+          mean: 7.0
+          standardDeviation: 1.0
+        none: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
+          27 28 29 30 31 32 33 34 '
+      depth1:
+        '@type': CommandQWOP
+        distribution:
+          type: normal
+          mean: 34.0
+          standardDeviation: 2.0
+        wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
+          30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+      depth2:
+        '@type': CommandQWOP
+        distribution:
+          type: normal
+          mean: 2.0
+          standardDeviation: 2.0
+        none: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
+          27 28 29 30 31 32 33 34 '
+      depth3:
+        '@type': CommandQWOP
+        distribution:
+          type: normal
+          mean: 25.0
+          standardDeviation: 2.0
+        qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
+          30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+searchOperations:
+- stage:
+    type: grouping
+    treeStages:
+      - type: fixed_games
+        numGamesToPlay: 20000
+      - type: value_update
+        valueFunction:
+          type: tflow_state_only
+          fileName: src/main/resources/tflow_models/test.pb
+          gameTemplate:
+            type: default #delay_embedded
+            # timestepDelay: 1
+            # numDelayedStates: 1
+            # stateType: DIFFERENCES
+          stateNormalizer:
+            type: normalizer_stateqwop
+            normalizationMethod: RANGE
+          hiddenLayerSizes:
+          - 128
+          - 64
+          additionalNetworkArgs:
+          - --learnrate
+          - 1e-3
+          activeCheckpoint: null
+          keepProbability: 0.97
+          inputSize: 72
+          outputSize: 1
+        checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
+        excludeLeaves: false
+        updateGraphicalLabels: false
+  game:
+    type: default #delay_embedded
+    # timestepDelay: 1
+    # numDelayedStates: 1
+    # stateType: DIFFERENCES
+  sampler:
+    type: ucb
+    evaluationFunction:
+      type: constant
+      scalingFactor: 0.0
+    rolloutPolicy:
+      type: decaying_horizon
+      evaluationFunction:
+        type: distance
+        scalingFactor: 1.0
+      rolloutActionGenerator:
+        type: fixed_sequence
+        repeatedActions:
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 12.0
+            standardDeviation: 5.0
+          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 20.0
+            standardDeviation: 5.0
+          wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 12.0
+            standardDeviation: 5.0
+          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+        - '@type': CommandQWOP
+          distribution:
+            type: normal
+            mean: 20.0
+            standardDeviation: 5.0
+          qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+      rolloutController:
+        type: value_function
+        valueFunction:
+          type: tflow_state_only
+          modelFile: src/main/resources/tflow_models/small_net.pb
+          gameTemplate:
+            type: qwop
+          stateNormalizer:
+            type: normalizer_stateqwop
+            normalizationMethod: RANGE
+          activeCheckpoint: src/main/resources/tflow_models/checkpoints/small329
+          keepProbability: 1.0
+          tensorboardLogging: false
+      maxTimesteps: 200
+    valueUpdater:
+      type: average
+    explorationConstant: 5.0
+    explorationRandomFactor: 10.0
+  saver:
+    type: null
+    saveInterval: 0
+    savePath:
+  repetitionCount: 10000
+ui:
+  type: full
+  maxWorkersToMonitor: 5
+  tabbedPanes:
+  - type: runner_animated_transformed
+    name: Run Animation
+  - type: runner_snapshot
+    name: StateQWOP Viewer
+    numHistoryStatesDisplay: 25
+  - type: runner_comparison
+    name: StateQWOP Compare
+    maxNumStatesToShow: 50
+  - type: plot_states
+    name: StateQWOP Plots
+    numberOfPlots: 6
+  - type: futures_pie
+    name: Viable Futures
+  - type: depth_histogram
+    name: Leaf depth distribution
+  - type: plot_controls
+    name: Controls Plots
+    numberOfPlots: 6
+  - type: plot_transformed
+    transformer:
+      type: pca
+      transformPCAComponents:
+        transformPCAComponents: '0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+          20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43
+          44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67
+          68 69 70 71 '
+    name: PCA Plots
+    plotsPerView: 6
+    numberOfPlots: 6
+  - type: plot_transformed
+    transformer:
+      type: autoencoder
+      graphFile: src/main/resources/tflow_models/AutoEnc_72to12_6layer.pb
+    name: Autoenc Plots
+    plotsPerView: 6
+    numberOfPlots: 6
+  - type: controlled_valfun
+    name: ValFun controller
+    game:
+      type: default #delay_embedded
+    #   timestepDelay: 1
+    #   numDelayedStates: 1
+    #   stateType: DIFFERENCES
+    stateNormalizer:
+      type: normalizer_stateqwop
+      normalizationMethod: RANGE
+    modelLocation: src/main/resources/tflow_models
+    checkpointLocation: src/main/resources/tflow_models/checkpoints
+    actionGenerator: null
