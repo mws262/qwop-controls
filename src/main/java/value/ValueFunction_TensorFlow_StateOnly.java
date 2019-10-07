@@ -60,37 +60,6 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
     public final ITransform<S> stateNormalizer;
 
     /**
-     * Constructor which loads an existing value function net.
-     * @param file .pb file of the existing net.
-     * @throws FileNotFoundException Unable to find an existing net.
-     */
-    // See https://stackoverflow.com/questions/15931082/how-to-deserialize-a-class-with-overloaded-constructors-using-jsoncreator
-    // for weird Jackson constructor overloading rules.
-    @JsonCreator
-    public ValueFunction_TensorFlow_StateOnly(@JsonProperty("modelFile") File file,
-                                              @JsonProperty("gameTemplate") IGameSerializable<CommandQWOP, S> gameTemplate,
-                                              @JsonProperty("stateNormalizer") ITransform<S> stateNormalizer,
-                                              @JsonProperty("activeCheckpoint") String checkpointFile,
-                                              @JsonProperty("keepProbability") float keepProbability,
-                                              @JsonProperty("tensorboardLogging") boolean tensorboardLogging) throws IOException {
-        super(file, keepProbability, tensorboardLogging);
-        Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
-                "state size.", gameTemplate.getStateDimension());
-        Preconditions.checkArgument(outputSize == 1, "Value function output for this controller should have precisely" +
-                " one output.");
-        this.modelFile = file;
-        this.gameTemplate = gameTemplate.getCopy();
-        this.stateNormalizer = stateNormalizer;
-        fileName = file.getName();
-        if (checkpointFile != null && !checkpointFile.isEmpty()) {
-            loadCheckpoint(checkpointFile);
-        }
-        assignFuturePredictors(this.gameTemplate);
-        if (multithread)
-            executor = Executors.newFixedThreadPool(numThreads);
-    }
-
-    /**
      * Constructor which makes a new value function net based on provided parameters. If this net is similar enough
      * to a previously-used one, you can probably load a checkpoint file with weights with it too.
      * @param fileName File name of the new .pb net. Don't include file extension.
@@ -114,6 +83,34 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
         this.stateNormalizer = stateNormalizer;
         this.fileName = fileName;
         assignFuturePredictors(gameTemplate);
+        if (multithread)
+            executor = Executors.newFixedThreadPool(numThreads);
+    }
+
+    /**
+     * Constructor which loads an existing value function net.
+     * @param modelFile .pb file of the existing net.
+     * @throws FileNotFoundException Unable to find an existing net.
+     */
+    public ValueFunction_TensorFlow_StateOnly(File modelFile,
+                                              IGameSerializable<CommandQWOP, S> gameTemplate,
+                                              ITransform<S> stateNormalizer,
+                                              String checkpointFile,
+                                              float keepProbability,
+                                              boolean tensorboardLogging) throws IOException {
+        super(modelFile, keepProbability, tensorboardLogging);
+        Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
+                "state size.", gameTemplate.getStateDimension());
+        Preconditions.checkArgument(outputSize == 1, "Value function output for this controller should have precisely" +
+                " one output.");
+        this.modelFile = modelFile;
+        this.gameTemplate = gameTemplate.getCopy();
+        this.stateNormalizer = stateNormalizer;
+        fileName = modelFile.getName();
+        if (checkpointFile != null && !checkpointFile.isEmpty()) {
+            loadCheckpoint(checkpointFile);
+        }
+        assignFuturePredictors(this.gameTemplate);
         if (multithread)
             executor = Executors.newFixedThreadPool(numThreads);
     }
@@ -418,7 +415,7 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
         ValueFunction_TensorFlow_StateOnly<S> valFunCopy = null;
         try {
             valFunCopy = new ValueFunction_TensorFlow_StateOnly<>(
-                    getGraphDefinitionFile(),
+                    modelFile,
                     gameTemplate,
                     stateNormalizer,
                     getActiveCheckpoint(),
