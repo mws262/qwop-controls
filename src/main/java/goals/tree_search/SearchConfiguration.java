@@ -342,6 +342,7 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
             objectMapper.enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
             objectMapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
             objectMapper.disable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+
             objectMapper.registerModule(new ParameterNamesModule());
 
             objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());

@@ -147,7 +147,7 @@ searchOperations:
       rolloutController:
         type: value_function
         valueFunction:
-          type: tflow_state_only
+          type: tflow_state_only_loaded
           modelFile: src/main/resources/tflow_models/small_net.pb
           gameTemplate:
             type: qwop
