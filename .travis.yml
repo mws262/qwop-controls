@@ -8,7 +8,7 @@ before_install:
   - sudo apt-get install -y python3-setuptools
   - sudo python3 -m pip install --upgrade pip
   - python3 -m pip install --user --upgrade tensorflow
-  - python3 -c "import tensorflow as tf; op = tf.reduce_sum(tf.random_normal([100, 100])); sess=tf.Session(); print(sess.run(op))"
+  - python3 -c "import tensorflow as tf; op = tf.constant("hello world"); sess=tf.Session(); print(sess.run(op))"
   - sudo apt-get install xvfb
   - sudo Xvfb :1 -screen 0 1024x768x24 </dev/null &
   - export DISPLAY=":1"
