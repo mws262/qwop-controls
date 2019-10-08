@@ -31,9 +31,9 @@ public class EvaluationFunction_Constant<C extends Command<?>, S extends IState>
 
     @Override
     public float getValue(NodeGameBase<?, C, S> nodeToEvaluate) {
-        float endBonus = // TODO TEMP EXPERIMENT
-                100f * (nodeToEvaluate.getState().getCenterX() / (float) nodeToEvaluate.getCumulativeTimesteps());
-        return constantValue + (nodeToEvaluate.getState().getCenterX() >= 1000 ? endBonus : 0);
+//        float endBonus = // TODO TEMP EXPERIMENT
+//                100f * (nodeToEvaluate.getState().getCenterX() / (float) nodeToEvaluate.getCumulativeTimesteps());
+        return constantValue; // + (nodeToEvaluate.getState().getCenterX() >= 1000 ? endBonus : 0);
     }
 
     @Override

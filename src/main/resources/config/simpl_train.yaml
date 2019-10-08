@@ -157,7 +157,7 @@ searchOperations:
           activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_name150
           keepProbability: 1.0
           tensorboardLogging: false
-      maxTimesteps: 200
+      maxTimesteps: 100
       useSerializedState: true
     valueUpdater:
       type: average
@@ -172,6 +172,10 @@ ui:
   type: full
   maxWorkersToMonitor: 5
   tabbedPanes:
+  - type: workerload
+    name: Worker status
+    numberOfPlots: 28
+    maxPtsPerPlot: 200
   - type: runner_animated_transformed
     name: Run Animation
   - type: runner_snapshot
