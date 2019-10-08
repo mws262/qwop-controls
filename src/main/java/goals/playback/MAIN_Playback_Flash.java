@@ -25,10 +25,11 @@ public class MAIN_Playback_Flash extends FlashGame {
     private FrameGrab grab;
     private ImageIcon img;
     private JFrame frame;
-    Font font = new Font("Verdana", Font.BOLD, 24);
+    private Font font = new Font("Verdana", Font.BOLD, 24);
 
     MAIN_Playback_Flash() throws IOException, JCodecException {
         JFrame.setDefaultLookAndFeelDecorated(true);
+        final int startLine = 168; // Start line in the code for the queue definition. stupid thing to do lol
         frame = new JFrame() {
             @Override
             public void paint(Graphics g) {
@@ -37,6 +38,7 @@ public class MAIN_Playback_Flash extends FlashGame {
                     Action act = actionQueue.peekThisAction();
                     g.setFont(font);
                     g.drawString(act.toString(), 500, 400);
+                    g.drawString(String.valueOf(actionQueue.getCurrentActionIdx() + startLine), 500, 450);
                 }
             }
         };
@@ -188,10 +190,10 @@ public class MAIN_Playback_Flash extends FlashGame {
                 new Action<>(3, CommandQWOP.WO),
                 new Action<>(3, CommandQWOP.W),
                 new Action<>(4, CommandQWOP.WO),
-                new Action<>(3, CommandQWOP.W),
-                new Action<>(5, CommandQWOP.WO),
+                new Action<>(1, CommandQWOP.W), // 3
+                new Action<>(4, CommandQWOP.WO), // 5
                 new Action<>(1, CommandQWOP.W),
-                new Action<>(7, CommandQWOP.NONE),
+                new Action<>(9, CommandQWOP.NONE), // 7
                 new Action<>(3, CommandQWOP.P),
                 new Action<>(11, CommandQWOP.QP),
                 new Action<>(3, CommandQWOP.Q),
