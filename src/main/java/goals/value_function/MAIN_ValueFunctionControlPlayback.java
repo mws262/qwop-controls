@@ -19,7 +19,7 @@ public class MAIN_ValueFunctionControlPlayback {
         GameQWOP game = new GameQWOP();
         ITransform<StateQWOP> stateNormalizer = null;
         try {
-            stateNormalizer = new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV);
+            stateNormalizer = new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.RANGE);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

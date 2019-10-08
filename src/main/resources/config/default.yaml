@@ -120,6 +120,7 @@ searchOperations:
       rolloutController:
         type: random
       maxTimesteps: 200
+      useSerializedState: false
     valueUpdater:
       type: average
     explorationConstant: 5.0
@@ -137,8 +138,7 @@ searchOperations:
     - type: value_update
       valueFunction:
         type: tflow_state_only
-        modelFile:
-          file: /home/matt/git/qwop-controls/src/main/resources/tflow_models/test.pb
+        fileName: src/main/resources/tflow_models/test.pb
         gameTemplate:
           type: delay_embedded
           timestepDelay: 1
@@ -147,17 +147,17 @@ searchOperations:
         stateNormalizer:
           type: normalizer_qwopdiffs
           normalizationMethod: STDEV
-        activeCheckpoint: null
-        keepProbability: 0.9
-        fileName: src/main/resources/tflow_models/test.pb
         hiddenLayerSizes:
         - 128
         - 64
         additionalNetworkArgs:
         - --learnrate
         - 1e-4
+        activeCheckpoint: null
+        keepProbability: 0.9
         inputSize: 108
         outputSize: 1
+        modelFile: /home/matt/git/qwop-controls/src/main/resources/tflow_models/test.pb
       checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
       excludeLeaves: false
       updateGraphicalLabels: true
@@ -208,6 +208,7 @@ searchOperations:
         rolloutController:
           type: random
         maxTimesteps: 200
+        useSerializedState: false
       selectionCriteria: BEST
     valueUpdater:
       type: average

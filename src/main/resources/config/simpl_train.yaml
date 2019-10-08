@@ -76,7 +76,7 @@ searchOperations:
     type: grouping
     treeStages:
       - type: fixed_games
-        numGamesToPlay: 20000
+        numGamesToPlay: 2000
       - type: value_update
         valueFunction:
           type: tflow_state_only
@@ -99,7 +99,7 @@ searchOperations:
           keepProbability: 0.97
           inputSize: 72
           outputSize: 1
-        checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name
+        checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name_n
         excludeLeaves: false
         updateGraphicalLabels: false
   game:
@@ -148,16 +148,17 @@ searchOperations:
         type: value_function
         valueFunction:
           type: tflow_state_only_loaded
-          modelFile: src/main/resources/tflow_models/small_net.pb
+          modelFile: src/main/resources/tflow_models/test.pb
           gameTemplate:
             type: qwop
           stateNormalizer:
             type: normalizer_stateqwop
             normalizationMethod: RANGE
-          activeCheckpoint: src/main/resources/tflow_models/checkpoints/small329
+          activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_name150
           keepProbability: 1.0
           tensorboardLogging: false
       maxTimesteps: 200
+      useSerializedState: true
     valueUpdater:
       type: average
     explorationConstant: 5.0

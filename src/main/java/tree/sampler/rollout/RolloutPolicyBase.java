@@ -6,6 +6,7 @@ import controllers.IController;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
 import game.IGameInternal;
+import game.IGameSerializable;
 import game.action.*;
 import game.qwop.CommandQWOP;
 import game.qwop.QWOPConstants;
@@ -36,6 +37,9 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
     private final List<Action<C>> actionSequence = new ArrayList<>(); // Reused local list.
 
     public final int maxTimesteps;
+
+    @JsonProperty
+    public boolean useSerializedState = false;
 
     RolloutPolicyBase(
             @JsonProperty("evaluationFunction") @NotNull IEvaluationFunction<C, S> evaluationFunction,
@@ -101,8 +105,9 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
 
         int timestepCounter = 0;
         // Falling, too many timesteps, reaching the finish line.
-        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps && rolloutNode.getState().getCenterX() < QWOPConstants.goalDistance) {
-            Action<C> childAction = getRolloutController().policy(rolloutNode);
+        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps && rolloutNode.getState().getCenterX() < QWOPConstants.goalDistance) { // TODO qwop specific remove
+            Action<C> childAction = useSerializedState ? getRolloutController().policy(rolloutNode, (IGameSerializable<C, S>) game) :
+                    getRolloutController().policy(rolloutNode);
 
             actionQueue.addAction(childAction);
 
