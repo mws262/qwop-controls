@@ -473,7 +473,7 @@ public class GameQWOP implements IGameSerializable<CommandQWOP, StateQWOP> {
         rElbowJDef.lowerAngle = -0.1f;
         rElbowJDef.enableMotor = true;
         rElbowJDef.maxMotorTorque = 0f;
-        rElbowJDef.motorSpeed = 10f; //TODO: investigate further
+        rElbowJDef.motorSpeed = 10f;
         rElbowJDef.collideConnected = false;
         rElbowJ = (RevoluteJoint) getWorld().createJoint(rElbowJDef);
 
@@ -567,7 +567,7 @@ public class GameQWOP implements IGameSerializable<CommandQWOP, StateQWOP> {
         lElbowJDef.lowerAngle = -0.1f;
         lElbowJDef.enableMotor = true;
         lElbowJDef.maxMotorTorque = 0f;
-        lElbowJDef.motorSpeed = 10f; //TODO: investigate further
+        lElbowJDef.motorSpeed = 10f;
         lElbowJDef.collideConnected = false;
         lElbowJ = (RevoluteJoint) getWorld().createJoint(lElbowJDef);
 

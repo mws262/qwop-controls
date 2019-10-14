@@ -148,7 +148,6 @@ public class PanelPlot_States<C extends Command<?>, S extends IState> extends Pa
                 XYPlot pl = plotAndData.getKey();
                 PlotDataset dat = plotAndData.getValue();
 
-                // TODO fix these unsafe casts.
                 Float[] xData =
 						nodesBelow.stream().map(n -> ((StateQWOP) n.getState()).getStateVariableFromName(plotObjectsX[countDataCollect]).getStateByName(plotStatesX[countDataCollect])).toArray(Float[]::new); // Crazy new Java 8!
                 Float[] yData =

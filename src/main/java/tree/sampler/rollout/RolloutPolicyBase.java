@@ -82,6 +82,8 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
         game.setState(target.getState());
     }
 
+
+    private NodeGameExplorableBase<?, C, S> recentRolloutNode; // For unit test.
     /**
      * Do a rollout from a given node. Assumes that the given game is in the state of startNode! Be careful!
      * @param startNode Starting Node to rollout from.
@@ -97,8 +99,9 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
         }
         assert startNode.getState().equals(game.getCurrentState());
 
-        // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts.
-        NodeGameExplorableBase<?, C, S> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
+        // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts. References from
+        // parent so as not to screw up the tree depth.
+        NodeGameExplorableBase<?, C, S> rolloutNode = startNode.getParent().addBackwardsLinkedChild(startNode.getAction(),
                 startNode.getState(), rolloutActionGenerator);
 
         float totalScore = startScore(startNode);
@@ -125,6 +128,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
             rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState(), rolloutActionGenerator);
         }
         totalScore += endScore(rolloutNode);
+        recentRolloutNode = rolloutNode; // Mostly just stored for unit tests.
         return calculateFinalScore(totalScore, startNode, rolloutNode, timestepCounter);
     }
 

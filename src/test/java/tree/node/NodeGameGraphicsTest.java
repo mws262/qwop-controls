@@ -448,7 +448,8 @@ public class NodeGameGraphicsTest {
         return (float[])getPrivateField(NodeGameGraphicsBase.class, node, "overridePointColorFloats");
     }
 
-    private static Object getPrivateField(@SuppressWarnings("SameParameterValue") Class clazz, Object object, String fieldName) {
+    public static Object getPrivateField(@SuppressWarnings("SameParameterValue") Class clazz, Object object,
+                                    String fieldName) {
         Field field;
         try {
             field = clazz.getDeclaredField(fieldName);
