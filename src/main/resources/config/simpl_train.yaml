@@ -43,40 +43,43 @@ tree:
         '@type': CommandQWOP
         distribution:
           type: normal
-          mean: 7.0
+          mean: 5.0
           standardDeviation: 1.0
-        none: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
-          27 28 29 30 31 32 33 34 '
+        none: '7'
       depth1:
         '@type': CommandQWOP
         distribution:
           type: normal
           mean: 34.0
           standardDeviation: 2.0
-        wo: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
-          30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+        wo: '49'
       depth2:
         '@type': CommandQWOP
         distribution:
           type: normal
-          mean: 2.0
+          mean: 24.0
           standardDeviation: 2.0
-        none: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
-          27 28 29 30 31 32 33 34 '
+        none: '2'
       depth3:
         '@type': CommandQWOP
         distribution:
           type: normal
-          mean: 25.0
+          mean: 49.0
           standardDeviation: 2.0
-        qp: '5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
-          30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+        qp: '25'
+      depth4:
+        '@type': CommandQWOP
+        distribution:
+          type: normal
+          mean: 5.0
+          standardDeviation: 1.0
+        none: '34'
 searchOperations:
 - stage:
     type: grouping
     treeStages:
       - type: fixed_games
-        numGamesToPlay: 2000
+        numGamesToPlay: 10000
       - type: value_update
         valueFunction:
           type: tflow_state_only
@@ -96,10 +99,10 @@ searchOperations:
           - --learnrate
           - 1e-3
           activeCheckpoint: null
-          keepProbability: 0.97
+          keepProbability: 1.0
           inputSize: 72
           outputSize: 1
-        checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name_n
+        checkpointName: src/main/resources/tflow_models/checkpoints/checkpoint_name_nn
         excludeLeaves: false
         updateGraphicalLabels: false
   game:
@@ -113,56 +116,60 @@ searchOperations:
       type: constant
       scalingFactor: 0.0
     rolloutPolicy:
-      type: decaying_horizon
-      evaluationFunction:
-        type: distance
-        scalingFactor: 1.0
-      rolloutActionGenerator:
-        type: fixed_sequence
-        repeatedActions:
-        - '@type': CommandQWOP
-          distribution:
-            type: normal
-            mean: 12.0
-            standardDeviation: 5.0
-          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
-        - '@type': CommandQWOP
-          distribution:
-            type: normal
-            mean: 20.0
-            standardDeviation: 5.0
-          wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-        - '@type': CommandQWOP
-          distribution:
-            type: normal
-            mean: 12.0
-            standardDeviation: 5.0
-          none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
-        - '@type': CommandQWOP
-          distribution:
-            type: normal
-            mean: 20.0
-            standardDeviation: 5.0
-          qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
-      rolloutController:
-        type: value_function
-        valueFunction:
-          type: tflow_state_only_loaded
-          modelFile: src/main/resources/tflow_models/test.pb
-          gameTemplate:
-            type: qwop
-          stateNormalizer:
-            type: normalizer_stateqwop
-            normalizationMethod: RANGE
-          activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_name150
-          keepProbability: 1.0
-          tensorboardLogging: false
-      maxTimesteps: 100
-      useSerializedState: true
+      type: window
+      selectionCriteria: BEST
+      individualRollout:
+        type: delta_score
+        evaluationFunction:
+          type: distance
+          scalingFactor: 1.0
+        rolloutActionGenerator:
+          type: fixed_sequence
+          repeatedActions:
+          - '@type': CommandQWOP
+            distribution:
+              type: normal
+              mean: 12.0
+              standardDeviation: 2.0
+            none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+          - '@type': CommandQWOP
+            distribution:
+              type: normal
+              mean: 20.0
+              standardDeviation: 2.0
+            wo: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+          - '@type': CommandQWOP
+            distribution:
+              type: normal
+              mean: 12.0
+              standardDeviation: 2.0
+            none: '2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 '
+          - '@type': CommandQWOP
+            distribution:
+              type: normal
+              mean: 20.0
+              standardDeviation: 2.0
+            qp: '15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 '
+        rolloutController:
+          type: random
+          # type: value_function
+          # valueFunction:
+          #   type: tflow_state_only_loaded
+          #   modelFile: src/main/resources/tflow_models/test.pb
+          #   gameTemplate:
+          #     type: qwop
+          #   stateNormalizer:
+          #     type: normalizer_stateqwop
+          #     normalizationMethod: RANGE
+          #   activeCheckpoint: src/main/resources/tflow_models/checkpoints/checkpoint_name150
+          #   keepProbability: 1.0
+          #   tensorboardLogging: false
+        maxTimesteps: 150
+        useSerializedState: true
     valueUpdater:
       type: average
-    explorationConstant: 5.0
-    explorationRandomFactor: 10.0
+    explorationConstant: 1.0
+    explorationRandomFactor: 3.0
   saver:
     type: null
     saveInterval: 0

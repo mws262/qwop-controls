@@ -44,7 +44,7 @@ public class RolloutPolicy_DeltaScore<C extends Command<?>, S extends IState> ex
 
     @Override
     float startScore(NodeGameExplorableBase<?, C, S> startNode) {
-        return -getEvaluationFunction().getValue(startNode);
+        return -getEvaluationFunction().getValue(startNode); //.getParent()); // temp added getParent.
     }
 
     @Override

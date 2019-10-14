@@ -33,7 +33,7 @@ public class ValueFunctionControllerConsistencyTest {
         File modelFile = new File("src/test/resources/test_models/small_net.pb");
         Assert.assertTrue(modelFile.exists());
         ValFunSandbox valFun = new ValFunSandbox(modelFile, game);
-        valFun.loadCheckpoint("src/test/resources/test_models/good_save"); // TODO change to full path.
+        valFun.loadCheckpoint("src/test/resources/test_models/good_save");
 
         ActionQueue<CommandQWOP> queue = new ActionQueue<>();
 
