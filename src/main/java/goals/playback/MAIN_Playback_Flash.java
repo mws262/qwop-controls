@@ -46,7 +46,7 @@ public class MAIN_Playback_Flash extends FlashGame {
         frame.setUndecorated(true);
         frame.setOpacity(0.5f);
 
-        frame.setLocation(94, 64);
+        frame.setLocation(93, 64);
 
         img = new ImageIcon();
 
@@ -68,7 +68,12 @@ public class MAIN_Playback_Flash extends FlashGame {
 //            System.out.println("new Action<>(" + a.getTimestepsTotal() + ", CommandQWOP." + a.getCommand().toString().toUpperCase() + "), ");
 //        }
 
+        float timeDilation = 1f;
         beginningActions = Arrays.asList(actions);
+        for (int i = 0; i < beginningActions.size(); i++) {
+            beginningActions.set(i, new Action<>((int)(timeDilation * beginningActions.get(i).getTimestepsTotal()),
+                    beginningActions.get(i).getCommand()));
+        }
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -118,8 +123,10 @@ public class MAIN_Playback_Flash extends FlashGame {
             op.filter(bufferedImage, imgArgb);
 
             setAlpha(imgArgb, (byte) 128);
-            float scale = 2.15f;
-            img.setImage(scale(imgArgb, (int) (scale * imgArgb.getWidth()), (int) (scale * imgArgb.getHeight()) - 10));
+            float scale = 2.1511f;
+//            float yscale = 1.003f;
+            img.setImage(scale(imgArgb, (int) (scale * imgArgb.getWidth()),
+                    (int) (scale * imgArgb.getHeight() - 5)));
             frame.repaint();
             vidSteps++;
         }
@@ -152,13 +159,14 @@ public class MAIN_Playback_Flash extends FlashGame {
             for (y = 0; y < h; y++) {
                 int col = src.getRGB(x * ww / w, y * hh / h);
                 // For inverting colors if desired.
-//                Color c = new Color(col, true);
-//                c = new Color(255 - c.getRed(),
-//                        255 - c.getGreen(),
-//                        255 - c.getBlue());
-//
-//                img.setRGB(x, y, c.getRGB());
-                img.setRGB(x, y, col);
+                Color c = new Color(col, true);
+                c = new Color(255 - c.getRed(),
+                        255 - c.getGreen(),
+                        255 - c.getBlue());
+
+                img.setRGB(x, y, c.getRGB());
+
+//                img.setRGB(x, y, col);
             }
         }
         return img;
