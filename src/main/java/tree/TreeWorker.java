@@ -48,7 +48,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     /**
      * Is this worker running the FSM repeatedly?
      */
-    private boolean workerRunning = true;
+    private boolean workerRunning = false;
 
     /**
      * Sets the FSM to stop running the next time it is idle.
@@ -167,11 +167,6 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
         this.sampler = sampler;
         this.saver = saver;
         lastTsTimeMs = System.currentTimeMillis();
-
-        // Thread that this worker is running on. Will stay constant with this worker.
-        Thread workerThread = new Thread(this);
-        workerThread.setName(workerName);
-        workerThread.start();
     }
 
     /**
@@ -234,7 +229,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
      */
     @Override
     public void run() {
-        while (workerRunning) {
+        do {
             switch (currentStatus) {
                 case IDLE:
                     // Overall behavior does not switch until the worker reaches IDLE in order to not leave some task
@@ -374,7 +369,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
                 default:
                     break;
             }
-        }
+        } while (workerRunning);
     }
 
     /**
@@ -383,6 +378,16 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     private void changeStatus(Status newStatus) {
         logger.debug("Worker " + workerID + ": " + currentStatus + " --->  " + newStatus + "     game: " + workerGamesPlayed);
         currentStatus = newStatus;
+    }
+
+    @JsonIgnore
+    public Status getCurrentWorkerStatus() {
+        return currentStatus;
+    }
+
+    @JsonIgnore
+    public NodeGameExplorableBase<?, C, S> getExpansionNode() {
+        return expansionNode;
     }
 
     /**
@@ -445,6 +450,10 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
         }
     }
 
+    void unpauseWorker() {
+        paused = false;
+    }
+
     /**
      * Pause what the worker is doing. Tells its saver to do whatever it should when the stage is complete.
      */
@@ -460,6 +469,11 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
     public void startWorker() {
         if (rootNode == null) throw new RuntimeException("Cannot start a worker while no root node is assigned.");
         paused = false;
+        workerRunning = true;
+        // Thread that this worker is running on. Will stay constant with this worker.
+        Thread workerThread = new Thread(this);
+        workerThread.setName(workerName);
+        workerThread.start();
     }
 
     /**
