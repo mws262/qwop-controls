@@ -1,8 +1,7 @@
 package goals.value_function;
 
-import game.qwop.GameQWOPCaching;
-import game.qwop.StateQWOPDelayEmbedded_Differences;
-import game.qwop.StateQWOPDelayEmbedded_HigherDifferences;
+import game.qwop.GameQWOP;
+import game.qwop.StateQWOP;
 import game.state.transform.ITransform;
 import ui.runner.PanelRunner_ControlledTFlow;
 
@@ -17,27 +16,28 @@ public class MAIN_ValueFunctionControlPlayback {
 
         JFrame jFrame = new JFrame();
 
-//        ITransform<StateQWOP> stateNormalizer = null;
-//        try {
-//            stateNormalizer = new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV);
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-
-        // TODO have a sensible way of substituting out game types.
-        //new GameQWOPCaching(1,2,
-//                GameQWOP game = new GameQWOP();
-        GameQWOPCaching<StateQWOPDelayEmbedded_Differences> game
-                = new GameQWOPCaching<>(1,1, GameQWOPCaching.StateType.DIFFERENCES);
-        ITransform<StateQWOPDelayEmbedded_Differences> stateNormalizer = null;
+        GameQWOP game = new GameQWOP();
+        ITransform<StateQWOP> stateNormalizer = null;
         try {
-            stateNormalizer =
-                    new StateQWOPDelayEmbedded_Differences.Normalizer(StateQWOPDelayEmbedded_Differences.Normalizer.NormalizationMethod.RANGE);
+            stateNormalizer = new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.RANGE);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        PanelRunner_ControlledTFlow<StateQWOPDelayEmbedded_Differences> controlPanel = new PanelRunner_ControlledTFlow<>(
+        // TODO have a sensible way of substituting out game types.
+        //new GameQWOPCaching(1,2,
+//                GameQWOP game = new GameQWOP();
+//        GameQWOPCaching<StateQWOPDelayEmbedded_Differences> game
+//                = new GameQWOPCaching<>(1,1, GameQWOPCaching.StateType.DIFFERENCES);
+//        ITransform<StateQWOPDelayEmbedded_Differences> stateNormalizer = null;
+//        try {
+//            stateNormalizer =
+//                    new StateQWOPDelayEmbedded_Differences.Normalizer(StateQWOPDelayEmbedded_Differences.Normalizer.NormalizationMethod.RANGE);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+
+        PanelRunner_ControlledTFlow<StateQWOP> controlPanel = new PanelRunner_ControlledTFlow<>(
                 "Controlled runner",
                 game,
                 stateNormalizer,

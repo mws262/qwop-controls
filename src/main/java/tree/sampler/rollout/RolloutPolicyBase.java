@@ -6,12 +6,14 @@ import controllers.IController;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
 import game.IGameInternal;
+import game.IGameSerializable;
 import game.action.*;
 import game.qwop.CommandQWOP;
 import game.qwop.QWOPConstants;
 import game.state.IState;
 import org.jetbrains.annotations.NotNull;
 import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorable;
 import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
@@ -36,6 +38,9 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
     private final List<Action<C>> actionSequence = new ArrayList<>(); // Reused local list.
 
     public final int maxTimesteps;
+
+    @JsonProperty
+    public boolean useSerializedState = false;
 
     RolloutPolicyBase(
             @JsonProperty("evaluationFunction") @NotNull IEvaluationFunction<C, S> evaluationFunction,
@@ -78,6 +83,8 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
         game.setState(target.getState());
     }
 
+
+    private NodeGameExplorableBase<?, C, S> recentRolloutNode; // For unit test.
     /**
      * Do a rollout from a given node. Assumes that the given game is in the state of startNode! Be careful!
      * @param startNode Starting Node to rollout from.
@@ -93,16 +100,23 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
         }
         assert startNode.getState().equals(game.getCurrentState());
 
-        // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts.
-        NodeGameExplorableBase<?, C, S> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
-                startNode.getState(), rolloutActionGenerator);
+        // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts. References from
+        // parent so as not to screw up the tree depth.
+        NodeGameExplorableBase<?, C, S> rolloutNode;
+        if (startNode.getTreeDepth() == 0) { // Prevent null pointer due to no action at root.
+            rolloutNode = new NodeGameExplorable<>(startNode.getState(), rolloutActionGenerator);
+        } else {
+             rolloutNode = startNode.getParent().addBackwardsLinkedChild(startNode.getAction(),
+                    startNode.getState(), rolloutActionGenerator);
+        }
 
         float totalScore = startScore(startNode);
 
         int timestepCounter = 0;
         // Falling, too many timesteps, reaching the finish line.
-        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps && rolloutNode.getState().getCenterX() < QWOPConstants.goalDistance) {
-            Action<C> childAction = getRolloutController().policy(rolloutNode);
+        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps && rolloutNode.getState().getCenterX() < QWOPConstants.goalDistance) { // TODO qwop specific remove
+            Action<C> childAction = useSerializedState ? getRolloutController().policy(rolloutNode, (IGameSerializable<C, S>) game) :
+                    getRolloutController().policy(rolloutNode);
 
             actionQueue.addAction(childAction);
 
@@ -120,6 +134,7 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
             rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState(), rolloutActionGenerator);
         }
         totalScore += endScore(rolloutNode);
+        recentRolloutNode = rolloutNode; // Mostly just stored for unit tests.
         return calculateFinalScore(totalScore, startNode, rolloutNode, timestepCounter);
     }
 

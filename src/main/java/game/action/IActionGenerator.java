@@ -21,6 +21,7 @@ import java.util.Set;
         @JsonSubTypes.Type(value = ActionGenerator_FixedSequence.class, name = "fixed_sequence"),
         @JsonSubTypes.Type(value = ActionGenerator_UniformNoRepeats.class, name = "fixed_actions_no_repeats"),
         @JsonSubTypes.Type(value = ActionGenerator_Null.class, name = "null"),
+        @JsonSubTypes.Type(value = ActionGenerator_QWOPNominal.class, name = "qwop_nominal"),
 })
 public interface IActionGenerator<C extends Command<?>> {
     /**

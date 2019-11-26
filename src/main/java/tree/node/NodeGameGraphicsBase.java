@@ -9,6 +9,7 @@ import game.action.Command;
 import game.action.IActionGenerator;
 import game.qwop.GameQWOP;
 import game.state.IState;
+import value.updaters.IValueUpdater;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
@@ -58,7 +59,7 @@ public abstract class NodeGameGraphicsBase
     /**
      * Enables a text label over this node, if one is assigned.
      */
-    public boolean displayLabel = false;
+    public boolean displayLabel = true;
 
     /**
      * Sets locked nodes to have points drawn. This is useful for seeing what the workers are up to.
@@ -164,6 +165,19 @@ public abstract class NodeGameGraphicsBase
     private static final Vector<NodeGameGraphicsBase> unbufferedNodes = new Vector<>();
 
     private static Map<Integer, List<NodeGameGraphicsBase>> bufferMap = new HashMap<>();
+
+
+    @Override
+    public synchronized boolean reserveExpansionRights() {
+        setOverridePointColor(Color.PINK);
+        return super.reserveExpansionRights();
+    }
+
+    @Override
+    public synchronized void releaseExpansionRights() {
+        setOverridePointColor(null);
+        super.releaseExpansionRights();
+    }
 
     private static synchronized int makeNewBuffer(GL2 gl, List<NodeGameGraphicsBase> nodesToBuffer) {
         int [] aiVertexBufferIndices = new int [] {-1};
@@ -346,7 +360,7 @@ public abstract class NodeGameGraphicsBase
     }
 
     void drawOverrideLine(GL2 gl) {
-        if (overrideLineColorFloats != null && !notDrawnForSpeed) {
+        if (overrideLineColorFloats != null) {
             gl.glColor3fv(overrideLineColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
             gl.glVertex3d(getParent().nodeLocation[0], getParent().nodeLocation[1],
@@ -372,7 +386,7 @@ public abstract class NodeGameGraphicsBase
     }
 
     public void drawOverridePoint(GL2 gl) {
-        if (overridePointColorFloats != null && !notDrawnForSpeed) {
+        if (overridePointColorFloats != null) {
             gl.glColor3fv(overridePointColorFloats, 0);
             gl.glVertex3d(nodeLocation[0], nodeLocation[1], nodeLocation[2] + overrideZOffset);
         }
@@ -491,7 +505,7 @@ public abstract class NodeGameGraphicsBase
             int childNo = getIndexAccordingToParent();
 
             sweepAngle = (float) Math.max((getParent().sweepAngle / (possibleParentBranchSlots))
-                    * (1 + (getTreeDepth() - 1) * 0.05f), 0.005);
+                    * (1 + (getTreeDepth() - 1) * 0.05f), 0.008);
 
             // This is to straighten out branches that are curving off to one side due to asymmetric expansion.
             // Acts like a controller to bring the angle towards the angle of the first node in this branch after
@@ -667,5 +681,11 @@ public abstract class NodeGameGraphicsBase
         if (drawLockedNodes) {
             displayPoint = isLocked;
         }
+    }
+
+    @Override
+    public synchronized void updateValue(float valueUpdate, IValueUpdater<C, S> updater) {
+        super.updateValue(valueUpdate, updater);
+        nodeLabel = String.valueOf((int) (getValue() * 100) / 100f);
     }
 }

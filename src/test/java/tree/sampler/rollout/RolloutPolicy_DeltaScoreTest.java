@@ -1,11 +1,11 @@
 package tree.sampler.rollout;
 
 import controllers.Controller_Random;
-import game.qwop.GameQWOP;
 import game.action.Action;
 import game.action.ActionGenerator_FixedSequence;
-import game.qwop.CommandQWOP;
 import game.action.IActionGenerator;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
 import game.qwop.StateQWOP;
 import game.state.IState;
 import org.junit.Assert;
@@ -13,11 +13,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import tree.node.NodeGame;
-import tree.node.NodeGameExplorable;
+import tree.node.*;
 import tree.node.evaluator.EvaluationFunction_Distance;
 import tree.node.evaluator.IEvaluationFunction;
 
+import java.util.HashSet;
 import java.util.Set;
 
 // Also includes most of the testing for abstract RolloutPolicyBase class.
@@ -26,8 +26,10 @@ public class RolloutPolicy_DeltaScoreTest {
     public final ExpectedException exception = ExpectedException.none(); // For asserting that exceptions should occur.
 
     private EvaluationFunction_Distance<CommandQWOP, StateQWOP> evaluator = new EvaluationFunction_Distance<>();
+    private IActionGenerator<CommandQWOP> rolloutActionGenerator = RolloutPolicyBase.getQWOPRolloutActionGenerator();
+
     private RolloutPolicyBase<CommandQWOP, StateQWOP> rollout = new RolloutPolicy_DeltaScore<>(evaluator,
-            RolloutPolicyBase.getQWOPRolloutActionGenerator(), new Controller_Random<>());
+            rolloutActionGenerator, new Controller_Random<>());
 
     private Action<CommandQWOP> a1 = new Action<>(10, CommandQWOP.WO),
             a2 = new Action<>(5, CommandQWOP.QP),
@@ -44,7 +46,6 @@ public class RolloutPolicy_DeltaScoreTest {
     private NodeGameExplorable<CommandQWOP, StateQWOP> n1_2_4;
     private NodeGameExplorable<CommandQWOP, StateQWOP> n2, n2_3, n2_3_5;
 
-    private IActionGenerator<CommandQWOP> rolloutActionGenerator = RolloutPolicyBase.getQWOPRolloutActionGenerator();
     private Set<Action<CommandQWOP>> possibleRolloutActions;
     {
         possibleRolloutActions = rolloutActionGenerator.getAllPossibleActions();
@@ -121,55 +122,56 @@ public class RolloutPolicy_DeltaScoreTest {
 
     @Test
     public void randomRollout() {
-//        NodeGameExplorableBase<?> startNode = n1_2_4;
-//        Assert.assertFalse(n1_2_4.isFullyExplored());
-//        Assert.assertFalse(n1_2_4.getState().isFailed());
-//        int startNodeChildOptions = startNode.getUntriedActionCount();
-//        GameQWOP game = new GameQWOP();
-//
-//        // For no maximum of timesteps. Always goes until failure.
-//        Set<NodeGameExplorableBase<?>> rolloutResults = new HashSet<>();
-//        for (int i = 0; i < 10; i++) {
-//            rollout.simGameToNode(startNode, game);
-//            rolloutResults.add(rollout.rollout(startNode, game));
-//        }
-//
-//        for (NodeGameExplorableBase<?> node : rolloutResults) {
-//            // Make sure that all command used in the rollout are ones that the ActionGenerator can generate.
-//            Set<Action> rolloutActions = new HashSet<>();
-//            node.recurseUpTreeInclusive(n -> {
-//                if (n.getTreeDepth() > startNode.getTreeDepth()) {
-//                    rolloutActions.add(n.getAction());
-//                }
-//            });
-//
-//            Assert.assertTrue(possibleRolloutActions.containsAll(rolloutActions));
-//            Assert.assertTrue(((NodeGameExplorable) node).isOtherNodeAncestor(n1_2_4));
-//            Assert.assertTrue(node.isFullyExplored());
-//            Assert.assertTrue(node.getState().isFailed());
-//
-//            // Rollout should not affect the normal tree building and adding of children.
-//            Assert.assertEquals(startNodeChildOptions, startNode.getUntriedActionCount());
-//        }
-//
-//        for (NodeGameExplorableBase<?> node : rolloutResults) {
-//            // Make sure that all command used in the rollout are ones that the ActionGenerator can generate.
-//            Set<Action> rolloutActions = new HashSet<>();
-//            node.recurseUpTreeInclusive(n -> {
-//                if (n.getTreeDepth() > startNode.getTreeDepth()) {
-//                    rolloutActions.add(n.getAction());
-//                }
-//            });
-//
-//            Assert.assertTrue(possibleRolloutActions.containsAll(rolloutActions));
-//            Assert.assertTrue(((NodeGameExplorable) node).isOtherNodeAncestor(n1_2_4));
-//
-//            Assert.assertFalse(node.getState().isFailed());
-//            Assert.assertFalse(node.isFullyExplored());
-//
-//            // Rollout should not affect the normal tree building and adding of children.
-//            Assert.assertEquals(startNodeChildOptions, startNode.getUntriedActionCount());
-//        }
+        NodeGameExplorableBase<?, CommandQWOP, StateQWOP> startNode = n1_2_4;
+        Assert.assertFalse(n1_2_4.isFullyExplored());
+        Assert.assertFalse(n1_2_4.getState().isFailed());
+        int startNodeChildOptions = startNode.getUntriedActionCount();
+        GameQWOP game = new GameQWOP();
+
+        // For no maximum of timesteps. Always goes until failure.
+        Set<NodeGameExplorableBase<?, CommandQWOP, StateQWOP>> rolloutResults = new HashSet<>();
+        for (int i = 0; i < 10; i++) {
+            rollout.simGameToNode(startNode, game);
+            rollout.rollout(startNode, game);
+            NodeGameExplorableBase rolloutNode = (NodeGameExplorableBase) NodeGameGraphicsTest.getPrivateField(RolloutPolicyBase.class, rollout,
+                    "recentRolloutNode");
+            rolloutResults.add(rolloutNode);
+        }
+
+        for (NodeGameExplorableBase<?, CommandQWOP, StateQWOP> node : rolloutResults) {
+            // Make sure that all command used in the rollout are ones that the ActionGenerator can generate.
+            Set<Action> rolloutActions = new HashSet<>();
+            node.recurseUpTreeInclusive(n -> {
+                if (n.getTreeDepth() > startNode.getTreeDepth()) {
+                    rolloutActions.add(n.getAction());
+                }
+            });
+
+            Assert.assertTrue(possibleRolloutActions.containsAll(rolloutActions));
+            Assert.assertTrue(node.isFullyExplored());
+            Assert.assertTrue(node.getState().isFailed());
+
+            // Rollout should not affect the normal tree building and adding of children.
+            Assert.assertEquals(startNodeChildOptions, startNode.getUntriedActionCount());
+        }
+
+        for (NodeGameExplorableBase<?, CommandQWOP, StateQWOP> node : rolloutResults) {
+            // Make sure that all command used in the rollout are ones that the ActionGenerator can generate.
+            Set<Action> rolloutActions = new HashSet<>();
+            node.recurseUpTreeInclusive(n -> {
+                if (n.getTreeDepth() > startNode.getTreeDepth()) {
+                    rolloutActions.add(n.getAction());
+                }
+            });
+
+            Assert.assertTrue(possibleRolloutActions.containsAll(rolloutActions));
+
+            Assert.assertTrue(node.getState().isFailed());
+            Assert.assertTrue(node.isFullyExplored());
+
+            // Rollout should not affect the normal tree building and adding of children.
+            Assert.assertEquals(startNodeChildOptions, startNode.getUntriedActionCount());
+        }
     }
 
     @Test

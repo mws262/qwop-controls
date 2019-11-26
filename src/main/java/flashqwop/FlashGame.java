@@ -28,7 +28,7 @@ import java.util.List;
 public abstract class FlashGame implements IFlashStateListener {
 
     private FlashQWOPServer server;
-    private ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
+    protected ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
     private LinkedList<StateQWOP> stateCache = new LinkedList<>();
 
     /**
@@ -199,7 +199,7 @@ public abstract class FlashGame implements IFlashStateListener {
 
         // Only send command when it's different from the previous.
         CommandQWOP nextCommand = actionQueue.pollCommand();
-        if (!prevCommand.equals(nextCommand)) {
+        if (!nextCommand.equals(prevCommand)) {
             commandTarget.command(nextCommand);
         }
         prevCommand = nextCommand;
