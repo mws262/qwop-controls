@@ -507,9 +507,10 @@ public class NodeGameExplorableTest {
         node2.addDoublyLinkedChild(node2.getUntriedActionRandom(), failedState);
         Assert.assertEquals(0, node2.getUntriedActionCount());
         Assert.assertEquals(3, node2.getChildCount()); // Shouldn't affect the child count.
-        
-        exception.expect(IllegalArgumentException.class);
-        node2.addBackwardsLinkedChild(a4, unfailedState); // Still shouldn't be able to add duplicate game.command, even
-        // if it is only backwards linked.
+
+// Disabled this so phantom nodes can be added during rollouts.
+//        exception.expect(IllegalArgumentException.class);
+//        node2.addBackwardsLinkedChild(a4, unfailedState); // Still shouldn't be able to add duplicate game.command, even
+//        // if it is only backwards linked.
     }
 }

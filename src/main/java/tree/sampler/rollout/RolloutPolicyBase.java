@@ -13,6 +13,7 @@ import game.qwop.QWOPConstants;
 import game.state.IState;
 import org.jetbrains.annotations.NotNull;
 import tree.node.NodeGameBase;
+import tree.node.NodeGameExplorable;
 import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
@@ -101,8 +102,13 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
 
         // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts. References from
         // parent so as not to screw up the tree depth.
-        NodeGameExplorableBase<?, C, S> rolloutNode = startNode.getParent().addBackwardsLinkedChild(startNode.getAction(),
-                startNode.getState(), rolloutActionGenerator);
+        NodeGameExplorableBase<?, C, S> rolloutNode;
+        if (startNode.getTreeDepth() == 0) { // Prevent null pointer due to no action at root.
+            rolloutNode = new NodeGameExplorable<>(startNode.getState(), rolloutActionGenerator);
+        } else {
+             rolloutNode = startNode.getParent().addBackwardsLinkedChild(startNode.getAction(),
+                    startNode.getState(), rolloutActionGenerator);
+        }
 
         float totalScore = startScore(startNode);
 
