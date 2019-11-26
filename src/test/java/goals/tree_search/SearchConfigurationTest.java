@@ -49,14 +49,16 @@ public class SearchConfigurationTest {
     private StateQWOP testState2;
     private NodeGameExplorable<CommandQWOP, StateQWOP> sampleNode2;
 
+    private GameQWOP game;
+
     @Before
     public void setup() {
-        GameQWOP game = new GameQWOP();
+        game = new GameQWOP();
         for (int i = 0; i < 10; i++) {
             game.step(false, true, true, false);
         }
         testState2 = game.getCurrentState();
-        sampleNode2 = new NodeGameExplorable<>(testState2, ActionGenerator_FixedSequence.makeDefaultGenerator(-1));
+        sampleNode2 = sampleNode1.addDoublyLinkedChild(new Action<>(10, CommandQWOP.WO), testState2);
     }
 
     @Test
@@ -605,7 +607,7 @@ public class SearchConfigurationTest {
                                 new EvaluationFunction_Constant<>(
                                         1f),
                                 RolloutPolicyBase.getQWOPRolloutActionGenerator(),
-                                new Controller_Constant<>(new Action<>(1, CommandQWOP.NONE))));
+                                new Controller_Constant<>(new Action<>(1, CommandQWOP.Q))));
         rollout.selectionCriteria = RolloutPolicy_Window.Criteria.WORST;
 
         SearchConfiguration.serializeToYaml(file, rollout);
@@ -617,8 +619,13 @@ public class SearchConfigurationTest {
         Assert.assertNotNull(loaded);
         Assert.assertEquals(rollout.selectionCriteria, loaded.selectionCriteria);
         Assert.assertEquals(rollout.getIndividualRollout().getClass(), loaded.getIndividualRollout().getClass());
-        Assert.assertEquals(rollout.getIndividualRollout().rollout(sampleNode1, new GameQWOP()),
-                loaded.getIndividualRollout().rollout(sampleNode1, new GameQWOP()), 1e-10);
+        rollout.getIndividualRollout().rollout(sampleNode2, game);
+
+        setup(); // Gets the game back to the correct state to match sampleNode2.
+        float originalResult = rollout.getIndividualRollout().rollout(sampleNode2, game);
+        setup();
+        float afterResult = rollout.getIndividualRollout().rollout(sampleNode2, game);
+        Assert.assertEquals(originalResult, afterResult, 1e-10);
         rollout.close();
         loaded.close();
     }
