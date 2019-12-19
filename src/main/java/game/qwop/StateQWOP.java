@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 import game.IGameInternal;
 import game.state.IState;
 import game.state.StateVariable6D;
@@ -495,6 +496,26 @@ public class StateQWOP implements IStateQWOP, Serializable {
 
         hashCodeBuilder.append(failedState);
         return hashCodeBuilder.toHashCode();
+    }
+
+    /**
+     * Make a state with zero velocities from just position coordinates in an array.
+     * @param positionCoords x, y, theta coordinates for all the bodies in the order used everywhere in this.
+     * @return A constructed state with the specified positions and no velocity.
+     */
+    public static StateQWOP makeFromPositionArrayOnly(float[] positionCoords) {
+        Preconditions.checkArgument(positionCoords.length == STATE_SIZE / 2);
+
+        float[] vals = new float[STATE_SIZE];
+        int count = 0;
+        for (int i = 0; i < STATE_SIZE; i += 3) {
+            vals[i++] = positionCoords[count++];
+            vals[i++] = positionCoords[count++];
+            vals[i++] = positionCoords[count++];
+            
+        }
+        assert count == STATE_SIZE / 2 + 1;
+        return new StateQWOP(vals, false);
     }
 
     public static class Normalizer implements ITransform<StateQWOP> {
