@@ -10,7 +10,9 @@ import ui.runner.PanelRunner_SimpleState;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
@@ -148,13 +150,29 @@ public class TensorflowGenericEvaluator implements AutoCloseable {
         frame.pack();
         frame.setVisible(true);
 
+
+        BufferedReader br = new BufferedReader(new FileReader(new File("./python/mins.txt")));
+        float[] mins = new float[35];
+        String line;
+        int count = 0;
+        while ((line = br.readLine()) != null)
+            mins[count++] = Float.parseFloat(line);
+        br.close();
+
+        br = new BufferedReader(new FileReader(new File("./python/maxes.txt")));
+        float[] maxes = new float[35];
+        count = 0;
+        while ((line = br.readLine()) != null)
+            maxes[count++] = Float.parseFloat(line);
+        br.close();
+
         TensorflowGenericEvaluator tflow = new TensorflowGenericEvaluator(new File("./python/saves/modeldef.pb"));
         tflow.loadCheckpoint("./python/saves/model.ckpt");
 
         tflow.printTensorflowGraphOperations();
-        for (int j = 0; j < 300; j++) {
+        for (int j = 0; j < 500; j++) {
             Map<String, Tensor<?>> in = new HashMap<>();
-            in.put("img_filename", Tensors.create("./vision_capture/run3/ts" + j + ".png"));
+            in.put("img_filename", Tensors.create("./vision_capture/run1/ts" + j + ".png"));
             List<String> out = new ArrayList<>();
             out.add("processed_img");
             List<Tensor<?>> output = tflow.evaluate(in, out);
@@ -174,13 +192,13 @@ public class TensorflowGenericEvaluator implements AutoCloseable {
             float[] stateVals = new float[36];
             stateVals[0] = 0;
             for (int i = 0; i < reshapedResult.length; i++) {
-                stateVals[i + 1] = reshapedResult[i];
+                stateVals[i + 1] = reshapedResult[i] * (maxes[i] - mins[i]) + mins[i];
             }
 
             StateQWOP st = StateQWOP.makeFromPositionArrayOnly(stateVals);
 
             runnerPanel.updateState(st);
-            Thread.sleep(20);
+            Thread.sleep(30);
         }
 
         tflow.close();

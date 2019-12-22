@@ -1,6 +1,7 @@
 import tensorflow as tf
 import csv
 import time
+import numpy as np
 print(tf.__version__)
 
 IMG_WIDTH = int(640/5)
@@ -8,32 +9,10 @@ IMG_HEIGHT = int(400/5)
 pool_reduction = 2
 INPUT_COUNT = 35
 
-imgdim = 64
-batch_size = 50
-# tensorboard --samples_per_plugin images=10000 --logdir=summarytmp
-def decode_img(img, label):
-  # convert the compressed string to a 3D uint8 tensor
-  img = tf.image.decode_png(tf.io.read_file(img), channels=3)
-  # Use `convert_image_dtype` to convert to floats in the [0,1] range.
-  img = tf.image.convert_image_dtype(img, tf.float32)
-  img = tf.image.crop_to_bounding_box(img, 50, 150, 350, 325)
-  # resize the image to the desired size.
-  img = tf.image.resize(img, [imgdim, imgdim])
-  img = img - tf.tile(tf.expand_dims(img[:, 0, :],1), [1, imgdim, 1]) # Subtract out the background sort of.
-  return img, label
+imgdim = 256
+batch_size = 25
 
-def cnn_layer(input, kernel, channelsin, channelsout, name='filter'):
-    with tf.name_scope(name):
-        wc1 = tf.Variable(tf.random.uniform([kernel, kernel, channelsin, channelsout], minval=0, maxval=2/channelsout))
-        bc1 = tf.Variable(tf.random_normal([channelsout]))
-        x = tf.nn.conv2d(input, filter=wc1, strides=[1, 1, 1, 1], padding='SAME')
-        x = tf.nn.bias_add(x, bc1)
-        x = tf.nn.relu(x)
-        # x = tf.nn.max_pool(x, ksize=[1, pool_reduction, pool_reduction, 1], strides=[1, pool_reduction, pool_reduction, 1], padding='SAME', name='pool1')
-        tf.summary.image(name, x, family='cnn', max_outputs=3)
-        return x
-
-#######################
+##################
 img_paths = []
 state_labels = []
 for j in range(31):
@@ -47,6 +26,49 @@ epoch_size = len(img_paths)
 img_paths_tensor = tf.convert_to_tensor(img_paths, dtype=tf.string)
 state_labels_tensor = tf.convert_to_tensor(state_labels, dtype=tf.float32)
 
+#
+# min_st = tf.reduce_min(state_labels_tensor, axis=0)
+# max_st = tf.reduce_max(state_labels_tensor, axis=0)
+# with tf.Session() as sess:
+#     mins, maxes = sess.run([min_st, max_st])
+# np.savetxt("mins.txt", mins, delimiter='\n')
+# np.savetxt("maxes.txt", maxes, delimiter='\n')
+
+min_states = tf.constant(np.loadtxt("mins.txt"), dtype=tf.float32, name="mins")
+max_states = tf.constant(np.loadtxt("maxes.txt"), dtype=tf.float32, name="maxes")
+range_states = max_states - min_states
+#############################3
+
+initializer = tf.glorot_uniform_initializer(seed=6)
+
+# tensorboard --samples_per_plugin images=10000 --logdir=summarytmp
+def decode_img(img, label):
+  # convert the compressed string to a 3D uint8 tensor
+  img = tf.image.decode_png(tf.io.read_file(img), channels=3)
+  # Use `convert_image_dtype` to convert to floats in the [0,1] range.
+  img = tf.image.convert_image_dtype(img, tf.float32)
+  img = tf.image.crop_to_bounding_box(img, 50, 150, 350, 325)
+  # resize the image to the desired size.
+  img = tf.image.resize(img, [imgdim, imgdim])
+  img = img - tf.tile(tf.expand_dims(img[:, 0, :],1), [1, imgdim, 1]) # Subtract out the background sort of.
+
+  label_norm = (label - min_states) / range_states
+  return img, label_norm
+
+def cnn_layer(input, kernel, channelsin, channelsout, name='filter'):
+    with tf.name_scope(name):
+        wc1 = tf.Variable(initializer([kernel, kernel, channelsin, channelsout]))
+        bc1 = tf.Variable(initializer([channelsout]))
+        x = tf.nn.conv2d(input, filter=wc1, strides=[1, 1, 1, 1], padding='SAME')
+        x = tf.nn.bias_add(x, bc1)
+        x = tf.nn.relu(x)
+        # x = tf.nn.max_pool(x, ksize=[1, pool_reduction, pool_reduction, 1], strides=[1, pool_reduction, pool_reduction, 1], padding='SAME', name='pool1')
+        for i in range(channelsout):
+            tf.summary.image(name, tf.expand_dims(x[:,:,:,i],3), family='cnn', max_outputs=1)
+        return x
+
+#######################
+
 dataset = tf.data.Dataset.from_tensor_slices((img_paths_tensor, state_labels_tensor))
 dataset = dataset.repeat().shuffle(epoch_size)
 
@@ -59,37 +81,44 @@ images, labels = dataset.make_one_shot_iterator().get_next()
 
 
 file_in = tf.placeholder(tf.string, name="img_filename")
-img_decoded, _ = decode_img(file_in, [])
+st_in = tf.placeholder(tf.float32, name="st_in")
+img_decoded, _ = decode_img(file_in, st_in)
 img_decoded = tf.expand_dims(img_decoded, 0) # Dimension 1 is associated with batches.
 img_out = tf.identity(img_decoded, name="processed_img")
+st_in = tf.identity(st_in, name="state_normed")
 
 # img_summary0 = tf.summary.image('filter0', x)
 
 x = tf.placeholder_with_default(images, shape=None, name="img_in")
 
-x = cnn_layer(x, 3, 3, 3, 'f1')
-x = cnn_layer(x, 3, 3, 1, 'f2')
-x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool1')
-x = cnn_layer(x, 3, 1, 1, 'f3')
+x = cnn_layer(x, 5, 3, 12, 'f1')
+x = cnn_layer(x, 3, 12, 12, 'f2')
+
+x = tf.nn.max_pool(x, ksize=[1, 8, 8, 1], strides=[1, 8, 8, 1], padding='SAME', name='pool1')
+x = cnn_layer(x, 3, 12, 36, 'f4')
 #x = cnn_layer(x, 3, 1, 1, 'f4')
-x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool1')
+x = tf.nn.max_pool(x, ksize=[1, 8, 8, 1], strides=[1, 8, 8, 1], padding='SAME', name='pool2')
+x = cnn_layer(x, 3, 36, 36, 'f4')
+#x = cnn_layer(x, 3, 1, 1, 'f4')
+x = tf.nn.avg_pool(x, ksize=[1, 8, 8, 1], strides=[1, 8, 8, 1], padding='SAME', name='pool3')
 
 #x = cnn_layer(x, 3, 1, 1, 'f5')
 #c5 = cnn_layer(c4, 3, 1, 1, 'f5')
 #x = tf.nn.max_pool(x, ksize=[1, 4, 4, 1], strides=[1, 4, 4, 1], padding='SAME', name='pool1')
-img_summary2 = tf.summary.image('filter2', x, max_outputs=3)
+# img_summary2 = tf.summary.image('filter2', x[:,:,:,0:3], max_outputs=1)
+for i in range(36):
+    tf.summary.image("pool", tf.expand_dims(x[:, :, :, i],3), family='cnn', max_outputs=1)
 
+x = tf.reshape(x, [-1, 36])#int(imgdim * imgdim / 64)]) # Flatten to 1D
 
-x = tf.reshape(x, [-1, int(imgdim * imgdim / 16)]) # Flatten to 1D
-
-wfc1 = tf.Variable(tf.constant(0.01, shape = [int(imgdim * imgdim / 16), 48]))
-bfc1 = tf.Variable(tf.constant(0.01, shape=[48]))
+wfc1 = tf.Variable(initializer([36, INPUT_COUNT]))
+bfc1 = tf.Variable(initializer([INPUT_COUNT]))
 x = tf.matmul(x, wfc1) + bfc1
-x = tf.nn.relu(x)
-
-wfc2 = tf.Variable(tf.constant(0.01, shape = [48, INPUT_COUNT]))
-bfc2 = tf.Variable(tf.random_normal([INPUT_COUNT]))
-x = tf.matmul(x, wfc2) + bfc2
+# x = tf.nn.relu(x)
+#
+# wfc2 = tf.Variable(tf.constant(0.01, shape = [48, INPUT_COUNT]))
+# bfc2 = tf.Variable(tf.random_normal([INPUT_COUNT]))
+# x = tf.matmul(x, wfc2) + bfc2
 x = tf.identity(x, name="prediction")
 
 # input_desired = tf.placeholder(dtype=tf.float32, shape=[1, INPUT_COUNT])
@@ -99,7 +128,7 @@ tf.summary.scalar("loss", loss_op)
 # torsoThetaError = x[0][1] - input_desired[0][1]
 # tf.summary.scalar("torso_theta_err", torsoThetaError)
 
-optimizer = tf.train.AdamOptimizer(learning_rate=1e-2, name='optimizer')
+optimizer = tf.train.AdamOptimizer(learning_rate=1e-3, name='optimizer')
 train_op = optimizer.minimize(loss_op, name='train')
 
 # list_ds = tf.data.Dataset.list_files('../vision_capture/run1/*')
@@ -120,13 +149,17 @@ with tf.device('/GPU:0'):
         sess.run(init)
         summ_writer = tf.summary.FileWriter('./summarytmp/' + str(time.strftime("%Y%m%d-%H%M%S")), sess.graph)
         for i in range(int(1e9)):
-            [loss, thing, summ] = sess.run([loss_op, train_op,
-                                            merged_summary_op])
+
+            # xo, lo, xx = sess.run([x, labels, xp2])
             if count % 50 == 0:
+                [loss, thing, summ] = sess.run([loss_op, train_op,
+                                                merged_summary_op])
                 summ_writer.add_summary(summ, count1)
                 summ_writer.flush()
                 count1 += 1
                 print(count)
+            else:
+                sess.run([loss_op, train_op])
             if count + 1 % 100:
                 save_path = saver_def.save(sess, "./saves/model.ckpt")
             count += 1

@@ -20,13 +20,16 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
      */
 
     /**
-     * The blue-ish color on the top row of the game in RGB.
-     */
-    private static final int[] topRowColor = new int[]{82, 114, 137};
-    /**
      * The blue-ish color on the top row of the game in compact form.
      */
-    private static final int topRowColorSingleInt = -11373943;
+    /*
+    Note 12/22/19: These colors seem to have changed since the last time I used this. I have updated below. Previously
+    the main color had been (82, 114, 137). I think that was on a different computer though. It is possible that
+    rendering differences account for this. Perhaps a range of values should be used in the future if this needs to
+    be more robust.
+     */
+    private static final int topRowMainColor = new Color(83, 114, 136).getRGB();
+    private static final int topRowEndColor = new Color(77, 89, 106).getRGB();
 
     /**
      * Game width at default scaling.
@@ -83,6 +86,8 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
         // Figure out the size of the specified monitor.
         final GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
         logger.info("Found " + devices.length + " monitors.");
+        for (GraphicsDevice dev : devices)
+            logger.info(dev.getDefaultConfiguration().getBounds().width + " x " + dev.getDefaultConfiguration().getBounds().height);
 
         GraphicsDevice gd = devices[monitorIdx];
         monitorBounds = gd.getDefaultConfiguration().getBounds();
@@ -118,6 +123,7 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
     private void locateQWOP() {
         // Capture the whole monitor image and get the data buffer as pixels.
         BufferedImage img = robot.createScreenCapture(monitorBounds);
+
         // This array is basically all the rows (x-dimension) concatenated together.
         int[] pixels = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
 
@@ -128,11 +134,10 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
         // The data buffer collapses RGBA into a single 32bit integer. This Stack Overflow magic converts back.
         for (int i = 0; i < pixels.length; i++) {
 
-            if (!previouslyOnTopRow && pixels[i] == topRowColorSingleInt) {
+            if (!previouslyOnTopRow && pixels[i] == topRowMainColor) {
                 previouslyOnTopRow = true;
                 topRowStartPixel = i;
-            } else if (previouslyOnTopRow && pixels[i] != topRowColorSingleInt) {
-                previouslyOnTopRow = false;
+            } else if (previouslyOnTopRow && (pixels[i] != topRowMainColor && pixels[i] != topRowEndColor)) {
                 topRowEndPixel = i;
                 break;
             }
@@ -150,7 +155,9 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
             logger.info("Game scaling is: " + gameStageScaling);
         }
 
-        screenCapRegion = new Rectangle(gameUpperCornerX, gameUpperCornerY,
+        screenCapRegion = new Rectangle(gameUpperCornerX + (int)monitorBounds.getX(), // Have to add on start
+                // coordinates of the selected monitor. Can be weird in multi-monitor setups.
+                gameUpperCornerY + (int)monitorBounds.getY(),
                 (int) (gameStageScaling * defaultGameWidth), (int) (gameStageScaling * defaultGameHeight));
     }
 
@@ -169,7 +176,9 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
     private BufferedImage getGameCapture() {
         if (screenCapRegion.getX() > 0 && screenCapRegion.getY() > 0) {
             BufferedImage img = robot.createScreenCapture(screenCapRegion);
-            if (img.getRGB(0, 0) != topRowColorSingleInt) {
+            if (img.getRGB(0, 0) != topRowMainColor) {
+                logger.warn("Screen cap region invalid. Locating the QWOP window again. RGB found at corner location " +
+                        "actually was: " + img.getRGB(0, 0));
                 locateQWOP();
                 getGameCapture();
             }
@@ -199,7 +208,7 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
 
     public static void main(String[] args) {
         CaptureQWOPWindow.debugFrame = true;
-        CaptureQWOPWindow locator = new CaptureQWOPWindow(0);
+        CaptureQWOPWindow locator = new CaptureQWOPWindow(1);
         try {
             locator.saveImageToPNG(new File("test.png"));
         } catch (IOException e) {
