@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class CaptureQWOPWindow extends JPanel implements Runnable {
 
@@ -27,9 +28,10 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
     the main color had been (82, 114, 137). I think that was on a different computer though. It is possible that
     rendering differences account for this. Perhaps a range of values should be used in the future if this needs to
     be more robust.
+    Note 1/4/20: They do vary. Just keep adding to these arrays as needed.
      */
-    private static final int topRowMainColor = new Color(83, 114, 136).getRGB();
-    private static final int topRowEndColor = new Color(77, 89, 106).getRGB();
+    private static final int[] topRowMainColor = {new Color(83, 114, 136).getRGB(), new Color(82, 114, 137).getRGB()};
+    private static final int[] topRowEndColor = {new Color(77, 89, 106).getRGB(), new Color(77, 89, 107).getRGB()};
 
     /**
      * Game width at default scaling.
@@ -133,11 +135,12 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
 
         // The data buffer collapses RGBA into a single 32bit integer. This Stack Overflow magic converts back.
         for (int i = 0; i < pixels.length; i++) {
-
-            if (!previouslyOnTopRow && pixels[i] == topRowMainColor) {
+            final int pix = i;
+            boolean topMatch = Arrays.stream(topRowMainColor).anyMatch(c->(c==pixels[pix]));
+            if (!previouslyOnTopRow && topMatch) {
                 previouslyOnTopRow = true;
                 topRowStartPixel = i;
-            } else if (previouslyOnTopRow && (pixels[i] != topRowMainColor && pixels[i] != topRowEndColor)) {
+            } else if (previouslyOnTopRow && (!topMatch && Arrays.stream(topRowEndColor).anyMatch(c->(c==pixels[pix])))) {
                 topRowEndPixel = i;
                 break;
             }
@@ -176,7 +179,8 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
     private BufferedImage getGameCapture() {
         if (screenCapRegion.getX() > 0 && screenCapRegion.getY() > 0) {
             BufferedImage img = robot.createScreenCapture(screenCapRegion);
-            if (img.getRGB(0, 0) != topRowMainColor) {
+            boolean topMatch = Arrays.stream(topRowMainColor).anyMatch(c->(c==img.getRGB(0, 0)));
+            if (!topMatch) {
                 logger.warn("Screen cap region invalid. Locating the QWOP window again. RGB found at corner location " +
                         "actually was: " + img.getRGB(0, 0));
                 locateQWOP();

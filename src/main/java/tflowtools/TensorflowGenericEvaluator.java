@@ -166,8 +166,9 @@ public class TensorflowGenericEvaluator implements AutoCloseable {
             maxes[count++] = Float.parseFloat(line);
         br.close();
 
-        TensorflowGenericEvaluator tflow = new TensorflowGenericEvaluator(new File("./python/saves/modeldef.pb"));
-        tflow.loadCheckpoint("./python/saves/model.ckpt");
+        TensorflowGenericEvaluator tflow = new TensorflowGenericEvaluator(new File("./python/backup_medres/modeldef" +
+                ".pb"));
+        tflow.loadCheckpoint("./python/backup_medres/model.ckpt");
 
         tflow.printTensorflowGraphOperations();
         for (int j = 0; j < 500; j++) {
