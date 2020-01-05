@@ -133,14 +133,12 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
         int topRowStartPixel = 0;
         int topRowEndPixel = 0;
 
-        // The data buffer collapses RGBA into a single 32bit integer. This Stack Overflow magic converts back.
         for (int i = 0; i < pixels.length; i++) {
             final int pix = i;
-            boolean topMatch = Arrays.stream(topRowMainColor).anyMatch(c->(c==pixels[pix]));
-            if (!previouslyOnTopRow && topMatch) {
+            if (!previouslyOnTopRow && Arrays.stream(topRowMainColor).anyMatch(c->(c==pixels[pix]))) {
                 previouslyOnTopRow = true;
                 topRowStartPixel = i;
-            } else if (previouslyOnTopRow && (!topMatch && Arrays.stream(topRowEndColor).anyMatch(c->(c==pixels[pix])))) {
+            } else if (previouslyOnTopRow && (Arrays.stream(topRowEndColor).anyMatch(c->(c==pixels[pix])))) {
                 topRowEndPixel = i;
                 break;
             }
@@ -148,7 +146,8 @@ public class CaptureQWOPWindow extends JPanel implements Runnable {
 
         gameUpperCornerX = topRowStartPixel % monitorBounds.width;
         gameUpperCornerY = topRowStartPixel / monitorBounds.width;
-        gameStageScaling = Math.max((topRowEndPixel - topRowStartPixel) / (double) defaultGameWidth, 0.1);
+        gameStageScaling = Math.max((topRowEndPixel - topRowStartPixel + 1) / (double) defaultGameWidth, 0.1); // +1
+        // since the bounds are included. i.e. "fencepost problem"
 
         if ((topRowEndPixel - topRowStartPixel) == 0) {
             logger.warn("Game window not found. Check monitor number or move nearby browser instances.");
