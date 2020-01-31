@@ -58,7 +58,7 @@ public class TensorflowGenericEvaluator implements AutoCloseable {
         session = new Session(graph);
     }
 
-    protected List<Tensor<?>> evaluate(Map<String, Tensor<?>> inputs, List<String> outputsToFetch) {
+    public List<Tensor<?>> evaluate(Map<String, Tensor<?>> inputs, List<String> outputsToFetch) {
 
         final Session.Runner runner = session.runner();
 
@@ -84,6 +84,7 @@ public class TensorflowGenericEvaluator implements AutoCloseable {
         result.close();
         return reshapedResult;
     }
+
 
     /**
      * Load a checkpoint file. Must match the graph loaded. Name does not need to include path or file extension.
@@ -166,14 +167,20 @@ public class TensorflowGenericEvaluator implements AutoCloseable {
             maxes[count++] = Float.parseFloat(line);
         br.close();
 
-        TensorflowGenericEvaluator tflow = new TensorflowGenericEvaluator(new File("./python/backup_medres/modeldef" +
-                ".pb"));
-        tflow.loadCheckpoint("./python/backup_medres/model.ckpt");
+        TensorflowGenericEvaluator tflow = new TensorflowGenericEvaluator(new File("./python" +
+                "/backup_medres_backgroundincl/modeldef.pb"));
+        tflow.loadCheckpoint("./python/backup_medres_backgroundincl/model.ckpt");
 
         tflow.printTensorflowGraphOperations();
+
+        //CaptureQWOPWindow locator = new CaptureQWOPWindow(1);
         for (int j = 0; j < 500; j++) {
+
+            //locator.saveImageToPNG(new File("tmp.png"));
+
+            /////
             Map<String, Tensor<?>> in = new HashMap<>();
-            in.put("img_filename", Tensors.create("./vision_capture/run1/ts" + j + ".png"));
+            in.put("img_filename", Tensors.create( "./vision_capture/run1/ts" + j + ".png")); //"tmp.png"));
             List<String> out = new ArrayList<>();
             out.add("processed_img");
             List<Tensor<?>> output = tflow.evaluate(in, out);
@@ -183,7 +190,6 @@ public class TensorflowGenericEvaluator implements AutoCloseable {
             out.clear();
             out.add("prediction");
             output = tflow.evaluate(in, out);
-
 
             Tensor<Float> result = output.get(0).expect(Float.class);
             long[] outputShape = result.shape();

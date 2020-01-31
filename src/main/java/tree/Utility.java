@@ -100,9 +100,9 @@ public class Utility {
         long tocTime = System.nanoTime();
         long difference = tocTime - ticTime;
         if (difference < Long.MAX_VALUE) {
-            logger.debug(Math.floor(difference / 10000.) / 100 + " ms elapsed.");
+            logger.info(Math.floor(difference / 10000.) / 100 + " ms elapsed.");
         } else {
-            logger.debug(Math.floor(difference / 100000000.) / 10. + " s elapsed.");
+            logger.info(Math.floor(difference / 100000000.) / 10. + " s elapsed.");
         }
         return difference;
     }

@@ -136,7 +136,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP, StateQWOP> {
 
     @Override
     public int getNumberOfChoices() {
-        return commandToFlashString.size();
+        return NUM_COMMANDS;
     }
 
     void sendInfoRequest() {
@@ -201,7 +201,7 @@ public class FlashQWOPServer implements IGameExternal<CommandQWOP, StateQWOP> {
 
     @Override
     public int getStateDimension() {
-        return 72;
+        return StateQWOP.STATE_SIZE;
     }
 
     /**
