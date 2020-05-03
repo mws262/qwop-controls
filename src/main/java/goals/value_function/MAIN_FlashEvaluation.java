@@ -45,7 +45,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private final String valueNetworkName = "small_net.pb"; // "deepnarrow_net.pb";
     private final String checkpointName = "small329";//698"; //329"; // "med67";
 
-    private static boolean hardware = true;
+    private static boolean hardware = false;
 
 
     private final List<Action<CommandQWOP>> prefix = new ArrayList<>();
@@ -124,7 +124,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
                     new File("src/main/resources/tflow_models/" + valueNetworkName),
                     new GameQWOP(),
                     new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
-                    checkpointName,
+                    "src/main/resources/tflow_models/special_checkpoints/" + checkpointName,
                     1f,
                     false);
 

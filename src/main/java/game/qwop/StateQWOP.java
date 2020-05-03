@@ -518,6 +518,20 @@ public class StateQWOP implements IStateQWOP, Serializable {
         return new StateQWOP(vals, false);
     }
 
+    public static StateQWOP makeFromPositionVelocityArrays(float[] positionCoords, float[] velocityCoords, boolean isFailed) {
+        StateVariable6D[] stateVars = new StateVariable6D[12];
+        for (int i = 0; i < stateVars.length; i++) {
+            stateVars[i] = new StateVariable6D(
+                    positionCoords[3 * i],
+                    positionCoords[3 * i + 1],
+                    positionCoords[3 * i + 2],
+                    velocityCoords[3 * i],
+                    velocityCoords[3 * i + 1],
+                    velocityCoords[3 * i + 2]);
+        }
+        return new StateQWOP(stateVars, isFailed);
+    }
+
     public static class Normalizer implements ITransform<StateQWOP> {
 
         public enum NormalizationMethod {
