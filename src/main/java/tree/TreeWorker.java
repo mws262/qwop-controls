@@ -372,7 +372,7 @@ public class TreeWorker<C extends Command<?>, S extends IState> extends PanelRun
                     }
                     break;
                 default:
-                    break;
+                    throw new IllegalStateException("Undefined state entered.");
             }
         }
     }

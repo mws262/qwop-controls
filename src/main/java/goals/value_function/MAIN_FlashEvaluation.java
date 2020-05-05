@@ -34,7 +34,7 @@ import java.util.List;
 public class MAIN_FlashEvaluation extends FlashGame {
 
     private final boolean imageCapture = false;
-    private final boolean addActionNoise = true;
+    private final boolean addActionNoise = false;
     private final float noiseProbability = 0.99f;
 
 
@@ -43,8 +43,10 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private File captureDir = new File("vision_capture");
 
     // Net and execution parameters.
-    private final String valueNetworkName = "small_net.pb"; // "deepnarrow_net.pb";
-    private final String checkpointName = "small329";//698"; //329"; // "med67";
+    String valueNetworkName = "src/main/resources/tflow_models/tuesday.pb";
+    String checkpointName = "src/main/resources/tflow_models/checkpoints/small329";
+//    private final String valueNetworkName = "tuesday.pb"; // "deepnarrow_net.pb";
+//    private final String checkpointName = "small329";//698"; //329"; // "med67";
 
     private static boolean hardware = true;
 
@@ -122,7 +124,7 @@ public class MAIN_FlashEvaluation extends FlashGame {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly<>(
-                    new File("src/main/resources/tflow_models/" + valueNetworkName),
+                    new File(valueNetworkName),
                     new GameQWOP(),
                     new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
                     1f,

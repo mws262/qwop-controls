@@ -199,7 +199,7 @@ public abstract class FlashGame implements IFlashStateListener {
 
         // Only send command when it's different from the previous.
         CommandQWOP nextCommand = actionQueue.pollCommand();
-        if (!prevCommand.equals(nextCommand)) {
+        if (prevCommand != null && !prevCommand.equals(nextCommand)) {
             commandTarget.command(nextCommand);
         }
         prevCommand = nextCommand;
