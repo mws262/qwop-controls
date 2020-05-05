@@ -72,6 +72,11 @@ public class CommandQWOP extends Command<boolean[]> {
         q, w, o, p, qp, wo, qo, wp, none
     }
 
+<<<<<<< HEAD
+=======
+    public static final int NUM_COMMANDS = 9;
+
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     @JsonProperty("keys")
     public final Keys keys;
 

@@ -51,7 +51,11 @@ Note that all bodies are done first, and then joints afterwards.
     /**
      * Goal distance in physics engine units.
      */
+<<<<<<< HEAD
     public static final float goalDistance = 1000f;
+=======
+    public static final float goalDistance = 2 * 1000f;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
     /**
      * AABB bounds.

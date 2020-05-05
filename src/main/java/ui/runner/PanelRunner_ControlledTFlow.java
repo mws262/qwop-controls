@@ -20,7 +20,10 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+<<<<<<< HEAD
 import java.io.FileNotFoundException;
+=======
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -236,6 +239,10 @@ public class PanelRunner_ControlledTFlow<S extends IStateQWOP>
                                         Paths.get(modelLocation, selectedModel).toFile(),
                                         game,
                                         stateNormalizer,
+<<<<<<< HEAD
+=======
+                                        null,
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
                                         1f, // No dropout for this evaluation.
                                         false
                                 )
@@ -246,7 +253,11 @@ public class PanelRunner_ControlledTFlow<S extends IStateQWOP>
                 } else {
                     activateDrawingButNotController();
                 }
+<<<<<<< HEAD
             } catch (FileNotFoundException e1) {
+=======
+            } catch (IOException e1) {
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
                 e1.printStackTrace();
             } catch (IllegalArgumentException modeNotMatchingGameException) { // Dimension of model input does not
                 // match game state size

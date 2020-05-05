@@ -9,12 +9,15 @@ import tree.node.NodeGameBase;
 import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
+<<<<<<< HEAD
 /**
  * Most basic rollout policy. Just randomly picks game.command until failure. This is how {@link tree.sampler.Sampler_UCB} was
  * hardcoded for most of its life.
  *
  * @author matt
  */
+=======
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 public class RolloutPolicy_EndScore<C extends Command<?>, S extends IState> extends RolloutPolicyBase<C, S> {
 
     /**

@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+<<<<<<< HEAD
+=======
+import com.google.common.base.Preconditions;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import game.IGameInternal;
 import game.state.IState;
 import game.state.StateVariable6D;
@@ -497,6 +501,43 @@ public class StateQWOP implements IStateQWOP, Serializable {
         return hashCodeBuilder.toHashCode();
     }
 
+<<<<<<< HEAD
+=======
+    /**
+     * Make a state with zero velocities from just position coordinates in an array.
+     * @param positionCoords x, y, theta coordinates for all the bodies in the order used everywhere in this.
+     * @return A constructed state with the specified positions and no velocity.
+     */
+    public static StateQWOP makeFromPositionArrayOnly(float[] positionCoords) {
+        Preconditions.checkArgument(positionCoords.length == STATE_SIZE / 2);
+
+        float[] vals = new float[STATE_SIZE];
+        int count = 0;
+        for (int i = 0; i < STATE_SIZE; i += 3) {
+            vals[i++] = positionCoords[count++];
+            vals[i++] = positionCoords[count++];
+            vals[i++] = positionCoords[count++];
+            
+        }
+        assert count == STATE_SIZE / 2 + 1;
+        return new StateQWOP(vals, false);
+    }
+
+    public static StateQWOP makeFromPositionVelocityArrays(float[] positionCoords, float[] velocityCoords, boolean isFailed) {
+        StateVariable6D[] stateVars = new StateVariable6D[12];
+        for (int i = 0; i < stateVars.length; i++) {
+            stateVars[i] = new StateVariable6D(
+                    positionCoords[3 * i],
+                    positionCoords[3 * i + 1],
+                    positionCoords[3 * i + 2],
+                    velocityCoords[3 * i],
+                    velocityCoords[3 * i + 1],
+                    velocityCoords[3 * i + 2]);
+        }
+        return new StateQWOP(stateVars, isFailed);
+    }
+
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     public static class Normalizer implements ITransform<StateQWOP> {
 
         public enum NormalizationMethod {

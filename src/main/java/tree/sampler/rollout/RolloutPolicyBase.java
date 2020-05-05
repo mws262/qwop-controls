@@ -6,12 +6,20 @@ import controllers.IController;
 import distributions.Distribution;
 import distributions.Distribution_Normal;
 import game.IGameInternal;
+<<<<<<< HEAD
+=======
+import game.IGameSerializable;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import game.action.*;
 import game.qwop.CommandQWOP;
 import game.qwop.QWOPConstants;
 import game.state.IState;
 import org.jetbrains.annotations.NotNull;
 import tree.node.NodeGameBase;
+<<<<<<< HEAD
+=======
+import tree.node.NodeGameExplorable;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import tree.node.NodeGameExplorableBase;
 import tree.node.evaluator.IEvaluationFunction;
 
@@ -37,6 +45,12 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
 
     public final int maxTimesteps;
 
+<<<<<<< HEAD
+=======
+    @JsonProperty
+    public boolean useSerializedState = false;
+
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     RolloutPolicyBase(
             @JsonProperty("evaluationFunction") @NotNull IEvaluationFunction<C, S> evaluationFunction,
             @JsonProperty("rolloutActionGenerator") @NotNull IActionGenerator<C> rolloutActionGenerator,
@@ -78,6 +92,11 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
         game.setState(target.getState());
     }
 
+<<<<<<< HEAD
+=======
+
+    private NodeGameExplorableBase<?, C, S> recentRolloutNode; // For unit test.
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     /**
      * Do a rollout from a given node. Assumes that the given game is in the state of startNode! Be careful!
      * @param startNode Starting Node to rollout from.
@@ -93,16 +112,34 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
         }
         assert startNode.getState().equals(game.getCurrentState());
 
+<<<<<<< HEAD
         // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts.
         NodeGameExplorableBase<?, C, S> rolloutNode = startNode.addBackwardsLinkedChild(startNode.getAction(),
                 startNode.getState(), rolloutActionGenerator);
+=======
+        // Create a duplicate of the start node, but with the specific ActionGenerator for rollouts. References from
+        // parent so as not to screw up the tree depth.
+        NodeGameExplorableBase<?, C, S> rolloutNode;
+        if (startNode.getTreeDepth() == 0) { // Prevent null pointer due to no action at root.
+            rolloutNode = new NodeGameExplorable<>(startNode.getState(), rolloutActionGenerator);
+        } else {
+             rolloutNode = startNode.getParent().addBackwardsLinkedChild(startNode.getAction(),
+                    startNode.getState(), rolloutActionGenerator);
+        }
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
         float totalScore = startScore(startNode);
 
         int timestepCounter = 0;
         // Falling, too many timesteps, reaching the finish line.
+<<<<<<< HEAD
         while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps && rolloutNode.getState().getCenterX() < QWOPConstants.goalDistance) {
             Action<C> childAction = getRolloutController().policy(rolloutNode);
+=======
+        while (!rolloutNode.getState().isFailed() && timestepCounter < maxTimesteps && rolloutNode.getState().getCenterX() < QWOPConstants.goalDistance) { // TODO qwop specific remove
+            Action<C> childAction = useSerializedState ? getRolloutController().policy(rolloutNode, (IGameSerializable<C, S>) game) :
+                    getRolloutController().policy(rolloutNode);
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
             actionQueue.addAction(childAction);
 
@@ -120,6 +157,10 @@ public abstract class RolloutPolicyBase<C extends Command<?>, S extends IState> 
             rolloutNode = rolloutNode.addBackwardsLinkedChild(childAction, game.getCurrentState(), rolloutActionGenerator);
         }
         totalScore += endScore(rolloutNode);
+<<<<<<< HEAD
+=======
+        recentRolloutNode = rolloutNode; // Mostly just stored for unit tests.
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
         return calculateFinalScore(totalScore, startNode, rolloutNode, timestepCounter);
     }
 

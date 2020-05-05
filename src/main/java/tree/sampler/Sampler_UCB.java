@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import game.IGameInternal;
 import game.action.Action;
 import game.action.Command;
+<<<<<<< HEAD
+=======
+import game.qwop.QWOPConstants;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,9 +43,13 @@ public class Sampler_UCB<C extends Command<?>, S extends IState> extends Sampler
      */
     private final IRolloutPolicy<C, S> rolloutPolicy;
 
+<<<<<<< HEAD
     private final IValueUpdater<C, S> valueUpdater; //TopNChildren(8); // TODO make this an
     // assignable
     // parameter.
+=======
+    private final IValueUpdater<C, S> valueUpdater;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
     /**
      * Explore/exploit trade-off parameter. Higher means more exploration. Lower means more exploitation.
@@ -169,7 +177,12 @@ public class Sampler_UCB<C extends Command<?>, S extends IState> extends Sampler
     public void expansionPolicyActionDone(NodeGameExplorableBase<?, C, S> currentNode) {
         treePolicyDone = false;
         expansionPolicyDone = true; // We move on after adding only one node.
+<<<<<<< HEAD
         if (currentNode.getState().isFailed()) { // If expansion is to failed node, no need to do rollout.
+=======
+        if (currentNode.getState().isFailed() || currentNode.getState().getCenterX() >= QWOPConstants.goalDistance) {
+            // TODO shouldn't use a strictly QWOP constant here.
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
             rolloutPolicyDone = true;
             propagateScore(currentNode, evaluationFunction.getValue(currentNode));
         } else {

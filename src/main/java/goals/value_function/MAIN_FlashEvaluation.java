@@ -18,7 +18,10 @@ import value.ValueFunction_TensorFlow_StateOnly;
 import vision.VisionDataSaver;
 
 import java.io.File;
+<<<<<<< HEAD
 import java.io.FileNotFoundException;
+=======
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +37,11 @@ import java.util.List;
 public class MAIN_FlashEvaluation extends FlashGame {
 
     private final boolean imageCapture = false;
+<<<<<<< HEAD
     private final boolean addActionNoise = false;
+=======
+    private final boolean addActionNoise = true;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     private final float noiseProbability = 0.99f;
 
 
@@ -43,12 +50,19 @@ public class MAIN_FlashEvaluation extends FlashGame {
     private File captureDir = new File("vision_capture");
 
     // Net and execution parameters.
+<<<<<<< HEAD
     String valueNetworkName = "src/main/resources/tflow_models/tuesday.pb";
     String checkpointName = "src/main/resources/tflow_models/checkpoints/small329";
 //    private final String valueNetworkName = "tuesday.pb"; // "deepnarrow_net.pb";
 //    private final String checkpointName = "small329";//698"; //329"; // "med67";
 
     private static boolean hardware = true;
+=======
+    private final String valueNetworkName = "small_net.pb"; // "deepnarrow_net.pb";
+    private final String checkpointName = "small329";//698"; //329"; // "med67";
+
+    private static boolean hardware = false;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
 
     private final List<Action<CommandQWOP>> prefix = new ArrayList<>();
@@ -124,18 +138,28 @@ public class MAIN_FlashEvaluation extends FlashGame {
         // Load a value function controller.
         try {
             valueFunction = new ValueFunction_TensorFlow_StateOnly<>(
+<<<<<<< HEAD
                     new File(valueNetworkName),
                     new GameQWOP(),
                     new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+=======
+                    new File("src/main/resources/tflow_models/" + valueNetworkName),
+                    new GameQWOP(),
+                    new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+                    "src/main/resources/tflow_models/special_checkpoints/" + checkpointName,
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
                     1f,
                     false);
 
             // .pb"));
+<<<<<<< HEAD
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         try {
             valueFunction.loadCheckpoint(checkpointName);//"small329"); // "small289"); // _after439");//273");//chk_after1");
+=======
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
         } catch (IOException e) {
             e.printStackTrace();
         }

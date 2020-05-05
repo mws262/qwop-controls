@@ -6,6 +6,10 @@ import game.state.IState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+<<<<<<< HEAD
+=======
+import java.awt.*;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -58,7 +62,11 @@ public class VisionDataSaver implements IFlashStateListener {
      */
     public VisionDataSaver(File captureDir, int monitorIndex) {
         this.captureDir = captureDir;
+<<<<<<< HEAD
         windowCapturer = new CaptureQWOPWindow(monitorIndex);
+=======
+        windowCapturer = new CaptureQWOPWindow();
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
         if (!captureDir.exists() || !captureDir.isDirectory()) {
             assert captureDir.mkdirs();
@@ -117,7 +125,11 @@ public class VisionDataSaver implements IFlashStateListener {
             File nextCapture = new File(runFile.getPath() + "/ts" + (timestep - 1) + ".png");
             windowCapturer.saveImageToPNG(nextCapture);
             capturesThisRun.add(nextCapture);
+<<<<<<< HEAD
         } catch (IOException e) {
+=======
+        } catch (AWTException e) {
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
             e.printStackTrace();
         }
     }

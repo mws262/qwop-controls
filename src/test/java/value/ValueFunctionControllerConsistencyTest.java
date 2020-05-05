@@ -12,7 +12,10 @@ import tree.node.NodeGameBase;
 import tree.node.NodeGameExplorable;
 
 import java.io.File;
+<<<<<<< HEAD
 import java.io.FileNotFoundException;
+=======
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -34,7 +37,11 @@ public class ValueFunctionControllerConsistencyTest {
         File modelFile = new File("src/test/resources/test_models/small_net.pb");
         Assert.assertTrue(modelFile.exists());
         ValFunSandbox valFun = new ValFunSandbox(modelFile, game);
+<<<<<<< HEAD
         valFun.loadCheckpoint("src/test/resources/test_models/good_save"); // TODO change to full path.
+=======
+        valFun.loadCheckpoint("src/test/resources/test_models/good_save");
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
         ActionQueue<CommandQWOP> queue = new ActionQueue<>();
 
@@ -52,8 +59,14 @@ public class ValueFunctionControllerConsistencyTest {
 
     class ValFunSandbox extends ValueFunction_TensorFlow_StateOnly<StateQWOP> {
 
+<<<<<<< HEAD
         ValFunSandbox(File file, GameQWOP gameTemplate) throws FileNotFoundException {
             super(file, gameTemplate, new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV), 1f,
+=======
+        ValFunSandbox(File file, GameQWOP gameTemplate) throws IOException {
+            super(file, gameTemplate, new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV), "",
+                    1f,
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
                     false);
             assignFuturePredictors(gameTemplate);
         }

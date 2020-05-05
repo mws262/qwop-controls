@@ -106,7 +106,11 @@ public class PanelTree<C extends Command<?>, S extends IState> extends GLPanelGe
      * Enable/disable node text labels.
      */
     private JCheckBox labelToggleCheck;
+<<<<<<< HEAD
 
+=======
+    private JCheckBox lockDotToggle;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     private JCheckBox logToggle;
 
     public PanelTree() {
@@ -137,12 +141,26 @@ public class PanelTree<C extends Command<?>, S extends IState> extends GLPanelGe
         treeButtons.add(resetButton);
 
         // Enable node labels.
+<<<<<<< HEAD
         labelToggleCheck = new JCheckBox("Enable text labels (slow).");
+=======
+        labelToggleCheck = new JCheckBox("Text labels (slow).");
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
         labelToggleCheck.setToolTipText("Enable text labels at nodes (if set). This is much slower than all other " +
                 "drawing processes.");
         labelToggleCheck.setBackground(new Color(255, 255, 255, 60));
         treeButtons.add(labelToggleCheck);
 
+<<<<<<< HEAD
+=======
+        // Enable lock location dots..
+        lockDotToggle = new JCheckBox("Expansion node dots (slow-ish).");
+        lockDotToggle.setToolTipText("Enable node dots at the location where a lock has been placed by a " +
+                "TreeWorker.");
+        lockDotToggle.setBackground(new Color(255, 255, 255, 60));
+        treeButtons.add(lockDotToggle);
+
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
         PanelLogger log = new PanelLogger();
 
         // Hide/show log panel.
@@ -237,11 +255,22 @@ public class PanelTree<C extends Command<?>, S extends IState> extends GLPanelGe
         final float ptSize = Math.min(50f / cam.getZoomFactor(), 10f); //Let the points be smaller/bigger depending on
         // zoom, but make sure to cap out the size!
 
+<<<<<<< HEAD
         gl.glPointSize(ptSize);
 //        for (NodeGameGraphicsBase<?> node : rootNodes) {
 //            node.drawOverridePointsBelow(gl);
 //            node.drawOverrideLinesBelow(gl);
 //        }
+=======
+        if (lockDotToggle.isSelected()) {
+            gl.glPointSize(ptSize);
+            for (NodeGameGraphicsBase<?, C, S> node : rootNodes) {
+                node.drawOverridePointsBelow(gl);
+                // node.drawOverrideLinesBelow(gl);
+            }
+        }
+
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
         NodeGameGraphicsBase.updateBuffers(gl);
         NodeGameGraphicsBase.drawAllBuffered(gl);
         NodeGameGraphicsBase.drawAllUnbuffered(gl);

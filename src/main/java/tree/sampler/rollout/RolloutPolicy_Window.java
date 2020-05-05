@@ -1,5 +1,9 @@
 package tree.sampler.rollout;
 
+<<<<<<< HEAD
+=======
+import com.fasterxml.jackson.annotation.JsonIgnore;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.primitives.Floats;
 import game.IGameInternal;
@@ -89,6 +93,10 @@ public class RolloutPolicy_Window<C extends Command<?>, S extends IState> implem
         }
     }
 
+<<<<<<< HEAD
+=======
+    @JsonIgnore
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     @Override
     public IRolloutPolicy<C, S> getCopy() {
         return new RolloutPolicy_Window<>(individualRollout.getCopy());

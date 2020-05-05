@@ -61,12 +61,22 @@ public abstract class NodeGameBase<N extends NodeGameBase<N, C, S>, C extends Co
         this.action = action;
         this.state = state;
         // Check to make sure this node isn't already there in the parent's nodes.
+<<<<<<< HEAD
         for (N parentChildren : parent.getChildren()) {
             if (parentChildren.getAction() == action) {
                 throw new IllegalArgumentException("Tried to add a duplicate command node at depth " + getTreeDepth() + ". Action " +
                         "was: " + action.toString() + ".");
             }
         }
+=======
+        // TODO check disabled for now because backwards linked children could be duplicates.
+//        for (N parentChildren : parent.getChildren()) {
+//            if (parentChildren.getAction() == action) {
+//                throw new IllegalArgumentException("Tried to add a duplicate command node at depth " + getTreeDepth() + ". Action " +
+//                        "was: " + action.toString() + ".");
+//            }
+//        }
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     }
 
     /**

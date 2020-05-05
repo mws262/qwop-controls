@@ -1,11 +1,23 @@
 package value;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import game.qwop.*;
 import game.IGameSerializable;
 import game.action.Action;
+=======
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
+import game.IGameSerializable;
+import game.action.Action;
+import game.qwop.CommandQWOP;
+import game.qwop.IStateQWOP;
+import game.qwop.QWOPConstants;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import game.state.IState;
 import game.state.transform.ITransform;
 import org.apache.logging.log4j.Level;
@@ -44,6 +56,10 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
 
     public final IGameSerializable<CommandQWOP, S> gameTemplate;
     public final String fileName;
+<<<<<<< HEAD
+=======
+    public final File modelFile;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
     /**
      * Number of threads to distribute the predictive simulations to. There are 9 predicted futures, so this is a
@@ -56,6 +72,7 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
     public final ITransform<S> stateNormalizer;
 
     /**
+<<<<<<< HEAD
      * Constructor which loads an existing value function net.
      * @param file .pb file of the existing net.
      * @throws FileNotFoundException Unable to find an existing net.
@@ -80,6 +97,8 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
     }
 
     /**
+=======
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
      * Constructor which makes a new value function net based on provided parameters. If this net is similar enough
      * to a previously-used one, you can probably load a checkpoint file with weights with it too.
      * @param fileName File name of the new .pb net. Don't include file extension.
@@ -87,6 +106,10 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
      * @param additionalNetworkArgs Additional arguments to pass to the network creation script.
      * @throws FileNotFoundException Model file was not successfully created.
      */
+<<<<<<< HEAD
+=======
+    @JsonCreator
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     public ValueFunction_TensorFlow_StateOnly(@JsonProperty("fileName") String fileName,
                                               @JsonProperty("gameTemplate") IGameSerializable<CommandQWOP, S> gameTemplate,
                                               @JsonProperty("stateNormalizer") ITransform<S> stateNormalizer,
@@ -97,6 +120,10 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
                                               @JsonProperty("tensorboardLogging") boolean tensorboardLogging) throws IOException {
         super(fileName, gameTemplate.getStateDimension(), VALUE_SIZE, hiddenLayerSizes, additionalNetworkArgs,
                 checkpointFile, keepProbability, tensorboardLogging);
+<<<<<<< HEAD
+=======
+        this.modelFile = getGraphDefinitionFile();
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
         this.gameTemplate = gameTemplate;
         this.stateNormalizer = stateNormalizer;
         this.fileName = fileName;
@@ -106,12 +133,47 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * Constructor which loads an existing value function net.
+     * @param modelFile .pb file of the existing net.
+     * @throws FileNotFoundException Unable to find an existing net.
+     */
+    public ValueFunction_TensorFlow_StateOnly(File modelFile,
+                                              IGameSerializable<CommandQWOP, S> gameTemplate,
+                                              ITransform<S> stateNormalizer,
+                                              String checkpointFile,
+                                              float keepProbability,
+                                              boolean tensorboardLogging) throws IOException {
+        super(modelFile, keepProbability, tensorboardLogging);
+        Preconditions.checkArgument(gameTemplate.getStateDimension() == inputSize, "Graph file should have input matching the provide game template's " +
+                "state size.", gameTemplate.getStateDimension());
+        Preconditions.checkArgument(outputSize == 1, "Value function output for this controller should have precisely" +
+                " one output.");
+        this.modelFile = modelFile;
+        this.gameTemplate = gameTemplate.getCopy();
+        this.stateNormalizer = stateNormalizer;
+        fileName = modelFile.getName();
+        if (checkpointFile != null && !checkpointFile.isEmpty()) {
+            loadCheckpoint(checkpointFile);
+        }
+        assignFuturePredictors(this.gameTemplate);
+        if (multithread)
+            executor = Executors.newFixedThreadPool(numThreads);
+    }
+
+    /**
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
      * Assign the futures that will be explored on each controller evaluation.
      */
     private void assignFuturePredictors(IGameSerializable<CommandQWOP, S> gameTemplate) {
         evaluations = new ArrayList<>();
         evalResults = new ArrayList<>();
+<<<<<<< HEAD
         int min = 2;
+=======
+        int min = 1;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
         evaluations.add(new FuturePredictor(gameTemplate, Keys.none, min, 10));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.qp, min, 35));
         evaluations.add(new FuturePredictor(gameTemplate, Keys.wo, min, 35));
@@ -405,12 +467,22 @@ public class ValueFunction_TensorFlow_StateOnly<S extends IStateQWOP> extends Va
         ValueFunction_TensorFlow_StateOnly<S> valFunCopy = null;
         try {
             valFunCopy = new ValueFunction_TensorFlow_StateOnly<>(
+<<<<<<< HEAD
                     getGraphDefinitionFile(),
                     gameTemplate,
                     stateNormalizer,
                     keepProbability,
                     tensorboardLogging);
         } catch (FileNotFoundException e) {
+=======
+                    modelFile,
+                    gameTemplate,
+                    stateNormalizer,
+                    getActiveCheckpoint(),
+                    keepProbability,
+                    tensorboardLogging);
+        } catch (IOException e) {
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
             e.printStackTrace();
         }
         return valFunCopy;

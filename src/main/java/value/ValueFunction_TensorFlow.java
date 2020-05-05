@@ -24,6 +24,10 @@ import java.util.List;
         property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ValueFunction_TensorFlow_StateOnly.class, name = "tflow_state_only"),
+<<<<<<< HEAD
+=======
+        @JsonSubTypes.Type(value = ValueFunction_TensorFlow_StateOnlyLoaded.class, name = "tflow_state_only_loaded"),
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 })
 public abstract class ValueFunction_TensorFlow<C extends Command<?>, S extends IState> implements IValueFunction<C, S>,
         AutoCloseable {

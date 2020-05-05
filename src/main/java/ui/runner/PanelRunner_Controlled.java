@@ -83,8 +83,11 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
 
     private JCheckBox serializeToggle;
 
+<<<<<<< HEAD
     private JLabel gameDistance;
 
+=======
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     private volatile float currentGameX = 0f;
 
     private Thread gameThread;
@@ -131,6 +134,10 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
 
         // Options checkboxes.
         JPanel checkboxes = new JPanel();
+<<<<<<< HEAD
+=======
+        checkboxes.setOpaque(false);
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
         pauseToggle = new JCheckBox("Pause");
         pauseToggle.setToolTipText("Pause the controlled game simulation.");
         pauseToggle.setOpaque(false);
@@ -156,6 +163,7 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
                 ".");
         serializeToggle.setOpaque(false);
         checkboxes.add(serializeToggle);
+<<<<<<< HEAD
         
         // Distance and time indicator.
         gameDistance = new JLabel("");
@@ -164,6 +172,8 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
         constraints.gridx = layoutColumns /2;
         constraints.gridy = 0;
         add(gameDistance, constraints);
+=======
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     }
 
     /**
@@ -188,6 +198,10 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
             boolean[] mostRecentKeys = actionQueue.isEmpty() ? new boolean[]{false, false, false, false} :
                     actionQueue.peekThisAction().peek().get();
             keyDrawer(g, mostRecentKeys[0], mostRecentKeys[1], mostRecentKeys[2], mostRecentKeys[3]);
+<<<<<<< HEAD
+=======
+            updateDistanceLabel(g, game);
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
         }
     }
 
@@ -273,9 +287,12 @@ public class PanelRunner_Controlled<C extends IController<CommandQWOP, S>, S ext
                     }
                     applyDisturbance(game);
                     game.step(actionQueue.pollCommand());
+<<<<<<< HEAD
                     currentGameX = (game.getCurrentState().getCenterX() - GameQWOP.getInitialState().getCenterX()) / QWOPConstants.worldScale;
                     gameDistance.setText(String.format("%.1fm  %.1fs",
                             currentGameX, game.getTimestepsThisGame() * QWOPConstants.timestep));
+=======
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
                     if (tsDelay > 0) {
                         try {

@@ -13,6 +13,10 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+<<<<<<< HEAD
+=======
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import com.google.common.base.Preconditions;
 import game.IGameInternal;
 import game.action.Command;
@@ -319,6 +323,11 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
             objectMapper.enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
             objectMapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
             objectMapper.disable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+<<<<<<< HEAD
+=======
+            objectMapper.registerModule(new ParameterNamesModule());
+
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
             objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
@@ -330,6 +339,31 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
         }
     }
 
+<<<<<<< HEAD
+=======
+    public static String serializeToYamlString(Object object) {
+
+        try {
+            YAMLMapper objectMapper = new YAMLMapper();
+            objectMapper.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
+            objectMapper.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
+            objectMapper.enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
+            objectMapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
+            objectMapper.disable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+
+            objectMapper.registerModule(new ParameterNamesModule());
+
+            objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Output with line breaks.
+
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        throw new IllegalStateException("Could not write to YAML string.");
+    }
+
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     /**
      * Take a .yaml definition of a class and attempt to recreate the Java object.
      * @param yamlFileOutput File containing the yaml definition.
@@ -345,6 +379,10 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
             objectMapper.enable(YAMLGenerator.Feature.MINIMIZE_QUOTES);
             objectMapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
             objectMapper.disable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+<<<<<<< HEAD
+=======
+            objectMapper.registerModule(new ParameterNamesModule());
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
             objectMapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -372,7 +410,11 @@ public class SearchConfiguration<C extends Command<?>, S extends IState, G exten
     }
 
     public static void main(String[] args) {
+<<<<<<< HEAD
         SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/config.yaml"),
+=======
+        SearchConfiguration config = deserializeYaml(new File("src/main/resources/config/simpl_train.yaml"),
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
                 SearchConfiguration.class);
         Objects.requireNonNull(config).execute();
     }

@@ -18,7 +18,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+<<<<<<< HEAD
 import java.io.FileNotFoundException;
+=======
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,6 +104,7 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
                             new File(valueNetworkName),
                             game,
                             new StateQWOP.Normalizer(StateQWOP.Normalizer.NormalizationMethod.STDEV),
+<<<<<<< HEAD
                             1f,
                             false);
         } catch (FileNotFoundException e) {
@@ -112,6 +116,15 @@ public class MAIN_SingleEvaluation extends JPanel implements ActionListener, Mou
         } catch (IOException e) {
             e.printStackTrace();
         }
+=======
+                            checkpointName,
+                            1f,
+                            false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Objects.requireNonNull(valueFunction);
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     }
 
     private NodeGameExplorable<CommandQWOP, StateQWOP> doPrefix() {

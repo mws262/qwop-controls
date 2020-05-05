@@ -2,9 +2,18 @@ package ui.runner;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+<<<<<<< HEAD
 import game.action.Action;
 import game.qwop.CommandQWOP;
 import game.qwop.IStateQWOP;
+=======
+import game.IGameInternal;
+import game.action.Action;
+import game.qwop.CommandQWOP;
+import game.qwop.GameQWOP;
+import game.qwop.IStateQWOP;
+import game.qwop.QWOPConstants;
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 import ui.IUserInterface.TabbedPaneActivator;
 
 import javax.swing.*;
@@ -276,6 +285,18 @@ public abstract class PanelRunner<S extends IStateQWOP> extends JPanel implement
         return transform;
     }
 
+<<<<<<< HEAD
+=======
+    void updateDistanceLabel(Graphics g, IGameInternal<CommandQWOP, ? extends IStateQWOP> currentGame) {
+        g.setFont(bigFont);
+        g.setColor(Color.BLACK);
+        float currentGameX =
+                (currentGame.getCurrentState().getCenterX() - GameQWOP.getInitialState().getCenterX()) / QWOPConstants.worldScale;
+        g.drawString(String.format("%.1fm  %.1fs", currentGameX,
+                currentGame.getTimestepsThisGame() * QWOPConstants.timestep), Math.max(0, xOffsetPixels - 70), 30);
+    }
+
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
     @Override
     public void componentResized(ComponentEvent e) {
         this.xOffsetPixels = getWidth()/2;

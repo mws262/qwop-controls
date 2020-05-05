@@ -125,7 +125,11 @@ public class TimeTester {
 
     public static void main(String[] args) {
         TimeTester tt = new TimeTester();
+<<<<<<< HEAD
         tt.testKeyTime(CommandQWOP.P, 10); // Change out the keys here or chain tests together here.
+=======
+        tt.testKeyTime(CommandQWOP.Q, 10); // Change out the keys here or chain tests together here.
+>>>>>>> 3aca6a7e233ee0daea77c6a3abea920fe53b0449
 
         System.exit(0);
     }
