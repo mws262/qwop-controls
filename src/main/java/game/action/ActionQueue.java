@@ -179,7 +179,7 @@ public class ActionQueue<C extends Command<?>> {
         if (!currentAction.hasNext() && actionQueue.isEmpty()) {
             isEmpty.set(true);
         }
-        commandsPolled ++;
+        commandsPolled++;
         return nextCommand;
     }
 
@@ -234,6 +234,68 @@ public class ActionQueue<C extends Command<?>> {
         List<Action<C>> actions = getActionsInCurrentRun();
         clearAll();
         this.addSequence(actions);
+    }
+
+    /**
+     * Split the queue (without altering the original) into two queues, one before, and one after the specified
+     * timestep.
+     * @param timestep
+     * @return
+     */
+    public List<ActionQueue<C>> splitQueueAtTimestep(int timestep) {
+
+        if (timestep > getTotalQueueLengthTimesteps() - 1) {
+            throw new IllegalArgumentException("Queue is too short to be split in chunks at the specified timestep.");
+        }
+
+        // Make a copy, and get to the location of the split in this copy.
+        ActionQueue<C> queueCopy = getCopyOfUnexecutedQueue();
+        int count = 0;
+        while (count++ < timestep) {
+            queueCopy.pollCommand();
+        }
+
+        int currentActionIdx = queueCopy.getCurrentActionIdx();
+
+        // Get another copy so none of the actions have been polled at all.
+        ActionQueue<C> unusedQueue = getCopyOfUnexecutedQueue();
+        List<Action<C>> actions = unusedQueue.getActionsInCurrentRun();
+
+
+        Action<C> dividedAction = queueCopy.getActionsInCurrentRun().get(currentActionIdx);
+
+        // I don't think this can happen. When the next action becomes the current one, it is immediately polled.
+        assert(dividedAction.getTimestepsRemaining() != dividedAction.getTimestepsTotal());
+
+        List<Action<C>> actionsBefore;
+        List<Action<C>> actionsAfter;
+        if (dividedAction.getTimestepsRemaining() == 0) {
+            // Note -- subList is inclusive low bound and exclusive high bound. Also, sublists are backed by original
+            // list, meaning that it behaves more like an array of values than references.
+            actionsBefore = new ArrayList<>(actions.subList(0, currentActionIdx + 1));
+            actionsAfter = new ArrayList<>(actions.subList(currentActionIdx + 1, actions.size()));
+        } else {
+            actionsBefore = new ArrayList<>(actions.subList(0, currentActionIdx + 1));
+            actionsAfter = new ArrayList<>(actions.subList(currentActionIdx, actions.size()));
+            Action<C> borderAction = queueCopy.peekThisAction();
+            Action<C> firstHalfAction = new Action<>(borderAction.getTimestepsTotal() - borderAction.getTimestepsRemaining(),
+                    borderAction.getCommand());
+            Action<C> secondHalfAction =
+                    new Action<>(borderAction.getTimestepsRemaining(),
+                    borderAction.getCommand());
+
+            actionsBefore.set(actionsBefore.size() - 1, firstHalfAction);
+            actionsAfter.set(0, secondHalfAction);
+        }
+
+        ActionQueue<C> queue1 = new ActionQueue<>();
+        ActionQueue<C> queue2 = new ActionQueue<>();
+        queue1.addSequence(actionsBefore);
+        queue2.addSequence(actionsAfter);
+        List<ActionQueue<C>> dividedQueues = new ArrayList<>();
+        dividedQueues.add(queue1);
+        dividedQueues.add(queue2);
+        return dividedQueues;
     }
 
     /**

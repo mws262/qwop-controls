@@ -307,6 +307,36 @@ public class ActionQueueTest {
     }
 
     @Test
+    public void splitQueueAtTimestep() {
+        ActionQueue<CommandQWOP> actQueue = makeTestQueue();
+        List<ActionQueue<CommandQWOP>> splitQueues = actQueue.splitQueueAtTimestep(6);
+
+        Assert.assertEquals(2, splitQueues.size()); // Should only be split into 2 pieces.
+        ActionQueue<CommandQWOP> q1 = splitQueues.get(0);
+        ActionQueue<CommandQWOP> q2 = splitQueues.get(1);
+
+        // Make sure they come out to the same number of timesteps before and after the split.
+        Assert.assertEquals(actQueue.getTotalQueueLengthTimesteps(), q1.getTotalQueueLengthTimesteps() + q2.getTotalQueueLengthTimesteps());
+
+        // Poll timesteps one at a time to make sure the returned commands match.
+        while (!actQueue.isEmpty()) {
+            CommandQWOP realCommand = actQueue.pollCommand();
+            CommandQWOP splitCommand;
+            if (!q1.isEmpty()) {
+                splitCommand = q1.pollCommand();
+            } else {
+                splitCommand = q2.pollCommand();
+            }
+            Assert.assertEquals(realCommand, splitCommand);
+        }
+        // All queues should be empty at the same time as the original.
+        Assert.assertTrue(q1.isEmpty());
+        Assert.assertTrue(q2.isEmpty());
+
+    }
+
+
+    @Test
     public void integrateWithGame() {
         // This is super-thorough because I'm an idiot who can't tell the difference between true false true false
         // and false false true false.

@@ -25,7 +25,7 @@ public class MAIN_LyapunovEstimate extends JFrame {
     private int START_TS = 200;
     private int START_ACTION = 1;
 
-    private double diffSize = Math.sqrt(Math.pow(2,-23)); // Saw recommendation to do sqrt of precision.
+    private double diffSize = 2 * Math.sqrt(Math.pow(2,-23)); // Saw recommendation to do sqrt of precision.
 
     public MAIN_LyapunovEstimate() {
 
