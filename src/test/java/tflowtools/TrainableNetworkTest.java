@@ -154,7 +154,7 @@ public class TrainableNetworkTest {
         Assert.assertEquals(2, multiOutput.length);
         Assert.assertEquals(2, multiOutput[0].length);
 
-        Assert.assertArrayEquals("Same evaluation should be replicable.", singleOutput[0], multiOutput[1], 0.0f);
+        Assert.assertArrayEquals("Same evaluation should be replicable.", singleOutput[0], multiOutput[1], 1e-6f);
     }
 
     @Test

@@ -113,21 +113,6 @@ public class ActionQueue<C extends Command<?>> {
         isEmpty.set(false);
     }
 
-//    /**
-//     * Add a sequence of game.command. All added game.command are copied.
-//     *
-//     * @param actions Array of game.command to add to the end of the queue. They are copied, and adding does not influence
-//     *                polling of the existing queue.
-//     */
-//    public synchronized void addSequence(@NotNull Action<C>[] actions) {
-//        if (actions.length == 0)
-//            throw new IllegalArgumentException("Tried to add an empty array of game.command to a queue.");
-//
-//        for (Action<C> action : actions) {
-//            addAction(action); // Copy happens in addAction. No need to duplicate here.
-//        }
-//    }
-
     /**
      * Add a sequence of game.command. All added game.command are copied.
      *
@@ -238,9 +223,9 @@ public class ActionQueue<C extends Command<?>> {
 
     /**
      * Split the queue (without altering the original) into two queues, one before, and one after the specified
-     * timestep.
-     * @param timestep
-     * @return
+     * timestep. First queue will have the input argument's number of timesteps.
+     * @param timestep Number of timesteps to put in the first subqueue.
+     * @return A 2-element list of the ActionQueues created by splitting this one.
      */
     public List<ActionQueue<C>> splitQueueAtTimestep(int timestep) {
 
@@ -260,21 +245,18 @@ public class ActionQueue<C extends Command<?>> {
         // Get another copy so none of the actions have been polled at all.
         ActionQueue<C> unusedQueue = getCopyOfUnexecutedQueue();
         List<Action<C>> actions = unusedQueue.getActionsInCurrentRun();
-
-
         Action<C> dividedAction = queueCopy.getActionsInCurrentRun().get(currentActionIdx);
-
-        // I don't think this can happen. When the next action becomes the current one, it is immediately polled.
-        assert(dividedAction.getTimestepsRemaining() != dividedAction.getTimestepsTotal());
 
         List<Action<C>> actionsBefore;
         List<Action<C>> actionsAfter;
+
+        // If we are splitting naturally at the transition between actions, we don't need to split an existing action.
         if (dividedAction.getTimestepsRemaining() == 0) {
             // Note -- subList is inclusive low bound and exclusive high bound. Also, sublists are backed by original
             // list, meaning that it behaves more like an array of values than references.
             actionsBefore = new ArrayList<>(actions.subList(0, currentActionIdx + 1));
             actionsAfter = new ArrayList<>(actions.subList(currentActionIdx + 1, actions.size()));
-        } else {
+        } else { // We have to split the middle action into two pieces, one for each queue.
             actionsBefore = new ArrayList<>(actions.subList(0, currentActionIdx + 1));
             actionsAfter = new ArrayList<>(actions.subList(currentActionIdx, actions.size()));
             Action<C> borderAction = queueCopy.peekThisAction();
@@ -292,6 +274,7 @@ public class ActionQueue<C extends Command<?>> {
         ActionQueue<C> queue2 = new ActionQueue<>();
         queue1.addSequence(actionsBefore);
         queue2.addSequence(actionsAfter);
+
         List<ActionQueue<C>> dividedQueues = new ArrayList<>();
         dividedQueues.add(queue1);
         dividedQueues.add(queue2);
@@ -336,6 +319,22 @@ public class ActionQueue<C extends Command<?>> {
         return totalTS;
     }
 
+    /**
+     * Combine multiple independent ActionQueues into a single one. First argument's actions go first, followed by
+     * the next argument's, and so on.
+     * @param queues Queues to combine into one.
+     * @param <C> Command type of the action.
+     * @return A single combined queue containing all the actions in the input.
+     */
+    public static <C extends Command<?>> ActionQueue<C> concatenateQueues(ActionQueue<C> ...queues) {
+        List<Action<C>> concatenatedActions = new ArrayList<>();
+        for (ActionQueue<C> queue : queues) {
+            concatenatedActions.addAll(queue.getActionsInCurrentRun());
+        }
+        ActionQueue<C> resultingQueue = new ActionQueue<>();
+        resultingQueue.addSequence(concatenatedActions);
+        return resultingQueue;
+    }
     /**
      * Get some sample game.command for use in tests. This is a successful short run found by tree search.
      * @return A successful queue of game.command.

@@ -309,32 +309,77 @@ public class ActionQueueTest {
     @Test
     public void splitQueueAtTimestep() {
         ActionQueue<CommandQWOP> actQueue = makeTestQueue();
-        List<ActionQueue<CommandQWOP>> splitQueues = actQueue.splitQueueAtTimestep(6);
 
-        Assert.assertEquals(2, splitQueues.size()); // Should only be split into 2 pieces.
-        ActionQueue<CommandQWOP> q1 = splitQueues.get(0);
-        ActionQueue<CommandQWOP> q2 = splitQueues.get(1);
+        for (int i = 0; i < actQueue.getTotalQueueLengthTimesteps(); i++) {
+            actQueue.resetQueue();
+            List<ActionQueue<CommandQWOP>> splitQueues = actQueue.splitQueueAtTimestep(i);
 
-        // Make sure they come out to the same number of timesteps before and after the split.
-        Assert.assertEquals(actQueue.getTotalQueueLengthTimesteps(), q1.getTotalQueueLengthTimesteps() + q2.getTotalQueueLengthTimesteps());
+            Assert.assertEquals(2, splitQueues.size()); // Should only be split into 2 pieces.
+            ActionQueue<CommandQWOP> q1 = splitQueues.get(0);
+            ActionQueue<CommandQWOP> q2 = splitQueues.get(1);
 
-        // Poll timesteps one at a time to make sure the returned commands match.
-        while (!actQueue.isEmpty()) {
-            CommandQWOP realCommand = actQueue.pollCommand();
-            CommandQWOP splitCommand;
-            if (!q1.isEmpty()) {
-                splitCommand = q1.pollCommand();
-            } else {
-                splitCommand = q2.pollCommand();
+            // Make sure they come out to the same number of timesteps before and after the split.
+            Assert.assertEquals(actQueue.getTotalQueueLengthTimesteps(), q1.getTotalQueueLengthTimesteps() + q2.getTotalQueueLengthTimesteps());
+            Assert.assertEquals(i, q1.getTotalQueueLengthTimesteps());
+
+            // Poll timesteps one at a time to make sure the returned commands match.
+            while (!actQueue.isEmpty()) {
+                CommandQWOP realCommand = actQueue.pollCommand();
+                CommandQWOP splitCommand;
+                if (!q1.isEmpty()) {
+                    splitCommand = q1.pollCommand();
+                } else {
+                    splitCommand = q2.pollCommand();
+                }
+                Assert.assertEquals(realCommand, splitCommand);
             }
-            Assert.assertEquals(realCommand, splitCommand);
+            // All queues should be empty at the same time as the original.
+            Assert.assertTrue(q1.isEmpty());
+            Assert.assertTrue(q2.isEmpty());
         }
-        // All queues should be empty at the same time as the original.
-        Assert.assertTrue(q1.isEmpty());
-        Assert.assertTrue(q2.isEmpty());
-
     }
 
+    @Test
+    public void concatenateQueues() {
+        ActionQueue<CommandQWOP> a1 = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> a2 = makeTestQueue();
+        ActionQueue<CommandQWOP> a3 = new ActionQueue<>();
+        a3.addAction(new Action<>(20, CommandQWOP.QP));
+
+        //noinspection unchecked
+        ActionQueue<CommandQWOP> r1 = ActionQueue.concatenateQueues(a1, a2, a3);
+
+        Assert.assertEquals(a1.getTotalQueueLengthTimesteps()
+                + a2.getTotalQueueLengthTimesteps()
+                + a3.getTotalQueueLengthTimesteps(),
+                r1.getTotalQueueLengthTimesteps());
+
+        while (!r1.isEmpty()) {
+            CommandQWOP c;
+            if (a2.isEmpty()) {
+                c = a3.pollCommand();
+            } else if (a1.isEmpty()) {
+                c = a2.pollCommand();
+            } else {
+                c = a1.pollCommand();
+            }
+
+            Assert.assertEquals(c, r1.pollCommand());
+        }
+
+        Assert.assertTrue(a3.isEmpty());
+
+        a1.resetQueue();
+        ActionQueue<CommandQWOP> r2 = ActionQueue.concatenateQueues(a1);
+        Assert.assertEquals(a1.getTotalQueueLengthTimesteps(), r2.getTotalQueueLengthTimesteps());
+
+        while (!r2.isEmpty()) {
+            Assert.assertEquals(a1.pollCommand(), r2.pollCommand());
+        }
+
+        Assert.assertTrue(a1.isEmpty());
+
+    }
 
     @Test
     public void integrateWithGame() {
