@@ -1,6 +1,7 @@
 package goals.phase_variable_testing;
 
 import game.action.ActionQueue;
+import game.qwop.ActionQueuesQWOP;
 import game.qwop.CommandQWOP;
 import game.qwop.GameQWOP;
 import game.qwop.IStateQWOP.ObjectName;
@@ -37,7 +38,7 @@ public class MAIN_StateCombinations extends JFrame {
 
         GameQWOP game = new GameQWOP();
 
-        ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actionQueue = ActionQueuesQWOP.makeShortQueue();
 
         List<StateQWOP> stateList = new ArrayList<>();
         stateList.add((StateQWOP) GameQWOP.getInitialState());

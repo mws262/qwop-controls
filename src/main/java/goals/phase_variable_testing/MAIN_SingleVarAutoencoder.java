@@ -1,6 +1,7 @@
 package goals.phase_variable_testing;
 
 import game.action.ActionQueue;
+import game.qwop.ActionQueuesQWOP;
 import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.state.IState;
@@ -45,7 +46,7 @@ public class MAIN_SingleVarAutoencoder extends JFrame {
                 new Transform_Autoencoder(modelDir + "AutoEnc_72to" + numOutputs + "_6layer.pb",
                         numOutputs);
 
-        ActionQueue actionQueue = ActionQueue.getSampleActions();
+        ActionQueue actionQueue = ActionQueuesQWOP.makeShortQueue();
 
         List<IState> stateList = new ArrayList<>();
         stateList.add(GameQWOP.getInitialState());

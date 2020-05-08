@@ -1,6 +1,5 @@
 package game.action;
 
-import game.qwop.CommandQWOP;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -335,53 +334,4 @@ public class ActionQueue<C extends Command<?>> {
         resultingQueue.addSequence(concatenatedActions);
         return resultingQueue;
     }
-    /**
-     * Get some sample game.command for use in tests. This is a successful short run found by tree search.
-     * @return A successful queue of game.command.
-     */
-    public static ActionQueue<CommandQWOP> getSampleActions() {
-        // Ran MAIN_Search_LongRun to get these.
-        ActionQueue<CommandQWOP> actionQueue = new ActionQueue<>();
-        actionQueue.addAction(new Action<>(27, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(12, CommandQWOP.WO));
-        actionQueue.addAction(new Action<>(10, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(44, CommandQWOP.QP));
-
-        actionQueue.addAction(new Action<>(16, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(18, CommandQWOP.WO));
-        actionQueue.addAction(new Action<>(23, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(12, CommandQWOP.QP));
-
-        actionQueue.addAction(new Action<>(21, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(12, CommandQWOP.WO));
-        actionQueue.addAction(new Action<>(17, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(13, CommandQWOP.QP));
-
-        actionQueue.addAction(new Action<>(13, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(10, CommandQWOP.WO));
-        actionQueue.addAction(new Action<>(16, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(8, CommandQWOP.QP));
-
-        actionQueue.addAction(new Action<>(24, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(10, CommandQWOP.WO));
-        actionQueue.addAction(new Action<>(23, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(10, CommandQWOP.QP));
-
-        actionQueue.addAction(new Action<>(24, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(34, CommandQWOP.WO));
-        actionQueue.addAction(new Action<>(5, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(18, CommandQWOP.QP));
-
-        actionQueue.addAction(new Action<>(20, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(12, CommandQWOP.WO));
-        actionQueue.addAction(new Action<>(3, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(8, CommandQWOP.QP));
-
-        actionQueue.addAction(new Action<>(11, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(9, CommandQWOP.WO));
-        actionQueue.addAction(new Action<>(3, CommandQWOP.NONE));
-        actionQueue.addAction(new Action<>(9, CommandQWOP.QP));
-
-        return actionQueue;
-    }
-}
+ }

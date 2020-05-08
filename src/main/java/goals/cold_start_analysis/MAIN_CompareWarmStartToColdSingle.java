@@ -2,10 +2,7 @@ package goals.cold_start_analysis;
 
 import game.IGameInternal;
 import game.action.ActionQueue;
-import game.qwop.CommandQWOP;
-import game.qwop.GameQWOP;
-import game.qwop.QWOPConstants;
-import game.qwop.StateQWOP;
+import game.qwop.*;
 
 import java.awt.*;
 
@@ -24,7 +21,7 @@ public class MAIN_CompareWarmStartToColdSingle extends CompareWarmStartToColdBas
 
     public void run() {
         // Ran MAIN_Search_LongRun to get these.
-        ActionQueue<CommandQWOP> actionQueue = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actionQueue = ActionQueuesQWOP.makeShortQueue();
 
         IGameInternal<CommandQWOP, StateQWOP> gameFullRun = new GameQWOP(); // This game will run all the commands,
         // start to finish.

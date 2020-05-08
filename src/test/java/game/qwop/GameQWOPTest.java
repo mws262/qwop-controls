@@ -229,7 +229,7 @@ public class GameQWOPTest {
         GameQWOP gameSingle = new GameQWOP();
 
         // Run through the full queue with no saving/loading
-        ActionQueue<CommandQWOP> actions = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> actions = ActionQueuesQWOP.makeShortQueue();
         while (!actions.isEmpty()) {
             gameSingle.step(actions.pollCommand());
         }
@@ -237,7 +237,7 @@ public class GameQWOPTest {
 
         // Redo with save/load in the middle.
         gameSingle.resetGame();
-        actions = ActionQueue.getSampleActions();
+        actions = ActionQueuesQWOP.makeShortQueue();
         for (int i = 0; i < 30; i++) {
             gameSingle.step(actions.pollCommand());
         }

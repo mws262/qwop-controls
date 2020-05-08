@@ -1,5 +1,6 @@
 package game.action;
 
+import game.qwop.ActionQueuesQWOP;
 import game.qwop.CommandQWOP;
 import game.qwop.GameQWOP;
 import game.state.IState;
@@ -341,7 +342,7 @@ public class ActionQueueTest {
 
     @Test
     public void concatenateQueues() {
-        ActionQueue<CommandQWOP> a1 = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> a1 = ActionQueuesQWOP.makeShortQueue();
         ActionQueue<CommandQWOP> a2 = makeTestQueue();
         ActionQueue<CommandQWOP> a3 = new ActionQueue<>();
         a3.addAction(new Action<>(20, CommandQWOP.QP));

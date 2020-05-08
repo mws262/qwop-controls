@@ -146,7 +146,7 @@ public class TrainableNetworkTest {
         // Multiple examples in.
         float[][] multiInput = new float[][] {
                 {-100f, -100f, -100f, -100f},
-                singleInput[0] // Same as before for second example.
+                singleInput[0] // Same as before for second example.0
         };
 
         float[][] multiOutput = testNetwork.evaluateInput(multiInput);
@@ -154,7 +154,7 @@ public class TrainableNetworkTest {
         Assert.assertEquals(2, multiOutput.length);
         Assert.assertEquals(2, multiOutput[0].length);
 
-        Assert.assertArrayEquals("Same evaluation should be replicable.", singleOutput[0], multiOutput[1], 1e-6f);
+        Assert.assertArrayEquals("Same evaluation should be replicable.", singleOutput[0], multiOutput[1], 1e-5f);
     }
 
     @Test

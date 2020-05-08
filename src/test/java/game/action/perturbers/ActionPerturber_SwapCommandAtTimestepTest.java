@@ -1,6 +1,7 @@
 package game.action.perturbers;
 
 import game.action.ActionQueue;
+import game.qwop.ActionQueuesQWOP;
 import game.qwop.CommandQWOP;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,7 +11,7 @@ public class ActionPerturber_SwapCommandAtTimestepTest {
     @Test
     public void perturb() {
 
-        ActionQueue<CommandQWOP> queue = ActionQueue.getSampleActions();
+        ActionQueue<CommandQWOP> queue = ActionQueuesQWOP.makeShortQueue();
         for (int timestep = 0; timestep < queue.getTotalQueueLengthTimesteps() - 1; timestep++) {
             queue.resetQueue();
             CommandQWOP command = CommandQWOP.WP;
