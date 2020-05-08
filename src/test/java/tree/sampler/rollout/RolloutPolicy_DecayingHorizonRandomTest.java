@@ -104,7 +104,7 @@ public class RolloutPolicy_DecayingHorizonRandomTest {
         float startDistance = realGame.getCurrentState().getCenterX();
         float finalValue = rollout.rollout(startNode, realGame);
         float finalDistance = realGame.getCurrentState().getCenterX();
-        Assert.assertEquals(finalDistance - startDistance, finalValue, 1e-6f);
+        Assert.assertEquals(finalDistance - startDistance, finalValue, 1e-5f);
 
         // If we make the kernel steep enough, then it will cut off exactly halfway through.
         RolloutPolicy_DecayingHorizon.kernelCenter = 0.5f;
