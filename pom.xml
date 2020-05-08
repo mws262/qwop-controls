@@ -42,6 +42,10 @@ To update the classpath settings for Eclipse:
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
+                    <excludes>
+                        <!-- Skipping this class due to using a non-maven library in some specific early testing. -->
+                        <exclude>flashqwop/FlashGameVision.java</exclude>
+                    </excludes>
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
