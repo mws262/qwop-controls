@@ -1,25 +1,16 @@
 close all; clear;
 
 %% Import the data from text files.
-files = dir("./tmp/*.txt");
-num_files = length(files);
-data = cell(1, num_files);
-fileOrder = zeros(1, num_files);
-for i = 1:length(files)
-    fileOrder(i) = str2double(regexp(files(i).name,'\d*','Match')); % Extract the number portion from the file name.
-    data{i} = importdata(["./tmp/" + files(i).name]); % Load the actual data from the file.
-end
-% Reorder s.t. the order in the cell array matches the numbered ordering
-% of the files.
-[tsSorted, idx] = sort(fileOrder);
-data = {data{idx}};
+file_directory = '../../tmp1/';
+[data, tsSorted] = readPerturbationData(file_directory);
+numTs = length(tsSorted)
 
 %% Process each perturbation simulation run.
-survivalTimesteps = zeros(num_files, 8); % 8 out of 9 should eventually fail. The ninth will have perturbed the simulation with the action it was already going to take.
-survivalTimestepsInVar = zeros(num_files, 9);
-deviationDiffs = NaN(2000, num_files);
+survivalTimesteps = zeros(numTs, 8); % 8 out of 9 should eventually fail. The ninth will have perturbed the simulation with the action it was already going to take.
+survivalTimestepsInVar = zeros(numTs, 9);
+deviationDiffs = NaN(2000, numTs);
 diffcount = 1;
-for i = 1:num_files
+for i = 1:numTs
     runData = data{i}(1:end - 1, :);
     
     % Find out how long after the perturbations each failure occurs. This
@@ -72,7 +63,7 @@ validNums = size(deviationDiffs, 2) - sum(devNans, 2);
 deviationDiffs(isnan(deviationDiffs)) = 0;
 sum(deviationDiffs, 2) ./ validNums;
 
-perturbations = {"Q", "W", "O", "P", "QO", "QP", "WO", "WP", "NONE"};
+perturbations = {'NONE', 'Q', 'W', 'O', 'P', 'QO', 'QP', 'WO', 'WP'};
 for i = 1:9
     survivalOneVar = survivalTimestepsInVar(:, i);
     survivalOneVar(isnan(survivalOneVar)) = [];
@@ -89,7 +80,7 @@ for i = 1:9
     ylabel(['portion of ', perturbations{i}, '-perturbed simulations']);
 end
 
-lengths = zeros(numFiles, 1);
+lengths = zeros(numTs, 1);
 for i = 1:length(data)
     t = data{i};
     [~, endIdx] = find(isnan(t)', 1, 'first');
@@ -113,7 +104,7 @@ sumabsdiff(nanelements) = 0;
 res = sum(sumabsdiff, 2) ./ (size(sumabsdiff, 2) - sum(nanelements, 2));
 
 
-col = lines(length(files));
+col = lines(numTs);
 
 % Nominal trajectory.
 fig = figure;

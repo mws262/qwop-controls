@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import game.action.Command;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class CommandQWOP extends Command<boolean[]> {
 
@@ -22,6 +19,9 @@ public class CommandQWOP extends Command<boolean[]> {
             QP = new CommandQWOP(new boolean[]{true, false, false, true}, Keys.qp),
             WO = new CommandQWOP(new boolean[]{false, true, true, false}, Keys.wo),
             WP = new CommandQWOP(new boolean[]{false, true, false, true}, Keys.wp);
+
+    public static final List<CommandQWOP> allCommands = Collections.unmodifiableList(Arrays.asList(NONE, Q, W, O, P,
+            QO, QP, WO, WP));
 
     private static final Map<CommandQWOP, Keys> commandToKeys = new LinkedHashMap<>(9);
     static {
@@ -148,8 +148,6 @@ public class CommandQWOP extends Command<boolean[]> {
                 + (get()[3] ? "p" : "")
                 + (keys.equals(Keys.none) ? "none" : "");
     }
-
-
 
     @JsonIgnore
     @Override

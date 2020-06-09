@@ -11,6 +11,7 @@ import game.state.StateVariable6D;
 import game.state.transform.ITransform;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.jbox2d.common.Vec2;
 
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -351,6 +352,55 @@ public class StateQWOP implements IStateQWOP, Serializable {
     }
 
     /**
+     * Calculate the center of mass of the runner. By default, the body x is not subtracted out of all the x
+     * coordinates.
+     * @return x and y position of the COM.
+     */
+    public Vec2 calcCOM() {
+
+        float massSum = QWOPConstants.headMass +
+                QWOPConstants.torsoMass +
+                QWOPConstants.rThighMass +
+                QWOPConstants.rCalfMass +
+                QWOPConstants.rFootMass +
+                QWOPConstants.lThighMass +
+                QWOPConstants.lCalfMass +
+                QWOPConstants.lFootMass +
+                QWOPConstants.rUArmMass +
+                QWOPConstants.rLArmMass +
+                QWOPConstants.lUArmMass +
+                QWOPConstants.lLArmMass;
+
+        float weightedXSum = QWOPConstants.headMass * head.getX() +
+                QWOPConstants.torsoMass * body.getX() +
+                QWOPConstants.rThighMass * rthigh.getX() +
+                QWOPConstants.rCalfMass * rcalf.getX() +
+                QWOPConstants.rFootMass * rfoot.getX() +
+                QWOPConstants.lThighMass * lthigh.getX() +
+                QWOPConstants.lCalfMass * lcalf.getX() +
+                QWOPConstants.lFootMass * lfoot.getX() +
+                QWOPConstants.rUArmMass * ruarm.getX() +
+                QWOPConstants.rLArmMass * rlarm.getX() +
+                QWOPConstants.lUArmMass * luarm.getX() +
+                QWOPConstants.lLArmMass * llarm.getX();
+
+        float weightedYSum = QWOPConstants.headMass * head.getY() +
+                QWOPConstants.torsoMass * body.getY() +
+                QWOPConstants.rThighMass * rthigh.getY() +
+                QWOPConstants.rCalfMass * rcalf.getY() +
+                QWOPConstants.rFootMass * rfoot.getY() +
+                QWOPConstants.lThighMass * lthigh.getY() +
+                QWOPConstants.lCalfMass * lcalf.getY() +
+                QWOPConstants.lFootMass * lfoot.getY() +
+                QWOPConstants.rUArmMass * ruarm.getY() +
+                QWOPConstants.rLArmMass * rlarm.getY() +
+                QWOPConstants.lUArmMass * luarm.getY() +
+                QWOPConstants.lLArmMass * llarm.getY();
+
+        return new Vec2(weightedXSum / massSum, weightedYSum / massSum);
+    }
+
+    /**
      * Get a tab-separated list of the states in String form. This takes the same order that
      * {@link StateQWOP#flattenState()} uses.
      * @return String containing all the state values on a line.
@@ -512,7 +562,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
             vals[i++] = positionCoords[count++];
             vals[i++] = positionCoords[count++];
             vals[i++] = positionCoords[count++];
-            
+
         }
         assert count == STATE_SIZE / 2 + 1;
         return new StateQWOP(vals, false);

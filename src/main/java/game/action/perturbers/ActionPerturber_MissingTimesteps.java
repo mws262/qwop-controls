@@ -11,7 +11,7 @@ import java.util.Map;
  * Perturbs an {@link ActionQueue} by removing timesteps (shortening {@link game.action.Action}) without replacement at
  * specified locations in the sequence.
  *
- * See {@link ActionPerturber_SwitchTooSoon} for an implementation which preserves the number of timesteps by moving
+ * See {@link ActionPerturber_OffsetActionTransitions} for an implementation which preserves the number of timesteps by moving
  * them from one command to the next.
  *
  * @author matt

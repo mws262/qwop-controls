@@ -1,9 +1,9 @@
 package goals.perturbation_analysis;
 
 import game.action.ActionQueue;
+import game.action.perturbers.ActionPerturber_OffsetActionTransitions;
 import game.qwop.ActionQueuesQWOP;
 import game.qwop.CommandQWOP;
-import game.action.perturbers.ActionPerturber_SwitchTooSoon;
 import game.qwop.GameQWOP;
 import game.IGameInternal;
 import game.qwop.StateQWOP;
@@ -33,8 +33,8 @@ public class MAIN_PerturbationSimple extends JFrame {
         ActionQueue<CommandQWOP> actionQueue = ActionQueuesQWOP.makeShortQueue();
         Map<Integer, Integer> perturbationLocations = new HashMap<>();
         perturbationLocations.put(22, 1);
-        ActionPerturber_SwitchTooSoon<CommandQWOP> perturber =
-                new ActionPerturber_SwitchTooSoon<>(perturbationLocations);
+        ActionPerturber_OffsetActionTransitions<CommandQWOP> perturber =
+                new ActionPerturber_OffsetActionTransitions<>(perturbationLocations);
         ActionQueue<CommandQWOP> actionQueuePerturbed = perturber.perturb(actionQueue);
 
         IGameInternal<CommandQWOP, StateQWOP> gameUnperturbed = new GameQWOP();

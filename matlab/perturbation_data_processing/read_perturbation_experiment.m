@@ -1,24 +1,17 @@
 close all; clear;
 
-files = dir("./tmp/*.txt");
-
-col = lines(length(files));
-for i = 1:length(files)
-    tsNum(i) = str2double(regexp(files(i).name,'\d*','Match'));
-    data{i} = importdata(["./tmp/" + files(i).name]);
-end
-[tsSorted, idx] = sort(tsNum);
-data = {data{idx}};
+file_directory = '../../tmp1/';
+[data, tsSorted] = readPerturbationData(file_directory);
 
 % Nominal trajectory.
 fig = figure;
 fig.Position = [100, 100, 800, 500];
 ax = axes;
 hold on;
-nominalPl = plot(NaN, NaN, 'LineWidth', 4);
+nominalPl = plot(NaN, NaN, 'LineWidth', 1);
 devStartPl = plot(NaN, NaN, 'g', 'LineWidth', 2);
 fail1plot = plot(NaN, NaN, 'r', 'LineWidth', 2);
-axis([0, 30, -2.5, 3.5]);
+axis([0, 30, -0.5, 0.5]);
 avgStep = plot([2.5, 2.5], ax.YLim, 'Color', [162, 36, 229]/255, 'LineWidth', 2);
 devPlots = plot(0, zeros(1, 9));
 
@@ -28,7 +21,7 @@ ylabel('torso angle (rad)');
 legen = legend(perturbationLabels);
 legen.Position(2) = 0.58;
 legen.Position(1) = 0.77;
-ax.XLim = [-0.5, 8];
+ax.XLim = [-0.1, 0.2];
 fig.Color = [1,1,1];
 
 grid on;
@@ -37,12 +30,13 @@ vid_writer = VideoWriter([vid_name, '.avi'], 'Uncompressed AVI');
 vid_writer.FrameRate = 8;
 open(vid_writer);
 for j = 1:length(data)
-    startT = tsSorted(j) * 0.04;
+    [~, beginningIdx] = find((data{j}(:, 3:end) - data{j}(:, 2))', 1, 'first');
+    startT = data{j}(beginningIdx, 1);
     devStartPl.XData = [0, 0];
     devStartPl.YData = ax.YLim;
     firstFailIdx = inf;
     
-    for i = 1:9
+    for i = 1:size(data{j},2) - 2
         lastidxplus1 = find(isnan(data{j}(:, i + 2)), 1, 'first');
         if isempty(lastidxplus1)
             lastidxplus1 = length(data{j}(:, i + 2)) + 1;
@@ -63,7 +57,7 @@ for j = 1:length(data)
 
     writeVideo(vid_writer, getframe(fig));
 
-    pause(0.001);
+    pause(1);
 end
 close(vid_writer);
                     eval(['!ffmpeg -i ', vid_name, '.avi ', vid_name, '.mp4']);

@@ -287,7 +287,11 @@ public class ActionQueue<C extends Command<?>> {
      */
     public ActionQueue<C> getCopyOfUnexecutedQueue() {
         ActionQueue<C> actionQueueCopy = new ActionQueue<>();
-        actionQueueCopy.addSequence(getActionsInCurrentRun());
+        List<Action<C>> actionsInCurrentRun = getActionsInCurrentRun();
+
+        for (Action<C> action : actionsInCurrentRun) {
+            actionQueueCopy.addAction(action.getCopy());
+        }
         return actionQueueCopy;
     }
 
