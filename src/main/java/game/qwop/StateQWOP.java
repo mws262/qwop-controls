@@ -441,9 +441,15 @@ public class StateQWOP implements IStateQWOP, Serializable {
      * @return Angular momentum.
      */
     public float calcAngMomentum() {
-        // Overall COM.
-        Vec2 comPos = calcCOM();
+        return calcAngMomentum(calcCOM());
+    }
 
+    /**
+     * Calculate complete angular momentum of the runner about an arbitrary point.
+     * @param aboutPt To to calculate moments about.
+     * @return Angular momentum.
+     */
+    public float calcAngMomentum(Vec2 aboutPt) {
         // Components due to rotation about each body part's own COM.
         float angMomIndivCOM =
                 QWOPConstants.headInertia * head.getDth() +
@@ -461,7 +467,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
 
         // For calculating the r cross v terms of the angular momentum.
         final Function<StateVariable6D, Float> crosProdFun =
-                (StateVariable6D st) -> ((st.getX() - comPos.x) * st.getDy() + (st.getY() - comPos.y) * st.getDx());
+                (StateVariable6D st) -> ((st.getX() - aboutPt.x) * st.getDy() + (st.getY() - aboutPt.y) * st.getDx());
 
         // Components due to rotation about whole body COM. r x mv
         float angMomBodyTrans =
@@ -481,6 +487,65 @@ public class StateQWOP implements IStateQWOP, Serializable {
         return angMomIndivCOM + angMomBodyTrans;
     }
 
+    public float calcEnergy() {
+        float potentialEnergy =
+                QWOPConstants.gravityMagnitude * (
+                QWOPConstants.headMass * head.getY() +
+                QWOPConstants.torsoMass * body.getY() +
+                QWOPConstants.rThighMass * rthigh.getY() +
+                QWOPConstants.rCalfMass * rcalf.getY() +
+                QWOPConstants.rFootMass * rfoot.getY() +
+                QWOPConstants.lThighMass * lthigh.getY() +
+                QWOPConstants.lCalfMass * lcalf.getY() +
+                QWOPConstants.lFootMass * lfoot.getY() +
+                QWOPConstants.rUArmMass * ruarm.getY() +
+                QWOPConstants.rLArmMass * rlarm.getY() +
+                QWOPConstants.lUArmMass * luarm.getY() +
+                QWOPConstants.lLArmMass * llarm.getY());
+
+        float linKineticEnergy = 0.5f *
+                (QWOPConstants.headMass * head.getDx() * head.getDx() +
+                QWOPConstants.torsoMass * body.getDx() * body.getDx() +
+                QWOPConstants.rThighMass * rthigh.getDx()  * rthigh.getDx() +
+                QWOPConstants.rCalfMass * rcalf.getDx() * rcalf.getDx() +
+                QWOPConstants.rFootMass * rfoot.getDx() * rfoot.getDx() +
+                QWOPConstants.lThighMass * lthigh.getDx() * lthigh.getDx() +
+                QWOPConstants.lCalfMass * lcalf.getDx() * lcalf.getDx() +
+                QWOPConstants.lFootMass * lfoot.getDx() * lfoot.getDx() +
+                QWOPConstants.rUArmMass * ruarm.getDx() * ruarm.getDx() +
+                QWOPConstants.rLArmMass * rlarm.getDx() * rlarm.getDx() +
+                QWOPConstants.lUArmMass * luarm.getDx() * luarm.getDx() +
+                QWOPConstants.lLArmMass * llarm.getDx() * llarm.getDx() +
+
+                QWOPConstants.headMass * head.getDy() * head.getDy() +
+                QWOPConstants.torsoMass * body.getDy() * body.getDy() +
+                QWOPConstants.rThighMass * rthigh.getDy()  * rthigh.getDy() +
+                QWOPConstants.rCalfMass * rcalf.getDy() * rcalf.getDy() +
+                QWOPConstants.rFootMass * rfoot.getDy() * rfoot.getDy() +
+                QWOPConstants.lThighMass * lthigh.getDy() * lthigh.getDy() +
+                QWOPConstants.lCalfMass * lcalf.getDy() * lcalf.getDy() +
+                QWOPConstants.lFootMass * lfoot.getDy() * lfoot.getDy() +
+                QWOPConstants.rUArmMass * ruarm.getDy() * ruarm.getDy() +
+                QWOPConstants.rLArmMass * rlarm.getDy() * rlarm.getDy() +
+                QWOPConstants.lUArmMass * luarm.getDy() * luarm.getDy() +
+                QWOPConstants.lLArmMass * llarm.getDy() * llarm.getDy());
+
+        float rotKineticEnergy = 0.5f *
+                (QWOPConstants.headInertia * head.getDth() * head.getDth() +
+                QWOPConstants.torsoInertia * body.getDth() * body.getDth() +
+                QWOPConstants.rThighInertia * rthigh.getDth() * rthigh.getDth() +
+                QWOPConstants.rCalfInertia * rcalf.getDth() * rcalf.getDth() +
+                QWOPConstants.rFootInertia * rfoot.getDth() * rfoot.getDth() +
+                QWOPConstants.lThighInertia * lthigh.getDth() * lthigh.getDth() +
+                QWOPConstants.lCalfInertia * lcalf.getDth() * lcalf.getDth() +
+                QWOPConstants.lFootInertia * lfoot.getDth() * lfoot.getDth() +
+                QWOPConstants.rUArmInertia * ruarm.getDth() * ruarm.getDth() +
+                QWOPConstants.rLArmInertia * rlarm.getDth() * rlarm.getDth() +
+                QWOPConstants.lUArmInertia * luarm.getDth() * luarm.getDth() +
+                QWOPConstants.lLArmInertia * llarm.getDth() * llarm.getDth());
+
+        return potentialEnergy + linKineticEnergy + rotKineticEnergy;
+    }
 
     /**
      * Get a tab-separated list of the states in String form. This takes the same order that

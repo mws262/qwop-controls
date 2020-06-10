@@ -84,7 +84,7 @@ for dirIdx = 1:size(dataDirs)
         ax = subplot(2,2,sequencePosIdx, 'replace');
         hold on;
         xlim([xspanEarly(1), max(xspanEarly(end), xspanLate(end))]);
-        ylim([0, 600]);
+        ylim([0, 1]);
         
         plot([0, 0], ax.YLim, 'k', 'LineWidth', 2);
         plot([-dirIdx, -dirIdx], ax.YLim, '--', 'Color', colors(2, :), 'LineWidth', 1.5);

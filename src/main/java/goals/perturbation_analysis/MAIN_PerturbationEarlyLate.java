@@ -63,7 +63,11 @@ public class MAIN_PerturbationEarlyLate extends JFrame {
 
             @Override
             public float[] transform(StateQWOP originalState) {
-                return new float[]{originalState.calcAngMomentum()};
+                return new float[]{ originalState.calcCOM().x + originalState.body.getX()};
+                        //
+                        // originalState.calcCOM().x -
+                        // (originalState.rfoot.getX() -
+                        // originalState.lfoot.getX()) / 2f};
             }
 
             @Override
