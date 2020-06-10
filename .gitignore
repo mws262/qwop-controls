@@ -1,6 +1,6 @@
 ### Custom ###
 *.*~
-/tmp/
+tmp**/
 /target/
 /aziokbd/
 src/main/resources/tflow_models/checkpoints

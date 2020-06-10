@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -399,6 +400,87 @@ public class StateQWOP implements IStateQWOP, Serializable {
 
         return new Vec2(weightedXSum / massSum, weightedYSum / massSum);
     }
+
+    /**
+     * Calculate the linear momentum of the entire runner.
+     * @return x and y components of the linear momentum of the runner.
+     */
+    public Vec2 calcLinMomentum() {
+
+        float xMomentum = QWOPConstants.headMass * head.getDx() +
+                QWOPConstants.torsoMass * body.getDx() +
+                QWOPConstants.rThighMass * rthigh.getDx() +
+                QWOPConstants.rCalfMass * rcalf.getDx() +
+                QWOPConstants.rFootMass * rfoot.getDx() +
+                QWOPConstants.lThighMass * lthigh.getDx() +
+                QWOPConstants.lCalfMass * lcalf.getDx() +
+                QWOPConstants.lFootMass * lfoot.getDx() +
+                QWOPConstants.rUArmMass * ruarm.getDx() +
+                QWOPConstants.rLArmMass * rlarm.getDx() +
+                QWOPConstants.lUArmMass * luarm.getDx() +
+                QWOPConstants.lLArmMass * llarm.getDx();
+
+        float yMomentum = QWOPConstants.headMass * head.getDy() +
+                QWOPConstants.torsoMass * body.getDy() +
+                QWOPConstants.rThighMass * rthigh.getDy() +
+                QWOPConstants.rCalfMass * rcalf.getDy() +
+                QWOPConstants.rFootMass * rfoot.getDy() +
+                QWOPConstants.lThighMass * lthigh.getDy() +
+                QWOPConstants.lCalfMass * lcalf.getDy() +
+                QWOPConstants.lFootMass * lfoot.getDy() +
+                QWOPConstants.rUArmMass * ruarm.getDy() +
+                QWOPConstants.rLArmMass * rlarm.getDy() +
+                QWOPConstants.lUArmMass * luarm.getDy() +
+                QWOPConstants.lLArmMass * llarm.getDy();
+
+        return new Vec2(xMomentum, yMomentum);
+    }
+
+    /**
+     * Calculate the angular momentum of the whole runner about the COM of the entire runner.
+     * @return Angular momentum.
+     */
+    public float calcAngMomentum() {
+        // Overall COM.
+        Vec2 comPos = calcCOM();
+
+        // Components due to rotation about each body part's own COM.
+        float angMomIndivCOM =
+                QWOPConstants.headInertia * head.getDth() +
+                QWOPConstants.torsoInertia * body.getDth() +
+                QWOPConstants.rThighInertia * rthigh.getDth() +
+                QWOPConstants.rCalfInertia * rcalf.getDth() +
+                QWOPConstants.rFootInertia * rfoot.getDth() +
+                QWOPConstants.lThighInertia * lthigh.getDth() +
+                QWOPConstants.lCalfInertia * lcalf.getDth() +
+                QWOPConstants.lFootInertia * lfoot.getDth() +
+                QWOPConstants.rUArmInertia * ruarm.getDth() +
+                QWOPConstants.rLArmInertia * rlarm.getDth() +
+                QWOPConstants.lUArmInertia * luarm.getDth() +
+                QWOPConstants.lLArmInertia * llarm.getDth();
+
+        // For calculating the r cross v terms of the angular momentum.
+        final Function<StateVariable6D, Float> crosProdFun =
+                (StateVariable6D st) -> ((st.getX() - comPos.x) * st.getDy() + (st.getY() - comPos.y) * st.getDx());
+
+        // Components due to rotation about whole body COM. r x mv
+        float angMomBodyTrans =
+                QWOPConstants.headMass * crosProdFun.apply(head) +
+                QWOPConstants.torsoMass * crosProdFun.apply(body) +
+                QWOPConstants.rThighMass * crosProdFun.apply(rthigh) +
+                QWOPConstants.rCalfMass * crosProdFun.apply(rcalf) +
+                QWOPConstants.rFootMass * crosProdFun.apply(rfoot) +
+                QWOPConstants.lThighMass * crosProdFun.apply(lthigh) +
+                QWOPConstants.lCalfMass * crosProdFun.apply(lcalf) +
+                QWOPConstants.lFootMass * crosProdFun.apply(lfoot) +
+                QWOPConstants.rUArmMass * crosProdFun.apply(ruarm) +
+                QWOPConstants.rLArmMass * crosProdFun.apply(rlarm) +
+                QWOPConstants.lUArmMass * crosProdFun.apply(luarm) +
+                QWOPConstants.lLArmMass * crosProdFun.apply(llarm);
+
+        return angMomIndivCOM + angMomBodyTrans;
+    }
+
 
     /**
      * Get a tab-separated list of the states in String form. This takes the same order that

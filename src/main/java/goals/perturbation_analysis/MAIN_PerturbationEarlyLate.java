@@ -6,7 +6,6 @@ import game.action.perturbers.ActionPerturber_OffsetActionTransitions;
 import game.qwop.*;
 import game.qwop.IStateQWOP.ObjectName;
 import game.state.transform.ITransform;
-import org.jbox2d.common.Vec2;
 
 import javax.swing.*;
 import java.io.File;
@@ -64,8 +63,7 @@ public class MAIN_PerturbationEarlyLate extends JFrame {
 
             @Override
             public float[] transform(StateQWOP originalState) {
-                Vec2 stCom = originalState.calcCOM();
-                return new float[]{stCom.y};
+                return new float[]{originalState.calcAngMomentum()};
             }
 
             @Override
