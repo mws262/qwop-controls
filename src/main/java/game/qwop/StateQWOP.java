@@ -359,19 +359,6 @@ public class StateQWOP implements IStateQWOP, Serializable {
      */
     public Vec2 calcCOM() {
 
-        float massSum = QWOPConstants.headMass +
-                QWOPConstants.torsoMass +
-                QWOPConstants.rThighMass +
-                QWOPConstants.rCalfMass +
-                QWOPConstants.rFootMass +
-                QWOPConstants.lThighMass +
-                QWOPConstants.lCalfMass +
-                QWOPConstants.lFootMass +
-                QWOPConstants.rUArmMass +
-                QWOPConstants.rLArmMass +
-                QWOPConstants.lUArmMass +
-                QWOPConstants.lLArmMass;
-
         float weightedXSum = QWOPConstants.headMass * head.getX() +
                 QWOPConstants.torsoMass * body.getX() +
                 QWOPConstants.rThighMass * rthigh.getX() +
@@ -398,7 +385,7 @@ public class StateQWOP implements IStateQWOP, Serializable {
                 QWOPConstants.lUArmMass * luarm.getY() +
                 QWOPConstants.lLArmMass * llarm.getY();
 
-        return new Vec2(weightedXSum / massSum, weightedYSum / massSum);
+        return new Vec2(weightedXSum / QWOPConstants.totalMass, weightedYSum / QWOPConstants.totalMass);
     }
 
     /**
@@ -545,6 +532,31 @@ public class StateQWOP implements IStateQWOP, Serializable {
                 QWOPConstants.lLArmInertia * llarm.getDth() * llarm.getDth());
 
         return potentialEnergy + linKineticEnergy + rotKineticEnergy;
+    }
+
+    public float approxZMP(StateQWOP prevSt, float dt) {
+        // (hdot - m*xgdd*yg)/(g*m + m*ygdd)
+        StateQWOP finiteDiffSt = subtract(prevSt).multiply(1f/dt);
+
+        Vec2 comPos = calcCOM();
+        Vec2 comAccel = calcLinMomentum().sub(prevSt.calcLinMomentum()).mul(QWOPConstants.totalMass * dt);
+
+        // These say Dth, etc, but are actually acceleration estimates from the finite difference.
+        float angMomDotIndivCOM =
+                QWOPConstants.headInertia * finiteDiffSt.head.getDth() +
+                    QWOPConstants.torsoInertia * finiteDiffSt.body.getDth() +
+                    QWOPConstants.rThighInertia * finiteDiffSt.rthigh.getDth() +
+                    QWOPConstants.rCalfInertia * finiteDiffSt.rcalf.getDth() +
+                    QWOPConstants.rFootInertia * finiteDiffSt.rfoot.getDth() +
+                    QWOPConstants.lThighInertia * finiteDiffSt.lthigh.getDth() +
+                    QWOPConstants.lCalfInertia * finiteDiffSt.lcalf.getDth() +
+                    QWOPConstants.lFootInertia * finiteDiffSt.lfoot.getDth() +
+                    QWOPConstants.rUArmInertia * finiteDiffSt.ruarm.getDth() +
+                    QWOPConstants.rLArmInertia * finiteDiffSt.rlarm.getDth() +
+                    QWOPConstants.lUArmInertia * finiteDiffSt.luarm.getDth() +
+                    QWOPConstants.lLArmInertia * finiteDiffSt.llarm.getDth();
+
+        return (angMomDotIndivCOM / QWOPConstants.totalMass - comAccel.x * comPos.y) / (QWOPConstants.gravityMagnitude + comAccel.y);
     }
 
     /**

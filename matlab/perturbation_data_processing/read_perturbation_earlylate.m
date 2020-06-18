@@ -7,7 +7,7 @@ dataDirs = {'../../tmp1/'};
 showTsBefore = 5;
 showTsAfter = 150;
 
-actionSequenceLength = 4;
+actionSequenceLength = 1;
 
 %% Setup video recording for when the plot evolves over time.
 recordVideo = false;
@@ -67,8 +67,8 @@ for dirIdx = 1:size(dataDirs)
         firstEarlyFail = min(tsToFailEarly);
         firstLateFail = min(tsToFailLate);
         
-        deviationDatEarly = firstTsEarly(1:firstEarlyFail + showTsBefore, :);
-        deviationDatLate = firstTsLate(1:firstLateFail + showTsBefore + 1, :);
+        deviationDatEarly = firstTsEarly(1:firstEarlyFail + showTsBefore - 2, :);
+        deviationDatLate = firstTsLate(1:firstLateFail + showTsBefore - 2, :);
 
         a = mean(deviationDatLate, 2);%, 'omitnan');
         b = mean(deviationDatEarly, 2);%, 'omitnan');
@@ -81,7 +81,9 @@ for dirIdx = 1:size(dataDirs)
         xspanEarly = -showTsBefore : (size(deviationDatEarly, 1) - showTsBefore - 1);
         xspanLate = -showTsBefore : (size(deviationDatLate, 1) - showTsBefore - 1);
         
-        ax = subplot(2,2,sequencePosIdx, 'replace');
+        % Not really worrying about the number of subplots. Really only
+        % care about 1 single or 2 sep.
+        ax = subplot(sqrt(actionSequenceLength),sqrt(actionSequenceLength),sequencePosIdx, 'replace');
         hold on;
         xlim([xspanEarly(1), max(xspanEarly(end), xspanLate(end))]);
         ylim([0, 1]);
@@ -99,8 +101,13 @@ for dirIdx = 1:size(dataDirs)
         earlyouter = fill([xspanEarly, fliplr(xspanEarly)], [min(deviationDatEarly, [], 2); flipud(max(deviationDatEarly, [], 2))], c2, 'FaceAlpha', 0.08, 'LineStyle', 'none');
         earlyinner = fill([xspanEarly, fliplr(xspanEarly)], [b - s2/2; flipud(b + s2/2)], c2, 'FaceAlpha', 0.2, 'LineStyle', 'none');
         
+        fitfun = @(c, xdat)(c(1) * xdat + c(2));
+        coef = lsqcurvefit(fitfun, [1,-5], xspanLate * 0.04, a')
+%         fiteval = fitfun(coef, xspanLate);
+%         plot(xspanLate, fiteval, 'LineWidth', 3);
+        
         xlabel('Timesteps around keypress transition');
-        ylabel('Torso angle deviation (rad)');
+        ylabel('COM position deviation (rad)');
         title(titles{sequencePosIdx});
         
         nonespacing = 13;

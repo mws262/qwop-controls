@@ -286,4 +286,9 @@ Note that all bodies are done first, and then joints afterwards.
      */
     public static final float torsoAngUpper = 1.57f, torsoAngLower = -2.2f; // Negative is falling backwards. 0.4 is start angle.
 
+    public static final float totalMass =
+            headMass + torsoMass + rThighMass + rFootMass + lThighMass + lCalfMass + lFootMass + rUArmMass + rLArmMass
+                    + lUArmMass + lLArmMass;
+
+
 }

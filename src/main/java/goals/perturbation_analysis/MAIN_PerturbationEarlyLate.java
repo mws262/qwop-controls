@@ -4,7 +4,6 @@ import game.action.Action;
 import game.action.ActionQueue;
 import game.action.perturbers.ActionPerturber_OffsetActionTransitions;
 import game.qwop.*;
-import game.qwop.IStateQWOP.ObjectName;
 import game.state.transform.ITransform;
 
 import javax.swing.*;
@@ -16,18 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static game.state.StateVariable6D.StateName;
-
 public class MAIN_PerturbationEarlyLate extends JFrame {
-    /**
-     * Set the body part for which the perturbation data will be saved.
-     */
-    private final ObjectName bodyPartToSave = ObjectName.RFOOT;
-
-    /**
-     * Set the coordinate (for the body) for which the perturbation data will be saved.
-     */
-    private final StateName stateVarToSave = StateName.DX;
 
     public static void main(String[] args) {
         new MAIN_PerturbationEarlyLate().run();
@@ -52,42 +40,17 @@ public class MAIN_PerturbationEarlyLate extends JFrame {
         }
 
 //        ITransform<StateQWOP> tform = new Transform_PCA<>(new int[]{0});
-        ITransform<StateQWOP> tform = new ITransform<StateQWOP>() {
-            @Override
-            public void updateTransform(List<StateQWOP> statesToUpdateFrom) {}
-
-            @Override
-            public List<float[]> transform(List<StateQWOP> originalStates) {
-                return null;
-            }
-
-            @Override
-            public float[] transform(StateQWOP originalState) {
-                return new float[]{ originalState.calcCOM().x + originalState.body.getX()};
-                        //
-                        // originalState.calcCOM().x -
-                        // (originalState.rfoot.getX() -
-                        // originalState.lfoot.getX()) / 2f};
-            }
-
-            @Override
-            public List<float[]> untransform(List<float[]> transformedStates) { return null; }
-
-            @Override
-            public List<float[]> compressAndDecompress(List<StateQWOP> originalStates) { return null; }
-
-            @Override
-            public int getOutputSize() { return 1; }
-
-            @Override
-            public String getName() { return ""; }
-        };
+        TestingTform tform = new TestingTform();
+        TestingTform tformEarly = new TestingTform();
+        TestingTform tformLate = new TestingTform();
 
         tform.updateTransform(baselineStates);
+        tformEarly.updateTransform(baselineStates);
+        tformLate.updateTransform(baselineStates);
 
 //        List<float[]> tformedBaseline = tform.transform(baselineStates);
 
-        for (int delayAmount = 1; delayAmount < 2; delayAmount++) {
+        for (int delayAmount = 1; delayAmount < 5; delayAmount++) {
             for (int i = 11; i < baselineActions.size(); i++) { // Skip the first actions.
                 actionQueue.resetQueue();
                 gameUnperturbed.resetGame();
@@ -111,6 +74,10 @@ public class MAIN_PerturbationEarlyLate extends JFrame {
                 ActionQueue<CommandQWOP> perturbedEarlyQueue = perturbEarly1.perturb(actionQueue);
                 ActionQueue<CommandQWOP> perturbedLateQueue = perturbLate1.perturb(actionQueue);
 
+                tform.reset();
+                tformEarly.reset();
+                tformLate.reset();
+
                 new File("./tmp" + delayAmount).mkdirs();
                 try (FileWriter stateWriter = new FileWriter("./tmp" + delayAmount + "/actionDev" + i + ".txt")) {
                     while (!actionQueue.isEmpty()) {
@@ -133,8 +100,8 @@ public class MAIN_PerturbationEarlyLate extends JFrame {
                         stateWriter.write((gameUnperturbed.getTimestepsThisGame()) * QWOPConstants.timestep + " ");
 
                         float[] transformBaseline = tform.transform(gameUnperturbed.getCurrentState());
-                        float[] transformEarly = tform.transform(gameEarly.getCurrentState());
-                        float[] transformLate = tform.transform(gameLate.getCurrentState());
+                        float[] transformEarly = tformEarly.transform(gameEarly.getCurrentState());
+                        float[] transformLate = tformLate.transform(gameLate.getCurrentState());
 
 ////                         TESTING TESTING TESTING
 //                        StateQWOP stEarly = gameEarly.getCurrentState().subtract(gameUnperturbed.getCurrentState());
@@ -194,4 +161,59 @@ public class MAIN_PerturbationEarlyLate extends JFrame {
             }
         }
     }
+
+    class TestingTform implements ITransform<StateQWOP> {
+        public void reset() {
+            prevSt = null;
+        }
+        @Override
+        public void updateTransform(List<StateQWOP> statesToUpdateFrom) {}
+
+        @Override
+        public List<float[]> transform(List<StateQWOP> originalStates) {
+            return null;
+        }
+
+        StateQWOP prevSt;
+        @Override
+        public float[] transform(StateQWOP originalState) {
+//
+//            if (prevSt == null) {
+//                prevSt = originalState;
+//                return new float[]{0f};
+//            } else {
+//                float zmp = originalState.approxZMP(prevSt, QWOPConstants.timestep);
+//                prevSt = originalState;
+//                return new float[]{zmp};
+//            }
+
+                float xdiff =
+                        (float) (originalState.calcCOM().x - 0*(originalState.body.getX() + Math.sin(originalState.body.getTh()) * QWOPConstants.torsoL / 2f));
+                // .getX();
+                float ydiff = 0 *
+                        (float) (originalState.calcCOM().y - 0*(originalState.body.getY() - Math.cos(originalState.body.getTh()) * QWOPConstants.torsoL / 2f));
+            // .getX();
+                // .getY();
+                return new float[]{originalState.calcCOM().x}; //(float) Math.sqrt(xdiff * xdiff + ydiff * ydiff)};
+
+            // (float) (originalState.calcCOM().x - (originalState.body.getX() + Math.sin(originalState
+            // .body.getTh()) * QWOPConstants.torsoL / 2f))};
+            //
+            //  -
+            // (originalState.rfoot.getX() -
+            // originalState.lfoot.getX()) / 2f};
+        }
+
+        @Override
+        public List<float[]> untransform(List<float[]> transformedStates) { return null; }
+
+        @Override
+        public List<float[]> compressAndDecompress(List<StateQWOP> originalStates) { return null; }
+
+        @Override
+        public int getOutputSize() { return 1; }
+
+        @Override
+        public String getName() { return ""; }
+    };
 }
