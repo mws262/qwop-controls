@@ -223,7 +223,7 @@ To update the classpath settings for Eclipse:
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>3.1.1</version>
+            <version>3.2.3</version>
         </dependency>
 
         <!-- Video capture -->
